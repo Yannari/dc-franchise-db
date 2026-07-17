@@ -76,6 +76,7 @@ import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaC
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 import { buildViewerVoteCommitments } from './vote-planning.js';
+import { rpBuildKnowledgeMap } from './knowledge-vp.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -13645,6 +13646,10 @@ export function buildVPScreens(epRecord) {
     }
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
+    if (ep.knowledgeSnapshot && Object.keys(ep.knowledgeSnapshot).length) {
+      vpScreens.push({ id:'knowledge-map', label:'Who Knew What',
+        html: rpBuildKnowledgeMap(ep.num, ep.knowledgeSnapshot) });
+    }
 
     // ── Emissary's Choice screen (AFTER votes — emissary picks second elimination) ──
     if (ep.emissaryPick) {

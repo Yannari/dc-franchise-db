@@ -13,6 +13,7 @@
 // notes, not here.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players } from './core.js';
+import { pitchTrust } from './relationships.js';
 
 function store() { if (!gs.knowledge || typeof gs.knowledge !== 'object') gs.knowledge = {}; return gs.knowledge; }
 function statsOf(n) { return players.find(p => p.name === n)?.stats || {}; }
@@ -20,7 +21,7 @@ function archOf(n) { return players.find(p => p.name === n)?.archetype || 'float
 function curEp() { return (gs.episode || 0) + 1; }
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
-export function factId(type, subject, object) { return object ? `${type}:${subject}:${object}` : `${type}:${subject}`; }
+export function factId(type, subject, object) { return object !== null && object !== undefined ? `${type}:${subject}:${object}` : `${type}:${subject}`; }
 
 // how many episodes a fact stays "current" before beliefs go stale
 const VALIDITY = { target: 1, pitch: 2, 'bond-read': 4, idol: 99, advantage: 99, alliance: 99, betrayal: 99, throw: 99 };
@@ -34,6 +35,13 @@ export function recordFact({ type, subject, object = null, payload = null, truth
   const s = store();
   const existing = s[id];
   if (existing) {
+    const nextEp = ep ?? curEp();
+    // Targets and pitches describe the current round. Reusing the same name in
+    // a later episode must not silently preserve last episode's audience.
+    if (['target', 'pitch'].includes(type) && existing.createdEp !== nextEp) {
+      existing.createdEp = nextEp;
+      existing.beliefs = {};
+    }
     if (payload != null) existing.payload = payload;
     existing.truth = truth;
     return existing;
@@ -77,7 +85,12 @@ export function learn(knower, id, { source = 'observation', sourceType = 'observ
   const fact = store()[id];
   if (!fact || !knower) return null;
   const cred = confidence != null ? clamp01(confidence) : (SOURCE_CRED[sourceType] ?? 0.5);
-  const res = _assess(knower, cred, fact.truth, rng);
+  // Witnessing an action or hearing a public announcement is knowledge, not a
+  // persuasion roll. Interpretation may later be wrong; occurrence is known.
+  const direct = sourceType === 'public' || sourceType === 'observed';
+  const res = direct
+    ? { accept: true, confidence: Math.max(cred, sourceType === 'public' ? 1 : 0.9), valence: fact.truth ? 'accurate' : 'false' }
+    : _assess(knower, cred, fact.truth, rng);
   if (!res.accept) return null;
 
   const e = ep ?? curEp();
@@ -96,16 +109,16 @@ export function learn(knower, id, { source = 'observation', sourceType = 'observ
 // ── confidence over time ────────────────────────────────────────────────
 export function effectiveConfidence(fact, belief, ep = null) {
   const e = ep ?? curEp();
-  const age = Math.max(0, e - (belief.learnedEp || e));
+  const age = Math.max(0, e - (belief.learnedEp ?? e));
   let eff = (belief.confidence || 0) - age * 0.08;
-  const factAge = Math.max(0, e - (fact.createdEp || e));
+  const factAge = Math.max(0, e - (fact.createdEp ?? e));
   const validity = VALIDITY[fact.type] ?? 99;
   if (factAge > validity) eff -= (factAge - validity) * 0.15;   // outdated facts fade fast
   return clamp01(eff);
 }
 
 function _isStale(fact, ep) {
-  const factAge = Math.max(0, (ep ?? curEp()) - (fact.createdEp || 0));
+  const factAge = Math.max(0, (ep ?? curEp()) - (fact.createdEp ?? 0));
   return factAge > (VALIDITY[fact.type] ?? 99);
 }
 
@@ -181,7 +194,10 @@ export function propagate(ep = null, { contacts = defaultContacts, rng = Math.ra
       if (!pool.length) continue;
       const listener = pool[Math.floor(rng() * pool.length)];
       const src = fact.beliefs[knower];
-      const hopCred = clamp01(effectiveConfidence(fact, src, e) * 0.85);
+      // A warm relationship does not guarantee belief. Directional trust in
+      // this particular source controls how much credibility survives the hop.
+      const trustMultiplier = 0.65 + clamp01((pitchTrust(listener, knower) + 10) / 20) * 0.45;
+      const hopCred = clamp01(effectiveConfidence(fact, src, e) * 0.85 * trustMultiplier);
       const sourceType = src.sourceType === 'observed' ? 'told' : 'rumor';
       const b = learn(listener, id, { source: knower, sourceType, confidence: hopCred, ep: e, from: knower, rng });
       if (b) { shared++; events.push({ id, type: fact.type, subject: fact.subject, from: knower, to: listener, sourceType, valence: b.valence }); }
@@ -197,7 +213,7 @@ export function pruneStale(ep = null, { maxAge = 6 } = {}) {
   const s = store();
   for (const id of Object.keys(s)) {
     const fact = s[id];
-    if ((VALIDITY[fact.type] ?? 99) < 90 && (e - (fact.createdEp || e)) > maxAge) delete s[id];
+    if ((VALIDITY[fact.type] ?? 99) < 90 && (e - (fact.createdEp ?? e)) > maxAge) delete s[id];
   }
 }
 

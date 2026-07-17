@@ -6,6 +6,8 @@ import { computeHeat, wRandom } from './alliances.js';
 import { strategicMemoryReason, strategicMemoryScore, strongestStrategicMemory } from './strategy-memory.js';
 import { buildObservedVoteCommitments, compareObservedCommitments, consolidateFringeBallots, resolveLateBallotTransitions, summarizePlanReliability } from './vote-planning.js';
 import { reputationModifier } from './reputation.js';
+import { pitchTrust, targetProtection } from './relationships.js';
+import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
 
 export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, claimedSupport = 1,
   eligibleVoters = 1, confirmedSupport = 1, strategic = 5, intuition = 5, emotional = 'comfortable', liar = false,
@@ -720,6 +722,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   const votes = {}, log = [], defections = [], provisionalBallots = [];
   const emotionalDefectionDiagnostics = [];
   const observedCommitments = buildObservedVoteCommitments(tribalPlayers, _immSet, alliances, lostVotes);
+  recordVotingPlanKnowledge(tribalPlayers, alliances);
   alliances.forEach(plan => {
     plan.reliability = summarizePlanReliability(observedCommitments, plan.label, observedCommitments[0]?.majority);
   });
@@ -785,8 +788,8 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
         const vS = pStats(voter);
         const _voterRead = observedCommitments.find(read => read.voter === voter);
         const _votesAimedAtVoter = _forecastCounts[voter] || 0;
-        const response = evaluatePitchResponse({ trust:getPerceivedBond(voter, pitcher), loyalty:vS.loyalty,
-          targetBond:getPerceivedBond(voter, pitchTarget), claimedSupport:_claimedSupport,
+        const response = evaluatePitchResponse({ trust:pitchTrust(voter, pitcher), loyalty:vS.loyalty,
+          targetBond:targetProtection(voter, pitchTarget), claimedSupport:_claimedSupport,
           eligibleVoters:_pitchCandidates.length, confirmedSupport:new Set([..._existingSupporters, pitcher, ..._flipped]).size,
           strategic:vS.strategic, intuition:vS.intuition, emotional:getPlayerState(voter).emotional, liar:_lieAboutNumbers,
           selfTargeted:_votesAimedAtVoter >= 2, competingSupport:_votesAimedAtVoter,
@@ -806,6 +809,8 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     });
   }
   resolveCompetingPitches(_votePitches, observedCommitments);
+  recordPitchKnowledge(_votePitches);
+  const _knowledgeEvents = spreadKnowledgeForRound(tribalPlayers);
   applyResolvedPitchesToForecast(_votePitches, observedCommitments);
   const _pitchIntel = propagatePitchLeaks(_votePitches, tribalPlayers, alliances);
   const _pitchCounterplay = resolvePitchCounterplay(_votePitches, _pitchIntel, tribalPlayers, alliances, lostVotes);
@@ -1373,6 +1378,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   delete gs._pitchCounterplay;
   return { votes, log, defections, voteMiscommunications: _voteMiscommunications, votePitches: _votePitches.length ? _votePitches : null,
     pitchIntel:_pitchIntel.length ? _pitchIntel : null, pitchCounterplay:_pitchCounterplay.length ? _pitchCounterplay : null,
+    knowledgeEvents:_knowledgeEvents.length ? _knowledgeEvents : null,
     emotionalDefectionDiagnostics, voteCommitmentDiagnostics: _comparedCommitments };
 }
 

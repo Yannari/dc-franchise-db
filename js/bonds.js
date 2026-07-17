@@ -1,12 +1,34 @@
 // js/bonds.js - Bond tracking, perceived bonds, bond recovery
 import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, threatScore } from './players.js';
+import { applyLegacyBondDelta, seedRelationshipFromLegacyBond } from './relationships.js';
+import { addMutualRelationshipDimension, addRelationshipDimension } from './relationships.js';
 
 export function bKey(a, b)         { return [a,b].sort().join('||'); }
 
 export function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
 
-export function setBond(a, b, val) { if(gs) gs.bonds[bKey(a,b)] = Math.max(-10, Math.min(10, val)); }
+export function setBond(a, b, val) {
+  if (!gs) return;
+  const next = Math.max(-10, Math.min(10, val));
+  gs.bonds[bKey(a,b)] = next;
+  seedRelationshipFromLegacyBond(a, b, next, { overwrite: true });
+}
+
+// Relax extreme hostility involving a returning player: floor their bonds and
+// keep relationship dimensions in sync. Matches player names exactly (the old
+// inline `k.includes(name)` substring test could false-match e.g. "Ana" inside
+// "Anastasia").
+export function floorBondsInvolving(name, floor = -1) {
+  if (!gs?.bonds) return;
+  Object.keys(gs.bonds).forEach(k => {
+    const [a, b] = k.split('||');
+    if ((a === name || b === name) && gs.bonds[k] < floor) {
+      applyLegacyBondDelta(a, b, floor - gs.bonds[k]);
+      gs.bonds[k] = floor;
+    }
+  });
+}
 
 export function addBond(a, b, d) {
   // Temperament scaling: hotheads feel everything harder (bonds swing faster both ways)
@@ -28,7 +50,13 @@ export function addBond(a, b, d) {
   if (_archA === 'hero' || _archB === 'hero') {
     if (d > 0) d *= 1.15; // heroes build bonds faster (genuine warmth)
   }
-  setBond(a, b, getBond(a,b)+d);
+  const before = getBond(a, b);
+  const next = Math.max(-10, Math.min(10, before + d));
+  // Apply the dimension delta BEFORE writing the legacy bond: the dimension
+  // defaults derive from the current legacy bond, so updating the bond first
+  // would double-count the delta on a pair's first interaction.
+  applyLegacyBondDelta(a, b, next - before);
+  gs.bonds[bKey(a,b)] = next;
 }
 
 export function getPerceivedBond(a, b) {
@@ -531,8 +559,8 @@ export function recoverBonds(ep) {
       // Cap: never recover past -2.0 (feuds leave deep scars)
       const newBond = Math.min(-2.0, bond + recovery);
       if (newBond > bond) {
-        const key = [a, b].sort().join('|');
-        gs.bonds[key] = newBond;
+        applyLegacyBondDelta(a, b, newBond - bond); // keep dimensions in sync (before the write)
+        gs.bonds[bKey(a, b)] = newBond;             // was join('|') — orphaned the write (getBond reads '||')
       }
     }
   }
@@ -563,7 +591,10 @@ export function recoverBonds(ep) {
       const _avgLoyalty = (pStats(a).loyalty + pStats(b).loyalty) / 2;
       const cooling = Math.max(0.03, 0.04 + (bond - 4.0) * 0.02 - _avgLoyalty * 0.005);
       const newBond = Math.max(3.0, bond - cooling); // floor at +3.0
-      if (newBond < bond) gs.bonds[[a, b].sort().join('|')] = newBond;
+      if (newBond < bond) {
+        applyLegacyBondDelta(a, b, newBond - bond); // keep dimensions in sync (before the write)
+        gs.bonds[bKey(a, b)] = newBond;             // was join('|') — orphaned the write (getBond reads '||')
+      }
     }
   }
 
@@ -641,6 +672,7 @@ export function updateBonds(votingLog, eliminated, alliances) {
     sameVoters.forEach(other => {
       if (getBond(voter,other) < 8) {
         addBond(voter, other, 0.5);
+        addMutualRelationshipDimension(voter, other, 'strategicRespect', 0.12);
         changes.push({ a:voter, b:other, delta:0.5, reason:'voted together' });
       }
     });
@@ -648,6 +680,7 @@ export function updateBonds(votingLog, eliminated, alliances) {
     // Voted for someone still in the game: small negative
     if (voted !== eliminated) {
       addBond(voter, voted, -0.5);
+      addRelationshipDimension(voted, voter, 'resentment', 0.35);
       changes.push({ a:voter, b:voted, delta:-0.5, reason:'voted against (missed)' });
     }
   });

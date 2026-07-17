@@ -1260,6 +1260,51 @@ export function _textVotingPlans(ep, ln, sec) {
   }
 }
 
+export function _textInformationFlow(ep, ln, sec) {
+  const snapshot = ep.knowledgeSnapshot || gs.knowledge;
+  const facts = Object.values(snapshot || {});
+  if (!facts.length) return;
+  const activeNames = new Set(ep.tribalPlayers || gs.activePlayers || []);
+  const knowers = fact => Object.keys(fact.beliefs || {}).filter(name => !activeNames.size || activeNames.has(name));
+  const list = names => names.length ? names.join(', ') : 'nobody recorded';
+  sec('WHO KNEW WHAT — INFORMATION FLOW');
+  ln('This section tracks awareness, not support. Knowing a name or hearing a pitch does not mean the contestant agreed, committed, or voted that way.');
+
+  const targets = facts.filter(f => f.type === 'target')
+    .map(f => ({ fact: f, names: knowers(f) }))
+    .sort((a, b) => b.names.length - a.names.length);
+  if (targets.length) {
+    ln('TARGET NAMES IN CIRCULATION:');
+    targets.slice(0, 6).forEach(({ fact, names }) =>
+      ln(`- ${fact.subject}: heard by ${list(names)} (${names.length}). This records awareness of the proposal, not promised ballots.`));
+    if (targets.length > 6) ln(`- ${targets.length - 6} additional names had smaller or more private conversations around them.`);
+  }
+
+  const pitches = facts.filter(f => f.type === 'pitch')
+    .map(f => ({ fact: f, names: knowers(f).filter(name => name !== f.subject) }))
+    .sort((a, b) => b.names.length - a.names.length);
+  if (pitches.length) {
+    ln('DIRECT PITCHES HEARD:');
+    pitches.slice(0, 5).forEach(({ fact, names }) =>
+      ln(`- ${fact.subject} pitched ${fact.object} to ${list(names)}. Their presence here means they heard it; their reaction and ballot may still differ.`));
+    if (pitches.length > 5) ln(`- ${pitches.length - 5} other pitches stayed narrower.`);
+  }
+
+  const betrayals = facts.filter(f => f.type === 'betrayal');
+  if (betrayals.length) {
+    ln('KNOWN BETRAYALS:');
+    betrayals.slice(0, 4).forEach(f =>
+      ln(`- ${f.subject}'s move against ${f.object} is known by ${list(knowers(f))}. Anyone absent from this list has not directly identified the betrayal.`));
+  }
+
+  const targetReach = targets.map(t => t.names.length);
+  if (targets.length >= 3 && Math.max(...targetReach, 0) < Math.max(2, activeNames.size * 0.75)) {
+    ln('READ OF THE ROOM: Information is fragmented. Several names are circulating, but the tribe does not share one complete picture.');
+  } else if (targets.length) {
+    ln('READ OF THE ROOM: One or more target names are broadly known, but awareness still does not guarantee a unified vote.');
+  }
+}
+
 // ── TRIBAL COUNCIL ──
 export function _textTribalCouncil(ep, ln, sec) {
   if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight || ep.isTripleDogDare) return;
@@ -3331,6 +3376,7 @@ export function generateSummaryText(ep) {
   _textTiedDestinies(ep, ln, sec);
   _textJuryElimination(ep, ln, sec); // mid-game jury-elimination twist replaces the tribal-council block
   _textVotingPlans(ep, ln, sec);
+  _textInformationFlow(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);
   _textMoleDisruption(ep, ln, sec);

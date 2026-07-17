@@ -572,7 +572,8 @@ export function initGameState() {
     tribes: tribeList,
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
     riArrivalEp: {}, riQuits: [], riAlliancesFormed: [],
-    eliminated: [], bonds, perceivedBonds: {}, sideDeals: [], loyaltyTests: [], alliances: [], episodeHistory: [],
+    eliminated: [], bonds, relationshipDimensions: {}, perceivedBonds: {}, knowledge: {},
+    _knowledgeSpreadRounds: [], sideDeals: [], loyaltyTests: [], alliances: [], episodeHistory: [],
     advantages: [],      // [{ holder, type, foundEp, fromBeware? }]
     idolSlots,           // { tribeName: bool }
     bewares,             // { tribeName: { hidden, holder, activated } }

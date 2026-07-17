@@ -1,7 +1,7 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
 import { gs, seasonConfig, players, repairGsSets } from './core.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
-import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds } from './bonds.js';
+import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds, floorBondsInvolving } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
 import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions } from './voting.js';
@@ -10,6 +10,7 @@ import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, sim
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
+import { knowledgeCampCards } from './knowledge-integration.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -1369,7 +1370,7 @@ export function simulateEpisode() {
         const smallest = [...gs.tribes].sort((a,b) => a.members.length-b.members.length)[0];
         smallest.members.push(winner);
       }
-      Object.keys(gs.bonds).forEach(k => { if (k.includes(winner) && gs.bonds[k] < -1) gs.bonds[k] = -1; });
+      floorBondsInvolving(winner);
       gs.activePlayers.forEach(p => {
         if (p === winner) return;
         const bond = getBond(winner, p);
@@ -1446,9 +1447,7 @@ export function simulateEpisode() {
         if (_smallest) _smallest.members.push(_fvReturnee);
       }
       // Soften extreme negative bonds (time away shifts perspective)
-      Object.keys(gs.bonds).forEach(k => {
-        if (k.includes(_fvReturnee) && gs.bonds[k] < -1) gs.bonds[k] = -1;
-      });
+      floorBondsInvolving(_fvReturnee);
       ep.fanVoteReturnee = _fvReturnee;
       ep.twists.push({ type: 'fan-vote-return', returnee: _fvReturnee });
     }
@@ -4095,12 +4094,20 @@ export function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult, pitchIntel:_pitchIntelResult, pitchCounterplay:_pitchCounterplayResult, knowledgeEvents:_knowledgeEventsResult, emotionalDefectionDiagnostics, voteCommitmentDiagnostics } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
     if (emotionalDefectionDiagnostics?.length) ep.emotionalDefectionDiagnostics = emotionalDefectionDiagnostics;
     if (voteCommitmentDiagnostics?.length) ep.voteCommitmentDiagnostics = voteCommitmentDiagnostics;
     if (_vpResult) ep.votePitches = _vpResult;
     if (_pitchIntelResult) ep.pitchIntel = _pitchIntelResult;
     if (_pitchCounterplayResult) ep.pitchCounterplay = _pitchCounterplayResult;
+    if (_knowledgeEventsResult?.length) {
+      ep.knowledgeEvents = [...(ep.knowledgeEvents || []), ..._knowledgeEventsResult];
+      const _knowledgeCampKey = gs.isMerged ? 'merge'
+        : (gs.tribes.find(t => t.members.some(m => tribalPlayers.includes(m)))?.name || Object.keys(ep.campEvents || {})[0]);
+      if (_knowledgeCampKey && ep.campEvents?.[_knowledgeCampKey]?.pre) {
+        ep.campEvents[_knowledgeCampKey].pre.push(...knowledgeCampCards(_knowledgeEventsResult));
+      }
+    }
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
 
@@ -6807,6 +6814,7 @@ function simulateJuryRoundtable(ep) {
     tribalTribe: ep.loser?.name || null,
     tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
+    knowledgeSnapshot: JSON.parse(JSON.stringify(gs.knowledge || {})),
     tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
     twistScenes: [], campEvents: ep.campEvents || null, tribeDissolutions: ep.tribeDissolutions || null, summaryText: '', gsSnapshot: window.snapshotGameState(),
     // Post-elimination twist results — saved here so VP can rebuild them on reload

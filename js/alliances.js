@@ -4,6 +4,8 @@ import { pStats, pronouns, threatScore, isAllianceBottom, getPlayerState, challe
 import { getBond, getPerceivedBond, addBond, addPerceivedBond } from './bonds.js';
 import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
 import { rememberStrategy } from './strategy-memory.js';
+import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
+import { addRelationshipDimension } from './relationships.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
@@ -676,7 +678,9 @@ export function detectBetrayals(ep) {
     const _numLeft = new Set((ep.votingLog || []).filter(v => v.voter && v.voter !== 'THE GAME').map(v => v.voter)).size
       || gs.activePlayers.length;
     const _isLone = _deviators.length === 1;
-    const _loyalReaders = alliance.members.filter(m => !_deviators.includes(m) && gs.activePlayers.includes(m));
+    // Only people who attended and cast a loyal ballot can directly read this
+    // Tribal. Off-tribe allies may learn later through the knowledge network.
+    const _loyalReaders = voters.filter(m => !_deviators.includes(m) && gs.activePlayers.includes(m));
     const _bestRead = _loyalReaders.length ? Math.max(..._loyalReaders.map(m => pStats(m).intuition + (_arch(m) === 'perceptive-player' ? 4 : 0))) : 0;
 
     voters.forEach(voter => {
@@ -740,6 +744,12 @@ export function detectBetrayals(ep) {
 
       // ── DETECTED: recorded + punished (original behavior) ──
       alliance.betrayals.push({ player: voter, ep: ep.num, votedFor: entry.voted, consensusWas: consensusVote, formedThisEp, reason: entry.reason || '', severity: _betrayalSeverity });
+      recordDetectedBetrayalKnowledge({
+        traitor: voter,
+        votedFor: betrayerVotedFor,
+        witnesses: _loyalReaders,
+        ep: ep.num,
+      });
       // Queue a dedicated camp confrontation for MAJOR/MODERATE detected betrayals (the caught traitor
       // faces the alliance's reckoning next episode). Minor stray votes don't warrant a confrontation.
       // Skip if the traitor was themselves voted out (nothing to confront). Consumed in camp-events.js.
@@ -767,6 +777,10 @@ export function detectBetrayals(ep) {
         const _victimWasLoyal = _victimBetrayalCount === 0; // never betrayed anyone
         const _loyaltyMultiplier = _victimWasLoyal ? 1.3 : _victimBetrayalCount <= 1 ? 1.1 : 1.0;
         addBond(voter, other, bondCost * _loyaltyMultiplier);
+        // The old bond is mutual for compatibility. The richer reaction is
+        // directional: the betrayed ally loses trust and gains resentment.
+        addRelationshipDimension(other, voter, 'trust', bondCost * 0.7 * _loyaltyMultiplier);
+        addRelationshipDimension(other, voter, 'resentment', Math.abs(bondCost) * 0.8 * _loyaltyMultiplier);
       });
       const newAllianceNote = formedThisEp
         ? ` (alliance formed this episode — bonds never had time to solidify)`

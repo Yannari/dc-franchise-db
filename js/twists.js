@@ -1,7 +1,7 @@
 // js/twists.js - Twist application, journey, dock arrivals, first impressions, twist scenes
 import { gs, seasonConfig, players, TWIST_CATALOG } from './core.js';
 import { pStats, pronouns, getPlayerState } from './players.js';
-import { getBond, addBond } from './bonds.js';
+import { getBond, addBond, floorBondsInvolving } from './bonds.js';
 import { wRandom, computeHeat, formAlliances, nameNewAlliance } from './alliances.js';
 import { runAuction } from './auction.js';
 import { simulateDisadvantageVote } from './disadvantage-vote.js';
@@ -2424,9 +2424,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       }
 
       // Bond adjustments
-      Object.keys(gs.bonds).forEach(k => {
-        if (k.includes(returnee) && gs.bonds[k] < -1) gs.bonds[k] = -1;
-      });
+      floorBondsInvolving(returnee);
       gs.activePlayers.filter(p => p !== returnee).forEach(p => {
         const b = getBond(returnee, p);
         if (b >= 4) addBond(returnee, p, 1);
@@ -2690,9 +2688,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
       smallest.members.push(returnee);
     }
     // Soften extreme negative bonds (time away shifts perspective)
-    Object.keys(gs.bonds).forEach(k => {
-      if (k.includes(returnee) && gs.bonds[k] < -1) gs.bonds[k] = -1;
-    });
+    floorBondsInvolving(returnee);
     // Ally reunion + enemy wariness
     gs.activePlayers.filter(p => p !== returnee).forEach(p => {
       const b = getBond(returnee, p);

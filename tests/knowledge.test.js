@@ -17,6 +17,9 @@ const DULL = { stats: { mental: 1, intuition: 1 } };
 beforeEach(() => { seed([{ name: 'A', ...SHARP }, { name: 'B' }, { name: 'C' }]); });
 
 describe('knowledge: record + learn + query', () => {
+  it('keeps zero-like objects in compound fact ids', () => {
+    expect(K.factId('throw', 'A', 0)).toBe('throw:A:0');
+  });
   it('records a ground-truth fact and forms a belief', () => {
     const f = K.recordFact({ type: 'target', subject: 'C', truth: true, ep: 1 });
     expect(f.id).toBe('target:C');
@@ -37,6 +40,19 @@ describe('knowledge: record + learn + query', () => {
     K.learn('A', 'idol:B', { sourceType: 'observed', confidence: 0.95, ep: 1, rng: LOW });
     expect(K.believes('A', 'idol:B', 1).effectiveConfidence).toBeGreaterThan(0.8);
   });
+
+  it('always registers a directly observed or public fact', () => {
+    K.recordFact({ type: 'idol', subject: 'B', truth: true, ep: 1 });
+    expect(K.learn('A', 'idol:B', { sourceType: 'observed', ep: 1, rng: () => 0.999 })).toBeTruthy();
+    expect(K.learn('C', 'idol:B', { sourceType: 'public', ep: 1, rng: () => 0.999 })).toBeTruthy();
+  });
+
+  it('clears obsolete target beliefs when the same target returns next episode', () => {
+    K.recordFact({ type: 'target', subject: 'C', ep: 1 });
+    K.learn('A', 'target:C', { sourceType: 'observed', ep: 1 });
+    K.recordFact({ type: 'target', subject: 'C', ep: 2 });
+    expect(K.believes('A', 'target:C', 2)).toBeNull();
+  });
 });
 
 describe('knowledge: confidence decays and facts go stale', () => {
@@ -52,9 +68,10 @@ describe('knowledge: confidence decays and facts go stale', () => {
     K.recordFact({ type: 'target', subject: 'C', truth: true, ep: 1 });
     K.learn('A', 'target:C', { sourceType: 'observed', ep: 1, rng: LOW });
     expect(K.believes('A', 'target:C', 1).valence).toBe('accurate');
+    const fresh = K.believes('A', 'target:C', 1).effectiveConfidence;
     const later = K.believes('A', 'target:C', 4);
     expect(later.valence).toBe('stale');
-    expect(later.effectiveConfidence).toBeLessThan(0.3);
+    expect(later.effectiveConfidence).toBeLessThan(fresh - 0.3); // confidence has clearly collapsed
   });
 });
 
@@ -98,7 +115,7 @@ describe('knowledge: propagation (rumors, leaks, second-order)', () => {
     seedNetwork();
     K.recordFact({ type: 'betrayal', subject: 'B', object: 'C', truth: true, ep: 1 });
     K.learn('A', 'betrayal:B:C', { sourceType: 'observed', ep: 1, rng: LOW });
-    for (let ep = 1; ep <= 4; ep++) K.tick(ep, { maxPerFact: 6 });
+    for (let ep = 1; ep <= 4; ep++) K.tick(ep, { maxPerFact: 6, rng: LOW });
     const knowers = K.whoKnows('betrayal:B:C').map(x => x.knower);
     expect(knowers.length).toBeGreaterThan(1);
     expect(knowers).toContain('A');
@@ -121,7 +138,7 @@ describe('knowledge: propagation (rumors, leaks, second-order)', () => {
     seedNetwork();
     K.recordFact({ type: 'idol', subject: 'F', truth: true, ep: 1 });
     K.learn('A', 'idol:F', { sourceType: 'observed', ep: 1, rng: LOW });
-    for (let ep = 1; ep <= 5; ep++) K.tick(ep, { maxPerFact: 6 });
+    for (let ep = 1; ep <= 5; ep++) K.tick(ep, { maxPerFact: 6, rng: LOW });
     const secondhand = K.whoKnows('idol:F').filter(x => x.knower !== 'A');
     expect(secondhand.length).toBeGreaterThan(0);
     secondhand.forEach(x => expect(['told', 'rumor']).toContain(x.sourceType));

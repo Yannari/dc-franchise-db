@@ -7,6 +7,7 @@ export function seedGs(overrides = {}) {
     episode: 1,
     activePlayers: [],
     bonds: {},
+    relationshipDimensions: {},
     perceivedBonds: {},
     showmances: [],
     romanticSparks: [],

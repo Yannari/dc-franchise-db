@@ -8,7 +8,7 @@
 // knowledge. Self-contained: reads core + the knowledge core only.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players } from './core.js';
-import { allFacts, believes } from './knowledge.js';
+import { allFacts, believes, effectiveConfidence } from './knowledge.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || String(name).toLowerCase().replace(/\s+/g, '-'); }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -17,7 +17,7 @@ function av(name, size = 22) {
 }
 
 const VAL_COLOR = { accurate: '#3fb950', exaggerated: '#d29922', stale: '#6e7681', false: '#f85149' };
-const TYPE_LABEL = { idol: 'Idol', advantage: 'Advantage', target: 'Vote target', alliance: 'Alliance', betrayal: 'Betrayal', throw: 'Thrown challenge', pitch: 'Vote pitch', 'bond-read': 'Relationship read' };
+const TYPE_LABEL = { idol: 'Knows idol', advantage: 'Knows advantage', target: 'Heard target name', alliance: 'Knows alliance', betrayal: 'Knows betrayal', throw: 'Knows challenge throw', pitch: 'Heard vote pitch', 'bond-read': 'Relationship read' };
 
 function _factLabel(f) {
   const t = TYPE_LABEL[f.type] || f.type;
@@ -36,6 +36,10 @@ function _css() {
   .kw-sub{text-align:center;font-size:12px;color:var(--dim);margin-bottom:14px}
   .kw-legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;font-size:11px;color:var(--dim)}
   .kw-legend span{display:inline-flex;align-items:center;gap:5px}
+  .kw-guide{max-width:820px;margin:0 auto 14px;padding:12px 14px;border:1px solid #2f4364;border-radius:8px;background:#111c2e;font-size:12px;line-height:1.55;color:#b9c7dc}
+  .kw-guide strong{color:#f0f6fc}
+  .kw-counts{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .kw-count{padding:4px 8px;border-radius:999px;background:#1c2a42;color:#9db9ec;font-size:10px}
   .kw-dot{width:11px;height:11px;border-radius:3px;display:inline-block}
   .kw-scroll{overflow-x:auto}
   .kw-grid{border-collapse:separate;border-spacing:3px;margin:0 auto}
@@ -53,8 +57,8 @@ function _css() {
 }
 
 // The main map. `ep` defaults to the current episode for confidence/staleness.
-export function rpBuildKnowledgeMap(ep = null) {
-  const facts = allFacts();
+export function rpBuildKnowledgeMap(ep = null, snapshot = null) {
+  const facts = snapshot ? Object.values(snapshot) : allFacts();
   const people = (gs.activePlayers && gs.activePlayers.length ? gs.activePlayers : players.map(p => p.name));
   if (!facts.length) {
     return `${_css()}<div class="kw-wrap"><div class="kw-h">WHO KNOWS WHAT</div><div class="kw-empty">No strategic facts are in circulation yet.</div></div>`;
@@ -62,6 +66,13 @@ export function rpBuildKnowledgeMap(ep = null) {
   const legend = Object.entries(VAL_COLOR).map(([k, c]) =>
     `<span><i class="kw-dot" style="background:${c}"></i>${k}</span>`).join('') +
     `<span><i class="kw-dot" style="background:#3fb950;position:relative"><i style="position:absolute;right:0;bottom:0;width:4px;height:4px;border-radius:50%;background:#fff"></i></i>knows others know</span>`;
+  const typeCount = type => facts.filter(f => f.type === type).length;
+  const guide = `<div class="kw-guide"><strong>This is an information map, not a ballot prediction.</strong>
+    A filled cell means that contestant heard or believes the fact named on that row. It does not mean they support the target, accepted the pitch, or voted that way.
+    The small white dot means they also know at least one other person heard it.
+    <div class="kw-counts"><span class="kw-count">${typeCount('target')} target names circulating</span>
+    <span class="kw-count">${typeCount('pitch')} direct pitches</span>
+    <span class="kw-count">${typeCount('betrayal')} known betrayals</span></div></div>`;
 
   const head = `<tr><th></th>${people.map(n => `<th class="col">${av(n, 26)}<div class="nm">${esc(n)}</div></th>`).join('')}</tr>`;
 
@@ -69,7 +80,11 @@ export function rpBuildKnowledgeMap(ep = null) {
     .sort((a, b) => (a.type + a.subject).localeCompare(b.type + b.subject))
     .map(f => {
       const cells = people.map(n => {
-        const b = believes(n, f.id, ep);
+        const raw = snapshot ? f.beliefs?.[n] : null;
+        const b = snapshot
+          ? (raw ? { ...raw, effectiveConfidence: effectiveConfidence(f, raw, ep),
+              valence: raw.valence, factTruth: f.truth } : null)
+          : believes(n, f.id, ep);
         if (!b) return `<td><div class="kw-cell"></div></td>`;
         const col = VAL_COLOR[b.valence] || '#3fb950';
         const op = Math.max(0.12, Math.min(1, b.effectiveConfidence));
@@ -84,6 +99,7 @@ export function rpBuildKnowledgeMap(ep = null) {
   return `${_css()}<div class="kw-wrap">
     <div class="kw-h">WHO KNOWS WHAT</div>
     <div class="kw-sub">Each cell is one contestant's belief about one fact — brighter = more certain, color = how accurate.</div>
+    ${guide}
     <div class="kw-legend">${legend}</div>
     <div class="kw-scroll"><table class="kw-grid"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
   </div>`;

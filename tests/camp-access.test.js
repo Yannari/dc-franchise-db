@@ -110,6 +110,28 @@ describe('venue-aware camp access', () => {
     expect(access.pullAside).toBe(false);
   });
 
+  it('slips a narrated pair away to a varied private nook instead of repeating the public spot', () => {
+    seasonConfig.setting = 'carnival';
+    gs.isMerged = true;
+    const ep = { num: 5, campAccess: { setting: 'carnival', groups: {}, phases: {
+      'post:merge': [{ id: 'return', label: 'Return', privacyNeed: 'public', assignments: [
+        { locationId: 'campsite', players: ['Alice', 'Bob', 'Carol', 'Dana', 'Erin'] },   // only the public spot shared
+      ] }],
+    } } };
+    const ab = findConversationAccess(ep, 'Alice', 'Bob', { phase: 'post', privacy: 0.45, slipAway: true });
+    const cd = findConversationAccess(ep, 'Carol', 'Dana', { phase: 'post', privacy: 0.45, slipAway: true });
+    expect(ab.slippedAway).toBe(true);
+    expect(ab.pullAside).toBe(false);
+    expect(ab.locationId).not.toBe('campsite');
+    expect(ab.location).not.toMatch(/off to the side/);
+    // A different pair generally lands somewhere else; both are real private spots.
+    [ab, cd].forEach(a => expect(ACCESS_PROFILES.carnival.find(l => l.id === a.locationId).privacy).toBeGreaterThanOrEqual(0.45));
+    // Without slipAway (leak/gating callers) the raw public pull-aside is kept.
+    const raw = findConversationAccess(ep, 'Alice', 'Bob', { phase: 'post', privacy: 0.45 });
+    expect(raw.locationId).toBe('campsite');
+    expect(raw.pullAside).toBe(true);
+  });
+
   it('ignores a schedule left over from an earlier episode', () => {
     gs.episode = 8;
     gs._campAccessThisEp = { setting: 'survival-island', epNum: 3, phases: {

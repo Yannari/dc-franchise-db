@@ -150,9 +150,18 @@ export function buildCampAccessSchedule(ep, phase = 'pre', rng = Math.random) {
   return ep.campAccess;
 }
 
-export function findConversationAccess(ep, requester, target, { phase = 'post', privacy = 0, allowPublicPullAside = true } = {}) {
+// Stable per-pair index so the same two players always slip away to the same
+// quiet spot, while different pairs spread across the venue's private corners.
+function stableIndex(str, mod) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return mod > 0 ? h % mod : 0;
+}
+
+export function findConversationAccess(ep, requester, target, { phase = 'post', privacy = 0, allowPublicPullAside = true, slipAway = false } = {}) {
   if (!ep?.campAccess || !requester || !target || requester === target) return { possible:false, reason:'no-schedule' };
-  const locationMap = new Map(ACCESS_PROFILES[ep.campAccess.setting || setting()].map(l => [l.id, l]));
+  const profile = ACCESS_PROFILES[ep.campAccess.setting || setting()];
+  const locationMap = new Map(profile.map(l => [l.id, l]));
   const entries = Object.entries(ep.campAccess.phases || {}).filter(([key]) => key.startsWith(`${phase}:`));
   // No schedule was built for this phase at all — fall back to a permissive
   // "camp is reachable" result rather than blocking every interaction. This is
@@ -177,12 +186,25 @@ export function findConversationAccess(ep, requester, target, { phase = 'post', 
   if (!options.length) return { possible:false, reason:'no-shared-window' };
   // Pick the spot that satisfies the requested privacy with the least excess,
   // preferring a genuine private location over stepping aside in the open.
-  return options.sort((a, b) => {
+  const best = options.sort((a, b) => {
     if (a.pullAside !== b.pullAside) return a.pullAside ? 1 : -1;   // real spot beats a public aside
     const aOK = a.privacy >= privacy, bOK = b.privacy >= privacy;
     if (aOK !== bOK) return aOK ? -1 : 1;                           // meets the need beats falling short
     return aOK ? a.privacy - b.privacy : b.privacy - a.privacy;     // sufficient → least excess; else → most private
   })[0];
+  // For narrated conversations (slipAway), a pair that only shares the public
+  // area actually wanders off together to somewhere quieter. Give it a real,
+  // varied private nook instead of repeating "<public> (off to the side)" for
+  // everyone. (Leak/gating callers omit slipAway and keep the raw public spot.)
+  if (slipAway && best.pullAside) {
+    const nooks = profile.filter(l => !l.public && (l.privacy ?? 0) >= 0.45 && locationIsOpen(l, ep, {}));
+    if (nooks.length) {
+      const nook = nooks[stableIndex(`${[requester, target].sort().join('|')}|${phase}`, nooks.length)];
+      return { ...best, locationId:nook.id, location:nook.label, privacy:Math.max(best.privacy, nook.privacy ?? 0.5),
+        overhearRisk:Math.min(best.overhearRisk, nook.overhear ?? 0.3), nearby:[], pullAside:false, slippedAway:true };
+    }
+  }
+  return best;
 }
 
 export function currentCampAccessEpisode() {
@@ -227,7 +249,7 @@ export function attachCampAccessToEvents(ep, phase = 'pre') {
     events.forEach(event => {
       if (event.access || !Array.isArray(event.players) || event.players.length < 2) return;
       const [a, b] = event.players;
-      const access = findConversationAccess(ep, a, b, { phase, privacy:0.35 });
+      const access = findConversationAccess(ep, a, b, { phase, privacy:0.35, slipAway:true });
       if (access.possible) event.access = access;
     });
   });

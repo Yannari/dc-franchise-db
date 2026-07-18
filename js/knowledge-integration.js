@@ -136,7 +136,7 @@ export function knowledgeCampCards(events) {
     // These cards are created during vote simulation, after the post-phase
     // access annotation ran, so attach the real conversation location here too.
     if (accessEp) {
-      const access = findConversationAccess(accessEp, event.from, event.to, { phase: 'post', privacy: 0.45 });
+      const access = findConversationAccess(accessEp, event.from, event.to, { phase: 'post', privacy: 0.45, slipAway: true });
       if (access.possible) card.access = access;
     }
     return card;

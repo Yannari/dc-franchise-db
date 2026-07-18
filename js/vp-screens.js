@@ -2528,6 +2528,35 @@ export function rpBuildDebug(ep) {
     } else {
       html += `<div style="color:#484f58;font-size:11px">${_focusW} doesn't currently know any tracked strategic facts.</div>`;
     }
+
+    // ── the focused player's persistent game plan (intentions) ──
+    const _planStore = ep.intentionsSnapshot || gs.intentions || {};
+    const _plan = _planStore[_focusW];
+    html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#5ad1ff;margin:14px 0 6px">${String(_focusW).toUpperCase()}'S GAME PLAN</div>`;
+    if (_plan) {
+      const _row = (label, val) => val && (Array.isArray(val) ? val.length : true) ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e">${label}</span><span style="color:#e6edf3">${Array.isArray(val) ? val.join(', ') : val}</span></div>` : '';
+      html += `<div style="border:1px solid rgba(90,209,255,0.15);border-radius:8px;padding:8px 10px;background:rgba(90,209,255,0.04)">
+        ${_row('Final three', (_plan.finalThree || []).filter(n => n !== _focusW))}
+        ${_row('Preferred shield', _plan.shield)}
+        ${_row('Endgame goat', _plan.goat)}
+        ${_row('Backup allies', _plan.backupAllies)}
+        ${_row('Long-term targets', _plan.targets)}
+        ${_row('Revenge', _plan.revenge)}
+        ${_row('Jury plan', _plan.juryPlan)}
+        ${_row('Advantage plan', _plan.advantagePlan)}
+        ${(_plan.betrayalConditions || []).length ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e">Would flip on</span><span style="color:#f0883e">${_plan.betrayalConditions.map(b => `${b.ally} (${b.condition})`).join('; ')}</span></div>` : ''}
+        <div style="font-size:9px;color:#6e7681;margin-top:5px">formed Ep ${_plan.formedEp} · last revised Ep ${_plan.lastRevisedEp}</div>
+      </div>`;
+      const _hist = [...(_plan.history || [])].reverse().slice(0, 6);
+      if (_hist.length) {
+        html += `<div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#6e7681;margin:8px 0 3px">WHY THE PLAN CHANGED</div>`;
+        _hist.forEach(h => { html += `<div style="font-size:10px;color:#8b949e;padding:2px 0"><span style="color:#5ad1ff">Ep ${h.ep}</span> ${h.reason}</div>`; });
+      } else {
+        html += `<div style="font-size:10px;color:#484f58;margin-top:4px">plan unchanged since it formed (persistence — not rebuilt each episode)</div>`;
+      }
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">No plan yet (intentions form at the merge).</div>`;
+    }
   }
 
   if (_dbTab === '__legacy_relationships') {

@@ -6822,6 +6822,7 @@ function simulateJuryRoundtable(ep) {
     knowledgeSnapshot: JSON.parse(JSON.stringify(gs.knowledge || {})),
     relationshipSnapshot: JSON.parse(JSON.stringify(gs.relationshipDimensions || {})),
     relationshipCausesSnapshot: JSON.parse(JSON.stringify(gs.relationshipCauses || {})),
+    intentionsSnapshot: JSON.parse(JSON.stringify(gs.intentions || {})),
     tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
     twistScenes: [], campEvents: ep.campEvents || null, tribeDissolutions: ep.tribeDissolutions || null, summaryText: '', gsSnapshot: window.snapshotGameState(),
     // Post-elimination twist results — saved here so VP can rebuild them on reload

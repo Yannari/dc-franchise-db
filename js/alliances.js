@@ -6,7 +6,7 @@ import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
 import { believes, factId } from './knowledge.js';
-import { getIntentions } from './intentions.js';
+import { getIntentions, prepareIntentionsForVote } from './intentions.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 
@@ -925,6 +925,9 @@ export function resolveAllianceRepair(incident, epNum = (gs.episode || 0) + 1, r
 
 export function formAlliances(members, tribeLabel, challengeLabel) {
   if (members.length <= 1) return [];
+  // On the first merge vote, plans must exist before the organizer proposes a
+  // target—not be created only after alliances have already chosen names.
+  if (gs.isMerged) prepareIntentionsForVote();
   const alliances = [];
   const present = new Set(members);
   const _lostVoteSet = new Set([...(gs.lostVoteThisEp || []), ...(gs.lostVotes || [])]);
@@ -1263,8 +1266,11 @@ export function beliefTargetMod(attackers, v) {
 // final-three partner, their shield, or their goat). Neutral when no plan exists
 // (pre-merge / no intentions), so it can't disturb the calibrated baseline.
 export function intentionTargetMod(attackers, v) {
+  // A group does not telepathically combine every member's private endgame.
+  // The lead organizer proposes the name; other members can accept or resist it
+  // later in voting/negotiation based on their own plans.
   let mod = 0;
-  for (const a of attackers || []) {
+  for (const a of (attackers || []).slice(0, 1)) {
     if (a === v) continue;
     const p = getIntentions(a);
     if (!p) continue;

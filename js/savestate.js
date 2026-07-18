@@ -114,6 +114,13 @@ export function patchEpisodeHistory(ep) {
   if (!h.voteCommitmentDiagnostics && ep.voteCommitmentDiagnostics?.length) h.voteCommitmentDiagnostics = ep.voteCommitmentDiagnostics;
   if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;
   if (!h.challengeThrows && ep.challengeThrows?.length) h.challengeThrows = ep.challengeThrows;
+  // Persistent game plans need two chronological views. The pre-vote copy is
+  // safe for Voting Plans/backlog; the post-vote copy is retained for aftermath
+  // and the next episode. Apply here so special episode paths are covered too.
+  if (!h.intentionsSnapshot && ep.intentionsPreVoteSnapshot)
+    h.intentionsSnapshot = JSON.parse(JSON.stringify(ep.intentionsPreVoteSnapshot));
+  if (!h.intentionsPostVoteSnapshot && ep.intentionsPostVoteSnapshot)
+    h.intentionsPostVoteSnapshot = JSON.parse(JSON.stringify(ep.intentionsPostVoteSnapshot));
   // Challenge-specific data
   if (!h.oceansHeist && ep.oceansHeist) h.oceansHeist = ep.oceansHeist;
   if (!h.fullMetalDrama && ep.fullMetalDrama) h.fullMetalDrama = ep.fullMetalDrama;

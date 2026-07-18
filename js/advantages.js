@@ -6,6 +6,7 @@ import { computeHeat, wRandom } from './alliances.js';
 import { resolveVotes } from './voting.js';
 import { assessIdolExposure } from './advantage-intel.js';
 import { reputationModifier } from './reputation.js';
+import { getIntentions, intendsToProtect } from './intentions.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -574,8 +575,11 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const exposureRead = ep.idolExposureReads?.find(r => r.holder === name);
     const exposureBonus = exposureRead?.notices ? exposureRead.perceivedRisk * (0.12 + s.intuition * 0.012) : 0;
     const exposurePenalty = exposureRead?.missesExposure ? -0.16 : exposureRead?.mode === 'calm' ? -0.10 : 0;
+    const _advantageIntent = getIntentions(name)?.advantagePlan;
+    const _advantageIntentMod = _advantageIntent === 'play-if-threatened' ? 0.12
+      : _advantageIntent === 'hold' ? -0.06 : 0;
     const roomReadChance = Math.max(0.03, Math.min(0.92, 0.06 + s.intuition * 0.045 + s.strategic * 0.022 + s.boldness * 0.008
-      + emotionBonus + tipOffBonus + betrayalPenalty + flushBonus + eavesdropBonus + pitchWarningBonus + exposureBonus + exposurePenalty + comfortPenalty));
+      + emotionBonus + tipOffBonus + betrayalPenalty + flushBonus + eavesdropBonus + pitchWarningBonus + exposureBonus + exposurePenalty + comfortPenalty + _advantageIntentMod));
     const playRoll = Math.random();
     const didPlay = playRoll < roomReadChance;
     const playReason = pitchWarning ? `warned by ${pitchWarning.source} that ${pitchWarning.pitcher} was organizing against them`
@@ -784,7 +788,9 @@ export function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
                    : _hArch === 'villain'           ? -0.08  // villains don't waste power on others
                    : _hArch === 'mastermind'        ? -0.05 : 0;
 
-    const _doAllyPlay = Math.random() < _baseChance + _hs.boldness * 0.03 + _hs.loyalty * 0.03 + _archMod;
+    const _holderPlan = getIntentions(_holder);
+    const _plannedProtection = _holderPlan?.advantagePlan === 'protect-endgame' && intendsToProtect(_holder, _allyName);
+    const _doAllyPlay = Math.random() < _baseChance + _hs.boldness * 0.03 + _hs.loyalty * 0.03 + _archMod + (_plannedProtection ? 0.15 : 0) + (_holderPlan?.advantagePlan === 'hold' ? -0.05 : 0);
     if (_doAllyPlay) {
       const _advIdx = gs.advantages.indexOf(_adv);
       gs.advantages.splice(_advIdx, 1);

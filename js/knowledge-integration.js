@@ -2,6 +2,7 @@
 import { gs } from './core.js';
 import { factId, learn, propagate, recordFact } from './knowledge.js';
 import { pitchTrust } from './relationships.js';
+import { campKnowledgeContacts, currentCampAccessEpisode } from './camp-access.js';
 const currentEp = () => (gs.episode || 0) + 1;
 
 export function recordVotingPlanKnowledge(tribalPlayers, alliances, ep = currentEp()) {
@@ -35,8 +36,12 @@ export function recordPitchKnowledge(pitches, ep = currentEp()) {
       payload: { claimedSupport: pitch.claimedSupport,
         liedAboutNumbers: Boolean(pitch.liedAboutNumbers) }, ep });
     learn(pitch.pitcher, id, { sourceType: 'observed', ep });
-    (pitch.responses || []).forEach(response => learn(response.voter, id, {
+    (pitch.responses || []).filter(response => response.access?.possible !== false).forEach(response => learn(response.voter, id, {
       source: pitch.pitcher, sourceType: 'observed', from: pitch.pitcher, ep,
+    }));
+    (pitch.overheardBy || []).forEach(overhear => learn(overhear.knower || overhear, id, {
+      source:pitch.pitcher, sourceType:'overheard', from:pitch.pitcher,
+      confidence:overhear.confidence || 0.62, ep,
     }));
     recorded.push(id);
   });
@@ -98,7 +103,9 @@ export function spreadKnowledgeForRound(tribalPlayers, ep = currentEp(), rng = M
   const round = `${ep}:${[...(tribalPlayers || [])].sort().join('|')}`;
   if (gs._knowledgeSpreadRounds.includes(round)) return [];
   gs._knowledgeSpreadRounds.push(round);
-  return propagate(ep, { rng, maxPerFact: 2 });
+  const hasSchedule = Boolean(currentCampAccessEpisode());
+  return propagate(ep, { rng, maxPerFact: 2,
+    ...(hasSchedule ? { contacts:knower => campKnowledgeContacts(knower, 'post') } : {}) });
 }
 
 export function knowledgeCampCards(events) {

@@ -9,7 +9,8 @@ import { reputationModifier } from './reputation.js';
 import { getRelationshipDimensions, pitchTrust, tacticalCooperation, targetProtection } from './relationships.js';
 import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
 import { believes, getFact, factId } from './knowledge.js';
-import { getIntentions } from './intentions.js';
+import { getIntentions, intentionBallotMod, intendsToProtect, betrayalConditionActive } from './intentions.js';
+import { currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -800,7 +801,8 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const pitchVictims = tribalPlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget);
       if (!pitchVictims.length) return;
       const pitchTarget = wRandom(pitchVictims, v =>
-        Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3 + Math.random() * 0.3));
+        Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3
+          + intentionBallotMod(pitcher, v) + Math.random() * 0.3));
       if (pitchTarget === myTarget) return; // already the plan — no pitch needed
       const _existingSupporters = observedCommitments.filter(r => r.predictedBallot === pitchTarget).map(r => r.voter);
       const _lieAboutNumbers = pS.loyalty <= 4 && pS.boldness >= 6 && Math.random() < 0.35;
@@ -809,9 +811,17 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const _flipped = [];
       const _responses = [];
       const _leaks = [];
+      const _approachBudget = Math.max(2, Math.min(5, 1 + Math.round((pS.social + pS.strategic) / 6)));
+      const _accessEp = currentCampAccessEpisode();
       const _recipients = _pitchCandidates.filter(v => v !== pitcher && v !== pitchTarget && !lostVotes.includes(v))
-        .sort((a,b) => getPerceivedBond(b, pitcher) - getPerceivedBond(a, pitcher));
-      _recipients.forEach(voter => {
+        .map(voter => ({ voter, access:_accessEp
+          ? findConversationAccess(_accessEp, pitcher, voter, { phase:'post', privacy:0.45 })
+          : { possible:true, reason:'legacy-no-schedule', nearby:[], overhearRisk:0.5 } }))
+        .filter(entry => entry.access.possible)
+        .sort((a,b) => getPerceivedBond(b.voter, pitcher) - getPerceivedBond(a.voter, pitcher))
+        .slice(0, _approachBudget);
+      const _overheardBy = new Map();
+      _recipients.forEach(({ voter, access }) => {
         const vS = pStats(voter);
         const _voterRead = observedCommitments.find(read => read.voter === voter);
         const _votesAimedAtVoter = _forecastCounts[voter] || 0;
@@ -822,16 +832,24 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           selfTargeted:_votesAimedAtVoter >= 2, competingSupport:_votesAimedAtVoter,
           commitmentStrength:_voterRead?.commitmentStrength || 0,
           reputationMod:reputationModifier(pitcher, 'pitch-trust'),
-          leakMod:reputationModifier(voter, 'leak'),
+          leakMod:reputationModifier(voter, 'leak') + ((access.overhearRisk || 0.5) - 0.5) * 0.18,
           majority:_voterRead?.majority || Math.floor(_pitchCandidates.length / 2) + 1 });
-        _responses.push({ voter, ...response });
+        _responses.push({ voter, ...response, access });
         if (response.accepted) _flipped.push(voter);
         if (response.leaked) _leaks.push(voter);
+        const nearby = (access.nearby || []).filter(person => person !== pitchTarget && person !== pitcher && person !== voter);
+        if (nearby.length && Math.random() < (access.overhearRisk || 0) * 0.35) {
+          const knower = [...nearby].sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+          const confidence = Math.min(0.9, 0.42 + (access.overhearRisk || 0) * 0.35 + pStats(knower).intuition * 0.015);
+          const prior = _overheardBy.get(knower);
+          if (!prior || confidence > prior.confidence) _overheardBy.set(knower, { knower, confidence, location:access.location, windowLabel:access.windowLabel });
+        }
       });
       const _coalition = [...new Set([..._existingSupporters, pitcher, ..._flipped])].filter(v => v !== pitchTarget);
       _votePitches.push({ pitcher, pitchTarget, originalTarget: myTarget, claimedSupport:_claimedSupport,
         liedAboutNumbers:_lieAboutNumbers, existingSupporters:_existingSupporters, responses:_responses,
-        flipped:_flipped, confirmedCoalition:_coalition, leaks:_leaks, success:_flipped.length > 0 });
+        flipped:_flipped, confirmedCoalition:_coalition, leaks:_leaks, overheardBy:[..._overheardBy.values()],
+        approachBudget:_approachBudget, attemptedContacts:_recipients.length, success:_flipped.length > 0 });
       _pitchCount++;
     });
   }
@@ -840,6 +858,12 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
   const _knowledgeEvents = spreadKnowledgeForRound(tribalPlayers);
   applyResolvedPitchesToForecast(_votePitches, observedCommitments);
   const _pitchIntel = propagatePitchLeaks(_votePitches, tribalPlayers, alliances);
+  _votePitches.forEach(pitch => (pitch.overheardBy || []).forEach(overhear => {
+    if (_pitchIntel.some(intel => intel.knower === overhear.knower && intel.pitcher === pitch.pitcher && intel.target === pitch.pitchTarget)) return;
+    _pitchIntel.push({ knower:overhear.knower, source:pitch.pitcher, pitcher:pitch.pitcher,
+      target:pitch.pitchTarget, confidence:overhear.confidence, believed:true, sourceType:'overheard',
+      location:overhear.location, windowLabel:overhear.windowLabel });
+  }));
   const _pitchCounterplay = resolvePitchCounterplay(_votePitches, _pitchIntel, tribalPlayers, alliances, lostVotes);
   alliances.forEach(plan => {
     plan.reliability = summarizePlanReliability(observedCommitments, plan.label, observedCommitments[0]?.majority);
@@ -894,9 +918,10 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     // Bond resistance scales proportionally — stronger bonds make it harder to vote someone out
     // Bond resistance: scales with bond strength. Strong bonds = near-impossible to betray.
     // Bond 2 → 20%, Bond 5 → 50%, Bond 7 → 75%, Bond 9 → 92%
+    const _intentProtectsTarget = allianceTarget && intendsToProtect(voter, allianceTarget);
     const bondResistChance = isShowmanceTarget ? 0.92
       : targetBond >= 7 ? Math.min(0.95, 0.50 + targetBond * 0.05)
-      : targetBond >= 1 ? Math.min(0.75, targetBond * 0.10) : 0;
+      : Math.max(_intentProtectsTarget ? 0.62 : 0, targetBond >= 1 ? Math.min(0.75, targetBond * 0.10) : 0);
     // Showmance partner — even in free-vote situations, won't write their name
     const showmancePartner = getShowmancePartner(voter);
     const showmanceResist = showmancePartner && tribalPlayers.includes(showmancePartner)
@@ -996,6 +1021,24 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       target = _idolCounter.counterTarget;
       reason = `idol exposure counter — believes ${target} knows about the idol and is striking before the leak becomes a flush`;
       isDefecting = target !== allianceTarget;
+    }
+
+    // A conditional endgame betrayal is actionable only when the ally actually
+    // moves on this voter or a visible counter-coalition has formed. The plan
+    // supplies motive; it never invents numbers.
+    if (!target && _inNamedAlliance) {
+      const _conditionAllies = (getIntentions(voter)?.betrayalConditions || []).map(c => c.ally)
+        .filter(ally => tribalPlayers.includes(ally) && !isImmune(ally));
+      const _triggeredAlly = _conditionAllies.find(ally => {
+        const targetedByAlly = alliances.some(a => a.target === voter && a.members?.includes(ally));
+        const coalitionReady = alliances.some(a => a.target === ally && a.members?.length >= Math.max(2, Math.floor(tribalPlayers.length / 3)));
+        return betrayalConditionActive(voter, ally, { targetedByAlly, coalitionReady });
+      });
+      if (_triggeredAlly) {
+        target = _triggeredAlly;
+        reason = `[CONDITIONAL BETRAYAL] ${_triggeredAlly} crossed the line written into ${voter}'s endgame plan`;
+        isDefecting = target !== allianceTarget;
+      }
     }
 
     // ── Emotional counter-plan: remembered harm can loosen alliance discipline ──
@@ -1200,7 +1243,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
               if (_vAvg < _tAvg - 1) return -3.0; // terrified of being picked
               return -1.0;
             };
-            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getPerceivedBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + _memoryMod(t) + voteGravity(t)));
+            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getPerceivedBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + _memoryMod(t) + intentionBallotMod(voter, t) + voteGravity(t)));
           }
           const bond = getPerceivedBond(voter, target);
           // Pick the underlying reason first

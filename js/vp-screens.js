@@ -2318,12 +2318,46 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('stats', 'Player Stats')}
       ${_tabBtn('bonds', 'Perceived Bonds')}
       ${_tabBtn('web', 'The Web')}
+      ${(ep.campAccess || snap.campAccess) ? _tabBtn('access', 'Camp Access') : ''}
       ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
       ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
+
+  // ════════════════════════════════════════════════
+  // TAB: CAMP TIME / LOCATION ACCESS
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'access') {
+    const access = ep.campAccess || snap.campAccess;
+    html += `<div style="margin-bottom:14px;padding:10px;background:rgba(87,166,232,0.07);border:1px solid rgba(87,166,232,0.18);border-radius:8px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#57a6e8">CAMP ACCESS · ${String(access?.setting || 'unknown').replaceAll('-', ' ').toUpperCase()}</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:5px">This is the physical schedule used by pitches and information spread. Sharing an alliance does not create access when players never shared a window.</div>
+    </div>`;
+    Object.entries(access?.phases || {}).forEach(([phaseKey, windows]) => {
+      html += `<div style="margin-bottom:14px"><div style="font-size:11px;color:#d2a8ff;font-weight:800;letter-spacing:1px;margin-bottom:6px">${phaseKey.toUpperCase()}</div>`;
+      (windows || []).forEach(window => {
+        html += `<div style="padding:8px;margin-bottom:5px;border:1px solid rgba(255,255,255,0.07);border-radius:6px;background:rgba(255,255,255,0.02)">
+          <div style="font-size:11px;color:#e6edf3;font-weight:700">${window.label}</div>`;
+        (window.assignments || []).forEach(assignment => {
+          const profile = assignment.locationId.replaceAll('-', ' ');
+          html += `<div style="display:flex;gap:8px;padding-top:4px;font-size:10px"><span style="min-width:120px;color:#57a6e8;text-transform:capitalize">${profile}</span><span style="color:#8b949e">${assignment.players.join(', ') || 'nobody'}</span></div>`;
+        });
+        html += `</div>`;
+      });
+      html += `</div>`;
+    });
+    const pitches = ep.votePitches || [];
+    if (pitches.length) {
+      html += `<div style="font-size:11px;color:#d29922;font-weight:800;letter-spacing:1px;margin:12px 0 6px">ACCESS USED BY VOTE PITCHES</div>`;
+      pitches.forEach(pitch => {
+        const contacts = (pitch.responses || []).map(response => `${response.voter} @ ${response.access?.location || 'unrecorded'} (${Math.round((response.access?.privacy || 0) * 100)}% privacy)`).join(' · ');
+        const overheard = (pitch.overheardBy || []).map(o => `${o.knower} at ${o.location}`).join(', ');
+        html += `<div style="padding:7px 9px;margin-bottom:5px;border-left:3px solid #d29922;background:rgba(210,153,34,0.06);font-size:10px;color:#8b949e"><strong style="color:#e6edf3">${pitch.pitcher} → ${pitch.pitchTarget}</strong> · budget ${pitch.approachBudget || '—'} · contacted ${pitch.attemptedContacts ?? (pitch.responses || []).length}<br>${contacts || 'No reachable recipient'}${overheard ? `<br><span style="color:#f0883e">Overheard: ${overheard}</span>` : ''}</div>`;
+      });
+    }
+  }
 
   // ════════════════════════════════════════════════
   // TAB: THIS EPISODE
@@ -7781,7 +7815,16 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     } else if (mentioned.length === 1) {
       html += `<div class="rp-brant-portraits">${rpPortrait(mentioned[0])}</div>`;
     }
-    html += `<div class="rp-brant-text" style="${isTipOff ? 'color:#e3b341' : ''}">${evt.text}</div>`;
+    const _accessPrivacy = evt.access
+      ? (evt.access.privacy >= 0.65 ? 'private' : evt.access.privacy <= 0.25 ? 'public' : 'semi-private')
+      : '';
+    const _accessNearby = evt.access?.nearby?.length
+      ? ` · ${evt.access.nearby.length} nearby`
+      : '';
+    html += `<div class="rp-brant-text" style="${isTipOff ? 'color:#e3b341' : ''}">
+      ${evt.access ? `<div style="font-size:9px;font-weight:700;letter-spacing:.45px;color:#8b949e;margin-bottom:3px">📍 ${evt.access.location} · ${evt.access.windowLabel} · ${_accessPrivacy}${_accessNearby}</div>` : ''}
+      ${evt.text}
+    </div>`;
     if (badgeText) html += `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>`;
     html += `</div>`;
   };
@@ -9378,6 +9421,30 @@ export function rpBuildVotingPlans(ep) {
   }
 
   if (ep.votePitches?.length) {
+    html += `<div class="rp-vp-section-label">CONVERSATION ACCESS</div>
+      <div style="font-size:10px;color:#8b949e;margin:-5px 0 8px">This shows who the organizer physically reached, where, and how exposed the conversation was. Access creates an opportunity to pitch—it does not mean the listener agreed.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-bottom:14px">${ep.votePitches.map(p => {
+        const contacts = (p.responses || []).filter(r => r.access?.possible);
+        const accessGroups = new Map();
+        contacts.forEach(r => {
+          const key = `${r.access.location || 'Unknown location'}|${r.access.windowLabel || 'Camp time'}`;
+          if (!accessGroups.has(key)) accessGroups.set(key, { location:r.access.location || 'Unknown location', window:r.access.windowLabel || 'Camp time', people:[], privacy:[], nearby:new Set() });
+          const group = accessGroups.get(key);
+          group.people.push(r.voter);
+          group.privacy.push(r.access.privacy ?? 0.5);
+          (r.access.nearby || []).forEach(name => { if (name !== p.pitcher && !group.people.includes(name)) group.nearby.add(name); });
+        });
+        const accessRows = [...accessGroups.values()].map(group => {
+          const privacy = group.privacy.reduce((sum, value) => sum + value, 0) / Math.max(1, group.privacy.length);
+          const exposure = privacy >= 0.65 ? 'private' : privacy <= 0.25 ? 'public' : 'semi-private';
+          return `<div style="margin-top:4px"><strong style="color:#c9d1d9">📍 ${group.location} · ${group.window}</strong><br>${group.people.join(', ')} could be approached · ${exposure}${group.nearby.size ? ` · other players were nearby` : ''}</div>`;
+        }).join('');
+        return `<div style="padding:10px 11px;background:rgba(56,139,253,.04);border:1px solid rgba(56,139,253,.16);border-radius:8px">
+          <div style="font-size:10px;font-weight:800;color:#79c0ff">${p.pitcher} tried to build a vote against ${p.pitchTarget}</div>
+          <div style="font-size:10px;color:#8b949e;margin-top:3px">Reached ${contacts.length} of a possible ${p.approachBudget || contacts.length} direct conversations. Other players may still hear the name through allies, leaks, or their own plans.</div>
+          ${accessRows || `<div style="font-size:10px;color:#8b949e;margin-top:4px">No shared post-challenge window was available.</div>`}
+        </div>`;
+      }).join('')}</div>`;
     html += `<div class="rp-vp-section-label">FLIP NEGOTIATIONS</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-bottom:14px">${ep.votePitches.map(p => {
       const exposedPushback = (p.responses || []).filter(r => !r.accepted && r.leaked);
       const targetHeard = (ep.pitchIntel || []).some(info => info.pitcher === p.pitcher && info.target === p.pitchTarget && info.knower === p.pitchTarget);

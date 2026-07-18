@@ -5,6 +5,8 @@ import { setRelationshipDimension } from '../js/relationships.js';
 import {
   formIntentions, getIntentions, ensureIntentions, evolveIntentions,
   describeIntentions, describeIntentionsPlan, removeIntentionsFor, resetIntentions,
+  intentionBallotMod, betrayalConditionActive, prepareIntentionsForVote,
+  tickIntentions,
 } from '../js/intentions.js';
 import { intentionTargetMod } from '../js/alliances.js';
 
@@ -33,6 +35,14 @@ describe('intentions: formation', () => {
     expect(p.formedEp).toBe(6);
     expect(getIntentions('A')).toBe(p);
     expect(ensureIntentions('A')).toBe(p);                 // idempotent
+  });
+
+  it('gives low-planning players a reactive plan instead of universal mastermind structure', () => {
+    const p = formIntentions('B', 6);
+    expect(p.planStyle).toBe('reactive');
+    expect(p.shield).toBeNull();
+    expect(p.goat).toBeNull();
+    expect(p.juryPlan).toEqual([]);
   });
 });
 
@@ -67,6 +77,21 @@ describe('intentions: evolution on believable triggers', () => {
     expect(p.targets).toContain('B');
     expect(p.finalThree).not.toContain('B');
     expect(p.history.some(h => h.field === 'revenge' && h.to === 'B')).toBe(true);
+
+    evolveIntentions('A', 8);
+    expect(getIntentions('A').finalThree).not.toContain('B'); // vacancy fill cannot undo the grudge
+  });
+
+  it('allows an old grudge to heal after resentment falls and trust is repaired', () => {
+    formIntentions('A', 6);
+    setRelationshipDimension('A', 'B', 'resentment', 6);
+    evolveIntentions('A', 7);
+    setRelationshipDimension('A', 'B', 'resentment', 0.5);
+    setRelationshipDimension('A', 'B', 'trust', 8);
+    evolveIntentions('A', 8);
+    evolveIntentions('A', 9);
+    expect(getIntentions('A').revenge).not.toContain('B');
+    expect(getIntentions('A').history.some(h => /repaired enough trust/.test(h.reason))).toBe(true);
   });
 
   it('never lets the final three contain duplicates across repeated evolutions', () => {
@@ -86,7 +111,7 @@ describe('intentions: evolution on believable triggers', () => {
     formIntentions('A', 6);
     gs.advantages = [{ holder: 'A', type: 'idol', used: false }];
     evolveIntentions('A', 7);
-    expect(getIntentions('A').advantagePlan).toBe('hold');
+    expect(getIntentions('A').advantagePlan).toBe('play-if-threatened');
     gs.advantages = [];
     evolveIntentions('A', 8);
     expect(getIntentions('A').advantagePlan).toBeNull();
@@ -108,10 +133,38 @@ describe('intentions: hints + cleanup', () => {
     expect(intentionTargetMod(['A'], 'B')).toBeLessThan(0);     // final-three partner → protected
     getIntentions('A').revenge = ['E'];
     expect(intentionTargetMod(['A'], 'E')).toBeGreaterThan(intentionTargetMod(['A'], p.targets[0]) - 0.001); // grudge weighs heaviest
+    formIntentions('B', 6);
+    getIntentions('B').revenge = ['E'];
+    expect(intentionTargetMod(['A', 'B'], 'E')).toBe(intentionTargetMod(['A'], 'E')); // private plans do not aggregate telepathically
   });
 
   it('has no effect when there is no plan (calibration-safe)', () => {
     expect(intentionTargetMod(['A'], 'B')).toBe(0);
+  });
+
+  it('uses personal intention for ballots and activates betrayal conditions only on evidence', () => {
+    const p = formIntentions('A', 6);
+    p.revenge = ['E'];
+    p.betrayalConditions = [{ ally:'B', condition:'if the numbers turn or they move on me' }];
+    expect(intentionBallotMod('A', 'E')).toBeGreaterThan(0);
+    expect(intentionBallotMod('A', 'B')).toBeLessThan(0);
+    expect(betrayalConditionActive('A', 'B')).toBe(false);
+    expect(betrayalConditionActive('A', 'B', { targetedByAlly:true })).toBe(true);
+  });
+
+  it('captures a stable pre-vote snapshot without evolving it twice', () => {
+    gs.isMerged = true;
+    const ep = { num:7 };
+    const first = prepareIntentionsForVote(ep);
+    expect(first.A).toBeTruthy();
+    first.A.finalThree.push('tampered');
+    expect(getIntentions('A').finalThree).not.toContain('tampered');
+    expect(ep.intentionsPreVoteSnapshot.A).toBeTruthy();
+    tickIntentions(ep);
+    const historyCount = getIntentions('A').history.length;
+    tickIntentions(ep);
+    expect(getIntentions('A').history.length).toBe(historyCount);
+    expect(ep.intentionsPostVoteSnapshot.A).toBeTruthy();
   });
 
   it('renders hints from a snapshot plan object (for the text backlog)', () => {

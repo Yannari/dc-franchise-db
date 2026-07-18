@@ -1269,8 +1269,25 @@ export function _textGamePlans(ep, ln, sec) {
     const hints = describeIntentionsPlan(store[n], n);
     if (!hints.length) return;
     ln(`- ${n}: ${hints.join('; ')}.`);
-    const changes = (store[n].history || []).filter(h => h.ep === ep.num);
-    changes.forEach(h => ln(`    (this episode: ${h.reason})`));
+    // This section appears before Tribal, so it intentionally uses only the
+    // pre-vote snapshot. Outcome-driven revisions belong to later episodes.
+  });
+}
+
+export function _textCampAccess(ep, ln, sec) {
+  const access = ep.campAccess;
+  const pitches = ep.votePitches || [];
+  if (!access || !pitches.length) return;
+  sec('CAMP ACCESS — WHERE THE STRATEGY HAPPENED');
+  ln(`Venue profile: ${String(access.setting || 'unknown').replaceAll('-', ' ')}. Only strategically meaningful contacts are shown here; the complete movement schedule is available in Debug → Camp Access.`);
+  pitches.forEach(pitch => {
+    const responses = pitch.responses || [];
+    const places = [...new Set(responses.map(r => r.access?.location).filter(Boolean))];
+    const contacted = responses.map(r => r.voter);
+    ln(`- ${pitch.pitcher} tried to build the ${pitch.pitchTarget} pitch: reached ${contacted.length}/${pitch.approachBudget || contacted.length} available approaches${places.length ? ` across ${places.join(' and ')}` : ''}.`);
+    const publicReads = responses.filter(r => (r.access?.overhearRisk || 0) >= 0.65).map(r => r.voter);
+    if (publicReads.length) ln(`    ${publicReads.join(', ')} heard it in exposed surroundings; keeping the conversation contained was difficult.`);
+    if (pitch.overheardBy?.length) ln(`    Nearby ${pitch.overheardBy.map(o => `${o.knower} overheard at ${o.location}`).join('; ')}.`);
   });
 }
 
@@ -3390,6 +3407,7 @@ export function generateSummaryText(ep) {
   _textTiedDestinies(ep, ln, sec);
   _textJuryElimination(ep, ln, sec); // mid-game jury-elimination twist replaces the tribal-council block
   _textVotingPlans(ep, ln, sec);
+  _textCampAccess(ep, ln, sec);
   _textGamePlans(ep, ln, sec);
   _textInformationFlow(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);

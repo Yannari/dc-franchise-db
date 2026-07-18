@@ -12,7 +12,7 @@ import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
 import { applyObservedStrategicRespect } from './relationship-events.js';
 import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge } from './knowledge-integration.js';
-import { tickIntentions } from './intentions.js';
+import { tickIntentions, prepareIntentionsForVote } from './intentions.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
   generateEmissaryScoutEvents, checkVolunteerExileDuel, checkMoleSabotage,
@@ -3919,6 +3919,7 @@ export function simulateEpisode() {
 
   // Helper: run one full vote + idol + resolve (with revote on tie)
   function runTribal(tribalPlayers, immuneName, allianceSet) {
+    prepareIntentionsForVote(ep);
     // open-vote: boost loyalty pressure — pass flag to simulateVotes
     // Combine challenge winner + shared-immunity/double-safety immune players
     const _allImmune = [immuneName, ...(ep.extraImmune || [])].filter(Boolean);
@@ -6820,9 +6821,11 @@ function simulateJuryRoundtable(ep) {
     tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
     knowledgeSnapshot: JSON.parse(JSON.stringify(gs.knowledge || {})),
+    campAccess: ep.campAccess ? JSON.parse(JSON.stringify(ep.campAccess)) : null,
     relationshipSnapshot: JSON.parse(JSON.stringify(gs.relationshipDimensions || {})),
     relationshipCausesSnapshot: JSON.parse(JSON.stringify(gs.relationshipCauses || {})),
-    intentionsSnapshot: JSON.parse(JSON.stringify(gs.intentions || {})),
+    intentionsSnapshot: JSON.parse(JSON.stringify(ep.intentionsPreVoteSnapshot || gs.intentions || {})),
+    intentionsPostVoteSnapshot: JSON.parse(JSON.stringify(ep.intentionsPostVoteSnapshot || gs.intentions || {})),
     tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
     twistScenes: [], campEvents: ep.campEvents || null, tribeDissolutions: ep.tribeDissolutions || null, summaryText: '', gsSnapshot: window.snapshotGameState(),
     // Post-elimination twist results — saved here so VP can rebuild them on reload
@@ -7095,7 +7098,7 @@ function simulateJuryRoundtable(ep) {
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
   ep.summaryText = summaryText;
 
-  updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+  updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
   updateSurvival(ep);
 
   // Save debug data to episode history before patching

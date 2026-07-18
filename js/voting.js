@@ -6,7 +6,7 @@ import { computeHeat, wRandom } from './alliances.js';
 import { strategicMemoryReason, strategicMemoryScore, strongestStrategicMemory } from './strategy-memory.js';
 import { buildObservedVoteCommitments, compareObservedCommitments, consolidateFringeBallots, resolveLateBallotTransitions, summarizePlanReliability } from './vote-planning.js';
 import { reputationModifier } from './reputation.js';
-import { pitchTrust, targetProtection } from './relationships.js';
+import { getRelationshipDimensions, pitchTrust, tacticalCooperation, targetProtection } from './relationships.js';
 import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
 import { believes, getFact, factId } from './knowledge.js';
 
@@ -26,7 +26,7 @@ export function voterOutOfLoop(voter, allianceTarget) {
 export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, claimedSupport = 1,
   eligibleVoters = 1, confirmedSupport = 1, strategic = 5, intuition = 5, emotional = 'comfortable', liar = false,
   selfTargeted = false, competingSupport = 0, commitmentStrength = 0, majority = Math.floor(eligibleVoters / 2) + 1,
-  reputationMod = 0, leakMod = 0 } = {}, roll = Math.random) {
+  reputationMod = 0, leakMod = 0, tacticalCredibility = 0 } = {}, roll = Math.random) {
   const impossibleClaim = claimedSupport > eligibleVoters || claimedSupport < 1;
   const verification = (strategic + intuition) / 20;
   const unverifiableGap = Math.max(0, claimedSupport - confirmedSupport - 1);
@@ -39,7 +39,11 @@ export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, 
   const cannotSaveSelf = selfTargeted && actionableConfirmedSupport < competingSupport;
   const doesNotReplaceStrongPlan = commitmentStrength >= 0.7
     && claimedSupport < majority && confirmedSupport < Math.min(3, majority);
-  let acceptChance = 0.12 + trust * 0.06 + confirmedSupport * 0.06 + strategic * 0.015 + reputationMod
+  // Believing the messenger and executing one useful vote are different choices.
+  // Confirmed numbers and earned game respect can overcome moderate distrust;
+  // loyalty, target protection and the hard consistency gates still constrain it.
+  let acceptChance = 0.12 + trust * 0.035 + tacticalCredibility * 0.05
+    + confirmedSupport * 0.07 + strategic * 0.015 + reputationMod
     - loyalty * 0.025 - Math.max(0, targetBond) * 0.08 - unverifiableGap * verification * 0.05;
   if (emotional === 'paranoid') acceptChance -= 0.08;
   if (emotional === 'desperate') acceptChance += 0.08;
@@ -48,7 +52,8 @@ export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, 
   const reason = impossibleClaim ? 'impossible-numbers' : catchesExaggeration ? 'caught-exaggeration'
     : closeTarget ? 'protecting-target' : cannotSaveSelf ? 'does-not-save-me'
     : doesNotReplaceStrongPlan ? 'strong-plan-not-replaced'
-    : accepted ? (confirmedSupport >= 2 ? 'numbers-confirmed' : 'trusted-pitcher')
+    : accepted ? (confirmedSupport >= 2 ? 'numbers-confirmed'
+      : tacticalCredibility >= 2 ? 'strategically-credible' : 'trusted-pitcher')
     : confirmedSupport < 2 ? 'wanted-confirmation' : 'not-convinced';
   const leakChance = Math.max(0.02, Math.min(0.60, (emotional === 'paranoid' ? 0.35 : loyalty <= 3 ? 0.22 : 0.06) + leakMod));
   return { accepted, reason, catchesExaggeration, acceptChance, leaked: !accepted && roll() < leakChance };
@@ -806,7 +811,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
         const vS = pStats(voter);
         const _voterRead = observedCommitments.find(read => read.voter === voter);
         const _votesAimedAtVoter = _forecastCounts[voter] || 0;
-        const response = evaluatePitchResponse({ trust:pitchTrust(voter, pitcher), loyalty:vS.loyalty,
+        const response = evaluatePitchResponse({ trust:pitchTrust(voter, pitcher), tacticalCredibility:tacticalCooperation(voter, pitcher), loyalty:vS.loyalty,
           targetBond:targetProtection(voter, pitchTarget), claimedSupport:_claimedSupport,
           eligibleVoters:_pitchCandidates.length, confirmedSupport:new Set([..._existingSupporters, pitcher, ..._flipped]).size,
           strategic:vS.strategic, intuition:vS.intuition, emotional:getPlayerState(voter).emotional, liar:_lieAboutNumbers,
@@ -919,7 +924,13 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       if (!_inNamedAlliance) return 0;
       const _allyMembers = myAlliance.members.filter(m => m !== voter);
       if (!_allyMembers.length) return 0;
-      const _avgBond = _allyMembers.reduce((sum, m) => sum + getPerceivedBond(voter, m), 0) / _allyMembers.length;
+      const _avgCoordination = _allyMembers.reduce((sum, m) => {
+        const r = getRelationshipDimensions(voter, m);
+        // Short-term plan reliability: trust remains relevant, but visible game
+        // competence can make a distrusted ally usable for tonight's vote.
+        return sum + r.trust * 0.018 + r.strategicRespect * 0.045
+          + r.obligation * 0.006 - r.resentment * 0.008;
+      }, 0) / _allyMembers.length;
       // New alliance grace period: alliances formed this episode get a loyalty boost
       // You don't join an alliance and immediately betray it — even wildcards follow through once
       const _namedAlliance = (gs.namedAlliances || []).find(a => a.name === myAlliance.label);
@@ -928,7 +939,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       // Scales proportionally with bond AND alliance size — bigger alliances with good bonds hold tighter
       // Bond 4, size 5 → +0.12 + 0.10 = +0.22. Bond 2, size 3 → +0.06 + 0.04 = +0.10
       const _sizeBonus = Math.max(0, (_allyMembers.length - 1) * 0.03); // 2-member=0.03, 4-member=0.09, 5-member=0.12
-      return _avgBond * 0.03 + _sizeBonus + _gracePeriod;
+      return _avgCoordination + _sizeBonus + _gracePeriod;
     })();
 
     // Track record: past betrayals erode the loyalty stat's influence

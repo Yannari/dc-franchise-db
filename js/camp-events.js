@@ -14,6 +14,7 @@ import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
 import { reputationModifier } from './reputation.js';
 import { recordIntimidation, recordProtection } from './relationship-events.js';
+import { attachCampAccessToEvents, buildCampAccessSchedule } from './camp-access.js';
 
 // Fill a reskin/atmosphere template: player tokens first, then vocab tokens.
 // {a}/{b} = the two players, {p} = single featured player, {po} = possessive.
@@ -6504,6 +6505,15 @@ export function checkComfortBlindspot(ep) {
 }
 
 export function generateCampEvents(ep, phase = 'both') {
+  // Build the physical access layer before scenes are generated. This records
+  // where contestants actually were; strategy modules may query the same
+  // schedule without owning or duplicating venue logic.
+  if (phase === 'both') {
+    buildCampAccessSchedule(ep, 'pre');
+    buildCampAccessSchedule(ep, 'post');
+  } else {
+    buildCampAccessSchedule(ep, phase);
+  }
   // Clear per-episode camp event heat flags
   gs.injuredThisEp    = new Set();
   gs.scramblingThisEp = new Set();
@@ -8190,4 +8200,10 @@ export function generateCampEvents(ep, phase = 'both') {
   updateLoveTrianglePhases(ep);
   // ── Secret affairs: progress exposure tiers ──
   updateAffairExposure(ep);
+  if (phase === 'both') {
+    attachCampAccessToEvents(ep, 'pre');
+    attachCampAccessToEvents(ep, 'post');
+  } else {
+    attachCampAccessToEvents(ep, phase);
+  }
 }

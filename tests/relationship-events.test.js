@@ -6,7 +6,7 @@ import { getBond } from '../js/bonds.js';
 import {
   recordBetrayal, recordChallengeDominance, recordProtection, recordIntimidation,
   recordAttractionSpark, recordLoyaltyProof, recordStrategicRespect,
-  recentCauses, clearRelationshipCausesFor, decayRelationshipDimensions,
+  recentCauses, clearRelationshipCausesFor, decayRelationshipDimensions, applyObservedStrategicRespect,
 } from '../js/relationship-events.js';
 
 beforeEach(() => seedGame(['Alice', 'Bob', 'Carol'], { episode: 3, relationshipCauses: {} }));
@@ -65,6 +65,17 @@ describe('relationship-events: semantic dimensions', () => {
     expect(getRelationshipDimension('Bob', 'Alice', 'obligation')).toBeGreaterThan(0);
     recordStrategicRespect('Carol', 'Alice', 2, 'slick idol play');
     expect(getRelationshipDimension('Carol', 'Alice', 'strategicRespect')).toBeGreaterThan(1.5);
+  });
+
+  it('visible strategic reputation creates respect without granting personal trust', () => {
+    gs.episodeHistory = [1, 2, 3].map(num => ({ num, votePitches:[{
+      pitcher:'Alice', success:true, confirmedCoalition:['Alice', 'Bob', 'Carol'], responses:[],
+    }] }));
+    const trustBefore = getRelationshipDimension('Bob', 'Alice', 'trust');
+    applyObservedStrategicRespect({ num:4, tribalPlayers:['Alice', 'Bob', 'Carol'], votePitches:[] });
+    expect(getRelationshipDimension('Bob', 'Alice', 'strategicRespect')).toBeGreaterThan(0.75);
+    expect(getRelationshipDimension('Bob', 'Alice', 'trust')).toBe(trustBefore);
+    expect(recentCauses('Bob', 'Alice', 'strategicRespect')[0].reason).toMatch(/track record/i);
   });
 });
 

@@ -3,7 +3,7 @@ import { addBond, setBond } from '../js/bonds.js';
 import { addMutualRelationshipDimension, addRelationshipDimension,
   getRelationshipDimension, getRelationshipDimensions, relationshipDecisionProfile,
   relationshipKey, removeRelationshipDimensionsFor, setRelationshipDimension } from '../js/relationships.js';
-import { pitchTrust, targetProtection } from '../js/relationships.js';
+import { pitchTrust, tacticalCooperation, targetProtection } from '../js/relationships.js';
 import { seedGame } from './helpers/setup.js';
 import { gs } from '../js/core.js';
 
@@ -69,5 +69,13 @@ describe('multidimensional relationships', () => {
     setRelationshipDimension('Alice', 'Carol', 'trust', -3);
     expect(pitchTrust('Alice', 'Bob')).toBeGreaterThan(4);
     expect(targetProtection('Alice', 'Carol')).toBeGreaterThan(3);
+  });
+  it('lets earned game respect outweigh moderate distrust for one tactical move', () => {
+    setRelationshipDimension('Alice', 'Bob', 'trust', -3);
+    setRelationshipDimension('Alice', 'Bob', 'resentment', 1);
+    setRelationshipDimension('Alice', 'Bob', 'strategicRespect', 3);
+    expect(pitchTrust('Alice', 'Bob')).toBeLessThan(0);
+    expect(tacticalCooperation('Alice', 'Bob')).toBeGreaterThan(2);
+    expect(getRelationshipDimension('Alice', 'Bob', 'trust')).toBe(-3);
   });
 });

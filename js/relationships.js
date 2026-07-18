@@ -98,6 +98,20 @@ export function pitchTrust(from, pitcher) {
   return clamp(r.trust + r.obligation * 0.2 - r.resentment * 0.35, -10, 10);
 }
 
+// Whether working with this person for one tactical move appears rational.
+// This deliberately is not personal trust: a contestant can distrust a Bowie-
+// style strategist while respecting the plan and cooperating for one vote.
+// Respect is weighted about four times as strongly as trust because it is rarer
+// and more specifically earned; it never repairs the underlying relationship.
+export function tacticalCooperation(from, organizer) {
+  const r = getRelationshipDimensions(from, organizer);
+  return clamp(
+    r.trust * 0.35 + r.strategicRespect * 1.35 + r.obligation * 0.2 - r.resentment * 0.2,
+    -10,
+    10,
+  );
+}
+
 export function targetProtection(from, target) {
   const r = relationshipDecisionProfile(from, target);
   return clamp(

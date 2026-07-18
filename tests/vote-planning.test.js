@@ -166,6 +166,13 @@ describe('flip negotiation', () => {
       .toMatchObject({ accepted:true, reason:'numbers-confirmed' });
   });
 
+  it('lets a distrusted but respected strategist coordinate a confirmed vote', () => {
+    const rolls = [0.20, 0.99];
+    expect(evaluatePitchResponse({ trust:-4, tacticalCredibility:4, loyalty:4, targetBond:-1,
+      claimedSupport:4, eligibleVoters:8, confirmedSupport:3, strategic:8, intuition:7 }, () => rolls.shift()))
+      .toMatchObject({ accepted:true, reason:'numbers-confirmed' });
+  });
+
   it('refuses to sacrifice a close ally for the pitch', () => {
     expect(evaluatePitchResponse({ trust:5, targetBond:5, claimedSupport:5, eligibleVoters:8, confirmedSupport:4 }, () => 0))
       .toMatchObject({ accepted:false, reason:'protecting-target' });

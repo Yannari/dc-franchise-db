@@ -15,8 +15,9 @@
 // Voting Plans can explain WHY a dimension is where it is.
 // ══════════════════════════════════════════════════════════════════════
 import { gs } from './core.js';
-import { addRelationshipDimension } from './relationships.js';
+import { addRelationshipDimension, getRelationshipDimensions } from './relationships.js';
 import { addBond } from './bonds.js';
+import { strategicReputation } from './reputation.js';
 
 // decay lives in relationships.js (leaf) so bonds.js/recoverBonds can call it
 // without a circular import; re-exported here for API cohesion.
@@ -110,6 +111,38 @@ export function recordStrategicRespect(from, to, amount = 1, reason = 'respected
   bumpDim(from, to, 'strategicRespect', amount, reason, ep);
 }
 
+// Convert a publicly demonstrated strategic track record into a modest respect
+// floor. Raw strategic stats do not count: the player must have actually led
+// pitches or accumulated visible big moves. Discrete accomplishments below can
+// still push respect above this baseline.
+function demonstratedRespectTarget(actor, ep) {
+  const rep = strategicReputation(actor, ep);
+  const pitches = rep.evidence?.pitches || 0;
+  const bigMoves = gs.playerStates?.[actor]?.bigMoves || 0;
+  if (pitches < 2 && bigMoves < 1) return 0;
+  const control = Math.max(0, rep.control - 0.32) * 6;
+  const persuasion = pitches >= 2 ? Math.max(0, rep.persuasion - 0.45) * 3 : 0;
+  return Math.min(4, control + persuasion);
+}
+
+function applyDemonstratedReputationRespect(ep, cast, episodeNum) {
+  cast.forEach(actor => {
+    const publicTarget = demonstratedRespectTarget(actor, ep);
+    if (publicTarget <= 0) return;
+    cast.filter(observer => observer !== actor).forEach(observer => {
+      const current = getRelationshipDimensions(observer, actor);
+      // Personal bias changes the read slightly, but distrust cannot erase
+      // plainly visible competence. Converging toward a floor avoids endlessly
+      // awarding the same reputation every episode.
+      const bias = Math.max(0.75, Math.min(1.1, 0.9 + current.trust * 0.025));
+      const gap = publicTarget * bias - current.strategicRespect;
+      const amount = Math.min(0.9, Math.max(0, gap * 0.55));
+      if (amount >= 0.1) recordStrategicRespect(observer, actor, amount,
+        `${actor}'s visible strategic track record is becoming hard to dismiss`, episodeNum);
+    });
+  });
+}
+
 // Apply respect only for accomplishments the relevant observer could actually
 // see. Called once after Tribal, when the challenge, pitches and advantage
 // results are all known. Small values accumulate into a season-long read.
@@ -153,4 +186,6 @@ export function applyObservedStrategicRespect(ep) {
       recordStrategicRespect(observer, pitch.pitcher, amount,
         `${pitch.pitcher} assembled a credible ${coalition.length}-vote coalition`, episodeNum));
   });
+
+  applyDemonstratedReputationRespect(ep, cast, episodeNum);
 }

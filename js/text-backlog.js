@@ -1,7 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
-import { getBond, bondLabel, bondFeeling } from './bonds.js';
+import { getBond, bondLabel } from './bonds.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
 
 // Challenge-specific text functions
@@ -416,11 +416,8 @@ export function _textCampPre(ep, ln, sec) {
       relPairs.forEach(p => {
         const preRel = relationships.find(r => [r.a,r.b].sort().join('|')===[p.a,p.b].sort().join('|'));
         const note = preRel?.note ? ` (${preRel.note})` : '';
-        if (p.hasGap) {
-          ln(`- ${p.a} & ${p.b} — ${p.a} feels ${bondLabel(p.aPerceived)}. ${p.b} feels ${bondLabel(p.bPerceived)}${note}.`);
-        } else {
-          ln(`- ${p.a} and ${p.b} ${bondFeeling(p.val)}${note}.`);
-        }
+        const cleanSummary = p.presentation.summary.replace(/[.!?]+$/, '');
+        ln(`- [${p.presentation.badgeText}] ${p.a} & ${p.b} — ${cleanSummary}${note}.${p.presentation.subline ? ` ${p.presentation.subline}.` : ''}`);
       });
     } else {
       ln('- No notable bonds established yet.');

@@ -13,6 +13,7 @@ import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
 import { reputationModifier } from './reputation.js';
+import { recordIntimidation, recordProtection } from './relationship-events.js';
 
 // Fill a reskin/atmosphere template: player tokens first, then vocab tokens.
 // {a}/{b} = the two players, {p} = single featured player, {po} = possessive.
@@ -532,6 +533,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.4 + (10 - pStats(n).temperament) * 0.15 + 1));
       addBond(a, b, -1.5);
+      // The bond hit above owns dislike/trust/resentment. Record the semantic
+      // direction separately: a was the aggressor and b was in the blast radius.
+      recordIntimidation(a, b, { strength: 0.45, applyWarmth: false, ep: _epNum });
       const tmpA = pStats(a).temperament;
       const fightLines = tmpA <= 2
         ? [`${a} erupts at ${b} with zero warning. Nobody knows what triggered it. The tribe just watches.`,
@@ -908,6 +912,9 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const comforter = wRandom(comforterPool, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.2 + 1));
       addBond(comforter, struggling, 0.6);
       addBond(struggling, comforter, 0.4);
+      // Comfort is a small protective act. Warmth was already applied above;
+      // only add the saved player's modest feeling of debt/gratitude.
+      recordProtection(comforter, struggling, { strength: 0.25, applyWarmth: false, ep: _epNum });
       _trackBond(comforter, struggling);
       const socC = pStats(comforter).social;
       const comfortLines = socC >= 8
@@ -1239,6 +1246,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, (10 - pStats(n).boldness) * 0.4 + (10 - pStats(n).physical) * 0.2 + 1));
       addBond(b, a, -0.8);
+      recordIntimidation(a, b, { strength: 0.8, applyWarmth: false, ep: _epNum });
       const phA = pStats(a).physical;
       const _intA = pronouns(a);
       const intLines = phA >= 8

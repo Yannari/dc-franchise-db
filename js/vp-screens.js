@@ -2447,7 +2447,16 @@ export function rpBuildDebug(ep) {
     if (!_focusW || !_rosterW.includes(_focusW)) _focusW = _rosterW[0];
     const _slugW = n => players.find(p => p.name === n)?.slug || String(n).toLowerCase().replace(/\s+/g, '-');
     const _dimsW = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
-    const _shortW = { affection: 'AFF', trust: 'TRUST', strategicRespect: 'RESPECT', fear: 'FEAR', obligation: 'DEBT', resentment: 'RESENT', attraction: 'ATTRACT' };
+    const _shortW = { affection: 'LIKING', trust: 'TRUST', strategicRespect: 'GAME RESPECT', fear: 'FEAR', obligation: 'OWES', resentment: 'RESENTMENT', attraction: 'ATTRACTION' };
+    const _helpW = {
+      affection: 'Personal warmth or liking. Someone can still distrust or resent a person they care about.',
+      trust: 'Belief that this person is honest, reliable, and safe to coordinate with.',
+      strategicRespect: 'Respect earned from visible gameplay: wins, correct idol plays, coalition leadership, and coordination.',
+      fear: 'How threatening or intimidating this person feels.',
+      obligation: 'A social debt: this player feels the other person helped or protected them.',
+      resentment: 'Unresolved anger from betrayal, mistreatment, or being targeted. It can coexist with affection.',
+      attraction: 'Romantic pull. Low values are weak interest; higher values can support sparks and romantic conflicts.',
+    };
     const _colW = v => v >= 5 ? '#3fb950' : v >= 2 ? '#d29922' : v <= -2 ? '#f47067' : '#6e7681';
     const _dgetW = (a, b) => { const r = _relStoreW[`${a}→${b}`] || {}; const o = {}; _dimsW.forEach(d => o[d] = Number(r[d]) || 0); return o; };
     const _readW = r => {
@@ -2473,6 +2482,8 @@ export function rpBuildDebug(ep) {
     html += `<div style="margin-bottom:10px;padding:9px;background:rgba(200,120,255,0.06);border:1px solid rgba(200,120,255,0.18);border-radius:8px">
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d9a6ff">THE WEB · ${_focusW}</div>
       <div style="font-size:10px;color:#8b949e;margin-top:3px">Click a face to switch player. Shows how <strong style="color:#e6edf3">${_focusW}</strong> feels about everyone (A→B is directional, may differ from B→A) and what ${_focusW} personally knows. Never-met pairs show neutral.</div>
+      <div style="font-size:10px;color:#b9c7dc;margin-top:6px"><strong style="color:#e6edf3">Values:</strong> liking/trust/game respect range from −10 to 10; fear/owes/resentment/attraction range from 0 to 10. A person can like someone while distrusting or resenting them—history and current safety are separate.</div>
+      <div style="font-size:9px;color:#6e7681;margin-top:4px">Hover a column name for its exact meaning. Game respect is earned by visible accomplishments; it is not the same as liking someone.</div>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">${_selW}</div>`;
     const _othersW = _rosterW.filter(n => n !== _focusW).map(n => {
@@ -2480,14 +2491,14 @@ export function rpBuildDebug(ep) {
       return { n, out, back, i: _intW(out) + _intW(back) };
     }).sort((a, b) => b.i - a.i || a.n.localeCompare(b.n));
     html += `<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><th style="text-align:left;padding:5px">${_focusW} →</th>${_dimsW.map(d => `<th style="padding:5px" title="${d}">${_shortW[d]}</th>`).join('')}<th style="text-align:left;padding:5px">Read</th><th style="text-align:left;padding:5px">↩ back</th></tr>`;
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)"><th style="text-align:left;padding:5px">${_focusW} feels →</th>${_dimsW.map(d => `<th style="padding:5px;white-space:nowrap;cursor:help" title="${_helpW[d]}">${_shortW[d]}</th>`).join('')}<th style="text-align:left;padding:5px">Plain-language read</th><th style="text-align:left;padding:5px">How they feel back</th></tr>`;
     _othersW.forEach(({ n, out, back, i }) => {
       const faded = i < 0.5;
       const _causes = [...(_causeStoreW[`${_focusW}→${n}`] || [])].reverse().slice(0, 2).map(c => `ep${c.ep} ${c.reason}`).join(' · ');
       const _backSig = _dimsW.filter(d => Math.abs(back[d]) >= 2).map(d => `${_shortW[d]} ${back[d].toFixed(0)}`).join(' ');
       html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);opacity:${faded ? '0.5' : '1'}">
         <td style="padding:5px;color:#e6edf3;white-space:nowrap"><img src="assets/avatars/${_slugW(n)}.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'"><strong>${n}</strong></td>
-        ${_dimsW.map(d => { const v = out[d]; return `<td style="padding:5px;text-align:center;color:${_colW(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}">${v ? v.toFixed(1) : '·'}</td>`; }).join('')}
+        ${_dimsW.map(d => { const v = out[d]; return `<td style="padding:5px;text-align:center;color:${_colW(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}" title="${_helpW[d]}">${v.toFixed(1)}</td>`; }).join('')}
         <td style="padding:5px;color:#c9d1d9;min-width:150px">${_readW(out)}${_causes ? `<div style="color:#6e7681;font-size:9px;margin-top:2px">${_causes}</div>` : ''}</td>
         <td style="padding:5px;color:#8b949e;min-width:90px">${_backSig || '<span style="color:#484f58">·</span>'}</td>
       </tr>`;
@@ -2501,13 +2512,16 @@ export function rpBuildDebug(ep) {
     if (_knownW.length) {
       _knownW.forEach(f => {
         const b = f.beliefs[_focusW], eff = _effW(f, b), val = b.valence || 'accurate';
+        const expired = eff < 0.05;
+        const confidenceText = expired ? 'Expired' : `Confidence ${Math.round(eff * 100)}%`;
+        const truthText = val === 'accurate' ? 'fact was accurate' : val === 'exaggerated' ? 'heard an exaggerated version' : val === 'false' ? 'recognized as false' : 'stale information';
         const others = b.knowsOthersKnow?.length ? ` · knows ${b.knowsOthersKnow.join(', ')} also know` : '';
         html += `<div style="padding:5px 8px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span style="font-size:8px;font-weight:800;letter-spacing:1px;color:#a78bfa;width:56px">${String(f.type).toUpperCase()}</span>
           <strong style="color:#e6edf3">${_flabW(f)}</strong>
           ${f.truth === false ? '<span style="font-size:8px;color:#f47067">(planted)</span>' : ''}
-          <span style="margin-left:auto;color:${eff >= 0.7 ? '#3fb950' : eff >= 0.4 ? '#d29922' : '#f47067'};font-weight:700">${Math.round(eff * 100)}%</span>
-          <span style="color:${_valColW[val] || '#8b949e'};width:64px">${val}</span>
+          <span style="margin-left:auto;color:${expired ? '#6e7681' : eff >= 0.7 ? '#3fb950' : eff >= 0.4 ? '#d29922' : '#f47067'};font-weight:700">${confidenceText}</span>
+          <span style="color:${_valColW[val] || '#8b949e'};min-width:105px">${truthText}</span>
           <span style="color:#6e7681">via ${b.sourceType || '?'}${b.source && b.source !== 'observation' ? ` (${b.source})` : ''}${others}</span>
         </div>`;
       });
@@ -7890,42 +7904,17 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
     <div id="rel-${safeId}" class="rp-camp-toggle-body">`;
   if (relPairs.length) {
     relPairs.forEach(p => {
-      const v = p.val;
-      const _hasGap = p.hasGap;
-      const _aPerceived = p.aPerceived;
-      const _bPerceived = p.bPerceived;
-      const _displayVal = Math.max(Math.abs(v), Math.abs(_aPerceived), Math.abs(_bPerceived));
-      let badgeText = '', badgeClass = '';
-      if (_hasGap) {
-        badgeText = 'ONE-SIDED'; badgeClass = 'gold';
-      } else if (v >= 9)   { badgeText = 'UNBREAKABLE';  badgeClass = 'green'; }
-      else if (v >= 7)   { badgeText = 'RIDE OR DIE';  badgeClass = 'green'; }
-      else if (v >= 5)   { badgeText = 'STRONG BOND';  badgeClass = 'green'; }
-      else if (v >= 3)   { badgeText = 'SOLID BOND';   badgeClass = 'green'; }
-      else if (v >= 1)   { badgeText = 'BOND';         badgeClass = 'green'; }
-      else if (v <= -9)  { badgeText = 'PURE HATRED';  badgeClass = 'red'; }
-      else if (v <= -7)  { badgeText = 'NEMESIS';      badgeClass = 'red'; }
-      else if (v <= -5)  { badgeText = 'HOSTILE';      badgeClass = 'red'; }
-      else if (v <= -3)  { badgeText = 'CONFLICT';     badgeClass = 'red'; }
-      else if (v <= -1)  { badgeText = 'TENSION';      badgeClass = 'red'; }
+      const { badgeText, badgeClass, summary, subline } = p.presentation;
+      const cleanSummary = summary.replace(/[.!?]+$/, '');
       const preRel = relationships.find(r => [r.a,r.b].sort().join('|') === [p.a,p.b].sort().join('|'));
       const note = preRel?.note ? ` (${preRel.note})` : '';
-      // Split display for perception gaps
-      let feelingText;
-      if (_hasGap) {
-        const _aLabel = bondLabel(_aPerceived);
-        const _bLabel = bondLabel(_bPerceived);
-        feelingText = `${p.a} feels ${_aLabel}. ${p.b} feels ${_bLabel}`;
-      } else {
-        feelingText = bondFeeling(p.val);
-      }
       // Check for active side deal — use snapshot if available
       const _snapDeals = ep.gsSnapshot?.sideDeals || gs.sideDeals || [];
       const _hasDeal = _snapDeals.some(d => d.active && d.players.includes(p.a) && d.players.includes(p.b));
       const _dealType = _hasDeal ? (_snapDeals.find(d => d.active && d.players.includes(p.a) && d.players.includes(p.b))?.type || 'f2') : null;
       html += `<div class="rp-brant-entry">
         <div class="rp-brant-portraits">${rpDuoImg(p.a, p.b)}</div>
-        <div class="rp-brant-text">${p.a} & ${p.b} \u2014 ${feelingText}${note}.</div>
+        <div class="rp-brant-text"><strong>${p.a} & ${p.b}</strong> \u2014 ${cleanSummary}${note}.${subline ? `<div style="font-size:10px;color:#8b949e;margin-top:3px">${subline}</div>` : ''}</div>
         ${_hasDeal ? `<span class="rp-brant-badge gold">${_dealType === 'f3' ? 'F3 DEAL' : 'F2 DEAL'}</span>` : ''}
         ${badgeText ? `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>` : ''}
       </div>`;
@@ -14213,9 +14202,162 @@ export function buildVPScreens(epRecord) {
     if (_debugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _debugHtml });
   }
 }
+
+function _relationshipProfile(raw, fallback = 0) {
+  return {
+    affection: Number(raw?.affection ?? fallback) || 0,
+    trust: Number(raw?.trust ?? fallback) || 0,
+    strategicRespect: Number(raw?.strategicRespect) || 0,
+    fear: Number(raw?.fear) || 0,
+    obligation: Number(raw?.obligation) || 0,
+    resentment: Number(raw?.resentment ?? Math.max(0, -fallback)) || 0,
+    attraction: Number(raw?.attraction) || 0,
+  };
+}
+
+function _directionalRelationshipRead(from, to, r) {
+  const parts = [];
+  if (r.affection >= 3) parts.push(`cares about ${to}`);
+  else if (r.affection <= -2.5) parts.push(`dislikes ${to}`);
+  if (r.trust >= 3) parts.push(`trusts ${to}`);
+  else if (r.trust <= -2) parts.push(`does not trust ${to}`);
+  if (r.resentment >= 3) parts.push(`resents ${to}`);
+  if (r.strategicRespect >= 3) parts.push(`respects ${to}'s game`);
+  if (r.fear >= 3) parts.push(`feels threatened by ${to}`);
+  if (r.obligation >= 3) parts.push(`feels indebted to ${to}`);
+  if (r.attraction >= 3) parts.push(`feels drawn to ${to}`);
+  if (!parts.length) return `${from} has no strong read on ${to}`;
+  return `${from} ${parts.length === 1 ? parts[0] : parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1]}`;
+}
+
+export function describeRelationshipPair(a, b, aToB, bToA, {
+  hasGap = false, aPerceived = 0, bPerceived = 0, explicitType = null,
+  loyaltyEvidence = 0, establishedEpisodes = 0, romancePhase = null,
+} = {}) {
+  const close = r => r.affection >= 3 && r.trust >= 2 && r.resentment < 3;
+  const warm = r => r.affection >= 2 && r.resentment < 3;
+  const hostile = r => (r.affection <= -2 || r.trust <= -3) && r.resentment >= 2;
+  const complicated = r => r.affection >= 2 && (r.trust <= 0 || r.resentment >= 3);
+  const rivalry = r => r.strategicRespect >= 2.5 && (r.fear >= 2 || r.trust < 1);
+  const romantic = r => r.attraction >= 3;
+  const strategic = r => r.trust >= 2 && r.strategicRespect >= 2.5;
+  const negative = r => r.affection <= -2 || r.trust <= -2 || r.resentment >= 2 || r.fear >= 3;
+  const both = predicate => predicate(aToB) && predicate(bToA);
+  const currentCoreIsHealthy = both(r => r.affection >= 3 && r.trust >= 2 && r.resentment < 2);
+  const deeplyClose = both(r => r.affection >= 7 && r.trust >= 6 && r.resentment < 1.5);
+  const loyaltyHistory = loyaltyEvidence >= 2 || establishedEpisodes >= 5 || romancePhase === 'ride-or-die';
+  const distrustClause = (from, to, r) => {
+    const issues = [];
+    if (r.trust <= -2) issues.push(`does not trust ${to}`);
+    if (r.resentment >= 3) issues.push(`resents ${to}`);
+    if (r.fear >= 3) issues.push(`feels threatened by ${to}`);
+    if (!issues.length) issues.push(`does not feel fully safe with ${to}`);
+    return `${from} ${issues.length === 1 ? issues[0] : issues.slice(0, -1).join(', ') + ' and ' + issues[issues.length - 1]}`;
+  };
+  let badgeText = 'MIXED RELATIONSHIP', badgeClass = 'gold', summary = '';
+
+  if (hasGap) {
+    badgeText = 'ONE-SIDED READ'; badgeClass = 'gold';
+    summary = `${a} reads this as ${bondLabel(aPerceived)}; ${b} reads it as ${bondLabel(bPerceived)}.`;
+  } else if (explicitType === 'unbreakable' && currentCoreIsHealthy) {
+    badgeText = 'UNBREAKABLE'; badgeClass = 'green';
+    summary = 'Exceptional mutual affection and trust are backed by a proven history of choosing each other.';
+  } else if (deeplyClose && loyaltyHistory) {
+    badgeText = 'RIDE OR DIE'; badgeClass = 'green';
+    summary = 'Deep mutual affection, trust, and demonstrated loyalty make this one of the strongest bonds in the game.';
+  } else if (romantic(aToB) && romantic(bToA)) {
+    badgeText = 'ROMANTIC TENSION'; badgeClass = 'gold';
+    summary = 'The attraction is mutual, though attraction alone does not guarantee trust.';
+  } else if (both(r => r.affection >= 3 && r.resentment >= 4)) {
+    badgeText = 'LOVE–HATE'; badgeClass = 'gold';
+    summary = `They remain emotionally attached, but ${distrustClause(a, b, aToB)}; ${distrustClause(b, a, bToA)}.`;
+  } else if (complicated(aToB) && complicated(bToA)) {
+    badgeText = 'COMPLICATED'; badgeClass = 'gold';
+    summary = `Affection remains mutual, but the damage is real: ${distrustClause(a, b, aToB)}; ${distrustClause(b, a, bToA)}.`;
+  } else if (both(r => r.affection <= -8 && r.trust <= -8 && r.resentment >= 7)) {
+    badgeText = 'PURE HATRED'; badgeClass = 'red';
+    summary = `The hostility is total: ${distrustClause(a, b, aToB)}; ${distrustClause(b, a, bToA)}.`;
+  } else if (both(r => hostile(r) && r.affection <= -5 && r.trust <= -5 && r.resentment >= 5)) {
+    badgeText = 'NEMESES'; badgeClass = 'red';
+    summary = `This is sustained, personal opposition: ${distrustClause(a, b, aToB)}; ${distrustClause(b, a, bToA)}.`;
+  } else if (hostile(aToB) && hostile(bToA)) {
+    badgeText = 'MUTUAL HOSTILITY'; badgeClass = 'red';
+    summary = `${distrustClause(a, b, aToB)}; ${distrustClause(b, a, bToA)}.`;
+  } else if (both(r => r.strategicRespect >= 4 && r.fear >= 2 && r.trust < 2)) {
+    badgeText = 'RESPECTED RIVALS'; badgeClass = 'gold';
+    summary = "They recognize each other's ability, but that respect makes each one feel more dangerous to the other.";
+  } else if (rivalry(aToB) && rivalry(bToA)) {
+    badgeText = 'RIVALRY'; badgeClass = 'red';
+    summary = "They respect each other's game, but neither feels strategically safe.";
+  } else if (both(r => r.affection >= 5 && r.trust >= 4 && r.resentment < 2)) {
+    badgeText = 'CLOSE ALLIES'; badgeClass = 'green';
+    summary = 'Strong mutual affection and trust make them personally close and strategically dependable.';
+  } else if (close(aToB) && close(bToA)) {
+    badgeText = 'FRIENDS'; badgeClass = 'green';
+    summary = 'Clear mutual affection and trust make this a genuine friendship.';
+  } else if (strategic(aToB) && strategic(bToA)) {
+    badgeText = 'STRATEGIC PARTNERS'; badgeClass = 'green';
+    summary = 'Mutual trust and game respect make this a functional strategic partnership.';
+  } else if (both(r => r.trust <= -2) && !both(hostile)) {
+    badgeText = 'MUTUAL DISTRUST'; badgeClass = 'red';
+    summary = `Neither considers the other reliable: ${a} does not trust ${b}, and ${b} does not trust ${a}.`;
+  } else if (both(r => r.resentment >= 3) && !both(hostile)) {
+    badgeText = 'RESENTMENT'; badgeClass = 'red';
+    summary = 'Both are carrying unresolved anger, even if the relationship has not become outright hostility.';
+  } else if (both(r => r.affection < 2 && r.trust >= 0 && (r.strategicRespect >= 2 || r.obligation >= 2))) {
+    badgeText = 'WORKING TRUCE'; badgeClass = 'gold';
+    summary = 'They are not personally close, but respect, debt, or practical trust gives them a reason to cooperate.';
+  } else if (aToB.obligation >= 3 || bToA.obligation >= 3) {
+    const debtor = aToB.obligation >= bToA.obligation ? a : b;
+    const owed = debtor === a ? b : a;
+    badgeText = 'INDEBTED'; badgeClass = 'gold';
+    summary = `${debtor} feels indebted to ${owed}; that obligation is currently more important than the personal bond.`;
+  } else if (warm(aToB) && warm(bToA)) {
+    const trustDiff = aToB.trust - bToA.trust;
+    if (Math.abs(trustDiff) >= 1.5) {
+      const higher = trustDiff > 0 ? a : b;
+      const lower = trustDiff > 0 ? b : a;
+      badgeText = 'UNEVEN TRUST'; badgeClass = 'gold';
+      summary = `The affection is mutual, but ${higher} trusts ${lower} more than ${lower} trusts ${higher}.`;
+    } else if (aToB.trust >= 0.5 && bToA.trust >= 0.5) {
+      badgeText = 'EMERGING TRUST'; badgeClass = 'green';
+      summary = 'They genuinely like each other and trust is forming, but the bond is not fully secure yet.';
+    } else {
+      badgeText = 'MUTUAL WARMTH'; badgeClass = 'green';
+      summary = 'They genuinely like each other, but neither has developed strong trust in the other yet.';
+    }
+  } else {
+    const aRead = _directionalRelationshipRead(a, b, aToB);
+    const bRead = _directionalRelationshipRead(b, a, bToA);
+    const aRom = romantic(aToB), bRom = romantic(bToA);
+    const aPositive = warm(aToB) || close(aToB) || strategic(aToB);
+    const bPositive = warm(bToA) || close(bToA) || strategic(bToA);
+    const trulyAsymmetric = aPositive !== bPositive || aRom !== bRom
+      || Math.abs(aToB.trust - bToA.trust) >= 2 || Math.abs(aToB.resentment - bToA.resentment) >= 2;
+    const actualConflict = negative(aToB) || negative(bToA);
+    const oneHostile = hostile(aToB) !== hostile(bToA);
+    badgeText = aRom !== bRom ? 'ONE-SIDED ATTRACTION'
+      : oneHostile ? 'ONE-SIDED HOSTILITY'
+      : trulyAsymmetric ? 'ONE-SIDED RELATIONSHIP'
+      : actualConflict ? 'TENSION'
+      : 'EMERGING CONNECTION';
+    badgeClass = actualConflict || oneHostile ? 'red' : trulyAsymmetric || aRom !== bRom ? 'gold' : 'green';
+    summary = `${aRead}. ${bRead}.`;
+  }
+
+  const notable = [aToB, bToA].flatMap(r => [r.strategicRespect, r.fear, r.obligation, r.attraction]).some(v => v >= 2.5);
+  const subline = notable && !/respect|attraction|threat|indebted/i.test(summary)
+    ? [_directionalRelationshipRead(a, b, aToB), _directionalRelationshipRead(b, a, bToA)].join(' · ')
+    : '';
+  return { badgeText, badgeClass, summary, subline };
+}
+
 export function getTribeRelationshipHighlights(members, snapshot) {
   const _bonds = snapshot?.bonds || gs.bonds || {};
   const _percBonds = snapshot?.perceivedBonds || gs.perceivedBonds || {};
+  const _dimensions = snapshot?.relationshipDimensions || gs.relationshipDimensions || {};
+  const _causes = snapshot?.relationshipCauses || gs.relationshipCauses || {};
+  const _showmances = snapshot?.showmances || gs.showmances || [];
   const pairs = [], seen = new Set();
   members.forEach(a => {
     members.forEach(b => {
@@ -14230,7 +14372,20 @@ export function getTribeRelationshipHighlights(members, snapshot) {
       const _aPerc = _gapAB ? _gapAB.perceived : val;
       const _bPerc = _gapBA ? _gapBA.perceived : val;
       const _hasGap = (_gapAB || _gapBA) && bondLabel(_aPerc) !== bondLabel(_bPerc);
-      pairs.push({ a, b, val, hasGap: _hasGap, aPerceived: _aPerc, bPerceived: _bPerc });
+      const aToB = _relationshipProfile(_dimensions[`${a}→${b}`], val);
+      const bToA = _relationshipProfile(_dimensions[`${b}→${a}`], val);
+      const relMeta = relationships.find(r => [r.a, r.b].sort().join('|') === [a, b].sort().join('|'));
+      const evidence = [...(_causes[`${a}→${b}`] || []), ...(_causes[`${b}→${a}`] || [])]
+        .filter(c => /proved loyal|kept their word|had their back|saved|protected/i.test(c.reason || '')).length;
+      const showmance = _showmances.find(sh => sh.players?.includes(a) && sh.players?.includes(b) && sh.phase !== 'broken-up');
+      const presentation = describeRelationshipPair(a, b, aToB, bToA,
+        { hasGap: _hasGap, aPerceived: _aPerc, bPerceived: _bPerc,
+          explicitType: relMeta?.type || null, loyaltyEvidence: evidence,
+          establishedEpisodes: showmance?.episodesActive || 0, romancePhase: showmance?.phase || null });
+      const dimensionIntensity = Math.max(...[aToB, bToA].flatMap(r =>
+        [Math.abs(r.affection), Math.abs(r.trust), r.strategicRespect, r.fear, r.obligation, r.resentment, r.attraction]));
+      pairs.push({ a, b, val, hasGap: _hasGap, aPerceived: _aPerc, bPerceived: _bPerc,
+        aToB, bToA, dimensionIntensity, presentation });
     });
   });
   // Sort by strongest relationship first — gaps use highest perceived/real value
@@ -14247,8 +14402,9 @@ export function getTribeRelationshipHighlights(members, snapshot) {
   });
   // Show all pairs for small groups, cap at 25 for large merged groups
   // Gap pairs and non-neutral bonds are already sorted to the top — neutrals get cut first
-  const cap = members.length <= 8 ? pairs.length : 25;
-  return pairs.slice(0, cap);
+  const notable = pairs.filter(p => p.hasGap || Math.abs(p.val) >= 0.5 || p.dimensionIntensity >= 1);
+  const cap = members.length <= 8 ? notable.length : 25;
+  return notable.slice(0, cap);
 }
 
 export function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {

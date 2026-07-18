@@ -34,10 +34,24 @@ describe('relationship-events: semantic dimensions', () => {
     expect(getBond('Bob', 'Alice')).toBeGreaterThan(0);
   });
 
+  it('can add protection meaning without double-counting warmth already applied by an event', () => {
+    const before = getBond('Bob', 'Alice');
+    recordProtection('Alice', 'Bob', { strength: 0.5, applyWarmth: false });
+    expect(getBond('Bob', 'Alice')).toBe(before);
+    expect(getRelationshipDimension('Bob', 'Alice', 'obligation')).toBeGreaterThan(0);
+  });
+
   it('intimidation raises fear and lowers warmth', () => {
     recordIntimidation('Bob', 'Alice');
     expect(getRelationshipDimension('Alice', 'Bob', 'fear')).toBeGreaterThan(0);
     expect(getBond('Alice', 'Bob')).toBeLessThan(0);
+  });
+
+  it('can add intimidation meaning without duplicating an existing fight bond hit', () => {
+    const before = getBond('Alice', 'Bob');
+    recordIntimidation('Bob', 'Alice', { strength: 0.5, applyWarmth: false });
+    expect(getBond('Alice', 'Bob')).toBe(before);
+    expect(getRelationshipDimension('Alice', 'Bob', 'fear')).toBeGreaterThan(0);
   });
 
   it('a spark is mutual attraction', () => {

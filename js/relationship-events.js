@@ -78,17 +78,17 @@ export function recordChallengeDominance(winner, observers = [], { margin = 1, e
 }
 
 // Being saved / shielded builds obligation and warmth toward the protector.
-export function recordProtection(savior, saved, { strength = 1, ep = null } = {}) {
+export function recordProtection(savior, saved, { strength = 1, applyWarmth = true, ep = null } = {}) {
   if (!savior || !saved || savior === saved) return;
-  bumpWarmth(saved, savior, 1.5 * strength, `${savior} had their back`, ep);
+  if (applyWarmth) bumpWarmth(saved, savior, 1.5 * strength, `${savior} had their back`, ep);
   bumpDim(saved, savior, 'obligation', 1.5 * strength, `${savior} saved/protected them`, ep);
 }
 
 // Threats / bullying: fear up, warmth down.
-export function recordIntimidation(aggressor, target, { strength = 1, ep = null } = {}) {
+export function recordIntimidation(aggressor, target, { strength = 1, applyWarmth = true, ep = null } = {}) {
   if (!aggressor || !target || aggressor === target) return;
   bumpDim(target, aggressor, 'fear', 1.0 * strength, `intimidated by ${aggressor}`, ep);
-  bumpWarmth(target, aggressor, -0.8 * strength, `felt threatened by ${aggressor}`, ep);
+  if (applyWarmth) bumpWarmth(target, aggressor, -0.8 * strength, `felt threatened by ${aggressor}`, ep);
 }
 
 // A romantic spark: mutual attraction.
@@ -110,3 +110,47 @@ export function recordStrategicRespect(from, to, amount = 1, reason = 'respected
   bumpDim(from, to, 'strategicRespect', amount, reason, ep);
 }
 
+// Apply respect only for accomplishments the relevant observer could actually
+// see. Called once after Tribal, when the challenge, pitches and advantage
+// results are all known. Small values accumulate into a season-long read.
+export function applyObservedStrategicRespect(ep) {
+  if (!ep || ep._observedStrategicRespectApplied) return;
+  ep._observedStrategicRespectApplied = true;
+  const episodeNum = ep.num ?? curEp();
+  const cast = [...new Set((ep.tribalPlayers?.length ? ep.tribalPlayers : gs.activePlayers) || [])];
+
+  if (ep.immunityWinner) {
+    recordChallengeDominance(ep.immunityWinner, cast, { margin: 1, ep: episodeNum });
+  }
+  if (ep.immunityWinner && ep.sharedImmunity && ep.sharedImmunity !== ep.immunityWinner) {
+    // The base twist already adds warmth. Record the directional social debt
+    // without booking that warmth a second time.
+    recordProtection(ep.immunityWinner, ep.sharedImmunity,
+      { strength: 0.8, applyWarmth: false, ep: episodeNum });
+  }
+
+  (ep.idolPlays || []).forEach(play => {
+    if (play.failed || play.misplay || play.fake || (play.votesNegated || 0) <= 0) return;
+    const actor = play.player;
+    if (!actor) return;
+    if (play.playedFor && play.playedFor !== actor) {
+      // Ally-idol code already grants a large mutual bond boost. This adds the
+      // missing meaning: the saved player now owes the holder.
+      recordProtection(actor, play.playedFor,
+        { strength: Math.min(1.4, 0.7 + (play.votesNegated || 0) * 0.12), applyWarmth: false, ep: episodeNum });
+    }
+    const amount = Math.min(1.4, 0.45 + (play.votesNegated || 0) * 0.18);
+    cast.filter(observer => observer !== actor).forEach(observer =>
+      recordStrategicRespect(observer, actor, amount,
+        `${actor} played an idol correctly and erased ${play.votesNegated} vote${play.votesNegated === 1 ? '' : 's'}`, episodeNum));
+  });
+
+  (ep.votePitches || []).forEach(pitch => {
+    const coalition = [...new Set(pitch.confirmedCoalition || pitch.flipped || [])];
+    if (!pitch.success || !pitch.pitcher || coalition.length < 2) return;
+    const amount = Math.min(1.1, 0.35 + coalition.length * 0.1);
+    coalition.filter(observer => observer !== pitch.pitcher).forEach(observer =>
+      recordStrategicRespect(observer, pitch.pitcher, amount,
+        `${pitch.pitcher} assembled a credible ${coalition.length}-vote coalition`, episodeNum));
+  });
+}

@@ -10,6 +10,7 @@ import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, sim
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
+import { applyObservedStrategicRespect } from './relationship-events.js';
 import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge } from './knowledge-integration.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
@@ -6761,6 +6762,7 @@ function simulateJuryRoundtable(ep) {
   detectBetrayals(ep);
   applyPitchAllianceFallout(ep);
   applyPostTribalConsequences(ep);
+  applyObservedStrategicRespect(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
   checkSideDealBreaks(ep); checkConflictingDeals(ep); checkFalseInfoBlowup(ep);
   updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);

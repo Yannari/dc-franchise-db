@@ -6,6 +6,7 @@ import { allianceIdolRead, recordIdolIntel } from './advantage-intel.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
 import { believes, factId } from './knowledge.js';
+import { getIntentions } from './intentions.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 
@@ -1257,6 +1258,25 @@ export function beliefTargetMod(attackers, v) {
   return mod;
 }
 
+// Intentions → targeting: an attacker's persistent plan pulls v up (a long-term
+// target or a revenge grudge) or pushes v down (someone they're protecting — a
+// final-three partner, their shield, or their goat). Neutral when no plan exists
+// (pre-merge / no intentions), so it can't disturb the calibrated baseline.
+export function intentionTargetMod(attackers, v) {
+  let mod = 0;
+  for (const a of attackers || []) {
+    if (a === v) continue;
+    const p = getIntentions(a);
+    if (!p) continue;
+    if ((p.revenge || []).includes(v)) mod += 1.5;               // active grudge — want them gone
+    else if ((p.targets || []).includes(v)) mod += 0.8;          // long-term target
+    if ((p.finalThree || []).includes(v)) mod -= 1.3;            // don't cut my endgame partner
+    if (p.shield === v) mod -= 0.9;                              // keep the shield around
+    if (p.goat === v) mod -= 1.1;                                // definitely keep the goat
+  }
+  return mod;
+}
+
 // Knowledge → idol reactions: does anyone in the attacking group actually have
 // reason to think v holds an idol? True if it's public/revealed OR an attacker
 // personally believes it (and hasn't dismissed it as a false rumor). This
@@ -1348,7 +1368,8 @@ export function pickTarget(attackers, victims, challengeLabel) {
       // Knowledge-driven misvote: an attacker made to BELIEVE v is against them
       // (e.g. a planted lie they swallowed) nudges v up as a target.
       const _beliefMod = beliefTargetMod(attackers, v);
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + Math.random() * 0.5);
+      const _intentMod = intentionTargetMod(attackers, v);
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + _intentMod + Math.random() * 0.5);
     }
   });
 }

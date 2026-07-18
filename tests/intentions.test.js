@@ -6,6 +6,7 @@ import {
   formIntentions, getIntentions, ensureIntentions, evolveIntentions,
   describeIntentions, removeIntentionsFor, resetIntentions,
 } from '../js/intentions.js';
+import { intentionTargetMod } from '../js/alliances.js';
 
 // A trusts B>C>D>E; E/F are strategic threats A distrusts.
 function seed() {
@@ -98,6 +99,19 @@ describe('intentions: hints + cleanup', () => {
     const hints = describeIntentions('A');
     expect(hints.some(h => /final three with B & C/.test(h))).toBe(true);
     expect(hints.some(h => /target/.test(h))).toBe(true);
+  });
+
+  it('the plan drives targeting: grudges/targets pull up, endgame partners push down', () => {
+    const p = formIntentions('A', 6);            // finalThree [A,B,C], targets include E/F
+    expect(intentionTargetMod(['A'], 'X-nobody')).toBe(0);      // not on the radar
+    expect(intentionTargetMod(['A'], p.targets[0])).toBeGreaterThan(0);   // long-term target → up
+    expect(intentionTargetMod(['A'], 'B')).toBeLessThan(0);     // final-three partner → protected
+    getIntentions('A').revenge = ['E'];
+    expect(intentionTargetMod(['A'], 'E')).toBeGreaterThan(intentionTargetMod(['A'], p.targets[0]) - 0.001); // grudge weighs heaviest
+  });
+
+  it('has no effect when there is no plan (calibration-safe)', () => {
+    expect(intentionTargetMod(['A'], 'B')).toBe(0);
   });
 
   it('scrubs a departed contestant from everyone\'s plans', () => {

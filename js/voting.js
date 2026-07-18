@@ -9,6 +9,7 @@ import { reputationModifier } from './reputation.js';
 import { getRelationshipDimensions, pitchTrust, tacticalCooperation, targetProtection } from './relationships.js';
 import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
 import { believes, getFact, factId } from './knowledge.js';
+import { getIntentions } from './intentions.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -324,7 +325,10 @@ export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers,
       supporters.add(voter);
       const confidence = Math.min(1, supporters.size / Math.max(1, majority));
       const age = Math.max(0, currentEp - (memory.ep || currentEp));
-      const desirability = memoryScore + Math.max(0, -getPerceivedBond(voter, subject)) * 0.2 + confidence;
+      // A standing revenge goal in the voter's plan makes them steer a defection
+      // toward THAT person. Neutral when there's no plan (calibration-safe).
+      const _revengeBoost = getIntentions(voter)?.revenge?.includes(subject) ? 0.6 : 0;
+      const desirability = memoryScore + Math.max(0, -getPerceivedBond(voter, subject)) * 0.2 + confidence + _revengeBoost;
       return { subject, memory, memoryScore, supporters: supporters.size, confidence, age, desirability };
     })
     .filter(Boolean)

@@ -1,5 +1,6 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { gs, seasonConfig, players } from './core.js';
+import { describeIntentionsPlan } from './intentions.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
@@ -1255,6 +1256,22 @@ export function _textVotingPlans(ep, ln, sec) {
       ln(`  ${p}${tag ? ` [${tag}]` : ''}: "${reason}"`);
     });
   }
+}
+
+export function _textGamePlans(ep, ln, sec) {
+  const store = ep.intentionsSnapshot || gs.intentions || {};
+  const active = (ep.tribalPlayers || gs.activePlayers || []);
+  const named = active.filter(n => store[n]);
+  if (!named.length) return;
+  sec('WHERE THEIR HEADS ARE AT — GAME PLANS');
+  ln('Persistent intentions: what each contestant is playing toward. Plans carry over between episodes and only shift when something forces them to.');
+  named.forEach(n => {
+    const hints = describeIntentionsPlan(store[n], n);
+    if (!hints.length) return;
+    ln(`- ${n}: ${hints.join('; ')}.`);
+    const changes = (store[n].history || []).filter(h => h.ep === ep.num);
+    changes.forEach(h => ln(`    (this episode: ${h.reason})`));
+  });
 }
 
 export function _textInformationFlow(ep, ln, sec) {
@@ -3373,6 +3390,7 @@ export function generateSummaryText(ep) {
   _textTiedDestinies(ep, ln, sec);
   _textJuryElimination(ep, ln, sec); // mid-game jury-elimination twist replaces the tribal-council block
   _textVotingPlans(ep, ln, sec);
+  _textGamePlans(ep, ln, sec);
   _textInformationFlow(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);

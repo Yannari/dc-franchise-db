@@ -4,7 +4,7 @@ import { gs, setGs } from '../js/core.js';
 import { setRelationshipDimension } from '../js/relationships.js';
 import {
   formIntentions, getIntentions, ensureIntentions, evolveIntentions,
-  describeIntentions, removeIntentionsFor, resetIntentions,
+  describeIntentions, describeIntentionsPlan, removeIntentionsFor, resetIntentions,
 } from '../js/intentions.js';
 import { intentionTargetMod } from '../js/alliances.js';
 
@@ -112,6 +112,15 @@ describe('intentions: hints + cleanup', () => {
 
   it('has no effect when there is no plan (calibration-safe)', () => {
     expect(intentionTargetMod(['A'], 'B')).toBe(0);
+  });
+
+  it('renders hints from a snapshot plan object (for the text backlog)', () => {
+    const plan = { finalThree: ['A', 'B'], goat: 'C', revenge: ['E'], targets: [], backupAllies: [], juryPlan: [], betrayalConditions: [], advantagePlan: 'hold' };
+    const hints = describeIntentionsPlan(plan, 'A');
+    expect(hints.some(h => /final three with B/.test(h))).toBe(true);
+    expect(hints.some(h => /goat/.test(h) && /C/.test(h))).toBe(true);
+    expect(hints.some(h => /grudge against E/.test(h))).toBe(true);
+    expect(describeIntentionsPlan(null, 'A')).toEqual([]);
   });
 
   it('scrubs a departed contestant from everyone\'s plans', () => {

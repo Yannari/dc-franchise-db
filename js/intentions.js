@@ -145,8 +145,10 @@ export function tickIntentions(ep = null) {
 }
 
 // ── human-readable hints for the VP / text backlog ──
-export function describeIntentions(name) {
-  const p = store()[name];
+export function describeIntentions(name) { return describeIntentionsPlan(store()[name], name); }
+
+// Same hints but from a plan object directly (works on a per-episode snapshot).
+export function describeIntentionsPlan(p, name) {
   if (!p) return [];
   const out = [];
   const f3 = (p.finalThree || []).filter(n => n !== name);

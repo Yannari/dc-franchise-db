@@ -68,6 +68,19 @@ describe('intentions: evolution on believable triggers', () => {
     expect(p.history.some(h => h.field === 'revenge' && h.to === 'B')).toBe(true);
   });
 
+  it('never lets the final three contain duplicates across repeated evolutions', () => {
+    formIntentions('A', 6);
+    // eliminate members repeatedly, forcing multiple backup promotions
+    setGs({ ...gs, activePlayers: gs.activePlayers.filter(n => n !== 'B') });
+    evolveIntentions('A', 7);
+    setGs({ ...gs, activePlayers: gs.activePlayers.filter(n => n !== 'C') });
+    evolveIntentions('A', 8);
+    evolveIntentions('A', 9);
+    const f3 = getIntentions('A').finalThree;
+    expect(new Set(f3).size).toBe(f3.length);   // no duplicates
+    expect(f3[0]).toBe('A');
+  });
+
   it('tracks an advantage plan when they hold one', () => {
     formIntentions('A', 6);
     gs.advantages = [{ holder: 'A', type: 'idol', used: false }];

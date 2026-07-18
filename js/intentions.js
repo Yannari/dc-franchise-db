@@ -88,9 +88,9 @@ export function evolveIntentions(name, ep = null) {
   ['targets', 'revenge', 'juryPlan', 'backupAllies'].forEach(f => { plan[f] = (plan[f] || []).filter(alive); });
 
   // 2. finalThree: keep self + alive; a lost slot is a believable trigger to promote a backup
-  const f3 = (plan.finalThree || []).filter(n => n === name || alive(n));
+  const f3 = [...new Set((plan.finalThree || []).filter(n => n === name || alive(n)))];
   if (f3.length < 3) {
-    const fill = [...(plan.backupAllies || []), ...active().filter(n => n !== name)]
+    const fill = [...new Set([...(plan.backupAllies || []), ...active().filter(n => n !== name)])]
       .filter(n => alive(n) && !f3.includes(n))
       .sort((a, b) => trustOf(name, b) - trustOf(name, a));
     while (f3.length < 3 && fill.length) {
@@ -131,6 +131,17 @@ export function evolveIntentions(name, ep = null) {
   else if (!hasAdv && plan.advantagePlan && plan.advantagePlan !== 'gift') { logChange(plan, e, 'advantagePlan', plan.advantagePlan, null, 'no longer holds an advantage'); plan.advantagePlan = null; }
 
   return plan;
+}
+
+// once-per-episode entry point (called from episode.js after the vote settles).
+// Endgame planning begins at the merge; forms plans that don't exist yet,
+// evolves the rest, and clears anyone who's left.
+export function tickIntentions(ep = null) {
+  if (!gs.isMerged) return;
+  const e = ep?.num ?? curEp();
+  const act = active();
+  Object.keys(store()).forEach(n => { if (!act.includes(n)) removeIntentionsFor(n); });
+  act.forEach(n => { ensureIntentions(n, e); evolveIntentions(n, e); });
 }
 
 // ── human-readable hints for the VP / text backlog ──

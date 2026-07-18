@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
-import { ACCESS_PROFILES, availableLocations, buildCampAccessSchedule, findConversationAccess, locationIsOpen } from '../js/camp-access.js';
+import { ACCESS_PROFILES, availableLocations, buildCampAccessSchedule, campKnowledgeContacts, currentCampAccessEpisode, findConversationAccess, locationIsOpen } from '../js/camp-access.js';
 import { seedGame } from './helpers/setup.js';
 
 describe('venue-aware camp access', () => {
@@ -48,5 +48,76 @@ describe('venue-aware camp access', () => {
     const cargo = ACCESS_PROFILES['world-tour'].find(l => l.id === 'cargo-hold');
     expect(locationIsOpen(cargo, {}, {})).toBe(false);
     expect(locationIsOpen(cargo, {}, { allowRestricted:true })).toBe(true);
+  });
+
+  it('limits knowledge contacts to people who physically shared a window', () => {
+    gs._campAccessThisEp = { setting:'survival-island', phases:{
+      'post:merge': [{ id:'scramble', assignments:[
+        { locationId:'beach', players:['Alice', 'Bob'] },
+        { locationId:'jungle-trail', players:['Carol', 'Dana'] },
+      ] }],
+    } };
+    gs.namedAlliances = [{ name:'AB', active:true, members:['Alice', 'Bob', 'Carol'] }];
+    const contacts = campKnowledgeContacts('Alice', 'post');
+    expect(contacts.allies).toEqual(['Bob']);
+    expect(contacts.others).not.toContain('Carol');
+    expect(contacts.others).not.toContain('Dana');
+  });
+
+  it('never seats more players in a location than its capacity', () => {
+    seedGame(Array.from({ length: 14 }, (_, i) => `P${i + 1}`));
+    seasonConfig.setting = 'hosted-camp';
+    gs.isMerged = true;
+    const ep = { num: 5 };
+    buildCampAccessSchedule(ep, 'post', () => 0.4);
+    const caps = new Map(ACCESS_PROFILES['hosted-camp'].map(l => [l.id, l.capacity]));
+    Object.values(ep.campAccess.phases).forEach(windows => windows.forEach(w => w.assignments.forEach(a => {
+      expect(a.players.length).toBeLessThanOrEqual(caps.get(a.locationId));
+    })));
+  });
+
+  it('spreads a downtime window across multiple real locations', () => {
+    seedGame(Array.from({ length: 9 }, (_, i) => `P${i + 1}`));
+    seasonConfig.setting = 'survival-island';
+    gs.isMerged = true;
+    const ep = { num: 5 };
+    buildCampAccessSchedule(ep, 'post', () => 0.5);
+    const scramble = ep.campAccess.phases[`post:${gs.mergeName || 'merge'}`].find(w => w.privacyNeed === 'mixed');
+    expect(scramble.assignments.length).toBeGreaterThan(1);   // not everyone piled into one spot
+  });
+
+  it('falls back to reachable when the requested phase was never scheduled', () => {
+    seasonConfig.setting = 'survival-island';
+    gs.isMerged = true;
+    const ep = { num: 5 };
+    buildCampAccessSchedule(ep, 'pre', () => 0.3);            // only the pre schedule exists
+    const access = findConversationAccess(ep, 'Alice', 'Bob', { phase: 'post', privacy: 0.45 });
+    expect(access.possible).toBe(true);
+    expect(access.reason).toBe('no-phase-schedule');
+  });
+
+  it('prefers a genuine private spot over stepping aside in the open', () => {
+    seasonConfig.setting = 'survival-island';
+    gs.isMerged = true;
+    const ep = { num: 5, campAccess: { setting: 'survival-island', groups: {}, phases: {
+      'post:merge': [{ id: 'scramble', label: 'Scramble', privacyNeed: 'mixed', assignments: [
+        { locationId: 'campfire', players: ['Alice', 'Bob', 'Carol', 'Dana'] },  // public, low privacy
+        { locationId: 'jungle-trail', players: ['Alice', 'Bob'] },               // real private spot
+      ] }],
+    } } };
+    const access = findConversationAccess(ep, 'Alice', 'Bob', { phase: 'post', privacy: 0.45 });
+    expect(access.locationId).toBe('jungle-trail');
+    expect(access.pullAside).toBe(false);
+  });
+
+  it('ignores a schedule left over from an earlier episode', () => {
+    gs.episode = 8;
+    gs._campAccessThisEp = { setting: 'survival-island', epNum: 3, phases: {
+      'post:merge': [{ id: 'scramble', assignments: [{ locationId: 'beach', players: ['Alice', 'Bob'] }] }],
+    } };
+    expect(currentCampAccessEpisode()).toBeNull();
+    expect(campKnowledgeContacts('Alice', 'post').others).not.toContain('Bob');
+    gs._campAccessThisEp.epNum = 8;                            // stamped for the current episode
+    expect(currentCampAccessEpisode()).not.toBeNull();
   });
 });

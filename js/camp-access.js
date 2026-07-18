@@ -12,7 +12,7 @@ const freezeLocations = list => Object.freeze(list.map(location => Object.freeze
 // have different infrastructure and social routines.
 export const ACCESS_PROFILES = Object.freeze({
   'hosted-camp': freezeLocations([
-    { id:'communal-grounds', label:'Camp grounds', access:'everyday', privacy:0.10, overhear:0.85, capacity:20 },
+    { id:'communal-grounds', label:'Camp grounds', access:'everyday', privacy:0.10, overhear:0.85, capacity:20, public:true },
     { id:'cabins', label:'Cabins', access:'everyday', privacy:0.45, overhear:0.45, capacity:8 },
     { id:'mess-hall', label:'Mess hall', access:'everyday', privacy:0.10, overhear:0.90, capacity:20 },
     { id:'dock', label:'Dock', access:'everyday', privacy:0.40, overhear:0.45, capacity:6 },
@@ -21,7 +21,7 @@ export const ACCESS_PROFILES = Object.freeze({
   ]),
   'survival-island': freezeLocations([
     { id:'shelter', label:'Shelter', access:'everyday', privacy:0.25, overhear:0.70, capacity:12 },
-    { id:'campfire', label:'Campfire', access:'everyday', privacy:0.05, overhear:0.95, capacity:20 },
+    { id:'campfire', label:'Campfire', access:'everyday', privacy:0.05, overhear:0.95, capacity:20, public:true },
     { id:'beach', label:'Beach', access:'everyday', privacy:0.20, overhear:0.65, capacity:20 },
     { id:'shoreline', label:'Shoreline', access:'everyday', privacy:0.50, overhear:0.35, capacity:5 },
     { id:'water-source', label:'Water source', access:'everyday', privacy:0.55, overhear:0.40, capacity:4 },
@@ -32,7 +32,7 @@ export const ACCESS_PROFILES = Object.freeze({
   // Attractions exist but are not casual downtime spaces unless an episode
   // explicitly opens them.
   carnival: freezeLocations([
-    { id:'campsite', label:'Team campsite', access:'everyday', privacy:0.15, overhear:0.80, capacity:12 },
+    { id:'campsite', label:'Team campsite', access:'everyday', privacy:0.15, overhear:0.80, capacity:12, public:true },
     { id:'shelter', label:'Team shelter', access:'everyday', privacy:0.35, overhear:0.60, capacity:9 },
     { id:'forest-edge', label:'Forest near camp', access:'everyday', privacy:0.70, overhear:0.25, capacity:4 },
     { id:'rocky-beach', label:'Rocky beach', access:'everyday', privacy:0.55, overhear:0.35, capacity:5 },
@@ -48,12 +48,12 @@ export const ACCESS_PROFILES = Object.freeze({
   'film-lot': freezeLocations([
     { id:'trailers', label:'Contestant trailers', access:'everyday', privacy:0.50, overhear:0.40, capacity:8 },
     { id:'craft-services', label:'Craft services', access:'everyday', privacy:0.10, overhear:0.90, capacity:20 },
-    { id:'studio-backlot', label:'Studio backlot', access:'everyday', privacy:0.25, overhear:0.65, capacity:15 },
+    { id:'studio-backlot', label:'Studio backlot', access:'everyday', privacy:0.25, overhear:0.65, capacity:15, public:true },
     { id:'soundstage-corridor', label:'Soundstage corridor', access:'everyday', privacy:0.55, overhear:0.40, capacity:5 },
     { id:'prop-storage', label:'Prop storage', access:'restricted', privacy:0.80, overhear:0.15, capacity:4 },
   ]),
   'world-tour': freezeLocations([
-    { id:'economy', label:'Economy class', access:'everyday', privacy:0.05, overhear:0.95, capacity:20 },
+    { id:'economy', label:'Economy class', access:'everyday', privacy:0.05, overhear:0.95, capacity:20, public:true },
     { id:'aisle', label:'Plane aisle', access:'everyday', privacy:0.15, overhear:0.80, capacity:6 },
     { id:'galley', label:'Plane galley', access:'everyday', privacy:0.40, overhear:0.50, capacity:4 },
     { id:'cargo-hold', label:'Cargo hold', access:'restricted', privacy:0.80, overhear:0.20, capacity:5 },
@@ -86,10 +86,23 @@ function groupsForCurrentCamp() {
 }
 
 function distribute(members, locations, rng) {
-  const shuffled = [...members].sort(() => rng() - 0.5);
-  const buckets = locations.map(location => ({ locationId:location.id, players:[] }));
-  shuffled.forEach((player, index) => buckets[index % buckets.length].players.push(player));
-  return buckets.filter(bucket => bucket.players.length);
+  // Unbiased Fisher-Yates shuffle (sort(()=>rng()-0.5) is non-uniform).
+  const shuffled = [...members];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const buckets = locations.map(location => ({ locationId: location.id, capacity: location.capacity || 99, players: [] }));
+  // Fill respecting capacity — spread evenly (by absolute count so people fan out
+  // across the available spots instead of piling into the roomiest one), only
+  // consider buckets with room, and spill into the least-crowded one if all full.
+  shuffled.forEach(player => {
+    const withRoom = buckets.filter(b => b.players.length < b.capacity);
+    const bucket = (withRoom.length ? withRoom : buckets)
+      .sort((a, b) => a.players.length - b.players.length || (a.players.length / a.capacity) - (b.players.length / b.capacity))[0];
+    bucket.players.push(player);
+  });
+  return buckets.filter(b => b.players.length).map(({ locationId, players }) => ({ locationId, players }));
 }
 
 export function buildCampAccessSchedule(ep, phase = 'pre', rng = Math.random) {
@@ -97,8 +110,10 @@ export function buildCampAccessSchedule(ep, phase = 'pre', rng = Math.random) {
   ep.campAccess = ep.campAccess || { setting:setting(), groups:{}, phases:{} };
   ep.campAccess.setting = setting();
   const locations = availableLocations(ep);
-  const publicLocation = locations.find(l => ['communal-grounds','campfire','campsite','economy','studio-backlot'].includes(l.id)) || locations[0];
-  const smaller = locations.filter(l => l.id !== publicLocation?.id && l.capacity <= 6);
+  const publicLocation = locations.find(l => l.public) || locations[0];
+  // Genuinely private spots people can slip away to (excludes the communal
+  // location and low-privacy gathering spaces like a mess hall).
+  const privateSpots = locations.filter(l => l.id !== publicLocation?.id && (l.privacy ?? 0) >= 0.3);
   const windows = phase === 'post'
     ? [
       { id:'return', label:'Return from the challenge', privacyNeed:'public', duration:1 },
@@ -112,14 +127,26 @@ export function buildCampAccessSchedule(ep, phase = 'pre', rng = Math.random) {
 
   groupsForCurrentCamp().forEach(group => {
     const records = windows.map(window => {
-      const assignments = window.privacyNeed === 'public' || !smaller.length
-        ? [{ locationId:publicLocation.id, players:[...group.members] }]
-        : distribute(group.members, [publicLocation, ...smaller.slice(0, Math.max(1, Math.ceil(group.members.length / 3) - 1))], rng);
+      let assignments;
+      if (window.privacyNeed === 'public' || !privateSpots.length) {
+        // Everyone together at the communal spot (return from challenge, morning).
+        assignments = [{ locationId:publicLocation.id, players:[...group.members] }];
+      } else {
+        // Downtime/scramble: people fan out into small private clusters (~3 each)
+        // plus the open communal area, so conversations happen in varied spots.
+        const spots = Math.min(privateSpots.length, Math.max(2, Math.round(group.members.length / 3)));
+        assignments = distribute(group.members, [publicLocation, ...privateSpots.slice(0, spots)], rng);
+      }
       return { ...window, assignments };
     });
     ep.campAccess.groups[group.key] = { members:[...group.members] };
     ep.campAccess.phases[`${phase}:${group.key}`] = records;
   });
+  // Voting and knowledge run later in the episode without receiving `ep`
+  // directly. Keep a transient pointer to this episode's plain-data schedule,
+  // stamped with the episode number so consumers can detect a stale schedule.
+  ep.campAccess.epNum = ep.num;
+  gs._campAccessThisEp = ep.campAccess;
   return ep.campAccess;
 }
 
@@ -127,6 +154,13 @@ export function findConversationAccess(ep, requester, target, { phase = 'post', 
   if (!ep?.campAccess || !requester || !target || requester === target) return { possible:false, reason:'no-schedule' };
   const locationMap = new Map(ACCESS_PROFILES[ep.campAccess.setting || setting()].map(l => [l.id, l]));
   const entries = Object.entries(ep.campAccess.phases || {}).filter(([key]) => key.startsWith(`${phase}:`));
+  // No schedule was built for this phase at all — fall back to a permissive
+  // "camp is reachable" result rather than blocking every interaction. This is
+  // distinct from a built phase where the pair genuinely never shared a window.
+  if (!entries.length) {
+    return { possible:true, reason:'no-phase-schedule', phase, windowId:null, windowLabel:'Around camp',
+      locationId:null, location:'around camp', privacy, overhearRisk:0.5, nearby:[], pullAside:false };
+  }
   const options = [];
   entries.forEach(([, windows]) => windows.forEach(window => window.assignments.forEach(assignment => {
     if (!assignment.players.includes(requester) || !assignment.players.includes(target)) return;
@@ -134,13 +168,56 @@ export function findConversationAccess(ep, requester, target, { phase = 'post', 
     if (!location) return;
     const privacyScore = location.privacy ?? 0;
     const pullAside = allowPublicPullAside && privacyScore < privacy && assignment.players.length > 2;
-    options.push({ possible:true, phase, windowId:window.id, windowLabel:window.label,
-      locationId:location.id, location:location.label, privacy:pullAside ? Math.min(0.55, privacyScore + 0.25) : privacyScore,
+    options.push({ possible:true, phase, windowId:window.id, windowLabel:window.label, locationId:location.id,
+      location:pullAside ? `${location.label} (off to the side)` : location.label,
+      privacy:pullAside ? Math.min(0.55, privacyScore + 0.25) : privacyScore,
       overhearRisk:pullAside ? Math.min(1, location.overhear + 0.12) : location.overhear,
       nearby:assignment.players.filter(p => p !== requester && p !== target), pullAside });
   })));
   if (!options.length) return { possible:false, reason:'no-shared-window' };
-  return options.sort((a, b) => Math.abs(a.privacy - privacy) - Math.abs(b.privacy - privacy))[0];
+  // Pick the spot that satisfies the requested privacy with the least excess,
+  // preferring a genuine private location over stepping aside in the open.
+  return options.sort((a, b) => {
+    if (a.pullAside !== b.pullAside) return a.pullAside ? 1 : -1;   // real spot beats a public aside
+    const aOK = a.privacy >= privacy, bOK = b.privacy >= privacy;
+    if (aOK !== bOK) return aOK ? -1 : 1;                           // meets the need beats falling short
+    return aOK ? a.privacy - b.privacy : b.privacy - a.privacy;     // sufficient → least excess; else → most private
+  })[0];
+}
+
+export function currentCampAccessEpisode() {
+  const schedule = gs._campAccessThisEp;
+  if (!schedule) return null;
+  // Reject a schedule left over from an earlier episode. Real schedules are
+  // stamped with their episode number; an unstamped one (legacy/tests) is
+  // trusted. gs.episode is set to the current episode number partway through
+  // processing, so both it and it+1 count as "this episode".
+  if (schedule.epNum != null) {
+    const now = gs.episode || 0;
+    if (schedule.epNum !== now && schedule.epNum !== now + 1) return null;
+  }
+  return { campAccess:schedule };
+}
+
+// Contact adapter for knowledge.propagate(). Only people who shared at least
+// one physical window are available. Named allies remain preferred inside that
+// reachable set; they are not granted magical cross-location access.
+export function campKnowledgeContacts(knower, phase = 'post') {
+  const ep = currentCampAccessEpisode();
+  const reachable = new Set();
+  if (ep) {
+    Object.entries(ep.campAccess.phases || {}).filter(([key]) => key.startsWith(`${phase}:`))
+      .forEach(([, windows]) => windows.forEach(window => window.assignments.forEach(assignment => {
+        if (assignment.players.includes(knower)) assignment.players.forEach(p => { if (p !== knower) reachable.add(p); });
+      })));
+  }
+  const allies = new Set();
+  (gs.namedAlliances || []).forEach(alliance => {
+    if (alliance.active !== false && alliance.members?.includes(knower)) {
+      alliance.members.forEach(member => { if (reachable.has(member)) allies.add(member); });
+    }
+  });
+  return { allies:[...allies], others:[...reachable].filter(person => !allies.has(person)) };
 }
 
 export function attachCampAccessToEvents(ep, phase = 'pre') {

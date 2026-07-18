@@ -1257,6 +1257,20 @@ export function beliefTargetMod(attackers, v) {
   return mod;
 }
 
+// Knowledge → idol reactions: does anyone in the attacking group actually have
+// reason to think v holds an idol? True if it's public/revealed OR an attacker
+// personally believes it (and hasn't dismissed it as a false rumor). This
+// replaces omniscient idol awareness with information asymmetry — you only play
+// around an idol you know about.
+export function attackersSuspectIdol(attackers, v) {
+  if (gs.knownIdolHoldersThisEp?.has(v)) return true;   // publicly known / revealed this episode
+  return (attackers || []).some(a => {
+    if (a === v) return false;
+    const b = believes(a, factId('idol', v));
+    return b && b.valence !== 'false' && (b.effectiveConfidence || 0) >= 0.4;
+  });
+}
+
 export function pickTarget(attackers, victims, challengeLabel) {
   // Filter out immune players — can't target someone with immunity
   const _immune = new Set([
@@ -1306,7 +1320,7 @@ export function pickTarget(attackers, victims, challengeLabel) {
         // Proportional personality targeting
         personalityMod += _hubS.boldness * 0.03 * Math.max(vs.physical, vs.endurance) * 0.1; // bold targets physical threats
         personalityMod += _hubS.loyalty * 0.07 * Math.max(0, (5 - vs.loyalty) * 0.2); // loyal targets disloyal
-        if (gs.knownIdolHoldersThisEp?.has(v)) personalityMod += _hubS.intuition * 0.15; // intuitive targets known idol holders
+        if (attackersSuspectIdol(attackers, v)) personalityMod += _hubS.intuition * 0.15; // intuitive react to an idol they actually know/suspect
       }
       // Known Second Life Amulet holder — personality-driven reaction
       let _amuletMod = 0;

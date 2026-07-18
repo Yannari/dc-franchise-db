@@ -2,8 +2,10 @@
 // beliefTargetMod is the knowledge-driven nudge added inside pickTarget's score.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { seedGame } from './helpers/setup.js';
-import { beliefTargetMod } from '../js/alliances.js';
+import { beliefTargetMod, attackersSuspectIdol } from '../js/alliances.js';
 import { recordPlantedLie } from '../js/knowledge-integration.js';
+import { recordFact, learn } from '../js/knowledge.js';
+import { gs } from '../js/core.js';
 
 beforeEach(() => seedGame(['A', 'V', 'W'], { episode: 5, knowledge: {} }));
 
@@ -31,5 +33,32 @@ describe('decisions read beliefs: planted lie → targeting nudge', () => {
     const two = beliefTargetMod(['A', 'B'], 'V');
     const one = beliefTargetMod(['A'], 'V');
     expect(two).toBeGreaterThan(one);
+  });
+});
+
+describe('decisions read beliefs: idol reactions are belief-gated', () => {
+  it('no knowledge and not public → no suspicion (information asymmetry)', () => {
+    expect(attackersSuspectIdol(['A'], 'V')).toBe(false);
+  });
+
+  it('a publicly-revealed idol → everyone suspects', () => {
+    gs.knownIdolHoldersThisEp = new Set(['V']);
+    expect(attackersSuspectIdol(['A'], 'V')).toBe(true);
+    gs.knownIdolHoldersThisEp = null;
+  });
+
+  it('only an attacker who actually learned it suspects', () => {
+    recordFact({ type: 'idol', subject: 'V', truth: true, ep: 5 });
+    learn('A', 'idol:V', { sourceType: 'observed', ep: 5 });
+    expect(attackersSuspectIdol(['A'], 'V')).toBe(true);
+    expect(attackersSuspectIdol(['W'], 'V')).toBe(false);   // W never found out
+  });
+
+  it('a dismissed false rumor does not count as suspicion', () => {
+    recordFact({ type: 'idol', subject: 'V', truth: true, ep: 5 });
+    // force a "false"-valence belief (they concluded the rumor was bogus)
+    const f = recordFact({ type: 'idol', subject: 'V', truth: true, ep: 5 });
+    f.beliefs['A'] = { confidence: 0.7, source: 'rumor', sourceType: 'rumor', valence: 'false', learnedEp: 5, knowsOthersKnow: [] };
+    expect(attackersSuspectIdol(['A'], 'V')).toBe(false);
   });
 });

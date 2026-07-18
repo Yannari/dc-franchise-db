@@ -1086,7 +1086,11 @@ export function _textVotingPlans(ep, ln, sec) {
       const split = c.splitVoteAssignment === 'backup'
         ? ` Assigned to backup target ${c.splitBackupTarget} in a split against ${c.splitPrimaryTarget}.`
         : c.splitVoteAssignment === 'primary' ? ` Assigned to primary target ${c.splitPrimaryTarget} in an idol split.` : '';
-      const negotiation = negotiated ? ` Pre-negotiation forecast ${c.preNegotiationPredictedBallot}; joined ${c.pitchOrganizer}'s ${c.pitchCoalition?.length || 1}-vote coalition on ${c.predictedBallot}.` : '';
+      const negotiation = negotiated
+        ? (c.voter === c.pitchOrganizer
+          ? ` Pre-negotiation forecast ${c.preNegotiationPredictedBallot}; organized the ${c.pitchCoalition?.length || 1}-vote coalition on ${c.predictedBallot}.`
+          : ` Pre-negotiation forecast ${c.preNegotiationPredictedBallot}; joined ${c.pitchOrganizer}'s ${c.pitchCoalition?.length || 1}-vote coalition on ${c.predictedBallot}.`)
+        : '';
       ln(`  ${c.voter}: ${status}. Initial lean ${c.committedTarget}; forecast ballot ${c.predictedBallot}.${negotiation} Plan pull ${pull}%. Estimates ${c.believedVotes} early support; ${c.majority} needed. Forecasted proposal ballots: ${c.projectedVoters?.join(', ') || 'none'}.${split}`);
     });
     const leanCounts = {};
@@ -1176,7 +1180,9 @@ export function _textVotingPlans(ep, ln, sec) {
       let explanation;
       if (c.transitionPrevented) explanation = `considered ${c.transitionPrevented.rejectedTarget}, but stayed on ${c.transitionPrevented.heldTarget} because no credible coalition or disruption supported the switch`;
       else if (c.lateTrigger?.startsWith('live-coalition-')) explanation = `joined a simultaneous ${c.lateTrigger.split('-').at(-1)}-ballot coalition on ${c.actualBallot}`;
-      else if (c.lateTrigger === 'late-pitch') explanation = `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
+      else if (c.lateTrigger === 'late-pitch') explanation = c.pitchOrganizer && c.voter === c.pitchOrganizer
+        ? `organized the ${c.actualBallot} pitch${c.pitchCoalition?.filter(n => n !== c.voter).length ? ` with ${c.pitchCoalition.filter(n => n !== c.voter).join(', ')}` : ''}`
+        : `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
       else if (c.lateTrigger === 'late-consensus') explanation = `left an isolated one-vote plan and moved to the leading ${c.actualBallot} option when the room narrowed`;
       else if (c.lateTrigger === 'protect-ally') explanation = `voted ${c.actualBallot} to protect an ally`;
       else if (c.lateTrigger === 'personal-grudge') explanation = `put a personal grudge ahead of the plan and voted ${c.actualBallot}`;

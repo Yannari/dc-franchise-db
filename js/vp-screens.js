@@ -11638,7 +11638,9 @@ export function rpBuildVotes(ep) {
       const _triggerText = c => {
         if (c.transitionPrevented) return `considered ${c.transitionPrevented.rejectedTarget}, but no credible coalition or disruption justified leaving ${c.transitionPrevented.heldTarget}`;
         if (c.lateTrigger?.startsWith('live-coalition-')) return `joined a simultaneous ${c.lateTrigger.split('-').at(-1)}-vote coalition on ${c.actualBallot}`;
-        if (c.lateTrigger === 'late-pitch') return `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
+        if (c.lateTrigger === 'late-pitch') return c.pitchOrganizer && c.voter === c.pitchOrganizer
+          ? `organized the ${c.actualBallot} pitch${c.pitchCoalition?.filter(n => n !== c.voter).length ? ` with ${c.pitchCoalition.filter(n => n !== c.voter).join(', ')}` : ''}`
+          : `joined ${c.pitchOrganizer ? `${c.pitchOrganizer}'s ` : 'a '}${c.actualBallot} pitch${c.pitchCoalition?.length ? ` with ${c.pitchCoalition.join(', ')}` : ''}`;
         if (c.lateTrigger === 'late-consensus') return `left an isolated one-vote plan and moved to the leading ${c.actualBallot} option when the room narrowed`;
         if (c.lateTrigger === 'protect-ally') return `moved to ${c.actualBallot} to protect an ally`;
         if (c.lateTrigger === 'personal-grudge') return `put a personal grudge ahead of the plan and voted ${c.actualBallot}`;

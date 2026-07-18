@@ -1011,7 +1011,9 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       && !isImmune(_acceptedPitch.pitchTarget)) {
       target = _acceptedPitch.pitchTarget;
       const _confirmed = _acceptedPitch.confirmedCoalition.length;
-      reason = `[NEGOTIATED FLIP] joined ${_acceptedPitch.pitcher}'s pitch on ${target} after confirming ${_confirmed} vote${_confirmed === 1 ? '' : 's'}`;
+      reason = voter === _acceptedPitch.pitcher
+        ? `[NEGOTIATED FLIP] organized the move on ${target}, locking in ${_confirmed} vote${_confirmed === 1 ? '' : 's'}`
+        : `[NEGOTIATED FLIP] joined ${_acceptedPitch.pitcher}'s pitch on ${target} after confirming ${_confirmed} vote${_confirmed === 1 ? '' : 's'}`;
       isDefecting = target !== allianceTarget;
     }
 

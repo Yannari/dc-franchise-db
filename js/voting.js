@@ -8,6 +8,20 @@ import { buildObservedVoteCommitments, compareObservedCommitments, consolidateFr
 import { reputationModifier } from './reputation.js';
 import { pitchTrust, targetProtection } from './relationships.js';
 import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
+import { believes, getFact, factId } from './knowledge.js';
+
+// Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
+// is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
+// in it. Out-of-loop voters coordinate worse — more prone to going rogue.
+// Returns false whenever no target info exists, so the calibrated defection math
+// is unchanged in the absence of a knowledge model.
+export function voterOutOfLoop(voter, allianceTarget) {
+  if (!voter || !allianceTarget) return false;
+  const fact = getFact(factId('target', allianceTarget));
+  if (!fact || !Object.keys(fact.beliefs || {}).length) return false;   // nothing circulating → neutral
+  const b = believes(voter, fact.id);
+  return !(b && b.valence !== 'false');                                  // they lack a live belief in the plan
+}
 
 export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, claimedSupport = 1,
   eligibleVoters = 1, confirmedSupport = 1, strategic = 5, intuition = 5, emotional = 'comfortable', liar = false,
@@ -341,9 +355,13 @@ export function evaluateEmotionalDefection(voter, allianceTarget, tribalPlayers,
     : emotional === 'paranoid' ? 0.07
     : emotional === 'uneasy' ? 0.03
     : emotional === 'calculating' ? -0.04 : 0;
+  // Out-of-the-loop voters (the plan is circulating but they don't hold it)
+  // coordinate worse — a small bump to going rogue. Neutral when no plan info exists.
+  const outOfLoopMod = voterOutOfLoop(voter, allianceTarget) ? 0.04 : 0;
   const rawActChance = Math.max(0.02, Math.min(0.55,
     0.03 + volatility * 0.18 + Math.min(3, pick.memoryScore) * 0.04
     + (10 - s.loyalty) * 0.008 + s.boldness * 0.006 + emotionalMod + (pick.age <= 1 ? 0.04 : 0)
+    + outOfLoopMod
   ));
   // Barely having enough perceived support produces hesitation. A coalition well
   // above the voter's threshold converts emotional desire into action more often.

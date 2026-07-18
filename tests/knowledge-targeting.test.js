@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { seedGame } from './helpers/setup.js';
 import { beliefTargetMod, attackersSuspectIdol } from '../js/alliances.js';
+import { voterOutOfLoop } from '../js/voting.js';
 import { recordPlantedLie } from '../js/knowledge-integration.js';
 import { recordFact, learn } from '../js/knowledge.js';
 import { gs } from '../js/core.js';
@@ -60,5 +61,24 @@ describe('decisions read beliefs: idol reactions are belief-gated', () => {
     const f = recordFact({ type: 'idol', subject: 'V', truth: true, ep: 5 });
     f.beliefs['A'] = { confidence: 0.7, source: 'rumor', sourceType: 'rumor', valence: 'false', learnedEp: 5, knowsOthersKnow: [] };
     expect(attackersSuspectIdol(['A'], 'V')).toBe(false);
+  });
+});
+
+describe('alliance-trust: out-of-loop voters coordinate worse', () => {
+  it('is neutral when no plan info is circulating (calibration preserved)', () => {
+    expect(voterOutOfLoop('A', 'V')).toBe(false);
+  });
+
+  it('a voter who knows the plan is in the loop; one who does not is out', () => {
+    recordFact({ type: 'target', subject: 'V', truth: true, ep: 5 });
+    learn('A', 'target:V', { sourceType: 'observed', ep: 5 });   // A is in on it
+    expect(voterOutOfLoop('A', 'V')).toBe(false);
+    expect(voterOutOfLoop('W', 'V')).toBe(true);                 // W is out of the loop
+  });
+
+  it('a voter who dismissed the plan (false valence) is out of the loop', () => {
+    const f = recordFact({ type: 'target', subject: 'V', truth: true, ep: 5 });
+    f.beliefs['A'] = { confidence: 0.6, source: 'rumor', sourceType: 'rumor', valence: 'false', learnedEp: 5, knowsOthersKnow: [] };
+    expect(voterOutOfLoop('A', 'V')).toBe(true);
   });
 });

@@ -1,8 +1,9 @@
 // Bridges concrete game events into contestant-specific knowledge.
 import { gs } from './core.js';
+import { pronouns } from './players.js';
 import { factId, learn, propagate, recordFact } from './knowledge.js';
 import { pitchTrust } from './relationships.js';
-import { campKnowledgeContacts, currentCampAccessEpisode } from './camp-access.js';
+import { campKnowledgeContacts, currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
 const currentEp = () => (gs.episode || 0) + 1;
 
 export function recordVotingPlanKnowledge(tribalPlayers, alliances, ep = currentEp()) {
@@ -108,14 +109,36 @@ export function spreadKnowledgeForRound(tribalPlayers, ep = currentEp(), rng = M
     ...(hasSchedule ? { contacts:knower => campKnowledgeContacts(knower, 'post') } : {}) });
 }
 
+function knowledgeCardText(event) {
+  const { from, to, subject } = event;
+  const trusted = pitchTrust(to, from) >= 2;
+  const react = trusted
+    ? `${to} listens closely and asks questions, but makes no promise about Tribal.`
+    : `${to} takes it in, but the guarded response gives nothing away.`;
+  // The fact's subject can BE the person being told — that's a heads-up, not a
+  // vote pitch. And it can be the speaker themselves — that's confiding.
+  if (subject === to) {
+    return `${from} quietly warns ${to} that ${pronouns(to).posAdj} name is being floated for the next vote. ${react}`;
+  }
+  if (subject === from) {
+    return `${from} confides in ${to} that ${pronouns(from).posAdj} own name is in play. ${react}`;
+  }
+  return `${from} quietly brings ${subject}'s name to ${to}. ${react}`;
+}
+
 export function knowledgeCampCards(events) {
+  const accessEp = currentCampAccessEpisode();
   return (events || []).slice(0, 3).map(event => {
-    const trusted = pitchTrust(event.to, event.from) >= 2;
-    return { type: 'informationFlow', players: [event.from, event.to],
+    const card = { type: 'informationFlow', players: [event.from, event.to],
       badgeText: event.sourceType === 'rumor' ? 'WORD TRAVELS' : 'PRIVATE WORD',
       badgeClass: 'purple',
-      text: trusted
-        ? `${event.from} quietly brings ${event.subject}'s name to ${event.to}. ${event.to} listens closely and asks questions, but makes no promise about Tribal.`
-        : `${event.from} quietly brings ${event.subject}'s name to ${event.to}. ${event.to} hears the pitch, but the guarded response gives nothing away.` };
+      text: knowledgeCardText(event) };
+    // These cards are created during vote simulation, after the post-phase
+    // access annotation ran, so attach the real conversation location here too.
+    if (accessEp) {
+      const access = findConversationAccess(accessEp, event.from, event.to, { phase: 'post', privacy: 0.45 });
+      if (access.possible) card.access = access;
+    }
+    return card;
   });
 }

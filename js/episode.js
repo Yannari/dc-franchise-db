@@ -10,9 +10,10 @@ import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, sim
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
-import { applyObservedStrategicRespect } from './relationship-events.js';
+import { applyObservedStrategicRespect, applySocialStatusEffects } from './relationship-events.js';
 import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge, attachInfoFlowLocations, recordVoteArchitect, juryArchitectCredit, reconcileJuryPerception } from './knowledge-integration.js';
 import { getRelationshipDimensions } from './relationships.js';
+import { updateSocialStatus, captureSocialStatusBeforeVote } from './social-status.js';
 import { tickIntentions, prepareIntentionsForVote } from './intentions.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
@@ -394,6 +395,10 @@ export function updateSurvival(ep) {
       if (isProvider) {
         gs.currentProviders.push(name);
         gs.providerHistory[name] = (gs.providerHistory[name] || 0) + 1;
+        if (!gs.providerEpisodes) gs.providerEpisodes = {};
+        if (!gs.providerEpisodes[name]) gs.providerEpisodes[name] = [];
+        gs.providerEpisodes[name].push(epNum);
+        gs.providerEpisodes[name] = gs.providerEpisodes[name].filter(e => e >= epNum - 5);
         // Provider adds extra to tribe food
         gs.tribeFood[tribe.name] = Math.min(100, gs.tribeFood[tribe.name] + diff * 0.5);
         // Provider bond boost with tribemates
@@ -1159,6 +1164,10 @@ export function simulateEpisode() {
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
                 activeAtStart: [...gs.activePlayers],
                 exileDuelPlayerAtStart: gs.exileDuelPlayer || null };
+  captureSocialStatusBeforeVote(ep);
+  // Vote-plan evidence belongs to one round only. Special/no-vote episodes must
+  // not inherit last episode's competing plans and manufacture a swing-vote role.
+  gs._socialVotePlans = [];
 
   // ── HELPER: RI choice + duel for early-return episode paths ──
   function _handleRIForEliminated(eliminatedName) {
@@ -1665,7 +1674,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -2024,7 +2033,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -2155,7 +2164,7 @@ export function simulateEpisode() {
     }
     generateCampEvents(ep, 'post');
     _handleRIDuelPostElimination();
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -2715,7 +2724,7 @@ export function simulateEpisode() {
       // calling it again here would double-credit the winner (2 wins). Skip it.
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -2812,7 +2821,7 @@ export function simulateEpisode() {
     }
 
     _handleRIDuelPostElimination();
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -3103,7 +3112,7 @@ export function simulateEpisode() {
       if (ep.challengeThrows?.length) ep.challengeThrowData = ep.challengeThrows;
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -3583,7 +3592,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -3656,7 +3665,7 @@ export function simulateEpisode() {
       ep.alliances = [];
       ep.bondChanges = updateBonds([], null, []);
       detectBetrayals(ep);
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
@@ -3788,7 +3797,7 @@ export function simulateEpisode() {
     ep.alliances = [];
     ep.bondChanges = updateBonds([], null, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -3886,6 +3895,7 @@ export function simulateEpisode() {
     }
   }
   ep.alliances = alliances;
+  gs._socialVotePlans = alliances.map(a => ({ members:[...(a.members || [])], target:a.target, label:a.label }));
   // Save split vote plans for betrayal exemption + VP display
   ep.splitVotePlans = alliances.filter(a => a.splitTarget).map(a => ({
     alliance: a.label, primary: a.target, secondary: a.splitTarget,
@@ -4789,7 +4799,7 @@ export function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, _dtAlliances);
     detectBetrayals(ep); applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -5034,7 +5044,7 @@ export function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
     applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -5569,7 +5579,7 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
@@ -5792,7 +5802,7 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length - 1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stCOC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stCOC; ep.summaryText = stCOC;
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
     updateSurvival(ep);
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
@@ -6800,7 +6810,7 @@ function simulateJuryRoundtable(ep) {
   applyObservedStrategicRespect(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
   checkSideDealBreaks(ep); checkConflictingDeals(ep); checkFalseInfoBlowup(ep);
-  updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep);
+  updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
   updateStrategicReputations(ep);
   if (ep.reputationChanges?.length) {
     const _repKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || Object.keys(ep.campEvents || {})[0]);

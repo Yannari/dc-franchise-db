@@ -18,6 +18,7 @@ import { gs } from './core.js';
 import { addRelationshipDimension, getRelationshipDimensions } from './relationships.js';
 import { addBond } from './bonds.js';
 import { strategicReputation } from './reputation.js';
+import { hasSocialRole, perceivedRoles, sharesSocialCamp } from './social-status.js';
 
 // decay lives in relationships.js (leaf) so bonds.js/recoverBonds can call it
 // without a circular import; re-exported here for API cohesion.
@@ -188,4 +189,53 @@ export function applyObservedStrategicRespect(ep) {
   });
 
   applyDemonstratedReputationRespect(ep, cast, episodeNum);
+}
+
+// #8: camp hierarchy → relationships, through explicit events with a recorded
+// cause (never raw automatic deltas). Reads the FROZEN prior-episode status, so
+// it can't feed back into the status it's derived from. Deltas are small and
+// decay — status colours relationships, it doesn't dictate them.
+export function applySocialStatusEffects(ep) {
+  if (!ep || ep._socialStatusEffectsApplied) return;
+  ep._socialStatusEffectsApplied = true;
+  const epNum = ep.num ?? curEp();
+  const active = [...new Set(gs.activePlayers || [])];
+  if (active.length < 3) return;
+  const alliances = (gs.namedAlliances || []).filter(a => a.active !== false && Array.isArray(a.members));
+
+  active.forEach(subject => {
+    // Provider: the camp leaned on their work — a small standing debt.
+    if (hasSocialRole(subject, 'provider') && (gs.currentProviders || []).includes(subject)) {
+      active.forEach(o => { if (o !== subject && sharesSocialCamp(o, subject)) bumpDim(o, subject, 'obligation', 0.08, `leaned on ${subject}'s camp work`, epNum); });
+    }
+    // Information broker: those who can SEE it control the flow grow wary.
+    const brokerActed = (ep.knowledgeEvents || []).some(e => e.from === subject);
+    if (hasSocialRole(subject, 'information-broker') && brokerActed) {
+      active.forEach(o => {
+        if (o !== subject && sharesSocialCamp(o, subject) && perceivedRoles(o, subject).includes('information-broker'))
+          bumpDim(o, subject, 'fear', 0.14, `watched ${subject} control the flow of information`, epNum);
+      });
+    }
+    // Outsider: resentment builds toward the blocs running the game without them.
+    if (hasSocialRole(subject, 'outsider')) {
+      const excluding = (ep.alliances || []).filter(a => a.target === subject && !a.members?.includes(subject));
+      const blamed = new Set();
+      excluding.forEach(a => {
+        const leader = [...(a.members || [])].filter(m => sharesSocialCamp(subject, m))
+          .sort((x,y) => (getRelationshipDimensions(subject, x).trust || 0) - (getRelationshipDimensions(subject, y).trust || 0))[0];
+        if (leader && !blamed.has(leader)) {
+          blamed.add(leader);
+          bumpDim(subject, leader, 'resentment', 0.12, `felt ${leader}'s group keep them outside the plan`, epNum);
+        }
+      });
+    }
+    // Trusted lieutenant: executing a leader's plan earns them respect for it.
+    if (hasSocialRole(subject, 'trusted-lieutenant')) {
+      const bloc = (ep.alliances || []).find(a => a.members?.includes(subject) && a.target);
+      const leader = bloc?.members.filter(m => m !== subject)
+        .sort((x, y) => (getRelationshipDimensions(subject, y).trust || 0) - (getRelationshipDimensions(subject, x).trust || 0))[0];
+      const followed = ep.votingLog?.some(v => v.voter === subject && v.voted === bloc?.target);
+      if (leader && followed) bumpDim(leader, subject, 'strategicRespect', 0.16, `${subject} carried out the shared plan cleanly`, epNum);
+    }
+  });
 }

@@ -76,6 +76,7 @@ import { rpBuildPTTitleCard, rpBuildPTScavenge, rpBuildPTLandRace, rpBuildPTSeaC
 import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDesignStudio, rpBuildPRRunway, rpBuildPRBerserk, rpBuildPRResults, prRevealNext, prRevealAll, resetPRState } from './chal/project-runaway.js';
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 import { buildViewerVoteCommitments } from './vote-planning.js';
+import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2536,6 +2537,18 @@ export function rpBuildDebug(ep) {
       <div style="font-size:9px;color:#6e7681;margin-top:4px">Hover a column name for its exact meaning. Game respect is earned by visible accomplishments; it is not the same as liking someone.</div>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">${_selW}</div>`;
+    // #8: the focus player's camp role(s) — merged in from the old Camp Status tab.
+    const _statusW = ep.socialStatusSnapshot || snap.socialStatus || {};
+    const _perW = ep.socialPerceptionSnapshot || snap.socialPerception || {};
+    const _fActiveW = Object.entries(_statusW[_focusW] || {}).filter(([, v]) => v?.active).sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
+    if (_fActiveW.length) {
+      html += `<div style="margin-bottom:12px;padding:8px 10px;background:rgba(87,166,232,0.06);border:1px solid rgba(87,166,232,0.18);border-radius:8px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#57a6e8">CAMP ROLE — ${_focusW}</div>
+        <div style="margin-top:4px;font-size:10px;color:#8b949e;line-height:1.6">${_fActiveW.map(([role, v]) => {
+          const seen = _rosterW.filter(o => o !== _focusW && Number(_perW[o]?.[_focusW]?.[role] || 0) >= 0.4);
+          return `<div><span style="color:#e6edf3;font-weight:700">${roleLabel(role)}</span> <span style="color:#6e7681">(${(v.score || 0).toFixed(1)})</span> — ${seen.length ? `seen by ${seen.join(', ')}` : 'unseen'}</div>`;
+        }).join('')}</div></div>`;
+    }
     const _othersW = _rosterW.filter(n => n !== _focusW).map(n => {
       const out = _dgetW(_focusW, n), back = _dgetW(n, _focusW);
       return { n, out, back, i: _intW(out) + _intW(back) };
@@ -6709,6 +6722,57 @@ export function _buildPostTwistBlocks(ep) {
 }
 
 // ── Screen: Relationships / Alliance State ──
+const _ROLE_CHIP = {
+  'social-center': '#57a6e8', 'information-broker': '#d2a8ff', 'provider': '#3fb950', 'challenge-leader': '#f0883e',
+  'outsider': '#8b949e', 'shield': '#e3b341', 'goat': '#a371f7', 'swing-vote': '#f778ba', 'trusted-lieutenant': '#2ea043',
+  'irritating-but-useful': '#db6d28', 'power-couple': '#ff7b9c',
+};
+// #8 surfacing: a compact CAMP HIERARCHY web — portraits ranked by standing,
+// public role chips (solid) and hidden reads (dashed), plus this-episode movement.
+export function rpBuildCampHierarchy(ep) {
+  const snap = ep.socialStatusSnapshot || ep.gsSnapshot?.socialStatus;
+  if (!snap) return '';
+  const perception = ep.socialPerceptionSnapshot || ep.gsSnapshot?.socialPerception || {};
+  const active = (ep.tribalPlayers?.length ? ep.tribalPlayers : (ep.gsSnapshot?.activePlayers || gs.activePlayers)) || Object.keys(snap);
+  const prev = (gs.episodeHistory || []).slice().reverse().find(h => h !== ep && h.socialStatusSnapshot)?.socialStatusSnapshot;
+  const moveMap = {}; standingMovement(snap, prev).forEach(m => { moveMap[m.name] = m; });
+  // Rank as an actual hierarchy: power/visibility floats to the top, outsiders sink.
+  const RANK_W = { 'social-center': 1.3, 'challenge-leader': 0.9, 'provider': 0.7, 'information-broker': 0.7,
+    'power-couple': 0.6, 'swing-vote': 0.5, 'trusted-lieutenant': 0.4, 'shield': 0.5,
+    'irritating-but-useful': 0.2, 'goat': -0.3, 'outsider': -1.1 };
+  const rows = active.filter(n => snap[n]).map(n => {
+    const st = standingFromSnapshot(snap[n]);
+    // Hidden standings are reads, not omniscient facts. The audience-facing VP
+    // only shows one when at least one other attending player had actually
+    // recognized it by this point. Exact objective roles remain available in Debug.
+    st.hidden = st.hidden.filter(role => active.some(observer => observer !== n
+      && Number(perception?.[observer]?.[n]?.[role] || 0) >= 0.4));
+    return { name: n, st, gained: new Set(moveMap[n]?.gained || []),
+      rank: Object.entries(st.scores).reduce((a, [r, sc]) => a + sc * (RANK_W[r] || 0), 0) };
+  }).filter(r => r.st.public.length || r.st.hidden.length).sort((a, b) => b.rank - a.rank);
+  if (!rows.length) return '';
+  const chip = (r, isNew, dashed) => `<span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin:2px 3px 0 0;${dashed
+    ? `color:${_ROLE_CHIP[r] || '#8b949e'};border:1px dashed ${_ROLE_CHIP[r] || '#8b949e'}`
+    : `color:#0d1117;background:${_ROLE_CHIP[r] || '#8b949e'}`}${isNew ? ';box-shadow:0 0 0 2px rgba(63,185,80,.6)' : ''}">${roleLabel(r)}${isNew ? ' ·new' : ''}</span>`;
+  let html = `<div style="margin-top:18px;background:linear-gradient(180deg,#12161d,#0f1319);border:1px solid #30363d;border-radius:12px;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid #30363d;background:radial-gradient(120% 150% at 0 0,rgba(87,166,232,.10),transparent 62%)">
+      <div style="font-size:12px;font-weight:900;letter-spacing:2px;color:#e6edf3">CAMP HIERARCHY</div>
+      <div style="font-size:9px;color:#6e7681;letter-spacing:.5px">top of the pecking order down · dashed = a hidden read only some players make · <span style="color:#3fb950">·new</span> = gained this episode</div>
+    </div><div style="padding:4px 12px">`;
+  rows.forEach((r, i) => {
+    const lost = (moveMap[r.name]?.lost || []);
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid #1c222b">
+      <div style="font-size:11px;color:#6e7681;width:16px;text-align:right">${i + 1}</div>
+      ${rpPortrait(r.name, 'sm')}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;color:#e6edf3;font-weight:700">${r.name}</div>
+        <div>${r.st.public.map(x => chip(x, r.gained.has(x), false)).join('')}${r.st.hidden.map(x => chip(x, r.gained.has(x), true)).join('')}${lost.length ? `<span style="color:#8b949e;font-size:9px;margin-left:4px">▼ ${lost.map(roleLabel).join(', ')}</span>` : ''}</div>
+      </div>
+    </div>`;
+  });
+  return html + `</div></div>`;
+}
+
 export function rpBuildRelationships(ep) {
   const alliances = (ep.alliancesPreTribal || ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
   const active = ep.gsSnapshot?.activePlayers || gs.activePlayers;
@@ -6733,7 +6797,10 @@ export function rpBuildRelationships(ep) {
 
   // Nothing worth showing → return null
   const hasAdvantages = advList.some(a => active.includes(a.holder));
-  if (!alliances.length && !hasAdvantages && !bondChanges.length && !betrayalsThisEp.length) return null;
+  if (!alliances.length && !hasAdvantages && !bondChanges.length && !betrayalsThisEp.length) {
+    const _ch = rpBuildCampHierarchy(ep);
+    return _ch ? `<div class="rp-page tod-golden"><div class="rp-eyebrow">Episode ${ep.num}</div><div class="rp-title">Camp Overview</div>${_ch}</div>` : null;
+  }
 
   let html = `<div class="rp-page tod-golden">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
@@ -6897,6 +6964,7 @@ export function rpBuildRelationships(ep) {
       </div>`;
   }
 
+  html += rpBuildCampHierarchy(ep); // #8: camp hierarchy web — INSIDE .rp-page so it stays centered
   html += `</div>`;
   return html;
 }

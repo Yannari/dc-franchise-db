@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { seedGame } from './helpers/setup.js';
 import { getAdaptation, updateAdaptationFromEpisode, lieChanceModifier, verificationModifier, idolSuspicionModifier } from '../js/adaptation.js';
 import { evaluatePitchResponse } from '../js/voting.js';
+import { _textAdaptation } from '../js/text-backlog.js';
 
 describe('persistent adaptation and learning', () => {
   beforeEach(() => seedGame([
@@ -67,5 +68,21 @@ describe('persistent adaptation and learning', () => {
     getAdaptation('A').confidence=-0.5;
     for(let ep=10;ep<18;ep++) updateAdaptationFromEpisode({ num:ep, eliminated:'C', votes:{C:2}, votingLog:[{voter:'A',voted:'C'},{voter:'B',voted:'C'}] });
     expect(getAdaptation('A').confidence).toBeGreaterThan(-0.1);
+  });
+
+  it('renders learning and the room as story material instead of internal-stat prose', () => {
+    const lines=[];
+    _textAdaptation({ tribalPlayers:['A','B','C'], voteCommitmentDiagnostics:[
+      {voter:'A',predictedBallot:'C'},{voter:'B',predictedBallot:'C'},{voter:'C',predictedBallot:'A'}
+    ], eliminated:'C', votePitches:[{pitcher:'B',pitchTarget:'A',responses:[{reason:'protecting-target'}]}], adaptationEvents:[
+      {player:'A',type:'blindside'},{player:'B',type:'credible-pitch'}
+    ] }, text=>lines.push(text), title=>lines.push(`=== ${title} ===`));
+    const copy=lines.join('\n');
+    expect(copy).toContain('THE ROOM — AND WHAT LINGERS');
+    expect(copy).toMatch(/C's exit|final parchment|decisive movement/);
+    expect(copy).toContain('A');
+    expect(copy).toMatch(/resistance lived|clearer map|fingerprints/);
+    expect(copy).not.toContain('gradual behavioral adjustments');
+    expect(copy).not.toContain('contestant-specific baseline');
   });
 });

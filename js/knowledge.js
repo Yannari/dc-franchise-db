@@ -168,6 +168,10 @@ function spreadRate(knower) {
   let r = 0.15 + (st.social || 5) / 40 + (st.boldness || 5) / 60;
   if (['social-butterfly', 'schemer', 'mastermind', 'chaos-agent'].includes(arch)) r += 0.1;
   if (['loyal-soldier', 'goat'].includes(arch)) r -= 0.05;
+  // Brokers do not magically know more, but once the role is established they
+  // route information a little more often. This remains bounded and still needs
+  // a real contact, a fact they know, and the normal trust/accuracy checks.
+  if (gs.socialStatus?.[knower]?.['information-broker']?.active) r += 0.08;
   const emo = gs.playerStates?.[knower]?.emotional;
   if (emo === 'paranoid' || emo === 'desperate') r += 0.12;     // stress makes people leak
   return clamp01(r);

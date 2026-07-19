@@ -121,6 +121,14 @@ export function patchEpisodeHistory(ep) {
     h.intentionsSnapshot = JSON.parse(JSON.stringify(ep.intentionsPreVoteSnapshot));
   if (!h.intentionsPostVoteSnapshot && ep.intentionsPostVoteSnapshot)
     h.intentionsPostVoteSnapshot = JSON.parse(JSON.stringify(ep.intentionsPostVoteSnapshot));
+  if (!h.socialStatusSnapshot && ep.socialStatusSnapshot)
+    h.socialStatusSnapshot = JSON.parse(JSON.stringify(ep.socialStatusSnapshot));
+  if (!h.socialPerceptionSnapshot && ep.socialPerceptionSnapshot)
+    h.socialPerceptionSnapshot = JSON.parse(JSON.stringify(ep.socialPerceptionSnapshot));
+  if (!h.socialStatusPostVoteSnapshot && ep.socialStatusPostVoteSnapshot)
+    h.socialStatusPostVoteSnapshot = JSON.parse(JSON.stringify(ep.socialStatusPostVoteSnapshot));
+  if (!h.socialPerceptionPostVoteSnapshot && ep.socialPerceptionPostVoteSnapshot)
+    h.socialPerceptionPostVoteSnapshot = JSON.parse(JSON.stringify(ep.socialPerceptionPostVoteSnapshot));
   // Challenge-specific data
   if (!h.oceansHeist && ep.oceansHeist) h.oceansHeist = ep.oceansHeist;
   if (!h.fullMetalDrama && ep.fullMetalDrama) h.fullMetalDrama = ep.fullMetalDrama;
@@ -509,6 +517,8 @@ export function snapshotGameState() {
     ) : {},
     sideDeals: (gs.sideDeals || []).map(d => ({ ...d, players: [...d.players] })),
     bonds: gs.bonds ? { ...gs.bonds } : {},
+    socialStatus: gs.socialStatus ? JSON.parse(JSON.stringify(gs.socialStatus)) : {},
+    socialPerception: gs.socialPerception ? JSON.parse(JSON.stringify(gs.socialPerception)) : {},
     moles: (gs.moles || []).map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] })),
     exileDuelPlayer: gs.exileDuelPlayer || null,
     chalRecord: gs.chalRecord ? Object.fromEntries(
@@ -612,6 +622,7 @@ export function initGameState() {
     currentProviders: [],          // provider names this episode
     currentSlackers: [],           // slacker names this episode
     providerHistory: {},           // { [name]: episodeCount } — how many eps as provider
+    providerEpisodes: {},          // { [name]: [episode numbers] } — rolling provider evidence
     collapseWarning: {},           // { [name]: epNum } — collapse event fired
     medevacs: [],                  // medevac records for season stats
     lastAftermathEp: 0,            // last episode that had an Aftermath

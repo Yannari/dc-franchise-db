@@ -11,6 +11,7 @@ import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRoun
 import { believes, getFact, factId } from './knowledge.js';
 import { getIntentions, intentionBallotMod, intendsToProtect, betrayalConditionActive, assessBallotAgainstPlan } from './intentions.js';
 import { currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
+import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { pitchInitiationModifier, approachBudgetModifier, lieChanceModifier, verificationModifier, learnedCaution } from './adaptation.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
@@ -861,14 +862,25 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       const _flipped = [];
       const _responses = [];
       const _leaks = [];
-      const _approachBudget = Math.max(2, Math.min(5, 1 + Math.round((pS.social + pS.strategic) / 6) + approachBudgetModifier(pitcher)));
+      // #8: social centers and brokers work the room wider (one extra approach).
+      const _statusReach = (hasSocialRole(pitcher, 'social-center') || hasSocialRole(pitcher, 'information-broker')) ? 1 : 0;
+      const _approachBudget = Math.max(2, Math.min(6, 1 + Math.round((pS.social + pS.strategic) / 6) + approachBudgetModifier(pitcher) + _statusReach));
       const _accessEp = currentCampAccessEpisode();
+      // #8: swing votes get prioritized by organizers — approached first (a nudge,
+      // never a guarantee; it sits on top of the real bond ordering).
+      const _sortKey = v => {
+        const read = perceivedRoles(pitcher, v);
+        return getPerceivedBond(v, pitcher)
+          + (read.includes('swing-vote') ? 1.5 : 0)
+          + (read.includes('social-center') ? 0.35 : 0)
+          - (read.includes('outsider') ? 0.25 : 0);
+      };
       const _recipients = _pitchCandidates.filter(v => v !== pitcher && v !== pitchTarget && !lostVotes.includes(v))
         .map(voter => ({ voter, access:_accessEp
           ? findConversationAccess(_accessEp, pitcher, voter, { phase:'post', privacy:0.45 })
           : { possible:true, reason:'legacy-no-schedule', nearby:[], overhearRisk:0.5 } }))
         .filter(entry => entry.access.possible)
-        .sort((a,b) => getPerceivedBond(b.voter, pitcher) - getPerceivedBond(a.voter, pitcher))
+        .sort((a,b) => _sortKey(b.voter) - _sortKey(a.voter))
         .slice(0, _approachBudget);
       const _overheardBy = new Map();
       _recipients.forEach(({ voter, access }) => {

@@ -7,6 +7,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { recordDetectedBetrayalKnowledge } from './knowledge-integration.js';
 import { believes, factId } from './knowledge.js';
 import { getIntentions, prepareIntentionsForVote } from './intentions.js';
+import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
@@ -1300,6 +1301,24 @@ export function attackersSuspectIdol(attackers, v) {
   });
 }
 
+// #8: the CONSENSUS read of a target's camp role (distinct from any one player's
+// intention) nudges collective targeting — bounded, always below numbers/threat.
+// A shield is kept by the bloc that shields them but a target for rivals; a goat
+// is kept for the endgame; an outsider is the low-risk boot; visible threats draw
+// heat. These are small pulls, never guarantees.
+export function socialStatusTargetMod(attackers, v) {
+  if (!gs.socialStatus?.[v]) return 0;
+  const seenBy = role => (attackers || []).some(a => perceivedRoles(a, v).includes(role));
+  let mod = 0;
+  if (seenBy('outsider')) mod += 0.4;                                   // easy, low-risk boot
+  if (seenBy('challenge-leader') || seenBy('social-center')) mod += 0.35; // visible threat
+  if (seenBy('power-couple')) mod += 0.25;
+  if (hasSocialRole(v, 'shield')) mod += attackers.some(a => getIntentions(a)?.shield === v) ? -0.6 : (seenBy('shield') ? 0.35 : 0);
+  if (hasSocialRole(v, 'goat')) mod += attackers.some(a => getIntentions(a)?.goat === v) ? -0.7 : (seenBy('goat') ? -0.15 : 0);
+  if (seenBy('irritating-but-useful')) mod -= 0.2;
+  return mod;
+}
+
 export function pickTarget(attackers, victims, challengeLabel) {
   // Filter out immune players — can't target someone with immunity
   const _immune = new Set([
@@ -1378,7 +1397,8 @@ export function pickTarget(attackers, victims, challengeLabel) {
       // (e.g. a planted lie they swallowed) nudges v up as a target.
       const _beliefMod = beliefTargetMod(attackers, v);
       const _intentMod = intentionTargetMod(attackers, v);
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + _intentMod + Math.random() * 0.5);
+      const _statusMod = socialStatusTargetMod(attackers, v);
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + _beliefMod + _intentMod + _statusMod + Math.random() * 0.5);
     }
   });
 }

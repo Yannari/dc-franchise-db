@@ -2,6 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { describeIntentionsPlan } from './intentions.js';
 import { buildInfoFlowLog } from './knowledge-integration.js';
+import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
@@ -1309,11 +1310,84 @@ export function _textCampAccess(ep, ln, sec) {
 
 export function _textAdaptation(ep, ln, sec) {
   const events = ep.adaptationEvents || [];
-  if (!events.length) return;
-  sec('LESSONS THEY TAKE FORWARD');
-  ln('These are gradual behavioral adjustments caused by experience. They affect future judgment and approach—not base personality, loyalty, or intelligence—and one event is rarely enough to transform someone. Confidence and negotiation also recover toward a contestant-specific baseline, so temporary failure does not create a permanent spiral.');
-  events.slice(0, 8).forEach(event => ln(`- ${event.text}`));
-  if (events.length > 8) ln(`- ${events.length - 8} smaller adjustments are retained in Debug → Learning.`);
+  const reads = ep.voteCommitmentDiagnostics || [];
+  const targetFacts = Object.values(ep.knowledgeSnapshot || {}).filter(f => f?.type === 'target');
+  if (!events.length && !reads.length && !targetFacts.length) return;
+
+  const choose = (key, options) => {
+    const hash = [...`${ep.num || 0}|${key}`].reduce((n,ch) => ((n*31)+ch.charCodeAt(0))>>>0,0);
+    return options[hash % options.length];
+  };
+  const naturalList = names => {
+    const unique = [...new Set(names.filter(Boolean))];
+    if (unique.length <= 2) return unique.join(' and ');
+    if (unique.length === 3) return `${unique[0]}, ${unique[1]} and ${unique[2]}`;
+    return `${unique[0]}, ${unique[1]} and ${unique.length-2} others`;
+  };
+  const pitchFor = player => (ep.votePitches || []).find(p => p.pitcher === player);
+
+  sec('THE ROOM — AND WHAT LINGERS');
+  const forecast = reads.reduce((out, read) => {
+    if (read.predictedBallot) out[read.predictedBallot] = (out[read.predictedBallot] || 0) + 1;
+    return out;
+  }, {});
+  const ordered = Object.entries(forecast).sort((a,b) => b[1] - a[1]);
+  const eligible = reads.filter(r => !r.voteSacrificed).length || (ep.tribalPlayers || []).length;
+  if (ordered.length >= 4) {
+    const [[lead,leadN],[second,secondN],[third,thirdN]] = ordered;
+    ln(choose(`fractured-${lead}`, [
+      `${lead}'s name travelled furthest through camp, but it never swallowed the night: ${leadN} apparent ballots sat beside ${secondN} on ${second} and ${thirdN} on ${third}. The vote felt less like a march than several conversations colliding at once.`,
+      `There was no single current before Tribal. ${lead} drew the strongest pull at ${leadN}, ${second} remained alive at ${secondN}, and ${third} still had ${thirdN}. Everyone could see movement; almost nobody could see the whole shape.`,
+      `By sundown, the vote had splintered into competing versions of reality. ${lead} appeared to lead ${second} ${leadN}–${secondN}, with ${third} still absorbing ${thirdN}; enough structure to inspire confidence, and enough noise to make that confidence dangerous.`
+    ]));
+  } else if (ordered.length) {
+    const [lead, count] = ordered[0];
+    const majority = Math.floor(Math.max(eligible,1)/2)+1;
+    ln(count >= majority ? choose(`majority-${lead}`, [
+      `${lead}'s name had become the camp's common language by the time torches were collected. The danger was visible; the private reasons holding those ballots together were not.`,
+      `Most roads appeared to end at ${lead}. That kind of momentum can make a vote feel finished early—even while individual promises remain softer than the total suggests.`,
+      `The room leaned unmistakably toward ${lead}, with ${count} apparent ballots. What looked like unity from a distance was still made of separate motives up close.`
+    ]) : choose(`plurality-${lead}`, [
+      `${lead} stood at the center of the loudest plan, but only ${count} apparent ballots gave it weight. One quiet decision still had room to turn the entire night.`,
+      `${lead}'s name was ahead without being secure. At ${count} possible votes, the plan had momentum—not ownership of the room.`,
+      `The clearest path pointed toward ${lead}, though the margin never stopped looking fragile. This was the kind of vote where silence could matter more than the loudest pitch.`
+    ]));
+  }
+
+  const exposed = targetFacts.filter(f => {
+    const belief = f.beliefs?.[f.subject];
+    return belief && belief.valence !== 'false' && (belief.confidence ?? 0) >= .45;
+  }).map(f => f.subject);
+  if (exposed.length) { const named=naturalList(exposed), one=[...new Set(exposed)].length===1; ln(choose(`exposed-${named}`, [
+    `${named} had heard enough to know the danger was real. What they did not possess was the more valuable piece: which reassurances were genuine and which were buying time.`,
+    `The target talk reached ${named} before Tribal. That warning opened the door to counterplay, but it came without a reliable map of the votes behind it.`,
+    `${named} did not walk into Tribal completely blind—${one?'their name had':'their names had'} made it back to them. Awareness offered a chance to move, not certainty about where to move.`
+  ])); }
+
+  const byType = type => events.filter(e => e.type === type);
+  const misreads = byType('blindside').map(e => e.player);
+  if (misreads.length) { const named=naturalList(misreads), boot=ep.eliminated, verb=[...new Set(misreads)].length===1?'has':'have'; ln(choose(`misread-${named}`, [
+    `${boot ? `${boot}'s exit` : 'The result'} exposed how many people had been reading a different room. ${named} now ${verb} a reason to treat the next confident vote count as a claim to test, not a fact to inherit.`,
+    `For ${named}, the lesson arrived with the final parchment: the conversations they trusted were not the ones deciding the night. Next time, reassurance alone may not be enough.`,
+    `${named} came away with the uncomfortable knowledge that the decisive movement happened beyond their view. That does not make them wiser overnight, but it gives them a sharper reason to verify the next plan.`
+  ])); }
+  byType('pitch-worked').slice(0,2).forEach(e => { const pitch=pitchFor(e.player), target=pitch?.pitchTarget||'their target'; ln(choose(`worked-${e.player}-${target}`, [
+    `${e.player} put ${target}'s name into motion and felt at least one conversation bend. Having found a door that opens, they are more likely to knock again.`,
+    `The ${target} pitch gave ${e.player} proof that their voice could move somebody else's ballot. That kind of small success tends to make the next approach come easier.`,
+    `${e.player}'s case against ${target} found real purchase. The vote may have belonged to a larger room, but the negotiation gave them confidence they can help shape the next one.`
+  ])); });
+  byType('credible-pitch').slice(0,2).forEach(e => { const pitch=pitchFor(e.player), target=pitch?.pitchTarget||'another name', responses=pitch?.responses||[]; const protectedTarget=responses.some(r=>r.reason==='protecting-target'), strongPlan=responses.some(r=>r.reason==='strong-plan-not-replaced'); const obstacle=protectedTarget?'loyalty around the target':strongPlan?'a plan that was already difficult to dislodge':'hesitation that never became commitment'; ln(choose(`credible-${e.player}-${target}`, [
+    `${e.player} tested the room on ${target} and found ${obstacle}. The pitch died, but not uselessly: it revealed where resistance lived.`,
+    `The case ${e.player} made against ${target} earned attention without earning control. What remains is a clearer map of who listened and who was never truly available.`,
+    `${target} never became ${e.player}'s move, yet the conversations were serious enough to leave fingerprints. ${e.player} now knows which part of the room might be workable later.`
+  ])); });
+  byType('pitch-stalled').slice(0,2).forEach(e => { const pitch=pitchFor(e.player), target=pitch?.pitchTarget||'their target'; ln(choose(`stalled-${e.player}-${target}`, [
+    `${e.player} kept pressing ${target}, but the idea met closed body language and shorter answers. The next attempt may be narrower—and aimed at people who have not already chosen a door.`,
+    `Nothing around the ${target} pitch loosened for ${e.player}. Repeated resistance like that does not erase ambition; it teaches a player where not to spend it.`,
+    `${e.player}'s push against ${target} never found oxygen. If that pattern continues, expect fewer approaches and more care in choosing the first listener.`
+  ])); });
+  byType('lie-caught').slice(0,2).forEach(e => ln(`${e.player}'s numbers did not survive scrutiny. Future claims may be more careful now that someone proved willing to check the math.`));
+  byType('split-success').slice(0,2).forEach(e => ln(`${e.player} saw an idol split work under pressure. That memory gives them another option to recognize when an idol threat surfaces again.`));
 }
 
 export function _textInformationFlow(ep, ln, sec) {
@@ -1374,17 +1448,42 @@ export function _textInformationFlow(ep, ln, sec) {
       ln(`- ${f.subject}'s move against ${f.object} is known by ${list(knowers(f))}. Anyone absent from this list has not directly identified the betrayal.`));
   }
 
-  const targetReach = targets.map(t => t.names.length);
-  if (targets.length >= 3 && Math.max(...targetReach, 0) < Math.max(2, activeNames.size * 0.75)) {
-    ln('READ OF THE ROOM: Information is fragmented. Several names are circulating, but the tribe does not share one complete picture.');
-  } else if (targets.length) {
-    ln('READ OF THE ROOM: One or more target names are broadly known, but awareness still does not guarantee a unified vote.');
-  }
+  // The audience-facing interpretation of this awareness is combined with
+  // post-vote learning in THE ROOM — AND WHAT LINGERS. This section remains
+  // the exact information ledger rather than repeating the narrative summary.
 }
 
 // Text retranscription of the Read of the Room "WHAT SHIFTED" band: directional
 // relationship movement this episode with the recorded cause. Mirrors the VP
 // (rpBuildReadOfRoom) — same snapshot, same grouping, same load threshold.
+// #8: the camp's social hierarchy as story context for the writer — public roles
+// each contestant holds, the game's hidden strategic reads, and what shifted.
+export function _textSocialStatus(ep, ln, sec) {
+  const snap = ep.socialStatusSnapshot;
+  if (!snap) return;
+  const active = new Set(gs.activePlayers || Object.keys(snap));
+  const rows = Object.keys(snap).filter(n => active.has(n)).map(n => ({ n, s: standingFromSnapshot(snap[n]) }))
+    .filter(r => r.s.public.length || r.s.hidden.length);
+  if (!rows.length) return;
+  sec('CAMP HIERARCHY — SOCIAL STANDING');
+  ln('The role(s) each contestant occupies right now, read from observable behavior. "Hidden reads" are strategic roles only some players recognize — the game\'s view, not public consensus.');
+  rows.forEach(({ n, s }) => {
+    const pub = s.public.map(roleLabel).join(', ');
+    const hid = s.hidden.map(roleLabel).join(', ');
+    ln(`- ${n}: ${pub || '—'}${hid ? ` · hidden reads: ${hid}` : ''}`);
+  });
+  const prev = (gs.episodeHistory || []).slice().reverse().find(h => h !== ep && h.socialStatusSnapshot)?.socialStatusSnapshot;
+  const moves = standingMovement(snap, prev).filter(m => active.has(m.name));
+  if (prev && moves.length) {
+    ln('MOVEMENT THIS EPISODE:');
+    moves.forEach(m => {
+      const g = m.gained.map(roleLabel).join(', ');
+      const l = m.lost.map(roleLabel).join(', ');
+      ln(`- ${m.name}${g ? ` rose to ${g}` : ''}${g && l ? ';' : ''}${l ? ` no longer ${l}` : ''}.`);
+    });
+  }
+}
+
 export function _textRelationshipShifts(ep, ln, sec) {
   const causeStore = ep.relationshipCausesPreVoteSnapshot || {};
   const roster = new Set(ep.tribalPlayers || gs.activePlayers || []);
@@ -3518,6 +3617,7 @@ export function generateSummaryText(ep) {
   _textGamePlans(ep, ln, sec);
   _textInformationFlow(ep, ln, sec);
   _textRelationshipShifts(ep, ln, sec);
+  _textSocialStatus(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);
   _textAdaptation(ep, ln, sec);

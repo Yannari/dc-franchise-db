@@ -1458,6 +1458,31 @@ export function _textInformationFlow(ep, ln, sec) {
 // (rpBuildReadOfRoom) — same snapshot, same grouping, same load threshold.
 // #8: the camp's social hierarchy as story context for the writer — public roles
 // each contestant holds, the game's hidden strategic reads, and what shifted.
+// The episode's strategic arc in ONE chronological list (the same beats the VP
+// Strategy Timeline shows) — camp → challenge → scramble → shifts → Tribal.
+export function _textStrategyTimeline(ep, ln, sec) {
+  const strip = s => String(s || '').replace(/<[^>]+>/g, '').trim();
+  const beats = [];
+  const camp = ep.campEvents || {};
+  const collect = (block, phase, key) => (Array.isArray(block) ? block : (block?.[key] || []))
+    .filter(e => e && e.text && (e.badgeText || (e.players || []).length >= 2 || e.access)).slice(0, 6)
+    .forEach(e => beats.push({ phase, text: strip(e.text), loc: e.access?.location, badge: e.badgeText }));
+  Object.values(camp).forEach(b => collect(b, 'CAMP LIFE', 'pre'));
+  if (ep.immunityWinner) beats.push({ phase: 'CHALLENGE', text: `${ep.immunityWinner} won immunity — safe tonight.`, badge: 'IMMUNITY' });
+  Object.values(camp).forEach(b => collect(b, 'SCRAMBLE', 'post'));
+  (ep.votePitches || []).filter(p => p.pitcher && p.pitchTarget).slice(0, 5).forEach(p =>
+    beats.push({ phase: 'SCRAMBLE', text: `${p.pitcher} works a vote on ${p.pitchTarget}${p.confirmedCoalition?.length ? ` (${p.confirmedCoalition.length} on board: ${p.confirmedCoalition.join(', ')})` : ''}.`, badge: 'PITCH' }));
+  const shiftStore = ep.relationshipCausesPreVoteSnapshot || {};
+  const shifts = [];
+  Object.entries(shiftStore).forEach(([k, cs]) => (cs || []).filter(c => c.ep === ep.num && c.reason && Math.abs(c.delta) >= 1).forEach(c => { const [a, b] = k.split('→'); shifts.push({ a, b, ...c, m: Math.abs(c.delta) }); }));
+  shifts.sort((x, y) => y.m - x.m).slice(0, 3).forEach(s => beats.push({ phase: 'SHIFTS', text: `${s.a} → ${s.b}: ${s.reason}.`, badge: 'SHIFT' }));
+  if (beats.length < 2) return;
+  sec('STRATEGY TIMELINE — HOW THE EPISODE UNFOLDED');
+  ln('The strategic arc in order, camp to the edge of Tribal (the vote itself is transcribed in the tribal-council section).');
+  let last = '';
+  beats.forEach(b => { if (b.phase !== last) { ln(`[${b.phase}]`); last = b.phase; } ln(`- ${b.badge ? `(${b.badge}) ` : ''}${b.text}${b.loc ? ` — at ${b.loc}` : ''}`); });
+}
+
 export function _textSocialStatus(ep, ln, sec) {
   const snap = ep.socialStatusSnapshot;
   if (!snap) return;
@@ -3617,6 +3642,7 @@ export function generateSummaryText(ep) {
   _textGamePlans(ep, ln, sec);
   _textInformationFlow(ep, ln, sec);
   _textRelationshipShifts(ep, ln, sec);
+  _textStrategyTimeline(ep, ln, sec);
   _textSocialStatus(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);

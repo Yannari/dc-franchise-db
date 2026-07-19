@@ -77,6 +77,8 @@ import { rpBuildPRTitleCard, rpBuildPRRoles, rpBuildPRCreatureHunt, rpBuildPRDes
 import { rpBuildAuctionTitle, rpBuildAuctionFloor, rpBuildAuctionResults } from './auction-vp.js';
 import { buildViewerVoteCommitments } from './vote-planning.js';
 import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
+import { sgChip, sgBadge, sgSection, sgArrow, sgEmpty, sgDot, sgBar, sgLegend, sgCard, sgPortraitChip, DIM_TONE, DIM_LABEL } from './vp-kit.js';
+import { describeIntentionsPlan } from './intentions.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
@@ -2543,10 +2545,10 @@ export function rpBuildDebug(ep) {
     const _fActiveW = Object.entries(_statusW[_focusW] || {}).filter(([, v]) => v?.active).sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
     if (_fActiveW.length) {
       html += `<div style="margin-bottom:12px;padding:8px 10px;background:rgba(87,166,232,0.06);border:1px solid rgba(87,166,232,0.18);border-radius:8px">
-        <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#57a6e8">CAMP ROLE — ${_focusW}</div>
-        <div style="margin-top:4px;font-size:10px;color:#8b949e;line-height:1.6">${_fActiveW.map(([role, v]) => {
+        <div class="sg-section" style="--c:var(--sg-trust);margin:0 0 6px">CAMP ROLE — ${_focusW}</div>
+        <div style="font-size:10px;color:var(--sg-dim);line-height:1.9">${_fActiveW.map(([role, v]) => {
           const seen = _rosterW.filter(o => o !== _focusW && Number(_perW[o]?.[_focusW]?.[role] || 0) >= 0.4);
-          return `<div><span style="color:#e6edf3;font-weight:700">${roleLabel(role)}</span> <span style="color:#6e7681">(${(v.score || 0).toFixed(1)})</span> — ${seen.length ? `seen by ${seen.join(', ')}` : 'unseen'}</div>`;
+          return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${sgChip(roleLabel(role), { color: _ROLE_CHIP[role], dashed: _HIDDEN_ROLE_SET.has(role), tip: _ROLE_MEANING[role] })}<span style="color:var(--sg-ghost)">score ${(v.score || 0).toFixed(1)} · ${seen.length ? `seen by ${seen.join(', ')}` : 'unseen'}</span></div>`;
         }).join('')}</div></div>`;
     }
     const _othersW = _rosterW.filter(n => n !== _focusW).map(n => {
@@ -6727,20 +6729,35 @@ const _ROLE_CHIP = {
   'outsider': '#8b949e', 'shield': '#e3b341', 'goat': '#a371f7', 'swing-vote': '#f778ba', 'trusted-lieutenant': '#2ea043',
   'irritating-but-useful': '#db6d28', 'power-couple': '#ff7b9c',
 };
+const _HIDDEN_ROLE_SET = new Set(['information-broker', 'shield', 'goat', 'swing-vote', 'trusted-lieutenant']);
+// One-line plain meaning per role — powers the tooltips + the panel dictionary.
+const _ROLE_MEANING = {
+  'social-center': 'Liked and connected — the person conversations flow through.',
+  'information-broker': "Holds what others don't know and is the source they cite — controls the flow of information.",
+  'provider': 'Does the camp work (food, fire, shelter) everyone leans on.',
+  'challenge-leader': 'Winning or leading challenges lately — a competition threat.',
+  'outsider': 'No alliance cover, few bonds, a name that keeps coming up — vulnerable.',
+  'shield': 'A visible threat someone keeps around on purpose to draw fire off themselves.',
+  'goat': "Someone rivals want to sit beside at the end because they'd lose the jury vote.",
+  'swing-vote': 'Can credibly go with either side — the vote that decides.',
+  'trusted-lieutenant': "A reliable #2 who carries out a leader's plans.",
+  'irritating-but-useful': 'Resented by the camp but too useful (strategy, challenge, or camp) to cut yet.',
+  'power-couple': 'Half of a tight pair whose combined reach makes them dangerous.',
+};
 // #8 surfacing: a compact CAMP HIERARCHY web — portraits ranked by standing,
 // public role chips (solid) and hidden reads (dashed), plus this-episode movement.
 export function rpBuildCampHierarchy(ep) {
   const snap = ep.socialStatusSnapshot || ep.gsSnapshot?.socialStatus;
   if (!snap) return '';
   const perception = ep.socialPerceptionSnapshot || ep.gsSnapshot?.socialPerception || {};
-  const active = (ep.tribalPlayers?.length ? ep.tribalPlayers : (ep.gsSnapshot?.activePlayers || gs.activePlayers)) || Object.keys(snap);
+  const active = (ep.gsSnapshot?.activePlayers || gs.activePlayers || Object.keys(snap)); // ALL players, every tribe
   const prev = (gs.episodeHistory || []).slice().reverse().find(h => h !== ep && h.socialStatusSnapshot)?.socialStatusSnapshot;
   const moveMap = {}; standingMovement(snap, prev).forEach(m => { moveMap[m.name] = m; });
   // Rank as an actual hierarchy: power/visibility floats to the top, outsiders sink.
   const RANK_W = { 'social-center': 1.3, 'challenge-leader': 0.9, 'provider': 0.7, 'information-broker': 0.7,
     'power-couple': 0.6, 'swing-vote': 0.5, 'trusted-lieutenant': 0.4, 'shield': 0.5,
     'irritating-but-useful': 0.2, 'goat': -0.3, 'outsider': -1.1 };
-  const rows = active.filter(n => snap[n]).map(n => {
+  const mapped = active.filter(n => snap[n]).map(n => {
     const st = standingFromSnapshot(snap[n]);
     // Hidden standings are reads, not omniscient facts. The audience-facing VP
     // only shows one when at least one other attending player had actually
@@ -6749,28 +6766,340 @@ export function rpBuildCampHierarchy(ep) {
       && Number(perception?.[observer]?.[n]?.[role] || 0) >= 0.4));
     return { name: n, st, gained: new Set(moveMap[n]?.gained || []),
       rank: Object.entries(st.scores).reduce((a, [r, sc]) => a + sc * (RANK_W[r] || 0), 0) };
-  }).filter(r => r.st.public.length || r.st.hidden.length).sort((a, b) => b.rank - a.rank);
-  if (!rows.length) return '';
-  const chip = (r, isNew, dashed) => `<span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin:2px 3px 0 0;${dashed
-    ? `color:${_ROLE_CHIP[r] || '#8b949e'};border:1px dashed ${_ROLE_CHIP[r] || '#8b949e'}`
-    : `color:#0d1117;background:${_ROLE_CHIP[r] || '#8b949e'}`}${isNew ? ';box-shadow:0 0 0 2px rgba(63,185,80,.6)' : ''}">${roleLabel(r)}${isNew ? ' ·new' : ''}</span>`;
-  let html = `<div style="margin-top:18px;background:linear-gradient(180deg,#12161d,#0f1319);border:1px solid #30363d;border-radius:12px;overflow:hidden">
-    <div style="padding:12px 16px;border-bottom:1px solid #30363d;background:radial-gradient(120% 150% at 0 0,rgba(87,166,232,.10),transparent 62%)">
-      <div style="font-size:12px;font-weight:900;letter-spacing:2px;color:#e6edf3">CAMP HIERARCHY</div>
-      <div style="font-size:9px;color:#6e7681;letter-spacing:.5px">top of the pecking order down · dashed = a hidden read only some players make · <span style="color:#3fb950">·new</span> = gained this episode</div>
-    </div><div style="padding:4px 12px">`;
+  });
+  const rows = mapped.filter(r => r.st.public.length || r.st.hidden.length).sort((a, b) => b.rank - a.rank);
+  const roleless = mapped.filter(r => !r.st.public.length && !r.st.hidden.length).map(r => r.name);
+  if (!rows.length && !roleless.length) return '';
+  // Uses the shared strategy grammar (sg-* chips): solid = public role, dashed =
+  // a hidden read, green ring = gained this episode, hover = meaning.
+  const legend = sgLegend('What do these roles mean?',
+    Object.keys(_ROLE_MEANING).map(r => ({ color: _ROLE_CHIP[r], label: roleLabel(r), tag: _HIDDEN_ROLE_SET.has(r) ? 'hidden read' : '', note: _ROLE_MEANING[r] })));
+  let body = `<div style="padding:2px 12px 4px">`;
   rows.forEach((r, i) => {
     const lost = (moveMap[r.name]?.lost || []);
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid #1c222b">
-      <div style="font-size:11px;color:#6e7681;width:16px;text-align:right">${i + 1}</div>
+    const chips = [
+      ...r.st.public.map(x => sgChip(roleLabel(x), { color: _ROLE_CHIP[x], isNew: r.gained.has(x), tip: _ROLE_MEANING[x] })),
+      ...r.st.hidden.map(x => sgChip(roleLabel(x), { color: _ROLE_CHIP[x], dashed: true, isNew: r.gained.has(x), tip: _ROLE_MEANING[x] })),
+      lost.length ? `<span style="color:var(--sg-dim);font-size:9px;margin-left:4px">▼ ${lost.map(roleLabel).join(', ')}</span>` : '',
+    ].join('');
+    body += `<div style="display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid var(--sg-line,#262c36)">
+      <div style="font-size:11px;color:var(--sg-ghost);width:16px;text-align:right">${i + 1}</div>
       ${rpPortrait(r.name, 'sm')}
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;color:#e6edf3;font-weight:700">${r.name}</div>
-        <div>${r.st.public.map(x => chip(x, r.gained.has(x), false)).join('')}${r.st.hidden.map(x => chip(x, r.gained.has(x), true)).join('')}${lost.length ? `<span style="color:#8b949e;font-size:9px;margin-left:4px">▼ ${lost.map(roleLabel).join(', ')}</span>` : ''}</div>
+        <div style="font-size:12px;color:var(--sg-ink);font-weight:700">${r.name}</div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center">${chips}</div>
       </div>
     </div>`;
   });
-  return html + `</div></div>`;
+  if (roleless.length) body += `<div style="padding:9px 10px 6px;font-size:10px;color:var(--sg-ghost);border-top:1px solid #262c36">Still finding their footing — no defined role yet: <span style="color:var(--sg-dim)">${roleless.join(', ')}</span></div>`;
+  body += `</div>`;
+  return `<div style="margin-top:18px">${sgCard('CAMP HIERARCHY', 'most powerful at the top · solid = public role · dashed = a hidden read · green ring = gained this episode · hover a chip', legend + body, { tone: 'trust' })}</div>`;
+}
+
+// ── Episode STRATEGY TIMELINE: the chronological arc — camp → challenge →
+//    scramble → Tribal — with portraits, locations and an expandable-detail per
+//    beat. The ballot is LOCKED (concealed) before the vote screen. ──
+const _strip = s => String(s || '').replace(/<[^>]+>/g, '').trim();
+function _beatTone(txt, badge) {
+  const t = (String(badge || '') + ' ' + String(txt || '')).toLowerCase();
+  if (/betray|blindsid|lie|exposed|sabotage|steal|target|turn|threat|slam|backstab|rat|caught/.test(t)) return 'danger';
+  if (/pitch|scheme|private word|word travels|plan|flip|coalition|deal|manipulat|read|goat/.test(t)) return 'strategy';
+  if (/bond|comfort|ally|loyal|trust|protect|support|friend|amends|apolog/.test(t)) return 'trust';
+  if (/immun|won|safe/.test(t)) return 'safe';
+  return 'neutral';
+}
+export function rpBuildStrategyTimeline(ep) {
+  const beats = [];
+  const add = (order, phase, tone, portraits, text, location, badge, detail) => { if (text) beats.push({ order, phase, tone, portraits: portraits.filter(Boolean).slice(0, 2), text, location, badge, detail }); };
+  const camp = ep.campEvents || {};
+  const collect = (block, order, phase) => (Array.isArray(block) ? block : (block?.[phase === 'CAMP LIFE' ? 'pre' : 'post'] || []))
+    .filter(e => e && e.text && (e.badgeText || (e.players || []).length >= 2 || e.access))
+    .slice(0, 6)
+    .forEach(e => add(order, phase, _beatTone(e.text, e.badgeText), e.players || [], _strip(e.text), e.access?.location, e.badgeText || e.type));
+  Object.values(camp).forEach(block => collect(block, 1, 'CAMP LIFE'));
+  if (ep.immunityWinner) add(2, 'CHALLENGE', 'safe', [ep.immunityWinner], `${ep.immunityWinner} won immunity — untouchable tonight.`, null, 'IMMUNITY');
+  Object.values(camp).forEach(block => collect(block, 3, 'SCRAMBLE'));
+  (ep.votePitches || []).filter(p => p.pitcher && p.pitchTarget).slice(0, 5).forEach(p =>
+    add(3, 'SCRAMBLE', 'strategy', [p.pitcher, p.pitchTarget], `${p.pitcher} works a vote on ${p.pitchTarget}${p.confirmedCoalition?.length ? ` — ${p.confirmedCoalition.length} on board` : ''}.`, null, 'PITCH',
+      p.confirmedCoalition?.length ? `Coalition: ${p.confirmedCoalition.join(', ')}.` : ''));
+  // meaningful relationship shifts this episode (top few)
+  const shiftStore = ep.relationshipCausesPreVoteSnapshot || {};
+  const shifts = [];
+  Object.entries(shiftStore).forEach(([k, cs]) => (cs || []).filter(c => c.ep === ep.num && c.reason && Math.abs(c.delta) >= 1).forEach(c => { const [a, b] = k.split('→'); shifts.push({ a, b, ...c, m: Math.abs(c.delta) }); }));
+  shifts.sort((x, y) => y.m - x.m).slice(0, 3).forEach(s => add(4, 'SHIFTS', s.delta > 0 ? 'trust' : 'danger', [s.a, s.b], `${s.a} → ${s.b}: ${s.reason}.`, null, 'SHIFT'));
+  add(5, 'TRIBAL', 'danger', [], '__BALLOT__', null, 'THE VOTE');
+  if (beats.length <= 1) return '';
+  beats.sort((a, b) => a.order - b.order);
+  const toneVar = { danger: 'var(--sg-danger)', strategy: 'var(--sg-strategy)', trust: 'var(--sg-trust)', safe: 'var(--sg-safe)', neutral: 'var(--sg-neutral)' };
+  let last = '';
+  let body = `<div style="padding:6px 14px 12px">`;
+  beats.forEach((b, i) => {
+    const phaseHead = b.phase !== last ? `<div class="sg-section" style="--c:${toneVar[b.tone]};margin:${i ? '12px' : '2px'} 0 6px">${b.phase}</div>` : '';
+    last = b.phase;
+    const locked = b.text === '__BALLOT__';
+    const portraits = b.portraits.map(p => `<span style="margin-left:-6px">${rpPortrait(p, 'xs')}</span>`).join('');
+    const line = i < beats.length - 1;
+    const content = locked
+      ? `<div style="font-size:11px;color:var(--sg-ink)">🔒 The vote is cast at Tribal Council. <span style="color:var(--sg-ghost)">See the Votes screen for the reveal.</span></div>`
+      : `<div style="font-size:11px;color:var(--sg-ink);line-height:1.45">${b.text}</div>
+         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:3px">${b.badge ? sgChip(b.badge, { tone: b.tone, outline: true }) : ''}${b.location ? `<span style="font-size:9px;color:var(--sg-ghost)">📍 ${b.location}</span>` : ''}</div>
+         ${b.detail ? `<div style="font-size:9px;color:var(--sg-ghost);margin-top:2px">↳ ${b.detail}</div>` : ''}`;
+    body += `<div style="display:flex;gap:10px">
+      <div style="display:flex;flex-direction:column;align-items:center;width:22px;flex:none;padding-top:${phaseHead ? '30' : '4'}px">
+        <span style="width:11px;height:11px;border-radius:50%;background:${toneVar[b.tone]};box-shadow:0 0 8px ${toneVar[b.tone]};border:2px solid var(--vp-surface)"></span>
+        ${line ? `<span style="width:2px;flex:1;background:var(--sg-line,#262c36);margin-top:2px"></span>` : ''}
+      </div>
+      <div style="flex:1;min-width:0;padding-bottom:10px">${phaseHead}<div style="display:flex;gap:8px;align-items:flex-start">${portraits ? `<span style="display:flex;padding-left:6px">${portraits}</span>` : ''}<div style="flex:1;min-width:0">${content}</div></div></div>
+    </div>`;
+  });
+  body += `</div>`;
+  return `<div style="margin:4px 0 8px">${sgCard('STRATEGY TIMELINE', 'how tonight came together, in order · 📍 = where it happened · the vote stays sealed until Tribal', body, { tone: 'strategy' })}</div>`;
+}
+
+// ── Directional RELATIONSHIP NETWORK (normal VP): focus + overview modes, a
+//    dimension filter, directional reads and plain-language summaries. Exact
+//    numbers stay in Debug → The Web; here it's qualitative (uncertainty kept). ──
+const _RN_DIMS = ['trust', 'strategicRespect', 'affection', 'fear', 'resentment', 'obligation', 'attraction'];
+function _rnRead(o) {
+  const n = [];
+  if ((o.affection || 0) >= 4 && (o.trust || 0) <= 1) n.push('likes them, doesn\'t trust them');
+  else if ((o.affection || 0) >= 4) n.push('personally close');
+  else if ((o.affection || 0) <= -3) n.push('dislikes them');
+  if ((o.trust || 0) >= 5) n.push('trusts them'); else if ((o.trust || 0) <= -3) n.push('distrusts them');
+  if ((o.strategicRespect || 0) >= 5) n.push('respects their game');
+  if ((o.fear || 0) >= 4) n.push('wary of them');
+  if ((o.resentment || 0) >= 4) n.push('resents them');
+  if ((o.obligation || 0) >= 4) n.push('feels indebted');
+  if ((o.attraction || 0) >= 4) n.push('drawn to them');
+  return n.length ? n.join(' · ') : 'barely connected';
+}
+export function rpBuildRelationshipNetwork(ep) {
+  const snap = ep.gsSnapshot || {};
+  const store = ep.relationshipSnapshot || snap.relationshipDimensions || gs.relationshipDimensions || {};
+  const causes = ep.relationshipCausesSnapshot || snap.relationshipCauses || gs.relationshipCauses || {};
+  const roster = ((snap.activePlayers || gs.activePlayers) || []).filter(Boolean); // ALL players, every tribe
+  if (roster.length < 2) return '';
+  const dget = (a, b) => { const r = store[`${a}→${b}`] || {}; const o = {}; _RN_DIMS.forEach(d => o[d] = Number(r[d]) || 0); return o; };
+  const mag = o => _RN_DIMS.reduce((s, d) => s + Math.abs(o[d]), 0);
+  const mode = localStorage.getItem('vp_rel_mode') || 'focus';
+  const dim = localStorage.getItem('vp_rel_dim') || 'all';
+  let focus = localStorage.getItem('vp_rel_focus');
+  if (!focus || !roster.includes(focus)) focus = roster.map(n => ({ n, m: roster.reduce((s, o) => s + (o === n ? 0 : mag(dget(n, o)) + mag(dget(o, n))), 0) })).sort((a, b) => b.m - a.m)[0]?.n || roster[0];
+  const _rb = (key, val, label, on) => `<button onclick="localStorage.setItem('${key}','${val}');_stratHubReload('relationships')" style="font-size:10px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid ${on ? 'var(--sg-trust)' : 'var(--vp-border)'};background:${on ? 'color-mix(in srgb,var(--sg-trust) 18%,transparent)' : 'transparent'};color:${on ? 'var(--sg-ink)' : 'var(--sg-dim)'}">${label}</button>`;
+  // Controls: mode + dimension filter.
+  let controls = `<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:8px 12px 4px">
+    ${_rb('vp_rel_mode', 'focus', 'One player', mode === 'focus')}${_rb('vp_rel_mode', 'overview', 'Whole camp', mode === 'overview')}
+    <span style="width:1px;height:14px;background:var(--vp-border);margin:0 4px"></span>
+    ${_rb('vp_rel_dim', 'all', 'All', dim === 'all')}${_RN_DIMS.map(d => _rb('vp_rel_dim', d, DIM_LABEL[d], dim === d)).join('')}</div>`;
+  // Row builder: A → B, directional read + strong-dimension pips + cause.
+  const dimPips = o => _RN_DIMS.filter(d => (dim === 'all' || d === dim) && Math.abs(o[d]) >= 2)
+    .sort((a, b) => Math.abs(o[b]) - Math.abs(o[a])).slice(0, 4)
+    .map(d => `<span title="${DIM_LABEL[d]} ${o[d] > 0 ? '+' : ''}${o[d].toFixed(0)}" style="display:inline-flex;align-items:center;gap:3px;font-size:8.5px;color:var(--sg-dim)">${sgDot(DIM_TONE[d])}${DIM_LABEL[d]}${o[d] < 0 ? ' ↓' : ''}</span>`).join('');
+  const row = (a, b) => {
+    const out = dget(a, b), back = dget(b, a);
+    const cz = [...(causes[`${a}→${b}`] || [])].slice(-1)[0];
+    return `<div style="display:flex;align-items:flex-start;gap:9px;padding:8px 6px;border-bottom:1px solid var(--sg-line,#262c36)">
+      ${rpPortrait(b, 'sm')}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:var(--sg-ink)"><span style="color:var(--sg-dim)">${a}</span> <span class="sg-arrow">→</span> <strong>${b}</strong> — ${_rnRead(out)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:3px">${dimPips(out)}</div>
+        ${mag(back) >= 3 ? `<div style="font-size:9px;color:var(--sg-ghost);margin-top:2px">↩ ${b}'s side: ${_rnRead(back)}</div>` : ''}
+        ${cz?.reason ? `<div style="font-size:9px;color:var(--sg-ghost);margin-top:2px">↳ ${cz.reason}</div>` : ''}
+      </div></div>`;
+  };
+  let body = '';
+  if (mode === 'overview') {
+    const pairs = [];
+    roster.forEach(a => roster.forEach(b => { if (a !== b) { const o = dget(a, b); if ((dim === 'all' && mag(o) >= 5) || (dim !== 'all' && Math.abs(o[dim]) >= 3)) pairs.push({ a, b, w: dim === 'all' ? mag(o) : Math.abs(o[dim]) }); } }));
+    pairs.sort((x, y) => y.w - x.w);
+    body = pairs.length ? `<div style="padding:0 12px 8px">${pairs.slice(0, 14).map(p => row(p.a, p.b)).join('')}</div>` : `<div style="padding:8px 12px 12px">${sgEmpty('No strong relationships to show yet.')}</div>`;
+  } else {
+    const faces = roster.map(n => `<button onclick="localStorage.setItem('vp_rel_focus','${String(n).replace(/'/g, "\\'")}');_stratHubReload('relationships')" title="${n}" style="padding:2px;border:1px solid ${n === focus ? 'var(--sg-trust)' : 'transparent'};border-radius:50%;background:none;cursor:pointer">${rpPortrait(n, 'xs')}</button>`).join('');
+    const others = roster.filter(n => n !== focus).map(n => ({ n, w: dim === 'all' ? mag(dget(focus, n)) : Math.abs(dget(focus, n)[dim]) }))
+      .filter(x => x.w >= (dim === 'all' ? 2 : 2)).sort((a, b) => b.w - a.w);
+    body = `<div style="display:flex;gap:3px;flex-wrap:wrap;padding:2px 12px 8px">${faces}</div>`
+      + (others.length ? `<div style="padding:0 12px 8px">${others.slice(0, 12).map(x => row(focus, x.n)).join('')}</div>`
+        : `<div style="padding:0 12px 12px">${sgEmpty(`${focus} hasn't formed strong reads here yet.`)}</div>`);
+  }
+  const sub = 'directional — A → B is how A feels about B · dots show the active dimensions · filter above · exact numbers live in Debug → The Web';
+  return `<div style="margin:6px 0 8px">${sgCard('RELATIONSHIP NETWORK', sub, controls + body, { tone: 'trust' })}</div>`;
+}
+
+// ── Evolving ALLIANCE MAP: portrait clusters, overlap/fracture rings, target,
+//    reliability, formation, and an episode slider to watch blocs change. ──
+export function rpBuildAllianceMap(ep) {
+  const hist = gs.episodeHistory || [];
+  const alliances = ((ep.alliancesPreTribal || ep.gsSnapshot?.namedAlliances) || [])
+    .filter(a => a.active !== false && Array.isArray(a.members) && a.members.length);
+  const active = new Set(ep.gsSnapshot?.activePlayers || gs.activePlayers || []);
+  // In how many blocs does each still-present player sit? (overlap)
+  const inCount = {}; alliances.forEach(a => a.members.forEach(m => { if (active.has(m)) inCount[m] = (inCount[m] || 0) + 1; }));
+  // First episode each alliance appeared (formation).
+  const firstSeen = {}; hist.forEach(h => (h.gsSnapshot?.namedAlliances || []).forEach(a => { if (firstSeen[a.name] == null && a.active !== false) firstSeen[a.name] = h.num; }));
+  // ── Movement this episode: dissolutions (with reason), joins, departures ──
+  const _prevNames = (hist.find(h => h.num === ep.num - 1)?.gsSnapshot?.namedAlliances || []).map(a => a.name);
+  const dissolved = (ep.gsSnapshot?.dissolvedAlliances || []).filter(a => _prevNames.includes(a.name));
+  const recruits = ep.allianceRecruits || [];
+  const quits = ep.allianceQuits || [];
+  const _elimSet = new Set(ep.gsSnapshot?.eliminated || []);
+  const _reasonFor = a => {
+    const betr = (a.betrayals || []).filter(b => b.ep === ep.num).map(b => b.player);
+    const elim = a.members.filter(m => !active.has(m) && _elimSet.has(m));
+    const act = a.members.filter(m => active.has(m));
+    if (act.length <= 1 && elim.length) return act.length === 1 ? `${elim.join(' & ')} eliminated — ${act[0]} is the last one standing.` : `${elim.join(' & ')} eliminated — nobody left.`;
+    if (betr.length >= 2) return `Too many broken promises — ${betr.join(', ')} broke rank.`;
+    if (betr.length === 1) return `${betr[0]} broke rank — the alliance couldn't survive it.`;
+    return 'The bonds collapsed — nobody was willing to hold it together.';
+  };
+  let movement = '';
+  if (dissolved.length || recruits.length || quits.length) {
+    movement = `<div class="sg-section" style="--c:var(--sg-danger);margin:8px 12px 6px">ALLIANCE MOVEMENT — this episode</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:7px">`
+      + dissolved.map(a => `<div style="display:flex;align-items:flex-start;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<div style="font-size:11px"><span style="color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span> <span style="color:var(--sg-dim)">— ${_reasonFor(a)}</span></div></div>`).join('')
+      + recruits.map(r => `<div style="font-size:10px;color:var(--sg-safe)">▲ ${r.player} joined <strong>${r.toAlliance}</strong></div>`).join('')
+      + quits.map(q => `<div style="font-size:10px;color:var(--sg-unstable)">▼ ${q.player} left <strong>${q.alliance}</strong></div>`).join('')
+      + `</div>`;
+  }
+  if (!alliances.length) return `<div style="margin:6px 0 8px">${sgCard('ALLIANCE MAP', 'the blocs in play — use the episode toggle above to watch them form & fracture', movement + `<div style="padding:8px 12px 14px">${sgEmpty('No alliances currently standing.')}</div>`, { tone: 'strategy' })}</div>`;
+  let body = `<div style="padding:8px 12px 10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:10px">`;
+  alliances.forEach(a => {
+    const members = a.members.filter(m => active.has(m));
+    if (!members.length) return;
+    const betrayers = new Set((a.betrayals || []).map(b => b.player));
+    const dependable = a.reliability?.hasDependableControl;
+    const held = members.length >= a.members.length * 0.75;
+    const formed = firstSeen[a.name] || a.formed || '?';
+    const targetActive = a.target && active.has(a.target);
+    const overlaps = members.some(m => (inCount[m] || 0) > 1);
+    const cluster = members.map(m => {
+      const overlap = (inCount[m] || 0) > 1, betrayed = betrayers.has(m);
+      const ring = betrayed ? 'var(--sg-danger)' : overlap ? 'var(--sg-strategy)' : 'var(--vp-border)';
+      const tip = betrayed ? `${m} — crossed this alliance` : overlap ? `${m} — also sits in another bloc` : m;
+      return `<span title="${tip}" style="position:relative;display:inline-block;line-height:0">${rpPortrait(m, 'sm')}<span style="position:absolute;inset:-2px;border-radius:50%;border:2px solid ${ring};pointer-events:none"></span>${overlap ? `<span style="position:absolute;bottom:-3px;right:-3px;min-width:13px;height:13px;border-radius:50%;background:var(--sg-strategy);border:2px solid var(--vp-surface);font-size:7px;color:#0c1118;display:grid;place-items:center;font-weight:800">${inCount[m]}</span>` : ''}</span>`;
+    }).join('');
+    body += `<div class="sg-card" style="border-color:${held ? 'var(--vp-border)' : 'color-mix(in srgb,var(--sg-unstable) 45%,var(--vp-border))'}">
+      <div style="padding:9px 11px;border-bottom:1px solid var(--vp-border);display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <span style="font-family:var(--font-display);font-size:13px;letter-spacing:.5px;color:var(--sg-ink)">${a.name}</span>
+        ${sgBadge(held ? 'holding' : 'fracturing', { tone: held ? 'safe' : 'unstable' })}
+      </div>
+      <div style="padding:11px;display:flex;flex-wrap:wrap;gap:9px 11px;align-items:center">${cluster}</div>
+      <div style="padding:0 11px 10px;font-size:9px;color:var(--sg-ghost);display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+        ${targetActive ? sgChip('targeting ' + a.target, { tone: 'danger' }) : ''}
+        ${dependable ? sgChip('numbers locked', { tone: 'safe', outline: true, tip: 'This alliance reliably controls enough votes to hit its target.' }) : sgChip('numbers not locked', { tone: 'unstable', outline: true, tip: "They can't count on enough votes yet — members could still slip." })}
+        ${overlaps ? sgChip('overlaps other blocs', { tone: 'strategy', outline: true, tip: 'A member also sits in another alliance.' }) : ''}
+        <span style="margin-left:2px">formed ep ${formed}</span>
+      </div>
+    </div>`;
+  });
+  body += `</div>`;
+  const sub = 'portrait clusters · red ring = crossed the bloc · purple ring = sits in multiple blocs · hover a chip for its meaning';
+  return `<div style="margin:6px 0 8px">${sgCard('ALLIANCE MAP', sub, body + movement, { tone: 'strategy' })}</div>`;
+}
+
+// ── #4 Contestant GAME PLANS: per player — targets, protected, shields, goats,
+//    deals, revenge, and revisions. Reads the frozen intentions snapshot. ──
+export function rpBuildStrategyProfiles(ep) {
+  const plans = ep.intentionsSnapshot || ep.gsSnapshot?.intentions || gs.intentions || {};
+  const roster = ((ep.gsSnapshot?.activePlayers || gs.activePlayers) || []).filter(n => plans[n]);
+  if (!roster.length) return `<div style="margin:6px 0 8px">${sgCard('GAME PLANS', 'nobody has committed to a plan yet', `<div style="padding:8px 12px 14px">${sgEmpty('No game plans formed yet — they take shape after the merge.')}</div>`, { tone: 'strategy' })}</div>`;
+  let focus = localStorage.getItem('vp_plan_focus');
+  if (!focus || !roster.includes(focus)) focus = roster[0];
+  const faces = roster.map(n => `<button onclick="localStorage.setItem('vp_plan_focus','${String(n).replace(/'/g, "\\'")}');_stratHubReload('plans')" title="${n}" style="padding:2px;border:1px solid ${n === focus ? 'var(--sg-strategy)' : 'transparent'};border-radius:50%;background:none;cursor:pointer">${rpPortrait(n, 'xs')}</button>`).join('');
+  const p = plans[focus] || {};
+  const active = new Set((ep.gsSnapshot?.activePlayers || gs.activePlayers) || []);
+  const only = arr => (arr || []).filter(n => active.has(n) && n !== focus);
+  const line = (label, names, tone, dashed) => names.length ? `<div style="display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="font-size:9px;color:var(--sg-ghost);min-width:96px;text-transform:uppercase;letter-spacing:.6px">${label}</span><span>${names.map(n => sgChip(n, { tone, dashed })).join('')}</span></div>` : '';
+  const f3 = only(p.finalThree), targets = only(p.targets), revenge = only(p.revenge), backup = only(p.backupAllies), pref = only(p.preferredCore);
+  const rows = [
+    line('Final three', f3, 'safe'),
+    p.goat && active.has(p.goat) ? line('Endgame goat', [p.goat], 'strategy', true) : '',
+    p.shield && active.has(p.shield) ? line('Shield', [p.shield], 'unstable', true) : '',
+    line('Wants to keep', pref, 'trust', true),
+    line('Backup allies', backup, 'neutral'),
+    line('Targeting', targets, 'danger'),
+    line('Revenge', revenge, 'danger', true),
+  ].filter(Boolean).join('');
+  const revs = (p.history || []).slice(-4).reverse().map(h => `<div style="font-size:9px;color:var(--sg-ghost)">↳ ep${h.ep}: ${h.reason || `${h.field} changed`}</div>`).join('');
+  const note = p.planStyle === 'reactive' ? sgChip('plays it by ear', { tone: 'neutral', outline: true }) : '';
+  const body = `<div style="padding:8px 12px 8px"><div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px">${faces}</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${rpPortrait(focus, 'sm')}<span style="font-size:13px;color:var(--sg-ink);font-weight:700">${focus}'s plan</span>${note}</div>
+    ${rows || sgEmpty(`${focus} is still playing it one vote at a time.`)}
+    ${revs ? `<div class="sg-section" style="--c:var(--sg-unstable);margin:10px 0 4px">Revisions</div>${revs}` : ''}
+    <div style="font-size:9px;color:var(--sg-ghost);margin-top:8px">Solid = a committed part of the plan · dashed = a private preference, not a binding deal.</div></div>`;
+  return `<div style="margin:6px 0 8px">${sgCard('GAME PLANS', 'each contestant\'s target, protected people, shields, goat, deals & revenge — pick a face', body, { tone: 'strategy' })}</div>`;
+}
+
+// Fan Pulse (fan sentiment) as a hub tab — same tiers as the classic screen.
+export function _rpHubPopularity(ep) {
+  if (seasonConfig.popularityEnabled === false || seasonConfig.hidePopularity) return `<div style="margin:6px 0 8px">${sgCard('FAN PULSE', 'fan sentiment is off this season', `<div style="padding:8px 12px 14px">${sgEmpty('Fan Pulse is disabled.')}</div>`, { tone: 'trust' })}</div>`;
+  const pop = ep.popularitySnapshot || ep.gsSnapshot?.popularity || gs.popularity || {};
+  const active = (ep.gsSnapshot?.activePlayers || gs.activePlayers) || [];
+  const rows = active.map(n => ({ n, v: Number(pop[n] || 0) })).sort((a, b) => b.v - a.v);
+  if (!rows.length || !Object.keys(pop).length) return `<div style="margin:6px 0 8px">${sgCard('FAN PULSE', 'no fan data yet', `<div style="padding:8px 12px 14px">${sgEmpty('No Fan Pulse data.')}</div>`, { tone: 'trust' })}</div>`;
+  const tier = s => s >= 12 ? ['LOVED', 'safe'] : s >= 7 ? ['FAN FAV', 'safe'] : s >= 3 ? ['RISING', 'trust'] : s === 0 ? ['INVISIBLE', 'neutral'] : s <= -10 ? ['HATED', 'danger'] : s <= -5 ? ['UNPOPULAR', 'danger'] : s < 0 ? ['FADING', 'unstable'] : ['STEADY', 'neutral'];
+  const max = Math.max(1, ...rows.map(r => Math.abs(r.v)));
+  const body = `<div style="padding:8px 12px 10px">${rows.map((r, i) => {
+    const [tl, tt] = tier(r.v);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 4px;border-bottom:1px solid var(--sg-line,#262c36)">
+      <span style="font-size:11px;color:var(--sg-ghost);width:16px;text-align:right">${i + 1}</span>${rpPortrait(r.n, 'sm')}
+      <span style="font-size:12px;color:var(--sg-ink);font-weight:600;flex:none;width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.n}</span>
+      ${sgBadge(tl, { tone: tt })}
+      <div style="flex:1">${sgBar(Math.abs(r.v), { max, tone: tt })}</div>
+      <span style="font-size:10px;color:var(--sg-dim);width:34px;text-align:right">${r.v.toFixed(1)}</span></div>`;
+  }).join('')}</div>`;
+  return `<div style="margin:6px 0 8px">${sgCard('FAN PULSE', 'how the fans feel this episode · LOVED → HATED', body, { tone: 'trust' })}</div>`;
+}
+
+// Advantages in play as a hub tab (spoiler-safe: shows who HOLDS, not plays).
+export function _rpHubAdvantages(ep) {
+  const advs = (ep.advantagesPreTribal || ep.gsSnapshot?.advantages || gs.advantages || []).filter(a => !a.used && !a.expired);
+  const active = new Set((ep.gsSnapshot?.activePlayers || gs.activePlayers) || []);
+  const live = advs.filter(a => active.has(a.holder));
+  if (!live.length) return `<div style="margin:6px 0 8px">${sgCard('ADVANTAGES IN PLAY', 'nothing hidden in the game right now', `<div style="padding:8px 12px 14px">${sgEmpty('No advantages currently held.')}</div>`, { tone: 'unstable' })}</div>`;
+  const label = a => (a.type === 'idol' && a.superIdol) ? '⚡ Super Idol' : a.type === 'idol' ? 'Hidden Immunity Idol'
+    : (a.type === 'extra-vote' || a.type === 'extraVote') ? 'Extra Vote' : (a.type === 'vote-steal' || a.type === 'voteSteal') ? 'Vote Steal'
+    : a.type === 'legacy' ? `Legacy Advantage${a.activatesAt ? ` (${a.activatesAt.map(n => 'F' + n).join('/')})` : ''}`
+    : a.type === 'amulet' ? `Amulet — ${({ extraVote: 'Extra Vote', voteSteal: 'Vote Steal', idol: 'Idol' }[a.amuletPower] || a.amuletPower || '?')}`
+    : a.type === 'beware' ? 'Beware Advantage' : (a.type || 'Advantage');
+  const body = `<div style="padding:8px 12px 10px;display:flex;flex-direction:column;gap:9px">${live.map(a => `<div style="display:flex;align-items:center;gap:10px">${rpPortrait(a.holder, 'sitd')}
+    <div style="min-width:0"><div style="font-size:12px;color:var(--sg-ink);font-weight:700">${a.holder}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:1px">${sgChip(label(a), { tone: 'unstable', outline: true })}${a.public ? sgBadge('known', { tone: 'danger' }) : sgBadge('secret', { tone: 'strategy', ghost: true })}</div>
+      ${a.foundEp ? `<div style="font-size:9px;color:var(--sg-ghost);margin-top:2px">Found Episode ${a.foundEp}</div>` : ''}</div></div>`).join('')}</div>`;
+  return `<div style="margin:6px 0 8px">${sgCard('ADVANTAGES IN PLAY', 'who is holding what · secret = the camp doesn\'t know', body, { tone: 'unstable' })}</div>`;
+}
+
+// ── The STRATEGY HUB: one frame, switchable tabs + an episode toggle that
+//    updates via the DOM only (never rebuilds/scrolls the whole VP). ──
+export function _stratHubContent(rec, tab) {
+  try {
+    if (tab === 'alliances') return rpBuildAllianceMap(rec);
+    if (tab === 'relationships') return rpBuildRelationshipNetwork(rec);
+    if (tab === 'hierarchy') return rpBuildCampHierarchy(rec) || `<div style="margin:6px 0">${sgEmpty('No camp roles have formed yet.')}</div>`;
+    if (tab === 'plans') return rpBuildStrategyProfiles(rec);
+    if (tab === 'popularity') return _rpHubPopularity(rec);
+    if (tab === 'advantages') return _rpHubAdvantages(rec);
+    return rpBuildStrategyTimeline(rec) || `<div style="margin:6px 0">${sgEmpty('No strategic beats recorded this episode.')}</div>`;
+  } catch (e) { return `<div style="margin:6px 0">${sgEmpty('Nothing to show here for this episode.')}</div>`; }
+}
+export function _stratHub(epNum, tab) {
+  const hub = document.querySelector('.strat-hub'); if (!hub) return;
+  const rec = (gs.episodeHistory || []).find(h => +h.num === +epNum); if (!rec) return;
+  hub.dataset.ep = epNum; hub.dataset.tab = tab;
+  hub.querySelectorAll('[data-hubtab]').forEach(b => b.classList.toggle('hub-on', b.dataset.hubtab === tab));
+  hub.querySelectorAll('[data-hubep]').forEach(b => b.classList.toggle('hub-on', +b.dataset.hubep === +epNum));
+  const c = hub.querySelector('.strat-hub-content'); if (c) c.innerHTML = _stratHubContent(rec, tab);
+}
+export function _stratHubReload(tab) { const hub = document.querySelector('.strat-hub'); if (hub) _stratHub(+hub.dataset.ep, tab || hub.dataset.tab); }
+export function rpBuildStrategyHub(ep) {
+  const hist = gs.episodeHistory || [];
+  const maxEp = hist.length ? hist[hist.length - 1].num : ep.num;
+  const tabs = [['timeline', 'Timeline'], ['alliances', 'Alliances'], ['relationships', 'Relationships'], ['hierarchy', 'Hierarchy'], ['plans', 'Game Plans'], ['popularity', 'Fan Pulse'], ['advantages', 'Advantages']];
+  const tab0 = 'timeline';
+  const tabBtns = tabs.map(([id, label]) => `<button data-hubtab="${id}" class="strat-hub-tab${id === tab0 ? ' hub-on' : ''}" onclick="_stratHub(+this.closest('.strat-hub').dataset.ep,'${id}')">${label}</button>`).join('');
+  const epBtns = maxEp > 1 ? `<div class="strat-hub-eps"><span style="font-size:9px;color:var(--sg-ghost);margin-right:3px;letter-spacing:.5px">EP</span>${Array.from({ length: maxEp }, (_, i) => i + 1).map(n => `<button data-hubep="${n}" class="strat-hub-ep${n === ep.num ? ' hub-on' : ''}" onclick="_stratHub(${n},this.closest('.strat-hub').dataset.tab)">${n}</button>`).join('')}</div>` : '';
+  return `<div class="strat-hub" data-ep="${ep.num}" data-tab="${tab0}">
+    <div class="strat-hub-bar"><div class="strat-hub-tabs">${tabBtns}</div>${epBtns}</div>
+    <div class="strat-hub-content">${_stratHubContent(ep, tab0)}</div>
+  </div>`;
 }
 
 export function rpBuildRelationships(ep) {
@@ -6798,53 +7127,25 @@ export function rpBuildRelationships(ep) {
   // Nothing worth showing → return null
   const hasAdvantages = advList.some(a => active.includes(a.holder));
   if (!alliances.length && !hasAdvantages && !bondChanges.length && !betrayalsThisEp.length) {
-    const _ch = rpBuildCampHierarchy(ep);
-    return _ch ? `<div class="rp-page tod-golden"><div class="rp-eyebrow">Episode ${ep.num}</div><div class="rp-title">Camp Overview</div>${_ch}</div>` : null;
+    return `<div class="rp-page tod-golden"><div class="rp-eyebrow">Episode ${ep.num}</div><div class="rp-title">Camp Overview</div>${rpBuildStrategyHub(ep)}</div>`;
   }
 
   let html = `<div class="rp-page tod-golden">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div class="rp-title">Camp Overview</div>`;
 
-  // ── Alliances ──
-  if (alliances.length) {
-    alliances.forEach((a, i) => {
-      const members = a.members.filter(n => active.includes(n));
-      if (!members.length) return;
-      const aRecruits = recruits.filter(r => r.toAlliance === a.name).map(r => r.player);
-      const aQuits    = quits.filter(q => q.alliance === a.name).map(q => q.player);
-      const epsSinceFormed = ep.num - (a.formed || ep.num);
-      const stability = a.members.filter(m => active.includes(m)).length >= a.members.length * 0.75 ? 'Holding' : 'Fractured';
-      html += `<div class="vp-card ice" style="animation:slideInLeft 0.4s var(--ease-broadcast) ${i * 80}ms both;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <span style="font-family:var(--font-display);font-size:14px;letter-spacing:1px">${a.name}</span>
-          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#484f58;margin-left:auto">${members.length} members · Ep ${a.formed || '?'}</span>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-          ${members.map(n => {
-            const mood = _emotional(n);
-            const moodCol = _moodColor[mood] || '#6ee7b7';
-            const _heldAdv = advList.find(adv => adv.holder === n && adv.type === 'idol');
-            const hasIdol = !!_heldAdv;
-            const _idolLabel = _heldAdv?.superIdol ? 'Super Idol' : 'Idol';
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-              ${rpPortrait(n, hasIdol ? 'sitd' : '', hasIdol ? _idolLabel : '')}
-              <span style="font-size:8px;font-weight:700;color:${moodCol};text-transform:uppercase;letter-spacing:0.5px">${mood}</span>
-            </div>`;
-          }).join('')}
-        </div>`;
-      if (aRecruits.length) html += `<div style="font-size:11px;color:var(--accent-ice);margin-top:4px">+ Joined this episode: ${aRecruits.join(', ')}</div>`;
-      if (aQuits.length)    html += `<div style="font-size:11px;color:var(--accent-fire);margin-top:2px">− Left this episode: ${aQuits.join(', ')}</div>`;
-      html += `</div>`;
-    });
-  }
+  // ── Strategy Hub: ONE frame with switchable tabs (Timeline · Alliances ·
+  //    Relationships · Hierarchy · Game Plans · Popularity · Advantages) and an
+  //    episode toggle. Tab/episode switches update the DOM only — the page never
+  //    rebuilds or scrolls back to the top. ──
+  html += rpBuildStrategyHub(ep);
 
   // ── Alliances dissolved this episode ──
   // Compare: alliances in current snapshot's dissolvedAlliances that were active in previous snapshot
   const _curDissolved = ep.gsSnapshot?.dissolvedAlliances || [];
   const _prevActive = (gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot?.namedAlliances || []).map(a => a.name);
   const _dissolvedThisEp = _curDissolved.filter(a => _prevActive.includes(a.name));
-  if (_dissolvedThisEp.length) {
+  if (false && _dissolvedThisEp.length) {   // moved into the Strategy Hub → Alliances → Alliance Movement
     html += `<div class="vp-section-header" style="color:var(--accent-fire);margin-top:12px">Dissolved This Episode</div>`;
     _dissolvedThisEp.forEach(a => {
       const _betrayals = (a.betrayals || []).filter(b => b.ep === ep.num);
@@ -6878,7 +7179,7 @@ export function rpBuildRelationships(ep) {
 
   // ── Advantages in play ──
   const activeAdvs = advList.filter(a => active.includes(a.holder));
-  if (activeAdvs.length) {
+  if (false && activeAdvs.length) {   // moved into the Strategy Hub → Advantages tab
     html += `<div class="vp-section-header gold" style="margin-top:4px">Advantages in Play</div>`;
     activeAdvs.forEach(adv => {
       const _amuPowerLabel = { extraVote:'Extra Vote', voteSteal:'Vote Steal', idol:'Idol' };
@@ -6933,8 +7234,8 @@ export function rpBuildRelationships(ep) {
     });
   }
 
-  // ── Fan Pulse — scores AFTER this episode ──
-  if (seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
+  // ── Fan Pulse — scores AFTER this episode ── (moved into the Strategy Hub → Fan Pulse tab)
+  if (false && seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
     const _popSnap = ep.popularitySnapshot || {};
     const _allRanked = [...active].sort((a, b) => (_popSnap[b] || 0) - (_popSnap[a] || 0));
     const _n = _allRanked.length;
@@ -6964,7 +7265,6 @@ export function rpBuildRelationships(ep) {
       </div>`;
   }
 
-  html += rpBuildCampHierarchy(ep); // #8: camp hierarchy web — INSIDE .rp-page so it stays centered
   html += `</div>`;
   return html;
 }

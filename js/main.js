@@ -9,6 +9,7 @@ import * as alliancesMod from './alliances.js';
 import * as votingMod from './voting.js';
 import * as adaptationMod from './adaptation.js';
 import * as socialStatusMod from './social-status.js';
+import * as vpKitMod from './vp-kit.js';
 import * as advantagesMod from './advantages.js';
 import * as romanceMod from './romance.js';
 import * as challengesCoreMod from './challenges-core.js';
@@ -193,7 +194,7 @@ for (const name of functions) {
 
 // ── Expose extracted module functions on window ──
 const extractedModules = [
-  playersMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod,
+  playersMod, bondsMod, alliancesMod, votingMod, adaptationMod, socialStatusMod, vpKitMod,
   advantagesMod, romanceMod, challengesCoreMod,
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, truthOrDareTrainMod, aMazeInGripMod, polesApartMod, tusksLaddersMod, tusksLaddersVpMod, killerClownMod, killerClownVpMod, bumperCarBashMod, bumperCarBashVpMod, sayCheeseMod, sayCheeseVpMod, wheelOfMisfortuneMod, wheelOfMisfortuneVpMod, rescueMissionMod, disadvantageVoteMod, paintballHuntMod, hellsKitchenMod,

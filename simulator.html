@@ -40,7 +40,61 @@
       --lower-third:    rgba(16,185,129,0.16);
       --panel-edge:     rgba(255,255,255,0.05);
       --slider-track:   #334155;
+      /* ── Strategy visual grammar: ONE consistent meaning everywhere.
+           danger=active threat · unstable=uncertain/negotiating · trust=trust/info
+           · strategy=long-term plans · safe=confirmed/positive. Solid=public/confirmed,
+           dashed=suspected/private, faded=stale. ── */
+      --sg-danger:   #f0506e;
+      --sg-unstable: #e0a72e;
+      --sg-trust:    #57a6e8;
+      --sg-strategy: #b483f0;
+      --sg-safe:     #3fb950;
+      --sg-neutral:  #8b98a8;
+      --sg-ink:      #e6edf3;
+      --sg-dim:      #8b949e;
+      --sg-ghost:    #6e7681;
     }
+
+    /* ── Strategy grammar components (reusable across every strategic VP surface) ── */
+    .sg-chip { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-body); font-size:9.5px; font-weight:700; letter-spacing:.2px; line-height:1.35; padding:3px 9px; border-radius:999px; margin:2px 6px 2px 0; white-space:nowrap; color:#0c1118; background:var(--c,var(--sg-neutral)); }
+    .sg-chip--dashed { color:var(--c,var(--sg-neutral)); background:transparent; border:1px dashed var(--c,var(--sg-neutral)); }
+    .sg-chip--outline { color:var(--c,var(--sg-neutral)); background:color-mix(in srgb, var(--c,var(--sg-neutral)) 14%, transparent); border:1px solid color-mix(in srgb, var(--c,var(--sg-neutral)) 42%, transparent); }
+    .sg-chip--faded { opacity:.5; }
+    .sg-chip--new { box-shadow:0 0 0 2px rgba(63,185,80,.75); }
+    .sg-badge { display:inline-block; font-size:8px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:2px 6px; border-radius:4px; color:#0c1118; background:var(--c,var(--sg-neutral)); }
+    .sg-badge--ghost { color:var(--c,var(--sg-neutral)); background:transparent; border:1px solid color-mix(in srgb, var(--c,var(--sg-neutral)) 45%, transparent); }
+    .sg-portrait-chip { display:inline-flex; align-items:center; gap:6px; padding:2px 10px 2px 2px; border-radius:999px; background:var(--vp-surface2); border:1px solid var(--vp-border); font-size:11px; font-weight:600; color:var(--sg-ink); }
+    .sg-portrait-chip img { width:20px; height:20px; border-radius:50%; object-fit:cover; }
+    .sg-arrow { color:var(--sg-ghost); font-weight:400; padding:0 3px; }
+    .sg-section { font-family:var(--font-body); font-size:10px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--c,var(--sg-dim)); display:flex; align-items:center; gap:8px; margin:16px 0 9px; }
+    .sg-section::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--c,var(--sg-dim)); box-shadow:0 0 8px var(--c,var(--sg-dim)); flex:none; }
+    .sg-empty { padding:12px 14px; border:1px dashed var(--vp-border); border-radius:8px; color:var(--sg-ghost); font-size:11px; text-align:center; font-style:italic; }
+    .sg-bar-track { height:5px; border-radius:3px; background:var(--vp-surface2); overflow:hidden; }
+    .sg-bar-fill { height:100%; border-radius:3px; background:var(--c,var(--sg-neutral)); transition:width .3s var(--ease-broadcast); }
+    .sg-card { background:linear-gradient(180deg,#12161d,#0f1319); border:1px solid var(--vp-border); border-radius:12px; overflow:hidden; }
+    .sg-card-head { padding:12px 16px; border-bottom:1px solid var(--vp-border); background:radial-gradient(120% 150% at 0 0, color-mix(in srgb, var(--c,var(--sg-trust)) 12%, transparent), transparent 62%); }
+    .sg-card-title { font-family:var(--font-body); font-size:12px; font-weight:900; letter-spacing:2px; color:var(--sg-ink); }
+    .sg-card-sub { font-size:9px; color:var(--sg-ghost); letter-spacing:.5px; margin-top:2px; }
+    .sg-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c,var(--sg-neutral)); flex:none; }
+    .sg-legend { margin:2px 12px 6px; }
+    .sg-legend > summary { cursor:pointer; font-size:10px; font-weight:700; color:var(--sg-trust); padding:6px 2px; list-style:none; }
+    .sg-legend > summary::-webkit-details-marker { display:none; }
+    .sg-legend > summary::marker { content:''; }
+    .sg-legend-body { font-size:10px; color:var(--sg-dim); line-height:1.4; padding:4px 4px 10px; }
+    .sg-legend-row { display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; }
+    @media (prefers-reduced-motion: reduce){ .sg-bar-fill{ transition:none; } }
+    /* ── Strategy Hub: one framed panel, switchable tabs + episode toggle ── */
+    .strat-hub { margin-top:16px; border:1px solid var(--vp-border); border-radius:12px; background:var(--vp-surface); overflow:hidden; }
+    .strat-hub-bar { display:flex; flex-wrap:wrap; gap:8px 12px; justify-content:space-between; align-items:center; padding:9px 11px; border-bottom:1px solid var(--vp-border); background:radial-gradient(120% 150% at 0 0, color-mix(in srgb, var(--sg-strategy) 12%, transparent), transparent 60%); }
+    .strat-hub-tabs { display:flex; flex-wrap:wrap; gap:4px; }
+    .strat-hub-tab { font-family:var(--font-body); font-size:11px; font-weight:700; padding:5px 11px; border-radius:7px; cursor:pointer; border:1px solid var(--vp-border); background:transparent; color:var(--sg-dim); transition:background .15s, border-color .15s, color .15s; }
+    .strat-hub-tab:hover { color:var(--sg-ink); border-color:var(--sg-ghost); }
+    .strat-hub-tab.hub-on { border-color:var(--sg-trust); background:color-mix(in srgb, var(--sg-trust) 16%, transparent); color:var(--sg-ink); }
+    .strat-hub-eps { display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
+    .strat-hub-ep { min-width:21px; height:21px; font-size:9px; border-radius:5px; cursor:pointer; border:1px solid var(--vp-border); background:transparent; color:var(--sg-ghost); }
+    .strat-hub-ep:hover { color:var(--sg-ink); }
+    .strat-hub-ep.hub-on { border-color:var(--sg-trust); background:color-mix(in srgb, var(--sg-trust) 22%, transparent); color:var(--sg-ink); }
+    .strat-hub-content { padding:2px 4px 4px; }
 
     /* ── Light theme: override the SHELL palette only. The VP/recap keep their
          own --vp-* dark palette, so the cinematic screens stay dark. ── */

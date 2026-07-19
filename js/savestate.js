@@ -495,6 +495,7 @@ export function snapshotGameState() {
     playerStates: Object.fromEntries(
       Object.entries(gs.playerStates || {}).map(([k, v]) => [k, { emotional: v.emotional || 'comfortable' }])
     ),
+    adaptationProfiles: Object.fromEntries(Object.entries(gs.adaptationProfiles || {}).map(([k,v]) => [k,{...v,history:[...(v.history||[])]}])),
     advantages: (gs.advantages || []).map(a => ({ ...a })),
     journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
@@ -597,6 +598,8 @@ export function initGameState() {
       permanence: a.permanence || 'normal', preGame: true,
     })),
     playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
+    adaptationProfiles: {}, // bounded learned tendencies; base stats remain unchanged
+    _adaptationProcessedEpisodes: [],
     jurorHistory: {},    // { [name]: { voters, ep, finalBonds } } — tracks how each jury member was voted out
     popularity: {},               // { [name]: running score }
     popularityArcs: {},           // { [name]: [{ep, delta, score}] } — episode-by-episode arc

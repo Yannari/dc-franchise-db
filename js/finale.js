@@ -3,6 +3,11 @@ import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.j
 import { _idbPut } from './savestate.js';
 import { pStats, pronouns } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { getRelationshipDimensions } from './relationships.js';
+import { getIntentions } from './intentions.js';
+import { believes, factId } from './knowledge.js';
+import { juryArchitectCredit, juryBelievesBooter, reconcileJuryPerception, ftcCorrectBelief } from './knowledge-integration.js';
+import { recentCauses } from './relationship-events.js';
 import { handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
@@ -1798,9 +1803,15 @@ export function simulateFinale() {
     ep.juryResult = null;
     gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
   } else if (cfg.finaleFormat !== 'fan-vote' || !ep.fanVoteResult) {
+    gs.jury = seatedJury(); // lock the jury to the configured size before anything reads it
+    // Ponderosa: the jury compares stories first — some false credit gets seen
+    // through, some entrenched — then FTC lets finalists reclaim mis-credited
+    // moves. Both mutate beliefs BEFORE the vote reads them.
+    ep.ponderosaReconciliations = reconcileJuryPerception(gs.jury, ep.num);
     // FTC swing votes: nudge hesitating juror bonds based on FTC performance
     // Must happen BEFORE simulateJuryVote so the vote uses post-FTC bonds
     ep.ftcSwings = applyFTCSwingVotes(finalists);
+    ep.ftcCorrections = gs._ftcCorrections || [];
 
     // Jury vote (uses post-swing bonds)
     const juryResult = simulateJuryVote(finalists);
@@ -1914,6 +1925,8 @@ export function simulateFinale() {
     juryTiebreak: ep.juryTiebreak || null,
     ftcData: ep.ftcData || null,
     ftcSwings: ep.ftcSwings || [],
+    ftcCorrections: ep.ftcCorrections || [],
+    ponderosaReconciliations: ep.ponderosaReconciliations || [],
     benchAssignments: ep.benchAssignments || null,
     benchReasons: ep.benchReasons || null,
     assistants: ep.assistants || null,
@@ -2370,10 +2383,101 @@ export function generateFinaleSummaryText(ep) {
   return L.join('\n');
 }
 
-export function simulateJuryVote(finalists) {
-  // Deduplicate jury (can happen if a player is added by multiple code paths, e.g. koh-lanta orienteering + finale)
+// The seated jury respects the configured jurySize: only the most recent N
+// eliminees sit (earlier post-merge boots are pre-jury). Without this the jury
+// was every post-merge eliminee, ignoring the setting.
+export function seatedJury() {
   const jury = [...new Set(gs.jury || [])];
-  gs.jury = jury; // fix the source too
+  const size = seasonConfig.jurySize;
+  return (size && jury.length > size) ? jury.slice(-size) : jury;
+}
+
+// What this juror actually respects in a game — derived from their stats and
+// archetype. Two jurors watching the same résumé weigh it differently: a
+// control-valuer rewards the architect, a loyalty-valuer rewards the honest ally.
+export function juryValueProfile(juror) {
+  const s = pStats(juror);
+  const arch = players.find(p => p.name === juror)?.archetype || '';
+  const w = {
+    control:   0.3 + s.strategic * 0.05,
+    loyalty:   0.3 + s.loyalty * 0.05,
+    social:    0.3 + s.social * 0.045,
+    honesty:   0.3 + s.loyalty * 0.03 + (10 - s.boldness) * 0.02,
+    challenge: 0.2 + (s.physical + s.endurance) * 0.02,
+  };
+  const bump = { mastermind: 'control', schemer: 'control', villain: 'control', 'perceptive-player': 'control',
+    'loyal-soldier': 'loyalty', goat: 'loyalty', hero: 'honesty', 'social-butterfly': 'social',
+    showmancer: 'social', 'challenge-beast': 'challenge' };
+  if (bump[arch]) w[bump[arch]] += 0.45;
+  return w;
+}
+export function juryTopValue(juror) {
+  const w = juryValueProfile(juror);
+  return Object.entries(w).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+// How a juror privately reads a finalist through the strategy layers — the
+// substance behind the vote and the speech. Legacy resume/threat still scores;
+// this adds the grudges, respect, broken/kept promises and what the juror
+// actually KNOWS. Archetype stays a flavor layer on top, not the essence.
+export function _juryLayerRead(juror, finalist) {
+  const jS = pStats(juror);
+  const strategicJuror = jS.strategic > 6 || jS.intuition > 6;
+  const dims = getRelationshipDimensions(juror, finalist); // directional juror → finalist
+  const resentment = dims.resentment || 0;        // 0..10
+  const respect = dims.strategicRespect || 0;     // 0..10
+  const trust = dims.trust || 0;                  // -10..10
+  const fear = dims.fear || 0;                     // 0..10
+  const hist = gs.jurorHistory?.[juror];
+  const votedMeOut = Boolean(hist?.voters?.includes(finalist));
+  // Does the juror actually KNOW this finalist moved on them, or only feel it?
+  // Either a recorded betrayal, or believing this finalist architected their boot.
+  const betrayalBelief = believes(juror, factId('betrayal', finalist, juror));
+  const believedBooter = juryBelievesBooter(juror, finalist) >= 0.45;
+  const knewBetrayal = votedMeOut && (Number(betrayalBelief?.effectiveConfidence || 0) >= 0.45 || believedBooter);
+  // How much this juror credits the finalist with actually running the game.
+  const credit = juryArchitectCredit(juror, finalist);
+  // Did the finalist break — or keep — a stated plan that included this juror?
+  const fPlan = getIntentions(finalist);
+  const promised = fPlan ? [...(fPlan.finalThree || []), ...(fPlan.preferredCore || []), ...(fPlan.backupAllies || [])].includes(juror) : false;
+  const brokePromise = promised && votedMeOut;
+  const keptPromise = promised && !votedMeOut && trust >= 1;   // only counts if the trust actually held
+  // A straight shooter (high trust, never crossed them) vs a respected threat
+  // the juror never controlled (fear + respect, little warmth).
+  const straightShooter = trust >= 4 && !votedMeOut && resentment < 3;
+  const respectedThreat = respect >= 5 && (fear >= 4 || resentment >= 3) && trust < 3;
+  const grievanceReason = recentCauses(juror, finalist, 'resentment')[0]?.reason || null;
+  const respectReason = recentCauses(juror, finalist, 'strategicRespect')[0]?.reason
+    || recentCauses(juror, finalist, 'fear')[0]?.reason || null;
+  const trustReason = recentCauses(juror, finalist, 'trust').find(c => c.delta > 0)?.reason || null;
+  // Net directional pull from the layers, for scoring. Strategic/intuitive
+  // jurors weigh respect (and grudging respect for a threat) more heavily;
+  // everyone punishes resentment and betrayed pacts, rewards a pact kept.
+  // What this juror personally values, applied as a modest weighting.
+  const val = juryValueProfile(juror);
+  const topValue = juryTopValue(juror);
+  const valueMod = val.control * credit * 0.06
+    + val.loyalty * (keptPromise ? 0.35 : brokePromise ? -0.35 : 0)
+    + val.honesty * Math.max(0, trust) * 0.02
+    + val.social * Math.max(0, trust) * 0.01;
+  const mod = -resentment * 0.18
+    + respect * (strategicJuror ? 0.15 : 0.06)
+    + Math.max(0, trust) * 0.05
+    + fear * (strategicJuror ? 0.05 : -0.03)   // strategists respect a threat; emotional jurors resent one
+    + credit * (strategicJuror ? 0.3 : 0.12)   // reward the player they BELIEVE ran the game
+    - (knewBetrayal ? 0.6 : 0)
+    - (brokePromise ? 0.7 : 0)
+    + (keptPromise ? 0.5 : 0)
+    + valueMod;
+  return { resentment, respect, trust, fear, credit, votedMeOut, knewBetrayal, believedBooter, brokePromise, keptPromise,
+    straightShooter, respectedThreat, strategicJuror, grievanceReason, respectReason, trustReason, topValue, mod };
+}
+
+export function simulateJuryVote(finalists) {
+  // Seat the jury to the configured size (also dedups). Fix the source so the
+  // VP, text and vote all agree on exactly who sits on the jury.
+  const jury = seatedJury();
+  gs.jury = jury;
   if (!jury.length || !finalists.length) return { votes: {}, reasoning: [], jury: [] };
 
   const votes = Object.fromEntries(finalists.map(f => [f, 0]));
@@ -2438,9 +2542,11 @@ export function simulateJuryVote(finalists) {
       // Strategic/intuitive jurors weigh gameplay more and forgive gameplay betrayals better
       // Loyal/emotional jurors weight bitterness more heavily
       const _reputationBonus = reputationModifier(f, 'jury') * (jS.strategic > 7 || jS.intuition > 7 ? 0.9 : 0.45);
+      // Strategy layers: grudges, respect, betrayed/kept pacts, what they know.
+      const _layerMod = _juryLayerRead(juror, f).mod;
       const score = (jS.strategic > 7 || jS.intuition > 7
         ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
-        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus;
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus + _layerMod;
       return { name: f, score: score + (Math.random() * 1.5) };
     });
     scores.sort((a, b) => b.score - a.score);
@@ -2458,6 +2564,8 @@ export function simulateJuryVote(finalists) {
       .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === pick).length), 0);
     const _jrPosJurorBonds = (gs.jury || []).filter(j => getBond(j, pick) >= 1).length;
     const _jrShowmance = gs.showmances?.find(sm => sm.players.includes(pick) && sm.phase !== 'broken-up' && sm.players.includes(juror));
+    const _jrLayer = _juryLayerRead(juror, pick);
+    const _cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
     let _jrReason;
     // Showmance partner — strongest emotional pull, takes priority
     if (_jrShowmance) {
@@ -2465,6 +2573,51 @@ export function simulateJuryVote(finalists) {
         `${pick} is my person. Out there and in here. There was never a question who I'm voting for.`,
         `We went through this game together. ${pick} is the reason I survived as long as I did. My vote is for ${_jrFp.obj} — and it's not even close.`,
         `I'm not going to pretend this is objective. ${pick} and I had something real. ${_jrFp.Sub} ${_jrFp.sub==='they'?'deserve':'deserves'} this. I believe that with everything I have.`,
+      ]);
+    // ── Strategy-layer reasons: substance from grudges, respect, broken/kept
+    //    pacts and what the juror actually KNOWS. These take priority over the
+    //    legacy resume lines when that history exists. ──
+    } else if (_jrLayer.brokePromise && _jrLayer.respect >= 4) {
+      _jrReason = _jrPick([
+        `${pick} looked me in the eye, said we were going to the end together — then wrote my name down. I hated ${_jrFp.obj} for it. But that is exactly the move that got ${_jrFp.obj} here, and I won't punish a winner for winning.${_jrLayer.grievanceReason ? ` ${_cap(_jrLayer.grievanceReason)}.` : ''}`,
+        `The cut still stings. ${pick} broke our deal at the worst possible moment for me — and the best possible moment for ${_jrFp.pos} game. I came to reward the best player, not my feelings.`,
+        `I'm bitter and I'm honest about it: ${pick} played me, and ${_jrFp.sub} played me perfectly. That's a winner's résumé.`,
+      ]);
+    } else if (_jrLayer.knewBetrayal && _jrLayer.respect >= 4) {
+      _jrReason = _jrPick([
+        `I know exactly what ${pick} did to me — ${_jrFp.sub} set the whole thing up and let me look the other way. I figured it out on the bench. And I'm still voting for ${_jrFp.obj}, because that is how you win this game.`,
+        `${pick} orchestrated my exit and covered ${_jrFp.pos} tracks clean. I found out who was really behind it. Respect. My vote goes to the person who outplayed me.`,
+      ]);
+    } else if (_jrLayer.keptPromise && _jrLayer.trust >= 1) {
+      _jrReason = _jrPick([
+        `${pick} kept ${_jrFp.pos} word to me when ${_jrFp.sub} had every reason to break it. In a game built on lies, that meant something real. ${_jrFp.Sub} earned my vote the honest way.`,
+        `Everyone else was willing to burn me. ${pick} wasn't — ${_jrFp.sub} told me where ${_jrFp.sub} stood and stuck to it. That's the loyalty I'm rewarding.`,
+      ]);
+    } else if (_jrLayer.respectedThreat && _jrLayer.strategicJuror) {
+      _jrReason = _jrPick([
+        `${pick} scared me the entire game — and I mean that as a compliment. I never had control while ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} in the room. You reward the player you couldn't touch.${_jrLayer.respectReason ? ` ${_cap(_jrLayer.respectReason)}.` : ''}`,
+        `I didn't like sitting across from ${pick} — ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} always two moves ahead and dangerous with it. That's exactly why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote. Fear is just respect you haven't admitted yet.`,
+      ]);
+    } else if (_jrLayer.straightShooter && _jrLayer.trustReason) {
+      _jrReason = _jrPick([
+        `${pick} was straight with me from the start — ${_jrLayer.trustReason}. In a game full of liars, ${_jrFp.sub} never made me feel like a mark. That earns it.`,
+        `I always knew where I stood with ${pick}. ${_cap(_jrLayer.trustReason)}. ${_jrFp.Sub} played hard without playing me, and I respect that more than any blindside.`,
+      ]);
+    } else if (_jrLayer.credit >= 1.5 && _jrLayer.strategicJuror) {
+      _jrReason = _jrPick([
+        `I watched ${pick} pull the strings on vote after vote. ${_jrFp.Sub} ran this game whether the others want to admit it or not — and I reward the person who actually controlled the room.`,
+        `Everybody up there wants the credit, but I know who was really behind the big moves: ${pick}. That's the résumé I'm voting for.`,
+        `${pick} was the architect. I sat on that jury and watched ${_jrFp.obj} engineer the votes that got us all here. You don't out-strategize that and then lose to it.`,
+      ]);
+    } else if (_jrLayer.respect >= 5 && _jrLayer.respectReason) {
+      _jrReason = _jrPick([
+        `I'm voting on gameplay, and ${pick} earned it — ${_jrLayer.respectReason}. Sharpest game sitting up there.`,
+        `${_cap(_jrLayer.respectReason)}. That's the moment ${pick} won my vote. Pure strategy, and I respect it.`,
+      ]);
+    } else if (_jrLayer.resentment >= 5) {
+      _jrReason = _jrPick([
+        `Let me be clear — I don't like how ${pick} played me.${_jrLayer.grievanceReason ? ` ${_cap(_jrLayer.grievanceReason)}.` : ''} But ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still the strongest game up there, and I won't let a grudge hand the title to the wrong person.`,
+        `This vote costs me something. ${pick} burned me and I haven't forgotten it. I'm voting for ${_jrFp.obj} anyway, because the game earned it even if my pride didn't.`,
       ]);
     } else if (_jrVotedOut && _jrBond >= 2) {
       _jrReason = _jrPick([
@@ -2508,7 +2661,7 @@ export function simulateJuryVote(finalists) {
     } else if (_jrPosJurorBonds >= 5) {
       _jrReason = _jrPick([
         `Everybody on this jury has something good to say about ${pick}. That's not an accident — ${_jrFp.sub} built real relationships with real people. My vote reflects that.`,
-        `${pick} connected with more people on this jury than anyone else up there. That's social game. That's what Survivor is about.`,
+        `${pick} connected with more people on this jury than anyone else up there. That's social game. That's what this whole thing is about.`,
         `I look at this jury and I see ${_jrPosJurorBonds} people who genuinely like ${pick}. You can't fake that over 30 days. ${_jrFp.Sub} earned every one of those relationships.`,
       ]);
     } else if ((gs.providerHistory?.[pick] || 0) >= 5) {
@@ -2525,9 +2678,21 @@ export function simulateJuryVote(finalists) {
         `strong personal loyalty — felt closest to ${pick}`,
       ]);
     } else {
-      _jrReason = _jrPick([
+      // No strong personal signal — the juror falls back on what they value most.
+      const _valueReasons = {
+        control: [`I vote for the person who controlled this game, and that's ${pick}. Feelings don't win me over — moves do.`,
+          `${pick} was always a step ahead. I respect a player who runs the board, and ${_jrFp.sub} did.`],
+        loyalty: [`${pick} never turned on the people ${_jrFp.sub} was loyal to. That's the game I respect, and it gets my vote.`,
+          `I reward people who don't stab their allies in the back. ${pick} kept ${_jrFp.pos} loyalties intact.`],
+        social: [`${pick} understood people. This game is won in the conversations, and ${_jrFp.sub} had them all.`,
+          `The social game is the game, and ${pick} played it better than anyone up there.`],
+        honesty: [`${pick} played hard but ${_jrFp.sub} played honest. I'd rather reward a clean game than a ruthless one.`,
+          `No dirty tricks with ${pick}. In a game that rewards lying, ${_jrFp.sub} stayed straight. That matters to me.`],
+        challenge: [`${pick} won when it counted. ${_jrFp.Sub} earned ${_jrFp.pos} spot on the mat, not in a backroom deal.`,
+          `I respect someone who fights for it. ${pick} never coasted — ${_jrFp.sub} competed.`],
+      };
+      _jrReason = _jrPick(_valueReasons[_jrLayer.topValue] || [
         `${pick} is the least bad option up there. Not a ringing endorsement — but it's the truth.`,
-        `I don't love any of the finalists. But ${pick} at least played ${_jrFp.pos} own game.`,
         `Process of elimination. The others gave me less reason to vote for them than ${pick} did.`,
         `${pick} survived. That's not nothing. In this game, making it to the end is its own argument.`,
       ]);
@@ -2542,7 +2707,7 @@ export function simulateJuryVote(finalists) {
 // Thin wrapper around simulateJuryVote's scoring logic, but deterministic (no random noise)
 // Returns { [finalist]: projectedVotes } without modifying game state
 export function projectJuryVotes(finalistSet) {
-  const jury = gs.jury || [];
+  const jury = seatedJury();
   if (!jury.length || !finalistSet.length) return {};
   const votes = Object.fromEntries(finalistSet.map(f => [f, 0]));
   jury.forEach(juror => {
@@ -2595,9 +2760,12 @@ export function projectJuryVotes(finalistSet) {
         else bitterness = 0.25 + Math.max(0, bondAtBoot) * 0.15;
       }
       const _reputationBonus = reputationModifier(f, 'jury') * (jS.strategic > 7 || jS.intuition > 7 ? 0.9 : 0.45);
+      // Keep in sync with simulateJuryVote: strategy-layer weighting so a
+      // finalist's projection of the vote matches the vote that actually happens.
+      const _layerMod = _juryLayerRead(juror, f).mod;
       const score = (jS.strategic > 7 || jS.intuition > 7
         ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
-        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus;
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus + _layerMod;
       // Deterministic tiebreaker: use bond magnitude to break score ties
       return { name: f, score, tiebreak: Math.abs(bond) };
     });
@@ -4448,8 +4616,26 @@ export function generateRelayTextBacklog(ep) {
 
 // FTC swing votes: hesitating jurors can change their vote based on FTC performance
 export function applyFTCSwingVotes(finalists) {
-  const jury = gs.jury || [];
+  const jury = seatedJury();
   const swings = [];
+  const corrections = [];
+
+  // FTC correction pass: a finalist reclaims moves a juror mis-credited (stolen
+  // credit / wrong story). Reads beliefs, so the jury vote afterward rewards the
+  // true architect. This runs for EVERY juror, not just hesitating ones.
+  jury.forEach(juror => {
+    finalists.forEach(f => {
+      const fS = pStats(f);
+      const persuasion = Math.min(0.6, 0.10 + fS.social * 0.03 + fS.strategic * 0.025 - Math.max(0, -getBond(juror, f)) * 0.03);
+      const fixed = ftcCorrectBelief(f, juror, persuasion);
+      if (fixed) {
+        addBond(juror, f, 0.4);   // reclaiming the move earns real credit
+        corrections.push({ juror, finalist: f, from: fixed.stolenFrom,
+          reason: `${f} set the record straight — the ${fixed.object} vote was ${pronouns(f).pos}, not ${fixed.stolenFrom}'s. ${juror} bought it.` });
+      }
+    });
+  });
+  gs._ftcCorrections = corrections;
 
   jury.forEach(juror => {
     const jS = pStats(juror);
@@ -4585,6 +4771,15 @@ export function generateFTCData(finalists, juryResult) {
       { q:`I thought we had something out there, ${target}. Then you voted me out. What happened?`,
         r: hi('loyalty') ? `"We did, ${juror}. And losing that was one of the worst parts of this game. But the numbers left me no choice."` : `"The game moved faster than our relationship could keep up. I made a call — and I'm sorry."` },
     ],
+    // ── Belief-driven: the juror confronts whoever they BELIEVE ran their boot ──
+    beliefConfront: [
+      { q:`I've had a long time on that bench to think, ${target}. I believe it was you who ran the vote that sent me home. Tell me I'm wrong.`,
+        r: hi('strategic') ? `"You're not wrong, ${juror}. It was me. I let the room think it was someone else, but you were too sharp for that. That's exactly why I moved on you."` : `"...You're not wrong. It was me. I'm sorry you had to find out sitting over there."` },
+      { q:`Everyone credited someone else for my elimination, ${target}. But I think the real architect is sitting right in front of me. Was it you?`,
+        r: hi('strategic') ? `"It was. Letting someone else take the credit was the whole point — it kept the target off me. You caught it anyway. Respect."` : `"It was my move, ${juror}. I didn't correct the record because it kept me safe. But I won't lie to your face now."` },
+      { q:`Own it or lose my vote, ${target}: did you engineer the blindside that ended my game?`,
+        r: hi('boldness') ? `"I did. No hiding behind the numbers — that was mine, start to finish. Vote how you want, but at least I'll tell you the truth."` : `"Yes. It was mine. I'd rather lose your vote being honest than win it on a lie."` },
+    ],
     // ── Strategic ──
     strategic: [
       { q:`What was your single biggest move, ${target} — and how do you know it was yours?`,
@@ -4683,6 +4878,10 @@ export function generateFTCData(finalists, juryResult) {
     const target = Math.random() < 0.45 && other ? other : votedFor;
     const bond = getBond(juror, target);
     const votedThemOut = jHistory?.voters?.includes(target);
+    // Does this juror BELIEVE this finalist ran their boot (true or a stolen-credit
+    // misconception)? That belief drives the confrontation, even if the finalist
+    // never wrote their name.
+    const believesTargetBootedMe = juryBelievesBooter(juror, target) >= 0.45;
     const fS = pStats(target);
     const seed = _h(juror, target) + ri * 7;
     const qa = _qa(target, fS, _wins(target), juror);
@@ -4692,6 +4891,8 @@ export function generateFTCData(finalists, juryResult) {
     let picked;
     if (votedThemOut && bond < 0) {
       picked = _pickUnusedQA(qa.betrayalHostile, seed);
+    } else if (believesTargetBootedMe && bond < 1.5) {
+      picked = _pickUnusedQA(qa.beliefConfront, seed);   // confront who they think ran it
     } else if (votedThemOut) {
       picked = _pickUnusedQA(qa.betrayalNeutral, seed);
     } else {

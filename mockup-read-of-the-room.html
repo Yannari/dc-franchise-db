@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read of the Room — VP mockup</title>
+<style>
+  :root {
+    --bg:#0d1117; --card:#161b22; --card2:#11151c; --line:#30363d;
+    --ink:#e6edf3; --sub:#8b949e; --mut:#6e7681;
+    --blue:#57a6e8; --purple:#d2a8ff; --amber:#d29922; --orange:#f0883e;
+    --red:#f85149; --green:#3fb950; --pink:#c9a9e4;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:28px 16px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:760px; margin:0 auto; }
+
+  /* section shell */
+  .rotr { background:linear-gradient(180deg,#12161d,#0f1319); border:1px solid var(--line);
+    border-radius:12px; padding:0 0 6px; overflow:hidden;
+    box-shadow:0 0 0 1px rgba(88,166,255,.04), 0 8px 30px rgba(0,0,0,.35); }
+  .rotr-head { display:flex; align-items:baseline; justify-content:space-between;
+    padding:14px 18px 12px; border-bottom:1px solid var(--line);
+    background:radial-gradient(120% 140% at 0% 0%, rgba(210,153,34,.10), transparent 60%); }
+  .rotr-title { font-size:13px; font-weight:900; letter-spacing:2.5px; color:var(--ink); }
+  .rotr-sub { font-size:10px; letter-spacing:1.5px; color:var(--mut); text-transform:uppercase; }
+
+  .band { padding:14px 18px 6px; }
+  .band + .band { border-top:1px solid #1c222b; }
+  .band-h { display:flex; align-items:center; gap:8px; margin-bottom:11px; }
+  .band-dot { width:9px; height:9px; border-radius:50%; box-shadow:0 0 8px currentColor; }
+  .band-name { font-size:11px; font-weight:800; letter-spacing:1.4px; }
+  .band-note { font-size:10px; color:var(--mut); font-weight:400; letter-spacing:.3px; }
+
+  /* rows */
+  .row { display:flex; align-items:flex-start; gap:11px; padding:9px 11px; margin-bottom:7px;
+    border-radius:8px; background:var(--card); border:1px solid #232a33; position:relative; }
+  /* signal tiering */
+  .row.load { border-left:3px solid var(--tier); background:linear-gradient(90deg, color-mix(in srgb,var(--tier) 12%, var(--card)), var(--card) 42%); }
+  .row.ambient { opacity:.72; background:var(--card2); }
+  .row.ambient .badge { background:#20262e; color:var(--mut); box-shadow:none; }
+
+  .badge { flex:none; font-size:8.5px; font-weight:900; letter-spacing:.8px; padding:3px 7px;
+    border-radius:5px; color:#0d1117; white-space:nowrap; margin-top:1px;
+    box-shadow:0 0 10px -2px currentColor; }
+  .row-txt { font-size:12px; line-height:1.5; color:var(--sub); }
+  .row-txt strong { color:var(--ink); font-weight:700; }
+  .where { font-size:10px; color:var(--mut); }
+
+  /* avatar chips for the intentions band */
+  .who { display:flex; align-items:center; gap:9px; padding:8px 11px; margin-bottom:7px;
+    border-radius:8px; background:var(--card); border:1px solid #232a33; }
+  .who.load { border-left:3px solid var(--tier); }
+  .av { flex:none; width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
+    font-size:11px; font-weight:800; color:#0d1117; }
+  .who-txt { font-size:12px; color:var(--sub); line-height:1.45; }
+  .who-txt b { color:var(--ink); }
+  .arrow { color:var(--mut); }
+
+  .legend { display:flex; gap:16px; align-items:center; padding:10px 18px 4px; font-size:9.5px; color:var(--mut); }
+  .legend b { color:var(--sub); }
+  .chip { display:inline-flex; align-items:center; gap:5px; }
+  .chip i { width:16px; height:8px; border-radius:2px; display:inline-block; }
+  .caption { max-width:760px; margin:16px auto 0; font-size:11px; color:var(--mut); line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rotr">
+    <div class="rotr-head">
+      <div class="rotr-title">READ OF THE ROOM</div>
+      <div class="rotr-sub">before Tribal · Episode 9</div>
+    </div>
+
+    <div class="legend">
+      <span><b>Signal:</b></span>
+      <span class="chip"><i style="background:var(--red)"></i> load-bearing — moved this vote</span>
+      <span class="chip"><i style="background:#20262e"></i> ambient — texture</span>
+    </div>
+
+    <!-- BAND 1 · SECRETS -->
+    <div class="band">
+      <div class="band-h" style="color:var(--red)">
+        <span class="band-dot"></span>
+        <span class="band-name">SECRETS IN PLAY</span>
+        <span class="band-note">— who knows what, going in</span>
+      </div>
+
+      <div class="row load" style="--tier:var(--red)">
+        <span class="badge" style="background:var(--red)">EXPOSED</span>
+        <div class="row-txt"><strong>Emmah</strong> was warned her name is being floated for tonight — she walks in hunting votes, not blindsided. <span class="where">· heard it at the lake shore</span></div>
+      </div>
+
+      <div class="row load" style="--tier:var(--orange)">
+        <span class="badge" style="background:var(--orange)">LEAKED</span>
+        <div class="row-txt"><strong>Caleb</strong>'s plan to take out Emmah slipped to <strong>Jade</strong>, who wasn't meant to hear it. <span class="where">· overheard by the campfire</span></div>
+      </div>
+
+      <div class="row ambient">
+        <span class="badge">WORD SPREAD</span>
+        <div class="row-txt">Three players now quietly believe <strong>Zee</strong> is holding an idol.</div>
+      </div>
+    </div>
+
+    <!-- BAND 2 · INTENTIONS -->
+    <div class="band">
+      <div class="band-h" style="color:var(--blue)">
+        <span class="band-dot"></span>
+        <span class="band-name">WHERE HEADS ARE AT</span>
+        <span class="band-note">— each player's read, in their own logic</span>
+      </div>
+
+      <div class="who load" style="--tier:var(--blue)">
+        <span class="av" style="background:linear-gradient(135deg,#57a6e8,#3b82c4)">CA</span>
+        <div class="who-txt"><b>Caleb</b> <span class="arrow">→</span> gunning for <b>Emmah</b>, wants a final three with <b>Zee</b> &amp; <b>Anastasia</b>.</div>
+      </div>
+      <div class="who load" style="--tier:var(--purple)">
+        <span class="av" style="background:linear-gradient(135deg,#d2a8ff,#a06cd5)">EM</span>
+        <div class="who-txt"><b>Emmah</b> <span class="arrow">→</span> knows she's the target, scrambling to flip the vote onto <b>Caleb</b>.</div>
+      </div>
+      <div class="who">
+        <span class="av" style="background:linear-gradient(135deg,#3fb950,#2ea043)">JA</span>
+        <div class="who-txt"><b>Jade</b> <span class="arrow">→</span> floating between blocs, protecting <b>Anastasia</b> above all.</div>
+      </div>
+      <div class="who">
+        <span class="av" style="background:linear-gradient(135deg,#f0883e,#d2691e)">ZE</span>
+        <div class="who-txt"><b>Zee</b> <span class="arrow">→</span> sitting on the idol, happy to let Caleb take the heat.</div>
+      </div>
+    </div>
+
+    <!-- BAND 3 · SHIFTS -->
+    <div class="band">
+      <div class="band-h" style="color:var(--amber)">
+        <span class="band-dot"></span>
+        <span class="band-name">WHAT SHIFTED THIS EPISODE</span>
+        <span class="band-note">— relationships that actually moved</span>
+      </div>
+
+      <div class="row load" style="--tier:var(--red)">
+        <span class="badge" style="background:var(--red)">TRUST ↓</span>
+        <div class="row-txt"><strong>Caleb</strong> <span class="arrow">→</span> <strong>Emmah</strong> — trust cratered after she floated his name to the other side.</div>
+      </div>
+      <div class="row load" style="--tier:var(--green)">
+        <span class="badge" style="background:var(--green)">RESPECT ↑</span>
+        <div class="row-txt"><strong>Zee</strong> <span class="arrow">→</span> <strong>Caleb</strong> — earned respect for running the pitch cleanly and locking two votes.</div>
+      </div>
+      <div class="row ambient">
+        <span class="badge">RESENTMENT ↑</span>
+        <div class="row-txt"><strong>Jade</strong> <span class="arrow">→</span> <strong>Caleb</strong> — a flicker of resentment at being kept out of the plan.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    Injected into the votes VP screen, right before the tally reveal. Everything here is read from data already
+    on the episode (knowledge events, intention snapshots, relationship-cause snapshots) — no new engine work.
+    <b style="color:var(--sub)">Load-bearing</b> rows (accent border + bright badge) are the ones that moved this vote;
+    ambient rows stay muted. The same tiering gets applied to the camp-event cards so a real pitch outranks flavor.
+  </div>
+</div>
+</body>
+</html>

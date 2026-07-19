@@ -9,6 +9,7 @@ import { believes, factId } from './knowledge.js';
 import { getIntentions, prepareIntentionsForVote } from './intentions.js';
 import { addRelationshipDimension } from './relationships.js';
 import { recordBetrayal } from './relationship-events.js';
+import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
@@ -925,9 +926,9 @@ export function resolveAllianceRepair(incident, epNum = (gs.episode || 0) + 1, r
 
 export function formAlliances(members, tribeLabel, challengeLabel) {
   if (members.length <= 1) return [];
-  // On the first merge vote, plans must exist before the organizer proposes a
-  // target—not be created only after alliances have already chosen names.
-  if (gs.isMerged) prepareIntentionsForVote();
+  // Persistent strategy starts as a tribe-survival read before merge and may
+  // later expand. It must exist before organizers choose names in either phase.
+  prepareIntentionsForVote();
   const alliances = [];
   const present = new Set(members);
   const _lostVoteSet = new Set([...(gs.lostVoteThisEp || []), ...(gs.lostVotes || [])]);
@@ -1165,7 +1166,9 @@ export function formAlliances(members, tribeLabel, challengeLabel) {
     const _confirmedIdol = _idolRead.confirmed;
     // Check: suspected idol? Strategic roll.
     const _maxStrategic = Math.max(..._atTribal.map(m => pStats(m).strategic));
-    const _organicSuspicion = !_confirmedIdol && !_idolRead.suspected && threatScore(a.target) >= 2.0 && Math.random() < _maxStrategic * 0.06;
+    const _bestIdolReader = [..._atTribal].sort((x,y) => (idolSuspicionModifier(y)+splitVotePreference(y)*.03)-(idolSuspicionModifier(x)+splitVotePreference(x)*.03))[0];
+    const _learnedSuspicion = _bestIdolReader ? idolSuspicionModifier(_bestIdolReader) : 0;
+    const _organicSuspicion = !_confirmedIdol && !_idolRead.suspected && threatScore(a.target) >= 2.0 && Math.random() < Math.min(.75, _maxStrategic*.06+_learnedSuspicion);
     if (_organicSuspicion) {
       const _reader = [..._atTribal].sort((x,y) => (pStats(y).strategic + pStats(y).intuition) - (pStats(x).strategic + pStats(x).intuition))[0];
       recordIdolIntel(_reader, a.target, { source:'strategic suspicion', confidence:0.58, truth:'unknown' });

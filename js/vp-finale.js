@@ -2,6 +2,8 @@
 // vp-finale.js — Finale VP screens, jury, reunion, season stats, debug
 // ══════════════════════════════════════════════════════════════════════
 
+import { dramaticVoteOrder } from './vp-screens.js';
+
 if (typeof window !== 'undefined' && !window._tvState) window._tvState = {};
 
 export function rpBuildFinaleCampLife(ep) {
@@ -1711,10 +1713,29 @@ export function rpBuildJuryVoteReveal(ep) {
   if (!winner || !juryResult?.votes) return '';
 
   const jury = gs.jury || [];
-  const reasoning = juryResult.reasoning || [];
   const votes = juryResult.votes;
   const epNum = ep.num;
   const sorted = Object.entries(votes).sort(([,a],[,b]) => b-a);
+  // Read the votes "clinch last" for suspense: keep the tally close and land the
+  // winner's deciding vote on the final card. Only the reveal order changes.
+  const reasoning = dramaticVoteOrder(juryResult.reasoning || [], 'votedFor', winner);
+  // Precompute the running tally + tension beat shown as each card flips.
+  const _need = Math.floor((juryResult.reasoning || []).length / 2) + 1;
+  const _beats = [];
+  const _run = {};
+  reasoning.forEach((r, i) => {
+    _run[r.votedFor] = (_run[r.votedFor] || 0) + 1;
+    const rank = Object.entries(_run).sort(([,a],[,b]) => b - a);
+    const [leadName, leadCt] = rank[0];
+    const tied = rank.length > 1 && rank[1][1] === leadCt;
+    const tally = finalists.map(f => `${f} ${_run[f] || 0}`).join('  ·  ');
+    let label;
+    if (i === reasoning.length - 1) label = '★ THE DECIDING VOTE';
+    else if (tied) label = `TIED ${leadCt}–${leadCt}`;
+    else if (leadCt >= _need - 1 && leadCt < _need) label = `${leadName} — ONE VOTE FROM THE TITLE`;
+    else label = `${leadName} LEADS`;
+    _beats.push({ label, tally });
+  });
 
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
@@ -1726,11 +1747,23 @@ export function rpBuildJuryVoteReveal(ep) {
         <div id="ftc-cnt-${epNum}-${f.replace(/\s+/g,'_')}" style="font-size:28px;font-family:var(--font-display);color:#8b949e;margin-top:4px;min-width:40px" data-finalist="${f}" data-winner="${winner}">0</div>
       </div>`).join('')}
     </div>
+    <style>
+      @keyframes ftcBeatPulse{0%{transform:scale(.96);opacity:.4}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+      #ftc-beat-${epNum}{animation:ftcBeatPulse .35s ease-out}
+      .ftc-deciding.tv-revealed{border-color:rgba(227,179,65,0.75)!important;background:rgba(227,179,65,0.08)!important;box-shadow:0 0 24px rgba(227,179,65,0.25)}
+      @media(prefers-reduced-motion:reduce){#ftc-beat-${epNum}{animation:none}}
+    </style>
+    <div id="ftc-beat-${epNum}" style="text-align:center;min-height:34px;margin-bottom:10px">
+      <div id="ftc-beat-label-${epNum}" style="font-family:var(--font-display);font-size:15px;letter-spacing:2px;color:#e3b341;text-transform:uppercase">The jury has spoken. The votes are counted.</div>
+      <div id="ftc-beat-tally-${epNum}" style="font-size:11px;color:#8b949e;letter-spacing:1px;margin-top:2px"></div>
+    </div>
     <div id="ftc-cards-${epNum}" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">`;
 
   reasoning.forEach((r, i) => {
     const isWin = r.votedFor === winner;
-    html += `<div class="tv-vote-card ftc-card" data-voted="${r.votedFor}" data-voter="${r.juror}" data-index="${i}" data-epnum="${epNum}" data-is-winner-vote="${isWin}" style="display:none;border-color:rgba(139,148,158,0.3);background:rgba(139,148,158,0.03)">
+    const _b = _beats[i] || {};
+    const _deciding = i === reasoning.length - 1;
+    html += `<div class="tv-vote-card ftc-card${_deciding ? ' ftc-deciding' : ''}" data-voted="${r.votedFor}" data-voter="${r.juror}" data-index="${i}" data-epnum="${epNum}" data-is-winner-vote="${isWin}" data-beat="${(_b.label || '').replace(/"/g,'')}" data-tally="${(_b.tally || '').replace(/"/g,'')}" data-deciding="${_deciding ? '1' : '0'}" style="display:none;border-color:rgba(139,148,158,0.3);background:rgba(139,148,158,0.03)">
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(r.juror, 'sm')}
         <div class="tv-vote-voter">${r.juror}</div>

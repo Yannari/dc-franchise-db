@@ -3040,7 +3040,7 @@ export function applyTwist(ep, twist, isPrimary = true) {
         addBond(a, b, _bondGain);
         ep.feastEvents.push({ type, players: [a, b], text: _pick([
           `${a} and ${b} start talking — not about the game. About home, about why they're here, about things that don't usually come up at camp. Something shifts.`,
-          `The food loosens things up. ${a} tells a story that makes ${b} laugh until ${_prB.sub} can't breathe. For five minutes, nobody is playing Survivor.`,
+          `The food loosens things up. ${a} tells a story that makes ${b} laugh until ${_prB.sub} can't breathe. For five minutes, nobody is playing the game.`,
           `${a} and ${b} discover they have more in common than either expected. The game will test whether that matters.`,
         ]), badgeText: 'Connection', badgeClass: 'green' });
       } else if (type === 'emotional-negative') {

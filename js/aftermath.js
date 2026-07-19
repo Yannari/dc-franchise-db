@@ -2,6 +2,9 @@
 import { gs, seasonConfig, players } from './core.js';
 import { pStats, pronouns } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { getRelationshipDimensions } from './relationships.js';
+import { getIntentions } from './intentions.js';
+import { believes, factId } from './knowledge.js';
 import { buildNextEpQs, buildTrackedArcs } from './text-backlog.js';
 import { simulateAftermayhem } from './chal/aftermayhem.js';
 
@@ -195,18 +198,56 @@ export function generateAftermathShow(ep) {
     const _pickedQAs = [..._shuffledRare.slice(0, 3), ..._shuffledNormal.slice(0, 3)].slice(0, 6);
     if (!_pickedQAs.length) _pickedQAs.push(..._shuffledNormal.slice(0, 4));
 
-    // Closing statement based on archetype
-    const lastWords = arch === 'villain' || arch === 'schemer'
-      ? _pick([`"They haven't seen the last of me."`, `"I'd do it all again. Every single move."`, `"The game needed a villain. You're welcome."`, `"I didn't lose. I just ran out of time."`])
-      : arch === 'hero'
-      ? _pick([`"Play with integrity. That's all that matters."`, `"I'm proud of the game I played."`, `"Win or lose — I stayed true to myself."`, `"I hope I inspired someone out there."`])
-      : arch === 'hothead' || arch === 'chaos-agent'
-      ? _pick([`"I hope they all turn on each other."`, `"I regret NOTHING."`, `"This isn't over. Not for me."`, `"You're welcome for the entertainment."`])
-      : arch === 'floater'
-      ? _pick([`"I played a quieter game than people realize."`, `"Nobody noticed me until it was too late. Unfortunately, it was too late for me too."`, `"I flew under the radar. It just wasn't far enough."`])
-      : arch === 'challenge-beast'
-      ? _pick([`"I gave every challenge everything I had."`, `"They couldn't beat me in challenges. So they got me at tribal."`, `"I went out swinging. Literally."`])
-      : _pick([`"It was an experience. That's what I'll take away."`, `"I gave it everything I had."`, `"No regrets. Well... maybe one or two."`, `"I'll be back. Count on it."`]);
+    // Closing statement: the ESSENCE comes from this player's own game plan and
+    // who they blame for their exit (weighted by resentment + what they know);
+    // the archetype only FLAVORS the delivery/voice.
+    const _lwPr = pronouns(name);
+    const _lwPlan = getIntentions(name);
+    let _nemesis = null, _nemScore = 0.5;
+    (voters || []).forEach(v => {
+      if (v === name) return;
+      const d = getRelationshipDimensions(name, v); // how the eliminee regards the voter
+      const knew = believes(name, factId('betrayal', v, name));
+      const s = (d.resentment || 0) + (knew ? 3 : 0);
+      if (s > _nemScore) { _nemScore = s; _nemesis = v; }
+    });
+    const _pact = _lwPlan ? [...(_lwPlan.finalThree || []), ...(_lwPlan.preferredCore || []), ...(_lwPlan.backupAllies || [])] : [];
+    const _betrayedBy = _nemesis && _pact.includes(_nemesis) ? _nemesis : null;
+    const _dreamF3 = (_lwPlan?.finalThree || []).filter(n => n !== name && !(voters || []).includes(n));
+    // Archetype voice — the tone the essence is delivered in.
+    const _toneBank = {
+      villain: [`They haven't seen the last of me.`, `I'd do it all again — every move.`, `The game needed a villain. You're welcome.`],
+      schemer: [`I'll be back, and I'll be sharper.`, `A good move is a good move — even against me.`, `The game got me. It didn't break me.`],
+      mastermind: [`I built the board. Someone finally flipped it.`, `I'll be back, and I'll be sharper.`],
+      hero: [`I played it clean, and I'm proud of that.`, `No bitterness — that's not who I am.`, `Win or lose, I stayed true to myself.`],
+      'loyal-soldier': [`I kept my word to the end. I'd do it again.`, `Loyalty cost me. I'd still choose it.`],
+      hothead: [`I hope they all turn on each other.`, `I regret NOTHING.`],
+      'chaos-agent': [`You're welcome for the chaos.`, `Let it all burn behind me.`],
+      floater: [`Guess I stayed quiet a beat too long.`, `Nobody saw me — until they needed to.`],
+      'challenge-beast': [`They couldn't beat me, so they voted me.`, `I went out swinging.`],
+      underdog: [`Counted out from day one — I still made them sweat.`, `From the bottom to here. I'm proud of that.`],
+    };
+    const _toneLine = _pick(_toneBank[arch] || [`It was an experience. That's what I'll take away.`, `I gave it everything I had.`, `No regrets. Well... maybe one or two.`]);
+    let lastWords;
+    if (_betrayedBy) {
+      lastWords = _pick([
+        `"${_betrayedBy} and I were supposed to go to the end together. ${_lwPr.Sub} wrote my name instead. ${_toneLine}"`,
+        `"I trusted ${_betrayedBy}. That's the mistake that ended my game. ${_toneLine}"`,
+      ]);
+    } else if (_nemesis) {
+      lastWords = _pick([
+        `"${_nemesis} came for me and got the job done. ${_toneLine}"`,
+        `"I know it was ${_nemesis} behind this. ${_toneLine}"`,
+      ]);
+    } else if (_dreamF3.length) {
+      lastWords = _pick([
+        `"I wanted to sit at the end with ${_dreamF3.slice(0, 2).join(' and ')}. Didn't get there. ${_toneLine}"`,
+        `"The plan was ${_dreamF3.slice(0, 2).join(' and ')} and me at the final. So close. ${_toneLine}"`,
+      ]);
+    } else {
+      // No plan/blame data recorded — fall back to pure archetype voice.
+      lastWords = `"${_toneLine}"`;
+    }
 
     return { player: name, isActive, elimEpNum, arch, pop, crowdReaction, entranceQuote, questions: _pickedQAs, lastWords, voters };
   });

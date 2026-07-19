@@ -385,7 +385,7 @@ export function simulateUpTheCreek(ep) {
           const prSpot = pronouns(spotter);
           const wildTexts = [
             `${spotter} points out a great blue heron watching them from the reeds. The tribe slows down to look. Worth it.`,
-            `${spotter} calls out a school of fish under the canoe. Everyone peers over the side. For five seconds, nobody's playing Survivor.`,
+            `${spotter} calls out a school of fish under the canoe. Everyone peers over the side. For five seconds, nobody's playing the game.`,
             `A family of otters slides past ${spotter}'s canoe. ${prSpot.Sub} grins. Even the tribe's most jaded members can't help it.`,
           ];
           const spotterPair = pairs.find(p => p.a === spotter || p.b === spotter);

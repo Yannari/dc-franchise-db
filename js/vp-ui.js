@@ -344,7 +344,19 @@ export function ftcRevealNext(epNum, total) {
   card.style.display = 'flex';
   card.classList.add('tv-revealed', 'tv-latest');
   if (state.revealed > 0) cards[state.revealed - 1].classList.remove('tv-latest');
+  const _deciding = card.dataset.deciding === '1';
   audio.sfx(cueFromElement(card) || 'vote-tick');
+
+  // Suspense banner: running tally + tension beat for this vote.
+  const beatLabel = document.getElementById(`ftc-beat-label-${epNum}`);
+  const beatTally = document.getElementById(`ftc-beat-tally-${epNum}`);
+  const beatWrap = document.getElementById(`ftc-beat-${epNum}`);
+  if (beatLabel && card.dataset.beat) {
+    beatLabel.textContent = card.dataset.beat;
+    beatLabel.style.color = _deciding ? '#e3b341' : (card.dataset.beat.includes('ONE VOTE') ? '#f0883e' : card.dataset.beat.startsWith('TIED') ? '#57a6e8' : '#c9d1d9');
+    if (beatTally) beatTally.textContent = card.dataset.tally || '';
+    if (beatWrap) { beatWrap.style.animation = 'none'; void beatWrap.offsetWidth; beatWrap.style.animation = ''; }
+  }
 
   // Update tally counter
   const voted = card.dataset.voted;

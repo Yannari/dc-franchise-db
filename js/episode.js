@@ -11,7 +11,8 @@ import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney,
 import { applyDisadvantagePenalty } from './disadvantage-vote.js';
 import { updateStrategicReputations } from './reputation.js';
 import { applyObservedStrategicRespect } from './relationship-events.js';
-import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge } from './knowledge-integration.js';
+import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge, attachInfoFlowLocations, recordVoteArchitect, juryArchitectCredit, reconcileJuryPerception } from './knowledge-integration.js';
+import { getRelationshipDimensions } from './relationships.js';
 import { tickIntentions, prepareIntentionsForVote } from './intentions.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
@@ -28,6 +29,7 @@ import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
+import { updateAdaptationFromEpisode } from './adaptation.js';
 
 // Challenge simulate functions
 import { simulateCliffDive } from './chal/cliff-dive.js';
@@ -128,6 +130,9 @@ export function updatePlayerStates(ep) {
     const finalBonds = {};
     gs.activePlayers.forEach(p => { finalBonds[p] = getBond(ep.eliminated, p); });
     gs.jurorHistory[ep.eliminated] = { voters, ep: epNum, finalBonds };
+    // #5: record who the jury believes controlled this boot (distorted by
+    // stolen credit / secrecy) — read by the finale + jury-elimination votes.
+    recordVoteArchitect(ep, epNum);
   }
 
   gs.activePlayers.forEach(name => {
@@ -332,6 +337,7 @@ export function updatePlayerStates(ep) {
     state.emotional = emotional;
     gs.playerStates[name] = state;
   });
+  updateAdaptationFromEpisode(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1338,7 +1344,7 @@ export function simulateEpisode() {
       ep.riReentry = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
       ep.rescueReturnChallenge = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
       if (gs.riReturnCount === 0) { gs.riPlayers = []; } else { gs.riPlayers = gs.riPlayers.filter(p => !_rescuePlayers.includes(p)); }
-      losers.forEach(l => { gs.eliminated.push(l); gs.jury.push(l); });
+      losers.forEach(l => { gs.eliminated.push(l); if (gs.isMerged) gs.jury.push(l); }); // jury only forms post-merge
       gs.riReturnCount++;
       winners.forEach(w => {
         gs.activePlayers.push(w);
@@ -3920,6 +3926,11 @@ export function simulateEpisode() {
   // Helper: run one full vote + idol + resolve (with revote on tie)
   function runTribal(tribalPlayers, immuneName, allianceSet) {
     prepareIntentionsForVote(ep);
+    // Read-of-the-room must never include fallout caused by the ballot it
+    // appears before. Preserve the relationship cause trail at this boundary.
+    if (!ep.relationshipCausesPreVoteSnapshot) {
+      ep.relationshipCausesPreVoteSnapshot = JSON.parse(JSON.stringify(gs.relationshipCauses || {}));
+    }
     // open-vote: boost loyalty pressure — pass flag to simulateVotes
     // Combine challenge winner + shared-immunity/double-safety immune players
     const _allImmune = [immuneName, ...(ep.extraImmune || [])].filter(Boolean);
@@ -4106,6 +4117,7 @@ export function simulateEpisode() {
     if (_pitchIntelResult) ep.pitchIntel = _pitchIntelResult;
     if (_pitchCounterplayResult) ep.pitchCounterplay = _pitchCounterplayResult;
     if (_knowledgeEventsResult?.length) {
+      attachInfoFlowLocations(_knowledgeEventsResult); // stamp location while the schedule is current (persists for replay)
       ep.knowledgeEvents = [...(ep.knowledgeEvents || []), ..._knowledgeEventsResult];
       const _knowledgeCampKey = gs.isMerged ? 'merge'
         : (gs.tribes.find(t => t.members.some(m => tribalPlayers.includes(m)))?.name || Object.keys(ep.campEvents || {})[0]);
@@ -5131,6 +5143,10 @@ function simulateJuryRoundtable(ep) {
   const activePlayers = gs.activePlayers || [];
   if (jurors.length < 3 || activePlayers.length < 2) return null;
 
+  // Ponderosa first: comparing notes corrects or entrenches who they believe
+  // ran each vote — which reshapes who they see as the biggest threat.
+  ep.ponderosaReconciliations = reconcileJuryPerception(jurors, ep.num);
+
   const lobbyists = [];
   const shifts = [];
   const pushbacks = [];
@@ -5340,10 +5356,17 @@ function simulateJuryRoundtable(ep) {
       const elimVotes = Object.fromEntries(candidates.map(p => [p, 0]));
       const elimLog = [];
       jurors.forEach(juror => {
-        const scores = candidates.map(p => ({
-          name: p,
-          score: -getBond(juror, p) + pStats(juror).strategic * 0.05 + Math.random() * 2
-        }));
+        const _jS = pStats(juror);
+        const _strategicJuror = _jS.strategic > 6 || _jS.intuition > 6;
+        const scores = candidates.map(p => {
+          const _d = getRelationshipDimensions(juror, p);
+          // Jurors boot who they most resent — and the player they believe is
+          // running the game reads as the biggest threat (strategists especially).
+          return { name: p, score: -getBond(juror, p)
+            + (_d.resentment || 0) * 0.25
+            + juryArchitectCredit(juror, p) * (_strategicJuror ? 0.35 : 0.18)
+            + _jS.strategic * 0.05 + Math.random() * 2 };
+        });
         scores.sort((a, b) => b.score - a.score);
         const target = scores[0].name;
         elimVotes[target]++;
@@ -5779,6 +5802,16 @@ function simulateJuryRoundtable(ep) {
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  // The initial tally is authoritative. In particular, Extra Votes already
+  // mutate r1.votes before resolution. Preserve tie metadata even if a legacy
+  // or special resolution path returned an eliminated player without it; the
+  // VP/text must never present equal top totals as a clean plurality boot.
+  const _r1InitialResolution = resolveVotes(r1.votes || {});
+  if (_r1InitialResolution.isTie && _r1InitialResolution.tiedPlayers?.length) {
+    r1.isTie = true;
+    r1.tiedPlayers = r1.tiedPlayers?.length ? r1.tiedPlayers : _r1InitialResolution.tiedPlayers;
+    if (!ep.revoteVotes && !ep.tiebreakerResult && !ep.isRockDraw) ep.tieResolutionMetadataMissing = true;
+  }
   ep.votes = r1.votes; ep.votingLog = r1.log;
   ep.isTie = r1.isTie; ep.tiedPlayers = r1.tiedPlayers;
 
@@ -6821,9 +6854,11 @@ function simulateJuryRoundtable(ep) {
     tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
     knowledgeSnapshot: JSON.parse(JSON.stringify(gs.knowledge || {})),
+    knowledgeEvents: ep.knowledgeEvents ? JSON.parse(JSON.stringify(ep.knowledgeEvents)) : null,
     campAccess: ep.campAccess ? JSON.parse(JSON.stringify(ep.campAccess)) : null,
     relationshipSnapshot: JSON.parse(JSON.stringify(gs.relationshipDimensions || {})),
     relationshipCausesSnapshot: JSON.parse(JSON.stringify(gs.relationshipCauses || {})),
+    relationshipCausesPreVoteSnapshot: JSON.parse(JSON.stringify(ep.relationshipCausesPreVoteSnapshot || {})),
     intentionsSnapshot: JSON.parse(JSON.stringify(ep.intentionsPreVoteSnapshot || gs.intentions || {})),
     intentionsPostVoteSnapshot: JSON.parse(JSON.stringify(ep.intentionsPostVoteSnapshot || gs.intentions || {})),
     tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
@@ -7094,6 +7129,9 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents;
   }
 
+  updateAdaptationFromEpisode(ep);
+  gs.episodeHistory[gs.episodeHistory.length-1].adaptationEvents = ep.adaptationEvents || [];
+  gs.episodeHistory[gs.episodeHistory.length-1].adaptationSnapshot = ep.adaptationSnapshot || {};
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
   ep.summaryText = summaryText;

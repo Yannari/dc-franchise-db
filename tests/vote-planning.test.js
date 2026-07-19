@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gs } from '../js/core.js';
 import { setBond } from '../js/bonds.js';
 import { buildObservedVoteCommitments, buildViewerVoteCommitments, compareObservedCommitments, consolidateFringeBallots, evaluateLateBallotTransition, resolveLateBallotTransitions, summarizePlanReliability } from '../js/vote-planning.js';
-import { applyResolvedPitchesToForecast, checkShotInDark, describePitchReaction, evaluatePitchResponse, propagatePitchLeaks, resolveCompetingPitches, resolvePitchCounterplay, summarizePitchReactions } from '../js/voting.js';
+import { applyResolvedPitchesToForecast, checkShotInDark, describePitchReaction, ensureVoteReasonMatchesTarget, evaluatePitchResponse, propagatePitchLeaks, resolveCompetingPitches, resolvePitchCounterplay, summarizePitchReactions } from '../js/voting.js';
 import { seedGame } from './helpers/setup.js';
 import { resolveAllianceRepair } from '../js/alliances.js';
 
@@ -154,6 +154,17 @@ describe('observational vote commitments', () => {
 });
 
 describe('flip negotiation', () => {
+  it('rewrites stale target-bound prose after a late ballot change', () => {
+    const fixed = ensureVoteReasonMatchesTarget('Ripper', 'Aiden', 'Brightly never gave them a real reason to feel safe', 'late-pitch', ['Ripper','Aiden','Brightly']);
+    expect(fixed).toContain('Aiden');
+    expect(fixed).toMatch(/replaced the earlier Brightly read/);
+  });
+
+  it('keeps coherent explanations that already name the final target', () => {
+    const reason = 'Brightly is untouchable to them — Aiden absorbs the vote instead';
+    expect(ensureVoteReasonMatchesTarget('Ripper', 'Aiden', reason, 'protect-ally', ['Ripper','Aiden','Brightly'])).toBe(reason);
+  });
+
   it('rejects impossible claimed numbers', () => {
     expect(evaluatePitchResponse({ claimedSupport:8, eligibleVoters:6, confirmedSupport:1 }, () => 0))
       .toMatchObject({ accepted:false, reason:'impossible-numbers' });

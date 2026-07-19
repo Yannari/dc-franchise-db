@@ -88,6 +88,8 @@ numbers, or notice suspicious behavior.
 
 ### 5. Adaptation and learning
 
+Status: implemented July 18, 2026. Persistent bounded profiles now learn from missed deciding votes, successful/stalled pitches, exposed number bluffs, observed idol plays, and successful idol splits. The learned tendencies affect verification, bluff caution, pitch initiative/reach, withdrawal, idol suspicion, and split recognition without rewriting base stats. Episode snapshots are visible in Debug → Learning and important changes appear in the text backlog. Covered by `tests/adaptation.test.js` plus vote-planning integration tests.
+
 Static stats should define starting tendencies. Experience should modify
 behavior during the season.
 
@@ -246,4 +248,3 @@ come from believable people:
 - People cannot be everywhere at once.
 - People learn from success and failure.
 - The audience does not see the complete truth until the story is ready.
-

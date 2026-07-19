@@ -9,8 +9,9 @@ import { reputationModifier } from './reputation.js';
 import { getRelationshipDimensions, pitchTrust, tacticalCooperation, targetProtection } from './relationships.js';
 import { recordPitchKnowledge, recordVotingPlanKnowledge, spreadKnowledgeForRound } from './knowledge-integration.js';
 import { believes, getFact, factId } from './knowledge.js';
-import { getIntentions, intentionBallotMod, intendsToProtect, betrayalConditionActive } from './intentions.js';
+import { getIntentions, intentionBallotMod, intendsToProtect, betrayalConditionActive, assessBallotAgainstPlan } from './intentions.js';
 import { currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
+import { pitchInitiationModifier, approachBudgetModifier, lieChanceModifier, verificationModifier, learnedCaution } from './adaptation.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -28,9 +29,9 @@ export function voterOutOfLoop(voter, allianceTarget) {
 export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, claimedSupport = 1,
   eligibleVoters = 1, confirmedSupport = 1, strategic = 5, intuition = 5, emotional = 'comfortable', liar = false,
   selfTargeted = false, competingSupport = 0, commitmentStrength = 0, majority = Math.floor(eligibleVoters / 2) + 1,
-  reputationMod = 0, leakMod = 0, tacticalCredibility = 0 } = {}, roll = Math.random) {
+  reputationMod = 0, leakMod = 0, tacticalCredibility = 0, verificationMod = 0, learnedCaution = 0 } = {}, roll = Math.random) {
   const impossibleClaim = claimedSupport > eligibleVoters || claimedSupport < 1;
-  const verification = (strategic + intuition) / 20;
+  const verification = Math.max(0, Math.min(1, (strategic + intuition) / 20 + verificationMod));
   const unverifiableGap = Math.max(0, claimedSupport - confirmedSupport - 1);
   const catchesExaggeration = liar && unverifiableGap > 0 && roll() < verification * 0.8;
   const closeTarget = targetBond >= 3;
@@ -46,7 +47,7 @@ export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, 
   // loyalty, target protection and the hard consistency gates still constrain it.
   let acceptChance = 0.12 + trust * 0.035 + tacticalCredibility * 0.05
     + confirmedSupport * 0.07 + strategic * 0.015 + reputationMod
-    - loyalty * 0.025 - Math.max(0, targetBond) * 0.08 - unverifiableGap * verification * 0.05;
+    - loyalty * 0.025 - Math.max(0, targetBond) * 0.08 - unverifiableGap * verification * 0.05 - unverifiableGap * learnedCaution * 0.04;
   if (emotional === 'paranoid') acceptChance -= 0.08;
   if (emotional === 'desperate') acceptChance += 0.08;
   if (impossibleClaim || catchesExaggeration || closeTarget || cannotSaveSelf || doesNotReplaceStrongPlan) acceptChance = 0;
@@ -58,7 +59,7 @@ export function evaluatePitchResponse({ trust = 0, loyalty = 5, targetBond = 0, 
       : tacticalCredibility >= 2 ? 'strategically-credible' : 'trusted-pitcher')
     : confirmedSupport < 2 ? 'wanted-confirmation' : 'not-convinced';
   const leakChance = Math.max(0.02, Math.min(0.60, (emotional === 'paranoid' ? 0.35 : loyalty <= 3 ? 0.22 : 0.06) + leakMod));
-  return { accepted, reason, catchesExaggeration, acceptChance, leaked: !accepted && roll() < leakChance };
+  return { accepted, reason, catchesExaggeration, acceptChance, verification, leaked: !accepted && roll() < leakChance };
 }
 
 export function describePitchReaction(pitch = {}, response = {}, roll = Math.random) {
@@ -407,6 +408,28 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
 
   if (type === 'memory') return ctx.rememberedReason || strategicMemoryReason(voter, target) || 'past history made this vote personal';
 
+  // Strategy-layer motive: when this vote lines up with a grudge the voter has
+  // carried (intention), something they actually learned (knowledge), or real
+  // resentment, surface that personal 'why'. Only for votes the voter OWNS
+  // (grudge/threat) — never an alliance-follow ('loyal'), which frequently gets
+  // re-targeted by a late swing and would leave a stale, name-bound reason.
+  if ((type === 'grudge' || type === 'threat') && Math.random() < 0.5) {
+    if (getIntentions(voter)?.revenge?.includes(target)) return pick([
+      `settling an old score — ${target} crossed the line and this is the reckoning`,
+      `this one's personal; ${voter} has been waiting to write ${target}'s name`,
+      `the plan and the grudge against ${target} finally line up`,
+    ]);
+    if (Number(believes(voter, factId('betrayal', target, voter))?.effectiveConfidence || 0) >= 0.45) return pick([
+      `found out ${target} was the one setting them up — striking before the strike lands`,
+      `${voter} knows ${target} had their name; this is self-defense, plain and simple`,
+      `no sitting still after learning ${target} was coming for them`,
+    ]);
+    if ((getRelationshipDimensions(voter, target).resentment || 0) >= 5) return pick([
+      `no love lost with ${target} — this vote writes itself`,
+      `there's real bad blood with ${target}; ${voter} isn't losing sleep over this one`,
+    ]);
+  }
+
   if (type === 'loyal') {
     const { myAlliance, openVote, phase, splitVote } = ctx;
     if (splitVote) return pick([
@@ -734,6 +757,33 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
   ]);
 }
 
+// A ballot can move after its first prose reason was generated (late pitch,
+// live coalition, consistency fallback). Do not display a target-bound sentence
+// about the rejected name beside the final ballot. Third-person explanations
+// remain valid when they explicitly connect the protected person to the target.
+export function ensureVoteReasonMatchesTarget(voter, target, reason, lateTrigger = null, roster = []) {
+  const text = String(reason || '').trim();
+  if (!target || !text) return text || 'strategic read';
+  const lower = text.toLowerCase();
+  if (lower.includes(String(target).toLowerCase())) return text;
+  const mentioned = (roster || []).filter(name => name !== voter && name !== target
+    && lower.includes(String(name).toLowerCase()));
+  if (!mentioned.length) return text; // generic alliance/numbers prose is still coherent
+  const other = mentioned[0];
+  if (lateTrigger === 'late-pitch') return `[LATE PITCH] a new pitch replaced the earlier ${other} read and moved ${voter} onto ${target}`;
+  if (String(lateTrigger || '').startsWith('live-coalition-')) return `[LIVE COALITION] reliable support formed around ${target}, replacing ${voter}'s earlier ${other} option`;
+  if (lateTrigger === 'protect-ally') return `${voter} would not vote ${other}, so ${target} became the alternative`;
+  if (lateTrigger === 'conflicting-alliance') return `${voter}'s competing alliance commitment redirected the ballot to ${target}`;
+  if (lateTrigger === 'self-preservation') return `${voter} abandoned the earlier ${other} read and struck at ${target} in self-preservation`;
+  const _moved = [
+    `${voter}'s read moved off ${other} once ${target} became the name the room settled on`,
+    `${voter} let the ${other} idea go when the votes gathered behind ${target}`,
+    `the ${other} plan faded for ${voter}; ${target} was where the numbers actually were`,
+    `${voter} shifted from ${other} to ${target} as the vote consolidated`,
+  ];
+  return _moved[(voter.length * 3 + target.length * 2 + other.length) % _moved.length];
+}
+
 export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], openVote = false) {
   // immuneName may be a string or an array — normalise to a Set for O(1) lookup
   const _immArr = Array.isArray(immuneName) ? immuneName : immuneName ? [immuneName] : [];
@@ -793,7 +843,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       if (_pitchCount >= 2) return;
       const pS = pStats(pitcher);
       const pitchWeight = pS.social * 0.05 + pS.strategic * 0.03 + pS.boldness * 0.02;
-      if (Math.random() >= pitchWeight * 0.2) return;
+      if (Math.random() >= Math.max(0.02, Math.min(0.32, pitchWeight * 0.2 + pitchInitiationModifier(pitcher)))) return;
       // Only pitch if disagreeing with alliance target or unallied
       const myAlliance = alliances.find(a => a.members.includes(pitcher));
       const myTarget = myAlliance?.target;
@@ -805,13 +855,13 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           + intentionBallotMod(pitcher, v) + Math.random() * 0.3));
       if (pitchTarget === myTarget) return; // already the plan — no pitch needed
       const _existingSupporters = observedCommitments.filter(r => r.predictedBallot === pitchTarget).map(r => r.voter);
-      const _lieAboutNumbers = pS.loyalty <= 4 && pS.boldness >= 6 && Math.random() < 0.35;
+      const _lieAboutNumbers = pS.loyalty <= 4 && pS.boldness >= 6 && Math.random() < Math.max(0.05, 0.35 + lieChanceModifier(pitcher));
       const _credibleReach = Math.min(_pitchCandidates.length, 1 + _existingSupporters.length + Math.max(1, Math.round((pS.social + pS.strategic) / 8)));
       const _claimedSupport = Math.min(_pitchCandidates.length + (_lieAboutNumbers ? 1 : 0), _credibleReach + (_lieAboutNumbers ? 2 : 0));
       const _flipped = [];
       const _responses = [];
       const _leaks = [];
-      const _approachBudget = Math.max(2, Math.min(5, 1 + Math.round((pS.social + pS.strategic) / 6)));
+      const _approachBudget = Math.max(2, Math.min(5, 1 + Math.round((pS.social + pS.strategic) / 6) + approachBudgetModifier(pitcher)));
       const _accessEp = currentCampAccessEpisode();
       const _recipients = _pitchCandidates.filter(v => v !== pitcher && v !== pitchTarget && !lostVotes.includes(v))
         .map(voter => ({ voter, access:_accessEp
@@ -832,6 +882,7 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
           selfTargeted:_votesAimedAtVoter >= 2, competingSupport:_votesAimedAtVoter,
           commitmentStrength:_voterRead?.commitmentStrength || 0,
           reputationMod:reputationModifier(pitcher, 'pitch-trust'),
+          verificationMod:verificationModifier(voter), learnedCaution:learnedCaution(voter),
           leakMod:reputationModifier(voter, 'leak') + ((access.overhearRisk || 0.5) - 0.5) * 0.18,
           majority:_voterRead?.majority || Math.floor(_pitchCandidates.length / 2) + 1 });
         _responses.push({ voter, ...response, access });
@@ -1430,13 +1481,16 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
     // Prose selection must not consume simulation RNG and change future strategy.
     const _heldKey = `${ballot.voter}|${rejectedTarget}|${finalTarget}|${gs.episode || gs.episodeHistory?.length || 0}`;
     const _heldIndex = [..._heldKey].reduce((n, ch) => ((n * 31) + ch.charCodeAt(0)) >>> 0, 0) % _heldReasons.length;
-    const finalReason = ballot.fringeConsolidation
+    const rawFinalReason = ballot.fringeConsolidation
       ? `[LATE CONSENSUS] ${ballot.fringeConsolidation.from} was isolated; shifted to ${finalTarget} when the room narrowed to the leading options`
       : transition.prevented
       ? _heldReasons[_heldIndex]
       : ballot.reason;
+    const finalReason = ensureVoteReasonMatchesTarget(ballot.voter, finalTarget, rawFinalReason, transition.lateTrigger, tribalPlayers);
     votes[finalTarget] = (votes[finalTarget] || 0) + 1;
-    log.push({ voter: ballot.voter, voted: finalTarget, reason: finalReason, lateTrigger: transition.lateTrigger,
+    const _planBreak = assessBallotAgainstPlan(ballot.voter, finalTarget, finalReason);
+    const _visibleReason = _planBreak ? `${finalReason} — [${_planBreak.label}] ${_planBreak.explanation}` : finalReason;
+    log.push({ voter: ballot.voter, voted: finalTarget, reason: _visibleReason, planBreak:_planBreak, lateTrigger: transition.lateTrigger,
       provisionalSupport: ballot.provisionalSupport,
       transitionPrevented: transition.prevented ? { rejectedTarget, heldTarget: finalTarget } : null });
     if (ballot.isDefecting && ballot.alliance && ballot.allianceTarget && finalTarget !== ballot.allianceTarget) {

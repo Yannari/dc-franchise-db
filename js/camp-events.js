@@ -13,8 +13,82 @@ import { generateSocialManipulationEvents } from './social-manipulation.js';
 import { simulateTribeChallenge } from './challenges-core.js';
 import { eventAllowedInSetting, settingWeightMod, settingProfile, fillVocab, currentSetting, settingReskin } from './settings.js';
 import { reputationModifier } from './reputation.js';
-import { recordIntimidation, recordProtection } from './relationship-events.js';
-import { attachCampAccessToEvents, buildCampAccessSchedule } from './camp-access.js';
+import { recordIntimidation, recordProtection, recordBetrayal } from './relationship-events.js';
+import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAccess } from './camp-access.js';
+import { ensureIntentions, evolveIntentions, getIntentions, evaluateEndgameBeatability } from './intentions.js';
+import { getRelationshipDimensions } from './relationships.js';
+
+function _intentionCampKey(name) {
+  return gs.isMerged ? (gs.mergeName || 'merge')
+    : ((Array.isArray(gs.tribes) ? gs.tribes : []).find(t => (t.members || []).includes(name))?.name || null);
+}
+
+// A small sample of persistent strategy becomes story. Private preference is
+// labelled as private; actual F2/F3 promises remain the sideDeal event's job.
+function generateIntentionStoryEvents(ep, phase) {
+  if (phase !== 'pre' && phase !== 'both') return;
+  // A confirmed deal cannot vanish because a number changed. When resentment
+  // makes it untenable, the withdrawal itself is a camp event.
+  const strained = (gs.sideDeals || []).find(d => d.active && d.genuine !== false && (d.players || []).length === 2 &&
+    d.players.some(a => (getRelationshipDimensions(a, d.players.find(b => b !== a))?.resentment || 0) >= 4));
+  if (strained) {
+    const [a,b] = strained.players;
+    const ar = getRelationshipDimensions(a,b)?.resentment || 0;
+    const br = getRelationshipDimensions(b,a)?.resentment || 0;
+    const breaker = ar >= br ? a : b;
+    const partner = breaker === a ? b : a;
+    const arr = ep.campEvents?.[_intentionCampKey(breaker)]?.pre;
+    if (arr) {
+      const access = findConversationAccess(ep, breaker, partner, { phase:'pre', privacy:.35, allowPublicPullAside:true });
+      strained.active = false; strained.brokenEp = ep.num; strained.brokenBy = breaker;
+      strained.brokenAgainst = partner; strained.breakReason = 'relationship deteriorated until the promise was withdrawn';
+      arr.push({ type:'endgameDealDissolved', players:[breaker, partner], access:access || undefined,
+        badgeText:'ENDGAME DEAL ENDS', badgeClass:'red',
+        text:access
+          ? `${breaker} pulls ${partner} aside and admits their ${strained.type === 'f3' ? 'Final Three' : 'Final Two'} promise no longer feels real. The deal ends here; what replaces it is not decided yet.`
+          : `${breaker} stops treating the ${strained.type === 'f3' ? 'Final Three' : 'Final Two'} promise with ${partner} as real. The distance is visible even before either says it aloud.` });
+    }
+  }
+  const candidates = (gs.activePlayers || []).map(name => {
+    const plan = ensureIntentions(name, ep.num);
+    if (!plan) return null;
+    evolveIntentions(name, ep.num);
+    plan.narrated = plan.narrated || {};
+    const key = `formed:${plan.formedEp}:${plan.stage}`;
+    return plan.narrated[key] ? null : { name, plan, key, skill:pStats(name).strategic || 5 };
+  }).filter(Boolean).sort((a,b) => b.skill-a.skill).slice(0, 2);
+
+  candidates.forEach(({ name, plan, key }) => {
+    const arr = ep.campEvents?.[_intentionCampKey(name)]?.pre;
+    if (!arr) return;
+    const preferred = (plan.preferredCore || [])[0];
+    const target = (plan.targets || [])[0];
+    const access = preferred && Math.random() < Math.min(.65, .18 + pStats(name).social * .04)
+      ? findConversationAccess(ep, name, preferred, { phase:'pre', privacy:.55, allowPublicPullAside:true }) : null;
+    if (access) {
+      arr.push({ type:'gamePlanProbe', players:[name, preferred], access,
+        badgeText:'TESTING THE WATER', badgeClass:'gold',
+        text:`${name} tests a future with ${preferred} without offering a pact. ${preferred} listens, but neither promises Final Two or Final Three. It is interest, not a deal.` });
+    } else {
+      const focus = preferred && target
+        ? `${name} privately wants to keep ${preferred} close while watching ${target} as a possible obstacle.`
+        : preferred ? `${name} privately sees ${preferred} as the safest person to keep close right now.`
+        : target ? `${name} has not built an endgame pact. For now, the plan is simply to survive ${target}.`
+        : `${name} is still thinking one vote at a time. There is no finished endgame plan yet.`;
+      arr.push({ type:'gamePlanConfessional', players:[name], badgeText:'PRIVATE GAME PLAN', badgeClass:'blue',
+        text:`${focus} This is a private intention, not something the other players automatically know.` });
+    }
+    plan.narrated[key] = ep.num;
+  });
+
+  const broken = (gs._brokenDeals || []).splice(0);
+  broken.slice(0, 2).forEach(b => {
+    const arr = ep.campEvents?.[_intentionCampKey(b.partner) || _intentionCampKey(b.breaker)]?.pre;
+    if (!arr) return;
+    arr.push({ type:'endgameDealBroken', players:[b.partner, b.breaker], badgeText:'ENDGAME DEAL BROKEN', badgeClass:'red',
+      text:`${b.partner} learns that ${b.breaker} wrote ${b.partner}'s name despite their ${b.deal.type === 'f3' ? 'Final Three' : 'Final Two'} promise. The deal is over. Whether the hurt becomes revenge or a colder strategic target depends on what follows.` });
+  });
+}
 
 // Fill a reskin/atmosphere template: player tokens first, then vocab tokens.
 // {a}/{b} = the two players, {p} = single featured player, {po} = possessive.
@@ -4319,7 +4393,8 @@ export function checkSocialBomb(ep) {
 
 // Goat targeting — two parts:
 // Part 1 (merge): player with bombs >= 3 reaches merge → someone clocks them as a drag-along.
-// Part 2 (late game, <= 9 left): strategic player recognizes that goat is dangerous at FTC
+// Part 2 (late game, <= 9 left): a planner reassesses someone they actually
+// intended to take, after the social/strategic evidence makes that read risky.
 //   and starts mentally targeting them. Injects camp events + heat for next tribal.
 export function checkGoatTargeting(ep) {
   if (!gs.isMerged || !gs.chalRecord) return;
@@ -4366,18 +4441,18 @@ export function checkGoatTargeting(ep) {
   // ── PART 2: FTC threat reassessment — late game only (9 or fewer left) ──
   if (active.length > 9) return;
 
-  const goats = active.filter(name => {
-    const rec = gs.chalRecord[name];
-    return rec && rec.bombs >= 3;
-  });
+  const goats = [...new Set(active.map(planner => getIntentions(planner)?.goat).filter(name => name && active.includes(name)))];
   if (!goats.length) return;
 
   goats.forEach(goat => {
     // Guard: each goat can only be re-assessed once per episode
     if (ep.goatEvents.some(g => g.player === goat && g.type === 'ftcThreat' && g.ep === ep.num)) return;
 
-    // Find a strategist who hasn't already clocked this goat recently
-    const strategists = active.filter(p => p !== goat && pStats(p).strategic >= 7);
+    // Only the contestant whose persistent plan named this person can have the
+    // reassessment. A low challenge record alone no longer creates this story.
+    const strategists = active.filter(p => p !== goat && getIntentions(p)?.goat === goat && pStats(p).strategic >= 5.5)
+      .map(p => ({ player:p, read:evaluateEndgameBeatability(p, goat) }))
+      .filter(x => x.read && (x.read.beatability < 6 || x.read.warnings?.length));
     if (!strategists.length) return;
 
     // Deterministic roll per goat per episode
@@ -4385,19 +4460,21 @@ export function checkGoatTargeting(ep) {
     const roll = (hashBase + epSeed) % 100;
     if (roll >= 22) return;
 
-    const strategist = strategists.reduce((best, p) => pStats(p).strategic > pStats(best).strategic ? p : best, strategists[0]);
+    const picked = strategists.reduce((best, x) => x.read.beatability < best.read.beatability ? x : best, strategists[0]);
+    const strategist = picked.player;
     const gPrn = pronouns(goat);
     const gs3 = gPrn.sub === 'they';
     const sPrn = pronouns(strategist);
     const ss3 = sPrn.sub === 'they';
 
+    const evidenceLead = picked.read.warnings?.[0] || picked.read.reasons?.[0] || 'the FTC evidence no longer looks harmless';
     const ftcLines = [
-      `${goat} hasn't won a single challenge. But ${gPrn.sub} ${gs3 ? 'are' : 'is'} liked. And liked players win jury votes. That's a problem.`,
-      `${goat} look${gs3 ? '' : 's'} easy to beat on paper. But ${gPrn.sub} ${gs3 ? 'have' : 'has'} been sitting next to people at every tribal. The jury will remember that.`,
+      `${goat} looked beatable earlier. Now the read has changed: ${evidenceLead}. That is a problem.`,
+      `${goat} look${gs3 ? '' : 's'} easy to beat on paper, but the evidence no longer supports treating ${gPrn.obj} as a guaranteed losing finalist.`,
       `Everyone's been treating ${goat} like a goat. But goats who make it deep don't need immunity wins. They need relationships. And ${gPrn.sub} ${gs3 ? 'have' : 'has'} those.`,
       `The challenge résumé is a distraction. ${goat} will sit in front of the jury, smile, and explain how ${gPrn.sub} played ${gPrn.posAdj} social game quietly for 30 days. And it'll work.`,
       `${goat} is the most dangerous person at this stage — not because ${gPrn.sub} ${gs3 ? 'win' : 'wins'} challenges, but because nobody's afraid of ${gPrn.obj}. Jury never hates someone they never feared.`,
-      `Losing every challenge didn't make ${goat} powerless. It made ${gPrn.obj} invisible. And invisible players make it to the end and win.`,
+      `${goat}'s challenge record was only one part of the original read. The jury and strategic résumé are now telling a less comfortable story.`,
     ];
     const strategistLines = [
       `${strategist} recalculate${ss3 ? '' : 's'}. ${gPrn.Sub} ${gs3 ? 'weren\'t' : 'wasn\'t'} supposed to be a concern. Now ${sPrn.sub} ${ss3 ? 'aren\'t' : 'isn\'t'} sure anymore.`,
@@ -6338,7 +6415,12 @@ export function checkSideDealBreaks(ep) {
       if (v.voted !== partner) return; // didn't vote against partner
       // Deal broken
       deal.active = false;
+      deal.brokenEp = curEp;
+      deal.brokenBy = v.voter;
+      deal.brokenAgainst = partner;
+      deal.breakReason = 'voted against endgame partner';
       addBond(partner, v.voter, -2.0);
+      recordBetrayal(partner, v.voter, { severity:1.35, applyWarmth:false, ep:curEp });
       // Emotional state shift
       if (gs.playerStates?.[partner]) {
         const _pBond = getBond(partner, v.voter);
@@ -6376,6 +6458,11 @@ export function checkConflictingDeals(ep) {
       // Discovered!
       addBond(partner, player, -2.5);
       deal.active = false;
+      deal.brokenEp = curEp;
+      deal.brokenBy = player;
+      deal.brokenAgainst = partner;
+      deal.breakReason = 'conflicting endgame promises were exposed';
+      recordBetrayal(partner, player, { severity:1.1, applyWarmth:false, ep:curEp });
       const pr = pronouns(player);
       const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(player))?.name || 'merge');
       if (ep.campEvents?.[campKey]?.pre) {
@@ -8200,6 +8287,9 @@ export function generateCampEvents(ep, phase = 'both') {
   updateLoveTrianglePhases(ep);
   // ── Secret affairs: progress exposure tiers ──
   updateAffairExposure(ep);
+  // Persistent strategy is surfaced sparingly, after ordinary camp scenes
+  // exist and before access metadata is attached.
+  generateIntentionStoryEvents(ep, phase);
   if (phase === 'both') {
     attachCampAccessToEvents(ep, 'pre');
     attachCampAccessToEvents(ep, 'post');

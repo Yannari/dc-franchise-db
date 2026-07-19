@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { seedGame } from './helpers/setup.js';
 import { gs, setGs } from '../js/core.js';
 import { setRelationshipDimension } from '../js/relationships.js';
+import { setBond } from '../js/bonds.js';
 import {
   formIntentions, getIntentions, ensureIntentions, evolveIntentions,
   describeIntentions, describeIntentionsPlan, removeIntentionsFor, resetIntentions,
   intentionBallotMod, betrayalConditionActive, prepareIntentionsForVote,
   tickIntentions,
+  assessBallotAgainstPlan,
+  evaluateEndgameBeatability,
 } from '../js/intentions.js';
 import { intentionTargetMod } from '../js/alliances.js';
 
@@ -16,7 +19,11 @@ function seed() {
     [{ name: 'A', stats: { strategic: 6 } }, { name: 'B', stats: { strategic: 4 } },
      { name: 'C', stats: { strategic: 3 } }, { name: 'D', stats: { strategic: 4 } },
      { name: 'E', stats: { strategic: 9, social: 8 } }, { name: 'F', stats: { strategic: 9, boldness: 8 } }],
-    { episode: 6, intentions: {}, relationshipDimensions: {}, bonds: {} },
+    { episode: 6, isMerged:true, intentions: {}, relationshipDimensions: {}, bonds: {},
+      sideDeals:[
+        { players:['A','B'], initiator:'A', madeEp:5, type:'f3', active:true, genuine:true },
+        { players:['A','C'], initiator:'A', madeEp:5, type:'f3', active:true, genuine:true },
+      ] },
   );
   setRelationshipDimension('A', 'B', 'trust', 8);
   setRelationshipDimension('A', 'C', 'trust', 6);
@@ -44,6 +51,52 @@ describe('intentions: formation', () => {
     expect(p.goat).toBeNull();
     expect(p.juryPlan).toEqual([]);
   });
+
+  it('uses observed FTC evidence instead of equating challenge weakness with goat status', () => {
+    gs.jury = ['J1', 'J2', 'J3'];
+    gs.chalRecord = { B:{ wins:0, bombs:5 }, C:{ wins:0, bombs:0 } };
+    ['J1','J2','J3'].forEach(j => {
+      setBond('A', j, 5);       // planner has a credible winning résumé
+      setBond('B', j, 5);       // weak challenger, but a jury threat
+      setBond('C', j, -3);      // genuinely weak jury position
+    });
+    const socialThreat = evaluateEndgameBeatability('A', 'B');
+    const beatable = evaluateEndgameBeatability('A', 'C');
+    expect(socialThreat.warnings.some(w => /social or jury support/.test(w))).toBe(true);
+    expect(beatable.beatability).toBeGreaterThan(socialThreat.beatability);
+    const p = formIntentions('A', 6);
+    expect(p.goat).toBe('C');
+    expect(p.goatAssessment.reasons.some(r => /jurors/.test(r))).toBe(true);
+    expect(p.origins.goat.C).toMatch(/FTC beatability read/);
+  });
+
+  it('forms a pre-merge survival read only from the current tribe and invents no pact', () => {
+    resetIntentions();
+    gs.isMerged = false;
+    gs.sideDeals = [];
+    gs.tribes = [{ name:'Red', members:['A','B','C'] }, { name:'Blue', members:['D','E','F'] }];
+    const p = formIntentions('A', 3);
+    expect(p.stage).toBe('survival');
+    expect(p.finalThree).toEqual(['A']);
+    expect([...p.preferredCore, ...p.backupAllies, ...p.targets]).not.toContain('E');
+    expect(p.goat).toBeNull();
+    expect(p.juryPlan).toEqual([]);
+  });
+
+  it('expands selectively at merge while keeping preferences separate from deals', () => {
+    resetIntentions();
+    gs.isMerged = false;
+    gs.sideDeals = [];
+    gs.tribes = [{ name:'Red', members:['A','B','C'] }, { name:'Blue', members:['D','E','F'] }];
+    const p = formIntentions('A', 3);
+    gs.isMerged = true;
+    evolveIntentions('A', 4);
+    expect(p.mergeExpanded).toBe(true);
+    expect(['adaptation','endgame']).toContain(p.stage);
+    expect(p.finalThree).toEqual(['A']);
+    expect(p.preferredCore.length).toBeGreaterThan(0);
+    expect(p.history.some(h => h.field === 'stage' && /merge/.test(h.reason))).toBe(true);
+  });
 });
 
 describe('intentions: persistence', () => {
@@ -58,31 +111,35 @@ describe('intentions: persistence', () => {
 });
 
 describe('intentions: evolution on believable triggers', () => {
-  it('promotes a backup into the final three when a member is eliminated', () => {
+  it('does not invent a replacement deal when a confirmed partner is eliminated', () => {
     formIntentions('A', 6);
     setGs({ ...gs, activePlayers: gs.activePlayers.filter(n => n !== 'C') });   // C voted out
     evolveIntentions('A', 7);
     const p = getIntentions('A');
     expect(p.finalThree).not.toContain('C');
-    expect(p.finalThree.length).toBe(3);
-    expect(p.history.some(h => h.field === 'finalThree' && h.reason.includes('slot'))).toBe(true);
+    expect(p.finalThree).toEqual(['A', 'B']);
+    expect(p.finalThree).not.toContain('D');
   });
 
-  it('turns a crossed ally into a revenge target and drops them from the final three', () => {
+  it('keeps a strained confirmed deal until an event ends it, then records revenge', () => {
     formIntentions('A', 6);
     setRelationshipDimension('A', 'B', 'resentment', 6);   // B crossed A
     evolveIntentions('A', 7);
     const p = getIntentions('A');
+    expect(p.finalThree).toContain('B');
+    expect(p.dealStrain.B).toMatch(/promise has not been ended/);
+    const deal = gs.sideDeals.find(d => d.players.includes('A') && d.players.includes('B'));
+    deal.active = false; deal.brokenEp = 8; deal.brokenBy = 'B'; deal.brokenAgainst = 'A';
+    deal.breakReason = 'voted against endgame partner';
+    evolveIntentions('A', 8);
     expect(p.revenge).toContain('B');
     expect(p.targets).toContain('B');
     expect(p.finalThree).not.toContain('B');
-    expect(p.history.some(h => h.field === 'revenge' && h.to === 'B')).toBe(true);
-
-    evolveIntentions('A', 8);
-    expect(getIntentions('A').finalThree).not.toContain('B'); // vacancy fill cannot undo the grudge
+    expect(p.history.some(h => h.field === 'dealBreak' && /revenge/.test(h.reason))).toBe(true);
   });
 
   it('allows an old grudge to heal after resentment falls and trust is repaired', () => {
+    gs.sideDeals.forEach(d => { d.active = false; });
     formIntentions('A', 6);
     setRelationshipDimension('A', 'B', 'resentment', 6);
     evolveIntentions('A', 7);
@@ -122,7 +179,7 @@ describe('intentions: hints + cleanup', () => {
   it('describes the plan in plain language', () => {
     formIntentions('A', 6);
     const hints = describeIntentions('A');
-    expect(hints.some(h => /final three with B & C/.test(h))).toBe(true);
+    expect(hints.some(h => /confirmed endgame deal with B & C/.test(h))).toBe(true);
     expect(hints.some(h => /target/.test(h))).toBe(true);
   });
 
@@ -152,6 +209,31 @@ describe('intentions: hints + cleanup', () => {
     expect(betrayalConditionActive('A', 'B', { targetedByAlly:true })).toBe(true);
   });
 
+  it('labels votes that abandon an endgame role and persists the resulting revision', () => {
+    const p = formIntentions('A', 6);
+    const partner = p.finalThree.find(n => n !== 'A');
+    const contradiction = assessBallotAgainstPlan('A', partner, 'personal preference');
+    expect(contradiction.label).toBe('BROKE ENDGAME PACT');
+    const revision = assessBallotAgainstPlan('A', partner, '[LATE CONSENSUS] numbers changed');
+    expect(revision.label).toBe('BROKE ENDGAME PACT');
+
+    gs.isMerged = true;
+    const ep = { num:7, votingLog:[{ voter:'A', voted:partner, planBreak:revision }] };
+    tickIntentions(ep);
+    expect(getIntentions('A').finalThree).not.toContain(partner);
+    expect(getIntentions('A').history.some(h => h.field === 'ballotPlan')).toBe(true);
+  });
+
+  it('treats abandoning a shield as a plan revision, never a broken pact', () => {
+    const p = formIntentions('A', 6);
+    p.shield = 'D';
+    const change = assessBallotAgainstPlan('A', p.shield, 'the numbers changed');
+    expect(change.label).toBe('ENDGAME PLAN REVISION');
+    expect(change.classification).toBe('plan-revision');
+    expect(change.pactBroken).toBe(false);
+    expect(change.explanation).toMatch(/no pact was broken/i);
+  });
+
   it('captures a stable pre-vote snapshot without evolving it twice', () => {
     gs.isMerged = true;
     const ep = { num:7 };
@@ -170,7 +252,7 @@ describe('intentions: hints + cleanup', () => {
   it('renders hints from a snapshot plan object (for the text backlog)', () => {
     const plan = { finalThree: ['A', 'B'], goat: 'C', revenge: ['E'], targets: [], backupAllies: [], juryPlan: [], betrayalConditions: [], advantagePlan: 'hold' };
     const hints = describeIntentionsPlan(plan, 'A');
-    expect(hints.some(h => /final three with B/.test(h))).toBe(true);
+    expect(hints.some(h => /confirmed endgame deal with B/.test(h))).toBe(true);
     expect(hints.some(h => /goat/.test(h) && /C/.test(h))).toBe(true);
     expect(hints.some(h => /grudge against E/.test(h))).toBe(true);
     expect(describeIntentionsPlan(null, 'A')).toEqual([]);

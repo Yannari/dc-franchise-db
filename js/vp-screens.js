@@ -1680,7 +1680,7 @@ export function rpBuildAmbassadors(ep) {
       : _elimS.boldness >= 7
         ? _exitPick([`"Two people I never got to face decided my fate. That's not the game — that's a backroom deal. And I would have blown it up if I'd been in that room."`, `"You want to take me out? Say it to my face. Don't send ambassadors to do your dirty work."`])
         : _elimS.temperament <= 4
-        ? _exitPick([`"This is garbage. I didn't even get a vote. I didn't get to fight. Someone in a room I wasn't in wrote my name and that's it? That's not Survivor."`, `"I'm angry. I'm not gonna pretend I'm not. They took the coward's way out and I'm the one who pays for it."`])
+        ? _exitPick([`"This is garbage. I didn't even get a vote. I didn't get to fight. Someone in a room I wasn't in wrote my name and that's it? That's not how you play this game."`, `"I'm angry. I'm not gonna pretend I'm not. They took the coward's way out and I'm the one who pays for it."`])
         : _elimS.strategic >= 7
         ? _exitPick([`"I respect the move. I don't respect that I never got to counter it. The game happened in a room I wasn't in."`, `"Strategically, it makes sense. I would have done the same thing. That doesn't make it easier to walk away."`])
         : _elimS.social >= 7
@@ -2319,12 +2319,28 @@ export function rpBuildDebug(ep) {
       ${_tabBtn('bonds', 'Perceived Bonds')}
       ${_tabBtn('web', 'The Web')}
       ${(ep.campAccess || snap.campAccess) ? _tabBtn('access', 'Camp Access') : ''}
+      ${(ep.adaptationSnapshot || snap.adaptationProfiles) ? _tabBtn('learning', 'Learning') : ''}
       ${_tabBtn('commitments', 'Vote Commitments')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
       ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isTruthOrDareTrain || ep.isAMazeInGrip || ep.isPolesApart || ep.isTusksLadders || ep.isKillerClown || ep.isBumperCarBash || ep.isSayCheese || ep.isWheelOfMisfortune || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge || ep.isBasicStraining || ep.isXtremeTorture || ep.isLuckyHunt || ep.isHideAndBeSneaky || ep.isOffTheChain || ep.isWawanakwaGoneWild || ep.isTriArmedTriathlon || ep.isCampCastaways || ep.isSlasherNight || ep.isMonsterCash || ep.isAlienEgg) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
+
+  if (_dbTab === 'learning') {
+    const profiles = ep.adaptationSnapshot || snap.adaptationProfiles || {};
+    const events = ep.adaptationEvents || [];
+    html += `<div style="margin-bottom:14px;padding:10px;background:rgba(210,153,34,.07);border:1px solid rgba(210,153,34,.2);border-radius:8px"><div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922">ADAPTATION & LEARNING</div><div style="font-size:10px;color:#8b949e;margin-top:5px">Experience changes how contestants apply existing stats; it does not rewrite personality. Verification checks claimed numbers. Caution discourages bluffing and unsupported counts. Confidence and negotiation encourage approaches; withdrawal narrows them. Confidence and negotiation recover toward stat-based personal baselines, preventing permanent failure spirals. Idol awareness improves recognition, while normal safety math can still reject a split.</div></div>`;
+    if (events.length) {
+      html += `<div style="font-size:11px;color:#f0883e;font-weight:800;margin:0 0 6px">LEARNED THIS EPISODE</div>`;
+      events.forEach(e => { html += `<div style="padding:6px 8px;margin-bottom:4px;border-left:3px solid #f0883e;background:rgba(240,136,62,.05);color:#c9d1d9;font-size:10px">${e.text}</div>`; });
+    }
+    html += `<div style="font-size:11px;color:#57a6e8;font-weight:800;margin:12px 0 6px">PERSISTENT PROFILES AT EPISODE ${ep.num}</div>`;
+    Object.entries(profiles).filter(([name]) => activePlayers.includes(name)).forEach(([name,p]) => {
+      const pct = v => `${Math.round((v || 0) * 100)}%`;
+      html += `<div style="padding:8px;margin-bottom:5px;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.02)"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">${rpPortrait(name,'sm')}<strong style="color:#e6edf3">${name}</strong><span style="margin-left:auto;color:#6e7681;font-size:9px">${p.blindsides||0} missed votes · ${p.successfulMoves||0} correct votes</span></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;font-size:9px;color:#8b949e"><span>verify <b style="color:#57a6e8">${pct(p.verification)}</b></span><span>caution <b style="color:#d29922">${pct(p.caution)}</b></span><span>confidence <b style="color:${(p.confidence||0)>=0?'#3fb950':'#f47067'}">${pct(p.confidence)}</b></span><span>negotiation <b style="color:#a371f7">${pct(p.negotiation)}</b></span><span>withdrawal <b style="color:#f47067">${pct(p.withdrawal)}</b></span><span>idol read <b style="color:#d2a8ff">${pct(p.idolAwareness)}</b></span><span>split habit <b style="color:#79c0ff">${pct(p.splitPreference)}</b></span></div></div>`;
+    });
+  }
 
   // ════════════════════════════════════════════════
   // TAB: CAMP TIME / LOCATION ACCESS
@@ -2564,22 +2580,30 @@ export function rpBuildDebug(ep) {
     }
 
     // ── the focused player's persistent game plan (intentions) ──
-    const _planStore = ep.intentionsSnapshot || gs.intentions || {};
+    // Never fall back to the live season plan while viewing an older episode.
+    // Post-vote is the end-of-episode state; pre-vote is the safe fallback for
+    // episodes recorded before dual snapshots existed.
+    const _planStore = ep.intentionsPostVoteSnapshot || ep.intentionsSnapshot || ep.gsSnapshot?.intentions || {};
     const _plan = _planStore[_focusW];
-    html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#5ad1ff;margin:14px 0 6px">${String(_focusW).toUpperCase()}'S GAME PLAN</div>`;
+    html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#5ad1ff;margin:14px 0 6px">${String(_focusW).toUpperCase()}'S GAME PLAN · EPISODE ${ep.num}</div>`;
     if (_plan) {
-      const _row = (label, val) => val && (Array.isArray(val) ? val.length : true) ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e">${label}</span><span style="color:#e6edf3">${Array.isArray(val) ? val.join(', ') : val}</span></div>` : '';
+      const _fmtPlanList = (val, sourceKey) => (val || []).map(n => {
+        const why = sourceKey ? _plan.origins?.[sourceKey]?.[n] : null;
+        return `${n}${why ? ` <span style="color:#6e7681">— ${why}</span>` : ''}`;
+      }).join('<br>');
+      const _row = (label, val, sourceKey = null) => val && (Array.isArray(val) ? val.length : true) ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e;flex:none">${label}</span><span style="color:#e6edf3">${Array.isArray(val) ? _fmtPlanList(val, sourceKey) : val}</span></div>` : '';
       html += `<div style="border:1px solid rgba(90,209,255,0.15);border-radius:8px;padding:8px 10px;background:rgba(90,209,255,0.04)">
-        ${_row('Final three', (_plan.finalThree || []).filter(n => n !== _focusW))}
+        ${_row('Confirmed deal', (_plan.finalThree || []).filter(n => n !== _focusW), 'finalThree')}
+        ${_row('Private preference', _plan.preferredCore, 'preferredCore')}
         ${_row('Preferred shield', _plan.shield)}
-        ${_row('Endgame goat', _plan.goat)}
-        ${_row('Backup allies', _plan.backupAllies)}
-        ${_row('Long-term targets', _plan.targets)}
-        ${_row('Revenge', _plan.revenge)}
+        ${_plan.goat ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e;flex:none">FTC beatability read</span><span style="color:#e6edf3"><strong>${_plan.goat}</strong>${_plan.goatAssessment ? ` · <span style="color:#d29922">${Number(_plan.goatAssessment.beatability).toFixed(1)}/10 beatable</span> · ${Math.round(Number(_plan.goatAssessment.confidence) * 100)}% confidence<br><span style="color:#8b949e">Evidence: ${(_plan.goatAssessment.reasons || []).join(' · ')}</span>${(_plan.goatAssessment.warnings || []).length ? `<br><span style="color:#f0883e">Risk: ${_plan.goatAssessment.warnings.join(' · ')}</span>` : ''}` : ` — older save; no evidence snapshot`}</span></div>` : `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e;flex:none">FTC beatability read</span><span style="color:#6e7681">None — no candidate has enough evidence to be confidently labeled beatable.</span></div>`}
+        ${_row('Backup allies', _plan.backupAllies, 'backupAllies')}
+        ${_row('Long-term targets', _plan.targets, 'targets')}
+        ${_row('Revenge', _plan.revenge, 'revenge')}
         ${_row('Jury plan', _plan.juryPlan)}
         ${_row('Advantage plan', _plan.advantagePlan)}
         ${(_plan.betrayalConditions || []).length ? `<div style="display:flex;gap:8px;padding:3px 0;font-size:11px"><span style="width:120px;color:#8b949e">Would flip on</span><span style="color:#f0883e">${_plan.betrayalConditions.map(b => `${b.ally} (${b.condition})`).join('; ')}</span></div>` : ''}
-        <div style="font-size:9px;color:#6e7681;margin-top:5px">formed Ep ${_plan.formedEp} · last revised Ep ${_plan.lastRevisedEp}</div>
+        <div style="font-size:9px;color:#6e7681;margin-top:5px">${_plan.stage || 'unknown'} plan · Confirmed deal = an interaction occurred. Private preference = no pact was promised. · formed Ep ${_plan.formedEp} · last revised Ep ${_plan.lastRevisedEp}</div>
       </div>`;
       const _hist = [...(_plan.history || [])].reverse().slice(0, 6);
       if (_hist.length) {
@@ -2589,7 +2613,7 @@ export function rpBuildDebug(ep) {
         html += `<div style="font-size:10px;color:#484f58;margin-top:4px">plan unchanged since it formed (persistence — not rebuilt each episode)</div>`;
       }
     } else {
-      html += `<div style="color:#484f58;font-size:11px">No plan yet (intentions form at the merge).</div>`;
+      html += `<div style="color:#484f58;font-size:11px">No persistent read yet. Plans can form before merge once the player has enough social context.</div>`;
     }
   }
 
@@ -6991,6 +7015,17 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
       CAMP EVENTS <span class="rp-toggle-arrow">\u25b2</span>
     </button>
     <div id="evt-${safeId}" class="rp-camp-toggle-body">`;
+  const _signalLoadTypes = new Set([
+    'votePitch','strategicApproach','readingRoom','informationFlow','sideDeal','infoTrade','loyaltyTest',
+    'loyaltyTestFailed','loyaltyTestPassed','loyaltyTestCaught','conflictingDeals','allianceForm','allianceCrack',
+    'allianceDissolved','allianceExpelled','gamePlanProbe','endgameDealBroken','endgameDealDissolved',
+    'idolShare','idolConfession','idolSnooped','legacyLeak','amuletLeak','brokerExposed','socialIntel',
+    'falseInfoBlowup','perceptionRealization','miscommunicationFallout','fakeIdolCaught','stolenCreditConfrontation'
+  ]);
+  const _signalAmbientTypes = new Set([
+    'groupLaugh','weirdMoment','hardWork','confessional','tribeMood','homesick','prank','watchingYou',
+    'goatOblivious','comfortBlindspot','clockingIt','gamePlanConfessional','emissaryObservation'
+  ]);
   // renderEvt: closure appender — writes one event card to html
   const renderEvt = evt => {
     if (!evt.text && evt.desc) evt.text = evt.desc;
@@ -7805,7 +7840,12 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'floaterInvisible' || evt.type === 'tribeMood' || evt.type === 'weirdMoment' ? ''
                      : isPos ? 'green' : isNeg ? 'red' : (evt.badgeClass || '');
 
-    html += `<div class="rp-brant-entry">`;
+    const _signalTier = evt.signalTier || (_signalLoadTypes.has(evt.type) ? 'load' : _signalAmbientTypes.has(evt.type) ? 'ambient' : 'standard');
+    const _signalColor = badgeClass === 'red' ? '#f85149' : badgeClass === 'green' ? '#3fb950' : '#d29922';
+    const _signalStyle = _signalTier === 'load'
+      ? `border-left:3px solid ${_signalColor};background:linear-gradient(90deg,${_signalColor}16,rgba(22,27,34,.5) 45%)`
+      : _signalTier === 'ambient' ? 'opacity:.68;background:rgba(17,21,28,.55)' : '';
+    html += `<div class="rp-brant-entry signal-${_signalTier}" style="${_signalStyle}">`;
     if (mentioned.length >= 3) {
       html += `<div class="rp-brant-portraits">${mentioned.map(n => rpPortrait(n)).join('')}</div>`;
     } else if (mentioned.length === 2 && isRelEvt) {
@@ -7831,7 +7871,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
 
   if (events.length) {
     // Group events into Strategy / Social / Spotlight for all camps (pre-merge and post-merge)
-    const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
+    const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk','gamePlanProbe','gamePlanConfessional','endgameDealBroken','endgameDealDissolved',
       'eavesdrop','chalThreat','chalThreatReaction','idolConfession','idolShare','idolFound',
       'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
       'watchingYou','goatMergeAssessment','goatIdentified','goatObserver','goatOblivious','scramble','lie',
@@ -9167,6 +9207,15 @@ export function rpBuildVotingPlans(ep) {
   // ── ALLIANCE PLANS ──────────────────────────────────────────────────────────
   if (namedAlliances.length) {
     html += `<div class="rp-vp-section-label">ALLIANCE PLANS</div>
+      <details style="margin:0 0 10px;border:1px solid rgba(139,148,158,.16);border-radius:8px;background:rgba(139,148,158,.035);padding:7px 10px">
+        <summary style="cursor:pointer;font-size:10px;font-weight:800;letter-spacing:.8px;color:#8b949e">HOW TO READ BALLOT RELIABILITY</summary>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 14px;margin-top:8px;font-size:10px;line-height:1.45;color:#8b949e">
+          <div><strong style="color:#3fb950">Dependable</strong> — forecast to vote for the proposal with at least 65% plan pull. This is the plan's firmest modeled ballot, not a guarantee.</div>
+          <div><strong style="color:#d29922">Tentative</strong> — forecast to vote for the proposal, but with under 65% plan pull. A better pitch, relationship conflict, or late disruption can move them.</div>
+          <div><strong style="color:#8b949e">Early reservations</strong> — began on another personal choice, then was forecast to return to the proposal. They are included in Tentative or Dependable, not added as extra ballots.</div>
+          <div><strong style="color:#f0883e">Forecast elsewhere</strong> — belongs to the alliance, but the model expects a different ballot. They add zero projected support to this proposal.</div>
+        </div>
+      </details>
       <div class="rp-vp-plans-row">`;
     namedAlliances.forEach((a, aIdx) => {
       const spear = allianceSpear(a.members);
@@ -10599,6 +10648,184 @@ export function vpWhyCard(name, bullets, subtitle) {
   </div>`;
 }
 
+// ── Post-vote debrief: the hidden game (secrets, intentions, relationship
+// shifts) behind the vote the viewer just watched. Directional, not a spoiler. ──
+export function rpBuildReadOfRoom(ep, attending = []) {
+  const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const cast = typeof players !== 'undefined' ? players : (globalThis.players || []);
+  const pr = n => typeof pronouns !== 'undefined' ? pronouns(n) : { sub:'they', posAdj:'their' };
+  const roster = [...new Set((attending || []).filter(Boolean))];
+  if (!roster.length) return '';
+  const rosterSet = new Set(roster);
+  const slug = n => cast.find(p => p.name === n)?.slug || String(n).toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const face = (n, extra = '') => `<span class="rotr-face ${extra}" title="${esc(n)}"><img src="assets/avatars/${slug(n)}.png" alt="${esc(n)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${esc(String(n)[0] || '?')}</span></span>`;
+  const faces = ns => `<span class="rotr-faces">${[...new Set(ns.filter(Boolean))].slice(0,2).map((n,i)=>face(n,i?'back':'')).join('')}</span>`;
+  const badge = (label, color, privacy = '') => `<span class="rotr-badges"><span class="rotr-badge" style="--bc:${color}">${esc(label)}</span>${privacy ? `<span class="rotr-privacy">${esc(privacy)}</span>` : ''}</span>`;
+  const row = ({ people=[], label, color='#8b949e', text, load=false, privacy='' }) => `<div class="rotr-row ${load?'load':'ambient'}" style="--tier:${color}">${faces(people)}${badge(label,color,privacy)}<div class="rotr-copy">${text}</div></div>`;
+  const list = (rows, visible = 6) => {
+    if (!rows.length) return `<div class="rotr-empty">No reliable signal recorded for this band.</div>`;
+    const head = rows.slice(0,visible).join('');
+    const rest = rows.slice(visible);
+    return head + (rest.length ? `<details class="rotr-more"><summary>Show ${rest.length} more signal${rest.length===1?'':'s'}</summary>${rest.join('')}</details>` : '');
+  };
+
+  // SECRETS: current-round facts and the concrete propagation events that
+  // moved them. A fact being true is not enough; somebody must actually know.
+  const facts = ep.knowledgeSnapshot || ep.gsSnapshot?.knowledge || {};
+  const currentFacts = Object.values(facts).filter(f => f && (f.createdEp == null || f.createdEp === ep.num));
+  const secretRows = [];
+  const seenSecrets = new Set();
+  const confidentKnowers = fact => Object.entries(fact.beliefs || {})
+    .filter(([n,b]) => rosterSet.has(n) && Number(b?.confidence || 0) >= .35)
+    .map(([n]) => n);
+  currentFacts.forEach(fact => {
+    const knowers = confidentKnowers(fact);
+    if (!knowers.length) return;
+    const privacy = knowers.length === 1 ? 'PRIVATE' : `KNOWN BY ${knowers.length}`;
+    if (fact.type === 'target' && rosterSet.has(fact.subject) && knowers.includes(fact.subject)) {
+      const key = `exposed:${fact.subject}`; if (seenSecrets.has(key)) return; seenSecrets.add(key);
+      secretRows.push(row({ people:[fact.subject], label:'EXPOSED', color:'#f85149', load:true, privacy,
+        text:`<strong>${esc(fact.subject)}</strong> knows ${pr(fact.subject).posAdj} name is being discussed. That warning can change how ${pr(fact.subject).sub} approaches the vote, but does not guarantee a successful counterplan.` }));
+    }
+    if (['idol','advantage'].includes(fact.type) && knowers.some(n => n !== fact.subject)) {
+      const outsiders = knowers.filter(n => n !== fact.subject);
+      const key = `${fact.type}:${fact.subject}`; if (seenSecrets.has(key)) return; seenSecrets.add(key);
+      secretRows.push(row({ people:[fact.subject, outsiders[0]], label:'SECRET EXPOSED', color:'#f0883e', load:outsiders.length>0, privacy,
+        text:`<strong>${esc(outsiders.join(', '))}</strong> ${outsiders.length===1?'has':'have'} credible information about <strong>${esc(fact.subject)}</strong>'s ${fact.type}.` }));
+    }
+  });
+  (ep.knowledgeEvents || []).forEach(ev => {
+    const fact = facts[ev.id] || {};
+    const knowers = confidentKnowers(fact);
+    const privacy = knowers.length > 1 ? `KNOWN BY ${knowers.length}` : 'PRIVATE WORD';
+    const isExposure = ev.type === 'target' && ev.to === ev.subject;
+    const isCredibleLeak = ev.sourceType !== 'rumor' && ['target','pitch'].includes(ev.type);
+    const key = `${ev.id}:${ev.from}:${ev.to}`; if (seenSecrets.has(key)) return; seenSecrets.add(key);
+    const object = fact.object;
+    const text = isExposure
+      ? `<strong>${esc(ev.from)}</strong> warned <strong>${esc(ev.to)}</strong> that ${pr(ev.to).posAdj} name is live.`
+      : ev.type === 'pitch'
+        ? `<strong>${esc(ev.to)}</strong> heard that <strong>${esc(ev.subject)}</strong> pitched <strong>${esc(object || 'a target')}</strong>.`
+        : `<strong>${esc(ev.from)}</strong> passed <strong>${esc(ev.subject)}</strong>'s name to <strong>${esc(ev.to)}</strong>.`;
+    // How it moved and where — so the reader sees method + place, not just the fact.
+    const method = { told:'told directly', rumor:'secondhand rumor', overheard:'overheard', observed:'saw it firsthand', public:'said openly', deduced:'pieced it together' }[ev.sourceType] || 'heard it';
+    const how = `<span class="rotr-how">${method}${ev.location ? ` · ${esc(ev.location)}` : ''}</span>`;
+    secretRows.push(row({ people:[ev.from,ev.to], label:isExposure?'EXPOSED':isCredibleLeak?'LEAKED':'WORD SPREAD',
+      color:isExposure?'#f85149':isCredibleLeak?'#f0883e':'#8b949e', load:isExposure||isCredibleLeak, privacy, text:`${text} ${how}` }));
+  });
+
+  // INTENTIONS: describe the stored plan without promoting a private wish to
+  // an agreement. Pitchers are visually elevated because they are actively
+  // trying to move the room, not because we know their pitch succeeds.
+  const plans = ep.intentionsSnapshot || ep.gsSnapshot?.intentions || {};
+  const drivers = new Set((ep.votePitches || []).map(p => p.pitcher).filter(Boolean));
+  const intentionItems = roster.map(name => {
+    const p = plans[name]; if (!p) return null;
+    const confirmed = (p.finalThree || []).filter(n => n !== name && rosterSet.has(n));
+    const preferred = (p.preferredCore || []).filter(n => n !== name && rosterSet.has(n) && !confirmed.includes(n));
+    const revenge = (p.revenge || []).filter(rosterSet.has.bind(rosterSet));
+    const targets = (p.targets || []).filter(n => rosterSet.has(n) && !revenge.includes(n));
+    const thoughts = [];
+    if (revenge.length) thoughts.push(`wants payback against <strong>${esc(revenge[0])}</strong>`);
+    else if (targets.length) thoughts.push(`is watching <strong>${esc(targets[0])}</strong> as a longer-term target`);
+    if (confirmed.length) thoughts.push(`has a confirmed endgame deal with <strong>${confirmed.map(esc).join(' &amp; ')}</strong>`);
+    if (preferred.length) thoughts.push(`privately wants to keep <strong>${preferred.map(esc).join(' &amp; ')}</strong> close — no pact promised`);
+    if (p.shield && rosterSet.has(p.shield)) thoughts.push(`still sees <strong>${esc(p.shield)}</strong> as useful cover`);
+    if (!thoughts.length) thoughts.push(p.stage === 'survival' ? 'is still planning one vote at a time' : 'has no firm endgame structure yet');
+    const load = drivers.has(name);
+    return { load, html:row({ people:[name], label:load?'DRIVING':'PRIVATE READ', color:load?'#57a6e8':'#6e7681', load,
+      privacy:confirmed.length?'SHARED DEAL':'PRIVATE', text:`<strong>${esc(name)}</strong> <span class="rotr-arrow">→</span> ${thoughts.join('; ')}.` }) };
+  }).filter(Boolean).sort((a,b)=>Number(b.load)-Number(a.load)).map(x=>x.html);
+
+  // SHIFTS: use only the pre-vote cause snapshot. Aggregate repeated semantic
+  // nudges, keep directionality, and never invent a cause.
+  const causeStore = ep.relationshipCausesPreVoteSnapshot || {};
+  const dimMeta = {
+    affection:['LIKING','#57a6e8'], trust:['TRUST','#57a6e8'], strategicRespect:['RESPECT','#3fb950'],
+    fear:['FEAR','#f0883e'], obligation:['OWES','#d29922'], resentment:['RESENTMENT','#f85149'], attraction:['ATTRACTION','#d2a8ff']
+  };
+  const shifts = [];
+  Object.entries(causeStore).forEach(([key,causes]) => {
+    const [from,to] = key.split('→'); if (!rosterSet.has(from) || !rosterSet.has(to)) return;
+    const grouped = {};
+    (causes || []).filter(c => c.ep === ep.num && c.reason && dimMeta[c.dim]).forEach(c => {
+      const g = grouped[c.dim] || (grouped[c.dim] = { delta:0, reasons:[] });
+      g.delta += Number(c.delta || 0); if (!g.reasons.includes(c.reason)) g.reasons.push(c.reason);
+    });
+    Object.entries(grouped).forEach(([dim,g]) => {
+      if (Math.abs(g.delta) < .1) return;
+      const [label,baseColor] = dimMeta[dim];
+      const harmfulUp = ['fear','resentment'].includes(dim) && g.delta > 0;
+      const harmfulDown = ['affection','trust','strategicRespect','obligation'].includes(dim) && g.delta < 0;
+      const color = harmfulUp || harmfulDown ? '#f85149' : baseColor;
+      const arrow = g.delta > 0 ? '↑' : '↓';
+      const load = Math.abs(g.delta) >= 1.25;
+      shifts.push({ mag:Math.abs(g.delta), html:row({ people:[from,to], label:`${label} ${arrow} ${Math.abs(g.delta).toFixed(1)}`,
+        color, load, privacy:'DIRECTIONAL', text:`<strong>${esc(from)}</strong> <span class="rotr-arrow">→</span> <strong>${esc(to)}</strong> — ${esc(g.reasons.slice(0,2).join('; '))}.` }) });
+    });
+  });
+  shifts.sort((a,b)=>b.mag-a.mag);
+
+  if (!secretRows.length && !intentionItems.length && !shifts.length) return '';
+  return `<style>
+    .rotr-shell{margin:14px 0 18px;background:linear-gradient(180deg,#12161d,#0f1319);border:1px solid #30363d;border-radius:12px;overflow:hidden;box-shadow:0 10px 34px rgba(0,0,0,.34)}
+    .rotr-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:14px 18px 12px;border-bottom:1px solid #30363d;background:radial-gradient(120% 150% at 0 0,rgba(210,153,34,.11),transparent 62%)}
+    .rotr-title{font-size:13px;font-weight:900;letter-spacing:2.4px;color:#e6edf3}.rotr-sub{font-size:9px;letter-spacing:1.2px;color:#6e7681;text-transform:uppercase}
+    .rotr-legend{display:flex;gap:14px;flex-wrap:wrap;padding:9px 18px 2px;font-size:9px;color:#6e7681}.rotr-legend b{color:#8b949e}.rotr-key{display:inline-flex;align-items:center;gap:5px}.rotr-key i{width:14px;height:7px;border-radius:2px}
+    .rotr-band{padding:14px 18px 7px}.rotr-band+.rotr-band{border-top:1px solid #1c222b}.rotr-band-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}.rotr-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}.rotr-band-name{font-size:10px;font-weight:900;letter-spacing:1.35px}.rotr-band-note{font-size:9px;color:#6e7681}
+    .rotr-row{display:grid;grid-template-columns:46px minmax(104px,auto) 1fr;align-items:center;gap:10px;min-height:50px;padding:8px 10px;margin-bottom:7px;border:1px solid #232a33;border-radius:8px;background:#161b22}.rotr-row.load{border-left:3px solid var(--tier);background:linear-gradient(90deg,color-mix(in srgb,var(--tier) 11%,#161b22),#161b22 42%)}.rotr-row.ambient{background:#11151c;opacity:.78}
+    .rotr-faces{display:flex;align-items:center;min-width:42px}.rotr-face{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;overflow:hidden;background:#30363d;border:2px solid #0d1117;color:#e6edf3;font-size:10px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.35)}.rotr-face.back{margin-left:-12px}.rotr-face img{width:100%;height:100%;object-fit:cover}.rotr-face>span{display:none;width:100%;height:100%;place-items:center}
+    .rotr-badges{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.rotr-badge{font-size:8px;font-weight:900;letter-spacing:.7px;padding:3px 6px;border-radius:4px;color:#0d1117;background:var(--bc);white-space:nowrap}.rotr-privacy{font-size:7px;font-weight:800;letter-spacing:.65px;color:#6e7681}.rotr-copy{font-size:11px;line-height:1.5;color:#8b949e}.rotr-copy strong{color:#e6edf3}.rotr-arrow{color:#6e7681}.rotr-how{display:block;margin-top:2px;font-size:9px;letter-spacing:.4px;color:#6e7681;text-transform:uppercase}.rotr-empty{padding:7px 10px;margin-bottom:7px;border:1px dashed #30363d;border-radius:7px;color:#6e7681;font-size:10px}
+    .rotr-more summary{cursor:pointer;color:#8b949e;font-size:9px;font-weight:800;letter-spacing:.6px;padding:5px 2px 9px}.rotr-more[open] summary{color:#57a6e8}.rotr-more summary::marker{color:#57a6e8}.rotr-dict{margin:7px 18px 5px;border:1px solid #232a33;border-radius:8px;background:#11151c;padding:7px 10px}.rotr-dict summary{cursor:pointer;color:#8b949e;font-size:9px;font-weight:900;letter-spacing:.8px}.rotr-dict-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:7px 14px;margin-top:9px}.rotr-def{font-size:9px;line-height:1.45;color:#6e7681}.rotr-def b{color:#c9d1d9;letter-spacing:.3px}
+    @media(max-width:620px){.rotr-head{align-items:flex-start;flex-direction:column}.rotr-row{grid-template-columns:40px 1fr}.rotr-badges{grid-column:2;flex-direction:row;align-items:center}.rotr-copy{grid-column:1/-1;padding-left:2px}.rotr-band{padding-left:12px;padding-right:12px}.rotr-band-note{display:none}}
+  </style><section class="rotr-shell" aria-label="Read of the room — the hidden game behind tonight's vote">
+    <div class="rotr-head"><div class="rotr-title">READ OF THE ROOM</div><div class="rotr-sub">the hidden game behind tonight's vote · Episode ${esc(ep.num)}</div></div>
+    <div class="rotr-legend"><b>Signal:</b><span class="rotr-key"><i style="background:#f85149"></i> shaped tonight's decisions</span><span class="rotr-key"><i style="background:#20262e"></i> context, not a promised outcome</span></div>
+    <details class="rotr-dict"><summary>BADGE DICTIONARY — WHAT THESE SIGNALS ACTUALLY MEAN</summary><div class="rotr-dict-grid">
+      <div class="rotr-def"><b>DRIVING</b> — actively pitched a target this episode and tried to move other people. It does not mean the pitch succeeded.</div>
+      <div class="rotr-def"><b>PRIVATE READ</b> — the player's own intention or endgame preference. It has not been turned into a meaningful pitch this episode.</div>
+      <div class="rotr-def"><b>EXPOSED</b> — actionable information reached the person affected or an outsider able to respond. Exposure can trigger counterplay; it does not guarantee it works.</div>
+      <div class="rotr-def"><b>LEAKED</b> — someone passed restricted information outside its intended conversation. The leak may still have narrow reach.</div>
+      <div class="rotr-def"><b>WORD SPREAD</b> — information moved through camp, but this step was contextual, lower-confidence, or not independently decisive.</div>
+      <div class="rotr-def"><b>KNOWN BY / PRIVATE / SHARED DEAL</b> — who currently holds the information. Awareness is not agreement; a shared deal is the exception because an actual pact exists.</div>
+    </div></details>
+    <div class="rotr-band"><div class="rotr-band-h" style="color:#f85149"><span class="rotr-dot"></span><span class="rotr-band-name">SECRETS IN PLAY</span><span class="rotr-band-note">who actually knows what</span></div>${list(secretRows,5)}</div>
+    <div class="rotr-band"><div class="rotr-band-h" style="color:#57a6e8"><span class="rotr-dot"></span><span class="rotr-band-name">WHERE HEADS ARE AT</span><span class="rotr-band-note">private intentions are not automatic deals</span></div>${list(intentionItems,6)}</div>
+    <div class="rotr-band"><div class="rotr-band-h" style="color:#d29922"><span class="rotr-dot"></span><span class="rotr-band-name">WHAT SHIFTED THIS EPISODE</span><span class="rotr-band-note">directional changes with recorded causes</span></div>${list(shifts.map(s=>s.html),5)}</div>
+  </section>`;
+}
+
+// Reorder vote entries for a suspenseful "clinch last" read: keep the tally as
+// close as possible and reveal the deciding vote (the clincher crossing the
+// winning count) LAST. Only the reveal SEQUENCE changes — never the votes.
+export function dramaticVoteOrder(entries, key, clincher) {
+  const list = (entries || []).filter(Boolean);
+  if (list.length <= 2 || !clincher) return [...list];
+  const total = list.reduce((n, e) => n + (e[key] ? 1 : 0), 0);
+  const clinch = Math.floor(total / 2) + 1;   // votes needed to secure it
+  const pool = [...list];
+  const order = [];
+  const counts = {};
+  while (pool.length) {
+    // "Safe" = revealing it does NOT push the clincher to the winning count yet.
+    const safe = pool.map((e, i) => ({ e, i }))
+      .filter(({ e }) => e[key] !== clincher || (counts[clincher] || 0) + 1 < clinch);
+    let idx;
+    if (safe.length) {
+      // Keep it tight: reveal a vote for whoever currently trails; defer the clincher.
+      safe.sort((a, b) => (counts[a.e[key]] || 0) - (counts[b.e[key]] || 0)
+        || (a.e[key] === clincher ? 1 : -1));
+      idx = safe[0].i;
+    } else {
+      idx = pool.length - 1;   // only clinch-reaching votes remain — read them last
+    }
+    const [chosen] = pool.splice(idx, 1);
+    if (chosen[key]) counts[chosen[key]] = (counts[chosen[key]] || 0) + 1;
+    order.push(chosen);
+  }
+  return order;
+}
+
 // ── Screen 5: The Votes (interactive reveal) ──
 export function rpBuildVotes(ep) {
   const vlog = ep.votingLog || [];
@@ -10608,6 +10835,9 @@ export function rpBuildVotes(ep) {
   const rawElim = ep.exileDuelVotedOut || ep.eliminated;
   const elim = (rawElim && rawElim !== 'No elimination' && players.find(p => p.name === rawElim)) ? rawElim : null;
   const sortedVotes = Object.entries(votes).sort(([,a],[,b]) => b-a);
+  const _initialTopCount = sortedVotes[0]?.[1] || 0;
+  const _initialTiedPlayers = _initialTopCount > 0 ? sortedVotes.filter(([,count]) => count === _initialTopCount).map(([name]) => name) : [];
+  const _initialTallyTie = _initialTiedPlayers.length >= 2;
   // Blindside: the eliminated player didn't see it coming
   // Requires: (1) they felt safe (confident/comfortable/content) OR voted for someone else (thought target was elsewhere)
   // AND (2) they weren't the obvious consensus target (< 70% of votes, or they had low heat)
@@ -10913,7 +11143,17 @@ export function rpBuildVotes(ep) {
   const _ovLastVoter = _ovOrder.length ? _ovOrder[_ovOrder.length - 1] : null;
   const _ovLastPiledOn = ep._openLastVoterPiledOn ?? false;
 
-  vlog.filter(e => !e.sitdSacrificed).forEach((entry, idx) => {
+  // Dramatize the read: for a clean secret-ballot boot, reveal in "clinch last"
+  // order so the tally stays close and the deciding vote lands last. Open votes
+  // are a live sequential cascade (SETS THE TONE / FINAL WORD) — never reorder
+  // those; likewise skip ties/rock draws/idol-scrambled reveals.
+  const _mainVotes = vlog.filter(e => !e.sitdSacrificed);
+  const _cleanReveal = !ep.openVote && ep.eliminated && !ep.isTie && !ep.isRockDraw
+    && !ep.sidFreshVote && !_cancelledVoteTargets.size;
+  const _orderedVotes = _cleanReveal
+    ? dramaticVoteOrder(_mainVotes, 'voted', ep.eliminated)
+    : _mainVotes;
+  _orderedVotes.forEach((entry, idx) => {
     const { voter, voted, reason } = entry;
     const isStolen = entry.voteStolen || _stolenVoters.has(voter);
     const isBlackVote = entry.isBlackVote || false;
@@ -10922,6 +11162,9 @@ export function rpBuildVotes(ep) {
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
     const _react = _ovReact ? _ovReact(voter, voted) : null;
+    const _planBreakBadge = entry.planBreak
+      ? `<span style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:.8px;color:${entry.planBreak.classification === 'plan-revision' ? '#d29922' : '#f47067'};background:${entry.planBreak.classification === 'plan-revision' ? 'rgba(210,153,34,.12)' : 'rgba(244,112,103,.12)'};border:1px solid ${entry.planBreak.classification === 'plan-revision' ? 'rgba(210,153,34,.28)' : 'rgba(244,112,103,.28)'};border-radius:4px;padding:1px 6px;margin-right:4px">${entry.planBreak.label}</span>`
+      : '';
     const _stolenStyle = isStolen ? 'opacity:0.4;border-color:rgba(240,165,0,0.3);background:rgba(240,165,0,0.03)' : '';
     const _blackVoteStyle = isBlackVote ? 'border-color:rgba(99,102,241,0.4);background:rgba(99,102,241,0.06)' : '';
 
@@ -10963,6 +11206,7 @@ export function rpBuildVotes(ep) {
       </div>
       <div class="tv-vote-arrow"${isStolen ? ' style="color:#f0a500"' : isBlackVote ? ' style="color:#818cf8"' : ''}>\u2192</div>
       <div class="tv-vote-right">
+        ${_planBreakBadge ? `<div style="margin-bottom:3px">${_planBreakBadge}</div>` : ''}
         ${_ovBadgeHtml ? `<div style="margin-bottom:3px">${_ovBadgeHtml}</div>` : ''}
         <div class="tv-vote-target">${voted}</div>
         ${isStolen ? `<div class="tv-vote-reason" style="color:#f0a500;font-weight:700;font-size:10px;letter-spacing:0.5px">VOTE STOLEN \u2014 this vote does not count</div>` : ''}
@@ -11175,7 +11419,7 @@ export function rpBuildVotes(ep) {
   const _hasFireMaking = !!ep.fireMaking;
   const _hasSuperIdol = !!ep.superIdolPlayed;
   // Revote tie: first vote was a tie → went to revote (or rocks). Don't mark anyone eliminated in first-vote tally.
-  const _hasRevoteTie = !ep.firstEliminated && ep.isTie && !!ep.revoteVotes && !_hasTiebreaker;
+  const _hasRevoteTie = !ep.firstEliminated && _initialTallyTie && !_hasTiebreaker;
   const _tallyVotes = _hasSuperIdol && ep.votesBeforeSuperIdol ? ep.votesBeforeSuperIdol : votes;
   const _tallySorted = Object.entries(_tallyVotes).sort(([,a],[,b]) => b-a);
   const _tallyTotal = Object.values(_tallyVotes).reduce((a,b) => a+b, 0);
@@ -11198,7 +11442,7 @@ export function rpBuildVotes(ep) {
     _tallySorted.forEach(([name, v]) => {
       const pct = Math.round((v / Math.max(1, _tallyTotal)) * 100);
       const isDuel = !!(ep.exileDuelResult) && name === ep.exileDuelResult.newBoot;
-      const isTied = (_hasTiebreaker || _hasRevoteTie) && (ep.tiedPlayers||[]).includes(name);
+      const isTied = (_hasTiebreaker || _hasRevoteTie) && ((ep.tiedPlayers?.length ? ep.tiedPlayers : _initialTiedPlayers).includes(name));
       const isE  = !ep.exileDuelResult && !isTied && name === _v1Elim;
       const isE2 = !ep.exileDuelResult && !isTied && name === _v1Elim2;
       const isS  = !_v1Elim && !_v1Elim2 && !_hasTiebreaker && !_hasSuperIdol && swap && name === _tallySorted[0][0];
@@ -11268,6 +11512,9 @@ export function rpBuildVotes(ep) {
   }
 
   // ── Vote 1 elimination card (not shown for fresh vote — elim card is inside fresh vote section) ──
+  if (_initialTallyTie && ep.tieResolutionMetadataMissing) {
+    html += `<div style="margin:16px 0;padding:12px 14px;border:1px solid rgba(210,153,34,.3);border-radius:9px;background:rgba(210,153,34,.06);color:#d29922;font-size:11px;line-height:1.5"><strong>INITIAL VOTE TIED:</strong> ${_initialTiedPlayers.join(' and ')} each received ${_initialTopCount}. The tally cannot be treated as a clean elimination; this saved episode is missing its revote/tiebreaker detail.</div>`;
+  }
   if (ep.tiebreakerResult1) {
     html += _renderTiebreakerCard(ep.tiebreakerResult1, ep.tiedPlayers);
   } else if (ep.tiebreakerResult && !ep.firstEliminated) {
@@ -11900,6 +12147,10 @@ export function rpBuildVotes(ep) {
     </div>`;
     html += `</div>`;
   }
+
+  // Closing debrief: the hidden game — secrets, intentions, relationship shifts
+  // — behind the vote the viewer just watched.
+  html += rpBuildReadOfRoom(ep, _tribal);
 
   html += `</div></div>`; // end tv-results + rp-page
   return html;

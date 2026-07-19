@@ -1,6 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { gs, seasonConfig, players } from './core.js';
 import { describeIntentionsPlan } from './intentions.js';
+import { buildInfoFlowLog } from './knowledge-integration.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
@@ -1017,6 +1018,11 @@ export function _textVotingPlans(ep, ln, sec) {
 
   if (namedAlliances.length) {
     ln('ALLIANCE PLANS:');
+    ln('BALLOT RELIABILITY DICTIONARY:');
+    ln('  DEPENDABLE — forecast to follow the proposal with at least 65% plan pull. It is the firmest modeled ballot, not a guarantee.');
+    ln('  TENTATIVE — forecast to follow the proposal with under 65% plan pull; a better pitch, relationship conflict, or late disruption can move them.');
+    ln('  EARLY RESERVATIONS — began on another personal choice, then was forecast to return. This is a note on a Tentative/Dependable voter, not an extra ballot.');
+    ln('  FORECAST ELSEWHERE — alliance member expected to cast a different ballot; contributes zero projected support to this proposal.');
     namedAlliances.forEach(a => {
       const canVote = a.members.filter(m => tribalPlayers.includes(m) && !lostVoters.includes(m));
       const spearheader = canVote.slice().sort((x, y) => (pStats(y).social + pStats(y).strategic) - (pStats(x).social + pStats(x).strategic))[0];
@@ -1027,7 +1033,9 @@ export function _textVotingPlans(ep, ln, sec) {
       const dependable = commitmentReads.filter(c => c.source === a.label && c.predictedBallot === c.proposedTarget && c.commitmentStrength >= 0.65).map(c => c.voter);
       const tentative = commitmentReads.filter(c => c.source === a.label && c.predictedBallot === c.proposedTarget && c.commitmentStrength < 0.65).map(c => c.voter);
       const drifting = commitmentReads.filter(c => c.source === a.label && c.predictedBallot !== c.proposedTarget).map(c => c.voter);
+      const initialReservations = commitmentReads.filter(c => c.source === a.label && c.committedTarget !== c.proposedTarget && c.predictedBallot === c.proposedTarget).map(c => c.voter);
       ln(`  BALLOT RELIABILITY: ${dependable.length} dependable (${dependable.join(', ') || 'none'}); ${tentative.length} tentative (${tentative.join(', ') || 'none'}).`);
+      if (initialReservations.length) ln(`  EARLY RESERVATIONS: ${initialReservations.join(', ')}. Already counted above; they initially preferred another name.`);
       if (drifting.length) ln(`  FORECAST ELSEWHERE: ${drifting.join(', ')}. Alliance membership does not count them as ballots tonight.`);
 
       // Target reasoning from actual vote log
@@ -1270,11 +1278,13 @@ export function _textGamePlans(ep, ln, sec) {
   const named = active.filter(n => store[n]);
   if (!named.length) return;
   sec('WHERE THEIR HEADS ARE AT — GAME PLANS');
-  ln('Persistent intentions: what each contestant is playing toward. Plans carry over between episodes and only shift when something forces them to.');
+  ln('Persistent strategy: pre-merge reads focus on surviving the current tribe; stronger endgame structures can grow later. A private preference is not a pact. Confirmed deals require an interaction, and plans only shift when something forces them to.');
+  ln('READ DICTIONARY: DRIVING = actively pitched a target and tried to move the vote this episode (success is not guaranteed). PRIVATE READ = a personal intention that was not meaningfully pitched this episode.');
+  const drivers = new Set((ep.votePitches || []).map(p => p.pitcher).filter(Boolean));
   named.forEach(n => {
     const hints = describeIntentionsPlan(store[n], n);
     if (!hints.length) return;
-    ln(`- ${n}: ${hints.join('; ')}.`);
+    ln(`- [${drivers.has(n) ? 'DRIVING' : 'PRIVATE READ'}] ${n}: ${hints.join('; ')}.`);
     // This section appears before Tribal, so it intentionally uses only the
     // pre-vote snapshot. Outcome-driven revisions belong to later episodes.
   });
@@ -1297,6 +1307,15 @@ export function _textCampAccess(ep, ln, sec) {
   });
 }
 
+export function _textAdaptation(ep, ln, sec) {
+  const events = ep.adaptationEvents || [];
+  if (!events.length) return;
+  sec('LESSONS THEY TAKE FORWARD');
+  ln('These are gradual behavioral adjustments caused by experience. They affect future judgment and approach—not base personality, loyalty, or intelligence—and one event is rarely enough to transform someone. Confidence and negotiation also recover toward a contestant-specific baseline, so temporary failure does not create a permanent spiral.');
+  events.slice(0, 8).forEach(event => ln(`- ${event.text}`));
+  if (events.length > 8) ln(`- ${events.length - 8} smaller adjustments are retained in Debug → Learning.`);
+}
+
 export function _textInformationFlow(ep, ln, sec) {
   const snapshot = ep.knowledgeSnapshot || gs.knowledge;
   const facts = Object.values(snapshot || {});
@@ -1306,6 +1325,27 @@ export function _textInformationFlow(ep, ln, sec) {
   const list = names => names.length ? names.join(', ') : 'nobody recorded';
   sec('WHO KNEW WHAT — INFORMATION FLOW');
   ln('This section tracks awareness, not support. Knowing a name or hearing a pitch does not mean the contestant agreed, committed, or voted that way.');
+  ln('INFORMATION BADGE DICTIONARY:');
+  ln('  EXPOSED — actionable information reached the affected player or an outsider able to respond. It may trigger counterplay, but does not guarantee success.');
+  ln('  LEAKED — restricted information was passed outside its intended conversation; it may still have narrow reach.');
+  ln('  WORD SPREAD — information circulated, but that step was contextual, lower-confidence, or not independently decisive.');
+  ln('  KNOWN BY / PRIVATE / SHARED DEAL — identifies who holds the information. Awareness is not agreement; SHARED DEAL means an actual pact exists.');
+
+  // Ordered play-by-play: every move of information this episode, with method,
+  // place and the awareness it produced. This is the chronological log an
+  // episode writer needs — not just the end-state counts below.
+  const flowLog = buildInfoFlowLog(ep);
+  if (flowLog.length) {
+    ln('');
+    ln('INFORMATION FLOW (in order):');
+    flowLog.forEach(e => {
+      const how = ` (${e.method})`;
+      const where = e.location ? `, ${e.location}` : '';
+      const reach = e.awareness.length ? ` — now known by ${e.awareness.length} (${e.awareness.join(', ')})` : '';
+      const flag = e.kind === 'warning' ? ' [EXPOSED]' : e.kind === 'leak' ? ' [LEAK]' : e.kind === 'rumor' ? ' [RUMOR]' : e.kind === 'pitch' ? ' [PITCH HEARD]' : '';
+      ln(`- ${e.sentence}${how}${where}${reach}.${flag}`);
+    });
+  }
 
   const targets = facts.filter(f => f.type === 'target')
     .map(f => ({ fact: f, names: knowers(f) }))
@@ -1340,6 +1380,41 @@ export function _textInformationFlow(ep, ln, sec) {
   } else if (targets.length) {
     ln('READ OF THE ROOM: One or more target names are broadly known, but awareness still does not guarantee a unified vote.');
   }
+}
+
+// Text retranscription of the Read of the Room "WHAT SHIFTED" band: directional
+// relationship movement this episode with the recorded cause. Mirrors the VP
+// (rpBuildReadOfRoom) — same snapshot, same grouping, same load threshold.
+export function _textRelationshipShifts(ep, ln, sec) {
+  const causeStore = ep.relationshipCausesPreVoteSnapshot || {};
+  const roster = new Set(ep.tribalPlayers || gs.activePlayers || []);
+  const dimMeta = {
+    affection: 'LIKING', trust: 'TRUST', strategicRespect: 'RESPECT',
+    fear: 'FEAR', obligation: 'OWES', resentment: 'RESENTMENT', attraction: 'ATTRACTION',
+  };
+  const shifts = [];
+  Object.entries(causeStore).forEach(([key, causes]) => {
+    const [from, to] = key.split('→');
+    if (!roster.size || !roster.has(from) || !roster.has(to)) return;
+    const grouped = {};
+    (causes || []).filter(c => c.ep === ep.num && c.reason && dimMeta[c.dim]).forEach(c => {
+      const g = grouped[c.dim] || (grouped[c.dim] = { delta: 0, reasons: [] });
+      g.delta += Number(c.delta || 0);
+      if (!g.reasons.includes(c.reason)) g.reasons.push(c.reason);
+    });
+    Object.entries(grouped).forEach(([dim, g]) => {
+      if (Math.abs(g.delta) < 0.1) return;
+      shifts.push({ mag: Math.abs(g.delta), from, to, label: dimMeta[dim],
+        arrow: g.delta > 0 ? '↑' : '↓', reasons: g.reasons.slice(0, 2), load: Math.abs(g.delta) >= 1.25 });
+    });
+  });
+  if (!shifts.length) return;
+  shifts.sort((a, b) => b.mag - a.mag);
+  sec('WHAT SHIFTED THIS EPISODE — RELATIONSHIP MOVEMENT');
+  ln('Directional changes in how contestants privately regard each other, with the recorded cause. These feed targeting and endgame plans; they are not public knowledge.');
+  shifts.slice(0, 12).forEach(s =>
+    ln(`- ${s.from} → ${s.to}: ${s.label} ${s.arrow} ${s.mag.toFixed(1)}${s.load ? ' (notable)' : ''} — ${s.reasons.join('; ')}.`));
+  if (shifts.length > 12) ln(`- ${shifts.length - 12} smaller movement${shifts.length - 12 === 1 ? '' : 's'} also recorded.`);
 }
 
 // ── TRIBAL COUNCIL ──
@@ -2589,6 +2664,32 @@ export function _textJuryConvenes(ep, ln, sec) {
   if (jc.projections?.length) { ln('Vote projections:'); jc.projections.forEach(p => ln(`  ${p.juror}: leaning ${p.leaning}`)); }
 }
 
+// ── FINALE: JURY PERCEPTION (#5) — who the jury BELIEVES ran the game ──
+export function _textJuryPerception(ep, ln, sec) {
+  const pond = ep.ponderosaReconciliations || [];
+  const ftc = ep.ftcCorrections || [];
+  const facts = Object.values(gs.knowledge || {}).filter(f => f?.type === 'architect');
+  const credited = facts.filter(f => Object.values(f.beliefs || {}).some(b => Number(b?.confidence || 0) >= 0.35));
+  if (!pond.length && !ftc.length && !credited.length) return;
+  sec('JURY PERCEPTION — WHO THEY THINK RAN THE GAME');
+  ln('The jury votes on what it BELIEVES about who controlled each vote — which can differ from the truth (stolen credit, secret moves). Belief, not fact, decides the winner.');
+  credited.forEach(f => {
+    const believers = Object.entries(f.beliefs || {}).filter(([, b]) => Number(b?.confidence || 0) >= 0.35).map(([n]) => n);
+    const stolen = f.payload?.trueArchitect && f.payload.trueArchitect !== f.subject;
+    ln(`- The ${f.object} boot: ${believers.length} juror${believers.length === 1 ? '' : 's'} credit ${f.subject}${stolen ? ` — WRONGLY; it was really ${f.payload.trueArchitect}` : ''} (${believers.join(', ')}).`);
+  });
+  if (pond.length) {
+    ln('PONDEROSA — jurors compared stories:');
+    pond.forEach(p => p.kind === 'corrected'
+      ? ln(`- ${p.juror} saw through it — realized ${p.to} architected the ${p.object} vote, not ${p.from}.`)
+      : ln(`- ${p.juror} stayed convinced of the wrong story on the ${p.object} vote (${p.subject} kept the credit).`));
+  }
+  if (ftc.length) {
+    ln('FTC — finalists reclaimed credit:');
+    ftc.forEach(c => ln(`- ${c.reason}`));
+  }
+}
+
 // ── FINALE: JURY VOTES ──
 export function _textJuryVotes(ep, ln, sec) {
   if (!ep.juryVotes?.length && !ep.finaleResult?.juryVotes?.length) return;
@@ -3416,8 +3517,10 @@ export function generateSummaryText(ep) {
   _textCampAccess(ep, ln, sec);
   _textGamePlans(ep, ln, sec);
   _textInformationFlow(ep, ln, sec);
+  _textRelationshipShifts(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);
+  _textAdaptation(ep, ln, sec);
   _textMoleDisruption(ep, ln, sec);
   _textWhyVote(ep, ln, sec);
   _textMoleReveal(ep, ln, sec);
@@ -3440,6 +3543,7 @@ export function generateSummaryText(ep) {
   _textFinalCut(ep, ln, sec);
   _textFTCQA(ep, ln, sec);
   _textJuryConvenes(ep, ln, sec);
+  _textJuryPerception(ep, ln, sec);
   _textJuryVotes(ep, ln, sec);
   _textFanCampaign(ep, ln, sec);
   _textFanVote(ep, ln, sec);

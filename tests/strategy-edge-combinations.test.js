@@ -62,6 +62,22 @@ describe('rare strategy combinations', () => {
     expect(resolveVotes(votes)).toMatchObject({ eliminated:'B', isTie:false });
   });
 
+  it('lets an Extra Vote create a tie that resolveVotes must honor', () => {
+    seedGame(cast, {
+      advantages:[{ holder:'E', type:'extraVote' }],
+      playerStates:{ E:{ emotional:'calculating' } },
+      lostVotes:[], tribes:[],
+    });
+    const votes = { B:1, C:2, D:1 };
+    const ep = { _forceAdvantages:true, idolPlays:[] };
+    const log = [{ voter:'E', voted:'B' }, { voter:'A', voted:'C' }, { voter:'F', voted:'C' }, { voter:'D', voted:'D' }];
+    checkNonIdolAdvantageUse(cast, votes, ep, log);
+
+    expect(ep.idolPlays).toContainEqual(expect.objectContaining({ player:'E', type:'extraVote', target:'B' }));
+    expect(votes).toMatchObject({ B:2, C:2 });
+    expect(resolveVotes(votes)).toMatchObject({ eliminated:null, isTie:true, tiedPlayers:expect.arrayContaining(['B','C']) });
+  });
+
   it('Shot in the Dark sacrifices a negotiated ballot but preserves its explanation', () => {
     seedGame([
       { name:'A', stats:{ boldness:10, intuition:5 } }, 'B', 'C', 'D', 'E', 'F',

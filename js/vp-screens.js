@@ -6944,6 +6944,9 @@ export function rpBuildAllianceMap(ep) {
   const dissolved = (ep.gsSnapshot?.dissolvedAlliances || [])
     .filter(a => _lastActive[a.name] != null && (ep.num - _lastActive[a.name]) <= 3)
     .map(a => ({ ...a, _lastEp: _lastActive[a.name] }));
+  // Newly formed blocs (this episode or the last couple) are movement too.
+  const formed = alliances.filter(a => firstSeen[a.name] != null && (ep.num - firstSeen[a.name]) <= 2)
+    .map(a => ({ ...a, _formedEp: firstSeen[a.name] }));
   const recruits = ep.allianceRecruits || [];
   const quits = ep.allianceQuits || [];
   const _elimSet = new Set(ep.gsSnapshot?.eliminated || []);
@@ -6957,9 +6960,13 @@ export function rpBuildAllianceMap(ep) {
     return 'The bonds collapsed — nobody was willing to hold it together.';
   };
   let movement = '';
-  if (dissolved.length || recruits.length || quits.length) {
+  if (formed.length || dissolved.length || recruits.length || quits.length) {
     const _face = m => `<span title="${m}${active.has(m) ? '' : ' (eliminated)'}" style="opacity:${active.has(m) ? 1 : 0.4};line-height:0;display:inline-block">${rpPortrait(m, 'xs')}</span>`;
-    movement = `<div class="sg-section" style="--c:var(--sg-danger);margin:8px 12px 6px">ALLIANCE MOVEMENT — recent</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:9px">`
+    movement = `<div class="sg-section" style="--c:var(--sg-strategy);margin:8px 12px 6px">ALLIANCE MOVEMENT — recent</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:9px">`
+      + formed.map(a => `<div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px">${sgBadge('FORMED', { tone: 'safe' })}<span style="font-size:12px;color:var(--sg-ink);font-weight:700">${a.name}</span>${a._formedEp < ep.num ? `<span style="font-size:9px;color:var(--sg-ghost)">ep ${a._formedEp}</span>` : ''}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">${(a.members || []).filter(m => active.has(m)).map(_face).join('')}</div>
+        </div>`).join('')
       + dissolved.map(a => `<div style="display:flex;flex-direction:column;gap:5px">
           <div style="display:flex;align-items:center;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<span style="font-size:12px;color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span>${a._lastEp < ep.num - 1 ? `<span style="font-size:9px;color:var(--sg-ghost)">ep ${a._lastEp + 1}</span>` : ''}</div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">${(a.members || []).map(_face).join('')}</div>

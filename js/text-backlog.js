@@ -435,6 +435,19 @@ export function _textCampPre(ep, ln, sec) {
   const playerTribeMap = {};
   if (!gs.isMerged) (gs.tribes || []).forEach(t => t.members.forEach(m => { playerTribeMap[m] = t.name; }));
 
+  // Mirror the VP Alliance Movement wording: FORMED / DISSOLVED (with reason),
+  // members listed (eliminated marked).
+  const _elimSet = new Set(gs.eliminated || []);
+  const _dissolveReason = a => {
+    const betr = (a.betrayals || []).filter(b => b.ep === ep.num).map(b => b.player);
+    const elim = a.members.filter(m => !gs.activePlayers.includes(m) && _elimSet.has(m));
+    const act = a.members.filter(m => gs.activePlayers.includes(m));
+    if (act.length <= 1 && elim.length) return act.length === 1 ? `${elim.join(' & ')} eliminated — ${act[0]} is the last one standing.` : `${elim.join(' & ')} eliminated — nobody left.`;
+    if (betr.length >= 2) return `too many broken promises — ${betr.join(', ')} broke rank.`;
+    if (betr.length === 1) return `${betr[0]} broke rank — the alliance couldn't survive it.`;
+    return 'the bonds collapsed — nobody was willing to hold it together.';
+  };
+
   if (activeAlliances.length || dissolvedThisEp.length) {
     ln('');
     ln('ALLIANCES:');
@@ -452,7 +465,11 @@ export function _textCampPre(ep, ln, sec) {
         }
       }
       const statusTag = isDissolved ? ' — DISSOLVED' : formedThisEp ? ' — FORMED THIS EPISODE' : '';
-      ln(`${a.name} (formed ep.${a.formed})${statusTag}: ${active.join(', ')}${splitNote}`);
+      const memberList = isDissolved
+        ? a.members.map(m => gs.activePlayers.includes(m) ? m : `${m} (out)`).join(', ')
+        : active.join(', ');
+      ln(`${a.name} (formed ep.${a.formed})${statusTag}: ${memberList}${splitNote}`);
+      if (isDissolved) ln(`  > ${_dissolveReason(a)}`);
       if (a.betrayals?.length) {
         a.betrayals.forEach(b => {
           const votedAnAlly = a.members.includes(b.votedFor);

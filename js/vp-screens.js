@@ -6958,10 +6958,14 @@ export function rpBuildAllianceMap(ep) {
   };
   let movement = '';
   if (dissolved.length || recruits.length || quits.length) {
-    movement = `<div class="sg-section" style="--c:var(--sg-danger);margin:8px 12px 6px">ALLIANCE MOVEMENT — this episode</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:7px">`
-      + dissolved.map(a => `<div style="display:flex;align-items:flex-start;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<div style="font-size:11px"><span style="color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span>${a._lastEp < ep.num - 1 ? ` <span style="color:var(--sg-ghost)">(ep ${a._lastEp + 1})</span>` : ''} <span style="color:var(--sg-dim)">— ${_reasonFor(a)}</span></div></div>`).join('')
-      + recruits.map(r => `<div style="font-size:10px;color:var(--sg-safe)">▲ ${r.player} joined <strong>${r.toAlliance}</strong></div>`).join('')
-      + quits.map(q => `<div style="font-size:10px;color:var(--sg-unstable)">▼ ${q.player} left <strong>${q.alliance}</strong></div>`).join('')
+    const _face = m => `<span title="${m}${active.has(m) ? '' : ' (eliminated)'}" style="opacity:${active.has(m) ? 1 : 0.4};line-height:0;display:inline-block">${rpPortrait(m, 'xs')}</span>`;
+    movement = `<div class="sg-section" style="--c:var(--sg-danger);margin:8px 12px 6px">ALLIANCE MOVEMENT — recent</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:9px">`
+      + dissolved.map(a => `<div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<span style="font-size:12px;color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span>${a._lastEp < ep.num - 1 ? `<span style="font-size:9px;color:var(--sg-ghost)">ep ${a._lastEp + 1}</span>` : ''}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">${(a.members || []).map(_face).join('')}</div>
+          <div style="font-size:10px;color:var(--sg-dim)">${_reasonFor(a)}</div>
+        </div>`).join('')
+      + (recruits.length || quits.length ? `<div style="display:flex;flex-direction:column;gap:3px">${recruits.map(r => `<div style="font-size:10px;color:var(--sg-safe);display:flex;align-items:center;gap:5px">▲ ${_face(r.player)} <span>${r.player} joined <strong>${r.toAlliance}</strong></span></div>`).join('')}${quits.map(q => `<div style="font-size:10px;color:var(--sg-unstable);display:flex;align-items:center;gap:5px">▼ ${_face(q.player)} <span>${q.player} left <strong>${q.alliance}</strong></span></div>`).join('')}</div>` : '')
       + `</div>`;
   }
   if (!alliances.length) return `<div style="margin:6px 0 8px">${sgCard('ALLIANCE MAP', 'the blocs in play — use the episode toggle above to watch them form & fracture', movement + `<div style="padding:8px 12px 14px">${sgEmpty('No alliances currently standing.')}</div>`, { tone: 'strategy' })}</div>`;

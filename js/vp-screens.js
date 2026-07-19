@@ -6936,9 +6936,14 @@ export function rpBuildAllianceMap(ep) {
   const inCount = {}; alliances.forEach(a => a.members.forEach(m => { if (active.has(m)) inCount[m] = (inCount[m] || 0) + 1; }));
   // First episode each alliance appeared (formation).
   const firstSeen = {}; hist.forEach(h => (h.gsSnapshot?.namedAlliances || []).forEach(a => { if (firstSeen[a.name] == null && a.active !== false) firstSeen[a.name] = h.num; }));
-  // ── Movement this episode: dissolutions (with reason), joins, departures ──
-  const _prevNames = (hist.find(h => h.num === ep.num - 1)?.gsSnapshot?.namedAlliances || []).map(a => a.name);
-  const dissolved = (ep.gsSnapshot?.dissolvedAlliances || []).filter(a => _prevNames.includes(a.name));
+  // ── Movement: alliances dissolved recently (last few episodes so it stays
+  //    discoverable, not only on the exact episode it happened), plus this
+  //    episode's joins and departures. ──
+  const _lastActive = {};
+  hist.filter(h => h.num < ep.num).forEach(h => (h.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false).forEach(a => { _lastActive[a.name] = h.num; }));
+  const dissolved = (ep.gsSnapshot?.dissolvedAlliances || [])
+    .filter(a => _lastActive[a.name] != null && (ep.num - _lastActive[a.name]) <= 3)
+    .map(a => ({ ...a, _lastEp: _lastActive[a.name] }));
   const recruits = ep.allianceRecruits || [];
   const quits = ep.allianceQuits || [];
   const _elimSet = new Set(ep.gsSnapshot?.eliminated || []);
@@ -6954,7 +6959,7 @@ export function rpBuildAllianceMap(ep) {
   let movement = '';
   if (dissolved.length || recruits.length || quits.length) {
     movement = `<div class="sg-section" style="--c:var(--sg-danger);margin:8px 12px 6px">ALLIANCE MOVEMENT — this episode</div><div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:7px">`
-      + dissolved.map(a => `<div style="display:flex;align-items:flex-start;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<div style="font-size:11px"><span style="color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span> <span style="color:var(--sg-dim)">— ${_reasonFor(a)}</span></div></div>`).join('')
+      + dissolved.map(a => `<div style="display:flex;align-items:flex-start;gap:8px">${sgBadge('DISSOLVED', { tone: 'danger' })}<div style="font-size:11px"><span style="color:var(--sg-ink);font-weight:700;text-decoration:line-through">${a.name}</span>${a._lastEp < ep.num - 1 ? ` <span style="color:var(--sg-ghost)">(ep ${a._lastEp + 1})</span>` : ''} <span style="color:var(--sg-dim)">— ${_reasonFor(a)}</span></div></div>`).join('')
       + recruits.map(r => `<div style="font-size:10px;color:var(--sg-safe)">▲ ${r.player} joined <strong>${r.toAlliance}</strong></div>`).join('')
       + quits.map(q => `<div style="font-size:10px;color:var(--sg-unstable)">▼ ${q.player} left <strong>${q.alliance}</strong></div>`).join('')
       + `</div>`;

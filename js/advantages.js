@@ -83,13 +83,12 @@ export function findAdvantages(ep) {
   if (cfg.advantages?.legacy?.enabled && ep.num <= 3 && !gs.advantages.some(a => a.type === 'legacy')) {
     // Escalating chance: ep1 = 40%, ep2 = 70%, ep3 = 100% (guaranteed by ep3)
     const _legacyChance = ep.num === 1 ? 0.4 : ep.num === 2 ? 0.7 : 1.0;
-    // Learned-behavior: the most idol-paranoid searcher in the pool hunts harder, so legacy surfaces sooner (1.0 when meta-less)
-    const _metaFind = 1 + Math.max(0, ...gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).map(p => gs.franchiseMeta?.profiles?.[p]?.idolParanoia || 0)) * META_WEIGHTS.idolParanoiaSearchBoost;
-    if (Math.random() < _legacyChance * _metaFind) {
+    if (Math.random() < _legacyChance) {
       const _legPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
       if (_legPool.length) {
-        // Slight bias toward intuitive players (they search harder)
-        const _legWeighted = _legPool.map(p => ({ name: p, w: 1 + pStats(p).intuition * 0.1 }));
+        // Slight bias toward intuitive players (they search harder), plus each candidate's own
+        // learned idol-paranoia raises THEIR lottery weight so the boosted player is the actual finder (1.0 when meta-less)
+        const _legWeighted = _legPool.map(p => ({ name: p, w: (1 + pStats(p).intuition * 0.1) * (1 + (gs.franchiseMeta?.profiles?.[p]?.idolParanoia || 0) * META_WEIGHTS.idolParanoiaSearchBoost) }));
         const _legTotal = _legWeighted.reduce((s, w) => s + w.w, 0);
         let _legRoll = Math.random() * _legTotal;
         let _legFinder = _legWeighted[0].name;

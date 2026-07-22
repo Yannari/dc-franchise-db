@@ -4,6 +4,9 @@
 
 import { audio } from './audio.js';
 import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
+import { franchiseLedger, franchiseHistorySummary, backfillFromSeasonsDb,
+  clearPlayerHistory, wipeLedger, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
+import { persistFranchiseLedger } from './savestate.js';
 
 export function showTab(name) {
   audio.sfx('tab-swoosh');
@@ -297,6 +300,69 @@ export function importCast(event) {
   const reader = new FileReader();
   reader.onload = e => { try { const raw=JSON.parse(e.target.result); const data=Array.isArray(raw) ? raw : (raw.players && Array.isArray(raw.players)) ? raw.players : null; if(!data) throw new Error(); players=data; saveCast(); renderCast(); renderTribeBuilder(); renderTribeSelect(); } catch { alert('Invalid JSON file.'); } };
   reader.readAsText(file); event.target.value='';
+}
+
+// ── Franchise History (cross-season ledger) UI ──
+export function renderFranchiseHistoryPanel() {
+  const el = document.getElementById('franchise-history-panel'); if (!el) return;
+  const rows = players.filter(p => p.isReturnee).map(p => {
+    const hist = franchiseHistorySummary(p.name);
+    if (!hist.length) return `<div class="fh-row"><b>${p.name}</b> — no recorded history</div>`;
+    return `<div class="fh-row"><b>${p.name}</b> — ${hist.map(h => `S${h.seasonNum}: ${h.line}`).join(' | ')}
+      <button onclick="clearFranchisePlayerHistory('${p.name.replace(/'/g, "\\'")}')" style="margin-left:6px;">clear</button></div>`;
+  });
+  const total = Object.keys(franchiseLedger.seasons).length;
+  el.innerHTML = `<div style="font-size:12px;opacity:.8;">Franchise ledger: ${total} season${total === 1 ? '' : 's'} recorded</div>` + rows.join('');
+}
+
+export function importFranchiseHistory(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const n = backfillFromSeasonsDb(JSON.parse(e.target.result));
+      persistFranchiseLedger();
+      renderFranchiseHistoryPanel();
+      alert(`Imported ${n} season${n === 1 ? '' : 's'} into franchise history.`);
+    } catch { alert('Invalid seasons_database.json file.'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+
+export function clearFranchisePlayerHistory(name) {
+  clearPlayerHistory(name); persistFranchiseLedger(); renderFranchiseHistoryPanel();
+}
+
+export function wipeFranchiseHistory() {
+  if (!confirm('Wipe ALL franchise history? This cannot be undone.')) return;
+  wipeLedger(); persistFranchiseLedger(); renderFranchiseHistoryPanel();
+}
+
+// Record whatever finished season is currently loaded into the franchise
+// ledger. Officialness = the user's choice of which save to load and record.
+export function recordLoadedSeasonToHistory() {
+  if (!gs || gs.phase !== 'complete') { alert('Load a FINISHED season savestate first (the finale must be complete).'); return; }
+  const seasonNum = gs.seasonNumber || seasonConfig?.seasonNumber || 0;
+  if (!seasonNum) { alert('This save has no season number. Set "Season Number" in the config to identify it, then click again.'); return; }
+  if (!gs.seasonNumber && !confirm(`This save predates season stamping. Record it as Season ${seasonNum} (from your config)?`)) return;
+  if (franchiseLedger.seasons[String(seasonNum)] && !confirm(`Season ${seasonNum} already has a recorded history. Overwrite it with this savestate?`)) return;
+  if (recordSeasonToLedger(null, 'manual')) {
+    persistFranchiseLedger();
+    renderFranchiseHistoryPanel();
+    alert(`Season ${seasonNum} recorded into franchise history (${Object.keys(franchiseLedger.seasons[String(seasonNum)].players).length} players).`);
+  } else {
+    alert('Could not derive a season record from this save.');
+  }
+}
+
+export function applyFranchiseMetaMidSeason() {
+  if (!gs || gs.phase === 'complete') { alert('No season in progress — load or start one first.'); return; }
+  let meta = null;
+  try { meta = buildFranchiseMeta(players, seasonConfig); } catch (e) { console.warn(e); }
+  if (!meta) { alert('No returnee history found. Backfill or record past seasons first, and make sure returnees are marked as returnees.'); return; }
+  gs.franchiseMeta = { profiles: meta.profiles, seededPairs: [] }; // no retroactive bond seeding
+  saveGameState();
+  alert(`Franchise history applied to ${Object.keys(meta.profiles).length} returnee(s) for the rest of this season (reputation, instincts, callbacks — starting bonds unchanged).`);
 }
 
 // ── Franchise Roster Management ──
@@ -612,6 +678,7 @@ export function renderCast() {
     grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div><p>No players yet. Add one or click <strong>S9 Cast</strong> / <strong>S10 Cast</strong>.</p></div>`;
     document.getElementById('cast-count').textContent='0';
     document.getElementById('cast-tribe-summary').textContent='';
+    renderFranchiseHistoryPanel();
     return;
   }
   const sorted = [...players].sort((a,b) => (a.tribe||'').localeCompare(b.tribe||'')||a.name.localeCompare(b.name));
@@ -620,6 +687,7 @@ export function renderCast() {
   const tribes={};
   players.forEach(p => { const t=p.tribe||'No Tribe'; tribes[t]=(tribes[t]||0)+1; });
   document.getElementById('cast-tribe-summary').textContent = '\u2014 '+Object.entries(tribes).map(([t,c])=>`${t} (${c})`).join(' \u00b7 ');
+  renderFranchiseHistoryPanel();
 }
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
@@ -740,6 +808,7 @@ export function saveConfig() {
     finaleSize:  parseInt(g('cfg-finale')?.value) || 3,
     finaleFormat: g('cfg-finale-format')?.value || 'traditional',
     finaleAssistants: g('cfg-finale-assistants')?.checked || false,
+    franchiseMeta: g('cfg-franchise-meta')?.checked !== false,
     jurySize:    parseInt(g('cfg-jury')?.value) || 9,
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -824,6 +893,7 @@ export function renderConfig() {
   set('cfg-finale',  seasonConfig.finaleSize);
   set('cfg-finale-format', seasonConfig.finaleFormat || 'traditional');
   if (g('cfg-finale-assistants')) g('cfg-finale-assistants').checked = !!seasonConfig.finaleAssistants;
+  if (g('cfg-franchise-meta')) g('cfg-franchise-meta').checked = seasonConfig.franchiseMeta !== false;
   set('cfg-jury',    seasonConfig.jurySize || 9);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);

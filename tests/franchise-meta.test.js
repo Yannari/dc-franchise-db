@@ -161,3 +161,24 @@ describe('reputation threat multiplier', () => {
     expect(d.challenge * 0.33 + d.social * 0.33 + d.strategic * 0.33).toBeCloseTo(d.total, 10);
   });
 });
+
+import { backfillFromSeasonsDb, franchiseHistorySummary, wipeLedger } from '../js/franchise-meta.js';
+
+describe('backfillFromSeasonsDb', () => {
+  it('imports placements defensively and never overwrites live-recorded seasons', () => {
+    setFranchiseLedger({ seasons: { '11': { seasonName: 'Live S11', players: { 'Fiore': { placement: 2, winner: false, finalist: true } } } } });
+    const n = backfillFromSeasonsDb({ seasons: [
+      { seasonNumber: 10, seasonName: 'S10', winner: { name: 'Fiore' },
+        players: [ { name: 'Fiore', placement: 1 }, { name: 'Thom', placement: 7 } ] },
+      { seasonNumber: 11, seasonName: 'Should Not Overwrite', winner: { name: 'X' }, players: [] }
+    ] });
+    expect(n).toBe(1); // season 11 already live-recorded → skipped
+    expect(franchiseLedger.seasons['10'].players['Fiore'].winner).toBe(true);
+    expect(franchiseLedger.seasons['10'].players['Thom'].placement).toBe(7);
+    expect(franchiseLedger.seasons['11'].seasonName).toBe('Live S11');
+    // relationship facts absent in export schema → empty arrays, not undefined
+    expect(franchiseLedger.seasons['10'].players['Thom'].betrayed).toEqual([]);
+    wipeLedger();
+    expect(franchiseLedger.seasons).toEqual({});
+  });
+});

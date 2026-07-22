@@ -2514,6 +2514,20 @@
         </div>
         <input type="file" id="import-roster-file" accept=".json" style="display:none" onchange="importRoster(event)">
         <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Franchise History</div>
+        <div id="franchise-history-panel" style="font-size:11px;margin-bottom:6px"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="document.getElementById('fh-import-input').click()" title="Backfill past seasons from an exported seasons_database.json">Import History</button>
+          <button class="btn btn-danger" onclick="wipeFranchiseHistory()">Wipe History</button>
+        </div>
+        <input type="file" id="fh-import-input" accept=".json" style="display:none" onchange="importFranchiseHistory(event)">
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="recordLoadedSeasonToHistory()" title="Record the currently-loaded finished season into the ledger">Record Loaded Season</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="applyFranchiseMetaMidSeason()" title="Apply returnee reputation/instincts to the in-progress season">Apply to Current Season</button>
+        </div>
+        <div class="divider"></div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Presets</div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="savePreset()" style="background:#6366f1;color:#fff">Save Preset</button>
@@ -2567,6 +2581,12 @@
                 <label class="form-label">Length (Days)</label>
                 <input type="number" id="cfg-days" class="form-input" placeholder="39" min="1" max="120" oninput="saveConfig()">
               </div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" id="cfg-franchise-meta" checked onchange="saveConfig()" style="width:14px;height:14px">
+                <span style="font-size:13px">Franchise history <span class="hint">(returnees carry reputation &amp; grudges)</span></span>
+              </label>
             </div>
             <div class="form-group">
               <label class="form-label">Host</label>

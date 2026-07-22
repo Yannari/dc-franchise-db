@@ -214,6 +214,60 @@ export function buildFranchiseMeta(cast, cfg) {
   return { profiles, seededPairs };
 }
 
+// ── Backfill from exported seasons_database.json ──────────────────────────
+// Defensive mapping: the export DB carries placements/winners but not
+// relationship facts — those stay empty for backfilled seasons (they
+// contribute reputation, not carried relationships). Live-recorded seasons
+// always win over backfill.
+function _emptyRecord() {
+  return { placement: 0, winner: false, finalist: false, episodesLasted: 0,
+    blindsided: false, blindsidedBy: [], blindsidesAuthored: 0,
+    idolsFound: 0, idolsPlayed: 0, idoledOut: false,
+    betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [],
+    chalWins: 0, schemesCaught: 0, backfilled: true };
+}
+
+export function backfillFromSeasonsDb(json) {
+  const seasons = Array.isArray(json?.seasons) ? json.seasons : [];
+  let imported = 0;
+  for (const s of seasons) {
+    const num = s?.seasonNumber; if (!num) continue;
+    const existing = franchiseLedger.seasons[String(num)];
+    if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) continue; // live wins
+    const winnerName = s.winner?.name || s.winner || null;
+    const roster = Array.isArray(s.players) ? s.players : (Array.isArray(s.placements) ? s.placements : (Array.isArray(s.cast) ? s.cast : []));
+    const rec = { seasonName: s.seasonName || s.name || `Season ${num}`, players: {} };
+    for (const p of roster) {
+      const name = p?.name || (typeof p === 'string' ? p : null); if (!name) continue;
+      const r = _emptyRecord();
+      r.placement = p.placement || p.finish || 0;
+      r.winner = name === winnerName || r.placement === 1;
+      r.finalist = r.winner || r.placement === 2 || r.placement === 3;
+      r.chalWins = p.chalWins || p.immunityWins || 0;
+      r.episodesLasted = p.episodesLasted || 0;
+      rec.players[name] = r;
+    }
+    if (winnerName && !rec.players[winnerName]) { const r = _emptyRecord(); r.placement = 1; r.winner = true; r.finalist = true; rec.players[winnerName] = r; }
+    if (!Object.keys(rec.players).length) continue;
+    franchiseLedger.seasons[String(num)] = rec;
+    imported++;
+  }
+  return imported;
+}
+
+export function franchiseHistorySummary(name) {
+  return _historyFor(name).map(({ seasonNum, seasonName, rec }) => ({
+    seasonNum, seasonName,
+    line: `${rec.winner ? '🏆 Won' : _ordinal(rec.placement)}${rec.blindsided ? ' · blindsided' : ''}${rec.idolsPlayed ? ` · ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''}` : ''}${rec.chalWins ? ` · ${rec.chalWins}W` : ''}${rec.backfilled ? ' · (imported)' : ''}`
+  }));
+}
+
+export function clearPlayerHistory(name) {
+  for (const season of Object.values(franchiseLedger.seasons)) delete season.players?.[name];
+}
+
+export function wipeLedger() { franchiseLedger.seasons = {}; }
+
 // Idempotent: keyed by season number; live records always overwrite backfill.
 export function recordSeasonToLedger(_ep, source = 'live') {
   if (seasonConfig?.franchiseMeta === false && source === 'live') return false;

@@ -58,6 +58,19 @@ describe('canonical season event ledger', () => {
     expect(validateLedger(ledger).valid).toBe(false);
   });
 
+  it('reports only concrete data-health exceptions instead of creating a review queue', () => {
+    const record = buildEpisodeRecord({ season:2, episode:4, summaryText:summary, cast, eliminated:['Axel'], analytics:{
+      bootPredictions:[{player:'Bowie',prob:20}],
+      powerRankings:[{player:'Bowie',score:70},{player:'Ghost',score:50},{player:'Axel',score:20}],
+    } });
+    const health = validateLedger(upsertEpisode(createLedger(2), record));
+    expect(health.valid).toBe(true);
+    expect(health.issues.map(issue => issue.code)).toEqual(expect.arrayContaining([
+      'missing-bootPredictions', 'missing-powerRankings', 'unknown-powerRankings', 'eliminated-powerRankings',
+    ]));
+    expect(health.issues.every(issue => issue.severity === 'warning')).toBe(true);
+  });
+
   it('confirms, rejects, corrects, and manually adds events without losing provenance', () => {
     const record = buildEpisodeRecord({ season:2, episode:4, summaryText:summary, cast });
     let ledger = upsertEpisode(createLedger(2), record);

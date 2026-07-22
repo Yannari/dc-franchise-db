@@ -197,18 +197,44 @@ export function upsertEpisode(ledger, record) {
 }
 
 export function validateLedger(ledger) {
-  const errors = [], warnings = [], ids = new Set();
-  if (!ledger || Number(ledger.schemaVersion) !== LEDGER_SCHEMA_VERSION) errors.push('Unsupported or missing schemaVersion.');
+  const issues = [], ids = new Set();
+  const report = (severity, code, episode, message, eventId = null) => issues.push({ severity, code, episode:Number(episode) || null, message, eventId });
+  if (!ledger || Number(ledger.schemaVersion) !== LEDGER_SCHEMA_VERSION) report('error','schema-version',null,'Unsupported or missing schemaVersion.');
   Object.entries(ledger?.episodes || {}).forEach(([key, record]) => {
-    if (Number(key) !== Number(record?.episode)) errors.push(`Episode key ${key} does not match its record.`);
+    const ep = Number(record?.episode || key);
+    if (Number(key) !== ep) report('error','episode-key',ep,`Episode key ${key} does not match its record.`);
+    const cast = new Set(record?.cast || []);
+    const eliminated = new Set(record?.eliminated || []);
+    if (cast.size) eliminated.forEach(name => { if (!cast.has(name)) report('error','unknown-elimination',ep,`${name} is eliminated but is not in the episode cast.`); });
     (record?.events || []).forEach(event => {
-      if (!event.id || ids.has(event.id)) errors.push(`Duplicate or missing event id in episode ${key}.`);
+      if (!event.id || ids.has(event.id)) report('error','duplicate-event',ep,`Duplicate or missing event id in Episode ${key}.`,event.id);
       ids.add(event.id);
-      if (!event.provenance?.kind || !event.provenance?.source) errors.push(`Event ${event.id || '?'} lacks provenance.`);
-      if (!event.description) warnings.push(`Event ${event.id || '?'} has no description.`);
+      if (!event.provenance?.kind || !event.provenance?.source) report('error','missing-provenance',ep,`Event ${event.id || '?'} has no source information.`,event.id);
+      if (!event.description) report('warning','missing-description',ep,`Event ${event.id || '?'} has no description.`,event.id);
+      if (cast.size) [...(event.actors || []), ...(event.targets || [])].forEach(name => {
+        if (!cast.has(name)) report('error','unknown-player',ep,`${name} appears in ${event.type} but is not in the episode cast.`,event.id);
+      });
     });
+
+    const active = [...cast].filter(name => !eliminated.has(name));
+    const checkCoverage = (field, label) => {
+      const rows = record?.observations?.[field];
+      if (!Array.isArray(rows) || !cast.size) return;
+      const names = rows.map(row => row?.player).filter(Boolean);
+      const seen = new Set(names);
+      active.forEach(name => { if (!seen.has(name)) report('warning',`missing-${field}`,ep,`${label} is missing active contestant ${name}.`); });
+      eliminated.forEach(name => { if (seen.has(name)) report('warning',`eliminated-${field}`,ep,`${label} still includes eliminated contestant ${name}.`); });
+      names.forEach((name, index) => {
+        if (!cast.has(name)) report('warning',`unknown-${field}`,ep,`${label} includes unknown contestant ${name}.`);
+        if (names.indexOf(name) !== index) report('warning',`duplicate-${field}`,ep,`${label} contains ${name} more than once.`);
+      });
+    };
+    checkCoverage('bootPredictions','Boot predictions');
+    checkCoverage('powerRankings','Power rankings');
   });
-  return { valid:errors.length === 0, errors, warnings, eventCount:ids.size };
+  const errors = issues.filter(issue => issue.severity === 'error').map(issue => issue.message);
+  const warnings = issues.filter(issue => issue.severity === 'warning').map(issue => issue.message);
+  return { valid:errors.length === 0, errors, warnings, issues, eventCount:ids.size };
 }
 
 export function ledgerStats(ledger) {

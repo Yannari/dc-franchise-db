@@ -71,8 +71,11 @@ export function deriveSeasonRecord() {
     const flippers = (elimEp?.defections || []).map(d => d.player).filter(Boolean);
     const blindsided = !!elimEp && !!(elimEp.votingLog || []).length
       && (flippers.length >= 2 || (!!ownBallot && ownBallot.voted !== n && votersAgainst.length >= 3));
+    // ep.idolPlays is a shared log for ALL advantage plays (kip/extraVote/voteSteal/
+    // voteBlock/soleVote/teamSwap/fake-idol carry a `type`). Genuine idol plays are
+    // pushed with NO type field (advantages.js), legacy idols with type:'legacy'.
     const idolsPlayed = hist.reduce((s, ep) => s + (ep.idolPlays || [])
-      .filter(ip => ip.player === n && !ip.fake && !ip.failed).length, 0);
+      .filter(ip => ip.player === n && !ip.fake && !ip.failed && (!ip.type || ip.type === 'legacy')).length, 0);
     const idoledOut = !!elimEp && (elimEp.idolPlays || []).some(ip => ip.player !== n && (ip.votesNegated || 0) > 0);
     const betrayed = [];
     for (const ep of hist) {

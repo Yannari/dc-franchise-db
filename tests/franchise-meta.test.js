@@ -29,7 +29,7 @@ function fabricateFinishedSeason() {
       { num: 1, eliminated: 'Dee', immunityWinner: 'Ava',
         votingLog: [ { voter: 'Ava', voted: 'Dee' }, { voter: 'Ben', voted: 'Dee' }, { voter: 'Cy', voted: 'Dee' }, { voter: 'Dee', voted: 'Ben' } ],
         defections: [ { player: 'Cy' }, { player: 'Ben' } ],
-        idolPlays: [] },
+        idolPlays: [ { player: 'Ben', type: 'extraVote', target: 'Dee' } ] },
       { num: 2, eliminated: 'Cy', immunityWinner: 'Ava',
         votingLog: [ { voter: 'Ava', voted: 'Cy' }, { voter: 'Ben', voted: 'Cy' }, { voter: 'Cy', voted: 'Ben' } ],
         defections: [],
@@ -57,6 +57,7 @@ describe('deriveSeasonRecord', () => {
     expect(rec.players['Ava'].showmances).toEqual([{ partner: 'Ben', ended: 'intact' }]);
     expect(rec.players['Ben'].rivals).toContain('Cy');          // bond -5
     expect(rec.players['Cy'].schemesCaught).toBe(1);
+    expect(rec.players['Ben'].idolsPlayed).toBe(0);             // extraVote is NOT an idol play
   });
   it('returns null when seasonNumber is 0', () => {
     fabricateFinishedSeason();

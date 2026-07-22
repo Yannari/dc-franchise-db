@@ -17,9 +17,10 @@ import { setGs, setPlayers, setSeasonConfig, defaultConfig } from '../js/core.js
 import { deriveSeasonRecord, recordSeasonToLedger } from '../js/franchise-meta.js';
 
 function fabricateFinishedSeason() {
+  const _stats = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5, loyalty: 5, boldness: 5, intuition: 5, temperament: 5 };
   setPlayers([
-    { name: 'Ava', isReturnee: false }, { name: 'Ben', isReturnee: false },
-    { name: 'Cy', isReturnee: false }, { name: 'Dee', isReturnee: false }
+    { name: 'Ava', isReturnee: false, stats: { ..._stats } }, { name: 'Ben', isReturnee: false, stats: { ..._stats } },
+    { name: 'Cy', isReturnee: false, stats: { ..._stats } }, { name: 'Dee', isReturnee: false, stats: { ..._stats } }
   ]);
   setSeasonConfig({ ...defaultConfig(), seasonNumber: 15, name: 'Test Season', franchiseMeta: true });
   setGs({
@@ -125,5 +126,27 @@ describe('buildFranchiseMeta', () => {
     seedLedgerS12();
     expect(buildFranchiseMeta(cast, { franchiseMeta: false })).toBeNull();
     expect(buildFranchiseMeta([{ name: 'Newbie', isReturnee: false }], { franchiseMeta: true })).toBeNull();
+  });
+});
+
+import { gs } from '../js/core.js';
+import { threatScore } from '../js/players.js';
+
+describe('reputation threat multiplier', () => {
+  it('raises threatScore for a decorated returnee, decaying over episodes', () => {
+    fabricateFinishedSeason(); // any valid gs; then attach meta
+    gs.showmances = []; // fabricated showmances use {a,b}; threatScore reads sh.players
+    gs.chalRecord = { 'Ava': { wins: 1, podiums: 0, bombs: 0 } }; // decorated returnee: keeps the base challenge-threat stable across episodes so the assertion isolates the rep multiplier's decay
+    gs.episode = 1;
+    gs.franchiseMeta = { profiles: { 'Ava': { repScore: 1.0 } }, seededPairs: [] };
+    const withRep = threatScore('Ava');
+    gs.franchiseMeta = null;
+    const withoutRep = threatScore('Ava');
+    expect(withRep).toBeGreaterThan(withoutRep);
+    gs.franchiseMeta = { profiles: { 'Ava': { repScore: 1.0 } }, seededPairs: [] };
+    gs.episode = 12; // decayed résumé
+    const lateRep = threatScore('Ava');
+    expect(lateRep).toBeLessThan(withRep);
+    expect(lateRep).toBeGreaterThan(withoutRep); // floor keeps some effect
   });
 });

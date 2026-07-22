@@ -1,5 +1,6 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
+import { META_WEIGHTS } from './franchise-meta.js';
 
 export function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
 
@@ -211,7 +212,14 @@ export function threatScore(name, detailed) {
   const _chal = Math.max(0, challengeThreat);
   const _soc = Math.max(0, socialThreat);
   const _strat = Math.max(0, strategicThreat);
-  const total = _chal * 0.33 + _soc * 0.33 + _strat * 0.33;
+  let total = _chal * 0.33 + _soc * 0.33 + _strat * 0.33;
+  // Franchise meta: résumé makes returnees read as bigger threats, strongest
+  // early — survivors "prove themselves" as current threats and the résumé fades.
+  const _rep = gs?.franchiseMeta?.profiles?.[name]?.repScore || 0;
+  if (_rep > 0) {
+    const _decay = Math.max(META_WEIGHTS.repDecayFloor, 1 - (gs.episode || 0) * META_WEIGHTS.repDecayPerEpisode);
+    total *= 1 + _rep * _decay * META_WEIGHTS.repThreatFactor;
+  }
   if (detailed) return { total, challenge: _chal, social: _soc, strategic: _strat };
   return total;
 }

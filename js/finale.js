@@ -1964,7 +1964,7 @@ export function simulateFinale() {
     _recorded = window.recordSeasonToLedger?.(ep);
     if (_recorded) window.persistFranchiseLedger?.();
   } catch (e) { console.warn('Franchise ledger record failed:', e); }
-  if (_recorded === false && seasonConfig?.franchiseMeta !== false) {
+  if (_recorded === false && seasonConfig?.franchiseMeta !== false && seasonConfig?.franchiseMetaAutoRecord !== false) {
     console.warn('Season not added to franchise history — check that a season number is set.');
   }
 

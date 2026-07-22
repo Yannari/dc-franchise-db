@@ -280,7 +280,7 @@ export function wipeLedger() { franchiseLedger.seasons = {}; }
 
 // Idempotent: keyed by season number; live records always overwrite backfill.
 export function recordSeasonToLedger(_ep, source = 'live') {
-  if (seasonConfig?.franchiseMeta === false && source === 'live') return false;
+  if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
   const rec = deriveSeasonRecord();
   if (!rec) return false;
   rec.source = source; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags

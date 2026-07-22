@@ -937,6 +937,7 @@ export function defaultConfig() {
     tribes: [],  // [{ name, color }]
     popularityEnabled: true,
     franchiseMeta: true,
+    franchiseMetaAutoRecord: true,
     seasonNumber: 0,
   };
 }

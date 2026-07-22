@@ -76,6 +76,15 @@ describe('recordSeasonToLedger', () => {
     expect(Object.keys(franchiseLedger.seasons)).toEqual(['15']);
     expect(franchiseLedger.seasons['15'].players['Ava'].winner).toBe(true);
   });
+  it('skips live recording when auto-record is off, but manual recording still works', () => {
+    setFranchiseLedger({ seasons: {} });
+    fabricateFinishedSeason();
+    setSeasonConfig({ ...defaultConfig(), seasonNumber: 15, franchiseMeta: true, franchiseMetaAutoRecord: false });
+    expect(recordSeasonToLedger({}, 'live')).toBe(false);
+    expect(franchiseLedger.seasons['15']).toBeUndefined();
+    expect(recordSeasonToLedger({}, 'manual')).toBe(true);
+    expect(franchiseLedger.seasons['15'].players['Ava'].winner).toBe(true);
+  });
 });
 
 import { buildFranchiseMeta } from '../js/franchise-meta.js';

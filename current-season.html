@@ -206,6 +206,10 @@
 .row-player{display:inline-flex;gap:8px;align-items:center}
 
 .ledger-health{margin:0 0 12px;border:1px solid rgba(255,255,255,.09);border-left:3px solid #3fb950;background:rgba(255,255,255,.035);font-size:11px;color:#8b949e}.ledger-health.has-issues{border-left-color:#d29922}.ledger-health.has-errors{border-left-color:#f85149}.ledger-health summary{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 10px;cursor:pointer;list-style:none}.ledger-health summary::-webkit-details-marker{display:none}.ledger-health-dot{width:7px;height:7px;border-radius:50%;background:#3fb950;flex:none}.ledger-health.has-issues .ledger-health-dot{background:#d29922}.ledger-health.has-errors .ledger-health-dot{background:#f85149}.ledger-health-hint{margin-left:auto;font-size:10px;color:#6e7681}.ledger-health-issues{border-top:1px solid rgba(255,255,255,.08);padding:8px 10px}.ledger-health-issue{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.07);color:#c9d1d9}.ledger-health-issue:last-child{border-bottom:0}.ledger-health-issue b{color:#d29922;margin-right:6px}.ledger-health-issue.error b{color:#f85149}
+
+/* Season Control Room — a broadcast desk, not another card dashboard. */
+.control-room{--cr-red:#ff5a5f;--cr-amber:#f0b429;--cr-green:#42d392;background:#0d1117;border:1px solid rgba(255,255,255,.11);overflow:hidden}.cr-mast{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:22px 24px 18px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(90deg,rgba(255,90,95,.12),transparent 42%)}.cr-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--cr-red);text-transform:uppercase}.cr-title{margin:4px 0 0;font-size:28px;letter-spacing:-.03em}.cr-deck{margin-top:5px;color:#8b949e;font-size:12px;max-width:68ch}.cr-source{flex:none;text-align:right;font-size:10px;color:#8b949e}.cr-source b{display:block;color:#c9d1d9;font-size:12px;margin-bottom:3px}.cr-cast-strip{display:flex;align-items:center;gap:8px;padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.08);overflow-x:auto;scrollbar-width:thin}.cr-cast-label{position:sticky;left:0;z-index:2;background:#0d1117;padding-right:8px;color:#8b949e;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.cr-face{position:relative;flex:none;width:34px;height:34px;border:1px solid rgba(255,255,255,.14);background:#161b22;overflow:hidden;transform:rotate(-2deg)}.cr-face:nth-child(even){transform:rotate(2deg)}.cr-face img{width:100%;height:100%;object-fit:cover}.cr-face span{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;color:#8b949e}.cr-face.eliminated{filter:grayscale(1);opacity:.3}.cr-face.eliminated:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;background:rgba(13,17,23,.45);color:#ff7b72;font-size:22px;font-weight:900}.cr-board{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(270px,.88fr)}.cr-main{padding:22px 24px}.cr-rail{padding:22px;border-left:1px solid rgba(255,255,255,.1);background:#10151c}.cr-section+.cr-section{margin-top:24px}.cr-section-title{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8b949e}.cr-section-title:after{content:'';height:1px;flex:1;background:rgba(255,255,255,.09)}.cr-headline{padding:16px 18px;border-left:4px solid var(--cr-amber);background:#161b22}.cr-headline strong{display:block;font-size:18px;line-height:1.25}.cr-headline p{margin:6px 0 0;color:#9da7b3;font-size:12px;line-height:1.5}.cr-list{display:flex;flex-direction:column}.cr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}.cr-row:last-child{border-bottom:0}.cr-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;background:#21262d;border:1px solid rgba(255,255,255,.12)}.cr-avatar img{width:100%;height:100%;object-fit:cover}.cr-avatar span{display:grid;width:100%;height:100%;place-items:center;font-size:11px;font-weight:900;color:#8b949e}.cr-row-copy{min-width:0}.cr-row-copy b{font-size:12px}.cr-row-copy small{display:block;margin-top:2px;color:#8b949e;font-size:10px;line-height:1.35}.cr-value{font-size:12px;font-weight:900;color:#c9d1d9}.cr-value.danger{color:#ff7b72}.cr-value.power{color:#56d4a2}.cr-thread{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.45;color:#c9d1d9}.cr-thread:last-child{border-bottom:0}.cr-thread-meta{display:block;margin-bottom:3px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8b949e}.cr-thread.recorded .cr-thread-meta{color:#56d4a2}.cr-thread.inferred .cr-thread-meta{color:#d2a8ff}.cr-empty{padding:14px;border:1px dashed rgba(255,255,255,.15);color:#8b949e;font-size:11px;line-height:1.5}.cr-meter{height:4px;margin-top:6px;background:#21262d}.cr-meter span{display:block;height:100%;background:var(--cr-green)}
+@media(max-width:780px){.cr-mast{align-items:flex-start;flex-direction:column}.cr-source{text-align:left}.cr-board{grid-template-columns:1fr}.cr-rail{border-left:0;border-top:1px solid rgba(255,255,255,.1)}.cr-main,.cr-rail{padding:18px}.cr-title{font-size:23px}}
 </style>
 
 </head>
@@ -447,7 +451,8 @@
     <div class="window-head">
       <h2 class="section-title">📊 Cullhouse Analytics</h2>
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
-        <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
+        <button class="tab-btn active" id="tabControl" role="tab" aria-selected="true">🎛️ Control Room</button>
+        <button class="tab-btn" id="tabOverview" role="tab" aria-selected="false">📘 Overview</button>
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
         <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📋 Resumes</button>
         <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💞 Relationships</button>
@@ -456,8 +461,31 @@
       </div>
     </div>
 
+    <!-- SEASON CONTROL ROOM -->
+    <div class="window-body" id="viewControl">
+      <section class="control-room" aria-labelledby="controlRoomTitle">
+        <header class="cr-mast">
+          <div><div class="cr-eyebrow">Live season intelligence</div><h3 class="cr-title" id="controlRoomTitle">Season Control Room</h3><div class="cr-deck" id="crDeck">Import or analyze an episode to build the season picture.</div></div>
+          <div class="cr-source"><b id="crEpisode">No episode loaded</b><span id="crSource">Waiting for recorded data</span></div>
+        </header>
+        <div class="cr-cast-strip" id="crCast"><span class="cr-cast-label">Players</span></div>
+        <div class="cr-board">
+          <div class="cr-main">
+            <section class="cr-section"><div class="cr-section-title">State of play</div><div id="crHeadline" class="cr-headline"><strong>No season signal yet</strong><p>Sync the simulator or generate analytics for an episode.</p></div></section>
+            <section class="cr-section"><div class="cr-section-title">Strategic fault lines</div><div id="crThreads" class="cr-list"></div></section>
+            <section class="cr-section"><div class="cr-section-title">Recent recorded movement</div><div id="crMovement" class="cr-list"></div></section>
+          </div>
+          <aside class="cr-rail">
+            <section class="cr-section"><div class="cr-section-title">Power desk</div><div id="crPower" class="cr-list"></div></section>
+            <section class="cr-section"><div class="cr-section-title">Danger board</div><div id="crDanger" class="cr-list"></div></section>
+            <section class="cr-section"><div class="cr-section-title">Alliance pressure</div><div id="crAlliances" class="cr-list"></div></section>
+          </aside>
+        </div>
+      </section>
+    </div>
+
     <!-- OVERVIEW PAGE -->
-    <div class="window-body" id="viewOverview">
+    <div class="window-body hidden" id="viewOverview">
       <div class="cards-grid">
         <div class="mini-panel">
           <div class="mini-title">BEST MOVE</div>
@@ -1289,6 +1317,7 @@ Dave voted for Mickey
     const api = await _seasonLedgerReady;
     const ledger = _parseStoredJson(await _csGet(_ledgerKey(season)), null);
     _renderLedgerStatus(ledger, ledger ? api.validateLedger(ledger) : null);
+    if (window.renderSeasonControlRoom) await window.renderSeasonControlRoom(ledger);
     return ledger;
   }
   window.getSeasonEventLedger = async season => _parseStoredJson(await _csGet(_ledgerKey(season)), null);
@@ -1436,12 +1465,14 @@ Dave voted for Mickey
       playersGrid: $("currentPlayersGrid"),
 
       tabOverview: $("tabOverview"),
+      tabControl: $("tabControl"),
       tabGameplay: $("tabGameplay"),
       tabResumes: $("tabResumes"),
       tabRelationships: $("tabRelationships"),
       tabEpisode: $("tabEpisode"),
       tabSeasonSetup: $("tabSeasonSetup"),
       viewOverview: $("viewOverview"),
+      viewControl: $("viewControl"),
       viewGameplay: $("viewGameplay"),
       viewResumes: $("viewResumes"),
       viewRelationships: $("viewRelationships"),
@@ -2322,6 +2353,89 @@ Dave voted for Mickey
       }).join("");
     }
 
+    function _crEmpty(message) {
+      return `<div class="cr-empty">${escapeHtml(message)}</div>`;
+    }
+
+    function _crAvatar(name, className = 'cr-avatar') {
+      const id = slugify(name || '');
+      return `<span class="${className}" title="${escapeHtml(name || '')}"><img src="assets/avatars/${id}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span style="display:none">${escapeHtml((name || '?').slice(0,1).toUpperCase())}</span></span>`;
+    }
+
+    function _crPersonRow(row, mode) {
+      const name = row?.player || 'Unknown';
+      const raw = Number(mode === 'danger' ? row?.prob : row?.score);
+      const value = mode === 'danger' ? (raw <= 1 ? Math.round(raw * 100) : Math.round(raw)) : Math.round(raw);
+      const note = mode === 'danger' ? row?.why : row?.blurb;
+      return `<div class="cr-row">${_crAvatar(name)}<div class="cr-row-copy"><b>${escapeHtml(name)}</b><small>${escapeHtml(note || (mode === 'danger' ? 'No reason supplied.' : 'No trend supplied.'))}</small><div class="cr-meter"><span style="width:${Math.max(0,Math.min(100,value))}%"></span></div></div><span class="cr-value ${mode}">${value}${mode === 'danger' ? '%' : ''}</span></div>`;
+    }
+
+    async function renderSeasonControlRoom(providedLedger = null) {
+      const season = Number(els.season.value || 1);
+      const selectedEpisode = Number(els.episode.value || 1);
+      const ledger = providedLedger || await window.getSeasonEventLedger(season);
+      const records = Object.values(ledger?.episodes || {}).filter(r => Number(r?.episode) <= selectedEpisode).sort((a,b) => Number(a.episode)-Number(b.episode));
+      const latest = records[records.length - 1];
+      const castEl = document.getElementById('crCast');
+      const episodeEl = document.getElementById('crEpisode');
+      const sourceEl = document.getElementById('crSource');
+      const deckEl = document.getElementById('crDeck');
+      const headlineEl = document.getElementById('crHeadline');
+      const powerEl = document.getElementById('crPower');
+      const dangerEl = document.getElementById('crDanger');
+      const alliancesEl = document.getElementById('crAlliances');
+      const threadsEl = document.getElementById('crThreads');
+      const movementEl = document.getElementById('crMovement');
+      if (!castEl || !headlineEl) return;
+
+      if (!latest) {
+        episodeEl.textContent = `Season ${season} · Episode ${selectedEpisode}`;
+        sourceEl.textContent = 'No ledger entry at or before this episode';
+        deckEl.textContent = 'Import a simulated episode or generate analytics. Unavailable information stays unavailable.';
+        castEl.innerHTML = '<span class="cr-cast-label">Players</span>';
+        headlineEl.innerHTML = '<strong>No season signal yet</strong><p>The Control Room will use recorded events first and clearly mark AI interpretation.</p>';
+        powerEl.innerHTML = dangerEl.innerHTML = alliancesEl.innerHTML = threadsEl.innerHTML = movementEl.innerHTML = _crEmpty('Not evaluated yet.');
+        return;
+      }
+
+      const eliminated = new Set();
+      records.forEach(record => {
+        (record.eliminated || []).forEach(name => eliminated.add(String(name).toLowerCase()));
+        (record.events || []).filter(event => event.type === 'elimination').forEach(event => (event.targets || []).forEach(name => eliminated.add(String(name).toLowerCase())));
+      });
+      const cast = latest.cast || [];
+      const active = cast.filter(name => !eliminated.has(String(name).toLowerCase()));
+      const observations = latest.observations || {};
+      const power = Array.isArray(observations.powerRankings) ? observations.powerRankings.slice().sort((a,b) => Number(b.score)-Number(a.score)).slice(0,3) : [];
+      const danger = Array.isArray(observations.bootPredictions) ? observations.bootPredictions.slice().sort((a,b) => Number(b.prob)-Number(a.prob)).slice(0,3) : [];
+      const alliances = Array.isArray(observations.allianceStability) ? observations.allianceStability.slice().sort((a,b) => Number(a.score)-Number(b.score)).slice(0,4) : [];
+
+      episodeEl.textContent = `Season ${season} · through Episode ${latest.episode}`;
+      sourceEl.textContent = `${latest.counts?.recorded || 0} recorded facts · ${latest.counts?.inferred || 0} AI interpretations this episode`;
+      deckEl.textContent = `${active.length || 'No'} player${active.length === 1 ? '' : 's'} active at this point. Later episodes are intentionally excluded.`;
+      castEl.innerHTML = '<span class="cr-cast-label">Players</span>' + cast.map(name => `<span class="cr-face ${eliminated.has(String(name).toLowerCase()) ? 'eliminated' : ''}" title="${escapeHtml(name)}"><img src="assets/avatars/${slugify(name)}.png" alt="${escapeHtml(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none">${escapeHtml(name.slice(0,1))}</span></span>`).join('');
+
+      const lastElimination = records.flatMap(record => record.events || []).filter(event => event.type === 'elimination').pop();
+      if (power[0] && danger[0]) {
+        headlineEl.innerHTML = `<strong>${escapeHtml(power[0].player)} leads the power read; ${escapeHtml(danger[0].player)} carries the most visible danger.</strong><p>This is the latest AI interpretation, not a guaranteed outcome. Recorded votes and events remain the source of truth.</p>`;
+      } else if (lastElimination?.targets?.[0]) {
+        headlineEl.innerHTML = `<strong>${escapeHtml(lastElimination.targets[0])} left in Episode ${lastElimination.episode}.</strong><p>The result is recorded. Power and next-boot positioning have not been evaluated for this point in the season.</p>`;
+      } else {
+        headlineEl.innerHTML = '<strong>The episode is recorded, but the strategic picture is not evaluated.</strong><p>Generate Analytics when you want interpretation layered over the confirmed events.</p>';
+      }
+
+      powerEl.innerHTML = power.length ? power.map(row => _crPersonRow(row,'power')).join('') : _crEmpty('Power rankings not evaluated for this episode.');
+      dangerEl.innerHTML = danger.length ? danger.map(row => _crPersonRow(row,'danger')).join('') : _crEmpty('Next-boot danger not evaluated for this episode.');
+      alliancesEl.innerHTML = alliances.length ? alliances.map(a => { const score=Math.max(0,Math.min(100,Math.round(Number(a.score)||0))); return `<div class="cr-thread inferred"><span class="cr-thread-meta">AI stability read · ${score}/100</span><b>${escapeHtml(a.name || 'Alliance')}</b><div class="cr-meter"><span style="width:${score}%"></span></div><small>${escapeHtml(a.note || '')}</small></div>`; }).join('') : _crEmpty('Alliance stability not evaluated for this episode.');
+
+      const assessments = (latest.events || []).filter(event => event.provenance?.kind === 'ai-inferred' && ['assessment.biggest-risk','assessment.voting-bloc','assessment.best-move'].includes(event.type)).slice(0,5);
+      threadsEl.innerHTML = assessments.length ? assessments.map(event => `<div class="cr-thread inferred"><span class="cr-thread-meta">AI interpretation · ${escapeHtml(event.type.replace('assessment.','').replace('-',' '))}</span>${escapeHtml(event.description)}</div>`).join('') : _crEmpty('No strategic fault line has been evaluated yet.');
+
+      const recent = records.slice(-2).flatMap(record => (record.events || []).map(event => ({...event,_ep:record.episode}))).filter(event => event.provenance?.kind === 'recorded' && ['elimination','advantage.action','challenge.win','narrative.beat'].includes(event.type)).slice(-6).reverse();
+      movementEl.innerHTML = recent.length ? recent.map(event => `<div class="cr-thread recorded"><span class="cr-thread-meta">Recorded · Episode ${event._ep} · ${escapeHtml(event.phase)}</span>${escapeHtml(event.description)}</div>`).join('') : _crEmpty('No supported recent movement was extracted from the imported summaries.');
+    }
+    window.renderSeasonControlRoom = renderSeasonControlRoom;
+
     // ----------------------------
     // Main render from analytics
     // ----------------------------
@@ -2392,12 +2506,14 @@ Dave voted for Mickey
       // Gameplay
       renderCompass(analytics, cast, eliminated, titlesMap);
       renderGameplayTable(analytics, cast, eliminated, titlesMap);
+      await renderSeasonControlRoom();
     }
 
     // ----------------------------
     // Tabs
     // ----------------------------
     function showTab(which) {
+      const isControl = which === "control";
       const isOverview = which === "overview";
       const isGameplay = which === "gameplay";
       const isResumes = which === "resumes";
@@ -2405,6 +2521,7 @@ Dave voted for Mickey
       const isEpisode = which === "episode";
       const isSeasonSetup = which === "seasonsetup";
 
+      els.viewControl.classList.toggle("hidden", !isControl);
       els.viewOverview.classList.toggle("hidden", !isOverview);
       els.viewGameplay.classList.toggle("hidden", !isGameplay);
       els.viewResumes.classList.toggle("hidden", !isResumes);
@@ -2412,6 +2529,7 @@ Dave voted for Mickey
       els.viewEpisode.classList.toggle("hidden", !isEpisode);
       els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
 
+      els.tabControl.classList.toggle("active", isControl);
       els.tabOverview.classList.toggle("active", isOverview);
       els.tabGameplay.classList.toggle("active", isGameplay);
       els.tabResumes.classList.toggle("active", isResumes);
@@ -2419,6 +2537,7 @@ Dave voted for Mickey
       els.tabEpisode.classList.toggle("active", isEpisode);
       els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
       
+      els.tabControl.setAttribute("aria-selected", isControl ? "true" : "false");
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
       els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
       els.tabResumes.setAttribute("aria-selected", isResumes ? "true" : "false");
@@ -2429,6 +2548,7 @@ Dave voted for Mickey
       // Render data when switching to new tabs
       if (isResumes && CURRENT.analytics) renderResumes(CURRENT.analytics);
       if (isRelationships && CURRENT.analytics) renderRelationships(CURRENT.analytics);
+      if (isControl) renderSeasonControlRoom();
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
@@ -2444,6 +2564,7 @@ Dave voted for Mickey
       }
     }
 
+    els.tabControl.addEventListener("click", () => showTab("control"));
     els.tabOverview.addEventListener("click", () => showTab("overview"));
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
     els.tabResumes.addEventListener("click", () => showTab("resumes"));
@@ -2649,10 +2770,21 @@ Dave voted for Mickey
 
       const season = Number(els.season.value || 1);
       let newCount = 0;
+      const packageCast = Array.isArray(payload?.players) ? payload.players.map(player => player?.name).filter(Boolean) : [];
+      let knownCast = packageCast;
       for (const row of rows) {
         if (!(await loadSummary(season, row.num))) newCount++;
         saveSummary(season, row.num, row.summary);
         await _csPut(`SIMULATOR_SUMMARY_s${season}_e${row.num}`, row.summary);
+        const parsedCast = parseCastFromSummary(row.summary);
+        if (parsedCast.length) knownCast = parsedCast;
+        const eliminated = [...parseEliminated(row.summary)];
+        const parsedTitle = parseEpisodeTitle(row.summary);
+        const title = parsedTitle?.title ? `"${parsedTitle.title}"` : '';
+        saveCastState(season, row.num, knownCast, eliminated, title);
+        // Importing is enough to record confirmed episode facts. Analytics can
+        // be layered on later without making the Control Room depend on AI.
+        await _syncSeasonLedger(season, row.num, row.summary, {}, knownCast, eliminated, title);
       }
 
       // Complete Season Builder consumes these same imported episodes when its
@@ -2682,6 +2814,7 @@ Dave voted for Mickey
         ? Number(els.episode.value)
         : highestEpisode;
       await applySelection(season, selected, { quiet: true });
+      await _loadSeasonLedgerStatus(season);
       const unavailable = Math.max(0, Number(sbCount?.value || highestEpisode) - rows.length);
       setStatus(`${sourceLabel}: ${rows.length} simulated episode${rows.length === 1 ? '' : 's'} imported (${newCount} new). Episode ${selected} is ready; ${unavailable || 'no'} future episode${unavailable === 1 ? '' : 's'} remain unavailable.`);
       if (els.simulatorSync) els.simulatorSync.textContent = `Simulator · ${rows.length} eps`;
@@ -2889,10 +3022,10 @@ Dave voted for Mickey
       els.uiEpNum.textContent = `Episode ${episode}`;
 
       // Restore last tab for this episode
-      let savedTab = "overview";
-      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
-      const allowedTabs = new Set(['overview','gameplay','resumes','relationships','episode','seasonsetup']);
-      showTab(allowedTabs.has(savedTab) ? savedTab : 'overview');
+      let savedTab = "control";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "control"; } catch {}
+      const allowedTabs = new Set(['control','overview','gameplay','resumes','relationships','episode','seasonsetup']);
+      showTab(allowedTabs.has(savedTab) ? savedTab : 'control');
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = await loadCached(season, episode);

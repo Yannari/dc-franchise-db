@@ -22,10 +22,12 @@ import * as votePlanningMod from '../../js/vote-planning.js';
 import * as socialManipMod from '../../js/social-manipulation.js';
 import * as settingsMod from '../../js/settings.js';
 import * as rescueIslandMod from '../../js/rescue-island.js';
+import * as franchiseMetaMod from '../../js/franchise-meta.js';
 
 const MODS = [core, playersMod, bondsMod, alliancesMod, votingMod, advantagesMod, romanceMod,
   challengesCoreMod, campEventsMod, twistsMod, episodeMod, finaleMod, savestateMod, textBacklogMod,
-  reputationMod, strategyMemoryMod, votePlanningMod, socialManipMod, settingsMod, rescueIslandMod];
+  reputationMod, strategyMemoryMod, votePlanningMod, socialManipMod, settingsMod, rescueIslandMod,
+  franchiseMetaMod];
 for (const m of MODS) for (const [k, v] of Object.entries(m)) { try { window[k] = v; } catch { /* live binding */ } }
 window.saveGameState = () => {};
 window.snapshotGameState = savestateMod.snapshotGameState;
@@ -61,8 +63,8 @@ export function makeCast(n = 16) {
   return cast;
 }
 
-export function runOneSeason(configOverride = {}, castSize = 16) {
-  core.setPlayers(makeCast(castSize));
+export function runOneSeason(configOverride = {}, castSize = 16, cast = null) {
+  core.setPlayers(cast || makeCast(castSize));
   core.setSeasonConfig({
     ...core.seasonConfig, name: 'Audit', teams: 2, mergeAt: 10, finaleSize: 3,
     finaleFormat: 'traditional', jurySize: 7, romance: 'disabled', aftermath: 'disabled',

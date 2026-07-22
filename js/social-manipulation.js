@@ -16,6 +16,8 @@ export function _generateExposeSchemer(exposer, schemer, victim, group, ep, _rp)
   ];
   if (!gs._schemeHeat) gs._schemeHeat = {};
   gs._schemeHeat[schemer] = { amount: 2.0, expiresEp: (gs.episode || 0) + 1 + 3 };
+  if (!gs.schemesCaught) gs.schemesCaught = {};
+  gs.schemesCaught[schemer] = (gs.schemesCaught[schemer] || 0) + 1;
   group.filter(p => p !== schemer && p !== exposer).forEach(p => {
     addBond(p, schemer, -0.5);
     addBond(p, exposer, 0.3);

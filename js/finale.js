@@ -1959,6 +1959,13 @@ export function simulateFinale() {
     finaleEntrants: ep.finaleEntrants || null,
   });
 
+  try {
+    if (window.recordSeasonToLedger?.(ep)) window.persistFranchiseLedger?.();
+  } catch (e) { console.warn('Franchise ledger record failed:', e); }
+  if (!(seasonConfig?.seasonNumber) && seasonConfig?.franchiseMeta !== false) {
+    console.warn('Season number not set — this season was not added to franchise history.');
+  }
+
   window.saveGameState();
   return ep;
 }

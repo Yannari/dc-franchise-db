@@ -149,4 +149,15 @@ describe('reputation threat multiplier', () => {
     expect(lateRep).toBeLessThan(withRep);
     expect(lateRep).toBeGreaterThan(withoutRep); // floor keeps some effect
   });
+
+  it('keeps the detailed breakdown summing to total with rep active', () => {
+    fabricateFinishedSeason();
+    gs.showmances = [];
+    gs.chalRecord = { 'Ava': { wins: 1, podiums: 0, bombs: 0 } };
+    gs.episode = 3;
+    gs.franchiseMeta = { profiles: { 'Ava': { repScore: 0.8 } }, seededPairs: [] };
+    const d = threatScore('Ava', true);
+    // components are raw (unweighted); total applies the 0.33 weighting
+    expect(d.challenge * 0.33 + d.social * 0.33 + d.strategic * 0.33).toBeCloseTo(d.total, 10);
+  });
 });

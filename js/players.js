@@ -212,15 +212,19 @@ export function threatScore(name, detailed) {
   const _chal = Math.max(0, challengeThreat);
   const _soc = Math.max(0, socialThreat);
   const _strat = Math.max(0, strategicThreat);
-  let total = _chal * 0.33 + _soc * 0.33 + _strat * 0.33;
   // Franchise meta: résumé makes returnees read as bigger threats, strongest
   // early — survivors "prove themselves" as current threats and the résumé fades.
+  // Scale total AND each component by the identical factor so the detailed
+  // breakdown still sums to total (components stay in their 0.33 ratios).
+  let _repMult = 1;
   const _rep = gs?.franchiseMeta?.profiles?.[name]?.repScore || 0;
   if (_rep > 0) {
     const _decay = Math.max(META_WEIGHTS.repDecayFloor, 1 - (gs.episode || 0) * META_WEIGHTS.repDecayPerEpisode);
-    total *= 1 + _rep * _decay * META_WEIGHTS.repThreatFactor;
+    _repMult = 1 + _rep * _decay * META_WEIGHTS.repThreatFactor;
   }
-  if (detailed) return { total, challenge: _chal, social: _soc, strategic: _strat };
+  const _cF = _chal * _repMult, _sF = _soc * _repMult, _stF = _strat * _repMult;
+  const total = _cF * 0.33 + _sF * 0.33 + _stF * 0.33;
+  if (detailed) return { total, challenge: _cF, social: _sF, strategic: _stF };
   return total;
 }
 

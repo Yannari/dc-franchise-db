@@ -7,6 +7,7 @@ import { resolveVotes } from './voting.js';
 import { assessIdolExposure } from './advantage-intel.js';
 import { reputationModifier } from './reputation.js';
 import { getIntentions, intendsToProtect } from './intentions.js';
+import { META_WEIGHTS } from './franchise-meta.js';
 
 export function handleAdvantageInheritance(eliminatedName, ep) {
   if (!eliminatedName || !gs.advantages?.length) return;
@@ -63,7 +64,9 @@ export function findAdvantages(ep) {
         // ep1: ~0.6% per player → ~3.5% tribe (6p). ep5: ~1.4% → ~8%. Idols typically ep 4–7.
         const epScale = Math.min(ep.num * 0.002, 0.02);
         const eavBoostFind = gs.playerStates[name]?.eavesdropBoostThisEp ? 0.008 + s.intuition * 0.001 : 0;
-        if (Math.random() < 0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005 + eavBoostFind) {
+        // Learned-behavior: a searcher who's been idol-paranoid across seasons hunts harder (1.0 when meta-less)
+        const _metaFind = 1 + (gs.franchiseMeta?.profiles?.[name]?.idolParanoia || 0) * META_WEIGHTS.idolParanoiaSearchBoost;
+        if (Math.random() < (0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005 + eavBoostFind) * _metaFind) {
           gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num, foundTribe: isMergeSlot ? 'merge' : tribe.name });
           if (isMergeSlot) gs.mergeIdolHidden = Math.max(0, (gs.mergeIdolHidden || 1) - 1);
           else gs.idolSlots[tribe.name] = Math.max(0, (gs.idolSlots[tribe.name] || 1) - 1);
@@ -80,7 +83,9 @@ export function findAdvantages(ep) {
   if (cfg.advantages?.legacy?.enabled && ep.num <= 3 && !gs.advantages.some(a => a.type === 'legacy')) {
     // Escalating chance: ep1 = 40%, ep2 = 70%, ep3 = 100% (guaranteed by ep3)
     const _legacyChance = ep.num === 1 ? 0.4 : ep.num === 2 ? 0.7 : 1.0;
-    if (Math.random() < _legacyChance) {
+    // Learned-behavior: the most idol-paranoid searcher in the pool hunts harder, so legacy surfaces sooner (1.0 when meta-less)
+    const _metaFind = 1 + Math.max(0, ...gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).map(p => gs.franchiseMeta?.profiles?.[p]?.idolParanoia || 0)) * META_WEIGHTS.idolParanoiaSearchBoost;
+    if (Math.random() < _legacyChance * _metaFind) {
       const _legPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
       if (_legPool.length) {
         // Slight bias toward intuitive players (they search harder)

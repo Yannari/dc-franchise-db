@@ -13,6 +13,7 @@ import { getIntentions, intentionBallotMod, intendsToProtect, betrayalConditionA
 import { currentCampAccessEpisode, findConversationAccess } from './camp-access.js';
 import { hasSocialRole, perceivedRoles } from './social-status.js';
 import { pitchInitiationModifier, approachBudgetModifier, lieChanceModifier, verificationModifier, learnedCaution } from './adaptation.js';
+import { META_WEIGHTS } from './franchise-meta.js';
 
 // Alliance-trust belief-reading: a voter is "out of the loop" if the target plan
 // is circulating (someone knows it) but THEY don't hold a (non-dismissed) belief
@@ -1198,7 +1199,9 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
       // Proportional: any intuition level can sense danger, higher = better
       if (emotional === 'paranoid' || emotional === 'desperate') {
         const heat = computeHeat(voter, tribalPlayers, alliances);
-        if (heat >= 2.5 && Math.random() < s.intuition * 0.03) { // proportional: stat 4=12%, stat 7=21%, stat 10=30%
+        // Learned-behavior: a voter burned by past blindsides senses the strike coming sooner (1.0 when meta-less)
+        const _metaWary = 1 + (gs.franchiseMeta?.profiles?.[voter]?.blindsideWariness || 0) * META_WEIGHTS.blindsideWarinessSense;
+        if (heat >= 2.5 && Math.random() < s.intuition * 0.03 * _metaWary) { // proportional: stat 4=12%, stat 7=21%, stat 10=30%
           const orchestrators = tribalPlayers.filter(p => p !== voter && !isImmune(p)
             && alliances.some(a => a.members.includes(p) && a.target === voter));
           if (orchestrators.length) {
@@ -1241,7 +1244,9 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
                          : _iState.emotional === 'content'     ? -0.05 : 0;
           const _eavMod = gs.playerStates[voter]?.eavesdropBoostThisEp ? s.intuition * 0.015 : 0;
           const _lateGameBoost = tribalPlayers.length <= 5 ? 0.25 : tribalPlayers.length <= 7 ? 0.10 : 0;
-          const _senseChance = s.strategic * 0.05 + s.intuition * 0.02 + _emotMod + _eavMod + _lateGameBoost; // proportional: stat 4=0.20, stat 8=0.40
+          // Learned-behavior: the targeted voter's cross-season blindside wariness sharpens their self-preservation instinct (1.0 when meta-less)
+          const _metaWary = 1 + (gs.franchiseMeta?.profiles?.[voter]?.blindsideWariness || 0) * META_WEIGHTS.blindsideWarinessSense;
+          const _senseChance = (s.strategic * 0.05 + s.intuition * 0.02 + _emotMod + _eavMod + _lateGameBoost) * _metaWary; // proportional: stat 4=0.20, stat 8=0.40
           if (Math.random() < _senseChance) {
             // Join the largest bloc not targeting them — scramble to safety
             const _safeBlocs = alliances

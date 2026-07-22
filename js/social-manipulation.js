@@ -3,6 +3,7 @@ import { gs, players } from './core.js';
 import { pStats, pronouns, romanticCompat } from './players.js';
 import { getBond, addBond } from './bonds.js';
 import { recordPlantedLie } from './knowledge-integration.js';
+import { META_WEIGHTS } from './franchise-meta.js';
 
 export function _generateExposeSchemer(exposer, schemer, victim, group, ep, _rp) {
   if (!exposer || !schemer) return null;
@@ -73,6 +74,9 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
   const noteQuality = sStats.strategic * 0.1 + sStats.social * 0.05;
   const belief = noteQuality + (5 - getBond(reader, alleged)) * 0.1;
   const resistance = rStats.mental * 0.08 + rStats.intuition * 0.05;
+  // Learned-behavior: "we've all seen her season — watch her." A known schemer's forgeries meet stiffer resistance (0 when meta-less).
+  const _metaSchemer = (gs.franchiseMeta?.profiles?.[schemer]?.knownSchemer || 0) * META_WEIGHTS.knownSchemerDetection;
+  const resistanceTotal = resistance * (1 + _metaSchemer);
 
   const noteContents = [
     `a message suggesting ${alleged} is planning to flip`,
@@ -83,7 +87,7 @@ export function _generateForgeNote(schemer, target, group, ep, _rp) {
   ];
   const noteContent = _rp(noteContents);
 
-  if (belief > resistance + 0.3) {
+  if (belief > resistanceTotal + 0.3) {
     // Believed
     const bondDrop = -(1.0 + noteQuality * 0.3);
     addBond(reader, alleged, bondDrop);

@@ -1,4 +1,5 @@
 import { gs, players } from './core.js';
+import { META_WEIGHTS } from './franchise-meta.js';
 
 function ledger() {
   if (!gs.advantageIntel || typeof gs.advantageIntel !== 'object') gs.advantageIntel = {};
@@ -58,7 +59,9 @@ export function assessIdolExposure(holder, tribalPlayers = [], roll = Math.rando
   const readSkill = ((s.strategic || 5) + (s.intuition || 5)) / 20;
   const emotionalAlarm = emotional === 'paranoid' ? 0.32 : emotional === 'desperate' ? 0.22 : emotional === 'uneasy' ? 0.1 : 0;
   const calmPenalty = emotional === 'comfortable' && (s.intuition || 5) < 6 ? 0.12 : 0;
-  const perceivedRisk = Math.max(0, Math.min(1, actualSignal * (0.35 + readSkill * 0.65) + emotionalAlarm - calmPenalty));
+  // Learned-behavior: idol-paranoid OBSERVERS scrutinize harder, raising the exposure read. Holder's own profile is never read (1.0 when meta-less).
+  const _metaSus = 1 + Math.max(0, ...entries.map(e => gs.franchiseMeta?.profiles?.[e.knower]?.idolParanoia || 0)) * META_WEIGHTS.idolParanoiaSuspicion;
+  const perceivedRisk = Math.max(0, Math.min(1, (actualSignal * (0.35 + readSkill * 0.65) + emotionalAlarm - calmPenalty) * _metaSus));
   const notices = publicExposure || roll() < perceivedRisk;
   const falseAlarm = entries.length === 0 && notices;
   const missesExposure = entries.length > 0 && !notices;

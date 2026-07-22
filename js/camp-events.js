@@ -3407,6 +3407,58 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
     }
   }
 
+  // Franchise meta: once-per-season history moments between returnees who share a past.
+  const _fm = gs.franchiseMeta;
+  if (_fm && group.length >= 2) {
+    if (!gs._metaCalloutsFired) gs._metaCalloutsFired = {};
+    const _pairs = (_fm.seededPairs || []).filter(sp =>
+      // Skip betrayer-side duplicate of a betrayal pair (wronged === false) so one betrayal fires one event.
+      sp.wronged !== false &&
+      group.includes(sp.a) && group.includes(sp.b) &&
+      !gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind]);
+    for (const sp of _pairs) {
+      if (Math.random() > 0.25) continue; // ~1-2 fire per season, spread out
+      gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind] = true;
+      const A = sp.a, B = sp.b, pa = pronouns(A);
+      if (sp.kind === 'betrayal' || sp.kind === 'blindside') {
+        addBond(A, B, -0.5);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[A] = (gs.popularity[A] || 0) + 0.5; // sympathy for the wronged
+        events.push({ type: 'metaGrudge', players: [A, B],
+          text: _rp([
+            `${A} finally says it to ${B}'s face: "${sp.reason}. I haven't forgotten." The whole camp goes quiet.`,
+            `${A} and ${B} circle each other all morning. ${sp.reason} — some wounds don't close between seasons.`,
+            `${B} tries to laugh off the past. ${A} isn't laughing. ${sp.reason}, and ${pa.sub} came back to settle it.`,
+            `Old business surfaces at the fire: ${sp.reason}. ${A} wants an apology. ${B} offers strategy instead. It goes badly.`
+          ]),
+          consequences: `Bond ${A}↔${B} −0.5. ${A} gains sympathy.`,
+          badgeText: 'OLD WOUNDS', badgeClass: 'red' });
+      } else if (sp.kind === 'allies' || sp.kind === 'showmance-intact') {
+        addBond(A, B, +0.5);
+        events.push({ type: 'metaReunion', players: [A, B],
+          text: _rp([
+            `${A} and ${B} fall back into their old rhythm within minutes. ${sp.reason} — and everyone else at camp notices the shorthand.`,
+            `No pitch needed: ${A} and ${B} shared a foxhole once. ${sp.reason}. The trust is already built.`,
+            `${A} catches ${B}'s eye across camp and grins. ${sp.reason}. The band might be getting back together.`,
+            `Veterans move different: ${A} and ${B} debrief by the water like no time passed at all. ${sp.reason}.`
+          ]),
+          consequences: `Bond ${A}↔${B} +0.5. Their closeness is public knowledge.`,
+          badgeText: 'REUNION', badgeClass: 'gold' });
+      } else { // rivals, showmance-broken
+        addBond(A, B, -0.3);
+        events.push({ type: 'metaAwkward', players: [A, B],
+          text: _rp([
+            `${A} and ${B} get assigned the same chore and say maybe nine words total. ${sp.reason} — the tension is its own third player.`,
+            `Everyone can feel it: ${A} and ${B} have history. ${sp.reason}. Nobody asks. Everybody watches.`,
+            `${B} picks the far side of camp. ${A} pretends not to notice. ${sp.reason}, and neither wants to relive it.`,
+            `A too-long silence when ${A} and ${B} end up alone at the fire. ${sp.reason}. Some things don't need a confessional.`
+          ]),
+          consequences: `Bond ${A}↔${B} −0.3. Camp reads the tension.`,
+          badgeText: 'HISTORY', badgeClass: 'red' });
+      }
+    }
+  }
+
   // ── Social Manipulation Events ──
   // Kept deliberately uncommon so ordinary social moments (bonding, side deals, comfort, etc.)
   // outnumber scheming. Elevated, but not spammy, during Lucky Hunt.

@@ -580,6 +580,12 @@ export function _rpBuildDockArrival(ep) {
     ? `"Tonight, ${returneeCount} returning player${returneeCount>1?'s':''} face${returneeCount===1?'s':''} off against ${newbieCount} brand new competitor${newbieCount>1?'s':''}. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
     : `"Welcome to ${_place}! I'm your host, ${host}. ${arrivals.length} players have signed up for the ride of their lives. They'll compete in challenges, vote each other out, and the last one standing wins the prize. Every moment caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;
 
+  // Franchise meta: if returnees have real ledger résumés, swap the generic returning-player line for a fact-driven one.
+  const _decorated = arrivals.filter(a => a.isReturnee && gs.franchiseMeta?.profiles?.[a.name]?.resume?.length);
+  const hostMono = (returneeCount > 0 && _decorated.length)
+    ? `"They've played before — and the tapes don't lie. ${_decorated.slice(0, 2).map(a => `${a.name}: ${gs.franchiseMeta.profiles[a.name].resume[0]}.`).join(' ')} They all came back for more, and this time they think they've figured it out. I'm ${host}, and this is ${seasonName}. Let's see who really learned... and who's about to repeat history."`
+    : hostMonologue;
+
   const _hero = (typeof settingHeroSVG === 'function') ? settingHeroSVG('arrival') : '';
   let html = `<div class="rp-page tod-dawn">
     <div class="rp-co-eyebrow">${seasonName}</div>
@@ -589,7 +595,7 @@ export function _rpBuildDockArrival(ep) {
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${_arr.headline}</div>
     <div style="padding:14px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:10px;text-align:center;margin-bottom:20px">
       <div style="font-size:10px;color:#f0a500;font-weight:700;letter-spacing:1px;margin-bottom:4px">${host.toUpperCase()}</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.7;font-style:italic">${hostMonologue}</div>
+      <div style="font-size:13px;color:#e6edf3;line-height:1.7;font-style:italic">${hostMono}</div>
     </div>`;
 
   arrivals.forEach((a, i) => {
@@ -605,6 +611,7 @@ export function _rpBuildDockArrival(ep) {
         <div style="flex:1">
           <div style="font-family:var(--font-display);font-size:15px;color:#e6edf3;margin-bottom:2px">${a.name}${returnBadge}</div>
           <div style="font-size:10px;color:#8b949e;margin-bottom:6px">${ARCHETYPE_NAMES[a.archetype] || a.archetype}</div>
+          ${(() => { const _fmResume = gs.franchiseMeta?.profiles?.[a.name]?.resume || []; return _fmResume.length ? `<div class="rp-resume-line" style="font-size:11px;opacity:.75;margin-top:3px;margin-bottom:6px;color:#e3b341">${_fmResume.slice(0, 2).join(' · ')}</div>` : ''; })()}
           <div style="font-size:11px;color:#f0a500;font-style:italic;margin-bottom:4px">${host}: ${a.hostLine}</div>
           <div style="font-size:13px;color:#e6edf3;line-height:1.6">${a.name}: ${a.playerLine}</div>
           ${a.dockReaction ? `<div style="font-size:12px;color:#8b949e;font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.04)">${a.dockReaction.text}</div>` : ''}

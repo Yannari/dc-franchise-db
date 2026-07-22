@@ -179,19 +179,22 @@ export function buildFranchiseMeta(cast, cfg) {
   seasonNums.forEach((num, idx) => {
     const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
     const season = franchiseLedger.seasons[String(num)];
-    const add = (a, b, delta, reason, kind, directional) => {
+    const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
       // symmetric kinds collapse regardless of order.
       const key = (directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
       if (seeded[key]) { seeded[key].bondDelta += delta * scale * 0.5; return; } // stacking, diminishing
-      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (Season ${num})`, kind };
+      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (Season ${num})`, kind, ...(extra || {}) };
     };
     for (const [name, rec] of Object.entries(season.players || {})) {
       for (const ally of rec.allies || []) add(name, ally, W.bondAllies, `Rode together to the end`, 'allies', false);
       for (const victim of rec.betrayed || []) {
-        add(victim, name, W.bondBetrayedVictim, `${name} betrayed ${victim}`, 'betrayal', true);
-        add(name, victim, W.bondBetrayedBetrayer, `${name} betrayed ${victim}`, 'betrayal', true);
+        // wronged flags perspective: victim-side entry (a = the wronged party) vs
+        // betrayer-side entry (a = the betrayer). Consumers that want the grudge
+        // "why" must require wronged:true so the betrayer never speaks as victim.
+        add(victim, name, W.bondBetrayedVictim, `${name} betrayed ${victim}`, 'betrayal', true, { wronged: true });
+        add(name, victim, W.bondBetrayedBetrayer, `${name} betrayed ${victim}`, 'betrayal', true, { wronged: false });
       }
       if (rec.blindsided) for (const author of rec.blindsidedBy || []) {
         add(name, author, W.bondBlindsideVictim, `${author} blindsided ${name}`, 'blindside', true);

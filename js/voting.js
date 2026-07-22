@@ -417,7 +417,8 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
   const _fm = gs.franchiseMeta;
   if (_fm && (type === 'grudge' || type === 'threat') && Math.random() < META_WEIGHTS.calloutTextChance) {
     const _grudge = (_fm.seededPairs || []).find(sp =>
-      sp.a === voter && sp.b === target && (sp.kind === 'betrayal' || sp.kind === 'blindside' || sp.kind === 'rivals'));
+      sp.a === voter && sp.b === target && (sp.kind === 'betrayal' || sp.kind === 'blindside' || sp.kind === 'rivals')
+      && (sp.kind !== 'betrayal' || sp.wronged));
     if (_grudge) return pick([
       `${_grudge.reason}. Some debts follow you into a new season.`,
       `This isn't strategy — it's personal. ${_grudge.reason}, and tonight it gets settled.`,

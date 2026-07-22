@@ -122,6 +122,22 @@ describe('buildFranchiseMeta', () => {
     expect(showmance.bondDelta).toBeGreaterThan(0);
     for (const p of meta.seededPairs) expect(Math.abs(p.bondDelta)).toBeLessThanOrEqual(6);
   });
+  it('does not stack a betrayal AND a blindside for the same victim→author edge', () => {
+    // One incident: Fiore both betrayed AND blindsided Thom. Should seed only the betrayal.
+    setFranchiseLedger({ seasons: { '12': { seasonName: 'S12', players: {
+      'Fiore': { placement: 1, winner: true, finalist: true, episodesLasted: 18, blindsided: false,
+        blindsidedBy: [], blindsidesAuthored: 1, idolsFound: 0, idolsPlayed: 0, idoledOut: false,
+        betrayed: ['Thom'], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 1, schemesCaught: 0 },
+      'Thom': { placement: 5, winner: false, finalist: false, episodesLasted: 14, blindsided: true,
+        blindsidedBy: ['Fiore'], blindsidesAuthored: 0, idolsFound: 0, idolsPlayed: 0, idoledOut: true,
+        betrayed: [], betrayedBy: ['Fiore'], allies: [], showmances: [], rivals: [], chalWins: 0, schemesCaught: 0 }
+    } } } });
+    const meta = buildFranchiseMeta(cast, { franchiseMeta: true });
+    const thomToFiore = meta.seededPairs.filter(p => p.a === 'Thom' && p.b === 'Fiore');
+    expect(thomToFiore.length).toBe(1);
+    expect(thomToFiore[0].kind).toBe('betrayal');
+    expect(meta.seededPairs.some(p => p.kind === 'blindside')).toBe(false);
+  });
   it('returns null when toggled off or when no returnee has history', () => {
     seedLedgerS12();
     expect(buildFranchiseMeta(cast, { franchiseMeta: false })).toBeNull();

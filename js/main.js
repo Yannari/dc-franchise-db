@@ -311,8 +311,9 @@ async function init() {
   buildStatSliders();
   buildAdvantageList();
   await loadAll();
-  // Load persistent cross-season history ledger (never blocks the sim)
-  savestateMod.loadFranchiseLedgerFromDb();
+  // Load persistent cross-season history ledger (never blocks the sim); refresh the
+  // history panel once it lands so imported/persisted seasons show without a reload.
+  savestateMod.loadFranchiseLedgerFromDb().then(() => { try { castUiMod.renderFranchiseHistoryPanel?.(); } catch {} });
   renderCast();
   renderConfig();
   renderRelList();

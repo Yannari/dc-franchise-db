@@ -612,7 +612,9 @@ export function initGameState() {
   if (_fMeta) {
     for (const sp of _fMeta.seededPairs) {
       const k = bKey(sp.a, sp.b);
-      bonds[k] = Math.max(-META_WEIGHTS.bondClamp, Math.min(META_WEIGHTS.bondClamp, (bonds[k] || 0) + sp.bondDelta));
+      const cur = bonds[k] || 0;
+      const hi = Math.max(META_WEIGHTS.bondClamp, cur), lo = Math.min(-META_WEIGHTS.bondClamp, cur);
+      bonds[k] = Math.max(lo, Math.min(hi, cur + sp.bondDelta));
     }
   }
 

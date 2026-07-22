@@ -1959,11 +1959,13 @@ export function simulateFinale() {
     finaleEntrants: ep.finaleEntrants || null,
   });
 
+  let _recorded;
   try {
-    if (window.recordSeasonToLedger?.(ep)) window.persistFranchiseLedger?.();
+    _recorded = window.recordSeasonToLedger?.(ep);
+    if (_recorded) window.persistFranchiseLedger?.();
   } catch (e) { console.warn('Franchise ledger record failed:', e); }
-  if (!(seasonConfig?.seasonNumber) && seasonConfig?.franchiseMeta !== false) {
-    console.warn('Season number not set — this season was not added to franchise history.');
+  if (_recorded === false && seasonConfig?.franchiseMeta !== false) {
+    console.warn('Season not added to franchise history — check that a season number is set.');
   }
 
   window.saveGameState();
@@ -2709,7 +2711,7 @@ export function simulateJuryVote(finalists) {
     // around that legacy instead of the season-specific reason above. Gated so
     // the season-specific reasons still dominate.
     const _fmProf = gs.franchiseMeta?.profiles?.[pick];
-    if (_fmProf && Math.random() < 0.35) {
+    if (_fmProf && _fmProf.repScore >= 0.4 && Math.random() < 0.35) {
       _jrReason = _jrPick([
         `"Two seasons. Same result. ${pick} just plays this game at a different level."`,
         `"I watched ${pick}'s first season from my couch and this one from the jury bench. The growth is undeniable."`,

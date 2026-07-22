@@ -133,10 +133,12 @@ function _historyFor(name) {
 function _resumeLines(name, history) {
   const lines = [];
   for (const { seasonNum, rec } of history) {
+    const place = rec.placement > 0 ? ` (${_ordinal(rec.placement)})` : '';
     if (rec.winner) lines.push(`Won Season ${seasonNum}`);
-    else if (rec.finalist) lines.push(`Finalist in Season ${seasonNum} (${_ordinal(rec.placement)})`);
-    else if (rec.blindsided) lines.push(`Blindsided in Season ${seasonNum} (${_ordinal(rec.placement)})`);
-    else lines.push(`Placed ${_ordinal(rec.placement)} in Season ${seasonNum}`);
+    else if (rec.finalist) lines.push(`Finalist in Season ${seasonNum}${place}`);
+    else if (rec.blindsided) lines.push(`Blindsided in Season ${seasonNum}${place}`);
+    else if (rec.placement > 0) lines.push(`Placed ${_ordinal(rec.placement)} in Season ${seasonNum}`);
+    else lines.push(`Appeared in Season ${seasonNum}`);
     if (rec.blindsidesAuthored >= 2) lines.push(`Orchestrated ${rec.blindsidesAuthored} blindsides in Season ${seasonNum}`);
     if (rec.idolsPlayed >= 1) lines.push(`Played ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''} in Season ${seasonNum}`);
     if (rec.chalWins >= 3) lines.push(`${rec.chalWins} immunity wins in Season ${seasonNum}`);
@@ -206,6 +208,14 @@ export function buildFranchiseMeta(cast, cfg) {
       }
     }
   });
+  // Dedupe: one incident must not seed BOTH a betrayal and a blindside grudge for the
+  // same victim→author edge (that would stack heat and fire two OLD WOUNDS camp events).
+  // The betrayal pair (directional key `victim>>author::betrayal`) wins; drop the blindside twin.
+  for (const key of Object.keys(seeded)) {
+    if (!key.endsWith('::blindside')) continue;
+    const edge = key.slice(0, -'::blindside'.length);
+    if (seeded[edge + '::betrayal']) delete seeded[key];
+  }
   // Betrayal/blindside adds are directional (a = the one whose feeling it is);
   // collapse duplicates and clamp. History biases — it does not predetermine.
   const seededPairs = Object.values(seeded).map(sp => ({
@@ -258,7 +268,7 @@ export function backfillFromSeasonsDb(json) {
 export function franchiseHistorySummary(name) {
   return _historyFor(name).map(({ seasonNum, seasonName, rec }) => ({
     seasonNum, seasonName,
-    line: `${rec.winner ? '🏆 Won' : _ordinal(rec.placement)}${rec.blindsided ? ' · blindsided' : ''}${rec.idolsPlayed ? ` · ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''}` : ''}${rec.chalWins ? ` · ${rec.chalWins}W` : ''}${rec.backfilled ? ' · (imported)' : ''}`
+    line: `${rec.winner ? '🏆 Won' : (rec.placement > 0 ? _ordinal(rec.placement) : 'Appeared')}${rec.blindsided ? ' · blindsided' : ''}${rec.idolsPlayed ? ` · ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''}` : ''}${rec.chalWins ? ` · ${rec.chalWins}W` : ''}${rec.backfilled ? ' · (imported)' : ''}`
   }));
 }
 

@@ -154,6 +154,7 @@ function analyticsObservations(analytics = {}) {
     allianceStability: copy(analytics.allianceStability || []), socialNetwork: copy(analytics.socialNetwork || []),
     juryManagement: copy(analytics.juryManagement || []), threatBreakdown: copy(analytics.threatBreakdown || []),
     pathToVictory: copy(analytics.pathToVictory || []), relationships: copy(analytics.relationships || {}),
+    episodeImpact: copy(analytics.episodeImpact || null),
     provenance: { kind:'ai-inferred', source:'analytics', confidence:.6 },
   };
 }

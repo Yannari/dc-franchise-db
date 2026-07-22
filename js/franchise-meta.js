@@ -121,6 +121,96 @@ export function deriveSeasonRecord() {
   return rec;
 }
 
+// ── Season-start meta build ───────────────────────────────────────────────
+function _historyFor(name) {
+  const out = []; // [{ seasonNum, rec }] sorted oldest → newest
+  for (const [num, season] of Object.entries(franchiseLedger.seasons)) {
+    if (season.players?.[name]) out.push({ seasonNum: Number(num), rec: season.players[name], seasonName: season.seasonName });
+  }
+  return out.sort((a, b) => a.seasonNum - b.seasonNum);
+}
+
+function _resumeLines(name, history) {
+  const lines = [];
+  for (const { seasonNum, rec } of history) {
+    if (rec.winner) lines.push(`Won Season ${seasonNum}`);
+    else if (rec.finalist) lines.push(`Finalist in Season ${seasonNum} (${_ordinal(rec.placement)})`);
+    else if (rec.blindsided) lines.push(`Blindsided in Season ${seasonNum} (${_ordinal(rec.placement)})`);
+    else lines.push(`Placed ${_ordinal(rec.placement)} in Season ${seasonNum}`);
+    if (rec.blindsidesAuthored >= 2) lines.push(`Orchestrated ${rec.blindsidesAuthored} blindsides in Season ${seasonNum}`);
+    if (rec.idolsPlayed >= 1) lines.push(`Played ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''} in Season ${seasonNum}`);
+    if (rec.chalWins >= 3) lines.push(`${rec.chalWins} immunity wins in Season ${seasonNum}`);
+  }
+  return lines;
+}
+function _ordinal(n) { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v-20)%10] || s[v] || s[0]); }
+
+export function buildFranchiseMeta(cast, cfg) {
+  if (cfg?.franchiseMeta === false) return null;
+  const W = META_WEIGHTS;
+  const profiles = {};
+  for (const p of cast) {
+    if (!p.isReturnee) continue;
+    const history = _historyFor(p.name);
+    if (!history.length) continue;
+    let wins = 0, finals = 0, bsAuth = 0, chalW = 0, idolsP = 0, idoledOut = 0, blindsided = 0, betrayedCt = 0, caught = 0;
+    for (const { rec } of history) {
+      wins += rec.winner ? 1 : 0; finals += rec.finalist && !rec.winner ? 1 : 0;
+      bsAuth += rec.blindsidesAuthored || 0; chalW += rec.chalWins || 0; idolsP += rec.idolsPlayed || 0;
+      idoledOut += rec.idoledOut ? 1 : 0; blindsided += rec.blindsided ? 1 : 0;
+      betrayedCt += (rec.betrayed || []).length; caught += rec.schemesCaught || 0;
+    }
+    profiles[p.name] = {
+      seasonsPlayed: history.length,
+      repScore: Math.min(1, (wins * 3 + finals * 1.5 + bsAuth * 0.6 + chalW * 0.25 + idolsP * 0.4) / 6),
+      resume: _resumeLines(p.name, history),
+      idolParanoia: Math.min(1, idoledOut * 0.6 + blindsided * 0.3),
+      blindsideWariness: Math.min(1, blindsided * 0.5),
+      knownSchemer: Math.min(1, betrayedCt * 0.35 + caught * 0.4 + bsAuth * 0.25)
+    };
+  }
+  if (!Object.keys(profiles).length) return null;
+
+  // Seeded pairs — only between two cast members who BOTH have profiles.
+  // Most recent shared season at full weight; older ones scaled down.
+  const seeded = {}; // key → { a, b, bondDelta, reason, kind }
+  const inCast = new Set(Object.keys(profiles));
+  const seasonNums = Object.keys(franchiseLedger.seasons).map(Number).sort((a, b) => b - a);
+  seasonNums.forEach((num, idx) => {
+    const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
+    const season = franchiseLedger.seasons[String(num)];
+    const add = (a, b, delta, reason, kind, directional) => {
+      if (!inCast.has(a) || !inCast.has(b) || a === b) return;
+      // Directional kinds (betrayal/blindside) keep each side's feeling separate;
+      // symmetric kinds collapse regardless of order.
+      const key = (directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
+      if (seeded[key]) { seeded[key].bondDelta += delta * scale * 0.5; return; } // stacking, diminishing
+      seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (Season ${num})`, kind };
+    };
+    for (const [name, rec] of Object.entries(season.players || {})) {
+      for (const ally of rec.allies || []) add(name, ally, W.bondAllies, `Rode together to the end`, 'allies', false);
+      for (const victim of rec.betrayed || []) {
+        add(victim, name, W.bondBetrayedVictim, `${name} betrayed ${victim}`, 'betrayal', true);
+        add(name, victim, W.bondBetrayedBetrayer, `${name} betrayed ${victim}`, 'betrayal', true);
+      }
+      if (rec.blindsided) for (const author of rec.blindsidedBy || []) {
+        add(name, author, W.bondBlindsideVictim, `${author} blindsided ${name}`, 'blindside', true);
+      }
+      for (const rival of rec.rivals || []) add(name, rival, W.bondRivals, `Old rivalry`, 'rivals', false);
+      for (const sh of rec.showmances || []) {
+        if (sh.ended === 'intact') add(name, sh.partner, W.bondShowmanceIntact, `Showmance that lasted`, 'showmance-intact', false);
+        else add(name, sh.partner, W.bondShowmanceBroken, `Showmance that ended badly`, 'showmance-broken', false);
+      }
+    }
+  });
+  // Betrayal/blindside adds are directional (a = the one whose feeling it is);
+  // collapse duplicates and clamp. History biases — it does not predetermine.
+  const seededPairs = Object.values(seeded).map(sp => ({
+    ...sp, bondDelta: Math.max(-W.bondClamp, Math.min(W.bondClamp, sp.bondDelta))
+  }));
+  return { profiles, seededPairs };
+}
+
 // Idempotent: keyed by season number; live records always overwrite backfill.
 export function recordSeasonToLedger(_ep, source = 'live') {
   if (seasonConfig?.franchiseMeta === false && source === 'live') return false;

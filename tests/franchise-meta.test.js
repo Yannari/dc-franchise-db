@@ -76,3 +76,54 @@ describe('recordSeasonToLedger', () => {
     expect(franchiseLedger.seasons['15'].players['Ava'].winner).toBe(true);
   });
 });
+
+import { buildFranchiseMeta } from '../js/franchise-meta.js';
+
+function seedLedgerS12() {
+  setFranchiseLedger({ seasons: { '12': { seasonName: 'S12', players: {
+    'Fiore': { placement: 1, winner: true, finalist: true, episodesLasted: 18, blindsided: false,
+      blindsidedBy: [], blindsidesAuthored: 2, idolsFound: 1, idolsPlayed: 1, idoledOut: false,
+      betrayed: ['Thom'], betrayedBy: [], allies: ['MacArthur'], showmances: [], rivals: [], chalWins: 4, schemesCaught: 1 },
+    'Thom': { placement: 5, winner: false, finalist: false, episodesLasted: 14, blindsided: true,
+      blindsidedBy: ['Fiore'], blindsidesAuthored: 0, idolsFound: 0, idolsPlayed: 0, idoledOut: true,
+      betrayed: [], betrayedBy: ['Fiore'], allies: [], showmances: [{ partner: 'MacArthur', ended: 'intact' }],
+      rivals: [], chalWins: 0, schemesCaught: 0 },
+    'MacArthur': { placement: 3, winner: false, finalist: true, episodesLasted: 17, blindsided: false,
+      blindsidedBy: [], blindsidesAuthored: 1, idolsFound: 0, idolsPlayed: 0, idoledOut: false,
+      betrayed: [], betrayedBy: [], allies: ['Fiore'], showmances: [{ partner: 'Thom', ended: 'intact' }],
+      rivals: [], chalWins: 2, schemesCaught: 0 }
+  } } } });
+}
+
+describe('buildFranchiseMeta', () => {
+  const cast = [
+    { name: 'Fiore', isReturnee: true }, { name: 'Thom', isReturnee: true },
+    { name: 'MacArthur', isReturnee: true }, { name: 'Newbie', isReturnee: false }
+  ];
+  it('builds profiles only for returnees with history', () => {
+    seedLedgerS12();
+    const meta = buildFranchiseMeta(cast, { franchiseMeta: true });
+    expect(meta.profiles['Fiore'].repScore).toBeGreaterThan(0.5);   // winner
+    expect(meta.profiles['Fiore'].resume.length).toBeGreaterThan(0);
+    expect(meta.profiles['Thom'].blindsideWariness).toBeGreaterThan(0);
+    expect(meta.profiles['Thom'].idolParanoia).toBeGreaterThan(0);  // idoled out + blindsided
+    expect(meta.profiles['Fiore'].knownSchemer).toBeGreaterThan(0); // betrayer + caught scheming
+    expect(meta.profiles['Newbie']).toBeUndefined();
+  });
+  it('seeds asymmetric betrayal bonds and ally/showmance bonds', () => {
+    seedLedgerS12();
+    const meta = buildFranchiseMeta(cast, { franchiseMeta: true });
+    const betrayal = meta.seededPairs.find(p => p.kind === 'betrayal');
+    expect(betrayal).toBeTruthy(); // Fiore betrayed Thom
+    const allies = meta.seededPairs.find(p => p.kind === 'allies' && [p.a, p.b].includes('MacArthur'));
+    expect(allies.bondDelta).toBeGreaterThan(0);
+    const showmance = meta.seededPairs.find(p => p.kind === 'showmance-intact');
+    expect(showmance.bondDelta).toBeGreaterThan(0);
+    for (const p of meta.seededPairs) expect(Math.abs(p.bondDelta)).toBeLessThanOrEqual(6);
+  });
+  it('returns null when toggled off or when no returnee has history', () => {
+    seedLedgerS12();
+    expect(buildFranchiseMeta(cast, { franchiseMeta: false })).toBeNull();
+    expect(buildFranchiseMeta([{ name: 'Newbie', isReturnee: false }], { franchiseMeta: true })).toBeNull();
+  });
+});

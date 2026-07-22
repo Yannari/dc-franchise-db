@@ -936,6 +936,8 @@ export function defaultConfig() {
     twistSchedule: [],
     tribes: [],  // [{ name, color }]
     popularityEnabled: true,
+    franchiseMeta: true,
+    seasonNumber: 0,
   };
 }
 

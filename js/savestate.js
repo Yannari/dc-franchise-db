@@ -6,7 +6,7 @@ import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
 import { _checkMoleExposure } from './camp-events.js';
-import { setFranchiseLedger, franchiseLedger } from './franchise-meta.js';
+import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta, META_WEIGHTS } from './franchise-meta.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
@@ -605,6 +605,17 @@ export function initGameState() {
     });
   });
 
+  // Franchise meta: profiles + cross-season bond seeds (no-op without returnee history)
+  let _fMeta = null;
+  try { _fMeta = buildFranchiseMeta(players, seasonConfig); }
+  catch (e) { console.warn('Franchise meta build failed — season runs without it.', e); }
+  if (_fMeta) {
+    for (const sp of _fMeta.seededPairs) {
+      const k = bKey(sp.a, sp.b);
+      bonds[k] = Math.max(-META_WEIGHTS.bondClamp, Math.min(META_WEIGHTS.bondClamp, (bonds[k] || 0) + sp.bondDelta));
+    }
+  }
+
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 
   // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
@@ -669,6 +680,8 @@ export function initGameState() {
     loveTriangles: [],             // [{ center, suitors, phase, jealousyLevel, resolved, resolution }]
     _triangleRejectionHeat: {},    // { [name]: { heat, expiresEp } }
     affairs: [],                   // [{ cheater, partner, secretPartner, exposure, resolved, resolution }]
+    franchiseMeta: _fMeta,
+    seasonNumber: seasonConfig?.seasonNumber || 0,  // saves become self-identifying (Task 8b relies on this)
   });
 
   // Initialize survival values when food/water system is enabled

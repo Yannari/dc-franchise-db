@@ -160,6 +160,17 @@
 .tag-down{background:rgba(255,90,120,.12);border-color:rgba(255,90,120,.35)}
 .tag-steady{background:rgba(255,255,255,.08)}
 
+/* Data-quality treatment (roadmap #2): missing values must NEVER look like real
+   analysis. "Not evaluated" is a distinct, visibly-uncertain state — no bar, no
+   fabricated number, hatched + muted so it can't be mistaken for a real reading. */
+.na-row{padding:8px 10px;border-radius:14px;border:1px dashed rgba(255,255,255,.16);background:repeating-linear-gradient(135deg,rgba(255,255,255,.03),rgba(255,255,255,.03) 6px,transparent 6px,transparent 12px);margin-bottom:8px;opacity:.7}
+.na-tag{font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px dashed rgba(255,255,255,.3);background:rgba(255,255,255,.04);font-weight:700;white-space:nowrap}
+.na-cell{opacity:.5;font-style:italic;font-size:11px}
+.na-tr{opacity:.66}
+.na-group-label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;opacity:.5;margin:12px 2px 6px}
+.compass-na{margin-top:10px;padding:8px 10px;border-radius:10px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.14);font-size:11px;opacity:.78;line-height:1.5}
+.compass-na b{opacity:.9}
+
 .title-row{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
 .title-row:last-child{border-bottom:none}
 
@@ -193,6 +204,21 @@
 .gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
 .gp-table th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;background:rgba(255,255,255,.04);position:sticky;top:0}
 .row-player{display:inline-flex;gap:8px;align-items:center}
+
+/* Evidence Desk — deliberate editorial workspace, not another analytics card grid. */
+.ledger-review-shell{--ledger-ink:#101318;--ledger-paper:#171b22;--ledger-line:#30363d;--ledger-amber:#d29922;--ledger-green:#3fb950;--ledger-red:#f85149;padding:8px 2px 24px;color:#e6edf3}
+.ledger-review-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:20px 22px;border:1px solid var(--ledger-line);border-left:5px solid var(--ledger-amber);background:#11151b}
+.ledger-review-head h3{margin:5px 0 7px;font-size:24px;line-height:1.15}.ledger-review-head p{margin:0;color:#9da7b3;max-width:720px;line-height:1.5}.ledger-eyebrow{font-size:10px;font-weight:900;letter-spacing:2px;color:#e3b341}
+.ledger-scoreboard{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ledger-line);border-top:0;background:#0d1117}.ledger-scoreboard>div{display:flex;align-items:baseline;gap:8px;padding:14px 18px;border-right:1px solid var(--ledger-line)}.ledger-scoreboard>div:last-child{border-right:0}.ledger-scoreboard b{font-size:22px}.ledger-scoreboard span{font-size:11px;color:#8b949e}.ledger-scoreboard .valid b{color:var(--ledger-green)}.ledger-scoreboard .invalid b{color:var(--ledger-red)}
+.ledger-filters{display:grid;grid-template-columns:160px 180px 160px minmax(220px,1fr);gap:10px;padding:16px 0 10px}.ledger-filters label,.ledger-editor label,.ledger-manual label{display:flex;flex-direction:column;gap:6px;color:#8b949e;font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}.ledger-filters select,.ledger-filters input,.ledger-editor select,.ledger-editor input,.ledger-editor textarea,.ledger-manual select,.ledger-manual input,.ledger-manual textarea{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #30363d;border-radius:4px;background:#0d1117;color:#e6edf3;font:inherit;font-size:12px;text-transform:none;letter-spacing:0;outline:none}.ledger-filters select:focus,.ledger-filters input:focus,.ledger-editor :is(select,input,textarea):focus,.ledger-manual :is(select,input,textarea):focus{border-color:#d29922;box-shadow:0 0 0 2px rgba(210,153,34,.14)}
+.ledger-result-line{padding:7px 1px 12px;color:#8b949e;font-size:11px}.ledger-event-list{display:flex;flex-direction:column;gap:10px}.ledger-event{padding:14px 16px;border:1px solid #30363d;border-left:4px solid #6e7681;background:#151a21}.ledger-event.confirmed{border-left-color:var(--ledger-green)}.ledger-event.rejected{border-left-color:var(--ledger-red);opacity:.68}.ledger-event.editing{border-left-color:var(--ledger-amber)}
+.ledger-event-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.ledger-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ledger-kind,.ledger-state,.ledger-type{padding:3px 7px;border:1px solid #30363d;border-radius:3px;font-size:9px;font-weight:900;letter-spacing:.65px;text-transform:uppercase}.ledger-kind.recorded{color:#7ee787;border-color:#2ea043}.ledger-kind.ai-inferred{color:#e3b341;border-color:#9e6a03}.ledger-kind.manual{color:#79c0ff;border-color:#1f6feb}.ledger-state.pending{background:#30363d}.ledger-state.confirmed{color:#7ee787}.ledger-state.rejected{color:#ff7b72}.ledger-type{color:#8b949e;font-weight:700;text-transform:none}.ledger-phase{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px}
+.ledger-people{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}.ledger-face{width:25px;height:25px;border:1px solid #484f58;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#0d1117}.ledger-face img{width:100%;height:100%;object-fit:cover}.ledger-face b{font-size:10px}.ledger-person-name{font-size:11px;font-weight:700;margin-right:4px}.ledger-arrow{color:#d29922;font-weight:900;margin:0 3px}.ledger-none{font-size:10px;color:#8b949e}
+.ledger-description{margin:11px 0 8px;font-size:14px;line-height:1.5}.ledger-review-note{margin:5px 0;color:#b8c0ca;font-size:11px}.ledger-source{margin-top:8px;border-top:1px dashed #30363d;padding-top:8px;color:#8b949e;font-size:11px}.ledger-source summary{cursor:pointer;color:#b8c0ca}.ledger-source blockquote{margin:8px 0;padding:8px 10px;border-left:2px solid #484f58;background:#0d1117;color:#c9d1d9;line-height:1.45}
+.ledger-actions{display:flex;gap:7px;margin-top:12px}.ledger-action{min-height:34px;padding:5px 11px;border:1px solid #484f58;border-radius:4px;background:#21262d;color:#c9d1d9;cursor:pointer;font-size:11px;font-weight:700}.ledger-action:hover{border-color:#8b949e}.ledger-action.confirm{color:#7ee787}.ledger-action.reject{color:#ff7b72}.ledger-action:disabled{opacity:.35;cursor:default}
+.ledger-editor,.ledger-manual{display:flex;flex-direction:column;gap:12px}.ledger-manual{margin:14px 0;padding:16px;border:1px solid #9e6a03;border-left:5px solid #d29922;background:#12161c}.ledger-manual-title{font-size:16px;font-weight:900}.ledger-manual-title span,.ledger-editor label span,.ledger-manual label span{font-size:9px;color:#6e7681;font-weight:500;text-transform:none}.ledger-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ledger-editor-actions{display:flex;gap:8px}.ledger-error{padding:9px;border-left:3px solid #f85149;background:rgba(248,81,73,.08);color:#ff7b72;font-size:11px}.ledger-empty{padding:34px;border:1px dashed #30363d;background:#0d1117;text-align:center}.ledger-empty b,.ledger-empty span{display:block}.ledger-empty span{margin-top:6px;color:#8b949e;font-size:12px}
+@media(max-width:820px){.ledger-review-head{flex-direction:column}.ledger-scoreboard{grid-template-columns:repeat(2,1fr)}.ledger-scoreboard>div:nth-child(2){border-right:0}.ledger-scoreboard>div:nth-child(-n+2){border-bottom:1px solid var(--ledger-line)}.ledger-filters{grid-template-columns:1fr 1fr}.ledger-form-grid{grid-template-columns:1fr}.ledger-action{min-height:44px}}
+@media(max-width:520px){.ledger-scoreboard,.ledger-filters{grid-template-columns:1fr}.ledger-scoreboard>div{border-right:0;border-bottom:1px solid var(--ledger-line)}.ledger-event-head{align-items:flex-start;flex-direction:column}.ledger-actions{display:grid;grid-template-columns:1fr 1fr}.ledger-actions .reject{grid-column:1/-1}}
 </style>
 
 </head>
@@ -382,11 +408,16 @@
       <div class="ai-actions">
         <button class="btn btn-primary" id="aiGenerate">Generate Analytics</button>
         <button class="btn btn-ghost" id="aiLoadCached">Load Cached</button>
+        <button class="btn btn-ghost" id="ledgerExport" type="button" title="Download the season's confirmed facts and clearly-labelled AI assessments">Export Ledger</button>
         <label class="ai-toggle">
           <input type="checkbox" id="aiAutoLoad" checked />
           <span>Auto-load on refresh</span>
         </label>
       </div>
+    </div>
+
+    <div id="ledgerStatus" style="margin:0 0 12px;padding:8px 10px;border-left:3px solid #6e7681;background:rgba(255,255,255,.035);font-size:11px;color:#8b949e">
+      Season ledger: no episode data recorded yet.
     </div>
 
     <div class="ai-row">
@@ -430,6 +461,7 @@
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
         <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📋 Resumes</button>
         <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💞 Relationships</button>
+        <button class="tab-btn" id="tabDataReview" role="tab" aria-selected="false">🗂 Data Review</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
         <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
       </div>
@@ -500,6 +532,7 @@
               <div class="compass-points" id="compassPoints"></div>
             </div>
           </div>
+          <div class="compass-na hidden" id="compassNA"></div>
           <div class="muted small">If you want true "Social vs Competition", I can upgrade your Worker to output compass coordinates directly.</div>
         </div>
 
@@ -567,6 +600,11 @@
           <p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>
         </div>
       </div>
+    </div>
+
+    <!-- DATA REVIEW TAB -->
+    <div class="window-body hidden" id="viewDataReview">
+      <div id="ledgerReviewContainer"><div class="ledger-empty"><b>Opening the Evidence Desk…</b></div></div>
     </div>
 
     <!-- EPISODE TAB -->
@@ -1171,6 +1209,9 @@ Dave voted for Mickey
   <!-- SCRIPT: AI + RENDERING -->
   <script>
 
+  const _seasonLedgerReady = import('./js/season-event-ledger.js');
+  const _seasonLedgerReviewReady = import('./js/season-ledger-review.js');
+
   // ── IndexedDB wrapper (replaces localStorage for large data) ──
   const CS_DB_NAME = 'dc_current_season';
   const CS_DB_VERSION = 1;
@@ -1204,6 +1245,61 @@ Dave voted for Mickey
       req.onerror = () => reject(req.error);
     })).catch(e => { console.warn('IDB get failed:', e); return undefined; });
   }
+
+  function _ledgerKey(season) { return `SEASON_EVENT_LEDGER_s${Number(season) || 1}`; }
+  function _parseStoredJson(raw, fallback = null) {
+    if (raw == null || raw === '') return fallback;
+    if (typeof raw !== 'string') return raw;
+    try { return JSON.parse(raw); } catch { return fallback; }
+  }
+  function _renderLedgerStatus(ledger, validation) {
+    const el = document.getElementById('ledgerStatus');
+    if (!el) return;
+    if (!ledger) {
+      el.textContent = 'Season ledger: no episode data recorded yet.';
+      el.style.borderLeftColor = '#6e7681';
+      return;
+    }
+    const records = Object.values(ledger.episodes || {});
+    const recorded = records.reduce((sum, r) => sum + Number(r.counts?.recorded || 0), 0);
+    const inferred = records.reduce((sum, r) => sum + Number(r.counts?.inferred || 0), 0);
+    const manual = records.reduce((sum, r) => sum + Number(r.counts?.manual || 0), 0);
+    el.textContent = `Season ledger: ${records.length} episode${records.length === 1 ? '' : 's'} · ${recorded} recorded facts · ${inferred} AI assessments${manual ? ` · ${manual} manual correction${manual === 1 ? '' : 's'}` : ''}${validation?.valid === false ? ` · ${validation.errors.length} validation errors` : ''}.`;
+    el.style.borderLeftColor = validation?.valid === false ? '#f85149' : '#3fb950';
+  }
+  async function _syncSeasonLedger(season, episode, summaryText, analytics, cast, eliminated, title) {
+    const api = await _seasonLedgerReady;
+    const raw = await _csGet(_ledgerKey(season));
+    const prior = _parseStoredJson(raw, api.createLedger(season));
+    const record = api.buildEpisodeRecord({ season, episode, title, summaryText, analytics, cast, eliminated });
+    const ledger = api.upsertEpisode(prior, record);
+    const validation = api.validateLedger(ledger);
+    await _csPut(_ledgerKey(season), JSON.stringify(ledger));
+    _renderLedgerStatus(ledger, validation);
+    return { ledger, validation, record };
+  }
+  async function _loadSeasonLedgerStatus(season) {
+    const api = await _seasonLedgerReady;
+    const ledger = _parseStoredJson(await _csGet(_ledgerKey(season)), null);
+    _renderLedgerStatus(ledger, ledger ? api.validateLedger(ledger) : null);
+    return ledger;
+  }
+  window.getSeasonEventLedger = async season => _parseStoredJson(await _csGet(_ledgerKey(season)), null);
+  window.validateSeasonEventLedger = async season => {
+    const api = await _seasonLedgerReady;
+    const ledger = await window.getSeasonEventLedger(season);
+    return ledger ? api.validateLedger(ledger) : { valid:false, errors:['No ledger found.'], warnings:[], eventCount:0 };
+  };
+  window.exportSeasonEventLedger = async season => {
+    const ledger = await window.getSeasonEventLedger(season);
+    if (!ledger) return false;
+    const blob = new Blob([JSON.stringify(ledger, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `season-${Number(season) || 1}-event-ledger.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return true;
+  };
 
   // ── VOICE PROFILES: reusable per-player franchise histories + voice, loaded once from
   // voice-profiles.json and auto-assembled into the franchise context from a season's cast,
@@ -1334,12 +1430,14 @@ Dave voted for Mickey
       tabGameplay: $("tabGameplay"),
       tabResumes: $("tabResumes"),
       tabRelationships: $("tabRelationships"),
+      tabDataReview: $("tabDataReview"),
       tabEpisode: $("tabEpisode"),
       tabSeasonSetup: $("tabSeasonSetup"),
       viewOverview: $("viewOverview"),
       viewGameplay: $("viewGameplay"),
       viewResumes: $("viewResumes"),
       viewRelationships: $("viewRelationships"),
+      viewDataReview: $("viewDataReview"),
       viewEpisode: $("viewEpisode"),
       viewSeasonSetup: $("viewSeasonSetup"),
 
@@ -1357,6 +1455,7 @@ Dave voted for Mickey
       cardPathToVictory: $("cardPathToVictory"),
 
       compassPoints: $("compassPoints"),
+      compassNA: $("compassNA"),
       gpTableBody: $("gpTableBody"),
     };
 
@@ -1605,6 +1704,60 @@ Dave voted for Mickey
     }
 
     // ----------------------------
+    // Data provenance / quality (roadmap #2)
+    // Every displayed value is either EVALUATED by the model or explicitly
+    // MISSING. We never invent a default (10% risk, 50/100 power, "Steady")
+    // and present it as analysis — missing stays distinct and visible.
+    // ----------------------------
+    // Partition the active cast against an analytics array keyed by `.player`.
+    // Returns { evaluated:[{name,item}], missing:[name], hasSection }.
+    function partitionByPlayer(arr, activeCast) {
+      const hasSection = Array.isArray(arr) && arr.length > 0;
+      const rows = hasSection ? arr : [];
+      const byName = new Map(rows.map(x => [String(x?.player || "").toLowerCase(), x]));
+      const active = (activeCast || []).filter(Boolean);
+      const evaluated = [], missing = [], usedActive = new Set();
+      active.forEach(name => {
+        const item = byName.get(name.toLowerCase());
+        if (item) { evaluated.push({ name, item }); usedActive.add(name.toLowerCase()); }
+        else missing.push(name);
+      });
+      // Never drop real analysis: surface evaluated players not on the active list
+      // (name mismatches, just-eliminated jurors) rather than hiding them.
+      rows.forEach(x => {
+        const nm = String(x?.player || "").trim();
+        if (nm && !active.some(a => a.toLowerCase() === nm.toLowerCase())) evaluated.push({ name: nm, item: x });
+      });
+      return { evaluated, missing, hasSection };
+    }
+
+    // A muted, visibly-uncertain row for a player the model did not evaluate.
+    function naRow(name, label = "Not evaluated") {
+      const id = slugify(name);
+      return `
+        <div class="na-row">
+          <div class="bar-head">
+            <div class="bar-left">
+              <span class="tiny-avatar">
+                <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                  onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+              </span>
+              <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+            </div>
+            <span class="na-tag">${escapeHtml(label)}</span>
+          </div>
+        </div>`;
+    }
+
+    function naGroup(missing, label = "Not evaluated this episode") {
+      if (!missing || !missing.length) return "";
+      return `<div class="na-group-label">${escapeHtml(label)} · ${missing.length}</div>` +
+        missing.map(n => naRow(n)).join("");
+    }
+
+    // ----------------------------
     // Rendering: Overview cards
     // ----------------------------
     function renderMoveCard(targetEl, moveObj) {
@@ -1626,15 +1779,16 @@ Dave voted for Mickey
       `;
     }
 
-    function renderBootOdds(targetEl, bootPredictions) {
+    function renderBootOdds(targetEl, bootPredictions, activeCast) {
       if (!Array.isArray(bootPredictions) || bootPredictions.length === 0) {
         targetEl.textContent = "No boot predictions returned.";
         return;
       }
-      
-      // Sort by probability descending (highest risk first)
-      const sorted = [...bootPredictions].sort((a, b) => (Number(b.prob) || 0) - (Number(a.prob) || 0));
-      
+
+      const { evaluated, missing } = partitionByPlayer(bootPredictions, activeCast);
+      // Sort evaluated by probability descending (highest risk first)
+      const sorted = evaluated.map(e => e.item).sort((a, b) => (Number(b.prob) || 0) - (Number(a.prob) || 0));
+
       targetEl.innerHTML = sorted
         .map((p) => {
           const name = p.player || "";
@@ -1665,15 +1819,16 @@ Dave voted for Mickey
             </div>
           `;
         })
-        .join("");
+        .join("") + naGroup(missing);
     }
 
-    function renderPowerRankings(targetEl, powerRankings) {
+    function renderPowerRankings(targetEl, powerRankings, activeCast) {
       if (!Array.isArray(powerRankings) || powerRankings.length === 0) {
         targetEl.textContent = "No power rankings returned.";
         return;
       }
-      targetEl.innerHTML = powerRankings
+      const { evaluated, missing } = partitionByPlayer(powerRankings, activeCast);
+      targetEl.innerHTML = evaluated.map(e => e.item)
         .map((r) => {
           const name = r.player || "";
           const id = slugify(name);
@@ -1700,7 +1855,7 @@ Dave voted for Mickey
             </div>
           `;
         })
-        .join("");
+        .join("") + naGroup(missing);
     }
 
     function renderAllianceStability(targetEl, allianceStability) {
@@ -1784,14 +1939,15 @@ Dave voted for Mickey
       }).join("");
     }
 
-    function renderJuryManagement(targetEl, juryManagement) {
+    function renderJuryManagement(targetEl, juryManagement, activeCast) {
       if (!Array.isArray(juryManagement) || juryManagement.length === 0) {
         targetEl.textContent = "No jury management data returned.";
         return;
       }
-      
-      const sorted = [...juryManagement].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
-      
+
+      const { evaluated, missing } = partitionByPlayer(juryManagement, activeCast);
+      const sorted = evaluated.map(e => e.item).sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+
       targetEl.innerHTML = sorted.map((j) => {
         const name = j.player || "";
         const id = slugify(name);
@@ -1816,17 +1972,18 @@ Dave voted for Mickey
             <div class="bar-note">${escapeHtml(note)}</div>
           </div>
         `;
-      }).join("");
+      }).join("") + naGroup(missing, "Not assessed for jury management");
     }
 
-    function renderThreatBreakdown(targetEl, threatBreakdown) {
+    function renderThreatBreakdown(targetEl, threatBreakdown, activeCast) {
       if (!Array.isArray(threatBreakdown) || threatBreakdown.length === 0) {
         targetEl.textContent = "No threat breakdown data returned.";
         return;
       }
-      
+
+      const { evaluated, missing } = partitionByPlayer(threatBreakdown, activeCast);
       // Calculate totals and sort by total threat (highest to lowest)
-      const withTotals = threatBreakdown.map((t) => {
+      const withTotals = evaluated.map(e => e.item).map((t) => {
         const physical = Math.round(Number(t.physical) || 0);
         const strategic = Math.round(Number(t.strategic) || 0);
         const social = Math.round(Number(t.social) || 0);
@@ -1863,7 +2020,7 @@ Dave voted for Mickey
             </div>
           </div>
         `;
-      }).join("");
+      }).join("") + naGroup(missing, "Not assessed for threat");
     }
 
     function renderPathToVictory(targetEl, pathToVictory) {
@@ -1962,26 +2119,38 @@ Dave voted for Mickey
       }));
 
       const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
+      // Only players the model actually evaluated on BOTH axes can be truthfully
+      // placed. Anyone missing power OR boot data is NOT fabricated to (50, 15%) —
+      // they go to a distinct "not evaluated" tray below the plot. (roadmap #2)
+      const notPlaced = [];
       const points = active.slice(0, 30).map((name) => {
         const key = name.toLowerCase();
-        const power = bm.get(key) ?? 50;
-        
-        // Use boot prediction from AI if available (now in 0-1 range)
-        let prob = probMap.get(key);
-        if (prob === undefined) {
-          // Fallback: If AI didn't include this player, assume moderate-low risk
-          prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
-        }
-        
+        const power = bm.get(key);
+        const prob = probMap.get(key);
+        if (power === undefined || prob === undefined) { notPlaced.push(name); return null; }
+
         // CAP boot risk at 70% maximum to spread players more vertically
         const cappedProb = Math.min(prob * 100, 70); // Convert to percentage and cap at 70
-        
-        // x: power (0..100) - use actual power score
-        // y: safety = 100 - cappedProb (now ranges from 30-90 instead of 0-100)
-        const x = power;
-        const y = 100 - cappedProb;
-        return { name, x, y, prob, power };
-      });
+
+        // x: power (0..100) — actual power score
+        // y: safety = 100 - cappedProb (ranges 30-90 after the cap)
+        return { name, x: power, y: 100 - cappedProb, prob, power };
+      }).filter(Boolean);
+
+      if (els.compassNA) {
+        if (notPlaced.length) {
+          els.compassNA.classList.remove("hidden");
+          els.compassNA.innerHTML = `<b>Not evaluated · ${notPlaced.length}</b> — no power/boot reading from the model, so not plotted: ${notPlaced.map(escapeHtml).join(", ")}`;
+        } else {
+          els.compassNA.classList.add("hidden");
+          els.compassNA.innerHTML = "";
+        }
+      }
+
+      if (!points.length) {
+        els.compassPoints.innerHTML = "";
+        return;
+      }
       
       // Use actual data ranges with minimal normalization
       // Only apply a gentle spread if data is too clustered (within 20 points)
@@ -2025,23 +2194,21 @@ Dave voted for Mickey
       const sortedByPower = [...normalizedPoints].sort((a, b) => (b.power || 0) - (a.power || 0));
       const top3Names = new Set(sortedByPower.slice(0, 3).map(p => p.name.toLowerCase()));
 
+      // Carry each plotted player's real (evaluated) power/prob for dot sizing.
+      const realByName = new Map(points.map(p => [p.name.toLowerCase(), p]));
+
       els.compassPoints.innerHTML = normalizedPoints.map((p, index) => {
         const id = slugify(p.name);
         // convert x,y (0..100) to %
         const left = Math.max(3, Math.min(97, p.x));
         const top = Math.max(3, Math.min(97, 100 - p.y)); // invert for CSS top
-        
-        // Get power score and boot risk from analytics
-        const playerData = analytics?.powerRankings?.find(pr => 
-          pr.player.toLowerCase() === p.name.toLowerCase()
-        );
-        const bootData = analytics?.bootPredictions?.find(bp => 
-          bp.player.toLowerCase() === p.name.toLowerCase()
-        );
-        
-        const power = playerData?.score || 50;
-        const risk = bootData?.prob || 15;
-        
+
+        // Real evaluated values only — these points were filtered to players the
+        // model scored on both axes, so no fabricated 50/15% fallback is needed.
+        const real = realByName.get(p.name.toLowerCase());
+        const power = real ? real.power : 0;
+        const risk = real ? real.prob * 100 : 0;
+
         // Calculate dot size based on combined threat (power + inverse risk)
         const threat = (power + (100 - risk)) / 2;
         const size = 20 + (threat / 100) * 15; // 20-35px range (smaller)
@@ -2077,31 +2244,54 @@ Dave voted for Mickey
       const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
       const rows = active.map((name) => {
         const key = name.toLowerCase();
-        const r = powerMap.get(key) || { player: name, score: 50, tag: "Steady", blurb: "" };
-        const p = probMap.get(key) || { prob: 0.15, why: "" };
-        const score = Math.round(Number(r.score)||0);
-        
-        // Handle both prob formats: 0-1 decimal OR 0-100 percentage
-        const rawProb = Number(p.prob) || 0;
-        const prob = rawProb <= 1 ? Math.round(rawProb * 100) : Math.round(rawProb);
-        
+        const r = powerMap.get(key);              // no fabricated 50/"Steady" default
+        const p = probMap.get(key);               // no fabricated 15% default
+        const evaluated = !!r;                     // the power ranking is the primary evaluation
+        const score = r ? Math.round(Number(r.score) || 0) : null;
+
+        // Handle both prob formats: 0-1 decimal OR 0-100 percentage; null when absent.
+        const rawProb = p ? (Number(p.prob) || 0) : null;
+        const prob = rawProb === null ? null : (rawProb <= 1 ? Math.round(rawProb * 100) : Math.round(rawProb));
+
         const title = titlesMap?.[key] || "";
-        
-        // Use AI-generated role from analytics, fallback to calculated role
-        const role = rolesMap.get(key) || (
-          prob >= 35 ? "In Danger" :
+
+        // AI role if given; else derive from real values only (never from a fabricated prob).
+        const role = rolesMap.get(key) || (!evaluated ? null : (
+          (prob !== null && prob >= 35) ? "In Danger" :
           score >= 80 ? "Power Player" :
           score >= 65 ? "Well-Positioned" :
           "Under the Radar"
-        );
-        
-        return { name, score, prob, tag: r.tag || "Steady", title, role };
-      }).sort((a,b)=>b.score-a.score);
+        ));
+
+        return { name, evaluated, score, prob, tag: r?.tag || null, title, role };
+      }).sort((a,b) => (Number(b.evaluated) - Number(a.evaluated)) || ((b.score||0) - (a.score||0)));
 
       els.gpTableBody.innerHTML = rows.map((row) => {
         const id = slugify(row.name);
         const tag = (row.tag||"Steady").toLowerCase();
         const tagClass = tag==="rising" ? "tag tag-up" : tag==="falling" ? "tag tag-down" : "tag tag-steady";
+        if (!row.evaluated) {
+          // Distinct, non-fabricated row: the model returned nothing for this player.
+          return `
+          <tr class="na-tr">
+            <td>
+              <a class="plink row-player" href="player.html?player=${id}">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(row.name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((row.name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <b>${escapeHtml(row.name)}</b>
+              </a>
+            </td>
+            <td class="muted">${escapeHtml(row.title || "—")}</td>
+            <td><span class="na-tag">Not evaluated</span></td>
+            <td class="na-cell">—</td>
+            <td class="na-cell">—</td>
+            <td class="na-cell">—</td>
+          </tr>`;
+        }
         return `
           <tr>
             <td>
@@ -2116,10 +2306,10 @@ Dave voted for Mickey
               </a>
             </td>
             <td class="muted">${escapeHtml(row.title || "—")}</td>
-            <td><span class="${tagClass}">${escapeHtml(row.tag)}</span></td>
+            <td><span class="${tagClass}">${escapeHtml(row.tag || "Steady")}</span></td>
             <td>${row.score}</td>
-            <td>${row.prob}%</td>
-            <td>${escapeHtml(row.role)}</td>
+            <td>${row.prob === null ? '<span class="na-cell">—</span>' : row.prob + '%'}</td>
+            <td>${escapeHtml(row.role || "—")}</td>
           </tr>
         `;
       }).join("");
@@ -2173,18 +2363,23 @@ Dave voted for Mickey
 
       renderPlayersGrid(cast, eliminated, titlesMap);
 
+      // Active (still-in) cast — used so partial AI responses surface a distinct
+      // "Not evaluated" state per player instead of a fabricated default. (#2)
+      const elimSet = eliminated instanceof Set ? eliminated : new Set((eliminated || []).map(n => String(n).toLowerCase()));
+      const activeCast = (cast || []).filter(n => !elimSet.has(String(n).toLowerCase()));
+
       // Overview cards
       renderMoveCard(els.cardBestMove, analytics.bestMove);
       renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
       els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
       renderVotingBlocs(els.cardVotingBlocs, analytics);
-      renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
-      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
+      renderBootOdds(els.cardBootOdds, analytics.bootPredictions, activeCast);
+      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings, activeCast);
       renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
       renderTitles(els.cardTitles, analytics.titles);
       renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
-      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
-      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
+      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement, activeCast);
+      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown, activeCast);
       renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
 
       // Gameplay
@@ -2195,11 +2390,32 @@ Dave voted for Mickey
     // ----------------------------
     // Tabs
     // ----------------------------
+    async function renderDataReview() {
+      const container = document.getElementById('ledgerReviewContainer');
+      if (!container) return;
+      const season = Number(els.season.value || 1);
+      const currentEpisode = Number(els.episode.value || 1);
+      const ledger = _parseStoredJson(await _csGet(_ledgerKey(season)), null);
+      const review = await _seasonLedgerReviewReady;
+      review.renderLedgerReview(container, {
+        ledger, season, currentEpisode,
+        onChange: async next => {
+          const api = await _seasonLedgerReady;
+          const validation = api.validateLedger(next);
+          await _csPut(_ledgerKey(season), JSON.stringify(next));
+          _renderLedgerStatus(next, validation);
+          setStatus(validation.valid ? 'Ledger review saved.' : `Saved with ${validation.errors.length} validation error(s).`);
+          return next;
+        },
+      });
+    }
+
     function showTab(which) {
       const isOverview = which === "overview";
       const isGameplay = which === "gameplay";
       const isResumes = which === "resumes";
       const isRelationships = which === "relationships";
+      const isDataReview = which === "datareview";
       const isEpisode = which === "episode";
       const isSeasonSetup = which === "seasonsetup";
 
@@ -2207,6 +2423,7 @@ Dave voted for Mickey
       els.viewGameplay.classList.toggle("hidden", !isGameplay);
       els.viewResumes.classList.toggle("hidden", !isResumes);
       els.viewRelationships.classList.toggle("hidden", !isRelationships);
+      els.viewDataReview.classList.toggle("hidden", !isDataReview);
       els.viewEpisode.classList.toggle("hidden", !isEpisode);
       els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
 
@@ -2214,6 +2431,7 @@ Dave voted for Mickey
       els.tabGameplay.classList.toggle("active", isGameplay);
       els.tabResumes.classList.toggle("active", isResumes);
       els.tabRelationships.classList.toggle("active", isRelationships);
+      els.tabDataReview.classList.toggle("active", isDataReview);
       els.tabEpisode.classList.toggle("active", isEpisode);
       els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
       
@@ -2221,12 +2439,14 @@ Dave voted for Mickey
       els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
       els.tabResumes.setAttribute("aria-selected", isResumes ? "true" : "false");
       els.tabRelationships.setAttribute("aria-selected", isRelationships ? "true" : "false");
+      els.tabDataReview.setAttribute("aria-selected", isDataReview ? "true" : "false");
       els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
       els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
       
       // Render data when switching to new tabs
       if (isResumes && CURRENT.analytics) renderResumes(CURRENT.analytics);
       if (isRelationships && CURRENT.analytics) renderRelationships(CURRENT.analytics);
+      if (isDataReview) renderDataReview();
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
@@ -2246,6 +2466,7 @@ Dave voted for Mickey
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
     els.tabResumes.addEventListener("click", () => showTab("resumes"));
     els.tabRelationships.addEventListener("click", () => showTab("relationships"));
+    els.tabDataReview.addEventListener("click", () => showTab("datareview"));
     els.tabEpisode.addEventListener("click", () => {
       showTab("episode");
       // Try to auto-load saved episode
@@ -2338,46 +2559,10 @@ Dave voted for Mickey
         throw new Error(msg);
       }
       
-      // VALIDATION: Auto-fill missing players
-      const cast = parseCastFromSummary(summaryText);
-      const eliminated = parseEliminated(summaryText);
-      const active = cast.filter(name => !eliminated.some(e => e.toLowerCase() === name.toLowerCase()));
-      
-      // Ensure all active players are in bootPredictions
-      if (Array.isArray(data.bootPredictions)) {
-        const bootMap = new Map(data.bootPredictions.map(x => [x.player.toLowerCase(), x]));
-        active.forEach(player => {
-          const key = player.toLowerCase();
-          if (!bootMap.has(key)) {
-            // Missing player - add with default low risk
-            console.info(`Auto-adding ${player} to bootPredictions with 10% risk (was not in AI response)`);
-            data.bootPredictions.push({
-              player: player,
-              prob: 10,
-              why: "Not in AI predictions; assumed moderate safety."
-            });
-          }
-        });
-      }
-      
-      // Ensure all active players are in powerRankings
-      if (Array.isArray(data.powerRankings)) {
-        const powerMap = new Map(data.powerRankings.map(x => [x.player.toLowerCase(), x]));
-        active.forEach(player => {
-          const key = player.toLowerCase();
-          if (!powerMap.has(key)) {
-            // Missing player - add with default middle score
-            console.warn(`Missing in powerRankings: ${player} - auto-adding with score 50`);
-            data.powerRankings.push({
-              player: player,
-              score: 50,
-              tag: "Steady",
-              blurb: "Not in AI's detailed rankings; neutral position."
-            });
-          }
-        });
-      }
-      
+      // NOTE (roadmap #2): we deliberately do NOT auto-fill players the model
+      // omitted. Injecting a fake 10% boot risk / 50 power score made a
+      // non-answer look like real analysis. Missing players are now surfaced as
+      // an explicit "Not evaluated" state by the render layer instead.
       return data;
     }
 
@@ -2512,6 +2697,10 @@ Dave voted for Mickey
         const epTitle = ep?.title ? `"${ep.title}"` : els.uiEpName.textContent;
         saveCastState(season, episode, cast, eliminated, epTitle);
 
+        // Canonical history: facts extracted from the final summary and AI
+        // interpretations are stored separately with explicit provenance.
+        await _syncSeasonLedger(season, episode, summaryText, analytics, cast, eliminated, epTitle);
+
         // 🆕 AUTO-UPDATE PLAYER DATABASE WITH ELIMINATIONS
         if (typeof updatePlayerEliminationsFromEpisode === 'function') {
           updatePlayerEliminationsFromEpisode(season, episode, cast, eliminated);
@@ -2532,8 +2721,19 @@ Dave voted for Mickey
       updateEpisodeHeaderFromInputs();
       const cached = await loadCached(season, episode);
       if (!cached) return setStatus("No cached analytics found for this season/episode.");
+      const summaryText = els.summary.value || await loadSummary(season, episode) || '';
+      const savedCast = await loadCastState(season, episode);
+      const cast = parseCastFromSummary(summaryText).length ? parseCastFromSummary(summaryText) : (savedCast?.cast || []);
+      const eliminated = parseEliminated(summaryText).length ? parseEliminated(summaryText) : (savedCast?.eliminated || []);
+      await _syncSeasonLedger(season, episode, summaryText, cached, cast, eliminated, savedCast?.title || '');
       await renderAll(cached, els.summary.value || "");
       setStatus("Loaded cached analytics.");
+    });
+
+    document.getElementById('ledgerExport')?.addEventListener('click', async () => {
+      const season = Number(els.season.value || 1);
+      const exported = await window.exportSeasonEventLedger(season);
+      setStatus(exported ? `Exported Season ${season} event ledger.` : `No Season ${season} ledger exists yet.`);
     });
 
 
@@ -2580,6 +2780,7 @@ Dave voted for Mickey
       // Update inputs (normalize)
       els.season.value = String(season);
       els.episode.value = String(episode);
+      await _loadSeasonLedgerStatus(season);
 
       // Restore summary + cast state for this selection
       const savedSummary = await loadSummary(season, episode);
@@ -2597,7 +2798,8 @@ Dave voted for Mickey
       // Restore last tab for this episode
       let savedTab = "overview";
       try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
-      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+      const allowedTabs = new Set(['overview','gameplay','resumes','relationships','datareview','episode','seasonsetup']);
+      showTab(allowedTabs.has(savedTab) ? savedTab : 'overview');
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = await loadCached(season, episode);
@@ -2654,6 +2856,7 @@ Dave voted for Mickey
 
       // Apply selection: restores summary, cast, tab, and (optionally) cached analytics
       await applySelection(season, episode, { quiet: true });
+      await _loadSeasonLedgerStatus(season);
 
       // Friendly status
       const cached = await loadCached(season, episode);

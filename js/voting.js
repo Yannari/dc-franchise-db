@@ -410,6 +410,32 @@ export function buildVoteReason(voter, target, type, ctx = {}) {
 
   if (type === 'memory') return ctx.rememberedReason || strategicMemoryReason(voter, target) || 'past history made this vote personal';
 
+  // Franchise-history callback: when a returning cast carries seeded grudges or a
+  // proven résumé, let that legacy surface as the vote's 'why'. Gated by
+  // calloutTextChance so normal reasons still dominate, and placed BEFORE the
+  // grudge/threat block so meta callbacks take priority when they exist.
+  const _fm = gs.franchiseMeta;
+  if (_fm && (type === 'grudge' || type === 'threat') && Math.random() < META_WEIGHTS.calloutTextChance) {
+    const _grudge = (_fm.seededPairs || []).find(sp =>
+      sp.a === voter && sp.b === target && (sp.kind === 'betrayal' || sp.kind === 'blindside' || sp.kind === 'rivals'));
+    if (_grudge) return pick([
+      `${_grudge.reason}. Some debts follow you into a new season.`,
+      `This isn't strategy — it's personal. ${_grudge.reason}, and tonight it gets settled.`,
+      `${target} thinks the past stays in the past. It doesn't.`,
+      `Last time, ${target} wrote the ending. This time I hold the pen.`,
+    ]);
+    const _rep = _fm.profiles?.[target];
+    if (_rep && _rep.repScore >= 0.4 && type === 'threat') {
+      const _line = (_rep.resume && _rep.resume[0]) || 'a résumé like that';
+      return pick([
+        `${_line}. You don't let a player like that reach the end twice.`,
+        `${target} has already proven they can win this game. That's exactly why it ends tonight.`,
+        `Everyone keeps talking about ${target}'s history. I'd rather make it history.`,
+        `We all watched ${target}'s season. Nobody should be surprised by this vote.`,
+      ]);
+    }
+  }
+
   // Strategy-layer motive: when this vote lines up with a grudge the voter has
   // carried (intention), something they actually learned (knowledge), or real
   // resentment, surface that personal 'why'. Only for votes the voter OWNS

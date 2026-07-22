@@ -2704,6 +2704,19 @@ export function simulateJuryVote(finalists) {
         `${pick} survived. That's not nothing. In this game, making it to the end is its own argument.`,
       ]);
     }
+    // Franchise-history legacy speech: when the chosen finalist is a returning
+    // player with a franchise profile, a juror will sometimes frame the vote
+    // around that legacy instead of the season-specific reason above. Gated so
+    // the season-specific reasons still dominate.
+    const _fmProf = gs.franchiseMeta?.profiles?.[pick];
+    if (_fmProf && Math.random() < 0.35) {
+      _jrReason = _jrPick([
+        `"Two seasons. Same result. ${pick} just plays this game at a different level."`,
+        `"I watched ${pick}'s first season from my couch and this one from the jury bench. The growth is undeniable."`,
+        `"${pick} came back with a target the size of a résumé and STILL made it here. That's my winner."`,
+        `"History repeats itself. ${pick} made sure of it."`,
+      ]);
+    }
     reasoning.push({ juror, votedFor: pick, reason: _jrReason });
   });
 

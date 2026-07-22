@@ -486,48 +486,54 @@
 
     <!-- OVERVIEW PAGE -->
     <div class="window-body hidden" id="viewOverview">
+      <div class="mini-subtitle" style="margin:0 0 14px">Episode-only review · what changed between the opening scene and the end credits</div>
       <div class="cards-grid">
         <div class="mini-panel">
-          <div class="mini-title">BEST MOVE</div>
-          <div class="mini-body" id="cardBestMove">—</div>
+          <div class="mini-title">TURNING POINT</div>
+          <div class="mini-subtitle">The moment that redirected this episode</div>
+          <div class="mini-body" id="cardTurningPoint">—</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">BIGGEST RISK</div>
-          <div class="mini-body" id="cardBiggestRisk">—</div>
+          <div class="mini-title">THE VOTE STORY</div>
+          <div class="mini-subtitle">Plan → shift → result</div>
+          <div class="mini-body" id="cardVoteStory">—</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">EPISODE SUMMARY</div>
-          <div class="mini-body" id="cardEpisodeSummary">—</div>
+          <div class="mini-title">WHO GAINED</div>
+          <div class="mini-subtitle">Position improved during this episode</div>
+          <div class="mini-body" id="cardEpisodeGainers">—</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">VOTING BLOCS</div>
-          <div class="mini-subtitle">Detected: Active voting coalitions</div>
-          <div class="mini-body" id="cardVotingBlocs">—</div>
+          <div class="mini-title">WHO LOST GROUND</div>
+          <div class="mini-subtitle">Position worsened during this episode</div>
+          <div class="mini-body" id="cardEpisodeLosers">—</div>
         </div>
       </div>
 
       <div class="cards-grid two">
         <div class="mini-panel">
-          <div class="mini-title">BOOT ODDS (NEXT)</div>
-          <div class="mini-body" id="cardBootOdds">No boot predictions yet.</div>
+          <div class="mini-title">WHAT CHANGED</div>
+          <div class="mini-subtitle">Concrete before → after movement</div>
+          <div class="mini-body" id="cardEpisodeChanges">Not evaluated yet.</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">POWER RANKINGS</div>
-          <div class="mini-body" id="cardPowerRankings">No power rankings yet.</div>
+          <div class="mini-title">LEFT UNRESOLVED</div>
+          <div class="mini-subtitle">Questions the episode creates but does not answer</div>
+          <div class="mini-body" id="cardUnresolved">Not evaluated yet.</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">ALLIANCE STABILITY</div>
-          <div class="mini-body" id="cardAllianceStability">No alliance stability yet.</div>
+          <div class="mini-title">BEST EXECUTED MOVE</div>
+          <div class="mini-body" id="cardBestMove">—</div>
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">TITLES</div>
-          <div class="mini-body" id="cardTitles">No titles yet.</div>
+          <div class="mini-title">EPISODE SUMMARY</div>
+          <div class="mini-body" id="cardEpisodeSummary">—</div>
         </div>
       </div>
     </div>
@@ -1480,13 +1486,13 @@ Dave voted for Mickey
       viewSeasonSetup: $("viewSeasonSetup"),
 
       cardBestMove: $("cardBestMove"),
-      cardBiggestRisk: $("cardBiggestRisk"),
       cardEpisodeSummary: $("cardEpisodeSummary"),
-      cardVotingBlocs: $("cardVotingBlocs"),
-      cardBootOdds: $("cardBootOdds"),
-      cardPowerRankings: $("cardPowerRankings"),
-      cardAllianceStability: $("cardAllianceStability"),
-      cardTitles: $("cardTitles"),
+      cardTurningPoint: $("cardTurningPoint"),
+      cardVoteStory: $("cardVoteStory"),
+      cardEpisodeGainers: $("cardEpisodeGainers"),
+      cardEpisodeLosers: $("cardEpisodeLosers"),
+      cardEpisodeChanges: $("cardEpisodeChanges"),
+      cardUnresolved: $("cardUnresolved"),
       cardSocialNetwork: $("cardSocialNetwork"),
       cardJuryManagement: $("cardJuryManagement"),
       cardThreatBreakdown: $("cardThreatBreakdown"),
@@ -1815,6 +1821,39 @@ Dave voted for Mickey
           </div>
         </div>
       `;
+    }
+
+    function renderEpisodeImpact(analytics) {
+      const impact = analytics?.episodeImpact || null;
+      const unavailable = '<div class="muted">Not evaluated for this cached episode. Regenerate Analytics to add episode-specific analysis.</div>';
+      const turning = impact?.turningPoint;
+      if (turning?.moment) {
+        els.cardTurningPoint.innerHTML = `<b>${escapeHtml(turning.moment)}</b><div class="muted" style="margin-top:6px">${escapeHtml(turning.whyItMattered || '')}</div>`;
+      } else if (analytics?.bestMove?.reason) {
+        els.cardTurningPoint.innerHTML = `<div class="muted" style="margin-bottom:5px">Legacy cached analysis · closest available signal</div>${escapeHtml(analytics.bestMove.reason)}`;
+      } else els.cardTurningPoint.innerHTML = unavailable;
+
+      const vote = impact?.voteStory;
+      if (vote) {
+        els.cardVoteStory.innerHTML = `<div class="cr-thread"><span class="cr-thread-meta">Opening plan</span>${escapeHtml(vote.initialPlan || 'Not established.')}</div><div class="cr-thread"><span class="cr-thread-meta">Decisive shift</span>${escapeHtml(vote.decisiveShift || 'No supported shift.')}</div><div class="cr-thread"><span class="cr-thread-meta">Final outcome</span>${escapeHtml(vote.finalOutcome || 'Not established.')}</div>`;
+      } else els.cardVoteStory.innerHTML = unavailable;
+
+      const renderPeople = (target, rows, legacy) => {
+        const list = Array.isArray(rows) ? rows.slice(0,3) : [];
+        if (!list.length && legacy?.player) {
+          target.innerHTML = `<div class="muted" style="margin-bottom:5px">Legacy cached analysis · closest available signal</div>${_crAvatar(legacy.player)} <b>${escapeHtml(legacy.player)}</b><div class="muted" style="margin-top:5px">${escapeHtml(legacy.reason || '')}</div>`;
+          return;
+        }
+        target.innerHTML = list.length ? list.map(row => `<div class="cr-row">${_crAvatar(row.player)}<div class="cr-row-copy"><b>${escapeHtml(row.player)}</b><small>${escapeHtml(row.change || '')}</small><small>Evidence: ${escapeHtml(row.evidence || '')}</small></div></div>`).join('') : '<div class="muted">No clear change was supported this episode.</div>';
+      };
+      renderPeople(els.cardEpisodeGainers, impact?.gainers, analytics?.bestMove);
+      renderPeople(els.cardEpisodeLosers, impact?.losers, analytics?.biggestRisk);
+
+      const changes = Array.isArray(impact?.changes) ? impact.changes.slice(0,6) : [];
+      els.cardEpisodeChanges.innerHTML = changes.length ? changes.map(row => `<div class="cr-thread"><span class="cr-thread-meta">${escapeHtml(row.dimension || 'change')} · ${escapeHtml(row.direction || '')}</span><b>${escapeHtml(row.subject || '')}</b>: ${escapeHtml(row.before || 'Before unclear')} → ${escapeHtml(row.after || 'After unclear')}<small style="display:block;margin-top:4px;color:#8b949e">Because: ${escapeHtml(row.cause || '')}</small></div>`).join('') : unavailable;
+
+      const questions = Array.isArray(impact?.unresolvedQuestions) ? impact.unresolvedQuestions.slice(0,3) : [];
+      els.cardUnresolved.innerHTML = questions.length ? questions.map((question,index) => `<div class="cr-thread"><span class="cr-thread-meta">Open question ${index+1}</span>${escapeHtml(question)}</div>`).join('') : (impact ? '<div class="muted">This episode left no clearly supported open question.</div>' : unavailable);
     }
 
     function renderBootOdds(targetEl, bootPredictions, activeCast) {
@@ -2490,14 +2529,9 @@ Dave voted for Mickey
       const activeCast = (cast || []).filter(n => !elimSet.has(String(n).toLowerCase()));
 
       // Overview cards
+      renderEpisodeImpact(analytics);
       renderMoveCard(els.cardBestMove, analytics.bestMove);
-      renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
       els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
-      renderVotingBlocs(els.cardVotingBlocs, analytics);
-      renderBootOdds(els.cardBootOdds, analytics.bootPredictions, activeCast);
-      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings, activeCast);
-      renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
-      renderTitles(els.cardTitles, analytics.titles);
       renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
       renderJuryManagement(els.cardJuryManagement, analytics.juryManagement, activeCast);
       renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown, activeCast);
@@ -2969,13 +3003,13 @@ Dave voted for Mickey
     function clearRenderedUI() {
       // Overview placeholders
       els.cardBestMove.innerHTML = "—";
-      els.cardBiggestRisk.innerHTML = "—";
       els.cardEpisodeSummary.textContent = "—";
-      els.cardBootOdds.innerHTML = "<div class='muted'>No boot predictions yet.</div>";
-      els.cardPowerRankings.innerHTML = "<div class='muted'>No power rankings yet.</div>";
-      els.cardVotingBlocs.innerHTML = "<div class='muted'>No voting blocs detected yet.</div>";
-      els.cardAllianceStability.innerHTML = "<div class='muted'>No alliance stability yet.</div>";
-      els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
+      els.cardTurningPoint.innerHTML = "—";
+      els.cardVoteStory.innerHTML = "—";
+      els.cardEpisodeGainers.innerHTML = "—";
+      els.cardEpisodeLosers.innerHTML = "—";
+      els.cardEpisodeChanges.innerHTML = "<div class='muted'>Not evaluated yet.</div>";
+      els.cardUnresolved.innerHTML = "<div class='muted'>Not evaluated yet.</div>";
       els.cardSocialNetwork.innerHTML = "<div class='muted'>No social network data yet.</div>";
       els.cardJuryManagement.innerHTML = "<div class='muted'>No jury management data yet.</div>";
       els.cardThreatBreakdown.innerHTML = "<div class='muted'>No threat breakdown yet.</div>";

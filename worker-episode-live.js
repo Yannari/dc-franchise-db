@@ -311,6 +311,39 @@ async function generateAnalytics(summaryText, season, episode, env) {
     additionalProperties: false,
     properties: {
       narrativeSummary: { type: "string" },
+      episodeImpact: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          turningPoint: {
+            type: "object", additionalProperties: false,
+            properties: { moment: { type: "string" }, whyItMattered: { type: "string" } },
+            required: ["moment", "whyItMattered"]
+          },
+          voteStory: {
+            type: "object", additionalProperties: false,
+            properties: { initialPlan: { type: "string" }, decisiveShift: { type: "string" }, finalOutcome: { type: "string" } },
+            required: ["initialPlan", "decisiveShift", "finalOutcome"]
+          },
+          gainers: {
+            type: "array", items: { type: "object", additionalProperties: false,
+              properties: { player: { type: "string" }, change: { type: "string" }, evidence: { type: "string" } },
+              required: ["player", "change", "evidence"] }
+          },
+          losers: {
+            type: "array", items: { type: "object", additionalProperties: false,
+              properties: { player: { type: "string" }, change: { type: "string" }, evidence: { type: "string" } },
+              required: ["player", "change", "evidence"] }
+          },
+          changes: {
+            type: "array", items: { type: "object", additionalProperties: false,
+              properties: { subject: { type: "string" }, dimension: { type: "string" }, direction: { type: "string" }, before: { type: "string" }, after: { type: "string" }, cause: { type: "string" } },
+              required: ["subject", "dimension", "direction", "before", "after", "cause"] }
+          },
+          unresolvedQuestions: { type: "array", items: { type: "string" } }
+        },
+        required: ["turningPoint", "voteStory", "gainers", "losers", "changes", "unresolvedQuestions"]
+      },
       bestMove: {
         type: "object",
         additionalProperties: false,
@@ -504,7 +537,7 @@ async function generateAnalytics(summaryText, season, episode, env) {
       },
     },
     required: [
-      "narrativeSummary", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
+      "narrativeSummary", "episodeImpact", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
       "allianceStability", "votingBlocs", "titles", "roles", "socialNetwork", "juryManagement",
       "threatBreakdown", "pathToVictory",
       "resumesList", "relationshipsList",
@@ -515,6 +548,17 @@ async function generateAnalytics(summaryText, season, episode, env) {
 You generate Survivor-style analytics for a Total Drama simulation.
 
 CRITICAL RULES FOR ALL FIELDS:
+
+EPISODE-SPECIFIC IMPACT (episodeImpact):
+- This object answers only: "What happened and changed DURING THIS EPISODE?"
+- Do not summarize the contestant's whole season and do not repeat generic current positioning.
+- turningPoint: the single recorded moment that most changed this episode's direction. If no decisive turn is supported, say "No single turning point was established" and explain why.
+- voteStory.initialPlan: the plan or competing plans visible before Tribal. decisiveShift: the event, pitch, advantage, defection, or failure that changed the result. finalOutcome: the actual result and immediate strategic meaning. Never invent a hidden flip.
+- gainers / losers: maximum 3 each. Describe position gained or lost THIS EPISODE and give concrete evidence from the supplied summary. Use [] if nobody is clearly supported.
+- changes: only include a before→after transition supported by this episode. dimension should be a plain category such as "alliance", "trust", "target", "power", "reputation", or "advantage". cause must name the episode event. Use [] instead of guessing.
+- unresolvedQuestions: 1-3 open questions created by this episode that remain unresolved at its end. Phrase as questions; do not answer them with future knowledge. Use [] if none are supported.
+- Do not use bootPredictions, season-wide power, or long-term win equity inside episodeImpact.
+- All claims must be chronologically honest and based on the supplied episode summary.
 
 BOOT PREDICTIONS (bootPredictions):
 - MANDATORY: Generate predictions for EVERY SINGLE active player

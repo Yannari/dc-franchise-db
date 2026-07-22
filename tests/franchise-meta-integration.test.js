@@ -38,23 +38,27 @@ describe('franchise meta end-to-end', () => {
   }, 120000);
 
   it('meta effects shift, never dominate: returnees are not auto-booted or auto-winners over 6 seasons', () => {
-    // Balance smoke: pre-seed a decorated returnee, run several seasons,
-    // check they neither always go first nor always win. seasonNumber 0 keeps
-    // each iteration from polluting the ledger.
+    // Balance smoke: pre-seed a decorated returnee, run several seasons, check
+    // they neither always go first nor always win. Each iteration re-seeds the
+    // ledger to the SAME single-season history so a real (non-zero) dummy
+    // seasonNumber can be used — recording fires but next iteration's reseed
+    // wipes it, giving identical inputs every run with zero cross-iteration
+    // pollution and no "Season number not set" console noise.
+    const seedLedger = () => setFranchiseLedger({ seasons: { '30': { seasonName: 'S30', players: {
+      'MetaVet': { placement: 1, winner: true, finalist: true, episodesLasted: 16, blindsided: false,
+        blindsidedBy: [], blindsidesAuthored: 3, idolsFound: 2, idolsPlayed: 2, idoledOut: false,
+        betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 5, schemesCaught: 0 }
+    } } } });
     let firstBoots = 0, wins = 0;
     const N = 6;
     for (let s = 0; s < N; s++) {
-      setFranchiseLedger({ seasons: { '30': { seasonName: 'S30', players: {
-        'MetaVet': { placement: 1, winner: true, finalist: true, episodesLasted: 16, blindsided: false,
-          blindsidedBy: [], blindsidesAuthored: 3, idolsFound: 2, idolsPlayed: 2, idoledOut: false,
-          betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 5, schemesCaught: 0 }
-      } } } });
+      seedLedger();
       const cast = makeCast(12);
       cast[0].name = 'MetaVet'; cast[0].isReturnee = true;
-      runOneSeason({ seasonNumber: 0, franchiseMeta: true }, 12, cast);
+      runOneSeason({ seasonNumber: 900 + s, franchiseMeta: true }, 12, cast);
       const firstBoot = core.gs.episodeHistory.map(ep => ep.eliminated).find(Boolean);
       if (firstBoot === 'MetaVet') firstBoots++;
-      if ((core.gs.winner || core.gs.finaleResult?.winner) === 'MetaVet') wins++;
+      if (core.gs.finaleResult?.winner === 'MetaVet') wins++;
     }
     expect(firstBoots).toBeLessThan(N); // elevated threat, but not a scripted first boot
     expect(wins).toBeLessThan(N);

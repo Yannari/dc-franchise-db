@@ -6,18 +6,24 @@ import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
 import { _checkMoleExposure } from './camp-events.js';
+import { setFranchiseLedger, franchiseLedger } from './franchise-meta.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'gameState';
+const LEDGER_STORE = 'franchiseLedger';
 let _db = null;
 
 export function _openDB() {
   if (_db) return Promise.resolve(_db);
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => { req.result.createObjectStore(STORE_NAME); };
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+      if (!db.objectStoreNames.contains(LEDGER_STORE)) db.createObjectStore(LEDGER_STORE);
+    };
     req.onsuccess = () => { _db = req.result; resolve(_db); };
     req.onerror = () => reject(req.error);
   });
@@ -66,6 +72,37 @@ export function _idbKeys() {
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   }));
+}
+
+export function _idbLedgerPut(key, value) {
+  return _openDB().then(db => new Promise((resolve) => {
+    const tx = db.transaction(LEDGER_STORE, 'readwrite');
+    tx.objectStore(LEDGER_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  })).catch(() => {});
+}
+
+export function _idbLedgerGet(key) {
+  return _openDB().then(db => new Promise((resolve) => {
+    const tx = db.transaction(LEDGER_STORE, 'readonly');
+    const req = tx.objectStore(LEDGER_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(undefined);
+  })).catch(() => undefined);
+}
+
+// Load ledger into franchise-meta's memory at startup. Never blocks the sim.
+export async function loadFranchiseLedgerFromDb() {
+  try {
+    const stored = await _idbLedgerGet('ledger');
+    if (stored && stored.seasons) setFranchiseLedger(stored);
+  } catch (e) { console.warn('Franchise ledger load failed — starting empty.', e); }
+}
+
+export async function persistFranchiseLedger() {
+  try { await _idbLedgerPut('ledger', JSON.parse(JSON.stringify(franchiseLedger))); }
+  catch (e) { console.warn('Franchise ledger save failed.', e); }
 }
 
 export function saveGameState() {

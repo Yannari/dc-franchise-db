@@ -125,6 +125,7 @@ import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
 import * as broadcastMod from './broadcast.js';
+import * as franchiseMetaMod from './franchise-meta.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -208,6 +209,7 @@ const extractedModules = [
   audioMod,
   recapMod,
   broadcastMod,
+  franchiseMetaMod,
 ];
 
 for (const mod of extractedModules) {
@@ -309,6 +311,8 @@ async function init() {
   buildStatSliders();
   buildAdvantageList();
   await loadAll();
+  // Load persistent cross-season history ledger (never blocks the sim)
+  savestateMod.loadFranchiseLedgerFromDb();
   renderCast();
   renderConfig();
   renderRelList();

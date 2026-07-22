@@ -281,7 +281,9 @@ function _bootOf(ep) {
 }
 
 export function deriveSeasonRecord() {
-  const seasonNum = seasonConfig?.seasonNumber || 0;
+  // Prefer the season number stamped ON the save (self-identifying — set by
+  // initGameState); fall back to current config for pre-stamp legacy saves.
+  const seasonNum = gs?.seasonNumber || seasonConfig?.seasonNumber || 0;
   if (!seasonNum || !gs) return null;
   const hist = gs.episodeHistory || [];
   const fin = gs.finaleResult || {};
@@ -358,11 +360,12 @@ export function deriveSeasonRecord() {
 }
 
 // Idempotent: keyed by season number; live records always overwrite backfill.
-export function recordSeasonToLedger(_ep) {
-  if (seasonConfig?.franchiseMeta === false) return false;
+export function recordSeasonToLedger(_ep, source = 'live') {
+  if (seasonConfig?.franchiseMeta === false && source === 'live') return false;
   const rec = deriveSeasonRecord();
   if (!rec) return false;
-  franchiseLedger.seasons[String(seasonConfig.seasonNumber)] = rec;
+  rec.source = source; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
+  franchiseLedger.seasons[String(gs?.seasonNumber || seasonConfig.seasonNumber)] = rec;
   return true;
 }
 ```
@@ -602,11 +605,14 @@ Read `js/savestate.js:530-635`. After the hero/villain rivalry seeding block (en
 
 (`bKey` is already imported/available in savestate.js — verify; if not, import it from `./bonds.js`. Import `buildFranchiseMeta, META_WEIGHTS` from `./franchise-meta.js`.) Note: directional betrayal deltas both land on the same symmetric bond here (real bonds are symmetric); the asymmetry lives in the *perceived* layer via the profile flags — the victim's `blindsideWariness` — and in callback text. That matches how the sim models perception.
 
-Then inside the `setGs({ ... })` object (lines 587-635) add the field:
+Then inside the `setGs({ ... })` object (lines 587-635) add the fields:
 
 ```javascript
     franchiseMeta: _fMeta,
+    seasonNumber: seasonConfig?.seasonNumber || 0,  // saves become self-identifying (Task 8b relies on this)
 ```
+
+(If `initGameState` already sets a `seasonNumber` field on gs, keep the existing one — don't duplicate the key.)
 
 - [ ] **Step 6: Add config defaults (`js/core.js`)**
 
@@ -1125,6 +1131,81 @@ Open `simulator.html`. Verify: checkbox renders and persists; panel shows "0 sea
 ```
 git add js/franchise-meta.js js/cast-ui.js simulator.html tests/franchise-meta.test.js
 git commit -m "feat: franchise history UI - config toggle, history panel, backfill import, wipe"
+```
+
+---
+
+### Task 8b: Retroactive recording — record loaded savestate + mid-season apply
+
+**Files:**
+- Modify: `js/cast-ui.js` (two new functions)
+- Modify: `simulator.html` (two buttons next to the Task 8 controls)
+
+**Interfaces:**
+- Consumes: `recordSeasonToLedger(ep, source)` (Task 2), `buildFranchiseMeta` (Task 3), `franchiseLedger`, `persistFranchiseLedger` (Task 1), `renderFranchiseHistoryPanel` (Task 8).
+- Produces: `recordLoadedSeasonToHistory()` and `applyFranchiseMetaMidSeason()` in cast-ui.js, on `window` via the module spread.
+
+**Context:** The user's completed S10–S13 exist as savestates in the load-save list, made before saves were self-identifying. There is no "official savestate" marker — officialness is the user's choice: whichever finished save they load and record becomes that season's ledger entry (idempotent per season number, confirm before overwrite).
+
+- [ ] **Step 1: Implement `recordLoadedSeasonToHistory` in `js/cast-ui.js`**
+
+```javascript
+// Record whatever finished season is currently loaded into the franchise
+// ledger. Officialness = the user's choice of which save to load and record.
+export function recordLoadedSeasonToHistory() {
+  if (!gs || gs.phase !== 'complete') { alert('Load a FINISHED season savestate first (the finale must be complete).'); return; }
+  const seasonNum = gs.seasonNumber || seasonConfig?.seasonNumber || 0;
+  if (!seasonNum) { alert('This save has no season number. Set "Season Number" in the config to identify it, then click again.'); return; }
+  if (!gs.seasonNumber && !confirm(`This save predates season stamping. Record it as Season ${seasonNum} (from your config)?`)) return;
+  if (franchiseLedger.seasons[String(seasonNum)] && !confirm(`Season ${seasonNum} already has a recorded history. Overwrite it with this savestate?`)) return;
+  if (recordSeasonToLedger(null, 'manual')) {
+    persistFranchiseLedger();
+    renderFranchiseHistoryPanel();
+    alert(`Season ${seasonNum} recorded into franchise history (${Object.keys(franchiseLedger.seasons[String(seasonNum)].players).length} players).`);
+  } else {
+    alert('Could not derive a season record from this save.');
+  }
+}
+```
+
+(Imports: `recordSeasonToLedger` from `./franchise-meta.js` — extend the existing franchise-meta import line from Task 8.)
+
+- [ ] **Step 2: Implement `applyFranchiseMetaMidSeason` in `js/cast-ui.js`**
+
+For a season already in progress (like the user's S14): applies profiles so reputation threat, learned behavior, and narrative callbacks work for the REST of the season. Seeded starting bonds are intentionally skipped — the season's bonds have already evolved past episode 1.
+
+```javascript
+export function applyFranchiseMetaMidSeason() {
+  if (!gs || gs.phase === 'complete') { alert('No season in progress — load or start one first.'); return; }
+  let meta = null;
+  try { meta = buildFranchiseMeta(players, seasonConfig); } catch (e) { console.warn(e); }
+  if (!meta) { alert('No returnee history found. Backfill or record past seasons first, and make sure returnees are marked as returnees.'); return; }
+  gs.franchiseMeta = { profiles: meta.profiles, seededPairs: [] }; // no retroactive bond seeding
+  saveGameState();
+  alert(`Franchise history applied to ${Object.keys(meta.profiles).length} returnee(s) for the rest of this season (reputation, instincts, callbacks — starting bonds unchanged).`);
+}
+```
+
+(`saveGameState` is already available in cast-ui.js scope via window/module imports — mirror how other cast-ui functions persist gs; `buildFranchiseMeta` import from `./franchise-meta.js`.)
+
+- [ ] **Step 3: Add the buttons to `simulator.html`**
+
+Next to the Task 8 import/wipe buttons:
+
+```html
+<button onclick="recordLoadedSeasonToHistory()">📖 Record loaded season into history</button>
+<button onclick="applyFranchiseMetaMidSeason()">⚡ Apply history to current season</button>
+```
+
+- [ ] **Step 4: Manual verification**
+
+In the browser: (a) load a finished old savestate, set its season number in config if prompted, click Record — panel shows the season with full relationship facts; (b) load the in-progress S14 save, click Apply — confirm `gs.franchiseMeta.profiles` is populated (console) and a subsequent episode shows meta effects; (c) re-record the same season — confirm the overwrite prompt appears.
+
+- [ ] **Step 5: Commit**
+
+```
+git add js/cast-ui.js simulator.html
+git commit -m "feat: retroactive ledger recording from loaded saves + mid-season meta apply"
 ```
 
 ---

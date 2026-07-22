@@ -150,7 +150,7 @@ export function simulateSayCheese(ep) {
       else {
         // categorize the miss: nerve-limited → fear-face, snap-limited → blurry, very low → froze
         const nervePart = nerveOf(n) - TOWER_DROP - HFEAR[P[n].height] + settleOf(r); // scarier cords freeze more; airtime doesn't help you jump
-        if (nervePart + noise(1.5) < 1.2) cat = 'froze';
+        if (nervePart + noise(1.5) < -0.8) cat = 'froze';   // froze is the rare, dramatic beat — not the default miss
         else cat = (nerveOf(n) < snapOf(n)) ? 'fear' : (Math.random() < 0.5 ? 'blurry' : 'fear');
         sel = cat;
       }
@@ -185,12 +185,20 @@ export function simulateSayCheese(ep) {
           (x) => `${x} screams the entire way down — a great jump, a terrible selfie. Every ounce of the fear is right there on ${pronouns(x).posAdj} face.`,
           (x) => `The cord recoils and so does ${x}'s face: eyes shut, mouth open, white-knuckle terror. Not the fearless look ${H} is after.`,
           (x) => `${x} looked calm on the platform and lost it in freefall — the shot is all clenched jaw and saucer eyes. No good.`,
+          (x) => `${x} holds a brave smile right up to the drop — then gravity takes it, and the selfie freezes ${pronouns(x).obj} mid-gasp. Terror, framed and centered.`,
+          (x) => `Halfway down, ${x}'s nerve just evaporates; the shot is a snapshot of pure regret, eyebrows halfway up ${pronouns(x).posAdj} forehead. Rejected.`,
+          (x) => `${x} promised ${pronouns(x).ref} a cool, casual grin and delivered a wide-eyed shriek instead. The camera caught the shriek. Back up the ladder.`,
+          (x) => `The drop yanks a yelp out of ${x} and the phone captures it perfectly — every tendon in ${pronouns(x).posAdj} neck standing out. Nowhere near fearless.`,
         ] : [
           (x) => `${x} nails the nerve — steady face, no fear at all — but the shot comes out a smeared, motion-blurred mess. So close. Back up ${pronouns(x).sub} go${pronouns(x).sub === 'they' ? '' : 'es'}.`,
           (x) => `Fearless face, terrible timing: ${x}'s selfie is a blurry streak of sky and hair. No good, ${pronouns(x).sub === 'they' ? "they'll" : (pronouns(x).sub === 'she' ? "she'll" : "he'll")} have to redo it.`,
           (x) => `${x} keeps it cool the whole drop — and thumbs the shutter a half-second too early. The selfie's a blur of motion and disappointment.`,
           (x) => `Perfect composure, ruined by a shaky hand: ${x}'s photo is an abstract smear. Composure isn't the problem — the camera is.`,
           (x) => `${x} holds the fearless face beautifully, but the wind and the speed turn the selfie into soup. Rejected on a technicality.`,
+          (x) => `Cool as ice, ${x} — and the phone rockets out of frame at the worst instant. The selfie is half an ear and a lot of sky. Do-over.`,
+          (x) => `${x} nails the calm, botches the geometry: the shot's all forehead and thumb, ${pronouns(x).posAdj} grin somewhere off the bottom edge. No good.`,
+          (x) => `Fearless face, cursed timing — ${x}'s phone catches the exact frame between poses. A blur of chin and cord. Back up ${pronouns(x).sub} go${pronouns(x).sub === 'they' ? '' : 'es'}.`,
+          (x) => `${x} stays glassy-calm the whole plunge and then jabs the shutter a beat late; the selfie's a smear, like a photo of a photo underwater. Rejected.`,
         ], n);
       P[n].fails++;
       addBeat({ type: sabotaged ? 'sabo' : 'jump', kind: sabotaged ? 'sabo' : (cat === 'froze' ? 'fear' : 'fail'),
@@ -199,8 +207,8 @@ export function simulateSayCheese(ep) {
         badgeClass: sabotaged ? 'sabo' : (cat === 'froze' ? 'fear' : cat === 'blurry' ? 'fail' : 'jump'),
         selfie: cat === 'froze' ? null : sel, text: failText });
 
-      // social beat between jumps
-      if (Math.random() < 0.7) _social(r);
+      // social beat between jumps (kept occasional so the log doesn't drown in chatter)
+      if (Math.random() < 0.35) _social(r);
       if (winner) break;
     }
     if (!winner) _social(r); // guarantee a beat of life each round

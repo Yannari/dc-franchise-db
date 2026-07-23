@@ -282,38 +282,49 @@ export function renderEpisodeView(epRecord) {
   _otEl.value = _spoilerFree ? '' : (epRecord.summaryText || '');
   _otEl.style.display = '';
 
-  // PDF export buttons — only after season complete
+  // AI context is useful after every episode; final reports remain finale-only.
   let pdfWrap = document.getElementById('pdf-export-wrap');
-  if (gs.phase === 'complete' || gs.activePlayers?.length <= 1) {
+  const mkPdfBtn = (id, label, gradient, fn) => {
+    const b = document.createElement('button');
+    b.id = id;
+    b.className = 'btn';
+    b.style.cssText = `flex:1;min-width:180px;padding:8px 12px;background:linear-gradient(135deg,${gradient});color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;`;
+    b.textContent = label;
+    b.onclick = async () => {
+      b.disabled = true;
+      try {
+        await fn(s => { b.textContent = s; });
+        b.textContent = 'Done!';
+        setTimeout(() => { b.textContent = label; b.disabled = false; }, 3000);
+      } catch (err) {
+        console.error(err);
+        b.textContent = 'Failed';
+        setTimeout(() => { b.textContent = label; b.disabled = false; }, 4000);
+      }
+    };
+    return b;
+  };
+  if (gs.episodeHistory?.length) {
     if (!pdfWrap) {
       pdfWrap = document.createElement('div');
       pdfWrap.id = 'pdf-export-wrap';
       pdfWrap.style.cssText = 'display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;';
 
-      const mkBtn = (id, label, gradient, fn) => {
-        const b = document.createElement('button');
-        b.id = id;
-        b.className = 'btn';
-        b.style.cssText = `flex:1;min-width:180px;padding:8px 12px;background:linear-gradient(135deg,${gradient});color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;`;
-        b.textContent = label;
-        b.onclick = async () => {
-          b.disabled = true;
-          try {
-            await fn(s => { b.textContent = s; });
-            b.textContent = 'Done!';
-            setTimeout(() => { b.textContent = label; b.disabled = false; }, 3000);
-          } catch (err) {
-            console.error(err);
-            b.textContent = 'Failed';
-            setTimeout(() => { b.textContent = label; b.disabled = false; }, 4000);
-          }
-        };
-        return b;
-      };
-
-      pdfWrap.appendChild(mkBtn('pdf-summary-btn', 'Export Summary PDF', '#e44d26,#f16529', window.exportSummaryPDF));
-      pdfWrap.appendChild(mkBtn('pdf-stats-btn', 'Export Statistics PDF', '#2563eb,#3b82f6', window.exportStatisticsPDF));
+      pdfWrap.appendChild(mkPdfBtn('pdf-ai-context-btn', 'Export AI Context PDF', '#7c3aed,#8b5cf6', window.exportAIContextPDF));
       _otEl.parentElement.appendChild(pdfWrap);
+    }
+
+    const seasonComplete = gs.phase === 'complete' || gs.activePlayers?.length <= 1;
+    let summaryBtn = document.getElementById('pdf-summary-btn');
+    let statsBtn = document.getElementById('pdf-stats-btn');
+    if (seasonComplete && !summaryBtn) {
+      summaryBtn = mkPdfBtn('pdf-summary-btn', 'Export Final Summary PDF', '#e44d26,#f16529', window.exportSummaryPDF);
+      statsBtn = mkPdfBtn('pdf-stats-btn', 'Export Final Statistics PDF', '#2563eb,#3b82f6', window.exportStatisticsPDF);
+      pdfWrap.appendChild(summaryBtn);
+      pdfWrap.appendChild(statsBtn);
+    } else if (!seasonComplete) {
+      summaryBtn?.remove();
+      statsBtn?.remove();
     }
   } else if (pdfWrap) {
     pdfWrap.remove();

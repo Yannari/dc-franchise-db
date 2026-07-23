@@ -2276,6 +2276,107 @@ function _loadJsPDF() {
   });
 }
 
+// Factual handoff for an AI writer. This deliberately includes the completed
+// episode summaries plus the live game state; it is not an end-of-season report.
+export function buildAIContextText() {
+  const history = gs?.episodeHistory || [];
+  if (!history.length) return '';
+  const seasonNum = seasonConfig?.seasonNumber || 0;
+  const title = seasonConfig?.title || seasonConfig?.name || `Total Drama Season ${seasonNum || '?'}`;
+  const through = Math.max(...history.map(ep => Number(ep.num) || 0));
+  const names = list => (list || []).map(p => typeof p === 'string' ? p : p?.name).filter(Boolean);
+  const active = names(gs?.activePlayers);
+  const eliminated = history.flatMap(ep => [ep.firstEliminated, ep.eliminated, ep.suddenDeathEliminated])
+    .filter((name, i, all) => name && all.indexOf(name) === i);
+  const out = [
+    'AI WRITING CONTEXT', title,
+    `Simulator record complete through Episode ${through}`,
+    `Latest simulated episode package: Episode ${through}`, '',
+    'HOW TO USE THIS DOCUMENT',
+    'This is factual continuity from the simulator, not a prose style template.',
+    'Use it to remember events, relationships, alliances, advantages, strategy, votes, eliminations, and unresolved developments.',
+    'A forecast or proposed target is not guaranteed to become the final ballot. Characters know only what the record says they learned.',
+    'The next episode package remains authoritative for its locked challenge, twist, advantage, vote, and elimination results.', '',
+    `If writing Episode ${through}, use Episodes 1-${Math.max(through - 1, 0)} as prior continuity and the Episode ${through} section as the current locked package.`,
+    `If Episode ${through} is already written, use the entire document as prior continuity and supply Episode ${through + 1}'s package separately.`, '',
+    'CURRENT GAME STATE',
+    `Phase: ${gs?.phase || 'in progress'}`,
+    `Players remaining (${active.length}): ${active.join(', ') || 'Not recorded'}`,
+    `Eliminated so far (${eliminated.length}): ${eliminated.join(', ') || 'None'}`,
+  ];
+
+  const tribes = (gs?.tribes || []).filter(t => t && (t.name || t.members?.length));
+  if (tribes.length) {
+    out.push('', 'CURRENT TRIBES / GROUPS');
+    tribes.forEach(t => out.push(`${t.name || 'Unnamed group'}: ${names(t.members).join(', ') || 'No active members recorded'}`));
+  }
+  const alliances = (gs?.namedAlliances || []).filter(a => a && a.active !== false && (a.name || a.members?.length));
+  if (alliances.length) {
+    out.push('', 'CURRENT ALLIANCES / DEALS');
+    alliances.forEach(a => out.push(`${a.name || 'Unnamed alliance'}: ${names(a.members).join(', ') || 'Members not recorded'}`));
+  }
+  const advantages = (gs?.advantages || []).filter(a => a?.holder && a.used !== true && a.played !== true);
+  if (advantages.length) {
+    out.push('', 'ADVANTAGES CURRENTLY IN PLAY');
+    advantages.forEach(a => out.push(`${a.holder}: ${a.label || a.name || a.type || 'Advantage'}`));
+  }
+
+  out.push('', 'EPISODE-BY-EPISODE SIMULATOR RECORD');
+  [...history].sort((a, b) => (Number(a.num) || 0) - (Number(b.num) || 0)).forEach(ep => {
+    out.push('', `===== EPISODE ${ep.num || '?'} =====`,
+      (ep.summaryText || '').trim() || '(No simulator summary was saved for this episode.)');
+  });
+  return out.join('\n');
+}
+
+export async function exportAIContextPDF(onStatus) {
+  const status = onStatus || (() => {});
+  const context = buildAIContextText();
+  if (!context) { alert('Simulate at least one episode before exporting AI context.'); return; }
+  status('Loading PDF library...');
+  const { jsPDF } = await _loadJsPDF();
+  status('Building AI context...');
+
+  const history = gs.episodeHistory || [];
+  const title = seasonConfig?.title || seasonConfig?.name || 'Total Drama Season';
+  const through = Math.max(...history.map(ep => Number(ep.num) || 0));
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  let y = 22, page = 1;
+  const safe = value => String(value ?? '').replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"').replace(/[\u2013\u2014]/g, '-')
+    .replace(/\u2026/g, '...').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '');
+  const header = continued => {
+    doc.setFillColor(22, 27, 34); doc.rect(0, 0, W, 16, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+    doc.text(safe(`${title} - AI WRITING CONTEXT${continued ? ' (CONT.)' : ''}`), W / 2, 10, { align: 'center' });
+    doc.setTextColor(110, 118, 129); doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
+    doc.text(`Page ${page}`, W - M, 291, { align: 'right' }); y = 22;
+  };
+  const nextPage = () => { doc.addPage(); page++; header(true); };
+  header(false);
+
+  for (const raw of context.split('\n')) {
+    const line = safe(raw);
+    const major = line === 'AI WRITING CONTEXT' || /^===== EPISODE /.test(line);
+    const section = /^[A-Z][A-Z /-]{3,}$/.test(line) && !major;
+    if (!line.trim()) { y += 2.2; continue; }
+    if ((major && y > 245) || (section && y > 265)) nextPage();
+    doc.setFont('helvetica', major || section ? 'bold' : 'normal');
+    doc.setFontSize(major ? 11 : section ? 9 : 7.5);
+    if (major) doc.setTextColor(124, 58, 237);
+    else if (section) doc.setTextColor(55, 65, 81);
+    else doc.setTextColor(31, 35, 48);
+    const spacing = major ? 5.2 : section ? 4.6 : 3.5;
+    for (const wrapped of doc.splitTextToSize(line, W - 2 * M)) {
+      if (y > 283) nextPage();
+      doc.text(wrapped, M, y); y += spacing;
+    }
+  }
+  status('Saving AI context PDF...');
+  doc.save(`${_slug(title) || 'season'}-ai-context-through-episode-${through}.pdf`);
+}
+
 export async function exportStatisticsPDF(onStatus) {
   const _status = onStatus || (() => {});
   _status('Loading PDF library...');

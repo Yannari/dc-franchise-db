@@ -77,6 +77,9 @@ export function renderFranchiseTab() {
   if (!host) return;
   _ensureLegacyCss();
   activeFranchise(); // normalise
+  // .fr-wrap is the scrolling container — preserve its position across rebuilds
+  // so actions mid-page (toggles, locks, deletes) don't fling the user to the top.
+  const prevScroll = host.querySelector('.fr-wrap')?.scrollTop || 0;
   host.innerHTML = `<div class="fr-wrap">
     ${_renderHeader()}
     ${_renderTimeline()}
@@ -86,6 +89,7 @@ export function renderFranchiseTab() {
     ${_renderDropzone()}
     ${_renderPulse()}
   </div>`;
+  if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
 }
 
 // Shared entry point: any player name/portrait in the tab is clickable and opens
@@ -406,14 +410,14 @@ function _renderScout() {
           ${_winnerPortrait(x.name, false, x.slug)}
           <span class="fr-scout-body"><span class="fr-scout-name">${_esc(x.name)}</span><span class="fr-scout-why">${_esc(x.why)}</span></span>
         </div>`).join('');
-    return `<div class="fr-pool fr-pool-${key} ${isOpen ? 'open' : ''}">
+    return `<div class="fr-pool fr-pool-${key} ${isOpen ? 'open' : ''}" id="fr-pool-${key}">
       <button class="fr-pool-head fr-pool-toggle" onclick="frTogglePool('${key}')" aria-expanded="${isOpen}">
         <span class="fr-pool-chev">${isOpen ? '▾' : '▸'}</span>
         <div class="fr-pool-titles"><span class="fr-pool-label">${meta.icon} ${_esc(meta.label)}</span><span class="fr-pool-blurb">${_esc(meta.blurb)}</span></div>
         <span class="fr-pool-count">${list.length}</span>
         ${key !== 'feuds' ? `<span class="fr-btn fr-btn-sm fr-copy-btn" onclick="event.stopPropagation();frCopyPool('${key}')" title="Copy this pool as a cast list">📋</span>` : `<span class="fr-btn fr-btn-sm fr-copy-btn" onclick="event.stopPropagation();frCopyPool('feuds')" title="Copy both sides of every feud">📋</span>`}
       </button>
-      ${isOpen ? `<div class="fr-pool-chips">${chips}</div>` : ''}
+      <div class="fr-pool-chips" style="display:${isOpen ? '' : 'none'}">${chips}</div>
     </div>`;
   }).join('');
   return `<div class="vp-section-header gold">All-Stars Scout</div>
@@ -424,10 +428,17 @@ function _renderScout() {
     <div class="fr-scout">${rows}</div>`;
 }
 
+// DOM-only toggle — never re-render the tab (a rebuild resets .fr-wrap's scroll).
 export function frTogglePool(key) {
   const open = _openPools();
-  if (open.has(key)) open.delete(key); else open.add(key);
-  renderFranchiseTab();
+  const isOpen = !open.has(key);
+  if (isOpen) open.add(key); else open.delete(key);
+  const pool = document.getElementById('fr-pool-' + key);
+  if (!pool) return;
+  pool.classList.toggle('open', isOpen);
+  const chips = pool.querySelector('.fr-pool-chips'); if (chips) chips.style.display = isOpen ? '' : 'none';
+  const chev = pool.querySelector('.fr-pool-chev'); if (chev) chev.textContent = isOpen ? '▾' : '▸';
+  const btn = pool.querySelector('.fr-pool-toggle'); if (btn) btn.setAttribute('aria-expanded', String(isOpen));
 }
 
 // ── CSS injection (one-time; simulator.html stays untouched) ───────────
@@ -514,7 +525,11 @@ const _LEGACY_CSS = `
 
 /* All-Stars Scout */
 .fr-scout-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-.fr-scout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+/* single column: accordion rows want full width, and a 2-col grid of uneven
+   collapsed/expanded cards left hole-y empty cells */
+.fr-scout { display: flex; flex-direction: column; gap: 10px; }
+/* breathing room between the content and the scrollbar */
+.fr-wrap { padding-right: 44px !important; }
 .fr-pool { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0; border-top: 3px solid var(--accent-gold); overflow: hidden; }
 .fr-pool-unfinishedBusiness { border-top-color: var(--accent-fire); }
 .fr-pool-fallenAngels { border-top-color: #b9c2cc; }

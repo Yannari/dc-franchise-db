@@ -211,11 +211,12 @@ function _portrait(p) {
 // 9-stat sheet as a compact grid so casts can be compared at a glance.
 function _topStats(stats) {
   if (typeof window !== 'undefined' && window._crShowAllStats) {
+    // No bars here — at 3 columns × 9 stats they collapse into noise. A clean
+    // "LABEL value" pair per cell reads at a glance.
     return `<span class="cr-allstats">` + STATS.map(s => {
       const val = stats?.[s.key] || 0;
       return `<span class="cr-as" title="${esc(s.name || s.label)}: ${val}">` +
         `<span class="cr-as-k" style="color:${s.color}">${s.label}</span>` +
-        `<span class="cr-as-bar"><span style="width:${val * 10}%;background:${s.color}"></span></span>` +
         `<span class="cr-as-v">${val}</span></span>`;
     }).join('') + `</span>`;
   }
@@ -343,6 +344,10 @@ export function crRenderGrid() {
   const filters = _readFilters();
   const view = window._crView || 'grid';
   const shown = castRoomFilter(players, filters);
+  // header count — keep it live on EVERY grid render (it previously only
+  // updated on the re-render branch, so first paint showed "0 players")
+  const hc = document.getElementById('cr-header-count');
+  if (hc) hc.textContent = `${players.length} player${players.length === 1 ? '' : 's'}`;
   // counter + clear chip
   const fc = document.getElementById('cr-filter-count');
   const clr = document.getElementById('cr-clear');
@@ -686,7 +691,11 @@ export function crCloseManage() { const m = document.getElementById('cr-manage-m
 // ── Escape closes the drawer; Tab is trapped inside it while open ──
 if (typeof document !== 'undefined') {
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && document.getElementById('cr-drawer')?.classList.contains('open')) { crCloseDrawer(); return; }
+    if (e.key === 'Escape') {
+      const menu = document.getElementById('cr-manage-menu');
+      if (menu && !menu.hidden) { crCloseManage(); return; }
+      if (document.getElementById('cr-drawer')?.classList.contains('open')) { crCloseDrawer(); return; }
+    }
     if (e.key === 'Tab') crDrawerTrap(e);
   });
 }
@@ -732,7 +741,10 @@ const CR_CSS = `
 .cr-manage-wrap { position:relative; }
 .cr-manage-btn { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; font-family:inherit; }
 .cr-manage-btn:hover { border-color:var(--muted); }
-.cr-manage-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:60; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:6px; min-width:190px; box-shadow:0 12px 32px rgba(0,0,0,.4); display:flex; flex-direction:column; gap:1px; }
+.cr-manage-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:60; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:6px; min-width:190px; max-height:70vh; overflow-y:auto; box-shadow:0 12px 32px rgba(0,0,0,.4); display:flex; flex-direction:column; gap:1px; }
+/* An author display rule overrides [hidden]'s UA display:none — without this
+   the menu was permanently visible from page load. */
+.cr-manage-menu[hidden] { display:none !important; }
 .cr-menu-group { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); padding:8px 10px 3px; }
 .cr-menu-item { text-align:left; background:transparent; color:var(--text); border:0; border-radius:6px; padding:7px 10px; font-size:13px; cursor:pointer; font-family:inherit; }
 .cr-menu-item:hover { background:var(--surface2); }
@@ -776,13 +788,12 @@ const CR_CSS = `
 .cr-stat-bar { flex:1; height:4px; background:var(--surface2); border-radius:3px; overflow:hidden; }
 .cr-stat-bar > span { display:block; height:100%; border-radius:3px; }
 .cr-stat-v { width:14px; text-align:right; color:var(--muted); }
-/* full 9-stat sheet (⚏ Stats toggle) */
-.cr-allstats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px 7px; width:100%; margin-top:2px; }
-.cr-as { display:flex; align-items:center; gap:3px; font-size:9px; min-width:0; }
-.cr-as-k { font-family:var(--font-mono,monospace); width:22px; flex-shrink:0; }
-.cr-as-bar { flex:1; height:3px; background:var(--surface2); border-radius:2px; overflow:hidden; min-width:8px; }
-.cr-as-bar > span { display:block; height:100%; border-radius:2px; }
-.cr-as-v { width:11px; text-align:right; color:var(--muted); flex-shrink:0; }
+/* full 9-stat sheet (⚏ Stats toggle) — barless label/value pairs with real
+   breathing room; bars at this density collapsed into unreadable noise */
+.cr-allstats { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px 12px; width:100%; margin-top:4px; padding-top:6px; border-top:1px solid var(--border); }
+.cr-as { display:flex; align-items:baseline; justify-content:space-between; gap:4px; min-width:0; }
+.cr-as-k { font-family:var(--font-mono,monospace); font-size:9px; letter-spacing:.4px; opacity:.85; }
+.cr-as-v { font-size:12px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
 .cr-statsbtn { margin-left:2px; }
 .cr-threat { font-size:10px; color:var(--muted); display:flex; align-items:center; gap:5px; }
 .cr-dot { width:7px; height:7px; border-radius:50%; }

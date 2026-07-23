@@ -11,6 +11,12 @@ describe('cast-room CSS tab gating', () => {
     expect(src).not.toMatch(/#tab-cast\.cast-room-active\s*\{\s*display/);
     expect(src).toMatch(/#tab-cast\.tab-content\.active\.cast-room-active\s*\{\s*display:\s*block/);
   });
+  it('manage menu respects [hidden] despite its display:flex rule', () => {
+    // An author display rule overrides [hidden]'s UA display:none — without the
+    // explicit [hidden] rule the menu was permanently visible from page load.
+    const src = readFileSync('js/cast-room.js', 'utf8');
+    expect(src).toMatch(/\.cr-manage-menu\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  });
 });
 import {
   castRoomFilter, balanceTribes, randomizeTribes, snakeDraft, castWarnings, renderCastRoom,

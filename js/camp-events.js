@@ -3411,13 +3411,17 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
   const _fm = gs.franchiseMeta;
   if (_fm && group.length >= 2) {
     if (!gs._metaCalloutsFired) gs._metaCalloutsFired = {};
+    // Decaying frequency: the "everyone's catching up" wave belongs to the
+    // premiere episodes. 100% weight at ep 1 tapering ~8%/episode to a 30%
+    // floor, so only the juiciest leftover history surfaces late-game.
+    const _metaDecay = Math.max(0.3, 1 - (gs.episode || 0) * 0.08);
     const _pairs = (_fm.seededPairs || []).filter(sp =>
       // Skip betrayer-side duplicate of a betrayal pair (wronged === false) so one betrayal fires one event.
       sp.wronged !== false &&
       group.includes(sp.a) && group.includes(sp.b) &&
       !gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind]);
     for (const sp of _pairs) {
-      if (Math.random() > 0.25) continue; // ~1-2 fire per season, spread out
+      if (Math.random() > 0.25 * _metaDecay) continue; // early-season wave, rare late
       gs._metaCalloutsFired[sp.a + '||' + sp.b + '::' + sp.kind] = true;
       const A = sp.a, B = sp.b, pa = pronouns(A);
       if (sp.kind === 'betrayal' || sp.kind === 'blindside') {
@@ -3466,7 +3470,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const _prof = _fm.profiles?.[T];
       if (!_prof || _prof.repScore < 0.5) continue;
       const _tKey = 'threatcall::' + T;
-      if (gs._metaCalloutsFired[_tKey] || Math.random() > 0.2) continue;
+      if (gs._metaCalloutsFired[_tKey] || Math.random() > 0.2 * _metaDecay) continue;
       const O = group.filter(n => n !== T && (_fm.profiles?.[n]?.repScore || 0) < 0.5)
         .sort((x, y) => (pStats(y).strategic + pStats(y).intuition) - (pStats(x).strategic + pStats(x).intuition))[0];
       if (!O) continue;
@@ -3495,7 +3499,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       const A = _cands.sort((x, y) => (pStats(y).intuition + pStats(y).mental) - (pStats(x).intuition + pStats(x).mental))[0];
       if (!A) continue;
       const _dKey = 'distrust::' + A + '>>' + T;
-      if (gs._metaCalloutsFired[_dKey] || Math.random() > 0.18) continue;
+      if (gs._metaCalloutsFired[_dKey] || Math.random() > 0.18 * _metaDecay) continue;
       gs._metaCalloutsFired[_dKey] = true;
       addBond(A, T, -0.5);
       events.push({ type: 'metaDistrust', players: [A, T],
@@ -3518,7 +3522,7 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
       if (!group.includes(sp.a) || !group.includes(sp.b)) continue;
       const _rKey = 'rekindle::' + sp.a + '||' + sp.b;
       if (gs._metaCalloutsFired[_rKey]) continue;
-      if (Math.random() > (sp.kind === 'showmance-intact' ? 0.3 : 0.12)) continue;
+      if (Math.random() > (sp.kind === 'showmance-intact' ? 0.3 : 0.12) * _metaDecay) continue;
       gs._metaCalloutsFired[_rKey] = true; // one attempt per season, sparked or not
       const _sparked = (typeof window !== 'undefined' && typeof window._challengeRomanceSpark === 'function')
         ? window._challengeRomanceSpark(sp.a, sp.b, null, null, null) : false;

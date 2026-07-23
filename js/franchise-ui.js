@@ -80,7 +80,7 @@ export function renderFranchiseTab() {
   // .fr-wrap is the scrolling container — preserve its position across rebuilds
   // so actions mid-page (toggles, locks, deletes) don't fling the user to the top.
   const prevScroll = host.querySelector('.fr-wrap')?.scrollTop || 0;
-  host.innerHTML = `<div class="fr-wrap">
+  host.innerHTML = `<div class="fr-wrap"><div class="fr-shell">
     ${_renderHeader()}
     ${_renderTimeline()}
     ${_renderHallOfFame()}
@@ -88,7 +88,7 @@ export function renderFranchiseTab() {
     ${_renderScout()}
     ${_renderDropzone()}
     ${_renderPulse()}
-  </div>`;
+  </div></div>`;
   if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
 }
 
@@ -525,11 +525,15 @@ const _LEGACY_CSS = `
 
 /* All-Stars Scout */
 .fr-scout-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-/* single column: accordion rows want full width, and a 2-col grid of uneven
-   collapsed/expanded cards left hole-y empty cells */
-.fr-scout { display: flex; flex-direction: column; gap: 10px; }
-/* breathing room between the content and the scrollbar */
-.fr-wrap { padding-right: 44px !important; }
+/* Season Overview pattern: the wrap scrolls at FULL tab width (scrollbar at the
+   screen edge), while the centered .fr-shell holds the content column — so text
+   never crowds the scrollbar. Overrides the base .fr-wrap in simulator.html. */
+.fr-wrap { max-width: none !important; padding: 26px 14px 60px !important; }
+.fr-shell { max-width: 1180px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+/* 3-column pool grid; align-items:start keeps collapsed rows compact when a
+   neighbor in the same row is expanded */
+.fr-scout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1000px) { .fr-scout { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
 .fr-pool { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0; border-top: 3px solid var(--accent-gold); overflow: hidden; }
 .fr-pool-unfinishedBusiness { border-top-color: var(--accent-fire); }
 .fr-pool-fallenAngels { border-top-color: #b9c2cc; }

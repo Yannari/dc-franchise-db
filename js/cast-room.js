@@ -169,7 +169,7 @@ export function castWarnings(pool, rels, configuredTribes) {
 // RENDER LAYER
 // ══════════════════════════════════════════════════════════════════════
 
-const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 // Distinct tribe names actually present in the cast.
 function _castTribeNames() { return [...new Set(players.map(p => p.tribe).filter(Boolean))]; }
@@ -248,18 +248,27 @@ function _tribeSelect(p) {
     onclick="event.stopPropagation()" onchange="crChangeTribe(event)">${opts}</select>`;
 }
 
-function _readFilters() {
-  const g = id => document.getElementById(id);
-  return {
-    search: g('cr-f-search')?.value || '',
-    archetype: g('cr-f-arch')?.value || '',
-    tribe: g('cr-f-tribe')?.value || '',
-    returnee: g('cr-f-ret')?.value || 'all',
-    gender: g('cr-f-gender')?.value || '',
-    seasons: g('cr-f-seasons')?.value || '',
-    seasonsOf: _seasonsOf,
-  };
+// Persistent filter state — the SINGLE source of truth (mirrors how _crPreserve is
+// kept on window). Survives every re-render so search/dropdowns are not wiped when
+// the filter bar is rebuilt after a drag-drop, tool run, or save.
+function _getFilters() {
+  if (!window._crFilters) window._crFilters = { search: '', archetype: '', tribe: '', returnee: 'all', gender: '', seasons: '' };
+  return window._crFilters;
 }
+// Pull the live DOM values into the persistent state (called from input handlers).
+function _syncFiltersFromDOM() {
+  const g = id => document.getElementById(id);
+  const f = _getFilters();
+  if (g('cr-f-search')) f.search = g('cr-f-search').value;
+  if (g('cr-f-arch')) f.archetype = g('cr-f-arch').value;
+  if (g('cr-f-tribe')) f.tribe = g('cr-f-tribe').value;
+  if (g('cr-f-ret')) f.returnee = g('cr-f-ret').value;
+  if (g('cr-f-gender')) f.gender = g('cr-f-gender').value;
+  if (g('cr-f-seasons')) f.seasons = g('cr-f-seasons').value;
+  return f;
+}
+// Read filters for the grid — always from persistent state, never the DOM.
+function _readFilters() { return { ..._getFilters(), seasonsOf: _seasonsOf }; }
 
 function _activeFilterCount(f) {
   let n = 0;
@@ -272,26 +281,25 @@ function _activeFilterCount(f) {
   return n;
 }
 
-// ── Filter bar (built once per full render; inputs preserved during typing) ──
+// ── Filter bar — rendered FROM persistent state so a rebuild reflects the user's
+//    current search text + dropdown selections (values/selected attributes). ──
 function _filterBarHTML() {
-  const archOpts = ['<option value="">All archetypes</option>']
-    .concat(Object.keys(ARCHETYPES).map(k => `<option value="${k}">${ARCHETYPE_NAMES[k] || k}</option>`)).join('');
-  const tribeNames = _castTribeNames();
-  const tribeOpts = ['<option value="">All tribes</option>', '<option value="__none__">No tribe</option>']
-    .concat(tribeNames.map(n => `<option value="${esc(n)}">${esc(n)}</option>`)).join('');
+  const f = _getFilters();
+  const opt = (v, label, sel) => `<option value="${esc(v)}"${sel === v ? ' selected' : ''}>${label}</option>`;
+  const archOpts = [opt('', 'All archetypes', f.archetype)]
+    .concat(Object.keys(ARCHETYPES).map(k => opt(k, esc(ARCHETYPE_NAMES[k] || k), f.archetype))).join('');
+  const tribeOpts = [opt('', 'All tribes', f.tribe), opt('__none__', 'No tribe', f.tribe)]
+    .concat(_castTribeNames().map(n => opt(n, esc(n), f.tribe))).join('');
+  const retOpts = [opt('all', 'All players', f.returnee), opt('returning', 'Returning', f.returnee), opt('new', 'New', f.returnee)].join('');
+  const genderOpts = [opt('', 'Any gender', f.gender), opt('m', 'He/Him', f.gender), opt('f', 'She/Her', f.gender), opt('nb', 'They/Them', f.gender)].join('');
+  const seasonsOpts = [opt('', 'Any experience', f.seasons), opt('0', 'Rookies (0)', f.seasons), opt('1', '1 season', f.seasons), opt('2+', 'Veterans (2+)', f.seasons)].join('');
   return `<div class="cr-filters" id="cr-filters">
-    <input id="cr-f-search" class="cr-input" type="text" placeholder="Search name…" aria-label="Search cast by name" oninput="crRenderGrid()">
-    <select id="cr-f-arch" class="cr-select" aria-label="Filter by archetype" onchange="crRenderGrid()">${archOpts}</select>
-    <select id="cr-f-tribe" class="cr-select" aria-label="Filter by tribe" onchange="crRenderGrid()">${tribeOpts}</select>
-    <select id="cr-f-ret" class="cr-select" aria-label="Filter by returnee status" onchange="crRenderGrid()">
-      <option value="all">All players</option><option value="returning">Returning</option><option value="new">New</option>
-    </select>
-    <select id="cr-f-gender" class="cr-select" aria-label="Filter by gender" onchange="crRenderGrid()">
-      <option value="">Any gender</option><option value="m">He/Him</option><option value="f">She/Her</option><option value="nb">They/Them</option>
-    </select>
-    <select id="cr-f-seasons" class="cr-select" aria-label="Filter by seasons played" onchange="crRenderGrid()">
-      <option value="">Any experience</option><option value="0">Rookies (0)</option><option value="1">1 season</option><option value="2+">Veterans (2+)</option>
-    </select>
+    <input id="cr-f-search" class="cr-input" type="text" placeholder="Search name…" aria-label="Search cast by name" value="${esc(f.search)}" oninput="crOnFilterInput()">
+    <select id="cr-f-arch" class="cr-select" aria-label="Filter by archetype" onchange="crOnFilterInput()">${archOpts}</select>
+    <select id="cr-f-tribe" class="cr-select" aria-label="Filter by tribe" onchange="crOnFilterInput()">${tribeOpts}</select>
+    <select id="cr-f-ret" class="cr-select" aria-label="Filter by returnee status" onchange="crOnFilterInput()">${retOpts}</select>
+    <select id="cr-f-gender" class="cr-select" aria-label="Filter by gender" onchange="crOnFilterInput()">${genderOpts}</select>
+    <select id="cr-f-seasons" class="cr-select" aria-label="Filter by seasons played" onchange="crOnFilterInput()">${seasonsOpts}</select>
     <span class="cr-filter-count" id="cr-filter-count" hidden></span>
     <button class="cr-clear" id="cr-clear" onclick="crClearFilters()" hidden>Clear</button>
   </div>`;
@@ -379,7 +387,17 @@ function _tribesBodyHTML(shown) {
 
 export function renderCastRoom() {
   if (typeof document === 'undefined') return;
-  if (window._castRoomDisabled) { document.getElementById('tab-cast')?.classList.remove('cast-room-active'); return; }
+  if (window._castRoomDisabled) {
+    // Clean legacy-only fallback at ANY time. The edit form was physically ADOPTED
+    // (moved) into the drawer, so we must first restore it to the legacy panel, then
+    // drop the takeover class (reveals legacy UI) and remove the room shell entirely
+    // so it can never stack on top. Re-enabling rebuilds + re-adopts from scratch.
+    _setDrawerOpen(false);
+    _restoreForm();
+    document.getElementById('tab-cast')?.classList.remove('cast-room-active');
+    document.getElementById('cast-room')?.remove();
+    return;
+  }
   const tab = document.getElementById('tab-cast');
   if (!tab) return; // legacy DOM absent — nothing to take over
 
@@ -479,6 +497,19 @@ function _adoptForm(room) {
   } catch (e) { /* leave legacy form in place if adoption fails */ }
 }
 
+// Reverse of _adoptForm: move the adopted nodes back to the front of the legacy
+// form panel (before the management buttons), restoring a whole legacy UI.
+function _restoreForm() {
+  try {
+    const host = document.getElementById('cr-drawer-form');
+    const aside = document.querySelector('#tab-cast .form-panel');
+    if (!host || !aside || !host.dataset.adopted) return;
+    const anchor = aside.firstChild;
+    [...host.children].forEach(n => aside.insertBefore(n, anchor)); // preserves original order
+    delete host.dataset.adopted;
+  } catch (e) { /* best-effort restore */ }
+}
+
 function _buildDrawer(room) {
   const backdrop = document.createElement('div');
   backdrop.id = 'cr-backdrop';
@@ -488,6 +519,7 @@ function _buildDrawer(room) {
   drawer.id = 'cr-drawer';
   drawer.className = 'cr-drawer';
   drawer.setAttribute('role', 'dialog');
+  drawer.setAttribute('aria-modal', 'true');
   drawer.setAttribute('aria-label', 'Edit player');
   drawer.innerHTML = `
     <div class="cr-drawer-head">
@@ -507,6 +539,22 @@ function _setDrawerOpen(open) {
   const d = document.getElementById('cr-drawer'), b = document.getElementById('cr-backdrop');
   if (d) d.classList.toggle('open', open);
   if (b) b.classList.toggle('open', open);
+}
+
+// Simple focus trap: while the drawer is open, Tab cycles within it.
+function _focusable(root) {
+  return [...root.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(el => el.offsetParent !== null || el === document.activeElement);
+}
+export function crDrawerTrap(e) {
+  const d = document.getElementById('cr-drawer');
+  if (!d || !d.classList.contains('open') || e.key !== 'Tab') return;
+  const items = _focusable(d);
+  if (!items.length) return;
+  const first = items[0], last = items[items.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  else if (!d.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
 }
 
 export function crOpenDrawerFor(pid) {
@@ -541,9 +589,16 @@ export function crSetView(view) {
   crRenderGrid();
 }
 
+// Filter input handler: persist DOM values into state, then re-render the grid only
+// (leaves the filter bar DOM intact, so the search input keeps focus + caret).
+export function crOnFilterInput() { _syncFiltersFromDOM(); crRenderGrid(); }
+
 export function crClearFilters() {
-  ['cr-f-search', 'cr-f-arch', 'cr-f-tribe', 'cr-f-gender', 'cr-f-seasons'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  const ret = document.getElementById('cr-f-ret'); if (ret) ret.value = 'all';
+  window._crFilters = { search: '', archetype: '', tribe: '', returnee: 'all', gender: '', seasons: '' };
+  // Reflect the reset in the live inputs (bar is not rebuilt here).
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  set('cr-f-search', ''); set('cr-f-arch', ''); set('cr-f-tribe', ''); set('cr-f-gender', ''); set('cr-f-seasons', '');
+  set('cr-f-ret', 'all');
   crRenderGrid();
 }
 
@@ -605,10 +660,11 @@ export function crToggleManage(e) {
 }
 export function crCloseManage() { const m = document.getElementById('cr-manage-menu'); if (m) m.hidden = true; }
 
-// ── Escape key closes the drawer ──
+// ── Escape closes the drawer; Tab is trapped inside it while open ──
 if (typeof document !== 'undefined') {
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && document.getElementById('cr-drawer')?.classList.contains('open')) crCloseDrawer();
+    if (e.key === 'Escape' && document.getElementById('cr-drawer')?.classList.contains('open')) { crCloseDrawer(); return; }
+    if (e.key === 'Tab') crDrawerTrap(e);
   });
 }
 
@@ -628,6 +684,9 @@ const CR_CSS = `
 #tab-cast.cast-room-active > .form-panel,
 #tab-cast.cast-room-active > .cast-panel { display: none !important; }
 #tab-cast.cast-room-active { display: block; }
+/* When the room is NOT active (disabled / not yet taken over), the room shell must
+   never stack on top of the legacy UI. */
+#tab-cast:not(.cast-room-active) #cast-room { display: none !important; }
 
 #cast-room { color: var(--text); }
 .cr-topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
@@ -721,8 +780,12 @@ const CR_CSS = `
 .cr-drawer-title { font-family:var(--font-display,sans-serif); font-size:16px; text-transform:uppercase; letter-spacing:.5px; }
 .cr-drawer-x { background:transparent; border:0; color:var(--muted); font-size:16px; cursor:pointer; }
 .cr-drawer-x:hover { color:var(--text); }
-.cr-drawer-scroll { overflow-y:auto; padding:16px; flex:1; }
+.cr-drawer-scroll { overflow-y:auto; overflow-x:visible; padding:16px; flex:1; }
 #cr-drawer-form .panel-title { font-family:var(--font-display,sans-serif); font-size:15px; margin-bottom:10px; }
+/* Roster autocomplete lives inside the scrollable drawer — raise it above sibling
+   form fields (its .form-group parent is the positioning context) so it never hides
+   behind later inputs; it scrolls internally via its own max-height. */
+#cr-drawer #roster-dropdown { z-index:950; box-shadow:0 8px 24px rgba(0,0,0,.45); }
 
 @media (max-width:640px) { .cr-drawer { width:100%; } }
 @media (prefers-reduced-motion:reduce) {
@@ -739,7 +802,7 @@ const CR_CSS = `
 if (typeof window !== 'undefined') {
   Object.assign(window, {
     renderCastRoom, crRenderGrid, crOpenDrawerFor, crAddPlayer, crCloseDrawer, crCardKey,
-    crSetView, crClearFilters, crDragStart, crDragOver, crDragLeave, crDrop, crChangeTribe,
-    crBalance, crSnake, crRandomize, crTogglePreserve, crToggleManage, crCloseManage,
+    crSetView, crOnFilterInput, crClearFilters, crDragStart, crDragOver, crDragLeave, crDrop, crChangeTribe,
+    crBalance, crSnake, crRandomize, crTogglePreserve, crToggleManage, crCloseManage, crDrawerTrap,
   });
 }

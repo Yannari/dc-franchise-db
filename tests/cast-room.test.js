@@ -190,33 +190,42 @@ describe('castWarnings', () => {
 });
 
 // ── renderCastRoom smoke (jsdom) ──────────────────────────────────────
+function buildTab() {
+  const tab = document.createElement('div');
+  tab.id = 'tab-cast';
+  tab.innerHTML = `
+    <aside class="form-panel">
+      <div id="form-title">Add Player</div>
+      <div class="form-group"><input id="f-name"></div>
+      <div class="form-group"><input id="f-slug"></div>
+      <div class="form-group"><select id="f-tribe"></select></div>
+      <div class="form-group"><select id="f-archetype"></select><div id="archetype-desc"></div><input type="checkbox" id="f-returnee"></div>
+      <div id="stat-sliders"></div>
+      <button id="submit-btn">Add Player</button>
+      <div id="edit-actions" style="display:none"></div>
+      <button onclick="clearCast()">Clear All</button>
+    </aside>
+    <main class="cast-panel"><div id="cast-grid"></div></main>`;
+  document.body.appendChild(tab);
+  return tab;
+}
+
 describe('renderCastRoom smoke', () => {
   beforeEach(() => {
     setSeasonConfig(defaultConfig());
     setRelationships([]);
     document.body.innerHTML = '';
+    window._castRoomDisabled = false;
+    window._crFilters = null;
+    window._crView = 'grid';
+    window._crKeepDrawerOpen = false;
   });
   it('does not throw when the cast DOM is absent', () => {
     setPlayers([]);
     expect(() => renderCastRoom()).not.toThrow();
   });
   it('renders portrait cards into a fabricated #tab-cast', () => {
-    const tab = document.createElement('div');
-    tab.id = 'tab-cast';
-    tab.innerHTML = `
-      <aside class="form-panel">
-        <div id="form-title">Add Player</div>
-        <div class="form-group"><input id="f-name"></div>
-        <div class="form-group"><input id="f-slug"></div>
-        <div class="form-group"><select id="f-tribe"></select></div>
-        <div class="form-group"><select id="f-archetype"></select><div id="archetype-desc"></div><input type="checkbox" id="f-returnee"></div>
-        <div id="stat-sliders"></div>
-        <button id="submit-btn">Add Player</button>
-        <div id="edit-actions" style="display:none"></div>
-        <button onclick="clearCast()">Clear All</button>
-      </aside>
-      <main class="cast-panel"><div id="cast-grid"></div></main>`;
-    document.body.appendChild(tab);
+    buildTab();
     setPlayers([
       mk('Bowie', { archetype: 'mastermind', tribe: 'Bass', isReturnee: true, stats: { physical: 6, endurance: 4, mental: 8, social: 10, strategic: 10, loyalty: 6, boldness: 7, intuition: 9, temperament: 6 } }),
       mk('Priya', { archetype: 'hero', tribe: 'Gophers', stats: { physical: 10, endurance: 8, mental: 10, social: 6, strategic: 8, loyalty: 6, boldness: 7, intuition: 8, temperament: 6 } }),
@@ -227,5 +236,47 @@ describe('renderCastRoom smoke', () => {
     expect(room.querySelectorAll('.cr-card').length).toBe(2);
     // adoption moved the form node into the drawer
     expect(document.querySelector('#cast-room #f-name')).toBeTruthy();
+  });
+
+  it('escape hatch: disabling after render removes the room, drops the class, and restores the legacy form', () => {
+    buildTab();
+    setPlayers([mk('Bowie', { archetype: 'mastermind', tribe: 'Bass' }), mk('Priya', { archetype: 'hero', tribe: 'Gophers' })]);
+    renderCastRoom();
+    expect(document.getElementById('cast-room')).toBeTruthy();
+    expect(document.getElementById('tab-cast').classList.contains('cast-room-active')).toBe(true);
+    expect(document.querySelector('#cast-room #f-name')).toBeTruthy(); // adopted into drawer
+
+    window._castRoomDisabled = true;
+    renderCastRoom();
+
+    // room shell gone (not stacked on top of legacy UI), takeover class removed
+    expect(document.getElementById('cast-room')).toBeNull();
+    expect(document.getElementById('tab-cast').classList.contains('cast-room-active')).toBe(false);
+    // legacy form restored into the legacy panel (adoption reversed)
+    expect(document.querySelector('#tab-cast .form-panel #f-name')).toBeTruthy();
+    expect(document.querySelector('#tab-cast .form-panel #edit-actions')).toBeTruthy();
+  });
+
+  it('persists filter state across a re-render (rebuilt filter bar reflects window._crFilters)', () => {
+    buildTab();
+    setPlayers([
+      mk('Bowie', { archetype: 'mastermind', tribe: 'Bass' }),
+      mk('Priya', { archetype: 'hero', tribe: 'Gophers' }),
+      mk('Julia', { archetype: 'schemer', tribe: 'Bass' }),
+    ]);
+    renderCastRoom(); // creates room + filter bar
+    // user sets a search + archetype filter
+    window._crFilters = { search: 'Bow', archetype: 'mastermind', tribe: '', returnee: 'all', gender: '', seasons: '' };
+    renderCastRoom(); // data-change re-render rebuilds the filter bar
+
+    // rebuilt inputs reflect the persisted state
+    expect(document.getElementById('cr-f-search').value).toBe('Bow');
+    expect(document.getElementById('cr-f-arch').value).toBe('mastermind');
+    // state object itself survives untouched
+    expect(window._crFilters.search).toBe('Bow');
+    // and the grid honors it (only Bowie shown)
+    const cards = document.querySelectorAll('#cast-room .cr-card');
+    expect(cards.length).toBe(1);
+    expect(cards[0].querySelector('.cr-name').textContent).toContain('Bowie');
   });
 });

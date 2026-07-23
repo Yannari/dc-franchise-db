@@ -110,7 +110,24 @@ describe('deriveSeasonRecord', () => {
   });
 });
 
-import { exportActiveFranchise, importFranchiseExport } from '../js/franchise-meta.js';
+import { exportActiveFranchise, importFranchiseExport, retrofitFranchiseMeta } from '../js/franchise-meta.js';
+
+describe('retrofitFranchiseMeta (ledger-load race self-heal)', () => {
+  it('rebuilds null meta before episode 1 and seeds bonds; no-op once episodes exist', () => {
+    seedLedgerS12();
+    setPlayers([{ name: 'Fiore', isReturnee: true }, { name: 'Thom', isReturnee: true }]);
+    setSeasonConfig({ ...defaultConfig(), seasonNumber: 20, franchiseMeta: true });
+    setGs({ initialized: true, franchiseMeta: null, episodeHistory: [], bonds: {} });
+    expect(retrofitFranchiseMeta()).toBe(true);
+    expect(gs.franchiseMeta.profiles['Fiore'].repScore).toBeGreaterThan(0);
+    expect(Object.keys(gs.bonds).length).toBeGreaterThan(0); // betrayal seed Fiore/Thom applied
+    // Second call is a no-op (meta already present)
+    expect(retrofitFranchiseMeta()).toBe(false);
+    // And never fires once an episode has been simulated
+    setGs({ initialized: true, franchiseMeta: null, episodeHistory: [{ num: 1 }], bonds: {} });
+    expect(retrofitFranchiseMeta()).toBe(false);
+  });
+});
 
 describe('franchise export / import round-trip', () => {
   it('exports the active franchise and re-imports it as a new active franchise', () => {

@@ -28,6 +28,7 @@ import {
 } from './rescue-island.js';
 import { generateSummaryText } from './text-backlog.js';
 import { _idbPut } from './savestate.js';
+import { retrofitFranchiseMeta } from './franchise-meta.js';
 import { survivalFlavor, fillVocab } from './settings.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { updateAdaptationFromEpisode } from './adaptation.js';
@@ -1149,6 +1150,10 @@ export function handleExileFormat(ep) {
 
 export function simulateEpisode() {
   if (!gs?.initialized || !players.length) return null;
+  // Franchise meta self-heal: seasons initialized before the async ledger load
+  // (or before history was imported) carry franchiseMeta = null — rebuild at
+  // the top of episode 1 while bond seeding is still legitimate.
+  try { if (retrofitFranchiseMeta()) console.log('Franchise meta retrofitted at episode 1.'); } catch (e) {}
   // Save full checkpoint before any mutation so this episode can be replayed
   const _cpNum = gs.episode + 1;
   gsCheckpoints[_cpNum] = JSON.parse(JSON.stringify(gs));

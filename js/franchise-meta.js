@@ -438,6 +438,30 @@ export function clearPlayerHistory(name) {
   for (const season of Object.values(activeSeasons())) delete season.players?.[name];
 }
 
+// ── Self-healing meta retrofit ────────────────────────────────────────────
+// A season initialized before the ledger finished its async IndexedDB load —
+// or before the user imported history — carries gs.franchiseMeta = null even
+// though its returnees have recorded history. Called at the start of episode 1
+// (nothing simulated yet, so bond seeding is still legitimate). No-op in every
+// other situation.
+export function retrofitFranchiseMeta() {
+  if (!gs || gs.franchiseMeta || (gs.episodeHistory || []).length) return false;
+  let meta = null;
+  try { meta = buildFranchiseMeta(players, seasonConfig); } catch (e) { return false; }
+  if (!meta) return false;
+  if (!gs.bonds) gs.bonds = {};
+  for (const sp of meta.seededPairs) {
+    const k = metaBondKey(sp.a, sp.b);
+    const cur = gs.bonds[k] || 0;
+    // Same asymmetric clamp as initGameState: never pull a pre-existing
+    // out-of-range bond inward, only cap the seed's contribution.
+    const hi = Math.max(META_WEIGHTS.bondClamp, cur), lo = Math.min(-META_WEIGHTS.bondClamp, cur);
+    gs.bonds[k] = Math.max(lo, Math.min(hi, cur + sp.bondDelta));
+  }
+  gs.franchiseMeta = meta;
+  return true;
+}
+
 // ── Franchise export / import (whole-franchise backup files) ──────────────
 export function exportActiveFranchise() {
   const f = activeFranchise();

@@ -336,9 +336,35 @@ export function rpBuildClownStalk(ep) {
 
 export function rpBuildClownRun(ep) {
   const d = ep.killerClown; if (!d) return '';
-  const routeOf = {}; d.loadout.forEach(l => routeOf[l.name] = l.route);
+  // The run is a full reveal-stream now: scrums, road-home grabs, covering
+  // fire, gun passes, the chase — then the results board + winner as the
+  // final reveal. Same engine as The Stalk.
+  const runBeats = d.beats.filter(b => b.phase === 'run' && b.type !== 'win');
   const winBeat = d.beats.find(b => b.type === 'win');
-  const trapBeat = d.beats.find(b => b.type === 'sabotage' && b.phase === 'run');
+  const intro = `<div class="noc-h2">🏁 The Run</div>
+    <div class="noc-card neutral"><div class="txt">Flags off the line — and every route funnels into the same open ground between the trees and the ring of camp flashlights. The clown knows exactly where everyone is going.</div></div>`;
+
+  const RUN_AMBIENT = [
+    '· · · the camp lights look close. they are not close · · ·',
+    '· · · somewhere behind, a honk — pitched like a laugh · · ·',
+    '· · · dropped flags mark the trail like breadcrumbs · · ·',
+    '· · · the hosts watch the tree line through binoculars, grinning · · ·',
+  ];
+  const steps = [], sideSnaps = [];
+  runBeats.forEach((b, i) => {
+    const avs = (b.players || []).map(n => av(n, 24)).join('');
+    let html;
+    if (b.type === 'grab') {
+      html = `<div class="noc-grab-stamp">🤡 ${esc(b.badge)}</div>${_card('bad', b.badge, esc(b.text), avs, b.t)}`;
+    } else {
+      html = _card(b.badgeClass || 'neutral', b.badge, esc(b.text), avs, b.t);
+    }
+    if (i > 0 && i % 3 === 0) html = `<div class="noc-amb">${RUN_AMBIENT[(i / 3) % RUN_AMBIENT.length | 0]}</div>` + html;
+    steps.push({ html });
+    sideSnaps.push(_sideStalk(d, b.prox != null ? b.prox : 0, b.arms || {}, b.pos || {}));
+  });
+
+  // final reveal: the results board + winner + host close
   const worst = d.worstTime || (d.results[d.results.length - 1]?.returnTime || 1);
   const best = d.bestTime || (d.results[0]?.returnTime || 1);
   const lanes = d.results.map((r, i) => {
@@ -351,17 +377,13 @@ export function rpBuildClownRun(ep) {
       <span class="noc-lt">${i === 0 ? (r.returnTime + 's ') : ''}${statusLbl}</span>
     </div>`;
   }).join('');
-  const trapHtml = trapBeat ? `<div class="noc-amb" style="margin-top:12px">${esc((trapBeat.players || []).join(' vs '))}</div>${_card('bad', trapBeat.badge, esc(trapBeat.text), (trapBeat.players || []).map(n => av(n, 24)).join(''), trapBeat.t)}` : '';
-  const inner = `<div class="noc-run">
-    <div class="noc-h2">🏁 The Run</div>
-    <div class="noc-amb" style="margin-bottom:8px">· · · the finish is a ring of flashlights, and the clown is between them and it · · ·</div>
-    ${trapHtml}
-    <div class="noc-track">${lanes}</div>
+  steps.push({ html: `<div class="noc-track">${lanes}</div>
     ${winBeat ? `<div style="margin-top:12px">${_card('good', winBeat.badge, esc(winBeat.text), (winBeat.players || []).map(n => av(n, 24)).join(''), winBeat.t)}</div>` : ''}
     <div class="noc-stamp">${esc(d.immunityWinner)} WINS IMMUNITY</div>
-    <div class="noc-close">"${esc(d.hostClose)}"</div>
-  </div>`;
-  return _shell(inner);
+    <div class="noc-close">"${esc(d.hostClose)}"</div>` });
+  sideSnaps.push(sideSnaps[sideSnaps.length - 1] || _sideStalk(d, 0, {}, {}));
+
+  return _shell(`<div class="noc-run">${_stream('run', intro, steps, sideSnaps)}</div>`);
 }
 
 // ── reveal handlers (DOM-only) ──

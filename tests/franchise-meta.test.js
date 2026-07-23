@@ -112,6 +112,20 @@ describe('deriveSeasonRecord', () => {
 
 import { exportActiveFranchise, importFranchiseExport, retrofitFranchiseMeta } from '../js/franchise-meta.js';
 
+describe('resume line ordering', () => {
+  it('leads with wins even when older seasons had weak placements', () => {
+    setFranchiseLedger({ seasons: {
+      '5': { seasonName: 'S5', players: { 'Jasmine': { placement: 14, winner: false, finalist: false, blindsided: false, blindsidedBy: [], blindsidesAuthored: 0, idolsFound: 0, idolsPlayed: 0, idoledOut: false, betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 0, schemesCaught: 0 } } },
+      '10': { seasonName: 'S10', players: { 'Jasmine': { placement: 1, winner: true, finalist: true, blindsided: false, blindsidedBy: [], blindsidesAuthored: 2, idolsFound: 0, idolsPlayed: 0, idoledOut: false, betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 4, schemesCaught: 0 } } }
+    } });
+    const meta = buildFranchiseMeta([{ name: 'Jasmine', isReturnee: true }], { franchiseMeta: true });
+    const resume = meta.profiles['Jasmine'].resume;
+    expect(resume[0]).toBe('Won Season 10');                       // headline first
+    expect(resume[1]).toContain('blindsides in Season 10');        // feats before filler
+    expect(resume[resume.length - 1]).toBe('Placed 14th in Season 5'); // weak placement last
+  });
+});
+
 describe('retrofitFranchiseMeta (ledger-load race self-heal)', () => {
   it('rebuilds null meta before episode 1 and seeds bonds; no-op once episodes exist', () => {
     seedLedgerS12();

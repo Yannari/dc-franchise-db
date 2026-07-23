@@ -345,6 +345,44 @@ export function backfillFromSeasonsDb(json) {
   return imported;
 }
 
+// ── Backfill from a single-season site data file (seasonN-data.json) ──────
+// Shape: { seasonNumber, title, castSize, episodeCount, winner:{name,playerSlug},
+// placements: [{placement, name, playerSlug, phase, notes}], ... }. Richer than
+// the seasons-DB rows: `phase` marks true finalists (FTC third place included),
+// notes carry immunity-win counts, and playerSlug enables portraits for players
+// who are not in the current roster. Same protection rule as the DB backfill:
+// live/manual records are never overwritten.
+export function backfillFromSeasonData(json) {
+  const num = json?.seasonNumber;
+  if (!num || !Array.isArray(json?.placements)) return { ok: false, error: 'Not a season data file' };
+  const _seasons = activeSeasons();
+  const existing = _seasons[String(num)];
+  if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) {
+    return { ok: false, skipped: true, seasonNum: num, error: `S${num} skipped — kept existing live/manual record` };
+  }
+  const winnerName = json.winner?.name || null;
+  const rec = {
+    seasonName: json.title || `Season ${num}`,
+    castSize: json.castSize || json.placements.length,
+    episodeCount: json.episodeCount || 0,
+    players: {}
+  };
+  for (const p of json.placements) {
+    if (!p?.name) continue;
+    const r = _emptyRecord();
+    r.placement = p.placement || 0;
+    r.winner = p.phase === 'Winner' || p.placement === 1 || p.name === winnerName;
+    r.finalist = r.winner || p.phase === 'Finalist';
+    const imm = String(p.notes || '').match(/(\d+)\s+immunity wins?/i);
+    r.chalWins = imm ? parseInt(imm[1], 10) : 0;
+    if (p.playerSlug) r.slug = p.playerSlug;
+    rec.players[p.name] = r;
+  }
+  if (!Object.keys(rec.players).length) return { ok: false, error: 'No players found in file' };
+  _seasons[String(num)] = rec;
+  return { ok: true, seasonNum: num, winner: winnerName, playerCount: Object.keys(rec.players).length };
+}
+
 export function franchiseHistorySummary(name) {
   return _historyFor(name).map(({ seasonNum, seasonName, rec }) => ({
     seasonNum, seasonName,

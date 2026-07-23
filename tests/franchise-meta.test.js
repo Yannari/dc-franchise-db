@@ -230,7 +230,47 @@ describe('reputation threat multiplier', () => {
   });
 });
 
-import { backfillFromSeasonsDb, franchiseHistorySummary, wipeLedger } from '../js/franchise-meta.js';
+import { backfillFromSeasonsDb, backfillFromSeasonData, franchiseHistorySummary, wipeLedger } from '../js/franchise-meta.js';
+
+describe('backfillFromSeasonData (single-season site file)', () => {
+  const seasonFile = {
+    seasonNumber: 1, title: 'Island Origins', castSize: 24, episodeCount: 26,
+    winner: { name: 'Lindsay', playerSlug: 'lindsay' },
+    placements: [
+      { placement: 1, name: 'Lindsay', playerSlug: 'lindsay', phase: 'Winner', notes: 'Won Final Tribal 5–4 • 1 votes against' },
+      { placement: 2, name: 'Alejandro', playerSlug: 'alejandro', phase: 'Finalist', notes: 'Lost Final Tribal 4–5 • 4 challenge wins • 3 immunity wins • 5 votes against' },
+      { placement: 3, name: 'Bridgette', playerSlug: 'bridgette', phase: 'Finalist', notes: '1 jury vote • 5 challenge wins • 4 immunity wins • 20 votes against' },
+      { placement: 4, name: 'Geoff', playerSlug: 'geoff', phase: 'Jury', notes: '2 immunity wins' }
+    ]
+  };
+  it('imports a season data file with phases, immunity wins, and slugs', () => {
+    setFranchiseLedger({ seasons: {} });
+    const res = backfillFromSeasonData(seasonFile);
+    expect(res).toMatchObject({ ok: true, seasonNum: 1, winner: 'Lindsay', playerCount: 4 });
+    const s = activeSeasons()['1'];
+    expect(s.seasonName).toBe('Island Origins');
+    expect(s.castSize).toBe(24);
+    expect(s.episodeCount).toBe(26);
+    expect(s.players['Lindsay']).toMatchObject({ placement: 1, winner: true, finalist: true, backfilled: true, slug: 'lindsay' });
+    expect(s.players['Bridgette']).toMatchObject({ placement: 3, winner: false, finalist: true, chalWins: 4 }); // FTC third = finalist via phase
+    expect(s.players['Alejandro'].chalWins).toBe(3); // immunity wins parsed from notes, not challenge wins
+    expect(s.players['Geoff']).toMatchObject({ finalist: false, chalWins: 2 });
+  });
+  it('never overwrites a live/manual record, but refreshes a prior backfill', () => {
+    setFranchiseLedger({ seasons: { '1': { seasonName: 'Live S1', players: { 'Ava': { placement: 1, winner: true } } } } });
+    const blocked = backfillFromSeasonData(seasonFile);
+    expect(blocked.ok).toBe(false);
+    expect(activeSeasons()['1'].seasonName).toBe('Live S1');
+    setFranchiseLedger({ seasons: {} });
+    expect(backfillFromSeasonData(seasonFile).ok).toBe(true);
+    expect(backfillFromSeasonData({ ...seasonFile, title: 'Refreshed' }).ok).toBe(true); // backfill-over-backfill ok
+    expect(activeSeasons()['1'].seasonName).toBe('Refreshed');
+  });
+  it('rejects non-season files', () => {
+    expect(backfillFromSeasonData({ foo: 1 }).ok).toBe(false);
+    expect(backfillFromSeasonData({ seasonNumber: 5 }).ok).toBe(false);
+  });
+});
 
 describe('backfillFromSeasonsDb', () => {
   it('imports placements defensively and never overwrites live-recorded seasons', () => {

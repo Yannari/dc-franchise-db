@@ -7,12 +7,13 @@ import { players } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
-  recordSeasonFromSavestate, wipeLedger, franchiseLedger
+  backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
 // ── slug / portrait helpers ───────────────────────────────────────────
-function _slugForName(name) {
+function _slugForName(name, storedSlug) {
+  if (storedSlug) return storedSlug; // slug captured at import time (seasonN-data.json)
   if (!name) return '';
   const live = (players || []).find(p => p.name === name);
   if (live?.slug) return live.slug;
@@ -38,8 +39,8 @@ function _svgTrophy() {
   return `<svg viewBox="0 0 96 110" class="fr-empty-trophy" aria-hidden="true"><path d="M28 12 h40 v20 a20 20 0 0 1 -40 0 Z" fill="none" stroke="var(--accent-gold)" stroke-width="3"/><path d="M28 16 h-14 a10 10 0 0 0 10 18" fill="none" stroke="var(--accent-gold)" stroke-width="3"/><path d="M68 16 h14 a10 10 0 0 1 -10 18" fill="none" stroke="var(--accent-gold)" stroke-width="3"/><path d="M48 52 v18" fill="none" stroke="var(--accent-gold)" stroke-width="3"/><path d="M34 82 h28 l4 14 h-36 Z" fill="none" stroke="var(--accent-gold)" stroke-width="3" stroke-linejoin="round"/><path d="M40 70 h16 v12 h-16 Z" fill="none" stroke="var(--accent-gold)" stroke-width="3"/></svg>`;
 }
 
-function _winnerPortrait(name, big) {
-  const slug = _slugForName(name);
+function _winnerPortrait(name, big, storedSlug) {
+  const slug = _slugForName(name, storedSlug);
   const cls = big ? 'fr-portrait fr-portrait-lg' : 'fr-portrait';
   return `<span class="${cls}"><img src="assets/avatars/${_esc(slug)}.png" alt="${_esc(name)}"
     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -116,8 +117,8 @@ function _renderSeasonCard(num, season) {
   const included = _isIncluded(season);
   const winner = _winnerOf(season);
   const runnerUp = _placeName(season, 2);
-  const castN = Object.keys(season.players || {}).length;
-  const eps = Math.max(0, ...Object.values(season.players || {}).map(p => p.episodesLasted || 0));
+  const castN = season.castSize || Object.keys(season.players || {}).length;
+  const eps = season.episodeCount || Math.max(0, ...Object.values(season.players || {}).map(p => p.episodesLasted || 0));
   const chips = [];
   if (castN) chips.push(`cast ${castN}`);
   if (eps) chips.push(`${eps} eps`);
@@ -128,7 +129,7 @@ function _renderSeasonCard(num, season) {
     </div>
     <div class="fr-card-name">${_esc(season.seasonName || `Season ${num}`)}</div>
     <div class="fr-winner">
-      <span class="fr-winner-portrait">${_svgCrown()}${_winnerPortrait(winner, true)}</span>
+      <span class="fr-winner-portrait">${_svgCrown()}${_winnerPortrait(winner, true, season.players?.[winner]?.slug)}</span>
       <div class="fr-winner-meta">
         <span class="fr-winner-label">Winner</span>
         <span class="fr-winner-name">${_esc(winner || '—')}</span>
@@ -162,7 +163,7 @@ function _renderDetails(num, season) {
     if ((r.chalWins || 0) > 0) facts.push(`<span class="fr-fact">${r.chalWins}W</span>`);
     return `<div class="fr-det-row">
       <span class="fr-det-place">${r.placement || '—'}</span>
-      ${_winnerPortrait(name)}
+      ${_winnerPortrait(name, false, r.slug)}
       <span class="fr-det-name">${_esc(name)}${r.winner ? ' 👑' : ''}</span>
       <span class="fr-det-facts">${facts.join('')}</span>
     </div>`;
@@ -179,7 +180,7 @@ function _renderDropzone() {
       onclick="document.getElementById('fr-file-input').click()">
       <div class="fr-drop-icon">⬇</div>
       <div class="fr-drop-title">Drop season files here</div>
-      <div class="fr-drop-sub">savestate exports (season-*-ep*.json) or seasons_database.json — or click to browse</div>
+      <div class="fr-drop-sub">savestate exports (season-*-ep*.json), season data files (seasonN-data.json), or seasons_database.json — or click to browse</div>
     </div>
     <input type="file" id="fr-file-input" accept=".json" multiple style="display:none" onchange="frHandleFileInput(event)">
     <div class="fr-drop-actions">
@@ -332,6 +333,14 @@ function _importOne(raw, fileName) {
   if (raw && Array.isArray(raw.seasons)) {
     const n = backfillFromSeasonsDb(raw);
     _logLine(`${_esc(fileName)} — backfilled ${n} season${n === 1 ? '' : 's'}`, n > 0);
+    return;
+  }
+  // single-season site data file (seasonN-data.json) → rich backfill
+  if (raw && raw.seasonNumber && Array.isArray(raw.placements) && !raw.gs) {
+    const res = backfillFromSeasonData(raw);
+    _logLine(res.ok
+      ? `S${res.seasonNum} imported — winner ${_esc(res.winner || '—')} (${res.playerCount} players)`
+      : `${_esc(fileName)} — ${_esc(res.error)}`, !!res.ok);
     return;
   }
   // savestate export → recordSeasonFromSavestate

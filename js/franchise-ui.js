@@ -157,15 +157,17 @@ function _renderDetails(num, season) {
   const rows = top.map(([name, r]) => {
     const facts = [];
     if (r.blindsided) facts.push(`<span class="fr-fact fr-fact-bad">blindsided</span>`);
-    if ((r.blindsidesAuthored || 0) > 0) facts.push(`<span class="fr-fact">${r.blindsidesAuthored} blindside${r.blindsidesAuthored > 1 ? 's' : ''} authored</span>`);
-    if ((r.betrayed || []).length) facts.push(`<span class="fr-fact">betrayed ${r.betrayed.map(_esc).join(', ')}</span>`);
-    if ((r.idolsPlayed || 0) > 0) facts.push(`<span class="fr-fact">${r.idolsPlayed} idol${r.idolsPlayed > 1 ? 's' : ''}</span>`);
-    if ((r.chalWins || 0) > 0) facts.push(`<span class="fr-fact">${r.chalWins}W</span>`);
+    if ((r.blindsidesAuthored || 0) > 0) facts.push(`<span class="fr-fact">⚡ ${r.blindsidesAuthored} blindside${r.blindsidesAuthored > 1 ? 's' : ''}</span>`);
+    if ((r.betrayed || []).length) facts.push(`<span class="fr-fact">🗡 ${r.betrayed.map(_esc).join(', ')}</span>`);
+    if ((r.idolsPlayed || 0) > 0) facts.push(`<span class="fr-fact">🗿 ${r.idolsPlayed}</span>`);
+    if ((r.chalWins || 0) > 0) facts.push(`<span class="fr-fact">🏅 ${r.chalWins}W</span>`);
     return `<div class="fr-det-row">
       <span class="fr-det-place">${r.placement || '—'}</span>
       ${_winnerPortrait(name, false, r.slug)}
-      <span class="fr-det-name">${_esc(name)}${r.winner ? ' 👑' : ''}</span>
-      <span class="fr-det-facts">${facts.join('')}</span>
+      <div class="fr-det-body">
+        <span class="fr-det-name">${_esc(name)}${r.winner ? ' 👑' : ''}</span>
+        ${facts.length ? `<div class="fr-det-facts">${facts.join('')}</div>` : ''}
+      </div>
     </div>`;
   }).join('');
   return `${anyBackfilled ? `<div class="fr-det-note">light import — placements only</div>` : ''}

@@ -110,6 +110,33 @@ describe('deriveSeasonRecord', () => {
   });
 });
 
+describe('placement derivation with twist eliminations (ported from stats-export)', () => {
+  it('orders by permanent exit (RI duel loss) and jury votes, not naive boot order', () => {
+    const state = {
+      seasonNumber: 42,
+      players: ['A', 'B', 'C', 'D', 'E', 'F'].map(n => ({ name: n })),
+      gs: {
+        phase: 'complete',
+        finaleResult: { winner: 'F', finalists: ['F', 'E', 'D'], votes: { E: 4, D: 1 } },
+        episodeHistory: [
+          { num: 1, eliminated: 'A' },                 // A voted out → Rescue Island
+          { num: 2, eliminated: 'B', riDuel: { loser: 'A' } }, // A's PERMANENT exit is the duel loss
+          { num: 3, multiTribalElims: ['C'] }          // multi-tribal boot not in ep.eliminated
+        ],
+        bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {}
+      }
+    };
+    const rec = deriveSeasonRecord(state);
+    expect(rec.players['F'].placement).toBe(1);  // winner
+    expect(rec.players['E'].placement).toBe(2);  // finalist, more jury votes
+    expect(rec.players['D'].placement).toBe(3);
+    expect(rec.players['C'].placement).toBe(4);  // last permanent exit
+    expect(rec.players['B'].placement).toBe(5);
+    expect(rec.players['A'].placement).toBe(6);  // earliest permanent exit despite two boot events
+    expect(rec.players['A'].episodesLasted).toBe(2); // duel ep, not first vote-out ep
+  });
+});
+
 describe('recordSeasonToLedger', () => {
   it('writes the season record idempotently', () => {
     setFranchiseLedger({ seasons: {} });

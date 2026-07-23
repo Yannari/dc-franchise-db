@@ -105,6 +105,60 @@ function _bootOf(ep) {
     || ep.emissaryEliminated || ep.hpTiebreakerEliminated || ep.tiedDestiniesCollateral || null;
 }
 
+// Placement derivation ported from stats-export.js _extractPlayerPlacements()
+// (the canonical, battle-tested logic — KEEP IN SYNC with stats-export.js:80).
+// Duplicated here because franchise-meta may import only core.js, and
+// stats-export sits behind modules that import US (cycle). Handles: RI/EoE duel
+// losses, RI quits, reentry losers, multi-tribal boots, fire-making duels,
+// jury-elimination twists, Koh-Lanta orienteering cuts, ambassador boots, and
+// Tied Destinies collateral — all the exits the naive boot-order walk missed.
+function _derivePlacements(_gs, names) {
+  const history = _gs.episodeHistory || [];
+  const fin = _gs.finaleResult || {};
+  const winner = fin.winner || null;
+  const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
+  const juryVotes = fin.votes || {};
+  const permanentExit = {};
+  for (const ep of history) {
+    if (ep.riDuel?.loser) permanentExit[ep.riDuel.loser] = ep.num;
+    if (ep.riQuit?.name) permanentExit[ep.riQuit.name] = ep.num;
+    const _reentryLosers = ep.riReentryLosers || ep.riReentry?.losers || ep.rescueReturn?.losers;
+    if (_reentryLosers?.length) for (const loser of _reentryLosers) {
+      if (permanentExit[loser] == null) permanentExit[loser] = ep.num;
+    }
+    const _juryBoot = (ep.twists || []).find(t => t.type === 'jury-elimination' && t.juryBooted)?.juryBooted;
+    const elimNames = [
+      ep.suddenDeathEliminated, ep.eliminated, ep.firstEliminated, ep.tiedDestiniesCollateral,
+      ep.emissaryEliminated, ep.hpTiebreakerEliminated, _juryBoot,
+      ...(ep.multiTribalElims || []),
+      ep.firemakingResult?.loser
+    ].filter(Boolean);
+    for (const name of elimNames) permanentExit[name] = ep.num;
+    if (ep.isFinale && ep.klOrienteering?.eliminated) permanentExit[ep.klOrienteering.eliminated] = ep.num - 0.5;
+    const _ambBoot = ep.ambassadorData?.ambassadorEliminated;
+    if (_ambBoot) permanentExit[_ambBoot] = ep.num - (ep.eliminated && ep.eliminated !== _ambBoot ? 0.5 : 0);
+    const _tdPartner = ep.tiedDestinies?.eliminatedPartner;
+    if (_tdPartner && _tdPartner !== ep.eliminated) permanentExit[_tdPartner] = ep.num - 0.5;
+  }
+  for (const name of finalists) delete permanentExit[name];
+  if (winner) delete permanentExit[winner];
+  const elimOrder = Object.entries(permanentExit).sort((a, b) => a[1] - b[1]).map(([name]) => name);
+  const sortedFinalists = [...new Set([winner, ...finalists].filter(Boolean))].sort((a, b) => {
+    if (a === winner) return -1;
+    if (b === winner) return 1;
+    return (juryVotes[b] || 0) - (juryVotes[a] || 0);
+  });
+  const placement = {};
+  let place = 1;
+  for (const name of sortedFinalists) placement[name] = place++;
+  for (let i = elimOrder.length - 1; i >= 0; i--) {
+    const name = elimOrder[i];
+    if (!placement[name]) placement[name] = place++;
+  }
+  for (const n of names) { if (!placement[n]) placement[n] = place++; }
+  return { placement, permanentExit };
+}
+
 // `state` (optional) = { gs, players, seasonNumber?, seasonName?, config? } lets
 // this derive from a parsed savestate WITHOUT touching live gs/players/seasonConfig.
 // When null, reads live module state exactly as before (zero behavior change).
@@ -123,22 +177,12 @@ export function deriveSeasonRecord(state = null) {
   const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
   const names = (_players || []).map(p => p.name);
 
-  // Boot order → placements. Winner is 1; other finalists follow; boots fill
-  // from last place upward; anyone unaccounted (quits, edge formats) slots
-  // into the remaining gaps in roster order.
-  const boots = [];
-  for (const ep of hist) { const b = _bootOf(ep); if (b && !boots.includes(b)) boots.push(b); }
-  const placement = {};
-  let place = names.length;
-  for (const b of boots) { if (!placement[b] && b !== winner && !finalists.includes(b)) placement[b] = place--; }
-  if (winner) placement[winner] = 1;
-  let fp = 2;
-  for (const f of finalists) { if (f !== winner && !placement[f]) placement[f] = fp++; }
-  for (const n of names) { if (!placement[n]) placement[n] = fp++; }
+  const { placement, permanentExit } = _derivePlacements(_gs, names);
 
   const rec = { seasonName: _seasonName, players: {} };
   for (const n of names) {
-    const elimEp = hist.find(ep => _bootOf(ep) === n) || null;
+    // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
+    const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;
     const ownBallot = elimEp?.votingLog?.find(v => v.voter === n) || null;
     const votersAgainst = (elimEp?.votingLog || []).filter(v => v.voted === n).map(v => v.voter);
     const flippers = (elimEp?.defections || []).map(d => d.player).filter(Boolean);
@@ -168,7 +212,7 @@ export function deriveSeasonRecord(state = null) {
     const rivals = names.filter(o => o !== n && (_gs.bonds?.[metaBondKey(n, o)] ?? 0) <= -4);
     rec.players[n] = {
       placement: placement[n], winner: n === winner, finalist: finalists.includes(n) || n === winner,
-      episodesLasted: elimEp ? elimEp.num : hist.length,
+      episodesLasted: Math.floor(permanentExit[n] ?? (elimEp ? elimEp.num : hist.length)),
       blindsided, blindsidedBy: blindsided ? (flippers.length ? flippers : votersAgainst.slice(0, 2)) : [],
       blindsidesAuthored: 0, // filled in the second pass below
       idolsFound: idolsPlayed + (_gs.advantages || []).filter(a => a.holder === n && a.type === 'idol').length,

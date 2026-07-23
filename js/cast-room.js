@@ -719,7 +719,8 @@ const CR_CSS = `
    Without the .active guard this rule's ID specificity beat the global
    .tab-content { display:none }, keeping the cast tab (room, Manage menu,
    drawer) visible on top of every other tab. */
-#tab-cast.tab-content.active.cast-room-active { display: block; }
+#tab-cast.tab-content.active.cast-room-active { display: block; overflow-y: auto; scrollbar-gutter: stable; }
+#cast-room { padding: 0 14px 60px; }
 /* When the room is NOT active (disabled / not yet taken over), the room shell must
    never stack on top of the legacy UI. */
 #tab-cast:not(.cast-room-active) #cast-room { display: none !important; }

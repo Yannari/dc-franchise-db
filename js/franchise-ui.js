@@ -183,7 +183,7 @@ function _renderDropzone() {
       onclick="document.getElementById('fr-file-input').click()">
       <div class="fr-drop-icon">⬇</div>
       <div class="fr-drop-title">Drop season files here</div>
-      <div class="fr-drop-sub">savestate exports (season-*-ep*.json), season data files (seasonN-data.json), or seasons_database.json — or click to browse</div>
+      <div class="fr-drop-sub">savestate exports (season-*-ep*.json), season data files (seasonN-data.json), seasons_database.json, or franchise exports (franchise-*.json) — or click to browse</div>
     </div>
     <input type="file" id="fr-file-input" accept=".json" multiple style="display:none" onchange="frHandleFileInput(event)">
     <div class="fr-drop-actions">

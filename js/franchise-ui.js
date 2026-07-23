@@ -593,6 +593,7 @@ export function frRenameFranchise() {
 export function frDeleteFranchise() {
   if (listFranchises().length <= 1) { alert('Cannot delete the last franchise.'); return; }
   const cur = franchiseLedger.franchises[franchiseLedger.active];
+  if (isFranchiseLocked(franchiseLedger.active)) { alert(`"${cur?.name || 'This franchise'}" is locked (sealed canon). Unlock it before deleting.`); return; }
   if (!confirm(`Delete franchise "${cur?.name || franchiseLedger.active}" and all its recorded seasons? This cannot be undone.`)) return;
   deleteFranchise(franchiseLedger.active);
   _persistAndRerender();

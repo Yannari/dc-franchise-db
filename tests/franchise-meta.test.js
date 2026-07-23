@@ -561,6 +561,35 @@ describe('franchiseRecords', () => {
   });
 });
 
+describe('returneePools — flavor pools and feuds', () => {
+  it('flavor pools are non-exclusive and feuds pair up real history', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 10, players: {
+        // Champion AND challenge machine AND villain — must appear in legends + titans + villains
+        Ace: _rec({ placement: 1, winner: true, finalist: true, chalWins: 5, blindsidesAuthored: 2, betrayed: ['Pip', 'Sam'], episodesLasted: 14 }),
+        Pip: _rec({ placement: 10, betrayedBy: ['Ace'], episodesLasted: 1 }),   // first boot (placement === castSize)
+        Sam: _rec({ placement: 4, betrayedBy: ['Ace'], showmances: [{ partner: 'Lux', ended: 'intact' }], episodesLasted: 12 }),
+        Lux: _rec({ placement: 5, showmances: [{ partner: 'Sam', ended: 'intact' }], rivals: ['Pip'], episodesLasted: 11 })
+      } },
+      '2': { seasonName: 'S2', castSize: 10, players: {
+        Ace: _rec({ placement: 3, finalist: true, chalWins: 2, blindsidesAuthored: 1, episodesLasted: 13 })
+      } }
+    } });
+    const p = returneePools();
+    expect(p.legends.map(x => x.name)).toContain('Ace');
+    expect(p.challengeTitans.map(x => x.name)).toContain('Ace');   // 7 career chalWins
+    expect(p.villains.map(x => x.name)).toContain('Ace');          // 3 blindsides + 2 betrayals
+    expect(p.showmanceStars.map(x => x.name)).toEqual(expect.arrayContaining(['Sam', 'Lux']));
+    expect(p.firstBootClub.map(x => x.name)).toContain('Pip');
+    expect(p.marathoners.map(x => x.name)).toContain('Ace');       // 27 episodes
+    // feuds: betrayal pair (Ace vs Pip or Ace vs Sam) present with a why
+    expect(p.feuds.length).toBeGreaterThan(0);
+    const feud = p.feuds.find(f => [f.a, f.b].includes('Ace'));
+    expect(feud).toBeTruthy();
+    expect(feud.why).toMatch(/betrayed/);
+  });
+});
+
 describe('returneePools', () => {
   it('sorts one player into each pool with the priority rule', () => {
     setFranchiseLedger({ seasons: {

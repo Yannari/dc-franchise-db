@@ -496,7 +496,8 @@ export function careerFor(name) {
       seasonNum, seasonName: seasonName || `Season ${seasonNum}`,
       placement: rec.placement || 0, winner: !!rec.winner, finalist: !!rec.finalist,
       blindsided: !!rec.blindsided, chalWins: rec.chalWins || 0, idolsPlayed: rec.idolsPlayed || 0,
-      blindsidesAuthored: rec.blindsidesAuthored || 0, backfilled: !!rec.backfilled
+      blindsidesAuthored: rec.blindsidesAuthored || 0, backfilled: !!rec.backfilled,
+      episodesLasted: rec.episodesLasted || 0
     };
   });
   if (!slug) slug = _slugify(name); // last resort so portraits still resolve
@@ -651,10 +652,61 @@ export function returneePools() {
     }
     void claimed;
   }
+
+  // ── flavor pools — NON-exclusive (a legend can also be a challenge titan);
+  // only the four core story pools above are one-per-name.
+  Object.assign(scored, { villains: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
+  Object.assign(pools, { villains: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
+  for (const name of names) {
+    const c = careerFor(name); if (!c) continue;
+    const slug = c.slug;
+    const menace = (c.totals.blindsidesAuthored || 0) + (c.totals.betrayalsCommitted || 0);
+    if (menace >= 3) scored.villains.push({ name, slug, rel: menace,
+      why: `${c.totals.blindsidesAuthored} blindside${c.totals.blindsidesAuthored === 1 ? '' : 's'} · ${c.totals.betrayalsCommitted} betrayal${c.totals.betrayalsCommitted === 1 ? '' : 's'}` });
+    if ((c.totals.chalWins || 0) >= 4) scored.challengeTitans.push({ name, slug, rel: c.totals.chalWins,
+      why: `${c.totals.chalWins} career immunity wins` });
+    if ((c.people.showmances || []).length >= 1) {
+      const sh = c.people.showmances[0];
+      scored.showmanceStars.push({ name, slug, rel: c.people.showmances.length * 10,
+        why: `Showmance with ${sh.partner} (S${sh.seasonNum}${sh.ended === 'intact' ? ', lasted' : ''})${c.people.showmances.length > 1 ? ` +${c.people.showmances.length - 1} more` : ''}` });
+    }
+    for (const s of c.seasons) {
+      const cs = _castSizeOf(s.seasonNum);
+      if (cs && s.placement === cs) {
+        scored.firstBootClub.push({ name, slug, rel: 100 - s.seasonNum, why: `First out in S${s.seasonNum}` });
+        break;
+      }
+    }
+    const eps = c.seasons.reduce((t, s) => t + (s.episodesLasted || 0), 0);
+    if (eps >= 20) scored.marathoners.push({ name, slug, rel: eps, why: `${eps} episodes survived across ${c.totals.seasons} seasons` });
+  }
+
   for (const key of Object.keys(pools)) {
     pools[key] = scored[key].sort((a, b) => b.rel - a.rel || a.name.localeCompare(b.name))
       .slice(0, 8).map(({ name, slug, why }) => ({ name, slug, why }));
   }
+
+  // ── unfinished feuds — PAIRS with real history, for rivalry-driven casting
+  const feudMap = {};
+  for (const [num, season] of Object.entries(activeSeasons())) {
+    if (season.included === false) continue;
+    for (const [nm, rec] of Object.entries(season.players || {})) {
+      for (const victim of rec.betrayed || []) {
+        const k = [nm, victim].sort().join('||');
+        if (!feudMap[k] || feudMap[k].rel < 20) feudMap[k] = { a: nm, b: victim, rel: 20 + Number(num), why: `S${num}: ${nm} betrayed ${victim}` };
+      }
+      for (const rival of rec.rivals || []) {
+        const k = [nm, rival].sort().join('||');
+        if (!feudMap[k]) feudMap[k] = { a: nm, b: rival, rel: 10 + Number(num), why: `Bitter rivals in S${num}` };
+      }
+    }
+  }
+  pools.feuds = Object.values(feudMap)
+    .filter(f => names.has(f.a) && names.has(f.b))
+    .sort((x, y) => y.rel - x.rel)
+    .slice(0, 6)
+    .map(f => ({ a: f.a, b: f.b, slugA: careerFor(f.a)?.slug, slugB: careerFor(f.b)?.slug, why: f.why }));
+
   return pools;
 }
 

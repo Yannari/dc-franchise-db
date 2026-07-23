@@ -366,39 +366,68 @@ function _careerPanelHtml(c) {
 
 // ── 3. ALL-STARS SCOUT ────────────────────────────────────────────────
 const _POOL_META = {
-  legends: { label: 'Legends', blurb: 'Champions & multi-finalists' },
-  unfinishedBusiness: { label: 'Unfinished Business', blurb: 'Robbed mid-run — blindsided deep' },
-  fallenAngels: { label: 'Fallen Angels', blurb: 'Rode high, then crashed back down' },
-  redemption: { label: 'Redemption Arc', blurb: 'Never made the merge — hungry for more' }
+  legends: { label: 'Legends', icon: '👑', blurb: 'Champions & multi-finalists' },
+  unfinishedBusiness: { label: 'Unfinished Business', icon: '🗡', blurb: 'Robbed mid-run — blindsided deep' },
+  fallenAngels: { label: 'Fallen Angels', icon: '🪽', blurb: 'Rode high, then crashed back down' },
+  redemption: { label: 'Redemption Arc', icon: '🌱', blurb: 'Never made the merge — hungry for more' },
+  villains: { label: 'Villains & Masterminds', icon: '😈', blurb: 'Career blindsiders and betrayers' },
+  challengeTitans: { label: 'Challenge Titans', icon: '🏅', blurb: 'The immunity-run machines' },
+  showmanceStars: { label: 'Showmance Stars', icon: '💘', blurb: 'Hearts on their sleeves, cameras on them' },
+  firstBootClub: { label: 'First Boot Club', icon: '🥾', blurb: 'Out first — owed a real chance' },
+  marathoners: { label: 'Marathoners', icon: '⏳', blurb: 'The most days survived on the books' },
+  feuds: { label: 'Unfinished Feuds', icon: '⚡', blurb: 'Pairs with scores to settle — cast both' }
 };
+const _POOL_ORDER = ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption',
+  'villains', 'challengeTitans', 'showmanceStars', 'firstBootClub', 'marathoners', 'feuds'];
+
+// Collapsed-state memory: survives tab re-renders within the session.
+function _openPools() {
+  if (typeof window === 'undefined') return new Set();
+  if (!window._frOpenPools) window._frOpenPools = new Set(['legends']); // first pool open by default
+  return window._frOpenPools;
+}
+
 function _renderScout() {
   const pools = returneePools();
-  const order = ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption'];
-  const anyData = order.some(k => pools[k].length);
+  const anyData = _POOL_ORDER.some(k => (pools[k] || []).length);
   if (!anyData) return '';
-  const rows = order.map(key => {
+  const open = _openPools();
+  const rows = _POOL_ORDER.map(key => {
     const meta = _POOL_META[key];
-    const list = pools[key];
-    const chips = list.length
-      ? list.map(x => `<div class="fr-scout-chip fr-clickable" ${_careerClick(x.name)} title="${_esc(x.why)}">
+    const list = pools[key] || [];
+    if (!list.length) return ''; // empty pools disappear entirely — no space wasted
+    const isOpen = open.has(key);
+    const chips = key === 'feuds'
+      ? list.map(f => `<div class="fr-scout-chip fr-feud-chip" title="${_esc(f.why)}">
+          <span class="fr-feud-pair"><span class="fr-clickable" ${_careerClick(f.a)}>${_winnerPortrait(f.a, false, f.slugA)}</span><span class="fr-feud-bolt">⚡</span><span class="fr-clickable" ${_careerClick(f.b)}>${_winnerPortrait(f.b, false, f.slugB)}</span></span>
+          <span class="fr-scout-body"><span class="fr-scout-name">${_esc(f.a)} vs ${_esc(f.b)}</span><span class="fr-scout-why">${_esc(f.why)}</span></span>
+        </div>`).join('')
+      : list.map(x => `<div class="fr-scout-chip fr-clickable" ${_careerClick(x.name)} title="${_esc(x.why)}">
           ${_winnerPortrait(x.name, false, x.slug)}
           <span class="fr-scout-body"><span class="fr-scout-name">${_esc(x.name)}</span><span class="fr-scout-why">${_esc(x.why)}</span></span>
-        </div>`).join('')
-      : `<div class="fr-legacy-empty">No candidates in this pool yet.</div>`;
-    return `<div class="fr-pool fr-pool-${key}">
-      <div class="fr-pool-head">
-        <div class="fr-pool-titles"><span class="fr-pool-label">${_esc(meta.label)}</span><span class="fr-pool-blurb">${_esc(meta.blurb)}</span></div>
-        ${list.length ? `<button class="fr-btn fr-btn-sm fr-copy-btn" onclick="frCopyPool('${key}')" title="Copy this pool as a cast list">📋 Copy</button>` : ''}
-      </div>
-      <div class="fr-pool-chips">${chips}</div>
+        </div>`).join('');
+    return `<div class="fr-pool fr-pool-${key} ${isOpen ? 'open' : ''}">
+      <button class="fr-pool-head fr-pool-toggle" onclick="frTogglePool('${key}')" aria-expanded="${isOpen}">
+        <span class="fr-pool-chev">${isOpen ? '▾' : '▸'}</span>
+        <div class="fr-pool-titles"><span class="fr-pool-label">${meta.icon} ${_esc(meta.label)}</span><span class="fr-pool-blurb">${_esc(meta.blurb)}</span></div>
+        <span class="fr-pool-count">${list.length}</span>
+        ${key !== 'feuds' ? `<span class="fr-btn fr-btn-sm fr-copy-btn" onclick="event.stopPropagation();frCopyPool('${key}')" title="Copy this pool as a cast list">📋</span>` : `<span class="fr-btn fr-btn-sm fr-copy-btn" onclick="event.stopPropagation();frCopyPool('feuds')" title="Copy both sides of every feud">📋</span>`}
+      </button>
+      ${isOpen ? `<div class="fr-pool-chips">${chips}</div>` : ''}
     </div>`;
   }).join('');
   return `<div class="vp-section-header gold">All-Stars Scout</div>
     <div class="fr-scout-topbar">
-      <div class="fr-careers-hint">Ready-made returnee shortlists drawn from this franchise's canon.</div>
+      <div class="fr-careers-hint">Ready-made returnee shortlists drawn from this franchise's canon — click a pool to expand.</div>
       <button class="fr-btn fr-btn-sm fr-copy-btn" onclick="frCopyAllStars()" title="Copy a balanced all-stars cast (top picks from every pool)">📋 Copy All-Stars pool</button>
     </div>
     <div class="fr-scout">${rows}</div>`;
+}
+
+export function frTogglePool(key) {
+  const open = _openPools();
+  if (open.has(key)) open.delete(key); else open.add(key);
+  renderFranchiseTab();
 }
 
 // ── CSS injection (one-time; simulator.html stays untouched) ───────────
@@ -486,11 +515,28 @@ const _LEGACY_CSS = `
 /* All-Stars Scout */
 .fr-scout-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .fr-scout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
-.fr-pool { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 15px; border-top: 3px solid var(--accent-gold); }
+.fr-pool { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0; border-top: 3px solid var(--accent-gold); overflow: hidden; }
 .fr-pool-unfinishedBusiness { border-top-color: var(--accent-fire); }
 .fr-pool-fallenAngels { border-top-color: #b9c2cc; }
 .fr-pool-redemption { border-top-color: var(--accent); }
-.fr-pool-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.fr-pool-villains { border-top-color: #c05ce0; }
+.fr-pool-challengeTitans { border-top-color: var(--accent-ice); }
+.fr-pool-showmanceStars { border-top-color: #e0668f; }
+.fr-pool-firstBootClub { border-top-color: #8a93a0; }
+.fr-pool-marathoners { border-top-color: #b98a4a; }
+.fr-pool-feuds { border-top-color: var(--accent-fire); }
+.fr-pool-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fr-pool-toggle { width: 100%; background: transparent; border: 0; padding: 12px 15px; cursor: pointer; text-align: left; color: inherit; font: inherit; transition: background .15s; }
+.fr-pool-toggle:hover { background: var(--accent-dim); }
+.fr-pool-toggle:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: -2px; }
+.fr-pool-chev { font-size: 12px; color: var(--muted); flex-shrink: 0; width: 14px; }
+.fr-pool-titles { flex: 1; min-width: 0; }
+.fr-pool-count { font-family: var(--font-mono, monospace); font-size: 11px; font-weight: 700; color: var(--accent-gold); background: rgba(240,192,64,.1); border: 1px solid rgba(240,192,64,.3); border-radius: 10px; padding: 1px 8px; flex-shrink: 0; }
+.fr-pool.open .fr-pool-chips { padding: 0 15px 14px; }
+.fr-feud-pair { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.fr-feud-bolt { color: var(--accent-fire); font-size: 13px; }
+.fr-feud-chip:hover { border-color: var(--accent-fire); }
+@media (prefers-reduced-motion: reduce) { .fr-pool-toggle, .fr-scout-chip { transition: none; } }
 .fr-pool-titles { display: flex; flex-direction: column; gap: 2px; }
 .fr-pool-label { font-family: var(--font-display); font-size: 17px; letter-spacing: .6px; color: var(--text); }
 .fr-pool-blurb { font-size: 10px; color: var(--muted); letter-spacing: .3px; }
@@ -548,7 +594,10 @@ export function frCopyPool(key) {
   const pool = returneePools()[key] || [];
   if (!pool.length) return;
   const meta = _POOL_META[key];
-  _copyText(pool.map(x => x.name).join('\n'), `${meta ? meta.label : key} cast list`);
+  const names = key === 'feuds'
+    ? [...new Set(pool.flatMap(f => [f.a, f.b]))]
+    : pool.map(x => x.name);
+  _copyText(names.join('\n'), `${meta ? meta.label : key} cast list`);
 }
 export function frCopyAllStars() {
   const pools = returneePools();

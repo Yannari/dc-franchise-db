@@ -471,3 +471,155 @@ describe('recordSeasonFromSavestate', () => {
     expect(again.needsConfirm).toBeUndefined();
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// Legacy layer — careerFor / franchiseRecords / returneePools + canon lock
+// ══════════════════════════════════════════════════════════════════════
+import { careerFor, franchiseRecords, returneePools, setFranchiseLocked,
+  isFranchiseLocked, backfillFromSeasonsDb, backfillFromSeasonData,
+  wipeLedger, deleteFranchise } from '../js/franchise-meta.js';
+
+function _rec(o = {}) {
+  return { placement: 0, winner: false, finalist: false, blindsided: false, blindsidedBy: [],
+    blindsidesAuthored: 0, idolsFound: 0, idolsPlayed: 0, idoledOut: false, betrayed: [], betrayedBy: [],
+    allies: [], showmances: [], rivals: [], chalWins: 0, schemesCaught: 0, ...o };
+}
+
+describe('careerFor', () => {
+  function seedCareer() {
+    // Nyla: 3 seasons — a title, a finals loss, and a mid boot with schemes.
+    setFranchiseLedger({ seasons: {
+      '4': { seasonName: 'S4', castSize: 12, players: {
+        Nyla: _rec({ placement: 1, winner: true, finalist: true, chalWins: 3, idolsPlayed: 2, idolsFound: 3, blindsidesAuthored: 2, allies: ['Bea'], betrayed: ['Cal'], showmances: [{ partner: 'Dov', ended: 'intact' }], slug: 'nyla-x' }),
+        Bea: _rec({ placement: 2, finalist: true, allies: ['Nyla'] }),
+        Cal: _rec({ placement: 8, blindsided: true, blindsidedBy: ['Nyla'], betrayedBy: ['Nyla'] })
+      } },
+      '6': { seasonName: 'S6', castSize: 14, players: {
+        Nyla: _rec({ placement: 2, finalist: true, chalWins: 2, blindsidesAuthored: 1, allies: ['Bea'], rivals: ['Cal'], betrayed: ['Eve'], showmances: [{ partner: 'Fen', ended: 'breakup' }] }),
+        Bea: _rec({ placement: 5 }), Cal: _rec({ placement: 3, finalist: true }), Eve: _rec({ placement: 9, betrayedBy: ['Nyla'] })
+      } },
+      '9': { seasonName: 'S9', castSize: 16, players: {
+        Nyla: _rec({ placement: 11, blindsided: true, blindsidedBy: ['Cal'], chalWins: 1, betrayed: ['Bea'], rivals: ['Cal'], schemesCaught: 2 }),
+        Cal: _rec({ placement: 1, winner: true, finalist: true }), Bea: _rec({ placement: 10, betrayedBy: ['Nyla'] })
+      } }
+    } });
+  }
+  it('aggregates totals, sorted people, and badges', () => {
+    seedCareer();
+    const c = careerFor('Nyla');
+    expect(c.slug).toBe('nyla-x');                       // slug from a season that has one
+    expect(c.seasons.map(s => s.seasonNum)).toEqual([4, 6, 9]); // oldest→newest
+    expect(c.totals).toMatchObject({ seasons: 3, wins: 1, finals: 2, chalWins: 6, idolsPlayed: 2,
+      idolsFound: 3, blindsidesAuthored: 3, timesBlindsided: 1, betrayalsCommitted: 3, bestPlacement: 1 });
+    expect(c.totals.avgPlacement).toBeCloseTo((1 + 2 + 11) / 3, 1);
+    // people aggregation + count sort
+    expect(c.people.allies[0]).toEqual({ name: 'Bea', count: 2 });
+    expect(c.people.showmances.length).toBe(2);
+    // badges: CHAMPION ×1 plus at least one more (BLINDSIDE ARTIST, CHALLENGE MACHINE, SURVIVOR, SNAKE, HEARTBREAKER)
+    expect(c.badges).toContain('CHAMPION ×1');
+    expect(c.badges).toContain('BLINDSIDE ARTIST');
+    expect(c.badges).toContain('CHALLENGE MACHINE');
+    expect(c.badges).toContain('SURVIVOR');
+    expect(c.badges.length).toBeGreaterThan(1);
+  });
+  it('returns null for a name with no history', () => {
+    seedCareer();
+    expect(careerFor('Nobody')).toBeNull();
+  });
+  it('excluded seasons do not count toward a career', () => {
+    seedCareer();
+    setSeasonIncluded(9, false);
+    const c = careerFor('Nyla');
+    expect(c.totals.seasons).toBe(2);
+    expect(c.totals.timesBlindsided).toBe(0);
+  });
+});
+
+describe('franchiseRecords', () => {
+  it('lists holders and enforces the min-2-seasons rule for avg placement', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 10, players: {
+        Ace: _rec({ placement: 1, winner: true, finalist: true, chalWins: 4, blindsidesAuthored: 3 }),
+        Bo: _rec({ placement: 2, finalist: true }) } },
+      '2': { seasonName: 'S2', castSize: 10, players: {
+        Ace: _rec({ placement: 3, finalist: true, chalWins: 1 }),
+        Bo: _rec({ placement: 6 }) } }
+    } });
+    const recs = franchiseRecords();
+    const titles = recs.find(r => r.title === 'Most titles');
+    expect(titles).toMatchObject({ holder: 'Ace', value: 1 });
+    const avg = recs.find(r => r.title === 'Best average placement');
+    // Ace avg (1+3)/2=2, Bo avg (2+6)/2=4 → Ace holds it; both have ≥2 seasons
+    expect(avg).toMatchObject({ holder: 'Ace' });
+    expect(avg.value).toBeCloseTo(2, 1);
+  });
+  it('skips average-placement record when nobody has 2 scored seasons', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', players: { Solo: _rec({ placement: 1, winner: true, finalist: true }) } }
+    } });
+    expect(franchiseRecords().find(r => r.title === 'Best average placement')).toBeUndefined();
+  });
+});
+
+describe('returneePools', () => {
+  it('sorts one player into each pool with the priority rule', () => {
+    setFranchiseLedger({ seasons: {
+      // Champ — also blindsided, but legends wins the tie-break
+      '1': { seasonName: 'S1', castSize: 12, players: {
+        Champ: _rec({ placement: 1, winner: true, finalist: true, blindsided: true, blindsidedBy: ['Rob'] }),
+        Rob: _rec({ placement: 6, blindsided: true, blindsidedBy: ['Champ'], blindsidesAuthored: 2 }),
+        Fade: _rec({ placement: 2, finalist: true }),
+        Doom: _rec({ placement: 11 }) } },
+      // Fade falls: was finalist S1, bottom-half in S2 → fallenAngels
+      '2': { seasonName: 'S2', castSize: 12, players: {
+        Fade: _rec({ placement: 10 }),
+        Doom: _rec({ placement: 12 }) } }
+    } });
+    const p = returneePools();
+    const has = (pool, nm) => p[pool].some(x => x.name === nm);
+    expect(has('legends', 'Champ')).toBe(true);
+    expect(has('unfinishedBusiness', 'Champ')).toBe(false); // priority: only in legends
+    expect(has('fallenAngels', 'Fade')).toBe(true);
+    expect(has('unfinishedBusiness', 'Rob')).toBe(true);    // blindsided last season, ran deep
+    expect(has('redemption', 'Doom')).toBe(true);           // never made merge across 2 runs
+    // each with a why line + slug
+    expect(p.legends.find(x => x.name === 'Champ').why).toMatch(/champion/i);
+    expect(p.legends[0].slug).toBeTruthy();
+  });
+});
+
+describe('canon lock', () => {
+  function seedLocked() {
+    setFranchiseLedger({ seasons: { '1': { seasonName: 'S1', players: { A: _rec({ placement: 1, winner: true }) } } } });
+    setFranchiseLocked('main', true);
+  }
+  it('blocks manual record, backfills, wipe, and delete while locked', () => {
+    seedLocked();
+    setSeasonConfig({ ...defaultConfig(), seasonNumber: 5, name: 'Blocked' });
+    setGs({ phase: 'complete', seasonNumber: 5, finaleResult: { winner: 'A', finalists: ['A'] },
+      episodeHistory: [], bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {} });
+    expect(recordSeasonToLedger(null, 'manual')).toBe(false);
+    expect(recordSeasonToLedger(null, 'live')).toBe(false);
+    expect(backfillFromSeasonsDb({ seasons: [{ seasonNumber: 2, players: [{ name: 'Z', placement: 1 }] }] })).toBe(0);
+    expect(backfillFromSeasonData({ seasonNumber: 3, placements: [{ name: 'Z', placement: 1 }] })).toMatchObject({ ok: false, error: 'Franchise is locked' });
+    expect(recordSeasonFromSavestate({ gs: { phase: 'complete', seasonNumber: 4 } })).toMatchObject({ ok: false, error: 'Franchise is locked' });
+    expect(wipeLedger()).toBe(false);
+    expect(activeSeasons()['1']).toBeTruthy();            // nothing wiped
+    const other = createFranchise('Temp'); setActiveFranchise('main');
+    expect(deleteFranchise('main')).toBe(false);          // locked can't be deleted
+    void other;
+  });
+  it('unlock restores writes; importFranchiseExport works even while locked', () => {
+    seedLocked();
+    // import creates a NEW franchise regardless of lock
+    const res = importFranchiseExport({ type: 'dc-franchise-export', seasons: { '9': { seasonName: 'S9', players: {} } } });
+    expect(res.ok).toBe(true);
+    // back to the locked one, unlock, then a wipe succeeds
+    setActiveFranchise('main');
+    expect(isFranchiseLocked('main')).toBe(true);
+    setFranchiseLocked('main', false);
+    expect(isFranchiseLocked('main')).toBe(false);
+    expect(wipeLedger()).toBe(true);
+    expect(activeSeasons()['1']).toBeUndefined();
+  });
+});

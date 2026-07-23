@@ -59,6 +59,7 @@ export function deleteFranchise(id) {
   activeFranchise();
   const ids = Object.keys(franchiseLedger.franchises);
   if (ids.length <= 1 || !franchiseLedger.franchises[id]) return false; // cannot delete the last one
+  if (franchiseLedger.franchises[id].locked) return false;              // a locked archive can't be deleted
   delete franchiseLedger.franchises[id];
   if (franchiseLedger.active === id) franchiseLedger.active = Object.keys(franchiseLedger.franchises)[0];
   return true;
@@ -67,6 +68,25 @@ export function setActiveFranchise(id) {
   activeFranchise();
   if (!franchiseLedger.franchises[id]) return false;
   franchiseLedger.active = id; return true;
+}
+
+// ── Canon lock ─────────────────────────────────────────────────────────
+// A locked franchise is a sealed archive: no season can be recorded, imported,
+// backfilled, or wiped, and the franchise itself cannot be deleted. Meta-only
+// operations (include toggles, clearing a player's carried history) stay allowed
+// because they re-weight, not rewrite. Importing a franchise EXPORT is always
+// allowed — it creates a brand-new (unlocked) franchise and never mutates a
+// locked one.
+export function isFranchiseLocked(id) {
+  activeFranchise();
+  const f = franchiseLedger.franchises[id || franchiseLedger.active];
+  return !!(f && f.locked);
+}
+export function setFranchiseLocked(id, bool) {
+  activeFranchise();
+  const f = franchiseLedger.franchises[id]; if (!f) return false;
+  if (bool) f.locked = true; else delete f.locked;
+  return true;
 }
 // Include toggle — excluded seasons still persist but feed nothing to meta.
 export function setSeasonIncluded(seasonNum, bool) {
@@ -365,6 +385,7 @@ function _emptyRecord() {
 }
 
 export function backfillFromSeasonsDb(json) {
+  if (activeFranchise().locked) return 0; // sealed archive — no backfill
   const seasons = Array.isArray(json?.seasons) ? json.seasons : [];
   const _seasons = activeSeasons();
   let imported = 0;
@@ -403,6 +424,7 @@ export function backfillFromSeasonsDb(json) {
 // who are not in the current roster. Same protection rule as the DB backfill:
 // live/manual records are never overwritten.
 export function backfillFromSeasonData(json) {
+  if (activeFranchise().locked) return { ok: false, error: 'Franchise is locked' };
   const num = json?.seasonNumber;
   if (!num || !Array.isArray(json?.placements)) return { ok: false, error: 'Not a season data file' };
   const _seasons = activeSeasons();
@@ -442,6 +464,198 @@ export function franchiseHistorySummary(name) {
 
 export function clearPlayerHistory(name) {
   for (const season of Object.values(activeSeasons())) delete season.players?.[name];
+}
+
+// ── Career aggregation (Legacy layer — pure reads over included seasons) ───
+function _castSizeOf(seasonNum) {
+  const s = activeSeasons()[String(seasonNum)];
+  if (!s) return 0;
+  return s.castSize || Object.keys(s.players || {}).length || 0;
+}
+// The "merge-ish" mark: made it past the halfway cut. When cast size is known we
+// use castSize/2; otherwise fall back to placement ≤ 9 (top-9-ish is the merge in
+// a typical field). Returns true when the player reached/beat that mark.
+function _madeMergeMark(placement, castSize) {
+  if (!placement || placement <= 0) return false;
+  const half = castSize ? castSize / 2 : 9;
+  return placement <= half;
+}
+function _rankCounts(map) {
+  return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+// Full cross-season résumé for ONE player over the active franchise's included
+// seasons. Pure ledger facts — no live sim state. Returns null if no history.
+export function careerFor(name) {
+  const history = _historyFor(name); // [{ seasonNum, seasonName, rec }] oldest→newest, included only
+  if (!history.length) return null;
+  let slug = '';
+  const seasons = history.map(({ seasonNum, seasonName, rec }) => {
+    if (!slug && rec.slug) slug = rec.slug;
+    return {
+      seasonNum, seasonName: seasonName || `Season ${seasonNum}`,
+      placement: rec.placement || 0, winner: !!rec.winner, finalist: !!rec.finalist,
+      blindsided: !!rec.blindsided, chalWins: rec.chalWins || 0, idolsPlayed: rec.idolsPlayed || 0,
+      blindsidesAuthored: rec.blindsidesAuthored || 0, backfilled: !!rec.backfilled
+    };
+  });
+  if (!slug) slug = _slugify(name); // last resort so portraits still resolve
+  const allies = {}, rivals = {}, betrayed = {}, betrayedBy = {}, showmances = [];
+  const totals = {
+    seasons: history.length, wins: 0, finals: 0, chalWins: 0, idolsPlayed: 0, idolsFound: 0,
+    blindsidesAuthored: 0, timesBlindsided: 0, betrayalsCommitted: 0, timesBetrayed: 0,
+    schemesCaught: 0, bestPlacement: 0, avgPlacement: 0
+  };
+  let placeSum = 0, placeN = 0;
+  for (const { seasonNum, rec } of history) {
+    totals.wins += rec.winner ? 1 : 0;
+    totals.finals += rec.finalist ? 1 : 0; // finalist appearances (a win is a finals appearance too)
+    totals.chalWins += rec.chalWins || 0;
+    totals.idolsPlayed += rec.idolsPlayed || 0;
+    totals.idolsFound += rec.idolsFound || 0;
+    totals.blindsidesAuthored += rec.blindsidesAuthored || 0;
+    totals.timesBlindsided += rec.blindsided ? 1 : 0;
+    totals.betrayalsCommitted += (rec.betrayed || []).length;
+    totals.timesBetrayed += (rec.betrayedBy || []).length;
+    totals.schemesCaught += rec.schemesCaught || 0;
+    if (rec.placement > 0) {
+      placeSum += rec.placement; placeN++;
+      if (!totals.bestPlacement || rec.placement < totals.bestPlacement) totals.bestPlacement = rec.placement;
+    }
+    for (const a of rec.allies || []) allies[a] = (allies[a] || 0) + 1;
+    for (const r of rec.rivals || []) rivals[r] = (rivals[r] || 0) + 1;
+    for (const b of rec.betrayed || []) betrayed[b] = (betrayed[b] || 0) + 1;
+    for (const b of rec.betrayedBy || []) betrayedBy[b] = (betrayedBy[b] || 0) + 1;
+    for (const sh of rec.showmances || []) showmances.push({ partner: sh.partner, ended: sh.ended, seasonNum });
+  }
+  totals.avgPlacement = placeN ? +(placeSum / placeN).toFixed(1) : 0;
+
+  const badges = [];
+  if (totals.wins >= 1) badges.push(`CHAMPION ×${totals.wins}`);
+  if (totals.finals >= 2) badges.push('FINALS FIXTURE');
+  if (totals.blindsidesAuthored >= 3) badges.push('BLINDSIDE ARTIST');
+  if (totals.idolsFound >= 2) badges.push('IDOL HUNTER');
+  if (totals.chalWins >= 6) badges.push('CHALLENGE MACHINE');
+  if (totals.seasons >= 3) badges.push('SURVIVOR');
+  if (totals.betrayalsCommitted >= 3) badges.push('SNAKE');
+  if (showmances.length >= 2) badges.push('HEARTBREAKER');
+  if (totals.timesBlindsided >= 2 && totals.wins === 0) badges.push('CURSED');
+
+  return {
+    name, slug, seasons, totals,
+    people: {
+      allies: _rankCounts(allies), rivals: _rankCounts(rivals),
+      betrayed: _rankCounts(betrayed), betrayedBy: _rankCounts(betrayedBy),
+      showmances
+    },
+    badges
+  };
+}
+
+// Record book across the active franchise's included seasons. Skips any record
+// with no data so an empty franchise shows an empty book, not zeros.
+export function franchiseRecords() {
+  const careers = {};
+  for (const [num, season] of Object.entries(activeSeasons())) {
+    if (season.included === false) continue;
+    for (const nm of Object.keys(season.players || {})) {
+      if (!careers[nm]) careers[nm] = careerFor(nm);
+    }
+    void num;
+  }
+  const list = Object.values(careers).filter(Boolean);
+  if (!list.length) return [];
+  const out = [];
+  const push = (title, holder, value, detail) => { if (holder) out.push({ title, holder, value, detail }); };
+  const best = (metric, min = 0) => {
+    let top = null;
+    for (const c of list) { const v = metric(c); if (v > min && (!top || v > top.v)) top = { c, v }; }
+    return top;
+  };
+  let t;
+  t = best(c => c.totals.wins); push('Most titles', t?.c.name, t?.v, t ? `${t.v} title${t.v === 1 ? '' : 's'}` : '');
+  t = best(c => c.totals.chalWins); push('Most career immunity wins', t?.c.name, t?.v, t ? `${t.v} immunity wins` : '');
+  t = best(c => c.totals.blindsidesAuthored); push('Most blindsides authored', t?.c.name, t?.v, t ? `${t.v} blindsides` : '');
+  t = best(c => c.totals.seasons, 1); push('Most seasons played', t?.c.name, t?.v, t ? `${t.v} seasons` : '');
+  // Best average placement — only players with ≥2 scored seasons qualify; lower is better.
+  let ap = null;
+  for (const c of list) {
+    const scored = c.seasons.filter(s => s.placement > 0).length;
+    if (scored >= 2 && c.totals.avgPlacement > 0 && (!ap || c.totals.avgPlacement < ap.v)) ap = { c, v: c.totals.avgPlacement };
+  }
+  if (ap) out.push({ title: 'Best average placement', holder: ap.c.name, value: ap.v, detail: `avg ${ap.v} over ${ap.c.totals.seasons} seasons` });
+  t = best(c => c.totals.idolsPlayed); push('Most idols played', t?.c.name, t?.v, t ? `${t.v} idols` : '');
+  t = best(c => c.totals.timesBetrayed); push('Most times betrayed', t?.c.name, t?.v, t ? `${t.v} betrayals` : '');
+  t = best(c => c.totals.schemesCaught); push('Most schemes caught', t?.c.name, t?.v, t ? `${t.v} caught` : '');
+  return out;
+}
+
+// All-Stars scouting pools drawn from the active franchise's included seasons.
+// A name lands in exactly ONE pool (priority legends > fallenAngels >
+// unfinishedBusiness > redemption). Each pool caps at 8, sorted by relevance.
+export function returneePools() {
+  const names = new Set();
+  for (const season of Object.values(activeSeasons())) {
+    if (season.included === false) continue;
+    for (const nm of Object.keys(season.players || {})) names.add(nm);
+  }
+  const pools = { legends: [], unfinishedBusiness: [], fallenAngels: [], redemption: [] };
+  const claimed = new Set();
+  const scored = { legends: [], unfinishedBusiness: [], fallenAngels: [], redemption: [] };
+
+  for (const name of names) {
+    const c = careerFor(name); if (!c) continue;
+    const slug = c.slug;
+    const last = c.seasons[c.seasons.length - 1];
+
+    // legends — winners + multi-finalists
+    if (c.totals.wins >= 1 || c.totals.finals >= 2) {
+      const why = c.totals.wins >= 1
+        ? (c.totals.wins > 1 ? `${c.totals.wins}× champion` : 'Former champion')
+        : `${c.totals.finals}× finalist`;
+      scored.legends.push({ name, slug, why, rel: c.totals.wins * 100 + c.totals.finals });
+      claimed.add(name); continue;
+    }
+    // fallenAngels — a win/finalist season followed by a LATER bottom-half season
+    let fell = null;
+    for (let i = 0; i < c.seasons.length - 1; i++) {
+      if (!(c.seasons[i].winner || c.seasons[i].finalist)) continue;
+      for (let j = i + 1; j < c.seasons.length; j++) {
+        const later = c.seasons[j];
+        const cs = _castSizeOf(later.seasonNum);
+        const half = cs ? cs / 2 : 9;
+        if (later.placement > 0 && later.placement > half) { fell = { peak: c.seasons[i], later }; break; }
+      }
+      if (fell) break;
+    }
+    if (fell) {
+      scored.fallenAngels.push({ name, slug,
+        why: `${fell.peak.winner ? 'Champion' : 'Finalist'} S${fell.peak.seasonNum}, then ${_ordinal(fell.later.placement)} in S${fell.later.seasonNum}`,
+        rel: (fell.peak.winner ? 2 : 1) * 100 + fell.later.placement });
+      claimed.add(name); continue;
+    }
+    // unfinishedBusiness — blindsided in their LAST season while making a real run
+    if (last && last.blindsided && (last.blindsidesAuthored >= 1 || (last.placement > 0 && last.placement <= 6))) {
+      scored.unfinishedBusiness.push({ name, slug,
+        why: `Blindsided ${_ordinal(last.placement)} in S${last.seasonNum}${last.blindsidesAuthored >= 1 ? ` after ${last.blindsidesAuthored} of their own` : ''}`,
+        rel: (last.blindsidesAuthored || 0) * 10 + (20 - Math.min(20, last.placement)) });
+      claimed.add(name); continue;
+    }
+    // redemption — never passed the merge-ish mark across ≥1 season
+    if (c.seasons.length && c.seasons.every(s => !_madeMergeMark(s.placement, _castSizeOf(s.seasonNum)))) {
+      const worst = c.seasons.reduce((a, s) => s.placement > (a?.placement || 0) ? s : a, null);
+      scored.redemption.push({ name, slug,
+        why: `Never made the merge — best ${_ordinal(c.totals.bestPlacement || (worst ? worst.placement : 0))} in ${c.totals.seasons} run${c.totals.seasons === 1 ? '' : 's'}`,
+        rel: c.totals.seasons * 10 + (worst ? worst.placement : 0) });
+      claimed.add(name); continue;
+    }
+    void claimed;
+  }
+  for (const key of Object.keys(pools)) {
+    pools[key] = scored[key].sort((a, b) => b.rel - a.rel || a.name.localeCompare(b.name))
+      .slice(0, 8).map(({ name, slug, why }) => ({ name, slug, why }));
+  }
+  return pools;
 }
 
 // ── Self-healing meta retrofit ────────────────────────────────────────────
@@ -490,10 +704,23 @@ export function importFranchiseExport(json) {
 }
 
 // Wipes the ACTIVE franchise's seasons only (other franchises untouched).
-export function wipeLedger() { activeFranchise().seasons = {}; }
+export function wipeLedger() {
+  const af = activeFranchise();
+  if (af.locked) return false; // sealed archive — nothing wiped
+  af.seasons = {};
+  return true;
+}
 
 // Idempotent: keyed by season number; live records always overwrite backfill.
 export function recordSeasonToLedger(_ep, source = 'live') {
+  const af = activeFranchise();
+  if (af.locked) {
+    // Locked franchises reject BOTH the finale auto-record (live) and manual
+    // records. Log from here so the rejection is visible even though finale.js's
+    // own "season number not set" warning (which we do not edit) may also fire.
+    console.warn(`Franchise "${af.name || 'Untitled'}" is locked — season not recorded.`);
+    return false;
+  }
   if (source === 'live' && (seasonConfig?.franchiseMeta === false || seasonConfig?.franchiseMetaAutoRecord === false)) return false;
   const rec = deriveSeasonRecord();
   if (!rec) return false;
@@ -507,6 +734,7 @@ export function recordSeasonToLedger(_ep, source = 'live') {
 // live gs/players. Writes into the ACTIVE franchise. Returns a result object.
 export function recordSeasonFromSavestate(parsedJson, opts = {}) {
   if (!parsedJson || typeof parsedJson !== 'object') return { ok: false, error: 'Not a valid save file' };
+  if (activeFranchise().locked) return { ok: false, error: 'Franchise is locked' };
   const sgs = parsedJson.gs;
   if (!sgs || typeof sgs !== 'object') return { ok: false, error: 'No game state in file' };
   if (sgs.phase !== 'complete') return { ok: false, error: `Season not finished (phase: ${sgs.phase || 'unknown'})` };

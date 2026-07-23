@@ -34,7 +34,7 @@ function runOnce(epNum = 12) {
 describe('Killer Clown balance', () => {
   const RUNS = 60;
   const winners = new Set();
-  let totalGrabs = 0, totalStuns = 0, totalMisses = 0, totalRefusals = 0, runBeats = 0;
+  let totalGrabs = 0, totalStuns = 0, totalMisses = 0, totalRefusals = 0, runBeats = 0, runClownActs = 0;
   const perRunGrabs = [];
 
   it('simulates repeatedly without crashing and produces full data', () => {
@@ -51,6 +51,8 @@ describe('Killer Clown balance', () => {
       totalMisses += d.beats.filter(b => b.type === 'miss').length;
       totalRefusals += d.beats.filter(b => b.type === 'refuse').length;
       runBeats += d.beats.filter(b => b.phase === 'run').length;
+      runClownActs += d.beats.filter(b => b.phase === 'run'
+        && ['grab', 'stun', 'miss', 'refuse', 'evade', 'chase', 'scrum'].includes(b.type)).length;
       // results are complete + times are finite
       expect(d.results.length).toBe(CAST.length);
       d.results.forEach(r => expect(Number.isFinite(r.returnTime)).toBe(true));
@@ -77,7 +79,10 @@ describe('Killer Clown balance', () => {
   });
 
   it('the run home is a real phase with events, not just a math pass', () => {
-    // win beat exists per run; beyond it we want actual run-phase drama on average
-    expect(runBeats).toBeGreaterThanOrEqual(RUNS * 1.5); // win beat + at least ~0.5 extra events/run
+    expect(runBeats).toBeGreaterThanOrEqual(RUNS * 3); // win + flag + real drama every run
+  });
+
+  it('the clown hunts DURING the run home, not just in the forest', () => {
+    expect(runClownActs).toBeGreaterThanOrEqual(RUNS); // avg >= 1 clown moment on the road home
   });
 });

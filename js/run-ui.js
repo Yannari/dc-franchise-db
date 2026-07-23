@@ -5,6 +5,229 @@
 export let _spoilerFree = false;
 export function set_spoilerFree(v) { _spoilerFree = v; }
 
+const _HUB_SETTING_META = {
+  'hosted-camp': { label: 'Hosted Camp', icon: '🏕️', accent: '#f0c040' },
+  'survival-island': { label: 'Survival Island', icon: '🏝️', accent: '#46c7b4' },
+  carnival: { label: 'Carnival of Chaos', icon: '🎪', accent: '#ff5a7a' },
+  'film-lot': { label: 'Film Lot', icon: '🎬', accent: '#cdd2df' },
+  'world-tour': { label: 'World Tour', icon: '✈️', accent: '#57a6e8' },
+};
+
+function _hubEsc(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c]));
+}
+
+function _hubPortrait(name, cast = players, eliminated = false) {
+  const player = (cast || []).find(p => p.name === name);
+  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  return `<span class="hub-player${eliminated ? ' eliminated' : ''}" title="${_hubEsc(name)}">
+    <span class="hub-player-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>
+    <span class="hub-player-name">${_hubEsc(name)}</span>
+  </span>`;
+}
+
+function _hubRailFace(name, cast = players) {
+  if (!name) return '<span class="hub-rail-empty">•</span>';
+  const player = (cast || []).find(p => p.name === name);
+  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  return `<span class="hub-rail-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
+}
+
+export function getEpisodeEliminations(ep) {
+  if (!ep) return [];
+  if (ep.multiTribalElims?.length) return [...new Set(ep.multiTribalElims.filter(Boolean))];
+  const names = [
+    ep.firstEliminated,
+    ep.ambassadorData?.ambassadorEliminated,
+    ep.eliminated,
+    ep.tiedDestinies?.eliminatedPartner,
+    ep.emissaryEliminated,
+  ].filter(Boolean);
+  return [...new Set(names)];
+}
+
+export function buildHubAftermath(ep) {
+  if (!ep) return null;
+  const eliminated = getEpisodeEliminations(ep);
+  const eliminatedLabel = eliminated.join(' + ');
+  const voteEntries = Object.entries(ep.votes || {}).filter(([, count]) => Number(count) > 0)
+    .sort(([, a], [, b]) => Number(b) - Number(a));
+  const voteShape = voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
+  const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
+  const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
+  let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
+  if (ep.isRockDraw) why = `${eliminatedLabel || 'The eliminated contestant'} drew the losing rock after the vote remained deadlocked.`;
+  else if (ep.tiebreakerResult) why = `${ep.tiebreakerResult.loser || eliminatedLabel} lost the ${ep.tiebreakerResult.challengeLabel || 'tiebreaker'} to ${ep.tiebreakerResult.winner || 'the other tied player'}.`;
+  else if (ep.isTie && ep.revoteLog?.length) why = `The first ballot tied. On the revote, the numbers consolidated against ${eliminatedLabel || 'the eliminated contestant'}.`;
+  else if (votesNegated > 0) why = `${votesNegated} vote${votesNegated === 1 ? '' : 's'} were erased by protection, leaving ${eliminatedLabel || 'the boot'} with the highest valid total.`;
+  else if (decidingVoters.length) why = `${decidingVoters.join(', ')} supplied the ballots that sent ${eliminatedLabel} out.`;
+
+  const advantages = [];
+  (ep.idolPlays || []).forEach(play => {
+    const beneficiary = play.playedFor || play.player;
+    if (Number(play.votesNegated || 0) > 0) advantages.push(`${play.player} protected ${beneficiary}; ${play.votesNegated} vote${Number(play.votesNegated) === 1 ? '' : 's'} did not count.`);
+    else if (play.type === 'extraVote') advantages.push(`${play.player} added an Extra Vote${play.target ? ` against ${play.target}` : ''}.`);
+    else if (play.type === 'voteSteal') advantages.push(`${play.player} stole ${play.stolenFrom || 'another player'}'s vote.`);
+    else if (play.type === 'soleVote') advantages.push(`${play.player}'s Sole Vote became the only ballot that counted.`);
+  });
+  (ep.idolMisplays || []).forEach(play => advantages.push(`${play.player} left with protection unused.`));
+  if (ep.shotInDark?.player) advantages.push(`${ep.shotInDark.player}'s Shot in the Dark ${ep.shotInDark.safe ? 'made them safe' : 'failed'}.`);
+
+  const allianceChanges = [];
+  (ep.allianceQuits || []).forEach(change => allianceChanges.push(`${change.player} left ${change.alliance}${change.reason ? ` — ${change.reason}` : ''}.`));
+  (ep.alliances || []).forEach(alliance => {
+    (alliance.betrayals || []).filter(b => Number(b.ep) === Number(ep.num)).forEach(betrayal => {
+      allianceChanges.push(`${betrayal.player} broke ${alliance.name || alliance.label || 'an alliance'} by voting ${betrayal.votedFor} instead of ${betrayal.consensusWas}.`);
+    });
+  });
+
+  const relationshipChanges = (ep.bondChanges || []).filter(change => Math.abs(Number(change.delta || 0)) >= 1)
+    .sort((a, b) => Math.abs(Number(b.delta)) - Math.abs(Number(a.delta))).slice(0, 3)
+    .map(change => `${change.a} and ${change.b} ${Number(change.delta) > 0 ? 'grew closer' : 'lost ground'} — ${String(change.reason || 'the vote changed their relationship').replace(/\s*\([^)]*\)\s*/g, '')}.`);
+
+  const reputationChanges = (ep.reputationChanges || []).filter(change => (change.earned || []).length || (change.lost || []).length).slice(0, 2).map(change => {
+    const parts = [];
+    if (change.earned?.length) parts.push(`now seen as ${change.earned.join(', ')}`);
+    if (change.lost?.length) parts.push(`lost the ${change.lost.join(', ')} reputation`);
+    return `${change.player} is ${parts.join(' and ')}.`;
+  });
+  const lessons = (ep.adaptationEvents || []).slice(0, 2).map(event => event.text).filter(Boolean);
+
+  return {
+    eliminated, eliminatedLabel, voteEntries, voteShape, votesNegated, decidingVoters, why,
+    advantages: [...new Set(advantages)].slice(0, 3),
+    allianceChanges: [...new Set(allianceChanges)].slice(0, 3),
+    relationshipChanges,
+    reputationChanges,
+    lessons,
+  };
+}
+
+export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = players, viewedEpisodeNum = null) {
+  const setting = _HUB_SETTING_META[config?.setting] || _HUB_SETTING_META['hosted-camp'];
+  const initialized = !!state?.initialized;
+  const history = initialized ? (state.episodeHistory || []) : [];
+  const liveLatest = history[history.length - 1] || null;
+  const selectedEpisode = viewedEpisodeNum == null ? liveLatest : history.find(ep => Number(ep.num) === Number(viewedEpisodeNum)) || liveLatest;
+  const isHistorical = !!(selectedEpisode && liveLatest && Number(selectedEpisode.num) !== Number(liveLatest.num));
+  const displayState = selectedEpisode?.gsSnapshot || state || {};
+  const latest = selectedEpisode;
+  const complete = initialized && !isHistorical && (state.phase === 'complete' || (state.activePlayers || []).length <= 1);
+  const lifecycle = !initialized ? 'setup' : complete ? 'complete' : latest ? 'aftermath' : 'ready';
+  const active = initialized ? [...(displayState.activePlayers || state.activePlayers || [])] : [];
+  const originalCount = Math.max((cast || []).length, active.length + (displayState.eliminated || []).length, 1);
+  const remaining = active.length;
+  const progress = initialized ? Math.max(0, Math.min(100, Math.round(((originalCount - remaining) / Math.max(1, originalCount - 1)) * 100))) : 0;
+  const nextEpisode = initialized ? Number(latest?.num ?? displayState.episode ?? state.episode ?? 0) + 1 : 1;
+  const nextScheduled = (config?.twistSchedule || []).filter(Boolean).find(t => Number(t.episode) === nextEpisode);
+  const catalogEntry = nextScheduled && typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG.find(t => t.id === nextScheduled.type) : null;
+  const twistLabel = nextScheduled
+    ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
+    : 'Standard episode — no scheduled twist';
+  const groups = initialized && displayState.phase === 'pre-merge' && (displayState.tribes || []).length
+    ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
+    : initialized ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }] : [];
+  const activeAlliances = initialized ? (displayState.namedAlliances || []).filter(a => a.active && (a.members || []).filter(m => active.includes(m)).length >= 2) : [];
+  const storylines = [];
+  if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
+  if (latest?.isMerge) storylines.push('The merge has redrawn every voting relationship.');
+  if ((displayState.riPlayers || []).length) storylines.push(`${displayState.riPlayers.length} eliminated contestant${displayState.riPlayers.length === 1 ? '' : 's'} remain in the second-chance game.`);
+  if (activeAlliances.length) storylines.push(`${activeAlliances.length} active alliance${activeAlliances.length === 1 ? '' : 's'} still have at least two players in the game.`);
+  if (!storylines.length && initialized) storylines.push('The opening relationships are in place. The first loss will reveal which promises matter.');
+
+  return {
+    lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
+    phase: displayState.phase || state?.phase || 'setup', episode: Number(latest?.num ?? displayState.episode ?? 0), nextEpisode, remaining, originalCount, progress,
+    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, activeAlliances, storylines: storylines.slice(0, 3), twistLabel,
+    primaryLabel: lifecycle === 'setup' ? 'Start Season · Play Episode 1' : isHistorical ? `Return to Current · Episode ${liveLatest.num}` : lifecycle === 'complete' ? 'View Season Results' : state?.phase === 'finale' ? `Play Finale · Episode ${Number(state.episode || 0) + 1}` : `Play Episode ${Number(state.episode || 0) + 1}`,
+    primaryAction: isHistorical ? 'current' : lifecycle === 'complete' ? 'results' : 'simulate',
+  };
+}
+
+export function renderSeasonHub() {
+  const host = document.getElementById('season-hub');
+  if (!host) return;
+  const model = buildSeasonHubModel(gs, seasonConfig, players, viewingEpNum);
+  const railHost = document.getElementById('season-episode-rail');
+  host.style.setProperty('--hub-accent', model.setting.accent);
+  if (railHost) railHost.style.setProperty('--hub-accent', model.setting.accent);
+  const phaseLabel = model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
+  const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
+  const controls = document.getElementById('season-controls-details');
+  if (controls) {
+    const previousLifecycle = controls.dataset.hubLifecycle;
+    if (!previousLifecycle) controls.open = model.lifecycle === 'setup';
+    else if (previousLifecycle === 'setup' && model.lifecycle !== 'setup') controls.open = false;
+    controls.dataset.hubLifecycle = model.lifecycle;
+  }
+  if (model.lifecycle === 'setup') {
+    if (railHost) railHost.innerHTML = '';
+    host.innerHTML = `<section class="hub-welcome"><div class="hub-kicker">Season control room</div><h1>Build the cast. Set the rules. Then let the game begin.</h1><p>Your cast and settings stay intact. Initialize when you are ready to create the opening tribes, relationships, and game state.</p><button class="hub-primary" onclick="${primaryClick}">${model.primaryLabel}<span>→</span></button></section>`;
+    return;
+  }
+  if (railHost) {
+    railHost.innerHTML = `<nav class="hub-episode-rail" aria-label="Episode history">
+      <div class="hub-rail-title"><span>Season tape</span><small>Select an episode</small></div>
+      <div class="hub-rail-track">
+        ${model.history.map(ep => {
+          const active = Number(ep.num) === Number(model.latest?.num);
+          const eliminatedNames = getEpisodeEliminations(ep);
+          const eliminatedLabel = eliminatedNames.join(' + ');
+          const outcome = _spoilerFree
+            ? '<span class="hub-rail-locked">?</span>'
+            : eliminatedNames.length
+              ? `<span class="hub-rail-faces">${eliminatedNames.slice(0, 2).map(name => _hubRailFace(name)).join('')}${eliminatedNames.length > 2 ? `<b>+${eliminatedNames.length - 2}</b>` : ''}</span>`
+              : _hubRailFace(null);
+          const label = _spoilerFree ? `Episode ${ep.num}` : `Episode ${ep.num}${eliminatedLabel ? ` — ${eliminatedLabel} eliminated` : ''}`;
+          return `<button class="hub-rail-episode${active ? ' active' : ''}" type="button" aria-current="${active ? 'true' : 'false'}" aria-label="${_hubEsc(label)}" title="${_hubEsc(label)}" onclick="viewEpisode(${Number(ep.num)})"><span class="hub-rail-num">EP ${String(ep.num).padStart(2, '0')}</span>${outcome}</button>`;
+        }).join('')}
+      </div>
+      <div class="hub-rail-position">${model.isHistorical ? `Reviewing ${model.latest.num} / ${model.liveEpisode}` : `Current · ${model.liveEpisode}`}</div>
+    </nav>`;
+    requestAnimationFrame(() => {
+      const track = railHost.querySelector('.hub-rail-track');
+      const selected = railHost.querySelector('.hub-rail-episode.active');
+      if (track && selected) track.scrollLeft = selected.offsetLeft - (track.clientWidth - selected.offsetWidth) / 2;
+    });
+  }
+  const latestElims = getEpisodeEliminations(model.latest);
+  const latestElim = latestElims.join(' + ');
+  const latestPortraits = latestElims.map(name => _hubPortrait(name, players, true)).join('');
+  const castHtml = _spoilerFree
+    ? '<div class="hub-spoiler-lock"><span>◉</span><div><strong>Updated cast hidden</strong><small>Watch in the Visual Player without spoiling this screen, or turn off Spoiler-free to reveal the current state.</small></div></div>'
+    : model.groups.map(group => `<section class="hub-tribe"><header><span class="hub-tribe-dot" style="background:${_hubEsc(group.color)}"></span><strong>${_hubEsc(group.name)}</strong><small>${group.members.length} remaining</small></header><div class="hub-cast-row">${group.members.map(name => _hubPortrait(name)).join('')}</div></section>`).join('');
+  const latestVotes = Object.entries(model.latest?.votes || {}).sort(([,a],[,b]) => b-a).slice(0, 3).map(([name, count]) => `<span>${_hubEsc(name)} <b>${count}</b></span>`).join('');
+  const headlineStatus = _spoilerFree && model.latest
+    ? `Episode ${model.latest.num} is ready to watch · outcome hidden`
+    : model.isHistorical ? `Reviewing Episode ${model.latest.num} · ${model.remaining} contestants remained afterward`
+    : model.lifecycle === 'complete' ? 'The season is complete. The jury has spoken.' : `Episode ${model.nextEpisode} is ready · ${model.remaining} of ${model.originalCount} contestants remain`;
+  const publicStorylines = _spoilerFree && model.latest
+    ? ['The game state will update here after you reveal the episode outcome.']
+    : model.storylines;
+  const aftermath = buildHubAftermath(model.latest);
+  const stateLabel = model.isHistorical ? `Historical review · Episode ${model.latest.num}`
+    : model.lifecycle === 'complete' ? 'Finale complete'
+      : model.latest ? `Episode ${model.latest.num} aftermath` : `Before Episode ${model.nextEpisode}`;
+  const aftermathRows = (items, tone = '') => items.map(item => `<li class="${tone}">${_hubEsc(item)}</li>`).join('');
+  const aftermathHtml = !_spoilerFree && aftermath ? `<section class="hub-aftermath">
+    <header class="hub-aftermath-head"><div><span>Episode consequence report</span><strong>What changed tonight</strong></div><div class="hub-vote-shape"><small>Final vote shape</small><b>${_hubEsc(aftermath.voteShape)}</b></div></header>
+    <div class="hub-aftermath-grid">
+      <article class="hub-aftermath-card hub-aftermath-why"><span class="hub-aftermath-index">01</span><div><label>Why the result happened</label><p>${_hubEsc(aftermath.why)}</p>${aftermath.decidingVoters.length ? `<small>Deciding ballots: ${_hubEsc(aftermath.decidingVoters.join(', '))}</small>` : ''}</div></article>
+      ${aftermath.advantages.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">02</span><div><label>Advantage impact</label><ul>${aftermathRows(aftermath.advantages, 'advantage')}</ul></div></article>` : ''}
+      ${aftermath.allianceChanges.length || aftermath.relationshipChanges.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">03</span><div><label>Alliance & relationship fallout</label><ul>${aftermathRows([...aftermath.allianceChanges, ...aftermath.relationshipChanges].slice(0, 4), 'fallout')}</ul></div></article>` : ''}
+      ${aftermath.reputationChanges.length || aftermath.lessons.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">04</span><div><label>What lingers</label><ul>${aftermathRows([...aftermath.reputationChanges, ...aftermath.lessons].slice(0, 4), 'lesson')}</ul></div></article>` : ''}
+    </div>
+    <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${Number(model.latest.num)})">Open the full episode breakdown →</button></footer>
+  </section>` : '';
+  host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
+    <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
+    <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${aftermathHtml}
+    <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
+  </section>`;
+}
+
 // Sudden Death is a format modifier that may co-fire with ONE scoring twist
 // challenge (it eliminates that challenge's last-place finisher). The runtime
 // allows that pairing, so the scheduler UI shouldn't flag it as incompatible.
@@ -26,22 +249,27 @@ export function initRunTab() {
 
 export function renderRunTab() {
   renderGameState();
+  renderSeasonHub();
   const empty   = document.getElementById('run-empty');
   const content = document.getElementById('run-content');
 
   if (!gs || !gs.initialized) {
-    empty.style.display = 'flex'; content.style.display = 'none'; return;
+    empty.style.display = 'none'; content.style.display = 'none'; return;
   }
   empty.style.display = 'none'; content.style.display = 'flex'; content.style.flexDirection = 'column';
 
   // Show episode or placeholder
   const replayBtn = document.getElementById('replay-btn');
   if (!gs.episodeHistory.length) {
+    const review = document.getElementById('episode-review');
+    if (review) review.style.display = 'none';
     document.getElementById('ep-result-card').innerHTML = '';
     document.getElementById('ep-output-text').value = '';
     document.getElementById('ep-history-wrap').style.display = 'none';
     if (replayBtn) replayBtn.style.display = 'none';
   } else {
+    const review = document.getElementById('episode-review');
+    if (review) review.style.display = 'flex';
     const epToShow = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
     if (epToShow) renderEpisodeView(epToShow);
     renderEpisodeHistory();
@@ -371,6 +599,7 @@ export function toggleSpoilerFree() {
   renderEpisodeHistory();
   const epToShow = viewingEpNum ? gs.episodeHistory.find(e => e.num === viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length - 1];
   if (epToShow) renderEpisodeView(epToShow);
+  renderSeasonHub();
 }
 
 export function renderEpisodeHistory() {
@@ -489,7 +718,7 @@ export function renderEpisodeHistory() {
 export function viewEpisode(num) {
   viewingEpNum = num;
   const epRecord = gs.episodeHistory.find(e=>e.num===num);
-  if (epRecord) { renderEpisodeView(epRecord); renderEpisodeHistory(); renderGameState(); }
+  if (epRecord) { renderEpisodeView(epRecord); renderEpisodeHistory(); renderGameState(); renderSeasonHub(); }
 }
 
 export function simulateNext() {
@@ -1476,6 +1705,294 @@ export function _runRandomizer() {
 // RESULTS TAB
 // ══════════════════════════════════════════════════════════════════════
 
+export function buildSeasonOverviewModel(state = gs, cast = players) {
+  const history = state?.episodeHistory || [];
+  const active = [...(state?.activePlayers || [])];
+  const eliminated = [...(state?.eliminated || [])];
+  const names = [...new Set([...(cast || []).map(player => player.name), ...active, ...eliminated])];
+  const lastPop = history[history.length - 1]?.popularitySnapshot || state?.popularity || {};
+  const prevPop = history.slice(0, -1).reverse().find(ep => ep.popularitySnapshot)?.popularitySnapshot || {};
+  const metrics = names.map(name => {
+    let ballots = 0, correctBallots = 0, votesReceived = 0, influence = 0;
+    history.forEach(ep => {
+      const boots = getEpisodeEliminations(ep);
+      const episodeLogs = ep.multiTribalResults?.length
+        ? ep.multiTribalResults.flatMap(result => result.log || [])
+        : [...(ep.votingLog || []), ...(ep.votingLog2 || [])];
+      const ownVotes = episodeLogs.filter(vote => vote.voter === name && !vote.isExtraVote && !vote.sitdSacrificed);
+      ballots += ownVotes.length;
+      correctBallots += ownVotes.filter(vote => boots.includes(vote.voted)).length;
+      votesReceived += episodeLogs.filter(vote => vote.voted === name && !vote.sitdSacrificed).length;
+      const steered = [...(ep.alliances || []), ...(ep.alliances2 || [])].some(alliance => boots.includes(alliance.target)
+        && (alliance.spearhead === name || alliance.members?.[0] === name));
+      if (steered) influence++;
+    });
+    const challengeWins = Number(state?.chalRecord?.[name]?.wins || 0);
+    const voteAccuracy = ballots ? correctBallots / ballots : 0;
+    const alliances = (state?.namedAlliances || []).filter(alliance => alliance.active !== false && alliance.members?.includes(name)).map(alliance => alliance.name);
+    const reputation = state?.strategicReputations?.[name]?.labels || [];
+    const popularity = Number(lastPop[name] || 0);
+    const momentum = popularity - Number(prevPop[name] || 0);
+    const pulse = challengeWins * 2 + voteAccuracy * 3 + influence * 1.5 + alliances.length * .6 + momentum * .08 - votesReceived * .08;
+    return { name, active: active.includes(name), challengeWins, ballots, correctBallots, voteAccuracy, votesReceived, influence, alliances, reputation, popularity, momentum, pulse };
+  });
+  const activeMetrics = metrics.filter(metric => metric.active);
+  const by = (key, min = 0) => [...activeMetrics].filter(metric => metric[key] >= min).sort((a, b) => b[key] - a[key]);
+  const leaders = [
+    { label: 'Challenge leader', metric: 'wins', player: by('challengeWins', 1)[0], value: leader => `${leader.challengeWins} win${leader.challengeWins === 1 ? '' : 's'}` },
+    { label: 'Vote accuracy', metric: 'ballots', player: [...activeMetrics].filter(metric => metric.ballots >= 2).sort((a, b) => b.voteAccuracy - a.voteAccuracy || b.ballots - a.ballots)[0], value: leader => `${Math.round(leader.voteAccuracy * 100)}% · ${leader.ballots} ballots` },
+    { label: 'Agenda control', metric: 'votes', player: by('influence', 1)[0], value: leader => `${leader.influence} vote${leader.influence === 1 ? '' : 's'} steered` },
+    { label: 'Under pressure', metric: 'votes', player: by('votesReceived', 1)[0], value: leader => `${leader.votesReceived} votes received` },
+  ].filter(entry => entry.player).map(entry => ({ label: entry.label, metric: entry.metric, player: entry.player.name, value: entry.value(entry.player) }));
+  const timeline = history.map(ep => ({
+    episode: ep.num,
+    eliminated: getEpisodeEliminations(ep),
+    immunity: ep.immunityWinner || ep.winner?.name || null,
+    merge: !!ep.isMerge,
+    voteShape: Object.entries(ep.votes || {}).filter(([, count]) => Number(count) > 0).sort(([, a], [, b]) => b - a).map(([name, count]) => `${name} ${count}`).join(' · '),
+  }));
+  const alliances = (state?.namedAlliances || []).map(alliance => ({
+    name: alliance.name,
+    formed: alliance.formed || null,
+    members: (alliance.members || []).filter(name => active.includes(name)),
+    originalSize: (alliance.members || []).length,
+    active: alliance.active !== false,
+    betrayals: (alliance.betrayals || []).length,
+  })).sort((a, b) => Number(b.active) - Number(a.active) || b.members.length - a.members.length);
+  const tribeHistory = [];
+  let previousSignature = '';
+  history.forEach(ep => {
+    const tribes = ep.tribesAtStart || [];
+    const signature = tribes.map(tribe => `${tribe.name}:${(tribe.members || []).slice().sort().join(',')}`).sort().join('|');
+    if (tribes.length && signature !== previousSignature) {
+      tribeHistory.push({ episode: ep.num, tribes: tribes.map(tribe => ({ name: tribe.name, members: [...(tribe.members || [])] })) });
+      previousSignature = signature;
+    }
+  });
+  const relationshipMovement = history.flatMap(ep => (ep.bondChanges || []).map(change => ({ ...change, episode: ep.num })))
+    .filter(change => Math.abs(Number(change.delta || 0)) >= 1)
+    .sort((a, b) => Number(b.episode) - Number(a.episode) || Math.abs(Number(b.delta)) - Math.abs(Number(a.delta))).slice(0, 6);
+  const publicRoleLabels = {
+    'social-center':'Social hub', provider:'Camp provider', 'challenge-leader':'Challenge threat',
+    outsider:'On the outs', 'irritating-but-useful':'Abrasive but useful', 'power-couple':'Power pair',
+  };
+  const socialRoles = active.flatMap(name => Object.entries(state?.socialStatus?.[name] || {})
+    .filter(([role, data]) => publicRoleLabels[role] && data?.active)
+    .map(([role, data]) => ({ name, role, label: publicRoleLabels[role], score: Number(data.score || 0) })))
+    .sort((a, b) => b.score - a.score);
+  const powerRanking = [...activeMetrics].sort((a, b) => b.pulse - a.pulse);
+  const storyThreads = [];
+  if (alliances.find(alliance => alliance.active && alliance.members.length >= 3)) {
+    const bloc = alliances.find(alliance => alliance.active && alliance.members.length >= 3);
+    storyThreads.push(`${bloc.name} is the largest intact named bloc with ${bloc.members.length} active members.`);
+  }
+  if (powerRanking[0]) storyThreads.push(`${powerRanking[0].name} leads the current game-read pulse, an interpretation rather than a prediction.`);
+  if (activeMetrics.some(metric => metric.momentum > 0)) {
+    const rising = [...activeMetrics].sort((a, b) => b.momentum - a.momentum)[0];
+    storyThreads.push(`${rising.name} has the strongest positive audience movement since the previous recorded episode.`);
+  }
+  if (relationshipMovement[0]) {
+    const shift = relationshipMovement[0];
+    storyThreads.push(`${shift.a} and ${shift.b} had the latest notable relationship ${Number(shift.delta) > 0 ? 'gain' : 'fracture'}.`);
+  }
+  return {
+    episode: Number(state?.episode || history.length),
+    phase: state?.phase || 'setup',
+    active,
+    eliminated,
+    metrics,
+    activeMetrics,
+    leaders,
+    timeline,
+    alliances,
+    tribeHistory,
+    relationshipMovement,
+    socialRoles,
+    storyThreads,
+    powerRanking,
+    jury: [...(state?.jury || [])],
+  };
+}
+
+function _overviewPortrait(name, extraClass = '') {
+  const player = players.find(candidate => candidate.name === name);
+  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  return `<span class="overview-face ${extraClass}" title="${_hubEsc(name)}"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
+}
+
+function renderMidseasonOverview() {
+  const model = buildSeasonOverviewModel();
+  const content = document.getElementById('results-content');
+  if (_spoilerFree) {
+    content.innerHTML = `<section class="overview-spoiler"><span>?</span><h2>Season Overview hidden</h2><p>This screen summarizes eliminations, alliances, and season leaders. Turn off Spoiler-free in Season Hub when you are ready to reveal it.</p><button class="btn btn-secondary" onclick="showTab('run')">Return to Season Hub</button></section>`;
+    return;
+  }
+  const phaseLabel = model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase;
+  const placementRows = [
+    ...model.activeMetrics.sort((a, b) => b.pulse - a.pulse).map((metric, index) => ({ ...metric, place: index + 1, status: 'In game' })),
+    ...[...model.eliminated].reverse().map((name, index) => ({ name, place: model.active.length + index + 1, status: model.jury.includes(name) ? 'Jury' : 'Out' })),
+  ];
+  const allianceHtml = model.alliances.length ? model.alliances.slice(0, 8).map(alliance => `<div class="overview-alliance ${alliance.active ? 'active' : 'inactive'}"><div><strong>${_hubEsc(alliance.name)}</strong><small>${alliance.formed ? `Formed Episode ${alliance.formed}` : 'Formation episode unknown'} · ${alliance.betrayals} betrayal${alliance.betrayals === 1 ? '' : 's'}</small></div><span>${alliance.active ? `${alliance.members.length} active` : 'Dissolved'}</span><div class="overview-alliance-faces">${alliance.members.slice(0, 6).map(name => _overviewPortrait(name)).join('')}</div></div>`).join('') : '<div class="overview-none">No named alliance has stabilized yet.</div>';
+  const tribeHistoryHtml = model.tribeHistory.length ? model.tribeHistory.map(era => `<article class="overview-tribe-era"><b>EP ${String(era.episode).padStart(2, '0')}</b><div>${era.tribes.map(tribe => `<section><strong>${_hubEsc(tribe.name)}</strong><span>${tribe.members.map(name => _overviewPortrait(name)).join('')}</span><small>${_hubEsc(tribe.members.join(', '))}</small></section>`).join('')}</div></article>`).join('') : '<div class="overview-none">Tribe history will appear after the first episode is recorded.</div>';
+  const statusHtml = model.socialRoles.length ? model.socialRoles.slice(0, 8).map(role => `<div class="overview-status-row">${_overviewPortrait(role.name)}<div><strong>${_hubEsc(role.name)}</strong><span>${_hubEsc(role.label)}</span></div><em>${Math.round(role.score)}</em></div>`).join('') : '<div class="overview-none">No clear public camp roles have emerged yet.</div>';
+  const movementHtml = model.relationshipMovement.length ? model.relationshipMovement.map(change => `<div class="overview-relationship-row ${Number(change.delta) > 0 ? 'gain' : 'loss'}"><div class="overview-pair">${_overviewPortrait(change.a)}${_overviewPortrait(change.b)}</div><div><strong>${_hubEsc(change.a)} &amp; ${_hubEsc(change.b)}</strong><span>${_hubEsc(change.reason || (Number(change.delta) > 0 ? 'Their bond strengthened.' : 'Their relationship lost ground.'))}</span></div><em>${Number(change.delta) > 0 ? '▲' : '▼'} ${Math.abs(Number(change.delta))} · EP ${change.episode}</em></div>`).join('') : '<div class="overview-none">No notable relationship change has been recorded yet.</div>';
+  const threadsHtml = model.storyThreads.length ? model.storyThreads.map((thread, index) => `<li><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(thread)}</span></li>`).join('') : '<li class="overview-none">The season needs more evidence before a larger story can be read.</li>';
+  content.innerHTML = `<section class="overview-shell">
+    <header class="overview-hero"><div><span class="overview-eyebrow">Season ledger · through Episode ${model.episode}</span><h1>Season Overview</h1><p>${_hubEsc(phaseLabel)} · ${model.active.length} players remain · ${model.timeline.length} episodes recorded</p></div><button class="hub-primary" onclick="showTab('run')">Return to Season Hub <span>→</span></button></header>
+    <div class="overview-truth-legend"><div><b>Recorded</b><span>Objective events and totals</span></div><div><b>Game read</b><span>Simulator interpretation—not certainty</span></div><div><b>Audience pulse</b><span>Public/edit perception, when available</span></div></div>
+    <section class="overview-section"><header><div><span>Recorded</span><h2>Players still writing the season</h2></div><small>${model.active.length} active</small></header><div class="overview-active-cast">${model.active.map(name => `<div>${_overviewPortrait(name)}<span>${_hubEsc(name)}</span></div>`).join('')}</div></section>
+    <section class="overview-leaders">${model.leaders.map(leader => `<article><label>${_hubEsc(leader.label)}</label>${_overviewPortrait(leader.player)}<div><strong>${_hubEsc(leader.player)}</strong><span>${_hubEsc(leader.value)}</span></div></article>`).join('') || '<div class="overview-none">Leaders need more episodes to emerge.</div>'}</section>
+    <div class="overview-columns">
+      <section class="overview-section overview-ranking"><header><div><span>Game read</span><h2>Season pulse</h2></div><small>Interpretive ranking</small></header><p class="overview-disclaimer">Combines visible challenge wins, voting accuracy, agenda control, alliance reach, pressure, and audience movement. It is not a winner prediction.</p><ol>${model.powerRanking.map((metric, index) => `<li><b>${index + 1}</b>${_overviewPortrait(metric.name)}<div><strong>${_hubEsc(metric.name)}</strong><span>${metric.challengeWins} wins · ${Math.round(metric.voteAccuracy * 100)}% vote accuracy · ${metric.alliances.length} alliances</span></div><em class="${metric.momentum > 0 ? 'up' : metric.momentum < 0 ? 'down' : ''}">${metric.momentum > 0 ? '▲' : metric.momentum < 0 ? '▼' : '—'} ${Math.abs(metric.momentum)}</em></li>`).join('')}</ol></section>
+      <section class="overview-section"><header><div><span>Recorded</span><h2>Alliance timeline</h2></div><small>${model.alliances.filter(alliance => alliance.active).length} active</small></header><div class="overview-alliance-list">${allianceHtml}</div></section>
+    </div>
+    <div class="overview-columns overview-history-grid">
+      <section class="overview-section"><header><div><span>Recorded</span><h2>How the tribes changed</h2></div><small>${model.tribeHistory.length} era${model.tribeHistory.length === 1 ? '' : 's'}</small></header><div class="overview-tribe-history">${tribeHistoryHtml}</div></section>
+      <section class="overview-section"><header><div><span>Public status</span><h2>Camp hierarchy</h2></div><small>Visible roles only</small></header><p class="overview-disclaimer">Roles reflect behavior the cast can observe. Hidden leverage and private intentions are deliberately excluded.</p><div class="overview-status-list">${statusHtml}</div></section>
+    </div>
+    <div class="overview-columns overview-movement-grid">
+      <section class="overview-section"><header><div><span>Game read</span><h2>Stories taking shape</h2></div><small>Not promised outcomes</small></header><p class="overview-disclaimer">A concise interpretation of the season-to-date record. Future episodes can reverse any of these threads.</p><ol class="overview-thread-list">${threadsHtml}</ol></section>
+      <section class="overview-section"><header><div><span>Recorded</span><h2>Relationship movement</h2></div><small>Largest recent shifts</small></header><div class="overview-relationship-list">${movementHtml}</div></section>
+    </div>
+    <section class="overview-section"><header><div><span>Recorded</span><h2>Episode trail</h2></div><small>Click to review</small></header><div class="overview-timeline">${model.timeline.map(item => `<button onclick="showTab('run');viewEpisode(${item.episode})"><b>EP ${String(item.episode).padStart(2, '0')}</b><span class="overview-timeline-faces">${item.eliminated.length ? item.eliminated.slice(0, 2).map(name => _overviewPortrait(name)).join('') : '<i>—</i>'}</span><strong>${item.eliminated.length ? _hubEsc(item.eliminated.join(' + ')) : 'No elimination'}</strong><small>${item.merge ? 'MERGE · ' : ''}${_hubEsc(item.voteShape || 'No standard vote')}</small></button>`).join('')}</div></section>
+    <section class="overview-section"><header><div><span>Recorded</span><h2>Player ledger</h2></div><small>Season-to-date totals</small></header><div class="overview-table"><div class="overview-table-head"><span>Player</span><span>Wins</span><span>Ballots</span><span>Accuracy</span><span>Votes received</span><span>Votes steered</span></div>${placementRows.map(row => {
+      const metric = model.metrics.find(item => item.name === row.name);
+      return `<div class="overview-table-row ${metric?.active ? '' : 'eliminated'}"><span>${_overviewPortrait(row.name)}<b>${_hubEsc(row.name)}</b><i>${_hubEsc(row.status)}</i></span><span>${metric?.challengeWins ?? '—'}</span><span>${metric?.ballots ?? '—'}</span><span>${metric?.ballots ? `${Math.round(metric.voteAccuracy * 100)}%` : '—'}</span><span>${metric?.votesReceived ?? '—'}</span><span>${metric?.influence ?? '—'}</span></div>`;
+    }).join('')}</div></section>
+  </section>`;
+}
+
+export function buildSeasonRetrospectiveModel(state = gs, cast = players) {
+  const history = state?.episodeHistory || [];
+  const finaleEp = [...history].reverse().find(ep => ep.isFinale) || history[history.length - 1] || {};
+  const result = state?.finaleResult || {};
+  const winner = typeof result.winner === 'object' ? result.winner?.name : result.winner;
+  const finalistsRaw = result.finalists || finaleEp.finaleFinalists || state?.activePlayers || [];
+  const finalists = [...new Set(finalistsRaw.map(entry => typeof entry === 'object' ? entry?.name : entry).filter(Boolean))];
+  if (winner && !finalists.includes(winner)) finalists.unshift(winner);
+  const juryVotes = result.votes && typeof result.votes === 'object' ? result.votes : (finaleEp.juryResult?.votes || {});
+  const juryReasoning = Array.isArray(result.reasoning) ? result.reasoning : (finaleEp.juryResult?.reasoning || []);
+  const overview = buildSeasonOverviewModel(state, cast);
+  const finalistOrder = [...finalists].sort((a, b) => {
+    if (a === winner) return -1;
+    if (b === winner) return 1;
+    return Number(juryVotes[b] || 0) - Number(juryVotes[a] || 0);
+  });
+  const eliminatedOrder = [];
+  [...history].reverse().forEach(ep => getEpisodeEliminations(ep).forEach(name => {
+    if (!finalistOrder.includes(name) && !eliminatedOrder.includes(name)) eliminatedOrder.push(name);
+  }));
+  [...(state?.eliminated || [])].reverse().forEach(name => {
+    if (!finalistOrder.includes(name) && !eliminatedOrder.includes(name)) eliminatedOrder.push(name);
+  });
+  const placements = [...finalistOrder, ...eliminatedOrder].map((name, index) => {
+    const elimEp = [...history].reverse().find(ep => getEpisodeEliminations(ep).includes(name));
+    return { name, place: index + 1, winner: name === winner, finalist: finalists.includes(name), jury: (state?.jury || []).includes(name), episode: elimEp?.num || null };
+  });
+  const finalistPaths = finalistOrder.map(name => {
+    const metric = overview.metrics.find(entry => entry.name === name) || { challengeWins:0, ballots:0, correctBallots:0, votesReceived:0, influence:0, alliances:[] };
+    const effectiveIdols = history.flatMap(ep => ep.idolPlays || []).filter(play => play.player === name && Number(play.votesNegated || 0) > 0).length;
+    const wastedIdols = history.flatMap(ep => ep.idolPlays || []).filter(play => play.player === name && !play.fake && Number(play.votesNegated || 0) === 0 && (!play.type || play.type === 'legacy')).length;
+    const authoredBetrayals = history.reduce((count, ep) => count + (ep.defections || []).filter(defection => defection.player === name).length, 0);
+    const moves = [];
+    if (metric.challengeWins) moves.push(`${metric.challengeWins} individual challenge win${metric.challengeWins === 1 ? '' : 's'}`);
+    if (metric.influence) moves.push(`helped set the target on ${metric.influence} eventual boot${metric.influence === 1 ? '' : 's'}`);
+    if (effectiveIdols) moves.push(`${effectiveIdols} protection play${effectiveIdols === 1 ? '' : 's'} erased votes`);
+    if (authoredBetrayals) moves.push(`${authoredBetrayals} recorded break${authoredBetrayals === 1 ? '' : 's'} from a voting plan`);
+    if (!moves.length && metric.correctBallots) moves.push(`voted with ${metric.correctBallots} eventual elimination${metric.correctBallots === 1 ? '' : 's'}`);
+    const vulnerabilities = [];
+    const missed = Math.max(0, metric.ballots - metric.correctBallots);
+    if (missed) vulnerabilities.push(`missed the eventual boot on ${missed} ballot${missed === 1 ? '' : 's'}`);
+    if (metric.votesReceived) vulnerabilities.push(`absorbed ${metric.votesReceived} vote${metric.votesReceived === 1 ? '' : 's'} during the season`);
+    if (wastedIdols) vulnerabilities.push(`${wastedIdols} protection play${wastedIdols === 1 ? '' : 's'} erased no votes`);
+    if (!vulnerabilities.length) vulnerabilities.push('no major recorded vulnerability in the available season ledger');
+    return { name, winner: name === winner, juryVotes: Number(juryVotes[name] || 0), metric, moves, vulnerabilities };
+  });
+  const allianceOutcomes = (state?.namedAlliances || []).map(alliance => {
+    const members = alliance.members || [];
+    const best = placements.filter(row => members.includes(row.name)).sort((a, b) => a.place - b.place)[0];
+    return { name: alliance.name, members, active: alliance.active !== false, betrayals: (alliance.betrayals || []).length, bestFinish: best || null };
+  }).sort((a, b) => (a.bestFinish?.place || 999) - (b.bestFinish?.place || 999)).slice(0, 8);
+  const relationshipMap = new Map();
+  history.forEach(ep => (ep.bondChanges || []).forEach(change => {
+    if (!change.a || !change.b) return;
+    const key = [change.a, change.b].sort().join('||');
+    const current = relationshipMap.get(key) || { a:change.a, b:change.b, delta:0, causes:[] };
+    current.delta += Number(change.delta || 0);
+    if (change.reason && !current.causes.includes(change.reason)) current.causes.push(change.reason);
+    relationshipMap.set(key, current);
+  }));
+  const relationshipOutcomes = [...relationshipMap.values()].filter(item => Math.abs(item.delta) >= 1)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 8);
+  const timeline = overview.timeline.map(item => ({ ...item, label: item.eliminated.length ? `${item.eliminated.join(' + ')} left` : (item.episode === finaleEp.num ? `${winner || 'A winner'} was crowned` : 'No elimination') }));
+  const voteTotal = Object.values(juryVotes).reduce((sum, value) => sum + Number(value || 0), 0);
+  return {
+    winner,
+    finalists: finalistOrder,
+    juryVotes,
+    juryReasoning,
+    voteTotal,
+    fanFavorite: finaleEp.fanFavorite || state?.fanFavorite || null,
+    episodeCount: history.length,
+    castSize: (cast || []).length,
+    placements,
+    finalistPaths,
+    allianceOutcomes,
+    relationshipOutcomes,
+    timeline,
+  };
+}
+
+export async function recordRetrospectiveInFranchise() {
+  const seasonNumber = gs?.seasonNumber || seasonConfig?.seasonNumber;
+  if (!seasonNumber) { alert('Set a season number before recording this season in Franchise.'); return false; }
+  if (!confirm(`Record or update Season ${seasonNumber} in the active franchise?`)) return false;
+  const recorded = typeof recordSeasonToLedger === 'function' && recordSeasonToLedger(null, 'manual');
+  if (!recorded) { alert('The season could not be recorded. The active franchise may be locked.'); return false; }
+  if (typeof persistFranchiseLedger === 'function') await persistFranchiseLedger();
+  if (typeof renderFranchiseTab === 'function') renderFranchiseTab();
+  renderResultsTab();
+  return true;
+}
+
+export function startNewSeasonFromRetrospective() {
+  if (typeof resetSeason !== 'function') return;
+  resetSeason();
+  if (!gs && typeof showTab === 'function') showTab('cast');
+}
+
+export function openWinnerCareerFromRetrospective(name = null) {
+  const winner = name || (typeof gs?.finaleResult?.winner === 'object' ? gs.finaleResult.winner?.name : gs?.finaleResult?.winner);
+  if (typeof showTab === 'function') showTab('franchise');
+  if (typeof renderFranchiseTab === 'function') renderFranchiseTab();
+  if (winner && typeof frOpenCareer === 'function') setTimeout(() => frOpenCareer(winner), 0);
+}
+
+function renderSeasonRetrospective() {
+  const model = buildSeasonRetrospectiveModel();
+  const content = document.getElementById('results-content');
+  if (_spoilerFree) {
+    content.innerHTML = `<section class="overview-spoiler"><span>?</span><h2>Season Retrospective hidden</h2><p>The winner, jury result, placements, and season outcomes are hidden while Spoiler-free is active.</p><button class="btn btn-secondary" onclick="showTab('run')">Return to Season Hub</button></section>`;
+    return;
+  }
+  let recorded = false;
+  try { recorded = !!activeSeasons?.()?.[String(gs?.seasonNumber || seasonConfig?.seasonNumber)]; } catch {}
+  const tally = Object.entries(model.juryVotes).sort(([,a],[,b]) => Number(b)-Number(a));
+  const finalistHtml = model.finalistPaths.map((path, index) => `<article class="retro-finalist ${path.winner ? 'winner' : ''}"><div class="retro-finalist-rank">${path.winner ? 'WINNER' : ordinal(index + 1)}</div>${_overviewPortrait(path.name, 'retro-big-face')}<div class="retro-finalist-main"><h3>${_hubEsc(path.name)}</h3><p>${path.juryVotes} jury vote${path.juryVotes === 1 ? '' : 's'} · ${path.metric.challengeWins} challenge win${path.metric.challengeWins === 1 ? '' : 's'} · ${Math.round(path.metric.voteAccuracy * 100)}% voting accuracy</p><div class="retro-path-columns"><section><b>Defining record</b>${path.moves.map(move => `<span>+ ${_hubEsc(move)}</span>`).join('') || '<span>No headline move was recorded.</span>'}</section><section><b>Pressure points</b>${path.vulnerabilities.map(item => `<span>− ${_hubEsc(item)}</span>`).join('')}</section></div></div></article>`).join('');
+  const juryHtml = model.juryReasoning.length ? model.juryReasoning.map(vote => `<div class="retro-jury-row">${_overviewPortrait(vote.juror)}<strong>${_hubEsc(vote.juror)}</strong><span>voted for</span>${_overviewPortrait(vote.votedFor)}<b>${_hubEsc(vote.votedFor)}</b>${vote.reason ? `<small>${_hubEsc(vote.reason)}</small>` : ''}</div>`).join('') : '<div class="overview-none">This finale format did not use a jury vote.</div>';
+  const allianceHtml = model.allianceOutcomes.length ? model.allianceOutcomes.map(alliance => `<div class="retro-outcome-row"><div><strong>${_hubEsc(alliance.name)}</strong><span>${alliance.active ? 'Finished intact' : 'Dissolved'} · ${alliance.betrayals} recorded betrayal${alliance.betrayals === 1 ? '' : 's'}</span></div><b>${alliance.bestFinish ? `${ordinal(alliance.bestFinish.place)} · ${_hubEsc(alliance.bestFinish.name)}` : 'No finisher'}</b><div>${alliance.members.slice(0, 6).map(name => _overviewPortrait(name)).join('')}</div></div>`).join('') : '<div class="overview-none">No named alliance outcome was recorded.</div>';
+  const relationshipHtml = model.relationshipOutcomes.length ? model.relationshipOutcomes.map(outcome => `<div class="retro-relationship ${outcome.delta > 0 ? 'gain' : 'loss'}"><div>${_overviewPortrait(outcome.a)}${_overviewPortrait(outcome.b)}</div><section><strong>${_hubEsc(outcome.a)} &amp; ${_hubEsc(outcome.b)}</strong><span>${outcome.delta > 0 ? 'Finished closer than they started' : 'Finished more fractured than they started'}${outcome.causes[0] ? ` · ${_hubEsc(outcome.causes[0])}` : ''}</span></section><b>${outcome.delta > 0 ? '+' : ''}${outcome.delta.toFixed(1)}</b></div>`).join('') : '<div class="overview-none">No season-long relationship movement was preserved in this save.</div>';
+  content.innerHTML = `<section class="retro-shell">
+    <header class="retro-hero"><div class="retro-crown">★</div>${model.winner ? _overviewPortrait(model.winner, 'retro-winner-face') : ''}<div><span>Season complete · ${model.episodeCount} episodes</span><h1>${_hubEsc(model.winner || 'Season complete')}</h1><p>${model.winner ? 'wins the season' : 'The finale has concluded'}${tally.length ? ` · ${tally.map(([name,votes]) => `${_hubEsc(name)} ${votes}`).join(' — ')}` : ' · final challenge decision'}${model.fanFavorite ? ` · Fan favorite: ${_hubEsc(model.fanFavorite)}` : ''}</p></div><button class="hub-primary" onclick="openSeasonRecap()" ${typeof recapAvailable === 'function' && recapAvailable(gs) ? '' : 'disabled'}>Watch season recap <span>▶</span></button></header>
+    <nav class="retro-actions" aria-label="Season retrospective actions"><button onclick="exportSummaryPDF()">Summary PDF</button><button onclick="exportStatisticsPDF()">Statistics PDF</button><button class="${recorded ? 'done' : ''}" onclick="recordRetrospectiveInFranchise()">${recorded ? '✓ Recorded in Franchise' : 'Record in Franchise'}</button><button onclick="showTab('franchise')">View Franchise</button></nav>
+    <section class="retro-finalists"><header><span>Final paths</span><h2>How the finalists reached the end</h2><p>Recorded accomplishments and exposure—not an automatic grade of decision quality.</p></header>${finalistHtml}</section>
+    <div class="retro-two-column"><section class="overview-section"><header><div><span>Final decision</span><h2>Jury breakdown</h2></div><small>${model.voteTotal ? `${model.voteTotal} votes` : 'Challenge finale'}</small></header><div class="retro-jury">${juryHtml}</div></section><section class="overview-section"><header><div><span>Recorded</span><h2>Alliance outcomes</h2></div><small>End state</small></header><div class="retro-outcomes">${allianceHtml}</div></section></div>
+    <section class="overview-section"><header><div><span>Recorded movement</span><h2>Relationships at the finish</h2></div><small>Season-long change</small></header><div class="retro-relationships">${relationshipHtml}</div></section>
+    <section class="overview-section"><header><div><span>The complete trail</span><h2>Season story timeline</h2></div><small>${model.timeline.length} episodes</small></header><div class="retro-timeline">${model.timeline.map(item => `<button onclick="showTab('run');viewEpisode(${item.episode})"><b>EP ${String(item.episode).padStart(2,'0')}</b><span>${item.eliminated.map(name => _overviewPortrait(name)).join('') || (item.episode === model.timeline.at(-1)?.episode && model.winner ? _overviewPortrait(model.winner) : '')}</span><strong>${_hubEsc(item.label)}</strong><small>${item.merge ? 'MERGE · ' : ''}${_hubEsc(item.voteShape || (item.episode === model.timeline.at(-1)?.episode ? 'Finale' : 'No standard vote'))}</small></button>`).join('')}</div></section>
+    <section class="overview-section"><header><div><span>Final placements</span><h2>Every journey</h2></div><small>${model.castSize} players</small></header><div class="retro-placement-list">${model.placements.map(row => `<div class="retro-placement ${row.winner ? 'winner' : ''}"><b>${ordinal(row.place)}</b>${_overviewPortrait(row.name)}<strong>${_hubEsc(row.name)}</strong><span>${row.winner ? 'Season winner' : row.finalist ? `${Number(model.juryVotes[row.name] || 0)} jury votes` : row.jury ? `Jury · Episode ${row.episode || '—'}` : `Out · Episode ${row.episode || '—'}`}</span></div>`).join('')}</div></section>
+    <footer class="retro-next"><div><span>Season archived</span><h2>What do you want to do next?</h2></div><button onclick="startNewSeasonFromRetrospective()">Start New Season</button><button onclick="showTab('franchise')">Open All-Stars Scout</button><button onclick="openWinnerCareerFromRetrospective()">Open Winner Career</button><button onclick="showTab('franchise')">View Franchise</button></footer>
+  </section>`;
+}
 
 export function renderResultsTab() {
   const empty   = document.getElementById('results-empty');
@@ -1488,81 +2005,12 @@ export function renderResultsTab() {
 
   const finalists = [...gs.activePlayers];
   const isComplete = gs.phase === 'complete';
-  const finaleResult = gs.finaleResult || null;
-  // Only project winner if merge has happened and not yet in finale; show actual if complete
-  const juryResult = finaleResult || ((gs.isMerged && !isComplete && finalists.length)
-    ? simulateJuryVote(finalists) : null);
-  const isProjected = !finaleResult && juryResult;
-
-  let html = '';
-
-  // Season Recap launcher — only on a completed season (winner crowned).
-  if (typeof recapAvailable === 'function' && recapAvailable(gs)) {
-    html += `<button class="btn btn-primary" style="width:auto;align-self:flex-start;padding:10px 22px;font-size:14px;letter-spacing:.5px"
-      onclick="openSeasonRecap()">▶ Watch Season Recap</button>`;
+  const resultsTab = document.getElementById('results-tab-btn');
+  if (resultsTab) resultsTab.textContent = isComplete ? 'Season Retrospective' : 'Season Overview';
+  if (!isComplete) {
+    renderMidseasonOverview();
+    return;
   }
-
-  // Winner block. Some finale formats (Hawaiian Punch, fan vote, final
-  // challenge) crown a winner with no jury tally — finaleResult.votes is null.
-  // Guard every votes/reasoning access so those formats render instead of crashing.
-  const _juryVotes = (juryResult && juryResult.votes && typeof juryResult.votes === 'object') ? juryResult.votes : null;
-  const _hasTally = _juryVotes && Object.values(_juryVotes).some(v => v > 0);
-  const _resultWinner = finaleResult?.winner || (_hasTally ? Object.entries(_juryVotes).sort(([,a],[,b]) => b-a)[0][0] : null);
-  if (_resultWinner) {
-    const tally = _hasTally
-      ? Object.entries(_juryVotes).sort(([,a],[,b]) => b-a).map(([n,v]) => `<span class="results-jury-chip">${n}: ${v}</span>`).join('')
-      : '';
-    html += `<div class="results-winner-card">
-      <div class="results-crown">&#127942;</div>
-      <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${isProjected ? 'Projected Winner' : 'Season Winner'}</div>
-        <div class="results-winner-name">${_resultWinner}</div>
-        ${tally ? `<div class="results-jury-tally">${tally}</div>` : ''}
-      </div></div>`;
-    if (_hasTally) {
-      html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">${isProjected ? 'Projected Jury Vote' : 'Final Jury Vote'}</div>`;
-      const _reasoning = Array.isArray(juryResult.reasoning) ? juryResult.reasoning : [];
-      html += `<div class="jury-breakdown">
-        <div class="jury-breakdown-header"><span class="jb-juror">Juror</span><span class="jb-voted">Votes For</span></div>
-        ${_reasoning.map(r => `<div class="jury-breakdown-row"><span class="jb-juror">${r.juror}</span><span class="jb-voted">${r.votedFor}</span></div>`).join('')}
-      </div>`;
-    }
-  }
-
-  // Placement list
-  html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">Boot Order</div>`;
-  html += `<div class="placement-table">`;
-
-  // Finalists (top placements)
-  finalists.forEach((name, i) => {
-    html += `<div class="placement-row">
-      <span class="placement-rank">${ordinal(i+1)}</span>
-      <span class="placement-name">${name}</span>
-      <span class="placement-badge" style="background:rgba(16,185,129,0.15);color:#10b981">${gs.phase==='finale'?'Finalist':'Active'}</span>
-    </div>`;
-  });
-
-  // Eliminated (most recent = highest placement)
-  const juryList = [...(gs.jury||[])].reverse();
-  const nonJury  = gs.eliminated.filter(p => !(gs.jury||[]).includes(p));
-  const allElim  = [...juryList, ...(gs.riPlayers.length ? gs.riPlayers : []), ...[...nonJury].reverse()];
-
-  allElim.forEach((name, i) => {
-    const place = finalists.length + i + 1;
-    const epRec = gs.episodeHistory.slice().reverse().find(e => e.eliminated === name);
-    const epLabel = epRec ? `Ep. ${epRec.num}` : '';
-    const isJury = (gs.jury||[]).includes(name);
-    const isRI   = gs.riPlayers.includes(name);
-    html += `<div class="placement-row">
-      <span class="placement-rank">${ordinal(place)}</span>
-      <span class="placement-name">${name}</span>
-      <span class="placement-ep-label">${epLabel}</span>
-      ${isRI   ? '<span class="placement-badge" style="background:rgba(249,115,22,0.15);color:#f97316">On RI</span>' : ''}
-      ${isJury ? '<span class="placement-badge" style="background:rgba(99,102,241,0.15);color:#6366f1">Jury</span>' : ''}
-    </div>`;
-  });
-
-  html += `</div>`;
-  content.innerHTML = html;
+  renderSeasonRetrospective();
 }
 

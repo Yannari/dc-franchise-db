@@ -148,6 +148,9 @@ export function patchEpisodeHistory(ep) {
   if (!h._politicsLog && ep._politicsLog?.length) h._politicsLog = ep._politicsLog;
   if (!h.votePitches && ep.votePitches) h.votePitches = ep.votePitches;
   if (!h.pitchIntel && ep.pitchIntel) h.pitchIntel = ep.pitchIntel;
+  if (!h.bondChanges && ep.bondChanges?.length) h.bondChanges = ep.bondChanges.map(change => ({ ...change }));
+  if (!h.reputationChanges && ep.reputationChanges?.length) h.reputationChanges = ep.reputationChanges.map(change => ({ ...change }));
+  if (!h.adaptationEvents && ep.adaptationEvents?.length) h.adaptationEvents = ep.adaptationEvents.map(event => ({ ...event }));
   if (!h.emotionalDefectionDiagnostics && ep.emotionalDefectionDiagnostics?.length) h.emotionalDefectionDiagnostics = ep.emotionalDefectionDiagnostics;
   if (!h.voteCommitmentDiagnostics && ep.voteCommitmentDiagnostics?.length) h.voteCommitmentDiagnostics = ep.voteCommitmentDiagnostics;
   if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;

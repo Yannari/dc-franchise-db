@@ -540,73 +540,31 @@
 
     <!-- GAMEPLAY PAGE -->
     <div class="window-body hidden" id="viewGameplay">
-      <div class="gameplay-grid">
-        <div class="mini-panel gameplay-panel">
-          <div class="mini-title">GAMEPLAY COMPASS</div>
-          <div class="mini-subtitle">AI-derived placement from your overview stats (Power vs Safety)</div>
-          <div class="compass-wrap">
-            <div class="compass" id="compass">
-              <div class="axis axis-x"></div>
-              <div class="axis axis-y"></div>
-              <div class="axis-label left">Low Power</div>
-              <div class="axis-label right">High Power</div>
-              <div class="axis-label top">Safe</div>
-              <div class="axis-label bottom">At Risk</div>
-              <div class="compass-points" id="compassPoints"></div>
-            </div>
-          </div>
-          <div class="compass-na hidden" id="compassNA"></div>
-          <div class="muted small">If you want true "Social vs Competition", I can upgrade your Worker to output compass coordinates directly.</div>
-        </div>
-
-        <div class="mini-panel gameplay-panel">
-          <div class="mini-title">INDIVIDUAL GAMEPLAY ANALYSIS</div>
-          <div class="mini-subtitle">Auto-built from AI output (tag + score + risk)</div>
+      <div class="mini-panel gameplay-panel">
+          <div class="mini-title">EPISODE GAME TAPE</div>
+          <div class="mini-subtitle">What each player intended, knew and actually did · result is not treated as decision quality</div>
 
           <div class="table-wrap">
             <table class="gp-table">
               <thead>
                 <tr>
                   <th>Player</th>
-                  <th>Title</th>
-                  <th>Trend</th>
-                  <th>Power</th>
-                  <th>Boot Risk</th>
-                  <th>Role</th>
+                  <th>Entered Tribal</th>
+                  <th>Ballot</th>
+                  <th>Read</th>
+                  <th>Influence</th>
+                  <th>Episode result</th>
                 </tr>
               </thead>
               <tbody id="gpTableBody"></tbody>
             </table>
           </div>
-        </div>
-      </div>
-      
-      <!-- NEW ANALYTICS PANELS -->
-      <div class="cards-grid two" style="margin-top: 20px;">
-        <div class="mini-panel">
-          <div class="mini-title">SOCIAL NETWORK</div>
-          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">JURY MANAGEMENT</div>
-          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">THREAT BREAKDOWN</div>
-          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">PATH TO VICTORY</div>
-          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
-        </div>
       </div>
     </div>
 
     <!-- RESUMES TAB -->
     <div class="window-body hidden" id="viewResumes">
+      <div style="padding:20px 20px 0"><h3 style="margin:0 0 5px">Verified season résumés</h3><p class="muted" style="margin:0">Cumulative only through the selected episode. Participation, control and outcome are kept separate.</p></div>
       <div id="resumesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
         <p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>
       </div>
@@ -616,9 +574,10 @@
     <div class="window-body hidden" id="viewRelationships">
       <div style="padding: 20px;">
         <div style="margin-bottom: 20px;">
-          <h3 style="color: #e879f9; margin-bottom: 8px;">💞 Relationship Heat Map</h3>
-          <p style="color: #94a3b8; font-size: 14px;">Live relationship values from -10 (enemies) to +10 (alliance)</p>
+          <h3 style="color: #e879f9; margin-bottom: 8px;">💞 Directional Relationship Read</h3>
+          <p style="color: #94a3b8; font-size: 14px;">Choose who is feeling what toward whom. Affection and trust are not interchangeable.</p>
         </div>
+        <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:18px"><label class="ai-field"><span class="ai-label">Perspective</span><select id="relFrom" class="ai-input"></select></label><span style="padding-bottom:10px;color:#8b949e">feels toward →</span><label class="ai-field"><span class="ai-label">Other player</span><select id="relTo" class="ai-input"></select></label></div>
         <div id="relationshipsContainer">
           <p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>
         </div>
@@ -1493,13 +1452,6 @@ Dave voted for Mickey
       cardEpisodeLosers: $("cardEpisodeLosers"),
       cardEpisodeChanges: $("cardEpisodeChanges"),
       cardUnresolved: $("cardUnresolved"),
-      cardSocialNetwork: $("cardSocialNetwork"),
-      cardJuryManagement: $("cardJuryManagement"),
-      cardThreatBreakdown: $("cardThreatBreakdown"),
-      cardPathToVictory: $("cardPathToVictory"),
-
-      compassPoints: $("compassPoints"),
-      compassNA: $("compassNA"),
       gpTableBody: $("gpTableBody"),
     };
 
@@ -2308,88 +2260,41 @@ Dave voted for Mickey
       }).join("");
     }
 
-    function renderGameplayTable(analytics, castNames, eliminatedNames, titlesMap) {
-      const eliminated = new Set((eliminatedNames||[]).map(n=>n.toLowerCase()));
-      const pr = Array.isArray(analytics?.powerRankings) ? analytics.powerRankings : [];
-      const bp = Array.isArray(analytics?.bootPredictions) ? analytics.bootPredictions : [];
-      const rolesArr = Array.isArray(analytics?.roles) ? analytics.roles : [];
+    async function loadSimulatorEpisode(season, episode) {
+      return _parseStoredJson(await _csGet(`SIMULATOR_EPISODE_s${season}_e${episode}`), null);
+    }
 
-      const powerMap = new Map(pr.map(x => [(x.player||"").toLowerCase(), x]));
-      const probMap = new Map(bp.map(x => [(x.player||"").toLowerCase(), x]));
-      const rolesMap = new Map(rolesArr.map(x => [(x.player||"").toLowerCase(), x.role||""]));
-
-      const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
-      const rows = active.map((name) => {
-        const key = name.toLowerCase();
-        const r = powerMap.get(key);              // no fabricated 50/"Steady" default
-        const p = probMap.get(key);               // no fabricated 15% default
-        const evaluated = !!r;                     // the power ranking is the primary evaluation
-        const score = r ? Math.round(Number(r.score) || 0) : null;
-
-        // Handle both prob formats: 0-1 decimal OR 0-100 percentage; null when absent.
-        const rawProb = p ? (Number(p.prob) || 0) : null;
-        const prob = rawProb === null ? null : (rawProb <= 1 ? Math.round(rawProb * 100) : Math.round(rawProb));
-
-        const title = titlesMap?.[key] || "";
-
-        // AI role if given; else derive from real values only (never from a fabricated prob).
-        const role = rolesMap.get(key) || (!evaluated ? null : (
-          (prob !== null && prob >= 35) ? "In Danger" :
-          score >= 80 ? "Power Player" :
-          score >= 65 ? "Well-Positioned" :
-          "Under the Radar"
-        ));
-
-        return { name, evaluated, score, prob, tag: r?.tag || null, title, role };
-      }).sort((a,b) => (Number(b.evaluated) - Number(a.evaluated)) || ((b.score||0) - (a.score||0)));
-
-      els.gpTableBody.innerHTML = rows.map((row) => {
-        const id = slugify(row.name);
-        const tag = (row.tag||"Steady").toLowerCase();
-        const tagClass = tag==="rising" ? "tag tag-up" : tag==="falling" ? "tag tag-down" : "tag tag-steady";
-        if (!row.evaluated) {
-          // Distinct, non-fabricated row: the model returned nothing for this player.
-          return `
-          <tr class="na-tr">
-            <td>
-              <a class="plink row-player" href="player.html?player=${id}">
-                <span class="tiny-avatar">
-                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(row.name)}"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
-                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
-                  <span class="tiny-fallback">${escapeHtml((row.name||'?').slice(0,1).toUpperCase())}</span>
-                </span>
-                <b>${escapeHtml(row.name)}</b>
-              </a>
-            </td>
-            <td class="muted">${escapeHtml(row.title || "—")}</td>
-            <td><span class="na-tag">Not evaluated</span></td>
-            <td class="na-cell">—</td>
-            <td class="na-cell">—</td>
-            <td class="na-cell">—</td>
-          </tr>`;
-        }
-        return `
-          <tr>
-            <td>
-              <a class="plink row-player" href="player.html?player=${id}">
-                <span class="tiny-avatar">
-                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(row.name)}"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
-                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
-                  <span class="tiny-fallback">${escapeHtml((row.name||'?').slice(0,1).toUpperCase())}</span>
-                </span>
-                <b>${escapeHtml(row.name)}</b>
-              </a>
-            </td>
-            <td class="muted">${escapeHtml(row.title || "—")}</td>
-            <td><span class="${tagClass}">${escapeHtml(row.tag || "Steady")}</span></td>
-            <td>${row.score}</td>
-            <td>${row.prob === null ? '<span class="na-cell">—</span>' : row.prob + '%'}</td>
-            <td>${escapeHtml(row.role || "—")}</td>
-          </tr>
-        `;
-      }).join("");
+    async function renderGameplayTable() {
+      const season = Number(els.season.value || 1);
+      const episode = Number(els.episode.value || 1);
+      const raw = await loadSimulatorEpisode(season, episode);
+      if (!raw) {
+        els.gpTableBody.innerHTML = '<tr><td colspan="6" class="na-cell">Structured simulator evidence is unavailable. Sync Simulator again; old summary-only imports cannot reconstruct private plans.</td></tr>';
+        return;
+      }
+      const diagnostics = Array.isArray(raw.voteCommitmentDiagnostics) ? raw.voteCommitmentDiagnostics : [];
+      const diagBy = new Map(diagnostics.map(row => [String(row.voter || '').toLowerCase(), row]));
+      const ballots = Array.isArray(raw.votingLog) ? raw.votingLog.filter(row => row.voter && row.voter !== 'THE GAME') : [];
+      const ballotBy = new Map(ballots.map(row => [String(row.voter).toLowerCase(), row]));
+      const tribal = raw.tribalPlayers || [...new Set([...diagnostics.map(row => row.voter), ...ballots.map(row => row.voter)].filter(Boolean))];
+      const tally = {};
+      ballots.forEach(row => { if (row.voted) tally[row.voted] = (tally[row.voted] || 0) + 1; });
+      const rows = tribal.map(name => {
+        const diagnostic = diagBy.get(String(name).toLowerCase());
+        const ballot = ballotBy.get(String(name).toLowerCase());
+        const entered = diagnostic?.predictedBallot || diagnostic?.committedTarget || diagnostic?.proposedTarget || diagnostic?.preferredTarget || null;
+        const actual = ballot?.voted || diagnostic?.actualBallot || null;
+        return {
+          name,
+          ballot,
+          entered,
+          actual,
+          matched: entered && actual ? entered === actual : null,
+          influence: actual ? Math.max(0, (tally[actual] || 0) - 1) : 0,
+          onResult: actual && raw.eliminated ? actual === raw.eliminated : null
+        };
+      });
+      els.gpTableBody.innerHTML = rows.map(row => `<tr><td>${_crAvatar(row.name)} <b>${escapeHtml(row.name)}</b></td><td>${row.entered ? escapeHtml(row.entered) : '<span class="na-cell">No saved plan</span>'}</td><td>${row.actual ? `<b>${escapeHtml(row.actual)}</b><div class="muted">${escapeHtml(row.ballot?.reason || '')}</div>` : '<span class="na-cell">No ballot</span>'}</td><td>${row.matched === null ? '<span class="na-tag">Unknown</span>' : row.matched ? '<span class="tag tag-steady">Plan held</span>' : '<span class="tag tag-down">Changed late</span>'}</td><td>${row.actual ? `${row.influence} other ballot${row.influence === 1 ? '' : 's'} joined this name` : '—'}</td><td>${row.onResult === null ? '—' : row.onResult ? '<span class="tag tag-up">Ballot landed</span>' : '<span class="tag tag-steady">Ballot missed</span>'}<div class="muted">Outcome only—not automatic decision quality</div></td></tr>`).join('');
     }
 
     function _crEmpty(message) {
@@ -2523,23 +2428,13 @@ Dave voted for Mickey
 
       renderPlayersGrid(cast, eliminated, titlesMap);
 
-      // Active (still-in) cast — used so partial AI responses surface a distinct
-      // "Not evaluated" state per player instead of a fabricated default. (#2)
-      const elimSet = eliminated instanceof Set ? eliminated : new Set((eliminated || []).map(n => String(n).toLowerCase()));
-      const activeCast = (cast || []).filter(n => !elimSet.has(String(n).toLowerCase()));
-
       // Overview cards
       renderEpisodeImpact(analytics);
       renderMoveCard(els.cardBestMove, analytics.bestMove);
       els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
-      renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
-      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement, activeCast);
-      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown, activeCast);
-      renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
 
       // Gameplay
-      renderCompass(analytics, cast, eliminated, titlesMap);
-      renderGameplayTable(analytics, cast, eliminated, titlesMap);
+      await renderGameplayTable();
       await renderSeasonControlRoom();
     }
 
@@ -2580,8 +2475,8 @@ Dave voted for Mickey
       els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
       
       // Render data when switching to new tabs
-      if (isResumes && CURRENT.analytics) renderResumes(CURRENT.analytics);
-      if (isRelationships && CURRENT.analytics) renderRelationships(CURRENT.analytics);
+      if (isResumes) renderResumes();
+      if (isRelationships) renderRelationships();
       if (isControl) renderSeasonControlRoom();
 
       // Persist tab choice per episode
@@ -2590,12 +2485,7 @@ Dave voted for Mickey
       try { localStorage.setItem(tabKey(s, e), which); } catch {}
 
       // If switching to gameplay, ensure it's rendered (in case cast was synced later)
-      if (isGameplay && CURRENT.analytics) {
-        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
-        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
-        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-      }
+      if (isGameplay) renderGameplayTable();
     }
 
     els.tabControl.addEventListener("click", () => showTab("control"));
@@ -2666,11 +2556,7 @@ Dave voted for Mickey
       CURRENT.eliminated = eliminated;
 
       renderPlayersGrid(cast, eliminated, {});
-      // If AI already loaded, refresh gameplay view too
-      if (CURRENT.analytics) {
-        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-      }
+      renderGameplayTable();
 
       setStatus("Synced from summary (saved for reload).");
     });
@@ -2794,7 +2680,7 @@ Dave voted for Mickey
       const rows = Array.isArray(state?.episodeHistory) ? state.episodeHistory : [];
       return rows
         .filter(ep => Number(ep?.num) > 0 && String(ep?.summaryText || '').trim())
-        .map(ep => ({ num: Number(ep.num), summary: String(ep.summaryText).trim() }))
+        .map(ep => ({ num: Number(ep.num), summary: String(ep.summaryText).trim(), record: ep }))
         .sort((a, b) => a.num - b.num);
     }
 
@@ -2810,6 +2696,7 @@ Dave voted for Mickey
         if (!(await loadSummary(season, row.num))) newCount++;
         saveSummary(season, row.num, row.summary);
         await _csPut(`SIMULATOR_SUMMARY_s${season}_e${row.num}`, row.summary);
+        await _csPut(`SIMULATOR_EPISODE_s${season}_e${row.num}`, JSON.stringify(row.record));
         const parsedCast = parseCastFromSummary(row.summary);
         if (parsedCast.length) knownCast = parsedCast;
         const eliminated = [...parseEliminated(row.summary)];
@@ -3010,11 +2897,6 @@ Dave voted for Mickey
       els.cardEpisodeLosers.innerHTML = "—";
       els.cardEpisodeChanges.innerHTML = "<div class='muted'>Not evaluated yet.</div>";
       els.cardUnresolved.innerHTML = "<div class='muted'>Not evaluated yet.</div>";
-      els.cardSocialNetwork.innerHTML = "<div class='muted'>No social network data yet.</div>";
-      els.cardJuryManagement.innerHTML = "<div class='muted'>No jury management data yet.</div>";
-      els.cardThreatBreakdown.innerHTML = "<div class='muted'>No threat breakdown yet.</div>";
-      els.cardPathToVictory.innerHTML = "<div class='muted'>No path to victory data yet.</div>";
-
       // Gameplay placeholders
       // els.gpSvg.innerHTML = ""; // REMOVED - element doesnt exist
       els.gpTableBody.innerHTML = "";
@@ -3059,13 +2941,14 @@ Dave voted for Mickey
       let savedTab = "control";
       try { savedTab = localStorage.getItem(tabKey(season, episode)) || "control"; } catch {}
       const allowedTabs = new Set(['control','overview','gameplay','resumes','relationships','episode','seasonsetup']);
-      showTab(allowedTabs.has(savedTab) ? savedTab : 'control');
+      savedTab = allowedTabs.has(savedTab) ? savedTab : 'control';
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = await loadCached(season, episode);
 
       if (cached && els.autoLoad.checked) {
         await renderAll(cached, els.summary.value || "");
+        showTab(savedTab);
         if (!quiet) setStatus("Loaded cached analytics for this season/episode.");
         return;
       }
@@ -3083,6 +2966,8 @@ Dave voted for Mickey
         const elim = new Set((savedCast.eliminated || []).map(s => String(s).toLowerCase()));
         renderPlayersGrid(savedCast.cast, elim, {});
       }
+
+      showTab(savedTab);
 
       if (!quiet) {
         setStatus(cached ? "Cached analytics exists for this episode — click \"Load Cached\" (or enable auto-load)." : "No cached analytics for this season/episode yet.");
@@ -3127,194 +3012,74 @@ Dave voted for Mickey
     
     // ========== RENDER FUNCTIONS FOR NEW TABS ==========
     
-    // Accumulate resume stats across episodes
-    async function accumulateResumes(currentEpisodeResumes, season, episode) {
-      const seasonKey = `season${season}_resumes`;
-
-      // Load previous data
-      const raw = await _csGet(seasonKey);
-      const previousData = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : {};
-      
-      const accumulated = {};
-      
-      for (const playerName in currentEpisodeResumes) {
-        const current = currentEpisodeResumes[playerName];
-        const previous = previousData[playerName] || {
-          majorityVotes: 0,
-          totalVotes: 0,
-          immunities: 0,
-          votesAgainst: 0,
-          votesNullified: 0,
-          keyMoves: []
-        };
-        
-        // Accumulate stats
-        accumulated[playerName] = {
-          ...current,
-          majorityVotes: previous.majorityVotes + (current.majorityVotes || 0),
-          totalVotes: previous.totalVotes + (current.totalVotes || 0),
-          immunities: previous.immunities + (current.immunities || 0),
-          votesAgainst: previous.votesAgainst + (current.votesAgainst || 0),
-          votesNullified: previous.votesNullified + (current.votesNullified || 0),
-          keyMoves: [
-            ...previous.keyMoves,
-            ...(current.keyMoves || [])
-          ].slice(-5) // Keep only last 5 key moves to avoid clutter
-        };
-        
-        // Recalculate win equity based on accumulated stats
-        let equity = 50;
-        equity += accumulated[playerName].immunities * 3;
-        equity += accumulated[playerName].majorityVotes * 2;
-        equity += accumulated[playerName].keyMoves.length * 5;
-        equity -= accumulated[playerName].votesAgainst * 2;
-        equity += (current.socialScore || 5) * 1;
-        equity = Math.max(5, Math.min(95, equity));
-        
-        accumulated[playerName].winEquity = Math.round(equity);
-      }
-      
-      // Save for next episode
-      _csPut(seasonKey, JSON.stringify(accumulated));
-      
-      return accumulated;
-    }
-    
-    async function renderResumes(analytics) {
+    async function renderResumes() {
       const container = document.getElementById('resumesContainer');
-      if (!analytics || !analytics.resumes) {
-        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
+      const season = Number(els.season.value || 1);
+      const through = Number(els.episode.value || 1);
+      const history = [];
+      for (let episode = 1; episode <= through; episode++) {
+        const row = await loadSimulatorEpisode(season, episode);
+        if (row) history.push(row);
+      }
+      if (!history.length) {
+        container.innerHTML = '<p class="cr-empty" style="grid-column:1/-1">No structured episodes found. Sync Simulator again to build verified résumés.</p>';
         return;
       }
-      
-      const season = Number(els.season.value || 7);
-      const episode = Number(els.episode.value || 1);
-      
-      // Accumulate stats across episodes
-      const resumes = await accumulateResumes(analytics.resumes, season, episode);
-      const players = Object.keys(resumes);
-      
-      if (players.length === 0) {
-        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
-        return;
-      }
-      
-      container.innerHTML = players.map(playerName => {
-        const resume = resumes[playerName];
-        const slug = resume.playerSlug || playerName.toLowerCase().replace(/\s+/g, '');
-        
-        return `
-          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; padding: 16px;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-              <img src="assets/avatars/${slug}.png" 
-                   onerror="this.src='assets/avatars/all.png'" 
-                   style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #7d4cff;">
-              <div style="flex: 1;">
-                <div style="font-weight: bold; font-size: 16px; color: #fff;">${playerName}</div>
-                <div style="font-size: 24px; font-weight: bold; color: #22c55e;" 
-                     title="Win Equity: Estimated win probability based on cumulative performance&#10;Base: 50% + Immunities(+3%) + Majority Votes(+2%) + Key Moves(+5%) - Votes Against(-2%) + Social(+1%)">
-                  ${resume.winEquity}%
-                  <span style="font-size: 12px; color: #94a3b8; font-weight: normal;">win equity</span>
-                </div>
-              </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
-              <div><span style="color: #94a3b8;">Majority Votes:</span> <span style="color: #fff;">${resume.majorityVotes}/${resume.totalVotes}</span></div>
-              <div><span style="color: #94a3b8;">Immunities:</span> <span style="color: #fff;">${resume.immunities}</span></div>
-              <div><span style="color: #94a3b8;">Votes Against:</span> <span style="color: #fff;">${resume.votesAgainst}</span></div>
-              <div><span style="color: #94a3b8;">Social Score:</span> <span style="color: #fff;">${resume.socialScore}/10</span></div>
-            </div>
-            
-            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
-              <div style="border-top: 1px solid rgba(125,76,255,0.2); padding-top: 12px;">
-                <div style="font-size: 12px; font-weight: bold; color: #7d4cff; margin-bottom: 8px;">KEY MOVES</div>
-                ${resume.keyMoves.map(move => `
-                  <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;">
-                    <span style="color: #7d4cff;">Ep${move.episode}:</span> ${move.description}
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-    
-    function renderRelationships(analytics) {
-      const container = document.getElementById('relationshipsContainer');
-      if (!analytics || !analytics.relationships) {
-        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
-        return;
-      }
-      
-      const relationships = analytics.relationships;
-      const players = Object.keys(relationships);
-      
-      if (players.length === 0) {
-        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
-        return;
-      }
-      
-      // Create heat map table
-      let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
-      
-      // Header row
-      html += '<tr><th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);"></th>';
-      players.forEach(player2 => {
-        const slug2 = relationships[player2]?.slug || player2.toLowerCase().replace(/\s+/g, '');
-        html += `<th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);">
-          <img src="assets/avatars/${slug2}.png" onerror="this.src='assets/avatars/all.png'" 
-               style="width: 32px; height: 32px; border-radius: 50%;" title="${player2}">
-        </th>`;
-      });
-      html += '</tr>';
-      
-      // Data rows
-      players.forEach(player1 => {
-        const slug1 = relationships[player1]?.slug || player1.toLowerCase().replace(/\s+/g, '');
-        html += `<tr><td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); font-weight: bold;">
-          <img src="assets/avatars/${slug1}.png" onerror="this.src='assets/avatars/all.png'" 
-               style="width: 32px; height: 32px; border-radius: 50%; margin-right: 8px;" title="${player1}">
-          ${player1}
-        </td>`;
-        
-        players.forEach(player2 => {
-          if (player1 === player2) {
-            html += '<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: rgba(100,100,100,0.3); text-align: center;">—</td>';
-          } else {
-            const rel = relationships[player1]?.relationships?.[player2];
-            const value = rel?.value || 0;
-            
-            // Color based on value
-            let bgColor;
-            if (value >= 7) bgColor = 'rgba(34,197,94,0.3)'; // Green - alliance
-            else if (value >= 3) bgColor = 'rgba(59,130,246,0.3)'; // Blue - friends
-            else if (value >= 0) bgColor = 'rgba(100,100,100,0.2)'; // Gray - neutral
-            else if (value >= -6) bgColor = 'rgba(251,146,60,0.3)'; // Orange - tension
-            else bgColor = 'rgba(239,68,68,0.3)'; // Red - enemies
-            
-            html += `<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: ${bgColor}; text-align: center; font-weight: bold; color: #fff;">${value}</td>`;
-          }
+      const observedNames = history.flatMap(ep => [
+        ...(ep.tribalPlayers || []),
+        ...(ep.votingLog || []).flatMap(vote => [vote.voter, vote.voted]),
+        ep.immunityWinner
+      ].filter(Boolean));
+      const names = [...new Set([...(CURRENT.cast || []), ...observedNames].filter(name => name && name !== 'THE GAME'))];
+      const resumes = names.map(name => {
+        let ballots = 0, onResult = 0, votesAgainst = 0, immunities = 0, pitches = 0;
+        const receipts = [];
+        history.forEach(ep => {
+          const own = (ep.votingLog || []).find(vote => vote.voter === name && !vote.sitdSacrificed);
+          if (own) { ballots++; if (ep.eliminated && own.voted === ep.eliminated) onResult++; }
+          votesAgainst += (ep.votingLog || []).filter(vote => vote.voted === name).length;
+          if (ep.immunityWinner === name) { immunities++; receipts.push({ ep: ep.num, text: 'Won immunity.' }); }
+          (ep.votePitches || []).filter(pitch => pitch.pitcher === name && (pitch.success || pitch.accepted?.length)).forEach(pitch => {
+            pitches++;
+            receipts.push({ ep: ep.num, text: `Pitch on ${pitch.pitchTarget || pitch.target || 'a target'} found traction.` });
+          });
+          (ep.idolPlays || []).filter(play => play.player === name || play.holder === name).forEach(play => receipts.push({ ep: ep.num, text: `Played an idol${play.playedFor ? ` for ${play.playedFor}` : ''}.` }));
         });
-        
-        html += '</tr>';
-      });
-      
-      html += '</table></div>';
-      
-      // Legend
-      html += `
-        <div style="margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px;">
-          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(34,197,94,0.5); border-radius: 3px; margin-right: 4px;"></span> 7-10: Alliance</div>
-          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(59,130,246,0.5); border-radius: 3px; margin-right: 4px;"></span> 3-6: Friends</div>
-          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(100,100,100,0.5); border-radius: 3px; margin-right: 4px;"></span> 0-2: Neutral</div>
-          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(251,146,60,0.5); border-radius: 3px; margin-right: 4px;"></span> -3 to -6: Tension</div>
-          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(239,68,68,0.5); border-radius: 3px; margin-right: 4px;"></span> -7 to -10: Enemies</div>
-        </div>
-      `;
-      
-      container.innerHTML = html;
+        return { name, ballots, onResult, votesAgainst, immunities, pitches, receipts: receipts.slice(-4) };
+      }).sort((a, b) => (b.pitches + b.immunities + b.onResult) - (a.pitches + a.immunities + a.onResult));
+      container.innerHTML = resumes.map(resume => `<article class="mini-panel"><div style="display:flex;align-items:center;gap:10px">${_crAvatar(resume.name)}<div><b>${escapeHtml(resume.name)}</b><div class="muted">Recorded through Episode ${through}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;font-size:12px"><div><span class="muted">Ballots cast</span><br><b>${resume.ballots}</b></div><div><span class="muted">Ballot on result</span><br><b>${resume.onResult}/${resume.ballots}</b></div><div><span class="muted">Successful pitches</span><br><b>${resume.pitches}</b></div><div><span class="muted">Immunities</span><br><b>${resume.immunities}</b></div><div><span class="muted">Votes received</span><br><b>${resume.votesAgainst}</b></div></div><div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:9px"><span class="cr-thread-meta">Receipts</span>${resume.receipts.length ? resume.receipts.map(receipt => `<div class="cr-thread">Episode ${receipt.ep} · ${escapeHtml(receipt.text)}</div>`).join('') : '<div class="muted">No major recorded receipt yet. This does not mean no agency.</div>'}</div></article>`).join('');
+    }
+
+    async function renderRelationships() {
+      const container = document.getElementById('relationshipsContainer');
+      const raw = await loadSimulatorEpisode(Number(els.season.value || 1), Number(els.episode.value || 1));
+      const snapshot = raw?.relationshipSnapshot || {};
+      const keys = Object.keys(snapshot).filter(key => key.includes('→'));
+      const players = [...new Set(keys.flatMap(key => key.split('→')))];
+      if (!players.length) {
+        container.innerHTML = '<div class="cr-empty">No multidimensional simulator snapshot is available. Sync Simulator again; AI relationship guesses are intentionally not substituted.</div>';
+        return;
+      }
+      const fromEl = document.getElementById('relFrom');
+      const toEl = document.getElementById('relTo');
+      const priorFrom = players.includes(fromEl.value) ? fromEl.value : players[0];
+      const priorTo = players.includes(toEl.value) && toEl.value !== priorFrom ? toEl.value : (players.find(name => name !== priorFrom) || players[0]);
+      const options = players.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      fromEl.innerHTML = options;
+      toEl.innerHTML = options;
+      fromEl.value = priorFrom;
+      toEl.value = priorTo;
+      const draw = () => {
+        const from = fromEl.value, to = toEl.value;
+        if (from === to) { container.innerHTML = '<div class="cr-empty">Choose two different players.</div>'; return; }
+        const data = snapshot[`${from}→${to}`] || { affection: 0, trust: 0, strategicRespect: 0, fear: 0, obligation: 0, resentment: 0, attraction: 0 };
+        const dimensions = [['Affection','affection','Personal warmth or liking',-10,10],['Trust','trust','Belief that this person is safe and reliable',-10,10],['Game respect','strategicRespect','Respect earned by visible strategic execution',-10,10],['Fear','fear','Concern about their power or danger',0,10],['Owes','obligation','A social debt from help or protection',0,10],['Resentment','resentment','Unresolved anger from crossed lines',0,10],['Attraction','attraction','Romantic pull when supported by events',0,10]];
+        const causes = (raw.relationshipCausesSnapshot?.[`${from}→${to}`] || []).slice().reverse().slice(0, 6);
+        container.innerHTML = `<div class="mini-panel"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">${_crAvatar(from)}<b>${escapeHtml(from)}</b><span class="muted">feels toward</span>${_crAvatar(to)}<b>${escapeHtml(to)}</b></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">${dimensions.map(([label,key,description,min,max]) => { const value = Number(data[key] || 0), percent = ((value - min) / (max - min)) * 100; return `<div style="background:#10151c;padding:10px;border:1px solid rgba(255,255,255,.08)"><div style="display:flex;justify-content:space-between"><b>${label}</b><span>${value.toFixed(1)}</span></div><div class="cr-meter"><span style="width:${Math.max(0, Math.min(100, percent))}%"></span></div><small class="muted">${description} · ${min} to ${max}</small></div>`; }).join('')}</div><div style="margin-top:16px"><span class="cr-thread-meta">Why these values moved</span>${causes.length ? causes.map(cause => `<div class="cr-thread recorded"><span class="cr-thread-meta">Episode ${cause.ep || '?'} · ${escapeHtml(cause.dim || 'relationship')} · ${Number(cause.delta || 0) >= 0 ? '+' : ''}${Number(cause.delta || 0).toFixed(1)}</span>${escapeHtml(cause.reason || 'Recorded relationship event')}</div>`).join('') : '<div class="muted">No recent cause was retained for this direction. Zero does not imply a hidden relationship.</div>'}</div></div>`;
+      };
+      fromEl.onchange = () => { if (fromEl.value === toEl.value) toEl.value = players.find(name => name !== fromEl.value) || toEl.value; draw(); };
+      toEl.onchange = draw;
+      draw();
     }
     
   })();

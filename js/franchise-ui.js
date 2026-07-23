@@ -188,6 +188,7 @@ function _renderDropzone() {
     <input type="file" id="fr-file-input" accept=".json" multiple style="display:none" onchange="frHandleFileInput(event)">
     <div class="fr-drop-actions">
       <button class="fr-btn" onclick="frRecordLoaded()" title="Record the currently-loaded finished season into the ledger">📖 Record loaded season</button>
+      <button class="fr-btn" onclick="frApplyToCurrent()" title="Rebuild returnee reputation/instincts for the in-progress season from this franchise's history">⚡ Apply to current season</button>
       <button class="fr-btn" onclick="frExportFranchise()" title="Download this franchise (all its seasons) as a JSON backup">⬆ Export franchise</button>
       <button class="fr-btn fr-btn-danger" onclick="frWipeActive()" title="Wipe this franchise's seasons">🗑 Wipe franchise</button>
     </div>
@@ -278,6 +279,11 @@ export function frRecordLoaded() {
     window.recordLoadedSeasonToHistory();
   }
   renderFranchiseTab();
+}
+export function frApplyToCurrent() {
+  if (typeof window !== 'undefined' && typeof window.applyFranchiseMetaMidSeason === 'function') {
+    window.applyFranchiseMetaMidSeason();
+  }
 }
 export function frExportFranchise() {
   const data = exportActiveFranchise();

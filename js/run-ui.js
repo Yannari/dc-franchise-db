@@ -284,11 +284,11 @@ export function renderEpisodeView(epRecord) {
 
   // AI context is useful after every episode; final reports remain finale-only.
   let pdfWrap = document.getElementById('pdf-export-wrap');
-  const mkPdfBtn = (id, label, gradient, fn) => {
+  const mkPdfBtn = (id, label, gradient, fn, compact = false) => {
     const b = document.createElement('button');
     b.id = id;
     b.className = 'btn';
-    b.style.cssText = `flex:1;min-width:180px;padding:8px 12px;background:linear-gradient(135deg,${gradient});color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;`;
+    b.style.cssText = `${compact ? 'flex:0 0 auto;min-width:0' : 'flex:1;min-width:180px'};padding:${compact ? '5px 10px' : '8px 12px'};background:linear-gradient(135deg,${gradient});color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:${compact ? '10px' : '12px'};`;
     b.textContent = label;
     b.onclick = async () => {
       b.disabled = true;
@@ -310,21 +310,21 @@ export function renderEpisodeView(epRecord) {
       pdfWrap.id = 'pdf-export-wrap';
       pdfWrap.style.cssText = 'display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;';
 
-      pdfWrap.appendChild(mkPdfBtn('pdf-ai-context-btn', 'Export AI Context PDF', '#7c3aed,#8b5cf6', window.exportAIContextPDF));
       _otEl.parentElement.appendChild(pdfWrap);
     }
 
     const seasonComplete = gs.phase === 'complete' || gs.activePlayers?.length <= 1;
-    let summaryBtn = document.getElementById('pdf-summary-btn');
-    let statsBtn = document.getElementById('pdf-stats-btn');
-    if (seasonComplete && !summaryBtn) {
-      summaryBtn = mkPdfBtn('pdf-summary-btn', 'Export Final Summary PDF', '#e44d26,#f16529', window.exportSummaryPDF);
-      statsBtn = mkPdfBtn('pdf-stats-btn', 'Export Final Statistics PDF', '#2563eb,#3b82f6', window.exportStatisticsPDF);
-      pdfWrap.appendChild(summaryBtn);
-      pdfWrap.appendChild(statsBtn);
-    } else if (!seasonComplete) {
-      summaryBtn?.remove();
-      statsBtn?.remove();
+    const hasFinalButtons = !!document.getElementById('pdf-summary-btn');
+    const hasContextButton = !!document.getElementById('pdf-ai-context-btn');
+    if (seasonComplete && !hasFinalButtons) {
+      pdfWrap.replaceChildren(
+        mkPdfBtn('pdf-summary-btn', 'Export Final Summary PDF', '#e44d26,#f16529', window.exportSummaryPDF),
+        mkPdfBtn('pdf-stats-btn', 'Export Final Statistics PDF', '#2563eb,#3b82f6', window.exportStatisticsPDF),
+      );
+    } else if (!seasonComplete && !hasContextButton) {
+      pdfWrap.replaceChildren(
+        mkPdfBtn('pdf-ai-context-btn', 'Export AI Context PDF', '#7c3aed,#8b5cf6', window.exportAIContextPDF, true),
+      );
     }
   } else if (pdfWrap) {
     pdfWrap.remove();

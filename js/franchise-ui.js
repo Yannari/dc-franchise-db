@@ -8,7 +8,8 @@ import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
   backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
-  exportActiveFranchise, importFranchiseExport
+  exportActiveFranchise, importFranchiseExport,
+  careerFor, franchiseRecords, returneePools, setFranchiseLocked, isFranchiseLocked
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
@@ -74,31 +75,47 @@ function _sourceBadge(season) {
 export function renderFranchiseTab() {
   const host = document.getElementById('tab-franchise');
   if (!host) return;
+  _ensureLegacyCss();
   activeFranchise(); // normalise
   host.innerHTML = `<div class="fr-wrap">
     ${_renderHeader()}
     ${_renderTimeline()}
+    ${_renderHallOfFame()}
+    ${_renderCareers()}
+    ${_renderScout()}
     ${_renderDropzone()}
     ${_renderPulse()}
   </div>`;
 }
 
+// Shared entry point: any player name/portrait in the tab is clickable and opens
+// their legacy page. Escaped for a JS single-quoted string inside an HTML attr.
+function _careerClick(name) {
+  const arg = _esc(String(name == null ? '' : name).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+  return `onclick="frOpenCareer('${arg}')" role="button" tabindex="0"`;
+}
+
 function _renderHeader() {
   const list = listFranchises();
-  const pills = list.map(f => `<button class="fr-pill ${f.active ? 'active' : ''}"
-    onclick="frSwitchFranchise('${_esc(f.id)}')" title="${_esc(f.name)} — ${f.seasonCount} season${f.seasonCount === 1 ? '' : 's'}">
-    <span class="fr-pill-name">${_esc(f.name)}</span><span class="fr-pill-count">${f.seasonCount}</span></button>`).join('');
+  const pills = list.map(f => {
+    const locked = isFranchiseLocked(f.id);
+    return `<button class="fr-pill ${f.active ? 'active' : ''} ${locked ? 'fr-pill-locked' : ''}"
+    onclick="frSwitchFranchise('${_esc(f.id)}')" title="${_esc(f.name)} — ${f.seasonCount} season${f.seasonCount === 1 ? '' : 's'}${locked ? ' · locked' : ''}">
+    ${locked ? '<span class="fr-pill-lock">🔒</span>' : ''}<span class="fr-pill-name">${_esc(f.name)}</span><span class="fr-pill-count">${f.seasonCount}</span></button>`;
+  }).join('');
+  const locked = isFranchiseLocked(franchiseLedger.active);
   return `<div class="fr-header">
     <div class="fr-header-top">
       <h1 class="fr-title">${_svgCrown()} Franchise</h1>
       <div class="fr-franchise-actions">
         <button class="fr-btn" onclick="frNewFranchise()" title="Create a new franchise">+ New Franchise</button>
+        <button class="fr-btn fr-btn-icon ${locked ? 'fr-btn-locked' : ''}" onclick="frToggleLock()" title="${locked ? 'Unlock this franchise' : 'Lock this franchise as sealed canon'}">${locked ? '🔒' : '🔓'}</button>
         <button class="fr-btn fr-btn-icon" onclick="frRenameFranchise()" title="Rename active franchise">✏️</button>
         <button class="fr-btn fr-btn-icon fr-btn-danger" onclick="frDeleteFranchise()" title="Delete active franchise">🗑</button>
       </div>
     </div>
     <div class="fr-pills">${pills}</div>
-    <div class="fr-subtext">Active franchise feeds returnee history.</div>
+    <div class="fr-subtext">${locked ? '🔒 This franchise is locked — sealed canon. Unlock to record, import, or wipe.' : 'Active franchise feeds returnee history.'}</div>
   </div>`;
 }
 
@@ -130,11 +147,11 @@ function _renderSeasonCard(num, season) {
     </div>
     <div class="fr-card-name">${_esc(season.seasonName || `Season ${num}`)}</div>
     <div class="fr-winner">
-      <span class="fr-winner-portrait">${_svgCrown()}${_winnerPortrait(winner, true, season.players?.[winner]?.slug)}</span>
+      <span class="fr-winner-portrait ${winner ? 'fr-clickable' : ''}" ${winner ? _careerClick(winner) : ''}>${_svgCrown()}${_winnerPortrait(winner, true, season.players?.[winner]?.slug)}</span>
       <div class="fr-winner-meta">
         <span class="fr-winner-label">Winner</span>
-        <span class="fr-winner-name">${_esc(winner || '—')}</span>
-        ${runnerUp ? `<span class="fr-runnerup">runner-up: ${_esc(runnerUp)}</span>` : ''}
+        <span class="fr-winner-name ${winner ? 'fr-clickable' : ''}" ${winner ? _careerClick(winner) : ''}>${_esc(winner || '—')}</span>
+        ${runnerUp ? `<span class="fr-runnerup">runner-up: <span class="fr-clickable" ${_careerClick(runnerUp)}>${_esc(runnerUp)}</span></span>` : ''}
       </div>
     </div>
     ${chips.length ? `<div class="fr-chips">${chips.map(c => `<span class="fr-chip">${_esc(c)}</span>`).join('')}</div>` : ''}
@@ -162,7 +179,7 @@ function _renderDetails(num, season) {
     if ((r.betrayed || []).length) facts.push(`<span class="fr-fact">🗡 ${r.betrayed.map(_esc).join(', ')}</span>`);
     if ((r.idolsPlayed || 0) > 0) facts.push(`<span class="fr-fact">🗿 ${r.idolsPlayed}</span>`);
     if ((r.chalWins || 0) > 0) facts.push(`<span class="fr-fact">🏅 ${r.chalWins}W</span>`);
-    return `<div class="fr-det-row">
+    return `<div class="fr-det-row fr-clickable" ${_careerClick(name)}>
       <span class="fr-det-place">${r.placement || '—'}</span>
       ${_winnerPortrait(name, false, r.slug)}
       <div class="fr-det-body">
@@ -229,9 +246,334 @@ function _tile(label, value, portraitName) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// LEGACY LAYER — Hall of Fame · Careers · All-Stars Scout
+// ══════════════════════════════════════════════════════════════════════
+
+// ── 1. HALL OF FAME + Record Book ─────────────────────────────────────
+function _renderHallOfFame() {
+  const seasons = activeSeasons();
+  const nums = Object.keys(seasons).map(Number).sort((a, b) => a - b)
+    .filter(n => _isIncluded(seasons[String(n)]));
+  const champs = [];
+  for (const num of nums) {
+    const s = seasons[String(num)];
+    const w = _winnerOf(s);
+    if (w) champs.push({ num, name: w, slug: s.players?.[w]?.slug });
+  }
+  const records = franchiseRecords();
+  if (!champs.length && !records.length) return '';
+
+  const gallery = champs.length
+    ? `<div class="fr-hof-gallery">${champs.map(c => `<div class="fr-hof-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.name)} — winner of Season ${c.num}">
+        <span class="fr-hof-portrait">${_svgCrown()}${_winnerPortrait(c.name, false, c.slug)}</span>
+        <span class="fr-hof-caption"><span class="fr-hof-snum">S${c.num}</span> · ${_esc(c.name)}</span>
+      </div>`).join('')}</div>`
+    : `<div class="fr-legacy-empty">No champions recorded yet.</div>`;
+
+  const book = records.length
+    ? `<div class="fr-recbook">${records.map(r => `<div class="fr-rec-row fr-clickable" ${_careerClick(r.holder)}>
+        <span class="fr-rec-title">🏅 ${_esc(r.title)}</span>
+        <span class="fr-rec-holder">${_esc(r.holder)} <span class="fr-rec-val">(${_esc(r.value)})</span></span>
+      </div>`).join('')}</div>`
+    : '';
+
+  return `<div class="vp-section-header gold">Hall of Fame</div>
+    ${gallery}
+    ${records.length ? `<div class="fr-recbook-label">Record Book</div>${book}` : ''}`;
+}
+
+// ── 2. CAREERS — roster index + inline legacy panel ───────────────────
+function _renderCareers() {
+  // Every player with history, ranked by titles then best placement — the index.
+  const roster = _allCareerNames().map(n => careerFor(n)).filter(Boolean)
+    .sort((a, b) => b.totals.wins - a.totals.wins
+      || (a.totals.bestPlacement || 999) - (b.totals.bestPlacement || 999)
+      || a.name.localeCompare(b.name));
+  if (!roster.length) return '';
+  const chips = roster.map(c => `<div class="fr-roster-chip fr-clickable" ${_careerClick(c.name)} title="${_esc(c.name)} — ${c.totals.seasons} season${c.totals.seasons === 1 ? '' : 's'}">
+    ${_winnerPortrait(c.name, false, c.slug)}
+    <span class="fr-roster-name">${_esc(c.name)}${c.totals.wins ? ' 👑' : ''}</span>
+  </div>`).join('');
+  return `<div class="vp-section-header gold">Careers</div>
+    <div class="fr-careers-hint">Every campaign, every scar — click a player to open their legacy page.</div>
+    <div id="fr-career-panel" class="fr-career-panel" style="display:none"></div>
+    <div class="fr-roster">${chips}</div>`;
+}
+
+function _allCareerNames() {
+  const set = new Set();
+  for (const s of Object.values(activeSeasons())) {
+    if (s.included === false) continue;
+    for (const nm of Object.keys(s.players || {})) set.add(nm);
+  }
+  return [...set];
+}
+
+function _careerPanelHtml(c) {
+  const badges = c.badges.map(b => `<span class="fr-badge">${_esc(b)}</span>`).join('');
+  const timeline = c.seasons.map(s => {
+    const cls = s.placement === 1 ? 'gold' : s.placement === 2 ? 'silver' : 'muted';
+    const marks = `${s.blindsided ? '🔻' : ''}${s.backfilled ? ' <span class="fr-place-light">(light)</span>' : ''}`;
+    return `<span class="fr-place-chip ${cls}" title="${_esc(s.seasonName)}">
+      <span class="fr-place-snum">S${s.seasonNum}</span>
+      <span class="fr-place-rank">${s.placement || '—'}</span>${marks}</span>`;
+  }).join('');
+
+  const t = c.totals;
+  const stat = (val, label) => `<div class="fr-stat"><div class="fr-stat-val">${val}</div><div class="fr-stat-label">${_esc(label)}</div></div>`;
+  const tiles = [
+    stat(t.seasons, 'Seasons'),
+    stat(t.wins, t.wins === 1 ? 'Title' : 'Titles'),
+    stat(t.finals, 'Finals'),
+    stat(t.bestPlacement || '—', 'Best finish'),
+    stat(t.avgPlacement || '—', 'Avg finish'),
+    stat(t.chalWins, 'Immunity wins'),
+    stat(t.blindsidesAuthored, 'Blindsides'),
+    stat(t.idolsPlayed, 'Idols played')
+  ].join('');
+
+  const peopleCol = (label, arr, kind) => {
+    if (!arr.length) return '';
+    const rows = arr.slice(0, 5).map(p => `<div class="fr-person-row fr-clickable" ${_careerClick(p.name)}>
+      ${_winnerPortrait(p.name, false)}
+      <span class="fr-person-name">${_esc(p.name)}</span>
+      <span class="fr-person-count fr-person-${kind}">×${p.count}</span>
+    </div>`).join('');
+    return `<div class="fr-people-col"><div class="fr-people-label">${_esc(label)}</div>${rows}</div>`;
+  };
+  const showLine = c.people.showmances.length
+    ? `<div class="fr-showmance-line">💞 ${c.people.showmances.map(sh => `${_esc(sh.partner)} <span class="fr-show-tag ${sh.ended === 'intact' ? 'ok' : 'bad'}">${sh.ended === 'intact' ? 'lasted' : 'ended'}</span> <span class="fr-show-season">S${sh.seasonNum}</span>`).join(' · ')}</div>`
+    : '';
+
+  return `<div class="fr-career-inner">
+    <button class="fr-career-close" onclick="frCloseCareer()" title="Close">✕</button>
+    <div class="fr-career-head">
+      <span class="fr-career-portrait">${_winnerPortrait(c.name, true, c.slug)}</span>
+      <div class="fr-career-headmeta">
+        <div class="fr-career-name">${_esc(c.name)}</div>
+        <div class="fr-career-badges">${badges || '<span class="fr-badge fr-badge-none">ROOKIE</span>'}</div>
+      </div>
+    </div>
+    <div class="fr-career-section-label">Career timeline</div>
+    <div class="fr-seasonline">${timeline}</div>
+    <div class="fr-career-section-label">By the numbers</div>
+    <div class="fr-totals-grid">${tiles}</div>
+    ${(c.people.allies.length || c.people.rivals.length || c.people.betrayedBy.length || showLine) ? `<div class="fr-career-section-label">The people</div>
+    <div class="fr-people">${peopleCol('Closest allies', c.people.allies, 'ally')}${peopleCol('Fiercest rivals', c.people.rivals, 'rival')}${peopleCol('Betrayed by', c.people.betrayedBy, 'betray')}</div>
+    ${showLine}` : ''}
+  </div>`;
+}
+
+// ── 3. ALL-STARS SCOUT ────────────────────────────────────────────────
+const _POOL_META = {
+  legends: { label: 'Legends', blurb: 'Champions & multi-finalists' },
+  unfinishedBusiness: { label: 'Unfinished Business', blurb: 'Robbed mid-run — blindsided deep' },
+  fallenAngels: { label: 'Fallen Angels', blurb: 'Rode high, then crashed back down' },
+  redemption: { label: 'Redemption Arc', blurb: 'Never made the merge — hungry for more' }
+};
+function _renderScout() {
+  const pools = returneePools();
+  const order = ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption'];
+  const anyData = order.some(k => pools[k].length);
+  if (!anyData) return '';
+  const rows = order.map(key => {
+    const meta = _POOL_META[key];
+    const list = pools[key];
+    const chips = list.length
+      ? list.map(x => `<div class="fr-scout-chip fr-clickable" ${_careerClick(x.name)} title="${_esc(x.why)}">
+          ${_winnerPortrait(x.name, false, x.slug)}
+          <span class="fr-scout-body"><span class="fr-scout-name">${_esc(x.name)}</span><span class="fr-scout-why">${_esc(x.why)}</span></span>
+        </div>`).join('')
+      : `<div class="fr-legacy-empty">No candidates in this pool yet.</div>`;
+    return `<div class="fr-pool fr-pool-${key}">
+      <div class="fr-pool-head">
+        <div class="fr-pool-titles"><span class="fr-pool-label">${_esc(meta.label)}</span><span class="fr-pool-blurb">${_esc(meta.blurb)}</span></div>
+        ${list.length ? `<button class="fr-btn fr-btn-sm fr-copy-btn" onclick="frCopyPool('${key}')" title="Copy this pool as a cast list">📋 Copy</button>` : ''}
+      </div>
+      <div class="fr-pool-chips">${chips}</div>
+    </div>`;
+  }).join('');
+  return `<div class="vp-section-header gold">All-Stars Scout</div>
+    <div class="fr-scout-topbar">
+      <div class="fr-careers-hint">Ready-made returnee shortlists drawn from this franchise's canon.</div>
+      <button class="fr-btn fr-btn-sm fr-copy-btn" onclick="frCopyAllStars()" title="Copy a balanced all-stars cast (top picks from every pool)">📋 Copy All-Stars pool</button>
+    </div>
+    <div class="fr-scout">${rows}</div>`;
+}
+
+// ── CSS injection (one-time; simulator.html stays untouched) ───────────
+function _ensureLegacyCss() {
+  if (typeof document === 'undefined' || document.getElementById('fr-legacy-css')) return;
+  const style = document.createElement('style');
+  style.id = 'fr-legacy-css';
+  style.textContent = _LEGACY_CSS;
+  (document.head || document.documentElement).appendChild(style);
+}
+const _LEGACY_CSS = `
+.fr-clickable { cursor: pointer; transition: color .18s, filter .18s; }
+.fr-clickable:hover { color: var(--accent-gold); }
+.fr-clickable:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; border-radius: 6px; }
+.fr-legacy-empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 8px 2px; }
+.fr-pill-lock { font-size: 11px; margin-right: -2px; }
+.fr-pill-locked.active { box-shadow: 0 0 0 1px var(--accent-gold), 0 0 16px -4px var(--accent-gold); border-color: var(--accent-gold); color: var(--accent-gold); }
+.fr-btn-locked { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+/* Hall of Fame */
+.fr-hof-gallery { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }
+.fr-hof-chip { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 92px; padding: 12px 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: transform .2s var(--ease-broadcast), border-color .2s, box-shadow .2s; }
+.fr-hof-chip:hover { transform: translateY(-3px); border-color: var(--accent-gold); box-shadow: 0 10px 24px -12px rgba(240,192,64,.5); }
+.fr-hof-portrait { position: relative; display: inline-block; }
+.fr-hof-portrait .fr-crown { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 24px; height: 16px; z-index: 2; }
+.fr-hof-portrait .fr-portrait img, .fr-hof-portrait .fr-portrait-fb { width: 48px; height: 48px; border: 2px solid var(--accent-gold); box-shadow: 0 0 12px -4px var(--accent-gold); border-radius: 50%; }
+.fr-hof-caption { font-size: 11px; font-weight: 600; color: var(--text); text-align: center; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.fr-hof-snum { color: var(--accent-gold); font-family: var(--font-display); font-size: 12px; }
+.fr-recbook-label, .fr-people-label, .fr-career-section-label { font-size: 10px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
+.fr-recbook { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; }
+.fr-rec-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; transition: border-color .18s, background .18s; }
+.fr-rec-row:hover { border-color: var(--accent-gold); background: var(--surface2); }
+.fr-rec-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.fr-rec-holder { font-size: 12px; font-weight: 700; color: var(--accent-gold); white-space: nowrap; }
+.fr-rec-val { color: var(--muted); font-weight: 600; }
+
+/* Careers roster + panel */
+.fr-careers-hint { font-size: 12px; color: var(--muted); margin: 2px 0 12px; }
+.fr-roster { display: flex; flex-wrap: wrap; gap: 8px; }
+.fr-roster-chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; transition: border-color .18s, background .18s, transform .18s; }
+.fr-roster-chip:hover { border-color: var(--accent-gold); background: var(--surface2); transform: translateY(-2px); }
+.fr-roster-chip .fr-portrait img, .fr-roster-chip .fr-portrait-fb { width: 26px; height: 26px; }
+.fr-roster-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+.fr-career-panel { margin-bottom: 14px; }
+.fr-career-inner { position: relative; background: linear-gradient(160deg, var(--surface2), var(--surface)); border: 1px solid var(--accent-gold); border-radius: 16px; padding: 22px 24px 20px; box-shadow: 0 18px 48px -22px rgba(240,192,64,.5), inset 0 1px 0 rgba(240,192,64,.15); }
+.fr-career-close { position: absolute; top: 12px; right: 14px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 13px; transition: color .18s, border-color .18s; }
+.fr-career-close:hover { color: var(--accent-fire); border-color: var(--accent-fire); }
+.fr-career-head { display: flex; align-items: center; gap: 16px; }
+.fr-career-portrait .fr-portrait img, .fr-career-portrait .fr-portrait-fb { width: 66px; height: 66px; border: 2px solid var(--accent-gold); box-shadow: 0 0 18px -4px var(--accent-gold); border-radius: 50%; }
+.fr-career-name { font-family: var(--font-display); font-size: 30px; letter-spacing: .5px; color: var(--text); line-height: 1; }
+.fr-career-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fr-badge { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: #1a1405; background: var(--accent-gold); border: 1px solid #c99a1e; }
+.fr-badge-none { color: var(--muted); background: var(--surface); border-color: var(--border); }
+.fr-seasonline { display: flex; flex-wrap: wrap; gap: 8px; }
+.fr-place-chip { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 52px; padding: 8px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); }
+.fr-place-chip .fr-place-snum { font-size: 9px; font-weight: 700; letter-spacing: .6px; color: var(--muted); text-transform: uppercase; }
+.fr-place-chip .fr-place-rank { font-family: var(--font-display); font-size: 20px; line-height: 1; color: var(--text); }
+.fr-place-chip.gold { border-color: var(--accent-gold); box-shadow: 0 0 12px -5px var(--accent-gold); }
+.fr-place-chip.gold .fr-place-rank { color: var(--accent-gold); }
+.fr-place-chip.silver { border-color: #b9c2cc; }
+.fr-place-chip.silver .fr-place-rank { color: #cfd6de; }
+.fr-place-chip.muted { opacity: .82; }
+.fr-place-light { font-size: 8px; color: var(--muted); font-style: italic; }
+.fr-totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+.fr-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.fr-stat-val { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--accent-gold); }
+.fr-stat-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.fr-people { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.fr-people-col { display: flex; flex-direction: column; gap: 6px; }
+.fr-person-row { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 8px; transition: background .18s; }
+.fr-person-row:hover { background: var(--surface2); }
+.fr-person-row .fr-portrait img, .fr-person-row .fr-portrait-fb { width: 24px; height: 24px; }
+.fr-person-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-person-count { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
+.fr-person-ally { color: #06110b; background: var(--accent); }
+.fr-person-rival { color: #fff; background: var(--accent-fire); }
+.fr-person-betray { color: var(--muted); background: var(--surface2); border: 1px solid var(--border); }
+.fr-showmance-line { font-size: 12px; color: var(--muted); margin-top: 10px; }
+.fr-show-tag { font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 1px 6px; border-radius: 5px; }
+.fr-show-tag.ok { color: #06110b; background: var(--accent); }
+.fr-show-tag.bad { color: #fff; background: var(--accent-fire); }
+.fr-show-season { color: var(--accent-gold); font-weight: 700; }
+
+/* All-Stars Scout */
+.fr-scout-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.fr-scout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.fr-pool { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 15px; border-top: 3px solid var(--accent-gold); }
+.fr-pool-unfinishedBusiness { border-top-color: var(--accent-fire); }
+.fr-pool-fallenAngels { border-top-color: #b9c2cc; }
+.fr-pool-redemption { border-top-color: var(--accent); }
+.fr-pool-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.fr-pool-titles { display: flex; flex-direction: column; gap: 2px; }
+.fr-pool-label { font-family: var(--font-display); font-size: 17px; letter-spacing: .6px; color: var(--text); }
+.fr-pool-blurb { font-size: 10px; color: var(--muted); letter-spacing: .3px; }
+.fr-pool-chips { display: flex; flex-direction: column; gap: 7px; }
+.fr-scout-chip { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; transition: border-color .18s, transform .18s; }
+.fr-scout-chip:hover { border-color: var(--accent-gold); transform: translateX(2px); }
+.fr-scout-chip .fr-portrait img, .fr-scout-chip .fr-portrait-fb { width: 30px; height: 30px; }
+.fr-scout-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.fr-scout-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.fr-scout-why { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-copy-btn { white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .fr-hof-chip, .fr-roster-chip, .fr-scout-chip, .fr-clickable { transition: none; }
+}
+`;
+
+// ══════════════════════════════════════════════════════════════════════
 // HANDLERS
 // ══════════════════════════════════════════════════════════════════════
 function _persistAndRerender() { try { persistFranchiseLedger(); } catch (e) { console.warn(e); } renderFranchiseTab(); }
+
+// ── Legacy: career panel + scout copy + lock ──────────────────────────
+export function frOpenCareer(name) {
+  const panel = document.getElementById('fr-career-panel');
+  if (!panel) return;
+  const c = careerFor(name);
+  if (!c) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  panel.innerHTML = _careerPanelHtml(c);
+  panel.style.display = 'block';
+  try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { void e; }
+}
+export function frCloseCareer() {
+  const panel = document.getElementById('fr-career-panel');
+  if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+}
+function _copyText(text, label) {
+  if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => _flashCopy(label, true),
+      () => { try { window.prompt(`${label} — copy the list below:`, text); } catch (e) { void e; } }
+    );
+  } else {
+    try { window.prompt(`${label} — copy the list below:`, text); } catch (e) { void e; }
+  }
+}
+function _flashCopy(label, ok) {
+  const log = document.getElementById('fr-import-log');
+  if (!log) return;
+  const row = document.createElement('div');
+  row.className = 'fr-log-row ' + (ok ? 'fr-log-ok' : 'fr-log-err');
+  row.innerHTML = (ok ? '✓ ' : '✗ ') + _esc(label) + ' copied to clipboard';
+  log.appendChild(row);
+}
+export function frCopyPool(key) {
+  const pool = returneePools()[key] || [];
+  if (!pool.length) return;
+  const meta = _POOL_META[key];
+  _copyText(pool.map(x => x.name).join('\n'), `${meta ? meta.label : key} cast list`);
+}
+export function frCopyAllStars() {
+  const pools = returneePools();
+  const seen = new Set(); const names = [];
+  for (const key of ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption']) {
+    for (const x of (pools[key] || []).slice(0, 5)) {
+      if (!seen.has(x.name)) { seen.add(x.name); names.push(x.name); }
+    }
+  }
+  if (!names.length) return;
+  _copyText(names.join('\n'), 'All-Stars pool');
+}
+export function frToggleLock() {
+  const id = franchiseLedger.active;
+  const f = franchiseLedger.franchises[id];
+  const nm = f?.name || id;
+  if (isFranchiseLocked(id)) {
+    if (!confirm(`Unlock "${nm}"? Recording, importing, and wiping will be re-enabled.`)) return;
+    setFranchiseLocked(id, false);
+  } else {
+    if (!confirm(`Lock "${nm}"? No season can be recorded, imported, or wiped until unlocked.`)) return;
+    setFranchiseLocked(id, true);
+  }
+  _persistAndRerender();
+}
 
 export function frSwitchFranchise(id) { if (setActiveFranchise(id)) _persistAndRerender(); }
 export function frNewFranchise() {
@@ -296,6 +638,7 @@ export function frExportFranchise() {
 }
 export function frWipeActive() {
   const cur = franchiseLedger.franchises[franchiseLedger.active];
+  if (isFranchiseLocked(franchiseLedger.active)) { alert(`"${cur?.name || 'This franchise'}" is locked. Unlock it before wiping.`); return; }
   if (!confirm(`Wipe ALL recorded seasons in "${cur?.name || 'this franchise'}"? This cannot be undone.`)) return;
   wipeLedger(); // wipes the ACTIVE franchise's seasons only
   _persistAndRerender();
@@ -348,6 +691,12 @@ function _processFiles(files) {
 }
 
 function _importOne(raw, fileName) {
+  // Locked franchise rejects every import EXCEPT a franchise export (which makes
+  // a brand-new franchise and never touches the locked one).
+  if (isFranchiseLocked(franchiseLedger.active) && !(raw && raw.type === 'dc-franchise-export')) {
+    _logLine(`${_esc(fileName)} — Franchise is locked`, false);
+    return;
+  }
   // franchise export → new franchise (never merges — zero overwrite risk)
   if (raw && raw.type === 'dc-franchise-export') {
     const res = importFranchiseExport(raw);

@@ -223,7 +223,14 @@ export function validateLedger(ledger) {
       if (!Array.isArray(rows) || !cast.size) return;
       const names = rows.map(row => row?.player).filter(Boolean);
       const seen = new Set(names);
-      active.forEach(name => { if (!seen.has(name)) report('warning',`missing-${field}`,ep,`${label} is missing active contestant ${name}.`); });
+      // One compact coverage warning per field instead of one line per player —
+      // 16 omissions used to produce 16 rows and drown the diagnostic list.
+      const missing = active.filter(name => !seen.has(name));
+      if (missing.length) {
+        const preview = missing.slice(0, 3).join(', ');
+        const rest = missing.length > 3 ? ` and ${missing.length - 3} more` : '';
+        report('warning',`missing-${field}`,ep,`${label} covers ${active.length - missing.length}/${active.length} active contestants (missing: ${preview}${rest}).`);
+      }
       eliminated.forEach(name => { if (seen.has(name)) report('warning',`eliminated-${field}`,ep,`${label} still includes eliminated contestant ${name}.`); });
       names.forEach((name, index) => {
         if (!cast.has(name)) report('warning',`unknown-${field}`,ep,`${label} includes unknown contestant ${name}.`);

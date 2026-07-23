@@ -28,7 +28,7 @@ export default {
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
-      return await generateAnalytics(summaryText, season, episode, env);
+      return await generateAnalytics(summaryText, season, episode, env, body.activeCast);
     }
   },
 };
@@ -298,7 +298,7 @@ Return ONLY valid JSON matching the schema exactly.
   return await callOpenAI(payload, env);
 }
 
-async function generateAnalytics(summaryText, season, episode, env) {
+async function generateAnalytics(summaryText, season, episode, env, activeCast = null) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -680,7 +680,9 @@ Use ONLY facts from the summary.
 
 Return ONLY JSON matching schema.
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
-`.trim();
+`.trim() + ((Array.isArray(activeCast) && activeCast.length)
+    ? `\n\nACTIVE CAST (authoritative): ${activeCast.join(", ")}.\nbootPredictions, powerRankings, and resumesList must each include EXACTLY these ${activeCast.length} players — no omissions, no extras, no eliminated players.`
+    : "");
 
   function convertAnalyticsData(data) {
     if (data.resumesList) {
@@ -708,23 +710,56 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
     return data;
   }
 
+  // Coverage enforcement: bootPredictions and powerRankings must include every
+  // active player. Ground truth = activeCast from the request when provided,
+  // else the model's OWN resumes list (the prompt requires resumes for ALL
+  // actives, so a player in resumes but absent from bootPredictions is a
+  // self-inconsistent response worth rejecting).
+  function coverageGaps(data) {
+    const ref = (Array.isArray(activeCast) && activeCast.length)
+      ? activeCast : Object.keys(data.resumes || {});
+    const gaps = {};
+    for (const field of ["bootPredictions", "powerRankings"]) {
+      const seen = new Set((data[field] || []).map(x => String(x?.player || "").toLowerCase()));
+      const miss = ref.filter(n => !seen.has(String(n).toLowerCase()));
+      if (miss.length) gaps[field] = miss;
+    }
+    return gaps;
+  }
+  const retryNote = gaps => `\n\nYOUR PREVIOUS ATTEMPT WAS REJECTED FOR INCOMPLETE COVERAGE.\n`
+    + Object.entries(gaps).map(([f, names]) => `- ${f} omitted these active players: ${names.join(", ")}`).join("\n")
+    + `\nRegenerate the FULL analytics with bootPredictions and powerRankings entries for EVERY active player listed above as well as everyone you already covered. Do not drop anyone.`;
+
   // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
   if (env.OPENAI_API_KEY) {
-    const payload = {
-      model: "gpt-5.5",
-      instructions,
-      input: summaryText,
-      text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
-    };
-    const response = await callOpenAI(payload, env, { provider: "openai" });
-    if (response.ok) {
+    let lastData = null, lastGaps = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const payload = {
+        model: "gpt-5.5",
+        instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
+        input: summaryText,
+        text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
+      };
+      const response = await callOpenAI(payload, env, { provider: "openai" });
+      if (!response.ok) break;
       const data = await response.json();
-      if (!data.error) {
-        convertAnalyticsData(data);
+      if (data.error) break;
+      convertAnalyticsData(data);
+      const gaps = coverageGaps(data);
+      if (!Object.keys(gaps).length) {
         return new Response(JSON.stringify(data), {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       }
+      lastData = data; lastGaps = gaps;
+    }
+    // Both attempts incomplete — return the best we have, flagged so the
+    // frontend/ledger can surface it honestly instead of silently thinning.
+    if (lastData) {
+      lastData._coverageWarning = lastGaps;
+      return new Response(JSON.stringify(lastData), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
     }
   }
 
@@ -805,6 +840,9 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
         }
 
         convertAnalyticsData(data);
+        // Streaming path can't retry — flag incomplete coverage instead.
+        const _gaps = coverageGaps(data);
+        if (Object.keys(_gaps).length) data._coverageWarning = _gaps;
         controller.enqueue(encoder.encode(JSON.stringify(data)));
       } catch (e) {
         if (heartbeat) clearInterval(heartbeat);

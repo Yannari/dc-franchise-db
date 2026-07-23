@@ -4,7 +4,7 @@
 
 import { audio } from './audio.js';
 import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
-import { franchiseLedger, franchiseHistorySummary, backfillFromSeasonsDb,
+import { activeSeasons, franchiseHistorySummary, backfillFromSeasonsDb,
   clearPlayerHistory, wipeLedger, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
@@ -13,7 +13,7 @@ export function showTab(name) {
   activeTab = name;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  const tabs = ['cast', 'setup', 'run', 'results'];
+  const tabs = ['cast', 'setup', 'run', 'results', 'franchise'];
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
     if (i < tabs.length) btn.classList.toggle('active', tabs[i] === name);
   });
@@ -21,6 +21,7 @@ export function showTab(name) {
   if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); }
   if (name === 'run')     initRunTab();
   if (name === 'results') renderResultsTab();
+  if (name === 'franchise' && typeof renderFranchiseTab === 'function') renderFranchiseTab();
   if (typeof updateBroadcastBar === 'function') updateBroadcastBar();   // refresh ON-AIR / season / episode
   // Remember active tab across reloads
   try { localStorage.setItem('simulator_activeTab', name); } catch(e) {}
@@ -311,7 +312,7 @@ export function renderFranchiseHistoryPanel() {
     return `<div class="fh-row"><b>${p.name}</b> — ${hist.map(h => `S${h.seasonNum}: ${h.line}`).join(' | ')}
       <button onclick="clearFranchisePlayerHistory('${p.name.replace(/'/g, "\\'")}')" style="margin-left:6px;">clear</button></div>`;
   });
-  const total = Object.keys(franchiseLedger.seasons).length;
+  const total = Object.keys(activeSeasons()).length;
   el.innerHTML = `<div style="font-size:12px;opacity:.8;">Franchise ledger: ${total} season${total === 1 ? '' : 's'} recorded</div>` + rows.join('');
 }
 
@@ -345,11 +346,11 @@ export function recordLoadedSeasonToHistory() {
   const seasonNum = gs.seasonNumber || seasonConfig?.seasonNumber || 0;
   if (!seasonNum) { alert('This save has no season number. Set "Season Number" in the config to identify it, then click again.'); return; }
   if (!gs.seasonNumber && !confirm(`This save predates season stamping. Record it as Season ${seasonNum} (from your config)?`)) return;
-  if (franchiseLedger.seasons[String(seasonNum)] && !confirm(`Season ${seasonNum} already has a recorded history. Overwrite it with this savestate?`)) return;
+  if (activeSeasons()[String(seasonNum)] && !confirm(`Season ${seasonNum} already has a recorded history. Overwrite it with this savestate?`)) return;
   if (recordSeasonToLedger(null, 'manual')) {
     persistFranchiseLedger();
     renderFranchiseHistoryPanel();
-    alert(`Season ${seasonNum} recorded into franchise history (${Object.keys(franchiseLedger.seasons[String(seasonNum)].players).length} players).`);
+    alert(`Season ${seasonNum} recorded into franchise history (${Object.keys(activeSeasons()[String(seasonNum)].players).length} players).`);
   } else {
     alert('Could not derive a season record from this save.');
   }

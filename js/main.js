@@ -126,6 +126,7 @@ import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
 import * as broadcastMod from './broadcast.js';
 import * as franchiseMetaMod from './franchise-meta.js';
+import * as franchiseUiMod from './franchise-ui.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -210,6 +211,7 @@ const extractedModules = [
   recapMod,
   broadcastMod,
   franchiseMetaMod,
+  franchiseUiMod,
 ];
 
 for (const mod of extractedModules) {
@@ -313,7 +315,10 @@ async function init() {
   await loadAll();
   // Load persistent cross-season history ledger (never blocks the sim); refresh the
   // history panel once it lands so imported/persisted seasons show without a reload.
-  savestateMod.loadFranchiseLedgerFromDb().then(() => { try { castUiMod.renderFranchiseHistoryPanel?.(); } catch {} });
+  savestateMod.loadFranchiseLedgerFromDb().then(() => {
+    try { castUiMod.renderFranchiseHistoryPanel?.(); } catch {}
+    try { franchiseUiMod.renderFranchiseTab?.(); } catch {}
+  });
   renderCast();
   renderConfig();
   renderRelList();

@@ -1711,6 +1711,98 @@
     .tab-content { display: none; width: 100%; height: 100%; }
     .tab-content.active { display: flex; }
 
+    /* ══ FRANCHISE TAB ══════════════════════════════════════════════ */
+    #tab-franchise.active { display: block; overflow-y: auto; }
+    .fr-wrap { max-width: 1180px; margin: 0 auto; padding: 26px 28px 60px; display: flex; flex-direction: column; gap: 8px; }
+    /* header */
+    .fr-header { margin-bottom: 8px; }
+    .fr-header-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .fr-title { font-family: var(--font-display); font-size: 34px; letter-spacing: 1px; margin: 0; color: var(--text); display: flex; align-items: center; gap: 12px; }
+    .fr-crown { width: 34px; height: 23px; filter: drop-shadow(0 2px 6px rgba(240,192,64,.35)); }
+    .fr-franchise-actions { display: flex; gap: 8px; align-items: center; }
+    .fr-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; }
+    .fr-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color .2s, color .2s, box-shadow .2s, background .2s; }
+    .fr-pill:hover { color: var(--text); border-color: var(--accent); }
+    .fr-pill.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent), 0 0 16px -4px var(--accent); }
+    .fr-pill-count { font-size: 11px; font-weight: 700; background: var(--surface2); color: var(--muted); border-radius: 999px; padding: 1px 8px; }
+    .fr-pill.active .fr-pill-count { background: var(--accent); color: #06110b; }
+    .fr-subtext { font-size: 12px; color: var(--muted); letter-spacing: .3px; }
+    /* buttons */
+    .fr-btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 13px; cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
+    .fr-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .fr-btn-icon { padding: 7px 9px; }
+    .fr-btn-sm { font-size: 11px; padding: 5px 9px; }
+    .fr-btn-danger:hover { border-color: var(--accent-fire); color: var(--accent-fire); }
+    /* timeline grid */
+    .fr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; margin-top: 4px; }
+    .fr-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; transition: transform .22s var(--ease-broadcast), box-shadow .22s, border-color .22s; }
+    .fr-card:hover { transform: translateY(-4px); border-color: var(--accent-gold); box-shadow: 0 12px 30px -12px rgba(240,192,64,.4), 0 0 0 1px rgba(240,192,64,.25); }
+    .fr-card.fr-excluded { opacity: .45; }
+    .fr-card.fr-excluded .fr-portrait img, .fr-card.fr-excluded .fr-medallion { filter: grayscale(1); }
+    .fr-card-head { display: flex; align-items: center; justify-content: space-between; }
+    .fr-snum { font-family: var(--font-display); font-size: 30px; line-height: .9; color: var(--accent-gold); letter-spacing: .5px; }
+    .fr-src { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; }
+    .fr-src-live { color: #06110b; background: var(--accent); }
+    .fr-src-manual { color: #1a1405; background: var(--accent-gold); }
+    .fr-src-import { color: var(--muted); background: var(--surface2); border: 1px solid var(--border); }
+    .fr-card-name { font-family: var(--font-body); font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.25; }
+    .fr-winner { display: flex; align-items: center; gap: 12px; }
+    .fr-winner-portrait { position: relative; display: inline-block; }
+    .fr-winner-portrait .fr-crown { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); width: 26px; height: 18px; z-index: 2; }
+    .fr-portrait { display: inline-flex; }
+    .fr-portrait img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); background: var(--surface2); }
+    .fr-portrait-fb { width: 40px; height: 40px; align-items: center; justify-content: center; }
+    .fr-portrait-lg img, .fr-portrait-lg .fr-portrait-fb { width: 54px; height: 54px; }
+    .fr-portrait-lg img { border: 2px solid var(--accent-gold); box-shadow: 0 0 14px -4px var(--accent-gold); }
+    .fr-medallion { width: 100%; height: 100%; }
+    .fr-winner-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .fr-winner-label { font-size: 9px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+    .fr-winner-name { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--accent-gold); }
+    .fr-runnerup { font-size: 11px; color: var(--muted); }
+    .fr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fr-chip { font-size: 10px; font-weight: 600; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; }
+    .fr-card-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .fr-incl { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); cursor: pointer; }
+    .fr-incl input { accent-color: var(--accent); cursor: pointer; }
+    .fr-card-controls .fr-btn-sm { margin-left: auto; }
+    .fr-card-controls .fr-btn-sm + .fr-btn-sm { margin-left: 0; }
+    /* details flyout */
+    .fr-details { margin-top: 4px; padding: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; gap: 7px; }
+    .fr-det-note { font-size: 10px; font-style: italic; color: var(--muted); }
+    .fr-det-row { display: flex; align-items: center; gap: 8px; }
+    .fr-det-row .fr-portrait img, .fr-det-row .fr-portrait-fb { width: 26px; height: 26px; }
+    .fr-det-place { font-family: var(--font-display); font-size: 15px; color: var(--accent-gold); min-width: 20px; text-align: center; }
+    .fr-det-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .fr-det-facts { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; justify-content: flex-end; }
+    .fr-fact { font-size: 9px; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; }
+    .fr-fact-bad { color: var(--accent-fire); border-color: var(--accent-fire); }
+    .fr-det-more { font-size: 11px; color: var(--muted); font-style: italic; text-align: center; }
+    /* dropzone */
+    .fr-drop { border: 2px dashed var(--border); border-radius: 14px; padding: 26px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; background: var(--surface); }
+    .fr-drop:hover, .fr-drop.fr-drop-over { border-color: var(--accent); background: var(--accent-dim); }
+    .fr-drop-icon { font-size: 26px; color: var(--accent); }
+    .fr-drop-title { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; }
+    .fr-drop-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .fr-drop-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .fr-log { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+    .fr-log-row { font-size: 12px; font-family: var(--font-mono); padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border); }
+    .fr-log-ok { color: var(--accent); background: var(--accent-dim); border-color: var(--accent); }
+    .fr-log-err { color: var(--accent-fire); background: rgba(232,135,58,.1); border-color: var(--accent-fire); }
+    /* pulse footer */
+    .fr-pulse { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 4px; }
+    .fr-tile { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .fr-tile-portrait .fr-portrait img, .fr-tile-portrait .fr-portrait-fb { width: 42px; height: 42px; border-color: var(--accent-gold); }
+    .fr-tile-value { font-family: var(--font-display); font-size: 22px; color: var(--text); line-height: 1; }
+    .fr-tile-label { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+    /* empty state */
+    .fr-empty { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .fr-empty-trophy { width: 84px; height: auto; opacity: .8; filter: drop-shadow(0 4px 12px rgba(240,192,64,.25)); }
+    .fr-empty-text { font-size: 14px; color: var(--muted); max-width: 420px; line-height: 1.5; }
+    @media (prefers-reduced-motion: reduce) {
+      .fr-card, .fr-pill, .fr-btn, .fr-drop { transition: none; }
+      .fr-card:hover { transform: none; }
+    }
+
     /* ── SHARED PANEL STYLES ── */
     .form-panel, .setup-left, .run-sidebar {
       width: 280px; min-width: 280px;
@@ -2402,6 +2494,7 @@
       <button class="tab-btn"         onclick="showTab('setup')">Season Setup</button>
       <button class="tab-btn"         onclick="showTab('run')">Run Episode</button>
       <button class="tab-btn" onclick="showTab('results')">Results</button>
+      <button class="tab-btn" onclick="showTab('franchise')">🏆 Franchise</button>
     </nav>
     <div class="audio-ctrl" id="audio-ctrl">
       <span class="bcast-clock" id="bcast-clock">--:--</span>
@@ -2516,14 +2609,7 @@
         <div class="divider"></div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Franchise History</div>
         <div id="franchise-history-panel" style="font-size:11px;margin-bottom:6px"></div>
-        <div class="btn-row">
-          <button class="btn btn-secondary" onclick="document.getElementById('fh-import-input').click()" title="Backfill past seasons from an exported seasons_database.json">Import History</button>
-          <button class="btn btn-danger" onclick="wipeFranchiseHistory()">Wipe History</button>
-        </div>
-        <input type="file" id="fh-import-input" accept=".json" style="display:none" onchange="importFranchiseHistory(event)">
-        <div class="btn-row">
-          <button class="btn btn-secondary" onclick="recordLoadedSeasonToHistory()" title="Record the currently-loaded finished season into the ledger">Record Loaded Season</button>
-        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Import, record &amp; manage seasons in the <b>🏆 Franchise</b> tab.</div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="applyFranchiseMetaMidSeason()" title="Apply returnee reputation/instincts to the in-progress season">Apply to Current Season</button>
         </div>
@@ -3237,6 +3323,11 @@
           <div id="audio-debug-panel"></div>
         </details>
       </main>
+    </div>
+
+    <!-- ═══════════════════════════════ FRANCHISE TAB -->
+    <div id="tab-franchise" class="tab-content">
+      <!-- populated by renderFranchiseTab() in js/franchise-ui.js -->
     </div>
 
   </div>

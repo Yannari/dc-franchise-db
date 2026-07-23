@@ -183,7 +183,7 @@ export function simulateKillerClown(ep) {
       const spd = 5 + (P[n].routeFit + runScore(n)) * 0.45 + noise(3);
       P[n].progress = clamp(P[n].progress + spd, 0, 100);
     });
-    prox = clamp(prox + 6 + noise(3), 0, 100);
+    prox = clamp(prox + 8 + noise(3), 0, 100);
 
     // ── ROUTE TRAVERSAL — the river crew and mountain crew each get their own thread ──
     ['river', 'mountain'].forEach(rt => {
@@ -191,24 +191,64 @@ export function simulateKillerClown(ep) {
       if (crew.length && Math.random() < 0.72) _routeBeat(rt, crew, P, personalScores, addBeat, clock, w);
     });
 
-    // ── clown targets the most exposed player (unloaded, no loaded ally, deep in) ──
-    const fieldSafe = w <= stunUntil.v;
+    // ── clown hunts. Darts are consumed on use, rescuers get MARKED (the
+    // clown remembers who shot it), stuns only cover the rest of this wave,
+    // and at RAMPAGE proximity even armed players can get caught mid-fumble. ──
+    const fieldSafe = w === stunUntil.v;
     if (!fieldSafe && prox >= 30) {
-      const exposed = active.filter(n => !P[n].grabbed && !P[n].loaded && P[n].progress < 96);
-      if (exposed.length) {
-        // most exposed = lowest evade, weight by low progress
-        const target = exposed.slice().sort((a, b) => (evadeScore(a) - P[a].progress * 0.04) - (evadeScore(b) - P[b].progress * 0.04))[0];
-        // a loaded ally nearby (same route) can intervene and stun
-        const rescuer = active.find(n => n !== target && P[n].loaded && !P[n].grabbed && P[n].route === P[target].route)
-          || active.find(n => n !== target && P[n].loaded && !P[n].grabbed);
-        const selfStun = P[target].loaded; // (shouldn't happen since target unloaded, but keep safe)
-        const canStun = selfStun || (rescuer && (aimScore(rescuer) + noise(2.5) > 3.2));
-        const evaded = evadeScore(target) + noise(3) > 7.5;
+      const rampage = prox >= 88;
+      const hunts = rampage ? 2 : 1;
+      for (let h = 0; h < hunts; h++) {
+        const exposed = active.filter(n => !P[n].grabbed && P[n].progress < 96
+          && (!P[n].loaded || (rampage && Math.random() < 0.45)));
+        if (!exposed.length) break;
+        // most exposed = lowest evade, weighted toward low progress; marked
+        // rescuers (spent their dart saving someone) are priority prey
+        const target = exposed.slice().sort((a, b) =>
+          (evadeScore(a) - P[a].progress * 0.04 - (P[a].marked ? 2.5 : 0)) -
+          (evadeScore(b) - P[b].progress * 0.04 - (P[b].marked ? 2.5 : 0)))[0];
 
-        if (canStun && rescuer) {
-          // STUN — rescuer buries a dart, clears the field five minutes
-          prox = 8; stunUntil.v = w + 1;
-          bumpScore(rescuer, 2); bumpPop(rescuer, 2); addBond(rescuer, target, 2);
+        // a loaded ally can intervene — same route first; cross-route only 30%
+        // of the time (they have to hear the screams from the other trail)
+        const _byBond = (a, b) => getBond(b, target) - getBond(a, target);
+        const sameRoute = active.filter(n => n !== target && P[n].loaded && !P[n].grabbed && P[n].route === P[target].route).sort(_byBond);
+        const crossRoute = active.filter(n => n !== target && P[n].loaded && !P[n].grabbed && P[n].route !== P[target].route).sort(_byBond);
+        let rescuer = sameRoute[0] || (crossRoute.length && Math.random() < 0.3 ? crossRoute[0] : null) || null;
+
+        // willingness: saving you costs my only dart AND paints a target on my
+        // back. Nice players save almost anyone; everyone else weighs the bond.
+        if (rescuer) {
+          const rb = getBond(rescuer, target);
+          const willing = isNice(rescuer) ? rb > -2 : (rb >= 2 || (rb >= -1 && Math.random() < 0.4));
+          if (!willing) {
+            if (Math.random() < 0.6) {
+              // REFUSED — they had the dart and chose not to spend it. Public.
+              addBond(target, rescuer, -2); bumpPop(rescuer, -1);
+              addBeat({ phase: 'stalk', type: 'refuse', players: [rescuer, target], badge: 'LEFT THEM', badgeClass: 'bad',
+                text: draw([
+                  (r, t) => `${t} screams ${r}'s name across the trail. ${r} has the loaded gun, a clean angle — and lowers it. "Sorry. I only get one shot." The clown closes in while ${r} melts back into the trees.`,
+                  (r, t) => `${r} watches from cover, dart loaded, as the clown corners ${t}. One shot, one save… on someone who'd never return the favor. ${r} doesn't fire. ${t} sees exactly who didn't.`,
+                  (r, t) => `"HELP ME—" ${t}'s voice cracks through the dark. ${r} weighs the dart, weighs the alliance math, and keeps walking. Somewhere behind, the honking gets louder.`,
+                  (r, t) => `${r} could save ${t}. ${r} does the cold arithmetic instead: a spent dart makes YOU the next target. ${t} is on ${pronouns(t).posAdj} own — and ${pronouns(t).sub} know${pronouns(t).sub === 'they' ? '' : 's'} it.`,
+                ], rescuer, target) });
+            }
+            rescuer = null;
+          }
+        }
+
+        // firing consumes the dart and marks the shooter — hit or miss
+        let hit = false;
+        if (rescuer) {
+          hit = aimScore(rescuer) + noise(2.5) > 4.2;
+          P[rescuer].loaded = false;
+          P[rescuer].marked = true;
+        }
+
+        if (rescuer && hit) {
+          // STUN — but shallower and shorter than it used to be: the field is
+          // safe for the REST of this wave only, and the clown comes back angry.
+          prox = clamp(20 + w * 2, 0, 60); stunUntil.v = w;
+          bumpScore(rescuer, 2); bumpPop(rescuer, 1.5); addBond(rescuer, target, 2);
           if (Math.random() < 0.18) {
             // FRIENDLY FIRE — the dart goes wide and clips the person they meant to save
             P[target].timePen += 10; bumpPop(rescuer, -1.5); addBond(rescuer, target, -1.5);
@@ -227,9 +267,24 @@ export function simulateKillerClown(ep) {
                 (r, t) => `A dart thunks home and the animatronic freezes in a horrible half-crouch. ${r} exhales. ${t} is already sprinting. Five minutes — use them.`,
               ], rescuer, target) });
           }
-        } else if (evaded) {
-          // EVADE — target ducks into cover
-          P[target].timePen += 4;
+        } else {
+          if (rescuer) {
+            // MISSED — the dart is spent, the clown is undeterred, and the
+            // shooter just announced their position for nothing.
+            P[rescuer].timePen += 4;
+            addBeat({ phase: 'stalk', type: 'miss', players: [rescuer, target], badge: 'MISSED SHOT', badgeClass: 'bad',
+              text: draw([
+                (r, t) => `${r} rises from cover, aims for the painted grin — and the dart hisses past into the dark. The clown's head snaps toward the muzzle flash. ${r} just spent ${pronouns(r).posAdj} only dart buying nothing, and ${t} is still cornered.`,
+                (r, t) => `The shot goes wide. Way wide. ${r} stares at the empty gun; the clown looks from ${t} to ${r} like it's choosing dessert. Worst possible trade.`,
+                (r, t) => `${r} fires with shaking hands and the dart buries itself in a tree a foot left of the clown's ear. It doesn't even flinch. ${t} screams. ${r} runs.`,
+                (r, t) => `One dart. One chance. ${r} rushes it and the shot sails over the clown's shoulder. Now it knows exactly where BOTH of them are.`,
+              ], rescuer, target) });
+          }
+          const evaded = !rampage && (evadeScore(target) + noise(3) > 7.8);
+          if (evaded) {
+          // EVADE — costs real time; a clean escape earns a little respect
+          P[target].timePen += 6 + Math.random() * 4;
+          if (Math.random() < 0.3) bumpPop(target, 0.5);
           addBeat({ phase: 'stalk', type: 'evade', players: [target], badge: 'HID', badgeClass: 'neutral',
             text: draw([
               (t) => `${t} drops flat into a bush as the clown sweeps past, close enough to smell the greasepaint. A twig cracks — ${pronouns(t).sub} freeze${pronouns(t).sub === 'they' ? '' : 's'} — and it lumbers on. That cost a few seconds and a year of ${pronouns(t).posAdj} life.`,
@@ -239,9 +294,11 @@ export function simulateKillerClown(ep) {
               (t) => `The clown's flashlight-eyes swing ${t}'s way. ${pronouns(t).Sub} duck${pronouns(t).sub === 'they' ? '' : 's'} behind a fat oak, heart slamming, and circle${pronouns(t).sub === 'they' ? '' : 's'} it slowly to keep the trunk between them. It works. It costs.`,
               (t) => `${t} kills ${pronouns(t).posAdj} own flashlight and stands stone-still in the pitch dark, close enough to hear the servos whir. The clown pauses… sniffs the air like it can smell fear… and moves on.`,
             ], target) });
-        } else {
-          // GRABBED — dragged off, heavy time penalty, returns at the very end
+          } else {
+          // GRABBED — dragged off, heavy time penalty, returns at the very end.
+          // If a RAMPAGE catch took an armed player, their dart is lost with them.
           P[target].grabbed = true; P[target].grabs++;
+          P[target].loaded = false;
           P[target].timePen += 42 + Math.random() * 14;
           bumpPop(target, -0.5);
           prox = clamp(prox - 12, 0, 100);
@@ -256,6 +313,7 @@ export function simulateKillerClown(ep) {
               (t) => `It comes up out of the creek mud without a sound and has ${t} by the collar before ${pronouns(t).sub} can scream. ${pronouns(t).PosAdj} flag hits the dirt. So does ${pronouns(t).posAdj} shot at immunity — the clown's got ${pronouns(t).obj} now.`,
               (t) => `${t} trips on a root at exactly the wrong instant. The clown is on ${pronouns(t).obj} like it was waiting for it, folding ${pronouns(t).obj} over a shoulder and lumbering back into the black. Minutes and minutes, just erased.`,
             ], target) });
+          }
         }
       }
     }
@@ -269,13 +327,51 @@ export function simulateKillerClown(ep) {
     _checkShowmanceChalMoment(ep, null, null, personalScores, 'danger', [{ members: active }]);
   }
 
-  // ── PHASE C: THE RUN — grab the flag, sprint home ──
+  // ── PHASE C: THE RUN — grab the flag, sprint home. Stats matter but never
+  // decide alone: noise is wide enough for real upsets, and the run has its
+  // own events (den rescue, final chase, photo finish) that move the board. ──
   active.forEach(n => {
-    const base = 150 - P[n].routeFit * 5;
-    const runBack = clamp(40 - runScore(n) * 2.5 + noise(4), 10, 46);
-    P[n].returnTime = base + P[n].timePen + runBack;
+    const base = 150 - P[n].routeFit * 3;
+    const runBack = clamp(40 - runScore(n) * 2 + noise(6), 8, 48);
+    P[n].returnTime = base + P[n].timePen + runBack + noise(8);
     P[n].progress = P[n].grabbed ? 70 : 100;
   });
+
+  // FLAG GRAB — the first runner to the flag line gets a hero beat
+  const _flagOrder = active.filter(n => !P[n].grabbed).sort((a, b) => P[a].returnTime - P[b].returnTime);
+  if (_flagOrder.length) {
+    const ff = _flagOrder[0];
+    addBeat({ phase: 'run', type: 'flag', players: [ff], badge: 'FLAG!', badgeClass: 'good',
+      text: draw([
+        (n) => `${n} bursts out of the tree line first, rips a flag off the line, and doesn't so much as break stride. Now it's just the run home — and everything in between.`,
+        (n) => `First to the flags: ${n}, mud to the eyebrows, snatching one mid-sprint. Behind ${pronouns(n).obj}, flashlight eyes swing around in the dark.`,
+        (n) => `${n} gets there first, grabs a flag, kisses it, and RUNS. Smart. The forest isn't done with anyone yet.`,
+        (n) => `A flag comes off the line in ${n}'s fist. Halfway there. The dangerous half is next.`,
+      ], ff) });
+  }
+
+  // DEN RESCUE — a free runner can detour to spring a grabbed friend loose.
+  // Bond goes up, popularity goes up — and the detour costs the rescuer real time.
+  const _grabbedNow = active.filter(n => P[n].grabbed);
+  if (_grabbedNow.length) {
+    const captive = _grabbedNow.sort((a, b) => P[b].timePen - P[a].timePen)[0];
+    const freer = active.filter(n => !P[n].grabbed && n !== captive)
+      .filter(n => getBond(n, captive) >= 3 || (isNice(n) && getBond(n, captive) >= 1))
+      .sort((a, b) => getBond(b, captive) - getBond(a, captive))[0];
+    if (freer && Math.random() < 0.55) {
+      P[freer].returnTime += 12; bumpPop(freer, 1.5); bumpScore(freer, 1.5);
+      P[captive].returnTime -= 15; addBond(freer, captive, 2.5);
+      camp.post.push({ type: 'clownFree', players: [freer, captive], badgeText: 'FREED FROM THE DEN', badgeClass: 'green', tag: 'killer-clown',
+        text: `${freer} detoured to the clown's den and cut ${captive} loose during Night of the Killer Clown, giving up race time to do it. ${captive} won't forget that.` });
+      addBeat({ phase: 'run', type: 'freed', players: [freer, captive], badge: 'FREED FROM THE DEN', badgeClass: 'good',
+        text: draw([
+          (f, c) => `${f} hears ${c} yelling from the hollow where the clown stashes its catches — and turns OFF the race line. Thirty seconds of fumbling with knots, then they're both sprinting. "You owe me a final two." "I owe you my LIFE." "Same thing."`,
+          (f, c) => `Every second of detour is a second off ${f}'s own race, and ${f} spends them anyway, hauling ${c} out of the den by both wrists. Two sets of footsteps hammer toward camp where there should have been one.`,
+          (f, c) => `${f} finds the den, finds ${c} trussed up next to a pile of confiscated flags, and starts cutting. The clown's honk echoes somewhere close. They run together or not at all.`,
+          (f, c) => `Nobody would have blamed ${f} for running past. ${f} doesn't. ${c} comes out of the dark shaking, furious, and — from tonight on — loyal.`,
+        ], freer, captive) });
+    }
+  }
 
   // a late leader-trap: a schemer near the front drops a branch on the front-runner (Logan→Amelie)
   const order0 = active.filter(n => !P[n].grabbed).sort((a, b) => P[a].returnTime - P[b].returnTime);
@@ -295,6 +391,55 @@ export function simulateKillerClown(ep) {
           (c, l) => `${l} has it won — and then a branch comes down out of nowhere, right where ${c}'s dart hit it. ${l} is trapped, screaming; ${c} is already gone. That's the kind of thing that gets a name written down.`,
         ], chaser, leader) });
       prox = clamp(prox + 8, 0, 100);
+    }
+  }
+
+  // FINAL CHASE — the clown makes one last lunge at the straggler in the open
+  const _lateOrder = active.filter(n => !P[n].grabbed).sort((a, b) => P[a].returnTime - P[b].returnTime);
+  if (_lateOrder.length >= 3) {
+    const straggler = _lateOrder[_lateOrder.length - 1];
+    const escaped = runScore(straggler) + noise(6) > 6;
+    if (escaped) {
+      P[straggler].returnTime += 6;
+      addBeat({ phase: 'run', type: 'chase', players: [straggler], badge: 'FINAL CHASE', badgeClass: 'neutral',
+        text: draw([
+          (n) => `The clown makes one last charge across the open ground at ${n} — and ${n} finds a gear nobody knew ${pronouns(n).sub} had, hitting the camp lights three steps ahead of a gloved hand. The whole camp screams.`,
+          (n) => `${n} hears the honk RIGHT behind ${pronouns(n).obj} and simply refuses to die last. A dead sprint, a dive over the camp line, and the clown pulls up short at the light like it hit glass.`,
+          (n) => `Full rampage, open field, ${n} alone at the back. The math says caught. ${n}'s legs disagree — barely. That's tomorrow's story sorted.`,
+          (n) => `The last stretch turns into a horror-movie chase scene with ${n} in the lead role. ${pronouns(n).Sub} make${pronouns(n).sub === 'they' ? '' : 's'} it. The scream carries anyway.`,
+        ], straggler) });
+    } else {
+      P[straggler].returnTime += 24;
+      camp.post.push({ type: 'clownGrab', players: [straggler], badgeText: 'CAUGHT AT THE FINISH', badgeClass: 'purple', tag: 'killer-clown',
+        text: `Steps from camp, the clown ran down ${straggler} at the end of Night of the Killer Clown and carried ${pronouns(straggler).obj} back into the dark one last time.` });
+      addBeat({ phase: 'run', type: 'grab', players: [straggler], badge: 'CAUGHT AT THE FINISH', badgeClass: 'bad',
+        text: draw([
+          (n) => `The camp lights are RIGHT THERE. ${n} can hear people cheering ${pronouns(n).obj} in — and then the ground shakes, a glove closes on ${pronouns(n).posAdj} pack, and the cheering turns to screaming. Caught at the doorstep.`,
+          (n) => `${n} looks back one last time — the cardinal sin. The clown is closer than it has any right to be, and the last thing camp sees is ${n} being carried, kicking, back into the trees.`,
+          (n) => `So close. ${n}'s hand is almost on the camp gate when seven feet of painted nightmare simply picks ${pronouns(n).obj} up mid-stride and turns around. The forest takes one more.`,
+          (n) => `The final sprint ends four steps short. The clown gets ${n} in the open, in full view of everyone home safe, just to make a point.`,
+        ], straggler) });
+    }
+  }
+
+  // PHOTO FINISH — if the top two are within 8s, the line decides it live
+  const _dueLOrder = active.filter(n => !P[n].grabbed).sort((a, b) => P[a].returnTime - P[b].returnTime);
+  if (_dueLOrder.length >= 2) {
+    const l1 = _dueLOrder[0], l2 = _dueLOrder[1];
+    if (P[l2].returnTime - P[l1].returnTime <= 8) {
+      const s1 = runScore(l1) * 0.5 + pStats(l1).boldness * 0.3 + noise(5);
+      const s2 = runScore(l2) * 0.5 + pStats(l2).boldness * 0.3 + noise(5);
+      const first = s1 >= s2 ? l1 : l2, second = s1 >= s2 ? l2 : l1;
+      P[first].returnTime = Math.min(P[first].returnTime, P[second].returnTime - 1);
+      bumpScore(first, 1); bumpScore(second, 0.5);
+      addBeat({ phase: 'run', type: 'photofinish', players: [first, second], badge: 'PHOTO FINISH', badgeClass: 'good',
+        text: draw([
+          (a, b) => `${a} and ${b} come out of the trees SIDE BY SIDE, flags out, dead even, the whole camp on its feet — and ${a} finds one more step where ${b} doesn't. By an arm. By a breath.`,
+          (a, b) => `Two flags, one line. ${b} has the angle, ${a} has the desperation. They cross in a tangle of limbs and mud and the hosts have to check — it's ${a}. Barely. Brutally.`,
+          (a, b) => `The last fifty meters are a coin flip at full sprint. ${a} leans at the line like ${pronouns(a).sub} ${pronouns(a).sub === 'they' ? 'have' : 'has'} done this before. ${b} will replay that lean for the rest of the season.`,
+          (a, b) => `${b} led the whole way home. ${a} took the only step that mattered. Camp erupts; ${b} stares at the dirt.`,
+        ], first, second) });
+      if (Math.random() < 0.4) addBond(first, second, -1); // losing a photo finish stings
     }
   }
 

@@ -661,6 +661,7 @@ export function renderCast() {
     document.getElementById('cast-count').textContent='0';
     document.getElementById('cast-tribe-summary').textContent='';
     renderFranchiseHistoryPanel();
+    try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
     return;
   }
   const sorted = [...players].sort((a,b) => (a.tribe||'').localeCompare(b.tribe||'')||a.name.localeCompare(b.name));
@@ -670,6 +671,7 @@ export function renderCast() {
   players.forEach(p => { const t=p.tribe||'No Tribe'; tribes[t]=(tribes[t]||0)+1; });
   document.getElementById('cast-tribe-summary').textContent = '\u2014 '+Object.entries(tribes).map(([t,c])=>`${t} (${c})`).join(' \u00b7 ');
   renderFranchiseHistoryPanel();
+  try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
 }
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);

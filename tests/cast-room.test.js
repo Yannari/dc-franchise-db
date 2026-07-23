@@ -1,4 +1,17 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { readFileSync } from 'fs';
+
+// Regression: the room's display rule must be gated on the ACTIVE tab class —
+// a bare `#tab-cast.cast-room-active { display:block }` outranks the global
+// `.tab-content { display:none }` and kept the casting room (plus its Manage
+// menu and drawer) visible on top of every other tab, Season Hub included.
+describe('cast-room CSS tab gating', () => {
+  it('only forces display while the cast tab is active', () => {
+    const src = readFileSync(new URL('../js/cast-room.js', import.meta.url), 'utf8');
+    expect(src).not.toMatch(/#tab-cast\.cast-room-active\s*\{\s*display/);
+    expect(src).toMatch(/#tab-cast\.tab-content\.active\.cast-room-active\s*\{\s*display:\s*block/);
+  });
+});
 import {
   castRoomFilter, balanceTribes, randomizeTribes, snakeDraft, castWarnings, renderCastRoom,
 } from '../js/cast-room.js';

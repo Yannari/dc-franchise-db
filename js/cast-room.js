@@ -683,7 +683,11 @@ function _injectCSS() {
 const CR_CSS = `
 #tab-cast.cast-room-active > .form-panel,
 #tab-cast.cast-room-active > .cast-panel { display: none !important; }
-#tab-cast.cast-room-active { display: block; }
+/* Block layout for the room — but ONLY while the cast tab is the ACTIVE tab.
+   Without the .active guard this rule's ID specificity beat the global
+   .tab-content { display:none }, keeping the cast tab (room, Manage menu,
+   drawer) visible on top of every other tab. */
+#tab-cast.tab-content.active.cast-room-active { display: block; }
 /* When the room is NOT active (disabled / not yet taken over), the room shell must
    never stack on top of the legacy UI. */
 #tab-cast:not(.cast-room-active) #cast-room { display: none !important; }

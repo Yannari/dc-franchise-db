@@ -204,6 +204,13 @@
 .gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
 .gp-table th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;background:rgba(255,255,255,.04);position:sticky;top:0}
 .row-player{display:inline-flex;gap:8px;align-items:center}
+.game-tape{margin-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.game-tape-summary{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0}
+.game-tape-chip{padding:5px 9px;border:1px solid rgba(255,255,255,.11);background:#10151c;font-size:10px;color:#9da7b3}.game-tape-chip b{color:#f0f3f6}
+.decision-card{display:grid;grid-template-columns:minmax(150px,.68fr) minmax(300px,1.65fr) minmax(170px,.72fr);gap:16px;align-items:center;padding:17px 4px;border-top:1px solid rgba(255,255,255,.075)}
+.decision-player{display:flex;align-items:center;gap:10px;min-width:0}.decision-player .cr-avatar{width:38px;height:38px}.decision-player b{display:block;font-size:14px}.decision-player small{display:block;margin-top:2px;color:#737d89;font-size:10px}
+.decision-flow{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);align-items:center;gap:8px}.decision-node{min-width:0;padding:10px 12px;background:#10151c;border-left:3px solid #6e7681}.decision-node.actual{border-left-color:#58a6ff}.decision-label{display:block;margin-bottom:3px;color:#737d89;font-size:9px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.decision-target{font-size:14px;font-weight:850;color:#f0f3f6}.decision-detail{display:block;margin-top:3px;color:#8b949e;font-size:10px;line-height:1.35}.decision-arrow{text-align:center;color:#58a6ff;font-size:18px}.decision-result{font-size:11px;line-height:1.45}.decision-result .tag{display:inline-block;margin-bottom:5px}.decision-empty{margin-top:16px;padding:22px;border:1px dashed rgba(255,255,255,.16);background:#10151c}.decision-empty b{display:block;margin-bottom:6px;color:#f0f3f6}.decision-empty p{margin:0;color:#8b949e;font-size:12px;line-height:1.55;max-width:72ch}
+@media(max-width:850px){.decision-card{grid-template-columns:1fr}.decision-flow{grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr)}}
 
 .ledger-health{margin:0 0 12px;border:1px solid rgba(255,255,255,.09);border-left:3px solid #3fb950;background:rgba(255,255,255,.035);font-size:11px;color:#8b949e}.ledger-health.has-issues{border-left-color:#d29922}.ledger-health.has-errors{border-left-color:#f85149}.ledger-health summary{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 10px;cursor:pointer;list-style:none}.ledger-health summary::-webkit-details-marker{display:none}.ledger-health-dot{width:7px;height:7px;border-radius:50%;background:#3fb950;flex:none}.ledger-health.has-issues .ledger-health-dot{background:#d29922}.ledger-health.has-errors .ledger-health-dot{background:#f85149}.ledger-health-hint{margin-left:auto;font-size:10px;color:#6e7681}.ledger-health-issues{border-top:1px solid rgba(255,255,255,.08);padding:8px 10px}.ledger-health-issue{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.07);color:#c9d1d9}.ledger-health-issue:last-child{border-bottom:0}.ledger-health-issue b{color:#d29922;margin-right:6px}.ledger-health-issue.error b{color:#f85149}
 
@@ -544,21 +551,7 @@
           <div class="mini-title">EPISODE GAME TAPE</div>
           <div class="mini-subtitle">What each player intended, knew and actually did · result is not treated as decision quality</div>
 
-          <div class="table-wrap">
-            <table class="gp-table">
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Entered Tribal</th>
-                  <th>Ballot</th>
-                  <th>Read</th>
-                  <th>Influence</th>
-                  <th>Episode result</th>
-                </tr>
-              </thead>
-              <tbody id="gpTableBody"></tbody>
-            </table>
-          </div>
+          <div class="game-tape" id="gpTableBody"></div>
       </div>
     </div>
 
@@ -2269,32 +2262,62 @@ Dave voted for Mickey
       const episode = Number(els.episode.value || 1);
       const raw = await loadSimulatorEpisode(season, episode);
       if (!raw) {
-        els.gpTableBody.innerHTML = '<tr><td colspan="6" class="na-cell">Structured simulator evidence is unavailable. Sync Simulator again; old summary-only imports cannot reconstruct private plans.</td></tr>';
+        els.gpTableBody.innerHTML = '<div class="decision-empty"><b>No decision tape imported</b><p>Sync Simulator again. Older summary-only imports cannot reconstruct private plans, ballots, or the reasoning behind them.</p></div>';
         return;
       }
       const diagnostics = Array.isArray(raw.voteCommitmentDiagnostics) ? raw.voteCommitmentDiagnostics : [];
       const diagBy = new Map(diagnostics.map(row => [String(row.voter || '').toLowerCase(), row]));
-      const ballots = Array.isArray(raw.votingLog) ? raw.votingLog.filter(row => row.voter && row.voter !== 'THE GAME') : [];
+      const structuredBallots = Array.isArray(raw.votingLog) ? raw.votingLog.filter(row => row.voter && row.voter !== 'THE GAME' && !row.isExtraVote) : [];
+      const tribal = raw.tribalPlayers || [...new Set([...diagnostics.map(row => row.voter), ...structuredBallots.map(row => row.voter)].filter(Boolean))];
+      const tribalSet = new Set(tribal.map(name => String(name).toLowerCase()));
+      const summaryBallots = [];
+      const lines = String(raw.summaryText || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      for (let index = 1; index < lines.length - 1; index++) {
+        if (lines[index] !== '→') continue;
+        const voter = lines[index - 1], voted = lines[index + 1];
+        if (!tribalSet.has(voter.toLowerCase()) || !voted || voted === 'The Votes') continue;
+        if (!summaryBallots.some(row => row.voter.toLowerCase() === voter.toLowerCase())) summaryBallots.push({ voter, voted, recoveredFromSummary: true });
+      }
+      const ballots = structuredBallots.length ? structuredBallots : summaryBallots;
       const ballotBy = new Map(ballots.map(row => [String(row.voter).toLowerCase(), row]));
-      const tribal = raw.tribalPlayers || [...new Set([...diagnostics.map(row => row.voter), ...ballots.map(row => row.voter)].filter(Boolean))];
+      const intentions = raw.intentionsSnapshot || {};
+      const alliances = Array.isArray(raw.alliances) ? raw.alliances : [];
       const tally = {};
       ballots.forEach(row => { if (row.voted) tally[row.voted] = (tally[row.voted] || 0) + 1; });
       const rows = tribal.map(name => {
         const diagnostic = diagBy.get(String(name).toLowerCase());
         const ballot = ballotBy.get(String(name).toLowerCase());
-        const entered = diagnostic?.predictedBallot || diagnostic?.committedTarget || diagnostic?.proposedTarget || diagnostic?.preferredTarget || null;
+        const alliancePlan = alliances.find(plan => (plan.members || []).includes(name) && plan.target);
+        const intention = intentions[name] || intentions[String(name).toLowerCase()] || null;
+        const entered = diagnostic?.predictedBallot || diagnostic?.committedTarget || diagnostic?.proposedTarget || diagnostic?.preferredTarget || alliancePlan?.target || intention?.targets?.[0] || null;
+        const planKind = diagnostic ? 'Modeled pre-vote plan' : alliancePlan ? `${alliancePlan.label || alliancePlan.name || 'Alliance'} proposal` : intention?.targets?.[0] ? 'Long-term intention—not a ballot promise' : 'Immediate plan not retained';
         const actual = ballot?.voted || diagnostic?.actualBallot || null;
         return {
           name,
           ballot,
           entered,
+          planKind,
           actual,
-          matched: entered && actual ? entered === actual : null,
+          matched: diagnostic && entered && actual ? entered === actual : null,
           influence: actual ? Math.max(0, (tally[actual] || 0) - 1) : 0,
-          onResult: actual && raw.eliminated ? actual === raw.eliminated : null
+          onResult: actual && raw.eliminated ? actual === raw.eliminated : null,
+          source: ballot?.recoveredFromSummary ? 'Ballot recovered from episode text' : ballot ? 'Recorded voter log' : diagnostic?.voteSacrificed ? 'Vote sacrificed' : 'No voter-level ballot retained'
         };
       });
-      els.gpTableBody.innerHTML = rows.map(row => `<tr><td>${_crAvatar(row.name)} <b>${escapeHtml(row.name)}</b></td><td>${row.entered ? escapeHtml(row.entered) : '<span class="na-cell">No saved plan</span>'}</td><td>${row.actual ? `<b>${escapeHtml(row.actual)}</b><div class="muted">${escapeHtml(row.ballot?.reason || '')}</div>` : '<span class="na-cell">No ballot</span>'}</td><td>${row.matched === null ? '<span class="na-tag">Unknown</span>' : row.matched ? '<span class="tag tag-steady">Plan held</span>' : '<span class="tag tag-down">Changed late</span>'}</td><td>${row.actual ? `${row.influence} other ballot${row.influence === 1 ? '' : 's'} joined this name` : '—'}</td><td>${row.onResult === null ? '—' : row.onResult ? '<span class="tag tag-up">Ballot landed</span>' : '<span class="tag tag-steady">Ballot missed</span>'}<div class="muted">Outcome only—not automatic decision quality</div></td></tr>`).join('');
+      const hasDecisionEvidence = rows.some(row => row.entered || row.actual);
+      if (!rows.length || !hasDecisionEvidence) {
+        const reason = raw.noTribal || raw.isInterlude ? 'This episode had no Tribal Council decision to trace.' : 'The episode exists, but its older or special save path did not retain voter-level plans or ballots.';
+        els.gpTableBody.innerHTML = `<div class="decision-empty"><b>No individual vote path is available for Episode ${episode}</b><p>${escapeHtml(reason)} The screen will not turn missing evidence into fake strategy. Newly simulated standard votes retain the complete plan-to-ballot path.</p></div>`;
+        return;
+      }
+      const tallyChips = Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([target, count]) => `<span class="game-tape-chip"><b>${escapeHtml(target)}</b> · ${count}</span>`).join('');
+      const sourceNote = structuredBallots.length ? 'Recorded voter log' : summaryBallots.length ? 'Ballots recovered from episode text' : 'Plans only';
+      els.gpTableBody.innerHTML = `<div class="game-tape-summary"><span class="game-tape-chip"><b>Episode ${episode}</b> · ${escapeHtml(sourceNote)}</span>${tallyChips}</div>` + rows.map(row => {
+        const readTag = row.matched === true ? '<span class="tag tag-steady">Plan held</span>' : row.matched === false ? '<span class="tag tag-down">Changed late</span>' : row.actual ? '<span class="tag tag-steady">Plan comparison unavailable</span>' : '<span class="na-tag">No ballot trace</span>';
+        const outcome = row.onResult === true ? '<span class="tag tag-up">Ballot landed</span>' : row.onResult === false ? '<span class="tag tag-steady">Ballot elsewhere</span>' : '';
+        const ballotDetail = row.actual ? (row.ballot?.reason || `${row.influence} other ballot${row.influence === 1 ? '' : 's'} joined this name`) : (row.ballot?.sitdSacrificed || row.source === 'Vote sacrificed' ? 'Vote sacrificed for Shot in the Dark' : 'No voter-level ballot was retained');
+        return `<article class="decision-card"><div class="decision-player">${_crAvatar(row.name)}<div><b>${escapeHtml(row.name)}</b><small>${escapeHtml(row.source)}</small></div></div><div class="decision-flow"><div class="decision-node"><span class="decision-label">Entered Tribal</span><span class="decision-target">${row.entered ? escapeHtml(row.entered) : 'Not recorded'}</span><span class="decision-detail">${escapeHtml(row.planKind)}</span></div><div class="decision-arrow">→</div><div class="decision-node actual"><span class="decision-label">Ballot</span><span class="decision-target">${row.actual ? escapeHtml(row.actual) : 'No recorded ballot'}</span><span class="decision-detail">${escapeHtml(ballotDetail)}</span></div></div><div class="decision-result">${readTag}${outcome}<div class="muted">${row.actual ? `${row.influence} other ballot${row.influence === 1 ? '' : 's'} matched this name.` : 'Outcome comparison unavailable.'}</div></div></article>`;
+      }).join('');
     }
 
     function _crEmpty(message) {

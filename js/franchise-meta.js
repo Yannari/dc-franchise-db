@@ -249,22 +249,25 @@ function _historyFor(name) {
 }
 
 function _resumeLines(name, history) {
-  // Weighted by importance, not chronology: the cold-open card only shows the
-  // first 2 lines, so "Won Season 10" must never be buried under a 14th-place
-  // finish from an older season. Recency breaks ties.
-  const lines = [];
-  for (const { seasonNum, rec } of history) {
+  // One line PER SEASON — the season's headline result with notable feats
+  // folded in — so a multi-season vet's card references a little of every
+  // campaign, not three facts about their best one. Strongest seasons lead
+  // (a title never gets buried under an old 14th place), capped at 3 lines.
+  const perSeason = history.map(({ seasonNum, rec }) => {
+    let w, head;
     const place = rec.placement > 0 ? ` (${_ordinal(rec.placement)})` : '';
-    if (rec.winner) lines.push({ w: 100, s: seasonNum, t: `Won Season ${seasonNum}` });
-    else if (rec.finalist) lines.push({ w: 80, s: seasonNum, t: `Finalist in Season ${seasonNum}${place}` });
-    else if (rec.blindsided) lines.push({ w: 30, s: seasonNum, t: `Blindsided in Season ${seasonNum}${place}` });
-    else if (rec.placement > 0) lines.push({ w: 10, s: seasonNum, t: `Placed ${_ordinal(rec.placement)} in Season ${seasonNum}` });
-    else lines.push({ w: 5, s: seasonNum, t: `Appeared in Season ${seasonNum}` });
-    if (rec.blindsidesAuthored >= 2) lines.push({ w: 60, s: seasonNum, t: `Orchestrated ${rec.blindsidesAuthored} blindsides in Season ${seasonNum}` });
-    if (rec.idolsPlayed >= 1) lines.push({ w: 50, s: seasonNum, t: `Played ${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''} in Season ${seasonNum}` });
-    if (rec.chalWins >= 3) lines.push({ w: 40, s: seasonNum, t: `${rec.chalWins} immunity wins in Season ${seasonNum}` });
-  }
-  return lines.sort((a, b) => b.w - a.w || b.s - a.s).map(l => l.t);
+    if (rec.winner) { w = 100; head = `Won Season ${seasonNum}`; }
+    else if (rec.finalist) { w = 80; head = `Finalist in Season ${seasonNum}${place}`; }
+    else if (rec.blindsided) { w = 30; head = `Blindsided in Season ${seasonNum}${place}`; }
+    else if (rec.placement > 0) { w = 10; head = `Placed ${_ordinal(rec.placement)} in Season ${seasonNum}`; }
+    else { w = 5; head = `Appeared in Season ${seasonNum}`; }
+    const feats = [];
+    if (rec.blindsidesAuthored >= 2) { feats.push(`${rec.blindsidesAuthored} blindsides`); w += 6; }
+    if (rec.idolsPlayed >= 1) { feats.push(`${rec.idolsPlayed} idol${rec.idolsPlayed > 1 ? 's' : ''}`); w += 5; }
+    if (rec.chalWins >= 3) { feats.push(`${rec.chalWins} immunity wins`); w += 4; }
+    return { w, s: seasonNum, t: head + (feats.length ? ` — ${feats.join(', ')}` : '') };
+  });
+  return perSeason.sort((a, b) => b.w - a.w || b.s - a.s).slice(0, 3).map(l => l.t);
 }
 function _ordinal(n) { const s = ['th','st','nd','rd'], v = n % 100; return n + (s[(v-20)%10] || s[v] || s[0]); }
 

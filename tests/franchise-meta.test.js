@@ -120,9 +120,26 @@ describe('resume line ordering', () => {
     } });
     const meta = buildFranchiseMeta([{ name: 'Jasmine', isReturnee: true }], { franchiseMeta: true });
     const resume = meta.profiles['Jasmine'].resume;
-    expect(resume[0]).toBe('Won Season 10');                       // headline first
-    expect(resume[1]).toContain('blindsides in Season 10');        // feats before filler
-    expect(resume[resume.length - 1]).toBe('Placed 14th in Season 5'); // weak placement last
+    // One line per season, best season first, feats folded into that season's line
+    expect(resume[0]).toBe('Won Season 10 — 2 blindsides, 4 immunity wins');
+    expect(resume[1]).toBe('Placed 14th in Season 5');
+    expect(resume.length).toBe(2);
+  });
+  it('caps the resume at 3 seasons, covering a little of each', () => {
+    const mkSeason = (placement, extra = {}) => ({ placement, winner: placement === 1, finalist: placement <= 2,
+      blindsided: false, blindsidedBy: [], blindsidesAuthored: 0, idolsFound: 0, idolsPlayed: 0, idoledOut: false,
+      betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], chalWins: 0, schemesCaught: 0, ...extra });
+    setFranchiseLedger({ seasons: {
+      '3': { seasonName: 'S3', players: { 'Vet': mkSeason(9) } },
+      '5': { seasonName: 'S5', players: { 'Vet': mkSeason(2) } },
+      '7': { seasonName: 'S7', players: { 'Vet': mkSeason(12) } },
+      '9': { seasonName: 'S9', players: { 'Vet': mkSeason(1) } }
+    } });
+    const resume = buildFranchiseMeta([{ name: 'Vet', isReturnee: true }], { franchiseMeta: true }).profiles['Vet'].resume;
+    expect(resume.length).toBe(3);                                 // capped
+    expect(resume[0]).toBe('Won Season 9');
+    expect(resume[1]).toContain('Finalist in Season 5');
+    expect(new Set(resume.map(l => l.match(/Season (\d+)/)[1])).size).toBe(3); // three DIFFERENT seasons
   });
 });
 

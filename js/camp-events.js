@@ -3457,6 +3457,83 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           badgeText: 'HISTORY', badgeClass: 'red' });
       }
     }
+
+    // ── Real-returnee moments beyond shared-past pairs ──
+    const _epNext = (gs.episode || 0) + 1;
+
+    // (a) Someone names a decorated vet as THE threat — real targeting heat.
+    for (const T of group) {
+      const _prof = _fm.profiles?.[T];
+      if (!_prof || _prof.repScore < 0.5) continue;
+      const _tKey = 'threatcall::' + T;
+      if (gs._metaCalloutsFired[_tKey] || Math.random() > 0.2) continue;
+      const O = group.filter(n => n !== T && (_fm.profiles?.[n]?.repScore || 0) < 0.5)
+        .sort((x, y) => (pStats(y).strategic + pStats(y).intuition) - (pStats(x).strategic + pStats(x).intuition))[0];
+      if (!O) continue;
+      gs._metaCalloutsFired[_tKey] = true;
+      if (!gs._metaThreatHeat) gs._metaThreatHeat = {};
+      gs._metaThreatHeat[T] = { amount: 0.8 + _prof.repScore, expiresEp: _epNext + 2 };
+      addBond(O, T, -0.3);
+      const _headline = _prof.resume?.[0] || 'that résumé';
+      events.push({ type: 'metaThreatCall', players: [O, T],
+        text: _rp([
+          `${O} says the quiet part at the fire: "${_headline}. Why are we all pretending ${T} isn't the biggest threat here?" Heads nod slowly.`,
+          `${O} pulls two people aside and holds up fingers, counting: "${_headline}. You don't carry that record by accident." ${T}'s name is officially in the air.`,
+          `Someone asks who's dangerous. ${O} doesn't hesitate: "${T}. ${_headline}. We let that slide, we lose." The silence afterward agrees.`,
+          `${O} watches ${T} work the camp and mutters, "${_headline} — and we're just letting it happen again." A few people start watching too.`
+        ]),
+        consequences: `${T} takes threat heat for 2 episodes. Bond ${O}↔${T} −0.3.`,
+        badgeText: 'THREAT NAMED', badgeClass: 'red' });
+    }
+
+    // (b) Distrust of a known betrayer by someone with no personal history — the tapes are enough.
+    for (const T of group) {
+      const _prof = _fm.profiles?.[T];
+      if (!_prof || _prof.knownSchemer < 0.4) continue;
+      const _cands = group.filter(n => n !== T && !(_fm.seededPairs || []).some(sp =>
+        (sp.a === n && sp.b === T) || (sp.a === T && sp.b === n)));
+      const A = _cands.sort((x, y) => (pStats(y).intuition + pStats(y).mental) - (pStats(x).intuition + pStats(x).mental))[0];
+      if (!A) continue;
+      const _dKey = 'distrust::' + A + '>>' + T;
+      if (gs._metaCalloutsFired[_dKey] || Math.random() > 0.18) continue;
+      gs._metaCalloutsFired[_dKey] = true;
+      addBond(A, T, -0.5);
+      events.push({ type: 'metaDistrust', players: [A, T],
+        text: _rp([
+          `${T} extends a hand and a deal. ${A} smiles, agrees to nothing, and later tells the fire: "I've seen ${T}'s seasons. I know how this movie ends."`,
+          `${A} keeps every conversation with ${T} short and public. Nothing personal — just an unreliable history and a good memory.`,
+          `"${T} plays people. That's not an insult, it's a record." ${A} says it without heat, which somehow makes it worse.`,
+          `${T} offers ${A} the same warmth that worked on past casts. ${A} clocks it instantly — different season, same script — and quietly steps back.`
+        ]),
+        consequences: `Bond ${A}↔${T} −0.5. ${A} won't be recruited easily.`,
+        badgeText: 'RECEIPTS', badgeClass: 'red' });
+    }
+
+    // (c) Old flames — rekindle attempt through the REAL romance pipeline
+    // (window call: romance.js imports this module, direct import would cycle;
+    // _challengeRomanceSpark enforces romance toggle, 4-showmance cap,
+    // romanticCompat, and duplicate-spark guards internally).
+    for (const sp of (_fm.seededPairs || [])) {
+      if (sp.kind !== 'showmance-intact' && sp.kind !== 'showmance-broken') continue;
+      if (!group.includes(sp.a) || !group.includes(sp.b)) continue;
+      const _rKey = 'rekindle::' + sp.a + '||' + sp.b;
+      if (gs._metaCalloutsFired[_rKey]) continue;
+      if (Math.random() > (sp.kind === 'showmance-intact' ? 0.3 : 0.12)) continue;
+      gs._metaCalloutsFired[_rKey] = true; // one attempt per season, sparked or not
+      const _sparked = (typeof window !== 'undefined' && typeof window._challengeRomanceSpark === 'function')
+        ? window._challengeRomanceSpark(sp.a, sp.b, null, null, null) : false;
+      if (_sparked) {
+        events.push({ type: 'metaRekindle', players: [sp.a, sp.b],
+          text: _rp([
+            `${sp.a} and ${sp.b} end up on water duty together. Ten quiet minutes, one old joke, and suddenly last season doesn't feel so far away.`,
+            `Everyone remembers ${sp.a} and ${sp.b} from before. Judging by the way they're orbiting each other at the fire, so do they.`,
+            `${sp.b} swore it was strictly game this time. Then ${sp.a} laughed at something dumb, and the whole camp watched the wall come down an inch.`,
+            `Old flames don't need kindling: ${sp.a} saves ${sp.b} the good spot in the shelter without being asked. Neither of them comments. Everyone else does.`
+          ]),
+          consequences: `A romantic spark rekindles between ${sp.a} and ${sp.b} (romance pipeline).`,
+          badgeText: 'OLD FLAME', badgeClass: 'gold' });
+      }
+    }
   }
 
   // ── Social Manipulation Events ──

@@ -611,7 +611,7 @@ export function _rpBuildDockArrival(ep) {
         <div style="flex:1">
           <div style="font-family:var(--font-display);font-size:15px;color:#e6edf3;margin-bottom:2px">${a.name}${returnBadge}</div>
           <div style="font-size:10px;color:#8b949e;margin-bottom:6px">${ARCHETYPE_NAMES[a.archetype] || a.archetype}</div>
-          ${(() => { const _fmResume = gs.franchiseMeta?.profiles?.[a.name]?.resume || []; return _fmResume.length ? `<div class="rp-resume-line" style="font-size:11px;opacity:.75;margin-top:3px;margin-bottom:6px;color:#e3b341">${_fmResume.slice(0, 2).join(' · ')}</div>` : ''; })()}
+          ${(() => { const _fmResume = gs.franchiseMeta?.profiles?.[a.name]?.resume || []; return _fmResume.length ? `<div class="rp-resume-line" style="font-size:11px;opacity:.75;margin-top:3px;margin-bottom:6px;color:#e3b341">${_fmResume.slice(0, 3).join(' · ')}</div>` : ''; })()}
           <div style="font-size:11px;color:#f0a500;font-style:italic;margin-bottom:4px">${host}: ${a.hostLine}</div>
           <div style="font-size:13px;color:#e6edf3;line-height:1.6">${a.name}: ${a.playerLine}</div>
           ${a.dockReaction ? `<div style="font-size:12px;color:#8b949e;font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.04)">${a.dockReaction.text}</div>` : ''}

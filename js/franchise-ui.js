@@ -7,7 +7,7 @@ import { players } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
-  recordSeasonFromSavestate, franchiseLedger
+  recordSeasonFromSavestate, wipeLedger, franchiseLedger
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
@@ -25,6 +25,9 @@ function _esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').repl
 function _initial(name) { return (name || '?').trim().charAt(0).toUpperCase() || '?'; }
 
 // ── inline SVG ────────────────────────────────────────────────────────
+// The crown + medallion use a fixed dark fill with gold accents on purpose:
+// they read as an award badge in BOTH light and dark themes (gold-on-dark is
+// the intended winner motif everywhere), so they deliberately do NOT track --text/--bg.
 function _svgCrown() {
   return `<svg class="fr-crown" viewBox="0 0 48 32" aria-hidden="true"><path d="M4 28 L2 8 L14 18 L24 4 L34 18 L46 8 L44 28 Z" fill="var(--accent-gold)" stroke="#8a6a10" stroke-width="1.2" stroke-linejoin="round"/><circle cx="2" cy="8" r="2.6" fill="var(--accent-gold)"/><circle cx="46" cy="8" r="2.6" fill="var(--accent-gold)"/><circle cx="24" cy="4" r="2.6" fill="var(--accent-gold)"/><rect x="6" y="27" width="36" height="3.4" rx="1.4" fill="#c99a1e"/></svg>`;
 }
@@ -274,7 +277,7 @@ export function frRecordLoaded() {
 export function frWipeActive() {
   const cur = franchiseLedger.franchises[franchiseLedger.active];
   if (!confirm(`Wipe ALL recorded seasons in "${cur?.name || 'this franchise'}"? This cannot be undone.`)) return;
-  activeFranchise().seasons = {};
+  wipeLedger(); // wipes the ACTIVE franchise's seasons only
   _persistAndRerender();
 }
 
@@ -333,7 +336,16 @@ function _importOne(raw, fileName) {
   }
   // savestate export → recordSeasonFromSavestate
   if (raw && raw.gs && typeof raw.gs === 'object') {
-    const res = recordSeasonFromSavestate(raw);
+    let res = recordSeasonFromSavestate(raw);
+    // Overwrite protection: existing LIVE/MANUAL record — confirm before clobbering.
+    if (res.needsConfirm) {
+      const srcLabel = String(res.existingSource || 'manual').toUpperCase();
+      const ok = confirm(`Season ${res.seasonNum} already has a ${srcLabel} record`
+        + (res.winner ? ` (winner ${res.winner}, ${res.playerCount} players)` : '')
+        + `.\n\nReplace it with this imported savestate?`);
+      if (!ok) { _logLine(`S${res.seasonNum} skipped — kept existing ${srcLabel} record`, false); return; }
+      res = recordSeasonFromSavestate(raw, { force: true });
+    }
     if (res.ok) {
       _logLine(`S${res.seasonNum} recorded — winner ${_esc(res.winner || '—')} (${res.playerCount} players)`, true);
     } else {

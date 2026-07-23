@@ -249,6 +249,16 @@ describe('backfillFromSeasonsDb', () => {
     wipeLedger();
     expect(activeSeasons()).toEqual({});
   });
+  it('a live season excluded from meta (included:false) still survives a backfill of the same number', () => {
+    setFranchiseLedger({ seasons: { '9': { seasonName: 'Live S9', included: false,
+      players: { 'Fiore': { placement: 1, winner: true } } } } });
+    const n = backfillFromSeasonsDb({ seasons: [
+      { seasonNumber: 9, seasonName: 'Backfill Should Not Win', winner: { name: 'X' }, players: [{ name: 'X', placement: 1 }] }
+    ] });
+    expect(n).toBe(0); // live record protected by backfilled-flags check ONLY
+    expect(activeSeasons()['9'].seasonName).toBe('Live S9');
+    expect(activeSeasons()['9'].players['Fiore'].winner).toBe(true);
+  });
 });
 
 describe('include toggle', () => {
@@ -298,5 +308,27 @@ describe('recordSeasonFromSavestate', () => {
     expect(recordSeasonFromSavestate(fakeSavestate('merge')).ok).toBe(false);
     const noNum = fakeSavestate(); delete noNum.gs.seasonNumber; delete noNum.config.seasonNumber;
     expect(recordSeasonFromSavestate(noNum).error).toMatch(/season number/i);
+  });
+  it('guards LIVE/MANUAL records: needsConfirm without writing, force overwrites', () => {
+    setFranchiseLedger({ seasons: {} });
+    activeSeasons()['77'] = { seasonName: 'Existing', source: 'live',
+      players: { 'Old': { placement: 1, winner: true } } };
+    const guarded = recordSeasonFromSavestate(fakeSavestate());
+    expect(guarded.ok).toBe(false);
+    expect(guarded.needsConfirm).toBe(true);
+    expect(guarded.existingSource).toBe('live');
+    expect(guarded.winner).toBe('Old');
+    expect(activeSeasons()['77'].players['Old']).toBeTruthy(); // NOT written
+    const forced = recordSeasonFromSavestate(fakeSavestate(), { force: true });
+    expect(forced.ok).toBe(true);
+    expect(activeSeasons()['77'].players['Zed'].winner).toBe(true);
+    expect(activeSeasons()['77'].players['Old']).toBeUndefined();
+  });
+  it('re-dropping an imported-save over its own kind overwrites freely (no confirm)', () => {
+    setFranchiseLedger({ seasons: {} });
+    expect(recordSeasonFromSavestate(fakeSavestate()).ok).toBe(true);
+    const again = recordSeasonFromSavestate(fakeSavestate());
+    expect(again.ok).toBe(true);
+    expect(again.needsConfirm).toBeUndefined();
   });
 });

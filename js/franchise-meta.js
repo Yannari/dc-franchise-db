@@ -321,9 +321,9 @@ export function backfillFromSeasonsDb(json) {
   for (const s of seasons) {
     const num = s?.seasonNumber; if (!num) continue;
     const existing = _seasons[String(num)];
-    // Live records win over backfill — EXCEPT excluded seasons (they feed nothing
-    // to meta, so let a fresh backfill overwrite them).
-    if (existing && existing.included !== false && !Object.values(existing.players || {}).every(p => p.backfilled)) continue;
+    // Live records always win over backfill — protection depends ONLY on the
+    // backfilled flags. Excluding a season from meta must never make it overwritable.
+    if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) continue;
     const winnerName = s.winner?.name || s.winner || null;
     const roster = Array.isArray(s.players) ? s.players : (Array.isArray(s.placements) ? s.placements : (Array.isArray(s.cast) ? s.cast : []));
     const rec = { seasonName: s.seasonName || s.name || `Season ${num}`, players: {} };
@@ -372,13 +372,23 @@ export function recordSeasonToLedger(_ep, source = 'live') {
 // Record a season derived from a PARSED savestate export (season-*-ep*.json shape:
 // { name, config, players, gs }). Validates a finished finale and NEVER touches
 // live gs/players. Writes into the ACTIVE franchise. Returns a result object.
-export function recordSeasonFromSavestate(parsedJson) {
+export function recordSeasonFromSavestate(parsedJson, opts = {}) {
   if (!parsedJson || typeof parsedJson !== 'object') return { ok: false, error: 'Not a valid save file' };
   const sgs = parsedJson.gs;
   if (!sgs || typeof sgs !== 'object') return { ok: false, error: 'No game state in file' };
   if (sgs.phase !== 'complete') return { ok: false, error: `Season not finished (phase: ${sgs.phase || 'unknown'})` };
   const seasonNumber = sgs.seasonNumber || parsedJson.config?.seasonNumber || 0;
   if (!seasonNumber) return { ok: false, error: 'No season number in file' };
+  // Overwrite protection: don't silently clobber a LIVE/MANUAL record. Re-dropping
+  // an imported-save over its own kind is allowed freely; anything else needs
+  // caller confirmation (opts.force). DOM confirm lives in franchise-ui.js, not here.
+  const existing = activeSeasons()[String(seasonNumber)];
+  if (existing && !opts.force && existing.source !== 'imported-save') {
+    const exWinner = Object.entries(existing.players || {}).find(([, r]) => r.winner)?.[0] || null;
+    return { ok: false, needsConfirm: true, seasonNum: seasonNumber,
+      existingSource: existing.source || 'manual', winner: exWinner,
+      playerCount: Object.keys(existing.players || {}).length };
+  }
   const state = {
     gs: sgs,
     players: parsedJson.players || [],

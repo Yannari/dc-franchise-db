@@ -4,8 +4,8 @@
 
 import { audio } from './audio.js';
 import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
-import { activeSeasons, franchiseHistorySummary, backfillFromSeasonsDb,
-  clearPlayerHistory, wipeLedger, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
+import { activeSeasons, franchiseHistorySummary,
+  clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
 export function showTab(name) {
@@ -316,27 +316,8 @@ export function renderFranchiseHistoryPanel() {
   el.innerHTML = `<div style="font-size:12px;opacity:.8;">Franchise ledger: ${total} season${total === 1 ? '' : 's'} recorded</div>` + rows.join('');
 }
 
-export function importFranchiseHistory(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const n = backfillFromSeasonsDb(JSON.parse(e.target.result));
-      persistFranchiseLedger();
-      renderFranchiseHistoryPanel();
-      alert(`Imported ${n} season${n === 1 ? '' : 's'} into franchise history.`);
-    } catch { alert('Invalid seasons_database.json file.'); }
-  };
-  reader.readAsText(file); event.target.value = '';
-}
-
 export function clearFranchisePlayerHistory(name) {
   clearPlayerHistory(name); persistFranchiseLedger(); renderFranchiseHistoryPanel();
-}
-
-export function wipeFranchiseHistory() {
-  if (!confirm('Wipe ALL franchise history? This cannot be undone.')) return;
-  wipeLedger(); persistFranchiseLedger(); renderFranchiseHistoryPanel();
 }
 
 // Record whatever finished season is currently loaded into the franchise

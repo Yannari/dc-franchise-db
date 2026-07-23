@@ -2653,7 +2653,9 @@ Dave voted for Mickey
 
     function _openSimulatorDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open('dc_franchise_db', 1);
+        // Omit the version so this read-only bridge follows the simulator's
+        // current schema version instead of failing whenever savestate upgrades.
+        const req = indexedDB.open('dc_franchise_db');
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error || new Error('Simulator storage could not be opened.'));
         req.onupgradeneeded = () => req.transaction.abort();

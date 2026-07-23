@@ -9,9 +9,15 @@ import {
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
   backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
   exportActiveFranchise, importFranchiseExport,
-  careerFor, franchiseRecords, returneePools, setFranchiseLocked, isFranchiseLocked
+  careerFor, franchiseRecords, returneePools, setFranchiseLocked, isFranchiseLocked,
+  setArchetypeResolver
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
+import { FRANCHISE_ROSTER } from './cast-ui.js';
+
+// Older/imported ledger records carry no archetype — resolve from the roster so
+// the villain/hero analysis has character evidence for every known player.
+setArchetypeResolver(n => FRANCHISE_ROSTER.find(p => p.name === n)?.archetype || null);
 
 // ── slug / portrait helpers ───────────────────────────────────────────
 function _slugForName(name, storedSlug) {
@@ -354,8 +360,9 @@ function _careerPanelHtml(c) {
     <div class="fr-career-head">
       <span class="fr-career-portrait">${_winnerPortrait(c.name, true, c.slug)}</span>
       <div class="fr-career-headmeta">
-        <div class="fr-career-name">${_esc(c.name)}</div>
+        <div class="fr-career-name">${_esc(c.name)}${c.archetype ? ` <span class="fr-arch-pill">${_esc(c.archetype)}</span>` : ''}</div>
         <div class="fr-career-badges">${badges || '<span class="fr-badge fr-badge-none">ROOKIE</span>'}</div>
+        ${c.totals.popularityKnown ? `<div class="fr-fanline">${c.totals.popularity >= 0 ? '❤' : '💔'} Fan standing: ${c.totals.popularity > 0 ? '+' : ''}${c.totals.popularity}</div>` : ''}
       </div>
     </div>
     <div class="fr-career-section-label">Career timeline</div>
@@ -374,7 +381,8 @@ const _POOL_META = {
   unfinishedBusiness: { label: 'Unfinished Business', icon: '🗡', blurb: 'Robbed mid-run — blindsided deep' },
   fallenAngels: { label: 'Fallen Angels', icon: '🪽', blurb: 'Rode high, then crashed back down' },
   redemption: { label: 'Redemption Arc', icon: '🌱', blurb: 'Never made the merge — hungry for more' },
-  villains: { label: 'Villains & Masterminds', icon: '😈', blurb: 'Career blindsiders and betrayers' },
+  villains: { label: 'Villains & Masterminds', icon: '😈', blurb: 'Schemers by nature, betrayers by record, hated by the fans' },
+  heroes: { label: 'Heroes & Fan Favorites', icon: '🦸', blurb: 'Clean hands, loyal alliances, loved by the audience' },
   challengeTitans: { label: 'Challenge Titans', icon: '🏅', blurb: 'The immunity-run machines' },
   showmanceStars: { label: 'Showmance Stars', icon: '💘', blurb: 'Hearts on their sleeves, cameras on them' },
   firstBootClub: { label: 'First Boot Club', icon: '🥾', blurb: 'Out first — owed a real chance' },
@@ -382,7 +390,7 @@ const _POOL_META = {
   feuds: { label: 'Unfinished Feuds', icon: '⚡', blurb: 'Pairs with scores to settle — cast both' }
 };
 const _POOL_ORDER = ['legends', 'unfinishedBusiness', 'fallenAngels', 'redemption',
-  'villains', 'challengeTitans', 'showmanceStars', 'firstBootClub', 'marathoners', 'feuds'];
+  'villains', 'heroes', 'challengeTitans', 'showmanceStars', 'firstBootClub', 'marathoners', 'feuds'];
 
 // Collapsed-state memory: survives tab re-renders within the session.
 function _openPools() {
@@ -554,6 +562,8 @@ const _LEGACY_CSS = `
 .fr-pool.open .fr-pool-chips { padding: 0 15px 14px; }
 .fr-feud-pair { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .fr-feud-bolt { color: var(--accent-fire); font-size: 13px; }
+.fr-arch-pill { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 1px 7px; vertical-align: middle; }
+.fr-fanline { font-size: 11px; color: var(--muted); margin-top: 3px; }
 .fr-feud-chip:hover { border-color: var(--accent-fire); }
 @media (prefers-reduced-motion: reduce) { .fr-pool-toggle, .fr-scout-chip { transition: none; } }
 .fr-pool-titles { display: flex; flex-direction: column; gap: 2px; }

@@ -565,20 +565,23 @@ describe('returneePools — flavor pools and feuds', () => {
   it('flavor pools are non-exclusive and feuds pair up real history', () => {
     setFranchiseLedger({ seasons: {
       '1': { seasonName: 'S1', castSize: 10, players: {
-        // Champion AND challenge machine AND villain — must appear in legends + titans + villains
-        Ace: _rec({ placement: 1, winner: true, finalist: true, chalWins: 5, blindsidesAuthored: 2, betrayed: ['Pip', 'Sam'], episodesLasted: 14 }),
+        // Champion AND challenge machine AND schemer-villain — legends + titans + villains
+        Ace: _rec({ placement: 1, winner: true, finalist: true, chalWins: 5, blindsidesAuthored: 2, betrayed: ['Pip', 'Sam'], episodesLasted: 14, archetype: 'schemer' }),
         Pip: _rec({ placement: 10, betrayedBy: ['Ace'], episodesLasted: 1 }),   // first boot (placement === castSize)
         Sam: _rec({ placement: 4, betrayedBy: ['Ace'], showmances: [{ partner: 'Lux', ended: 'intact' }], episodesLasted: 12 }),
-        Lux: _rec({ placement: 5, showmances: [{ partner: 'Sam', ended: 'intact' }], rivals: ['Pip'], episodesLasted: 11 })
+        Lux: _rec({ placement: 5, showmances: [{ partner: 'Sam', ended: 'intact' }], rivals: ['Pip'], episodesLasted: 11, archetype: 'hero', allies: ['Sam'], popularity: 3 })
       } },
       '2': { seasonName: 'S2', castSize: 10, players: {
-        Ace: _rec({ placement: 3, finalist: true, chalWins: 2, blindsidesAuthored: 1, episodesLasted: 13 })
+        Ace: _rec({ placement: 3, finalist: true, chalWins: 2, blindsidesAuthored: 1, episodesLasted: 13, archetype: 'schemer' }),
+        Lux: _rec({ placement: 6, archetype: 'hero', allies: ['Pip'], episodesLasted: 9, popularity: 2 })
       } }
     } });
     const p = returneePools();
     expect(p.legends.map(x => x.name)).toContain('Ace');
     expect(p.challengeTitans.map(x => x.name)).toContain('Ace');   // 7 career chalWins
-    expect(p.villains.map(x => x.name)).toContain('Ace');          // 3 blindsides + 2 betrayals
+    expect(p.villains.map(x => x.name)).toContain('Ace');          // schemer archetype + 2 betrayals
+    expect(p.heroes.map(x => x.name)).toContain('Lux');            // hero, clean hands, allies, fan-loved
+    expect(p.heroes.map(x => x.name)).not.toContain('Ace');        // betrayers can never be heroes
     expect(p.showmanceStars.map(x => x.name)).toEqual(expect.arrayContaining(['Sam', 'Lux']));
     expect(p.firstBootClub.map(x => x.name)).toContain('Pip');
     expect(p.marathoners.map(x => x.name)).toContain('Ace');       // 27 episodes
@@ -587,6 +590,17 @@ describe('returneePools — flavor pools and feuds', () => {
     const feud = p.feuds.find(f => [f.a, f.b].includes('Ace'));
     expect(feud).toBeTruthy();
     expect(feud.why).toMatch(/betrayed/);
+  });
+  it('blindsides alone are NOT villainy — a clean-handed hero never qualifies', () => {
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 10, players: {
+        // A hero who orchestrated 4 blindsides but never betrayed an ally or got caught scheming
+        Rook: _rec({ placement: 1, winner: true, finalist: true, blindsidesAuthored: 4, episodesLasted: 14, archetype: 'hero', allies: ['Wren', 'Tam'], popularity: 4 })
+      } }
+    } });
+    const p = returneePools();
+    expect(p.villains.map(x => x.name)).not.toContain('Rook');
+    expect(p.heroes.map(x => x.name)).toContain('Rook');
   });
 });
 

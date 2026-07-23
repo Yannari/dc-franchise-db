@@ -240,7 +240,11 @@ export function deriveSeasonRecord(state = null) {
       betrayedBy: [], // second pass
       allies, showmances, rivals,
       chalWins: hist.filter(ep => ep.immunityWinner === n).length,
-      schemesCaught: _gs.schemesCaught?.[n] || 0
+      schemesCaught: _gs.schemesCaught?.[n] || 0,
+      // Character evidence — who they ARE and how the audience received them.
+      // Both power the villain/hero analysis; older records lack them (null-safe).
+      archetype: _players.find(p => p.name === n)?.archetype || null,
+      popularity: Math.round((_gs.popularity?.[n] || 0) * 10) / 10
     };
   }
   // Second pass: mirror betrayals + credit blindside authors.
@@ -486,6 +490,18 @@ function _rankCounts(map) {
 
 // Full cross-season résumé for ONE player over the active franchise's included
 // seasons. Pure ledger facts — no live sim state. Returns null if no history.
+// Archetype resolution: live-recorded seasons store the archetype on the record;
+// for older/imported records we fall back to the current cast, then to a
+// roster resolver installed by the UI layer (franchise-meta cannot import
+// cast-ui's FRANCHISE_ROSTER — that would be an import cycle).
+let _archResolver = null;
+export function setArchetypeResolver(fn) { _archResolver = typeof fn === 'function' ? fn : null; }
+function _resolveArchetype(name) {
+  const live = (players || []).find(p => p.name === name)?.archetype;
+  if (live) return live;
+  try { return _archResolver ? (_archResolver(name) || null) : null; } catch (e) { return null; }
+}
+
 export function careerFor(name) {
   const history = _historyFor(name); // [{ seasonNum, seasonName, rec }] oldest→newest, included only
   if (!history.length) return null;
@@ -505,10 +521,13 @@ export function careerFor(name) {
   const totals = {
     seasons: history.length, wins: 0, finals: 0, chalWins: 0, idolsPlayed: 0, idolsFound: 0,
     blindsidesAuthored: 0, timesBlindsided: 0, betrayalsCommitted: 0, timesBetrayed: 0,
-    schemesCaught: 0, bestPlacement: 0, avgPlacement: 0
+    schemesCaught: 0, bestPlacement: 0, avgPlacement: 0,
+    popularity: 0, popularityKnown: false
   };
-  let placeSum = 0, placeN = 0;
+  let placeSum = 0, placeN = 0, archetype = null;
   for (const { seasonNum, rec } of history) {
+    if (rec.archetype) archetype = rec.archetype; // latest recorded season wins
+    if (typeof rec.popularity === 'number') { totals.popularity += rec.popularity; totals.popularityKnown = true; }
     totals.wins += rec.winner ? 1 : 0;
     totals.finals += rec.finalist ? 1 : 0; // finalist appearances (a win is a finals appearance too)
     totals.chalWins += rec.chalWins || 0;
@@ -541,9 +560,12 @@ export function careerFor(name) {
   if (totals.betrayalsCommitted >= 3) badges.push('SNAKE');
   if (showmances.length >= 2) badges.push('HEARTBREAKER');
   if (totals.timesBlindsided >= 2 && totals.wins === 0) badges.push('CURSED');
+  totals.popularity = Math.round(totals.popularity * 10) / 10;
+  if (totals.popularityKnown && totals.popularity >= 6) badges.push('FAN FAVORITE');
+  if (totals.popularityKnown && totals.popularity <= -5) badges.push('NOTORIOUS');
 
   return {
-    name, slug, seasons, totals,
+    name, slug, archetype: archetype || _resolveArchetype(name), seasons, totals,
     people: {
       allies: _rankCounts(allies), rivals: _rankCounts(rivals),
       betrayed: _rankCounts(betrayed), betrayedBy: _rankCounts(betrayedBy),
@@ -588,6 +610,11 @@ export function franchiseRecords() {
   t = best(c => c.totals.idolsPlayed); push('Most idols played', t?.c.name, t?.v, t ? `${t.v} idols` : '');
   t = best(c => c.totals.timesBetrayed); push('Most times betrayed', t?.c.name, t?.v, t ? `${t.v} betrayals` : '');
   t = best(c => c.totals.schemesCaught); push('Most schemes caught', t?.c.name, t?.v, t ? `${t.v} caught` : '');
+  // Fan-perception records — only when popularity data exists (live-recorded seasons)
+  t = best(c => c.totals.popularityKnown ? c.totals.popularity : 0);
+  push('Most beloved', t?.c.name, t?.v, t ? `+${t.v} career fan score` : '');
+  t = best(c => c.totals.popularityKnown && c.totals.popularity < 0 ? -c.totals.popularity : 0);
+  push('Most notorious', t?.c.name, t?.v, t ? `${-t.v} career fan score` : '');
   return out;
 }
 
@@ -655,14 +682,51 @@ export function returneePools() {
 
   // ── flavor pools — NON-exclusive (a legend can also be a challenge titan);
   // only the four core story pools above are one-per-name.
-  Object.assign(scored, { villains: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
-  Object.assign(pools, { villains: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
+  Object.assign(scored, { villains: [], heroes: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
+  Object.assign(pools, { villains: [], heroes: [], challengeTitans: [], showmanceStars: [], firstBootClub: [], marathoners: [] });
+  // Villainy per this sim's own behavior rules: it's WHO you are (villain-class
+  // archetypes are the ones allowed to scheme), what you did to people who
+  // TRUSTED you (betrayals, caught schemes), and how the audience received it
+  // (negative popularity). Blindsides alone are NOT villainy — a hero voting
+  // out a big threat is just a big move, so they carry almost no weight here.
+  const VILLAIN_ARCH = { villain: 4, schemer: 3, mastermind: 2.5, 'chaos-agent': 1.5 };
+  const NICE_ARCH = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
   for (const name of names) {
     const c = careerFor(name); if (!c) continue;
     const slug = c.slug;
-    const menace = (c.totals.blindsidesAuthored || 0) + (c.totals.betrayalsCommitted || 0);
-    if (menace >= 3) scored.villains.push({ name, slug, rel: menace,
-      why: `${c.totals.blindsidesAuthored} blindside${c.totals.blindsidesAuthored === 1 ? '' : 's'} · ${c.totals.betrayalsCommitted} betrayal${c.totals.betrayalsCommitted === 1 ? '' : 's'}` });
+    const arch = c.archetype;
+    const t = c.totals;
+
+    // — villains: archetype + trust crimes + fan hatred
+    {
+      const parts = [];
+      let v = 0;
+      if (VILLAIN_ARCH[arch]) { v += VILLAIN_ARCH[arch]; parts.push(arch); }
+      if (t.betrayalsCommitted) { v += t.betrayalsCommitted * 1.5; parts.push(`${t.betrayalsCommitted} betrayal${t.betrayalsCommitted === 1 ? '' : 's'}`); }
+      if (t.schemesCaught) { v += t.schemesCaught * 2; parts.push(`caught scheming ×${t.schemesCaught}`); }
+      if (t.popularityKnown && t.popularity < 0) { v += Math.min(4, -t.popularity); parts.push('fan-hated'); }
+      if (t.blindsidesAuthored >= 3) { v += 0.5; parts.push(`${t.blindsidesAuthored} blindsides`); } // flavor, near-zero weight
+      // nice archetypes are structurally incapable of scheming in this sim —
+      // they only qualify on overwhelming real deeds, never on blindsides
+      const disqualified = NICE_ARCH.includes(arch) && t.betrayalsCommitted === 0 && t.schemesCaught === 0;
+      if (!disqualified && v >= 4) scored.villains.push({ name, slug, rel: v, why: parts.join(' · ') });
+    }
+
+    // — heroes: loyalty you can verify (clean hands + real allies) + fan love
+    {
+      const parts = [];
+      let h = 0;
+      if (t.betrayalsCommitted === 0 && t.schemesCaught === 0) {
+        h += 1.5;
+        if (arch === 'hero') { h += 2.5; parts.push('hero'); }
+        else if (NICE_ARCH.includes(arch)) { h += 1.5; parts.push(arch); }
+        const allyCount = c.people.allies.reduce((s, a) => s + a.count, 0);
+        if (allyCount >= 2) { h += Math.min(3, allyCount * 0.6); parts.push(`${allyCount} loyal alliances`); }
+        if (t.timesBetrayed >= 1 && t.betrayalsCommitted === 0) { h += 1; parts.push('betrayed, never betrayed back'); }
+        if (t.popularityKnown && t.popularity > 0) { h += Math.min(4, t.popularity); parts.push('fan-loved'); }
+        if (h >= 4) scored.heroes.push({ name, slug, rel: h, why: parts.join(' · ') || 'clean hands, full seasons' });
+      }
+    }
     if ((c.totals.chalWins || 0) >= 4) scored.challengeTitans.push({ name, slug, rel: c.totals.chalWins,
       why: `${c.totals.chalWins} career immunity wins` });
     if ((c.people.showmances || []).length >= 1) {

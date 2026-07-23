@@ -5,7 +5,7 @@
 // second season built from returnees receives meta effects and still completes.
 import { describe, it, expect } from 'vitest';
 import { makeCast, runOneSeason, core } from './helpers/season-harness.js';
-import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta } from '../js/franchise-meta.js';
+import { setFranchiseLedger, activeSeasons, buildFranchiseMeta } from '../js/franchise-meta.js';
 
 describe('franchise meta end-to-end', () => {
   it('season 1 records a ledger; season 2 with returnees gets meta effects; sim completes', () => {
@@ -13,10 +13,10 @@ describe('franchise meta end-to-end', () => {
 
     // Season 1 — fresh cast, seasonNumber set so the finale hook records.
     runOneSeason({ seasonNumber: 21, franchiseMeta: true }, 14);
-    expect(franchiseLedger.seasons['21']).toBeTruthy();
-    const s1players = Object.keys(franchiseLedger.seasons['21'].players);
+    expect(activeSeasons()['21']).toBeTruthy();
+    const s1players = Object.keys(activeSeasons()['21'].players);
     expect(s1players.length).toBe(14);
-    const s1winner = Object.entries(franchiseLedger.seasons['21'].players).find(([, r]) => r.winner);
+    const s1winner = Object.entries(activeSeasons()['21'].players).find(([, r]) => r.winner);
     expect(s1winner).toBeTruthy();
 
     // Season 2 — half the cast returns, tagged as returnees with names present
@@ -34,7 +34,7 @@ describe('franchise meta end-to-end', () => {
     expect(core.gs.franchiseMeta).toBeTruthy();
     expect(Object.keys(core.gs.franchiseMeta.profiles).length).toBeGreaterThan(0);
     expect(core.gs.phase).toBe('complete');
-    expect(franchiseLedger.seasons['22']).toBeTruthy();
+    expect(activeSeasons()['22']).toBeTruthy();
   }, 120000);
 
   it('meta effects shift, never dominate: returnees are not auto-booted or auto-winners over 6 seasons', () => {

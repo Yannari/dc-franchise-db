@@ -6,8 +6,74 @@ import { gs, players, seasonConfig } from './core.js';
 // Must match bKey() in bonds.js (can't import it — cycle via players.js).
 export function metaBondKey(a, b) { return [a, b].sort().join('||'); }
 
-export let franchiseLedger = { seasons: {} };
-export function setFranchiseLedger(v) { franchiseLedger = v && v.seasons ? v : { seasons: {} }; }
+// ── Ledger schema v2 — multi-franchise ──────────────────────────────────
+// { v:2, active:'main', franchises:{ main:{ name:'Main', seasons:{...} } } }
+// v1 shape ({seasons}) is migrated on load. Everything stays plain-serializable.
+function _emptyV2() { return { v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } }; }
+export let franchiseLedger = _emptyV2();
+export function setFranchiseLedger(v) {
+  if (v && v.v === 2 && v.franchises && typeof v.franchises === 'object') { franchiseLedger = v; }
+  else if (v && v.seasons && typeof v.seasons === 'object') { // v1 → v2 migration
+    franchiseLedger = { v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: v.seasons } } };
+  } else { franchiseLedger = _emptyV2(); }
+  activeFranchise(); // normalise (guarantees an active franchise with a seasons map)
+}
+
+function _slugify(s) {
+  return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'franchise';
+}
+// The active franchise object, auto-creating `main` if the ledger is malformed/empty.
+export function activeFranchise() {
+  if (!franchiseLedger || typeof franchiseLedger !== 'object') franchiseLedger = _emptyV2();
+  if (!franchiseLedger.franchises || typeof franchiseLedger.franchises !== 'object') franchiseLedger.franchises = {};
+  if (!Object.keys(franchiseLedger.franchises).length) franchiseLedger.franchises.main = { name: 'Main', seasons: {} };
+  if (!franchiseLedger.franchises[franchiseLedger.active]) {
+    franchiseLedger.active = Object.keys(franchiseLedger.franchises)[0];
+  }
+  const af = franchiseLedger.franchises[franchiseLedger.active];
+  if (!af.seasons || typeof af.seasons !== 'object') af.seasons = {};
+  if (!af.name) af.name = 'Untitled';
+  return af;
+}
+export function activeSeasons() { return activeFranchise().seasons; }
+export function listFranchises() {
+  activeFranchise();
+  return Object.entries(franchiseLedger.franchises).map(([id, f]) => ({
+    id, name: f.name || id, seasonCount: Object.keys(f.seasons || {}).length, active: id === franchiseLedger.active
+  }));
+}
+export function createFranchise(name) {
+  activeFranchise();
+  const base = _slugify(name);
+  let id = base, i = 2;
+  while (franchiseLedger.franchises[id]) id = base + '-' + (i++);
+  franchiseLedger.franchises[id] = { name: (name || '').trim() || 'Untitled', seasons: {} };
+  return id;
+}
+export function renameFranchise(id, name) {
+  activeFranchise();
+  const f = franchiseLedger.franchises[id]; if (!f) return false;
+  f.name = (name || '').trim() || f.name || 'Untitled'; return true;
+}
+export function deleteFranchise(id) {
+  activeFranchise();
+  const ids = Object.keys(franchiseLedger.franchises);
+  if (ids.length <= 1 || !franchiseLedger.franchises[id]) return false; // cannot delete the last one
+  delete franchiseLedger.franchises[id];
+  if (franchiseLedger.active === id) franchiseLedger.active = Object.keys(franchiseLedger.franchises)[0];
+  return true;
+}
+export function setActiveFranchise(id) {
+  activeFranchise();
+  if (!franchiseLedger.franchises[id]) return false;
+  franchiseLedger.active = id; return true;
+}
+// Include toggle — excluded seasons still persist but feed nothing to meta.
+export function setSeasonIncluded(seasonNum, bool) {
+  const s = activeSeasons()[String(seasonNum)];
+  if (s) { s.included = !!bool; return true; }
+  return false;
+}
 
 export const META_WEIGHTS = {
   // Mechanic 1 — reputation threat
@@ -39,16 +105,23 @@ function _bootOf(ep) {
     || ep.emissaryEliminated || ep.hpTiebreakerEliminated || ep.tiedDestiniesCollateral || null;
 }
 
-export function deriveSeasonRecord() {
+// `state` (optional) = { gs, players, seasonNumber?, seasonName?, config? } lets
+// this derive from a parsed savestate WITHOUT touching live gs/players/seasonConfig.
+// When null, reads live module state exactly as before (zero behavior change).
+export function deriveSeasonRecord(state = null) {
+  const _gs = state?.gs || gs;
+  const _players = state?.players || players;
   // Prefer the season number stamped ON the save (self-identifying — set by
   // initGameState); fall back to current config for pre-stamp legacy saves.
-  const seasonNum = gs?.seasonNumber || seasonConfig?.seasonNumber || 0;
-  if (!seasonNum || !gs) return null;
-  const hist = gs.episodeHistory || [];
-  const fin = gs.finaleResult || {};
+  const seasonNum = state?.seasonNumber || _gs?.seasonNumber
+    || (state ? state?.config?.seasonNumber : seasonConfig?.seasonNumber) || 0;
+  if (!seasonNum || !_gs) return null;
+  const _seasonName = state?.seasonName || (state ? state?.config?.name : seasonConfig?.name) || `Season ${seasonNum}`;
+  const hist = _gs.episodeHistory || [];
+  const fin = _gs.finaleResult || {};
   const winner = fin.winner || null;
   const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
-  const names = (players || []).map(p => p.name);
+  const names = (_players || []).map(p => p.name);
 
   // Boot order → placements. Winner is 1; other finalists follow; boots fill
   // from last place upward; anyone unaccounted (quits, edge formats) slots
@@ -63,7 +136,7 @@ export function deriveSeasonRecord() {
   for (const f of finalists) { if (f !== winner && !placement[f]) placement[f] = fp++; }
   for (const n of names) { if (!placement[n]) placement[n] = fp++; }
 
-  const rec = { seasonName: seasonConfig?.name || `Season ${seasonNum}`, players: {} };
+  const rec = { seasonName: _seasonName, players: {} };
   for (const n of names) {
     const elimEp = hist.find(ep => _bootOf(ep) === n) || null;
     const ownBallot = elimEp?.votingLog?.find(v => v.voter === n) || null;
@@ -85,25 +158,25 @@ export function deriveSeasonRecord() {
       if (flipped && votedForBoot && !betrayed.includes(b)) betrayed.push(b);
     }
     const allies = [];
-    for (const al of (gs.namedAlliances || [])) {
+    for (const al of (_gs.namedAlliances || [])) {
       if (!(al.members || []).includes(n)) continue;
       for (const m of al.members) { if (m !== n && !allies.includes(m) && !betrayed.includes(m)) allies.push(m); }
     }
-    const showmances = (gs.showmances || [])
+    const showmances = (_gs.showmances || [])
       .filter(sh => sh.a === n || sh.b === n)
       .map(sh => ({ partner: sh.a === n ? sh.b : sh.a, ended: sh.broken ? 'breakup' : 'intact' }));
-    const rivals = names.filter(o => o !== n && (gs.bonds?.[metaBondKey(n, o)] ?? 0) <= -4);
+    const rivals = names.filter(o => o !== n && (_gs.bonds?.[metaBondKey(n, o)] ?? 0) <= -4);
     rec.players[n] = {
       placement: placement[n], winner: n === winner, finalist: finalists.includes(n) || n === winner,
       episodesLasted: elimEp ? elimEp.num : hist.length,
       blindsided, blindsidedBy: blindsided ? (flippers.length ? flippers : votersAgainst.slice(0, 2)) : [],
       blindsidesAuthored: 0, // filled in the second pass below
-      idolsFound: idolsPlayed + (gs.advantages || []).filter(a => a.holder === n && a.type === 'idol').length,
+      idolsFound: idolsPlayed + (_gs.advantages || []).filter(a => a.holder === n && a.type === 'idol').length,
       idolsPlayed, idoledOut, betrayed,
       betrayedBy: [], // second pass
       allies, showmances, rivals,
       chalWins: hist.filter(ep => ep.immunityWinner === n).length,
-      schemesCaught: gs.schemesCaught?.[n] || 0
+      schemesCaught: _gs.schemesCaught?.[n] || 0
     };
   }
   // Second pass: mirror betrayals + credit blindside authors.
@@ -124,7 +197,8 @@ export function deriveSeasonRecord() {
 // ── Season-start meta build ───────────────────────────────────────────────
 function _historyFor(name) {
   const out = []; // [{ seasonNum, rec }] sorted oldest → newest
-  for (const [num, season] of Object.entries(franchiseLedger.seasons)) {
+  for (const [num, season] of Object.entries(activeSeasons())) {
+    if (season.included === false) continue; // excluded seasons feed nothing to meta
     if (season.players?.[name]) out.push({ seasonNum: Number(num), rec: season.players[name], seasonName: season.seasonName });
   }
   return out.sort((a, b) => a.seasonNum - b.seasonNum);
@@ -177,10 +251,13 @@ export function buildFranchiseMeta(cast, cfg) {
   // Most recent shared season at full weight; older ones scaled down.
   const seeded = {}; // key → { a, b, bondDelta, reason, kind }
   const inCast = new Set(Object.keys(profiles));
-  const seasonNums = Object.keys(franchiseLedger.seasons).map(Number).sort((a, b) => b - a);
+  const _seasons = activeSeasons();
+  const seasonNums = Object.keys(_seasons)
+    .filter(num => _seasons[num].included !== false) // excluded seasons seed no bonds
+    .map(Number).sort((a, b) => b - a);
   seasonNums.forEach((num, idx) => {
     const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
-    const season = franchiseLedger.seasons[String(num)];
+    const season = _seasons[String(num)];
     const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
@@ -239,11 +316,14 @@ function _emptyRecord() {
 
 export function backfillFromSeasonsDb(json) {
   const seasons = Array.isArray(json?.seasons) ? json.seasons : [];
+  const _seasons = activeSeasons();
   let imported = 0;
   for (const s of seasons) {
     const num = s?.seasonNumber; if (!num) continue;
-    const existing = franchiseLedger.seasons[String(num)];
-    if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) continue; // live wins
+    const existing = _seasons[String(num)];
+    // Live records win over backfill — EXCEPT excluded seasons (they feed nothing
+    // to meta, so let a fresh backfill overwrite them).
+    if (existing && existing.included !== false && !Object.values(existing.players || {}).every(p => p.backfilled)) continue;
     const winnerName = s.winner?.name || s.winner || null;
     const roster = Array.isArray(s.players) ? s.players : (Array.isArray(s.placements) ? s.placements : (Array.isArray(s.cast) ? s.cast : []));
     const rec = { seasonName: s.seasonName || s.name || `Season ${num}`, players: {} };
@@ -259,7 +339,7 @@ export function backfillFromSeasonsDb(json) {
     }
     if (winnerName && !rec.players[winnerName]) { const r = _emptyRecord(); r.placement = 1; r.winner = true; r.finalist = true; rec.players[winnerName] = r; }
     if (!Object.keys(rec.players).length) continue;
-    franchiseLedger.seasons[String(num)] = rec;
+    _seasons[String(num)] = rec;
     imported++;
   }
   return imported;
@@ -273,10 +353,11 @@ export function franchiseHistorySummary(name) {
 }
 
 export function clearPlayerHistory(name) {
-  for (const season of Object.values(franchiseLedger.seasons)) delete season.players?.[name];
+  for (const season of Object.values(activeSeasons())) delete season.players?.[name];
 }
 
-export function wipeLedger() { franchiseLedger.seasons = {}; }
+// Wipes the ACTIVE franchise's seasons only (other franchises untouched).
+export function wipeLedger() { activeFranchise().seasons = {}; }
 
 // Idempotent: keyed by season number; live records always overwrite backfill.
 export function recordSeasonToLedger(_ep, source = 'live') {
@@ -284,6 +365,31 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   const rec = deriveSeasonRecord();
   if (!rec) return false;
   rec.source = source; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
-  franchiseLedger.seasons[String(gs?.seasonNumber || seasonConfig.seasonNumber)] = rec;
+  activeSeasons()[String(gs?.seasonNumber || seasonConfig.seasonNumber)] = rec;
   return true;
+}
+
+// Record a season derived from a PARSED savestate export (season-*-ep*.json shape:
+// { name, config, players, gs }). Validates a finished finale and NEVER touches
+// live gs/players. Writes into the ACTIVE franchise. Returns a result object.
+export function recordSeasonFromSavestate(parsedJson) {
+  if (!parsedJson || typeof parsedJson !== 'object') return { ok: false, error: 'Not a valid save file' };
+  const sgs = parsedJson.gs;
+  if (!sgs || typeof sgs !== 'object') return { ok: false, error: 'No game state in file' };
+  if (sgs.phase !== 'complete') return { ok: false, error: `Season not finished (phase: ${sgs.phase || 'unknown'})` };
+  const seasonNumber = sgs.seasonNumber || parsedJson.config?.seasonNumber || 0;
+  if (!seasonNumber) return { ok: false, error: 'No season number in file' };
+  const state = {
+    gs: sgs,
+    players: parsedJson.players || [],
+    seasonNumber,
+    seasonName: parsedJson.name || parsedJson.config?.name || `Season ${seasonNumber}`,
+    config: parsedJson.config || null
+  };
+  const rec = deriveSeasonRecord(state);
+  if (!rec) return { ok: false, error: 'Could not derive a record from this save' };
+  rec.source = 'imported-save';
+  activeSeasons()[String(seasonNumber)] = rec;
+  const winner = Object.entries(rec.players).find(([, r]) => r.winner)?.[0] || null;
+  return { ok: true, seasonNum: seasonNumber, playerCount: Object.keys(rec.players).length, winner };
 }

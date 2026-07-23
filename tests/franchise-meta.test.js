@@ -1,15 +1,58 @@
 import { describe, it, expect } from 'vitest';
-import { franchiseLedger, setFranchiseLedger, META_WEIGHTS } from '../js/franchise-meta.js';
+import { franchiseLedger, setFranchiseLedger, activeSeasons, activeFranchise,
+  listFranchises, createFranchise, renameFranchise, deleteFranchise, setActiveFranchise,
+  setSeasonIncluded, recordSeasonFromSavestate, META_WEIGHTS } from '../js/franchise-meta.js';
 
 describe('franchise-meta skeleton', () => {
-  it('exposes an empty ledger and weights', () => {
-    expect(franchiseLedger).toEqual({ seasons: {} });
+  it('exposes an empty v2 ledger and weights', () => {
+    setFranchiseLedger(null);
+    expect(franchiseLedger.v).toBe(2);
+    expect(franchiseLedger.active).toBe('main');
+    expect(activeSeasons()).toEqual({});
     expect(META_WEIGHTS.repThreatFactor).toBeGreaterThan(0);
   });
-  it('setFranchiseLedger replaces the ledger', () => {
+  it('setFranchiseLedger accepts v2 and migrates v1', () => {
+    // v1 input migrates to v2 with a `main` franchise carrying the old seasons.
     setFranchiseLedger({ seasons: { '10': { seasonName: 'X', players: {} } } });
-    expect(franchiseLedger.seasons['10'].seasonName).toBe('X');
+    expect(franchiseLedger.v).toBe(2);
+    expect(franchiseLedger.franchises.main.seasons['10'].seasonName).toBe('X');
+    expect(activeSeasons()['10'].seasonName).toBe('X');
     setFranchiseLedger({ seasons: {} });
+  });
+  it('malformed input yields an empty v2 ledger', () => {
+    setFranchiseLedger(42);
+    expect(franchiseLedger.v).toBe(2);
+    expect(activeSeasons()).toEqual({});
+  });
+});
+
+describe('multi-franchise management', () => {
+  it('creates, renames, switches, and deletes franchises with isolation', () => {
+    setFranchiseLedger({ seasons: {} });
+    activeSeasons()['1'] = { seasonName: 'Main S1', players: { A: { placement: 1, winner: true } } };
+    const otherId = createFranchise('Spin Off');
+    expect(otherId).toBe('spin-off');
+    // Recording lands in the ACTIVE franchise only.
+    setActiveFranchise(otherId);
+    activeSeasons()['1'] = { seasonName: 'Spin S1', players: { B: { placement: 1, winner: true } } };
+    expect(Object.keys(activeSeasons())).toEqual(['1']);
+    expect(activeSeasons()['1'].seasonName).toBe('Spin S1');
+    setActiveFranchise('main');
+    expect(activeSeasons()['1'].seasonName).toBe('Main S1'); // untouched
+    renameFranchise(otherId, 'Renamed');
+    expect(listFranchises().find(f => f.id === otherId).name).toBe('Renamed');
+    // uniqueness on slug collision
+    expect(createFranchise('Main')).toBe('main-2');
+  });
+  it('cannot delete the last franchise; reassigns active when active deleted', () => {
+    setFranchiseLedger({ seasons: {} });
+    const b = createFranchise('B');
+    setActiveFranchise(b);
+    expect(deleteFranchise(b)).toBe(true);
+    expect(franchiseLedger.active).not.toBe(b);
+    // now only one franchise remains
+    const only = listFranchises()[0].id;
+    expect(deleteFranchise(only)).toBe(false);
   });
 });
 
@@ -73,17 +116,17 @@ describe('recordSeasonToLedger', () => {
     fabricateFinishedSeason();
     expect(recordSeasonToLedger({})).toBe(true);
     expect(recordSeasonToLedger({})).toBe(true);
-    expect(Object.keys(franchiseLedger.seasons)).toEqual(['15']);
-    expect(franchiseLedger.seasons['15'].players['Ava'].winner).toBe(true);
+    expect(Object.keys(activeSeasons())).toEqual(['15']);
+    expect(activeSeasons()['15'].players['Ava'].winner).toBe(true);
   });
   it('skips live recording when auto-record is off, but manual recording still works', () => {
     setFranchiseLedger({ seasons: {} });
     fabricateFinishedSeason();
     setSeasonConfig({ ...defaultConfig(), seasonNumber: 15, franchiseMeta: true, franchiseMetaAutoRecord: false });
     expect(recordSeasonToLedger({}, 'live')).toBe(false);
-    expect(franchiseLedger.seasons['15']).toBeUndefined();
+    expect(activeSeasons()['15']).toBeUndefined();
     expect(recordSeasonToLedger({}, 'manual')).toBe(true);
-    expect(franchiseLedger.seasons['15'].players['Ava'].winner).toBe(true);
+    expect(activeSeasons()['15'].players['Ava'].winner).toBe(true);
   });
 });
 
@@ -198,12 +241,62 @@ describe('backfillFromSeasonsDb', () => {
       { seasonNumber: 11, seasonName: 'Should Not Overwrite', winner: { name: 'X' }, players: [] }
     ] });
     expect(n).toBe(1); // season 11 already live-recorded → skipped
-    expect(franchiseLedger.seasons['10'].players['Fiore'].winner).toBe(true);
-    expect(franchiseLedger.seasons['10'].players['Thom'].placement).toBe(7);
-    expect(franchiseLedger.seasons['11'].seasonName).toBe('Live S11');
+    expect(activeSeasons()['10'].players['Fiore'].winner).toBe(true);
+    expect(activeSeasons()['10'].players['Thom'].placement).toBe(7);
+    expect(activeSeasons()['11'].seasonName).toBe('Live S11');
     // relationship facts absent in export schema → empty arrays, not undefined
-    expect(franchiseLedger.seasons['10'].players['Thom'].betrayed).toEqual([]);
+    expect(activeSeasons()['10'].players['Thom'].betrayed).toEqual([]);
     wipeLedger();
-    expect(franchiseLedger.seasons).toEqual({});
+    expect(activeSeasons()).toEqual({});
+  });
+});
+
+describe('include toggle', () => {
+  const cast = [ { name: 'Fiore', isReturnee: true }, { name: 'Thom', isReturnee: true },
+    { name: 'MacArthur', isReturnee: true } ];
+  it('excluded seasons feed nothing to buildFranchiseMeta', () => {
+    seedLedgerS12();
+    expect(buildFranchiseMeta(cast, { franchiseMeta: true })).toBeTruthy();
+    // Exclude the only season → no history → null meta.
+    expect(setSeasonIncluded('12', false)).toBe(true);
+    expect(buildFranchiseMeta(cast, { franchiseMeta: true })).toBeNull();
+    expect(franchiseHistorySummary('Fiore')).toEqual([]);
+    // Re-include restores it.
+    setSeasonIncluded('12', true);
+    expect(buildFranchiseMeta(cast, { franchiseMeta: true })).toBeTruthy();
+  });
+});
+
+describe('recordSeasonFromSavestate', () => {
+  function fakeSavestate(phase = 'complete') {
+    return {
+      type: 'season-save', name: 'Imported Season',
+      config: { seasonNumber: 77, name: 'Imported Season' },
+      players: [ { name: 'Zed' }, { name: 'Yon' }, { name: 'Xia' } ],
+      gs: {
+        phase, seasonNumber: 77,
+        finaleResult: { winner: 'Zed', finalists: ['Zed', 'Yon'] },
+        episodeHistory: [ { num: 1, eliminated: 'Xia', immunityWinner: 'Zed', votingLog: [], defections: [], idolPlays: [] } ],
+        bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {}
+      }
+    };
+  }
+  it('records a finished save into the active franchise without touching live gs', () => {
+    setFranchiseLedger({ seasons: {} });
+    const before = JSON.stringify(gs); // live gs snapshot
+    const res = recordSeasonFromSavestate(fakeSavestate());
+    expect(res.ok).toBe(true);
+    expect(res.seasonNum).toBe(77);
+    expect(res.winner).toBe('Zed');
+    expect(res.playerCount).toBe(3);
+    expect(activeSeasons()['77'].players['Zed'].winner).toBe(true);
+    expect(activeSeasons()['77'].source).toBe('imported-save');
+    expect(JSON.stringify(gs)).toBe(before); // live gs untouched
+  });
+  it('rejects an unfinished season and a numberless save', () => {
+    setFranchiseLedger({ seasons: {} });
+    expect(recordSeasonFromSavestate(fakeSavestate('merge')).ok).toBe(false);
+    const noNum = fakeSavestate(); delete noNum.gs.seasonNumber; delete noNum.config.seasonNumber;
+    expect(recordSeasonFromSavestate(noNum).error).toMatch(/season number/i);
   });
 });

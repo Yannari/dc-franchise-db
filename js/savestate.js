@@ -96,7 +96,8 @@ export function _idbLedgerGet(key) {
 export async function loadFranchiseLedgerFromDb() {
   try {
     const stored = await _idbLedgerGet('ledger');
-    if (stored && stored.seasons) setFranchiseLedger(stored);
+    // Accept both v2 ({v,active,franchises}) and legacy v1 ({seasons}) — setFranchiseLedger migrates.
+    if (stored && (stored.franchises || stored.seasons)) setFranchiseLedger(stored);
   } catch (e) { console.warn('Franchise ledger load failed — starting empty.', e); }
 }
 

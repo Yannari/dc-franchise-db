@@ -206,8 +206,19 @@ function _portrait(p) {
   return `<div class="cr-portrait" style="--tc:${tc}">${medallion}${img}</div>`;
 }
 
-// Two strongest stats as tiny labelled bars.
+// Card stat block. Default: the two strongest stats as labelled bars ("faces
+// before statistics"). With the ⚏ Stats toggle on, every card shows the full
+// 9-stat sheet as a compact grid so casts can be compared at a glance.
 function _topStats(stats) {
+  if (typeof window !== 'undefined' && window._crShowAllStats) {
+    return `<span class="cr-allstats">` + STATS.map(s => {
+      const val = stats?.[s.key] || 0;
+      return `<span class="cr-as" title="${esc(s.name || s.label)}: ${val}">` +
+        `<span class="cr-as-k" style="color:${s.color}">${s.label}</span>` +
+        `<span class="cr-as-bar"><span style="width:${val * 10}%;background:${s.color}"></span></span>` +
+        `<span class="cr-as-v">${val}</span></span>`;
+    }).join('') + `</span>`;
+  }
   const ranked = STATS.map(s => ({ label: s.label, color: s.color, val: stats?.[s.key] || 0 }))
     .sort((a, b) => b.val - a.val).slice(0, 2);
   return ranked.map(s =>
@@ -215,6 +226,16 @@ function _topStats(stats) {
     `<span class="cr-stat-bar"><span style="width:${s.val * 10}%;background:${s.color}"></span></span>` +
     `<span class="cr-stat-v">${s.val}</span></span>`).join('');
 }
+
+// ⚏ Stats toggle — persisted on window like _crView/_crFilters; grid-only
+// re-render keeps scroll and filter state intact.
+export function crToggleStats() {
+  window._crShowAllStats = !window._crShowAllStats;
+  const btn = document.getElementById('cr-statsbtn');
+  if (btn) { btn.classList.toggle('active', window._crShowAllStats); btn.setAttribute('aria-pressed', String(!!window._crShowAllStats)); }
+  crRenderGrid();
+}
+if (typeof window !== 'undefined') window.crToggleStats = crToggleStats;
 
 function _card(p, opts = {}) {
   const tc = tribeColor(p.tribe);
@@ -446,6 +467,8 @@ function _shellHTML() {
           <button class="cr-viewbtn active" data-view="grid" onclick="crSetView('grid')">Grid</button>
           <button class="cr-viewbtn" data-view="tribes" onclick="crSetView('tribes')">Tribes</button>
         </div>
+        <button class="cr-viewbtn cr-statsbtn${typeof window !== 'undefined' && window._crShowAllStats ? ' active' : ''}" id="cr-statsbtn"
+          onclick="crToggleStats()" title="Show all 9 stats on every card" aria-pressed="${typeof window !== 'undefined' && !!window._crShowAllStats}">⚏ Stats</button>
         <div class="cr-manage-wrap">
           <button class="cr-manage-btn" onclick="crToggleManage(event)" aria-haspopup="true">⚙ Manage</button>
           <div class="cr-manage-menu" id="cr-manage-menu" hidden>${_manageMenuHTML()}</div>
@@ -753,6 +776,14 @@ const CR_CSS = `
 .cr-stat-bar { flex:1; height:4px; background:var(--surface2); border-radius:3px; overflow:hidden; }
 .cr-stat-bar > span { display:block; height:100%; border-radius:3px; }
 .cr-stat-v { width:14px; text-align:right; color:var(--muted); }
+/* full 9-stat sheet (⚏ Stats toggle) */
+.cr-allstats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px 7px; width:100%; margin-top:2px; }
+.cr-as { display:flex; align-items:center; gap:3px; font-size:9px; min-width:0; }
+.cr-as-k { font-family:var(--font-mono,monospace); width:22px; flex-shrink:0; }
+.cr-as-bar { flex:1; height:3px; background:var(--surface2); border-radius:2px; overflow:hidden; min-width:8px; }
+.cr-as-bar > span { display:block; height:100%; border-radius:2px; }
+.cr-as-v { width:11px; text-align:right; color:var(--muted); flex-shrink:0; }
+.cr-statsbtn { margin-left:2px; }
 .cr-threat { font-size:10px; color:var(--muted); display:flex; align-items:center; gap:5px; }
 .cr-dot { width:7px; height:7px; border-radius:50%; }
 .cr-tribe-sel { width:100%; margin-top:4px; background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-size:11px; font-family:inherit; }

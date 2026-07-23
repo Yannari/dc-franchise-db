@@ -110,6 +110,30 @@ describe('deriveSeasonRecord', () => {
   });
 });
 
+import { exportActiveFranchise, importFranchiseExport } from '../js/franchise-meta.js';
+
+describe('franchise export / import round-trip', () => {
+  it('exports the active franchise and re-imports it as a new active franchise', () => {
+    setFranchiseLedger({ seasons: { '12': { seasonName: 'S12', players: { 'Fiore': { placement: 1, winner: true } } } } });
+    renameFranchise('main', 'DC Canon');
+    const exported = exportActiveFranchise();
+    expect(exported).toMatchObject({ type: 'dc-franchise-export', v: 2, name: 'DC Canon', exportedSeasons: 1 });
+    // Mutating the export must not touch the live ledger (deep copy)
+    exported.seasons['12'].seasonName = 'Mutated';
+    expect(activeSeasons()['12'].seasonName).toBe('S12');
+    const res = importFranchiseExport(exported);
+    expect(res.ok).toBe(true);
+    expect(franchiseLedger.active).toBe(res.id);           // imported becomes active
+    expect(res.id).not.toBe('main');                        // new franchise, no merge
+    expect(activeSeasons()['12'].seasonName).toBe('Mutated');
+    expect(franchiseLedger.franchises.main.seasons['12'].seasonName).toBe('S12'); // original intact
+  });
+  it('rejects files that are not franchise exports', () => {
+    expect(importFranchiseExport({ seasons: {} }).ok).toBe(false);
+    expect(importFranchiseExport({ type: 'dc-franchise-export' }).ok).toBe(false);
+  });
+});
+
 describe('placement derivation with twist eliminations (ported from stats-export)', () => {
   it('orders by permanent exit (RI duel loss) and jury votes, not naive boot order', () => {
     const state = {

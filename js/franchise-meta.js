@@ -438,6 +438,27 @@ export function clearPlayerHistory(name) {
   for (const season of Object.values(activeSeasons())) delete season.players?.[name];
 }
 
+// ── Franchise export / import (whole-franchise backup files) ──────────────
+export function exportActiveFranchise() {
+  const f = activeFranchise();
+  return { type: 'dc-franchise-export', v: 2, name: f.name || 'Untitled',
+    exportedSeasons: Object.keys(f.seasons || {}).length,
+    seasons: JSON.parse(JSON.stringify(f.seasons || {})) };
+}
+
+// Imports a franchise export as a NEW franchise (never merges into an existing
+// one — no overwrite risk) and makes it active. Name is uniquified on collision.
+export function importFranchiseExport(json) {
+  if (json?.type !== 'dc-franchise-export' || !json.seasons || typeof json.seasons !== 'object') {
+    return { ok: false, error: 'Not a franchise export file' };
+  }
+  const id = createFranchise(json.name || 'Imported');
+  franchiseLedger.franchises[id].seasons = JSON.parse(JSON.stringify(json.seasons));
+  franchiseLedger.active = id;
+  return { ok: true, id, name: franchiseLedger.franchises[id].name,
+    seasonCount: Object.keys(json.seasons).length };
+}
+
 // Wipes the ACTIVE franchise's seasons only (other franchises untouched).
 export function wipeLedger() { activeFranchise().seasons = {}; }
 

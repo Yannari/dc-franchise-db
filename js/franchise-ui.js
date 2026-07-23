@@ -7,7 +7,8 @@ import { players } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
-  backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger
+  backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
+  exportActiveFranchise, importFranchiseExport
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 
@@ -187,6 +188,7 @@ function _renderDropzone() {
     <input type="file" id="fr-file-input" accept=".json" multiple style="display:none" onchange="frHandleFileInput(event)">
     <div class="fr-drop-actions">
       <button class="fr-btn" onclick="frRecordLoaded()" title="Record the currently-loaded finished season into the ledger">📖 Record loaded season</button>
+      <button class="fr-btn" onclick="frExportFranchise()" title="Download this franchise (all its seasons) as a JSON backup">⬆ Export franchise</button>
       <button class="fr-btn fr-btn-danger" onclick="frWipeActive()" title="Wipe this franchise's seasons">🗑 Wipe franchise</button>
     </div>
     <div class="fr-log" id="fr-import-log"></div>`;
@@ -277,6 +279,15 @@ export function frRecordLoaded() {
   }
   renderFranchiseTab();
 }
+export function frExportFranchise() {
+  const data = exportActiveFranchise();
+  if (!data.exportedSeasons) { alert('This franchise has no recorded seasons to export.'); return; }
+  const fname = `franchise-${String(data.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export'}.json`;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+  URL.revokeObjectURL(a.href);
+}
 export function frWipeActive() {
   const cur = franchiseLedger.franchises[franchiseLedger.active];
   if (!confirm(`Wipe ALL recorded seasons in "${cur?.name || 'this franchise'}"? This cannot be undone.`)) return;
@@ -331,6 +342,14 @@ function _processFiles(files) {
 }
 
 function _importOne(raw, fileName) {
+  // franchise export → new franchise (never merges — zero overwrite risk)
+  if (raw && raw.type === 'dc-franchise-export') {
+    const res = importFranchiseExport(raw);
+    _logLine(res.ok
+      ? `Franchise "${_esc(res.name)}" imported (${res.seasonCount} season${res.seasonCount === 1 ? '' : 's'}) and set active`
+      : `${_esc(fileName)} — ${_esc(res.error)}`, !!res.ok);
+    return;
+  }
   // seasons_database.json → backfill
   if (raw && Array.isArray(raw.seasons)) {
     const n = backfillFromSeasonsDb(raw);

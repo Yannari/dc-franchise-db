@@ -1657,6 +1657,11 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* App-shell: the window itself must NEVER scroll — every surface scrolls in
+       its own panel. Without this the header/viewport math can overflow by a few
+       pixels, and Firefox draws a useless near-empty ROOT scrollbar right next to
+       the panel's real one (the "double scrollbar"). */
+    html, body { overflow: hidden; height: 100%; }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; font-size: 14px; }
 
     /* ── HEADER ── */

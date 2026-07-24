@@ -774,6 +774,283 @@ export function returneePools() {
   return pools;
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// ACHIEVEMENTS + SEASON OBJECTIVES (UX Plan Item 11 — DESCRIPTIVE ONLY)
+// These functions are pure reads over live gs (via `state`) and the ledger.
+// They NEVER mutate simulation state — the only writes are storing the computed
+// results on the season record (rec.achievements / rec.objectives) at record
+// time. Nothing here can influence contestant AI or sim outcomes.
+// ══════════════════════════════════════════════════════════════════════════
+
+// Human-readable label per achievement id (stable ids; labels are cosmetic).
+export const ACHIEVEMENT_LABELS = {
+  'perfect-game':       'Perfect Game',
+  'idol-nullification': 'Idol Nullification',
+  'rock-survivor':      'Rock Survivor',
+  'zero-vote-finalist': 'Zero-Vote Finalist',
+  'fallen-angel':       'Fallen Angel',
+  'revenge-arc':        'Revenge Arc',
+  'immunity-streak':    'Immunity Streak',
+  'untouchable':        'Untouchable'
+};
+// Achievements that require live/state data (gs.episodeHistory / finaleResult).
+// Backfill (record-only) cannot compute these, and must preserve any that were
+// detected at live-record time.
+const _LIVE_ONLY_ACH = new Set(['perfect-game', 'idol-nullification', 'rock-survivor', 'zero-vote-finalist']);
+
+// The player's most recent INCLUDED season strictly before `seasonNum`.
+function _priorSeasonRec(name, seasonNum) {
+  const hist = _historyFor(name).filter(h => h.seasonNum < seasonNum);
+  return hist.length ? hist[hist.length - 1] : null;
+}
+// Did `victim` betray or blindside `author` in an INCLUDED season before
+// `seasonNum`? Returns { seasonNum, how } (most-recent prior wrong) or null.
+function _priorWrong(victim, author, seasonNum) {
+  const seasons = activeSeasons();
+  const nums = Object.keys(seasons).map(Number).filter(n => n < seasonNum).sort((a, b) => b - a);
+  for (const num of nums) {
+    const s = seasons[String(num)];
+    if (!s || s.included === false) continue;
+    const vp = s.players?.[victim], ap = s.players?.[author];
+    if ((vp?.betrayed || []).includes(author)) return { seasonNum: num, how: 'betrayed' };
+    if ((ap?.blindsidedBy || []).includes(victim)) return { seasonNum: num, how: 'blindsided' };
+  }
+  return null;
+}
+
+// detectSeasonAchievements(seasonNum, state) → [{ id, label, player, seasonNum, detail }]
+// `state` = { gs, players } (live finale context) enables the vote-level, live-only
+// detectors; record-only detection covers the rest. Idempotent; never mutates state.
+export function detectSeasonAchievements(seasonNum, state = null) {
+  seasonNum = Number(seasonNum);
+  const rec = activeSeasons()[String(seasonNum)] || null;
+  const _gs = state?.gs || null;
+  const _players = state?.players || null;
+  const out = [];
+  const seen = new Set();
+  const add = (id, player, detail) => {
+    if (!player) return;
+    const k = id + '|' + player;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ id, label: ACHIEVEMENT_LABELS[id] || id, player, seasonNum, detail: detail || '' });
+  };
+
+  // ── Live / state-only detectors (need gs.episodeHistory + finaleResult) ──
+  if (_gs) {
+    const hist = _gs.episodeHistory || [];
+    const fin = _gs.finaleResult || {};
+    const winner = fin.winner || null;
+    const finalists = (fin.finalists || []).map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
+
+    // perfect-game — winner with ZERO votes against them all season + ≥3 individual immunities
+    if (winner) {
+      let votesAgainst = 0, immWins = 0, anyVoteData = false;
+      for (const ep of hist) {
+        if (ep.immunityWinner === winner) immWins++;
+        for (const v of (ep.votingLog || [])) { anyVoteData = true; if (v.voted === winner) votesAgainst++; }
+      }
+      if (anyVoteData && votesAgainst === 0 && immWins >= 3) {
+        add('perfect-game', winner, `Won without a single vote ever cast against them — and ${immWins} individual immunities`);
+      }
+    }
+
+    // idol-nullification — played a real idol that negated ≥3 votes and sent someone ELSE home
+    for (const ep of hist) {
+      const elim = _bootOf(ep);
+      if (!elim) continue;
+      for (const ip of (ep.idolPlays || [])) {
+        const genuine = !ip.fake && !ip.failed && (!ip.type || ip.type === 'legacy');
+        if (genuine && (ip.votesNegated || 0) >= 3 && ip.player && ip.player !== elim) {
+          add('idol-nullification', ip.player, `Played an idol that voided ${ip.votesNegated} votes and sent ${elim} home (episode ${ep.num})`);
+        }
+      }
+    }
+
+    // rock-survivor — walked out of a rock draw / won a forced tiebreaker
+    for (const ep of hist) {
+      const elim = _bootOf(ep);
+      if (ep.isRockDraw) {
+        const field = new Set([...(ep.tiedPlayers || []), ...((ep.votingLog || []).map(v => v.voter))]);
+        field.delete('THE GAME');
+        for (const p of field) if (p && p !== elim) add('rock-survivor', p, `Survived the rock draw in episode ${ep.num}`);
+      } else if (ep.tiebreakerResult) {
+        const { participants, loser, challengeLabel } = ep.tiebreakerResult;
+        for (const p of (participants || [])) if (p && p !== loser) {
+          add('rock-survivor', p, `Won the ${challengeLabel || 'tiebreaker'} to break a deadlock (episode ${ep.num})`);
+        }
+      }
+    }
+
+    // zero-vote-finalist — reached FTC, got 0 jury votes (goated to the end)
+    const jv = fin.votes;
+    if (jv && typeof jv === 'object') {
+      const totalJury = Object.values(jv).reduce((s, n) => s + (Number(n) || 0), 0);
+      if (totalJury > 0) {
+        for (const f of finalists) {
+          if (f === winner) continue;
+          if ((Number(jv[f]) || 0) === 0) add('zero-vote-finalist', f, 'Reached the Final Tribal Council and received zero jury votes');
+        }
+      }
+    }
+  }
+
+  // ── Record + franchise-history detectors ──
+  if (rec && rec.players) {
+    const castSize = _castSizeOf(seasonNum) || Object.keys(rec.players).length;
+    const half = castSize ? castSize / 2 : 9;
+
+    for (const [name, r] of Object.entries(rec.players)) {
+      // immunity-streak — ≥4 individual immunity wins in one season
+      if ((r.chalWins || 0) >= 4) add('immunity-streak', name, `${r.chalWins} individual immunity wins in a single season`);
+
+      // fallen-angel — winner/finalist in their prior season, bottom-half this season
+      if (r.placement && r.placement > half) {
+        const prior = _priorSeasonRec(name, seasonNum);
+        if (prior && (prior.rec.winner || prior.rec.finalist)) {
+          add('fallen-angel', name, `${prior.rec.winner ? 'Champion' : 'Finalist'} in Season ${prior.seasonNum}, fell to ${_ordinal(r.placement)} this season`);
+        }
+      }
+    }
+
+    // revenge-arc — took out someone who had betrayed/blindsided them in a PRIOR season
+    for (const [name, r] of Object.entries(rec.players)) {
+      const victimsThis = new Set([...(r.betrayed || [])]);
+      for (const [b, br] of Object.entries(rec.players)) {
+        if (b !== name && (br.blindsidedBy || []).includes(name)) victimsThis.add(b);
+      }
+      for (const victim of victimsThis) {
+        const wrong = _priorWrong(victim, name, seasonNum);
+        if (wrong) add('revenge-arc', name, `Took out ${victim}, who had ${wrong.how} them back in Season ${wrong.seasonNum}`);
+      }
+    }
+
+    // untouchable — champion never blindsided across a 3+ season career (attach at latest season)
+    for (const name of Object.keys(rec.players)) {
+      const hist = _historyFor(name);
+      if (hist.length < 3) continue;
+      if (hist[hist.length - 1].seasonNum !== seasonNum) continue; // only the completing season
+      const everWon = hist.some(h => h.rec.winner);
+      const everBlindsided = hist.some(h => h.rec.blindsided);
+      if (everWon && !everBlindsided) add('untouchable', name, `A champion who was never once blindsided across ${hist.length} seasons`);
+    }
+  }
+
+  return out;
+}
+
+// Walk the active franchise's seasons and compute RECORD-detectable achievements,
+// persisting them on each rec. Preserves any live-only achievements already stored.
+// Idempotent. Skips a locked (sealed-canon) franchise. Returns seasons touched.
+export function backfillAchievements() {
+  if (activeFranchise().locked) return 0;
+  const seasons = activeSeasons();
+  let touched = 0;
+  for (const num of Object.keys(seasons)) {
+    const rec = seasons[num];
+    if (!rec || !rec.players) continue;
+    const recordAch = detectSeasonAchievements(Number(num), null); // no gs → record-only
+    const liveKept = (rec.achievements || []).filter(a => _LIVE_ONLY_ACH.has(a.id));
+    const merged = [], seen = new Set();
+    for (const a of [...liveKept, ...recordAch]) {
+      const k = a.id + '|' + a.player;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      merged.push(a);
+    }
+    rec.achievements = merged;
+    touched++;
+  }
+  return touched;
+}
+
+// ── Season objectives (optional, picked in Quick Setup) ───────────────────
+export const SEASON_OBJECTIVES = [
+  { id: 'protect-favorite',   label: 'Protect a Favorite', needsTarget: true,  blurb: 'Your pick reaches the merge — or further.' },
+  { id: 'returnee-wins',      label: 'Returnee Wins',      needsTarget: false, blurb: 'A returning player takes the crown.' },
+  { id: 'chaos-season',       label: 'Chaos Season',       needsTarget: false, blurb: '4+ blindsides and 2+ idol plays.' },
+  { id: 'strong-final-three', label: 'Strong Final Three', needsTarget: false, blurb: 'Every finalist earned it — a blindside or an immunity run.' },
+  { id: 'underdog-story',     label: 'Underdog Story',     needsTarget: false, blurb: 'A low-threat player reaches the Final Tribal.' }
+];
+
+function _isReturnee(name, seasonNum, playerList) {
+  const live = (playerList || []).find(p => p.name === name);
+  if (live && typeof live.isReturnee === 'boolean') return live.isReturnee;
+  return _historyFor(name).some(h => h.seasonNum < seasonNum); // record fallback: appeared earlier
+}
+
+// evaluateObjectives(config, seasonNum, state) → [{ id, label, target?, met, detail }]
+// Reads config.seasonObjectives (array of { id, target? }); pure over the record + state.
+export function evaluateObjectives(config, seasonNum, state = null) {
+  seasonNum = Number(seasonNum);
+  const chosen = Array.isArray(config?.seasonObjectives) ? config.seasonObjectives : [];
+  if (!chosen.length) return [];
+  const rec = activeSeasons()[String(seasonNum)] || null;
+  const _players = state?.players || null;
+  const players = rec?.players || {};
+  const castSize = _castSizeOf(seasonNum) || Object.keys(players).length;
+  const half = castSize ? castSize / 2 : 9;
+  const defFor = id => SEASON_OBJECTIVES.find(o => o.id === id);
+  const out = [];
+
+  for (const obj of chosen) {
+    const def = defFor(obj.id); if (!def) continue;
+    let met = false, detail = '';
+    switch (obj.id) {
+      case 'protect-favorite': {
+        const t = obj.target;
+        const r = t ? players[t] : null;
+        if (!t) { detail = 'No favorite selected.'; break; }
+        if (!r) { detail = `${t} was not in this season.`; break; }
+        const reachedMerge = r.placement && r.placement <= half;
+        met = !!reachedMerge;
+        detail = r.winner ? `${t} won the whole thing.`
+          : r.finalist ? `${t} reached the finale.`
+          : reachedMerge ? `${t} made the merge (${_ordinal(r.placement)}).`
+          : `${t} went out pre-merge (${_ordinal(r.placement)}).`;
+        break;
+      }
+      case 'returnee-wins': {
+        const winner = Object.entries(players).find(([, r]) => r.winner)?.[0] || null;
+        if (!winner) { detail = 'No winner recorded.'; break; }
+        met = _isReturnee(winner, seasonNum, _players);
+        detail = met ? `${winner} returned and won.` : `${winner} won, but was not a returnee.`;
+        break;
+      }
+      case 'chaos-season': {
+        const need = Number(obj.target) || 4;
+        let blindsides = 0, idols = 0;
+        for (const r of Object.values(players)) { if (r.blindsided) blindsides++; idols += (r.idolsPlayed || 0); }
+        met = blindsides >= need && idols >= 2;
+        detail = `${blindsides} blindside${blindsides === 1 ? '' : 's'} and ${idols} idol play${idols === 1 ? '' : 's'} (need ${need}+ and 2+).`;
+        break;
+      }
+      case 'strong-final-three': {
+        const f3 = Object.entries(players).filter(([, r]) => r.placement && r.placement <= 3);
+        if (f3.length < 3) { detail = 'No Final 3 recorded.'; break; }
+        met = f3.every(([, r]) => (r.blindsidesAuthored || 0) >= 1 || (r.chalWins || 0) >= 2);
+        detail = met ? 'Every finalist earned their seat.' : 'A finalist coasted in without a big move or an immunity run.';
+        break;
+      }
+      case 'underdog-story': {
+        const fin = Object.entries(players).filter(([, r]) => r.finalist || (r.placement && r.placement <= 3)).map(([n]) => n);
+        const underdog = fin.find(n => (players[n].chalWins || 0) === 0 && (players[n].blindsidesAuthored || 0) === 0);
+        met = !!underdog;
+        detail = met
+          ? `${underdog} reached the Final Tribal with no immunity wins and no blindsides — pure survival.`
+          : 'Every finalist had an immunity win or a blindside to their name.';
+        break;
+      }
+    }
+    out.push({ id: obj.id, label: def.label, ...(obj.target ? { target: obj.target } : {}), met, detail });
+  }
+  return out;
+}
+
+// Read accessors (the Retrospective / other surfaces can adopt these later).
+export function getSeasonAchievements(seasonNum) { return activeSeasons()[String(seasonNum)]?.achievements || []; }
+export function getSeasonObjectives(seasonNum) { return activeSeasons()[String(seasonNum)]?.objectives || []; }
+
 // ── Self-healing meta retrofit ────────────────────────────────────────────
 // A season initialized before the ledger finished its async IndexedDB load —
 // or before the user imported history — carries gs.franchiseMeta = null even
@@ -841,7 +1118,14 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   const rec = deriveSeasonRecord();
   if (!rec) return false;
   rec.source = source; // 'live' | 'manual' (Task 8b) — backfill entries carry per-player backfilled flags
-  activeSeasons()[String(gs?.seasonNumber || seasonConfig.seasonNumber)] = rec;
+  const _num = Number(gs?.seasonNumber || seasonConfig.seasonNumber);
+  activeSeasons()[String(_num)] = rec;
+  // Descriptive-only: detect achievements + evaluate objectives from live gs.
+  // Stored on the record; never influences the sim (already complete).
+  try {
+    rec.achievements = detectSeasonAchievements(_num, { gs, players });
+    rec.objectives = evaluateObjectives(seasonConfig, _num, { gs, players });
+  } catch (e) { console.warn('Achievement/objective detection failed:', e); }
   return true;
 }
 
@@ -877,6 +1161,10 @@ export function recordSeasonFromSavestate(parsedJson, opts = {}) {
   if (!rec) return { ok: false, error: 'Could not derive a record from this save' };
   rec.source = 'imported-save';
   activeSeasons()[String(seasonNumber)] = rec;
+  try {
+    rec.achievements = detectSeasonAchievements(Number(seasonNumber), state);
+    rec.objectives = evaluateObjectives(state.config || {}, Number(seasonNumber), state);
+  } catch (e) { void e; }
   const winner = Object.entries(rec.players).find(([, r]) => r.winner)?.[0] || null;
   return { ok: true, seasonNum: seasonNumber, playerCount: Object.keys(rec.players).length, winner };
 }

@@ -12,6 +12,8 @@
 
 # Playwright test artifacts
 .playwright-mcp/
+test-results/
+playwright-report/
 
 # Dependencies
 node_modules/

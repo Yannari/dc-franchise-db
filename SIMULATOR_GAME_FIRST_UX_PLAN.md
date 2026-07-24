@@ -140,11 +140,11 @@ Likely files: `js/franchise-ui.js`, `js/franchise-meta.js`, `simulator.html`.
 
 ### 11. Add optional meta-game progression after the core redesign
 
-- [ ] Add optional season objectives such as protecting a favorite, producing chaos, creating a strong Final Three, or getting a returnee to win.
-- [ ] Add uncommon outcome achievements such as Perfect Game, Idol Nullification, Rock Survivor, Fallen Angel, Zero-Vote Finalist, and Successful Revenge Arc.
-- [ ] Keep achievements descriptive so they never distort contestant AI.
+- [x] Add optional season objectives such as protecting a favorite, producing chaos, creating a strong Final Three, or getting a returnee to win.
+- [x] Add uncommon outcome achievements such as Perfect Game, Idol Nullification, Rock Survivor, Fallen Angel, Zero-Vote Finalist, and Successful Revenge Arc.
+- [x] Keep achievements descriptive so they never distort contestant AI.
 - [ ] Add alternate-timeline comparison for replayed episodes without overwriting the primary timeline.
-- [ ] Keep progression optional in spectator mode.
+- [x] Keep progression optional in spectator mode.
 
 ### 12. Preserve compatibility and isolate presentation changes
 
@@ -156,9 +156,9 @@ Likely files: `js/franchise-ui.js`, `js/franchise-meta.js`, `simulator.html`.
 
 ### 13. Validate the redesign
 
-- [ ] Add unit tests for navigation, Hub states, ongoing Results, and finale transitions.
-- [ ] Add integration tests for season creation, save/reload, episode simulation, replay, merge, finale, and franchise recording.
-- [ ] Add Playwright coverage for the primary journey.
+- [x] Add unit tests for navigation, Hub states, ongoing Results, and finale transitions.
+- [x] Add integration tests for season creation, save/reload, episode simulation, replay, merge, finale, and franchise recording. (Playwright journey covers all but episode replay.)
+- [x] Add Playwright coverage for the primary journey.
 - [ ] Test keyboard navigation, focus, contrast, reduced motion, and responsive layouts.
 - [ ] Run `npm test`, focused browser tests, `git diff --check`, and the frontend UX audit.
 - [ ] Manually test both LAN/local hosting and GitHub Pages.

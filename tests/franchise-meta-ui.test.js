@@ -92,6 +92,58 @@ describe('franchise-ui legacy layer', () => {
     ui.frCloseCareer();
     expect(document.getElementById('fr-career-panel').style.display).toBe('none');
   });
+  it('renders the Trophy Case with seeded achievements + a career Medals row', () => {
+    document.body.innerHTML = '<div id="tab-franchise" class="tab-content"></div>';
+    for (const [k, v] of Object.entries(ui)) if (typeof v === 'function') window[k] = v;
+    setFranchiseLedger({ seasons: {
+      '4': { seasonName: 'Rivals', castSize: 12, source: 'live', players: {
+        Fiore: { placement: 1, winner: true, finalist: true, chalWins: 5, blindsidesAuthored: 3, blindsided: false,
+          blindsidedBy: [], betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], idolsPlayed: 0, slug: 'fiore' } },
+        achievements: [
+          { id: 'immunity-streak', label: 'Immunity Streak', player: 'Fiore', seasonNum: 4, detail: '5 immunity wins' },
+          { id: 'perfect-game', label: 'Perfect Game', player: 'Fiore', seasonNum: 4, detail: 'Flawless run' }
+        ],
+        objectives: [
+          { id: 'returnee-wins', label: 'Returnee Wins', met: true, detail: 'Fiore returned and won.' },
+          { id: 'chaos-season', label: 'Chaos Season', met: false, detail: 'Too calm.' }
+        ] }
+    } });
+    ui.renderFranchiseTab();
+    const html = document.getElementById('tab-franchise').innerHTML;
+    expect(html).toContain('Trophy Case');
+    expect(html).toContain('Immunity Streak');
+    expect(html).toContain('Perfect Game');
+    expect(html).toContain('Season Objectives');
+    expect(html).toContain('1/2 met');
+    expect(html).toContain("frToggleMedal('immunity-streak')");
+    // medal accordion toggles DOM-only
+    ui.frToggleMedal('immunity-streak');
+    const grp = document.getElementById('fr-medal-immunity-streak');
+    expect(grp.classList.contains('open')).toBe(true);
+    expect(grp.querySelector('.fr-medal-list').style.display).toBe('');
+    // career panel shows a Medals row
+    ui.frOpenCareer('Fiore');
+    const panel = document.getElementById('fr-career-panel');
+    expect(panel.innerHTML).toContain('Medals');
+    expect(panel.innerHTML).toContain('Immunity Streak');
+  });
+
+  it('detect-achievements handler backfills medals and re-renders; empty state hidden', () => {
+    document.body.innerHTML = '<div id="tab-franchise" class="tab-content"></div><div id="fr-import-log"></div>';
+    for (const [k, v] of Object.entries(ui)) if (typeof v === 'function') window[k] = v;
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 12, players: { Star: { placement: 1, winner: true, chalWins: 5,
+        blindsided: false, blindsidedBy: [], blindsidesAuthored: 0, betrayed: [], betrayedBy: [], allies: [], showmances: [], rivals: [], idolsPlayed: 0 } } } } });
+    ui.renderFranchiseTab();
+    // no achievements yet → Trophy Case section absent
+    expect(document.getElementById('tab-franchise').innerHTML).not.toContain('Trophy Case');
+    ui.frDetectAchievements();
+    const html = document.getElementById('tab-franchise').innerHTML;
+    expect(html).toContain('Trophy Case');
+    expect(html).toContain('Immunity Streak');
+    expect(activeSeasons()['1'].achievements.some(a => a.id === 'immunity-streak')).toBe(true);
+  });
+
   it('lock toggle round-trips and blocks the wipe handler', () => {
     document.body.innerHTML = '<div id="tab-franchise" class="tab-content"></div>';
     for (const [k, v] of Object.entries(ui)) if (typeof v === 'function') window[k] = v;

@@ -388,6 +388,43 @@ describe('renderQuickSetup (jsdom smoke)', () => {
     expect(document.querySelector('.qs-start')).toBeTruthy();
   });
 
+  it('objectives card: toggling writes seasonConfig.seasonObjectives (survives saveConfig) + target plumbing', () => {
+    window._qsObjectives = undefined; // fresh picker state
+    window.players = [{ id: 'p0', name: 'Ava' }, { id: 'p1', name: 'Ben' }];
+    // A minimal saveConfig that REBUILDS config from DOM (drops unknown keys) —
+    // proves the re-apply path restores objectives afterward.
+    window.saveConfig = () => { window.seasonConfig = { teams: 2, mergeAt: 8, jurySize: 7, finaleSize: 3,
+      finaleFormat: 'traditional', name: 'Test Season', seasonNumber: 7, days: 39, twistSchedule: [] }; };
+    renderQuickSetup();
+    expect(document.querySelector('.qs-obj-chips')).toBeTruthy();
+
+    // select protect-favorite → a target dropdown appears
+    window.qsToggleObjective('protect-favorite');
+    expect(window.seasonConfig.seasonObjectives.some(o => o.id === 'protect-favorite')).toBe(true);
+    const sel = document.getElementById('qs-obj-target');
+    expect(sel).toBeTruthy();
+    expect([...sel.options].map(o => o.value)).toEqual(expect.arrayContaining(['Ava', 'Ben']));
+
+    // pick a favorite → target persists onto the config
+    sel.value = 'Ava';
+    window.qsSetObjectiveTarget();
+    expect(window.seasonConfig.seasonObjectives.find(o => o.id === 'protect-favorite').target).toBe('Ava');
+
+    // add a second objective, then confirm a saveConfig-driven rebuild keeps them
+    window.qsToggleObjective('returnee-wins');
+    window.saveConfig();            // rebuild from DOM — drops seasonObjectives
+    window.qsStep && null;          // (no-op guard)
+    // re-apply happens in renderQuickSetup + _updateDynamic; trigger a render
+    renderQuickSetup();
+    const ids = window.seasonConfig.seasonObjectives.map(o => o.id).sort();
+    expect(ids).toEqual(['protect-favorite', 'returnee-wins']);
+
+    // deselect returns to a smaller set
+    window.qsToggleObjective('protect-favorite');
+    expect(window.seasonConfig.seasonObjectives.map(o => o.id)).toEqual(['returnee-wins']);
+    window._qsObjectives = undefined; // clean up shared window state for other tests
+  });
+
   it('Advanced mode reveals legacy and hides the quick body', () => {
     renderQuickSetup();
     window.qsSetMode('advanced');

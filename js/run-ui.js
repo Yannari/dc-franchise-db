@@ -2021,7 +2021,7 @@ export function renderResultsTab() {
   const finalists = [...gs.activePlayers];
   const isComplete = gs.phase === 'complete';
   const resultsTab = document.getElementById('results-tab-btn');
-  if (resultsTab) resultsTab.textContent = isComplete ? 'Season Retrospective' : 'Season Overview';
+  if (resultsTab) resultsTab.textContent = isComplete ? 'Retrospective' : 'Overview';
   if (!isComplete) {
     renderMidseasonOverview();
     return;

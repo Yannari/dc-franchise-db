@@ -820,6 +820,7 @@ export function qsSetObjectiveTarget() {
 }
 
 export function qsStartSeason() {
+  _reapplyObjectives(); // defensive: ensure objectives are on the config before launch
   const gs = _gs();
   if (gs && gs.initialized) { window.showTab?.('run'); return; }
   const rows = validateQuickSetup(_cfg(), _players());

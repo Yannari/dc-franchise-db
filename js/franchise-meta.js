@@ -867,13 +867,16 @@ export function detectSeasonAchievements(seasonNum, state = null) {
       }
     }
 
-    // rock-survivor — walked out of a rock draw / won a forced tiebreaker
+    // rock-survivor — walked out of a rock draw / won a forced tiebreaker.
+    // Credit ONLY the players the vote actually hung on (ep.tiedPlayers — the
+    // at-risk set the sim records) minus whoever the draw eliminated. Mere voters
+    // / bystanders are NOT survivors of the draw, so they are never credited.
     for (const ep of hist) {
       const elim = _bootOf(ep);
       if (ep.isRockDraw) {
-        const field = new Set([...(ep.tiedPlayers || []), ...((ep.votingLog || []).map(v => v.voter))]);
-        field.delete('THE GAME');
-        for (const p of field) if (p && p !== elim) add('rock-survivor', p, `Survived the rock draw in episode ${ep.num}`);
+        for (const p of (ep.tiedPlayers || [])) {
+          if (p && p !== elim && p !== 'THE GAME') add('rock-survivor', p, `Survived the rock draw in episode ${ep.num}`);
+        }
       } else if (ep.tiebreakerResult) {
         const { participants, loser, challengeLabel } = ep.tiebreakerResult;
         for (const p of (participants || [])) if (p && p !== loser) {
@@ -937,6 +940,23 @@ export function detectSeasonAchievements(seasonNum, state = null) {
   }
 
   return out;
+}
+
+// Retract now-false "untouchable" medals. Untouchable claims a champion was NEVER
+// blindsided across their career, so a single new blindside (recorded this season)
+// invalidates the medal EVERYWHERE it was previously attached. Called from the live
+// record paths after a season is written: sweep every season record in the active
+// franchise and drop any untouchable entry for a player who was blindsided this
+// season. Plain-data edits on rec.achievements (persisted with the record write).
+function _retractStaleUntouchable(seasonNum) {
+  const rec = activeSeasons()[String(seasonNum)];
+  if (!rec || !rec.players) return;
+  const blindSet = new Set(Object.entries(rec.players).filter(([, r]) => r.blindsided).map(([n]) => n));
+  if (!blindSet.size) return;
+  for (const s of Object.values(activeSeasons())) {
+    if (!Array.isArray(s.achievements) || !s.achievements.length) continue;
+    s.achievements = s.achievements.filter(a => !(a.id === 'untouchable' && blindSet.has(a.player)));
+  }
 }
 
 // Walk the active franchise's seasons and compute RECORD-detectable achievements,
@@ -1125,6 +1145,7 @@ export function recordSeasonToLedger(_ep, source = 'live') {
   try {
     rec.achievements = detectSeasonAchievements(_num, { gs, players });
     rec.objectives = evaluateObjectives(seasonConfig, _num, { gs, players });
+    _retractStaleUntouchable(_num); // drop now-false untouchable medals on prior seasons
   } catch (e) { console.warn('Achievement/objective detection failed:', e); }
   return true;
 }
@@ -1164,6 +1185,7 @@ export function recordSeasonFromSavestate(parsedJson, opts = {}) {
   try {
     rec.achievements = detectSeasonAchievements(Number(seasonNumber), state);
     rec.objectives = evaluateObjectives(state.config || {}, Number(seasonNumber), state);
+    _retractStaleUntouchable(Number(seasonNumber)); // drop now-false untouchable medals on prior seasons
   } catch (e) { void e; }
   const winner = Object.entries(rec.players).find(([, r]) => r.winner)?.[0] || null;
   return { ok: true, seasonNum: seasonNumber, playerCount: Object.keys(rec.players).length, winner };

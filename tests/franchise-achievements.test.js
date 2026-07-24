@@ -73,19 +73,26 @@ describe('detectSeasonAchievements — live/state detectors', () => {
     expect(forPlayer(got, 'idol-nullification', 'Fox')).toBeFalsy();
   });
 
-  it('rock-survivor: survives a rock draw and wins a forced tiebreaker', () => {
+  it('rock-survivor: credits only the at-risk tied set (never mere voters) + tiebreaker winners', () => {
     setFranchiseLedger({ seasons: {} });
     const gs = { finaleResult: {}, episodeHistory: [
+      // Rocky (a drawer) got the purple rock; Al & Bea were the deadlocked at-risk set.
+      // Cal cast a vote but was NOT in the tie → NOT a rock survivor.
       { num: 3, eliminated: 'Rocky', isRockDraw: true, tiedPlayers: ['Al', 'Bea'],
         votingLog: [{ voter: 'Al', voted: 'Bea' }, { voter: 'Bea', voted: 'Al' }, { voter: 'Cal', voted: 'Al' }, { voter: 'Rocky', voted: 'Bea' }] },
-      { num: 4, eliminated: 'Dot', tiebreakerResult: { participants: ['Dot', 'Eve'], loser: 'Dot', winner: 'Eve', challengeLabel: 'Fire-Making' } }
+      { num: 4, eliminated: 'Dot', tiebreakerResult: { participants: ['Dot', 'Eve'], loser: 'Dot', winner: 'Eve', challengeLabel: 'Fire-Making' } },
+      // Fallback rock draw where the eliminated IS one of the tied set → minus-eliminated.
+      { num: 5, eliminated: 'Gil', isRockDraw: true, tiedPlayers: ['Gil', 'Hana'], votingLog: [] }
     ] };
     const got = detectSeasonAchievements(1, stateWith(gs));
-    expect(forPlayer(got, 'rock-survivor', 'Al')).toBeTruthy();   // in the draw field, not eliminated
-    expect(forPlayer(got, 'rock-survivor', 'Cal')).toBeTruthy();  // voter, survived
+    expect(forPlayer(got, 'rock-survivor', 'Al')).toBeTruthy();   // tied, survived
+    expect(forPlayer(got, 'rock-survivor', 'Bea')).toBeTruthy();  // tied, survived
+    expect(forPlayer(got, 'rock-survivor', 'Cal')).toBeFalsy();   // mere voter — NOT credited
     expect(forPlayer(got, 'rock-survivor', 'Rocky')).toBeFalsy(); // eliminated
     expect(forPlayer(got, 'rock-survivor', 'Eve')).toBeTruthy();  // won the tiebreaker
     expect(forPlayer(got, 'rock-survivor', 'Dot')).toBeFalsy();   // lost the tiebreaker
+    expect(forPlayer(got, 'rock-survivor', 'Hana')).toBeTruthy(); // tied, survived the fallback draw
+    expect(forPlayer(got, 'rock-survivor', 'Gil')).toBeFalsy();   // tied but eliminated by the draw
   });
 
   it('zero-vote-finalist: a goated finalist gets no jury votes', () => {
@@ -290,6 +297,37 @@ describe('recordSeasonToLedger stores achievements + objectives', () => {
     expect(rec.objectives.find(o => o.id === 'protect-favorite')).toMatchObject({ target: 'Ava', met: true });
     // accessors surface the stored data
     expect(getSeasonObjectives(50).length).toBe(2);
+  });
+
+  it('retracts a now-false untouchable medal when the player is later blindsided', () => {
+    // Career: Leg wins S1, finalist S2 & S3 (never blindsided) → untouchable at S3.
+    setFranchiseLedger({ seasons: {
+      '1': { seasonName: 'S1', castSize: 12, players: { Leg: _rec({ placement: 1, winner: true, finalist: true }) } },
+      '2': { seasonName: 'S2', castSize: 12, players: { Leg: _rec({ placement: 3, finalist: true }) } },
+      '3': { seasonName: 'S3', castSize: 12, players: { Leg: _rec({ placement: 2, finalist: true }) } }
+    } });
+    backfillAchievements();
+    expect(getSeasonAchievements(3).some(a => a.id === 'untouchable' && a.player === 'Leg')).toBe(true);
+
+    // Now Leg plays S7 and gets blindsided — recording it must retract the S3 medal.
+    setPlayers([{ name: 'Leg' }, { name: 'Win' }, { name: 'X' }, { name: 'Y' }]);
+    setSeasonConfig({ ...defaultConfig(), seasonNumber: 7, franchiseMeta: true });
+    setGs({ phase: 'complete', seasonNumber: 7,
+      finaleResult: { winner: 'Win', finalists: ['Win', 'X'] },
+      episodeHistory: [
+        { num: 1, eliminated: 'Leg', immunityWinner: 'Win',
+          votingLog: [{ voter: 'Win', voted: 'Leg' }, { voter: 'X', voted: 'Leg' }, { voter: 'Y', voted: 'Leg' }, { voter: 'Leg', voted: 'Win' }],
+          defections: [{ player: 'X' }, { player: 'Y' }], idolPlays: [] },
+        { num: 2, eliminated: 'Y', immunityWinner: 'Win', votingLog: [{ voter: 'Win', voted: 'Y' }, { voter: 'X', voted: 'Y' }], defections: [], idolPlays: [] }
+      ],
+      bonds: {}, advantages: [], namedAlliances: [], showmances: [], schemesCaught: {} });
+    expect(recordSeasonToLedger({})).toBe(true);
+    expect(activeSeasons()['7'].players['Leg'].blindsided).toBe(true);
+    // The stale S3 untouchable is gone; no untouchable persists for Leg anywhere.
+    expect(getSeasonAchievements(3).some(a => a.id === 'untouchable')).toBe(false);
+    for (const num of ['1', '2', '3', '7']) {
+      expect((getSeasonAchievements(Number(num)) || []).some(a => a.id === 'untouchable' && a.player === 'Leg')).toBe(false);
+    }
   });
 });
 

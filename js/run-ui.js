@@ -93,6 +93,22 @@ export function buildHubAftermath(ep) {
   });
   const lessons = (ep.adaptationEvents || []).slice(0, 2).map(event => event.text).filter(Boolean);
 
+  // Audience pulse: how the episode was cut for the viewers (edit layer, if tracking).
+  const editWatch = [];
+  const _editState = typeof gs !== 'undefined' ? gs?.edit : null;
+  const _editLabels = typeof EDIT_LABELS !== 'undefined' ? EDIT_LABELS : {};
+  const editRec = (_editState?.episodes || []).find(rec => Number(rec.ep) === Number(ep.num));
+  if (editRec) {
+    const prevRec = (_editState.episodes || []).filter(rec => Number(rec.ep) < Number(ep.num)).pop();
+    Object.entries(editRec.reads || {}).forEach(([name, key]) => {
+      const prevKey = prevRec?.reads?.[name];
+      if (prevKey && prevKey !== key) editWatch.push(`${name} shifted from ${_editLabels[prevKey] || prevKey} to ${_editLabels[key] || key}.`);
+    });
+    const topConf = Object.entries(editRec.conf || {}).sort((a, b) => b[1] - a[1])[0];
+    if (topConf) editWatch.push(`${topConf[0]} led the episode with ${topConf[1]} confessional${topConf[1] === 1 ? '' : 's'}.`);
+    if (editRec.quotes?.[0]) editWatch.push(`"${editRec.quotes[0].text}" — ${editRec.quotes[0].name}`);
+  }
+
   return {
     eliminated, eliminatedLabel, voteEntries, voteShape, votesNegated, decidingVoters, why,
     advantages: [...new Set(advantages)].slice(0, 3),
@@ -100,6 +116,7 @@ export function buildHubAftermath(ep) {
     relationshipChanges,
     reputationChanges,
     lessons,
+    editWatch: editWatch.slice(0, 3),
   };
 }
 
@@ -220,6 +237,7 @@ export function renderSeasonHub() {
       ${aftermath.advantages.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">02</span><div><label>Advantage impact</label><ul>${aftermathRows(aftermath.advantages, 'advantage')}</ul></div></article>` : ''}
       ${aftermath.allianceChanges.length || aftermath.relationshipChanges.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">03</span><div><label>Alliance & relationship fallout</label><ul>${aftermathRows([...aftermath.allianceChanges, ...aftermath.relationshipChanges].slice(0, 4), 'fallout')}</ul></div></article>` : ''}
       ${aftermath.reputationChanges.length || aftermath.lessons.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">04</span><div><label>What lingers</label><ul>${aftermathRows([...aftermath.reputationChanges, ...aftermath.lessons].slice(0, 4), 'lesson')}</ul></div></article>` : ''}
+      ${aftermath.editWatch?.length ? `<article class="hub-aftermath-card"><span class="hub-aftermath-index">05</span><div><label>Audience pulse</label><ul>${aftermathRows(aftermath.editWatch, 'edit')}</ul></div></article>` : ''}
     </div>
     <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${Number(model.latest.num)})">Open the full episode breakdown →</button></footer>
   </section>` : '';
@@ -1810,6 +1828,27 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     const shift = relationshipMovement[0];
     storyThreads.push(`${shift.a} and ${shift.b} had the latest notable relationship ${Number(shift.delta) > 0 ? 'gain' : 'fracture'}.`);
   }
+  // Audience pulse (edit layer): how the season is being CUT, distinct from how it is going.
+  const edit = state?.edit || null;
+  const editLabels = typeof EDIT_LABELS !== 'undefined' ? EDIT_LABELS : {};
+  const editTotalUnits = edit ? Object.values(edit.totals || {}).reduce((sum, t) => sum + Number(t?.units || 0), 0) : 0;
+  const audiencePulse = edit && edit.episodes?.length ? {
+    players: active.map(name => {
+      const readKey = edit.reads?.[name]?.key || 'steady';
+      const arc = [];
+      (edit.episodes || []).forEach(rec => { const k = rec.reads?.[name]; if (k && arc[arc.length - 1] !== k) arc.push(k); });
+      return {
+        name, readKey,
+        read: edit.reads?.[name]?.label || editLabels[readKey] || 'Steady presence',
+        share: editTotalUnits ? Number(edit.totals?.[name]?.units || 0) / editTotalUnits : 0,
+        confessionals: Number(edit.totals?.[name]?.conf || 0),
+        arc: arc.map(k => editLabels[k] || k),
+      };
+    }).sort((a, b) => b.share - a.share),
+    quotes: edit.episodes[edit.episodes.length - 1]?.quotes || [],
+    final: edit.final || null,
+  } : null;
+
   return {
     episode: Number(state?.episode || history.length),
     phase: state?.phase || 'setup',
@@ -1825,6 +1864,7 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     socialRoles,
     storyThreads,
     powerRanking,
+    audiencePulse,
     jury: [...(state?.jury || [])],
   };
 }
@@ -1865,6 +1905,12 @@ function renderMidseasonOverview() {
       <section class="overview-section"><header><div><span>Recorded</span><h2>How the tribes changed</h2></div><small>${model.tribeHistory.length} era${model.tribeHistory.length === 1 ? '' : 's'}</small></header><div class="overview-tribe-history">${tribeHistoryHtml}</div></section>
       <section class="overview-section"><header><div><span>Public status</span><h2>Camp hierarchy</h2></div><small>Visible roles only</small></header><p class="overview-disclaimer">Roles reflect behavior the cast can observe. Hidden leverage and private intentions are deliberately excluded.</p><div class="overview-status-list">${statusHtml}</div></section>
     </div>
+    ${model.audiencePulse ? `<section class="overview-section overview-audience"><header><div><span>Audience pulse</span><h2>The edit so far</h2></div><small>Viewer perception · not game truth</small></header>
+      <p class="overview-disclaimer">How the season is being cut for the audience: screen time, confessionals, and each player's running edit read. The edit can drift from what is really happening — that is the point.</p>
+      <div class="overview-edit-list">${(maxShare => model.audiencePulse.players.map(row => `<div class="overview-edit-row">${_overviewPortrait(row.name)}<div class="overview-edit-info"><strong>${_hubEsc(row.name)}</strong><span class="overview-edit-arc">${_hubEsc(row.arc.length > 1 ? row.arc.join(' → ') : row.read)}</span></div><span class="overview-edit-chip edit-${_hubEsc(row.readKey)}">${_hubEsc(row.read)}</span><div class="overview-edit-share"><div class="overview-edit-share-fill" style="width:${Math.round(row.share / maxShare * 100)}%"></div></div><em>${Math.round(row.share * 100)}% · ${row.confessionals} conf</em></div>`).join(''))(Math.max(...model.audiencePulse.players.map(row => row.share), 0.01))}</div>
+      ${model.audiencePulse.quotes.length ? `<div class="overview-edit-quotes">${model.audiencePulse.quotes.map(quote => `<blockquote class="overview-edit-quote">${_overviewPortrait(quote.name)}<p>“${_hubEsc(quote.text)}”<cite>— ${_hubEsc(quote.name)}, confessional</cite></p></blockquote>`).join('')}</div>` : ''}
+      ${model.audiencePulse.final ? `<div class="overview-edit-awards">${Object.entries({ editWinner: 'Winner edit', decoyFavorite: 'Decoy favorite', biggestVillain: 'Villain of the season', comicRelief: 'Comic relief', growthArc: 'Growth arc', mostInvisible: 'Most invisible' }).filter(([key]) => model.audiencePulse.final[key]).map(([key, label]) => `<div class="overview-edit-award">${_overviewPortrait(model.audiencePulse.final[key])}<div><label>${label}</label><strong>${_hubEsc(model.audiencePulse.final[key])}</strong></div></div>`).join('')}</div>` : ''}
+    </section>` : ''}
     <div class="overview-columns overview-movement-grid">
       <section class="overview-section"><header><div><span>Game read</span><h2>Stories taking shape</h2></div><small>Not promised outcomes</small></header><p class="overview-disclaimer">A concise interpretation of the season-to-date record. Future episodes can reverse any of these threads.</p><ol class="overview-thread-list">${threadsHtml}</ol></section>
       <section class="overview-section"><header><div><span>Recorded</span><h2>Relationship movement</h2></div><small>Largest recent shifts</small></header><div class="overview-relationship-list">${movementHtml}</div></section>

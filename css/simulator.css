@@ -2977,3 +2977,31 @@
     .aftermath-award { border: 2px solid rgba(245,158,11,0.4); background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(99,102,241,0.04) 100%); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: center; }
     @keyframes dropIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes slideInLeft { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── AUDIENCE PULSE (edit layer, roadmap #6) ── */
+    .overview-audience header > div > span { color: var(--sg-strategy); }
+    .overview-edit-list { display: flex; flex-direction: column; gap: 6px; }
+    .overview-edit-row { display: grid; grid-template-columns: auto minmax(120px, 1.4fr) auto minmax(70px, 1fr) auto; align-items: center; gap: 10px; padding: 7px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+    .overview-edit-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .overview-edit-info strong { font-size: 12px; }
+    .overview-edit-arc { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .overview-edit-chip { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); background: transparent; white-space: nowrap; }
+    .overview-edit-chip.edit-winner { color: var(--sg-safe); border-color: color-mix(in srgb, var(--sg-safe) 55%, transparent); background: color-mix(in srgb, var(--sg-safe) 12%, transparent); }
+    .overview-edit-chip.edit-decoy { color: var(--accent-gold); border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent); background: color-mix(in srgb, var(--accent-gold) 12%, transparent); }
+    .overview-edit-chip.edit-villain { color: var(--sg-danger); border-color: color-mix(in srgb, var(--sg-danger) 55%, transparent); background: color-mix(in srgb, var(--sg-danger) 12%, transparent); }
+    .overview-edit-chip.edit-growth { color: var(--sg-trust); border-color: color-mix(in srgb, var(--sg-trust) 55%, transparent); background: color-mix(in srgb, var(--sg-trust) 12%, transparent); }
+    .overview-edit-chip.edit-comic { color: var(--accent-fire); border-color: color-mix(in srgb, var(--accent-fire) 55%, transparent); background: color-mix(in srgb, var(--accent-fire) 12%, transparent); }
+    .overview-edit-chip.edit-invisible { color: var(--sg-ghost); border-style: dashed; }
+    .overview-edit-share { height: 5px; border-radius: 3px; background: var(--bg); overflow: hidden; }
+    .overview-edit-share-fill { height: 100%; border-radius: 3px; background: var(--sg-strategy); }
+    .overview-edit-row > em { font-size: 10px; font-style: normal; color: var(--muted); white-space: nowrap; }
+    .overview-edit-quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 12px; }
+    .overview-edit-quote { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 10px 12px; background: var(--surface2); border: 1px dashed var(--border); border-radius: 10px; }
+    .overview-edit-quote p { font-size: 12px; line-height: 1.55; font-style: italic; color: var(--text); margin: 0; }
+    .overview-edit-quote cite { display: block; margin-top: 5px; font-size: 10px; font-style: normal; color: var(--muted); }
+    .overview-edit-awards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-top: 12px; }
+    .overview-edit-award { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+    .overview-edit-award label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); }
+    .overview-edit-award strong { font-size: 12px; }
+    .hub-aftermath-card li.edit { color: var(--sg-strategy); }
+    @media (max-width: 720px) { .overview-edit-row { grid-template-columns: auto 1fr auto; } .overview-edit-share, .overview-edit-row > em { display: none; } }

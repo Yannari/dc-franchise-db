@@ -12,6 +12,7 @@ import { handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
 import { reputationModifier } from './reputation.js';
+import { finalizeEditSeason } from './edit-layer.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
 
@@ -1907,6 +1908,7 @@ export function simulateFinale() {
   // Deduplicate jury + eliminated (can accumulate duplicates from multi-path finales)
   gs.jury = [...new Set(gs.jury || [])];
   gs.eliminated = [...new Set(gs.eliminated || [])];
+  finalizeEditSeason();
   gs.phase = 'complete';
   gs.episode = epNum;
   gs.episodeHistory.push({

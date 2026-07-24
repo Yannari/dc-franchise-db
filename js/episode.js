@@ -14,6 +14,7 @@ import { applyObservedStrategicRespect, applySocialStatusEffects } from './relat
 import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge, attachInfoFlowLocations, recordVoteArchitect, juryArchitectCredit, reconcileJuryPerception } from './knowledge-integration.js';
 import { getRelationshipDimensions } from './relationships.js';
 import { updateSocialStatus, captureSocialStatusBeforeVote } from './social-status.js';
+import { updateEditLayer } from './edit-layer.js';
 import { tickIntentions, prepareIntentionsForVote } from './intentions.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
@@ -1679,7 +1680,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -2038,7 +2039,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -2169,7 +2170,7 @@ export function simulateEpisode() {
     }
     generateCampEvents(ep, 'post');
     _handleRIDuelPostElimination();
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -2729,7 +2730,7 @@ export function simulateEpisode() {
       // calling it again here would double-credit the winner (2 wins). Skip it.
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -2826,7 +2827,7 @@ export function simulateEpisode() {
     }
 
     _handleRIDuelPostElimination();
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -3117,7 +3118,7 @@ export function simulateEpisode() {
       if (ep.challengeThrows?.length) ep.challengeThrowData = ep.challengeThrows;
       generateCampEvents(ep, 'post');
       _handleRIDuelPostElimination();
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
       updateSurvival(ep);
       gs.episode = epNum;
       if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -3597,7 +3598,7 @@ export function simulateEpisode() {
     _handleRIDuelPostElimination();
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -3670,7 +3671,7 @@ export function simulateEpisode() {
       ep.alliances = [];
       ep.bondChanges = updateBonds([], null, []);
       detectBetrayals(ep);
-      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
@@ -3802,7 +3803,7 @@ export function simulateEpisode() {
     ep.alliances = [];
     ep.bondChanges = updateBonds([], null, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -4804,7 +4805,7 @@ export function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, _dtAlliances);
     detectBetrayals(ep); applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -5049,7 +5050,7 @@ export function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
     applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -5584,7 +5585,7 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
@@ -5807,7 +5808,7 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length - 1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stCOC = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length - 1].summaryText = stCOC; ep.summaryText = stCOC;
-    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
     updateSurvival(ep);
     window.patchEpisodeHistory(ep); window.saveGameState(); return ep;
   }
@@ -6815,7 +6816,7 @@ function simulateJuryRoundtable(ep) {
   applyObservedStrategicRespect(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
   checkSideDealBreaks(ep); checkConflictingDeals(ep); checkFalseInfoBlowup(ep);
-  updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep);
+  updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep); tickIntentions(ep); applySocialStatusEffects(ep); updateSocialStatus(ep); updateEditLayer(ep);
   updateStrategicReputations(ep);
   if (ep.reputationChanges?.length) {
     const _repKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || Object.keys(ep.campEvents || {})[0]);

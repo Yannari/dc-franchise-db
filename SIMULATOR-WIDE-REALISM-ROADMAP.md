@@ -103,6 +103,8 @@ Examples:
 
 ### 6. Production and editing layer
 
+**Status: built (insight layer v1, 2026-07-24)** — js/edit-layer.js: screen-time/tone derivation, confessional counts + quotes, live edit reads (one winner edit at a time), fan-perception drift only. Audience pulse surfaces in Season Overview + Hub aftermath. "As Aired" VP mode remains future work.
+
 Simulation truth and viewer truth should be separate systems.
 
 The game determines what happened. The edit determines what the audience sees:

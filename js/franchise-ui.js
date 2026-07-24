@@ -7,7 +7,7 @@ import { players } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
-  backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
+  backfillFromSeasonData, backfillFromEnrichedSeason, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
   exportActiveFranchise, importFranchiseExport,
   careerFor, franchiseRecords, returneePools, setFranchiseLocked, isFranchiseLocked,
   setArchetypeResolver, backfillAchievements, ACHIEVEMENT_LABELS
@@ -990,6 +990,14 @@ function _importOne(raw, fileName) {
   if (raw && Array.isArray(raw.seasons)) {
     const n = backfillFromSeasonsDb(raw);
     _logLine(`${_esc(fileName)} — backfilled ${n} season${n === 1 ? '' : 's'}`, n > 0);
+    return;
+  }
+  // chronicle-enriched season file → full-record backfill
+  if (raw && raw.type === 'dc-enriched-season') {
+    const res = backfillFromEnrichedSeason(raw);
+    _logLine(res.ok
+      ? `S${res.seasonNum} enriched — full chronicle record (${res.playerCount} players, winner ${_esc(res.winner || '—')})`
+      : `${_esc(fileName)} — ${_esc(res.error)}`, !!res.ok);
     return;
   }
   // single-season site data file (seasonN-data.json) → rich backfill

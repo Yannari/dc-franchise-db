@@ -331,6 +331,55 @@ describe('reputation threat multiplier', () => {
 
 import { backfillFromSeasonsDb, backfillFromSeasonData, franchiseHistorySummary, wipeLedger } from '../js/franchise-meta.js';
 
+import { backfillFromEnrichedSeason } from '../js/franchise-meta.js';
+
+describe('backfillFromEnrichedSeason (chronicle-enriched)', () => {
+  const enriched = {
+    type: 'dc-enriched-season', seasonNumber: 3, seasonName: 'World Tour', castSize: 4, episodeCount: 12,
+    players: {
+      'Emma': { placement: 1, winner: true, finalist: true, episodesLasted: 12, chalWins: 3, allies: ['Kitty'], slug: 'emma' },
+      'Kitty': { placement: 2, finalist: true, episodesLasted: 12, allies: ['Emma'], showmances: [{ partner: 'Noah', ended: 'intact' }] },
+      'Noah': { placement: 5, episodesLasted: 9, blindsided: true, blindsidedBy: ['Jacques'], betrayedBy: ['Jacques'], showmances: [{ partner: 'Kitty', ended: 'intact' }] },
+      'Jacques': { placement: 4, episodesLasted: 10, blindsidesAuthored: 1, betrayed: ['Noah'], idolsPlayed: 1, schemesCaught: 1 }
+    }
+  };
+  it('imports full-record fields and marks the season enriched', () => {
+    setFranchiseLedger({ seasons: {} });
+    const res = backfillFromEnrichedSeason(enriched);
+    expect(res).toMatchObject({ ok: true, seasonNum: 3, winner: 'Emma', playerCount: 4 });
+    const s = activeSeasons()['3'];
+    expect(s.source).toBe('enriched');
+    expect(s.players['Noah']).toMatchObject({ blindsided: true, blindsidedBy: ['Jacques'], backfilled: true });
+    expect(s.players['Jacques'].betrayed).toEqual(['Noah']);
+    expect(s.players['Kitty'].showmances[0].partner).toBe('Noah');
+  });
+  it('outranks light backfills but never live/manual records', () => {
+    // enriched over light: allowed
+    setFranchiseLedger({ seasons: { '3': { seasonName: 'Light', players: { 'Emma': { placement: 1, winner: true, backfilled: true } } } } });
+    expect(backfillFromEnrichedSeason(enriched).ok).toBe(true);
+    // light over enriched: refused (both DB-style and single-file backfills)
+    expect(backfillFromSeasonsDb({ seasons: [{ seasonNumber: 3, seasonName: 'Clobber', winner: { name: 'X' }, players: [{ name: 'X', placement: 1 }] }] })).toBe(0);
+    expect(backfillFromSeasonData({ seasonNumber: 3, title: 'Clobber2', placements: [{ placement: 1, name: 'X', phase: 'Winner' }] }).ok).toBe(false);
+    expect(activeSeasons()['3'].source).toBe('enriched');
+    // enriched over live: refused
+    setFranchiseLedger({ seasons: { '3': { seasonName: 'Live', players: { 'Emma': { placement: 1, winner: true } } } } });
+    expect(backfillFromEnrichedSeason(enriched).ok).toBe(false);
+    expect(activeSeasons()['3'].seasonName).toBe('Live');
+    // enriched over enriched: allowed (re-import/refresh)
+    setFranchiseLedger({ seasons: {} });
+    expect(backfillFromEnrichedSeason(enriched).ok).toBe(true);
+    expect(backfillFromEnrichedSeason({ ...enriched, seasonName: 'Refreshed' }).ok).toBe(true);
+    expect(activeSeasons()['3'].seasonName).toBe('Refreshed');
+  });
+  it('rejects wrong types and respects canon lock', () => {
+    setFranchiseLedger({ seasons: {} });
+    expect(backfillFromEnrichedSeason({ seasonNumber: 3, players: {} }).ok).toBe(false);
+    setFranchiseLocked('main', true);
+    expect(backfillFromEnrichedSeason(enriched).ok).toBe(false);
+    setFranchiseLocked('main', false);
+  });
+});
+
 describe('backfillFromSeasonData (single-season site file)', () => {
   const seasonFile = {
     seasonNumber: 1, title: 'Island Origins', castSize: 24, episodeCount: 26,

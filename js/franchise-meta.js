@@ -399,6 +399,8 @@ export function backfillFromSeasonsDb(json) {
     // Live records always win over backfill — protection depends ONLY on the
     // backfilled flags. Excluding a season from meta must never make it overwritable.
     if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) continue;
+    // Chronicle-enriched records outrank light backfills: never downgrade one.
+    if (existing?.source === 'enriched') continue;
     const winnerName = s.winner?.name || s.winner || null;
     const roster = Array.isArray(s.players) ? s.players : (Array.isArray(s.placements) ? s.placements : (Array.isArray(s.cast) ? s.cast : []));
     const rec = { seasonName: s.seasonName || s.name || `Season ${num}`, players: {} };
@@ -436,6 +438,9 @@ export function backfillFromSeasonData(json) {
   if (existing && !Object.values(existing.players || {}).every(p => p.backfilled)) {
     return { ok: false, skipped: true, seasonNum: num, error: `S${num} skipped — kept existing live/manual record` };
   }
+  if (existing?.source === 'enriched') {
+    return { ok: false, skipped: true, seasonNum: num, error: `S${num} skipped — kept richer chronicle-enriched record` };
+  }
   const winnerName = json.winner?.name || null;
   const rec = {
     seasonName: json.title || `Season ${num}`,
@@ -457,6 +462,50 @@ export function backfillFromSeasonData(json) {
   if (!Object.keys(rec.players).length) return { ok: false, error: 'No players found in file' };
   _seasons[String(num)] = rec;
   return { ok: true, seasonNum: num, winner: winnerName, playerCount: Object.keys(rec.players).length };
+}
+
+// ── Backfill from a chronicle-enriched season file (dc-enriched-season) ───
+// Produced by reading a season's episode-by-episode chronicle: carries the FULL
+// record schema (blindsides, betrayals, allies, showmances, rivals, idols…),
+// unlike the placements-only site/db backfills. Ranking: live/manual/imported-save
+// records still win over this; this wins over (and re-imports over) light
+// backfills and previous enriched imports.
+const _ENRICHED_FIELDS = ['placement', 'winner', 'finalist', 'episodesLasted', 'blindsided',
+  'blindsidedBy', 'blindsidesAuthored', 'idolsFound', 'idolsPlayed', 'idoledOut',
+  'betrayed', 'betrayedBy', 'allies', 'showmances', 'rivals', 'chalWins',
+  'schemesCaught', 'slug', 'votesAgainstTotal', 'archetype', 'popularity'];
+export function backfillFromEnrichedSeason(json) {
+  if (activeFranchise().locked) return { ok: false, error: 'Franchise is locked' };
+  if (json?.type !== 'dc-enriched-season') return { ok: false, error: 'Not an enriched season file' };
+  const num = json.seasonNumber;
+  if (!num || !json.players || typeof json.players !== 'object') return { ok: false, error: 'Enriched file missing seasonNumber or players' };
+  const _seasons = activeSeasons();
+  const existing = _seasons[String(num)];
+  if (existing && existing.source !== 'enriched'
+      && !Object.values(existing.players || {}).every(p => p.backfilled)) {
+    return { ok: false, skipped: true, seasonNum: num, error: `S${num} skipped — kept existing live/manual record` };
+  }
+  const rec = {
+    seasonName: json.seasonName || `Season ${num}`,
+    castSize: json.castSize || Object.keys(json.players).length,
+    episodeCount: json.episodeCount || 0,
+    source: 'enriched',
+    players: {}
+  };
+  let winner = null;
+  for (const [name, p] of Object.entries(json.players)) {
+    if (!name || !p || typeof p !== 'object') continue;
+    const r = _emptyRecord();
+    for (const f of _ENRICHED_FIELDS) {
+      if (p[f] !== undefined) r[f] = JSON.parse(JSON.stringify(p[f]));
+    }
+    r.backfilled = true; // live re-recordings may still overwrite; light backfills may not (source gate)
+    if (r.winner) winner = name;
+    rec.players[name] = r;
+  }
+  if (!Object.keys(rec.players).length) return { ok: false, error: 'No players found in enriched file' };
+  _seasons[String(num)] = rec;
+  return { ok: true, seasonNum: num, winner, playerCount: Object.keys(rec.players).length };
 }
 
 export function franchiseHistorySummary(name) {

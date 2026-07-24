@@ -100,7 +100,18 @@ describe('game-first redesign compatibility', () => {
   it('keeps the Visual Player Debug rebuild path accessible', () => {
     const simulator = readFileSync(join(process.cwd(), 'simulator.html'), 'utf8');
     expect(simulator).toContain("localStorage.getItem('vp_debug')");
-    expect(simulator).toContain('title="Toggle Debug Screen"');
-    expect(simulator).toContain('buildVPScreens(ep);renderVPScreen();');
+    expect(simulator).toContain('title="Toggle Debug Screen in Deep Dive"');
+    expect(simulator).toContain("buildVPScreens(ep);vpSetViewMode('deep');");
+    expect(simulator).toContain('onclick="openLatestDeepDive()"');
+  });
+
+  it('keeps creation, play, and season-management journeys distinct', () => {
+    const simulator = readFileSync(join(process.cwd(), 'simulator.html'), 'utf8');
+    const main = readFileSync(join(process.cwd(), 'js', 'main.js'), 'utf8');
+    expect(simulator).toContain('journey-nav-group journey-create');
+    expect(simulator).toContain('journey-nav-group journey-play');
+    expect(simulator).toContain('class="season-menu"');
+    expect(main).toContain("if (core.gs?.initialized)");
+    expect(main).toContain("showTab('run')");
   });
 });

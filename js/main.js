@@ -336,7 +336,9 @@ async function init() {
 
   // Restore last active tab
   const _savedTab = localStorage.getItem('simulator_activeTab');
-  if (_savedTab && ['cast','setup','run','results'].includes(_savedTab)) {
+  if (core.gs?.initialized) {
+    showTab('run');
+  } else if (_savedTab && ['cast','setup'].includes(_savedTab)) {
     showTab(_savedTab);
   }
 

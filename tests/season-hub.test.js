@@ -208,7 +208,7 @@ describe('Season Hub view model', () => {
     expect(model.progress).toBe(33);
     expect(model.twistLabel).toBe('Production surprise scheduled');
     expect(model.storylines.join(' ')).toContain("Julia's exit");
-    expect(model.storylines.join(' ')).toContain('1 active alliance');
+    expect(model.storylines.join(' ')).not.toContain('active alliance');
   });
 
   it('turns the primary action into results when the season is complete', () => {

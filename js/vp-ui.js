@@ -4,6 +4,55 @@
 
 import { audio, cueFromElement } from './audio.js';
 
+const VP_VIEW_MODES = new Set(['watch', 'quick', 'deep']);
+let _vpViewMode = 'watch';
+
+function _vpPhaseForScreen(id = '') {
+  if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
+  if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
+  if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };
+  if (id === 'tribal' || id.startsWith('tribal-') || id === 'jury-convenes') return { id:'tribal', label:'Tribal', icon:'▲' };
+  if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-') || id === 'post-twist' || id === 'reunion' || id === 'season-stats' || id === 'winner-ceremony') return { id:'aftermath', label:'Aftermath', icon:'■' };
+  if (id === 'voting-plans' || id.startsWith('voting-plans-') || id === 'mole-exposed' || id === 'final-cut') return { id:'scramble', label:'Scramble', icon:'◆' };
+  const bed = bedForScreen(id);
+  if (bed === 'challenge') return { id:'challenge', label:'Challenge', icon:'⚑' };
+  if (bed === 'tribal-tension') return { id:'tribal', label:'Tribal', icon:'▲' };
+  if (bed === 'aftermath' || bed === 'victory') return { id:'aftermath', label:'Aftermath', icon:'■' };
+  if (bed === 'camp-night') return { id:'scramble', label:'Scramble', icon:'◆' };
+  return { id:'camp', label:'Camp', icon:'●' };
+}
+
+function _vpQuickScreen(index) {
+  const screen = vpScreens[index];
+  if (!screen) return false;
+  if (screen.id === 'debug') return false;
+  const phase = _vpPhaseForScreen(screen.id).id;
+  if (index === 0 || index === vpScreens.length - 1) return true;
+  if (phase === 'reveal' || phase === 'aftermath') return true;
+  if (phase === 'tribal') return vpScreens.slice(index + 1).every(s => _vpPhaseForScreen(s.id).id !== 'tribal');
+  if (phase === 'challenge') return vpScreens.slice(index + 1).findIndex(s => _vpPhaseForScreen(s.id).id !== 'challenge') === 0;
+  if (phase === 'scramble') return vpScreens.slice(index + 1).findIndex(s => _vpPhaseForScreen(s.id).id !== 'scramble') === 0;
+  return false;
+}
+
+function _vpVisibleIndexes() {
+  if (_vpViewMode === 'watch') return vpScreens.map((s, i) => s.id === 'debug' ? -1 : i).filter(i => i >= 0);
+  if (_vpViewMode === 'deep') return vpScreens.map((_, i) => i);
+  const visible = vpScreens.map((_, i) => i).filter(_vpQuickScreen);
+  return visible.length ? visible : vpScreens.map((_, i) => i);
+}
+
+export function vpSetViewMode(mode) {
+  if (!VP_VIEW_MODES.has(mode)) return;
+  _vpViewMode = mode;
+  localStorage.setItem('vp_view_mode', mode);
+  const visible = _vpVisibleIndexes();
+  if (!visible.includes(vpCurrentScreen)) {
+    vpCurrentScreen = visible.reduce((best, i) => i <= vpCurrentScreen ? i : best, visible[0]);
+  }
+  renderVPScreen();
+}
+
 export function vpAnimateTallies(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -651,25 +700,42 @@ export function renderVPScreen() {
   const nextBtn  = document.getElementById('vp-next-btn');
   const epLabel  = document.getElementById('vp-nav-ep-label');
   const sidebar  = document.getElementById('vp-sidebar');
+  const player   = document.getElementById('visual-player');
   if (vpCurrentScreen >= vpScreens.length) window.vpCurrentScreen = 0;
   const cur = vpScreens[vpCurrentScreen];
   if (!cur) return;
+  const curPhase = _vpPhaseForScreen(cur.id);
+  const visibleIndexes = _vpVisibleIndexes();
+  const visiblePos = visibleIndexes.indexOf(vpCurrentScreen);
+  if (player) player.dataset.viewMode = _vpViewMode;
 
   // Nav bar
-  prevBtn.disabled = vpCurrentScreen === 0;
-  const isLast = vpCurrentScreen === vpScreens.length - 1;
+  prevBtn.disabled = visiblePos <= 0;
+  const isLast = visiblePos === visibleIndexes.length - 1;
   nextBtn.textContent = isLast ? 'Finish' : 'Continue →';
   nextBtn.className = 'rp-btn' + (isLast ? ' close' : '');
   nextBtn.onclick = isLast ? closeVisualPlayer : vpNext;
-  if (epLabel) epLabel.innerHTML = `EP ${vpEpNum}  &mdash;  ${cur?.label || ''}`;
+  if (epLabel) epLabel.innerHTML = '<span class="rp-nav-phase">' + curPhase.label + '</span><span class="rp-nav-divider">/</span><span>' + (cur?.label || '') + '</span>';
+
+  document.querySelectorAll('.vp-mode-btn').forEach(btn => {
+    const active = btn.dataset.mode === _vpViewMode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
 
   // Sidebar
   if (sidebar) {
-    sidebar.innerHTML = `<div class="rp-sidebar-ep">Episode ${vpEpNum}</div>` +
-      vpScreens.map((s, i) =>
-        `<button class="rp-sidebar-item ${i === vpCurrentScreen ? 'active' : i < vpCurrentScreen ? 'done' : ''}"
-                 onclick="vpGoTo(${i})">${s.label}</button>`
-      ).join('');
+    let lastPhase = '';
+    sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + vpEpNum + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
+      visibleIndexes.map(i => {
+        const s = vpScreens[i];
+        const phase = _vpPhaseForScreen(s.id);
+        const phaseHead = phase.id !== lastPhase
+          ? '<div class="rp-sidebar-phase"><span>' + phase.icon + '</span>' + phase.label + '</div>' : '';
+        lastPhase = phase.id;
+        return phaseHead + '<button class="rp-sidebar-item ' + (i === vpCurrentScreen ? 'active' : i < vpCurrentScreen ? 'done' : '') +
+          '" onclick="vpGoTo(' + i + ')"><span class="rp-sidebar-dot"></span><span>' + s.label + '</span></button>';
+      }).join('');
   }
 
   // Content — innerHTML is fully rebuilt each navigation, so any in-progress
@@ -680,10 +746,10 @@ export function renderVPScreen() {
     const _set = (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
     content.className = (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`;
   } catch (e) {}
-  content.innerHTML = cur.html;
+  content.innerHTML = '<div class="vp-stage-cue" aria-hidden="true"><span>' + curPhase.icon + '</span>' + curPhase.label + '</div>' + cur.html;
   // Ambience: explicit data-ambient on the screen root wins; otherwise fall back
   // to the universal screen-id → bed map. Plus a one-shot sting for big moments.
-  const _screenRootEl = content.firstElementChild;
+  const _screenRootEl = content.querySelector('.rp-page') || content.children[1] || content.firstElementChild;
   const _explicitBed = _screenRootEl && _screenRootEl.getAttribute && _screenRootEl.getAttribute('data-ambient');
   const _bed = bedForScreen(cur.id, _explicitBed);
   if (_bed) audio.ambient(_bed);
@@ -729,11 +795,22 @@ export function openVisualPlayer(epNum) {
   const epRecord = gs?.episodeHistory?.find(e => e.num === num);
   if (!epRecord) { alert('No episode data. Simulate an episode first.'); return; }
   vpCurrentScreen = 0;
+  const savedMode = localStorage.getItem('vp_view_mode');
+  _vpViewMode = VP_VIEW_MODES.has(savedMode) ? savedMode : 'watch';
   buildVPScreens(epRecord);
   document.getElementById('visual-player').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderVPScreen();
   vpStartParticles();
+}
+
+export function openLatestDeepDive() {
+  const latest = gs?.episodeHistory?.slice(-1)[0];
+  if (!latest) { alert('Simulate an episode before opening the Debug deep dive.'); return; }
+  localStorage.setItem('vp_debug', 'true');
+  openVisualPlayer(latest.num);
+  vpSetViewMode('deep');
+  document.getElementById('season-menu')?.removeAttribute('open');
 }
 
 // ── VP Search ──
@@ -854,8 +931,12 @@ export function closeVisualPlayer() {
 }
 
 export function vpNext() {
-  if (vpCurrentScreen < vpScreens.length - 1) { vpCurrentScreen++; renderVPScreen(); }
+  const visible = _vpVisibleIndexes();
+  const pos = visible.indexOf(vpCurrentScreen);
+  if (pos >= 0 && pos < visible.length - 1) { vpCurrentScreen = visible[pos + 1]; renderVPScreen(); }
 }
 export function vpPrev() {
-  if (vpCurrentScreen > 0) { vpCurrentScreen--; renderVPScreen(); }
+  const visible = _vpVisibleIndexes();
+  const pos = visible.indexOf(vpCurrentScreen);
+  if (pos > 0) { vpCurrentScreen = visible[pos - 1]; renderVPScreen(); }
 }

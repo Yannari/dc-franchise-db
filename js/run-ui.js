@@ -127,18 +127,22 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const groups = initialized && displayState.phase === 'pre-merge' && (displayState.tribes || []).length
     ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
     : initialized ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }] : [];
-  const activeAlliances = initialized ? (displayState.namedAlliances || []).filter(a => a.active && (a.members || []).filter(m => active.includes(m)).length >= 2) : [];
   const storylines = [];
   if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
   if (latest?.isMerge) storylines.push('The merge has redrawn every voting relationship.');
   if ((displayState.riPlayers || []).length) storylines.push(`${displayState.riPlayers.length} eliminated contestant${displayState.riPlayers.length === 1 ? '' : 's'} remain in the second-chance game.`);
-  if (activeAlliances.length) storylines.push(`${activeAlliances.length} active alliance${activeAlliances.length === 1 ? '' : 's'} still have at least two players in the game.`);
+  const publicStatuses = [];
+  const immunityHolder = latest?.individualImmunity || latest?.immunityWinner || latest?.challengeWinner;
+  if (immunityHolder && active.includes(immunityHolder)) publicStatuses.push(`${immunityHolder} is publicly safe after winning immunity.`);
+  if (latest?.isMerge) publicStatuses.push('The cast is now competing as one merged group.');
+  if ((displayState.riPlayers || []).length) publicStatuses.push('A public second-chance route remains active.');
+  storylines.push(...publicStatuses);
   if (!storylines.length && initialized) storylines.push('The opening relationships are in place. The first loss will reveal which promises matter.');
 
   return {
     lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
     phase: displayState.phase || state?.phase || 'setup', episode: Number(latest?.num ?? displayState.episode ?? 0), nextEpisode, remaining, originalCount, progress,
-    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, activeAlliances, storylines: storylines.slice(0, 3), twistLabel,
+    active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel,
     primaryLabel: lifecycle === 'setup' ? 'Start Season · Play Episode 1' : isHistorical ? `Return to Current · Episode ${liveLatest.num}` : lifecycle === 'complete' ? 'View Season Results' : state?.phase === 'finale' ? `Play Finale · Episode ${Number(state.episode || 0) + 1}` : `Play Episode ${Number(state.episode || 0) + 1}`,
     primaryAction: isHistorical ? 'current' : lifecycle === 'complete' ? 'results' : 'simulate',
   };
@@ -219,8 +223,19 @@ export function renderSeasonHub() {
     </div>
     <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${Number(model.latest.num)})">Open the full episode breakdown →</button></footer>
   </section>` : '';
+  const canBatch = !model.isHistorical && model.lifecycle !== 'complete' && model.phase !== 'finale';
+  const canReplay = !!(model.latest && typeof gsCheckpoints !== 'undefined' && gsCheckpoints[model.latest.num]);
+  const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
+    <button type="button" onclick="openVisualPlayer(${Number(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
+    <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
+    <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
+    <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
+    <button type="button" onclick="saveSeasonToStorage()">Save</button>
+    <button type="button" onclick="exportSeason()">Export</button>
+  </nav>`;
   host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
+    ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
     ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
     ${aftermathHtml}

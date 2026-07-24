@@ -26,17 +26,29 @@ export function saveTheme(theme, storage) {
 }
 
 // ── Broadcast bar display string (pure) ──
-// Returns { onAir, network, season, episode } describing what's "on" right now.
+// Returns the public, persistent season context shown in the application shell.
 export function broadcastState(g = gs, cfg = seasonConfig) {
   const hasSeason = !!(g && g.initialized);
   const season = (cfg && cfg.name) ? cfg.name : null;
   // gs.episode is 0 before the first episode runs; show the NEXT/current ep number.
   const epNum = hasSeason ? (g.episode || 0) : 0;
+  const activeCount = hasSeason ? (g.activePlayers || []).length : 0;
+  const originalCount = hasSeason ? Math.max(1, activeCount + (g.eliminated || []).length) : 1;
+  const progress = hasSeason && originalCount > 1
+    ? Math.max(0, Math.min(100, Math.round(((originalCount - activeCount) / (originalCount - 1)) * 100)))
+    : 0;
+  const phase = !hasSeason ? 'Create'
+    : g.phase === 'pre-merge' ? 'Pre-Merge'
+      : g.phase === 'post-merge' ? 'Post-Merge'
+        : g.phase === 'finale' ? 'Finale'
+          : g.phase === 'complete' ? 'Complete' : '';
   return {
     onAir: hasSeason,
     network: 'DC FRANCHISE NETWORK',
     season: season || (hasSeason ? 'Untitled Season' : null),
     episode: epNum > 0 ? epNum : null,
+    phase,
+    progress,
   };
 }
 
@@ -69,11 +81,16 @@ export function updateBroadcastBar() {
   const st = broadcastState();
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   const onAirEl = document.getElementById('bcast-onair');
+  const headerEl = document.querySelector('.sim-header');
   if (onAirEl) onAirEl.classList.toggle('off', !st.onAir);
+  if (headerEl) headerEl.classList.toggle('season-live', st.onAir);
   set('bcast-onair-label', st.onAir ? 'ON AIR' : 'OFF AIR');
   set('bcast-season', st.season || '—');
   const epEl = document.getElementById('bcast-episode');
   if (epEl) epEl.textContent = st.episode ? `EP ${st.episode}` : '';
+  set('bcast-phase', st.phase || '');
+  const progressEl = document.getElementById('bcast-progress-fill');
+  if (progressEl) progressEl.style.width = `${st.progress || 0}%`;
 }
 
 let _clockTimer = null;

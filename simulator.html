@@ -1688,11 +1688,29 @@
     .bcast-season { font-size: 13px; font-style: italic; color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
     .bcast-episode { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--accent); }
     .bcast-clock { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 1px; margin-right: 4px; }
-    .sim-tabs { display: flex; gap: 4px; margin-left: auto; }
+    .sim-tabs { display: flex; gap: 10px; margin-left: auto; align-items:center; }
+    .journey-nav-group { display:flex; align-items:center; gap:4px; padding:3px; border:1px solid var(--border); background:color-mix(in srgb,var(--surface2) 88%,transparent); }
+    .journey-nav-label { padding:0 6px; color:var(--muted); font:800 8px var(--font-body); letter-spacing:1px; text-transform:uppercase; }
+    .sim-header.season-live .journey-create .journey-nav-label { display:none; }
+    .sim-header.season-live .journey-create { opacity:.7; }
     .tab-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
     .tab-btn:hover { color: var(--text); border-color: var(--accent); }
     .tab-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
     .tab-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .season-menu { position:relative; }
+    .season-menu > summary { min-height:34px; display:flex; align-items:center; gap:7px; padding:0 11px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; cursor:pointer; list-style:none; }
+    .season-menu > summary::-webkit-details-marker { display:none; }
+    .season-menu > summary::after { content:'▾'; color:var(--accent); }
+    .season-menu[open] > summary, .season-menu > summary:hover { color:var(--text); border-color:var(--accent); }
+    .season-menu-panel { position:absolute; top:calc(100% + 8px); right:0; z-index:80; width:210px; padding:8px; display:grid; gap:5px; border:1px solid var(--border); background:var(--surface); box-shadow:0 18px 45px rgba(0,0,0,.42); }
+    .season-menu-panel button { min-height:36px; padding:0 10px; border:1px solid transparent; background:var(--surface2); color:var(--text); text-align:left; font:700 10px var(--font-body); cursor:pointer; }
+    .season-menu-panel button:hover { border-color:var(--accent); }
+    .season-menu-panel button.danger { color:#f87171; }
+    .season-menu-panel hr { width:100%; border:0; border-top:1px solid var(--border); }
+    .bcast-context { display:inline-flex; align-items:center; gap:7px; }
+    .bcast-phase { color:var(--muted); font:800 9px var(--font-body); letter-spacing:.7px; text-transform:uppercase; }
+    .bcast-progress { width:52px; height:3px; overflow:hidden; background:var(--border); }
+    .bcast-progress span { display:block; height:100%; background:var(--accent); }
     @media (prefers-reduced-motion: reduce) { .bcast-onair .bcast-dot { animation: none; } }
     .audio-ctrl { display:flex; align-items:center; gap:6px; margin-left:auto; padding-left:12px; }
     .audio-btn { background:none; border:none; font-size:16px; cursor:pointer; color:var(--text); line-height:1; }
@@ -1705,6 +1723,23 @@
       border:1px solid var(--border); color:var(--text); padding:10px 16px; border-radius:8px; font-size:13px;
       box-shadow:0 6px 24px rgba(0,0,0,.4); z-index:9999; opacity:0; transition:opacity .4s; }
     .audio-toast.show { opacity:1; }
+    @media (max-width:1180px) {
+      .sim-header { gap:10px; padding:8px 12px; flex-wrap:wrap; }
+      .bcast-net, .bcast-clock, .audio-ctrl input[type=range] { display:none; }
+      .sim-tabs { order:3; width:100%; margin-left:0; overflow-x:auto; padding-top:3px; }
+      .journey-nav-group { flex:0 0 auto; }
+      .season-menu { margin-left:auto; }
+    }
+    @media (max-width:680px) {
+      .bcast-onair, .bcast-chan, .journey-nav-label { display:none; }
+      .bcast-id { min-width:0; gap:7px; }
+      .bcast-now { min-width:0; padding-left:7px; }
+      .bcast-season { max-width:120px; font-size:11px; }
+      .bcast-progress { width:32px; }
+      .tab-btn { min-height:40px; padding:6px 10px; }
+      .audio-ctrl { margin-left:0; padding-left:0; }
+      .sim-body { height:calc(100vh - 108px); }
+    }
 
     /* ── TAB LAYOUT ── */
     .sim-body { display: flex; height: calc(100vh - 49px); overflow: hidden; }
@@ -2037,6 +2072,10 @@
     .hub-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
     .hub-primary:focus-visible, .hub-watch:focus-visible { outline: 2px solid white; outline-offset: 3px; }
     .hub-primary span { font-size: 17px; font-weight: 400; }
+    .hub-secondary-actions { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:6px; padding:0 28px 16px; }
+    .hub-secondary-actions button { min-height:34px; padding:0 11px; border:1px solid #2b3745; background:#111923; color:#8392a4; font:800 9px var(--font-body); letter-spacing:.45px; text-transform:uppercase; cursor:pointer; }
+    .hub-secondary-actions button:hover:not(:disabled) { border-color:var(--hub-accent); color:#e4ebf2; }
+    .hub-secondary-actions button:disabled { opacity:.3; cursor:not-allowed; }
     .hub-headline { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 26px 28px 20px; }
     .hub-headline h1 { margin: 5px 0 4px; color: #f2f5f8; font-family: var(--font-display); font-size: clamp(27px, 3.4vw, 42px); font-weight: 500; line-height: 1; }
     .hub-headline p { margin: 0; color: #8997a8; font-size: 12px; }
@@ -2133,6 +2172,8 @@
       .hub-rail-episode { min-width: 52px; padding: 5px 6px; }
       .hub-headline { align-items: stretch; flex-direction: column; padding: 22px 20px 17px; }
       .hub-primary { width: 100%; }
+      .hub-secondary-actions { padding:0 20px 14px; }
+      .hub-secondary-actions button { min-height:40px; flex:1 1 auto; }
       .hub-last-night { grid-template-columns: auto auto 1fr auto; margin: 14px 16px 0; }
       .hub-last-votes { display: none; }
       .hub-grid { margin-top: 15px; }
@@ -2448,15 +2489,32 @@
     .rp-page { animation: vpPageIn 0.28s cubic-bezier(0.22,1,0.36,1) both; }
     /* ── Sidebar ── */
     .rp-sidebar { width:172px; flex-shrink:0; border-right:1px solid #1a2130; overflow-y:auto; padding:20px 0 40px; display:flex; flex-direction:column; background:#07090d; position:relative; z-index:5; }
-    .rp-sidebar-ep { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#2a3444; padding:0 18px 18px; font-family:var(--font-body); }
-    .rp-sidebar-item { display:block; width:100%; text-align:left; background:none; border:none; border-left:3px solid transparent; padding:9px 16px 9px 15px; font-size:12px; font-weight:500; color:#607d8e; cursor:pointer; transition:color 0.12s, background 0.12s, border-color 0.12s; line-height:1.3; font-family:var(--font-body); }
+    .rp-sidebar-ep { display:flex; justify-content:space-between; gap:8px; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#607083; padding:0 16px 16px; font-family:var(--font-body); }
+    .rp-sidebar-ep b { color:#303b49; font-family:var(--font-mono); }
+    .rp-sidebar-phase { display:flex; align-items:center; gap:7px; margin:11px 14px 4px; color:#8998aa; font-size:8px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; }
+    .rp-sidebar-phase span { color:var(--accent); font-size:8px; }
+    .rp-sidebar-item { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:none; border-left:3px solid transparent; padding:7px 14px 7px 16px; font-size:11px; font-weight:500; color:#607d8e; cursor:pointer; transition:color 0.12s, background 0.12s, border-color 0.12s; line-height:1.3; font-family:var(--font-body); }
+    .rp-sidebar-dot { width:5px; height:5px; border-radius:50%; flex:0 0 auto; background:#202b38; }
     .rp-sidebar-item:hover { color:#c9d1d9; background:rgba(255,255,255,0.03); }
     .rp-sidebar-item.active { color:#f0f6fc; border-left-color:var(--accent); background:rgba(16,185,129,0.06); font-weight:700; }
+    .rp-sidebar-item.active .rp-sidebar-dot { background:var(--accent); box-shadow:0 0 0 3px rgba(16,185,129,.10); }
     .rp-sidebar-item.done { color:#232d3a; }
     /* ── Main content pane ── */
     .rp-main { flex:1; overflow-y:auto; display:flex; flex-direction:column; min-width:0; }
     /* ── Top nav bar ── */
     .rp-nav { position:sticky; top:0; z-index:50; background:rgba(7,9,13,0.96); backdrop-filter:blur(16px); border-bottom:1px solid #151e28; display:flex; align-items:center; padding:0 20px; height:46px; gap:10px; }
+    .rp-nav-ep { color:#7c8999; font-size:10px; font-weight:700; letter-spacing:.7px; text-transform:uppercase; }
+    .rp-nav-phase { color:var(--accent); }
+    .rp-nav-divider { margin:0 7px; color:#2c3744; }
+    .vp-mode-switch { display:flex; align-items:center; padding:2px; border:1px solid #1c2733; background:#0b1016; }
+    .vp-mode-btn { min-height:34px; padding:0 10px; border:0; background:transparent; color:#536274; font:800 8px var(--font-body); letter-spacing:.8px; text-transform:uppercase; cursor:pointer; }
+    .vp-mode-btn:hover { color:#c9d1d9; }
+    .vp-mode-btn.active { background:#1b2733; color:#f0f6fc; box-shadow:inset 0 -2px var(--accent); }
+    .vp-mode-btn:focus-visible, .rp-sidebar-item:focus-visible, .rp-btn:focus-visible { outline:2px solid #58a6ff; outline-offset:2px; }
+    .vp-stage-cue { max-width:760px; margin:22px auto -25px; padding:0 28px; display:flex; align-items:center; gap:8px; color:#344355; font:900 8px var(--font-body); letter-spacing:2.5px; text-transform:uppercase; }
+    .vp-stage-cue span { color:var(--accent); }
+    #visual-player[data-view-mode="quick"] .rp-page { max-width:860px; }
+    #visual-player[data-view-mode="deep"] .rp-page { max-width:980px; }
     /* ── Nav buttons ── */
     .rp-btn { padding:6px 14px; border-radius:5px; border:1px solid #1e2a38; background:rgba(255,255,255,0.04); color:#6e8096; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s; letter-spacing:0.8px; text-transform:uppercase; font-family:var(--font-body); }
     .rp-btn:hover:not(:disabled) { border-color:#4a5f75; color:#e6edf3; background:rgba(255,255,255,0.07); }
@@ -2468,6 +2526,24 @@
     /* ── VP Atmospheric Particles ── */
     #vp-particle-canvas { position:absolute; top:46px; left:172px; right:0; bottom:0; pointer-events:none; z-index:3; mix-blend-mode:screen; }
     @media (prefers-reduced-motion: reduce) { #vp-particle-canvas { display:none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .rp-page, .tv-tally-row, .tv-vote-card, .rp-twist-title { animation:none !important; transition:none !important; }
+    }
+    @media (max-width:760px) {
+      #visual-player { flex-direction:column; }
+      .rp-sidebar { width:100%; height:auto; min-height:52px; padding:0 10px; border-right:0; border-bottom:1px solid #1a2130; flex-direction:row; align-items:center; overflow-x:auto; overflow-y:hidden; }
+      .rp-sidebar-ep { position:sticky; left:0; z-index:2; min-width:max-content; padding:0 12px; background:#07090d; }
+      .rp-sidebar-phase { min-width:max-content; margin:0 6px 0 12px; }
+      .rp-sidebar-item { width:auto; min-width:max-content; padding:12px 9px; border-left:0; border-bottom:2px solid transparent; }
+      .rp-sidebar-item.active { border-left-color:transparent; border-bottom-color:var(--accent); }
+      .rp-nav { padding:0 8px; gap:5px; height:auto; min-height:48px; flex-wrap:wrap; }
+      .rp-nav-ep { order:5; width:100%; padding:4px 4px 7px; }
+      .vp-mode-switch { margin-left:auto; }
+      .vp-mode-btn { min-height:40px; padding:0 8px; }
+      #vp-particle-canvas { left:0; top:100px; }
+      .vp-stage-cue { margin-top:16px; padding:0 18px; }
+      .rp-page { padding:32px 18px 90px; }
+    }
     /* ── Section header ── */
     .rp-eyebrow { font-size:10px; font-weight:600; letter-spacing:3.5px; text-transform:uppercase; color:#4e6478; margin-bottom:10px; font-family:var(--font-body); }
     .rp-title { font-size:40px; font-weight:400; color:#e8f0f8; font-family:var(--font-display); letter-spacing:2px; line-height:1.05; margin-bottom:8px; }
@@ -2910,15 +2986,24 @@
       <span class="bcast-onair" id="bcast-onair"><span class="bcast-dot"></span><span id="bcast-onair-label">ON AIR</span></span>
       <span class="bcast-logo"><img src="assets/cast/dc_icon.png" alt="DC"><span class="bcast-chan">DCH<b>1</b></span></span>
       <span class="bcast-net">DC FRANCHISE NETWORK</span>
-      <span class="bcast-now"><span class="bcast-season" id="bcast-season">—</span><span class="bcast-episode" id="bcast-episode"></span></span>
+      <span class="bcast-now"><span class="bcast-season" id="bcast-season">—</span><span class="bcast-context"><span class="bcast-episode" id="bcast-episode"></span><span class="bcast-phase" id="bcast-phase"></span><span class="bcast-progress" aria-hidden="true"><span id="bcast-progress-fill"></span></span></span></span>
     </div>
-    <nav class="sim-tabs">
-      <button class="tab-btn active"  onclick="showTab('cast')">Cast Builder</button>
-      <button class="tab-btn"         onclick="showTab('setup')">Season Setup</button>
-      <button class="tab-btn"         onclick="showTab('run')">Season Hub</button>
-      <button class="tab-btn" id="results-tab-btn" onclick="showTab('results')">Season Overview</button>
-      <button class="tab-btn" onclick="showTab('franchise')">🏆 Franchise</button>
+    <nav class="sim-tabs" aria-label="Simulator journey">
+      <div class="journey-nav-group journey-create"><span class="journey-nav-label">Create Season</span><button class="tab-btn active" onclick="showTab('cast')">Cast</button><button class="tab-btn" onclick="showTab('setup')">Setup</button></div>
+      <div class="journey-nav-group journey-play"><span class="journey-nav-label">Play</span><button class="tab-btn" onclick="showTab('run')">Season Hub</button><button class="tab-btn" id="results-tab-btn" onclick="showTab('results')">Overview</button></div>
+      <button class="tab-btn" onclick="showTab('franchise')">🏆 Legacy</button>
     </nav>
+    <details class="season-menu" id="season-menu">
+      <summary>Season</summary>
+      <div class="season-menu-panel">
+        <button onclick="saveSeasonToStorage();document.getElementById('season-menu').removeAttribute('open')">Save season</button>
+        <button onclick="exportSeason();document.getElementById('season-menu').removeAttribute('open')">Export JSON</button>
+        <button onclick="document.getElementById('import-season-file').click();document.getElementById('season-menu').removeAttribute('open')">Import JSON</button>
+        <hr>
+        <button onclick="openLatestDeepDive()">Open Debug deep dive</button>
+        <button class="danger" onclick="resetSeason();document.getElementById('season-menu').removeAttribute('open')">Reset season</button>
+      </div>
+    </details>
     <div class="audio-ctrl" id="audio-ctrl">
       <span class="bcast-clock" id="bcast-clock">--:--</span>
       <button class="audio-btn" id="theme-toggle" title="Switch to light mode" onclick="toggleTheme()">☀️</button>
@@ -3772,8 +3857,13 @@
     <div class="rp-nav">
       <button class="rp-btn" id="vp-prev-btn" onclick="vpPrev()">← Back</button>
       <span class="rp-nav-ep" id="vp-nav-ep-label" style="flex:1;text-align:center"></span>
+      <div class="vp-mode-switch" role="group" aria-label="Episode viewing mode">
+        <button class="vp-mode-btn" data-mode="watch" onclick="vpSetViewMode('watch')" title="Follow every scene in episode order">Watch</button>
+        <button class="vp-mode-btn" data-mode="quick" onclick="vpSetViewMode('quick')" title="Jump through the episode's decisive screens">Quick Results</button>
+        <button class="vp-mode-btn" data-mode="deep" onclick="vpSetViewMode('deep')" title="Show every scene with additional reading space">Deep Dive</button>
+      </div>
       <button class="rp-btn" id="vp-next-btn" onclick="vpNext()">Continue →</button>
-      <button class="rp-btn" onclick="(function(){const on=localStorage.getItem('vp_debug')!=='true';localStorage.setItem('vp_debug',on?'true':'false');const ep=gs.episodeHistory.find(e=>e.num===vpEpNum);if(ep){buildVPScreens(ep);renderVPScreen();}})()" style="font-size:9px;opacity:0.5;padding:2px 6px" title="Toggle Debug Screen">🔧</button>
+      <button class="rp-btn" onclick="(function(){const on=localStorage.getItem('vp_debug')!=='true';localStorage.setItem('vp_debug',on?'true':'false');const ep=gs.episodeHistory.find(e=>e.num===vpEpNum);if(ep){buildVPScreens(ep);vpSetViewMode('deep');}})()" style="font-size:9px;opacity:0.5;padding:2px 6px" title="Toggle Debug Screen in Deep Dive">🔧</button>
       <button class="rp-btn close" onclick="closeVisualPlayer()">✕</button>
     </div>
     <div id="vp-search-bar" style="display:none;padding:6px 16px;background:rgba(7,9,13,0.95);border-bottom:1px solid #151e28;position:sticky;top:0;z-index:20">

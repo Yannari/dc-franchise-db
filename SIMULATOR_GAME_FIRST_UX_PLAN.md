@@ -54,20 +54,20 @@ Likely files: `simulator.html`, shared simulator CSS, `js/run-ui.js`, `js/vp-ui.
 
 ### 2. Replace the tab collection with a journey-based application shell
 
-- [ ] Group Cast Builder and Season Setup under **Create Season** before initialization.
-- [ ] Make **Season Hub** the default after initialization.
+- [x] Group Cast Builder and Season Setup under **Create Season** before initialization.
+- [x] Make **Season Hub** the default after initialization.
 - [x] Rename Results to **Season Overview** during a season and **Season Retrospective** afterward.
-- [ ] Move save, import, export, reset, and debug actions into a secondary Season menu.
-- [ ] Keep the season title, episode, phase, and progress visible in the header.
-- [ ] Preserve direct access to advanced production tools without making them primary navigation.
+- [x] Move save, import, export, reset, and debug actions into a secondary Season menu.
+- [x] Keep the season title, episode, phase, and progress visible in the header.
+- [x] Preserve direct access to advanced production tools without making them primary navigation.
 
 ### 3. Build a persistent Season Hub
 
-- [ ] Replace the operational Run Episode layout with a game-state dashboard.
-- [ ] Show season title, episode, day, phase, setting, remaining portraits, tribe membership, public statuses, previous elimination, active storylines, upcoming twist, and compact episode history.
-- [ ] Present one dominant state-aware action: Initialize Season, Play Episode, Continue Episode, View Aftermath, Begin Finale, or View Retrospective.
-- [ ] Keep Quick Sim, Sim Five, Sim All, replay, save, and export secondary.
-- [ ] Ensure the Hub never exposes private knowledge as public information.
+- [x] Replace the operational Run Episode layout with a game-state dashboard.
+- [x] Show season title, episode, phase, setting, remaining portraits, tribe membership, public statuses, previous elimination, active storylines, upcoming twist, and compact episode history. Day is intentionally omitted until the simulation records a canonical day rather than a UI estimate.
+- [x] Present one dominant state-aware action: Initialize Season, Play Episode, Continue Episode, View Aftermath, Begin Finale, or View Retrospective.
+- [x] Keep Quick Sim, Sim Five, Sim All, replay, save, and export secondary.
+- [x] Ensure the Hub never exposes private knowledge as public information.
 
 Likely files: `simulator.html`, `js/run-ui.js`, `js/broadcast.js`, `js/recap.js`.
 
@@ -104,12 +104,12 @@ Likely files: `simulator.html`, `js/settings.js`, `js/run-ui.js`, `js/twists.js`
 
 ### 7. Make Visual Player more theatrical and readable
 
-- [ ] Present the episode as Previously On, Camp, Challenge, Scramble, Tribal, Vote Reveal, and Aftermath.
-- [ ] Use portraits consistently beside conversations, votes, plans, and relationship changes.
-- [ ] Add restrained transitions for challenge wins, target shifts, advantages, parchments, ties, and eliminations.
-- [ ] Provide Watch, Quick Results, and Deep Dive viewing modes.
-- [ ] Keep Debug structurally and visually separate.
-- [ ] Respect reduced-motion preferences and never delay navigation for animation.
+- [x] Present the episode as Previously On, Camp, Challenge, Scramble, Tribal, Vote Reveal, and Aftermath.
+- [x] Use portraits consistently beside conversations, votes, plans, and relationship changes.
+- [x] Add restrained transitions for challenge wins, target shifts, advantages, parchments, ties, and eliminations.
+- [x] Provide Watch, Quick Results, and Deep Dive viewing modes.
+- [x] Keep Debug structurally and visually separate.
+- [x] Respect reduced-motion preferences and never delay navigation for animation.
 
 Likely files: `js/vp-ui.js`, `js/vp-screens.js`, `js/vp-finale.js`, `simulator.html`.
 

@@ -27,7 +27,7 @@
 // regression surface this suite guards.
 // ============================================================================
 import { test, expect } from '@playwright/test';
-import { APP_URL, seedCast, attachErrorTracking, expectClean, clearStorage, fastForwardToFinale } from './helpers.js';
+import { APP_URL, seedCast, attachErrorTracking, expectClean, clearStorage, fastForwardToFinale, idbGet, waitForGsPersisted } from './helpers.js';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -42,6 +42,15 @@ test.describe('Primary journey', () => {
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     errors = attachErrorTracking(page);
+    // Blanket dialog handler (defense-in-depth): the real Season-menu Save flow
+    // opens prompt()/alert(); without a handler Playwright auto-DISMISSES, which
+    // makes saveSeasonToStorage() return early and the save never runs. Accept
+    // prompts WITH their default value (a bare accept() enters an empty string,
+    // which saveSeasonToStorage rejects as `!name`); accept()/OK everything else.
+    page.on('dialog', (d) => {
+      const text = d.type() === 'prompt' ? (d.defaultValue() || 'E2E Save') : undefined;
+      d.accept(text).catch(() => {});
+    });
     await page.goto(APP_URL);
     await clearStorage(page);        // guarantee a clean origin regardless of reuse
     await page.reload();
@@ -105,10 +114,9 @@ test.describe('Primary journey', () => {
     expect(scroll.overflows).toBe(true);
 
     // ZERO cross-tab bleed: the casting room must not paint on other tabs.
-    // Checked on Franchise + Overview (both named in the bleed invariant).
-    // NB: the Hub tab auto-initialises a season when players exist
-    // (run-ui.initRunTab), so it is exercised at the Start step below rather
-    // than here — visiting it now would create the season prematurely.
+    // Checked on Franchise + Overview here; the HUB is asserted in the Quick
+    // Setup test after Start (visiting #tab-run now would prematurely init a
+    // season via run-ui.initRunTab and morph the Start button).
     for (const other of ['franchise', 'results']) {
       await tab(page, other).click();
       await expect(page.locator('#tab-cast')).toBeHidden();
@@ -145,6 +153,12 @@ test.describe('Primary journey', () => {
     await start.click();
     await expect(page.locator('#tab-run')).toHaveClass(/active/);
     await page.waitForFunction(() => window.gs && window.gs.initialized && window.gs.activePlayers.length === 14);
+
+    // HUB-TAB BLEED: with the Hub (#tab-run) now active, the casting room shell
+    // and its Manage control must not paint anywhere (the cross-tab bleed
+    // regression). #cast-room lives inside the hidden #tab-cast.
+    await expect(page.locator('#cast-room')).toBeHidden();
+    await expect(page.locator('.cr-manage-btn').first()).toBeHidden();
 
     expectClean(errors, 'quick-setup');
   });
@@ -190,17 +204,18 @@ test.describe('Primary journey', () => {
     expect(await page.locator('#tab-results .retro-placement').count()).toBeGreaterThan(0);
 
     // Season dropdown must open FULLY VISIBLE above the episode rail — the
-    // z-index regression. Open it, then confirm its first item is genuinely on
-    // top (elementFromPoint at the item centre resolves INSIDE the panel).
+    // z-index regression. Open it via a REAL click on its <summary> toggle (part
+    // of the journey spine), then confirm its first item is genuinely on top
+    // (elementFromPoint at the item centre resolves INSIDE the panel).
+    await page.locator('#season-menu > summary').click();
+    await expect(page.locator('#season-menu')).toHaveAttribute('open', '');
     const clip = await page.evaluate(() => {
       const sm = document.getElementById('season-menu');
-      sm.open = true;
       const panel = sm.querySelector('.season-menu-panel');
       const first = panel.querySelector('button');
       const r = first.getBoundingClientRect();
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return {
-        open: sm.open,
         // The top item's centre must resolve INSIDE the panel — i.e. nothing
         // (the episode rail, page chrome) is painted over it. THIS is the
         // z-index regression the invariant guards.
@@ -212,10 +227,10 @@ test.describe('Primary journey', () => {
         topItemVerticallyOnScreen: r.top >= 0 && r.bottom <= innerHeight,
       };
     });
-    expect(clip.open).toBe(true);
     expect(clip.covered).toBe(false);                  // not hidden behind rail/chrome
     expect(clip.topItemVerticallyOnScreen).toBe(true); // not clipped behind the rail
-    await page.evaluate(() => { document.getElementById('season-menu').open = false; });
+    await page.locator('#season-menu > summary').click(); // close it again (real click)
+    await expect(page.locator('#season-menu')).not.toHaveAttribute('open', '');
 
     expectClean(errors, 'retrospective');
   });
@@ -236,14 +251,30 @@ test.describe('Primary journey', () => {
   });
 
   // ── 9. Reload persistence ─────────────────────────────────────────────────────
-  test('reload restores the completed season and the franchise record', async () => {
-    // Persist explicitly via the real Season menu, then reload.
+  test('explicit save runs, and reload restores the season + franchise record', async () => {
     await tab(page, 'run').click();
-    await page.evaluate(() => { window.saveSeasonToStorage && window.saveSeasonToStorage(); });
+
+    // EXPLICIT SAVE via the REAL Season menu: open the <details>, click "Save
+    // season". saveSeasonToStorage() opens prompt()+alert(); the blanket dialog
+    // handler (beforeAll) accepts them so the flow genuinely completes.
+    expect(await idbGet(page, 'season_index')).toBeFalsy(); // nothing saved yet
+    await page.locator('#season-menu > summary').click();
+    await page.locator('#season-menu').getByRole('button', { name: /Save season/i }).click();
+    // Verify the named save actually landed in IndexedDB (proves the flow ran,
+    // not just that a dialog was dismissed).
+    await expect.poll(async () => {
+      const idx = await idbGet(page, 'season_index');
+      return Array.isArray(idx) ? idx.length : 0;
+    }, { timeout: 10_000 }).toBeGreaterThan(0);
+
+    // SYNC BARRIER: wait for the fire-and-forget auto-save of `gs` to be durably
+    // written to IDB before reloading, so the write can't race the reload.
+    await waitForGsPersisted(page, winner);
+
     await page.reload();
     await page.waitForFunction(() => typeof window.showTab === 'function');
 
-    // Season restored to its completed state (localStorage survived).
+    // Season restored to its completed state (IndexedDB survived).
     await page.waitForFunction((w) => window.gs && window.gs.phase === 'complete' && window.gs.finaleResult && window.gs.finaleResult.winner === w, winner);
 
     // Franchise record restored (IndexedDB survived).

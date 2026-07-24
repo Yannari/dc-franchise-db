@@ -88,6 +88,27 @@ export async function fastForwardToFinale(page, cap = 80) {
   return page.evaluate((cap) => {
     let i = 0;
     while (window.gs && window.gs.phase !== 'finale' && i < cap) { window.simulateNext(); i++; }
-    return { iters: i, phase: window.gs.phase, active: window.gs.activePlayers.length };
+    return { iters: i, phase: window.gs.phase };
   }, cap);
+}
+
+// Read an IndexedDB value straight from the app's own persistence layer
+// (savestate.js) inside the page. Used to verify writes actually landed.
+export async function idbGet(page, key) {
+  return page.evaluate(async (k) => {
+    const m = await import('/js/savestate.js');
+    return m._idbGet(k);
+  }, key);
+}
+
+// Synchronization barrier: the app's auto-save (`saveGameState`) fires a
+// fire-and-forget `_idbPut('gs', ...)`. Before reloading we poll a FRESH IDB
+// read until the completed season is durably written, so the write can't race
+// the reload on a slow runner.
+export async function waitForGsPersisted(page, winner) {
+  await page.waitForFunction(async (w) => {
+    const m = await import('/js/savestate.js');
+    const g = await m._idbGet('gs');
+    return !!g && g.phase === 'complete' && g.finaleResult && g.finaleResult.winner === w;
+  }, winner, { timeout: 15_000 });
 }

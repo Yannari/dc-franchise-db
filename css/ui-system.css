@@ -1,0 +1,396 @@
+/* ═══════════════════════════════════════════════════════════════════
+   DC FRANCHISE SIMULATOR — SHARED UI SYSTEM  (UX Plan · Item 1)
+
+   Loaded AFTER css/simulator.css. The broadcast identity (fonts,
+   palette, VP skins) lives there; this layer adds the game-first
+   design system on top:
+
+     1. Scale tokens        — spacing, type, radius, elevation, state
+     2. Interaction states  — hover / focus / disabled / loading /
+                              success / error
+     3. Accessibility       — keyboard focus rings, reduced motion
+     4. Primitives          — surfaces, badges, portraits, empty
+                              states, drawers, modals
+     5. Utilities           — the small repeated inline-style patterns
+
+   ACCENT RULE — one loud thing per screen.
+   Solid var(--accent) backgrounds are reserved for the screen's single
+   primary action (.btn-primary or .ui-cta). Every other control sits on
+   surface colors; the accent may only appear as a thin border, text
+   highlight, or active indicator. If two solid-accent controls are
+   visible at once, one of them is wrong.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. SCALE TOKENS ───────────────────────────────────────────── */
+:root {
+  /* spacing — 4px base grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* type scale (shell UI; VP screens keep their own display sizes) */
+  --fs-2xs: 9px;
+  --fs-xs: 10px;
+  --fs-sm: 11px;
+  --fs-md: 12px;
+  --fs-base: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 24px;
+
+  /* radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
+
+  /* elevation */
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 12px 40px rgba(0, 0, 0, 0.55);
+
+  /* state colors (semantic — match the strategy-grammar hues) */
+  --ok: #3fb950;
+  --ok-dim: rgba(63, 185, 80, 0.14);
+  --warn: #e0a72e;
+  --warn-dim: rgba(224, 167, 46, 0.14);
+  --danger: #ef4444;
+  --danger-dim: rgba(239, 68, 68, 0.12);
+  --info: #57a6e8;
+  --info-dim: rgba(87, 166, 232, 0.14);
+
+  /* motion */
+  --dur-fast: 0.15s;
+  --dur-med: 0.3s;
+}
+
+/* ── 2 + 3. INTERACTION STATES & KEYBOARD FOCUS ────────────────── */
+
+/* Keyboard focus ring: visible on keyboard navigation only.
+   simulator.css suppresses default outlines on inputs; this restores
+   an accent ring for :focus-visible so tab order is always trackable. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Generic disabled treatment for any .btn variant */
+.btn:disabled,
+.btn.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* Loading: keeps the button's size, hides its label, spins a ring */
+.btn.is-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+.btn.is-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--accent);
+  animation: ui-spin 0.7s linear infinite;
+}
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+/* Success / error feedback on form fields */
+.form-input.is-error,
+.form-select.is-error {
+  border-color: var(--danger);
+}
+.form-input.is-success,
+.form-select.is-success {
+  border-color: var(--ok);
+}
+
+/* Inline feedback line under a field or after an action */
+.ui-note {
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--muted);
+  padding: var(--space-1) 0;
+}
+.ui-note--ok    { color: var(--ok); }
+.ui-note--warn  { color: var(--warn); }
+.ui-note--error { color: var(--danger); }
+.ui-note--info  { color: var(--info); }
+
+/* Loading placeholder shimmer for panels awaiting data */
+.ui-skeleton {
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 42%, var(--surface2) 60%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.2s linear infinite;
+  color: transparent;
+  min-height: 1em;
+}
+@keyframes ui-shimmer { to { background-position: -200% 0; } }
+
+/* Reduced motion: collapse every animation/transition to a single
+   instant frame. Durations stay non-zero so animationend/transitionend
+   listeners still fire. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── 4. PRIMITIVES ─────────────────────────────────────────────── */
+
+/* Surfaces — three loudness levels so panels aren't equally loud.
+   quiet: outline only · default: standard panel · raised: focal panel */
+.ui-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.ui-surface--quiet {
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+.ui-surface--raised {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+}
+
+/* Section heading inside any panel (same voice as .panel-title) */
+.ui-section-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+/* Badges — semantic status pills for shell UI (VP keeps sg-*) */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ui-badge--ok     { background: var(--ok-dim);     border-color: transparent; color: var(--ok); }
+.ui-badge--warn   { background: var(--warn-dim);   border-color: transparent; color: var(--warn); }
+.ui-badge--danger { background: var(--danger-dim); border-color: transparent; color: var(--danger); }
+.ui-badge--info   { background: var(--info-dim);   border-color: transparent; color: var(--info); }
+
+/* Portraits — one circular avatar language everywhere.
+   <span class="ui-portrait ui-portrait--md"><img src=…></span>
+   Fallback initials render from the span's text when no img. */
+.ui-portrait {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ui-portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.ui-portrait--sm { width: 24px; height: 24px; font-size: var(--fs-xs); border-width: 1px; }
+.ui-portrait--md { width: 38px; height: 38px; font-size: var(--fs-lg); }
+.ui-portrait--lg { width: 56px; height: 56px; font-size: var(--fs-xl); }
+.ui-portrait--xl { width: 84px; height: 84px; font-size: var(--fs-2xl); }
+.ui-portrait--out { filter: grayscale(1) brightness(0.62); }
+
+/* Empty states — icon / headline / hint / optional action */
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-5);
+  color: var(--muted);
+}
+.ui-empty-icon  { font-size: 36px; }
+.ui-empty-title { font-size: var(--fs-lg); font-weight: 600; color: var(--text); }
+.ui-empty-hint  { font-size: var(--fs-base); max-width: 380px; line-height: 1.6; }
+
+/* Drawer — right-side slide-over for editing without leaving context.
+   Markup: .ui-drawer-backdrop + .ui-drawer, both toggled with .open. */
+.ui-drawer-backdrop,
+.ui-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(4, 8, 14, 0.6);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast);
+}
+.ui-drawer-backdrop.open,
+.ui-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ui-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 910;
+  width: min(420px, 94vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-3);
+  transform: translateX(102%);
+  transition: transform var(--dur-med) var(--ease-broadcast);
+}
+.ui-drawer.open { transform: translateX(0); }
+.ui-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.ui-drawer-title { font-size: var(--fs-lg); font-weight: 700; }
+.ui-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.ui-drawer-foot {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+/* Modal — centered confirm/decision card */
+.ui-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 910;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast);
+}
+.ui-modal.open { opacity: 1; pointer-events: auto; }
+.ui-modal-card {
+  width: min(520px, 100%);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-3);
+  transform: translateY(10px) scale(0.98);
+  transition: transform var(--dur-fast) var(--ease-broadcast);
+}
+.ui-modal.open .ui-modal-card { transform: none; }
+.ui-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.ui-modal-title { font-size: var(--fs-lg); font-weight: 700; }
+.ui-modal-body { overflow-y: auto; padding: var(--space-4); font-size: var(--fs-base); line-height: 1.6; }
+.ui-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+/* Close button shared by drawers and modals */
+.ui-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.ui-close:hover { color: var(--text); border-color: var(--muted); }
+
+/* ── 5. UTILITIES (extracted repeated inline patterns) ─────────── */
+.u-hidden { display: none !important; }
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.u-muted { color: var(--muted); }
+.u-field-note { font-size: var(--fs-sm); color: var(--muted); margin-bottom: 2px; }
+.u-hint { font-weight: 400; font-size: var(--fs-xs); color: var(--muted); }
+.u-subnote { font-size: var(--fs-md); font-weight: 400; color: var(--muted); }
+.u-check-row { display: flex; align-items: center; gap: 6px; cursor: pointer; }

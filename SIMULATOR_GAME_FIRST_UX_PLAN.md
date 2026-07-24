@@ -43,12 +43,12 @@ Transform the simulator from a configuration-heavy administration tool into a mo
 
 ### 1. Establish a shared game-first design system
 
-- [ ] Extract repeated inline styling from `simulator.html` into reusable classes or a dedicated stylesheet.
-- [ ] Define consistent spacing, typography, surfaces, buttons, badges, portraits, empty states, drawers, and modals.
-- [ ] Preserve the broadcast identity without making every panel equally loud.
-- [ ] Reserve one accent treatment for the current primary action.
-- [ ] Add hover, focus, disabled, loading, success, and error states.
-- [ ] Support reduced motion and keyboard navigation.
+- [x] Extract repeated inline styling from `simulator.html` into reusable classes or a dedicated stylesheet.
+- [x] Define consistent spacing, typography, surfaces, buttons, badges, portraits, empty states, drawers, and modals.
+- [x] Preserve the broadcast identity without making every panel equally loud.
+- [x] Reserve one accent treatment for the current primary action.
+- [x] Add hover, focus, disabled, loading, success, and error states.
+- [x] Support reduced motion and keyboard navigation.
 
 Likely files: `simulator.html`, shared simulator CSS, `js/run-ui.js`, `js/vp-ui.js`.
 

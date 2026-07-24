@@ -24,7 +24,7 @@ describe('quick-setup CSS tab gating', () => {
 });
 
 import {
-  clamp, blueprintFor, validateQuickSetup, seedChaosTwists, presetConfigFor, renderQuickSetup,
+  clamp, blueprintFor, validateQuickSetup, seedChaosTwists, presetConfigFor, renderQuickSetup, qsStartSeason,
 } from '../js/quick-setup.js';
 import { TWIST_CATALOG } from '../js/core.js';
 
@@ -131,6 +131,27 @@ describe('validateQuickSetup', () => {
     const players = makePlayers(8, ['A', 'B']);
     const rows = validateQuickSetup({ teams: 2, mergeAt: 6, jurySize: 5, finaleSize: 3 }, players);
     expect(row(rows, 'tribes').ok).toBe(true);
+  });
+
+  it('tribes imbalance > 1 is a WARN (ok:true) that never blocks Start', () => {
+    // 12/9 split — complete, correct tribe count, just uneven.
+    const players = [...makePlayers(12, ['A']), ...makePlayers(9, ['B'])];
+    const rows = validateQuickSetup({ teams: 2, mergeAt: 12, jurySize: 7, finaleSize: 3 }, players);
+    const t = row(rows, 'tribes');
+    expect(t.ok).toBe(true);
+    expect(t.warn).toBe(true);
+    expect(t.msg).toMatch(/rebalance/);
+    // overall setup is not blocked by the imbalance warn
+    expect(rows.every(r => r.ok)).toBe(true);
+  });
+
+  it('an empty tribe (count < teams) still hard-blocks with ok:false', () => {
+    // all players in 2 tribes but setup expects 3 → one configured tribe empty.
+    const players = makePlayers(12, ['A', 'B']);
+    const rows = validateQuickSetup({ teams: 3, mergeAt: 8, jurySize: 6, finaleSize: 3 }, players);
+    const t = row(rows, 'tribes');
+    expect(t.ok).toBe(false);
+    expect(t.warn).toBeFalsy();
   });
 
   it('merge rule fires when merge >= cast size', () => {
@@ -291,6 +312,19 @@ describe('presetConfigFor', () => {
     expect(config.jurySize).toBe(9);      // clamp(9,3,18)=9
   });
 
+  it('Survivor falls back to a startable Final 3 for a tiny cast (N=6)', () => {
+    const { config } = presetConfigFor('survivor', 6);
+    expect(config.finaleFormat).toBe('traditional'); // no room for fire-making F4
+    expect(config.finaleSize).toBe(3);
+    // merge must satisfy the validation rule mergeAt > finaleSize + 1
+    expect(config.mergeAt).toBeGreaterThan(config.finaleSize + 1);
+    expect(config.mergeAt).toBeLessThan(6); // and below the cast size
+    // and the whole preset validates as startable against a 6-player cast
+    const players = makePlayers(6, ['A', 'B']);
+    const rows = validateQuickSetup({ ...config, twistSchedule: [] }, players);
+    expect(rows.every(r => r.ok)).toBe(true);
+  });
+
   it('Disventure enables Rescue Island with reentry at the merge', () => {
     const { config } = presetConfigFor('disventure', 16);
     expect(config.ri).toBe(true);
@@ -386,5 +420,39 @@ describe('renderQuickSetup (jsdom smoke)', () => {
     window.seasonConfig.mergeAt = 20; // impossible for 8 players
     renderQuickSetup();
     expect(document.getElementById('qs-start-btn')?.disabled).toBe(true);
+  });
+
+  it('a tribe-size imbalance warns but leaves Start enabled', () => {
+    window.players = [
+      ...Array.from({ length: 12 }, (_, i) => ({ id: 'a' + i, name: 'A' + i, tribe: 'A' })),
+      ...Array.from({ length: 9 }, (_, i) => ({ id: 'b' + i, name: 'B' + i, tribe: 'B' })),
+    ];
+    Object.assign(window.seasonConfig, { teams: 2, mergeAt: 12, jurySize: 7, finaleSize: 3 });
+    renderQuickSetup();
+    expect(document.querySelector('.qs-ready-warn')).toBeTruthy();       // warn row rendered distinctly
+    expect(document.getElementById('qs-start-btn')?.disabled).toBe(false); // not blocked
+  });
+
+  it('an empty tribe hard-disables Start', () => {
+    window.players = Array.from({ length: 12 }, (_, i) => ({ id: 'p' + i, name: 'P' + i, tribe: i % 2 ? 'A' : 'B' }));
+    Object.assign(window.seasonConfig, { teams: 3, mergeAt: 8, jurySize: 6, finaleSize: 3 }); // 3rd tribe empty
+    renderQuickSetup();
+    expect(document.querySelector('.qs-ready-bad')).toBeTruthy();
+    expect(document.getElementById('qs-start-btn')?.disabled).toBe(true);
+  });
+
+  it('with a season already in progress, the primary becomes Open Season Hub (no Start)', () => {
+    window.players = Array.from({ length: 8 }, (_, i) => ({ id: 'p' + i, name: 'P' + i, tribe: i % 2 ? 'A' : 'B' }));
+    window.gs = { initialized: true };
+    let landed = null;
+    window.showTab = t => { landed = t; };
+    renderQuickSetup();
+    expect(document.getElementById('qs-start-btn')).toBe(null); // Start button absent
+    const hub = document.querySelector('.qs-start-hub');
+    expect(hub).toBeTruthy();
+    expect(hub.textContent).toMatch(/Season Hub/);
+    expect(hub.getAttribute('onclick')).toMatch(/qsStartSeason/); // wired to the handler
+    qsStartSeason();
+    expect(landed).toBe('run'); // handler routes to the Season Hub
   });
 });

@@ -129,7 +129,10 @@ export function validateQuickSetup(config = {}, playerList = []) {
       assigned.forEach(p => (groups[p.tribe] ??= []).push(p));
       const tribeNames = Object.keys(groups);
       const unassigned = N - assigned.length;
-      let ok = true, msg = `${teams} tribes, evenly split.`;
+      // ok:false is reserved for a genuinely broken tribe layout (unassigned
+      // players, wrong tribe count, or an empty tribe). A mere size imbalance is
+      // WARN-level — it flags but never blocks ▶ Start Season.
+      let ok = true, warn = false, msg = `${teams} tribes, evenly split.`;
       if (unassigned > 0) {
         ok = false;
         msg = `${unassigned} player${unassigned === 1 ? '' : 's'} not assigned to a tribe — set tribes in the Cast room.`;
@@ -139,9 +142,12 @@ export function validateQuickSetup(config = {}, playerList = []) {
       } else {
         const sizes = tribeNames.map(t => groups[t].length);
         if (Math.min(...sizes) === 0) { ok = false; msg = 'A tribe has no members.'; }
-        else if (Math.max(...sizes) - Math.min(...sizes) > 1) { ok = false; msg = 'Tribe sizes differ by more than 1 — rebalance in the Cast room.'; }
+        else if (Math.max(...sizes) - Math.min(...sizes) > 1) {
+          warn = true;
+          msg = `Tribe sizes differ by more than 1 (${Math.min(...sizes)}–${Math.max(...sizes)}) — rebalance in the Cast room if you like.`;
+        }
       }
-      rows.push({ key: 'tribes', ok, msg });
+      rows.push({ key: 'tribes', ok, warn, msg });
     }
   }
 
@@ -290,13 +296,19 @@ export function presetConfigFor(name, N, rng = Math.random) {
     case 'survivor': {
       // Fire-Making finale locks the entering field to Final 4 (F4 → duel → F3
       // FTC) in the live UI — real code governs, so finaleSize follows the lock.
-      const finaleSize = 4;
+      // A Final 4 needs merge > 5 and cast >= 6, so a tiny cast (N < 9) has no
+      // room: fall back to a traditional Final 3 (documented) rather than emit an
+      // unstartable preset. mergeAt is clamped up to finaleSize + 2 either way so
+      // the merge rule (mergeAt > finaleSize + 1) always holds.
+      const smallCast = N < 9;
+      const finaleSize = smallCast ? 3 : 4;
+      const finaleFormat = smallCast ? 'traditional' : 'fire-making';
       out.config = {
         teams: N >= 18 ? 3 : 2,
-        mergeAt: mergeMid,
+        mergeAt: clamp(Math.max(mergeMid, finaleSize + 2), 4, 22),
         jurySize: clamp(9, 3, Math.max(3, N - finaleSize)),
         finaleSize,
-        finaleFormat: 'fire-making',
+        finaleFormat,
         shotInDark: true,
         idolRehide: true,
         setting: 'survival-island',
@@ -496,7 +508,7 @@ function _readyRowsHTML() {
   const rows = validateQuickSetup(_cfg(), _players());
   return rows.map(r => {
     const state = r.ok ? (r.warn ? 'warn' : 'ok') : 'bad';
-    const mark = r.ok ? (r.warn ? '!' : '✓') : '✗';
+    const mark = r.ok ? (r.warn ? '⚠' : '✓') : '✗';
     return `<div class="qs-ready-row qs-ready-${state}">
       <span class="qs-ready-mark">${mark}</span>
       <span class="qs-ready-msg">${esc(r.msg)}</span>

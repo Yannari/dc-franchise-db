@@ -373,13 +373,13 @@ function _renderTrophyCase() {
     if (!list.length) return '';
     const meta = _ACH_META[type];
     const isOpen = open.has(type);
-    const chips = list.map(a => `<div class="fr-medal-row fr-clickable" ${_careerClick(a.player)} title="${_esc(a.detail)}">
+    const chips = list.map(a => `<div class="fr-medal-row fr-clickable" ${_careerClick(a.player)} title="${_esc(meta.label)} — ${_esc(meta.blurb)}. ${_esc(a.detail)} (Season ${a.seasonNum})">
         ${_winnerPortrait(a.player, false, a.slug)}
         <span class="fr-medal-rowbody"><span class="fr-medal-rowname">${_esc(a.player)}</span><span class="fr-medal-rowdetail">${_esc(a.detail)}</span></span>
         <span class="fr-medal-snum">S${a.seasonNum}</span>
       </div>`).join('');
     return `<div class="fr-medal-group fr-medal-${type} ${isOpen ? 'open' : ''}" id="fr-medal-${type}">
-      <button class="fr-medal-head" onclick="frToggleMedal('${type}')" aria-expanded="${isOpen}">
+      <button class="fr-medal-head" onclick="frToggleMedal('${type}')" aria-expanded="${isOpen}" title="${_esc(meta.label)} — ${_esc(meta.blurb)}">
         <span class="fr-medal-ico">${_svgMedal(type)}</span>
         <div class="fr-medal-titles"><span class="fr-medal-label">${_esc(meta.label)}</span><span class="fr-medal-blurb">${_esc(meta.blurb)}</span></div>
         <span class="fr-medal-count">${list.length}</span>
@@ -498,7 +498,7 @@ function _careerPanelHtml(c) {
   const medalRow = medals.length ? `<div class="fr-career-section-label">Medals</div>
     <div class="fr-career-medals">${medals.map(a => {
       const meta = _ACH_META[a.id] || { label: ACHIEVEMENT_LABELS[a.id] || a.id };
-      return `<span class="fr-career-medal" title="${_esc(a.detail || '')}">${_svgMedal(a.id)}<span class="fr-career-medal-body"><span class="fr-career-medal-label">${_esc(meta.label)}</span><span class="fr-career-medal-snum">S${a.seasonNum}</span></span></span>`;
+      return `<span class="fr-career-medal" title="${_esc(meta.label)} — ${_esc(meta.blurb)}. ${_esc(a.detail || '')} (Season ${a.seasonNum})">${_svgMedal(a.id)}<span class="fr-career-medal-body"><span class="fr-career-medal-label">${_esc(meta.label)}</span><span class="fr-career-medal-snum">S${a.seasonNum}</span></span></span>`;
     }).join('')}</div>` : '';
 
   return `<div class="fr-career-inner">
@@ -747,7 +747,9 @@ const _LEGACY_CSS = `
 .fr-medal-row .fr-portrait img, .fr-medal-row .fr-portrait-fb { width: 28px; height: 28px; }
 .fr-medal-rowbody { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
 .fr-medal-rowname { font-size: 12px; font-weight: 700; color: var(--text); }
-.fr-medal-rowdetail { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* wraps instead of truncating — the expanded list has the room, and the full
+   sentence is the whole point of the medal */
+.fr-medal-rowdetail { font-size: 10px; color: var(--muted); white-space: normal; line-height: 1.35; }
 .fr-medal-snum { font-family: var(--font-display); font-size: 12px; color: var(--accent-gold); flex-shrink: 0; }
 
 /* Season objectives block */

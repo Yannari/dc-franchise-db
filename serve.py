@@ -21,4 +21,6 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
-    http.server.test(HandlerClass=NoCacheHandler, port=port)
+    # bind 0.0.0.0 explicitly: the modern default ('::') is IPv6-only on
+    # Windows, which makes LAN addresses like 192.168.x.x refuse connections
+    http.server.test(HandlerClass=NoCacheHandler, port=port, bind='0.0.0.0')

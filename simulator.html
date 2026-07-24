@@ -1671,7 +1671,7 @@
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; font-size: 14px; }
 
     /* ── HEADER ── */
-    .sim-header { background: linear-gradient(180deg, var(--surface), var(--surface2)); border-bottom: 2px solid var(--accent); padding: 10px 22px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 14px rgba(0,0,0,0.25); }
+    .sim-header { background: linear-gradient(180deg, var(--surface), var(--surface2)); border-bottom: 2px solid var(--accent); padding: 10px 22px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 14px rgba(0,0,0,0.25); } /* above #season-episode-rail (24) so the Season menu isn't clipped by the sticky episode strip */
     /* ── Broadcast channel ID cluster ── */
     .bcast-id { display: flex; align-items: center; gap: 14px; white-space: nowrap; }
     .bcast-onair { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--broadcast-red); padding: 3px 8px; border: 1px solid var(--broadcast-red); border-radius: 4px; }

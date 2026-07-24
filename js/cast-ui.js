@@ -18,7 +18,7 @@ export function showTab(name) {
     if (i < tabs.length) btn.classList.toggle('active', tabs[i] === name);
   });
   if (name === 'cast')    renderTribeSelect();
-  if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); }
+  if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); try { window.renderQuickSetup?.(); } catch {} }
   if (name === 'run')     initRunTab();
   if (name === 'results') renderResultsTab();
   if (name === 'franchise' && typeof renderFranchiseTab === 'function') renderFranchiseTab();

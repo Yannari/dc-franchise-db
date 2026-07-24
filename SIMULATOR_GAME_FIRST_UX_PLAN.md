@@ -80,25 +80,25 @@ Likely files: `simulator.html`, `js/run-ui.js`, `js/broadcast.js`, `js/recap.js`
 
 ### 5. Redesign Cast Builder as a visual casting room
 
-- [ ] Make portrait cards the dominant surface.
-- [ ] Open contestant editing in a drawer instead of permanently displaying the full form.
-- [ ] Show portrait, name, archetype, tribe, returnee status, and strongest attributes on each card.
-- [ ] Add filters for name, archetype, season, returnee status, gender, and tribe.
-- [ ] Support drag-and-drop tribes with an accessible alternative.
-- [ ] Add Balance Tribes, Randomize, Snake Draft, and Preserve Relationships tools.
-- [ ] Warn about severe stat imbalance, missing tribes, concentrated archetypes, and overloaded pre-existing relationships.
-- [ ] Move roster synchronization, presets, import, and export into a secondary management menu.
+- [x] Make portrait cards the dominant surface.
+- [x] Open contestant editing in a drawer instead of permanently displaying the full form.
+- [x] Show portrait, name, archetype, tribe, returnee status, and strongest attributes on each card.
+- [x] Add filters for name, archetype, season, returnee status, gender, and tribe.
+- [x] Support drag-and-drop tribes with an accessible alternative.
+- [x] Add Balance Tribes, Randomize, Snake Draft, and Preserve Relationships tools.
+- [x] Warn about severe stat imbalance, missing tribes, concentrated archetypes, and overloaded pre-existing relationships.
+- [x] Move roster synchronization, presets, import, and export into a secondary management menu.
 
 Likely files: `simulator.html`, `js/cast-ui.js`, `js/players.js`.
 
 ### 6. Split Season Setup into Quick and Advanced modes
 
-- [ ] Create a Quick Setup flow for identity, cast/tribes, format preset, merge/jury/finale, and final validation.
-- [ ] Provide Total Drama, Survivor, Disventure Camp, Chaos, and Custom presets.
-- [ ] Keep existing detailed configuration under Advanced Production.
-- [ ] Display a live blueprint such as `18 players → 3 tribes → swap at 14 → merge at 11 → jury at 9 → Final 3`.
-- [ ] Validate incompatible twists and impossible schedules immediately.
-- [ ] End with a Season Ready checklist and one Start Season button.
+- [x] Create a Quick Setup flow for identity, cast/tribes, format preset, merge/jury/finale, and final validation.
+- [x] Provide Total Drama, Survivor, Disventure Camp, Chaos, and Custom presets.
+- [x] Keep existing detailed configuration under Advanced Production.
+- [x] Display a live blueprint such as `18 players → 3 tribes → swap at 14 → merge at 11 → jury at 9 → Final 3`.
+- [x] Validate incompatible twists and impossible schedules immediately.
+- [x] End with a Season Ready checklist and one Start Season button.
 
 Likely files: `simulator.html`, `js/settings.js`, `js/run-ui.js`, `js/twists.js`.
 
@@ -131,10 +131,10 @@ Likely files: `simulator.html`, Results renderer, `js/stats-export.js`, `js/soci
 
 ### 10. Turn Franchise into the long-term progression layer
 
-- [ ] Add player career pages with seasons, placements, wins, finales, challenge records, strategic records, allies, rivals, betrayals, loyalty, and reputation.
-- [ ] Add a Hall of Fame, record book, season comparison, historic alliances/rivalries, best partnerships, and franchise eras.
-- [ ] Add suggested returnees, unfinished stories, fallen angels, redemption candidates, and automatic All-Stars pools.
-- [ ] Ensure test seasons cannot overwrite canonical franchise history accidentally.
+- [x] Add player career pages with seasons, placements, wins, finales, challenge records, strategic records, allies, rivals, betrayals, loyalty, and reputation.
+- [x] Add a Hall of Fame, record book, season comparison, historic alliances/rivalries, best partnerships, and franchise eras.
+- [x] Add suggested returnees, unfinished stories, fallen angels, redemption candidates, and automatic All-Stars pools.
+- [x] Ensure test seasons cannot overwrite canonical franchise history accidentally.
 
 Likely files: `js/franchise-ui.js`, `js/franchise-meta.js`, `simulator.html`.
 

@@ -73,26 +73,42 @@ describe('detectSeasonAchievements — live/state detectors', () => {
     expect(forPlayer(got, 'idol-nullification', 'Fox')).toBeFalsy();
   });
 
-  it('rock-survivor: credits only the at-risk tied set (never mere voters) + tiebreaker winners', () => {
+  it('rock-survivor: full-deadlock only (common-branch draw credits NO ONE) + tiebreaker winners', () => {
     setFranchiseLedger({ seasons: {} });
     const gs = { finaleResult: {}, episodeHistory: [
-      // Rocky (a drawer) got the purple rock; Al & Bea were the deadlocked at-risk set.
-      // Cal cast a vote but was NOT in the tie → NOT a rock survivor.
+      // COMMON branch: rockDraw's pool EXCLUDES the tied set, so the eliminated
+      // (Rocky, a drawer) is NOT among tiedPlayers. The true at-risk pool is not
+      // persisted → credit NO ONE. Cal (mere voter) certainly not credited.
       { num: 3, eliminated: 'Rocky', isRockDraw: true, tiedPlayers: ['Al', 'Bea'],
         votingLog: [{ voter: 'Al', voted: 'Bea' }, { voter: 'Bea', voted: 'Al' }, { voter: 'Cal', voted: 'Al' }, { voter: 'Rocky', voted: 'Bea' }] },
       { num: 4, eliminated: 'Dot', tiebreakerResult: { participants: ['Dot', 'Eve'], loser: 'Dot', winner: 'Eve', challengeLabel: 'Fire-Making' } },
-      // Fallback rock draw where the eliminated IS one of the tied set → minus-eliminated.
-      { num: 5, eliminated: 'Gil', isRockDraw: true, tiedPlayers: ['Gil', 'Hana'], votingLog: [] }
+      // FULL DEADLOCK: the eliminated (Gil) IS one of the tied — the tied genuinely
+      // drew rocks → credit the tied survivors minus the eliminated.
+      { num: 5, eliminated: 'Gil', isRockDraw: true, tiedPlayers: ['Gil', 'Hana', 'Ivy'], votingLog: [] }
     ] };
     const got = detectSeasonAchievements(1, stateWith(gs));
-    expect(forPlayer(got, 'rock-survivor', 'Al')).toBeTruthy();   // tied, survived
-    expect(forPlayer(got, 'rock-survivor', 'Bea')).toBeTruthy();  // tied, survived
-    expect(forPlayer(got, 'rock-survivor', 'Cal')).toBeFalsy();   // mere voter — NOT credited
+    // common branch → nobody
+    expect(forPlayer(got, 'rock-survivor', 'Al')).toBeFalsy();
+    expect(forPlayer(got, 'rock-survivor', 'Bea')).toBeFalsy();
+    expect(forPlayer(got, 'rock-survivor', 'Cal')).toBeFalsy();   // mere voter
     expect(forPlayer(got, 'rock-survivor', 'Rocky')).toBeFalsy(); // eliminated
-    expect(forPlayer(got, 'rock-survivor', 'Eve')).toBeTruthy();  // won the tiebreaker
-    expect(forPlayer(got, 'rock-survivor', 'Dot')).toBeFalsy();   // lost the tiebreaker
-    expect(forPlayer(got, 'rock-survivor', 'Hana')).toBeTruthy(); // tied, survived the fallback draw
-    expect(forPlayer(got, 'rock-survivor', 'Gil')).toBeFalsy();   // tied but eliminated by the draw
+    // tiebreaker
+    expect(forPlayer(got, 'rock-survivor', 'Eve')).toBeTruthy();
+    expect(forPlayer(got, 'rock-survivor', 'Dot')).toBeFalsy();
+    // full deadlock → tied survivors credited, eliminated not
+    expect(forPlayer(got, 'rock-survivor', 'Hana')).toBeTruthy();
+    expect(forPlayer(got, 'rock-survivor', 'Ivy')).toBeTruthy();
+    expect(forPlayer(got, 'rock-survivor', 'Gil')).toBeFalsy();
+  });
+
+  it('rock-survivor: honors a live isFullDeadlock flag even when eliminated is external', () => {
+    setFranchiseLedger({ seasons: {} });
+    const gs = { finaleResult: {}, episodeHistory: [
+      { num: 2, eliminated: 'Ext', isRockDraw: true, isFullDeadlock: true, tiedPlayers: ['Ken', 'Lou'], votingLog: [] }
+    ] };
+    const got = detectSeasonAchievements(1, stateWith(gs));
+    expect(forPlayer(got, 'rock-survivor', 'Ken')).toBeTruthy();
+    expect(forPlayer(got, 'rock-survivor', 'Lou')).toBeTruthy();
   });
 
   it('zero-vote-finalist: a goated finalist gets no jury votes', () => {

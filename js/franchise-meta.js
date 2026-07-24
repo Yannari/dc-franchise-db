@@ -868,14 +868,22 @@ export function detectSeasonAchievements(seasonNum, state = null) {
     }
 
     // rock-survivor — walked out of a rock draw / won a forced tiebreaker.
-    // Credit ONLY the players the vote actually hung on (ep.tiedPlayers — the
-    // at-risk set the sim records) minus whoever the draw eliminated. Mere voters
-    // / bystanders are NOT survivors of the draw, so they are never credited.
+    // The sim's rockDraw() builds its pool EXCLUDING the tied players in the COMMON
+    // branch (the tied are declared safe), so there the drawn/eliminated player is
+    // NOT one of the tied and the true at-risk pool is never persisted. Only in a
+    // FULL DEADLOCK do the tied players themselves draw rocks — and there the
+    // eliminated IS one of the tied. Gate on that (isFullDeadlock is set on the live
+    // ep but not persisted, so `tiedPlayers.includes(eliminated)` is the reliable
+    // signal). Outside a full deadlock, per "do NOT invent", we credit no one.
     for (const ep of hist) {
       const elim = _bootOf(ep);
       if (ep.isRockDraw) {
-        for (const p of (ep.tiedPlayers || [])) {
-          if (p && p !== elim && p !== 'THE GAME') add('rock-survivor', p, `Survived the rock draw in episode ${ep.num}`);
+        const tied = ep.tiedPlayers || [];
+        const fullDeadlock = ep.isFullDeadlock === true || (!!elim && tied.includes(elim));
+        if (fullDeadlock) {
+          for (const p of tied) {
+            if (p && p !== elim && p !== 'THE GAME') add('rock-survivor', p, `Survived a full-deadlock rock draw in episode ${ep.num}`);
+          }
         }
       } else if (ep.tiebreakerResult) {
         const { participants, loser, challengeLabel } = ep.tiebreakerResult;

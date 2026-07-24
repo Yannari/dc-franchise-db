@@ -10,7 +10,7 @@ import {
   backfillFromSeasonData, recordSeasonFromSavestate, wipeLedger, franchiseLedger,
   exportActiveFranchise, importFranchiseExport,
   careerFor, franchiseRecords, returneePools, setFranchiseLocked, isFranchiseLocked,
-  setArchetypeResolver
+  setArchetypeResolver, backfillAchievements, ACHIEVEMENT_LABELS
 } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
 import { FRANCHISE_ROSTER } from './cast-ui.js';
@@ -90,6 +90,7 @@ export function renderFranchiseTab() {
     ${_renderHeader()}
     ${_renderTimeline()}
     ${_renderHallOfFame()}
+    ${_renderTrophyCase()}
     ${_renderCareers()}
     ${_renderScout()}
     ${_renderDropzone()}
@@ -216,6 +217,7 @@ function _renderDropzone() {
     <div class="fr-drop-actions">
       <button class="fr-btn" onclick="frRecordLoaded()" title="Record the currently-loaded finished season into the ledger">📖 Record loaded season</button>
       <button class="fr-btn" onclick="frApplyToCurrent()" title="Rebuild returnee reputation/instincts for the in-progress season from this franchise's history">⚡ Apply to current season</button>
+      <button class="fr-btn" onclick="frDetectAchievements()" title="Scan the ledger and award record-detectable achievement medals">🏅 Detect achievements</button>
       <button class="fr-btn" onclick="frExportFranchise()" title="Download this franchise (all its seasons) as a JSON backup">⬆ Export franchise</button>
       <button class="fr-btn fr-btn-danger" onclick="frWipeActive()" title="Wipe this franchise's seasons">🗑 Wipe franchise</button>
     </div>
@@ -292,6 +294,143 @@ function _renderHallOfFame() {
     ${records.length ? `<div class="fr-recbook-label">Record Book</div>${book}` : ''}`;
 }
 
+// ── 1b. TROPHY CASE — achievement medals + season objectives ──────────
+// Per-type medal metadata. Gold is reserved for the disc rim + glyph (the award
+// motif); the type accent drives the ribbon + inner ring so each medal reads
+// distinct without flooding the case in gold.
+const _ACH_META = {
+  'perfect-game':       { label: 'Perfect Game',       accent: 'var(--accent-gold)', glyph: 'P', blurb: 'Won without a single vote against them' },
+  'untouchable':        { label: 'Untouchable',        accent: 'var(--accent)',      glyph: '✦', blurb: 'A champion never once blindsided' },
+  'immunity-streak':    { label: 'Immunity Streak',    accent: 'var(--accent-ice)',  glyph: 'I', blurb: '4+ individual immunity wins in a season' },
+  'revenge-arc':        { label: 'Revenge Arc',        accent: 'var(--accent-fire)', glyph: '↺', blurb: 'Payback on an old betrayer or blindsider' },
+  'idol-nullification': { label: 'Idol Nullification', accent: '#c05ce0',            glyph: '★', blurb: 'An idol that voided the vote and flipped it' },
+  'rock-survivor':      { label: 'Rock Survivor',      accent: '#8a93a0',            glyph: '◆', blurb: 'Walked out of a rock draw or forced tiebreaker' },
+  'zero-vote-finalist': { label: 'Zero-Vote Finalist', accent: '#b98a4a',            glyph: '0', blurb: 'Reached the Final Tribal, took zero jury votes' },
+  'fallen-angel':       { label: 'Fallen Angel',       accent: '#b9c2cc',            glyph: '▼', blurb: 'A past champion or finalist who crashed down' }
+};
+const _ACH_ORDER = ['perfect-game', 'untouchable', 'immunity-streak', 'revenge-arc',
+  'idol-nullification', 'rock-survivor', 'zero-vote-finalist', 'fallen-angel'];
+
+function _svgMedal(type) {
+  const m = _ACH_META[type] || { accent: 'var(--accent-gold)', glyph: '★' };
+  return `<svg viewBox="0 0 48 60" class="fr-medal" aria-hidden="true">
+    <path d="M15 3 L24 26 L13 26 Z" fill="${m.accent}" opacity=".85"/>
+    <path d="M33 3 L35 26 L24 26 Z" fill="${m.accent}" opacity=".55"/>
+    <circle cx="24" cy="41" r="16" fill="#141c26" stroke="var(--accent-gold)" stroke-width="2.4"/>
+    <circle cx="24" cy="41" r="11.5" fill="none" stroke="${m.accent}" stroke-width="1.4" opacity=".75"/>
+    <text x="24" y="47" text-anchor="middle" font-family="var(--font-display)" font-size="15" fill="var(--accent-gold)">${_esc(m.glyph)}</text>
+  </svg>`;
+}
+
+// Flatten achievements across INCLUDED seasons, grouped by type (newest first).
+function _gatherAchievements() {
+  const groups = {};
+  const seasons = activeSeasons();
+  const nums = Object.keys(seasons).map(Number).sort((a, b) => b - a);
+  for (const num of nums) {
+    const s = seasons[String(num)];
+    if (!_isIncluded(s)) continue;
+    for (const a of (s.achievements || [])) {
+      if (!a || !a.id || !a.player) continue;
+      (groups[a.id] ??= []).push({ ...a, seasonNum: a.seasonNum || num, slug: s.players?.[a.player]?.slug });
+    }
+  }
+  return groups;
+}
+
+// Per-season objective results across INCLUDED seasons (newest first).
+function _gatherObjectives() {
+  const out = [];
+  const seasons = activeSeasons();
+  const nums = Object.keys(seasons).map(Number).sort((a, b) => b - a);
+  for (const num of nums) {
+    const s = seasons[String(num)];
+    if (!_isIncluded(s)) continue;
+    const objs = s.objectives || [];
+    if (!objs.length) continue;
+    out.push({ seasonNum: num, seasonName: s.seasonName || `Season ${num}`,
+      objectives: objs, met: objs.filter(o => o.met).length, total: objs.length });
+  }
+  return out;
+}
+
+// Collapsed-state memory for the medal wall (survives tab re-renders).
+function _openMedals() {
+  if (typeof window === 'undefined') return new Set();
+  if (!window._frOpenMedals) window._frOpenMedals = new Set();
+  return window._frOpenMedals;
+}
+
+function _renderTrophyCase() {
+  const groups = _gatherAchievements();
+  const objectiveSeasons = _gatherObjectives();
+  const anyMedals = _ACH_ORDER.some(t => (groups[t] || []).length);
+  if (!anyMedals && !objectiveSeasons.length) return ''; // empty state hidden entirely
+
+  const open = _openMedals();
+  const rows = _ACH_ORDER.map(type => {
+    const list = groups[type] || [];
+    if (!list.length) return '';
+    const meta = _ACH_META[type];
+    const isOpen = open.has(type);
+    const chips = list.map(a => `<div class="fr-medal-row fr-clickable" ${_careerClick(a.player)} title="${_esc(a.detail)}">
+        ${_winnerPortrait(a.player, false, a.slug)}
+        <span class="fr-medal-rowbody"><span class="fr-medal-rowname">${_esc(a.player)}</span><span class="fr-medal-rowdetail">${_esc(a.detail)}</span></span>
+        <span class="fr-medal-snum">S${a.seasonNum}</span>
+      </div>`).join('');
+    return `<div class="fr-medal-group fr-medal-${type} ${isOpen ? 'open' : ''}" id="fr-medal-${type}">
+      <button class="fr-medal-head" onclick="frToggleMedal('${type}')" aria-expanded="${isOpen}">
+        <span class="fr-medal-ico">${_svgMedal(type)}</span>
+        <div class="fr-medal-titles"><span class="fr-medal-label">${_esc(meta.label)}</span><span class="fr-medal-blurb">${_esc(meta.blurb)}</span></div>
+        <span class="fr-medal-count">${list.length}</span>
+        <span class="fr-medal-chev">${isOpen ? '▾' : '▸'}</span>
+      </button>
+      <div class="fr-medal-list" style="display:${isOpen ? '' : 'none'}">${chips}</div>
+    </div>`;
+  }).join('');
+
+  const objBlock = objectiveSeasons.length ? `<div class="fr-recbook-label">Season Objectives</div>
+    <div class="fr-obj-list">${objectiveSeasons.map(s => `<div class="fr-obj-row">
+      <span class="fr-obj-snum">S${s.seasonNum}</span>
+      <div class="fr-obj-body">
+        <span class="fr-obj-title">${_esc(s.seasonName)} <b class="${s.met === s.total ? 'fr-obj-full' : ''}">${s.met}/${s.total} met</b></span>
+        <div class="fr-obj-chips">${s.objectives.map(o => `<span class="fr-obj-chip ${o.met ? 'ok' : 'no'}" title="${_esc(o.detail || '')}">${o.met ? '✓' : '✗'} ${_esc(o.label)}${o.target ? ` (${_esc(o.target)})` : ''}</span>`).join('')}</div>
+      </div>
+    </div>`).join('')}</div>` : '';
+
+  return `<div class="vp-section-header gold">Trophy Case</div>
+    <div class="fr-careers-hint">Medals earned across this franchise's canon — click a type to see who holds it. Use <b>🏅 Detect achievements</b> below to scan imported seasons.</div>
+    ${anyMedals ? `<div class="fr-medalwall">${rows}</div>` : '<div class="fr-legacy-empty">No medals yet — run 🏅 Detect achievements to scan the ledger.</div>'}
+    ${objBlock}`;
+}
+
+// DOM-only accordion toggle — never rebuilds the tab (keeps .fr-wrap scroll).
+export function frToggleMedal(type) {
+  const open = _openMedals();
+  const isOpen = !open.has(type);
+  if (isOpen) open.add(type); else open.delete(type);
+  const grp = document.getElementById('fr-medal-' + type);
+  if (!grp) return;
+  grp.classList.toggle('open', isOpen);
+  const list = grp.querySelector('.fr-medal-list'); if (list) list.style.display = isOpen ? '' : 'none';
+  const chev = grp.querySelector('.fr-medal-chev'); if (chev) chev.textContent = isOpen ? '▾' : '▸';
+  const btn = grp.querySelector('.fr-medal-head'); if (btn) btn.setAttribute('aria-expanded', String(isOpen));
+}
+
+// All medals earned by ONE player across included seasons (for their career panel).
+function _medalsForPlayer(name) {
+  const out = [];
+  const seasons = activeSeasons();
+  for (const num of Object.keys(seasons).map(Number).sort((a, b) => a - b)) {
+    const s = seasons[String(num)];
+    if (!_isIncluded(s)) continue;
+    for (const a of (s.achievements || [])) {
+      if (a && a.player === name) out.push({ ...a, seasonNum: a.seasonNum || num });
+    }
+  }
+  return out;
+}
+
 // ── 2. CAREERS — roster index + inline legacy panel ───────────────────
 function _renderCareers() {
   // Every player with history, ranked by titles then best placement — the index.
@@ -355,6 +494,13 @@ function _careerPanelHtml(c) {
     ? `<div class="fr-showmance-line">💞 ${c.people.showmances.map(sh => `${_esc(sh.partner)} <span class="fr-show-tag ${sh.ended === 'intact' ? 'ok' : 'bad'}">${sh.ended === 'intact' ? 'lasted' : 'ended'}</span> <span class="fr-show-season">S${sh.seasonNum}</span>`).join(' · ')}</div>`
     : '';
 
+  const medals = _medalsForPlayer(c.name);
+  const medalRow = medals.length ? `<div class="fr-career-section-label">Medals</div>
+    <div class="fr-career-medals">${medals.map(a => {
+      const meta = _ACH_META[a.id] || { label: ACHIEVEMENT_LABELS[a.id] || a.id };
+      return `<span class="fr-career-medal" title="${_esc(a.detail || '')}">${_svgMedal(a.id)}<span class="fr-career-medal-body"><span class="fr-career-medal-label">${_esc(meta.label)}</span><span class="fr-career-medal-snum">S${a.seasonNum}</span></span></span>`;
+    }).join('')}</div>` : '';
+
   return `<div class="fr-career-inner">
     <button class="fr-career-close" onclick="frCloseCareer()" title="Close">✕</button>
     <div class="fr-career-head">
@@ -369,6 +515,7 @@ function _careerPanelHtml(c) {
     <div class="fr-seasonline">${timeline}</div>
     <div class="fr-career-section-label">By the numbers</div>
     <div class="fr-totals-grid">${tiles}</div>
+    ${medalRow}
     ${(c.people.allies.length || c.people.rivals.length || c.people.betrayedBy.length || showLine) ? `<div class="fr-career-section-label">The people</div>
     <div class="fr-people">${peopleCol('Closest allies', c.people.allies, 'ally')}${peopleCol('Fiercest rivals', c.people.rivals, 'rival')}${peopleCol('Betrayed by', c.people.betrayedBy, 'betray')}</div>
     ${showLine}` : ''}
@@ -580,6 +727,49 @@ const _LEGACY_CSS = `
 @media (prefers-reduced-motion: reduce) {
   .fr-hof-chip, .fr-roster-chip, .fr-scout-chip, .fr-clickable { transition: none; }
 }
+
+/* Trophy Case — achievement medals */
+.fr-medal { width: 30px; height: 38px; flex-shrink: 0; }
+.fr-medalwall { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; align-items: start; }
+.fr-medal-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fr-medal-group.open { border-color: rgba(240,192,64,.45); }
+.fr-medal-head { display: flex; align-items: center; gap: 11px; width: 100%; background: transparent; border: 0; padding: 10px 13px; cursor: pointer; text-align: left; color: inherit; font: inherit; transition: background .15s; }
+.fr-medal-head:hover { background: var(--accent-dim, var(--surface2)); }
+.fr-medal-head:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: -2px; }
+.fr-medal-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fr-medal-label { font-family: var(--font-display); font-size: 16px; letter-spacing: .5px; color: var(--text); }
+.fr-medal-blurb { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-medal-count { font-family: var(--font-mono, monospace); font-size: 11px; font-weight: 700; color: var(--accent-gold); background: rgba(240,192,64,.1); border: 1px solid rgba(240,192,64,.3); border-radius: 10px; padding: 1px 8px; flex-shrink: 0; }
+.fr-medal-chev { font-size: 12px; color: var(--muted); width: 14px; flex-shrink: 0; text-align: center; }
+.fr-medal-list { display: flex; flex-direction: column; gap: 6px; padding: 0 13px 12px; }
+.fr-medal-row { display: flex; align-items: center; gap: 9px; padding: 5px 7px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; transition: border-color .18s, transform .18s; }
+.fr-medal-row:hover { border-color: var(--accent-gold); transform: translateX(2px); }
+.fr-medal-row .fr-portrait img, .fr-medal-row .fr-portrait-fb { width: 28px; height: 28px; }
+.fr-medal-rowbody { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.fr-medal-rowname { font-size: 12px; font-weight: 700; color: var(--text); }
+.fr-medal-rowdetail { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-medal-snum { font-family: var(--font-display); font-size: 12px; color: var(--accent-gold); flex-shrink: 0; }
+
+/* Season objectives block */
+.fr-obj-list { display: flex; flex-direction: column; gap: 7px; }
+.fr-obj-row { display: flex; align-items: flex-start; gap: 11px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.fr-obj-snum { font-family: var(--font-display); font-size: 15px; color: var(--accent-gold); flex-shrink: 0; min-width: 30px; }
+.fr-obj-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.fr-obj-title { font-size: 12px; color: var(--text); }
+.fr-obj-title b { color: var(--muted); font-weight: 700; }
+.fr-obj-title b.fr-obj-full { color: var(--accent); }
+.fr-obj-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.fr-obj-chip { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); }
+.fr-obj-chip.ok { color: #06110b; background: var(--accent); border-color: var(--accent); }
+.fr-obj-chip.no { color: var(--muted); background: var(--surface2); }
+
+/* Career panel medals row */
+.fr-career-medals { display: flex; flex-wrap: wrap; gap: 10px; }
+.fr-career-medal { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; }
+.fr-career-medal-body { display: flex; flex-direction: column; gap: 1px; }
+.fr-career-medal-label { font-size: 11px; font-weight: 700; color: var(--text); }
+.fr-career-medal-snum { font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--accent-gold); }
+@media (prefers-reduced-motion: reduce) { .fr-medal-head, .fr-medal-row { transition: none; } }
 `;
 
 // ══════════════════════════════════════════════════════════════════════
@@ -705,6 +895,16 @@ export function frApplyToCurrent() {
   if (typeof window !== 'undefined' && typeof window.applyFranchiseMetaMidSeason === 'function') {
     window.applyFranchiseMetaMidSeason();
   }
+}
+export function frDetectAchievements() {
+  if (isFranchiseLocked(franchiseLedger.active)) {
+    const cur = franchiseLedger.franchises[franchiseLedger.active];
+    alert(`"${cur?.name || 'This franchise'}" is locked (sealed canon). Unlock it to scan for achievements.`);
+    return;
+  }
+  const n = backfillAchievements();
+  _logLine(`Scanned ${n} season${n === 1 ? '' : 's'} — achievement medals refreshed`, n > 0);
+  _persistAndRerender();
 }
 export function frExportFranchise() {
   const data = exportActiveFranchise();

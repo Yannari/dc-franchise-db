@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { TWIST_CATALOG, seasonConfig, players } from './core.js';
+import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // PURE HELPERS (exported + TDD-covered)
@@ -504,6 +505,50 @@ function _blueprintCardHTML() {
   </section>`;
 }
 
+// ── Season objectives (optional goals) ─────────────────────────────────
+// Source of truth for the picker is window._qsObjectives (loaded once from
+// seasonConfig.seasonObjectives). saveConfig() REBUILDS seasonConfig from the DOM
+// and drops unknown keys, so after any save we re-apply objectives onto the live
+// config + localStorage (core.js's load merge {...defaults, ...saved} keeps the
+// unknown `seasonObjectives` key across reloads). See _reapplyObjectives().
+function _qsObjectives() {
+  if (typeof window === 'undefined') return [];
+  if (Array.isArray(window._qsObjectives)) return window._qsObjectives;
+  const cfg = _cfg();
+  window._qsObjectives = Array.isArray(cfg?.seasonObjectives) ? cfg.seasonObjectives.map(o => ({ ...o })) : [];
+  return window._qsObjectives;
+}
+function _reapplyObjectives() {
+  const cfg = _cfg(); if (!cfg) return;
+  cfg.seasonObjectives = _qsObjectives().map(o => ({ ...o }));
+  try { localStorage.setItem('simulator_config', JSON.stringify(cfg)); } catch {}
+}
+
+function _objectivesCardHTML() {
+  const objs = _qsObjectives();
+  const selected = new Set(objs.map(o => o.id));
+  const chips = SEASON_OBJECTIVES.map(o => {
+    const active = selected.has(o.id);
+    return `<button class="qs-obj-chip${active ? ' active' : ''}" onclick="qsToggleObjective('${o.id}')"
+      aria-pressed="${active}" title="${esc(o.blurb)}">${esc(o.label)}</button>`;
+  }).join('');
+  const pf = objs.find(o => o.id === 'protect-favorite');
+  const names = _players().map(p => p.name).filter(Boolean);
+  const targetPicker = pf ? `<label class="qs-field qs-field-wide qs-obj-target">
+      <span class="qs-label">Favorite to protect</span>
+      <select id="qs-obj-target" class="qs-input" onchange="qsSetObjectiveTarget()">
+        <option value="">— pick a player —</option>
+        ${names.map(n => `<option value="${esc(n)}"${n === pf.target ? ' selected' : ''}>${esc(n)}</option>`).join('')}
+      </select>
+    </label>` : '';
+  return `<section class="qs-card">
+    <div class="qs-card-head"><span class="qs-card-icon">🎯</span><h3>Objectives</h3>
+      <span class="qs-card-hint">Optional — pick season goals to grade at the finale.</span></div>
+    <div class="qs-obj-chips">${chips}</div>
+    ${targetPicker}
+  </section>`;
+}
+
 function _readyRowsHTML() {
   const rows = validateQuickSetup(_cfg(), _players());
   return rows.map(r => {
@@ -541,6 +586,7 @@ function _bodyHTML() {
     ${_identityCardHTML()}
     ${_presetCardsHTML()}
     ${_structureCardHTML()}
+    ${_objectivesCardHTML()}
     ${_blueprintCardHTML()}
     ${_readyCardHTML()}
   </div>`;
@@ -598,6 +644,7 @@ export function renderQuickSetup() {
   // Mirror the legacy selects' current values into the Quick controls (options
   // were cloned generically; the value comes from live config via renderConfig).
   _syncFromLegacy();
+  _reapplyObjectives(); // keep objectives on the live config after any rebuild
 }
 
 function _syncFromLegacy() {
@@ -613,6 +660,7 @@ function _syncFromLegacy() {
 // ── Live (DOM-only) updates — never rebuilds identity/structure inputs, so the
 //    focused field keeps its caret. Reads the single source of truth. ──
 function _updateDynamic() {
+  _reapplyObjectives(); // survive saveConfig's DOM rebuild (drops unknown keys)
   const bp = _g('qs-blueprint'); if (bp) bp.innerHTML = _blueprintInnerHTML();
   const rc = _g('qs-readycheck'); if (rc) rc.innerHTML = _readyRowsHTML();
   const sw = _g('qs-start-wrap'); if (sw) sw.innerHTML = _startBtnHTML();
@@ -755,6 +803,22 @@ export function qsSetMode(mode) {
 
 export function qsGoCast() { window.showTab?.('cast'); }
 
+// Toggle a season objective on/off. protect-favorite carries a target player.
+export function qsToggleObjective(id) {
+  const objs = _qsObjectives();
+  const idx = objs.findIndex(o => o.id === id);
+  if (idx >= 0) objs.splice(idx, 1);
+  else objs.push(id === 'protect-favorite' ? { id, target: '' } : { id });
+  _reapplyObjectives();
+  renderQuickSetup(); // rebuild to show/hide the favorite dropdown
+}
+export function qsSetObjectiveTarget() {
+  const sel = _g('qs-obj-target'); if (!sel) return;
+  const pf = _qsObjectives().find(o => o.id === 'protect-favorite');
+  if (pf) pf.target = sel.value;
+  _reapplyObjectives();
+}
+
 export function qsStartSeason() {
   const gs = _gs();
   if (gs && gs.initialized) { window.showTab?.('run'); return; }
@@ -849,6 +913,16 @@ const QS_CSS = `
 .qs-range { width:140px; accent-color:var(--accent,#10b981); }
 .qs-step-val { font-family:var(--font-mono,monospace); font-size:15px; min-width:26px; text-align:right; color:var(--text); }
 
+/* Objectives */
+.qs-obj-chips { display:flex; flex-wrap:wrap; gap:9px; }
+.qs-obj-chip { background:var(--surface2); color:var(--muted); border:1px solid var(--border); border-radius:999px;
+  padding:8px 15px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;
+  transition:border-color .12s ease, color .12s ease, background .12s ease; }
+.qs-obj-chip:hover { border-color:var(--muted); color:var(--text); }
+.qs-obj-chip.active { border-color:var(--accent-gold,#f0c040); color:var(--text);
+  background:rgba(240,192,64,.12); box-shadow:0 0 0 1px var(--accent-gold,#f0c040) inset; }
+.qs-obj-target { margin-top:13px; }
+
 /* Blueprint */
 .qs-blueprint { display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-family:var(--font-mono,monospace); }
 .qs-bp-seg { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:20px;
@@ -901,5 +975,6 @@ if (typeof window !== 'undefined') {
   Object.assign(window, {
     renderQuickSetup, qsSetIdentity, qsStep, qsRange, qsFinaleFormat,
     qsApplyPreset, applyQuickPreset, qsSetMode, qsGoCast, qsStartSeason,
+    qsToggleObjective, qsSetObjectiveTarget,
   });
 }

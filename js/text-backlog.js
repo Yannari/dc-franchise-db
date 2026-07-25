@@ -5,6 +5,7 @@ import { buildInfoFlowLog } from './knowledge-integration.js';
 import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
+import { EDIT_LABELS } from './edit-layer.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
 
 // Challenge-specific text functions
@@ -3331,6 +3332,34 @@ export function _textWriterContext(ep, ln, sec) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// ── AUDIENCE PULSE (edit layer, realism roadmap #6) — how the episode was cut
+// for the viewers. Text retranscription of the Hub aftermath card + Overview
+// reads: edit-read shifts, confessional distribution, and confessional quotes.
+// Reads ep.editSnapshot (frozen by updateEditLayer before the summary runs).
+export function _textAudiencePulse(ep, ln, sec) {
+  const snap = ep.editSnapshot;
+  if (!snap) return;
+  sec('AUDIENCE PULSE (THE EDIT)');
+  ln('How this episode was cut for the audience — viewer perception, not game truth.');
+  const prev = (gs.edit?.episodes || []).filter(r => Number(r.ep) < Number(snap.ep)).pop();
+  const reads = Object.entries(snap.reads || {});
+  if (reads.length) {
+    ln('');
+    ln('EDIT READS:');
+    reads.forEach(([name, key]) => {
+      const label = EDIT_LABELS[key] || key;
+      const prevKey = prev?.reads?.[name];
+      ln(`  - ${name}: ${label}${prevKey && prevKey !== key ? ` (was ${EDIT_LABELS[prevKey] || prevKey})` : ''}`);
+    });
+  }
+  const conf = Object.entries(snap.conf || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  if (conf.length) {
+    ln('');
+    ln(`CONFESSIONAL COUNT: ${conf.map(([name, count]) => `${name} x${count}`).join(' · ')}`);
+  }
+  (snap.quotes || []).forEach(q => ln(`  ${q.name} (confessional): "${q.text}"`));
+}
+
 // MAIN — generateSummaryText
 // ══════════════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3670,6 +3699,7 @@ export function generateSummaryText(ep) {
   _textVolunteerDuel(ep, ln, sec);
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
+  _textAudiencePulse(ep, ln, sec);
   _textSeasonThreads(ep, ln, sec); // tracked story threads — worker beat-sheet spine + reader recap
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);

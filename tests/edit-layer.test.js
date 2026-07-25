@@ -5,6 +5,7 @@ import {
   updateEditLayer, finalizeEditSeason, editRead, editArc, editSummary, EDIT_LABELS,
 } from '../js/edit-layer.js';
 import { buildSeasonOverviewModel, buildHubAftermath } from '../js/run-ui.js';
+import { _textAudiencePulse } from '../js/text-backlog.js';
 
 const CAST = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -157,6 +158,24 @@ describe('#6 edit layer — season finalization and consumers', () => {
     expect(rowA.share).toBeGreaterThan(0);
     const aftermath = buildHubAftermath({ num: 1, votes: {}, votingLog: [] });
     expect(Array.isArray(aftermath.editWatch)).toBe(true);
+  });
+
+  it('text backlog gets a complete AUDIENCE PULSE retranscription', () => {
+    updateEditLayer(makeEp(1, { pre: [campEv('sabotage', ['B'], 'SABOTAGE'), campEv('bonding', ['A', 'C'])] }));
+    const ep2 = makeEp(2, { pre: [campEv('sabotage', ['B'], 'SABOTAGE'), campEv('bonding', ['A', 'C'])] });
+    updateEditLayer(ep2);
+    const L = [];
+    _textAudiencePulse(ep2, s => L.push(s), t => L.push(`=== ${t} ===`));
+    const text = L.join('\n');
+    expect(text).toContain('AUDIENCE PULSE (THE EDIT)');
+    expect(text).toContain('EDIT READS:');
+    expect(text).toContain('CONFESSIONAL COUNT:');
+    // every stored quote appears verbatim
+    ep2.editSnapshot.quotes.forEach(q => expect(text).toContain(q.text));
+    // an ep with no snapshot writes nothing
+    const L2 = [];
+    _textAudiencePulse({ num: 9 }, s => L2.push(s), t => L2.push(t));
+    expect(L2).toEqual([]);
   });
 
   it('old saves without gs.edit render safely everywhere', () => {

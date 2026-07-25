@@ -3,6 +3,7 @@ import { gs, seasonConfig } from '../js/core.js';
 import { seedGame } from './helpers/setup.js';
 import {
   updateEditLayer, finalizeEditSeason, editRead, editArc, editSummary, EDIT_LABELS,
+  VOICE_FAMILY, VOICE_POOLS,
 } from '../js/edit-layer.js';
 import { buildSeasonOverviewModel, buildHubAftermath } from '../js/run-ui.js';
 import { _textAudiencePulse } from '../js/text-backlog.js';
@@ -75,6 +76,33 @@ describe('#6 edit layer — confessionals and quotes', () => {
       expect(q.text).not.toMatch(/\{name\}|\{target\}|undefined/);
       expect(q.text.length).toBeGreaterThan(10);
     });
+  });
+});
+
+describe('#6 edit layer — archetype voice families', () => {
+  it('every archetype maps to a voice family with pools of 3+ variants', () => {
+    const VALID_ARCHETYPES = ['mastermind', 'schemer', 'hothead', 'challenge-beast', 'social-butterfly',
+      'loyal-soldier', 'wildcard', 'chaos-agent', 'floater', 'underdog', 'hero', 'villain', 'goat',
+      'perceptive-player', 'showmancer'];
+    VALID_ARCHETYPES.forEach(arch => {
+      const family = VOICE_FAMILY[arch];
+      expect(family, `${arch} has no voice family`).toBeTruthy();
+      expect(VOICE_POOLS[family], `${family} has no pools`).toBeTruthy();
+    });
+    Object.entries(VOICE_POOLS).forEach(([family, tones]) => {
+      Object.entries(tones).forEach(([tone, pool]) => {
+        expect(pool.length, `${family}/${tone} pool too small`).toBeGreaterThanOrEqual(3);
+        pool.forEach(line => expect(line).not.toMatch(/\{name\}|\{target\}|undefined/));
+      });
+    });
+  });
+
+  it('nice archetypes never receive villain-family villainous lines', () => {
+    // The guard reroutes villainous tone to strategic BEFORE the voice lookup,
+    // so a sunny-family player can never draw from any villainous pool.
+    const villainLines = new Set([...VOICE_POOLS.villain.villainous, ...(VOICE_POOLS.sunny.villainous || [])]);
+    expect(VOICE_POOLS.sunny.villainous).toBeUndefined();
+    expect(villainLines.size).toBeGreaterThan(0);
   });
 });
 

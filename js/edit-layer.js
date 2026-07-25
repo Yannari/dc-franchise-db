@@ -161,12 +161,165 @@ const QUOTE_POOLS = {
     `Quiet week for me. Out here, a quiet week is a gift.`,
   ],
 };
+// ── Archetype voice families: layered ON TOP of the tone pools so a mastermind,
+// a hothead, and a goat never sound alike in the same situation.
+export const VOICE_FAMILY = {
+  villain: 'villain', mastermind: 'villain', schemer: 'villain',
+  hero: 'sunny', 'loyal-soldier': 'sunny', 'social-butterfly': 'sunny', showmancer: 'sunny', underdog: 'sunny', goat: 'sunny',
+  'chaos-agent': 'chaotic', wildcard: 'chaotic',
+  floater: 'observer', 'perceptive-player': 'observer',
+  'challenge-beast': 'intense', hothead: 'intense',
+};
+export const VOICE_POOLS = {
+  villain: {
+    strategic: [
+      `Step one: earn the room. Step two: own the room. Step three: they thank you while you rob them.`,
+      `I don't need the numbers to like me. I need the numbers to be mine.`,
+      `Everyone here has a price. My job is finding out which currency.`,
+      `They call it paranoia. I call it inventory.`,
+    ],
+    villainous: [
+      `Watch the tape back later. You'll see exactly when I decided you were expendable.`,
+      `Guilt is a luxury item, and I packed light.`,
+      `They think tonight was the betrayal. Tonight was the rehearsal.`,
+      `I don't burn bridges. I sell tickets to the fire.`,
+    ],
+    emotional: [
+      `Do I feel something? Sure. I feel ahead.`,
+      `You're not supposed to get attached out here. I wrote that rule. I'm... revisiting it.`,
+      `The one thing I didn't plan for was actually liking these idiots.`,
+    ],
+    comic: [
+      `Evil laugh? No. This is just my laugh.`,
+      `My villain arc has a blooper reel, apparently.`,
+      `Even criminal masterminds slip on wet dock wood. Allegedly.`,
+    ],
+    neutral: [
+      `A quiet week. Which means somebody else is finally doing something stupid without me.`,
+      `No moves today. Even sharks nap.`,
+      `Consider this the calm. You already know what comes after.`,
+    ],
+  },
+  sunny: {
+    strategic: [
+      `My strategy is simple: be the person people want at the end... and hope nobody does the math.`,
+      `I keep my promises. Turns out that's so rare out here it counts as a strategy.`,
+      `I'm not playing chess. I'm playing "don't give anybody a reason." So far so good.`,
+      `You can vote smart and still vote kind. I'm living proof. For now.`,
+    ],
+    heroic: [
+      `If I go home for helping somebody, then send me home. I can live with that person.`,
+      `My mom's watching this. I play like my mom's watching this.`,
+      `Trust isn't a weakness. Trust is the whole reason anybody survives this place.`,
+      `Today I got to be the reason somebody smiled at this camp. That's a win they can't vote out.`,
+    ],
+    emotional: [
+      `These people started as competition. Somewhere around the campfire they became family.`,
+      `I cried tonight. Not embarrassed about it. The torch thing gets everybody eventually.`,
+      `Whatever happens at that vote, I want them to know it was real for me.`,
+    ],
+    comic: [
+      `I tripped, I fell, I made everyone laugh, and honestly? Best social move of the week.`,
+      `They keep saying I'm too nice for this game. Wait till you see me at the food table.`,
+      `I hugged the host. Apparently you're not supposed to hug the host.`,
+    ],
+    neutral: [
+      `Nothing dramatic today. Just sunshine, chores, and not getting voted out. Perfect.`,
+      `A good day here is soup, no rain, and nobody whispering your name. Today was a good day.`,
+      `Quiet days are when you write the letters home. So that's what I did.`,
+    ],
+  },
+  chaotic: {
+    strategic: [
+      `My plan is that nobody can plan around me. Including me.`,
+      `I flipped a coin for my vote. Then I ignored the coin. That's called an audible.`,
+      `They can't read my game because there's nothing to read. I'm improvising the whole novel.`,
+      `Predictable players go home. I am many things. That is not one of them.`,
+    ],
+    villainous: [
+      `Was it sabotage or was it performance art? The jury can decide. Literally.`,
+      `I lit the fuse mostly to see the colors, and WOW, the colors.`,
+      `Somebody had to shake the snow globe. Tag yourself, I'm the blizzard.`,
+    ],
+    emotional: [
+      `Big feelings day. I put them all in a jar and screamed into the jar. Healthy!`,
+      `Turns out chaos is a great hiding place for a soft heart. Don't tell anyone.`,
+      `I laughed so I wouldn't cry, and then I did both, which is very on brand.`,
+    ],
+    comic: [
+      `The raccoon and I have an understanding now. That's all I can legally say.`,
+      `Today's agenda: cause problems on purpose, snack, repeat.`,
+      `I don't have a strategy, I have a vibe, and the vibe is ungovernable.`,
+      `Somewhere out there is a version of this season where I behaved. Boring season.`,
+    ],
+    neutral: [
+      `A normal day?? Here?? Suspicious. I'm keeping my eye on it.`,
+      `Nothing exploded today. I consider that a personal failure.`,
+      `Rest day. Even agents of chaos file paperwork sometimes.`,
+    ],
+  },
+  observer: {
+    strategic: [
+      `Everybody's so busy performing that nobody notices who's watching. That's my whole game.`,
+      `I know who's lying, who's cracking, and who's about to do something dumb. I just don't say it out loud.`,
+      `The middle of the pack isn't hiding. It's the best seat in the house.`,
+      `Loud players make lists. Quiet players make finals.`,
+    ],
+    emotional: [
+      `Watching everyone this closely, you end up caring. That's the part the strategy books skip.`,
+      `I noticed tonight who checked on the person crying, and who checked the vote first. I notice everything.`,
+      `Being invisible is useful, but some days you'd like one person to really see you.`,
+    ],
+    comic: [
+      `I've said maybe nine words this week and I'm somehow in three alliances. Efficiency.`,
+      `People forget I'm in the room. Great for intel, terrible for getting soup passed to me.`,
+      `My confessional count is low because I'm busy. Watching. Everything.`,
+    ],
+    neutral: [
+      `Another episode where the storm went around me. That's not luck, that's positioning.`,
+      `No votes on me, no heat on me, no headlines. Beautiful.`,
+      `I'll speak up when it matters. Today it didn't.`,
+    ],
+  },
+  intense: {
+    strategic: [
+      `I don't scheme. I win things, and winning things IS the scheme.`,
+      `You want to beat me? Beat me out there. The whispering stuff is for people who can't.`,
+      `Every challenge I win is a day they can't touch me. Simple math. My favorite math.`,
+      `My game plan fits on a sticker: be undeniable.`,
+    ],
+    heroic: [
+      `I carried them up that hill because that's what a team is. Vote me out for it, see if I care.`,
+      `Strong is only worth something if somebody else gets to lean on it.`,
+      `I don't leave people behind in challenges. Or anywhere.`,
+    ],
+    emotional: [
+      `I train my body every day. Nobody told me to train for THIS.`,
+      `I punched a tree today. The tree won. We're both processing.`,
+      `Losing doesn't make me cry. Letting people down does. There's a difference.`,
+    ],
+    comic: [
+      `I flexed at a seagull today and it worked. It left.`,
+      `Apparently "calm down" is advice and not a personal attack. Growing!`,
+      `I did one hundred push-ups so I wouldn't say something at camp. Camp is lucky.`,
+    ],
+    neutral: [
+      `Rest day for the drama, training day for me. There are no rest days for me.`,
+      `Quiet camp, full plates, early night. My kind of episode.`,
+      `Nothing to report. The competition is Thursday. Everything else is waiting.`,
+    ],
+  },
+};
 function _quoteFor(name, tone) {
   const arch = players.find(p => p.name === name)?.archetype;
-  let pool = QUOTE_POOLS[tone] || QUOTE_POOLS.neutral;
+  let effectiveTone = tone;
   // Archetype voice guard: nice players never deliver villainous confessionals.
-  if (tone === 'villainous' && NICE.has(arch)) pool = QUOTE_POOLS.strategic;
-  if (tone === 'heroic' && MEAN.has(arch)) pool = QUOTE_POOLS.strategic;
+  if (tone === 'villainous' && NICE.has(arch)) effectiveTone = 'strategic';
+  if (tone === 'heroic' && MEAN.has(arch)) effectiveTone = 'strategic';
+  const base = QUOTE_POOLS[effectiveTone] || QUOTE_POOLS.neutral;
+  const voice = VOICE_POOLS[VOICE_FAMILY[arch]]?.[effectiveTone] || [];
+  // Voice lines lead (2x weight) so archetypes sound distinct; tone pool keeps variety up.
+  const pool = [...voice, ...voice, ...base];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 

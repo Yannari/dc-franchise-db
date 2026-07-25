@@ -47,6 +47,9 @@ function _ensureEdit() {
 // ── Tone classification: keyword map over event type + badge text.
 // Unknown content degrades to neutral — never throws on new event types.
 const TONE_RULES = [
+  // Reaction events (exposing/catching a scheme) are heroic — checked before the
+  // villainous net so "exposeSchemer" doesn't credit the CATCHER with villainy.
+  ['heroic',     /expos/i],
   ['villainous', /sabot|scheme|lie|liar|betray|steal|blindside|villain|frame|forge|manipul|taunt|threat|ambush|rat\b|snake|plot|mole|trap|undermine|backstab|sneak/i],
   ['heroic',     /help|comfort|bond|encourag|hero|rescue|protect|praise|carr|defend|loyal|generous|share|provider/i],
   ['emotional',  /romance|spark|showmance|kiss|date|breakup|cry|homesick|miss|heart|jealous|love/i],
@@ -74,7 +77,9 @@ function _deriveScreenTime(ep, active) {
   Object.values(ep.campEvents || {}).forEach(camp => {
     [...(camp?.pre || []), ...(camp?.post || [])].forEach(ev => {
       const tone = _tone(ev);
-      (ev?.players || []).forEach(p => add(p, 2, tone));
+      // Villainy belongs to the PERPETRATOR (actor-first convention in players[]).
+      // Victims and witnesses of a scheme are drama, not co-villains.
+      (ev?.players || []).forEach((p, i) => add(p, 2, tone === 'villainous' && i > 0 ? 'emotional' : tone));
     });
   });
 
@@ -368,8 +373,15 @@ function _updateReads(edit, st, active, ep) {
     const inShowmance = (gs.showmances || []).some(sh => !sh?.broken && (sh?.a === name || sh?.b === name));
     const scores = {
       invisible: Math.max(0, 1.4 - rel * 1.4),
-      // Villainy and comedy are rare and salient — TV amplifies both.
-      villain:   ema.villainous * 3.0 * Math.min(rel, 1.5),
+      // Villainy and comedy are rare and salient — TV amplifies both. But the
+      // villain edit requires villainy to be a SIGNATURE, not an accident: it
+      // must be substantial next to the sympathetic tones the player generates
+      // themselves (heroic, comic — discounted 40% because everyday bonding
+      // content inflates heroic for the whole cast). Emotional is excluded:
+      // it's mostly passive drama (votes received, being schemed on) and would
+      // shield actual schemers from their own edit.
+      villain:   ema.villainous > Math.max(ema.heroic, ema.comic) * 0.6
+                 ? ema.villainous * 3.0 * Math.min(rel, 1.5) : 0,
       comic:     ema.comic * 2.8 * Math.min(rel, 1.5),
       // Growth needs a SUSTAINED rise (2+ consecutive above-early episodes),
       // so one busy episode can't flip a long-invisible player straight to a growth arc.

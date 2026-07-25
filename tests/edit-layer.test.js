@@ -145,6 +145,41 @@ describe('#6 edit layer — live reads', () => {
     }
   });
 
+  it('a showmance love story earns the Showmance edit', () => {
+    gs.showmances = [{ a: 'A', b: 'C', broken: false }];
+    for (let ep = 1; ep <= 5; ep++) {
+      updateEditLayer(makeEp(ep, {
+        pre: [campEv('showmanceMoment', ['A', 'C'], 'ROMANCE'), campEv('stolenKiss', ['A', 'C'], 'KISS'),
+              campEv('allianceTalk', ['B', 'D'])],
+      }));
+    }
+    expect(['romance']).toContain(editRead('A').key);
+    expect(editRead('A').label).toBe(EDIT_LABELS.romance);
+  });
+
+  it('a player who keeps eating votes and surviving earns the Underdog edit', () => {
+    for (let ep = 1; ep <= 5; ep++) {
+      updateEditLayer(makeEp(ep, {
+        pre: [campEv('bonding', ['D', 'A'], 'BOND')],
+        votingLog: [
+          { voter: 'A', voted: 'D' }, { voter: 'B', voted: 'D' }, { voter: 'C', voted: 'D' },
+          { voter: 'D', voted: 'A' }, { voter: 'E', voted: 'D' },
+        ],
+      }));
+    }
+    expect(editRead('D').key).toBe('underdog');
+  });
+
+  it('a visible strategy-dominated player earns the Mastermind edit, not steady presence', () => {
+    for (let ep = 1; ep <= 5; ep++) {
+      updateEditLayer(makeEp(ep, {
+        pre: [campEv('allianceTalk', ['B', 'C'], 'ALLIANCE'), campEv('voteplanPitch', ['B', 'E'], 'VOTE PLAN'),
+              campEv('intelTrade', ['B', 'D'], 'INTEL'), campEv('bonding', ['A', 'F'], 'BOND')],
+      }));
+    }
+    expect(['mastermind', 'winner']).toContain(editRead('B').key);
+  });
+
   it('an established read survives one loud contradicting episode (season arc, not weekly mood)', () => {
     for (let ep = 1; ep <= 4; ep++) {
       updateEditLayer(makeEp(ep, { pre: [campEv('sabotage', ['B'], 'SABOTAGE'), campEv('spreadLies', ['B'], 'LIES')] }));

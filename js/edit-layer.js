@@ -19,18 +19,21 @@ import { gs, seasonConfig } from './core.js';
 import { players } from './core.js';
 
 export const EDIT_LABELS = {
-  winner:   'Winner edit',
-  decoy:    'Decoy favorite',
-  villain:  'Villain edit',
-  growth:   'Growth arc',
-  comic:    'Comic relief',
-  invisible:'Invisible',
-  steady:   'Steady presence',
+  winner:    'Winner edit',
+  decoy:     'Decoy favorite',
+  villain:   'Villain edit',
+  mastermind:'Mastermind edit',
+  growth:    'Growth arc',
+  comic:     'Comic relief',
+  romance:   'Showmance edit',
+  underdog:  'Underdog edit',
+  invisible: 'Invisible',
+  steady:    'Steady presence',
 };
 const TONES = ['heroic', 'villainous', 'comic', 'strategic', 'emotional', 'neutral'];
 
 // Fan-perception drift per episode by current read — the edit layer's ONLY consequence.
-const FAN_DRIFT = { growth: 0.3, winner: 0.25, decoy: 0.2, comic: 0.15, villain: 0.1, steady: 0, invisible: -0.2 };
+const FAN_DRIFT = { growth: 0.3, underdog: 0.3, winner: 0.25, romance: 0.25, decoy: 0.2, comic: 0.15, mastermind: 0.15, villain: 0.1, steady: 0, invisible: -0.2 };
 
 const EMA_ALPHA = 0.25;       // slow absorb — the edit is a season arc, not a weekly mood
 const HYSTERESIS = 1.35;      // challenger must beat the incumbent read by 35%...
@@ -44,7 +47,7 @@ function _ensureEdit() {
 // ── Tone classification: keyword map over event type + badge text.
 // Unknown content degrades to neutral — never throws on new event types.
 const TONE_RULES = [
-  ['villainous', /sabot|scheme|lie|liar|betray|steal|blindside|villain|frame|forge|manipul|taunt|threat|ambush|rat\b|snake/i],
+  ['villainous', /sabot|scheme|lie|liar|betray|steal|blindside|villain|frame|forge|manipul|taunt|threat|ambush|rat\b|snake|plot|mole|trap|undermine|backstab|sneak/i],
   ['heroic',     /help|comfort|bond|encourag|hero|rescue|protect|praise|carr|defend|loyal|generous|share|provider/i],
   ['emotional',  /romance|spark|showmance|kiss|date|breakup|cry|homesick|miss|heart|jealous|love/i],
   ['comic',      /prank|joke|funny|chaos|slacker|clumsy|fail|food|eat|vomit|silly|goof|blooper|panic/i],
@@ -95,7 +98,7 @@ function _deriveScreenTime(ep, active) {
 }
 
 // ── Confessional allocation: proportional to screen time, biased by read.
-const CONF_BIAS = { comic: 1.3, villain: 1.25, winner: 1.2, decoy: 1.2, growth: 1.1, steady: 1, invisible: 0.6 };
+const CONF_BIAS = { comic: 1.3, villain: 1.25, winner: 1.2, decoy: 1.2, mastermind: 1.2, romance: 1.15, growth: 1.1, underdog: 1.1, steady: 1, invisible: 0.6 };
 function _allocateConfessionals(st, active, reads) {
   const slots = Math.max(4, Math.min(10, Math.round(active.length * 0.6)));
   const weights = active.map(name => {
@@ -335,7 +338,7 @@ function _updateReads(edit, st, active, ep) {
     const s = st[name] || _blank();
     const share = (s.units || 0) / totalUnits;
     const toneShare = t => (s.tones[t] || 0) / Math.max(1, s.units);
-    const prev = edit.reads[name]?.ema || { share: baseline, heroic: 0, villainous: 0, comic: 0, strategic: 0, emotional: 0, early: null, epochs: 0 };
+    const prev = edit.reads[name]?.ema || { share: baseline, heroic: 0, villainous: 0, comic: 0, strategic: 0, emotional: 0, pressure: 0, early: null, epochs: 0 };
     const ema = {
       share: prev.share + EMA_ALPHA * (share - prev.share),
       heroic: prev.heroic + EMA_ALPHA * (toneShare('heroic') - prev.heroic),
@@ -343,6 +346,8 @@ function _updateReads(edit, st, active, ep) {
       comic: prev.comic + EMA_ALPHA * (toneShare('comic') - prev.comic),
       strategic: prev.strategic + EMA_ALPHA * (toneShare('strategic') - prev.strategic),
       emotional: prev.emotional + EMA_ALPHA * (toneShare('emotional') - prev.emotional),
+      // Votes received per episode, smoothed: the "constantly in danger" signal.
+      pressure: (prev.pressure || 0) + EMA_ALPHA * ((votesRec[name] || 0) - (prev.pressure || 0)),
       // First-three-episode average share, frozen: the growth arc's "before" picture.
       early: prev.epochs < 3 ? ((prev.early ?? share) + share) / 2 : (prev.early ?? share),
       // Consecutive episodes clearly above the early-season picture — growth must be sustained.
@@ -351,15 +356,26 @@ function _updateReads(edit, st, active, ep) {
     };
     const rel = ema.share / baseline;                 // 1 = exactly average presence
     const flawShown = (votesRec[name] || 0) > 0 || (ep.chalPlacements || []).slice(-1)[0] === name;
+    const inShowmance = (gs.showmances || []).some(sh => !sh?.broken && (sh?.a === name || sh?.b === name));
     const scores = {
       invisible: Math.max(0, 1.4 - rel * 1.4),
-      villain:   ema.villainous * 2.4 * Math.min(rel, 1.5),
-      comic:     ema.comic * 2.2 * Math.min(rel, 1.5),
+      villain:   ema.villainous * 2.6 * Math.min(rel, 1.5),
+      comic:     ema.comic * 2.4 * Math.min(rel, 1.5),
       // Growth needs a SUSTAINED rise (2+ consecutive above-early episodes),
       // so one busy episode can't flip a long-invisible player straight to a growth arc.
       growth:    ema.epochs >= 4 && ema.riseStreak >= 2 ? Math.max(0, (ema.share - (ema.early ?? ema.share)) / baseline) * 1.6 : 0,
       winner:    (rel >= 1.05 ? 0.5 : 0) + (ema.heroic + ema.strategic) * 1.3 - ema.villainous * 1.5 - (votesRec[name] || 0) * 0.15,
       decoy:     rel >= 1.5 && flawShown ? 0.4 + (ema.heroic + ema.emotional) : 0,
+      // Mastermind: the strategy-narrator cut — visible, strategy-dominated, not heroic
+      // enough for the winner edit (winner is exclusive; this is where schemers-in-plain-
+      // sight and vote captains land instead of "steady presence").
+      mastermind: ema.strategic >= 0.42 && rel >= 0.9 ? ema.strategic * 1.9 * Math.min(rel, 1.4) - ema.heroic * 0.4 : 0,
+      // Showmance edit: the love-story cut — emotional content dominates, doubly so
+      // while actually in an active showmance.
+      romance:   ema.emotional >= 0.32 ? ema.emotional * 2.0 * Math.min(rel, 1.5) + (inShowmance ? 0.35 : 0) : 0,
+      // Underdog edit: keeps eating votes and keeps surviving — the audience roots
+      // for whoever the game keeps trying (and failing) to kill.
+      underdog:  ema.pressure >= 1.1 && rel >= 0.55 ? 0.5 + ema.pressure * 0.25 : 0,
       steady:    0.35,
     };
     // A read is a season arc: a challenger must beat the incumbent by the
@@ -447,10 +463,13 @@ export function finalizeEditSeason() {
   edit.final = {
     editWinner: mostOf('winner'),
     biggestVillain: mostOf('villain'),
+    mastermind: mostOf('mastermind'),
     mostInvisible: mostOf('invisible'),
     comicRelief: mostOf('comic'),
     decoyFavorite: mostOf('decoy'),
     growthArc: mostOf('growth'),
+    loveStory: mostOf('romance'),
+    underdogStory: mostOf('underdog'),
   };
   return edit.final;
 }

@@ -2991,6 +2991,9 @@
     .overview-edit-chip.edit-villain { color: var(--sg-danger); border-color: color-mix(in srgb, var(--sg-danger) 55%, transparent); background: color-mix(in srgb, var(--sg-danger) 12%, transparent); }
     .overview-edit-chip.edit-growth { color: var(--sg-trust); border-color: color-mix(in srgb, var(--sg-trust) 55%, transparent); background: color-mix(in srgb, var(--sg-trust) 12%, transparent); }
     .overview-edit-chip.edit-comic { color: var(--accent-fire); border-color: color-mix(in srgb, var(--accent-fire) 55%, transparent); background: color-mix(in srgb, var(--accent-fire) 12%, transparent); }
+    .overview-edit-chip.edit-mastermind { color: var(--sg-strategy); border-color: color-mix(in srgb, var(--sg-strategy) 55%, transparent); background: color-mix(in srgb, var(--sg-strategy) 12%, transparent); }
+    .overview-edit-chip.edit-romance { color: #f27daa; border-color: color-mix(in srgb, #f27daa 55%, transparent); background: color-mix(in srgb, #f27daa 12%, transparent); }
+    .overview-edit-chip.edit-underdog { color: var(--accent-ice); border-color: color-mix(in srgb, var(--accent-ice) 55%, transparent); background: color-mix(in srgb, var(--accent-ice) 12%, transparent); }
     .overview-edit-chip.edit-invisible { color: var(--sg-ghost); border-style: dashed; }
     .overview-edit-share { height: 5px; border-radius: 3px; background: var(--bg); overflow: hidden; }
     .overview-edit-share-fill { height: 100%; border-radius: 3px; background: var(--sg-strategy); }

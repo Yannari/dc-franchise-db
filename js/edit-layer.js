@@ -337,10 +337,19 @@ function _updateReads(edit, st, active, ep) {
   active.forEach(name => {
     const s = st[name] || _blank();
     const share = (s.units || 0) / totalUnits;
-    const toneShare = t => (s.tones[t] || 0) / Math.max(1, s.units);
-    const prev = edit.reads[name]?.ema || { share: baseline, heroic: 0, villainous: 0, comic: 0, strategic: 0, emotional: 0, pressure: 0, early: null, epochs: 0 };
+    // Tone shares are over TONED content only — neutral filler (challenge
+    // participation, placements) otherwise dilutes every signal toward zero
+    // and the whole cast reads "steady". Floor of 2 damps one-event spikes.
+    const tonedUnits = Math.max(2, (s.units || 0) - (s.tones.neutral || 0));
+    const toneShare = t => (s.tones[t] || 0) / tonedUnits;
+    const prev = edit.reads[name]?.ema || { rel: 1, heroic: 0, villainous: 0, comic: 0, strategic: 0, emotional: 0, pressure: 0, early: null, epochs: 0 };
+    // Presence is tracked RELATIVE to the current field size (1 = average).
+    // Smoothing the raw share instead would systematically sink everyone below
+    // baseline as the cast shrinks. (Old saves stored `share`; migrate once.)
+    const relNow = share / baseline;
+    if (prev.rel === undefined) { prev.rel = (prev.share || baseline) / baseline; prev.early = null; }
     const ema = {
-      share: prev.share + EMA_ALPHA * (share - prev.share),
+      rel: prev.rel + EMA_ALPHA * (relNow - prev.rel),
       heroic: prev.heroic + EMA_ALPHA * (toneShare('heroic') - prev.heroic),
       villainous: prev.villainous + EMA_ALPHA * (toneShare('villainous') - prev.villainous),
       comic: prev.comic + EMA_ALPHA * (toneShare('comic') - prev.comic),
@@ -348,34 +357,37 @@ function _updateReads(edit, st, active, ep) {
       emotional: prev.emotional + EMA_ALPHA * (toneShare('emotional') - prev.emotional),
       // Votes received per episode, smoothed: the "constantly in danger" signal.
       pressure: (prev.pressure || 0) + EMA_ALPHA * ((votesRec[name] || 0) - (prev.pressure || 0)),
-      // First-three-episode average share, frozen: the growth arc's "before" picture.
-      early: prev.epochs < 3 ? ((prev.early ?? share) + share) / 2 : (prev.early ?? share),
+      // First-three-episode average presence, frozen: the growth arc's "before" picture.
+      early: prev.epochs < 3 ? ((prev.early ?? relNow) + relNow) / 2 : (prev.early ?? relNow),
       // Consecutive episodes clearly above the early-season picture — growth must be sustained.
-      riseStreak: share > ((prev.early ?? share) * 1.4 + 0.01) ? (prev.riseStreak || 0) + 1 : 0,
+      riseStreak: relNow > ((prev.early ?? relNow) * 1.4 + 0.01) ? (prev.riseStreak || 0) + 1 : 0,
       epochs: prev.epochs + 1,
     };
-    const rel = ema.share / baseline;                 // 1 = exactly average presence
+    const rel = ema.rel;                              // 1 = exactly average presence
     const flawShown = (votesRec[name] || 0) > 0 || (ep.chalPlacements || []).slice(-1)[0] === name;
     const inShowmance = (gs.showmances || []).some(sh => !sh?.broken && (sh?.a === name || sh?.b === name));
     const scores = {
       invisible: Math.max(0, 1.4 - rel * 1.4),
-      villain:   ema.villainous * 2.6 * Math.min(rel, 1.5),
-      comic:     ema.comic * 2.4 * Math.min(rel, 1.5),
+      // Villainy and comedy are rare and salient — TV amplifies both.
+      villain:   ema.villainous * 3.0 * Math.min(rel, 1.5),
+      comic:     ema.comic * 2.8 * Math.min(rel, 1.5),
       // Growth needs a SUSTAINED rise (2+ consecutive above-early episodes),
       // so one busy episode can't flip a long-invisible player straight to a growth arc.
       growth:    ema.epochs >= 4 && ema.riseStreak >= 2 ? Math.max(0, (ema.share - (ema.early ?? ema.share)) / baseline) * 1.6 : 0,
-      winner:    (rel >= 1.05 ? 0.5 : 0) + (ema.heroic + ema.strategic) * 1.3 - ema.villainous * 1.5 - (votesRec[name] || 0) * 0.15,
-      decoy:     rel >= 1.5 && flawShown ? 0.4 + (ema.heroic + ema.emotional) : 0,
+      winner:    (rel >= 1.0 ? 0.45 : 0) + (ema.heroic + ema.strategic) * 0.9 - ema.villainous * 1.2 - (votesRec[name] || 0) * 0.15,
+      decoy:     rel >= 1.4 && flawShown ? 0.4 + (ema.heroic + ema.emotional) * 0.8 : 0,
       // Mastermind: the strategy-narrator cut — visible, strategy-dominated, not heroic
       // enough for the winner edit (winner is exclusive; this is where schemers-in-plain-
       // sight and vote captains land instead of "steady presence").
-      mastermind: ema.strategic >= 0.42 && rel >= 0.9 ? ema.strategic * 1.9 * Math.min(rel, 1.4) - ema.heroic * 0.4 : 0,
-      // Showmance edit: the love-story cut — emotional content dominates, doubly so
-      // while actually in an active showmance.
-      romance:   ema.emotional >= 0.32 ? ema.emotional * 2.0 * Math.min(rel, 1.5) + (inShowmance ? 0.35 : 0) : 0,
+      mastermind: ema.strategic >= 0.5 && rel >= 0.85 ? ema.strategic * 1.4 * Math.min(rel, 1.4) - ema.heroic * 0.3 : 0,
+      // Showmance edit: an ACTIVE showmance is itself the love-story cut; without
+      // one, only genuinely emotion-dominated content earns it.
+      romance:   inShowmance ? 0.45 + ema.emotional * 1.2 * Math.min(rel, 1.5)
+                 : (ema.emotional >= 0.45 ? ema.emotional * 1.2 * Math.min(rel, 1.5) : 0),
       // Underdog edit: keeps eating votes and keeps surviving — the audience roots
-      // for whoever the game keeps trying (and failing) to kill.
-      underdog:  ema.pressure >= 1.1 && rel >= 0.55 ? 0.5 + ema.pressure * 0.25 : 0,
+      // for whoever the game keeps trying (and failing) to kill. Villains don't
+      // get the sympathy cut; they keep the villain edit instead.
+      underdog:  ema.pressure >= 0.9 && rel >= 0.55 && ema.villainous < 0.15 ? 0.5 + ema.pressure * 0.3 : 0,
       steady:    0.35,
     };
     // A read is a season arc: a challenger must beat the incumbent by the

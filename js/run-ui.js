@@ -172,12 +172,15 @@ export function renderSeasonHub() {
   if (railHost) railHost.style.setProperty('--hub-accent', model.setting.accent);
   const phaseLabel = model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
+  // Season Controls default OPEN in every lifecycle; the user's manual
+  // open/closed choice is remembered across renders and reloads.
   const controls = document.getElementById('season-controls-details');
-  if (controls) {
-    const previousLifecycle = controls.dataset.hubLifecycle;
-    if (!previousLifecycle) controls.open = model.lifecycle === 'setup';
-    else if (previousLifecycle === 'setup' && model.lifecycle !== 'setup') controls.open = false;
-    controls.dataset.hubLifecycle = model.lifecycle;
+  if (controls && !controls.dataset.hubInit) {
+    controls.dataset.hubInit = '1';
+    controls.open = localStorage.getItem('simulator_seasonControlsOpen') !== 'false';
+    controls.addEventListener('toggle', () => {
+      try { localStorage.setItem('simulator_seasonControlsOpen', String(controls.open)); } catch (e) {}
+    });
   }
   if (model.lifecycle === 'setup') {
     if (railHost) railHost.innerHTML = '';

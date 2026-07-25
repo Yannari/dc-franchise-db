@@ -145,6 +145,16 @@ describe('#6 edit layer — live reads', () => {
     }
   });
 
+  it('an established read survives one loud contradicting episode (season arc, not weekly mood)', () => {
+    for (let ep = 1; ep <= 4; ep++) {
+      updateEditLayer(makeEp(ep, { pre: [campEv('sabotage', ['B'], 'SABOTAGE'), campEv('spreadLies', ['B'], 'LIES')] }));
+    }
+    expect(editRead('B').key).toBe('villain');
+    // One heroic-heavy episode: the read must hold (change requires 2 consecutive episodes).
+    updateEditLayer(makeEp(5, { pre: [campEv('helpAtCamp', ['B'], 'HELPS'), campEv('comfortVictim', ['B'], 'COMFORT')] }));
+    expect(editRead('B').key).toBe('villain');
+  });
+
   it('editArc records label transitions without consecutive duplicates', () => {
     for (let ep = 1; ep <= 3; ep++) updateEditLayer(makeEp(ep));
     const arc = editArc('A');
@@ -197,7 +207,6 @@ describe('#6 edit layer — season finalization and consumers', () => {
     const text = L.join('\n');
     expect(text).toContain('AUDIENCE PULSE (THE EDIT)');
     expect(text).toContain('EDIT READS:');
-    expect(text).toContain('CONFESSIONAL COUNT:');
     // every stored quote appears verbatim
     ep2.editSnapshot.quotes.forEach(q => expect(text).toContain(q.text));
     // an ep with no snapshot writes nothing

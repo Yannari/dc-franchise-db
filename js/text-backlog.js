@@ -3352,12 +3352,8 @@ export function _textAudiencePulse(ep, ln, sec) {
       ln(`  - ${name}: ${label}${prevKey && prevKey !== key ? ` (was ${EDIT_LABELS[prevKey] || prevKey})` : ''}`);
     });
   }
-  const conf = Object.entries(snap.conf || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
-  if (conf.length) {
-    ln('');
-    ln(`CONFESSIONAL COUNT: ${conf.map(([name, count]) => `${name} x${count}`).join(' · ')}`);
-  }
-  (snap.quotes || []).forEach(q => ln(`  ${q.name} (confessional): "${q.text}"`));
+  if (snap.quotes?.length) { ln(''); ln('CONFESSIONALS:'); }
+  (snap.quotes || []).forEach(q => ln(`  ${q.name}: "${q.text}"`));
 }
 
 // MAIN — generateSummaryText

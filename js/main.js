@@ -335,11 +335,13 @@ async function init() {
   if (_sfCb2) _sfCb2.checked = _sfSaved2;
   _spoilerFree = _sfSaved2;
 
-  // Restore last active tab
+  // Restore last active tab — a refresh should land you where you were, not
+  // force the Season Hub. Hub stays the fallback for an active season.
   const _savedTab = localStorage.getItem('simulator_activeTab');
   if (core.gs?.initialized) {
-    showTab('run');
-  } else if (_savedTab && ['cast','setup'].includes(_savedTab)) {
+    if (['cast', 'setup', 'results', 'franchise'].includes(_savedTab)) showTab(_savedTab);
+    else showTab('run');
+  } else if (_savedTab && ['cast', 'setup', 'franchise'].includes(_savedTab)) {
     showTab(_savedTab);
   }
 

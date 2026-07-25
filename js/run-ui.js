@@ -104,8 +104,6 @@ export function buildHubAftermath(ep) {
       const prevKey = prevRec?.reads?.[name];
       if (prevKey && prevKey !== key) editWatch.push(`${name} shifted from ${_editLabels[prevKey] || prevKey} to ${_editLabels[key] || key}.`);
     });
-    const topConf = Object.entries(editRec.conf || {}).sort((a, b) => b[1] - a[1])[0];
-    if (topConf) editWatch.push(`${topConf[0]} led the episode with ${topConf[1]} confessional${topConf[1] === 1 ? '' : 's'}.`);
     if (editRec.quotes?.[0]) editWatch.push(`"${editRec.quotes[0].text}" — ${editRec.quotes[0].name}`);
   }
 
@@ -1907,7 +1905,7 @@ function renderMidseasonOverview() {
     </div>
     ${model.audiencePulse ? `<section class="overview-section overview-audience"><header><div><span>Audience pulse</span><h2>The edit so far</h2></div><small>Viewer perception · not game truth</small></header>
       <p class="overview-disclaimer">How the season is being cut for the audience: screen time, confessionals, and each player's running edit read. The edit can drift from what is really happening — that is the point.</p>
-      <div class="overview-edit-list">${(maxShare => model.audiencePulse.players.map(row => `<div class="overview-edit-row">${_overviewPortrait(row.name)}<div class="overview-edit-info"><strong>${_hubEsc(row.name)}</strong><span class="overview-edit-arc">${_hubEsc(row.arc.length > 1 ? row.arc.join(' → ') : row.read)}</span></div><span class="overview-edit-chip edit-${_hubEsc(row.readKey)}">${_hubEsc(row.read)}</span><div class="overview-edit-share"><div class="overview-edit-share-fill" style="width:${Math.round(row.share / maxShare * 100)}%"></div></div><em>${Math.round(row.share * 100)}% · ${row.confessionals} conf</em></div>`).join(''))(Math.max(...model.audiencePulse.players.map(row => row.share), 0.01))}</div>
+      <div class="overview-edit-list">${(maxShare => model.audiencePulse.players.map(row => `<div class="overview-edit-row">${_overviewPortrait(row.name)}<div class="overview-edit-info"><strong>${_hubEsc(row.name)}</strong><span class="overview-edit-arc">${_hubEsc(row.arc.length > 1 ? row.arc.join(' → ') : row.read)}</span></div><span class="overview-edit-chip edit-${_hubEsc(row.readKey)}">${_hubEsc(row.read)}</span><div class="overview-edit-share"><div class="overview-edit-share-fill" style="width:${Math.round(row.share / maxShare * 100)}%"></div></div><em title="Share of the season's total screen time">${Math.round(row.share * 100)}% screen time</em></div>`).join(''))(Math.max(...model.audiencePulse.players.map(row => row.share), 0.01))}</div>
       ${model.audiencePulse.quotes.length ? `<div class="overview-edit-quotes">${model.audiencePulse.quotes.map(quote => `<blockquote class="overview-edit-quote">${_overviewPortrait(quote.name)}<p>“${_hubEsc(quote.text)}”<cite>— ${_hubEsc(quote.name)}, confessional</cite></p></blockquote>`).join('')}</div>` : ''}
       ${model.audiencePulse.final ? `<div class="overview-edit-awards">${Object.entries({ editWinner: 'Winner edit', decoyFavorite: 'Decoy favorite', biggestVillain: 'Villain of the season', comicRelief: 'Comic relief', growthArc: 'Growth arc', mostInvisible: 'Most invisible' }).filter(([key]) => model.audiencePulse.final[key]).map(([key, label]) => `<div class="overview-edit-award">${_overviewPortrait(model.audiencePulse.final[key])}<div><label>${label}</label><strong>${_hubEsc(model.audiencePulse.final[key])}</strong></div></div>`).join('')}</div>` : ''}
     </section>` : ''}

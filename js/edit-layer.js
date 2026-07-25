@@ -32,8 +32,9 @@ const TONES = ['heroic', 'villainous', 'comic', 'strategic', 'emotional', 'neutr
 // Fan-perception drift per episode by current read — the edit layer's ONLY consequence.
 const FAN_DRIFT = { growth: 0.3, winner: 0.25, decoy: 0.2, comic: 0.15, villain: 0.1, steady: 0, invisible: -0.2 };
 
-const EMA_ALPHA = 0.4;        // how fast the running read absorbs a new episode
-const HYSTERESIS = 1.15;      // challenger must beat incumbent read by 15%
+const EMA_ALPHA = 0.25;       // slow absorb — the edit is a season arc, not a weekly mood
+const HYSTERESIS = 1.35;      // challenger must beat the incumbent read by 35%...
+const CONFIRM_EPISODES = 2;   // ...for this many CONSECUTIVE episodes before the label flips
 
 function _ensureEdit() {
   if (!gs.edit) gs.edit = { episodes: [], totals: {}, reads: {}, final: null };
@@ -361,10 +362,20 @@ function _updateReads(edit, st, active, ep) {
       decoy:     rel >= 1.5 && flawShown ? 0.4 + (ema.heroic + ema.emotional) : 0,
       steady:    0.35,
     };
-    const prevKey = edit.reads[name]?.key || 'steady';
-    let bestKey = prevKey, bestScore = (scores[prevKey] || 0) * HYSTERESIS;
-    Object.entries(scores).forEach(([k, v]) => { if (v > bestScore) { bestKey = k; bestScore = v; } });
-    edit.reads[name] = { key: bestKey, label: EDIT_LABELS[bestKey], score: Math.round((scores[bestKey] || 0) * 100) / 100, ema, _scores: scores };
+    // A read is a season arc: a challenger must beat the incumbent by the
+    // hysteresis margin for CONFIRM_EPISODES consecutive episodes. One loud
+    // episode never rewrites who someone is to the audience.
+    const prevRead = edit.reads[name] || {};
+    const prevKey = prevRead.key || 'steady';
+    let challengerKey = prevKey, challengerScore = (scores[prevKey] || 0) * HYSTERESIS;
+    Object.entries(scores).forEach(([k, v]) => { if (v > challengerScore) { challengerKey = k; challengerScore = v; } });
+    let key = prevKey, pendingKey = null, pendingCount = 0;
+    if (challengerKey !== prevKey) {
+      pendingKey = challengerKey;
+      pendingCount = (prevRead.pendingKey === challengerKey ? (prevRead.pendingCount || 0) : 0) + 1;
+      if (pendingCount >= CONFIRM_EPISODES) { key = challengerKey; pendingKey = null; pendingCount = 0; }
+    }
+    edit.reads[name] = { key, label: EDIT_LABELS[key], score: Math.round((scores[key] || 0) * 100) / 100, ema, pendingKey, pendingCount, _scores: scores };
   });
   // A season cuts ONE winner edit at a time: only the top winner-scorer keeps it,
   // every other claimant falls back to their next-best non-winner read.

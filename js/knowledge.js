@@ -185,9 +185,17 @@ export function propagate(ep = null, { contacts = defaultContacts, rng = Math.ra
   const e = ep ?? curEp();
   const s = store();
   const events = [];
+  const _active = gs.activePlayers || [];
   for (const id of Object.keys(s)) {
     const fact = s[id];
     if (_isStale(fact, e)) continue;   // nobody bothers passing around old news
+    // Vote-round facts about someone already voted out are dead news: a target
+    // fact stays time-valid into the next episode, but nobody "quietly brings
+    // Zaid's name" to camp after Zaid's torch is snuffed. (Permanent facts —
+    // idols, betrayals, architect credit — keep spreading; the jury needs them.)
+    if (fact.type === 'target' && fact.subject && _active.length && !_active.includes(fact.subject)) continue;
+    if (fact.type === 'pitch' && _active.length
+        && ((fact.object && !_active.includes(fact.object)) || (fact.subject && !_active.includes(fact.subject)))) continue;
     const knowers = Object.keys(fact.beliefs).filter(k => effectiveConfidence(fact, fact.beliefs[k], e) > 0.25);
     let shared = 0;
     for (const knower of knowers) {

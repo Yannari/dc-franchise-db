@@ -134,6 +134,23 @@ describe('knowledge: propagation (rumors, leaks, second-order)', () => {
     expect(found).toBe(true);
   });
 
+  it('vote-round facts about an eliminated player stop spreading (no "brings Zaid\'s name" after the boot)', () => {
+    seedNetwork();
+    K.recordFact({ type: 'target', subject: 'F', truth: true, ep: 1 });
+    K.learn('A', 'target:F', { sourceType: 'observed', ep: 1, rng: LOW });
+    K.recordFact({ type: 'pitch', subject: 'B', object: 'F', truth: true, ep: 1 });
+    K.learn('A', 'pitch:B:F', { sourceType: 'observed', ep: 1, rng: LOW });
+    // F is voted out — their name must vanish from camp conversation…
+    gs.activePlayers = ['A', 'B', 'C', 'D', 'E'];
+    const events = K.propagate(1, { maxPerFact: 6, rng: LOW });
+    expect(events.filter(ev => ev.subject === 'F' || ev.id === 'pitch:B:F')).toEqual([]);
+    // …while permanent facts (betrayals) about them keep flowing to the jury.
+    K.recordFact({ type: 'betrayal', subject: 'F', object: 'C', truth: true, ep: 1 });
+    K.learn('A', 'betrayal:F:C', { sourceType: 'observed', ep: 1, rng: LOW });
+    const events2 = K.propagate(1, { maxPerFact: 6, rng: LOW });
+    expect(events2.some(ev => ev.id === 'betrayal:F:C')).toBe(true);
+  });
+
   it('propagated beliefs arrive as told/rumor, not observed', () => {
     seedNetwork();
     K.recordFact({ type: 'idol', subject: 'F', truth: true, ep: 1 });

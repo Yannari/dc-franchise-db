@@ -194,7 +194,10 @@ export function _generateSpreadLies(schemer, target, group, ep, _rp) {
         `The confrontation between ${listener} and ${accused} happens in the middle of camp. Voices raise. Nobody interrupts. ${schemer} watches from a distance and says nothing.`,
       ];
       results.push({
-        type: 'spreadLies', players: [listener, accused],
+        // Reaction sub-event: the LISTENER confronts the accused. Not a scheme
+        // initiation — the listener was deceived, not scheming (propagated flag
+        // lets consumers distinguish the two).
+        type: 'spreadLies', players: [listener, accused], propagated: true,
         text: _rp(confrontTexts),
         consequences: `${listener} publicly confronts ${accused} — bond drop -0.5 each.`,
         badgeText: 'CONFRONTATION', badgeClass: 'red'
@@ -409,9 +412,168 @@ export function _generateCampaignRally(rallier, target, group, ep, _rp) {
   return results;
 }
 
+// ── FALSE MAJORITY — the schemer sells the victim a fake vote plan ("it's X
+// tonight") so the victim wastes their ballot on a decoy. The steer itself is
+// applied in voting.js (the victim's allianceTarget becomes the decoy, so bond
+// resistance / immunity / showmance protections still apply). Fallout resolves
+// here the NEXT episode once the vote record shows whether the con landed.
+export function _generateFalseMajority(schemer, victim, decoy, group, ep, _rp) {
+  if (!schemer || !victim || !decoy) return [];
+  const results = [];
+  const sS = pStats(schemer), vS = pStats(victim);
+  const _sP = pronouns(schemer), _vP = pronouns(victim);
+  const credibility = sS.social * 0.4 + sS.strategic * 0.4 + Math.max(0, getBond(schemer, victim)) * 0.6 + Math.random() * 3;
+  const resistance = vS.intuition * 0.5 + vS.mental * 0.35 + Math.random() * 3;
+
+  if (credibility > resistance) {
+    gs._falseMajorityPlot = { schemer, victim, decoy, ep: (gs.episode || 0) + 1 };
+    results.push({
+      type: 'falseMajority', players: [schemer, victim],
+      text: _rp([
+        `${schemer} finds ${victim} alone and lowers ${_sP.pos} voice. "It's ${decoy} tonight. Everyone's already locked in — I just didn't want you blindsided." ${victim} nods slowly. It sounds exactly like the truth.`,
+        `${schemer} sketches the vote in the sand for ${victim}: names, numbers, arrows all pointing at ${decoy}. The math is clean. The math is also fiction.`,
+        `${schemer} walks ${victim} through "the plan" — ${decoy}, unanimous, done by sunset. ${victim} asks who else knows. "Everyone. That's the point." Nobody knows. There is no plan.`,
+        `${schemer} leans in at the water pot: "Keep it quiet, but the tribe settled on ${decoy}." ${victim} feels relieved to finally be in the loop. ${_vP.Sub} ${_vP.sub === 'they' ? 'are' : 'is'} the only one in this particular loop.`,
+      ]),
+      consequences: `${victim} believes the fake plan — their ballot is steered toward ${decoy} tonight.`,
+      badgeText: 'FALSE MAJORITY', badgeClass: 'red',
+    });
+  } else {
+    addBond(victim, schemer, -1.5);
+    if (!gs._schemeHeat) gs._schemeHeat = {};
+    gs._schemeHeat[schemer] = { amount: 1.5, expiresEp: (gs.episode || 0) + 1 + 2 };
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
+    results.push({
+      type: 'falseMajorityResisted', players: [schemer, victim],
+      text: _rp([
+        `${schemer} pitches ${victim} a vote that doesn't smell right. ${victim} asks one question — "who told YOU?" — and watches ${schemer} improvise. Badly.`,
+        `${victim} listens to ${schemer}'s "plan," then checks it with one other person. It checks out with no one. ${victim} files that away.`,
+        `${schemer} tries to hand ${victim} a ready-made vote. ${victim} turns it over, finds the seams, and hands it back. "Try someone else."`,
+        `Halfway through ${schemer}'s pitch, ${victim} realizes nobody else has mentioned this plan all day. The pitch ends politely. The trust ends entirely.`,
+      ]),
+      consequences: `${victim} smells the con — bond with ${schemer} drops, heat +1.5 for 2 eps.`,
+      badgeText: 'CON REFUSED', badgeClass: 'gold',
+    });
+  }
+  return results;
+}
+
+// ── CHALLENGE-THROW ACCUSATION (pre-merge only) — after a tribal loss, the
+// schemer accuses a low scorer of throwing it. Credibility scales with the
+// target's ACTUAL recorded performance: accusing a genuine weak link sticks
+// (reuses gs.challengeThrowHeat, which alliance targeting already consumes);
+// accusing a strong performer backfires onto the schemer.
+export function _generateThrowAccusation(schemer, group, ep, _rp) {
+  if (gs.isMerged) return [];
+  const prev = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (!prev?.chalMemberScores || !prev.eliminated) return [];
+  const _prevTribe = (prev.tribesAtStart || []).find(t => t.members?.includes(schemer));
+  if (!_prevTribe || !_prevTribe.members.includes(prev.eliminated)) return [];   // our tribe didn't lose
+  const _mates = group.filter(p => p !== schemer && _prevTribe.members.includes(p) && prev.chalMemberScores[p] !== undefined);
+  if (_mates.length < 2) return [];
+  const _avg = _mates.reduce((sum, p) => sum + prev.chalMemberScores[p], 0) / _mates.length;
+  const target = [..._mates].sort((a, b) => prev.chalMemberScores[a] - prev.chalMemberScores[b])[0];
+  const _score = prev.chalMemberScores[target];
+  // Plausibility comes from THIS challenge only — career record is irrelevant.
+  // A historically weak player who showed up big yesterday is untouchable.
+  const plausibility = Math.max(0, (_avg - _score) / Math.max(1, _avg));
+  // Nobody underperformed enough to accuse — no story to sell, no event.
+  if (plausibility < 0.12) return [];
+  const results = [];
+  const sS = pStats(schemer);
+  const _tP = pronouns(target);
+
+  const sold = Math.random() < Math.min(0.85, plausibility * 1.4 + sS.social * 0.03);
+  if (sold) {
+    if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
+    gs.challengeThrowHeat[target] = (gs.episode || 0) + 2;
+    group.filter(p => p !== target && p !== schemer).forEach(p => addBond(p, target, -0.6));
+    results.push({
+      type: 'throwAccusation', players: [schemer, target],
+      text: _rp([
+        `${schemer} replays yesterday's loss around the fire — and keeps landing on ${target}'s performance. "Watch it again in your head. Does that look like trying to you?" The silence answers.`,
+        `${schemer} doesn't accuse ${target} directly. ${_tP.Sub} just asks, loudly, how the tribe's numbers looked before and after ${target}'s leg of the challenge. People start doing the math.`,
+        `"I'm not saying ${target} threw it," ${schemer} says, in the tone of someone saying exactly that. The tribe replays the loss. ${target}'s stretch of it does look bad.`,
+        `${schemer} corners two tribemates with the theory: ${target} quit on that challenge on purpose. Given how ${target} actually scored, it's an easy theory to sell.`,
+      ]),
+      consequences: `The accusation sticks — ${target} carries challenge-throw heat for 2 eps, tribe bonds slip.`,
+      badgeText: 'THROW ACCUSATION', badgeClass: 'red',
+    });
+  } else {
+    addBond(target, schemer, -1.2);
+    group.filter(p => p !== target && p !== schemer && getBond(p, target) >= 2).forEach(p => addBond(p, schemer, -0.6));
+    if (!gs._schemeHeat) gs._schemeHeat = {};
+    gs._schemeHeat[schemer] = { amount: 2.0, expiresEp: (gs.episode || 0) + 1 + 2 };
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[schemer] = (gs.popularity[schemer] || 0) - 1;
+    results.push({
+      type: 'throwAccusationBackfire', players: [schemer, target],
+      text: _rp([
+        `${schemer} floats the theory that ${target} threw the challenge. The tribe actually watched that challenge. ${target} bled for it. The theory dies loudly, and ${schemer} is holding it.`,
+        `${schemer} accuses ${target} of tanking the loss. Problem: ${target} was one of the few who showed up. The tribe closes ranks — around ${target}.`,
+        `The accusation lasts about a minute — until someone recites ${target}'s actual numbers back at ${schemer}. Now the only question is why ${schemer} wanted them blamed.`,
+        `${schemer} points the finger at ${target} for the loss. It bends back. "You want to talk about who cost us that challenge?" The fire crackles. Nobody defends ${schemer}.`,
+      ]),
+      consequences: `The tribe doesn't buy it — ${schemer} takes scheme heat +2.0 and bond damage.`,
+      badgeText: 'ACCUSATION BACKFIRES', badgeClass: 'gold',
+    });
+  }
+  return results;
+}
+
+// ── Fallout for last episode's False Majority: did the con land? ──
+function _resolveFalseMajorityFallout(group, ep, _rp, results) {
+  const plot = gs._falseMajorityPlot;
+  if (!plot) return;
+  const _currentEp = ep?.num || (gs.episode || 0) + 1;
+  if (plot.ep >= _currentEp) return;                    // plot episode not resolved yet
+  gs._falseMajorityPlot = null;                         // one-shot either way
+  if (!group.includes(plot.victim) || !group.includes(plot.schemer)) return;
+  const prev = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  const _ballot = (prev?.votingLog || []).find(v => v.voter === plot.victim);
+  if (!_ballot || _ballot.voted !== plot.decoy || prev?.eliminated === plot.decoy) return;   // con never mattered
+  const vS = pStats(plot.victim);
+  const traced = Math.random() < vS.intuition * 0.09;   // proportional: intuition 10 → 90% traceback
+  if (traced) {
+    addBond(plot.victim, plot.schemer, -2.5);
+    if (!gs._schemeHeat) gs._schemeHeat = {};
+    gs._schemeHeat[plot.schemer] = { amount: 2.0, expiresEp: (gs.episode || 0) + 1 + 3 };
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[plot.schemer] = (gs.popularity[plot.schemer] || 0) - 1;
+    // ep is NULL when called via generateCampEventsForGroup (documented scope
+    // gotcha) — the comfort/rally reaction hookup is best-effort only.
+    if (ep) { ep._socialVictim = plot.victim; ep._socialSchemer = plot.schemer; }
+    results.push({
+      type: 'falseMajorityExposed', players: [plot.victim, plot.schemer],
+      text: _rp([
+        `${plot.victim} replays the vote all night. Only one person pushed the ${plot.decoy} plan. Only one ballot followed it. By morning, ${plot.victim} says it to ${plot.schemer}'s face: "You wasted my vote."`,
+        `${plot.victim} compares notes at breakfast and discovers the "unanimous plan" existed in exactly one conversation — the one with ${plot.schemer}. The camp watches the confrontation from a safe distance.`,
+        `It takes ${plot.victim} a day to trace the bad vote back to its source. The source is ${plot.schemer}. What follows is loud, public, and long overdue.`,
+        `${plot.victim} lays out the receipts: who said what, who voted where. Every line leads to ${plot.schemer}. "You didn't beat me. You lied to me." The tribe hears every word.`,
+      ]),
+      consequences: `${plot.victim} traces the wasted ballot to ${plot.schemer} — bond -2.5, heat +2.0 for 3 eps.`,
+      badgeText: 'DECEPTION REVEALED', badgeClass: 'red',
+    });
+  } else {
+    results.push({
+      type: 'falseMajorityConfusion', players: [plot.victim],
+      text: _rp([
+        `${plot.victim} stares at the tally in ${pronouns(plot.victim).pos} head. The plan everyone supposedly agreed on got exactly one vote — ${pronouns(plot.victim).pos}. Somebody lied. ${plot.victim} just can't work out who.`,
+        `${plot.victim} quietly asks two people about last night's "plan." Both look blank. The paranoia settles in like weather.`,
+        `Something about that vote doesn't add up, and ${plot.victim} knows it. ${pronouns(plot.victim).Sub} ${pronouns(plot.victim).sub === 'they' ? 'start' : 'starts'} watching everyone a little more carefully.`,
+        `${plot.victim} was sure of the numbers. The numbers were sure of something else. Trust, from here on out, gets verified.`,
+      ]),
+      consequences: `${plot.victim} knows they were played but can't trace it — paranoia rises.`,
+      badgeText: 'BAD INTEL', badgeClass: 'gold',
+    });
+  }
+}
+
 export function generateSocialManipulationEvents(group, ep, boostRate) {
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
   const results = [];
+  _resolveFalseMajorityFallout(group, ep, _rp, results);
   if (group.length < 3) return results;
 
   // Identify eligible schemers — must have villain intent, not just brains
@@ -426,8 +588,10 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
     if (VILLAIN_ARCHETYPES.includes(arch)) return true;
     // Nice archetypes NEVER scheme (even with high strategic)
     if (isNice) return false;
-    // Neutral archetypes: need strategic + low loyalty
-    return (st.strategic >= 6 && st.loyalty <= 4);
+    // Neutral archetypes: PROPORTIONAL — scheme inclination scales with
+    // strategic brain and disloyal heart instead of a hard threshold.
+    // strategic 6 / loyalty 4 ≈ 36% · strategic 9 / loyalty 1 ≈ 81% · strategic 5 / loyalty 5 ≈ 25%
+    return Math.random() < (st.strategic / 10) * ((10 - st.loyalty) / 10);
   });
   if (!schemers.length) return results;
 
@@ -491,6 +655,20 @@ export function generateSocialManipulationEvents(group, ep, boostRate) {
     const whisperTarget = group.find(p => p !== schemer && getBond(schemer, p) <= -1);
     if (whisperTarget) {
       schemeOptions.push({ type: 'whisperCampaign', weight: 2, fn: () => _generateWhisperCampaign(schemer, whisperTarget, group, ep, _rp) });
+    }
+    // False majority — sell someone a fake vote plan. Needs a victim who trusts
+    // the schemer at least neutrally, and a decoy to burn the ballot on.
+    const _fmVictims = group.filter(p => p !== schemer && getBond(schemer, p) >= 0);
+    const _fmVictim = _fmVictims.sort((a, b) => getBond(schemer, b) - getBond(schemer, a))[0];
+    const _fmDecoyPool = group.filter(p => p !== schemer && p !== _fmVictim);
+    const _fmDecoy = _fmDecoyPool.sort((a, b) => getBond(schemer, a) - getBond(schemer, b))[0];
+    if (_fmVictim && _fmDecoy && !gs._falseMajorityPlot) {
+      schemeOptions.push({ type: 'falseMajority', weight: 3, fn: () => _generateFalseMajority(schemer, _fmVictim, _fmDecoy, group, ep, _rp) });
+    }
+    // Challenge-throw accusation — pre-merge only, and only when the schemer's
+    // tribe just lost; the generator verifies plausibility from the ACTUAL scores.
+    if (!gs.isMerged) {
+      schemeOptions.push({ type: 'throwAccusation', weight: 2, fn: () => _generateThrowAccusation(schemer, group, ep, _rp) });
     }
 
     if (!schemeOptions.length) continue;

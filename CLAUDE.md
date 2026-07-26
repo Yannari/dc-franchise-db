@@ -160,7 +160,7 @@ Tribe scores: averages per member, NEVER raw sums.
 ## Social Manipulation Camp Events (Standalone)
 Fires in ANY episode (not tied to a challenge). Rate: ~15% per eligible schemer per episode, boosted to ~40% during Lucky Hunt.
 
-**Schemer eligibility:** villain/mastermind/schemer archetypes always. Neutral archetypes need strategic >= 6 + loyalty <= 4. Nice archetypes NEVER scheme.
+**Schemer eligibility:** villain/mastermind/schemer archetypes always. Neutral archetypes PROPORTIONAL: chance = (strategic/10) x ((10-loyalty)/10) per episode. Nice archetypes NEVER scheme.
 
 | Event | Mechanic |
 |---|---|
@@ -169,6 +169,8 @@ Fires in ANY episode (not tied to a challenge). Rate: ~15% per eligible schemer 
 | Kiss Trap | Rarest. Needs showmance + accomplice + romantic compatibility. Showmance destruction possible. |
 | Whisper Campaign | Subtle. Seeds doubt with 5-6 individuals. Hard to trace. |
 | Campaign Rally | Social player rallies votes against a target. Heat applied. |
+| False Majority | Schemer sells victim a fake vote plan ("it's X tonight"). Believed: victim's ballot steered to the decoy (voting.js hook; bond/immunity resistance still applies). Fallout next ep: intuition-proportional traceback -> DECEPTION REVEALED, or untraced paranoia. |
+| Throw Accusation | PRE-MERGE only, after a tribal loss. Accuses the lowest scorer of THIS challenge of throwing it — plausibility from actual chalMemberScores only (career record irrelevant; nobody clearly underperformed -> no event). Sticks: challengeThrowHeat 2 eps. Backfires onto schemer. |
 | Expose Schemer | Reaction event. High-intuition player catches a scheme. Schemer takes massive heat. |
 | Comfort Victim | Reaction event. Loyal player comforts scheme victim. Bond boost + potential alliance. |
 

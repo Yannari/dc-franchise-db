@@ -996,6 +996,16 @@ export function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = 
                    || alliances.find(a => a.members.includes(voter));
     let allianceTarget = myAlliance?.target;
 
+    // FALSE MAJORITY (social manipulation): the victim believes tonight's vote
+    // is the decoy. Overriding their perceived plan here keeps every downstream
+    // protection intact — bond resistance, showmance loyalty, and immunity can
+    // all still pull the ballot off the decoy.
+    const _fmPlot = gs._falseMajorityPlot;
+    if (_fmPlot && voter === _fmPlot.victim && tribalPlayers.includes(_fmPlot.decoy)
+        && !isImmune(_fmPlot.decoy) && _fmPlot.decoy !== voter) {
+      allianceTarget = _fmPlot.decoy;
+    }
+
     // All real alliances this player belongs to (they may be in multiple)
     const allMyAlliances = alliances.filter(a => a.type === 'alliance' && a.members.includes(voter));
     // A conflicting target exists if another alliance wants to vote someone different

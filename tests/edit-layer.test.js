@@ -158,6 +158,16 @@ describe('#6 edit layer — live reads', () => {
     expect(editRead('A').label).toBe(EDIT_LABELS.romance);
   });
 
+  it('a broken-up showmance no longer powers the Showmance edit', () => {
+    gs.showmances = [{ players: ['A', 'C'], phase: 'broken-up' }];
+    for (let ep = 1; ep <= 5; ep++) {
+      updateEditLayer(makeEp(ep, {
+        pre: [campEv('allianceTalk', ['A', 'B']), campEv('bonding', ['C', 'D'])],
+      }));
+    }
+    expect(editRead('A').key).not.toBe('romance');
+  });
+
   it('a player who keeps eating votes and surviving earns the Underdog edit', () => {
     for (let ep = 1; ep <= 5; ep++) {
       updateEditLayer(makeEp(ep, {

@@ -370,7 +370,8 @@ function _updateReads(edit, st, active, ep) {
     };
     const rel = ema.rel;                              // 1 = exactly average presence
     const flawShown = (votesRec[name] || 0) > 0 || (ep.chalPlacements || []).slice(-1)[0] === name;
-    const inShowmance = (gs.showmances || []).some(sh => !sh?.broken && (sh?.a === name || sh?.b === name));
+    // Real showmance shape: { players: [a, b], phase } — 'broken-up' ends it.
+    const inShowmance = (gs.showmances || []).some(sh => sh?.players?.includes(name) && sh.phase !== 'broken-up');
     const scores = {
       invisible: Math.max(0, 1.4 - rel * 1.4),
       // Villainy and comedy are rare and salient — TV amplifies both. But the

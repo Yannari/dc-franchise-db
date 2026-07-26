@@ -146,7 +146,8 @@ describe('#6 edit layer — live reads', () => {
   });
 
   it('a showmance love story earns the Showmance edit', () => {
-    gs.showmances = [{ a: 'A', b: 'C', broken: false }];
+    // REAL showmance shape from romance.js — { players, phase }, not {a, b}.
+    gs.showmances = [{ players: ['A', 'C'], phase: 'showmance' }];
     for (let ep = 1; ep <= 5; ep++) {
       updateEditLayer(makeEp(ep, {
         pre: [campEv('showmanceMoment', ['A', 'C'], 'ROMANCE'), campEv('stolenKiss', ['A', 'C'], 'KISS'),

@@ -92,7 +92,7 @@ import { rpBuildClownTitleCard, rpBuildClownStalk, rpBuildClownRun } from './cha
 import { rpBuildBashTitleCard, rpBuildBashArena, rpBuildBashResults } from './chal/bumper-car-bash.js';
 import { rpBuildCheeseTitleCard, rpBuildCheeseDrop, rpBuildCheeseResults } from './chal/say-cheese.js';
 import { rpBuildWheelTitleCard, rpBuildWheelPhase1, rpBuildWheelPhase2, rpBuildWheelPhase3, rpBuildWheelResults } from './chal/wheel-of-misfortune.js';
-import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes } from './vp-finale.js';
+import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3678,6 +3678,10 @@ export function generateSummaryText(ep) {
   _textCampPost(ep, ln, sec);
   _textMoleExposed(ep, ln, sec);
   _textTiedDestinies(ep, ln, sec);
+  // Jury Life villa segment (jury-elimination twist) — retranscribe the VP screen.
+  if ((ep.twists || []).some(t => t.type === 'jury-elimination' && (t.elimLog || []).length >= 2)) {
+    _textTwistChallenge(ep, ln, sec, 'twists', 'JURY LIFE — THE JURY VILLA', [rpBuildJuryLife]);
+  }
   _textJuryElimination(ep, ln, sec); // mid-game jury-elimination twist replaces the tribal-council block
   _textVotingPlans(ep, ln, sec);
   _textCampAccess(ep, ln, sec);

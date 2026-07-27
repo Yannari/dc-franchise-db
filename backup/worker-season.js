@@ -329,13 +329,13 @@ Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {
-    model: "gpt-5.5",
+    model: "claude-opus-4-8",
     instructions,
     input: episodeSummaries + brantsteeleSection,
     text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
   };
 
-  return await callOpenAI(payload, env);
+  return await callClaude(payload, env);
 }
 
 async function generateNarrativeFill(body, env) {
@@ -485,13 +485,13 @@ Return ONLY valid JSON matching the schema.
 `.trim();
 
   const payload = {
-    model: "gpt-5.5",
+    model: "claude-opus-4-8",
     instructions,
     input: episodeSummaries,
     text: { format: { type: "json_schema", name: "narrative_fill", strict: true, schema } },
   };
 
-  return await callOpenAI(payload, env);
+  return await callClaude(payload, env);
 }
 
 async function generateAnalytics(summaryText, season, episode, env) {
@@ -971,13 +971,13 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 `.trim();
 
   const payload = {
-    model: "gpt-5.5",
+    model: "claude-opus-4-8",
     instructions,
     input: summaryText,
     text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
   };
 
-  return await callOpenAI(payload, env);
+  return await callClaude(payload, env);
 }
 
 async function generateEpisode(summaryText, season, episode, env, previousEpisodes = []) {
@@ -1354,8 +1354,8 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  const payload = { model: "gpt-5.5", instructions, input: summaryText };
-  return await callOpenAI(payload, env);
+  const payload = { model: "claude-opus-4-8", instructions, input: summaryText };
+  return await callClaude(payload, env);
 }
 
 async function generateRankingsNarration(body, env) {
@@ -1427,26 +1427,54 @@ Return ONLY valid JSON matching the schema.
 `.trim();
 
   const payload = {
-    model: "gpt-5.5",
+    model: "claude-opus-4-8",
     instructions,
     input: playerSummaries,
     text: { format: { type: "json_schema", name: "rankings_narration", strict: true, schema } },
   };
 
-  return await callOpenAI(payload, env);
+  return await callClaude(payload, env);
 }
 
 
-async function callOpenAI(payload, env) {
+// Anthropic structured outputs reject schema keywords OpenAI strict mode
+// allowed (numeric/string/array constraints). Strip them recursively; keep
+// enum/const/required/additionalProperties, which both providers share.
+function sanitizeSchemaForClaude(node) {
+  if (Array.isArray(node)) { node.forEach(sanitizeSchemaForClaude); return node; }
+  if (!node || typeof node !== "object") return node;
+  for (const key of ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
+    "minLength", "maxLength", "pattern", "minItems", "maxItems", "uniqueItems",
+    "minProperties", "maxProperties"]) delete node[key];
+  for (const value of Object.values(node)) sanitizeSchemaForClaude(value);
+  return node;
+}
+
+// Transport: Claude Messages API (payload keeps the legacy shape —
+// { model, instructions, input, text: { format: { schema } } } — so the
+// call sites are unchanged from the OpenAI era).
+async function callClaude(payload, env) {
+  const schema = payload?.text?.format?.schema
+    ? sanitizeSchemaForClaude(JSON.parse(JSON.stringify(payload.text.format.schema)))
+    : null;
+  const body = {
+    model: payload.model,
+    max_tokens: 32000,
+    system: payload.instructions,
+    messages: [{ role: "user", content: payload.input }],
+  };
+  if (schema) body.output_config = { format: { type: "json_schema", schema } };
+
   let resp;
   try {
-    resp = await fetch("https://api.openai.com/v1/responses", {
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
@@ -1464,25 +1492,31 @@ async function callOpenAI(payload, env) {
     });
   }
 
-  const outText = typeof data?.output_text === "string" ? data.output_text.trim() : "";
-  let outJson = null;
+  // stop_reason "refusal" (safety) or "max_tokens" (truncation) both mean the
+  // JSON contract may not hold — surface an explicit error instead of garbage.
+  if (data?.stop_reason === "refusal") {
+    return new Response(JSON.stringify({ error: "Claude refused the request", stop_details: data.stop_details || null }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
 
+  const outText = (data?.content || [])
+    .filter(block => block?.type === "text")
+    .map(block => block.text || "")
+    .join("")
+    .trim();
+
+  let outJson = null;
   if (outText) {
     try {
       outJson = JSON.parse(outText);
     } catch {
-      outJson = { episodeTranscript: outText };
-    }
-  }
-
-  if (!outJson && Array.isArray(data?.output)) {
-    const joined = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
-    if (joined) {
-      try {
-        outJson = JSON.parse(joined);
-      } catch {
-        outJson = { episodeTranscript: joined };
-      }
+      // Un-schema'd calls return prose; schema'd calls only land here when
+      // truncated by max_tokens.
+      outJson = data?.stop_reason === "max_tokens"
+        ? { error: "Claude output truncated (max_tokens)" }
+        : { episodeTranscript: outText };
     }
   }
 

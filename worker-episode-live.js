@@ -730,17 +730,18 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
     + Object.entries(gaps).map(([f, names]) => `- ${f} omitted these active players: ${names.join(", ")}`).join("\n")
     + `\nRegenerate the FULL analytics with bootPredictions and powerRankings entries for EVERY active player listed above as well as everyone you already covered. Do not drop anyone.`;
 
-  // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
-  if (env.OPENAI_API_KEY) {
+  // Claude first (structured outputs guarantee the schema; the coverage loop
+  // below still verifies every active player is present)
+  if (env.ANTHROPIC_API_KEY) {
     let lastData = null, lastGaps = null;
     for (let attempt = 0; attempt < 2; attempt++) {
       const payload = {
-        model: "gpt-5.5",
+        model: "claude-opus-4-8",
         instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
         input: summaryText,
         text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
       };
-      const response = await callOpenAI(payload, env, { provider: "openai" });
+      const response = await callClaude(payload, env);
       if (!response.ok) break;
       const data = await response.json();
       if (data.error) break;
@@ -2735,6 +2736,96 @@ function repairTruncatedJson(str) {
 // Keeps the SAME name, arguments, and return shape so all callers work unchanged: it accepts a
 // Responses-API-style payload ({ model, instructions, input, [text.format.schema] }) and returns
 // a Response whose .json() is either the parsed JSON (for schema calls) or { episodeTranscript }.
+// Anthropic structured outputs reject schema keywords OpenAI strict mode
+// allowed (numeric/string/array constraints). Strip them recursively; keep
+// enum/const/required/additionalProperties, which both providers share.
+function sanitizeSchemaForClaude(node) {
+  if (Array.isArray(node)) { node.forEach(sanitizeSchemaForClaude); return node; }
+  if (!node || typeof node !== "object") return node;
+  for (const key of ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
+    "minLength", "maxLength", "pattern", "minItems", "maxItems", "uniqueItems",
+    "minProperties", "maxProperties"]) delete node[key];
+  for (const value of Object.values(node)) sanitizeSchemaForClaude(value);
+  return node;
+}
+
+// Transport: Claude Messages API (payload keeps the legacy shape —
+// { model, instructions, input, text: { format: { schema } } } — so the
+// call sites are unchanged from the OpenAI era).
+async function callClaude(payload, env) {
+  const schema = payload?.text?.format?.schema
+    ? sanitizeSchemaForClaude(JSON.parse(JSON.stringify(payload.text.format.schema)))
+    : null;
+  const body = {
+    model: payload.model,
+    max_tokens: 32000,
+    system: payload.instructions,
+    messages: [{ role: "user", content: payload.input }],
+  };
+  if (schema) body.output_config = { format: { type: "json_schema", schema } };
+
+  let resp;
+  try {
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    return new Response(JSON.stringify(data), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  // stop_reason "refusal" (safety) or "max_tokens" (truncation) both mean the
+  // JSON contract may not hold — surface an explicit error instead of garbage.
+  if (data?.stop_reason === "refusal") {
+    return new Response(JSON.stringify({ error: "Claude refused the request", stop_details: data.stop_details || null }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const outText = (data?.content || [])
+    .filter(block => block?.type === "text")
+    .map(block => block.text || "")
+    .join("")
+    .trim();
+
+  let outJson = null;
+  if (outText) {
+    try {
+      outJson = JSON.parse(outText);
+    } catch {
+      // Un-schema'd calls return prose; schema'd calls only land here when
+      // truncated by max_tokens.
+      outJson = data?.stop_reason === "max_tokens"
+        ? { error: "Claude output truncated (max_tokens)" }
+        : { episodeTranscript: outText };
+    }
+  }
+
+  const finalOut = outJson || data;
+
+  return new Response(JSON.stringify(finalOut), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
+}
+
 async function callOpenAI(payload, env, opts = {}) {
   // Analytics (and any caller passing { provider: "openai" }) hit the real OpenAI Responses API.
   if (opts.provider === "openai") {

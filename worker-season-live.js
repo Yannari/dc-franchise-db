@@ -329,13 +329,13 @@ Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {
-    model: "claude-opus-4-8",
+    model: "gpt-5.5",
     instructions,
     input: episodeSummaries + brantsteeleSection,
     text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
   };
 
-  return await callClaude(payload, env);
+  return await callLLM(payload, env);
 }
 
 async function generateNarrativeFill(body, env) {
@@ -485,13 +485,13 @@ Return ONLY valid JSON matching the schema.
 `.trim();
 
   const payload = {
-    model: "claude-opus-4-8",
+    model: "gpt-5.5",
     instructions,
     input: episodeSummaries,
     text: { format: { type: "json_schema", name: "narrative_fill", strict: true, schema } },
   };
 
-  return await callClaude(payload, env);
+  return await callLLM(payload, env);
 }
 
 async function generateAnalytics(summaryText, season, episode, env) {
@@ -971,13 +971,13 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 `.trim();
 
   const payload = {
-    model: "claude-opus-4-8",
+    model: "gpt-5.5",
     instructions,
     input: summaryText,
     text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
   };
 
-  return await callClaude(payload, env);
+  return await callLLM(payload, env);
 }
 
 async function generateEpisode(summaryText, season, episode, env, previousEpisodes = []) {
@@ -1354,8 +1354,8 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  const payload = { model: "claude-opus-4-8", instructions, input: summaryText };
-  return await callClaude(payload, env);
+  const payload = { model: "gpt-5.5", instructions, input: summaryText };
+  return await callLLM(payload, env);
 }
 
 async function generateRankingsNarration(body, env) {
@@ -1427,13 +1427,13 @@ Return ONLY valid JSON matching the schema.
 `.trim();
 
   const payload = {
-    model: "claude-opus-4-8",
+    model: "gpt-5.5",
     instructions,
     input: playerSummaries,
     text: { format: { type: "json_schema", name: "rankings_narration", strict: true, schema } },
   };
 
-  return await callClaude(payload, env);
+  return await callLLM(payload, env);
 }
 
 
@@ -1458,7 +1458,7 @@ async function callClaude(payload, env) {
     ? sanitizeSchemaForClaude(JSON.parse(JSON.stringify(payload.text.format.schema)))
     : null;
   const body = {
-    model: payload.model,
+    model: "claude-opus-4-8",   // Claude leg always runs Opus regardless of payload.model
     max_tokens: 32000,
     system: payload.instructions,
     messages: [{ role: "user", content: payload.input }],
@@ -1523,6 +1523,79 @@ async function callClaude(payload, env) {
   const finalOut = outJson || data;
 
   return new Response(JSON.stringify(finalOut), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
+}
+
+async function callOpenAI(payload, env) {
+  let resp;
+  try {
+    resp = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    return new Response(JSON.stringify(data), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const outText = typeof data?.output_text === "string" ? data.output_text.trim() : "";
+  let outJson = null;
+
+  if (outText) {
+    try {
+      outJson = JSON.parse(outText);
+    } catch {
+      outJson = { episodeTranscript: outText };
+    }
+  }
+
+  if (!outJson && Array.isArray(data?.output)) {
+    const joined = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+    if (joined) {
+      try {
+        outJson = JSON.parse(joined);
+      } catch {
+        outJson = { episodeTranscript: joined };
+      }
+    }
+  }
+
+  const finalOut = outJson || data;
+
+  return new Response(JSON.stringify(finalOut), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
+}
+
+
+// Provider chain: OpenAI primary, Claude backup. Any OpenAI failure (quota
+// 429, network, 5xx) falls through to Claude so exports keep working on
+// whichever account has credit.
+async function callLLM(payload, env) {
+  if (env.OPENAI_API_KEY) {
+    const resp = await callOpenAI(payload, env);
+    if (resp.status === 200) return resp;
+    if (!env.ANTHROPIC_API_KEY) return resp;   // no backup configured — surface the real error
+  }
+  if (env.ANTHROPIC_API_KEY) return await callClaude(payload, env);
+  return new Response(JSON.stringify({ error: "No LLM key configured — set OPENAI_API_KEY and/or ANTHROPIC_API_KEY on this worker" }), {
+    status: 500,
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }

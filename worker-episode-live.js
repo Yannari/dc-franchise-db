@@ -730,8 +730,42 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
     + Object.entries(gaps).map(([f, names]) => `- ${f} omitted these active players: ${names.join(", ")}`).join("\n")
     + `\nRegenerate the FULL analytics with bootPredictions and powerRankings entries for EVERY active player listed above as well as everyone you already covered. Do not drop anyone.`;
 
-  // Claude first (structured outputs guarantee the schema; the coverage loop
-  // below still verifies every active player is present)
+  // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
+  if (env.OPENAI_API_KEY) {
+    let lastData = null, lastGaps = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const payload = {
+        model: "gpt-5.5",
+        instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
+        input: summaryText,
+        text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
+      };
+      const response = await callOpenAI(payload, env, { provider: "openai" });
+      if (!response.ok) break;
+      const data = await response.json();
+      if (data.error) break;
+      convertAnalyticsData(data);
+      const gaps = coverageGaps(data);
+      if (!Object.keys(gaps).length) {
+        return new Response(JSON.stringify(data), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
+      lastData = data; lastGaps = gaps;
+    }
+    // Both attempts incomplete — return the best we have, flagged so the
+    // frontend/ledger can surface it honestly instead of silently thinning.
+    if (lastData) {
+      lastData._coverageWarning = lastGaps;
+      return new Response(JSON.stringify(lastData), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+  }
+
+  // Claude backup (structured outputs guarantee the schema; the coverage loop
+  // below still verifies every active player is present). Runs when OpenAI is
+  // unavailable, out of quota, or returned incomplete coverage with no data.
   if (env.ANTHROPIC_API_KEY) {
     let lastData = null, lastGaps = null;
     for (let attempt = 0; attempt < 2; attempt++) {

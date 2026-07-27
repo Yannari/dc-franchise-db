@@ -1748,6 +1748,10 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       db.players.push(player);
     }
 
+    // AI-assigned player emoji flows into the database so devotees.html stays
+    // current without hand-editing its emojiMap. Latest season's emoji wins.
+    if (filled.emoji) player.emoji = filled.emoji;
+
     // Re-merge support: if this season was already recorded — whether as a
     // pre-season placeholder OR a previously-finalized result — strip its old
     // career contributions and season detail so the fresh data below replaces it.
@@ -1986,6 +1990,7 @@ export async function exportAndFillNarratives(onStatus) {
         if (aiP.story) target.story = aiP.story;
         if (aiP.gameplayStyle) target.gameplayStyle = aiP.gameplayStyle;
         if (aiP.keyMoments) target.keyMoments = aiP.keyMoments;
+        if (aiP.emoji) target.emoji = aiP.emoji;
       }
     }
 

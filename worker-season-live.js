@@ -135,9 +135,10 @@ async function generateSeasonDataExtraction(body, env) {
             idolsFound: { type: "number" },
             votesReceived: { type: "number" },
             alliances: { type: "array", items: castItemSchema },
-            rivalries: { type: "array", items: castItemSchema }
+            rivalries: { type: "array", items: castItemSchema },
+            emoji: { type: "string", description: "ONE emoji that captures this player's personality or game style this season. Distinctive, not generic — a schemer who hid behind charm gets something sly, an immunity beast gets something powerful. No duplicate emojis across the cast." }
           },
-          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments", "challengeWins", "immunityWins","rewardWins", "idolsFound", "votesReceived", "alliances", "rivalries"]
+          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments", "challengeWins", "immunityWins","rewardWins", "idolsFound", "votesReceived", "alliances", "rivalries", "emoji"]
         }
       },
       finalists: {

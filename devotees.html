@@ -584,6 +584,38 @@ const emojiMap = {
   'eureka': '💃', 'will': '🐶', 'seraphine': '😇', 'ashley': '💫',
   'alec': '🧐', 'fiore': '👿', 'ellie': '🥊', 'nick': '🦥',
   'wix': '🤥', 'lill': '🏕️'
+  'aiden': '🔍',
+  'ally': '🦋',
+  'connor': '🛡️',
+  'hunter': '💘',
+  'james': '🤳',
+  'kai': '🍃',
+  'karol': '🌋',
+  'lake': '🐕',
+  'maggy': '🐐',
+  'oliver': '🐢',
+  'riya': '🐍',
+  'rosa-maria': '🌹',
+  'tess': '👁️',
+  'yul': '😈',
+  'alessio': '🃏',
+  'amelie': '🧠',
+  'anastasia': '🔥',
+  'benji': '🧸',
+  'diego': '❤️‍🔥',
+  'hannah': '🌻',
+  'isabel': '🖤',
+  'ivy': '💋',
+  'jade': '💎',
+  'logan': '🎉',
+  'lynda': '⚡',
+  'marissa': '🦸',
+  'natalia': '🌪️',
+  'richard': '⚔️',
+  'spencer': '♟️',
+  'ted': '🎭',
+  'tristan': '🥊',
+  'zaid': '🎖️',
 };
 
 
@@ -660,7 +692,7 @@ function updateHeaderStats() {
 loadPlayerData()
   .then(data => {
     allPlayers = data.players.map(player => {
-      const emoji = emojiMap[player.name.toLowerCase()] || '👤';
+      const emoji = player.emoji || emojiMap[player.name.toLowerCase()] || '👤';
       return {
         ...player,
         emoji
@@ -732,7 +764,7 @@ function renderPlayers(players) {
     badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
     badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
 
-    const emoji = player.emoji || '👤';
+    const emoji = player.emoji || emojiMap[player.name.toLowerCase()] || '👤';
     const name = player.name || 'Unknown';
 
     card.innerHTML = `

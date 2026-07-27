@@ -140,10 +140,27 @@ def name_variants(name):
     if "-" in name:  yield name.replace("-", " ")
     if "-" in name:  yield name.replace("-", "")
 
-def download(url, dest):
+def fetch_bytes(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=60) as r, open(dest, "wb") as f:
-        f.write(r.read())
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return r.read()
+
+def is_transparent(raw):
+    """True when the image has a significant transparent area — i.e. it's a
+    cut-out character pose asset, not a scene/screenshot. Falls back to False
+    (treat as scene) when Pillow is unavailable or the format has no alpha."""
+    try:
+        from PIL import Image
+        import io as _io
+        im = Image.open(_io.BytesIO(raw))
+        if im.mode not in ("RGBA", "LA", "PA") and not (im.mode == "P" and "transparency" in im.info):
+            return False
+        alpha = im.convert("RGBA").getchannel("A")
+        hist = alpha.histogram()
+        transparent_px = sum(hist[:250])
+        return transparent_px / float(im.width * im.height) > 0.10
+    except Exception:
+        return False
 
 def main():
     ap = argparse.ArgumentParser()
@@ -151,6 +168,10 @@ def main():
     ap.add_argument("--only", default="", help="comma-separated names to limit to")
     ap.add_argument("--limit", type=int, default=0, help="only first N eligible chars")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--refetch", action="store_true",
+                    help="re-process characters that already have images, REPLACING their gallery")
+    ap.add_argument("--pose-cap", type=int, default=2,
+                    help="max transparent cut-out poses per character (rest must be scene/backgrounded images)")
     args = ap.parse_args()
     n_target = min(args.max, 12)
     only = {s.strip().lower() for s in args.only.split(",") if s.strip()}
@@ -164,7 +185,7 @@ def main():
     for p in players:
         name = p.get("name"); slug = p.get("slug") or name.lower().replace(" ", "-")
         if only and name.lower() not in only: continue
-        if has_images(slug):
+        if has_images(slug) and not args.refetch:
             skipped_existing.append(name); continue
         if args.limit and eligible >= args.limit: break
         eligible += 1
@@ -180,7 +201,7 @@ def main():
                 time.sleep(0.2); continue
             try:
                 titles = article_image_titles(base, title)
-                cand = resolve(base, titles or [])[:n_target]
+                cand = resolve(base, titles or [])[:n_target * 4]
             except Exception as e:
                 errors.append((name, f"images: {e}")); cand = []
             if cand:
@@ -190,17 +211,36 @@ def main():
             no_page.append(name); continue
 
         dest_dir = os.path.join(GALLERY_DIR, slug)
-        if not args.dry_run: os.makedirs(dest_dir, exist_ok=True)
         got = 0
-        for i, im in enumerate(imgs, 1):
-            ext = EXTS[im["mime"]]
-            dest = os.path.join(dest_dir, f"{i}.{ext}")
-            if args.dry_run:
-                got += 1; continue
-            try:
-                download(im["url"], dest); got += 1; time.sleep(0.25)
-            except Exception as e:
-                errors.append((name, f"dl {im['title']}: {e}"))
+        if args.dry_run:
+            got = min(len(imgs), n_target)
+        else:
+            # Download + classify: scenes (opaque) are unlimited, transparent
+            # cut-out poses are capped so the gallery is mostly real moments.
+            scenes, poses = [], []
+            for im in imgs:
+                if len(scenes) + min(len(poses), args.pose_cap) >= n_target and len(scenes) >= n_target - args.pose_cap:
+                    break
+                try:
+                    raw = fetch_bytes(im["url"]); time.sleep(0.25)
+                except Exception as e:
+                    errors.append((name, f"dl {im['title']}: {e}")); continue
+                (poses if is_transparent(raw) else scenes).append((im, raw))
+            keep = scenes[:n_target]
+            keep += poses[:max(0, min(args.pose_cap, n_target - len(keep)))]
+            # Backfill with leftover poses only if scenes were scarce
+            if len(keep) < n_target:
+                keep += poses[args.pose_cap:args.pose_cap + (n_target - len(keep))]
+            os.makedirs(dest_dir, exist_ok=True)
+            if args.refetch:
+                for f in os.listdir(dest_dir):
+                    if f.lower().rsplit(".", 1)[-1] in ("png", "jpg", "jpeg", "webp"):
+                        os.remove(os.path.join(dest_dir, f))
+            for i, (im, raw) in enumerate(keep, 1):
+                dest = os.path.join(dest_dir, f"{i}.{EXTS[im['mime']]}")
+                with open(dest, "wb") as f:
+                    f.write(raw)
+                got += 1
         covered.append((name, got))
         wiki = "DC" if src_base and "disventure" in src_base else "TD"
         print(f"  {name:16} {'(dry) ' if args.dry_run else ''}{got} images  [{wiki}]")

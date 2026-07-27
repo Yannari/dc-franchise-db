@@ -2,7 +2,7 @@
   "metadata": {
     "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
-    "lastUpdated": "2026-07-08",
+    "lastUpdated": "2026-07-27",
     "totalPlayers": 78,
     "seasons": 7,
     "improvements": [
@@ -154,9 +154,34 @@
       ]
     },
     {
+      "playerId": "jade",
+      "name": "Jade",
+      "rank": 3,
+      "tier": "S+",
+      "score": 94.4,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        94.4
+      ],
+      "placements": [
+        1
+      ],
+      "avgPlacement": 1,
+      "challengeWins": 3,
+      "votesAgainst": 10,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "👑",
+      "reasoning": "S14 Winner. Narrative override +5: equalizer. 3 immunity wins, played 1 idol effectively, 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "bowie",
       "name": "Bowie",
-      "rank": 3,
+      "rank": 4,
       "tier": "S+",
       "score": 94,
       "wins": 1,
@@ -193,7 +218,7 @@
     {
       "playerId": "james",
       "name": "James",
-      "rank": 4,
+      "rank": 5,
       "tier": "S+",
       "score": 92.9,
       "wins": 1,
@@ -227,7 +252,7 @@
     {
       "playerId": "mickey",
       "name": "Mickey",
-      "rank": 5,
+      "rank": 6,
       "tier": "S+",
       "score": 91.1,
       "title": "The Nervous Mastermind",
@@ -270,7 +295,7 @@
     {
       "playerId": "cameron",
       "name": "Cameron",
-      "rank": 6,
+      "rank": 7,
       "tier": "S+",
       "score": 90.2,
       "title": "The Brainiac",
@@ -307,7 +332,7 @@
     {
       "playerId": "wayne",
       "name": "Wayne",
-      "rank": 7,
+      "rank": 8,
       "tier": "S",
       "score": 89.6,
       "wins": 1,
@@ -351,7 +376,7 @@
     {
       "playerId": "julia",
       "name": "Julia",
-      "rank": 8,
+      "rank": 9,
       "tier": "S",
       "score": 88.1,
       "wins": 0,
@@ -396,7 +421,7 @@
       "playerId": "scott",
       "tier": "S",
       "score": 87.4,
-      "rank": 9,
+      "rank": 10,
       "avgPlacement": 5.5,
       "winRate": 0,
       "placements": [
@@ -438,9 +463,59 @@
       ]
     },
     {
+      "playerId": "anastasia",
+      "name": "Anastasia",
+      "rank": 11,
+      "tier": "S",
+      "score": 86.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        86.5
+      ],
+      "placements": [
+        3
+      ],
+      "avgPlacement": 3,
+      "challengeWins": 3,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P3. Narrative override +5: equalizer. 3 immunity wins, played 2 idols effectively, 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "logan",
+      "name": "Logan",
+      "rank": 12,
+      "tier": "S",
+      "score": 86.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        86.3
+      ],
+      "placements": [
+        2
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 2,
+      "votesAgainst": 4,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P2. Narrative override +5: equalizer. 2 immunity wins, 4 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "millie",
       "name": "Millie",
-      "rank": 10,
+      "rank": 13,
       "tier": "S",
       "score": 85.8,
       "wins": 0,
@@ -463,7 +538,7 @@
       "playerId": "jasmine",
       "tier": "S",
       "score": 85.3,
-      "rank": 11,
+      "rank": 14,
       "avgPlacement": 9.333333333333334,
       "winRate": 33.33,
       "placements": [
@@ -506,7 +581,7 @@
       "playerId": "lindsay",
       "tier": "S",
       "score": 84,
-      "rank": 12,
+      "rank": 15,
       "avgPlacement": 8,
       "winRate": 33.33,
       "placements": [
@@ -544,7 +619,7 @@
     {
       "playerId": "ryan",
       "name": "Ryan",
-      "rank": 13,
+      "rank": 16,
       "tier": "S",
       "score": 83.1,
       "title": "The Gentle Wrecking Ball",
@@ -587,7 +662,7 @@
     {
       "playerId": "duncan",
       "name": "Duncan",
-      "rank": 14,
+      "rank": 17,
       "tier": "S",
       "score": 83,
       "title": "The Delinquent",
@@ -624,7 +699,7 @@
     {
       "playerId": "riya",
       "name": "Riya",
-      "rank": 15,
+      "rank": 18,
       "tier": "S",
       "score": 82.8,
       "wins": 0,
@@ -669,7 +744,7 @@
       "playerId": "macarthur",
       "tier": "S",
       "score": 82.6,
-      "rank": 16,
+      "rank": 19,
       "avgPlacement": 6,
       "winRate": 33.33,
       "placements": [
@@ -717,7 +792,7 @@
     {
       "playerId": "jake",
       "name": "Jake",
-      "rank": 17,
+      "rank": 20,
       "tier": "S",
       "score": 81.1,
       "wins": 0,
@@ -761,7 +836,7 @@
     {
       "playerId": "emma",
       "name": "Emma",
-      "rank": 18,
+      "rank": 21,
       "tier": "S",
       "score": 81,
       "title": "The Comeback Kid",
@@ -799,7 +874,7 @@
       "playerId": "zoey",
       "tier": "S",
       "score": 80.8,
-      "rank": 19,
+      "rank": 22,
       "avgPlacement": 7.75,
       "winRate": 0,
       "placements": [
@@ -843,7 +918,7 @@
     {
       "playerId": "sanders",
       "name": "Sanders",
-      "rank": 20,
+      "rank": 23,
       "tier": "S",
       "score": 80.2,
       "wins": 0,
@@ -880,7 +955,7 @@
     {
       "playerId": "miriam",
       "name": "Miriam",
-      "rank": 21,
+      "rank": 24,
       "tier": "S",
       "score": 80,
       "wins": 1,
@@ -925,7 +1000,7 @@
       "playerId": "carrie",
       "tier": "A",
       "score": 77.8,
-      "rank": 22,
+      "rank": 25,
       "avgPlacement": 4.5,
       "winRate": 0,
       "placements": [
@@ -966,7 +1041,7 @@
       "playerId": "cody",
       "tier": "A",
       "score": 77.2,
-      "rank": 23,
+      "rank": 26,
       "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
@@ -1008,7 +1083,7 @@
     {
       "playerId": "ally",
       "name": "Ally",
-      "rank": 24,
+      "rank": 27,
       "tier": "A",
       "score": 76.9,
       "wins": 0,
@@ -1052,7 +1127,7 @@
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 25,
+      "rank": 28,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
@@ -1089,7 +1164,7 @@
       "playerId": "sky",
       "tier": "A",
       "score": 75.7,
-      "rank": 26,
+      "rank": 29,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1126,7 +1201,7 @@
     {
       "playerId": "brick",
       "name": "Brick",
-      "rank": 27,
+      "rank": 30,
       "tier": "A",
       "score": 75.1,
       "title": "The Noble Shield",
@@ -1168,7 +1243,7 @@
     {
       "playerId": "aiden",
       "name": "Aiden",
-      "rank": 28,
+      "rank": 31,
       "tier": "A",
       "score": 75,
       "wins": 0,
@@ -1210,9 +1285,34 @@
       ]
     },
     {
+      "playerId": "hannah",
+      "name": "Hannah",
+      "rank": 32,
+      "tier": "A",
+      "score": 74.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        74.8
+      ],
+      "placements": [
+        4
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P4. Narrative override +5: equalizer. 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "thom",
       "name": "Thom",
-      "rank": 29,
+      "rank": 33,
       "tier": "A",
       "score": 74.7,
       "wins": 0,
@@ -1256,7 +1356,7 @@
     {
       "playerId": "alec",
       "name": "Alec",
-      "rank": 30,
+      "rank": 34,
       "tier": "A",
       "score": 74.5,
       "wins": 0,
@@ -1300,7 +1400,7 @@
     {
       "playerId": "fiore",
       "name": "Fiore",
-      "rank": 31,
+      "rank": 35,
       "tier": "A",
       "score": 73,
       "wins": 0,
@@ -1345,7 +1445,7 @@
       "playerId": "tom",
       "tier": "A",
       "score": 72,
-      "rank": 32,
+      "rank": 36,
       "avgPlacement": 5,
       "winRate": 0,
       "placements": [
@@ -1377,9 +1477,34 @@
       "wins": 0
     },
     {
+      "playerId": "spencer",
+      "name": "Spencer",
+      "rank": 37,
+      "tier": "A",
+      "score": 71.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        71.1
+      ],
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 0,
+      "votesAgainst": 19,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P5. Narrative override +5: equalizer. 3 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 33,
+      "rank": 38,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
@@ -1415,7 +1540,7 @@
     {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 34,
+      "rank": 39,
       "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
@@ -1450,7 +1575,7 @@
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 35,
+      "rank": 40,
       "tier": "B",
       "score": 70.3,
       "title": "The Surfboard Shield",
@@ -1500,7 +1625,7 @@
     {
       "playerId": "gabby",
       "name": "Gabby",
-      "rank": 36,
+      "rank": 41,
       "tier": "B",
       "score": 70.3,
       "wins": 0,
@@ -1535,7 +1660,7 @@
       "playerId": "taylor",
       "tier": "B",
       "score": 70,
-      "rank": 37,
+      "rank": 42,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1567,9 +1692,34 @@
       "wins": 0
     },
     {
+      "playerId": "isabel",
+      "name": "Isabel",
+      "rank": 43,
+      "tier": "B",
+      "score": 69.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        69.4
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 0,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P6. Narrative override +5: equalizer. played 1 idol effectively, 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "mike",
       "name": "Mike",
-      "rank": 38,
+      "rank": 44,
       "tier": "B",
       "score": 69,
       "title": "The Many Faces",
@@ -1603,7 +1753,7 @@
     {
       "playerId": "rosa-maria",
       "name": "Rosa-Maria",
-      "rank": 39,
+      "rank": 45,
       "tier": "B",
       "score": 69,
       "wins": 0,
@@ -1637,7 +1787,7 @@
     {
       "playerId": "chase",
       "name": "Chase",
-      "rank": 40,
+      "rank": 46,
       "tier": "B",
       "score": 68.5,
       "wins": 0,
@@ -1674,7 +1824,7 @@
     {
       "playerId": "beth",
       "name": "Beth",
-      "rank": 41,
+      "rank": 47,
       "tier": "B",
       "score": 68.4,
       "title": "The Sweetheart",
@@ -1709,7 +1859,7 @@
     {
       "playerId": "jen",
       "name": "Jen",
-      "rank": 42,
+      "rank": 48,
       "tier": "B",
       "score": 68.2,
       "wins": 0,
@@ -1746,7 +1896,7 @@
     {
       "playerId": "ellie",
       "name": "Ellie",
-      "rank": 43,
+      "rank": 49,
       "tier": "B",
       "score": 67.7,
       "wins": 0,
@@ -1783,7 +1933,7 @@
     {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 44,
+      "rank": 50,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
@@ -1818,7 +1968,7 @@
     {
       "playerId": "caleb",
       "name": "Caleb",
-      "rank": 45,
+      "rank": 51,
       "tier": "B",
       "score": 67.4,
       "wins": 0,
@@ -1862,7 +2012,7 @@
     {
       "playerId": "ezekiel",
       "name": "Ezekiel",
-      "rank": 46,
+      "rank": 52,
       "tier": "B",
       "score": 67.3,
       "title": "The Idol Gambler",
@@ -1905,7 +2055,7 @@
     {
       "playerId": "gwen",
       "name": "Gwen",
-      "rank": 47,
+      "rank": 53,
       "tier": "B",
       "score": 67.2,
       "title": "The Shadow Marathoner",
@@ -1950,7 +2100,7 @@
       "playerId": "shawn",
       "tier": "B",
       "score": 67,
-      "rank": 48,
+      "rank": 54,
       "avgPlacement": 9,
       "winRate": 0,
       "placements": [
@@ -1986,7 +2136,7 @@
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 49,
+      "rank": 55,
       "tier": "B",
       "score": 66.6,
       "title": "The Bruised Strategist",
@@ -2036,7 +2186,7 @@
     {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 50,
+      "rank": 56,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
@@ -2068,7 +2218,7 @@
     {
       "playerId": "damien",
       "name": "Damien",
-      "rank": 51,
+      "rank": 57,
       "tier": "B",
       "score": 66.3,
       "wins": 0,
@@ -2110,9 +2260,34 @@
       ]
     },
     {
+      "playerId": "marissa",
+      "name": "Marissa",
+      "rank": 58,
+      "tier": "B",
+      "score": 65.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        65.6
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P7. Narrative override +5: equalizer. 1 immunity win, 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "eureka",
       "name": "Eureka",
-      "rank": 52,
+      "rank": 59,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -2146,7 +2321,7 @@
     {
       "playerId": "sugar",
       "name": "Sugar",
-      "rank": 53,
+      "rank": 60,
       "tier": "B",
       "score": 65.2,
       "title": "The Pageant Menace",
@@ -2180,7 +2355,7 @@
     {
       "playerId": "lake",
       "name": "Lake",
-      "rank": 54,
+      "rank": 61,
       "tier": "B",
       "score": 64.9,
       "wins": 0,
@@ -2214,7 +2389,7 @@
     {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 55,
+      "rank": 62,
       "tier": "B",
       "score": 64.7,
       "title": "The Volatile Mastermind",
@@ -2262,7 +2437,7 @@
     {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 56,
+      "rank": 63,
       "tier": "B",
       "score": 64.7,
       "title": "The Alpha Athlete",
@@ -2295,9 +2470,34 @@
       "strategicPercentile": 11.19
     },
     {
+      "playerId": "zaid",
+      "name": "Zaid",
+      "rank": 64,
+      "tier": "B",
+      "score": 64.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        64.5
+      ],
+      "placements": [
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 0,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P8. Narrative override +5: equalizer. 1 alliance, fan favorite.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "hunter",
       "name": "Hunter",
-      "rank": 57,
+      "rank": 65,
       "tier": "B",
       "score": 64.3,
       "wins": 0,
@@ -2340,7 +2540,7 @@
     {
       "playerId": "priya",
       "name": "Priya",
-      "rank": 58,
+      "rank": 66,
       "tier": "B",
       "score": 63.9,
       "wins": 0,
@@ -2377,7 +2577,7 @@
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 59,
+      "rank": 67,
       "tier": "B",
       "score": 63.6,
       "title": "The Fireline Fallen",
@@ -2425,7 +2625,7 @@
     {
       "playerId": "gerry",
       "name": "Gerry",
-      "rank": 60,
+      "rank": 68,
       "tier": "B",
       "score": 63.2,
       "wins": 0,
@@ -2469,7 +2669,7 @@
     {
       "playerId": "mk",
       "name": "MK",
-      "rank": 61,
+      "rank": 69,
       "tier": "B",
       "score": 62.3,
       "wins": 0,
@@ -2491,7 +2691,7 @@
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 62,
+      "rank": 70,
       "tier": "B",
       "score": 61.9,
       "title": "The Neurotic Strategist",
@@ -2526,7 +2726,7 @@
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 63,
+      "rank": 71,
       "tier": "B",
       "score": 61.1,
       "title": "The Queen Bee",
@@ -2562,7 +2762,7 @@
     {
       "playerId": "dawn",
       "name": "Dawn",
-      "rank": 64,
+      "rank": 72,
       "tier": "C",
       "score": 60.6,
       "title": "The Aura Casualty",
@@ -2610,7 +2810,7 @@
     {
       "playerId": "owen",
       "name": "Owen",
-      "rank": 65,
+      "rank": 73,
       "tier": "C",
       "score": 59.5,
       "title": "The Big Buddy",
@@ -2642,9 +2842,34 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "ivy",
+      "name": "Ivy",
+      "rank": 74,
+      "tier": "C",
+      "score": 59.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        59.5
+      ],
+      "placements": [
+        9
+      ],
+      "avgPlacement": 9,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P9. Narrative override +5: equalizer. 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "courtney",
       "name": "Courtney",
-      "rank": 66,
+      "rank": 75,
       "tier": "C",
       "score": 59.1,
       "title": "The Courtroom Wildfire",
@@ -2689,7 +2914,7 @@
       "playerId": "kitty",
       "tier": "C",
       "score": 59,
-      "rank": 67,
+      "rank": 76,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -2726,7 +2951,7 @@
       "playerId": "laurie",
       "tier": "C",
       "score": 59,
-      "rank": 68,
+      "rank": 77,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -2760,7 +2985,7 @@
     {
       "playerId": "ripper",
       "name": "Ripper",
-      "rank": 69,
+      "rank": 78,
       "tier": "C",
       "score": 58.7,
       "wins": 0,
@@ -2804,7 +3029,7 @@
     {
       "playerId": "max",
       "name": "Max",
-      "rank": 70,
+      "rank": 79,
       "tier": "C",
       "score": 57.8,
       "title": "The Evil Genius",
@@ -2836,7 +3061,7 @@
     {
       "playerId": "leshawna",
       "name": "Leshawna",
-      "rank": 71,
+      "rank": 80,
       "tier": "C",
       "score": 57.8,
       "title": "The Real One",
@@ -2871,7 +3096,7 @@
     {
       "playerId": "emmah",
       "name": "Emmah",
-      "rank": 72,
+      "rank": 81,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -2908,7 +3133,7 @@
     {
       "playerId": "axel",
       "name": "Axel",
-      "rank": 73,
+      "rank": 82,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -2930,7 +3155,7 @@
     {
       "playerId": "dan",
       "name": "Dan",
-      "rank": 74,
+      "rank": 83,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -2965,7 +3190,7 @@
       "playerId": "pete",
       "tier": "C",
       "score": 56.8,
-      "rank": 75,
+      "rank": 84,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3000,7 +3225,7 @@
     {
       "playerId": "topher",
       "name": "Topher",
-      "rank": 76,
+      "rank": 85,
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
@@ -3030,9 +3255,59 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "benji",
+      "name": "Benji",
+      "rank": 86,
+      "tier": "C",
+      "score": 56.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        56.1
+      ],
+      "placements": [
+        11
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P11. Narrative override +5: equalizer. played 1 idol effectively, 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "richard",
+      "name": "Richard",
+      "rank": 87,
+      "tier": "C",
+      "score": 55.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        55.2
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 0,
+      "votesAgainst": 16,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P10. Narrative override +5: equalizer. 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "stephanie",
       "name": "Stephanie",
-      "rank": 77,
+      "rank": 88,
       "tier": "C",
       "score": 55.1,
       "title": "The Unspent Fuse",
@@ -3074,7 +3349,7 @@
     {
       "playerId": "lill",
       "name": "Lill",
-      "rank": 78,
+      "rank": 89,
       "tier": "C",
       "score": 55,
       "wins": 0,
@@ -3108,7 +3383,7 @@
     {
       "playerId": "noah",
       "name": "Noah",
-      "rank": 79,
+      "rank": 90,
       "tier": "C",
       "score": 54.6,
       "title": "The Snark King",
@@ -3144,7 +3419,7 @@
       "playerId": "brody",
       "tier": "C",
       "score": 54.5,
-      "rank": 80,
+      "rank": 91,
       "avgPlacement": 13.666666666666666,
       "winRate": 0,
       "placements": [
@@ -3181,7 +3456,7 @@
     {
       "playerId": "dj",
       "name": "DJ",
-      "rank": 81,
+      "rank": 92,
       "tier": "C",
       "score": 54,
       "title": "The Gentle Giant",
@@ -3216,7 +3491,7 @@
     {
       "playerId": "harold",
       "name": "Harold",
-      "rank": 82,
+      "rank": 93,
       "tier": "C",
       "score": 54,
       "title": "The Ninja Nerd",
@@ -3249,9 +3524,34 @@
       "strategicPercentile": 77.61
     },
     {
+      "playerId": "natalia",
+      "name": "Natalia",
+      "rank": 94,
+      "tier": "C",
+      "score": 53.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        53.9
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 0,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P12. Narrative override +5: equalizer. 2 alliances.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "josee",
       "name": "Josee",
-      "rank": 83,
+      "rank": 95,
       "tier": "C",
       "score": 53.6,
       "title": "The Fury Duelist",
@@ -3294,7 +3594,7 @@
     {
       "playerId": "karol",
       "name": "Karol",
-      "rank": 84,
+      "rank": 96,
       "tier": "C",
       "score": 53.6,
       "wins": 0,
@@ -3327,7 +3627,7 @@
     {
       "playerId": "eva",
       "name": "Eva",
-      "rank": 85,
+      "rank": 97,
       "tier": "C",
       "score": 53.4,
       "title": "The Tempered Equalizer",
@@ -3376,7 +3676,7 @@
     {
       "playerId": "hicks",
       "name": "Hicks",
-      "rank": 86,
+      "rank": 98,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -3413,7 +3713,7 @@
     {
       "playerId": "seraphine",
       "name": "Seraphine",
-      "rank": 87,
+      "rank": 99,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -3446,7 +3746,7 @@
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 88,
+      "rank": 100,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
@@ -3479,7 +3779,7 @@
     {
       "playerId": "sadie",
       "name": "Sadie",
-      "rank": 89,
+      "rank": 101,
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
@@ -3512,7 +3812,7 @@
     {
       "playerId": "yul",
       "name": "Yul",
-      "rank": 90,
+      "rank": 102,
       "tier": "C",
       "score": 51.2,
       "wins": 0,
@@ -3543,9 +3843,34 @@
       ]
     },
     {
+      "playerId": "lynda",
+      "name": "Lynda",
+      "rank": 103,
+      "tier": "C",
+      "score": 51.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        51.2
+      ],
+      "placements": [
+        13
+      ],
+      "avgPlacement": 13,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P13. Narrative override +5: equalizer. 1 alliance.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 91,
+      "rank": 104,
       "tier": "C",
       "score": 51,
       "title": "The Loverboy",
@@ -3579,7 +3904,7 @@
     {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 92,
+      "rank": 105,
       "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
@@ -3614,7 +3939,7 @@
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 93,
+      "rank": 106,
       "tier": "D",
       "score": 50,
       "title": "The Jersey Diva",
@@ -3648,7 +3973,7 @@
     {
       "playerId": "lightning",
       "name": "Lightning",
-      "rank": 94,
+      "rank": 107,
       "tier": "D",
       "score": 50,
       "title": "The Jock",
@@ -3683,7 +4008,7 @@
     {
       "playerId": "sterling",
       "name": "Sterling",
-      "rank": 95,
+      "rank": 108,
       "tier": "D",
       "score": 49.7,
       "wins": 0,
@@ -3716,7 +4041,7 @@
     {
       "playerId": "brightly",
       "name": "Brightly",
-      "rank": 96,
+      "rank": 109,
       "tier": "D",
       "score": 48.8,
       "wins": 0,
@@ -3738,7 +4063,7 @@
     {
       "playerId": "sam",
       "name": "Sam",
-      "rank": 97,
+      "rank": 110,
       "tier": "D",
       "score": 47.6,
       "title": "The Eager Underdog",
@@ -3779,7 +4104,7 @@
     {
       "playerId": "izzy",
       "name": "Izzy",
-      "rank": 98,
+      "rank": 111,
       "tier": "D",
       "score": 47.4,
       "title": "The Chaos Gremlin",
@@ -3810,9 +4135,34 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "alessio",
+      "name": "Alessio",
+      "rank": 112,
+      "tier": "D",
+      "score": 47.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        47.1
+      ],
+      "placements": [
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P14. Narrative override +5: equalizer..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "mary",
       "name": "Mary",
-      "rank": 99,
+      "rank": 113,
       "tier": "D",
       "score": 47,
       "title": "The Brain",
@@ -3845,7 +4195,7 @@
     {
       "playerId": "nick",
       "name": "Nick",
-      "rank": 100,
+      "rank": 114,
       "tier": "D",
       "score": 47,
       "wins": 0,
@@ -3878,7 +4228,7 @@
     {
       "playerId": "raj",
       "name": "Raj",
-      "rank": 101,
+      "rank": 115,
       "tier": "D",
       "score": 46.8,
       "wins": 0,
@@ -3900,7 +4250,7 @@
     {
       "playerId": "tess",
       "name": "Tess",
-      "rank": 102,
+      "rank": 116,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -3933,7 +4283,7 @@
     {
       "playerId": "oliver",
       "name": "Oliver",
-      "rank": 103,
+      "rank": 117,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -3967,7 +4317,7 @@
       "playerId": "devin",
       "tier": "D",
       "score": 45,
-      "rank": 104,
+      "rank": 118,
       "avgPlacement": 14,
       "winRate": 0,
       "placements": [
@@ -3999,9 +4349,34 @@
       "wins": 0
     },
     {
+      "playerId": "tristan",
+      "name": "Tristan",
+      "rank": 119,
+      "tier": "D",
+      "score": 43.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        43.6
+      ],
+      "placements": [
+        15
+      ],
+      "avgPlacement": 15,
+      "challengeWins": 0,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P15. Narrative override +5: equalizer..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "kai",
       "name": "Kai",
-      "rank": 105,
+      "rank": 120,
       "tier": "D",
       "score": 43.5,
       "wins": 0,
@@ -4034,7 +4409,7 @@
     {
       "playerId": "tyler",
       "name": "Tyler",
-      "rank": 106,
+      "rank": 121,
       "tier": "D",
       "score": 43.4,
       "title": "The Heartfirst Liability",
@@ -4076,7 +4451,7 @@
     {
       "playerId": "grett",
       "name": "Grett",
-      "rank": 107,
+      "rank": 122,
       "tier": "D",
       "score": 43.2,
       "wins": 0,
@@ -4109,7 +4484,7 @@
     {
       "playerId": "samey",
       "name": "Samey",
-      "rank": 108,
+      "rank": 123,
       "tier": "D",
       "score": 42,
       "title": "The Sweet Twin",
@@ -4143,7 +4518,7 @@
       "playerId": "lorenzo",
       "tier": "D",
       "score": 42,
-      "rank": 109,
+      "rank": 124,
       "avgPlacement": 16,
       "winRate": 0,
       "placements": [
@@ -4175,9 +4550,34 @@
       "wins": 0
     },
     {
+      "playerId": "diego",
+      "name": "Diego",
+      "rank": 125,
+      "tier": "D",
+      "score": 41.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        41.4
+      ],
+      "placements": [
+        16
+      ],
+      "avgPlacement": 16,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P16. Narrative override +5: equalizer..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "wix",
       "name": "Wix",
-      "rank": 110,
+      "rank": 126,
       "tier": "D",
       "score": 41.2,
       "wins": 0,
@@ -4210,7 +4610,7 @@
     {
       "playerId": "junior",
       "name": "Junior",
-      "rank": 111,
+      "rank": 127,
       "tier": "D",
       "score": 41,
       "title": "The Kid",
@@ -4242,9 +4642,34 @@
       "strategicPercentile": 14.18
     },
     {
+      "playerId": "ted",
+      "name": "Ted",
+      "rank": 128,
+      "tier": "D",
+      "score": 40.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        40.2
+      ],
+      "placements": [
+        17
+      ],
+      "avgPlacement": 17,
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P17. Narrative override +5: equalizer..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "chet",
       "name": "Chet",
-      "rank": 112,
+      "rank": 129,
       "tier": "D",
       "score": 40.1,
       "wins": 0,
@@ -4266,7 +4691,7 @@
     {
       "playerId": "ennui",
       "name": "Ennui",
-      "rank": 113,
+      "rank": 130,
       "tier": "D",
       "score": 40,
       "title": "The Deadpan Goth",
@@ -4300,7 +4725,7 @@
     {
       "playerId": "will",
       "name": "Will",
-      "rank": 114,
+      "rank": 131,
       "tier": "D",
       "score": 39.4,
       "wins": 0,
@@ -4333,7 +4758,7 @@
     {
       "playerId": "beardo",
       "name": "Beardo",
-      "rank": 115,
+      "rank": 132,
       "tier": "D",
       "score": 39,
       "title": "The Soundboard",
@@ -4364,9 +4789,34 @@
       "strategicPercentile": 50
     },
     {
+      "playerId": "amelie",
+      "name": "Amelie",
+      "rank": 133,
+      "tier": "D",
+      "score": 38.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        38.2
+      ],
+      "placements": [
+        18
+      ],
+      "avgPlacement": 18,
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S14 P18. Narrative override +5: equalizer..",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "nichelle",
       "name": "Nichelle",
-      "rank": 116,
+      "rank": 134,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -4388,7 +4838,7 @@
     {
       "playerId": "maggy",
       "name": "Maggy",
-      "rank": 117,
+      "rank": 135,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -4421,7 +4871,7 @@
     {
       "playerId": "justin",
       "name": "Justin",
-      "rank": 118,
+      "rank": 136,
       "tier": "D",
       "score": 38,
       "title": "The Model",
@@ -4456,7 +4906,7 @@
     {
       "playerId": "ella",
       "name": "Ella",
-      "rank": 119,
+      "rank": 137,
       "tier": "D",
       "score": 38,
       "title": "The Disney Princess",
@@ -4489,7 +4939,7 @@
     {
       "playerId": "tammy",
       "name": "Tammy",
-      "rank": 120,
+      "rank": 138,
       "tier": "D",
       "score": 37,
       "title": "The Cosplayer",
@@ -4524,7 +4974,7 @@
       "playerId": "spud",
       "tier": "D",
       "score": 37,
-      "rank": 121,
+      "rank": 139,
       "avgPlacement": 17,
       "winRate": 0,
       "placements": [
@@ -4558,7 +5008,7 @@
     {
       "playerId": "scary-girl",
       "name": "Scary Girl",
-      "rank": 122,
+      "rank": 140,
       "tier": "D",
       "score": 36.5,
       "wins": 0,
@@ -4580,7 +5030,7 @@
     {
       "playerId": "rock",
       "name": "Rock",
-      "rank": 123,
+      "rank": 141,
       "tier": "D",
       "score": 36.1,
       "wins": 0,
@@ -4602,7 +5052,7 @@
     {
       "playerId": "drew",
       "name": "Drew",
-      "rank": 124,
+      "rank": 142,
       "tier": "D",
       "score": 35.9,
       "wins": 0,
@@ -4635,7 +5085,7 @@
     {
       "playerId": "connor",
       "name": "Connor",
-      "rank": 125,
+      "rank": 143,
       "tier": "D",
       "score": 35.6,
       "wins": 0,
@@ -4668,7 +5118,7 @@
     {
       "playerId": "ashley",
       "name": "Ashley",
-      "rank": 126,
+      "rank": 144,
       "tier": "D",
       "score": 33.3,
       "wins": 0,
@@ -4701,7 +5151,7 @@
     {
       "playerId": "zee",
       "name": "Zee",
-      "rank": 127,
+      "rank": 145,
       "tier": "D",
       "score": 33.2,
       "wins": 0,
@@ -4723,7 +5173,7 @@
     {
       "playerId": "b",
       "name": "B",
-      "rank": 128,
+      "rank": 146,
       "tier": "D",
       "score": 33,
       "title": "The Silent Genius",
@@ -4757,7 +5207,7 @@
     {
       "playerId": "miles",
       "name": "Miles",
-      "rank": 129,
+      "rank": 147,
       "tier": "D",
       "score": 33,
       "wins": 0,
@@ -4779,7 +5229,7 @@
     {
       "playerId": "staci",
       "name": "Staci",
-      "rank": 130,
+      "rank": 148,
       "tier": "D",
       "score": 32,
       "title": "The Storyteller",
@@ -4814,7 +5264,7 @@
       "playerId": "ellody",
       "tier": "D",
       "score": 32,
-      "rank": 131,
+      "rank": 149,
       "avgPlacement": 19,
       "winRate": 0,
       "placements": [
@@ -4848,7 +5298,7 @@
     {
       "playerId": "leonard",
       "name": "Leonard",
-      "rank": 132,
+      "rank": 150,
       "tier": "D",
       "score": 28,
       "title": "The Wizard",
@@ -4883,7 +5333,7 @@
     {
       "playerId": "dakota",
       "name": "Dakota",
-      "rank": 133,
+      "rank": 151,
       "tier": "D",
       "score": 26,
       "title": "The Celebrity",
@@ -4918,7 +5368,7 @@
     {
       "playerId": "crimson",
       "name": "Crimson",
-      "rank": 134,
+      "rank": 152,
       "tier": "D",
       "score": 21,
       "title": "The Goth Twin",

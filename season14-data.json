@@ -1,0 +1,1895 @@
+{
+  "seasonNumber": 14,
+  "title": "Total Drama: Carnival of Chaos",
+  "subtitle": "A season of rigged games, broken showmances, exposed advantages, and one final challenge where Jade turned calculation into a crown.",
+  "castSize": 18,
+  "episodeCount": 26,
+  "jurySize": 0,
+  "winner": {
+    "name": "Jade",
+    "playerSlug": "jade",
+    "vote": "",
+    "runnerUp": "Logan",
+    "keyStats": "Jade wins with 3 challenge wins, 3 immunities, 10 votes against, and a finale victory decided on the field rather than by jury ballot.",
+    "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
+    "legacy": "Her legacy is cold, controversial, and undeniable — a winner who survives public blowups, broken alliances, and jury hostility by making the last challenge her final argument."
+  },
+  "finalists": [
+    {
+      "name": "Jade",
+      "playerSlug": "jade",
+      "placement": 1,
+      "votes": 0
+    },
+    {
+      "name": "Logan",
+      "playerSlug": "logan",
+      "placement": 2,
+      "votes": 0
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Jade",
+      "playerSlug": "jade",
+      "phase": "Winner",
+      "notes": "Jade wins by weaponizing perception, loyalty, and endgame challenge power when the jury no longer has the final say.",
+      "strategicRank": 9.4,
+      "story": "Jade enters the carnival already reading faces, and the season quickly bends around that skill. She builds early trust with Hannah, Benji, Ivy, and Zaid, then repeatedly chooses timing over comfort, even when it costs her friendships. Her game is never clean; it is sharp, reactive, and often personal, especially once Spencer and Anastasia become permanent obstacles. The post-merge reveals her as a kingmaker hiding in plain sight, credited for the Zaid, Marissa, and Spencer boots while absorbing betrayals from people she once protected. By the finale, the jury may be divided on her morality, but the format gives her one final arena instead of one final argument. Jade wins the Carnival Rescue because every mental obstacle is just another pattern to solve.",
+      "gameplayStyle": "Cold reads, sharp pivots",
+      "keyMoments": [
+        "Episode 1: Chose the selfless Survival Kit at the Summit and immediately raised her tribe's comfort and trust.",
+        "Episode 6: Found the Red Team idol and quietly became the best-protected player on her tribe.",
+        "Episode 9: Played an idol for Zaid, wiping out votes and proving loyalty could be weaponized.",
+        "Episode 19: Won Night of the Killer Clown immunity by beating Isabel in a photo finish.",
+        "Episode 20: Helped drive the Marissa vote, earning jury credit as a hidden kingmaker.",
+        "Episode 22: Flipped off Spencer after his overplay, ending one of her longest rivalries.",
+        "Episode 24: Won Bumper Car Bash and secured a finale seat.",
+        "Episode 26: Won the final Carnival Rescue and the season."
+      ],
+      "challengeWins": 3,
+      "immunityWins": 3,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 10,
+      "alliances": [
+        "The Anchor",
+        "The Power Couple",
+        "The Double Edge"
+      ],
+      "rivalries": [
+        "Spencer",
+        "Zaid",
+        "Isabel",
+        "Marissa",
+        "Anastasia",
+        "Alessio",
+        "Richard"
+      ],
+      "socialScore": 2,
+      "strategicScore": 42.5
+    },
+    {
+      "placement": 2,
+      "name": "Logan",
+      "playerSlug": "logan",
+      "phase": "Finalist",
+      "notes": "Logan reaches the final as a social-physical hybrid whose bonds keep him alive even after his alliances collapse around him.",
+      "strategicRank": 8.1,
+      "story": "Logan begins as the upbeat strongman who makes Blue Team feel functional even when the shelter leaks and the food disappears. His best work happens in conversations: with Marissa, Isabel, Anastasia, Richard, and later Jade, he becomes the person people use to test their plans. But the deeper the season goes, the more his deals overlap, and the more jurors see a player who can soothe a room while quietly moving a vote. He wins key immunities, saves himself at the exact right times, and survives the collapse of The Ride or Die by staying useful to everyone left. His finale loss is not a collapse; it is the pain of reaching the final line and finding out the season will be decided by one more race. Logan leaves as the runner-up who played people better than he played the final obstacle.",
+      "gameplayStyle": "Warm shield, quiet broker",
+      "keyMoments": [
+        "Episode 3: Helped form The Triumvirate with Natalia and Richard, then immediately showed how unstable his loyalties could be.",
+        "Episode 10: Melted down in Hell's Kitchen but remained central enough to survive the fallout.",
+        "Episode 14: Won immunity with Isabel in the treasure dive and helped redirect the vote that sent Natalia out.",
+        "Episode 17: Survived the lie-detector challenge fallout while his name became openly dangerous.",
+        "Episode 19: Warned Isabel to play her idol, saving her and damaging his own alliance credibility.",
+        "Episode 21: Won paired immunity with Jade in Wheel of Misfortune.",
+        "Episode 25: Won Say Cheese immunity and became an automatic finalist.",
+        "Episode 26: Lost the final Carnival Rescue to Jade."
+      ],
+      "challengeWins": 2,
+      "immunityWins": 2,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Triumvirate",
+        "The Ride or Die",
+        "The Movement",
+        "The Double Edge"
+      ],
+      "rivalries": [
+        "Spencer",
+        "Zaid",
+        "Ivy",
+        "Hannah",
+        "Natalia"
+      ],
+      "socialScore": 3,
+      "strategicScore": 28
+    },
+    {
+      "placement": 3,
+      "name": "Anastasia",
+      "playerSlug": "anastasia",
+      "phase": "Juror",
+      "notes": "Anastasia plays the season's loudest strategic game, wins three immunities, and gets cut by the jury the moment she is vulnerable.",
+      "strategicRank": 9.8,
+      "story": "Anastasia arrives angry, and somehow turns that volatility into leverage. She finds an idol early, survives a massive idol play at the merge, and keeps her name in every major strategic conversation even when rivals openly call her controlling. Her bonds with Marissa and Logan give her warmth, but her feuds with Isabel, Jade, Spencer, Lynda, and Natalia give the season its heat. The deeper she goes, the more her résumé grows and the more the jury understands that she has been steering from the smoke. But that visibility becomes fatal. At final three, Logan wins immunity, the jury gets the knife, and Anastasia is removed not because she cannot win — but because too many people believe she can.",
+      "gameplayStyle": "Volcanic strategist, idol survivor",
+      "keyMoments": [
+        "Episode 4: Found the Blue Team hidden immunity idol and kept it secret.",
+        "Episode 14: Played her idol and negated four votes in the biggest advantage play of the season.",
+        "Episode 18: Bought and played a Vote Steal that helped redirect Jade's vote onto Ivy.",
+        "Episode 20: Won Maze of the Fallen immunity by remembering eliminated players better than the field.",
+        "Episode 21: Won The Princess Pride duel against Prince Spencer by a hair.",
+        "Episode 24: Secretly flipped the vote onto Hannah after Hannah overplayed.",
+        "Episode 25: Received the disadvantage in Say Cheese and still nearly survived before the jury eliminated her.",
+        "Episode 25: Left with a furious accusation that exposed Jade's endgame control."
+      ],
+      "challengeWins": 3,
+      "immunityWins": 3,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 2,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "The Ride or Die"
+      ],
+      "rivalries": [
+        "Jade",
+        "Spencer",
+        "Benji",
+        "Lynda",
+        "Isabel",
+        "Natalia",
+        "Richard"
+      ],
+      "socialScore": 2,
+      "strategicScore": 44
+    },
+    {
+      "placement": 4,
+      "name": "Hannah",
+      "playerSlug": "hannah",
+      "phase": "Juror",
+      "notes": "Hannah is the season's social engine, a provider and connector who repeatedly shapes votes until her own relationships become too threatening.",
+      "strategicRank": 8.3,
+      "story": "Hannah starts by learning names, building fires, and making people feel like they matter. That understated work becomes power, especially in the Red Team structure where she helps steer early decisions while appearing less dangerous than Jade, Spencer, or Benji. Her midgame is defined by intense bonds — Jade, Zaid, Ivy, Benji, Logan — and those relationships become both her résumé and her exposure. At final ten, the jury credits her with the Richard boot, a sign that her influence is finally visible. But by the endgame, the same warmth that kept her safe becomes a jury-threat warning sign. Anastasia and Logan cut her at four because Hannah sitting at the end is a story nobody wants to face.",
+      "gameplayStyle": "Soft power, hidden command",
+      "keyMoments": [
+        "Episode 1: Captained Red Team's shelter build and made everyone feel useful.",
+        "Episode 2: Spearheaded The Anchor vote that sent Amelie to Rescue Island.",
+        "Episode 4: Helped target Diego, surviving a tense tied vote and tiebreaker outcome.",
+        "Episode 17: Organized the negotiated flip on Richard and received broad jury credit for the move.",
+        "Episode 20: Formed The Shield Wall with Jade as an endgame survival structure.",
+        "Episode 22: Joined the failed push against Logan while Spencer was cut instead.",
+        "Episode 24: Overplayed at tribal and became the final-four casualty.",
+        "Episode 24: Left asking whether Anastasia's bond with her had ever been real."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Campfire Crew",
+        "The Shield Wall",
+        "The Power Couple"
+      ],
+      "rivalries": [
+        "Logan"
+      ],
+      "socialScore": 2,
+      "strategicScore": 27.5
+    },
+    {
+      "placement": 5,
+      "name": "Spencer",
+      "playerSlug": "spencer",
+      "phase": "Juror",
+      "notes": "Spencer survives eight dangerous votes as a brilliant, abrasive tactician before the room finally punishes his overplaying.",
+      "strategicRank": 8.7,
+      "story": "Spencer is planning from the moment he steps off the bus, and for a long time that brain keeps him alive. He forms The Anchor with Jade, breaks it, rebuilds elsewhere, gets swapped instead of eliminated, and keeps finding cracks inside majority plans. His greatest strength is also his fatal flaw: every conversation becomes an angle, every ally becomes a calculation, and eventually everyone can feel the machinery. His feud with Jade hardens into one of the season's defining rivalries, while his battles with Anastasia and Logan add new fronts he cannot fully manage. By final five, he is still alive after nineteen votes against him, a record of both danger and resilience. Then he whispers too loudly, scrambles too visibly, and the window closes thirty minutes before he can counter it.",
+      "gameplayStyle": "Abrasive architect, perpetual target",
+      "keyMoments": [
+        "Episode 2: Formed The Anchor with Jade, briefly positioning himself as a core strategist.",
+        "Episode 4: Voted against Jade and shattered The Anchor from inside.",
+        "Episode 8: Was voted out but survived via Elimination Swap, moving to Blue Team instead of leaving.",
+        "Episode 9: Bought critical information when he spotted Zaid pocketing an idol clue or advantage clue on the carousel.",
+        "Episode 15: Survived a three-way tiebreaker that eliminated Benji instead.",
+        "Episode 18: Bought individual immunity at auction, escaping a dangerous vote.",
+        "Episode 20: Overheard Jade bragging from the Maze pit and gained ammunition he never fully used.",
+        "Episode 22: Overplayed at final five and was voted out after eight escapes."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 19,
+      "alliances": [
+        "The Anchor",
+        "The Movement",
+        "The Power Couple"
+      ],
+      "rivalries": [
+        "Jade",
+        "Zaid",
+        "Isabel",
+        "Marissa",
+        "Anastasia",
+        "Logan"
+      ],
+      "socialScore": 2,
+      "strategicScore": 33
+    },
+    {
+      "placement": 6,
+      "name": "Isabel",
+      "playerSlug": "isabel",
+      "phase": "Juror",
+      "notes": "Isabel is a villainous social tactician whose idol save buys her one more round before old grudges finally catch up.",
+      "strategicRank": 8.4,
+      "story": "Isabel enters with arrogance, and somehow backs enough of it up to become indispensable. She burns relationships early, especially with Marissa, Natalia, Richard, and Anastasia, but she also builds working ties with Logan and Lynda that keep her strategically relevant. Her game thrives in whispers, intimidation, and perfectly timed mistrust. She finds a merge idol, holds it through chaos, and plays it when Logan warns her, erasing votes and sending Zaid home instead. But the idol cannot erase the way people feel about her. At six, Spencer, Hannah, and Anastasia finally land the shot, and Isabel exits realizing that being heard is not the same as being feared enough.",
+      "gameplayStyle": "Needle-threading villain broker",
+      "keyMoments": [
+        "Episode 1: Clashed with Marissa immediately, setting up one of the season's earliest hero-villain dynamics.",
+        "Episode 3: Kissed Lynda in Truth or Dare Train and deepened a complicated Blue Team bond.",
+        "Episode 9: Formed The Ride or Die with Logan and Lynda as a late pre-merge safety net.",
+        "Episode 16: Found the merge hidden immunity idol.",
+        "Episode 19: Played her idol after Logan's warning, nullifying votes and surviving the Zaid boot.",
+        "Episode 20: Survived the Marissa vote by a single vote.",
+        "Episode 21: Was voted out after her feud with Anastasia became impossible to contain."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 13,
+      "alliances": [
+        "The Movement"
+      ],
+      "rivalries": [
+        "Jade",
+        "Spencer",
+        "Zaid",
+        "Ivy",
+        "Natalia",
+        "Anastasia"
+      ],
+      "socialScore": 0,
+      "strategicScore": 37.5
+    },
+    {
+      "placement": 7,
+      "name": "Marissa",
+      "playerSlug": "marissa",
+      "phase": "Juror",
+      "notes": "Marissa plays a heroic, physically capable, fiercely loyal game that makes her beloved and therefore expendable at seven.",
+      "strategicRank": 7.5,
+      "story": "Marissa starts as the person willing to say what others will not, staring down Isabel before the game has even settled. She becomes the weight-bearer of Blue Team: provider, emotional outlet, challenge performer, and half of multiple unbreakable bonds. Her loyalty to Logan and Anastasia gives her purpose, while her rescue of Zaid in the treasure dive gives her one of the season's defining hero moments. But loyalty also narrows her options. When the game turns on pairs, her bond with Anastasia becomes weather everyone plans around. Jade's coalition cuts her at seven, and Marissa leaves naming Jade as the real author of the vote.",
+      "gameplayStyle": "Heroic grinder, loyal shield",
+      "keyMoments": [
+        "Episode 1: Publicly confronted Isabel and established herself as the season's early hero figure.",
+        "Episode 5: Dominated A-Maze-ing Grip as Blue Team's coconut dunker.",
+        "Episode 14: Abandoned a winning path underwater to rescue Zaid from drowning.",
+        "Episode 17: Won Hung Out to Dry immunity over the shark tank.",
+        "Episode 18: Joined the live coalition that eliminated Ivy, damaging several bonds.",
+        "Episode 20: Tried to move against Spencer but was countered and voted out.",
+        "Episode 20: Exited warning everyone that Jade made the call."
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "The Ride or Die",
+        "The Drama Triangle"
+      ],
+      "rivalries": [
+        "Jade",
+        "Spencer",
+        "Benji"
+      ],
+      "socialScore": 2,
+      "strategicScore": 12.5
+    },
+    {
+      "placement": 8,
+      "name": "Zaid",
+      "playerSlug": "zaid",
+      "phase": "Juror",
+      "notes": "Zaid is the loyal soldier and fan favorite whose bonds repeatedly save others until his own betrayals leave him exposed.",
+      "strategicRank": 7.2,
+      "story": "Zaid begins as the easygoing connector who can make camp laugh, then slowly becomes a central emotional force. His connections with Jade, Ivy, Hannah, and Marissa are real, messy, and strategically dangerous. He survives idol drama, showmance fallout, and multiple plans against him, often by being someone people cannot quite bring themselves to cut. But Zaid also takes credit he should not take, flips when pressure hits, and leaves scars on alliances that once protected him. By the time Ivy is gone and the Campfire Crew has fractured, his loyalty story no longer matches his voting record. Jade and Spencer finally put him down while Isabel's idol detonates the rest of the night.",
+      "gameplayStyle": "Loyal heart, messy pivots",
+      "keyMoments": [
+        "Episode 3: Stole credit for Spencer's Amelie blindside, starting a long strategic grudge.",
+        "Episode 6: Built an unbreakable bond with Ivy that became a liability.",
+        "Episode 8: Received an idol from Jade on the walk to tribal, deepening their trust.",
+        "Episode 9: Was saved by Jade's idol play after Benji and Ivy wrote his name.",
+        "Episode 14: Nearly drowned in the treasure dive and was revived by Marissa.",
+        "Episode 18: Voted Jade after her tribal overplay, breaking Campfire Crew trust.",
+        "Episode 19: Was eliminated after Isabel's idol nullified the other path."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "The Wildcard Pact"
+      ],
+      "rivalries": [
+        "Jade",
+        "Spencer",
+        "Benji",
+        "Isabel",
+        "Logan"
+      ],
+      "socialScore": 2,
+      "strategicScore": 20.5
+    },
+    {
+      "placement": 9,
+      "name": "Ivy",
+      "playerSlug": "ivy",
+      "phase": "Juror",
+      "notes": "Ivy returns from the Edge and immediately resumes as the season's emotional backbone, only to be cut twice for being too connected.",
+      "strategicRank": 7,
+      "story": "Ivy's game is built on care before calculation, and that makes her both loved and hunted. Early on, she becomes a social center in Red Team, forming deep ties with Jade, Zaid, Benji, Hannah, and Spencer. Her showmance-adjacent bonds become impossible to hide, and the game punishes her the first time at the pre-merge Red Team vote. She wins her way back at the Edge, proving that her social strength is matched by nerve under pressure. But the second act is harsher: she is too close to too many people, and her attempt to move on Logan leaks into a counterstrike. Anastasia's Vote Steal helps seal it, and Ivy leaves heartbroken more than angry.",
+      "gameplayStyle": "Open heart, social gravity",
+      "keyMoments": [
+        "Episode 3: Revealed her secret on Truth or Dare Train without hesitation.",
+        "Episode 6: Built an unbreakable bond with Zaid after the spin-the-bottle spark.",
+        "Episode 12: Was blindsided by Jade and Hannah despite deep personal bonds.",
+        "Episode 16: Won the Edge return gauntlet and re-entered the game.",
+        "Episode 17: Outlasted much of the cast in Hung Out to Dry before losing grip late.",
+        "Episode 18: Tried to build a Logan vote that leaked and triggered the counterattack.",
+        "Episode 18: Was eliminated after Anastasia stole Jade's vote and redirected it onto her."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Campfire Crew"
+      ],
+      "rivalries": [
+        "Isabel",
+        "Logan"
+      ],
+      "socialScore": 1,
+      "strategicScore": 18
+    },
+    {
+      "placement": 10,
+      "name": "Richard",
+      "playerSlug": "richard",
+      "phase": "Juror",
+      "notes": "Richard is the returning hero-provider whose integrity and loyalty make him valuable until Hannah's negotiated flip makes him the consensus sacrifice.",
+      "strategicRank": 6.6,
+      "story": "Richard's first game ends on Blue Team as the honorable provider caught in shifting alliances, but Rescue Island hardens him rather than erases him. He returns at the merge stronger, more observant, and more socially grounded. His bonds with Marissa, Logan, and Ivy give him real protection, and his provider role makes him useful in a starving camp. But Richard's game is too honest for a board full of secret pivots. At final ten, Hannah identifies him as the vote that can unite competing rooms, and the move spreads faster than he can counter it. He leaves with his integrity intact, but his second chance ends as proof that decency is not always armor.",
+      "gameplayStyle": "Honest provider, late shield",
+      "keyMoments": [
+        "Episode 1: Searched for an idol clue and came up empty, immediately drawing attention.",
+        "Episode 7: Was voted out by Blue Team after being labeled a challenge liability.",
+        "Episode 13: Became one of Rescue Island's strongest return contenders through training and camp work.",
+        "Episode 16: Won his way back from the Edge alongside Ivy.",
+        "Episode 16: Learned Logan had broken their Final Two promise, ending that route.",
+        "Episode 17: Was targeted by Hannah's negotiated flip and eliminated in a 7-3 vote.",
+        "Episode 17: Left worrying about Marissa being unprotected."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 16,
+      "alliances": [
+        "The Triumvirate",
+        "The Movement"
+      ],
+      "rivalries": [
+        "Jade",
+        "Natalia",
+        "Anastasia"
+      ],
+      "socialScore": 2,
+      "strategicScore": 12
+    },
+    {
+      "placement": 11,
+      "name": "Benji",
+      "playerSlug": "benji",
+      "phase": "Juror",
+      "notes": "Benji is an early puppetmaster and emotional connector who dodges vote after vote until a chaotic three-way tiebreaker ends him.",
+      "strategicRank": 7.8,
+      "story": "Benji looks harmless at first, but by the second vote the game is already moving through him. He builds trust with Jade, Ivy, Hannah, and Spencer while keeping his own intentions soft enough to deny. His relationships become a web: Ivy, Hannah, Diego, and later The Movement all pull him in different directions. For a while, that web catches every fall, and he survives five tribals where his name keeps circling. But the same loyalty brand that protects him makes betrayal feel explosive when Marissa and Anastasia write him down. In the Haunted House vote, the board fractures beyond repair, and Benji loses the endurance tiebreaker to Zaid. The kingmaker is dethroned, stunned that loyalty did not come back to save him.",
+      "gameplayStyle": "Soft-spoken kingmaker, tangled heart",
+      "keyMoments": [
+        "Episode 2: Helped The Anchor eliminate Amelie while being publicly accused as a smiling strategist.",
+        "Episode 4: Couldn't vote Jade and redirected onto Tristan, helping force Diego's tiebreaker loss.",
+        "Episode 9: Voted Zaid instead of Alessio, exposing fractures in The Ivy Core.",
+        "Episode 12: His bond with Ivy ended when Ivy was voted out, collapsing a major emotional pillar.",
+        "Episode 14: Played an Extra Vote for Natalia during the chaotic merge vote.",
+        "Episode 15: Was eliminated in a three-way tiebreaker against Spencer and Zaid.",
+        "Episode 15: Left furious at Anastasia and Marissa for betraying him."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Campfire Crew",
+        "The Movement"
+      ],
+      "rivalries": [
+        "Zaid",
+        "Marissa",
+        "Anastasia"
+      ],
+      "socialScore": 2,
+      "strategicScore": 16.5
+    },
+    {
+      "placement": 12,
+      "name": "Natalia",
+      "playerSlug": "natalia",
+      "phase": "Juror",
+      "notes": "Natalia is a chaos agent whose reads and aggression keep her relevant until her unpredictability becomes impossible to manage.",
+      "strategicRank": 7.4,
+      "story": "Natalia arrives promising to learn the rules and break them, and she spends the season doing both. On Blue Team, she moves through alliances quickly: The Triumvirate, The Secret Weapon, Anti-Spencer arrangements, and temporary truces with people she distrusts. She is perceptive, confrontational, and repeatedly close to power without ever staying fully inside it. Her stage disaster in Talent Show hurts her image, but she keeps surviving through pressure, side deals, and social intimidation. At the merge, her threat level is too high to ignore and her enemies too numerous to outmaneuver. She leaves by exposing Logan and Anastasia's roles, turning her exit into one last detonation.",
+      "gameplayStyle": "Volatile reads, chaos pressure",
+      "keyMoments": [
+        "Episode 3: Helped form The Triumvirate, then immediately fractured it by voting Richard.",
+        "Episode 4: Was MVP of Paintball Hunt as the last deer standing.",
+        "Episode 6: Choked in Talent Show after Spencer sabotaged her props, scoring zero.",
+        "Episode 10: Faced Lynda in exile and stayed alive by winning the duel.",
+        "Episode 11: Survived while Lynda was sent permanently to Rescue Island.",
+        "Episode 14: Was voted out at the merge after being labeled unpredictable and a jury threat.",
+        "Episode 14: Exposed Logan and the Anti-Spencer Coalition in her crashout."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "The Triumvirate",
+        "The Secret Weapon"
+      ],
+      "rivalries": [
+        "Isabel",
+        "Anastasia",
+        "Logan",
+        "Richard"
+      ],
+      "socialScore": 1,
+      "strategicScore": 31
+    },
+    {
+      "placement": 13,
+      "name": "Lynda",
+      "playerSlug": "lynda",
+      "phase": "Juror",
+      "notes": "Lynda is a hotheaded advantage holder whose extra vote never becomes the weapon her personality suggests it might.",
+      "strategicRank": 5.9,
+      "story": "Lynda finds the first advantage of the season and immediately becomes the kind of player everyone watches without fully trusting. She bounces between real bonds with Logan, Alessio, Isabel, and Marissa, and explosive hatred with Anastasia. Her alliances — The Firewall, The Secret Weapon, and The Ride or Die — never fully stabilize because Lynda keeps choosing emotion at the exact moments structure is required. She survives multiple brushes with danger, including an exile twist, but each escape costs trust. By Episode 11, her reputation as a flipper catches up, and Natalia beats her in the Exile Duel. Lynda leaves having made the waves she promised, even if they drowned her game.",
+      "gameplayStyle": "Hot temper, hidden parchment",
+      "keyMoments": [
+        "Episode 1: Found the Extra Vote while collecting water and told nobody.",
+        "Episode 3: Formed The Firewall with Alessio.",
+        "Episode 6: Formed The Secret Weapon with Natalia against Anastasia.",
+        "Episode 7: Betrayed Alessio by voting him instead of Richard, cracking The Firewall.",
+        "Episode 10: Was sent to exile instead of being fully eliminated.",
+        "Episode 11: Lost the Exile Duel to Natalia and was sent to Rescue Island.",
+        "Episode 11: Left with a fiery speech about making waves."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [
+        "The Ride or Die"
+      ],
+      "rivalries": [
+        "Anastasia"
+      ],
+      "socialScore": 1,
+      "strategicScore": 24
+    },
+    {
+      "placement": 14,
+      "name": "Alessio",
+      "playerSlug": "alessio",
+      "phase": "Juror",
+      "notes": "Alessio is a wildcard provider and quiet connector whose split alliances leave him exposed before the merge.",
+      "strategicRank": 5.6,
+      "story": "Alessio starts as the person nobody can quite read, which makes him funny, useful, and dangerous in small doses. He finds real bonds with Logan, Lynda, Marissa, and Richard, then becomes part of The Firewall with Lynda. But when Lynda betrays that structure and the swap separates them, Alessio's protection erodes. On Red Team, he is never fully integrated into Jade's network, and Jade openly dislikes him. His challenge competence and camp work cannot overcome being the easiest name in a split field. He exits regretting that Marissa no longer has him watching her back, a quiet loyalty note in a season full of loud betrayals.",
+      "gameplayStyle": "Oddball loyalist, quiet worker",
+      "keyMoments": [
+        "Episode 2: Beat Jade in the Bone Battle, giving Blue Team a crucial point.",
+        "Episode 3: Formed The Firewall with Lynda.",
+        "Episode 7: Was betrayed by Lynda when she voted for him instead of Richard.",
+        "Episode 8: Swapped onto Red Team after Spencer was voted out-but-swapped.",
+        "Episode 9: Overheard Jade pitching Benji on voting him out during Merry-Go-Round-Up.",
+        "Episode 9: Was eliminated by Jade and Zaid after the fractured Red Team vote.",
+        "Episode 13: Became a steadying presence on Rescue Island before falling short of the return."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [
+        "Jade"
+      ],
+      "socialScore": 0,
+      "strategicScore": 15
+    },
+    {
+      "placement": 15,
+      "name": "Tristan",
+      "playerSlug": "tristan",
+      "phase": "Juror",
+      "notes": "Tristan is an early underdog whose likeability keeps them close until the tribe decides closeness itself is the threat.",
+      "strategicRank": 5.2,
+      "story": "Tristan opens the season with humor, warmth, and enough physical grit to surprise people. They beat Isabel in the Bone Battle and keep Red Team's mood alive through jokes, songs, and quiet deflections. But as Red Team fractures, Tristan becomes trapped between loyalty to Zaid's side and suspicion from everyone else. Their social value becomes a liability after Diego's elimination, especially once the tribe is desperate for a clean target. At Episode 5, Hannah and Ivy refuse to write Jade's name, and Tristan becomes the compromise nobody fully wants but enough people accept. On Rescue Island, they grow into one of the emotional backbones, saving Ted in the storm and proving the game cut them before their story was done.",
+      "gameplayStyle": "Comic underdog, social glue",
+      "keyMoments": [
+        "Episode 1: Bonded with Zaid over host impressions and became an early camp mood-setter.",
+        "Episode 2: Beat Isabel in the Bone Battle with a clean low strike.",
+        "Episode 4: Survived a tied vote after Diego lost the puzzle tiebreaker.",
+        "Episode 5: Was targeted as a jury favorite and voted out by Jade, Spencer, Ivy, and Hannah.",
+        "Episode 13: Rescued Ted during the Rescue Island storm.",
+        "Episode 16: Fell in the Edge return gauntlet's first stage but left with grace."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 1,
+      "strategicScore": 11.5
+    },
+    {
+      "placement": 16,
+      "name": "Diego",
+      "playerSlug": "diego",
+      "phase": "Juror",
+      "notes": "Diego plays a clean, loyal early game that ends by the thinnest possible margin in a tiebreaker.",
+      "strategicRank": 4.7,
+      "story": "Diego enters looking for the experience, and for four episodes he plays with sincerity that stands out in a cast full of schemers. His bonds with Benji and Hannah, and his quiet loyalty to Jade, make him deeply trusted but strategically passive. Physically, he gives Red Team real strength, hauling shelter parts and winning his Bone Battle against Logan. But when Red Team fractures, Diego cannot bring himself to write Jade's name, and that mercy costs him. A 3-3 tie sends him into a puzzle tiebreaker against Tristan, and he loses. His exit is clean, painful, and remembered as one of the season's narrowest cuts.",
+      "gameplayStyle": "Clean loyalty, quiet muscle",
+      "keyMoments": [
+        "Episode 1: Hauled a Ferris-wheel cart during Shelter Scramble and gave Red Team a head start.",
+        "Episode 2: Beat Logan in the Bone Battle with a decisive smash.",
+        "Episode 3: Quietly redirected a plan against Benji without asking for credit.",
+        "Episode 4: Refused to vote Jade and wrote Tristan instead.",
+        "Episode 4: Lost the challenge tiebreaker to Tristan and was eliminated.",
+        "Episode 4: Learned at Aftermath that Jade had voted him out, deepening the sting."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 1,
+      "strategicScore": 8.5
+    },
+    {
+      "placement": 17,
+      "name": "Ted",
+      "playerSlug": "ted",
+      "phase": "Juror",
+      "notes": "Ted is an early schemer whose honest core and late read leave him one vote behind the game.",
+      "strategicRank": 5.1,
+      "story": "Ted arrives thinking three steps ahead, but Blue Team's chaos moves faster than his calculations. He builds small bonds with Logan and Richard, tries to plant context around Marissa and Richard, and keeps presenting himself as steady. The problem is that everyone reads him as flexible before he can prove he is loyal. At the Truth or Dare Train tribal, he sees the shape of the vote too late, and the consensus lands before he can counter. His exit speech nails Anastasia as a driver, giving the jury its first public strategic breadcrumb. On Rescue Island and at the motel, Ted becomes more reflective than bitter, a player who understands the game best after it has already passed him.",
+      "gameplayStyle": "Late-reading schemer",
+      "keyMoments": [
+        "Episode 1: Worked with Isabel to shift her read on Marissa through careful 'context'.",
+        "Episode 3: Completed the eyebrow-shaving dare without flinching.",
+        "Episode 3: Tried to vote Richard while the majority landed on him.",
+        "Episode 3: Was eliminated 5-3 after identifying the counter window too late.",
+        "Episode 3: Exposed Anastasia's role in his last words.",
+        "Episode 13: Was rescued by Tristan during the Rescue Island storm."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 1,
+      "strategicScore": 21.5
+    },
+    {
+      "placement": 18,
+      "name": "Amelie",
+      "playerSlug": "amelie",
+      "phase": "Juror",
+      "notes": "Amelie overplays first, exposes alliances on the way out, and becomes the season's original warning about moving too fast.",
+      "strategicRank": 5.3,
+      "story": "Amelie comes in calling the game a chess match, then burns through her opening moves before anyone else has finished setting the board. She has useful instincts — physical competence, social reads, and a willingness to name threats — but she pulls too many people too quickly. Her jealousy of Jade and discomfort with The Anchor's consolidation make her an easy first boot once Red Team loses. At tribal, she stays composed until the votes fall, then uses her exit to detonate Benji's role and expose The Zaid Four. On Rescue Island, she trains hard, heals, and remains sharp-tongued to the end. Her game is short, but it defines the season's first rule: personality is not protection.",
+      "gameplayStyle": "Overclocked chess opener",
+      "keyMoments": [
+        "Episode 1: Helped steady Benji during Shelter Scramble after the pigeon scare.",
+        "Episode 2: Overplayed by pulling too many people aside before the first Red Team vote.",
+        "Episode 2: Left a forged note that shook Jade's read on Hannah.",
+        "Episode 2: Broke from The Zaid Four's plan and voted Ivy.",
+        "Episode 2: Was voted out 5-1-1-2 and sent to Rescue Island.",
+        "Episode 4: Took an Aftermath anvil when her Ivy vote was exposed.",
+        "Episode 16: Fell in the Edge return gauntlet's social stage with a cold exit."
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 1,
+      "strategicScore": 25
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 2,
+      "eliminated": "Amelie",
+      "eliminatedSlug": "amelie",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Amelie",
+          "targetSlug": "amelie"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Amelie",
+          "targetSlug": "amelie"
+        },
+        {
+          "voter": "Diego",
+          "voterSlug": "diego",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Amelie",
+          "targetSlug": "amelie"
+        },
+        {
+          "voter": "Tristan",
+          "voterSlug": "tristan",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Amelie",
+          "targetSlug": "amelie"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Amelie",
+          "targetSlug": "amelie"
+        },
+        {
+          "voter": "Amelie",
+          "voterSlug": "amelie",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Ted",
+      "eliminatedSlug": "ted",
+      "votes": [
+        {
+          "voter": "Lynda",
+          "voterSlug": "lynda",
+          "target": "Ted",
+          "targetSlug": "ted"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Ted",
+          "targetSlug": "ted"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Ted",
+          "targetSlug": "ted"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Ted",
+          "voterSlug": "ted",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Alessio",
+          "voterSlug": "alessio",
+          "target": "Ted",
+          "targetSlug": "ted"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Richard",
+          "voterSlug": "richard",
+          "target": "Ted",
+          "targetSlug": "ted"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Diego",
+      "eliminatedSlug": "diego",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Diego",
+          "targetSlug": "diego"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Diego",
+          "voterSlug": "diego",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Tristan",
+          "voterSlug": "tristan",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Diego",
+          "targetSlug": "diego"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Diego",
+          "targetSlug": "diego"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Tristan",
+      "eliminatedSlug": "tristan",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Tristan",
+          "voterSlug": "tristan",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Tristan",
+          "targetSlug": "tristan"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Richard",
+      "eliminatedSlug": "richard",
+      "votes": [
+        {
+          "voter": "Lynda",
+          "voterSlug": "lynda",
+          "target": "Alessio",
+          "targetSlug": "alessio"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Alessio",
+          "voterSlug": "alessio",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Richard",
+          "voterSlug": "richard",
+          "target": "Lynda",
+          "targetSlug": "lynda"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Alessio",
+      "eliminatedSlug": "alessio",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Alessio",
+          "targetSlug": "alessio"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Alessio",
+          "targetSlug": "alessio"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Alessio",
+          "voterSlug": "alessio",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Lynda",
+          "voterSlug": "lynda",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Lynda",
+          "targetSlug": "lynda"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Lynda",
+          "targetSlug": "lynda"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": "Lynda",
+      "eliminatedSlug": "lynda",
+      "votes": [
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "Ivy",
+      "eliminatedSlug": "ivy",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Natalia",
+      "eliminatedSlug": "natalia",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Benji",
+      "eliminatedSlug": "benji",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Benji",
+          "voterSlug": "benji",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Marissa",
+          "targetSlug": "marissa"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Benji",
+          "targetSlug": "benji"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Richard",
+      "eliminatedSlug": "richard",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Richard",
+          "targetSlug": "richard"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Richard",
+          "voterSlug": "richard",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        }
+      ]
+    },
+    {
+      "episode": 18,
+      "eliminated": "Ivy",
+      "eliminatedSlug": "ivy",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Jade",
+          "targetSlug": "jade"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Logan",
+          "targetSlug": "logan"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Ivy",
+          "targetSlug": "ivy"
+        },
+        {
+          "voter": "Ivy",
+          "voterSlug": "ivy",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        }
+      ]
+    },
+    {
+      "episode": 19,
+      "eliminated": "Zaid",
+      "eliminatedSlug": "zaid",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Zaid",
+          "targetSlug": "zaid"
+        },
+        {
+          "voter": "Zaid",
+          "voterSlug": "zaid",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Hannah",
+          "targetSlug": "hannah"
+        }
+      ]
+    },
+    {
+      "episode": 20,
+      "eliminated": "Marissa",
+      "eliminatedSlug": "marissa",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Marissa",
+          "targetSlug": "marissa"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Marissa",
+          "targetSlug": "marissa"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Marissa",
+          "targetSlug": "marissa"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Marissa",
+          "targetSlug": "marissa"
+        },
+        {
+          "voter": "Marissa",
+          "voterSlug": "marissa",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        }
+      ]
+    },
+    {
+      "episode": 21,
+      "eliminated": "Isabel",
+      "eliminatedSlug": "isabel",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Isabel",
+          "voterSlug": "isabel",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Isabel",
+          "targetSlug": "isabel"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        }
+      ]
+    },
+    {
+      "episode": 22,
+      "eliminated": "Spencer",
+      "eliminatedSlug": "spencer",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Logan",
+          "targetSlug": "logan"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Logan",
+          "targetSlug": "logan"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        }
+      ]
+    },
+    {
+      "episode": 24,
+      "eliminated": "Hannah",
+      "eliminatedSlug": "hannah",
+      "votes": [
+        {
+          "voter": "Jade",
+          "voterSlug": "jade",
+          "target": "Anastasia",
+          "targetSlug": "anastasia"
+        },
+        {
+          "voter": "Hannah",
+          "voterSlug": "hannah",
+          "target": "Logan",
+          "targetSlug": "logan"
+        },
+        {
+          "voter": "Anastasia",
+          "voterSlug": "anastasia",
+          "target": "Hannah",
+          "targetSlug": "hannah"
+        },
+        {
+          "voter": "Logan",
+          "voterSlug": "logan",
+          "target": "Hannah",
+          "targetSlug": "hannah"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [],
+    "note": "No jury — winner decided by the final challenge."
+  },
+  "seasonNarrative": "Carnival of Chaos is a season where the midway never stops taking payment. The pre-merge is built on unstable shelters, food scarcity, Rescue Island pressure, and alliances that form quickly because nobody feels safe for long. Jade and Spencer begin as mutual respect and end as open hatred; Anastasia and Isabel turn Blue Team into a war zone; Benji, Ivy, Zaid, Hannah, and Marissa prove that showmances and ride-or-die bonds can be both shelter and target. The merge detonates the game: idols wipe votes, extra votes fail to control chaos, the Edge returns Ivy and Richard, and the jury starts tracking who it believes is really running each boot. By the endgame, shields become threats one by one — Richard, Ivy, Zaid, Marissa, Isabel, Spencer, Hannah, and Anastasia all fall as their stories become too visible. The finale strips away the jury vote and asks only who can finish the Carnival Rescue. Jade answers with the same thing that carried her all season: read the pattern, cut through the noise, and do not look back.",
+  "awards": {
+    "bestStrategic": {
+      "name": "Anastasia",
+      "playerSlug": "anastasia",
+      "description": "Anastasia had the highest strategic résumé: idol timing, vote influence, late-game immunity wins, and repeated jury credit for control, even though that visibility ultimately got her cut."
+    },
+    "bestSocial": {
+      "name": "Ted",
+      "playerSlug": "ted",
+      "description": "Ted's average bonds were the strongest on paper, and his post-game arc showed a player whose honesty and calm made people open up even after his early exit."
+    },
+    "bestPhysical": {
+      "name": "Jade",
+      "playerSlug": "jade",
+      "description": "Jade tied the season high in challenge wins and took the final challenge when it mattered most, turning physical and mental composure into the title.",
+      "wins": 3
+    },
+    "mostClutch": {
+      "name": "Jade",
+      "playerSlug": "jade",
+      "description": "From the Zaid idol save to late immunities to the final Carnival Rescue, Jade repeatedly landed the exact move or win she needed at the edge of disaster."
+    },
+    "mostLoyal": {
+      "name": "Diego",
+      "playerSlug": "diego",
+      "description": "Diego refused to write Jade's name even when it was strategically safer, and his clean loyalty became both his identity and his downfall."
+    },
+    "bestUnderdog": {
+      "name": "Tristan",
+      "playerSlug": "tristan",
+      "description": "Tristan survived a tiebreaker scare, fought from the bottom, and then became one of Rescue Island's emotional anchors despite leaving early."
+    },
+    "biggestVillain": {
+      "name": "Isabel",
+      "playerSlug": "isabel",
+      "description": "Isabel weaponized confidence, intimidation, lies, and idol timing while feuding with half the cast, earning the season's clearest villain edit."
+    },
+    "mostChaotic": {
+      "name": "Jade",
+      "playerSlug": "jade",
+      "description": "Jade's game produced idol saves, personal betrayals, challenge sabotage, public blowups, and finale dominance — chaos with a compass."
+    },
+    "quietestThreat": {
+      "name": "Logan",
+      "playerSlug": "logan",
+      "description": "Logan hid behind warmth and usefulness while becoming a vote broker, challenge threat, and endgame shield nobody could fully remove."
+    },
+    "seasonMVP": {
+      "name": "Jade",
+      "playerSlug": "jade",
+      "description": "Jade was the season's central force: winner, challenge closer, feud magnet, idol player, and repeated endgame decision-maker."
+    },
+    "mostTragic": {
+      "name": "Hannah",
+      "playerSlug": "hannah",
+      "description": "Hannah built real bonds everywhere, only to be cut at final four by people she thought had crossed from strategy into something genuine."
+    },
+    "mostUnlucky": {
+      "name": "Diego",
+      "playerSlug": "diego",
+      "description": "Diego's game ended not by majority collapse but by a tied vote and puzzle tiebreaker, the narrowest and cruelest kind of early exit."
+    },
+    "ironPerson": {
+      "name": "Spencer",
+      "playerSlug": "spencer",
+      "description": "Spencer absorbed 19 votes across the season, survived eight dangerous tribals, and kept fighting until final five."
+    },
+    "biggestMeltdown": {
+      "name": "Benji",
+      "playerSlug": "benji",
+      "description": "Benji's Episode 15 unraveling after the Ivy-Hannah-Zaid emotional triangle and alliance pressure exposed the cracks in his carefully gentle game.",
+      "episode": 15
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "description": "Jade wins the season and defines its strategic endgame, earning the top player spot through survival, control, and final execution."
+      },
+      "silver": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia had the strongest non-winning résumé and would have been a nightmare finalist if the jury had not removed her at third."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Marissa",
+        "playerSlug": "marissa",
+        "description": "Marissa's rescue of Zaid underwater, loyalty to her people, and repeated provider role made her the season's clearest hero."
+      },
+      "silver": {
+        "name": "Richard",
+        "playerSlug": "richard",
+        "description": "Richard played with integrity, protected others, and returned from the Edge as a provider before being sacrificed by a numbers move."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Isabel",
+        "playerSlug": "isabel",
+        "description": "Isabel's arrogance, idol play, feuds, and cutting social style made her the season's signature villain."
+      },
+      "silver": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia's controlling reputation, idol theatrics, and brutal betrayals gave her a darker strategic edge."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "description": "Jade won three challenges including the final, and repeatedly converted safety into control."
+      },
+      "silver": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia also won three immunities and survived multiple rounds purely because rivals could not touch her."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Hannah",
+        "playerSlug": "hannah",
+        "description": "Hannah's social reach shaped votes, repaired moods, and made her too dangerous to sit beside at the end."
+      },
+      "silver": {
+        "name": "Marissa",
+        "playerSlug": "marissa",
+        "description": "Marissa built deep loyalty with Logan, Anastasia, Zaid, Hannah, and Richard, making her a major jury threat."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia received repeated jury credit for running votes and used advantages, immunity, and fear to stay alive."
+      },
+      "silver": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "description": "Jade's quieter endgame architecture delivered the actual win and multiple credited boots."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia survived to final three only to be removed by the jury after Logan's immunity, a brutal reversal for a player built for Final Tribal."
+      },
+      "silver": {
+        "name": "Spencer",
+        "playerSlug": "spencer",
+        "description": "After dodging eight tribals, Spencer was finally undone by visible overplaying and cut just short of the final four."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia found an idol, played it to erase four votes, bought a Vote Steal, and used that advantage to shape the Ivy boot."
+      },
+      "silver": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "description": "Jade found an idol and used protection dramatically, most notably saving Zaid while deepening her loyalist image."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Anastasia",
+        "playerSlug": "anastasia",
+        "description": "Anastasia had the season's best strategic score and three immunities, but the jury twist removed her before she could argue her case."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "description": "With no jury vote, Jade's FTC-equivalent was the final challenge itself, and she delivered the only argument that mattered: victory."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Logan",
+        "playerSlug": "logan",
+        "description": "Logan reached the final with a strong social-physical résumé, but the final format denied him a jury case and forced everything onto one race."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Anastasia",
+        "Isabel"
+      ],
+      "description": "Their feud lasted from Blue Team through the endgame: intimidation, accusations, idol paranoia, crossed votes, and a final Isabel boot fueled by pure hostility."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Jade",
+      "betrayed": "Spencer",
+      "episode": 22,
+      "description": "Jade joined the brand-new Power Couple structure, then flipped onto Spencer after his overplaying, ending a season-long rivalry disguised briefly as cooperation."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Anastasia",
+      "betrayed": "Hannah",
+      "episode": 24,
+      "description": "Anastasia told the Power Couple one thing and secretly put the decisive votes on Hannah, cutting a daily confidante at final four."
+    },
+    "legacyMoment": {
+      "name": "Marissa rescues Zaid underwater",
+      "episode": 14,
+      "description": "In the Treasure Island challenge, Marissa abandoned a possible win to save Zaid from drowning, creating the season's defining hero moment and altering the emotional map of the merge."
+    },
+    "fanFavorite": {
+      "name": "Zaid",
+      "playerSlug": "zaid",
+      "description": "Zaid was the season's most popular player with the fans."
+    }
+  },
+  "emoji": "[AI_FILL]"
+}

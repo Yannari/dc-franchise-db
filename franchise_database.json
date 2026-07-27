@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
-    "totalSeasons": 13,
-    "totalEpisodes": 218,
-    "uniquePlayers": 134,
-    "totalAppearances": 244,
-    "lastUpdated": "2026-07-08",
+    "totalSeasons": 14,
+    "totalEpisodes": 244,
+    "uniquePlayers": 152,
+    "totalAppearances": 262,
+    "lastUpdated": "2026-07-27",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -157,6 +157,19 @@
       "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
       "legacy": "Wayne leaves Doom Island as the rare winner whose biggest weapon is sincerity. In a season dominated by schemers, idols, and revotes, he proves that loyalty can be messy, imperfect, and still strong enough to win.",
       "votesAgainst": 8
+    },
+    {
+      "season": 14,
+      "seasonTitle": "Total Drama: Carnival of Chaos",
+      "emoji": "",
+      "winner": "Jade",
+      "playerSlug": "jade",
+      "finalVote": "",
+      "runnerUp": "Logan",
+      "keyStats": "Jade wins with 3 challenge wins, 3 immunities, 10 votes against, and a finale victory decided on the field rather than by jury ballot.",
+      "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
+      "legacy": "Her legacy is cold, controversial, and undeniable — a winner who survives public blowups, broken alliances, and jury hostility by making the last challenge her final argument.",
+      "votesAgainst": 10
     }
   ],
   "records": {
@@ -386,6 +399,11 @@
       "season": 13,
       "name": "Wayne",
       "playerSlug": "wayne"
+    },
+    {
+      "season": 14,
+      "name": "Zaid",
+      "playerSlug": "zaid"
     }
   ],
   "multiSeasonPlayers": [
@@ -1413,6 +1431,11 @@
         "season": 13,
         "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
         "winner": "Wayne"
+      },
+      {
+        "season": 14,
+        "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
+        "winner": "Jade"
       }
     ],
     "castComposition": [
@@ -1469,6 +1492,10 @@
       {
         "season": 13,
         "composition": "22 players"
+      },
+      {
+        "season": 14,
+        "composition": "18 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1557,6 +1584,15 @@
           "Wayne",
           "Julia"
         ]
+      },
+      {
+        "season": 14,
+        "vote": "",
+        "winner": "Jade",
+        "finalists": [
+          "Jade",
+          "Logan"
+        ]
       }
     ],
     "majorTwists": [
@@ -1611,6 +1647,10 @@
       {
         "season": 13,
         "twist": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home."
+      },
+      {
+        "season": 14,
+        "twist": "Carnival of Chaos is a season where the midway never stops taking payment. The pre-merge is built on unstable shelters, food scarcity, Rescue Island pressure, and alliances that form quickly because nobody feels safe for long. Jade and Spencer begin as mutual respect and end as open hatred; Anastasia and Isabel turn Blue Team into a war zone; Benji, Ivy, Zaid, Hannah, and Marissa prove that showmances and ride-or-die bonds can be both shelter and target. The merge detonates the game: idols wipe votes, extra votes fail to control chaos, the Edge returns Ivy and Richard, and the jury starts tracking who it believes is really running each boot. By the endgame, shields become threats one by one — Richard, Ivy, Zaid, Marissa, Isabel, Spencer, Hannah, and Anastasia all fall as their stories become too visible. The finale strips away the jury vote and asks only who can finish the Carnival Rescue. Jade answers with the same thing that carried her all season: read the pattern, cut through the noise, and do not look back."
       }
     ]
   },
@@ -2186,9 +2226,10 @@
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
     "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Millie & Chase (5-3-0). Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
     "season10": "Champions vs Contenders brought 9 returning champions against 9 hungry contenders. Jasmine's pressure reads, loyal shields, and perfectly timed exits from danger carried her past Bowie's relentless scheming. Redemption Island produced its own mythology through Priya's early streak and Sanders's five-duel run. The Oath alliance dominated but fractured as exposure after exposure (Courtney, Scott, Priya) kept unmasking Bowie. The first physical finale (no jury vote) proved that the season's survivor can outrun the season's strategist when there's nowhere left to hide.",
-    "message": "The message across 13 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12, Wayne S13. Adaptability, jury respect, and understanding when to strike remain essential.",
+    "message": "The message across 14 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12, Wayne S13, Jade S14. Adaptability, jury respect, and understanding when to strike remain essential.",
     "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
     "season12": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.. James wins (7-2) over Riya. James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
-    "season13": "A season of rescue roads, broken alliances, and one final race where heart outran control.. Wayne wins (no jury vote) over Julia. Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed."
+    "season13": "A season of rescue roads, broken alliances, and one final race where heart outran control.. Wayne wins (no jury vote) over Julia. Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
+    "season14": "A season of rigged games, broken showmances, exposed advantages, and one final challenge where Jade turned calculation into a crown.. Jade wins (no jury vote) over Logan. Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open."
   }
 }

@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
-    "totalSeasons": 12,
-    "totalEpisodes": 198,
+    "totalSeasons": 13,
+    "totalEpisodes": 218,
     "uniquePlayers": 134,
-    "totalAppearances": 222,
-    "lastUpdated": "2026-06-30",
+    "totalAppearances": 244,
+    "lastUpdated": "2026-07-08",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -144,6 +144,19 @@
       "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
       "legacy": "James leaves as one of the season’s defining schemers: messy, polarizing, and frequently distrusted, but impossible for the jury to deny. His win becomes the signature case study for how a player can be voted out, fight back in, and still control the ending.",
       "votesAgainst": 9
+    },
+    {
+      "season": 13,
+      "seasonTitle": "Total Drama Doom Island",
+      "emoji": "",
+      "winner": "Wayne",
+      "playerSlug": "wayne",
+      "finalVote": "",
+      "runnerUp": "Julia",
+      "keyStats": "Wayne wins Season 13 after surviving 8 votes against, one individual immunity, multiple alliance fractures, and a finale decided on the course instead of by jury vote.",
+      "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
+      "legacy": "Wayne leaves Doom Island as the rare winner whose biggest weapon is sincerity. In a season dominated by schemers, idols, and revotes, he proves that loyalty can be messy, imperfect, and still strong enough to win.",
+      "votesAgainst": 8
     }
   ],
   "records": {
@@ -166,10 +179,10 @@
         }
       },
       "mostChallengeWins": {
-        "name": "Ryan",
-        "playerSlug": "ryan",
-        "wins": 3,
-        "season": 10
+        "name": "Julia",
+        "playerSlug": "julia",
+        "wins": 4,
+        "season": 13
       }
     },
     "votingRecords": {
@@ -368,6 +381,11 @@
       "season": 12,
       "name": "Aiden",
       "playerSlug": "aiden"
+    },
+    {
+      "season": 13,
+      "name": "Wayne",
+      "playerSlug": "wayne"
     }
   ],
   "multiSeasonPlayers": [
@@ -411,16 +429,29 @@
       "bestPlacement": 1
     },
     {
-      "name": "MacArthur",
-      "playerSlug": "macarthur",
+      "name": "Jacques",
+      "playerSlug": "jacques",
       "seasons": [
+        6,
         7,
-        8
+        12
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 3,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Riya",
+      "playerSlug": "riya",
+      "seasons": [
+        12,
+        13
       ],
       "seasonsPlayed": 2,
-      "wins": 1,
-      "avgPlacement": 4,
-      "bestPlacement": 1
+      "wins": 0,
+      "avgPlacement": 3,
+      "bestPlacement": 2
     },
     {
       "name": "Sanders",
@@ -433,6 +464,18 @@
       "wins": 0,
       "avgPlacement": 4,
       "bestPlacement": 3
+    },
+    {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "seasons": [
+        9,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 4,
+      "bestPlacement": 2
     },
     {
       "name": "Carrie",
@@ -460,6 +503,42 @@
       "bestPlacement": 3
     },
     {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "seasons": [
+        9,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 5,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Jake",
+      "playerSlug": "jake",
+      "seasons": [
+        11,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 5,
+      "bestPlacement": 3
+    },
+    {
+      "name": "Alec",
+      "playerSlug": "alec",
+      "seasons": [
+        11,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 5,
+      "bestPlacement": 4
+    },
+    {
       "name": "Scott",
       "playerSlug": "scott",
       "seasons": [
@@ -474,6 +553,18 @@
       "bestPlacement": 2
     },
     {
+      "name": "Ally",
+      "playerSlug": "ally",
+      "seasons": [
+        12,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 5.5,
+      "bestPlacement": 3
+    },
+    {
       "name": "Brick",
       "playerSlug": "brick",
       "seasons": [
@@ -486,27 +577,28 @@
       "bestPlacement": 3
     },
     {
-      "name": "Trent",
-      "playerSlug": "trent",
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
       "seasons": [
-        2,
-        1
+        7,
+        8,
+        13
       ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 6.5,
-      "bestPlacement": 6
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 6,
+      "bestPlacement": 1
     },
     {
-      "name": "Jen",
-      "playerSlug": "jen",
+      "name": "Aiden",
+      "playerSlug": "aiden",
       "seasons": [
-        8,
-        12
+        12,
+        13
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 7.0,
+      "avgPlacement": 6,
       "bestPlacement": 5
     },
     {
@@ -548,6 +640,18 @@
       "bestPlacement": 2
     },
     {
+      "name": "Jen",
+      "playerSlug": "jen",
+      "seasons": [
+        8,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 5
+    },
+    {
       "name": "Duncan",
       "playerSlug": "duncan",
       "seasons": [
@@ -585,16 +689,16 @@
       "bestPlacement": 7
     },
     {
-      "name": "Ellie",
-      "playerSlug": "ellie",
+      "name": "Thom",
+      "playerSlug": "thom",
       "seasons": [
         11,
-        12
+        13
       ],
       "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 8.0,
-      "bestPlacement": 8
+      "avgPlacement": 7.5,
+      "bestPlacement": 2
     },
     {
       "name": "Zoey",
@@ -624,24 +728,23 @@
       "bestPlacement": 1
     },
     {
-      "name": "Jacques",
-      "playerSlug": "jacques",
+      "name": "Ellie",
+      "playerSlug": "ellie",
       "seasons": [
-        6,
-        7,
+        11,
         12
       ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "avgPlacement": 3.0,
-      "bestPlacement": 1
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 8,
+      "bestPlacement": 8
     },
     {
-      "name": "Bridgette",
-      "playerSlug": "bridgette",
+      "name": "Fiore",
+      "playerSlug": "fiore",
       "seasons": [
-        2,
-        1
+        11,
+        13
       ],
       "seasonsPlayed": 2,
       "wins": 0,
@@ -698,18 +801,6 @@
       "bestPlacement": 9
     },
     {
-      "name": "Chase",
-      "playerSlug": "chase",
-      "seasons": [
-        9,
-        12
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 9.5,
-      "bestPlacement": 3
-    },
-    {
       "name": "Beth",
       "playerSlug": "beth",
       "seasons": [
@@ -749,19 +840,6 @@
       "bestPlacement": 1
     },
     {
-      "name": "Ezekiel",
-      "playerSlug": "ezekiel",
-      "seasons": [
-        2,
-        1,
-        12
-      ],
-      "seasonsPlayed": 3,
-      "wins": 0,
-      "avgPlacement": 9.67,
-      "bestPlacement": 4
-    },
-    {
       "name": "Jasmine",
       "playerSlug": "jasmine",
       "seasons": [
@@ -789,6 +867,55 @@
       "bestPlacement": 6
     },
     {
+      "name": "Chase",
+      "playerSlug": "chase",
+      "seasons": [
+        9,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9.5,
+      "bestPlacement": 3
+    },
+    {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "seasons": [
+        9,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9.5,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Hunter",
+      "playerSlug": "hunter",
+      "seasons": [
+        12,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9.5,
+      "bestPlacement": 9
+    },
+    {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "seasons": [
+        2,
+        1,
+        12
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.67,
+      "bestPlacement": 4
+    },
+    {
       "name": "Kitty",
       "playerSlug": "kitty",
       "seasons": [
@@ -813,6 +940,30 @@
       "bestPlacement": 8
     },
     {
+      "name": "Caleb",
+      "playerSlug": "caleb",
+      "seasons": [
+        9,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Miriam",
+      "playerSlug": "miriam",
+      "seasons": [
+        11,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 10,
+      "bestPlacement": 1
+    },
+    {
       "name": "Geoff",
       "playerSlug": "geoff",
       "seasons": [
@@ -824,6 +975,19 @@
       "wins": 0,
       "avgPlacement": 10.33,
       "bestPlacement": 5
+    },
+    {
+      "name": "Trent",
+      "playerSlug": "trent",
+      "seasons": [
+        2,
+        1,
+        13
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 10.33,
+      "bestPlacement": 6
     },
     {
       "name": "Anne Maria",
@@ -862,6 +1026,19 @@
       "bestPlacement": 10
     },
     {
+      "name": "Bridgette",
+      "playerSlug": "bridgette",
+      "seasons": [
+        2,
+        1,
+        13
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11,
+      "bestPlacement": 3
+    },
+    {
       "name": "Gwen",
       "playerSlug": "gwen",
       "seasons": [
@@ -887,6 +1064,18 @@
       "wins": 0,
       "avgPlacement": 11,
       "bestPlacement": 7
+    },
+    {
+      "name": "Ripper",
+      "playerSlug": "ripper",
+      "seasons": [
+        9,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 11.5,
+      "bestPlacement": 11
     },
     {
       "name": "Leshawna",
@@ -926,6 +1115,18 @@
       "bestPlacement": 9
     },
     {
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "seasons": [
+        5,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12,
+      "bestPlacement": 4
+    },
+    {
       "name": "Stephanie",
       "playerSlug": "stephanie",
       "seasons": [
@@ -936,18 +1137,6 @@
       "wins": 0,
       "avgPlacement": 12,
       "bestPlacement": 11
-    },
-    {
-      "name": "Emmah",
-      "playerSlug": "emmah",
-      "seasons": [
-        9,
-        12
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 12.5,
-      "bestPlacement": 5
     },
     {
       "name": "Courtney",
@@ -964,6 +1153,18 @@
       "bestPlacement": 9
     },
     {
+      "name": "Dawn",
+      "playerSlug": "dawn",
+      "seasons": [
+        3,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 8
+    },
+    {
       "name": "Harold",
       "playerSlug": "harold",
       "seasons": [
@@ -974,6 +1175,30 @@
       "wins": 0,
       "avgPlacement": 12.5,
       "bestPlacement": 8
+    },
+    {
+      "name": "Gerry",
+      "playerSlug": "gerry",
+      "seasons": [
+        8,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Emmah",
+      "playerSlug": "emmah",
+      "seasons": [
+        9,
+        12
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 5
     },
     {
       "name": "Josee",
@@ -987,6 +1212,18 @@
       "wins": 0,
       "avgPlacement": 13,
       "bestPlacement": 12
+    },
+    {
+      "name": "Kelly",
+      "playerSlug": "kelly",
+      "seasons": [
+        6,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 13,
+      "bestPlacement": 4
     },
     {
       "name": "Hicks",
@@ -1048,6 +1285,18 @@
       "wins": 0,
       "avgPlacement": 15.5,
       "bestPlacement": 13
+    },
+    {
+      "name": "Eva",
+      "playerSlug": "eva",
+      "seasons": [
+        1,
+        13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 16,
+      "bestPlacement": 11
     },
     {
       "name": "Justin",
@@ -1159,6 +1408,11 @@
         "season": 12,
         "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
         "winner": "James"
+      },
+      {
+        "season": 13,
+        "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
+        "winner": "Wayne"
       }
     ],
     "castComposition": [
@@ -1211,6 +1465,10 @@
       {
         "season": 12,
         "composition": "20 players"
+      },
+      {
+        "season": 13,
+        "composition": "22 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1290,6 +1548,15 @@
           "James",
           "Riya"
         ]
+      },
+      {
+        "season": 13,
+        "vote": "",
+        "winner": "Wayne",
+        "finalists": [
+          "Wayne",
+          "Julia"
+        ]
       }
     ],
     "majorTwists": [
@@ -1340,6 +1607,10 @@
       {
         "season": 12,
         "twist": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture."
+      },
+      {
+        "season": 13,
+        "twist": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home."
       }
     ]
   },
@@ -1388,10 +1659,10 @@
     },
     {
       "category": "Most Idols Found",
-      "holder": "Ezekiel, Heather, Kitty, Bowie",
-      "stat": "3 total (tied)",
-      "season": "Multiple",
-      "playerSlug": "ezekiel"
+      "holder": "Julia",
+      "stat": "4 total",
+      "season": "S9, S13",
+      "playerSlug": "julia"
     },
     {
       "category": "Most Finals Appearances",
@@ -1436,6 +1707,11 @@
           "total": 7
         },
         {
+          "name": "Julia",
+          "playerSlug": "julia",
+          "total": 7
+        },
+        {
           "name": "Cameron",
           "playerSlug": "cameron",
           "total": 6
@@ -1453,11 +1729,6 @@
         {
           "name": "Emma",
           "playerSlug": "emma",
-          "total": 5
-        },
-        {
-          "name": "Gwen",
-          "playerSlug": "gwen",
           "total": 5
         }
       ],
@@ -1488,6 +1759,11 @@
           "total": 5
         },
         {
+          "name": "Julia",
+          "playerSlug": "julia",
+          "total": 5
+        },
+        {
           "name": "Bridgette",
           "playerSlug": "bridgette",
           "total": 4
@@ -1505,11 +1781,6 @@
         {
           "name": "Jasmine",
           "playerSlug": "jasmine",
-          "total": 3
-        },
-        {
-          "name": "Mickey",
-          "playerSlug": "mickey",
           "total": 3
         }
       ],
@@ -1589,11 +1860,6 @@
           "votesAgainst": 1
         },
         {
-          "name": "Thom",
-          "playerSlug": "thom",
-          "votesAgainst": 1
-        },
-        {
           "name": "Connor",
           "playerSlug": "connor",
           "votesAgainst": 1
@@ -1609,14 +1875,19 @@
           "votesAgainst": 2
         },
         {
-          "name": "Scarlett",
-          "playerSlug": "scarlett",
+          "name": "Raj",
+          "playerSlug": "raj",
           "votesAgainst": 2
         },
         {
-          "name": "Damien",
-          "playerSlug": "damien",
+          "name": "Thom",
+          "playerSlug": "thom",
           "votesAgainst": 2
+        },
+        {
+          "name": "Amy",
+          "playerSlug": "amy",
+          "votesAgainst": 3
         }
       ],
       "mostJuryVotes": [
@@ -1915,8 +2186,9 @@
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
     "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Millie & Chase (5-3-0). Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
     "season10": "Champions vs Contenders brought 9 returning champions against 9 hungry contenders. Jasmine's pressure reads, loyal shields, and perfectly timed exits from danger carried her past Bowie's relentless scheming. Redemption Island produced its own mythology through Priya's early streak and Sanders's five-duel run. The Oath alliance dominated but fractured as exposure after exposure (Courtney, Scott, Priya) kept unmasking Bowie. The first physical finale (no jury vote) proved that the season's survivor can outrun the season's strategist when there's nowhere left to hide.",
-    "message": "The message across 12 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12. Adaptability, jury respect, and understanding when to strike remain essential.",
+    "message": "The message across 13 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12, Wayne S13. Adaptability, jury respect, and understanding when to strike remain essential.",
     "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
-    "season12": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.. James wins (7-2) over Riya. James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable."
+    "season12": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.. James wins (7-2) over Riya. James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
+    "season13": "A season of rescue roads, broken alliances, and one final race where heart outran control.. Wayne wins (no jury vote) over Julia. Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed."
   }
 }

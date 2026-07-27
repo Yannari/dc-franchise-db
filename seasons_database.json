@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 13,
-    "totalPlayers": 134,
+    "totalSeasons": 14,
+    "totalPlayers": 152,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -450,6 +450,42 @@
       "theme": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s13-cast.png",
+      "emoji": ""
+    },
+    {
+      "seasonNumber": 14,
+      "title": "Total Drama: Carnival of Chaos",
+      "subtitle": "A season of rigged games, broken showmances, exposed advantages, and one final challenge where Jade turned calculation into a crown.",
+      "castSize": 18,
+      "episodeCount": 26,
+      "jurySize": 0,
+      "winner": {
+        "name": "Jade",
+        "playerSlug": "jade",
+        "vote": "",
+        "runnerUp": "Logan",
+        "keyStats": "Jade wins with 3 challenge wins, 3 immunities, 10 votes against, and a finale victory decided on the field rather than by jury ballot.",
+        "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
+        "legacy": "Her legacy is cold, controversial, and undeniable — a winner who survives public blowups, broken alliances, and jury hostility by making the last challenge her final argument."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Zaid",
+          "playerSlug": "zaid"
+        },
+        "bestStrategic": {
+          "name": "Anastasia",
+          "playerSlug": "anastasia"
+        },
+        "mostChallengeWins": {
+          "name": "Jade",
+          "playerSlug": "jade",
+          "detail": "3 wins"
+        }
+      },
+      "theme": "Carnival of Chaos is a season where the midway never stops taking payment. The pre-merge is built on unstable shelters, food scarcity, Rescue Island pressure, and alliances that form quickly because nobody feels safe for long. Jade and Spencer begin as mutual respect and end as open hatred; Anastasia and Isabel turn Blue Team into a war zone; Benji, Ivy, Zaid, Hannah, and Marissa prove that showmances and ride-or-die bonds can be both shelter and target. The merge detonates the game: idols wipe votes, extra votes fail to control chaos, the Edge returns Ivy and Richard, and the jury starts tracking who it believes is really running each boot. By the endgame, shields become threats one by one — Richard, Ivy, Zaid, Marissa, Isabel, Spencer, Hannah, and Anastasia all fall as their stories become too visible. The finale strips away the jury vote and asks only who can finish the Carnival Rescue. Jade answers with the same thing that carried her all season: read the pattern, cut through the noise, and do not look back.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s14-cast.png",
       "emoji": ""
     }
   ]

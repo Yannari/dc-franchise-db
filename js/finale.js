@@ -15,6 +15,7 @@ import { reputationModifier } from './reputation.js';
 import { finalizeEditSeason } from './edit-layer.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
+import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   saveGameState, snapshotGameState
@@ -2275,6 +2276,26 @@ export function generateFinaleSummaryText(ep) {
     else if (ws.social >= 8) ln(`${winner} rode the crowd energy and bench support all the way to the finish line.`);
     else ln(`${winner} dug deep and won the only race that counted — the Rejected Olympic Relay.`);
 
+  } else if (cfg.finaleFormat === 'rescue-mission' && ep.rescueData) {
+    // ── Carnival Rescue text backlog: full retranscription of all 8 VP acts
+    // (title card carries the bench assignments — who roots for whom). ──
+    sec('CARNIVAL RESCUE — THE FINAL CHALLENGE');
+    ln(`No jury. The winner is decided by the Carnival Rescue — a six-act race through the midway.`);
+    vpToText(rpBuildRescueTitle);
+    sec('ACT 1 — CORN MAZE');
+    vpToText(rpBuildRescueMaze);
+    sec('ACT 2 — HAUNTED HOUSE');
+    vpToText(rpBuildRescueHaunted);
+    sec('ACT 3 — PIRATE SHIP');
+    vpToText(rpBuildRescueShip);
+    sec('ACT 4 — WATERSLIDE');
+    vpToText(rpBuildRescueSlide);
+    sec('ACT 5 — LAKE RESCUE');
+    vpToText(rpBuildRescueLake);
+    sec('ACT 6 — FINAL DRIVE');
+    vpToText(rpBuildRescueDrive);
+    sec('CHAMPION');
+    vpToText(rpBuildRescueChampion);
   } else if (cfg.finaleFormat === 'final-challenge' || cfg.finaleFormat === 'rescue-mission') {
     sec('FINAL CHALLENGE');
     ln(cfg.finaleFormat === 'rescue-mission'

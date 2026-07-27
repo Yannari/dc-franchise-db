@@ -172,11 +172,19 @@
       "votesAgainst": 10,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "👑",
-      "reasoning": "S14 Winner. Narrative override +5: equalizer. 3 immunity wins, played 1 idol effectively, 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Equalizer Queen",
+      "emoji": "⚖️",
+      "reasoning": "Jade turned a turbulent S14 into a championship run, winning despite taking 10 votes against her along the way. Her game had danger baked into it, but she balanced that with 3 immunity wins, an effective idol play, and enough alliance coverage to survive every swing. As a one-season winner ranked inside the elite tier, her legacy is less about clean control and more about clutch correction under pressure.",
+      "strengths": [
+        "S14 winner",
+        "3 immunity wins",
+        "Effective idol play",
+        "Survived 10 votes against"
+      ],
+      "weaknesses": [
+        "Frequently targeted",
+        "Messy path to the win"
+      ]
     },
     {
       "playerId": "bowie",
@@ -481,11 +489,20 @@
       "votesAgainst": 11,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P3. Narrative override +5: equalizer. 3 immunity wins, played 2 idols effectively, 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Idolized Equalizer",
+      "emoji": "💎",
+      "reasoning": "Anastasia played one of S14's loudest power games, matching the winner with 3 challenge wins while also deploying 2 advantages effectively. Her Marissa showmance and limited alliance structure made her visible, but she still fought all the way to 3rd place with real endgame weight. The flaw is obvious: 11 votes against shows how often the house wanted her gone before she could cash in that résumé.",
+      "strengths": [
+        "S14 3rd place",
+        "3 immunity wins",
+        "2 effective advantage plays",
+        "Strong endgame résumé"
+      ],
+      "weaknesses": [
+        "11 votes against",
+        "High threat level",
+        "Fell short of finals"
+      ]
     },
     {
       "playerId": "logan",
@@ -506,11 +523,19 @@
       "votesAgainst": 4,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P2. Narrative override +5: equalizer. 2 immunity wins, 4 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Alliance Architect",
+      "emoji": "🧩",
+      "reasoning": "Logan's S14 runner-up game was built on connectivity more than fireworks, with 4 alliances and only 4 votes against across the season. He added 2 immunity wins at the right time, proving he was more than just a social passenger. The drawback is that he reached the end without sealing the argument, finishing 2nd while Jade's flashier survival story claimed the win.",
+      "strengths": [
+        "S14 runner-up",
+        "Only 4 votes against",
+        "4 alliances",
+        "2 immunity wins"
+      ],
+      "weaknesses": [
+        "Lost at the finish",
+        "Less flashy résumé than Jade"
+      ]
     },
     {
       "playerId": "millie",
@@ -1303,11 +1328,20 @@
       "votesAgainst": 3,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P4. Narrative override +5: equalizer. 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Quiet Heartbreaker",
+      "emoji": "💞",
+      "reasoning": "Hannah rode an understated social game to 4th place in S14, staying remarkably insulated with only 3 votes against despite having no challenge wins or idols. Her connections mattered, with 3 alliances and showmances with Benji and Zaid helping define her path through the season. She proved she could last deep, but her lack of hard power left her vulnerable when the endgame demanded a final push.",
+      "strengths": [
+        "S14 4th place",
+        "Only 3 votes against",
+        "3 alliances",
+        "Strong social insulation"
+      ],
+      "weaknesses": [
+        "0 challenge wins",
+        "No idols or advantages",
+        "Limited endgame control"
+      ]
     },
     {
       "playerId": "thom",
@@ -1495,11 +1529,20 @@
       "votesAgainst": 19,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P5. Narrative override +5: equalizer. 3 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Coalition Equalizer",
+      "emoji": "⚖️",
+      "reasoning": "Spencer’s lone season is a classic fifth-place power-broker run: no challenge wins, no idols, but enough social reach to stay relevant deep into S14. His game was defined by flexibility, sitting inside three different alliances and repeatedly acting as the equalizer when numbers got messy. The downside is obvious too — 19 votes against is a flashing warning light that he was constantly on the board before finally running out of road.",
+      "strengths": [
+        "S14 fifth place",
+        "Three alliances",
+        "Strong swing-vote positioning",
+        "Tier A score without advantages"
+      ],
+      "weaknesses": [
+        "19 votes against",
+        "Zero challenge wins",
+        "No finalist equity shown"
+      ]
     },
     {
       "playerId": "geoff",
@@ -1710,11 +1753,20 @@
       "votesAgainst": 13,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P6. Narrative override +5: equalizer. played 1 idol effectively, 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Idol Equalizer",
+      "emoji": "🗿",
+      "reasoning": "Isabel made her S14 run count by pairing steady positioning with one of the season’s cleaner advantage moments, playing an idol effectively to extend her life in the game. She was not the loudest strategist, but her sixth-place finish and equalizer role show a player who understood timing and survival. Still, with only one core alliance and 13 votes against, her game felt more reactive than commanding by the end.",
+      "strengths": [
+        "S14 sixth place",
+        "Played 1 idol effectively",
+        "Advantage-aware survivor",
+        "Solid Tier B finish"
+      ],
+      "weaknesses": [
+        "13 votes against",
+        "Only one alliance",
+        "No challenge wins"
+      ]
     },
     {
       "playerId": "mike",
@@ -2278,11 +2330,20 @@
       "votesAgainst": 5,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P7. Narrative override +5: equalizer. 1 immunity win, 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Showmance Sparkplug",
+      "emoji": "💘",
+      "reasoning": "Marissa brought energy to S14, combining a visible social game with Anastasia showmance ties and enough competitive bite to grab an immunity win. Her seventh-place finish is respectable, especially with only 5 votes against, suggesting she was not an easy or constant target. The issue is that her game never fully broke out from the middle tier — connected, likable, and capable, but not quite positioned to control the endgame.",
+      "strengths": [
+        "S14 seventh place",
+        "1 immunity win",
+        "Only 5 votes against",
+        "Two alliances"
+      ],
+      "weaknesses": [
+        "Showmance visibility",
+        "Limited endgame control",
+        "No jury votes"
+      ]
     },
     {
       "playerId": "eureka",
@@ -2488,11 +2549,20 @@
       "votesAgainst": 7,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P8. Narrative override +5: equalizer. 1 alliance, fan favorite.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Fan-Favorite Flirt",
+      "emoji": "😎",
+      "reasoning": "Zaid’s S14 legacy is more character-driven than résumé-driven: a fan favorite whose relationships with Ivy and Hannah made him one of the season’s more memorable social figures. He reached eighth without idols or challenge wins, leaning on likability and a single alliance to stay alive. That charm carried him farther than some, but 7 votes against and no major strategic hardware suggest he was more spark than structure.",
+      "strengths": [
+        "S14 eighth place",
+        "Fan favorite",
+        "Strong social presence",
+        "Memorable showmance ties"
+      ],
+      "weaknesses": [
+        "Zero challenge wins",
+        "No idols or advantages",
+        "Only one alliance"
+      ]
     },
     {
       "playerId": "hunter",
@@ -2860,11 +2930,20 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P9. Narrative override +5: equalizer. 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Double-Hearted Equalizer",
+      "emoji": "💞",
+      "reasoning": "Ivy's S14 run was more memorable socially than strategically, landing 9th with relationships to both Benji and Zaid shaping her storyline. She never won a challenge or found an idol, but she stayed relevant as an emotional connector and alliance piece in a messy middle game. The 8 votes against show she was never fully insulated, yet her narrative impact outpaced her raw résumé.",
+      "strengths": [
+        "9th place in S14",
+        "Key showmance presence",
+        "1 alliance connection",
+        "Narrative equalizer boost"
+      ],
+      "weaknesses": [
+        "0 challenge wins",
+        "8 votes against",
+        "No idols or jury votes"
+      ]
     },
     {
       "playerId": "courtney",
@@ -3273,11 +3352,20 @@
       "votesAgainst": 8,
       "juryVotes": 0,
       "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P11. Narrative override +5: equalizer. played 1 idol effectively, 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Idol-Tangled Romantic",
+      "emoji": "🧿",
+      "reasoning": "Benji had one of the more chaotic early-midgame profiles of S14: two showmances, two alliances, and an idol play that at least gave him a real strategic pulse. Finishing 11th keeps him firmly in the C-tier crowd, but he was not just dead weight — he actively touched the mechanics of the game. The problem is that the social heat around Ivy and Hannah, plus 8 votes against, made him more exposed than protected.",
+      "strengths": [
+        "Played 1 idol effectively",
+        "2 alliance links",
+        "Major social storyline",
+        "Active advantage user"
+      ],
+      "weaknesses": [
+        "11th place finish",
+        "0 challenge wins",
+        "8 votes against"
+      ]
     },
     {
       "playerId": "richard",
@@ -3298,11 +3386,19 @@
       "votesAgainst": 16,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P10. Narrative override +5: equalizer. 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Perpetual Target",
+      "emoji": "🎯",
+      "reasoning": "Richard's S14 game is defined by visibility without control. He made it to 10th and had two alliances on paper, but a massive 16 votes against tells the real story: people kept writing his name down. That level of heat makes him notable, though more as a survivor of pressure than as someone steering the season.",
+      "strengths": [
+        "10th place in S14",
+        "2 alliance connections",
+        "Survived repeated targeting"
+      ],
+      "weaknesses": [
+        "16 votes against",
+        "0 challenge wins",
+        "No idols or jury votes"
+      ]
     },
     {
       "playerId": "stephanie",
@@ -3542,11 +3638,19 @@
       "votesAgainst": 9,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P12. Narrative override +5: equalizer. 2 alliances.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Early Alliance Spark",
+      "emoji": "✨",
+      "reasoning": "Natalia's S14 run ended in 12th, but she showed enough social initiative to avoid feeling like a total non-factor. With two alliances and 9 votes against, she was involved in the board even if she never gained the leverage to shape it. Her profile is a classic lower-tier equalizer: present, connected, but gone before the game could truly become hers.",
+      "strengths": [
+        "2 alliance connections",
+        "Narrative equalizer boost",
+        "Socially involved early"
+      ],
+      "weaknesses": [
+        "12th place finish",
+        "0 challenge wins",
+        "9 votes against"
+      ]
     },
     {
       "playerId": "josee",
@@ -3861,11 +3965,19 @@
       "votesAgainst": 3,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P13. Narrative override +5: equalizer. 1 alliance.",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Brief Equalizer",
+      "emoji": "⚖️",
+      "reasoning": "Lynda gets a small bump for at least finding some structure in S14, with one alliance giving her more shape than the boots below her. Still, a 13th-place finish with 0 challenge wins, 0 idols, and only three votes against suggests she was removed before she could turn that footing into leverage. Her legacy is more 'potential stabilizer' than proven player.",
+      "strengths": [
+        "Best finish of this group",
+        "Had 1 alliance",
+        "Only 3 votes against"
+      ],
+      "weaknesses": [
+        "13th place in only season",
+        "0 challenge wins",
+        "Limited strategic footprint"
+      ]
     },
     {
       "playerId": "rodney",
@@ -4153,11 +4265,19 @@
       "votesAgainst": 3,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P14. Narrative override +5: equalizer..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Vanishing Wildcard",
+      "emoji": "🎭",
+      "reasoning": "Alessio's S14 run ended in 14th, leaving behind more of a sketch than a full résumé. He avoided becoming a massive vote magnet with only three votes against, but he also never found a defining move, challenge win, idol play, or jury impact. As an early-season presence, he ranks as a low-end wildcard whose game never really got oxygen.",
+      "strengths": [
+        "Only 3 votes against",
+        "Narrative equalizer bump",
+        "Avoided total implosion"
+      ],
+      "weaknesses": [
+        "14th place finish",
+        "0 challenge wins",
+        "No visible power base"
+      ]
     },
     {
       "playerId": "mary",
@@ -4367,11 +4487,19 @@
       "votesAgainst": 7,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P15. Narrative override +5: equalizer..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Early Lightning Rod",
+      "emoji": "🧲",
+      "reasoning": "Tristan's 15th-place finish is dragged down by the fact that he absorbed 7 votes against, a huge number for someone gone this early. That kind of heat suggests he was immediately noticeable, but not in a way that translated into safety, influence, or control. With no wins, idols, or jury presence, his S14 story is mostly about becoming an early consensus target.",
+      "strengths": [
+        "Generated early attention",
+        "Narrative equalizer bump",
+        "Memorable target profile"
+      ],
+      "weaknesses": [
+        "15th place finish",
+        "7 votes against",
+        "No challenge or idol impact"
+      ]
     },
     {
       "playerId": "kai",
@@ -4568,11 +4696,19 @@
       "votesAgainst": 3,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P16. Narrative override +5: equalizer..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Sixteenth Spark",
+      "emoji": "🧨",
+      "reasoning": "Diego lands near the bottom because a 16th-place exit gives him almost no runway to build a case. The three votes against show he was targeted cleanly rather than buried by chaos, and he left without a challenge win, idol, or alliance marker to soften the fall. His legacy is a brief spark: present enough to be eliminated, but gone before the game opened up.",
+      "strengths": [
+        "Only 3 votes against",
+        "Narrative equalizer bump",
+        "Not a massive vote magnet"
+      ],
+      "weaknesses": [
+        "16th place finish",
+        "0 challenge wins",
+        "No established alliance"
+      ]
     },
     {
       "playerId": "wix",
@@ -4660,11 +4796,19 @@
       "votesAgainst": 5,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P17. Narrative override +5: equalizer..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Slight Survivor",
+      "emoji": "🪙",
+      "reasoning": "Ted’s legacy is thin, but he at least avoided the absolute basement by outlasting one player in S14. With 0 challenge wins and 5 votes against in a 17th-place finish, his game never found traction socially or competitively. The small narrative equalizer bump keeps him from feeling like a total non-factor, but the résumé is still firmly lower-tier.",
+      "strengths": [
+        "Outlasted the first boot",
+        "Narrative equalizer bump",
+        "Avoided last place"
+      ],
+      "weaknesses": [
+        "17th-place finish",
+        "0 challenge wins",
+        "5 votes against"
+      ]
     },
     {
       "playerId": "chet",
@@ -4807,11 +4951,18 @@
       "votesAgainst": 5,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S14 P18. Narrative override +5: equalizer..",
-      "strengths": [],
-      "weaknesses": []
+      "title": "The Equalized Exit",
+      "emoji": "🧊",
+      "reasoning": "Amelie’s S14 run ended in 18th, giving her one of the lightest statistical footprints in the ranking. She picked up 5 votes against, won no challenges, and never reached a point where jury equity or idol play could matter. The narrative equalizer prevents the write-up from being purely dismissive, but her game still reads as an early exit with little control.",
+      "strengths": [
+        "Narrative equalizer bump",
+        "Brief character presence"
+      ],
+      "weaknesses": [
+        "18th-place finish",
+        "0 challenge wins",
+        "5 votes against"
+      ]
     },
     {
       "playerId": "nichelle",

@@ -93,9 +93,11 @@ export function renderFranchiseTab() {
     ${_renderTrophyCase()}
     ${_renderCareers()}
     ${_renderScout()}
+    ${_renderBriefing()}
     ${_renderDropzone()}
     ${_renderPulse()}
   </div></div>`;
+  frBriefingPopulate();   // async — fills the Returnee Briefing checkbox grid
   if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
 }
 
@@ -772,6 +774,15 @@ const _LEGACY_CSS = `
 .fr-career-medal-label { font-size: 11px; font-weight: 700; color: var(--text); }
 .fr-career-medal-snum { font-size: 9px; font-weight: 700; letter-spacing: .5px; color: var(--accent-gold); }
 @media (prefers-reduced-motion: reduce) { .fr-medal-head, .fr-medal-row { transition: none; } }
+
+    .fr-brief-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;}
+    .fr-brief-search{background:var(--bg,#0c1118);border:1px solid var(--border,#263040);border-radius:6px;padding:6px 10px;color:var(--text,#e2e8f0);font-size:12px;min-width:160px;}
+    .fr-brief-count{font-size:11px;color:var(--muted,#8899aa);}
+    .fr-brief-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px;max-height:220px;overflow-y:auto;padding:8px;background:var(--surface2,#1c2736);border:1px solid var(--border,#263040);border-radius:8px;margin-bottom:10px;}
+    .fr-brief-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text,#e2e8f0);cursor:pointer;padding:2px 4px;border-radius:4px;}
+    .fr-brief-item:hover{background:rgba(255,255,255,.05);}
+    .fr-brief-loading{font-size:12px;color:var(--muted,#8899aa);grid-column:1/-1;}
+    .fr-brief-out{width:100%;min-height:260px;background:var(--bg,#0c1118);border:1px solid var(--border,#263040);border-radius:8px;color:var(--text,#e2e8f0);font-family:var(--font-mono,monospace);font-size:11.5px;line-height:1.6;padding:12px;box-sizing:border-box;}
 `;
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1029,3 +1040,148 @@ function _importOne(raw, fileName) {
   }
   _logLine(`${_esc(fileName)} — unrecognized file (not a savestate or seasons database)`, false);
 }
+
+// ── RETURNEE BRIEFING GENERATOR ────────────────────────────────────────
+// Builds the returning-player briefing block (history + Voice line per
+// player) via the season worker, in the exact format the episode writer
+// is primed with. Check players → Generate → copy.
+
+const _BRIEF_NOTE = `NOTE: Each character below has a "Voice:" line that defines exactly how they talk — their register, verbal tics, and how they sound winning vs. cornered. This is the definitive guide to their dialogue; use it and never let a character drift into a generic archetype. The rest of each line is their franchise history (use it for arcs, grudges, and callbacks).`;
+
+async function _briefDatabases() {
+  if (window._briefDbCache) return window._briefDbCache;
+  const [p, r] = await Promise.all([
+    fetch('players_database.json').then(x => x.json()).catch(() => null),
+    fetch('rankings_database.json').then(x => x.json()).catch(() => null),
+  ]);
+  window._briefDbCache = { players: (p && p.players) || [], rankings: (r && r.rankings) || [] };
+  return window._briefDbCache;
+}
+
+function _renderBriefing() {
+  return `<div class="vp-section-header gold">Returnee Briefing</div>
+    <div class="fr-careers-hint">Check the returning cast, then generate their writer's-bible block — franchise history + a Voice line per player — ready to paste into the AI episode context.</div>
+    <div class="fr-brief-bar">
+      <input class="fr-brief-search" id="fr-brief-search" placeholder="Filter players…" oninput="frBriefingFilter(this.value)">
+      <button class="fr-btn fr-btn-sm" onclick="frBriefingCheckCast()">☑ Current cast returnees</button>
+      <button class="fr-btn fr-btn-sm" onclick="frBriefingClear()">Clear</button>
+      <span class="fr-brief-count" id="fr-brief-count">0 checked</span>
+      <button class="fr-btn" id="fr-brief-generate" onclick="frGenerateBriefing()">🎙️ Generate History</button>
+    </div>
+    <div class="fr-brief-grid" id="fr-brief-grid"><span class="fr-brief-loading">Loading player list…</span></div>
+    <div class="fr-brief-out-wrap" id="fr-brief-out-wrap" style="display:none">
+      <div class="fr-brief-bar"><button class="fr-btn fr-btn-sm" onclick="frBriefingCopy()">📋 Copy briefing</button><span class="fr-brief-count" id="fr-brief-status"></span></div>
+      <textarea class="fr-brief-out" id="fr-brief-out" readonly spellcheck="false"></textarea>
+    </div>`;
+}
+
+export async function frBriefingPopulate() {
+  const grid = document.getElementById('fr-brief-grid');
+  if (!grid) return;
+  const { players } = await _briefDatabases();
+  const names = players.map(p => p.name).sort((a, b) => a.localeCompare(b));
+  if (!names.length) { grid.innerHTML = '<span class="fr-brief-loading">players_database.json not found — export a season first.</span>'; return; }
+  grid.innerHTML = names.map(n => `<label class="fr-brief-item" data-name="${_esc(n.toLowerCase())}">
+      <input type="checkbox" class="fr-brief-cb" value="${_esc(n)}" onchange="frBriefingCount()"> ${_esc(n)}
+    </label>`).join('');
+  frBriefingCount();
+}
+
+export function frBriefingFilter(q) {
+  const needle = (q || '').trim().toLowerCase();
+  document.querySelectorAll('.fr-brief-item').forEach(el => {
+    el.style.display = !needle || el.dataset.name.includes(needle) ? '' : 'none';
+  });
+}
+
+export function frBriefingCount() {
+  const n = document.querySelectorAll('.fr-brief-cb:checked').length;
+  const el = document.getElementById('fr-brief-count');
+  if (el) el.textContent = `${n} checked`;
+}
+
+export function frBriefingCheckCast() {
+  const cast = new Set((window.players || []).filter(p => p.isReturnee).map(p => p.name));
+  if (!cast.size) (window.players || []).forEach(p => cast.add(p.name)); // no returnee flags — take whole cast
+  document.querySelectorAll('.fr-brief-cb').forEach(cb => { cb.checked = cast.has(cb.value); });
+  frBriefingCount();
+}
+
+export function frBriefingClear() {
+  document.querySelectorAll('.fr-brief-cb').forEach(cb => { cb.checked = false; });
+  frBriefingCount();
+}
+
+export function frBriefingCopy() {
+  const out = document.getElementById('fr-brief-out');
+  if (out && out.value) navigator.clipboard.writeText(out.value);
+}
+
+export async function frGenerateBriefing() {
+  const names = [...document.querySelectorAll('.fr-brief-cb:checked')].map(cb => cb.value);
+  const btn = document.getElementById('fr-brief-generate');
+  if (!names.length) { if (btn) btn.textContent = 'Check some players first'; setTimeout(() => { if (btn) btn.textContent = '🎙️ Generate History'; }, 2000); return; }
+  let workerUrl = localStorage.getItem('SEASON_BUILDER_WORKER_URL');
+  if (!workerUrl) {
+    workerUrl = prompt('Enter your Season Builder Worker URL (Cloudflare Worker):');
+    if (!workerUrl || !workerUrl.trim()) return;
+    workerUrl = workerUrl.trim();
+    localStorage.setItem('SEASON_BUILDER_WORKER_URL', workerUrl);
+  }
+  if (btn) { btn.disabled = true; btn.textContent = `⏳ Writing ${names.length} briefings…`; }
+  try {
+    const { players, rankings } = await _briefDatabases();
+    const rmap = Object.fromEntries(rankings.map(r => [r.name, r]));
+    const payload = names.map(name => {
+      const p = players.find(x => x.name === name) || {};
+      const r = rmap[name] || {};
+      const career = careerFor(name);
+      const castEntry = (window.players || []).find(x => x.name === name);
+      return {
+        name,
+        archetype: (career && career.archetype) || (castEntry && castEntry.archetype) || null,
+        wins: p.wins || 0,
+        seasons: (p.seasonDetails || []).map(d => ({
+          season: d.season, placement: d.placement, status: d.status,
+          story: d.story || null, keyMoments: d.keyMoments || [],
+          alliances: d.alliances || [], rivalries: d.rivalries || [],
+          challengeWins: d.challengeWins || 0, idolsFound: d.idolsFound || 0,
+          votesReceived: d.votesReceived || 0, juryVotes: d.juryVotes || 0,
+        })),
+        rankings: r.title ? { title: r.title, tier: r.tier, reasoning: r.reasoning, strengths: r.strengths, weaknesses: r.weaknesses } : null,
+        ledger: career ? {
+          allies: Object.keys(career.allies || {}).slice(0, 6),
+          rivals: Object.keys(career.rivals || {}).slice(0, 6),
+          betrayed: Object.keys(career.betrayed || {}).slice(0, 6),
+          betrayedBy: Object.keys(career.betrayedBy || {}).slice(0, 6),
+        } : null,
+      };
+    });
+    const resp = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'returnee-history', players: payload }),
+    });
+    if (!resp.ok) throw new Error(`Worker failed (${resp.status}): ${await resp.text()}`);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const entries = (data.players || []).map(e => `- ${e.name} (${e.label}): ${e.history} Voice: ${e.voice}`);
+    const text = _BRIEF_NOTE + '\n\n' + entries.join('\n');
+    const wrap = document.getElementById('fr-brief-out-wrap');
+    const out = document.getElementById('fr-brief-out');
+    if (wrap) wrap.style.display = '';
+    if (out) out.value = text;
+    const st = document.getElementById('fr-brief-status');
+    if (st) st.textContent = `${entries.length} briefings written`;
+    try { localStorage.setItem('returnee_briefing', text); } catch (e) {}
+  } catch (err) {
+    console.error('Briefing error:', err);
+    const st = document.getElementById('fr-brief-status');
+    const wrap = document.getElementById('fr-brief-out-wrap');
+    if (wrap) wrap.style.display = '';
+    if (st) st.textContent = 'Failed: ' + err.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🎙️ Generate History'; }
+  }
+}
+

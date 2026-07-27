@@ -21,6 +21,8 @@ export default {
       return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
     } else if (mode === "narrative-fill") {
       return await generateNarrativeFill(body, env);
+    } else if (mode === "returnee-history") {
+      return await generateReturneeHistory(body, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else if (mode === "rankings-narration") {
@@ -1437,6 +1439,65 @@ Return ONLY valid JSON matching the schema.
   return await callLLM(payload, env);
 }
 
+
+// ── RETURNEE HISTORY BRIEFING ────────────────────────────────────────
+// Writes the returning-player briefing block used to prime the episode
+// writer: one line per player = franchise history (arcs, grudges,
+// callbacks) + a "Voice:" line that pins exactly how they talk.
+async function generateReturneeHistory(body, env) {
+  const players = Array.isArray(body.players) ? body.players : [];
+  if (!players.length) {
+    return new Response(JSON.stringify({ error: "No players provided" }), {
+      status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      players: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            label: { type: "string", description: "Season/placement tag, e.g. 'S9, 4th' or 'S1, 3rd / S2, 14th' or 'S11, WINNER' or 'S11, runner-up — Fan Favorite'" },
+            history: { type: "string", description: "2-4 sentences of franchise history: signature moves, alliances, betrayals, how they lost, and any live grudge. Specific, punchy, present-relevant ('Back to finish it.'). ONLY facts from the provided data — never invent events." },
+            voice: { type: "string", description: "One dense sentence-chain defining exactly how they talk: register, verbal tics, and how they sound winning vs cornered. Distinctive enough that no two players could be confused." }
+          },
+          required: ["name", "label", "history", "voice"]
+        }
+      }
+    },
+    required: ["players"]
+  };
+
+  const instructions = `You are the head writer's bible-keeper for a Total Drama-style reality franchise. For EACH returning player below, write their briefing entry: a franchise-history line plus a Voice definition.
+
+FORMAT you are matching (study the register — punchy fragments, em-dashes, grudges called out, a closing hook):
+- Damien (S9, 4th): Cerebral under-the-radar strategist — engineered Ripper as the merge shield, found the Campers idol, ran a late power trio, then lost fire-making to Bowie at Final 4. Makes no noise, always survives. Unfinished business with Ripper, whom he set up. Voice: quiet and sparing, rations his words, deflects with one flat joke instead of arguing, never tips his hand; the more cornered he is, the calmer he gets.
+- Wayne (S9, 9th): Loyal and liked but snakebitten — won a summit and stole Ripper's vote, then had his own Extra Vote stolen by Emmah and got snuffed 5-0. Did everything right and still got steamrolled. Voice: warm and goofy, hockey-brained; blurts his feelings, swears he's "fine" when he clearly isn't, says "I've got your back" out loud and means every word of it.
+- Fiore (S11, 3rd): The Cursed Island snake — drove the Ashley vote while secretly knifing Ellie, hoarded a Second Life Amulet, and flipped the revote that ended Alec. Vicious and unrepentant. Voice: venomous and surgical, never raises her voice, weaponizes politeness, hands out compliments that draw blood; thinks everyone is beneath her and never sputters.
+- Ripper (S9, 11th): Human chaos — idoled four votes to null and forced a rock draw, burned a Shot in the Dark, and detonated his season before going out 5-3-2. Voice: loud, gross, dim-but-loyal; non-sequiturs and dumb brags, loses his own train of thought, openly hates "smart conversations," and is occasionally, accidentally profound.
+
+RULES:
+1. HISTORY: use ONLY the facts provided per player (placements, stories, key moments, allies, rivals, betrayals, rankings notes). Compress their whole franchise arc into 2-4 sentences. Name names — grudges and callbacks are the point. End with a hook when one exists ("Back to finish it." / "Everyone's target.").
+2. LABEL: build from their real seasons/placements ("S9, 4th"; multi-season: "S1, 3rd / S2, 14th"; champions: "S11, WINNER").
+3. VOICE: derive from archetype + stories. Register + 2-3 concrete verbal tics + how they sound winning vs cornered. Every voice must be instantly distinguishable from every other player in THIS batch — vary rhythm, vocabulary, and confidence.
+4. Never drift into generic archetype language ("strategic player", "social butterfly"). Specific or nothing.
+
+Return JSON matching the schema.`;
+
+  const payload = {
+    model: "gpt-5.5",
+    instructions,
+    input: JSON.stringify(players, null, 1),
+    text: { format: { type: "json_schema", name: "returnee_history", strict: true, schema } },
+  };
+  return await callLLM(payload, env);
+}
 
 // Anthropic structured outputs reject schema keywords OpenAI strict mode
 // allowed (numeric/string/array constraints). Strip them recursively; keep

@@ -449,15 +449,15 @@
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;">
-        <input
-          type="search"
-          id="search"
-          placeholder="🔍 Search players by name..."
-          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text); grid-column:1 / -1;"
-        />
-        <select 
-          id="sort" 
+      <input
+        type="search"
+        id="search"
+        placeholder="🔍 Search players by name..."
+        style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text); box-sizing:border-box; margin-bottom:14px;"
+      />
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;">
+        <select
+          id="sort"
           style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
         >
           <option value="place-asc">📈 Best Placement (1st → Last)</option>

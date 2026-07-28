@@ -2789,15 +2789,15 @@
       "sexuality": "gay",
       "archetype": "mastermind",
       "stats": {
-        "physical": 6,
-        "endurance": 5,
-        "mental": 8,
-        "social": 8,
-        "strategic": 10,
+        "physical": 7,
+        "endurance": 4,
+        "mental": 7,
+        "social": 7,
+        "strategic": 9,
         "loyalty": 3,
-        "boldness": 6,
-        "intuition": 9,
-        "temperament": 8
+        "boldness": 5,
+        "intuition": 8,
+        "temperament": 4
       }
     },
     {

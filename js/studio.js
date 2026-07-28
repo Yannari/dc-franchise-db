@@ -532,10 +532,12 @@ function _refreshPortrait() {
 async function _toggleLibrary() {
   const box = document.getElementById('st-lib'); if (!box) return;
   if (!box.hidden) { box.hidden = true; return; }
-  if (!_avatarList.length) { try { _avatarList = (await (await fetch('/api/avatars', { cache:'no-store' })).json()).avatars || []; } catch {} }
+  if (!_avatarList.length) { try { _avatarList = (await (await fetch('/api/avatars', { cache: 'no-store' })).json()).avatars || []; } catch {} }
+  // fallback: the 166 roster slugs all have avatars — works on static hosting too
+  if (!_avatarList.length) _avatarList = _roster().map(p => p.slug).filter(Boolean);
   box.innerHTML = _avatarList.length
     ? _avatarList.map(s => `<button type="button" class="st-lib-item" data-s="${_esc(s)}" title="${_esc(s)}"><img src="assets/avatars/${_esc(s)}.png" alt="" loading="lazy" onerror="this.parentElement.remove()"></button>`).join('')
-    : '<p class="st-empty">Library needs the local server (serve.py) running.</p>';
+    : '<p class="st-empty">No avatars available yet.</p>';
   box.hidden = false;
   box.querySelectorAll('.st-lib-item').forEach(b => b.addEventListener('click', async () => {
     try { _draft.avatarDataUri = await _imgToAvatar(`assets/avatars/${b.dataset.s}.png`); _refreshPortrait(); box.hidden = true; }
@@ -829,7 +831,8 @@ function _injectCSS() {
   .st-l-txt{font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .st-hint{font-weight:400;font-style:italic;opacity:.8}
-  .st-avatar-ctrls{display:flex;gap:8px}
+  .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}
+  .st-btn{white-space:nowrap}
   .st-file{cursor:pointer}
   .st-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;max-height:180px;overflow:auto;padding:8px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px}
   .st-lib-item{padding:0;border:1px solid var(--border,#333);border-radius:7px;overflow:hidden;cursor:pointer;background:none}

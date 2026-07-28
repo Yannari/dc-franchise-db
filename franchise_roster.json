@@ -2744,6 +2744,216 @@
         "temperament": 3
       },
       "isReturnee": false
+    },
+    {
+      "name": "Stanley",
+      "slug": "stanley",
+      "gender": "m",
+      "sexuality": "bi",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 10,
+        "social": 3,
+        "strategic": 8,
+        "loyalty": 5,
+        "boldness": 5,
+        "intuition": 8,
+        "temperament": 3
+      }
+    },
+    {
+      "name": "Zachary",
+      "slug": "zachary",
+      "gender": "m",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 5,
+        "social": 9,
+        "strategic": 6,
+        "loyalty": 5,
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 5
+      }
+    },
+    {
+      "name": "Obi",
+      "slug": "obi",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 6,
+        "endurance": 5,
+        "mental": 8,
+        "social": 8,
+        "strategic": 10,
+        "loyalty": 3,
+        "boldness": 6,
+        "intuition": 9,
+        "temperament": 8
+      }
+    },
+    {
+      "name": "Arlo",
+      "slug": "arlo",
+      "gender": "m",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 8,
+        "endurance": 9,
+        "mental": 2,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 7,
+        "boldness": 10,
+        "intuition": 3,
+        "temperament": 9
+      }
+    },
+    {
+      "name": "Doug",
+      "slug": "doug",
+      "gender": "m",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 4,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 2,
+        "intuition": 4,
+        "temperament": 3
+      }
+    },
+    {
+      "name": "Jeremiah",
+      "slug": "jeremiah",
+      "gender": "m",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 10,
+        "endurance": 9,
+        "mental": 5,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 5
+      }
+    },
+    {
+      "name": "Avani",
+      "slug": "avani",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 7,
+        "social": 9,
+        "strategic": 9,
+        "loyalty": 2,
+        "boldness": 7,
+        "intuition": 8,
+        "temperament": 6
+      }
+    },
+    {
+      "name": "Dameira",
+      "slug": "dameira",
+      "gender": "f",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 2,
+        "endurance": 3,
+        "mental": 8,
+        "social": 8,
+        "strategic": 9,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 9,
+        "temperament": 8
+      }
+    },
+    {
+      "name": "Nessa",
+      "slug": "nessa",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 9,
+        "strategic": 9,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 6
+      }
+    },
+    {
+      "name": "Drea",
+      "slug": "drea",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 6,
+        "social": 4,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 4
+      }
+    },
+    {
+      "name": "Hina",
+      "slug": "hina",
+      "gender": "f",
+      "sexuality": "asexual",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 8,
+        "temperament": 7
+      }
+    },
+    {
+      "name": "Natasha",
+      "slug": "natasha",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "hero",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 5,
+        "social": 10,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 7
+      }
     }
   ]
 }

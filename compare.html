@@ -389,7 +389,7 @@
         <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
         <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
         <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
-        <li class="nav-item"><a href="compare.html" class="nav-link active" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
+        <li class="nav-item"><a href="leaderboards.html" class="nav-link active" data-page="leaderboards"><span class="nav-icon">📈</span><span>Leaderboards</span></a></li>
 
 
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
@@ -422,6 +422,32 @@
 <!-- SITE HEADER END -->
 
 <div class="container">
+
+  <!-- Section tabs: Compare lives under Leaderboards in the menu now.
+       Styles mirror .pgTabs in leaderboards.html — keep both copies in sync. -->
+  <style>
+    .pgTabs{
+      display:flex; gap:6px; margin:20px 0 0;
+      border-bottom:1px solid var(--stroke, rgba(255,255,255,.14));
+    }
+    .pgTab{
+      display:inline-flex; align-items:center; gap:8px; padding:11px 20px;
+      border-radius:12px 12px 0 0; text-decoration:none; font-weight:700; font-size:15px;
+      color:var(--muted, #bdb4c7); border:1px solid transparent; border-bottom:none;
+      margin-bottom:-1px; transition:background .16s ease, color .16s ease;
+    }
+    .pgTab:hover{ color:var(--text, #f4f1f7); background:rgba(255,255,255,.06); }
+    .pgTab.is-active{
+      color:var(--text, #f4f1f7);
+      background:var(--panel, rgba(255,255,255,.08));
+      border-color:var(--stroke, rgba(255,255,255,.14));
+    }
+    @media(max-width:520px){ .pgTab{ padding:10px 14px; font-size:14px; } }
+  </style>
+  <nav class="pgTabs" aria-label="Section">
+    <a class="pgTab" href="leaderboards.html">🏆 Leaderboards</a>
+    <a class="pgTab is-active" href="compare.html" aria-current="page">⚔️ Compare</a>
+  </nav>
 
   <div class="cmp-hero">
     <h1>Player Comparison</h1>

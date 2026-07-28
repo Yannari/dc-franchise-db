@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Leaderboards</title>
+
+  <!-- IMPORTANT: Load config.js FIRST -->
+  <script src="config.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .lbWrap{ max-width:1200px; margin:0 auto; padding:0 18px 60px; }
+
+    /* ── section tabs (shared with compare.html — keep both copies in sync) ── */
+    .pgTabs{
+      display:flex; gap:6px; margin:20px 0 0;
+      border-bottom:1px solid var(--stroke, rgba(255,255,255,.14));
+    }
+    .pgTab{
+      display:inline-flex; align-items:center; gap:8px; padding:11px 20px;
+      border-radius:12px 12px 0 0; text-decoration:none; font-weight:700; font-size:15px;
+      color:var(--muted, #bdb4c7); border:1px solid transparent; border-bottom:none;
+      margin-bottom:-1px; transition:background .16s ease, color .16s ease;
+    }
+    .pgTab:hover{ color:var(--text, #f4f1f7); background:rgba(255,255,255,.06); }
+    .pgTab.is-active{
+      color:var(--text, #f4f1f7);
+      background:var(--panel, rgba(255,255,255,.08));
+      border-color:var(--stroke, rgba(255,255,255,.14));
+    }
+    @media(max-width:520px){ .pgTab{ padding:10px 14px; font-size:14px; } }
+
+    /* ── source badge: tells you whether you're on the live DB or local JSON ── */
+    .srcBadge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 12px; border-radius:999px; font-size:12.5px; font-weight:600;
+      border:1px solid var(--stroke); background:var(--panel2); color:var(--muted);
+    }
+    .srcBadge .dot{ width:8px; height:8px; border-radius:50%; background:var(--muted); }
+    .srcBadge.live{ color:var(--good); border-color:rgba(76,255,179,.32); background:rgba(76,255,179,.08); }
+    .srcBadge.live .dot{ background:var(--good); box-shadow:0 0 8px rgba(76,255,179,.8); }
+    .srcBadge.local{ color:var(--accent2); border-color:rgba(255,179,71,.32); background:rgba(255,179,71,.08); }
+    .srcBadge.local .dot{ background:var(--accent2); }
+
+    /* ── controls ── */
+    .lbControls{
+      display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+      background:var(--panel); border:1px solid var(--stroke);
+      border-radius:var(--radius-lg,18px); padding:16px 18px; margin:18px 0 22px;
+    }
+    .ctrl{ display:flex; flex-direction:column; gap:6px; }
+    .ctrl label{ font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+    .ctrl select{
+      background:var(--panel2); color:var(--text); border:1px solid var(--stroke);
+      border-radius:10px; padding:9px 12px; font:inherit; font-size:14px; min-width:180px; cursor:pointer;
+    }
+    .ctrl select:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+    .lbControls .spacer{ margin-left:auto; }
+
+    /* ── leaderboard rows ── */
+    .lbTable{ display:flex; flex-direction:column; gap:8px; }
+    .lbRow{
+      display:grid; grid-template-columns:62px 52px 1fr auto; gap:14px; align-items:center;
+      background:var(--panel); border:1px solid var(--stroke);
+      border-radius:var(--radius-md,14px); padding:10px 16px;
+      cursor:pointer; text-align:left; width:100%; font:inherit; color:var(--text);
+      transition:transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+    .lbRow:hover{ transform:translateY(-2px); border-color:rgba(255,255,255,.26); background:rgba(255,255,255,.11); }
+    .lbRow:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+    .lbRow.is-open{ border-color:var(--accent); background:rgba(125,76,255,.14); }
+
+    .lbRank{ font-size:19px; font-weight:800; color:var(--muted); text-align:center; font-variant-numeric:tabular-nums; }
+    .lbRow[data-rank="1"] .lbRank{ color:#f59e0b; }
+    .lbRow[data-rank="2"] .lbRank{ color:#cbd5e1; }
+    .lbRow[data-rank="3"] .lbRank{ color:#d08b52; }
+    .lbRank .medal{ font-size:22px; }
+
+    .lbAvatar{ width:46px; height:46px; border-radius:50%; overflow:hidden; position:relative;
+      background:var(--panel2); border:1px solid var(--stroke); display:grid; place-items:center; }
+    .lbAvatar img{ width:100%; height:100%; object-fit:cover; }
+    .lbAvatar .ini{ position:absolute; font-size:15px; font-weight:800; color:var(--muted); }
+    .lbAvatar img.gone{ display:none; }
+
+    .lbName{ font-size:16.5px; font-weight:700; }
+    .lbSub{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+    .lbValue{ font-size:23px; font-weight:800; color:var(--accent2); font-variant-numeric:tabular-nums; text-align:right; }
+    .lbValue small{ display:block; font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+
+    .tierChip{
+      display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px; font-weight:800;
+      border:1px solid rgba(148,163,184,.3); color:#94a3b8; background:rgba(148,163,184,.1); margin-left:8px;
+    }
+    .tierChip[data-tier="S+"]{ border-color:rgba(245,158,11,.35); color:#f59e0b; background:rgba(245,158,11,.12); }
+    .tierChip[data-tier="S"] { border-color:rgba(167,139,250,.35); color:#a78bfa; background:rgba(167,139,250,.12); }
+    .tierChip[data-tier="A"] { border-color:rgba(52,211,153,.35);  color:#34d399; background:rgba(52,211,153,.12); }
+    .tierChip[data-tier="B"] { border-color:rgba(96,165,250,.35);  color:#60a5fa; background:rgba(96,165,250,.12); }
+    .tierChip[data-tier="C"] { border-color:rgba(251,146,60,.35);  color:#fb923c; background:rgba(251,146,60,.12); }
+
+    /* ── detail drawer ── */
+    .lbDetail{
+      background:var(--panel); border:1px solid var(--accent);
+      border-radius:var(--radius-lg,18px); padding:20px 22px; margin:10px 0 18px;
+      box-shadow:var(--shadow-card, 0 14px 34px rgba(0,0,0,.34));
+      animation:lbIn .22s ease;
+    }
+    @keyframes lbIn{ from{ opacity:0; transform:translateY(-6px);} to{ opacity:1; transform:none;} }
+    @media (prefers-reduced-motion:reduce){
+      .lbDetail{ animation:none; } .lbRow:hover{ transform:none; }
+    }
+    .lbDetailTop{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+    .lbDetailTop .lbAvatar{ width:60px; height:60px; }
+    .lbDetailTop h3{ margin:0; font-size:22px; }
+    .lbDetailTop .closeBtn{
+      margin-left:auto; background:var(--panel2); border:1px solid var(--stroke); color:var(--muted);
+      border-radius:10px; padding:7px 14px; cursor:pointer; font:inherit; font-size:13px;
+    }
+    .lbDetailTop .closeBtn:hover{ color:var(--text); border-color:rgba(255,255,255,.3); }
+
+    /* align-items:start stops a short column from stretching to match the
+       tallest one, which otherwise leaves a dead gap under it when wrapping. */
+    .lbCols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; align-items:start; }
+    .lbCol h4{
+      margin:0 0 10px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--muted); border-bottom:1px solid var(--stroke); padding-bottom:7px;
+    }
+    .lbList{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; max-height:290px; overflow-y:auto; }
+    .lbList li{
+      display:flex; align-items:center; gap:9px; padding:7px 10px;
+      background:var(--panel2); border:1px solid transparent; border-radius:9px; font-size:13.5px;
+    }
+    .lbList li .grow{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lbList li .num{ font-weight:800; color:var(--accent2); font-variant-numeric:tabular-nums; }
+    .lbList li .meta{ font-size:11.5px; color:var(--muted); }
+    button.mate{ cursor:pointer; text-align:left; width:100%; font:inherit; color:var(--text); }
+    button.mate:hover{ border-color:var(--accent); background:rgba(125,76,255,.14); }
+    .placeBadge{
+      min-width:26px; text-align:center; padding:1px 6px; border-radius:6px; font-size:11.5px; font-weight:800;
+      background:rgba(255,255,255,.09); color:var(--muted);
+    }
+    .placeBadge.win{ background:rgba(245,158,11,.16); color:#f59e0b; }
+    .placeBadge.fin{ background:rgba(167,139,250,.16); color:#a78bfa; }
+
+    .lbNote{ text-align:center; color:var(--muted); padding:34px 16px; font-size:14.5px; }
+    .lbNote.err{ color:var(--danger); }
+    .lbBanner{
+      display:flex; gap:10px; align-items:flex-start; margin-bottom:16px; padding:11px 15px; font-size:13.5px;
+      border-radius:12px; border:1px solid rgba(255,179,71,.3); background:rgba(255,179,71,.09); color:var(--accent2);
+    }
+    @media(max-width:640px){
+      .lbRow{ grid-template-columns:44px 42px 1fr auto; gap:10px; padding:9px 12px; }
+      .lbValue{ font-size:19px; }
+    }
+  </style>
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
+        </div>
+      </a>
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="leaderboards.html" class="nav-link" data-page="leaderboards"><span class="nav-icon">📈</span><span>Leaderboards</span></a></li>
+
+        <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<script>
+(function() {
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
+  }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
+
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.pageYOffset > 20);
+  }, { passive: true });
+
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.nav-link').forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) link.classList.add('active');
+  });
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<main class="lbWrap">
+  <nav class="pgTabs" aria-label="Section">
+    <a class="pgTab is-active" href="leaderboards.html" aria-current="page">🏆 Leaderboards</a>
+    <a class="pgTab" href="compare.html">⚔️ Compare</a>
+  </nav>
+
+  <section class="hero" style="padding:26px 0 6px;">
+    <h1 style="margin:0 0 6px;">📈 <span class="grad">Leaderboards</span></h1>
+    <p style="margin:0; color:var(--muted);">
+      Live franchise records, queried across every season. Click any player to see who they've played with.
+    </p>
+  </section>
+
+  <div class="lbControls">
+    <div class="ctrl">
+      <label for="statSelect">Leaderboard</label>
+      <select id="statSelect"><option value="wins">Season wins</option></select>
+    </div>
+    <div class="ctrl">
+      <label for="minSeasons">Minimum seasons</label>
+      <select id="minSeasons">
+        <option value="1">1+ season</option>
+        <option value="2">2+ seasons</option>
+        <option value="3">3+ seasons</option>
+        <option value="4">4+ seasons</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <label for="limitSelect">Show</label>
+      <select id="limitSelect">
+        <option value="10">Top 10</option>
+        <option value="25" selected>Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+      </select>
+    </div>
+    <div class="spacer"></div>
+    <div class="ctrl">
+      <label>Data source</label>
+      <span class="srcBadge" id="srcBadge"><span class="dot"></span><span id="srcText">connecting…</span></span>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+  <div id="board" class="lbTable"><div class="lbNote">Loading leaderboard…</div></div>
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   Leaderboards — talks to the D1-backed Worker, falls back to the JSON files.
+
+   Two data sources, one interface:
+     • WORKER  : /api/leaderboard + /api/relationships  (SQL runs on Cloudflare)
+     • FALLBACK: players_database.json + seasons_database.json (computed here)
+   If the Worker is unreachable OR slow OR errors, we switch to the fallback
+   and tell the visitor via the badge. The page never shows a dead end.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const API = 'https://dc-studio.yannari19.workers.dev';
+const API_TIMEOUT_MS = 6000;
+
+/* Must mirror LEADERBOARD_STATS in worker/worker-studio.js so both sources
+   offer the same menu and sort the same direction. */
+const STATS = {
+  wins:         { label:'Season wins',        pick:a => a.placement === 1 ? 1 : 0,   agg:'sum', better:'higher' },
+  finals:       { label:'Finals appearances', pick:a => a.placement <= 2 ? 1 : 0,    agg:'sum', better:'higher' },
+  seasons:      { label:'Seasons played',     pick:() => 1,                          agg:'sum', better:'higher' },
+  challenges:   { label:'Challenge wins',     pick:a => a.challengeWins || 0,        agg:'sum', better:'higher' },
+  immunities:   { label:'Immunity wins',      pick:a => a.immunityWins || 0,         agg:'sum', better:'higher' },
+  rewards:      { label:'Reward wins',        pick:a => a.rewardWins || 0,           agg:'sum', better:'higher' },
+  idols:        { label:'Idols found',        pick:a => a.idolsFound || 0,           agg:'sum', better:'higher' },
+  juryVotes:    { label:'Jury votes',         pick:a => a.juryVotes || 0,            agg:'sum', better:'higher' },
+  votesAgainst: { label:'Votes against',      pick:a => a.votesReceived || 0,        agg:'sum', better:'higher' },
+  avgPlacement: { label:'Best avg placement', pick:a => a.placement,                 agg:'avg', better:'lower'  },
+};
+
+let source = null;        // 'worker' | 'local'
+let localData = null;     // lazily built fallback index
+let openSlug = null;
+
+/* ── tiny helpers ───────────────────────────────────────────────────────── */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function initials(name){
+  const p = String(name || '').split(/\s+|[-_]/).filter(Boolean);
+  if (!p.length) return '?';
+  return (p.length === 1 ? p[0].slice(0,2) : p[0][0] + p[p.length-1][0]).toUpperCase();
+}
+function avatarHtml(id, name){
+  return `<span class="lbAvatar"><span class="ini">${esc(initials(name))}</span>` +
+         `<img loading="lazy" alt="" src="assets/avatars/${esc(id)}.png" ` +
+         `onerror="this.classList.add('gone')"></span>`;
+}
+function tierChip(tier){
+  if (!tier || tier === 'Unranked') return '';
+  return `<span class="tierChip" data-tier="${esc(tier)}">${esc(tier)}</span>`;
+}
+function rankCell(rank){
+  const medal = { 1:'🥇', 2:'🥈', 3:'🥉' }[rank];
+  return medal ? `<span class="medal">${medal}</span>` : `#${rank}`;
+}
+function setSource(kind, note){
+  source = kind;
+  const badge = document.getElementById('srcBadge');
+  badge.className = 'srcBadge ' + (kind === 'worker' ? 'live' : 'local');
+  document.getElementById('srcText').textContent = kind === 'worker' ? 'Live database' : 'Local files';
+  document.getElementById('banner').innerHTML = note
+    ? `<div class="lbBanner"><span>⚠️</span><span>${esc(note)}</span></div>` : '';
+}
+
+/* fetch with a timeout — a hanging Worker should fall back, not spin forever */
+async function apiGet(path){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS);
+  try {
+    const r = await fetch(API + path, { signal: ctrl.signal });
+    const body = await r.json();
+    if (!r.ok || body.ok === false) throw new Error(body.error || `HTTP ${r.status}`);
+    return body;
+  } finally { clearTimeout(timer); }
+}
+
+/* ── fallback: rebuild the same answers from the JSON files ─────────────── */
+async function loadLocal(){
+  if (localData) return localData;
+  const [pRes, sRes] = await Promise.all([
+    fetch('players_database.json'),
+    fetch('seasons_database.json'),
+  ]);
+  if (!pRes.ok) throw new Error('players_database.json unavailable');
+  const players = (await pRes.json()).players || [];
+  const seasons = sRes.ok ? ((await sRes.json()).seasons || []) : [];
+
+  const seasonTitle = new Map(seasons.map(s => [s.seasonNumber, s.title]));
+  const byId = new Map();
+  const nameToSlug = new Map();
+  const bySeason = new Map();   // season -> [slug, ...]   (drives the castmate join)
+  const apps = new Map();       // slug   -> [appearance, ...]
+
+  for (const p of players){
+    if (!p.id) continue;
+    byId.set(p.id, p);
+    if (p.name) nameToSlug.set(p.name.trim().toLowerCase(), p.id);
+  }
+  for (const p of players){
+    if (!p.id) continue;
+    const list = [];
+    const seen = new Set();
+    for (const d of (p.seasonDetails || [])){
+      if (d.season == null || seen.has(d.season)) continue;
+      seen.add(d.season);
+      list.push({
+        season: d.season, seasonTitle: seasonTitle.get(d.season) || null,
+        placement: d.placement, status: d.status, tribe: d.tribe,
+        challengeWins: d.challengeWins, immunityWins: d.immunityWins,
+        rewardWins: d.rewardWins, idolsFound: d.idolsFound,
+        votesReceived: d.votesReceived, juryVotes: d.juryVotes,
+        finalVote: d.finalVote, unbreakableBonds: d.unbreakableBonds || [],
+      });
+      if (!bySeason.has(d.season)) bySeason.set(d.season, []);
+      bySeason.get(d.season).push(p.id);
+    }
+    list.sort((a,b) => a.season - b.season);
+    apps.set(p.id, list);
+  }
+  localData = { players, byId, nameToSlug, bySeason, apps };
+  return localData;
+}
+
+async function localLeaderboard(statKey, limit, minSeasons){
+  const d = await loadLocal();
+  const stat = STATS[statKey];
+  const rows = [];
+  for (const [slug, list] of d.apps){
+    if (list.length < minSeasons) continue;
+    const vals = list.map(stat.pick).filter(v => typeof v === 'number' && !Number.isNaN(v));
+    if (!vals.length) continue;
+    let value = vals.reduce((a,b) => a + b, 0);
+    if (stat.agg === 'avg') value = Math.round((value / vals.length) * 100) / 100;
+    const p = d.byId.get(slug);
+    rows.push({ id: slug, name: p.name, tier: p.tier, value, seasonsPlayed: list.length });
+  }
+  rows.sort((a,b) =>
+    (stat.better === 'lower' ? a.value - b.value : b.value - a.value) ||
+    (b.seasonsPlayed - a.seasonsPlayed) ||
+    a.name.localeCompare(b.name));
+
+  const out = rows.slice(0, limit);
+  let lastValue = null, lastRank = 0;
+  out.forEach((r, i) => {
+    r.rank = r.value === lastValue ? lastRank : i + 1;
+    lastValue = r.value; lastRank = r.rank;
+  });
+  return { stat: statKey, label: stat.label, better: stat.better, rows: out };
+}
+
+async function localRelationships(slug){
+  const d = await loadLocal();
+  const p = d.byId.get(slug);
+  if (!p) throw new Error(`no player with id "${slug}"`);
+  const mine = d.apps.get(slug) || [];
+
+  const shared = new Map();
+  for (const a of mine){
+    for (const other of (d.bySeason.get(a.season) || [])){
+      if (other === slug) continue;
+      if (!shared.has(other)) shared.set(other, []);
+      shared.get(other).push(a.season);
+    }
+  }
+  const castmates = [...shared.entries()].map(([id, seasons]) => {
+    const q = d.byId.get(id);
+    return { id, name: q?.name || id, tier: q?.tier,
+             sharedSeasons: seasons.length, seasons: seasons.sort((x,y) => x - y) };
+  }).sort((a,b) => b.sharedSeasons - a.sharedSeasons || a.name.localeCompare(b.name)).slice(0,100);
+
+  /* bonds both ways, deduped — the same fix the SQL needed */
+  const bondSet = new Map();
+  const addBond = (id, season) => {
+    const q = d.byId.get(id);
+    if (!q || id === slug) return;
+    bondSet.set(`${id}|${season}`, { id, name: q.name, season });
+  };
+  for (const a of mine){
+    for (const allyName of (a.unbreakableBonds || [])){
+      const allySlug = d.nameToSlug.get(String(allyName).trim().toLowerCase());
+      if (allySlug) addBond(allySlug, a.season);
+    }
+  }
+  for (const [otherSlug, list] of d.apps){          // people who listed THIS player
+    if (otherSlug === slug) continue;
+    for (const a of list){
+      for (const allyName of (a.unbreakableBonds || [])){
+        if (d.nameToSlug.get(String(allyName).trim().toLowerCase()) === slug) addBond(otherSlug, a.season);
+      }
+    }
+  }
+  return {
+    player: { id: p.id, name: p.name, tier: p.tier, totalSeasons: p.totalSeasons,
+              wins: p.wins, bestPlacement: p.bestPlacement, avgPlacement: p.avgPlacement },
+    seasons: mine,
+    castmates,
+    bonds: [...bondSet.values()].sort((a,b) => a.season - b.season),
+  };
+}
+
+/* ── unified accessors: try the Worker, fall back on any failure ────────── */
+async function getLeaderboard(statKey, limit, minSeasons){
+  if (source !== 'local'){
+    try {
+      const r = await apiGet(`/api/leaderboard?stat=${encodeURIComponent(statKey)}&limit=${limit}&minSeasons=${minSeasons}`);
+      setSource('worker', '');
+      return r;
+    } catch (e){
+      console.warn('Worker leaderboard failed, using local JSON:', e.message);
+      setSource('local', 'Live database unreachable — showing results computed from the local data files instead. Everything still works; numbers may lag the newest season.');
+    }
+  }
+  return localLeaderboard(statKey, limit, minSeasons);
+}
+async function getRelationships(slug){
+  if (source !== 'local'){
+    try { return await apiGet(`/api/relationships?player=${encodeURIComponent(slug)}`); }
+    catch (e){
+      console.warn('Worker relationships failed, using local JSON:', e.message);
+      setSource('local', 'Live database unreachable — showing results computed from the local data files instead.');
+    }
+  }
+  return localRelationships(slug);
+}
+
+/* ── rendering ──────────────────────────────────────────────────────────── */
+function rowHtml(r, unit){
+  const value = (typeof r.value === 'number' && !Number.isInteger(r.value)) ? r.value.toFixed(2) : r.value;
+  return `
+    <button class="lbRow${openSlug === r.id ? ' is-open' : ''}" data-rank="${r.rank}" data-slug="${esc(r.id)}"
+            aria-expanded="${openSlug === r.id}">
+      <span class="lbRank">${rankCell(r.rank)}</span>
+      ${avatarHtml(r.id, r.name)}
+      <span>
+        <span class="lbName">${esc(r.name)}${tierChip(r.tier)}</span>
+        <span class="lbSub">${r.seasonsPlayed} season${r.seasonsPlayed === 1 ? '' : 's'} played</span>
+      </span>
+      <span class="lbValue">${esc(value)}<small>${esc(unit)}</small></span>
+    </button>`;
+}
+
+async function renderBoard(){
+  const statKey = document.getElementById('statSelect').value;
+  const limit = +document.getElementById('limitSelect').value;
+  const minSeasons = +document.getElementById('minSeasons').value;
+  const board = document.getElementById('board');
+  board.innerHTML = '<div class="lbNote">Loading leaderboard…</div>';
+  openSlug = null;
+
+  try {
+    const data = await getLeaderboard(statKey, limit, minSeasons);
+    const rows = data.rows || [];
+    if (!rows.length){
+      board.innerHTML = '<div class="lbNote">No players match that filter. Try lowering the minimum seasons.</div>';
+      return;
+    }
+    const unit = (STATS[statKey] || {}).label || data.label || '';
+    board.innerHTML = rows.map(r => rowHtml(r, unit)).join('');
+  } catch (e){
+    board.innerHTML = `<div class="lbNote err">Could not load this leaderboard.<br><small>${esc(e.message)}</small></div>`;
+  }
+}
+
+function detailHtml(d){
+  const p = d.player;
+  const seasons = (d.seasons || []).map(s => {
+    const cls = s.placement === 1 ? 'win' : (s.placement === 2 ? 'fin' : '');
+    return `<li>
+      <span class="placeBadge ${cls}">${s.placement != null ? '#' + s.placement : '—'}</span>
+      <span class="grow"><strong>S${s.season}</strong> ${esc(s.seasonTitle || '')}
+        <span class="meta">${esc(s.status || '')}</span></span>
+    </li>`;
+  }).join('') || '<li class="meta">No seasons recorded.</li>';
+
+  const mates = (d.castmates || []).slice(0, 40).map(m => `
+    <li><button class="mate" data-slug="${esc(m.id)}" style="display:flex;align-items:center;gap:9px;background:none;border:none;padding:0;">
+      <span class="grow">${esc(m.name)} <span class="meta">S${(m.seasons || []).join(', S')}</span></span>
+      <span class="num">${m.sharedSeasons}×</span>
+    </button></li>`).join('') || '<li class="meta">No shared seasons.</li>';
+
+  const bonds = (d.bonds || []).map(b => `
+    <li><span class="grow">🤝 ${esc(b.name)}</span><span class="meta">Season ${b.season}</span></li>`
+  ).join('') || '<li class="meta">No unbreakable bonds recorded.</li>';
+
+  return `<div class="lbDetail">
+    <div class="lbDetailTop">
+      ${avatarHtml(p.id, p.name)}
+      <div>
+        <h3>${esc(p.name)}${tierChip(p.tier)}</h3>
+        <div class="lbSub">${p.totalSeasons ?? d.seasons.length} seasons • ${p.wins || 0} win${p.wins === 1 ? '' : 's'}
+          • best finish #${p.bestPlacement ?? '—'} • avg ${p.avgPlacement ?? '—'}</div>
+      </div>
+      <a class="btn" href="player.html?player=${encodeURIComponent(p.id)}" style="margin-left:auto;">Full profile →</a>
+      <button class="closeBtn" data-close="1">Close ✕</button>
+    </div>
+    <div class="lbCols">
+      <div class="lbCol"><h4>Seasons played</h4><ul class="lbList">${seasons}</ul></div>
+      <div class="lbCol"><h4>Most shared seasons</h4><ul class="lbList">${mates}</ul></div>
+      <div class="lbCol"><h4>Unbreakable bonds</h4><ul class="lbList">${bonds}</ul></div>
+    </div>
+  </div>`;
+}
+
+async function toggleDetail(slug, rowEl){
+  document.querySelectorAll('.lbDetail').forEach(n => n.remove());
+  document.querySelectorAll('.lbRow.is-open').forEach(n => {
+    n.classList.remove('is-open'); n.setAttribute('aria-expanded', 'false');
+  });
+  if (openSlug === slug){ openSlug = null; return; }
+
+  openSlug = slug;
+  rowEl.classList.add('is-open');
+  rowEl.setAttribute('aria-expanded', 'true');
+  rowEl.insertAdjacentHTML('afterend', '<div class="lbDetail"><div class="lbNote">Loading…</div></div>');
+  try {
+    const data = await getRelationships(slug);
+    rowEl.nextElementSibling.outerHTML = detailHtml(data);
+  } catch (e){
+    rowEl.nextElementSibling.innerHTML = `<div class="lbNote err">Could not load ${esc(slug)}.<br><small>${esc(e.message)}</small></div>`;
+  }
+}
+
+/* one delegated listener handles rows, castmate jumps, and close */
+document.getElementById('board').addEventListener('click', async ev => {
+  if (ev.target.closest('[data-close]')){
+    document.querySelectorAll('.lbDetail').forEach(n => n.remove());
+    document.querySelectorAll('.lbRow.is-open').forEach(n => n.classList.remove('is-open'));
+    openSlug = null;
+    return;
+  }
+  const mate = ev.target.closest('button.mate');
+  if (mate){
+    const slug = mate.dataset.slug;
+    const row = document.querySelector(`.lbRow[data-slug="${CSS.escape(slug)}"]`);
+    if (row){ await toggleDetail(slug, row); row.scrollIntoView({ behavior:'smooth', block:'center' }); }
+    else { window.location.href = `player.html?player=${encodeURIComponent(slug)}`; }
+    return;
+  }
+  const row = ev.target.closest('.lbRow');
+  if (row) await toggleDetail(row.dataset.slug, row);
+});
+
+['statSelect','minSeasons','limitSelect'].forEach(id =>
+  document.getElementById(id).addEventListener('change', renderBoard));
+
+/* boot: fill the stat menu from the Worker so it can never drift out of sync */
+(async function boot(){
+  try {
+    const { stats } = await apiGet('/api/stats');
+    document.getElementById('statSelect').innerHTML =
+      stats.map(s => `<option value="${esc(s.key)}">${esc(s.label)}</option>`).join('');
+    setSource('worker', '');
+  } catch {
+    document.getElementById('statSelect').innerHTML =
+      Object.entries(STATS).map(([k,v]) => `<option value="${k}">${esc(v.label)}</option>`).join('');
+    setSource('local', 'Live database unreachable — showing results computed from the local data files instead. Everything still works; numbers may lag the newest season.');
+  }
+  renderBoard();
+})();
+</script>
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

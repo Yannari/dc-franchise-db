@@ -11,3 +11,10 @@ ALLOWED_ORIGIN = "https://yannari.github.io" # your site origin ("*" to allow an
 # Secrets are NOT stored here. Set them once with:
 #   wrangler secret put GITHUB_TOKEN     (fine-grained PAT: Contents = Read+Write on this repo)
 #   wrangler secret put STUDIO_TOKEN     (a long random string; the frontend must send it)
+
+# D1 database (Step 1 of the D1 learning project). Reach it in the Worker as env.DB.
+# Created with: npx wrangler d1 create dc-franchise
+[[d1_databases]]
+binding = "DB"
+database_name = "dc-franchise"
+database_id = "e00978c3-52eb-48e2-8e0f-d90fc51b2437"

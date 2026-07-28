@@ -596,20 +596,103 @@ function _refreshPortrait() {
   p.innerHTML = src ? `<img src="${_esc(src)}" alt="" onerror="this.remove()">` : '<span class="st-portrait-ph">no avatar</span>';
 }
 
+// ── avatar library picker ───────────────────────────────────────────────
+// 190+ avatars is far too many for one flat grid, so the picker shows one
+// alphabetical section at a time (‹ › steps between letters) plus a search
+// that spans every letter.
+let _libLetter = '';
+let _libQuery = '';
+
+const _libLetterOf = s => { const c = String(s).charAt(0).toUpperCase(); return c >= 'A' && c <= 'Z' ? c : '#'; };
+const _libSorted = () => _avatarList.slice().sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+const _libLetters = () => [...new Set(_libSorted().map(_libLetterOf))];
+
 async function _toggleLibrary() {
   const box = document.getElementById('st-lib'); if (!box) return;
   if (!box.hidden) { box.hidden = true; return; }
-  if (!_avatarList.length) { try { _avatarList = (await (await fetch('/api/avatars', { cache: 'no-store' })).json()).avatars || []; } catch {} }
-  // fallback: the 166 roster slugs all have avatars — works on static hosting too
+  if (!_avatarList.length) {
+    try { _avatarList = (await (await fetch(_apiUrl('/api/avatars'), { cache: 'no-store', headers: _apiHeaders() })).json()).avatars || []; } catch {}
+  }
+  // fallback: the roster slugs all have avatars — works on static hosting too
   if (!_avatarList.length) _avatarList = _roster().map(p => p.slug).filter(Boolean);
-  box.innerHTML = _avatarList.length
-    ? _avatarList.map(s => `<button type="button" class="st-lib-item" data-s="${_esc(s)}" title="${_esc(s)}"><img src="assets/avatars/${_esc(s)}.png" alt="" loading="lazy" onerror="this.parentElement.remove()"></button>`).join('')
-    : '<p class="st-empty">No avatars available yet.</p>';
+  _libQuery = '';
+  const letters = _libLetters();
+  if (!letters.includes(_libLetter)) _libLetter = letters[0] || '';
   box.hidden = false;
-  box.querySelectorAll('.st-lib-item').forEach(b => b.addEventListener('click', async () => {
+  _renderLibrary();
+}
+
+// full shell — built once per open so the search box keeps focus while typing
+function _renderLibrary() {
+  const box = document.getElementById('st-lib'); if (!box) return;
+  if (!_avatarList.length) { box.innerHTML = '<p class="st-empty">No avatars available yet.</p>'; return; }
+
+  box.innerHTML =
+    `<div class="st-lib-bar">
+      <button type="button" class="st-lib-nav" data-nav="-1" aria-label="Previous letter">‹</button>
+      <div class="st-lib-letters">
+        ${_libLetters().map(L => `<button type="button" class="st-lib-letter" data-l="${_esc(L)}">${_esc(L)}</button>`).join('')}
+      </div>
+      <button type="button" class="st-lib-nav" data-nav="1" aria-label="Next letter">›</button>
+      <input type="search" class="st-input st-lib-search" id="st-lib-q" placeholder="Search all…" autocomplete="off">
+    </div>
+    <div class="st-lib-grid" id="st-lib-grid"></div>
+    <p class="st-lib-count" id="st-lib-count"></p>`;
+
+  box.querySelector('#st-lib-q').addEventListener('input', e => { _libQuery = e.target.value; _renderLibGrid(); });
+  box.querySelectorAll('.st-lib-letter').forEach(b => b.addEventListener('click', () => {
+    _libLetter = b.dataset.l; _libQuery = ''; box.querySelector('#st-lib-q').value = ''; _renderLibGrid();
+  }));
+  box.querySelectorAll('.st-lib-nav').forEach(b => b.addEventListener('click', () => {
+    const letters = _libLetters(), i = letters.indexOf(_libLetter) + Number(b.dataset.nav);
+    if (i < 0 || i >= letters.length) return;
+    _libLetter = letters[i]; _libQuery = ''; box.querySelector('#st-lib-q').value = ''; _renderLibGrid();
+  }));
+  // delegated so it survives every grid re-render
+  box.addEventListener('click', async e => {
+    const b = e.target.closest('.st-lib-item'); if (!b) return;
     try { _draft.avatarDataUri = await _imgToAvatar(`assets/avatars/${b.dataset.s}.png`); _refreshPortrait(); box.hidden = true; }
     catch { _toast('Could not load that avatar', 'err'); }
-  }));
+  });
+
+  _renderLibGrid();
+}
+
+// section contents + the bits of chrome that depend on them
+function _renderLibGrid() {
+  const box = document.getElementById('st-lib'); if (!box) return;
+  const all = _libSorted();
+  const letters = _libLetters();
+  const q = _libQuery.trim().toLowerCase();
+  const shown = q ? all.filter(s => s.toLowerCase().includes(q)) : all.filter(s => _libLetterOf(s) === _libLetter);
+
+  box.querySelectorAll('.st-lib-letter').forEach(b => b.classList.toggle('on', !q && b.dataset.l === _libLetter));
+  // keep the active letter in view without scrolling the page (the strip
+  // scrolls horizontally, so scrollIntoView would be too blunt here)
+  const on = box.querySelector('.st-lib-letter.on');
+  if (on) {
+    const strip = on.parentElement, l = on.offsetLeft, r = l + on.offsetWidth;
+    if (l < strip.scrollLeft) strip.scrollLeft = l - 4;
+    else if (r > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = r - strip.clientWidth + 4;
+  }
+  const i = letters.indexOf(_libLetter);
+  box.querySelectorAll('.st-lib-nav').forEach(b => {
+    const step = Number(b.dataset.nav);
+    b.disabled = !!q || i + step < 0 || i + step >= letters.length;
+  });
+
+  box.querySelector('#st-lib-count').textContent = q
+    ? `${shown.length} match${shown.length === 1 ? '' : 'es'} for “${_libQuery.trim()}”`
+    : `${shown.length} in ${_libLetter} · ${all.length} total`;
+
+  const grid = box.querySelector('#st-lib-grid');
+  grid.innerHTML = shown.length
+    ? shown.map(s => `<button type="button" class="st-lib-item" data-s="${_esc(s)}" title="${_esc(s)}">
+        <span class="st-lib-thumb"><img src="assets/avatars/${encodeURIComponent(s)}.png" alt="" loading="lazy" onerror="this.closest('.st-lib-thumb').classList.add('miss')"></span>
+        <span class="st-lib-name">${_esc(s)}</span>
+      </button>`).join('')
+    : '<p class="st-empty">No avatars match.</p>';
+  grid.scrollTop = 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -906,10 +989,38 @@ function _injectCSS() {
   .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}
   .st-btn{white-space:nowrap}
   .st-file{cursor:pointer}
-  .st-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;max-height:300px;overflow:auto;padding:8px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px}
-  .st-lib-item{padding:0;border:1px solid var(--border,#333);border-radius:7px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:1}
-  .st-lib-item:hover{border-color:var(--accent,#f4b23e)}
-  .st-lib-item img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+  .st-lib{display:flex;flex-direction:column;gap:9px;padding:10px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px}
+  /* grid, not flex-wrap: the letters wrap inside their own cell instead of
+     pushing the ‹ › arrows onto a second line */
+  .st-lib-bar{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:8px}
+  @media(max-width:620px){
+    .st-lib-bar{grid-template-columns:auto minmax(0,1fr) auto}
+    .st-lib-search{grid-column:1/-1;flex:1 1 auto}
+  }
+  /* one row that scrolls rather than wrapping — a wrapped strip orphans the
+     last letter onto its own line at most panel widths */
+  .st-lib-letters{display:flex;gap:2px;flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .st-lib-letters::-webkit-scrollbar{display:none}
+  .st-lib-letter{font:inherit;font-size:11px;font-weight:700;flex:0 0 auto;min-width:22px;height:24px;padding:0 3px;border-radius:6px;border:1px solid transparent;background:none;color:var(--muted,#9a9);cursor:pointer;line-height:1}
+  .st-lib-letter:hover{color:inherit;border-color:var(--border,#333)}
+  .st-lib-letter.on{background:var(--accent,#f4b23e);color:#151119}
+  .st-lib-nav{font:inherit;font-size:16px;line-height:1;width:26px;height:26px;flex:0 0 auto;border-radius:50%;border:1px solid var(--border,#333);background:none;color:inherit;cursor:pointer;display:grid;place-items:center}
+  .st-lib-nav:hover:not([disabled]){border-color:var(--accent,#f4b23e);color:var(--accent,#f4b23e)}
+  .st-lib-nav[disabled]{opacity:.28;cursor:default}
+  .st-lib-search{flex:0 1 150px;min-width:110px;font-size:12px;padding:5px 8px}
+  .st-lib-count{font-size:10px;font-family:ui-monospace,monospace;color:var(--muted,#889);margin:0}
+  /* fixed tile width + square thumb: the row height can never collapse */
+  .st-lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:11px 9px;max-height:296px;overflow-y:auto;overflow-x:hidden;padding:2px 4px 2px 2px;align-content:start}
+  .st-lib-item{display:flex;flex-direction:column;gap:4px;padding:0;border:0;background:none;color:inherit;cursor:pointer;min-width:0}
+  .st-lib-thumb{display:block;width:100%;aspect-ratio:1;border-radius:9px;overflow:hidden;border:1px solid var(--border,#333);background:var(--border,#333)}
+  .st-lib-thumb img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+  .st-lib-thumb.miss{display:grid;place-items:center}
+  .st-lib-thumb.miss img{display:none}
+  .st-lib-thumb.miss::after{content:'?';font-size:18px;color:var(--muted,#889)}
+  .st-lib-item:hover .st-lib-thumb{border-color:var(--accent,#f4b23e)}
+  .st-lib-item:focus-visible .st-lib-thumb{outline:2px solid var(--accent,#f4b23e);outline-offset:1px}
+  .st-lib-name{font-size:9.5px;line-height:1.15;color:var(--muted,#9a9);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .st-lib-item:hover .st-lib-name{color:inherit}
   .st-genders{border-radius:8px}
   .st-genders button{font-size:11px;padding:6px 8px}
   .st-stats-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}

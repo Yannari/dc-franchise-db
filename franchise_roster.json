@@ -2753,12 +2753,12 @@
       "sexuality": "bi",
       "archetype": "perceptive-player",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
+        "physical": 3,
+        "endurance": 4,
         "mental": 10,
         "social": 3,
-        "strategic": 8,
-        "loyalty": 5,
+        "strategic": 7,
+        "loyalty": 7,
         "boldness": 5,
         "intuition": 8,
         "temperament": 3

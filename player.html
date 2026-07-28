@@ -904,7 +904,7 @@ function renderPlayerProfile(player) {
     <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}</div>
     <div class="pp-gallery-empty" id="pp-gallery-empty">
       No images yet — drop files into <code>assets/gallery/${slug}/1.png</code>, <code>2.jpg</code>, <code>3.webp</code>…
-      <div class="pp-gallery-hint">Supports png, jpg, jpeg, webp — up to 12 images per character</div>
+      <div class="pp-gallery-hint">Supports png, jpg, jpeg, webp, gif — up to 12 images per character</div>
     </div>`;
   }
 
@@ -1135,7 +1135,7 @@ function ppTab(n) {
 }
 
 // ── Gallery multi-format helpers ────────────────────────────
-const _galleryExts = ['png','jpg','jpeg','webp'];
+const _galleryExts = ['png','jpg','jpeg','webp','gif'];
 function ppGalleryLoaded(i, img) {
   document.getElementById('ppg-' + i).style.display = '';
   // Transparent cut-out poses get object-fit:contain so tall renders aren't

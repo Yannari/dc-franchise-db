@@ -49,6 +49,31 @@ const ARCH_PRESET = {
 const SEXES = ['straight','gay','bi','lesbian','queer','asexual'];
 const GENDERS = [['m','♂ He/Him'],['f','♀ She/Her'],['nb','⚧ They/Them']];
 
+// ── Studio API endpoint ─────────────────────────────────────────────────
+// Local dev (serve.py) is same-origin, so the base is ''. On the deployed
+// static site (GitHub Pages), point at the Cloudflare Worker that commits to
+// the repo. After deploying the Worker, paste its URL into STUDIO_API_PROD
+// below (or override at runtime with localStorage['studio_api_base']). The
+// write token is stored in localStorage['studio_api_token'] — never in source.
+const STUDIO_API_PROD = ''; // e.g. 'https://dc-studio.<you>.workers.dev'
+const _isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0', ''].includes(location.hostname);
+function _lsGet(k) { try { return localStorage.getItem(k) || ''; } catch { return ''; } }
+function _apiBase() {
+  const override = _lsGet('studio_api_base');
+  if (override) return override.replace(/\/+$/, '');
+  if (_isLocalHost) return '';                    // same-origin serve.py
+  return STUDIO_API_PROD.replace(/\/+$/, '');     // deployed Worker (or '' => browser-only)
+}
+function _apiUrl(path) { return _apiBase() + path; }
+function _apiHeaders(extra) {
+  const h = { ...(extra || {}) };
+  const t = _lsGet('studio_api_token');
+  if (t) h['Authorization'] = 'Bearer ' + t;
+  return h;
+}
+// Can this context reach a write backend at all? (local serve.py, or a configured Worker)
+function _canWrite() { return _isLocalHost || !!_apiBase(); }
+
 // ── state ───────────────────────────────────────────────────────────────
 let _draft = null;          // the character currently in the editor
 let _serverUp = false;      // serve.py reachable?
@@ -175,13 +200,19 @@ export function studioExit() {
 
 async function _pingServer() {
   const el = document.getElementById('st-server');
-  try {
-    const r = await fetch('/api/ping', { cache: 'no-store' });
-    const j = await r.json();
-    _serverUp = !!j.ok;
-    if (j.avatars) _avatarList = j.avatars;
-  } catch { _serverUp = false; }
-  if (!_avatarList.length) { try { const r = await fetch('/api/avatars', { cache:'no-store' }); _avatarList = (await r.json()).avatars || []; } catch {} }
+  if (_canWrite()) {
+    try {
+      const r = await fetch(_apiUrl('/api/ping'), { cache: 'no-store', headers: _apiHeaders() });
+      const j = await r.json();
+      _serverUp = !!j.ok;
+      if (j.avatars) _avatarList = j.avatars;
+    } catch { _serverUp = false; }
+  } else {
+    _serverUp = false; // deployed site with no Worker configured — browser-only
+  }
+  if (!_avatarList.length) {
+    try { const r = await fetch(_apiUrl('/api/avatars'), { cache: 'no-store', headers: _apiHeaders() }); _avatarList = (await r.json()).avatars || []; } catch {}
+  }
   if (el) {
     el.textContent = _serverUp ? '● writes to repo' : '● browser-only (export later)';
     el.className = 'st-server ' + (_serverUp ? 'up' : 'down');
@@ -453,6 +484,13 @@ function _renderEditor() {
 
       <div class="st-actions">
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
+        ${(() => {
+          const active = _casts.find(c => c.id === _activeCast);
+          const inPool = d.slug && _roster().some(p => p.slug === d.slug);
+          if (!active || !inPool) return '';
+          const member = active.slugs.includes(d.slug);
+          return `<button type="button" class="st-btn st-lg${member ? ' st-primary' : ''}" id="st-add-cast" title="Toggle ${_esc(d.name)} in ${_esc(active.name)}">${member ? '★ In ' + _esc(active.name) : '☆ Add to ' + _esc(active.name)}</button>`;
+        })()}
         ${d.slug ? `<button type="button" class="st-btn st-danger" id="st-del">Delete</button>` : ''}
         <span class="st-save-note" id="st-save-note"></span>
       </div>
@@ -497,6 +535,8 @@ function _renderEditor() {
   // save / delete
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
+  // add/remove the selected character from the active cast, right from the editor
+  ed.querySelector('#st-add-cast')?.addEventListener('click', async () => { await _toggleMember(d.slug); _renderEditor(); });
 
   _drawRadar();
 }
@@ -605,12 +645,12 @@ async function _save() {
   const composedVoice = _composeVoice(d);
   if (_voiceCache) _voiceCache[d.name] = composedVoice;
 
-  // 3) write repo files if the server is up
+  // 3) write repo files if a backend is up (local serve.py or deployed Worker)
   let wrote = null;
   if (_serverUp) {
     try {
-      const r = await fetch('/api/character', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const r = await fetch(_apiUrl('/api/character'), {
+        method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice }, avatar: { slug: d.slug, dataUri: d.avatarDataUri || '' } }),
       });
       const j = await r.json();
@@ -866,10 +906,10 @@ function _injectCSS() {
   .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}
   .st-btn{white-space:nowrap}
   .st-file{cursor:pointer}
-  .st-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px;max-height:180px;overflow:auto;padding:8px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px}
-  .st-lib-item{padding:0;border:1px solid var(--border,#333);border-radius:7px;overflow:hidden;cursor:pointer;background:none}
+  .st-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;max-height:300px;overflow:auto;padding:8px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px}
+  .st-lib-item{padding:0;border:1px solid var(--border,#333);border-radius:7px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:1}
   .st-lib-item:hover{border-color:var(--accent,#f4b23e)}
-  .st-lib-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+  .st-lib-item img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
   .st-genders{border-radius:8px}
   .st-genders button{font-size:11px;padding:6px 8px}
   .st-stats-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}

@@ -1,0 +1,13 @@
+name = "dc-studio"
+main = "worker-studio.js"
+compatibility_date = "2024-11-01"
+
+# Non-secret config. Edit these for your repo/site.
+[vars]
+GITHUB_REPO = "Yannari/dc-franchise-db"   # owner/repo that GitHub Pages serves
+GITHUB_BRANCH = "main"                      # branch Pages builds from
+ALLOWED_ORIGIN = "https://yannari.github.io" # your site origin ("*" to allow any)
+
+# Secrets are NOT stored here. Set them once with:
+#   wrangler secret put GITHUB_TOKEN     (fine-grained PAT: Contents = Read+Write on this repo)
+#   wrangler secret put STUDIO_TOKEN     (a long random string; the frontend must send it)

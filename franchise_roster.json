@@ -2753,12 +2753,12 @@
       "sexuality": "bi",
       "archetype": "perceptive-player",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
+        "physical": 3,
+        "endurance": 4,
         "mental": 10,
         "social": 3,
-        "strategic": 8,
-        "loyalty": 5,
+        "strategic": 7,
+        "loyalty": 7,
         "boldness": 5,
         "intuition": 8,
         "temperament": 3
@@ -2789,15 +2789,15 @@
       "sexuality": "gay",
       "archetype": "mastermind",
       "stats": {
-        "physical": 6,
-        "endurance": 5,
-        "mental": 8,
-        "social": 8,
-        "strategic": 10,
+        "physical": 7,
+        "endurance": 4,
+        "mental": 7,
+        "social": 7,
+        "strategic": 9,
         "loyalty": 3,
-        "boldness": 6,
-        "intuition": 9,
-        "temperament": 8
+        "boldness": 5,
+        "intuition": 8,
+        "temperament": 4
       }
     },
     {
@@ -2856,7 +2856,7 @@
       "name": "Avani",
       "slug": "avani",
       "gender": "f",
-      "archetype": "villain",
+      "archetype": "schemer",
       "stats": {
         "physical": 4,
         "endurance": 4,
@@ -2874,18 +2874,19 @@
       "name": "Dameira",
       "slug": "dameira",
       "gender": "f",
-      "archetype": "schemer",
+      "archetype": "villain",
       "stats": {
-        "physical": 2,
-        "endurance": 3,
-        "mental": 8,
-        "social": 8,
+        "physical": 3,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
         "strategic": 9,
-        "loyalty": 4,
-        "boldness": 6,
+        "loyalty": 1,
+        "boldness": 7,
         "intuition": 9,
-        "temperament": 8
-      }
+        "temperament": 6
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Nessa",

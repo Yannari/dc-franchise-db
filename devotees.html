@@ -53,39 +53,72 @@
       margin: 0;
     }
     
+    /* override styles.css's flex-row .controls — we want a clean stacked layout */
     .controls {
-      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 20px;
-      padding: 20px;
+      display: flex !important;
+      flex-direction: column;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 18px 20px;
       margin: 24px 0;
       backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,.25);
     }
-    
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+    .ctl-search {
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 14px;
+      font-size: 15px;
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .ctl-select {
+      width: 100%;
+      padding: 13px 42px 13px 16px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      color: var(--text);
+      box-sizing: border-box;
+    }
+
     input[type="search"] {
       background: rgba(0,0,0,.3);
-      border: 2px solid rgba(125,76,255,.3);
-      transition: all 0.3s ease;
+      border: 1.5px solid rgba(125,76,255,.35);
+      transition: border-color .25s ease, box-shadow .25s ease;
     }
-    
     input[type="search"]:focus {
+      outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(125,76,255,.15);
-      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(125,76,255,.18);
     }
-    
+    input[type="search"]::placeholder { color: var(--muted); }
+
     select {
-      background: rgba(0,0,0,.3);
-      border: 2px solid rgba(255,179,71,.3);
-      transition: all 0.3s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: rgba(0,0,0,.28);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e9b866' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      border: 1.5px solid rgba(255,179,71,.35);
+      transition: border-color .25s ease, box-shadow .25s ease;
       cursor: pointer;
     }
-    
-    select:hover {
+    select:hover { border-color: rgba(255,179,71,.6); }
+    select:focus {
+      outline: none;
       border-color: var(--accent2);
-      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(255,179,71,.15);
     }
+    select option, select optgroup { background: #241a33; color: var(--text); }
     
     #count {
       text-align: center;
@@ -452,14 +485,11 @@
       <input
         type="search"
         id="search"
+        class="ctl-search"
         placeholder="🔍 Search players by name..."
-        style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text); box-sizing:border-box; margin-bottom:14px;"
       />
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;">
-        <select
-          id="sort"
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
-        >
+      <div class="filter-row">
+        <select id="sort" class="ctl-select">
           <option value="place-asc">📈 Best Placement (1st → Last)</option>
           <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
           <option value="name-asc">🔤 Name (A → Z)</option>
@@ -493,15 +523,12 @@
             <option value="stat-temperament-desc">🧊 Temperament</option>
           </optgroup>
         </select>
-        <select 
-          id="seasonFilter" 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
-        >
+        <select id="seasonFilter" class="ctl-select">
           <option value="all">🎬 All Seasons</option>
         </select>
         <select
           id="countFilter"
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+          class="ctl-select"
           title="Filter by how many seasons a player has appeared in"
         >
           <option value="all">🔁 Any # of Seasons</option>
@@ -512,7 +539,7 @@
         </select>
         <select
           id="archetypeFilter"
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+          class="ctl-select"
           title="Filter by player archetype"
         >
           <option value="all">🎭 All Archetypes</option>

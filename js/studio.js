@@ -55,7 +55,7 @@ const GENDERS = [['m','♂ He/Him'],['f','♀ She/Her'],['nb','⚧ They/Them']];
 // the repo. After deploying the Worker, paste its URL into STUDIO_API_PROD
 // below (or override at runtime with localStorage['studio_api_base']). The
 // write token is stored in localStorage['studio_api_token'] — never in source.
-const STUDIO_API_PROD = ''; // e.g. 'https://dc-studio.<you>.workers.dev'
+const STUDIO_API_PROD = 'https://dc-studio.yannari19.workers.dev';
 const _isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0', ''].includes(location.hostname);
 function _lsGet(k) { try { return localStorage.getItem(k) || ''; } catch { return ''; } }
 function _apiBase() {

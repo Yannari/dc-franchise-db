@@ -344,16 +344,43 @@ function _chemistryHTML(members) {
   </div>`;
 }
 
+// existing voice-profiles.json, fetched once and cached
+let _voiceCache = null;
+async function _existingVoice(name) {
+  if (!_voiceCache) {
+    try { _voiceCache = (await (await fetch('voice-profiles.json', { cache: 'no-store' })).json()).profiles || {}; }
+    catch { _voiceCache = {}; }
+  }
+  return _voiceCache[name] || '';
+}
+
+// The voice profile is the ONLY field the episode writer reads, so fold the
+// structured bio (age, origin/nationality, orientation) into a lead-in in front
+// of the personality prose. The raw prose is what's kept in the editor and the
+// Studio DB; this composed string is what gets written to voice-profiles.json.
+function _composeVoice(d) {
+  const bits = [];
+  if (d.age) bits.push(String(d.age).trim());
+  if (d.origin) bits.push(String(d.origin).trim());
+  if (d.sexuality && d.sexuality !== 'straight') bits.push(d.sexuality);
+  const lead = bits.length ? bits.join(', ') + '.' : '';
+  const prose = (d.voice || '').trim();
+  return (lead && prose) ? `${lead} ${prose}` : (lead || prose);
+}
+
 async function _editBySlug(slug) {
   const base = _roster().find(p => p.slug === slug);
   if (!base) return;
   const rich = await _idbGet('characters', slug);
+  // Studio record wins; otherwise fall back to the existing voice-profiles.json
+  // entry so editing a canon/hand-added character shows their real voice.
+  const voice = (rich && rich.voice) || await _existingVoice(base.name);
   _draft = {
     name: base.name, slug: base.slug, gender: base.gender || 'nb',
     sexuality: base.sexuality || (rich && rich.sexuality) || 'straight',
     archetype: base.archetype || '', stats: { ...Object.fromEntries(STAT_KEYS.map(k => [k, 5])), ...(base.stats || {}) },
     age: (rich && rich.age) || '', origin: (rich && rich.origin) || '',
-    voice: (rich && rich.voice) || '', avatarDataUri: (rich && rich.avatarDataUri) || '',
+    voice, avatarDataUri: (rich && rich.avatarDataUri) || '',
   };
   renderStudio();
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -417,10 +444,10 @@ function _renderEditor() {
         <div class="st-radar-wrap"><canvas id="st-radar" width="220" height="220"></canvas></div>
       </div>
 
-      <label class="st-l">Voice profile <span class="st-hint">how they TALK, not who they are</span>
+      <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — age & origin get added automatically</span>
         <textarea class="st-input st-area" id="st-f-voice" rows="3" placeholder="e.g. Minimal, calm and dry; lets people underestimate the pretty one…">${_esc(d.voice)}</textarea>
       </label>
-      <label class="st-l">Origin / tagline <span class="st-hint">optional flavor</span>
+      <label class="st-l">Origin / nationality <span class="st-hint">folded into the voice profile the writer reads</span>
         <input class="st-input" id="st-f-origin" value="${_esc(d.origin)}" placeholder="e.g. Nigerian international model">
       </label>
 
@@ -568,10 +595,15 @@ async function _save() {
   if (i >= 0) arr[i] = { ...arr[i], ...entry }; else arr.push(entry);
   _persistRoster(arr);
 
-  // 2) rich record + avatar override
+  // 2) rich record (raw prose kept for editing) + avatar override
   const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender, sexuality: d.sexuality, archetype: d.archetype, origin: d.origin, voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }
+
+  // composed voice = bio lead-in (age/origin/orientation) + prose — this is what
+  // the episode writer actually reads. Keep the fetched cache in sync too.
+  const composedVoice = _composeVoice(d);
+  if (_voiceCache) _voiceCache[d.name] = composedVoice;
 
   // 3) write repo files if the server is up
   let wrote = null;
@@ -579,7 +611,7 @@ async function _save() {
     try {
       const r = await fetch('/api/character', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roster: entry, voice: { name: d.name, text: d.voice }, avatar: { slug: d.slug, dataUri: d.avatarDataUri || '' } }),
+        body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice }, avatar: { slug: d.slug, dataUri: d.avatarDataUri || '' } }),
       });
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || 'write failed');
@@ -717,7 +749,7 @@ async function _exportRepo() {
   try { base = await (await fetch('voice-profiles.json', { cache: 'no-store' })).json(); } catch {}
   if (!base.profiles) base.profiles = {};
   const chars = await _idbAll('characters');
-  chars.forEach(c => { if (c.voice) base.profiles[c.name] = c.voice; });
+  chars.forEach(c => { const v = _composeVoice(c); if (v) base.profiles[c.name] = v; });
   _dl('voice-profiles.json', JSON.stringify(base, null, 2) + '\n');
   // 3) avatar PNGs for studio-created characters
   let n = 0;

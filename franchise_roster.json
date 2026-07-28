@@ -2874,18 +2874,19 @@
       "name": "Dameira",
       "slug": "dameira",
       "gender": "f",
-      "archetype": "schemer",
+      "archetype": "villain",
       "stats": {
-        "physical": 2,
-        "endurance": 3,
-        "mental": 8,
-        "social": 8,
+        "physical": 3,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
         "strategic": 9,
-        "loyalty": 4,
-        "boldness": 6,
+        "loyalty": 1,
+        "boldness": 7,
         "intuition": 9,
-        "temperament": 8
-      }
+        "temperament": 6
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Nessa",

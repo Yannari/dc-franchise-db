@@ -2928,17 +2928,17 @@
       "slug": "hina",
       "gender": "f",
       "sexuality": "asexual",
-      "archetype": "social-butterfly",
+      "archetype": "underdog",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 7,
-        "social": 6,
-        "strategic": 3,
+        "physical": 3,
+        "endurance": 3,
+        "mental": 8,
+        "social": 5,
+        "strategic": 2,
         "loyalty": 8,
-        "boldness": 5,
-        "intuition": 8,
-        "temperament": 7
+        "boldness": 3,
+        "intuition": 9,
+        "temperament": 10
       }
     },
     {

@@ -245,18 +245,103 @@ async function _renderGrid(q) {
   grid.querySelectorAll('.st-star').forEach(s => s.addEventListener('click', ev => { ev.stopPropagation(); _toggleMember(s.dataset.slug); }));
 }
 
+const VILLAIN_ARCH = ['villain', 'mastermind', 'schemer'];
+const NICE_ARCH = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
+
 function _renderBalance() {
   const el = document.getElementById('st-balance');
   if (!el) return;
+  const active = _casts.find(c => c.id === _activeCast);
+  if (active && active.slugs.length) {
+    const members = active.slugs.map(s => _roster().find(p => p.slug === s)).filter(Boolean);
+    el.innerHTML = _castAnalysisHTML(members, active.name);
+    return;
+  }
+  // pool-level snapshot when no cast is being composed
   const r = _roster();
-  const g = { m:0, f:0, nb:0 };
-  const arch = {};
+  const g = { m: 0, f: 0, nb: 0 }; const arch = {};
   r.forEach(p => { g[p.gender] = (g[p.gender] || 0) + 1; arch[p.archetype] = (arch[p.archetype] || 0) + 1; });
-  const villains = (arch.villain||0)+(arch.mastermind||0)+(arch.schemer||0);
+  const villains = VILLAIN_ARCH.reduce((n, a) => n + (arch[a] || 0), 0);
   el.innerHTML =
     `<span class="st-chip">${r.length} in pool</span>
-     <span class="st-chip">♂ ${g.m||0}</span><span class="st-chip">♀ ${g.f||0}</span><span class="st-chip">⚧ ${g.nb||0}</span>
-     <span class="st-chip st-chip-warn">${villains} schemers/villains</span>`;
+     <span class="st-chip">♂ ${g.m || 0}</span><span class="st-chip">♀ ${g.f || 0}</span><span class="st-chip">⚧ ${g.nb || 0}</span>
+     <span class="st-chip st-chip-warn">${villains} schemers/villains</span>
+     <span class="st-hint">Open or create a cast to analyze a lineup.</span>`;
+}
+
+function _castAnalysisHTML(members, castName) {
+  const N = members.length;
+  const g = { m: 0, f: 0, nb: 0 }, arch = {};
+  let statSum = 0, phys = 0;
+  members.forEach(p => {
+    g[p.gender] = (g[p.gender] || 0) + 1;
+    arch[p.archetype] = (arch[p.archetype] || 0) + 1;
+    const s = p.stats || {};
+    statSum += STAT_KEYS.reduce((t, k) => t + (s[k] || 0), 0);
+    if ((s.physical || 0) >= 8 || p.archetype === 'challenge-beast') phys++;
+  });
+  const villains = VILLAIN_ARCH.reduce((n, a) => n + (arch[a] || 0), 0);
+  const nice = NICE_ARCH.reduce((n, a) => n + (arch[a] || 0), 0);
+  const heroes = arch.hero || 0;
+  const avg = N ? (statSum / (N * STAT_KEYS.length)).toFixed(1) : '0';
+
+  // archetype distribution bars
+  const archEntries = Object.entries(arch).sort((a, b) => b[1] - a[1]);
+  const maxA = Math.max(1, ...archEntries.map(e => e[1]));
+  const bars = archEntries.map(([a, n]) =>
+    `<div class="st-an-bar"><span class="st-an-bar-lab" style="--c:${ARCH_COLOR[a] || '#64748b'}">${a}</span>
+       <span class="st-an-bar-track"><span class="st-an-bar-fill" style="width:${(n / maxA) * 100}%;background:${ARCH_COLOR[a] || '#64748b'}"></span></span>
+       <span class="st-an-bar-n">${n}</span></div>`).join('');
+
+  // warnings
+  const warns = [];
+  if (villains >= Math.ceil(N * 0.4) && heroes === 0) warns.push(['crit', `${villains} schemers/villains and no hero — nobody to root for`]);
+  else if (villains >= Math.ceil(N * 0.5)) warns.push(['warn', `villain-heavy (${villains}/${N})`]);
+  if (heroes === 0) warns.push(['warn', 'no hero archetype — thin emotional center']);
+  if (phys === 0) warns.push(['warn', 'no challenge threat (no challenge-beast / high physical)']);
+  archEntries.forEach(([a, n]) => { if (n >= Math.max(3, Math.ceil(N / 3)) && n > 1) warns.push(['warn', `${n}× ${a} — archetype clumping`]); });
+  if (N >= 4 && (g.m === N || g.f === N)) warns.push(['warn', 'single-gender cast']);
+  if (!warns.length) warns.push(['ok', 'balanced lineup — no red flags']);
+
+  return `<div class="st-analysis">
+    <div class="st-an-head">${_esc(castName)} — cast analysis · ${N} member${N === 1 ? '' : 's'}</div>
+    <div class="st-an-cols">
+      <div class="st-an-bars">${bars}</div>
+      <div class="st-an-side">
+        <div class="st-an-stat"><b>${avg}</b><span>avg stat</span></div>
+        <div class="st-an-gender">♂ ${g.m || 0} · ♀ ${g.f || 0} · ⚧ ${g.nb || 0}</div>
+        <div class="st-an-mix"><span class="st-an-mix-v">${villains} scheme</span><span class="st-an-mix-h">${nice} nice</span><span class="st-an-mix-c">${phys} threat</span></div>
+      </div>
+    </div>
+    <div class="st-an-warns">${warns.map(([k, t]) => `<span class="st-an-warn st-an-${k}">${_esc(t)}</span>`).join('')}</div>
+    ${_chemistryHTML(members)}
+  </div>`;
+}
+
+function _chemistryHTML(members) {
+  if (typeof window.careerFor !== 'function') return '';
+  const names = new Set(members.map(m => m.name));
+  const key = (a, b) => [a, b].sort().join('||');
+  const chem = new Map(), conflict = new Map();
+  let hasHistory = false;
+  members.forEach(m => {
+    let c = null; try { c = window.careerFor(m.name); } catch {}
+    if (!c) return;
+    hasHistory = true;
+    const P = c.people || {};
+    (P.allies || []).forEach(a => { if (a.name !== m.name && names.has(a.name)) { const k = key(m.name, a.name); if (!chem.has(k)) chem.set(k, `${m.name} &amp; ${a.name} allied`); } });
+    (P.showmances || []).forEach(s => { if (names.has(s.partner)) chem.set(key(m.name, s.partner), `${m.name} &amp; ${s.partner} — showmance${s.ended ? ' (ended)' : ''}`); });
+    (P.betrayed || []).forEach(b => { if (names.has(b.name)) conflict.set(key(m.name, b.name), `${m.name} burned ${b.name}`); });
+    (P.betrayedBy || []).forEach(b => { if (names.has(b.name) && !conflict.has(key(m.name, b.name))) conflict.set(key(m.name, b.name), `${b.name} burned ${m.name}`); });
+    (P.rivals || []).forEach(r => { if (names.has(r.name) && !conflict.has(key(m.name, r.name))) conflict.set(key(m.name, r.name), `${m.name} &amp; ${r.name} — rivals`); });
+  });
+  if (!hasHistory) return `<div class="st-chem-note">✦ No prior-season history among these members — a clean slate.</div>`;
+  const chemA = [...chem.values()], confA = [...conflict.values()];
+  if (!chemA.length && !confA.length) return `<div class="st-chem-note">History on file, but no shared past among these members yet.</div>`;
+  return `<div class="st-chem">
+    ${chemA.length ? `<div class="st-chem-col st-chem-good"><span class="st-chem-h">✦ Chemistry</span>${chemA.map(t => `<span class="st-chem-pair">${t}</span>`).join('')}</div>` : ''}
+    ${confA.length ? `<div class="st-chem-col st-chem-bad"><span class="st-chem-h">⚔ Conflict</span>${confA.map(t => `<span class="st-chem-pair">${t}</span>`).join('')}</div>` : ''}
+  </div>`;
 }
 
 async function _editBySlug(slug) {
@@ -527,7 +612,7 @@ async function _delete() {
 // ═══════════════════════════════════════════════════════════════════════
 // CASTS — named collections you compose, then load into a season
 // ═══════════════════════════════════════════════════════════════════════
-function _gridRefresh() { _renderGrid(document.getElementById('st-search')?.value || ''); }
+function _gridRefresh() { _renderGrid(document.getElementById('st-search')?.value || ''); _renderBalance(); }
 
 function _renderCasts() {
   const el = document.getElementById('st-casts');
@@ -696,6 +781,35 @@ function _injectCSS() {
   .st-star{position:absolute;top:4px;left:4px;z-index:2;font-size:15px;line-height:1;color:var(--muted,#889);text-shadow:0 1px 3px rgba(0,0,0,.7);cursor:pointer}
   .st-star.on{color:var(--accent,#f4b23e)}
   .st-card.member{border-color:var(--accent,#f4b23e)}
+  .st-analysis{flex:1 1 100%;display:flex;flex-direction:column;gap:9px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px;padding:11px 12px}
+  .st-an-head{font-size:12px;font-weight:700;letter-spacing:.02em}
+  .st-an-cols{display:grid;grid-template-columns:1fr 132px;gap:14px}
+  @media(max-width:560px){.st-an-cols{grid-template-columns:1fr}}
+  .st-an-bars{display:flex;flex-direction:column;gap:4px}
+  .st-an-bar{display:grid;grid-template-columns:96px 1fr 16px;align-items:center;gap:6px}
+  .st-an-bar-lab{font-family:ui-monospace,monospace;font-size:9.5px;color:var(--c);text-transform:uppercase;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .st-an-bar-track{height:6px;background:var(--track,#2a2a33);border-radius:99px;overflow:hidden}
+  .st-an-bar-fill{display:block;height:100%;border-radius:99px}
+  .st-an-bar-n{font-family:ui-monospace,monospace;font-size:10px;color:var(--muted,#9a9);text-align:right}
+  .st-an-side{display:flex;flex-direction:column;gap:7px}
+  .st-an-stat{display:flex;flex-direction:column;line-height:1}
+  .st-an-stat b{font-size:22px}
+  .st-an-stat span{font-size:9px;color:var(--muted,#9a9);text-transform:uppercase;letter-spacing:.08em}
+  .st-an-gender{font-size:11px;color:var(--muted,#9a9)}
+  .st-an-mix{display:flex;flex-direction:column;gap:2px;font-family:ui-monospace,monospace;font-size:10px}
+  .st-an-mix-v{color:#e5484d}.st-an-mix-h{color:#46b17b}.st-an-mix-c{color:#f5a623}
+  .st-an-warns{display:flex;flex-wrap:wrap;gap:5px}
+  .st-an-warn{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--border,#333);color:#e5843e}
+  .st-an-crit{color:#fff;background:#e5484d;border-color:transparent}
+  .st-an-ok{color:#46b17b;border-color:#46b17b55}
+  .st-chem{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:560px){.st-chem{grid-template-columns:1fr}}
+  .st-chem-col{display:flex;flex-direction:column;gap:3px;border-radius:8px;padding:7px 9px;border:1px solid var(--border,#333)}
+  .st-chem-good{border-left:3px solid #46b17b}
+  .st-chem-bad{border-left:3px solid #e5484d}
+  .st-chem-h{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#9a9)}
+  .st-chem-pair{font-size:11px}
+  .st-chem-note{font-size:11px;color:var(--muted,#9a9);font-style:italic}
   .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
   .st-card{position:relative;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:12px;padding:8px 6px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;color:inherit}
   .st-card:hover{border-color:var(--accent,#f4b23e)}

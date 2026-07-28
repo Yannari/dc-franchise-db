@@ -449,12 +449,12 @@
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:16px;">
-        <input 
-          type="search" 
-          id="search" 
-          placeholder="🔍 Search players by name..." 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
+        <input
+          type="search"
+          id="search"
+          placeholder="🔍 Search players by name..."
+          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text); grid-column:span 2;"
         />
         <select 
           id="sort" 
@@ -480,6 +480,18 @@
           <option value="juryvotes-asc">⚖️ Jury Votes (Fewest → Most)</option>
           <option value="idols-desc">💎 Idols Found (Most → Fewest)</option>
           <option value="idols-asc">💎 Idols Found (Fewest → Most)</option>
+          <optgroup label="⚡ Stats (High → Low)">
+            <option value="stat-total-desc">💯 Overall (sum of all stats)</option>
+            <option value="stat-physical-desc">💪 Physical</option>
+            <option value="stat-endurance-desc">🔋 Endurance</option>
+            <option value="stat-mental-desc">🧠 Mental</option>
+            <option value="stat-social-desc">💬 Social</option>
+            <option value="stat-strategic-desc">♟️ Strategic</option>
+            <option value="stat-loyalty-desc">🤝 Loyalty</option>
+            <option value="stat-boldness-desc">🔥 Boldness</option>
+            <option value="stat-intuition-desc">👁️ Intuition</option>
+            <option value="stat-temperament-desc">🧊 Temperament</option>
+          </optgroup>
         </select>
         <select 
           id="seasonFilter" 
@@ -497,6 +509,13 @@
           <option value="2">2 Seasons</option>
           <option value="3">3 Seasons</option>
           <option value="4+">4+ Seasons</option>
+        </select>
+        <select
+          id="archetypeFilter"
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+          title="Filter by player archetype"
+        >
+          <option value="all">🎭 All Archetypes</option>
         </select>
       </div>
     </div>
@@ -618,6 +637,38 @@ const emojiMap = {
   'zaid': '🎖️',
 };
 
+// Archetype → display label (emoji + name) for the filter dropdown and card badge.
+const ARCHETYPE_META = {
+  'mastermind': '🧠 Mastermind',
+  'schemer': '🕸️ Schemer',
+  'hothead': '🔥 Hothead',
+  'challenge-beast': '💪 Challenge Beast',
+  'social-butterfly': '🦋 Social Butterfly',
+  'loyal-soldier': '🎖️ Loyal Soldier',
+  'wildcard': '🃏 Wildcard',
+  'chaos-agent': '🌪️ Chaos Agent',
+  'floater': '🎈 Floater',
+  'underdog': '🐕 Underdog',
+  'hero': '🦸 Hero',
+  'villain': '😈 Villain',
+  'goat': '🐐 Goat',
+  'perceptive-player': '👁️ Perceptive Player',
+  'showmancer': '💘 Showmancer',
+};
+const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
+
+// Populate the archetype filter from the archetypes actually present in the data.
+function populateArchetypeFilter() {
+  const sel = document.getElementById('archetypeFilter');
+  if (!sel) return;
+  const present = [...new Set(allPlayers.map(p => p.archetype).filter(Boolean))]
+    .sort((a, b) => (ARCHETYPE_META[a] || a).localeCompare(ARCHETYPE_META[b] || b));
+  const prev = sel.value;
+  sel.innerHTML = '<option value="all">🎭 All Archetypes</option>' +
+    present.map(a => `<option value="${a}">${ARCHETYPE_META[a] || a}</option>`).join('');
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+}
+
 
 
 // ========================================
@@ -689,16 +740,37 @@ function updateHeaderStats() {
 }
 
 // ✅ CALL THE FUNCTION AND CHAIN PROMISES
-loadPlayerData()
-  .then(data => {
+// Load the devotees dataset AND the roster (which carries archetype + stats),
+// then merge roster data onto each player by slug/id (falling back to name).
+Promise.all([
+  loadPlayerData(),
+  fetch('franchise_roster.json').then(r => r.json()).catch(() => null)
+])
+  .then(([data, roster]) => {
+    // Build a lookup keyed by both slug and lowercased name.
+    const rmap = {};
+    if (roster) {
+      let rarr = Array.isArray(roster) ? roster : (roster.players || roster);
+      if (!Array.isArray(rarr)) rarr = Object.values(rarr);
+      rarr.forEach(rp => {
+        if (!rp || typeof rp !== 'object') return;
+        if (rp.slug) rmap[rp.slug] = rp;
+        if (rp.name) rmap[String(rp.name).toLowerCase()] = rp;
+      });
+    }
+
     allPlayers = data.players.map(player => {
       const emoji = player.emoji || emojiMap[player.name.toLowerCase()] || '👤';
+      const rp = rmap[player.id] || rmap[(player.name || '').toLowerCase()] || null;
       return {
         ...player,
-        emoji
+        emoji,
+        archetype: rp?.archetype || null,
+        stats: rp?.stats || null
       };
     });
 
+    populateArchetypeFilter();
     renderPlayers(allPlayers);
     updateDisplay();
     updateHeaderStats();
@@ -761,6 +833,9 @@ function renderPlayers(players) {
     // Add basic badges (safe defaults)
     const bestPlacement = (player.bestPlacement != null ? player.bestPlacement : '—');
     const totalSeasons = Number(player.totalSeasons ?? 0);
+    if (player.archetype) {
+      badgesHtml += `<span class="badge purple">${ARCHETYPE_META[player.archetype] || player.archetype}</span>`;
+    }
     badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
     badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
 
@@ -793,6 +868,7 @@ function updateDisplay() {
   const sortValue = sortSelect.value;
   const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
   const countFilterValue = document.getElementById('countFilter')?.value || 'all';
+  const archetypeFilterValue = document.getElementById('archetypeFilter')?.value || 'all';
 
   // Let the search box double as a season-count filter: typing "2 seasons"
   // (or "2 season") shows only players who have appeared in exactly that many.
@@ -826,7 +902,13 @@ function updateDisplay() {
         : totalSeasons === Number(countFilterValue);
     }
 
-    return matchesName && matchesSeason && matchesCount;
+    // Archetype filter
+    let matchesArchetype = true;
+    if (archetypeFilterValue !== 'all') {
+      matchesArchetype = p.archetype === archetypeFilterValue;
+    }
+
+    return matchesName && matchesSeason && matchesCount && matchesArchetype;
   });
 
   filteredPlayers.sort((a, b) => {
@@ -872,6 +954,18 @@ function updateDisplay() {
     if (sortValue === 'juryvotes-asc') return (aJuryVotes - bJuryVotes) || aName.localeCompare(bName);
     if (sortValue === 'idols-desc') return (bIdols - aIdols) || aName.localeCompare(bName);
     if (sortValue === 'idols-asc') return (aIdols - bIdols) || aName.localeCompare(bName);
+
+    // Stat sorts (High → Low). Players missing stats sort to the bottom.
+    if (sortValue.startsWith('stat-')) {
+      const key = sortValue.replace(/^stat-/, '').replace(/-desc$/, '');
+      const statVal = (p) => {
+        if (!p.stats) return -1;
+        if (key === 'total') return STAT_KEYS.reduce((s, k) => s + (Number(p.stats[k]) || 0), 0);
+        return Number(p.stats[key] ?? -1);
+      };
+      return (statVal(b) - statVal(a)) || aName.localeCompare(bName);
+    }
+
     return 0;
   });
 
@@ -893,6 +987,12 @@ if (seasonFilter) {
 const countFilter = document.getElementById('countFilter');
 if (countFilter) {
   countFilter.addEventListener('change', updateDisplay);
+}
+
+// Archetype filter event listener
+const archetypeFilter = document.getElementById('archetypeFilter');
+if (archetypeFilter) {
+  archetypeFilter.addEventListener('change', updateDisplay);
 }
 </script>
 

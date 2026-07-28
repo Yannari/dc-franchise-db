@@ -53,6 +53,8 @@ const GENDERS = [['m','♂ He/Him'],['f','♀ She/Her'],['nb','⚧ They/Them']];
 let _draft = null;          // the character currently in the editor
 let _serverUp = false;      // serve.py reachable?
 let _avatarList = [];       // library slugs
+let _casts = [];            // named collections {id,name,slugs[]}
+let _activeCast = null;     // id of the cast currently being composed
 const _statOf = k => (_draft && _draft.stats[k]) || 5;
 
 // ── IndexedDB (rich store) ──────────────────────────────────────────────
@@ -134,6 +136,7 @@ export async function studioInit() {
     const all = await _idbAll('characters');
     all.forEach(c => { if (c.avatarDataUri) window.__studioAvatars[c.slug] = c.avatarDataUri; });
   } catch {}
+  try { _casts = await _idbAll('casts'); } catch { _casts = []; }
 
   // toggle bar
   const bar = document.createElement('div');
@@ -198,7 +201,9 @@ export function renderStudio() {
          <div class="st-pool-head">
            <button type="button" id="st-new" class="st-btn st-primary">＋ New character</button>
            <input type="search" id="st-search" class="st-input" placeholder="Filter roster…">
+           <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
          </div>
+         <div id="st-casts" class="st-casts"></div>
          <div id="st-balance" class="st-balance"></div>
          <div id="st-grid" class="st-grid"></div>
        </section>
@@ -206,6 +211,8 @@ export function renderStudio() {
      </div>`;
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
   panel.querySelector('#st-search').addEventListener('input', e => _renderGrid(e.target.value));
+  panel.querySelector('#st-export').addEventListener('click', _exportRepo);
+  _renderCasts();
   _renderGrid('');
   _renderBalance();
   _renderEditor();
@@ -219,12 +226,15 @@ async function _renderGrid(q) {
   const grid = document.getElementById('st-grid');
   if (!grid) return;
   const studioSlugs = await _studioSlugSet();
+  const active = _casts.find(c => c.id === _activeCast);
   const ql = (q || '').toLowerCase();
   const list = _roster().filter(p => !ql || p.name.toLowerCase().includes(ql) || (p.archetype || '').includes(ql));
   grid.innerHTML = list.map(p => {
     const col = ARCH_COLOR[p.archetype] || '#64748b';
     const mine = studioSlugs.has(p.slug);
-    return `<button type="button" class="st-card${_draft && _draft.slug === p.slug ? ' sel' : ''}" data-slug="${_esc(p.slug)}">
+    const member = active && active.slugs.includes(p.slug);
+    return `<button type="button" class="st-card${_draft && _draft.slug === p.slug ? ' sel' : ''}${member ? ' member' : ''}" data-slug="${_esc(p.slug)}">
+      ${active ? `<span class="st-star${member ? ' on' : ''}" data-slug="${_esc(p.slug)}" role="button" title="Toggle in ${_esc(active.name)}">${member ? '★' : '☆'}</span>` : ''}
       <img src="${_esc(_avatarSrc(p.slug))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
       <span class="st-card-name">${_esc(p.name)}</span>
       <span class="st-card-arch" style="--c:${col}">${_esc(p.archetype || '—')}</span>
@@ -232,6 +242,7 @@ async function _renderGrid(q) {
     </button>`;
   }).join('') || `<p class="st-empty">No matches.</p>`;
   grid.querySelectorAll('.st-card').forEach(b => b.addEventListener('click', () => _editBySlug(b.dataset.slug)));
+  grid.querySelectorAll('.st-star').forEach(s => s.addEventListener('click', ev => { ev.stopPropagation(); _toggleMember(s.dataset.slug); }));
 }
 
 function _renderBalance() {
@@ -514,6 +525,120 @@ async function _delete() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// CASTS — named collections you compose, then load into a season
+// ═══════════════════════════════════════════════════════════════════════
+function _gridRefresh() { _renderGrid(document.getElementById('st-search')?.value || ''); }
+
+function _renderCasts() {
+  const el = document.getElementById('st-casts');
+  if (!el) return;
+  const active = _casts.find(c => c.id === _activeCast);
+  el.innerHTML =
+    `<div class="st-casts-row">
+       <span class="st-casts-lab">Casts</span>
+       ${_casts.map(c => `<button type="button" class="st-cast-chip${c.id === _activeCast ? ' active' : ''}" data-id="${c.id}">${_esc(c.name)}<span class="st-cast-n">${c.slugs.length}</span></button>`).join('')}
+       <button type="button" class="st-cast-chip st-cast-new" id="st-cast-new">＋ New cast</button>
+     </div>
+     ${active ? `<div class="st-cast-actions">
+        <span class="st-cast-title">${_esc(active.name)} · ${active.slugs.length} member${active.slugs.length === 1 ? '' : 's'} <span class="st-hint">— star characters below to add them</span></span>
+        <span class="st-cast-btns">
+          <button type="button" class="st-btn st-sm st-primary" id="st-cast-load">Load into season</button>
+          <button type="button" class="st-btn st-sm" id="st-cast-rename">Rename</button>
+          <button type="button" class="st-btn st-sm st-danger" id="st-cast-del">Delete</button>
+        </span>
+      </div>` : ''}`;
+  el.querySelectorAll('.st-cast-chip[data-id]').forEach(b => b.addEventListener('click', () => {
+    _activeCast = (_activeCast === b.dataset.id) ? null : b.dataset.id;
+    _renderCasts(); _gridRefresh();
+  }));
+  el.querySelector('#st-cast-new')?.addEventListener('click', _newCast);
+  el.querySelector('#st-cast-load')?.addEventListener('click', () => _loadCastIntoSeason(active));
+  el.querySelector('#st-cast-rename')?.addEventListener('click', () => _renameCast(active));
+  el.querySelector('#st-cast-del')?.addEventListener('click', () => _deleteCast(active));
+}
+
+async function _newCast() {
+  const name = (prompt('Name this cast:', '') || '').trim();
+  if (!name) return;
+  const cast = { id: 'c' + Math.random().toString(36).slice(2, 9), name, slugs: [] };
+  _casts.push(cast); _activeCast = cast.id;
+  try { await _idbPut('casts', cast); } catch {}
+  _renderCasts(); _gridRefresh();
+}
+async function _renameCast(c) {
+  if (!c) return;
+  const n = (prompt('Rename cast:', c.name) || '').trim();
+  if (!n) return;
+  c.name = n; try { await _idbPut('casts', c); } catch {}
+  _renderCasts();
+}
+async function _deleteCast(c) {
+  if (!c || !confirm(`Delete cast "${c.name}"? (Characters themselves are not deleted.)`)) return;
+  _casts = _casts.filter(x => x.id !== c.id);
+  if (_activeCast === c.id) _activeCast = null;
+  try { await _idbDel('casts', c.id); } catch {}
+  _renderCasts(); _gridRefresh();
+}
+async function _toggleMember(slug) {
+  const c = _casts.find(x => x.id === _activeCast);
+  if (!c) return;
+  const i = c.slugs.indexOf(slug);
+  if (i >= 0) c.slugs.splice(i, 1); else c.slugs.push(slug);
+  try { await _idbPut('casts', c); } catch {}
+  _renderCasts(); _gridRefresh();
+}
+function _memberToPlayer(r) {
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    name: r.name, baseSlug: r.slug, slug: r.slug, tribe: '',
+    gender: r.gender || 'nb',
+    sexuality: (r.sexuality && r.sexuality !== 'straight') ? r.sexuality : undefined,
+    archetype: r.archetype || '', stats: { ...r.stats },
+    isReturnee: false,
+  };
+}
+function _loadCastIntoSeason(cast) {
+  if (!cast) return;
+  const members = cast.slugs.map(s => _roster().find(p => p.slug === s)).filter(Boolean);
+  if (!members.length) { _toast('This cast has no members yet — star some characters first', 'warn'); return; }
+  const cur = (window.players || []);
+  if (cur.length && !confirm(`Replace the current season cast (${cur.length} player${cur.length === 1 ? '' : 's'}) with "${cast.name}" (${members.length})?`)) return;
+  const arr = members.map(_memberToPlayer);
+  try { window.players = arr; } catch {}
+  try { window.saveCast && window.saveCast(); } catch {}
+  try { window.refreshReturneeAvatars && window.refreshReturneeAvatars(arr); } catch {}
+  try { window.renderCast && window.renderCast(); } catch {}
+  _toast(`Loaded "${cast.name}" — ${arr.length} into the season cast`, 'ok');
+  studioExit(); // drop to Build Cast so they see the loaded lineup
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// EXPORT FOR REPO — merged files, works with or without the server
+// ═══════════════════════════════════════════════════════════════════════
+function _dl(name, text) {
+  const b = new Blob([text], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function _dlDataUri(name, uri) { const a = document.createElement('a'); a.href = uri; a.download = name; a.click(); }
+
+async function _exportRepo() {
+  // 1) franchise_roster.json — full current pool
+  _dl('franchise_roster.json', JSON.stringify({ players: _roster() }, null, 2) + '\n');
+  // 2) voice-profiles.json — base file merged with studio voices
+  let base = { profiles: {} };
+  try { base = await (await fetch('voice-profiles.json', { cache: 'no-store' })).json(); } catch {}
+  if (!base.profiles) base.profiles = {};
+  const chars = await _idbAll('characters');
+  chars.forEach(c => { if (c.voice) base.profiles[c.name] = c.voice; });
+  _dl('voice-profiles.json', JSON.stringify(base, null, 2) + '\n');
+  // 3) avatar PNGs for studio-created characters
+  let n = 0;
+  chars.forEach(c => { if (c.avatarDataUri) { _dlDataUri(c.slug + '.png', c.avatarDataUri); n++; } });
+  _toast(`Exported roster + voices${n ? ` + ${n} avatar${n === 1 ? '' : 's'}` : ''}. Drop into the repo and commit.`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // global avatar fallback: any assets/avatars/<slug>.png that 404s and has a
 // studio data URI swaps to it — one handler instead of editing 6 call sites.
 // ═══════════════════════════════════════════════════════════════════════
@@ -557,6 +682,20 @@ function _injectCSS() {
   .st-balance{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
   .st-chip{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted,#9a9);background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:999px;padding:3px 9px}
   .st-chip-warn{color:#e5843e}
+  .st-casts{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .st-casts-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .st-casts-lab{font-size:11px;font-weight:700;color:var(--muted,#9a9);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .st-cast-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:999px;color:inherit;font:inherit;font-size:12px;padding:5px 11px;cursor:pointer}
+  .st-cast-chip:hover{border-color:var(--accent,#f4b23e)}
+  .st-cast-chip.active{background:var(--accent,#f4b23e);color:#151119;font-weight:700;border-color:transparent}
+  .st-cast-n{font-family:ui-monospace,monospace;font-size:10px;opacity:.7}
+  .st-cast-new{border-style:dashed;color:var(--muted,#9a9)}
+  .st-cast-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px;padding:8px 10px}
+  .st-cast-title{font-size:12px;font-weight:600}
+  .st-cast-btns{display:flex;gap:6px;flex-wrap:wrap}
+  .st-star{position:absolute;top:4px;left:4px;z-index:2;font-size:15px;line-height:1;color:var(--muted,#889);text-shadow:0 1px 3px rgba(0,0,0,.7);cursor:pointer}
+  .st-star.on{color:var(--accent,#f4b23e)}
+  .st-card.member{border-color:var(--accent,#f4b23e)}
   .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
   .st-card{position:relative;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:12px;padding:8px 6px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;color:inherit}
   .st-card:hover{border-color:var(--accent,#f4b23e)}

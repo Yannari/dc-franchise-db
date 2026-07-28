@@ -4,7 +4,7 @@
       "name": "Alejandro",
       "slug": "alejandro",
       "gender": "m",
-      "archetype": "schemer",
+      "archetype": "mastermind",
       "stats": {
         "physical": 8,
         "endurance": 8,
@@ -15,7 +15,8 @@
         "boldness": 9,
         "intuition": 10,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Amy",
@@ -2769,16 +2770,17 @@
       "gender": "m",
       "archetype": "showmancer",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
+        "physical": 7,
+        "endurance": 6,
         "mental": 5,
-        "social": 9,
+        "social": 7,
         "strategic": 6,
         "loyalty": 5,
-        "boldness": 8,
+        "boldness": 9,
         "intuition": 4,
         "temperament": 5
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Obi",
@@ -2819,18 +2821,19 @@
       "name": "Doug",
       "slug": "doug",
       "gender": "m",
-      "archetype": "loyal-soldier",
+      "archetype": "goat",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 4,
+        "physical": 3,
+        "endurance": 3,
+        "mental": 5,
         "social": 5,
-        "strategic": 3,
-        "loyalty": 9,
+        "strategic": 4,
+        "loyalty": 10,
         "boldness": 2,
         "intuition": 4,
-        "temperament": 3
-      }
+        "temperament": 7
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Jeremiah",
@@ -2855,16 +2858,17 @@
       "gender": "f",
       "archetype": "villain",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
+        "physical": 4,
+        "endurance": 4,
         "mental": 7,
         "social": 9,
         "strategic": 9,
         "loyalty": 2,
-        "boldness": 7,
+        "boldness": 8,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Dameira",
@@ -2890,15 +2894,15 @@
       "sexuality": "bi",
       "archetype": "perceptive-player",
       "stats": {
-        "physical": 5,
+        "physical": 6,
         "endurance": 6,
-        "mental": 8,
-        "social": 9,
-        "strategic": 9,
-        "loyalty": 4,
+        "mental": 6,
+        "social": 7,
+        "strategic": 7,
+        "loyalty": 6,
         "boldness": 6,
-        "intuition": 8,
-        "temperament": 6
+        "intuition": 6,
+        "temperament": 4
       }
     },
     {
@@ -2906,16 +2910,16 @@
       "slug": "drea",
       "gender": "f",
       "sexuality": "lesbian",
-      "archetype": "wildcard",
+      "archetype": "hothead",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
-        "mental": 6,
+        "physical": 6,
+        "endurance": 4,
+        "mental": 5,
         "social": 4,
-        "strategic": 5,
+        "strategic": 4,
         "loyalty": 8,
-        "boldness": 6,
-        "intuition": 7,
+        "boldness": 7,
+        "intuition": 6,
         "temperament": 4
       }
     },
@@ -2942,16 +2946,16 @@
       "slug": "natasha",
       "gender": "f",
       "sexuality": "bi",
-      "archetype": "hero",
+      "archetype": "social-butterfly",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 5,
-        "social": 10,
-        "strategic": 3,
+        "physical": 5,
+        "endurance": 5,
+        "mental": 6,
+        "social": 9,
+        "strategic": 5,
         "loyalty": 8,
-        "boldness": 8,
-        "intuition": 5,
+        "boldness": 7,
+        "intuition": 6,
         "temperament": 7
       }
     }

@@ -325,6 +325,9 @@ async function _rosterPublish() {
   } finally {
     if (btn) btn.disabled = false;
     _updatePublishBtn();
+    // Re-derive from the repo rather than trusting the call: this is what turns
+    // a failed publish into something visible instead of a missed toast.
+    _refreshPublishStatus();
   }
 }
 
@@ -437,6 +440,46 @@ async function _syncSeasonData() {
   }
 }
 
+/**
+ * Ask the site whether it matches the database, and say so in a line that
+ * stays on screen. A publish that silently failed shows up here on the next
+ * look, instead of only in a toast you had to catch.
+ */
+async function _refreshPublishStatus() {
+  const el = document.getElementById('st-pubstatus');
+  if (!el) return;
+  if (!_apiBase()) { el.textContent = ''; return; }
+  el.textContent = 'checking the site…';
+  el.className = 'st-pubstatus';
+  try {
+    const r = await fetch(_apiUrl('/api/roster/status'), { cache: 'no-store' });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'status failed');
+
+    if (j.inSync) {
+      el.className = 'st-pubstatus ok';
+      el.textContent = `✓ site matches the database — ${j.publishedCount} characters published`;
+    } else {
+      const bits = [];
+      if (j.added.length) bits.push(`${j.added.length} new`);
+      if (j.changed.length) bits.push(`${j.changed.length} edited`);
+      if (j.removed.length) bits.push(`${j.removed.length} removed`);
+      el.className = 'st-pubstatus warn';
+      el.textContent = `● ${j.pending} unpublished change${j.pending === 1 ? '' : 's'} (${bits.join(', ')}) — press Publish`;
+      el.title = [
+        j.added.length ? 'new: ' + j.added.join(', ') : '',
+        j.changed.length ? 'edited: ' + j.changed.join(', ') : '',
+        j.removed.length ? 'removed: ' + j.removed.join(', ') : '',
+      ].filter(Boolean).join('\n');
+    }
+    _d1Dirty = !j.inSync;
+    _updatePublishBtn();
+  } catch (e) {
+    el.className = 'st-pubstatus warn';
+    el.textContent = `couldn't check the site (${e.message})`;
+  }
+}
+
 function _updatePublishBtn() {
   const btn = document.getElementById('st-publish');
   if (!btn) return;
@@ -481,6 +524,7 @@ export function renderStudio() {
            <button type="button" id="st-sync" class="st-btn" title="Rebuild the season/ranking tables in the database from the repo JSON. Run this after exporting a finished season.">🔄 Sync season data</button>
            <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
          </div>
+         <div id="st-pubstatus" class="st-pubstatus"></div>
          <div id="st-retired-panel" hidden></div>
          <div id="st-casts" class="st-casts"></div>
          <div id="st-balance" class="st-balance"></div>
@@ -507,6 +551,7 @@ export function renderStudio() {
   });
   _updatePublishBtn();
   _updateNeverBtn();
+  _refreshPublishStatus();      // answers "did my last publish land?"
   _renderCasts();
   _renderGrid(_rosterQuery);
   _renderBalance();
@@ -1370,6 +1415,7 @@ async function _save() {
   if (wrote) bits.push(`${wrote.length} repo file${wrote.length === 1 ? '' : 's'}`);
   if (!bits.length) bits.push(_serverUp ? 'saved' : 'browser-only — run serve.py or deploy the Worker');
   _toast(`${d.name} saved — ${bits.join(' + ')}`, 'ok');
+  _refreshPublishStatus();
   if (note) {
     note.textContent = savedToDb ? '✓ saved — press Publish to push it to the site' : '✓ live in the cast pool';
     note.className = 'st-save-note ok';
@@ -1413,6 +1459,7 @@ async function _delete() {
   _draft = _blankChar();
   renderStudio();
   _toast(msg + ' — press Publish to update the site', 'ok');
+  _refreshPublishStatus();
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1578,6 +1625,10 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
+  /* publish status — derived from the site, not remembered */
+  .st-pubstatus{font-size:11.5px;margin:0 0 10px;min-height:15px;color:var(--muted,#9a9)}
+  .st-pubstatus.ok{color:#4ade80}
+  .st-pubstatus.warn{color:#f4b23e;cursor:help}
   /* archetype filter — colour-coded chips, kept tight so they cost few rows */
   .st-archbar{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 11px}
   .st-arch{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-left:3px solid var(--c,#64748b);

@@ -54,7 +54,7 @@ export default {
     // origin (including localhost during development). The studio write
     // endpoint keeps the strict ALLOWED_ORIGIN check.
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
-                          '/api/roster', '/api/live-season'];
+                          '/api/roster', '/api/roster/status', '/api/live-season'];
     const isPublicRead = PUBLIC_READS.includes(url.pathname);
     const rcors = isPublicRead ? { ...cors, 'Access-Control-Allow-Origin': '*' } : cors;
 
@@ -82,6 +82,10 @@ export default {
       // GET is public; every write requires the studio token.
       if (request.method === 'GET' && url.pathname === '/api/roster') {
         return json(await rosterList(env, url.searchParams), 200, rcors, 60);
+      }
+      // "did my publish land?" — derived, so it can be re-checked any time.
+      if (request.method === 'GET' && url.pathname === '/api/roster/status') {
+        return json(await rosterStatus(env), 200, rcors, 0);
       }
       if (request.method === 'POST' && url.pathname.startsWith('/api/roster')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
@@ -413,6 +417,42 @@ async function rosterUnretire(env, payload) {
     "UPDATE roster SET retired = 0, updated_at = datetime('now') WHERE slug = ?").bind(slug).run();
   if (!r.meta || !r.meta.changes) throw httpErr(`no character with slug "${slug}"`, 404);
   return { ok: true, action: 'unretired', slug };
+}
+
+/**
+ * Is the site actually up to date?
+ *
+ * Compares what a publish WOULD write against what franchise_roster.json
+ * currently holds, so the answer is derived rather than remembered. A toast can
+ * be missed and a failed publish leaves no trace; this can be re-checked at any
+ * time, from any device.
+ */
+async function rosterStatus(env) {
+  const { results } = await db(env).prepare(
+    'SELECT * FROM roster WHERE retired = 0 ORDER BY rowid').all();
+  const live = (results || []).map(rosterRowToJson);
+
+  const file = await getFile(env, ROSTER_PATH);
+  const published = file ? (decodeJson(file.content).players || []) : [];
+
+  const liveBy = new Map(live.map(p => [p.slug, JSON.stringify(p)]));
+  const pubBy = new Map(published.map(p => [p.slug, JSON.stringify(p)]));
+
+  const added = [...liveBy.keys()].filter(s => !pubBy.has(s));
+  const removed = [...pubBy.keys()].filter(s => !liveBy.has(s));
+  const changed = [...liveBy.keys()].filter(s => pubBy.has(s) && pubBy.get(s) !== liveBy.get(s));
+
+  const pending = added.length + removed.length + changed.length;
+  return {
+    ok: true,
+    inSync: pending === 0,
+    pending,
+    liveCount: live.length,
+    publishedCount: published.length,
+    added: added.slice(0, 20),
+    removed: removed.slice(0, 20),
+    changed: changed.slice(0, 20),
+  };
 }
 
 /**

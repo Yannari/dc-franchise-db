@@ -126,6 +126,70 @@ const RU_HTML = `      <!-- ═════════════════�
         <div id="ru-preview-output" style="display: none;"></div>
       </div>`;
 
+// ── Draft persistence ────────────────────────────────────────────────
+// The Legacy tab rebuilds itself whenever you leave and come back, and a
+// refresh throws the DOM away entirely. Everything typed here is expensive to
+// re-enter, so it's kept in localStorage and only cleared by Start over.
+const RU_DRAFT_KEY = 'ru_draft';
+const _ruVal = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+/** Snapshot raw input values by position — no per-field mapping to drift. */
+function _ruSnapshot() {
+  const rows = [...document.querySelectorAll('#ru-placements-body tr')].map(tr => ({
+    t: [...tr.querySelectorAll('input[type=text]')].map(i => i.value),
+    n: [...tr.querySelectorAll('input[type=number]')].map(i => i.value),
+    c: [...tr.querySelectorAll('input[type=checkbox]')].map(i => i.checked),
+  })).filter(r => r.t.some(v => String(v).trim()) || r.n.some(v => String(v).trim()) || r.c.some(Boolean));
+
+  const out = document.getElementById('ru-preview-output');
+  return {
+    rows,
+    seasonNum: _ruVal('ru-season-num'),
+    castSize: _ruVal('ru-cast-size'),
+    coWinner: _ruVal('ru-co-winner'),
+    previewOpen: !!(out && out.style.display !== 'none' && out.innerHTML.trim()),
+  };
+}
+
+function _ruSave() {
+  try {
+    const snap = _ruSnapshot();
+    if (!snap.rows.length) localStorage.removeItem(RU_DRAFT_KEY);
+    else localStorage.setItem(RU_DRAFT_KEY, JSON.stringify(snap));
+  } catch {}
+}
+
+let _ruSaveTimer = null;
+function _ruSaveSoon() { clearTimeout(_ruSaveTimer); _ruSaveTimer = setTimeout(_ruSave, 300); }
+
+/** Rebuild the table from the saved draft. Returns the draft, or null. */
+function _ruRestore() {
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(RU_DRAFT_KEY) || 'null'); } catch {}
+  if (!draft || !Array.isArray(draft.rows) || !draft.rows.length) return null;
+
+  const body = document.getElementById('ru-placements-body');
+  if (!body) return null;
+  body.innerHTML = '';
+  rowCount = 0;
+  draft.rows.forEach(() => addRow());
+
+  [...body.querySelectorAll('tr')].forEach((tr, i) => {
+    const r = draft.rows[i];
+    if (!r) return;
+    [...tr.querySelectorAll('input[type=text]')].forEach((inp, j) => { if (r.t[j] !== undefined) inp.value = r.t[j]; });
+    [...tr.querySelectorAll('input[type=number]')].forEach((inp, j) => { if (r.n[j] !== undefined) inp.value = r.n[j]; });
+    [...tr.querySelectorAll('input[type=checkbox]')].forEach((inp, j) => { if (r.c[j] !== undefined) inp.checked = !!r.c[j]; });
+  });
+
+  ['ru-season-num', 'ru-cast-size', 'ru-co-winner'].forEach((id, k) => {
+    const el = document.getElementById(id);
+    const v = [draft.seasonNum, draft.castSize, draft.coWinner][k];
+    if (el && v !== undefined && v !== '') el.value = v;
+  });
+  return draft;
+}
+
 /** Paint the tool into a host element and wire it up. */
 export function renderRankingsUpdate(host) {
   if (!host) return;
@@ -133,7 +197,14 @@ export function renderRankingsUpdate(host) {
   ruInit();
   document.getElementById('ru-use-current-btn')?.addEventListener('click', _ruUseCurrentSeason);
   document.getElementById('ru-reset-btn')?.addEventListener('click', _ruReset);
-  _ruAutoLoad();
+
+  // Any edit anywhere in the card is worth saving.
+  host.addEventListener('input', _ruSaveSoon);
+  host.addEventListener('change', _ruSaveSoon);
+
+  const draft = _ruRestore();
+  // The preview needs the rankings database, which arrives asynchronously.
+  _ruAutoLoad().then(() => { if (draft && draft.previewOpen) { try { buildPreview(); } catch {} } });
 }
 
 /**
@@ -142,8 +213,9 @@ export function renderRankingsUpdate(host) {
  * only be slower.
  */
 function _ruReset() {
-  if (!confirm('Clear the placements table and the preview?\n\nThe rankings database stays loaded. Nothing published or downloaded is affected.')) return;
+  if (!confirm('Clear the placements table and the preview?\n\nThis is the only thing that discards what you have typed — refreshing or switching tabs keeps it. The rankings database stays loaded.')) return;
 
+  try { localStorage.removeItem(RU_DRAFT_KEY); } catch {}
   const body = document.getElementById('ru-placements-body');
   if (body) body.innerHTML = '';
   rowCount = 0;
@@ -159,7 +231,8 @@ function _ruReset() {
   if (seasonStatus) { seasonStatus.textContent = 'No season file loaded'; seasonStatus.style.color = ''; }
 }
 
-/** Pull rankings_database.json straight from the site — no file picker. */
+/** Pull rankings_database.json straight from the site — no file picker.
+ *  Returns a promise so callers can wait for the database before previewing. */
 async function _ruAutoLoad() {
   const status = document.getElementById('ru-load-status');
   try {
@@ -236,6 +309,7 @@ function _ruUseCurrentSeason() {
 
     const vote = (tmpl.winner && tmpl.winner.vote) || '';
     say('Loaded from the simulator — ' + filled.join(' · ') + (vote ? ' · final vote ' + vote : ''));
+    _ruSave();                       // filled programmatically — no input event fires
   } catch (e) {
     say('Could not read the current season: ' + e.message, true);
   }
@@ -511,6 +585,7 @@ function buildPreview() {
 function renderPreview(results, seasonNum, castSize) {
   const out = document.getElementById('ru-preview-output');
   out.style.display = 'block';
+  setTimeout(_ruSave, 0);        // remember that the preview was open
 
   const newPlayers  = results.filter(r=>r.isNew);
   const tierChanges = results.filter(r=>r.tierChanged&&!r.isNew);

@@ -78,6 +78,37 @@ function _sourceBadge(season) {
 // ══════════════════════════════════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════════════════════════════════
+// Which Legacy sub-view is open. Module-level so it survives the rebuilds that
+// happen whenever a franchise action re-renders the tab.
+let _frView = 'history';
+let _frRankingsLoaded = false;
+
+function _frSetView(view) {
+  _frView = view;
+  const host = document.getElementById('tab-franchise');
+  if (!host) return;
+  host.querySelectorAll('.fr-view').forEach(v => { v.hidden = v.dataset.view !== view; });
+  host.querySelectorAll('.fr-view-tab').forEach(b => {
+    const on = b.dataset.view === view;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  if (view === 'rankings') _frLoadRankings();
+}
+
+/** The rankings tool is a separate module — only fetch it when it's opened. */
+function _frLoadRankings() {
+  const host = document.getElementById('fr-rankings-update');
+  if (!host || _frRankingsLoaded) return;
+  _frRankingsLoaded = true;
+  import('./rankings-update.js')
+    .then(m => m.renderRankingsUpdate(host))
+    .catch(e => {
+      _frRankingsLoaded = false;
+      host.innerHTML = `<p class="fr-legacy-empty">Rankings tool failed to load: ${_esc(e.message)}</p>`;
+    });
+}
+
 export function renderFranchiseTab() {
   const host = document.getElementById('tab-franchise');
   if (!host) return;
@@ -86,24 +117,37 @@ export function renderFranchiseTab() {
   // .fr-wrap is the scrolling container — preserve its position across rebuilds
   // so actions mid-page (toggles, locks, deletes) don't fling the user to the top.
   const prevScroll = host.querySelector('.fr-wrap')?.scrollTop || 0;
+  // Three franchise-scale views behind sub-tabs. Everything here spans seasons,
+  // so it belongs in Legacy — but as one scroll it was far too long.
   host.innerHTML = `<div class="fr-wrap"><div class="fr-shell">
     ${_renderHeader()}
-    ${_renderTimeline()}
-    ${_renderHallOfFame()}
-    ${_renderTrophyCase()}
-    ${_renderCareers()}
-    ${_renderScout()}
-    ${_renderBriefing()}
-    ${_renderDropzone()}
-    ${_renderPulse()}
-    <div id="fr-rankings-update" class="fr-card"></div>
+    <nav class="fr-views" role="tablist">
+      ${[['history', '🏛️ History'], ['briefing', '🎟️ Returnee Briefing'], ['rankings', '📊 Rankings']]
+        .map(([k, label]) => `<button class="fr-view-tab${_frView === k ? ' active' : ''}"
+          data-view="${k}" role="tab" aria-selected="${_frView === k}">${label}</button>`).join('')}
+    </nav>
+    <div class="fr-view" data-view="history"${_frView === 'history' ? '' : ' hidden'}>
+      ${_renderTimeline()}
+      ${_renderHallOfFame()}
+      ${_renderTrophyCase()}
+      ${_renderCareers()}
+      ${_renderScout()}
+      ${_renderDropzone()}
+      ${_renderPulse()}
+    </div>
+    <div class="fr-view" data-view="briefing"${_frView === 'briefing' ? '' : ' hidden'}>
+      ${_renderBriefing()}
+    </div>
+    <div class="fr-view" data-view="rankings"${_frView === 'rankings' ? '' : ' hidden'}>
+      <div id="fr-rankings-update"></div>
+    </div>
   </div></div>`;
+
+  host.querySelectorAll('.fr-view-tab').forEach(b =>
+    b.addEventListener('click', () => _frSetView(b.dataset.view)));
+
   frBriefingPopulate();   // async — fills the Returnee Briefing checkbox grid
-  // End-of-season rankings live here because they are franchise-wide: every
-  // player, every season. Loaded lazily so the tab doesn't pay for it on open.
-  import('./rankings-update.js')
-    .then(m => m.renderRankingsUpdate(document.getElementById('fr-rankings-update')))
-    .catch(e => console.warn('[legacy] rankings updater failed to load:', e));
+  if (_frView === 'rankings') _frLoadRankings();
   if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
 }
 
@@ -620,6 +664,18 @@ const _LEGACY_CSS = `
 .fr-pill-lock { font-size: 11px; margin-right: -2px; }
 .fr-pill-locked.active { box-shadow: 0 0 0 1px var(--accent-gold), 0 0 16px -4px var(--accent-gold); border-color: var(--accent-gold); color: var(--accent-gold); }
 .fr-btn-locked { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+/* Legacy sub-tabs */
+.fr-views { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 16px;
+  border-bottom: 1px solid var(--border, #333); }
+.fr-view-tab { background: none; border: 1px solid transparent; border-bottom: none;
+  border-radius: 9px 9px 0 0; color: var(--muted, #9a9); cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 700; margin-bottom: -1px; padding: 9px 16px;
+  transition: background .16s, color .16s; }
+.fr-view-tab:hover { color: inherit; background: rgba(255,255,255,.06); }
+.fr-view-tab.active { color: inherit; background: var(--surface, #1c1c22);
+  border-color: var(--border, #333); }
+.fr-view[hidden] { display: none; }
 
 /* Hall of Fame */
 .fr-hof-gallery { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }

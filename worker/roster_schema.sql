@@ -33,3 +33,14 @@ CREATE TABLE IF NOT EXISTS roster (
 
 -- Casting screens list living characters alphabetically; keep that path fast.
 CREATE INDEX IF NOT EXISTS idx_roster_active ON roster (retired, name);
+
+-- Tombstones: characters deliberately deleted from the pool.
+-- Publishing overwrites franchise_roster.json, so it has to tell "you deleted
+-- this on purpose" apart from "this never made it into the database" (a
+-- half-failed save). Without that distinction publish either blocks every
+-- legitimate delete, or silently deletes characters it shouldn't.
+CREATE TABLE IF NOT EXISTS roster_deleted (
+  slug       TEXT PRIMARY KEY,
+  name       TEXT,
+  deleted_at TEXT
+);

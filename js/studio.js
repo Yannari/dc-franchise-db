@@ -251,17 +251,26 @@ async function _rosterPull() {
   }
 }
 
-/** Upsert one character into D1. Throws on failure so callers can report it. */
+/** Upsert one character into D1. Throws on failure so callers can report it.
+ *  The error carries the HTTP status — a silent failure here once caused a
+ *  character to be published away, so make it diagnosable. */
 async function _rosterPush(entry, voiceText) {
-  const r = await fetch(_apiUrl('/api/roster'), {
-    method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ ...entry, voice: voiceText || '' }),
-  });
-  const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'roster write failed');
+  let r, body;
+  try {
+    r = await fetch(_apiUrl('/api/roster'), {
+      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ ...entry, voice: voiceText || '' }),
+    });
+  } catch (netErr) {
+    throw new Error(`network error reaching /api/roster (${netErr.message})`);
+  }
+  try { body = await r.json(); } catch { body = null; }
+  if (!r.ok || !body || !body.ok) {
+    throw new Error(`${r.status} ${(body && body.error) || r.statusText || 'roster write failed'}`);
+  }
   _d1Dirty = true;
   _updatePublishBtn();
-  return j;
+  return body;
 }
 
 /** Publish D1 -> franchise_roster.json + voice-profiles.json (a git commit). */

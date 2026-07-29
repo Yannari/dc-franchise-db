@@ -84,7 +84,7 @@ export default {
         if (url.pathname === '/api/roster')          return json(await rosterSave(env, body), 200, cors);
         if (url.pathname === '/api/roster/delete')   return json(await rosterDelete(env, body), 200, cors);
         if (url.pathname === '/api/roster/unretire') return json(await rosterUnretire(env, body), 200, cors);
-        if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env), 200, cors);
+        if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env, body), 200, cors);
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
       }
       // ── standalone avatar add / delete (token-guarded) ────────────────────
@@ -327,6 +327,10 @@ async function rosterSave(env, payload) {
     payload.retired ? 1 : 0,
   ).run();
 
+  // Re-creating a previously deleted slug clears its tombstone, otherwise
+  // publish would still treat their absence as intentional.
+  await d.prepare('DELETE FROM roster_deleted WHERE slug = ?').bind(slug).run();
+
   return { ok: true, slug, name, created: !existing };
 }
 
@@ -353,6 +357,11 @@ async function rosterDelete(env, payload) {
   }
 
   await d.prepare('DELETE FROM roster WHERE slug = ?').bind(slug).run();
+  // Tombstone it so publish knows this removal was intentional.
+  await d.prepare(
+    `INSERT INTO roster_deleted (slug, name, deleted_at) VALUES (?, ?, datetime('now'))
+     ON CONFLICT(slug) DO UPDATE SET name=excluded.name, deleted_at=excluded.deleted_at`
+  ).bind(slug, row.name).run();
   return { ok: true, action: 'deleted', slug, name: row.name, seasons };
 }
 
@@ -370,16 +379,43 @@ async function rosterUnretire(env, payload) {
  * commit both to GitHub. Retired characters are excluded from the published
  * roster (that is what retiring means) but remain in D1.
  */
-async function rosterPublish(env) {
-  const { results } = await db(env).prepare(
+async function rosterPublish(env, payload = {}) {
+  const d = db(env);
+  const { results } = await d.prepare(
     'SELECT * FROM roster WHERE retired = 0 ORDER BY rowid').all();
   const rows = results || [];
   if (!rows.length) throw new ValidationError('roster is empty — refusing to publish an empty file');
 
   const wrote = [];
+  const rosterFile = await getFile(env, ROSTER_PATH);
+
+  // SAFETY: publishing overwrites franchise_roster.json wholesale. If someone
+  // is in the published file but NOT in D1 — because a save half-failed, or
+  // another tool wrote the JSON directly — a blind publish would delete them.
+  // Refuse unless the removal was intentional (they're retired) or forced.
+  if (rosterFile && !payload.force) {
+    const currentDoc = decodeJson(rosterFile.content);
+    const live = new Set(rows.map(r => r.slug));
+    const retiredRows = await d.prepare('SELECT slug FROM roster WHERE retired = 1').all();
+    const retired = new Set((retiredRows.results || []).map(r => r.slug));
+    const goneRows = await d.prepare('SELECT slug FROM roster_deleted').all();
+    const deleted = new Set((goneRows.results || []).map(r => r.slug));
+
+    // Removing someone is fine if you retired or deleted them on purpose.
+    // Anything else means the database never heard about them.
+    const wouldRemove = (currentDoc.players || [])
+      .map(p => p.slug)
+      .filter(s => s && !live.has(s) && !retired.has(s) && !deleted.has(s));
+
+    if (wouldRemove.length) {
+      return {
+        ok: true, action: 'blocked', wouldRemove,
+        message: `Publishing would remove ${wouldRemove.length} character(s) that are in the published roster but not in the database: ${wouldRemove.join(', ')}. They were probably added while a database write was failing.`,
+      };
+    }
+  }
 
   const rosterDoc = { players: rows.map(rosterRowToJson) };
-  const rosterFile = await getFile(env, ROSTER_PATH);
   await putFile(env, ROSTER_PATH, encodeJson(rosterDoc),
     `studio: publish roster (${rows.length} characters)`, rosterFile && rosterFile.sha);
   wrote.push(ROSTER_PATH);

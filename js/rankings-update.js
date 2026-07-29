@@ -115,6 +115,7 @@ const RU_HTML = `      <!-- ═════════════════�
             </table>
           </div>
           <button id="ru-add-row-btn" class="btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); font-size: 13px; padding: 6px 14px;">+ Add Row</button>
+          <button id="ru-reset-btn" class="btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); font-size: 13px; padding: 6px 14px;" title="Empty the table and clear the preview so you can start again.">↺ Start over</button>
         </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
@@ -131,7 +132,31 @@ export function renderRankingsUpdate(host) {
   host.innerHTML = RU_HTML;
   ruInit();
   document.getElementById('ru-use-current-btn')?.addEventListener('click', _ruUseCurrentSeason);
+  document.getElementById('ru-reset-btn')?.addEventListener('click', _ruReset);
   _ruAutoLoad();
+}
+
+/**
+ * Empty the table and clear the preview. The rankings database stays loaded —
+ * that came from the site, not from anything you typed, and reloading it would
+ * only be slower.
+ */
+function _ruReset() {
+  if (!confirm('Clear the placements table and the preview?\n\nThe rankings database stays loaded. Nothing published or downloaded is affected.')) return;
+
+  const body = document.getElementById('ru-placements-body');
+  if (body) body.innerHTML = '';
+  rowCount = 0;
+  pendingUpdated = null;
+  addRow();                                   // leave one blank row to type into
+
+  const out = document.getElementById('ru-preview-output');
+  if (out) { out.innerHTML = ''; out.style.display = 'none'; }
+  const apply = document.getElementById('ru-apply-btn');
+  if (apply) apply.style.display = 'none';
+
+  const seasonStatus = document.getElementById('ru-season-load-status');
+  if (seasonStatus) { seasonStatus.textContent = 'No season file loaded'; seasonStatus.style.color = ''; }
 }
 
 /** Pull rankings_database.json straight from the site — no file picker. */
@@ -464,7 +489,8 @@ function buildPreview() {
 
     results.push({
       name:row.name, placement:row.placement, isWinner, isNew:wasNew, isFinalist,
-      oldScore, newScore, oldTier, newTier,
+      oldScore, currentScore: existing ? (existing.score ?? null) : null,
+      newScore, oldTier, newTier,
       tierChanged: oldTier!==newTier,
       delta: oldScore!==null ? newScore-oldScore : null,
       breakdown: parts.join(' \u2502 '),
@@ -498,7 +524,13 @@ function renderPreview(results, seasonNum, castSize) {
       (r.isWinner?' \ud83d\udc51':'') +
       (r.row.override?' <span style="font-size:10px;color:#fbbf24;" title="' + r.overrideReason + '">[override]</span>':'') +
     '</td>' +
-    '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore!==null?r.oldScore:'\u2014') + '</td>' +
+    // The baseline is the MEAN of every past season score, not the player's
+    // current score \u2014 Bowie sitting on 94 with a history of [94, 99] shows 96.5
+    // here. Show the live score underneath so the two can't be confused.
+    '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore!==null?r.oldScore:'\u2014') +
+      (r.currentScore!==null && r.currentScore!==undefined && r.currentScore!==r.oldScore
+        ? '<div style="font-size:10px;opacity:0.7;">now ' + r.currentScore + '</div>' : '') +
+    '</td>' +
     '<td style="padding:7px 10px;text-align:center;font-weight:700;color:' + tierColor(r.newTier) + ';">' + r.newScore + '</td>' +
     '<td style="padding:7px 10px;text-align:center;font-weight:600;color:' + dc(r.delta) + ';">' + ds(r.delta) + '</td>' +
     '<td style="padding:7px 10px;text-align:center;">' +
@@ -527,9 +559,9 @@ function renderPreview(results, seasonNum, castSize) {
         '<thead><tr style="background:rgba(255,255,255,0.05);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.65;">' +
           '<th style="padding:8px 10px;text-align:left;">Place</th>' +
           '<th style="padding:8px 10px;text-align:left;">Player</th>' +
-          '<th style="padding:8px 10px;text-align:center;" title="Average of all previous season scores">Avg</th>' +
+          '<th style="padding:8px 10px;text-align:center;" title="Career average \u2014 the mean of every past season score. This is the baseline the change is measured from, NOT the player\'s current score, which is shown under it when they differ.">Career avg</th>' +
           '<th style="padding:8px 10px;text-align:center;">New</th>' +
-          '<th style="padding:8px 10px;text-align:center;">\u0394</th>' +
+          '<th style="padding:8px 10px;text-align:center;" title="New score minus the career average">\u0394</th>' +
           '<th style="padding:8px 10px;text-align:center;">Tier</th>' +
           '<th style="padding:8px 10px;text-align:left;">Modifiers</th>' +
         '</tr></thead>' +

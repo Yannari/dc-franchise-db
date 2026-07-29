@@ -359,7 +359,7 @@ function av(slug){ return `<img src="assets/avatars/${slug}.png" onerror="this.s
 document.querySelectorAll('[data-img]').forEach(el=>{ el.innerHTML=av(el.getAttribute('data-img')); });
 // host cards
 const host=['bridgette','duncan']; // placeholder, host avatar
-document.getElementById('host1').innerHTML = `<span class="ba-iav big"><img src="assets/avatars/chris.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>C</b></span><div class="ba-name">Chris</div>`;
+document.getElementById('host1').innerHTML = `<span class="ba-iav big"><img src="assets/avatars/chris-mclean.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>C</b></span><div class="ba-name">Chris</div>`;
 // lineup
 const crew=['bridgette','owen','alejandro','duncan','courtney','heather','leshawna','gwen','noah','trent','geoff'];
 document.getElementById('lineup').innerHTML = crew.map(s=>`<span class="ba-iav">${av(s)}</span>`).join('');

@@ -2298,7 +2298,7 @@ function _buildClimbMap(ep) {
   return `<div class="bb-map-wrap"><div class="bb-map-climb">
     <div class="bb-statue-base"></div>
     <div class="bb-statue-body"></div>
-    <div class="bb-statue-head"><img src="assets/avatars/chris.png" onerror="this.style.display='none'"></div>
+    <div class="bb-statue-head"><img src="assets/avatars/chris-mclean.png" onerror="this.style.display='none'"></div>
     <div class="bb-halo"></div>
     <div class="bb-arm bb-arm-l"></div>
     <div class="bb-arm bb-arm-r"></div>
@@ -2843,7 +2843,7 @@ export function rpBuildBBTitleCard(ep) {
       <div style="position:relative;z-index:2">
         <div style="position:relative;display:inline-block">
           <div class="bb-title-statue-halo"></div>
-          <div class="bb-title-statue-head"><img src="assets/avatars/chris.png" onerror="this.style.display='none'"></div>
+          <div class="bb-title-statue-head"><img src="assets/avatars/chris-mclean.png" onerror="this.style.display='none'"></div>
         </div>
         <div class="bb-title-statue-body">
           <div class="bb-title-statue-arm bb-title-statue-arm-l"></div>

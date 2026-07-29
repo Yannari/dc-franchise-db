@@ -540,10 +540,12 @@ let _avQuery = '';
 
 // Avatars that nothing in the roster points at, but that the CODE loads by
 // name. Deleting these silently breaks challenges, so they count as in use.
+// chef.png/chris.png used to be byte-identical copies of these two, kept only
+// because challenge code loaded the short names. The code points here now, so
+// they are protected on their own account: deleting the roster character would
+// otherwise make these look unused while three challenge VPs still load them.
 const RESERVED_AVATARS = new Map([
-  ['chef', 'Chef — loaded by challenge code'],
   ['chef-hatchet', 'Chef — loaded by challenge code'],
-  ['chris', 'Host — loaded by challenge code'],
   ['chris-mclean', 'Host — loaded by challenge code'],
   ['slasher', 'Slasher Night challenge'],
 ]);

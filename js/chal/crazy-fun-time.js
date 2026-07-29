@@ -2408,7 +2408,7 @@ export function rpBuildCFTVerdict(ep) {
 
   // Chef intro
   steps.push(`<div class="cft-chef-intro">
-    <img class="cft-av cft-av-xl" style="border-color:var(--cft-amber);" src="assets/avatars/chef.png" alt="Chef Hatchet">
+    <img class="cft-av cft-av-xl" style="border-color:var(--cft-amber);" src="assets/avatars/chef-hatchet.png" alt="Chef Hatchet">
     <div class="cft-chef-speech">
       "Alright maggots, I've watched your little candy commercials. Let me tell you what I REALLY think..."
     </div>

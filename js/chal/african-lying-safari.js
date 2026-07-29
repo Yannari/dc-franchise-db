@@ -1761,7 +1761,7 @@ function _av(name, size = '') {
 }
 
 function _chefAv(size = '') {
-  return `<span class="als-av als-chef-av ${size}"><img src="assets/avatars/chef.png" alt="Chef Hatchet"></span>`;
+  return `<span class="als-av als-chef-av ${size}"><img src="assets/avatars/chef-hatchet.png" alt="Chef Hatchet"></span>`;
 }
 
 function _evAvatars(ev) {

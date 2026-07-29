@@ -1163,10 +1163,25 @@ export function frBriefingCount() {
 }
 
 export function frBriefingCheckCast() {
-  const cast = new Set((window.players || []).filter(p => p.isReturnee).map(p => p.name));
-  if (!cast.size) (window.players || []).forEach(p => cast.add(p.name)); // no returnee flags — take whole cast
+  const players = window.players || [];
+  const flagged = players.filter(p => p.isReturnee).map(p => p.name);
+  const wholeCast = flagged.length === 0;          // no returnee flags on this cast
+  const cast = new Set(wholeCast ? players.map(p => p.name) : flagged);
   document.querySelectorAll('.fr-brief-cb').forEach(cb => { cb.checked = cast.has(cb.value); });
   frBriefingCount();
+
+  const st = document.getElementById('fr-brief-status');
+  if (!cast.size) { if (st) st.textContent = 'No cast loaded'; return; }
+
+  // Ticking the boxes was only ever half the job, so write them straight away.
+  // The exception is a cast with no returnee flags: that selects EVERYONE, and
+  // firing an AI call per player would be an expensive surprise. Select, and
+  // let them press Generate deliberately.
+  if (wholeCast) {
+    if (st) st.textContent = `${cast.size} selected — no returnees flagged, so this is the whole cast. Press Generate History to write them.`;
+    return;
+  }
+  frGenerateBriefing();
 }
 
 export function frBriefingClear() {

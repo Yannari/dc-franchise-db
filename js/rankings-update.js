@@ -153,20 +153,66 @@ async function _ruAutoLoad() {
   }
 }
 
-/** Fill the table from the season currently loaded in the simulator. */
+/**
+ * A shared win is either two players sitting on placement 1, or a final vote
+ * whose top two counts are equal — S8's 4-4 tie is the case that matters.
+ * Co-winners take a 0.75x win bonus, so getting this wrong skews their score.
+ */
+function _ruDetectCoWin(tmpl) {
+  const firsts = (tmpl.placements || []).filter(p => Number(p.placement) === 1).length;
+  if (firsts > 1) return true;
+  const counts = String((tmpl.winner && tmpl.winner.vote) || '')
+    .split('-').map(n => parseInt(n, 10)).filter(Number.isFinite);
+  if (counts.length >= 2) {
+    const sorted = [...counts].sort((a, b) => b - a);
+    if (sorted[0] === sorted[1]) return true;
+  }
+  return false;
+}
+
+/** Fill the whole form from the season currently loaded in the simulator. */
 function _ruUseCurrentSeason() {
   const status = document.getElementById('ru-season-load-status');
+  const say = (msg, bad) => {
+    if (!status) return;
+    status.textContent = msg;
+    status.style.color = bad ? '#e5843e' : '#4ade80';
+  };
   try {
-    const tmpl = extractSeasonTemplate();
-    if (!tmpl || !(tmpl.placements || []).length) throw new Error('no finished season in the simulator');
-    loadSeasonData(tmpl);
-    const num = document.getElementById('ru-season-num');
-    if (num && tmpl.seasonNumber) num.value = tmpl.seasonNumber;
-  } catch (e) {
-    if (status) {
-      status.textContent = 'Could not read the current season: ' + e.message;
-      status.style.color = '#e5843e';
+    // extractSeasonTemplate() assumes a played season; with an empty simulator
+    // it throws from deep inside. Translate that into something actionable
+    // rather than surfacing "cannot read properties of undefined".
+    let tmpl;
+    try {
+      tmpl = extractSeasonTemplate();
+    } catch {
+      throw new Error('no season is loaded in the simulator — run or load one first');
     }
+    const placements = (tmpl && tmpl.placements) || [];
+    if (!placements.length) throw new Error('that season has no results yet — play it through the finale first');
+
+    loadSeasonData(tmpl);                       // fills the placements table
+
+    // Season Info, derived rather than typed
+    const filled = [];
+    const numEl = document.getElementById('ru-season-num');
+    if (numEl && tmpl.seasonNumber) { numEl.value = tmpl.seasonNumber; filled.push('S' + tmpl.seasonNumber); }
+
+    const castEl = document.getElementById('ru-cast-size');
+    const cast = Number(tmpl.castSize) || placements.length;
+    if (castEl && cast) { castEl.value = cast; filled.push(cast + ' players'); }
+
+    const coEl = document.getElementById('ru-co-winner');
+    if (coEl) {
+      const co = _ruDetectCoWin(tmpl);
+      coEl.value = co ? 'yes' : 'no';
+      if (co) filled.push('shared win detected');
+    }
+
+    const vote = (tmpl.winner && tmpl.winner.vote) || '';
+    say('Loaded from the simulator — ' + filled.join(' · ') + (vote ? ' · final vote ' + vote : ''));
+  } catch (e) {
+    say('Could not read the current season: ' + e.message, true);
   }
 }
 

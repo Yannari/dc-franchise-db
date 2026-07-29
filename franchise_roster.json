@@ -2911,6 +2911,24 @@
         "temperament": 7
       },
       "sexuality": "bi"
+    },
+    {
+      "name": "Aaron",
+      "slug": "aaron",
+      "gender": "nb",
+      "sexuality": "straight",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 5,
+        "social": 2,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 5,
+        "temperament": 5
+      }
     }
   ]
 }

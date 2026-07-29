@@ -2915,7 +2915,7 @@
     {
       "name": "Aaron",
       "slug": "aaron",
-      "gender": "nb",
+      "gender": "m",
       "archetype": "wildcard",
       "stats": {
         "physical": 7,

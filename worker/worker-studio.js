@@ -271,7 +271,14 @@ function rosterRowToJson(r) {
 
 async function rosterList(env, params) {
   const includeRetired = params.get('includeRetired') === '1';
-  const sql = `SELECT * FROM roster ${includeRetired ? '' : 'WHERE retired = 0'} ORDER BY rowid`;
+  // seasonCount lets the Studio show who has never actually played — a
+  // question the flat JSON couldn't answer without cross-referencing by hand.
+  const sql = `
+    SELECT r.*,
+           (SELECT COUNT(*) FROM appearances a WHERE a.player_id = r.slug) AS season_count
+    FROM roster r
+    ${includeRetired ? '' : 'WHERE r.retired = 0'}
+    ORDER BY r.rowid`;
   const { results } = await db(env).prepare(sql).all();
   return {
     ok: true,
@@ -280,6 +287,7 @@ async function rosterList(env, params) {
       ...rosterRowToJson(r),
       voice: r.voice || '',
       retired: !!r.retired,
+      seasonCount: r.season_count || 0,
       updatedAt: r.updated_at,
     })),
   };

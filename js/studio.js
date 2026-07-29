@@ -232,6 +232,12 @@ async function _pingServer() {
 // ═══════════════════════════════════════════════════════════════════════
 let _d1Up = false;          // did the last roster pull succeed?
 let _d1Dirty = false;       // unpublished D1 changes exist
+let _seasonCounts = new Map();   // slug -> seasons played (from D1)
+let _rosterFilter = 'all';       // all | never  (never = no season history)
+
+// Hosts live in the roster but never compete, so they'd always look "never
+// played". Keep them out of that filter so a cleanup sweep can't bin them.
+const RESERVED_CHARACTERS = new Set(['chef', 'chef-hatchet', 'chris', 'chris-mclean']);
 
 /** Pull the roster from D1 into the in-memory pool. Returns true on success. */
 async function _rosterPull() {
@@ -240,8 +246,11 @@ async function _rosterPull() {
     const r = await fetch(_apiUrl('/api/roster'), { cache: 'no-store' });
     const j = await r.json();
     if (!j.ok || !Array.isArray(j.players)) throw new Error(j.error || 'bad response');
+    // Keep season counts on the side: the simulator's roster shape must stay
+    // exactly what it expects, but the Studio wants to know who never played.
+    _seasonCounts = new Map(j.players.map(p => [p.slug, p.seasonCount || 0]));
     // Strip the DB-only fields the simulator doesn't expect.
-    _persistRoster(j.players.map(({ voice, retired, updatedAt, ...p }) => p));
+    _persistRoster(j.players.map(({ voice, retired, updatedAt, seasonCount, ...p }) => p));
     _d1Up = true;
     return true;
   } catch (e) {
@@ -395,6 +404,7 @@ export function renderStudio() {
          <div class="st-pool-head">
            <button type="button" id="st-new" class="st-btn st-primary">＋ New character</button>
            <input type="search" id="st-search" class="st-input" placeholder="Filter roster…">
+           <button type="button" id="st-never" class="st-btn" title="Show only characters with no season history — the ones safe to clean up.">🌱 Never played</button>
            <button type="button" id="st-retired" class="st-btn" title="Show characters that were retired instead of deleted, and bring them back.">👻 Retired</button>
            <button type="button" id="st-publish" class="st-btn" title="Regenerate franchise_roster.json + voice-profiles.json from the database.">⬆ Publish to site</button>
            <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
@@ -413,6 +423,11 @@ export function renderStudio() {
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
   panel.querySelector('#st-publish').addEventListener('click', _rosterPublish);
   panel.querySelector('#st-retired').addEventListener('click', _toggleRetiredPanel);
+  panel.querySelector('#st-never').addEventListener('click', e => {
+    _rosterFilter = _rosterFilter === 'never' ? 'all' : 'never';
+    e.currentTarget.classList.toggle('st-primary', _rosterFilter === 'never');
+    _renderGrid(document.getElementById('st-search')?.value || '');
+  });
   _updatePublishBtn();
   _renderCasts();
   _renderGrid('');
@@ -566,7 +581,13 @@ async function _renderGrid(q) {
   const studioSlugs = await _studioSlugSet();
   const active = _casts.find(c => c.id === _activeCast);
   const ql = (q || '').toLowerCase();
-  const list = _roster().filter(p => !ql || p.name.toLowerCase().includes(ql) || (p.archetype || '').includes(ql));
+  let list = _roster().filter(p => !ql || p.name.toLowerCase().includes(ql) || (p.archetype || '').includes(ql));
+
+  // "Never played" = no rows in appearances. Hosts are excluded because they
+  // never compete by design, so they would always match.
+  if (_rosterFilter === 'never') {
+    list = list.filter(p => !RESERVED_CHARACTERS.has(p.slug) && (_seasonCounts.get(p.slug) || 0) === 0);
+  }
 
   // With a cast selected, its starred members float to the top so you can see
   // and tweak the cast without hunting through 166 cards. Order within each

@@ -96,8 +96,14 @@ export function renderFranchiseTab() {
     ${_renderBriefing()}
     ${_renderDropzone()}
     ${_renderPulse()}
+    <div id="fr-rankings-update" class="fr-card"></div>
   </div></div>`;
   frBriefingPopulate();   // async — fills the Returnee Briefing checkbox grid
+  // End-of-season rankings live here because they are franchise-wide: every
+  // player, every season. Loaded lazily so the tab doesn't pay for it on open.
+  import('./rankings-update.js')
+    .then(m => m.renderRankingsUpdate(document.getElementById('fr-rankings-update')))
+    .catch(e => console.warn('[legacy] rankings updater failed to load:', e));
   if (prevScroll) { const w = host.querySelector('.fr-wrap'); if (w) w.scrollTop = prevScroll; }
 }
 

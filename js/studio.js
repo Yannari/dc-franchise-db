@@ -184,7 +184,14 @@ export async function studioInit() {
   tab.appendChild(panel);
 
   _pingServer();
+  _restoreMode();
 }
+
+// Where you were is remembered across reloads. Refreshing while building a
+// character used to drop you back on Build Cast, which is jarring when you are
+// going back and forth between the two.
+const _MODE_KEY = 'studio_cast_mode';
+function _saveMode(create) { try { localStorage.setItem(_MODE_KEY, create ? 'create' : 'cast'); } catch {} }
 
 function _setMode(create) {
   const tab = document.getElementById('tab-cast');
@@ -194,10 +201,20 @@ function _setMode(create) {
   if (bar) bar.querySelectorAll('.st-seg button').forEach(b => b.classList.toggle('active', (b.dataset.mode === 'create') === create));
 }
 
-export function studioEnter() { _setMode(true); renderStudio(); }
+export function studioEnter() { _saveMode(true); _setMode(true); renderStudio(); }
 export function studioExit() {
+  _saveMode(false);
   _setMode(false);
   try { window.renderCastRoom && window.renderCastRoom(); } catch {}
+}
+
+/** Restore the mode saved by the last visit. Called once, after the bar exists. */
+function _restoreMode() {
+  let saved = '';
+  try { saved = localStorage.getItem(_MODE_KEY) || ''; } catch {}
+  if (saved !== 'create') return;          // 'cast' is already the default
+  _setMode(true);
+  renderStudio();
 }
 
 async function _pingServer() {
@@ -444,7 +461,7 @@ export function renderStudio() {
   if (_studioView === 'avatars') {
     panel.innerHTML = tabs + '<section class="st-avatars" id="st-avatars"></section>';
     panel.querySelectorAll('.st-view').forEach(b =>
-      b.addEventListener('click', () => { _studioView = b.dataset.view; renderStudio(); }));
+      b.addEventListener('click', () => { _studioView = b.dataset.view; _saveStudioView(); renderStudio(); }));
     _renderAvatarsView();
     return;
   }
@@ -469,7 +486,7 @@ export function renderStudio() {
        <section class="st-editor" id="st-editor"></section>
      </div>`;
   panel.querySelectorAll('.st-view').forEach(b =>
-    b.addEventListener('click', () => { _studioView = b.dataset.view; renderStudio(); }));
+    b.addEventListener('click', () => { _studioView = b.dataset.view; _saveStudioView(); renderStudio(); }));
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
   panel.querySelector('#st-search').addEventListener('input', e => {
     _rosterQuery = e.target.value;
@@ -514,7 +531,10 @@ let _rosterOnce = false;
 // Used ones name the character and take a second confirm, because deleting
 // leaves a real portrait broken on the site.
 // ═══════════════════════════════════════════════════════════════════════
-let _studioView = 'roster';
+let _studioView = (() => {
+  try { return localStorage.getItem('studio_view') === 'avatars' ? 'avatars' : 'roster'; } catch { return 'roster'; }
+})();
+function _saveStudioView() { try { localStorage.setItem('studio_view', _studioView); } catch {} }
 let _avFilter = 'all';        // all | unused | used
 let _avQuery = '';
 

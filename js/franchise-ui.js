@@ -79,12 +79,21 @@ function _sourceBadge(season) {
 // RENDER
 // ══════════════════════════════════════════════════════════════════════
 // Which Legacy sub-view is open. Module-level so it survives the rebuilds that
-// happen whenever a franchise action re-renders the tab.
-let _frView = 'history';
+// happen whenever a franchise action re-renders the tab, and persisted so a
+// page refresh doesn't drop you back on History.
+const _FR_VIEW_KEY = 'fr_legacy_view';
+const _FR_VIEWS = ['history', 'briefing', 'rankings'];
+let _frView = (() => {
+  try {
+    const saved = localStorage.getItem(_FR_VIEW_KEY);
+    return _FR_VIEWS.includes(saved) ? saved : 'history';
+  } catch { return 'history'; }
+})();
 let _frRankingsLoaded = false;
 
 function _frSetView(view) {
   _frView = view;
+  try { localStorage.setItem(_FR_VIEW_KEY, view); } catch {}
   const host = document.getElementById('tab-franchise');
   if (!host) return;
   host.querySelectorAll('.fr-view').forEach(v => { v.hidden = v.dataset.view !== view; });

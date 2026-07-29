@@ -268,26 +268,46 @@ document.addEventListener('click', e => {
 
 export function saveCast() { localStorage.setItem('simulator_cast', JSON.stringify(players)); }
 export function clearCast() { if(!confirm('Clear all players?')) return; players=[]; saveCast(); cancelEdit(); renderCast(); }
+/**
+ * Wipe everything that points at cast members by name.
+ *
+ * Relationships and pre-game alliances are stored as player names, so they
+ * only mean anything for the cast they were written for. Swapping the cast
+ * used to leave them behind, pointing at people who are no longer playing.
+ * Loading a preset that carries its own relationships is different — that
+ * path replaces them wholesale in _applyPreset().
+ */
+function _clearCastScopedLinks() {
+  relationships = [];
+  saveRels();
+  preGameAlliances = [];
+  savePreAlliances();
+  if (typeof renderRelList === 'function') renderRelList();
+  if (typeof renderAllianceList === 'function') renderAllianceList();
+}
+
 export function loadS10Preset() {
-  if (players.length>0 && !confirm('Replace cast with S10 Champions vs Contenders?')) return;
+  if (players.length>0 && !confirm('Replace cast with S10 Champions vs Contenders?\n\nExisting relationships and pre-game alliances are cleared too — they name players from the old cast.')) return;
   const rosterMap = Object.fromEntries(FRANCHISE_ROSTER.map(p => [p.name, p]));
   players = S10_TRIBES.map((t,i) => {
     const r = rosterMap[t.name];
     if (!r) { console.warn('S10 preset: missing roster entry for', t.name); return null; }
     return { ...r, tribe: t.tribe, id: 's10-'+i, isReturnee: true };
   }).filter(Boolean);
+  _clearCastScopedLinks();
   seasonConfig.tribes = [{ name:'Champions', color:'#f59e0b' }, { name:'Contenders', color:'#ef4444' }];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
 }
 export function loadS9Preset() {
-  if (players.length>0 && !confirm('Replace cast with S9 Land of Powers (18 newbies)?')) return;
+  if (players.length>0 && !confirm('Replace cast with S9 Land of Powers (18 newbies)?\n\nExisting relationships and pre-game alliances are cleared too — they name players from the old cast.')) return;
   const rosterMap = Object.fromEntries(FRANCHISE_ROSTER.map(p => [p.name, p]));
   players = S9_TRIBES.map((t,i) => {
     const r = rosterMap[t.name];
     if (!r) { console.warn('S9 preset: missing roster entry for', t.name); return null; }
     return { ...r, tribe: t.tribe, id: 's9-'+i, isReturnee: false };
   }).filter(Boolean);
+  _clearCastScopedLinks();
   seasonConfig.tribes = [{ name:'Yellow', color:'#f59e0b' }, { name:'Red', color:'#ef4444' }, { name:'Blue', color:'#3b82f6' }];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
@@ -299,7 +319,7 @@ export function exportCast() {
 export function importCast(event) {
   const file = event.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = e => { try { const raw=JSON.parse(e.target.result); const data=Array.isArray(raw) ? raw : (raw.players && Array.isArray(raw.players)) ? raw.players : null; if(!data) throw new Error(); players=data; saveCast(); renderCast(); renderTribeBuilder(); renderTribeSelect(); } catch { alert('Invalid JSON file.'); } };
+  reader.onload = e => { try { const raw=JSON.parse(e.target.result); const data=Array.isArray(raw) ? raw : (raw.players && Array.isArray(raw.players)) ? raw.players : null; if(!data) throw new Error(); players=data; _clearCastScopedLinks(); saveCast(); renderCast(); renderTribeBuilder(); renderTribeSelect(); } catch { alert('Invalid JSON file.'); } };
   reader.readAsText(file); event.target.value='';
 }
 

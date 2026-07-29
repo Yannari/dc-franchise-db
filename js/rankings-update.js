@@ -13,7 +13,22 @@
 
 import { extractSeasonTemplate } from './stats-export.js';
 
-const RU_HTML = `      <!-- ══════════════════════════════════════════════════════════ -->
+// The tool was written against current-season.html, whose .btn is white-on-dark.
+// The simulator's .btn is not, so every button here rendered as black text —
+// unreadable on the translucent ones. Scope our own button styling to the card.
+const RU_CSS = `
+<style>
+#fr-rankings-update .btn {
+  color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 9px;
+  padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: filter .15s, border-color .15s;
+}
+#fr-rankings-update .btn:hover { filter: brightness(1.14); border-color: rgba(255,255,255,0.3); }
+#fr-rankings-update .btn:disabled { opacity: .6; cursor: default; filter: none; }
+#fr-rankings-update input, #fr-rankings-update select { color: #fff; }
+</style>`;
+
+const RU_HTML = RU_CSS + `      <!-- ══════════════════════════════════════════════════════════ -->
       <!-- END-OF-SEASON RANKINGS UPDATE                              -->
       <!-- ══════════════════════════════════════════════════════════ -->
       <div class="glass-card" style="padding: 24px; margin-top: 20px;" id="rankings-update-card">
@@ -115,12 +130,12 @@ const RU_HTML = `      <!-- ═════════════════�
             </table>
           </div>
           <button id="ru-add-row-btn" class="btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); font-size: 13px; padding: 6px 14px;">+ Add Row</button>
-          <button id="ru-reset-btn" class="btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); font-size: 13px; padding: 6px 14px;" title="Empty the table and clear the preview so you can start again.">↺ Start over</button>
         </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
           <button id="ru-preview-btn" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">👁️ Preview Score Changes</button>
-          <button id="ru-apply-btn" class="btn" style="background: linear-gradient(135deg, #22c55e, #16a34a); display: none;">✅ Apply & Download rankings_database.json</button>
+          <button id="ru-apply-btn" class="btn" style="background: linear-gradient(135deg, #22c55e, #16a34a); display: none;" title="Writes the AI reasoning, commits rankings_database.json and refreshes the database. Falls back to downloading the file if the site can't be reached.">✅ Apply &amp; publish to the site</button>
+          <button id="ru-reset-btn" class="btn" style="background: rgba(255,255,255,0.10);" title="Empty the table and clear the preview. This is the only thing that discards what you have typed.">↺ Start over</button>
         </div>
 
         <div id="ru-preview-output" style="display: none;"></div>
@@ -784,19 +799,59 @@ async function applyUpdates() {
   rankingsDB.rankings.forEach((p,i)=>{p.rank=i+1;});
   if (rankingsDB.metadata) rankingsDB.metadata.lastUpdated=new Date().toISOString().split('T')[0];
 
-  const blob=new Blob([JSON.stringify(rankingsDB,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='rankings_database.json'; a.click();
-  URL.revokeObjectURL(url);
+  // Publish straight to the site: the Worker commits rankings_database.json and
+  // refreshes the database from it. Downloading is the fallback, so a missing
+  // backend or a failed request never costs you the AI reasoning you just paid
+  // for \u2014 you still get the file and can commit it yourself.
+  applyBtn.textContent = '\u23f3 Publishing\u2026';
+  const published = await _ruPublish(rankingsDB, seasonNum);
+
+  let note;
+  if (published.ok) {
+    note = '\u2705 Published \u2014 rankings_database.json committed and the database refreshed. ' +
+           'The site rebuilds in about a minute.';
+  } else {
+    const blob = new Blob([JSON.stringify(rankingsDB, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'rankings_database.json'; a.click();
+    URL.revokeObjectURL(url);
+    note = '\u26a0\ufe0f Could not publish (' + published.error + ') \u2014 the file was downloaded instead. ' +
+           'Replace rankings_database.json in the repo with it and commit.';
+  }
 
   applyBtn.textContent = origText;
   applyBtn.disabled = false;
 
   document.getElementById('ru-preview-output').insertAdjacentHTML('beforeend',
-    '<div style="margin-top:12px;padding:12px 16px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;font-size:13px;color:#4ade80;">' +
-    '\u2705 rankings_database.json downloaded with AI-written reasoning \u2014 replace your existing file with this one.</div>'
+    '<div style="margin-top:12px;padding:12px 16px;background:' + (published.ok ? 'rgba(34,197,94,0.1)' : 'rgba(255,179,71,0.1)') +
+    ';border:1px solid ' + (published.ok ? 'rgba(34,197,94,0.3)' : 'rgba(255,179,71,0.35)') +
+    ';border-radius:10px;font-size:13px;color:' + (published.ok ? '#4ade80' : '#ffb347') + ';">' + note + '</div>'
   );
+}
+
+/** Hand the updated rankings to the Worker, which commits and syncs them. */
+async function _ruPublish(db, seasonNumber) {
+  let base = '', token = '';
+  try {
+    base = (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
+    token = localStorage.getItem('studio_api_token') || '';
+  } catch {}
+  if (!base) return { ok: false, error: 'no backend configured' };
+  if (!token) return { ok: false, error: 'no studio token on this device' };
+
+  try {
+    const r = await fetch(base + '/api/publish-season', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ seasonNumber, rankings: db }),
+    });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.ok) return { ok: false, error: (j && j.error) || ('HTTP ' + r.status) };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
 }
 
 // ── Season JSON auto-fill ─────────────────────────────────

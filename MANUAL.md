@@ -72,6 +72,48 @@ If the backend can't be reached, it falls back to **downloading** the files so a
 export is never lost. In that case, move them into the repo yourself, commit, and
 press **🔄 Sync season data** in the Studio.
 
+### 6. Score the season
+
+Simulator → **🏆 Legacy** → **📊 Rankings**
+
+The rankings database loads itself. Press **🎬 Use the season in the simulator** and it
+fills the placements table, the season number, the cast size, and whether the win was
+shared — a jury tie is detected from the final vote, which matters because co-winners
+take a 0.75× win bonus.
+
+Then **👁️ Preview**, check the numbers, and **✅ Apply & publish**. Apply writes the AI
+reasoning, commits `rankings_database.json` and refreshes the database. If it can't
+reach the site it downloads the file instead, so the AI writing is never lost to a
+failed request.
+
+The **Current** column is each player's established score — what the rankings show for
+them today — so Δ means "how far this season moves them".
+
+Your typed placements survive a refresh and a tab switch. **↺ Start over** is the only
+thing that clears them.
+
+---
+
+## How do I know a publish worked?
+
+The Studio shows a line above the roster that is **derived from the site**, not
+remembered from a toast:
+
+> ✓ site matches the database — 166 characters published
+
+or
+
+> ● 3 unpublished changes (2 edited, 1 new) — press Publish
+
+Hover it for the names. It refreshes on load, after every save or delete, and after a
+publish — re-reading the repo rather than trusting the response it just got. So a
+publish that silently failed shows up the next time you look, from any device.
+
+**GitHub will often say a deploy failed when it didn't.** Publishing makes *two*
+commits (roster, then voices), and Pages cancels a queued build when a newer commit
+arrives — then reports the cancelled run as "Failed to deploy". Only the last run
+matters. Trust the status line above, not the Actions tab.
+
 ---
 
 ## What each button costs
@@ -79,12 +121,40 @@ press **🔄 Sync season data** in the Studio.
 | Button | Where | Commits? | Rebuild wait? |
 |---|---|---|---|
 | Save a character | Studio | No | No |
+| Delete / retire a character | Studio | No (until you Publish) | No |
 | Upload an avatar | Studio → Avatars | **Yes** | ~1 min |
 | ⬆ Publish to site | Studio | **Yes** | ~1 min |
 | 🔴 Sync episode to site | Simulator | No | No |
 | Export Season | Simulator | **Yes** | ~1 min |
+| ✅ Apply & publish (rankings) | Legacy → Rankings | **Yes** | ~1 min |
 | 🔄 Sync season data | Studio | No | No |
-| Delete / retire a character | Studio | No (until you Publish) | No |
+
+Anything that writes a **file** commits; anything that writes only the **database**
+doesn't. Avatars commit because a PNG can't live in D1.
+
+---
+
+## Where the tools are
+
+| Tool | Where |
+|---|---|
+| Create / edit characters | Simulator → **Cast** → ＋ Create Character |
+| Avatar library | same, **🖼 Avatars** tab |
+| Build a cast, star members | Cast → Build Cast |
+| Run episodes, Export Season, 🔴 Sync episode | **Season Hub** → season controls |
+| Franchise history, Hall of Fame, import | **🏆 Legacy → 🏛️ History** |
+| Returnee briefing | **Legacy → 🎟️ Returnee Briefing** |
+| End-of-season rankings | **Legacy → 📊 Rankings** |
+| Episode writing / transcripts | `current-season.html` |
+| Leaderboards, Compare | `leaderboards.html` (Compare is a tab there) |
+
+Every tab remembers where you were, including after a refresh.
+
+**`current-season.html` no longer has a Season Setup tab.** Season Initialization, the
+Complete Season Builder, Season Progress Tracking, End-of-Season Finalization and
+Database Management were all removed — seasons come from the simulator now, and
+Export Season does what that tab used to do by hand. The rankings updater that lived
+there moved to Legacy.
 
 ---
 
@@ -102,7 +172,19 @@ returnees*. Hard-deleting someone with four seasons would leave their history al
 the site while making it impossible for them to ever return.
 
 **🌱 Never played** filters the pool to characters with no season history — your cleanup
-list. Chef and Chris are excluded: hosts never compete, so they'd always match.
+list. Chef and Chris are excluded: hosts never compete, so they'd always match. If the
+season counts haven't loaded it shows nothing and says so, rather than marking the whole
+roster as never-played — that list drives deletions, so a wrong answer is worse than none.
+
+The **archetype chips** filter too, sorted biggest first and re-sorted whenever a count
+changes. Their counts and shares are of what's currently in front of you, so they stack
+with the search box and the never-played filter rather than describing the library in
+the abstract.
+
+**Swapping the cast clears relationships.** Loading the S9 or S10 cast, or importing a
+cast file, wipes relationships and pre-game alliances — they're stored as player names
+and mean nothing for a different cast. Loading a *saved preset* is different: that
+carries its own relationships and replaces them wholesale.
 
 ---
 
@@ -121,10 +203,18 @@ Studio → **🖼 Avatars** tab.
 by name rather than through a roster entry, and both are reported as in use:
 
 - `<slug>-returnee.png` — the alternate portrait the returnee system looks for
-- `chef`, `chris`, `Slasher` — loaded directly by challenge code
+- `chef-hatchet`, `chris-mclean`, `Slasher` — loaded directly by challenge code
 
 Deleting removes a real file from the repo. It stays in git history, but it's gone from
 the site until you put it back.
+
+> **Before deleting an avatar, don't trust a filename search.** Several places build the
+> path from a name — `assets/avatars/${slugify(name)}.png` — so the file never appears
+> literally in the source. And these `<img>` tags hide themselves on error, so a wrong
+> path doesn't throw; the portrait just stops appearing. The check that works is to
+> enumerate every `assets/avatars/${…}` expression and ask what values that variable can
+> take. (There used to be duplicate `chef.png` / `chris.png` copies for exactly this
+> reason; they were folded into the roster slugs above.)
 
 ---
 
@@ -154,6 +244,20 @@ from scratch every time, so retrying always converges.
 The character is in your browser and possibly the repo, but not the database. Fix the
 cause (usually connectivity), then save again *before* publishing. This is the failure
 the publish guard above protects you from.
+
+**"Could not publish (…) — the file was downloaded instead"** (rankings)
+Apply had already generated the AI reasoning, so rather than lose it the file was
+downloaded. Drop `rankings_database.json` into the repo and commit it. Nothing was
+half-written.
+
+**"Season history hasn't loaded, so 'never played' can't be worked out"**
+The season counts come from the database and that call failed. The filter shows nothing
+on purpose — with an empty count map every character looks unplayed, and that list is a
+deletion list. Reload once the Worker is reachable.
+
+**"no season is loaded in the simulator"** (rankings)
+🎬 Use the season in the simulator needs a played season in memory. Load a save or run
+one first, or fill the table by hand.
 
 ---
 
@@ -325,7 +429,8 @@ only humans open can be organised freely.**
 | `live_season`, `live_meta` | temporary | Sync episode; cleared when the season is published |
 
 **Public endpoints** (no token, readable from anywhere):
-`/api/roster`, `/api/live-season`, `/api/leaderboard`, `/api/relationships`, `/api/stats`
+`/api/roster`, `/api/roster/status`, `/api/live-season`, `/api/leaderboard`,
+`/api/relationships`, `/api/stats`
 
 `/api/ping` and `/api/avatars` also need no token, but are restricted to the site's own
 origin, so they only work from the Studio — not from another site or a plain browser tab.

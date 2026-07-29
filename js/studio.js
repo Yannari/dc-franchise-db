@@ -752,8 +752,13 @@ function _renderArchBar(list) {
   const total = list.length || 1;
   const title = a => a.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  // Biggest first. This runs on every grid render, so the order re-shuffles by
+  // itself the moment a count changes — save a character as a mastermind and
+  // they climb past social-butterfly without anything else having to happen.
+  // Ties fall back to alphabetical so equal counts don't swap places at random.
   const chips = ARCHETYPES
     .filter(a => counts[a] || _archFilter === a)
+    .sort((x, y) => (counts[y] || 0) - (counts[x] || 0) || x.localeCompare(y))
     .map(a => {
       const n = counts[a] || 0;
       const on = _archFilter === a;

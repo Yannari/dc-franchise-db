@@ -374,7 +374,22 @@ export function renderStudio() {
   const panel = document.getElementById('studio-panel');
   if (!panel) return;
   if (!_draft) _draft = _blankChar();
-  panel.innerHTML =
+
+  const tabs =
+    `<nav class="st-views">
+       <button type="button" class="st-view${_studioView === 'roster' ? ' on' : ''}" data-view="roster">👥 Roster</button>
+       <button type="button" class="st-view${_studioView === 'avatars' ? ' on' : ''}" data-view="avatars">🖼 Avatars</button>
+     </nav>`;
+
+  if (_studioView === 'avatars') {
+    panel.innerHTML = tabs + '<section class="st-avatars" id="st-avatars"></section>';
+    panel.querySelectorAll('.st-view').forEach(b =>
+      b.addEventListener('click', () => { _studioView = b.dataset.view; renderStudio(); }));
+    _renderAvatarsView();
+    return;
+  }
+
+  panel.innerHTML = tabs +
     `<div class="st-wrap">
        <section class="st-pool">
          <div class="st-pool-head">
@@ -391,6 +406,8 @@ export function renderStudio() {
        </section>
        <section class="st-editor" id="st-editor"></section>
      </div>`;
+  panel.querySelectorAll('.st-view').forEach(b =>
+    b.addEventListener('click', () => { _studioView = b.dataset.view; renderStudio(); }));
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
   panel.querySelector('#st-search').addEventListener('input', e => _renderGrid(e.target.value));
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
@@ -416,6 +433,129 @@ export function renderStudio() {
 }
 let _rosterOnce = false;
 
+// ═══════════════════════════════════════════════════════════════════════
+// AVATAR MANAGEMENT VIEW
+//
+// An avatar is "used" when a roster character has that slug. Unused files are
+// safe to bin — nothing points at them — so they delete with one confirm.
+// Used ones name the character and take a second confirm, because deleting
+// leaves a real portrait broken on the site.
+// ═══════════════════════════════════════════════════════════════════════
+let _studioView = 'roster';
+let _avFilter = 'all';        // all | unused | used
+let _avQuery = '';
+
+// Avatars that nothing in the roster points at, but that the CODE loads by
+// name. Deleting these silently breaks challenges, so they count as in use.
+const RESERVED_AVATARS = new Map([
+  ['chef', 'Chef — loaded by challenge code'],
+  ['chef-hatchet', 'Chef — loaded by challenge code'],
+  ['chris', 'Host — loaded by challenge code'],
+  ['chris-mclean', 'Host — loaded by challenge code'],
+  ['slasher', 'Slasher Night challenge'],
+]);
+
+/** slug -> who/what uses it. Absent means genuinely orphaned. */
+const _avUsedBy = () => {
+  const m = new Map();
+  const roster = _roster();
+  const slugs = new Set(roster.map(p => p.slug).filter(Boolean));
+  for (const p of roster) if (p.slug) m.set(p.slug, p.name || p.slug);
+
+  for (const s of _avatarList) {
+    if (m.has(s)) continue;
+    // "<slug>-returnee.png" is the alternate portrait the returnee system uses
+    const base = s.replace(/-returnee$/, '');
+    if (base !== s && slugs.has(base)) {
+      const owner = roster.find(p => p.slug === base);
+      m.set(s, `${owner ? owner.name : base} — returnee art`);
+      continue;
+    }
+    const reserved = RESERVED_AVATARS.get(s.toLowerCase());
+    if (reserved) m.set(s, reserved);
+  }
+  return m;
+};
+
+async function _renderAvatarsView() {
+  const box = document.getElementById('st-avatars');
+  if (!box) return;
+  box.innerHTML = '<p class="st-empty">Loading avatars…</p>';
+
+  if (!_avatarList.length) {
+    try {
+      const r = await fetch(_apiUrl('/api/avatars'), { cache: 'no-store', headers: _apiHeaders() });
+      _avatarList = (await r.json()).avatars || [];
+    } catch {}
+  }
+  if (!_avatarList.length) _avatarList = _roster().map(p => p.slug).filter(Boolean);
+
+  box.innerHTML =
+    `<div class="st-av-bar">
+       <button type="button" class="st-btn st-primary" id="st-av-add">＋ Add avatar</button>
+       <input type="file" id="st-av-file" accept="image/*" hidden>
+       <input type="search" class="st-input st-av-search" id="st-av-q" placeholder="Search avatars…" autocomplete="off">
+       <div class="st-av-filters">
+         ${[['all', 'All'], ['unused', 'Unused'], ['used', 'In use']].map(([k, label]) =>
+           `<button type="button" class="st-av-f${_avFilter === k ? ' on' : ''}" data-f="${k}">${label}</button>`).join('')}
+       </div>
+     </div>
+     <p class="st-av-count" id="st-av-count"></p>
+     <div class="st-av-grid" id="st-av-grid"></div>`;
+
+  const file = box.querySelector('#st-av-file');
+  box.querySelector('#st-av-add').addEventListener('click', () => file.click());
+  file.addEventListener('change', () => _libAddFile(file));
+  box.querySelector('#st-av-q').addEventListener('input', e => { _avQuery = e.target.value; _renderAvatarGrid(); });
+  box.querySelectorAll('.st-av-f').forEach(b =>
+    b.addEventListener('click', () => { _avFilter = b.dataset.f; _renderAvatarsView(); }));
+
+  box.addEventListener('click', e => {
+    const del = e.target.closest('.st-av-del');
+    if (del) { e.stopPropagation(); _libDeleteFile(del.dataset.s); }
+  });
+
+  _renderAvatarGrid();
+}
+
+function _renderAvatarGrid() {
+  const grid = document.getElementById('st-av-grid');
+  const count = document.getElementById('st-av-count');
+  if (!grid) return;
+
+  const used = _avUsedBy();
+  const q = _avQuery.trim().toLowerCase();
+  const shown = _avatarList
+    .filter(s => !q || s.toLowerCase().includes(q))
+    .filter(s => _avFilter === 'all' || (_avFilter === 'used' ? used.has(s) : !used.has(s)))
+    .sort((a, b) => a.localeCompare(b));
+
+  const total = _avatarList.length;
+  const unusedTotal = _avatarList.filter(s => !used.has(s)).length;
+  if (count) {
+    count.textContent = `${shown.length} shown · ${total} avatar${total === 1 ? '' : 's'} total · ` +
+      `${unusedTotal} unused${unusedTotal ? ' (safe to delete)' : ''}`;
+  }
+
+  grid.innerHTML = shown.length ? shown.map(s => {
+    const owner = used.get(s);
+    return `<div class="st-av-item${owner ? ' in-use' : ''}">
+      <span class="st-av-thumb"><img src="assets/avatars/${encodeURIComponent(s)}.png" alt="" loading="lazy"
+        onerror="this.closest('.st-av-thumb').classList.add('miss')"></span>
+      <span class="st-av-slug">${_esc(s)}</span>
+      <span class="st-av-owner">${owner ? '🔒 ' + _esc(owner) : 'unused'}</span>
+      <button type="button" class="st-btn st-av-del" data-s="${_esc(s)}"
+        title="${owner ? `${_esc(owner)} uses this — deleting needs a second confirm` : 'Delete this unused avatar'}">🗑</button>
+    </div>`;
+  }).join('') : '<p class="st-empty">No avatars match that filter.</p>';
+}
+
+/** Re-render whichever avatar surface is currently open. */
+function _afterAvatarChange() {
+  if (_studioView === 'avatars') _renderAvatarsView();
+  else _renderLibrary();
+}
+
 async function _studioSlugSet() {
   try { return new Set((await _idbAll('characters')).map(c => c.slug)); } catch { return new Set(); }
 }
@@ -427,6 +567,14 @@ async function _renderGrid(q) {
   const active = _casts.find(c => c.id === _activeCast);
   const ql = (q || '').toLowerCase();
   const list = _roster().filter(p => !ql || p.name.toLowerCase().includes(ql) || (p.archetype || '').includes(ql));
+
+  // With a cast selected, its starred members float to the top so you can see
+  // and tweak the cast without hunting through 166 cards. Order within each
+  // group is left alone.
+  if (active) {
+    const inCast = new Set(active.slugs);
+    list.sort((a, b) => (inCast.has(b.slug) ? 1 : 0) - (inCast.has(a.slug) ? 1 : 0));
+  }
   grid.innerHTML = list.map(p => {
     const col = ARCH_COLOR[p.archetype] || '#64748b';
     const mine = studioSlugs.has(p.slug);
@@ -870,7 +1018,7 @@ async function _libAddFile(input) {
     if (!_avatarList.includes(slug)) _avatarList.push(slug);
     _libLetter = _libLetterOf(slug);
     _libQuery = '';
-    _renderLibrary();
+    _afterAvatarChange();
     _toast(`Avatar "${slug}" ${j.replaced ? 'replaced' : 'added'} — live after the site rebuilds (~1 min)`, 'ok');
   } catch (e) {
     _toast('Avatar upload failed: ' + e.message, 'err');
@@ -881,7 +1029,14 @@ async function _libAddFile(input) {
  *  it, and we re-ask with force so you always see whose portrait breaks. */
 async function _libDeleteFile(slug) {
   if (!_apiBase()) return _toast('No backend configured — cannot delete', 'err');
-  if (!confirm(`Delete the avatar file for "${slug}"?\n\nThis removes assets/avatars/${slug}.png from your repo. It stays in git history, but disappears from the site.`)) return;
+
+  // Unused avatars are low-stakes: nothing points at them. Used ones get the
+  // owner's name up front, and the Worker still makes you confirm again.
+  const owner = _avUsedBy().get(slug);
+  const first = owner
+    ? `"${slug}" is used by ${owner}.\n\nDeleting it removes assets/avatars/${slug}.png from your repo and leaves ${owner} with no portrait. Continue?`
+    : `Delete the unused avatar "${slug}"?\n\nRemoves assets/avatars/${slug}.png from your repo. It stays in git history.`;
+  if (!confirm(first)) return;
 
   const send = force => fetch(_apiUrl('/api/avatar/delete'), {
     method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
@@ -901,7 +1056,7 @@ async function _libDeleteFile(slug) {
     _avatarList = _avatarList.filter(s => s !== slug);
     const letters = _libLetters();
     if (!letters.includes(_libLetter)) _libLetter = letters[0] || '';
-    _renderLibrary();
+    _afterAvatarChange();
     _toast(`Avatar "${slug}" deleted — gone from the site after the rebuild`, 'ok');
   } catch (e) {
     _toast('Avatar delete failed: ' + e.message, 'err');
@@ -1226,6 +1381,30 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
+  /* studio view tabs */
+  .st-views{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--border,#333)}
+  .st-view{background:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:13px;font-weight:700;margin-bottom:-1px;padding:9px 16px}
+  .st-view:hover{color:inherit;background:#ffffff0a}
+  .st-view.on{color:inherit;background:var(--surface,#1c1c22);border-color:var(--border,#333)}
+  /* avatar management view */
+  .st-av-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .st-av-search{max-width:240px}
+  .st-av-filters{display:flex;gap:4px;margin-left:auto}
+  .st-av-f{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:999px;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:11px;padding:5px 12px}
+  .st-av-f.on{background:var(--accent,#f4b23e);border-color:var(--accent,#f4b23e);color:#1a1a1a;font-weight:700}
+  .st-av-count{color:var(--muted,#9a9);font-size:11.5px;margin:0 0 10px}
+  .st-av-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  .st-av-item{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px;padding:9px;position:relative;text-align:center}
+  .st-av-item.in-use{border-color:#3f4a5a}
+  .st-av-thumb{display:block;margin:0 auto 6px;width:64px;height:64px;border-radius:50%;overflow:hidden;background:#0003}
+  .st-av-thumb img{width:100%;height:100%;object-fit:cover}
+  .st-av-thumb.miss{outline:1px dashed #e5484d55}
+  .st-av-slug{display:block;font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .st-av-owner{display:block;color:var(--muted,#9a9);font-size:10.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .st-av-item.in-use .st-av-owner{color:#8fa6c4}
+  .st-av-del{position:absolute;top:5px;right:5px;font-size:11px!important;padding:3px 7px!important;opacity:0;transition:opacity .12s}
+  .st-av-item:hover .st-av-del,.st-av-del:focus-visible{opacity:1}
+  .st-av-item:not(.in-use) .st-av-del:hover{background:#e5484d22;border-color:#e5484d;color:#ff8a8f}
   /* avatar library management */
   .st-lib-add,.st-lib-del{font-size:11px!important;padding:6px 10px!important}
   .st-lib-del.on{background:#e5484d22;border-color:#e5484d;color:#ff8a8f}

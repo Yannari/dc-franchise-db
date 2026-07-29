@@ -265,3 +265,8 @@ origin, so they only work from the Studio — not from another site or a plain b
 
 **Pages:** `leaderboards.html` (D1-backed; Compare is a tab there) · `devotees.html` and
 `player.html` (JSON + live overlay) · everything else reads the JSON as it always has.
+
+**Where the data files live:** the four database files (`players_database.json`,
+`seasons_database.json`, `rankings_database.json`, `franchise_database.json`) and
+`franchise_roster.json` are in the repo root. The per-season episode logs are in
+`data/seasons/`. Exporting a season commits the season file there automatically.

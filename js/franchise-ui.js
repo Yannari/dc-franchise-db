@@ -89,7 +89,6 @@ let _frView = (() => {
     return _FR_VIEWS.includes(saved) ? saved : 'history';
   } catch { return 'history'; }
 })();
-let _frRankingsLoaded = false;
 
 function _frSetView(view) {
   _frView = view;
@@ -105,15 +104,23 @@ function _frSetView(view) {
   if (view === 'rankings') _frLoadRankings();
 }
 
-/** The rankings tool is a separate module — only fetch it when it's opened. */
+/**
+ * The rankings tool is a separate module — only fetch it when it's opened.
+ *
+ * The "already loaded" mark lives on the host ELEMENT, not in a module flag.
+ * renderFranchiseTab() rebuilds this tab on any franchise action, replacing the
+ * host with an empty div; a module flag would still read "loaded" and leave that
+ * new div blank until you switched views. A fresh element has no mark, so it
+ * refills itself. Re-importing is free — the browser caches the module.
+ */
 function _frLoadRankings() {
   const host = document.getElementById('fr-rankings-update');
-  if (!host || _frRankingsLoaded) return;
-  _frRankingsLoaded = true;
+  if (!host || host.dataset.loaded === '1') return;
+  host.dataset.loaded = '1';
   import('./rankings-update.js')
     .then(m => m.renderRankingsUpdate(host))
     .catch(e => {
-      _frRankingsLoaded = false;
+      delete host.dataset.loaded;      // let a later attempt retry
       host.innerHTML = `<p class="fr-legacy-empty">Rankings tool failed to load: ${_esc(e.message)}</p>`;
     });
 }

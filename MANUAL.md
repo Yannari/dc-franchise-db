@@ -239,6 +239,78 @@ absolute Worker URL, so those pages read the **real** airing season even locally
 
 ---
 
+## Where everything lives
+
+```
+dc-franchise-db/
+├── *.html                  ← every page of the site (these ARE the URLs)
+├── styles.css, config.js   ← loaded by every page
+│
+├── players_database.json   ← the four derived databases
+├── seasons_database.json
+├── rankings_database.json
+├── franchise_database.json
+├── franchise_roster.json   ← the roster snapshot (published from D1)
+├── voice-profiles.json
+│
+├── data/seasons/           ← per-season episode logs (season1-data.json …)
+│
+├── js/                     ← the simulator: one module per system
+│   └── chal/               ← one file per challenge
+├── css/                    ← simulator + design-system stylesheets
+├── assets/
+│   ├── avatars/            ← <slug>.png, the filename IS the slug
+│   ├── cast/               ← season cast photos
+│   └── gallery/            ← per-player image galleries
+│
+├── worker/                 ← all Cloudflare Worker code
+│   ├── worker-studio.js    ← the backend: roster, avatars, sync, publish
+│   ├── worker-episode-live.js, worker-season-live.js   ← AI writers
+│   ├── wrangler.toml       ← config + D1 binding (deploy from HERE)
+│   ├── *_schema.sql        ← table definitions, safe to re-run
+│   └── build_*_seed.py     ← rebuild D1 from the JSON
+│
+├── tools/                  ← data linters, validators, one-off fixers
+├── scripts/                ← helper scripts (gallery fetcher…)
+├── tests/                  ← vitest + playwright suites
+├── mockup/                 ← approved visual targets for challenge VPs
+├── docs/                   ← specs, design docs, plans
+├── backup/                 ← point-in-time copies of the databases
+├── DATA_SEASON/            ← source material (PDFs, spreadsheets) + roster builders
+│
+├── serve.py                ← local dev server
+├── start-sim.bat           ← double-click launchers
+├── MANUAL.md               ← this file
+├── README.md               ← project overview
+└── CLAUDE.md               ← conventions for AI assistants
+```
+
+### Why some things stay at the root
+
+Not everything at the top level is clutter — several things would break if moved:
+
+**The `.html` files are the site's URLs.** `player.html` lives at the root because it
+is literally `yannari.github.io/player.html`. Moving it into a folder changes that
+address, breaking every bookmark, every link between pages, and any link you've shared.
+
+**`styles.css` and `config.js`** are loaded by all fifteen pages with a bare relative
+path. Moving them means editing every page for no gain.
+
+**The four database JSONs and `franchise_roster.json`** are read from 12–22 places each
+— pages, the simulator, Python tools, and the Worker. There is no build step to catch a
+missed path, so a mistake wouldn't error; a page would just quietly render without its
+data. The tidiness isn't worth that. The per-season files moved into `data/seasons/`
+because only four things read them.
+
+**`package.json`, `vitest.config.js`, `playwright.config.js`** are found at the root by
+their tools by convention.
+
+**`serve.py` and the `.bat` launchers** are what you double-click, and the test config
+points at `serve.py` by path.
+
+The rule of thumb: **things the browser or a tool addresses by path stay put; things
+only humans open can be organised freely.**
+
 ## Reference
 
 **Worker:** `https://dc-studio.yannari19.workers.dev` (source: `worker/worker-studio.js`)

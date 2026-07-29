@@ -84,7 +84,7 @@ describe('game-first redesign compatibility', () => {
 
   it('preserves simulator → current-season → Worker payload contracts', () => {
     const currentSeason = readFileSync(join(process.cwd(), 'current-season.html'), 'utf8');
-    const worker = readFileSync(join(process.cwd(), 'worker-episode-live.js'), 'utf8');
+    const worker = readFileSync(join(process.cwd(), 'worker', 'worker-episode-live.js'), 'utf8');
 
     expect(currentSeason).toContain('function _simulatedEpisodeRows(payload)');
     expect(currentSeason).toContain('payload?.gs?.episodeHistory ? payload.gs : payload');

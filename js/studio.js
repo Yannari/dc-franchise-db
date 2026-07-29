@@ -233,7 +233,11 @@ async function _pingServer() {
 let _d1Up = false;          // did the last roster pull succeed?
 let _d1Dirty = false;       // unpublished D1 changes exist
 let _seasonCounts = new Map();   // slug -> seasons played (from D1)
+// Pool filters live in state, not in the DOM. renderStudio() rebuilds the whole
+// panel (clicking a character does exactly that), so anything held only as a
+// class or an input value is silently lost while the filter itself stays on.
 let _rosterFilter = 'all';       // all | never  (never = no season history)
+let _rosterQuery = '';           // the search box text
 
 // Hosts live in the roster but never compete, so they'd always look "never
 // played". Keep them out of that filter so a cleanup sweep can't bin them.
@@ -302,6 +306,27 @@ async function _rosterPublish() {
     if (btn) btn.disabled = false;
     _updatePublishBtn();
   }
+}
+
+/** How many characters have never played? null when D1 hasn't answered yet. */
+function _neverPlayedCount() {
+  if (!_seasonCounts.size) return null;
+  return _roster().filter(p =>
+    !RESERVED_CHARACTERS.has(p.slug) && (_seasonCounts.get(p.slug) || 0) === 0).length;
+}
+
+/** Paint the Never-played button from state. Must run after every render. */
+function _updateNeverBtn() {
+  const btn = document.getElementById('st-never');
+  if (!btn) return;
+  const on = _rosterFilter === 'never';
+  const n = _neverPlayedCount();
+  btn.textContent = `🌱 Never played${n == null ? '' : ` (${n})`}${on ? ' ✓' : ''}`;
+  btn.classList.toggle('st-primary', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.title = on
+    ? 'Filter is ON — showing only characters with no season history. Click to show everyone.'
+    : 'Show only characters with no season history — the ones safe to clean up.';
 }
 
 /** Show/hide the retired list. Retired characters are hidden from casting but
@@ -429,8 +454,8 @@ export function renderStudio() {
        <section class="st-pool">
          <div class="st-pool-head">
            <button type="button" id="st-new" class="st-btn st-primary">＋ New character</button>
-           <input type="search" id="st-search" class="st-input" placeholder="Filter roster…">
-           <button type="button" id="st-never" class="st-btn" title="Show only characters with no season history — the ones safe to clean up.">🌱 Never played</button>
+           <input type="search" id="st-search" class="st-input" placeholder="Filter roster…" value="${_esc(_rosterQuery)}">
+           <button type="button" id="st-never" class="st-btn" aria-pressed="false">🌱 Never played</button>
            <button type="button" id="st-retired" class="st-btn" title="Show characters that were retired instead of deleted, and bring them back.">👻 Retired</button>
            <button type="button" id="st-publish" class="st-btn" title="Regenerate franchise_roster.json + voice-profiles.json from the database.">⬆ Publish to site</button>
            <button type="button" id="st-sync" class="st-btn" title="Rebuild the season/ranking tables in the database from the repo JSON. Run this after exporting a finished season.">🔄 Sync season data</button>
@@ -446,19 +471,23 @@ export function renderStudio() {
   panel.querySelectorAll('.st-view').forEach(b =>
     b.addEventListener('click', () => { _studioView = b.dataset.view; renderStudio(); }));
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
-  panel.querySelector('#st-search').addEventListener('input', e => _renderGrid(e.target.value));
+  panel.querySelector('#st-search').addEventListener('input', e => {
+    _rosterQuery = e.target.value;
+    _renderGrid(_rosterQuery);
+  });
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
   panel.querySelector('#st-sync').addEventListener('click', _syncSeasonData);
   panel.querySelector('#st-publish').addEventListener('click', _rosterPublish);
   panel.querySelector('#st-retired').addEventListener('click', _toggleRetiredPanel);
-  panel.querySelector('#st-never').addEventListener('click', e => {
+  panel.querySelector('#st-never').addEventListener('click', () => {
     _rosterFilter = _rosterFilter === 'never' ? 'all' : 'never';
-    e.currentTarget.classList.toggle('st-primary', _rosterFilter === 'never');
-    _renderGrid(document.getElementById('st-search')?.value || '');
+    _updateNeverBtn();
+    _renderGrid(_rosterQuery);
   });
   _updatePublishBtn();
+  _updateNeverBtn();
   _renderCasts();
-  _renderGrid('');
+  _renderGrid(_rosterQuery);
   _renderBalance();
   _renderEditor();
 
@@ -468,9 +497,10 @@ export function renderStudio() {
     _rosterOnce = true;
     _rosterPull().then(ok => {
       if (!ok) return;
-      _renderGrid(document.getElementById('st-search')?.value || '');
+      _renderGrid(_rosterQuery);
       _renderBalance();
       _renderCasts();
+      _updateNeverBtn();          // the count is only known once D1 answers
     });
   }
 }
@@ -613,8 +643,14 @@ async function _renderGrid(q) {
 
   // "Never played" = no rows in appearances. Hosts are excluded because they
   // never compete by design, so they would always match.
+  //
+  // Season counts come from D1. If that pull failed the map is empty, and
+  // filtering on it would mark EVERY character as never-played — a confidently
+  // wrong list you might then delete from. Show nothing and say why instead.
   if (_rosterFilter === 'never') {
-    list = list.filter(p => !RESERVED_CHARACTERS.has(p.slug) && (_seasonCounts.get(p.slug) || 0) === 0);
+    list = _seasonCounts.size
+      ? list.filter(p => !RESERVED_CHARACTERS.has(p.slug) && (_seasonCounts.get(p.slug) || 0) === 0)
+      : [];
   }
 
   // With a cast selected, its starred members float to the top so you can see
@@ -635,7 +671,12 @@ async function _renderGrid(q) {
       <span class="st-card-arch" style="--c:${col}">${_esc(p.archetype || '—')}</span>
       ${mine ? '<span class="st-card-mine" title="Created in Studio">✎</span>' : ''}
     </button>`;
-  }).join('') || `<p class="st-empty">No matches.</p>`;
+  }).join('') || `<p class="st-empty">${
+    _rosterFilter === 'never'
+      ? (_seasonCounts.size
+          ? 'No characters match — everyone here has played a season. <b>“Never played” is on</b>; click it again to show all.'
+          : 'Season history hasn\'t loaded, so “never played” can\'t be worked out. Click the button again to show everyone.')
+      : 'No matches.'}</p>`;
   grid.querySelectorAll('.st-card').forEach(b => b.addEventListener('click', () => _editBySlug(b.dataset.slug)));
   grid.querySelectorAll('.st-star').forEach(s => s.addEventListener('click', ev => { ev.stopPropagation(); _toggleMember(s.dataset.slug); }));
 }
@@ -1304,7 +1345,7 @@ async function _delete() {
 // ═══════════════════════════════════════════════════════════════════════
 // CASTS — named collections you compose, then load into a season
 // ═══════════════════════════════════════════════════════════════════════
-function _gridRefresh() { _renderGrid(document.getElementById('st-search')?.value || ''); _renderBalance(); }
+function _gridRefresh() { _renderGrid(_rosterQuery); _renderBalance(); _updateNeverBtn(); }
 
 function _renderCasts() {
   const el = document.getElementById('st-casts');

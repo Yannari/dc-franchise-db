@@ -2916,7 +2916,6 @@
       "name": "Aaron",
       "slug": "aaron",
       "gender": "nb",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 7,
@@ -2928,7 +2927,8 @@
         "boldness": 6,
         "intuition": 5,
         "temperament": 5
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

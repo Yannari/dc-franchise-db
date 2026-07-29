@@ -732,37 +732,49 @@ function _renderBalance() {
   el.innerHTML =
     `<span class="st-chip">${r.length} in pool</span>
      <span class="st-chip">♂ ${g.m || 0}</span><span class="st-chip">♀ ${g.f || 0}</span><span class="st-chip">⚧ ${g.nb || 0}</span>
-     <span class="st-chip" title="villain, mastermind and schemer archetypes across the whole library">${villains} villainous (${Math.round(villains / (r.length || 1) * 100)}%)</span>
      <span class="st-hint">Open or create a cast to analyze a lineup.</span>`;
 }
 
 /**
- * Archetype filter strip. Counts come from the list AFTER the search box and
- * the never-played filter have been applied, so they describe what is actually
- * in front of you rather than the library in the abstract — and a count of 0
- * is worth seeing, so empty archetypes stay visible but dimmed.
+ * Archetype filter, as a dropdown to keep it to one line.
+ *
+ * Counts and shares come from the list AFTER the search box and the
+ * never-played filter but BEFORE this filter, so each option says how many you
+ * would get by choosing it — and the percentage is of what is currently in
+ * front of you, not of the library in the abstract.
  */
 function _renderArchBar(list) {
   const bar = document.getElementById('st-archbar');
   if (!bar) return;
-  const counts = {};
-  list.forEach(p => { const a = p.archetype || '—'; counts[a] = (counts[a] || 0) + 1; });
 
-  const chips = ARCHETYPES.filter(a => counts[a] || _archFilter === a).map(a => {
-    const n = counts[a] || 0;
-    const on = _archFilter === a;
-    return `<button type="button" class="st-arch${on ? ' on' : ''}${n ? '' : ' empty'}" data-arch="${a}"
-      style="--c:${ARCH_COLOR[a] || '#64748b'}" title="${a}">${a.replace(/-/g, ' ')} <b>${n}</b></button>`;
-  }).join('');
+  const counts = {};
+  list.forEach(p => { const a = p.archetype; if (a) counts[a] = (counts[a] || 0) + 1; });
+  const total = list.length || 1;
+  const title = a => a.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  const opts = ARCHETYPES
+    .filter(a => counts[a] || _archFilter === a)
+    .map(a => {
+      const n = counts[a] || 0;
+      return `<option value="${a}"${_archFilter === a ? ' selected' : ''}>` +
+             `${title(a)} — ${n} (${Math.round(n / total * 100)}%)</option>`;
+    }).join('');
 
   bar.innerHTML =
-    `<button type="button" class="st-arch${_archFilter ? '' : ' on'}" data-arch="">all <b>${list.length}</b></button>` + chips;
+    `<label class="st-archlab" for="st-arch-select">Archetype</label>
+     <select id="st-arch-select" class="st-input st-archsel">
+       <option value=""${_archFilter ? '' : ' selected'}>All — ${list.length}</option>
+       ${opts}
+     </select>` +
+    (_archFilter ? `<button type="button" class="st-btn st-archclear" title="Show every archetype">✕</button>` : '');
 
-  bar.querySelectorAll('.st-arch').forEach(b => b.addEventListener('click', () => {
-    _archFilter = b.dataset.arch === _archFilter ? '' : b.dataset.arch;
+  const apply = v => {
+    _archFilter = v;
     try { localStorage.setItem('studio_arch_filter', _archFilter); } catch {}
     _renderGrid(_rosterQuery);
-  }));
+  };
+  bar.querySelector('#st-arch-select').addEventListener('change', e => apply(e.target.value));
+  bar.querySelector('.st-archclear')?.addEventListener('click', () => apply(''));
 }
 
 function _castAnalysisHTML(members, castName) {
@@ -1565,16 +1577,11 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
-  /* archetype filter strip */
-  .st-archbar{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
-  .st-arch{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-left:3px solid var(--c,#64748b);
-    border-radius:7px;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:11px;padding:4px 9px;
-    text-transform:capitalize;transition:color .12s,background .12s}
-  .st-arch:hover{color:inherit;background:#ffffff0d}
-  .st-arch b{color:inherit;font-variant-numeric:tabular-nums;opacity:.75;margin-left:2px}
-  .st-arch.on{background:var(--c,#64748b)22;border-color:var(--c,#64748b);color:inherit;font-weight:700}
-  .st-arch.on b{opacity:1}
-  .st-arch.empty{opacity:.35}
+  /* archetype filter — one compact row */
+  .st-archbar{display:flex;align-items:center;gap:7px;margin:0 0 12px}
+  .st-archlab{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#9a9);font-weight:700}
+  .st-archsel{flex:1;min-width:0;max-width:340px;font-size:12px;padding:5px 8px}
+  .st-archclear{font-size:11px!important;padding:4px 9px!important;line-height:1}
   /* studio view tabs */
   .st-views{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--border,#333)}
   .st-view{background:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:13px;font-weight:700;margin-bottom:-1px;padding:9px 16px}

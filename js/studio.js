@@ -117,16 +117,18 @@ function _statHue(v) { v = Math.max(1, Math.min(10, v)); let h; if (v <= 5.5) h 
 function _avatarSrc(slug) { return (window.__studioAvatars && window.__studioAvatars[slug]) || `assets/avatars/${slug}.png`; }
 function _blankChar() { return { name:'', slug:'', age:'', gender:'nb', sexuality:'straight', archetype:'', origin:'', voice:'', avatarDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])) }; }
 
-// image → square-cropped, downscaled PNG data URI
+// image → square-cropped, downscaled PNG data URI. `size` is a ceiling, never a
+// target: upscaling a small source here would only soften it.
 function _imgToAvatar(src, size = 512) {
   return new Promise((res, rej) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       const s = Math.min(img.width, img.height);
+      const out = Math.min(size, s);
       const sx = (img.width - s) / 2, sy = (img.height - s) / 2;
-      const c = document.createElement('canvas'); c.width = c.height = size;
-      c.getContext('2d').drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      const c = document.createElement('canvas'); c.width = c.height = out;
+      c.getContext('2d').drawImage(img, sx, sy, s, s, 0, 0, out, out);
       try { res(c.toDataURL('image/png')); } catch (e) { rej(e); }
     };
     img.onerror = rej;
@@ -220,6 +222,143 @@ async function _pingServer() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// D1 ROSTER SYNC — the character pool lives in Cloudflare D1 now.
+//
+// D1 is the source of truth; franchise_roster.json is a published snapshot.
+// Saves and deletes hit D1 immediately (fast, no commit, visible on every
+// device). Pressing "Publish to site" regenerates the JSON and commits it.
+// If the Worker is unreachable we fall back to the old browser-only behaviour,
+// so the Studio never becomes unusable.
+// ═══════════════════════════════════════════════════════════════════════
+let _d1Up = false;          // did the last roster pull succeed?
+let _d1Dirty = false;       // unpublished D1 changes exist
+
+/** Pull the roster from D1 into the in-memory pool. Returns true on success. */
+async function _rosterPull() {
+  if (!_apiBase()) return false;
+  try {
+    const r = await fetch(_apiUrl('/api/roster'), { cache: 'no-store' });
+    const j = await r.json();
+    if (!j.ok || !Array.isArray(j.players)) throw new Error(j.error || 'bad response');
+    // Strip the DB-only fields the simulator doesn't expect.
+    _persistRoster(j.players.map(({ voice, retired, updatedAt, ...p }) => p));
+    _d1Up = true;
+    return true;
+  } catch (e) {
+    _d1Up = false;
+    console.warn('[studio] roster pull from D1 failed, using local pool:', e.message);
+    return false;
+  }
+}
+
+/** Upsert one character into D1. Throws on failure so callers can report it. */
+async function _rosterPush(entry, voiceText) {
+  const r = await fetch(_apiUrl('/api/roster'), {
+    method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ ...entry, voice: voiceText || '' }),
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'roster write failed');
+  _d1Dirty = true;
+  _updatePublishBtn();
+  return j;
+}
+
+/** Publish D1 -> franchise_roster.json + voice-profiles.json (a git commit). */
+async function _rosterPublish() {
+  const btn = document.getElementById('st-publish');
+  if (!_apiBase()) return _toast('No backend configured — nothing to publish to', 'err');
+  if (!confirm('Publish the roster to the live site?\n\nThis rewrites franchise_roster.json and voice-profiles.json in your repo and triggers a Pages rebuild (~1 min).')) return;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Publishing…'; }
+  try {
+    const r = await fetch(_apiUrl('/api/roster/publish'), {
+      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }), body: '{}',
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'publish failed');
+    _d1Dirty = false;
+    _toast(`Published ${j.published} characters + ${j.voices} voices — site rebuilds in ~1 min`, 'ok');
+  } catch (e) {
+    _toast('Publish failed: ' + e.message, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+    _updatePublishBtn();
+  }
+}
+
+/** Show/hide the retired list. Retired characters are hidden from casting but
+ *  still in the database with their season history intact. */
+async function _toggleRetiredPanel() {
+  const box = document.getElementById('st-retired-panel');
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = '<div class="st-retired-note">Loading…</div>';
+
+  let retired = [];
+  try {
+    const r = await fetch(_apiUrl('/api/roster?includeRetired=1'), { cache: 'no-store' });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'load failed');
+    retired = (j.players || []).filter(p => p.retired);
+  } catch (e) {
+    box.innerHTML = `<div class="st-retired-note err">Couldn't load retired characters: ${e.message}</div>`;
+    return;
+  }
+
+  if (!retired.length) {
+    box.innerHTML = '<div class="st-retired-note">Nobody is retired. Deleting a character who has played a season retires them instead, and they show up here.</div>';
+    return;
+  }
+
+  box.innerHTML =
+    `<div class="st-retired-note">${retired.length} retired — hidden from casting, history kept.</div>` +
+    retired.map(p => `
+      <div class="st-retired-row">
+        <img src="${_avatarSrc(p.slug)}" alt="" onerror="this.style.visibility='hidden'">
+        <span class="st-retired-name">${p.name}</span>
+        <span class="st-retired-arch">${p.archetype || ''}</span>
+        <button type="button" class="st-btn st-unretire" data-slug="${p.slug}">↩ Bring back</button>
+      </div>`).join('');
+
+  box.querySelectorAll('.st-unretire').forEach(btn => {
+    btn.addEventListener('click', () => _unretire(btn.dataset.slug, btn));
+  });
+}
+
+async function _unretire(slug, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const r = await fetch(_apiUrl('/api/roster/unretire'), {
+      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ slug }),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'un-retire failed');
+    _d1Dirty = true;
+    await _rosterPull();               // they rejoin the casting pool
+    _gridRefresh();
+    _updatePublishBtn();
+    _toast(`${slug} is back in the roster — press Publish to update the site`, 'ok');
+    document.getElementById('st-retired-panel').hidden = true;
+    _toggleRetiredPanel();             // repaint the list
+  } catch (e) {
+    _toast('Un-retire failed: ' + e.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '↩ Bring back'; }
+  }
+}
+
+function _updatePublishBtn() {
+  const btn = document.getElementById('st-publish');
+  if (!btn) return;
+  btn.textContent = _d1Dirty ? '⬆ Publish to site •' : '⬆ Publish to site';
+  btn.classList.toggle('st-primary', _d1Dirty);
+  btn.title = _d1Dirty
+    ? 'You have unpublished roster changes. Click to write them to the site.'
+    : 'Regenerate franchise_roster.json + voice-profiles.json from the database.';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // RENDER: pool (left) + editor (right)
 // ═══════════════════════════════════════════════════════════════════════
 export function renderStudio() {
@@ -232,8 +371,11 @@ export function renderStudio() {
          <div class="st-pool-head">
            <button type="button" id="st-new" class="st-btn st-primary">＋ New character</button>
            <input type="search" id="st-search" class="st-input" placeholder="Filter roster…">
+           <button type="button" id="st-retired" class="st-btn" title="Show characters that were retired instead of deleted, and bring them back.">👻 Retired</button>
+           <button type="button" id="st-publish" class="st-btn" title="Regenerate franchise_roster.json + voice-profiles.json from the database.">⬆ Publish to site</button>
            <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
          </div>
+         <div id="st-retired-panel" hidden></div>
          <div id="st-casts" class="st-casts"></div>
          <div id="st-balance" class="st-balance"></div>
          <div id="st-grid" class="st-grid"></div>
@@ -243,11 +385,27 @@ export function renderStudio() {
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
   panel.querySelector('#st-search').addEventListener('input', e => _renderGrid(e.target.value));
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
+  panel.querySelector('#st-publish').addEventListener('click', _rosterPublish);
+  panel.querySelector('#st-retired').addEventListener('click', _toggleRetiredPanel);
+  _updatePublishBtn();
   _renderCasts();
   _renderGrid('');
   _renderBalance();
   _renderEditor();
+
+  // Pull the authoritative pool from D1 once, then repaint the surfaces that
+  // depend on it. Cheap enough to run on every render; guarded by _rosterOnce.
+  if (!_rosterOnce) {
+    _rosterOnce = true;
+    _rosterPull().then(ok => {
+      if (!ok) return;
+      _renderGrid(document.getElementById('st-search')?.value || '');
+      _renderBalance();
+      _renderCasts();
+    });
+  }
 }
+let _rosterOnce = false;
 
 async function _studioSlugSet() {
   try { return new Set((await _idbAll('characters')).map(c => c.slug)); } catch { return new Set(); }
@@ -728,18 +886,29 @@ async function _save() {
   const composedVoice = _composeVoice(d);
   if (_voiceCache) _voiceCache[d.name] = composedVoice;
 
-  // 3) write repo files if a backend is up (local serve.py or deployed Worker)
+  // 3) write to the database (fast, no commit, visible everywhere). An avatar
+  //    is a PNG, which can only live in the repo — so a NEW avatar still goes
+  //    through /api/character. Saves without a new avatar no longer touch git,
+  //    which is why editing is instant now; press Publish when you're ready.
   let wrote = null;
+  let savedToDb = false;
   if (_serverUp) {
     try {
-      const r = await fetch(_apiUrl('/api/character'), {
-        method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice }, avatar: { slug: d.slug, dataUri: d.avatarDataUri || '' } }),
-      });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.error || 'write failed');
-      wrote = j.wrote;
-    } catch (e) { _toast('Saved locally, but repo write failed: ' + e.message, 'warn'); }
+      await _rosterPush(entry, composedVoice);
+      savedToDb = true;
+    } catch (e) { _toast('Saved locally, but the database write failed: ' + e.message, 'warn'); }
+
+    if (d.avatarDataUri) {
+      try {
+        const r = await fetch(_apiUrl('/api/character'), {
+          method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice }, avatar: { slug: d.slug, dataUri: d.avatarDataUri } }),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'write failed');
+        wrote = j.wrote;
+      } catch (e) { _toast('Avatar upload failed: ' + e.message, 'warn'); }
+    }
   }
 
   // 4) refresh surfaces
@@ -747,23 +916,54 @@ async function _save() {
   _renderBalance();
   try { if (document.getElementById('tab-cast')?.classList.contains('cast-room-active')) window.renderCastRoom && window.renderCastRoom(); } catch {}
 
-  const where = wrote ? `wrote ${wrote.length} repo file${wrote.length===1?'':'s'}` : (_serverUp ? 'saved' : 'saved (browser-only — run serve.py to write repo files)');
-  _toast(`${d.name} saved — ${where}`, 'ok');
-  if (note) { note.textContent = wrote ? '✓ ' + wrote.join(', ') : '✓ live in the cast pool'; note.className = 'st-save-note ok'; }
+  const bits = [];
+  if (savedToDb) bits.push('in the database');
+  if (wrote) bits.push(`${wrote.length} repo file${wrote.length === 1 ? '' : 's'}`);
+  if (!bits.length) bits.push(_serverUp ? 'saved' : 'browser-only — run serve.py or deploy the Worker');
+  _toast(`${d.name} saved — ${bits.join(' + ')}`, 'ok');
+  if (note) {
+    note.textContent = savedToDb ? '✓ saved — press Publish to push it to the site' : '✓ live in the cast pool';
+    note.className = 'st-save-note ok';
+  }
 }
 
 function _fail(note, msg) { if (note) { note.textContent = msg; note.className = 'st-save-note err'; } _toast(msg, 'err'); }
 
 async function _delete() {
   const d = _draft;
-  if (!d.slug || !confirm(`Remove ${d.name} from the local pool? (Repo files are not deleted — commit removal manually.)`)) return;
-  const arr = _roster().filter(p => p.slug !== d.slug);
-  _persistRoster(arr);
+  if (!d.slug) return;
+
+  // The database decides delete-vs-retire: a character who has never played is
+  // removed outright; one with season history is retired so their appearances
+  // and bonds are never orphaned. Ask before either.
+  if (!confirm(`Remove ${d.name} from the roster?\n\nIf they've played a season they'll be retired (hidden from casting, history kept) rather than deleted.`)) return;
+
+  let msg = `${d.name} removed from the local pool`;
+  if (_serverUp && _apiBase()) {
+    try {
+      const r = await fetch(_apiUrl('/api/roster/delete'), {
+        method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ slug: d.slug }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'delete failed');
+      _d1Dirty = true;
+      msg = j.action === 'retired'
+        ? `${j.name} retired — ${j.seasons} season(s) of history kept`
+        : `${j.name} deleted from the roster`;
+    } catch (e) {
+      _toast('Database delete failed: ' + e.message + ' (removed locally only)', 'warn');
+    }
+  }
+
+  // Retired characters are hidden from casting too, so either way they leave
+  // the in-memory pool.
+  _persistRoster(_roster().filter(p => p.slug !== d.slug));
   try { await _idbDel('characters', d.slug); } catch {}
   if (window.__studioAvatars) delete window.__studioAvatars[d.slug];
   _draft = _blankChar();
   renderStudio();
-  _toast(`${d.name} removed from local pool`, 'ok');
+  _toast(msg + ' — press Publish to update the site', 'ok');
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -918,7 +1118,17 @@ function _injectCSS() {
   #tab-cast.tab-content.active.studio-active{display:block;overflow-y:auto}
   .st-wrap{display:grid;grid-template-columns:minmax(280px,1fr) minmax(340px,1.1fr);gap:18px;align-items:start;padding:4px 2px 60px}
   @media(max-width:860px){.st-wrap{grid-template-columns:1fr}}
-  .st-pool-head{display:flex;gap:8px;margin-bottom:10px}
+  .st-pool-head{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  /* retired characters: kept in the DB with their history, hidden from casting */
+  #st-retired-panel{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:10px;padding:10px;margin-bottom:12px}
+  .st-retired-note{font-size:12px;color:var(--muted,#9a9);margin-bottom:8px}
+  .st-retired-note.err{color:#e5843e}
+  .st-retired-row{display:flex;align-items:center;gap:9px;padding:6px 4px;border-top:1px solid var(--border,#2a2a30)}
+  .st-retired-row:first-of-type{border-top:none}
+  .st-retired-row img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#0003}
+  .st-retired-name{font-weight:700;font-size:13px}
+  .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
+  .st-unretire{font-size:11px!important;padding:5px 10px!important}
   .st-input{width:100%;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:13px;padding:8px 10px}
   .st-input:focus{outline:2px solid var(--accent,#f4b23e);outline-offset:0}
   .st-balance{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}

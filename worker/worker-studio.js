@@ -14,6 +14,13 @@
 //   GET  /api/leaderboard?stat=wins&limit=20&minSeasons=1
 //   GET  /api/relationships?player=<slug>
 //   GET  /api/stats      -> {stats:[...]}  (which leaderboards exist; for menus)
+//   GET  /api/roster?includeRetired=1 -> the character pool (source of truth)
+//
+// Roster writes (require Authorization: Bearer <STUDIO_TOKEN>):
+//   POST /api/roster           {slug,name,gender,sexuality,archetype,stats{},voice}
+//   POST /api/roster/delete    {slug, force?}  -> deletes if unplayed, else retires
+//   POST /api/roster/unretire  {slug}
+//   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
 //
 // Config (wrangler.toml [vars]): GITHUB_REPO ("owner/repo"), GITHUB_BRANCH,
 // ALLOWED_ORIGIN (your site origin, or "*").
@@ -35,7 +42,7 @@ export default {
     // The D1 read endpoints serve public data, so they are readable from ANY
     // origin (including localhost during development). The studio write
     // endpoint keeps the strict ALLOWED_ORIGIN check.
-    const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats'];
+    const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats', '/api/roster'];
     const isPublicRead = PUBLIC_READS.includes(url.pathname);
     const rcors = isPublicRead ? { ...cors, 'Access-Control-Allow-Origin': '*' } : cors;
 
@@ -58,6 +65,23 @@ export default {
       }
       if (request.method === 'GET' && url.pathname === '/api/relationships') {
         return json(await relationships(env, url.searchParams), 200, rcors, 300);
+      }
+      // ── roster (character pool) ───────────────────────────────────────────
+      // GET is public; every write requires the studio token.
+      if (request.method === 'GET' && url.pathname === '/api/roster') {
+        return json(await rosterList(env, url.searchParams), 200, rcors, 60);
+      }
+      if (request.method === 'POST' && url.pathname.startsWith('/api/roster')) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const body = await request.json().catch(() => ({}));
+        if (url.pathname === '/api/roster')          return json(await rosterSave(env, body), 200, cors);
+        if (url.pathname === '/api/roster/delete')   return json(await rosterDelete(env, body), 200, cors);
+        if (url.pathname === '/api/roster/unretire') return json(await rosterUnretire(env, body), 200, cors);
+        if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env), 200, cors);
+        return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
       }
       if (request.method === 'POST' && url.pathname === '/api/character') {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
@@ -203,6 +227,160 @@ async function relationships(env, params) {
     })),
     bonds: bonds.results || [],
   };
+}
+
+// ══ roster: the character pool, source of truth in D1 ══════════════════════
+//
+// Authored data (unlike players/appearances/bonds, which are derived from sim
+// results). The Casting Studio reads and writes this live; franchise_roster.json
+// becomes a published snapshot, refreshed by /api/roster/publish.
+
+const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+                   'loyalty', 'boldness', 'intuition', 'temperament'];
+
+const ARCHETYPES = new Set(['mastermind', 'schemer', 'hothead', 'challenge-beast',
+  'social-butterfly', 'loyal-soldier', 'wildcard', 'chaos-agent', 'floater',
+  'underdog', 'hero', 'villain', 'goat', 'perceptive-player', 'showmancer']);
+
+function rosterRowToJson(r) {
+  const stats = {};
+  for (const k of STAT_KEYS) if (r[k] != null) stats[k] = r[k];
+  const out = { name: r.name, slug: r.slug };
+  if (r.gender) out.gender = r.gender;
+  if (r.archetype) out.archetype = r.archetype;
+  if (Object.keys(stats).length) out.stats = stats;
+  if (r.sexuality) out.sexuality = r.sexuality;
+  if (r.is_returnee) out.isReturnee = true;
+  return out;
+}
+
+async function rosterList(env, params) {
+  const includeRetired = params.get('includeRetired') === '1';
+  const sql = `SELECT * FROM roster ${includeRetired ? '' : 'WHERE retired = 0'} ORDER BY rowid`;
+  const { results } = await db(env).prepare(sql).all();
+  return {
+    ok: true,
+    count: (results || []).length,
+    players: (results || []).map(r => ({
+      ...rosterRowToJson(r),
+      voice: r.voice || '',
+      retired: !!r.retired,
+      updatedAt: r.updated_at,
+    })),
+  };
+}
+
+/** Validate + upsert one character. Returns {created:bool}. */
+async function rosterSave(env, payload) {
+  const slug = String(payload.slug || '').trim().toLowerCase();
+  const name = String(payload.name || '').trim();
+  if (!name) throw new ValidationError('character name is required');
+  if (!SLUG_RE.test(slug)) throw new ValidationError('slug must be lowercase letters, digits, and dashes');
+
+  const archetype = payload.archetype ? String(payload.archetype).trim() : null;
+  if (archetype && !ARCHETYPES.has(archetype)) {
+    throw new ValidationError(`unknown archetype "${archetype}"`);
+  }
+
+  // Only the 9 real stats are accepted; anything else is silently dropped so a
+  // typo like "charisma" can never become a column of garbage.
+  const stats = payload.stats || {};
+  const statVals = STAT_KEYS.map(k => {
+    const n = Number(stats[k]);
+    return Number.isFinite(n) ? Math.max(0, Math.min(10, Math.round(n))) : null;
+  });
+
+  const d = db(env);
+  const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
+
+  await d.prepare(
+    `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
+                         voice,is_returnee,retired,updated_at)
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,datetime('now'))
+     ON CONFLICT(slug) DO UPDATE SET
+       name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
+       archetype=excluded.archetype,
+       ${STAT_KEYS.map(k => `${k}=excluded.${k}`).join(', ')},
+       voice=excluded.voice, is_returnee=excluded.is_returnee,
+       retired=excluded.retired, updated_at=datetime('now')`
+  ).bind(
+    slug, name,
+    payload.gender || null, payload.sexuality || null, archetype,
+    ...statVals,
+    payload.voice ? String(payload.voice) : null,
+    payload.isReturnee ? 1 : 0,
+    payload.retired ? 1 : 0,
+  ).run();
+
+  return { ok: true, slug, name, created: !existing };
+}
+
+/**
+ * Smart delete. A character who has never played is removed outright; one with
+ * season history is RETIRED instead, so their appearances/bonds rows are never
+ * orphaned. Pass force:true to retire-vs-delete anyway.
+ */
+async function rosterDelete(env, payload) {
+  const slug = String(payload.slug || '').trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) throw new ValidationError('slug is required');
+  const d = db(env);
+
+  const row = await d.prepare('SELECT slug, name, retired FROM roster WHERE slug = ?').bind(slug).first();
+  if (!row) throw httpErr(`no character with slug "${slug}"`, 404);
+
+  const played = await d.prepare('SELECT COUNT(*) AS n FROM appearances WHERE player_id = ?').bind(slug).first();
+  const seasons = (played && played.n) || 0;
+
+  if (seasons > 0 && !payload.force) {
+    await d.prepare("UPDATE roster SET retired = 1, updated_at = datetime('now') WHERE slug = ?").bind(slug).run();
+    return { ok: true, action: 'retired', slug, name: row.name, seasons,
+             message: `${row.name} has ${seasons} season(s) of history and was retired instead of deleted.` };
+  }
+
+  await d.prepare('DELETE FROM roster WHERE slug = ?').bind(slug).run();
+  return { ok: true, action: 'deleted', slug, name: row.name, seasons };
+}
+
+async function rosterUnretire(env, payload) {
+  const slug = String(payload.slug || '').trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) throw new ValidationError('slug is required');
+  const r = await db(env).prepare(
+    "UPDATE roster SET retired = 0, updated_at = datetime('now') WHERE slug = ?").bind(slug).run();
+  if (!r.meta || !r.meta.changes) throw httpErr(`no character with slug "${slug}"`, 404);
+  return { ok: true, action: 'unretired', slug };
+}
+
+/**
+ * Publish: regenerate franchise_roster.json + voice-profiles.json from D1 and
+ * commit both to GitHub. Retired characters are excluded from the published
+ * roster (that is what retiring means) but remain in D1.
+ */
+async function rosterPublish(env) {
+  const { results } = await db(env).prepare(
+    'SELECT * FROM roster WHERE retired = 0 ORDER BY rowid').all();
+  const rows = results || [];
+  if (!rows.length) throw new ValidationError('roster is empty — refusing to publish an empty file');
+
+  const wrote = [];
+
+  const rosterDoc = { players: rows.map(rosterRowToJson) };
+  const rosterFile = await getFile(env, ROSTER_PATH);
+  await putFile(env, ROSTER_PATH, encodeJson(rosterDoc),
+    `studio: publish roster (${rows.length} characters)`, rosterFile && rosterFile.sha);
+  wrote.push(ROSTER_PATH);
+
+  const withVoice = rows.filter(r => r.voice && String(r.voice).trim());
+  if (withVoice.length) {
+    const voiceFile = await getFile(env, VOICE_PATH);
+    const voiceDoc = voiceFile ? decodeJson(voiceFile.content) : { profiles: {} };
+    if (!voiceDoc.profiles || typeof voiceDoc.profiles !== 'object') voiceDoc.profiles = {};
+    for (const r of withVoice) voiceDoc.profiles[r.name] = r.voice;
+    await putFile(env, VOICE_PATH, encodeJson(voiceDoc),
+      `studio: publish voices (${withVoice.length} profiles)`, voiceFile && voiceFile.sha);
+    wrote.push(VOICE_PATH);
+  }
+
+  return { ok: true, published: rows.length, voices: withVoice.length, wrote };
 }
 
 // ── core write logic (mirrors serve.py write_character) ────────────────────

@@ -857,6 +857,11 @@ const QS_CSS = `
 .qs-body[hidden] { display:none !important; }
 
 #quick-setup { color:var(--text); max-width:1100px; margin:0 auto; padding:6px 14px 80px; }
+/* In Advanced mode the quick body is hidden, so #quick-setup is only its
+   header — and the 80px of bottom padding meant for the body became a large
+   empty band above the legacy sub-nav. Collapse it when the body isn't shown. */
+#tab-setup:not(.qs-hide-legacy) #quick-setup { padding-bottom:0; }
+#tab-setup:not(.qs-hide-legacy) .qs-header { margin-bottom:14px; }
 .qs-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;
   padding:14px 0 16px; border-bottom:1px solid var(--border); margin-bottom:20px; }
 .qs-title-wrap { display:flex; flex-direction:column; gap:3px; }

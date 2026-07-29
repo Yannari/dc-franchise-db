@@ -406,9 +406,9 @@ export function _applyPreset(data) {
   refreshReturneeAvatars(players);   // resolve returnee icons for the loaded cast
   saveCast();
   relationships = data.relationships || [];
-  localStorage.setItem('simulator_relationships', JSON.stringify(relationships));
+  localStorage.setItem('simulator_rels', JSON.stringify(relationships));
   preGameAlliances = data.preGameAlliances || [];
-  localStorage.setItem('simulator_pre_alliances', JSON.stringify(preGameAlliances));
+  localStorage.setItem('simulator_prealliances', JSON.stringify(preGameAlliances));
   renderConfig(); renderCast(); renderTribeBuilder(); renderTribeSelect();
   if (typeof renderRelList === 'function') renderRelList();
   if (typeof renderAllianceList === 'function') renderAllianceList();
@@ -520,9 +520,9 @@ export function _applySeasonSave(data) {
   players = data.players || [];
   saveCast();
   relationships = data.relationships || [];
-  localStorage.setItem('simulator_relationships', JSON.stringify(relationships));
+  localStorage.setItem('simulator_rels', JSON.stringify(relationships));
   preGameAlliances = data.preGameAlliances || [];
-  localStorage.setItem('simulator_pre_alliances', JSON.stringify(preGameAlliances));
+  localStorage.setItem('simulator_prealliances', JSON.stringify(preGameAlliances));
   gs = data.gs;
   repairGsSets(gs);
   saveGameState();

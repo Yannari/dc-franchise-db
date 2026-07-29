@@ -1449,7 +1449,7 @@
       "name": "Samey",
       "slug": "samey",
       "gender": "f",
-      "archetype": "hero",
+      "archetype": "underdog",
       "stats": {
         "physical": 4,
         "endurance": 6,
@@ -1460,7 +1460,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Sanders",
@@ -1644,7 +1645,7 @@
       "name": "Sugar",
       "slug": "sugar",
       "gender": "f",
-      "archetype": "villain",
+      "archetype": "chaos-agent",
       "stats": {
         "physical": 6,
         "endurance": 8,
@@ -1655,7 +1656,8 @@
         "boldness": 9,
         "intuition": 5,
         "temperament": 2
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Tammy",

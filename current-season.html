@@ -3224,11 +3224,17 @@ async function generateEpisodeAI() {
     return `hsl(${h}, 68%, 68%)`;
   }
 
+  // Transcripts address the hosts by first name ("Chris:", "Chef:"), but their
+  // portraits live under their roster slugs. There used to be duplicate
+  // chris.png / chef.png copies; those were removed, so map the short names.
+  const HOST_AVATAR_ALIASES = { chris: 'chris-mclean', chef: 'chef-hatchet' };
+
   // Get character avatar (image or emoji)
   function getCharacterAvatar(characterName) {
-    const key = characterName.toLowerCase().replace(/\s+/g, '-');
+    const rawKey = characterName.toLowerCase().replace(/\s+/g, '-');
+    const key = HOST_AVATAR_ALIASES[rawKey] || rawKey;
     const keySimple = characterName.toLowerCase().replace(/\s+/g, '');
-    
+
     const paths = [
       `assets/avatars/${key}.png`,
       `assets/avatars/${keySimple}.png`,

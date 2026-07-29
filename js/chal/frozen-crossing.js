@@ -1961,7 +1961,7 @@ export function rpBuildFCPhase1(ep) {
   window._fcPhase1Snapshots = snapshots;
 
   const h = host();
-  const hostSlug = (seasonConfig?.hostSlug || 'chris');
+  const hostSlug = (seasonConfig?.hostSlug || 'chris-mclean');
 
   let cardsHtml = '';
 
@@ -1986,7 +1986,7 @@ export function rpBuildFCPhase1(ep) {
     let flavorHtml = '';
     if (i > 0 && i % (6 + flavorIdx % 3) === 0 && flavorIdx < 4) {
       const flavor = HOST_FLAVOR[flavorIdx % HOST_FLAVOR.length]();
-      const hostSlug = (seasonConfig?.hostSlug || 'chris');
+      const hostSlug = (seasonConfig?.hostSlug || 'chris-mclean');
       flavorHtml = `<div class="fc-flavor" style="display:flex;align-items:center;gap:8px;justify-content:center;"><img src="assets/avatars/${hostSlug}.png" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(168,216,234,.2);object-fit:cover;" onerror="this.style.display='none'"><span>"${flavor}"</span></div>`;
       flavorIdx++;
     }
@@ -2291,7 +2291,7 @@ export function rpBuildFCPhase2(ep) {
   window._fcCpStateSnapshots = cpStateSnapshots;
 
   const h = host();
-  const hostSlug = (seasonConfig?.hostSlug || 'chris');
+  const hostSlug = (seasonConfig?.hostSlug || 'chris-mclean');
 
   let cardsHtml = '';
 
@@ -2320,7 +2320,7 @@ export function rpBuildFCPhase2(ep) {
     let flavorHtml = '';
     if (i > 0 && i % (8 + flavorIdx % 4) === 0 && flavorIdx < 8) {
       const flavor = HOST_FLAVOR[(flavorIdx + 5) % HOST_FLAVOR.length]();
-      const hostSlug = (seasonConfig?.hostSlug || 'chris');
+      const hostSlug = (seasonConfig?.hostSlug || 'chris-mclean');
       flavorHtml = `<div class="fc-flavor" style="display:flex;align-items:center;gap:8px;justify-content:center;"><img src="assets/avatars/${hostSlug}.png" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(168,216,234,.2);object-fit:cover;" onerror="this.style.display='none'"><span>"${flavor}"</span></div>`;
       flavorIdx++;
     }

@@ -3301,7 +3301,7 @@ export function rpBuildAZTitleCard(ep) {
 
   const epNum = window.vpEpNum || gs.episodeHistory?.length || 1;
   const h = host();
-  const hostSlug = seasonConfig?.hostSlug || 'chris';
+  const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
 
   // Recover tribe names from gs.tribes if result data is missing them
   az.tribes.forEach(t => {
@@ -3472,7 +3472,7 @@ export function rpBuildAZZipline(ep) {
 
   let cardsHtml = '';
   const h = host();
-  const hostSlug = seasonConfig?.hostSlug || 'chris';
+  const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
 
   // Step 0: Host intro
   cardsHtml += `<div id="az-step-${suffix}-0" class="az-hidden">
@@ -3898,7 +3898,7 @@ export function rpBuildAZResults(ep) {
 
   // Host closing
   const h = host();
-  const hostSlug = seasonConfig?.hostSlug || 'chris';
+  const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
   steps.push(`<div class="az-card" style="border-left:3px solid var(--az-gold);margin-top:20px;">
     <div class="az-card-hdr">
       <img src="assets/avatars/${hostSlug}.png" class="az-av" style="width:36px;height:36px;border-color:var(--az-gold);" onerror="this.style.display='none'">

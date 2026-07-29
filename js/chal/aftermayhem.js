@@ -1559,7 +1559,7 @@ export function rpBuildAftermayhemLottery(ep) {
 
   // Step 0: Host intro
   const h = host();
-  const hostSlug = seasonConfig?.hostSlug || 'chris';
+  const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
   cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
     <div class="am-card roll" style="border-left:4px solid var(--am-gold);">
       <div class="am-card-head">
@@ -1703,7 +1703,7 @@ export function rpBuildAftermayhemBoard(ep) {
     // Host chatter between rounds
     if (ri > 0 && ri < am.rounds.length) {
       const chatter = pick(HOST_CHATTER)();
-      const hostSlug = seasonConfig?.hostSlug || 'chris';
+      const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
         <div style="text-align:center;padding:6px 16px;font-family:'Fredoka',sans-serif;font-size:11px;color:rgba(255,209,60,.4);font-style:italic;display:flex;align-items:center;gap:8px;justify-content:center;">
           <img src="assets/avatars/${hostSlug}.png" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,209,60,.2);object-fit:cover;" onerror="this.style.display='none'">
@@ -2000,7 +2000,7 @@ export function rpBuildAftermayhemBoard(ep) {
       else if (he.type === 'board-shuffle') cardStyle = 'border-left-color:var(--am-neon);';
       else if (he.type === 'trap-reveal') cardStyle = 'border-left-color:var(--am-gold);';
 
-      const hostSlug2 = seasonConfig?.hostSlug || 'chris';
+      const hostSlug2 = seasonConfig?.hostSlug || 'chris-mclean';
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
         <div class="am-card" style="border-left:4px solid var(--am-gold);background:rgba(255,209,60,.03);${cardStyle}">
           <div class="am-card-head">

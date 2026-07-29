@@ -2039,7 +2039,7 @@ export function rpBuildRTDTitleCard(ep) {
   if (!data) return '';
 
   const epNum = window.vpEpNum || gs.episodeHistory?.length || 1;
-  const hostSlug = seasonConfig?.hostSlug || 'chris';
+  const hostSlug = seasonConfig?.hostSlug || 'chris-mclean';
 
   // Fishnet players — sorted by tribe, swaying
   let netPlayers = '';

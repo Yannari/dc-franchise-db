@@ -44,10 +44,12 @@ Live site: hosted on GitHub Pages.
 ├── players_database.json    # All player profiles and career stats
 ├── seasons_database.json    # Season metadata (titles, winners, awards)
 ├── rankings_database.json   # Player power rankings with tier scores
-├── season1-data.json        # Per-season episode data (seasons 1–9)
-├── season2-data.json
-│   ...
-├── season9-data.json
+├── data/
+│   └── seasons/             # Per-season episode data
+│       ├── season1-data.json
+│       ├── season2-data.json
+│       │   ...
+│       └── season14-data.json
 │
 ├── assets/
 │   ├── avatars/             # Player avatar images (name.png format)
@@ -132,7 +134,7 @@ One entry per player. Career stats are aggregated across all seasons.
 
 ---
 
-### `season1-data.json` — `season9-data.json`
+### `data/seasons/season1-data.json` — `season14-data.json`
 Per-season data used for the season reference pages.
 
 ```json
@@ -216,7 +218,7 @@ PlayerA voted PlayerB
 
 2. **Generate season data** — paste all episode summaries into `current-season.html` → Season Builder, point it at `worker-episode.js`, and click "Extract Season Data". This produces a `seasonN-data.json`.
 
-3. **Save the season file** — download the generated JSON and save as `seasonN-data.json` in the repo root.
+3. **Save the season file** — download the generated JSON and save as `seasonN-data.json` in `data/seasons/`. (Exporting a season from the simulator now commits it there for you — see `MANUAL.md`.)
 
 4. **Update `franchise_database.json`** — increment `totalSeasons`, `totalEpisodes`, `uniquePlayers`, `totalAppearances`, update `lastUpdated`, and add the new season to `"champions"`. Everything on the site updates automatically from this file.
 

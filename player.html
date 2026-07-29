@@ -407,7 +407,7 @@ if (!playerId) {
     // Fetch season data files for any season missing keyMoments
     const seasonFetches = (player.seasonDetails || []).map(sd => {
       if (sd.keyMoments && sd.keyMoments.length) return Promise.resolve(null);
-      return fetch('season' + sd.season + '-data.json')
+      return fetch('data/seasons/season' + sd.season + '-data.json')
         .then(r => r.ok ? r.json() : null)
         .then(sData => {
           if (!sData || !sData.placements) return;

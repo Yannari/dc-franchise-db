@@ -2251,7 +2251,7 @@ function showSeason(season) {
   for (let n = STATIC_MAX + 1; n <= STATIC_MAX + 25; n++) {
     let data;
     try {
-      const r = await fetch(`season${n}-data.json`, { cache: 'no-store' });
+      const r = await fetch(`data/seasons/season${n}-data.json`, { cache: 'no-store' });
       if (!r.ok) break;                 // no more season files — stop probing
       data = await r.json();
     } catch { break; }

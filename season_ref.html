@@ -289,7 +289,7 @@ function buildRecords(season){
     const sn=parseInt(new URLSearchParams(window.location.search).get('season'),10);
     if(!sn){document.getElementById('season-content').innerHTML='<div class="hero"><h1>⚠️ No Season Specified</h1><p><a href="seasons.html">← Back to Seasons</a></p></div>';return;}
 
-    const resp=await fetch('season'+sn+'-data.json');
+    const resp=await fetch('data/seasons/season'+sn+'-data.json');
     if(!resp.ok)throw new Error('Season '+sn+' data not found');
     const s=await resp.json();
 

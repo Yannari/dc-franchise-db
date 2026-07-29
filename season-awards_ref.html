@@ -571,7 +571,7 @@ function statLbCard(title, rows) {
   }
 
   try {
-    const res = await fetch(`season${seasonNum}-data.json`);
+    const res = await fetch(`data/seasons/season${seasonNum}-data.json`);
     if (!res.ok) throw new Error(`Season ${seasonNum} data not found (HTTP ${res.status})`);
     const season = await res.json();
 

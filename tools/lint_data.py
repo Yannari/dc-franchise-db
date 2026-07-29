@@ -65,7 +65,7 @@ player_by_name = {p["name"].strip().lower(): p for p in players_data["players"]}
 
 # Load all season-data files
 season_data_files = {}
-for path in glob.glob(os.path.join(ROOT, "season*-data.json")):
+for path in glob.glob(os.path.join(ROOT, "data", "seasons", "season*-data.json")):
     sd = json.load(open(path, encoding="utf-8"))
     sn = sd.get("seasonNumber")
     if sn is not None:

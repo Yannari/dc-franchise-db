@@ -321,7 +321,7 @@ check("seasons_database.json",   load(os.path.join(ROOT, "seasons_database.json"
 check("rankings_database.json",  load(os.path.join(ROOT, "rankings_database.json")),  RANKINGS_DB_SCHEMA)
 
 print("\nSeason data files:")
-for path in sorted(glob.glob(os.path.join(ROOT, "season*-data.json"))):
+for path in sorted(glob.glob(os.path.join(ROOT, "data", "seasons", "season*-data.json"))):
     fname = os.path.basename(path)
     check(fname, load(path), SEASON_DATA_SCHEMA)
 

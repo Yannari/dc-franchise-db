@@ -36,7 +36,7 @@ DRY_RUN = "--dry-run" in sys.argv
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PLAYERS_FILE   = os.path.join(ROOT, "players_database.json")
-SEASON_PATTERN = os.path.join(ROOT, "season*-data.json")
+SEASON_PATTERN = os.path.join(ROOT, "data", "seasons", "season*-data.json")
 
 NUMERIC_PLAYER_FIELDS = [
     "totalSeasons", "bestPlacement", "wins",

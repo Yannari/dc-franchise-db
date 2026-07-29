@@ -482,6 +482,7 @@ async function rosterPublish(env, payload = {}) {
 // stale after every season unless it's refreshed. This endpoint rebuilds those
 // tables straight from the repo, which is why the export never had to change.
 
+const SEASON_DIR       = 'data/seasons';   // per-season episode logs live here
 const PLAYERS_DB_PATH  = 'players_database.json';
 const SEASONS_DB_PATH  = 'seasons_database.json';
 const RANKINGS_DB_PATH = 'rankings_database.json';
@@ -755,7 +756,7 @@ async function publishSeason(env, payload = {}) {
   const n = asInt(payload.seasonNumber);
   if (payload.season) {
     if (!n) throw new ValidationError('seasonNumber is required when publishing season data');
-    docs.push([`season${n}-data.json`, payload.season]);
+    docs.push([`${SEASON_DIR}/season${n}-data.json`, payload.season]);
   }
   if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);
   if (payload.seasons)   docs.push([SEASONS_DB_PATH, payload.seasons]);

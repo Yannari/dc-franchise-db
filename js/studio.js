@@ -752,29 +752,25 @@ function _renderArchBar(list) {
   const total = list.length || 1;
   const title = a => a.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const opts = ARCHETYPES
+  const chips = ARCHETYPES
     .filter(a => counts[a] || _archFilter === a)
     .map(a => {
       const n = counts[a] || 0;
-      return `<option value="${a}"${_archFilter === a ? ' selected' : ''}>` +
-             `${title(a)} — ${n} (${Math.round(n / total * 100)}%)</option>`;
+      const on = _archFilter === a;
+      return `<button type="button" class="st-arch${on ? ' on' : ''}${n ? '' : ' empty'}" data-arch="${a}"
+        style="--c:${ARCH_COLOR[a] || '#64748b'}" title="${title(a)} — ${n} of ${list.length} shown">` +
+        `${a.replace(/-/g, ' ')} <b>${n}</b><i>${Math.round(n / total * 100)}%</i></button>`;
     }).join('');
 
   bar.innerHTML =
-    `<label class="st-archlab" for="st-arch-select">Archetype</label>
-     <select id="st-arch-select" class="st-input st-archsel">
-       <option value=""${_archFilter ? '' : ' selected'}>All — ${list.length}</option>
-       ${opts}
-     </select>` +
-    (_archFilter ? `<button type="button" class="st-btn st-archclear" title="Show every archetype">✕</button>` : '');
+    `<button type="button" class="st-arch st-arch-all${_archFilter ? '' : ' on'}" data-arch=""
+      title="Show every archetype">all <b>${list.length}</b></button>` + chips;
 
-  const apply = v => {
-    _archFilter = v;
+  bar.querySelectorAll('.st-arch').forEach(b => b.addEventListener('click', () => {
+    _archFilter = b.dataset.arch === _archFilter ? '' : b.dataset.arch;
     try { localStorage.setItem('studio_arch_filter', _archFilter); } catch {}
     _renderGrid(_rosterQuery);
-  };
-  bar.querySelector('#st-arch-select').addEventListener('change', e => apply(e.target.value));
-  bar.querySelector('.st-archclear')?.addEventListener('click', () => apply(''));
+  }));
 }
 
 function _castAnalysisHTML(members, castName) {
@@ -1577,11 +1573,19 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
-  /* archetype filter — one compact row */
-  .st-archbar{display:flex;align-items:center;gap:7px;margin:0 0 12px}
-  .st-archlab{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#9a9);font-weight:700}
-  .st-archsel{flex:1;min-width:0;max-width:340px;font-size:12px;padding:5px 8px}
-  .st-archclear{font-size:11px!important;padding:4px 9px!important;line-height:1}
+  /* archetype filter — colour-coded chips, kept tight so they cost few rows */
+  .st-archbar{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 11px}
+  .st-arch{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-left:3px solid var(--c,#64748b);
+    border-radius:6px;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:10.5px;line-height:1.35;
+    padding:3px 7px;text-transform:capitalize;transition:color .12s,background .12s;white-space:nowrap}
+  .st-arch:hover{color:inherit;background:#ffffff0d}
+  .st-arch b{color:inherit;font-variant-numeric:tabular-nums;margin-left:3px;opacity:.85}
+  .st-arch i{font-style:normal;font-size:9.5px;margin-left:3px;opacity:.5;font-variant-numeric:tabular-nums}
+  .st-arch.on{background:color-mix(in srgb, var(--c,#64748b) 22%, transparent);
+    border-color:var(--c,#64748b);color:inherit;font-weight:700}
+  .st-arch.on b,.st-arch.on i{opacity:1}
+  .st-arch.empty{opacity:.3}
+  .st-arch-all{border-left-color:var(--muted,#9a9)}
   /* studio view tabs */
   .st-views{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--border,#333)}
   .st-view{background:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:13px;font-weight:700;margin-bottom:-1px;padding:9px 16px}

@@ -67,8 +67,7 @@
         "boldness": 6,
         "intuition": 4,
         "temperament": 3
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "B",
@@ -142,7 +141,6 @@
       "name": "Bowie",
       "slug": "bowie",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "mastermind",
       "stats": {
         "physical": 6,
@@ -155,6 +153,7 @@
         "intuition": 9,
         "temperament": 6
       },
+      "sexuality": "gay",
       "isReturnee": true
     },
     {
@@ -207,8 +206,7 @@
         "boldness": 6,
         "intuition": 8,
         "temperament": 6
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Brody",
@@ -242,8 +240,7 @@
         "boldness": 7,
         "intuition": 7,
         "temperament": 6
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Cameron",
@@ -295,8 +292,7 @@
         "boldness": 5,
         "intuition": 6,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Chef Hatchet",
@@ -389,7 +385,6 @@
       "name": "Crimson",
       "slug": "crimson",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 4,
@@ -401,7 +396,8 @@
         "boldness": 3,
         "intuition": 4,
         "temperament": 8
-      }
+      },
+      "sexuality": "bi"
     },
     {
       "name": "Dakota",
@@ -435,8 +431,7 @@
         "boldness": 4,
         "intuition": 8,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Dave",
@@ -606,8 +601,7 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 2
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Ennui",
@@ -698,7 +692,6 @@
       "name": "Gwen",
       "slug": "gwen",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "floater",
       "stats": {
         "physical": 6,
@@ -711,6 +704,7 @@
         "intuition": 7,
         "temperament": 4
       },
+      "sexuality": "bi",
       "isReturnee": true
     },
     {
@@ -786,7 +780,6 @@
       "name": "Jacques",
       "slug": "jacques",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "schemer",
       "stats": {
         "physical": 8,
@@ -798,7 +791,8 @@
         "boldness": 9,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "sexuality": "gay"
     },
     {
       "name": "Jasmine",
@@ -902,8 +896,7 @@
         "boldness": 9,
         "intuition": 6,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Junior",
@@ -1096,7 +1089,6 @@
       "name": "MacArthur",
       "slug": "macarthur",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 10,
@@ -1108,7 +1100,8 @@
         "boldness": 7,
         "intuition": 5,
         "temperament": 4
-      }
+      },
+      "sexuality": "lesbian"
     },
     {
       "name": "Mary",
@@ -1211,14 +1204,12 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 6
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "MK",
       "slug": "mk",
       "gender": "f",
-      "sexuality": "queer",
       "archetype": "schemer",
       "stats": {
         "physical": 4,
@@ -1231,7 +1222,7 @@
         "intuition": 6,
         "temperament": 8
       },
-      "isReturnee": false
+      "sexuality": "queer"
     },
     {
       "name": "Nichelle",
@@ -1248,8 +1239,7 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Noah",
@@ -1272,7 +1262,6 @@
       "name": "Owen",
       "slug": "owen",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 8,
@@ -1284,7 +1273,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 10
-      }
+      },
+      "sexuality": "bi"
     },
     {
       "name": "Pete",
@@ -1325,7 +1315,6 @@
       "name": "Raj",
       "slug": "raj",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 8,
@@ -1338,7 +1327,7 @@
         "intuition": 4,
         "temperament": 10
       },
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Ripper",
@@ -1355,8 +1344,7 @@
         "boldness": 6,
         "intuition": 3,
         "temperament": 6
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Rock",
@@ -1466,7 +1454,6 @@
       "name": "Sanders",
       "slug": "sanders",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hero",
       "stats": {
         "physical": 8,
@@ -1479,6 +1466,7 @@
         "intuition": 7,
         "temperament": 10
       },
+      "sexuality": "lesbian",
       "isReturnee": true
     },
     {
@@ -1514,8 +1502,7 @@
         "intuition": 3,
         "temperament": 2
       },
-      "sexuality": "asexual",
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Scott",
@@ -1693,7 +1680,6 @@
       "name": "Tom",
       "slug": "tom",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 8,
@@ -1705,7 +1691,8 @@
         "boldness": 3,
         "intuition": 6,
         "temperament": 10
-      }
+      },
+      "sexuality": "gay"
     },
     {
       "name": "Topher",
@@ -1774,8 +1761,7 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 10
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Zee",
@@ -1792,8 +1778,7 @@
         "boldness": 3,
         "intuition": 7,
         "temperament": 10
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Zoey",
@@ -1829,8 +1814,7 @@
         "intuition": 9,
         "temperament": 7
       },
-      "sexuality": "gay",
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Jake",
@@ -1848,8 +1832,7 @@
         "intuition": 2,
         "temperament": 4
       },
-      "sexuality": "gay",
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Miriam",
@@ -1866,8 +1849,7 @@
         "boldness": 9,
         "intuition": 9,
         "temperament": 5
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Grett",
@@ -1885,8 +1867,7 @@
         "intuition": 7,
         "temperament": 2
       },
-      "sexuality": "bi",
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Dan",
@@ -1904,8 +1885,7 @@
         "intuition": 8,
         "temperament": 8
       },
-      "sexuality": "asexual",
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Drew",
@@ -1923,8 +1903,7 @@
         "intuition": 7,
         "temperament": 10
       },
-      "sexuality": "asexual",
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Gabby",
@@ -1942,8 +1921,7 @@
         "intuition": 4,
         "temperament": 6
       },
-      "sexuality": "lesbian",
-      "isReturnee": false
+      "sexuality": "lesbian"
     },
     {
       "name": "Sterling",
@@ -1961,8 +1939,7 @@
         "intuition": 4,
         "temperament": 5
       },
-      "sexuality": "bi",
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Eureka",
@@ -1979,8 +1956,7 @@
         "boldness": 10,
         "intuition": 9,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Will",
@@ -1997,8 +1973,7 @@
         "boldness": 4,
         "intuition": 6,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Seraphine",
@@ -2015,8 +1990,7 @@
         "boldness": 3,
         "intuition": 3,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Ashley",
@@ -2033,8 +2007,7 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 7
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Alec",
@@ -2051,8 +2024,7 @@
         "boldness": 7,
         "intuition": 8,
         "temperament": 7
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Fiore",
@@ -2070,8 +2042,7 @@
         "intuition": 8,
         "temperament": 3
       },
-      "sexuality": "asexual",
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Ellie",
@@ -2089,8 +2060,7 @@
         "intuition": 8,
         "temperament": 5
       },
-      "sexuality": "bi",
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Nick",
@@ -2107,8 +2077,7 @@
         "boldness": 8,
         "intuition": 4,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Wix",
@@ -2126,8 +2095,7 @@
         "intuition": 7,
         "temperament": 7
       },
-      "sexuality": "queer",
-      "isReturnee": false
+      "sexuality": "queer"
     },
     {
       "name": "Lill",
@@ -2144,15 +2112,13 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Aiden",
       "slug": "aiden",
       "gender": "m",
       "archetype": "perceptive-player",
-      "sexuality": "gay",
       "stats": {
         "physical": 4,
         "endurance": 5,
@@ -2164,14 +2130,13 @@
         "intuition": 7,
         "temperament": 5
       },
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Ally",
       "slug": "ally",
       "gender": "f",
       "archetype": "social-butterfly",
-      "sexuality": "bi",
       "stats": {
         "physical": 5,
         "endurance": 7,
@@ -2183,7 +2148,7 @@
         "intuition": 7,
         "temperament": 6
       },
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Connor",
@@ -2200,8 +2165,7 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Hunter",
@@ -2218,15 +2182,13 @@
         "boldness": 2,
         "intuition": 4,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "James",
       "slug": "james",
       "gender": "m",
       "archetype": "schemer",
-      "sexuality": "gay",
       "stats": {
         "physical": 7,
         "endurance": 6,
@@ -2238,7 +2200,7 @@
         "intuition": 6,
         "temperament": 5
       },
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Kai",
@@ -2255,15 +2217,13 @@
         "boldness": 2,
         "intuition": 5,
         "temperament": 9
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Karol",
       "slug": "karol",
       "gender": "f",
       "archetype": "hothead",
-      "sexuality": "lesbian",
       "stats": {
         "physical": 6,
         "endurance": 6,
@@ -2275,7 +2235,7 @@
         "intuition": 7,
         "temperament": 2
       },
-      "isReturnee": false
+      "sexuality": "lesbian"
     },
     {
       "name": "Lake",
@@ -2293,7 +2253,6 @@
         "intuition": 7,
         "temperament": 8
       },
-      "isReturnee": false,
       "sexuality": "lesbian"
     },
     {
@@ -2311,8 +2270,7 @@
         "boldness": 1,
         "intuition": 3,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Oliver",
@@ -2329,8 +2287,7 @@
         "boldness": 2,
         "intuition": 5,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Riya",
@@ -2347,8 +2304,7 @@
         "boldness": 8,
         "intuition": 8,
         "temperament": 4
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Rosa-Maria",
@@ -2365,8 +2321,7 @@
         "boldness": 8,
         "intuition": 3,
         "temperament": 7
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Tess",
@@ -2383,8 +2338,7 @@
         "boldness": 5,
         "intuition": 9,
         "temperament": 7
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Yul",
@@ -2401,14 +2355,12 @@
         "boldness": 10,
         "intuition": 4,
         "temperament": 2
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Alessio",
       "slug": "alessio",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 4,
@@ -2421,13 +2373,12 @@
         "intuition": 9,
         "temperament": 8
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Amelie",
       "slug": "amelie",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
         "physical": 3,
@@ -2440,13 +2391,12 @@
         "intuition": 9,
         "temperament": 2
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Anastasia",
       "slug": "anastasia",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hothead",
       "stats": {
         "physical": 7,
@@ -2459,13 +2409,12 @@
         "intuition": 6,
         "temperament": 2
       },
-      "isReturnee": false
+      "sexuality": "lesbian"
     },
     {
       "name": "Benji",
       "slug": "benji",
       "gender": "m",
-      "sexuality": "pan",
       "archetype": "goat",
       "stats": {
         "physical": 6,
@@ -2478,13 +2427,12 @@
         "intuition": 4,
         "temperament": 9
       },
-      "isReturnee": false
+      "sexuality": "pan"
     },
     {
       "name": "Diego",
       "slug": "diego",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "showmancer",
       "stats": {
         "physical": 8,
@@ -2497,13 +2445,12 @@
         "intuition": 2,
         "temperament": 9
       },
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Hannah",
       "slug": "hannah",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 6,
@@ -2516,13 +2463,12 @@
         "intuition": 6,
         "temperament": 6
       },
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Isabel",
       "slug": "isabel",
       "gender": "f",
-      "sexuality": "asexual",
       "archetype": "villain",
       "stats": {
         "physical": 4,
@@ -2535,13 +2481,12 @@
         "intuition": 9,
         "temperament": 6
       },
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Ivy",
       "slug": "ivy",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 4,
@@ -2554,13 +2499,12 @@
         "intuition": 5,
         "temperament": 7
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Jade",
       "slug": "jade",
       "gender": "f",
-      "sexuality": "asexual",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 5,
@@ -2573,13 +2517,12 @@
         "intuition": 10,
         "temperament": 10
       },
-      "isReturnee": false
+      "sexuality": "asexual"
     },
     {
       "name": "Logan",
       "slug": "logan",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 8,
@@ -2592,13 +2535,12 @@
         "intuition": 3,
         "temperament": 8
       },
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Lynda",
       "slug": "lynda",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "hothead",
       "stats": {
         "physical": 3,
@@ -2611,13 +2553,12 @@
         "intuition": 5,
         "temperament": 3
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Marissa",
       "slug": "marissa",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hero",
       "stats": {
         "physical": 9,
@@ -2630,13 +2571,12 @@
         "intuition": 2,
         "temperament": 9
       },
-      "isReturnee": false
+      "sexuality": "lesbian"
     },
     {
       "name": "Natalia",
       "slug": "natalia",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 5,
@@ -2649,13 +2589,12 @@
         "intuition": 8,
         "temperament": 4
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Richard",
       "slug": "richard",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "hero",
       "stats": {
         "physical": 6,
@@ -2668,13 +2607,12 @@
         "intuition": 3,
         "temperament": 8
       },
-      "isReturnee": false
+      "sexuality": "gay"
     },
     {
       "name": "Spencer",
       "slug": "spencer",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "mastermind",
       "stats": {
         "physical": 5,
@@ -2687,13 +2625,12 @@
         "intuition": 10,
         "temperament": 6
       },
-      "isReturnee": false
+      "sexuality": "bi"
     },
     {
       "name": "Ted",
       "slug": "ted",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "schemer",
       "stats": {
         "physical": 3,
@@ -2706,13 +2643,12 @@
         "intuition": 7,
         "temperament": 5
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Tristan",
       "slug": "tristan",
       "gender": "nb",
-      "sexuality": "pan",
       "archetype": "underdog",
       "stats": {
         "physical": 4,
@@ -2725,13 +2661,12 @@
         "intuition": 7,
         "temperament": 9
       },
-      "isReturnee": false
+      "sexuality": "pan"
     },
     {
       "name": "Zaid",
       "slug": "zaid",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 7,
@@ -2744,13 +2679,12 @@
         "intuition": 4,
         "temperament": 3
       },
-      "isReturnee": false
+      "sexuality": "straight"
     },
     {
       "name": "Stanley",
       "slug": "stanley",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 3,
@@ -2762,7 +2696,8 @@
         "boldness": 5,
         "intuition": 8,
         "temperament": 3
-      }
+      },
+      "sexuality": "bi"
     },
     {
       "name": "Zachary",
@@ -2786,7 +2721,6 @@
       "name": "Obi",
       "slug": "obi",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "mastermind",
       "stats": {
         "physical": 7,
@@ -2798,7 +2732,8 @@
         "boldness": 5,
         "intuition": 8,
         "temperament": 4
-      }
+      },
+      "sexuality": "gay"
     },
     {
       "name": "Arlo",
@@ -2892,7 +2827,6 @@
       "name": "Nessa",
       "slug": "nessa",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 6,
@@ -2904,13 +2838,13 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "sexuality": "bi"
     },
     {
       "name": "Drea",
       "slug": "drea",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hothead",
       "stats": {
         "physical": 6,
@@ -2922,13 +2856,13 @@
         "boldness": 7,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "sexuality": "lesbian"
     },
     {
       "name": "Hina",
       "slug": "hina",
       "gender": "f",
-      "sexuality": "asexual",
       "archetype": "underdog",
       "stats": {
         "physical": 3,
@@ -2940,13 +2874,13 @@
         "boldness": 3,
         "intuition": 9,
         "temperament": 10
-      }
+      },
+      "sexuality": "asexual"
     },
     {
       "name": "Natasha",
       "slug": "natasha",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 5,
@@ -2958,25 +2892,8 @@
         "boldness": 7,
         "intuition": 6,
         "temperament": 7
-      }
-    },
-    {
-      "name": "andre",
-      "slug": "andre",
-      "gender": "nb",
-      "sexuality": "gay",
-      "archetype": "mastermind",
-      "stats": {
-        "physical": 5,
-        "endurance": 5,
-        "mental": 5,
-        "social": 5,
-        "strategic": 5,
-        "loyalty": 5,
-        "boldness": 5,
-        "intuition": 5,
-        "temperament": 5
-      }
+      },
+      "sexuality": "bi"
     }
   ]
 }

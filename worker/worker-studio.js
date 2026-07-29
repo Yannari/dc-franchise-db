@@ -488,10 +488,27 @@ const asInt = v => {
 };
 const asNum = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
+// Chunking means you never have to think about batch size — the sync splits
+// whatever it's given. The ceiling below is a different guard: past it we'd be
+// at risk of running out of Worker time PART WAY THROUGH, which is the bad
+// case, because the tables are emptied before they're refilled. Refusing up
+// front leaves the old data intact.
+const MAX_SYNC_STATEMENTS = 20000;
+const SYNC_CHUNK = 60;
+
 /** D1 caps how much one batch can carry, so run in chunks. */
-async function runChunked(d, statements, size = 60) {
+async function runChunked(d, statements, size = SYNC_CHUNK) {
   for (let i = 0; i < statements.length; i += size) {
-    await d.batch(statements.slice(i, i + size));
+    try {
+      await d.batch(statements.slice(i, i + size));
+    } catch (e) {
+      // Say plainly where it stopped and that re-running is safe: the sync
+      // rebuilds from scratch every time, so a retry always converges.
+      throw httpErr(
+        `sync failed on rows ${i + 1}-${Math.min(i + size, statements.length)} of ` +
+        `${statements.length} (${e.message}). The tables are mid-rebuild — press ` +
+        `Sync again to finish; it rebuilds from scratch, so retrying is safe.`, 500);
+    }
   }
 }
 
@@ -594,6 +611,17 @@ async function syncSeasons(env) {
       Array.isArray(r.weaknesses) ? JSON.stringify(r.weaknesses) : null));
   }
 
+  // Check the size BEFORE deleting anything. If this is ever too big to finish
+  // safely, the old data is still there and nothing has been lost.
+  if (stmts.length > MAX_SYNC_STATEMENTS) {
+    throw new ValidationError(
+      `this sync would run ${stmts.length} statements, over the ${MAX_SYNC_STATEMENTS} ` +
+      `safety limit (${counts.players} players, ${counts.appearances} appearances, ` +
+      `${counts.bonds} bonds, ${counts.rankings} rankings). Nothing was changed. ` +
+      `The franchise has outgrown a single-request sync — it needs to be split ` +
+      `into batches per season.`);
+  }
+
   // Clear in dependency order, then refill. The roster table is untouched —
   // it is authored data and has nothing to do with this.
   await runChunked(d, [
@@ -605,7 +633,13 @@ async function syncSeasons(env) {
   ]);
   await runChunked(d, stmts);
 
-  return { ok: true, synced: counts, note: 'roster table untouched (authored data)' };
+  return {
+    ok: true,
+    synced: counts,
+    statements: stmts.length,
+    headroom: `${stmts.length}/${MAX_SYNC_STATEMENTS} of the safety limit`,
+    note: 'roster table untouched (authored data)',
+  };
 }
 
 // ══ standalone avatar management ═══════════════════════════════════════════

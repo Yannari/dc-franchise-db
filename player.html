@@ -426,13 +426,23 @@ if (!playerId) {
         .catch(() => null);
     });
     
-    return Promise.all(seasonFetches).then(() => {
+    return Promise.all(seasonFetches).then(() => loadLiveSeason()).then(live => {
+      // A season still airing isn't in players_database.json, so it arrives
+      // separately and is shown above the historical profile.
+      if (live) {
+        const lp = (live.players || []).find(p =>
+          (p.slug && p.slug === playerId) ||
+          (p.name && player.name && p.name.toLowerCase() === player.name.toLowerCase()));
+        if (lp) player.live = { ...lp, seasonNumber: live.seasonNumber, title: live.title, episode: live.episode };
+      }
+
       // Update page title
       document.title = player.name + ' – Profile';
-      
+
       // Render player profile
       renderPlayerProfile(player);
-      
+      if (player.live) renderLiveStatus(player.live);
+
       document.getElementById('loading').style.display = 'none';
       document.getElementById('player-content').style.display = 'block';
     });
@@ -460,6 +470,67 @@ async function loadPlayerDatabase() {
   const raw = localStorage.getItem("players_database");
   if (raw) return JSON.parse(raw);
   throw new Error("players_database.json unavailable and no cached copy");
+}
+
+// ── Airing season ───────────────────────────────────────────
+// players_database.json only holds finished seasons, so a season in progress
+// is fetched from the Worker and shown as a card above the historical profile.
+// If the Worker is unreachable this resolves to null and the page is unchanged.
+const LIVE_API = 'https://dc-studio.yannari19.workers.dev/api/live-season';
+
+function loadLiveSeason() {
+  return fetch(LIVE_API)
+    .then(r => r.json())
+    .then(j => (j && j.ok && j.airing) ? j : null)
+    .catch(() => null);
+}
+
+function renderLiveStatus(lv) {
+  const host = document.getElementById('player-content');
+  if (!host) return;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .live-card{position:relative;margin:0 0 18px;padding:16px 20px;border-radius:16px;
+      border:1px solid rgba(255,92,122,.35);background:linear-gradient(135deg,rgba(255,92,122,.14),rgba(255,92,122,.04));}
+    .live-card .live-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;
+      font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#ff8fa3}
+    .live-card .dot{width:9px;height:9px;border-radius:50%;background:#ff5c7a;
+      box-shadow:0 0 0 0 rgba(255,92,122,.7);animation:liveP 2s infinite}
+    @keyframes liveP{70%{box-shadow:0 0 0 9px rgba(255,92,122,0)}100%{box-shadow:0 0 0 0 rgba(255,92,122,0)}}
+    @media (prefers-reduced-motion:reduce){.live-card .dot{animation:none}}
+    .live-card .live-status{font-size:20px;font-weight:800;margin-bottom:4px}
+    .live-card .live-status.is-in{color:#4cffb3}
+    .live-card .live-status.is-out{color:#94a3b8}
+    .live-card .live-sub{font-size:13px;color:var(--muted,#bdb4c7)}
+    .live-stats{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px}
+    .live-stat{min-width:70px}
+    .live-stat b{display:block;font-size:19px;font-weight:800;color:var(--accent2,#ffb347)}
+    .live-stat span{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted,#bdb4c7)}
+    .live-card .live-note{margin-top:10px;font-size:11.5px;color:var(--muted,#bdb4c7);opacity:.85}`;
+  document.head.appendChild(style);
+
+  const inGame = lv.status === 'in';
+  const statusText = inGame
+    ? 'Still in the game'
+    : (lv.status === 'jury' ? `Eliminated episode ${lv.exitEpisode ?? '—'} · on the jury`
+                            : `Eliminated episode ${lv.exitEpisode ?? '—'}`);
+
+  const el = document.createElement('div');
+  el.className = 'live-card';
+  el.innerHTML = `
+    <div class="live-head"><span class="dot"></span>
+      Season ${lv.seasonNumber}${lv.title ? ' · ' + lv.title : ''} — airing now, episode ${lv.episode}</div>
+    <div class="live-status ${inGame ? 'is-in' : 'is-out'}">${statusText}</div>
+    <div class="live-sub">This season is still in progress, so it isn't part of the record below yet.</div>
+    <div class="live-stats">
+      <div class="live-stat"><b>${lv.immunityWins ?? 0}</b><span>Immunity</span></div>
+      <div class="live-stat"><b>${lv.rewardWins ?? 0}</b><span>Reward</span></div>
+      <div class="live-stat"><b>${lv.challengeWins ?? 0}</b><span>Challenge wins</span></div>
+      <div class="live-stat"><b>${lv.votesReceived ?? 0}</b><span>Votes against</span></div>
+    </div>
+    <div class="live-note">Updated through episode ${lv.episode}.</div>`;
+  host.insertBefore(el, host.firstChild);
 }
 
 async function loadRankingsDatabase() {

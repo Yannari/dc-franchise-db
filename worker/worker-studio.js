@@ -22,6 +22,10 @@
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
 //
+// Season data sync (requires the token):
+//   POST /api/sync-seasons -> rebuilds players/appearances/bonds/seasons/rankings
+//                             from the repo JSON. Run after each season export.
+//
 // Avatar files (require the token; both are git commits):
 //   POST /api/avatar           {slug, dataUri}  -> add/replace assets/avatars/<slug>.png
 //   POST /api/avatar/delete    {slug, force?}   -> remove it (refuses if a character uses it)
@@ -86,6 +90,14 @@ export default {
         if (url.pathname === '/api/roster/unretire') return json(await rosterUnretire(env, body), 200, cors);
         if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env, body), 200, cors);
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
+      }
+      // ── refresh the derived tables from the repo JSON (token-guarded) ─────
+      if (request.method === 'POST' && url.pathname === '/api/sync-seasons') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        return json(await syncSeasons(env), 200, cors);
       }
       // ── standalone avatar add / delete (token-guarded) ────────────────────
       if (request.method === 'POST' && url.pathname.startsWith('/api/avatar')) {
@@ -440,6 +452,160 @@ async function rosterPublish(env, payload = {}) {
   }
 
   return { ok: true, published: rows.length, voices: withVoice.length, wrote };
+}
+
+// ══ season data sync: repo JSON -> D1 ══════════════════════════════════════
+//
+// players/appearances/bonds/seasons/rankings are DERIVED — the simulator makes
+// them and the export writes the JSON. D1 is a queryable mirror, so it goes
+// stale after every season unless it's refreshed. This endpoint rebuilds those
+// tables straight from the repo, which is why the export never had to change.
+
+const PLAYERS_DB_PATH  = 'players_database.json';
+const SEASONS_DB_PATH  = 'seasons_database.json';
+const RANKINGS_DB_PATH = 'rankings_database.json';
+
+/** Read a repo JSON file. Falls back to download_url for files over 1MB,
+ *  where the GitHub contents API stops inlining content. */
+async function getRepoJson(env, path, required = true) {
+  const f = await getFile(env, path);
+  if (!f) {
+    if (required) throw httpErr(`${path} not found in the repo`, 404);
+    return null;
+  }
+  if (f.content) return decodeJson(f.content);
+  if (f.download_url) {
+    const r = await fetch(f.download_url);
+    if (r.ok) return r.json();
+  }
+  throw httpErr(`could not read ${path}`, 500);
+}
+
+const asInt = v => {
+  if (typeof v === 'number' && Number.isFinite(v)) return Math.round(v);
+  if (typeof v === 'string' && /^-?\d+$/.test(v.trim())) return parseInt(v, 10);
+  return null;   // "High" and friends are prose, not ranks
+};
+const asNum = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/** D1 caps how much one batch can carry, so run in chunks. */
+async function runChunked(d, statements, size = 60) {
+  for (let i = 0; i < statements.length; i += size) {
+    await d.batch(statements.slice(i, i + size));
+  }
+}
+
+async function syncSeasons(env) {
+  const d = db(env);
+  const [pdb, sdb, rdb] = await Promise.all([
+    getRepoJson(env, PLAYERS_DB_PATH),
+    getRepoJson(env, SEASONS_DB_PATH),
+    getRepoJson(env, RANKINGS_DB_PATH, false),
+  ]);
+
+  const players = (pdb && pdb.players) || [];
+  const seasons = (sdb && sdb.seasons) || [];
+  const rankings = (rdb && rdb.rankings) || [];
+  if (!players.length) throw new ValidationError('players_database.json has no players — refusing to wipe the tables');
+  if (!seasons.length) throw new ValidationError('seasons_database.json has no seasons — refusing to wipe the tables');
+
+  const validSeasons = new Set(seasons.map(s => s.seasonNumber).filter(n => n != null));
+  const validSlugs = new Set(players.map(p => p.id).filter(Boolean));
+  // unbreakableBonds records display NAMES, so map them back to slugs
+  const nameToSlug = new Map();
+  for (const p of players) if (p.name && p.id) nameToSlug.set(String(p.name).trim().toLowerCase(), p.id);
+
+  const stmts = [];
+  const counts = { players: 0, seasons: 0, appearances: 0, bonds: 0, rankings: 0, skipped: 0 };
+
+  for (const p of players) {
+    if (!p.id) { counts.skipped++; continue; }
+    counts.players++;
+    stmts.push(d.prepare(
+      `INSERT INTO players (id,name,total_seasons,best_placement,wins,total_challenge_wins,
+        total_immunity_wins,total_reward_wins,total_votes_against,total_idols_found,
+        total_jury_votes,tier,avg_placement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(p.id, p.name || p.id, asInt(p.totalSeasons), asInt(p.bestPlacement), asInt(p.wins),
+      asInt(p.totalChallengeWins), asInt(p.totalImmunityWins), asInt(p.totalRewardWins),
+      asInt(p.totalVotesAgainst), asInt(p.totalIdolsFound), asInt(p.totalJuryVotes),
+      p.tier || null, asNum(p.avgPlacement)));
+  }
+
+  for (const s of seasons) {
+    if (s.seasonNumber == null) continue;
+    counts.seasons++;
+    const w = s.winner || {};
+    stmts.push(d.prepare(
+      `INSERT INTO seasons (season_number,title,subtitle,cast_size,episode_count,winner_slug,theme,status)
+       VALUES (?,?,?,?,?,?,?,?)`
+    ).bind(s.seasonNumber, s.title || null, s.subtitle || null, asInt(s.castSize),
+      asInt(s.episodeCount), w.playerSlug || null, s.theme || null, s.status || null));
+  }
+
+  const seenApp = new Set(), seenBond = new Set();
+  for (const p of players) {
+    if (!p.id) continue;
+    for (const det of (p.seasonDetails || [])) {
+      const sn = det.season;
+      if (!validSeasons.has(sn)) { counts.skipped++; continue; }
+      const key = `${p.id}|${sn}`;
+      if (seenApp.has(key)) continue;
+      seenApp.add(key);
+      counts.appearances++;
+      stmts.push(d.prepare(
+        `INSERT INTO appearances (player_id,season_number,placement,status,tribe,challenge_wins,
+          immunity_wins,reward_wins,votes_received,idols_found,strategic_rank,jury_votes,final_vote)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(p.id, sn, asInt(det.placement), det.status || null, det.tribe || null,
+        asInt(det.challengeWins), asInt(det.immunityWins), asInt(det.rewardWins),
+        asInt(det.votesReceived), asInt(det.idolsFound), asInt(det.strategicRank),
+        asInt(det.juryVotes), det.finalVote || null));
+
+      for (const ally of (det.unbreakableBonds || [])) {
+        const allySlug = nameToSlug.get(String(ally).trim().toLowerCase());
+        if (!allySlug || !validSlugs.has(allySlug) || allySlug === p.id) continue;
+        const bkey = `${p.id}|${allySlug}|${sn}`;
+        if (seenBond.has(bkey)) continue;
+        seenBond.add(bkey);
+        counts.bonds++;
+        stmts.push(d.prepare('INSERT INTO bonds (player_id,ally_id,season_number) VALUES (?,?,?)')
+          .bind(p.id, allySlug, sn));
+      }
+    }
+  }
+
+  for (const r of rankings) {
+    if (!r.playerId) continue;
+    counts.rankings++;
+    stmts.push(d.prepare(
+      `INSERT INTO rankings (player_id,name,rank,tier,score,title,emoji,status,avg_placement,
+        win_rate,wins,seasons_played,challenge_wins,votes_against,jury_votes,idols_found,
+        placement_percentile,win_percentile,challenge_percentile,social_percentile,
+        strategic_percentile,reasoning,strengths,weaknesses)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(r.playerId, r.name || null, asInt(r.rank), r.tier || null, asNum(r.score),
+      r.title || null, r.emoji || null, r.status || null, asNum(r.avgPlacement),
+      asNum(r.winRate), asInt(r.wins), asInt(r.seasonsPlayed), asInt(r.challengeWins),
+      asInt(r.votesAgainst), asInt(r.juryVotes), asInt(r.idolsFound),
+      asNum(r.placementPercentile), asNum(r.winPercentile), asNum(r.challengePercentile),
+      asNum(r.socialPercentile), asNum(r.strategicPercentile),
+      r.reasoning || null,
+      Array.isArray(r.strengths) ? JSON.stringify(r.strengths) : null,
+      Array.isArray(r.weaknesses) ? JSON.stringify(r.weaknesses) : null));
+  }
+
+  // Clear in dependency order, then refill. The roster table is untouched —
+  // it is authored data and has nothing to do with this.
+  await runChunked(d, [
+    d.prepare('DELETE FROM bonds'),
+    d.prepare('DELETE FROM appearances'),
+    d.prepare('DELETE FROM rankings'),
+    d.prepare('DELETE FROM seasons'),
+    d.prepare('DELETE FROM players'),
+  ]);
+  await runChunked(d, stmts);
+
+  return { ok: true, synced: counts, note: 'roster table untouched (authored data)' };
 }
 
 // ══ standalone avatar management ═══════════════════════════════════════════

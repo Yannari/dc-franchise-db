@@ -366,6 +366,32 @@ async function _unretire(slug, btn) {
   }
 }
 
+/** Rebuild the derived tables (players/appearances/bonds/seasons/rankings)
+ *  from the JSON the season export committed. The roster is not involved. */
+async function _syncSeasonData() {
+  const btn = document.getElementById('st-sync');
+  if (!_apiBase()) return _toast('No backend configured — nothing to sync', 'err');
+  if (!confirm('Rebuild the season and ranking tables from the repo?\n\nReads players_database.json, seasons_database.json and rankings_database.json and replaces those tables. Your roster is not touched.\n\nRun this after exporting and committing a finished season.')) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing…'; }
+  try {
+    const r = await fetch(_apiUrl('/api/sync-seasons'), {
+      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }), body: '{}',
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'sync failed');
+    const c = j.synced || {};
+    _toast(`Synced — ${c.players} players, ${c.appearances} appearances, ${c.seasons} seasons, ${c.rankings} rankings`, 'ok');
+    // season counts feed the "never played" filter
+    await _rosterPull();
+    _gridRefresh();
+  } catch (e) {
+    _toast('Sync failed: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Sync season data'; }
+  }
+}
+
 function _updatePublishBtn() {
   const btn = document.getElementById('st-publish');
   if (!btn) return;
@@ -407,6 +433,7 @@ export function renderStudio() {
            <button type="button" id="st-never" class="st-btn" title="Show only characters with no season history — the ones safe to clean up.">🌱 Never played</button>
            <button type="button" id="st-retired" class="st-btn" title="Show characters that were retired instead of deleted, and bring them back.">👻 Retired</button>
            <button type="button" id="st-publish" class="st-btn" title="Regenerate franchise_roster.json + voice-profiles.json from the database.">⬆ Publish to site</button>
+           <button type="button" id="st-sync" class="st-btn" title="Rebuild the season/ranking tables in the database from the repo JSON. Run this after exporting a finished season.">🔄 Sync season data</button>
            <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
          </div>
          <div id="st-retired-panel" hidden></div>
@@ -421,6 +448,7 @@ export function renderStudio() {
   panel.querySelector('#st-new').addEventListener('click', () => { _draft = _blankChar(); renderStudio(); });
   panel.querySelector('#st-search').addEventListener('input', e => _renderGrid(e.target.value));
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
+  panel.querySelector('#st-sync').addEventListener('click', _syncSeasonData);
   panel.querySelector('#st-publish').addEventListener('click', _rosterPublish);
   panel.querySelector('#st-retired').addEventListener('click', _toggleRetiredPanel);
   panel.querySelector('#st-never').addEventListener('click', e => {

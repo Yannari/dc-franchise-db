@@ -536,7 +536,7 @@ async function _renderAvatarsView() {
   box.innerHTML =
     `<div class="st-av-bar">
        <button type="button" class="st-btn st-primary" id="st-av-add">＋ Add avatar</button>
-       <input type="file" id="st-av-file" accept="image/*" hidden>
+       <input type="file" id="st-av-file" accept="image/*" multiple hidden>
        <input type="search" class="st-input st-av-search" id="st-av-q" placeholder="Search avatars…" autocomplete="off">
        <div class="st-av-filters">
          ${[['all', 'All'], ['unused', 'Unused'], ['used', 'In use']].map(([k, label]) =>
@@ -1041,36 +1041,70 @@ function _renderLibrary() {
 
 let _libDeleteMode = false;
 
-/** Upload a picked image to assets/avatars/<slug>.png — no character needed. */
+/** Upload one or many images to assets/avatars/<slug>.png — no character needed.
+ *  Slugs come from the filenames, so a bulk drop needs no prompting; only a
+ *  single file asks, since that's when you're most likely to want a rename. */
 async function _libAddFile(input) {
-  const file = input.files && input.files[0];
+  const files = [...(input.files || [])];
   input.value = '';                                   // allow re-picking the same file
-  if (!file) return;
+  if (!files.length) return;
   if (!_apiBase()) return _toast('No backend configured — cannot upload', 'err');
 
-  const suggested = _slugify(file.name.replace(/\.[a-z0-9]+$/i, ''));
-  const slug = (prompt('Save this avatar under which slug?\n(lowercase letters, digits and dashes — this is the filename)', suggested) || '').trim().toLowerCase();
-  if (!slug) return;
-  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) return _toast('Slug must be lowercase letters/digits/dashes', 'err');
-  if (_avatarList.includes(slug) && !confirm(`"${slug}" already exists in the library. Replace it?`)) return;
+  const jobs = [];
+  if (files.length === 1) {
+    const suggested = _slugify(files[0].name.replace(/\.[a-z0-9]+$/i, ''));
+    const slug = (prompt('Save this avatar under which slug?\n(lowercase letters, digits and dashes — this is the filename)', suggested) || '').trim().toLowerCase();
+    if (!slug) return;
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) return _toast('Slug must be lowercase letters/digits/dashes', 'err');
+    if (_avatarList.includes(slug) && !confirm(`"${slug}" already exists in the library. Replace it?`)) return;
+    jobs.push({ file: files[0], slug });
+  } else {
+    const bad = [];
+    for (const f of files) {
+      const slug = _slugify(f.name.replace(/\.[a-z0-9]+$/i, ''));
+      if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) { bad.push(f.name); continue; }
+      jobs.push({ file: f, slug });
+    }
+    if (!jobs.length) return _toast('None of those filenames make a valid slug', 'err');
+    const dupes = jobs.filter(j => _avatarList.includes(j.slug)).map(j => j.slug);
+    const lines = [
+      `Upload ${jobs.length} avatar${jobs.length === 1 ? '' : 's'}? Slugs come from the filenames:`,
+      jobs.slice(0, 12).map(j => `  ${j.slug}`).join('\n') + (jobs.length > 12 ? `\n  …and ${jobs.length - 12} more` : ''),
+    ];
+    if (dupes.length) lines.push(`\n${dupes.length} already exist and will be REPLACED: ${dupes.slice(0, 8).join(', ')}${dupes.length > 8 ? '…' : ''}`);
+    if (bad.length) lines.push(`\nSkipping ${bad.length} file(s) with unusable names: ${bad.slice(0, 5).join(', ')}`);
+    if (!confirm(lines.join('\n'))) return;
+  }
 
-  _toast('Uploading avatar…', 'ok');
-  try {
-    // reuse the same square-crop pipeline the character portrait uses
-    const dataUri = await _imgToAvatar(URL.createObjectURL(file));
-    const r = await fetch(_apiUrl('/api/avatar'), {
-      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ slug, dataUri }),
-    });
-    const j = await r.json();
-    if (!j.ok) throw new Error(j.error || 'upload failed');
-    if (!_avatarList.includes(slug)) _avatarList.push(slug);
-    _libLetter = _libLetterOf(slug);
-    _libQuery = '';
-    _afterAvatarChange();
-    _toast(`Avatar "${slug}" ${j.replaced ? 'replaced' : 'added'} — live after the site rebuilds (~1 min)`, 'ok');
-  } catch (e) {
-    _toast('Avatar upload failed: ' + e.message, 'err');
+  let ok = 0;
+  const failed = [];
+  for (let i = 0; i < jobs.length; i++) {
+    const { file, slug } = jobs[i];
+    if (jobs.length > 1) _toast(`Uploading ${i + 1}/${jobs.length}: ${slug}…`, 'ok');
+    else _toast('Uploading avatar…', 'ok');
+    try {
+      // reuse the same square-crop pipeline the character portrait uses
+      const dataUri = await _imgToAvatar(URL.createObjectURL(file));
+      const r = await fetch(_apiUrl('/api/avatar'), {
+        method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ slug, dataUri }),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'upload failed');
+      if (!_avatarList.includes(slug)) _avatarList.push(slug);
+      _libLetter = _libLetterOf(slug);
+      ok++;
+    } catch (e) {
+      failed.push(`${slug} (${e.message})`);
+    }
+  }
+
+  _libQuery = '';
+  _afterAvatarChange();
+  if (failed.length) {
+    _toast(`${ok} uploaded, ${failed.length} failed: ${failed.slice(0, 3).join('; ')}`, failed.length === jobs.length ? 'err' : 'warn');
+  } else {
+    _toast(`${ok} avatar${ok === 1 ? '' : 's'} uploaded — live after the site rebuilds (~1 min)`, 'ok');
   }
 }
 

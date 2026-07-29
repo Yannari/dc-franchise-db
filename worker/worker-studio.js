@@ -22,9 +22,12 @@
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
 //
-// Season data sync (requires the token):
-//   POST /api/sync-seasons -> rebuilds players/appearances/bonds/seasons/rankings
-//                             from the repo JSON. Run after each season export.
+// Season data (requires the token):
+//   POST /api/sync-seasons  -> rebuilds players/appearances/bonds/seasons/rankings
+//                              from the JSON already committed in the repo.
+//   POST /api/publish-season {seasonNumber, season, players, seasons, franchise, rankings}
+//                           -> commits those documents, THEN syncs. Removes the
+//                              old manual "move the downloads into the repo" step.
 //
 // Avatar files (require the token; both are git commits):
 //   POST /api/avatar           {slug, dataUri}  -> add/replace assets/avatars/<slug>.png
@@ -92,12 +95,14 @@ export default {
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
       }
       // ── refresh the derived tables from the repo JSON (token-guarded) ─────
-      if (request.method === 'POST' && url.pathname === '/api/sync-seasons') {
+      if (request.method === 'POST' && (url.pathname === '/api/sync-seasons' || url.pathname === '/api/publish-season')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
           return json({ ok: false, error: 'unauthorized' }, 401, cors);
         }
-        return json(await syncSeasons(env), 200, cors);
+        if (url.pathname === '/api/sync-seasons') return json(await syncSeasons(env), 200, cors);
+        const body = await request.json().catch(() => ({}));
+        return json(await publishSeason(env, body), 200, cors);
       }
       // ── standalone avatar add / delete (token-guarded) ────────────────────
       if (request.method === 'POST' && url.pathname.startsWith('/api/avatar')) {
@@ -640,6 +645,59 @@ async function syncSeasons(env) {
     headroom: `${stmts.length}/${MAX_SYNC_STATEMENTS} of the safety limit`,
     note: 'roster table untouched (authored data)',
   };
+}
+
+/**
+ * Commit the JSON the season export just produced, then refresh D1 from it.
+ * This is the step that used to be manual: the export could only download
+ * files, so they had to be moved into the repo by hand before syncing.
+ *
+ * Body: { seasonNumber, season, players, seasons, franchise, rankings }
+ * Every document is optional except that at least one must be present.
+ */
+async function publishSeason(env, payload = {}) {
+  const wrote = [];
+  const docs = [];
+
+  const n = asInt(payload.seasonNumber);
+  if (payload.season) {
+    if (!n) throw new ValidationError('seasonNumber is required when publishing season data');
+    docs.push([`season${n}-data.json`, payload.season]);
+  }
+  if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);
+  if (payload.seasons)   docs.push([SEASONS_DB_PATH, payload.seasons]);
+  if (payload.franchise) docs.push(['franchise_database.json', payload.franchise]);
+  if (payload.rankings)  docs.push([RANKINGS_DB_PATH, payload.rankings]);
+  if (!docs.length) throw new ValidationError('nothing to publish — no documents in the request');
+
+  // Refuse obviously truncated payloads rather than committing them over good
+  // data. An export that produced an empty players list is a bug, not a season.
+  for (const [path, doc] of docs) {
+    if (path === PLAYERS_DB_PATH && !(doc.players || []).length) {
+      throw new ValidationError('players_database.json payload has no players — refusing to overwrite the repo copy');
+    }
+    if (path === SEASONS_DB_PATH && !(doc.seasons || []).length) {
+      throw new ValidationError('seasons_database.json payload has no seasons — refusing to overwrite the repo copy');
+    }
+  }
+
+  for (const [path, doc] of docs) {
+    const existing = await getFile(env, path);
+    await putFile(env, path, encodeJson(doc),
+      n ? `season ${n}: publish ${path}` : `studio: publish ${path}`, existing && existing.sha);
+    wrote.push(path);
+  }
+
+  // Now that the repo is current, rebuild the derived tables from it.
+  let synced = null;
+  try {
+    synced = (await syncSeasons(env)).synced;
+  } catch (e) {
+    return { ok: true, wrote, synced: null,
+             warning: `Files committed, but the database sync failed: ${e.message}. Press "Sync season data" to retry.` };
+  }
+
+  return { ok: true, wrote, synced };
 }
 
 // ══ standalone avatar management ═══════════════════════════════════════════

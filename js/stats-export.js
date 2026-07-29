@@ -2067,7 +2067,19 @@ export async function exportAndFillNarratives(onStatus) {
     seasonsDb = null;
   }
 
-  // Step 4: Download everything together
+  // Step 4a: hand the documents to the Worker, which commits them and refreshes
+  // D1. This replaces the old routine of downloading four files and moving them
+  // into the repo by hand. Falls back to downloads if there's no backend.
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum,
+    season: finalSeasonData,
+    franchise: franchiseDb,
+    players: playersDb,
+    seasons: seasonsDb,
+  }, _status);
+  if (published) return published;
+
+  // Step 4b: fallback — download everything together
   _status('Downloading files...');
   let delay = 0;
   _downloadJSON(finalSeasonData, `season${seasonNum}-data.json`);
@@ -2083,6 +2095,45 @@ export async function exportAndFillNarratives(onStatus) {
   }
   if (seasonsDb) {
     setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), delay);
+  }
+}
+
+/**
+ * POST the freshly built season documents to the Worker, which commits them to
+ * the repo and then rebuilds the D1 tables. Returns a summary on success, or
+ * null when there's no backend configured (caller then falls back to downloads).
+ */
+async function _publishSeasonToSite(payload, onStatus) {
+  const _status = onStatus || (() => {});
+  let base = '';
+  let token = '';
+  try {
+    base = (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
+    token = localStorage.getItem('studio_api_token') || '';
+  } catch { return null; }
+  if (!base) return null;
+
+  _status('Publishing to the site…');
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const r = await fetch(base + '/api/publish-season', {
+      method: 'POST', headers, body: JSON.stringify(payload),
+    });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
+
+    const c = j.synced || {};
+    const msg = j.warning
+      ? `Committed ${j.wrote.length} file(s), but the sync failed — press "Sync season data" in the Studio.`
+      : `Published: ${j.wrote.length} file(s) committed, database refreshed ` +
+        `(${c.players} players, ${c.appearances} appearances, ${c.rankings || 0} rankings). Site rebuilds in ~1 min.`;
+    _status(msg);
+    return { published: true, wrote: j.wrote, synced: j.synced, warning: j.warning || null };
+  } catch (e) {
+    // Downloading is the safety net: never lose an export because the network did.
+    _status(`Could not publish (${e.message}) — downloading the files instead.`);
+    return null;
   }
 }
 

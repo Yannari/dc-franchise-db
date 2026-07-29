@@ -2098,6 +2098,122 @@ export async function exportAndFillNarratives(onStatus) {
   }
 }
 
+// ── Live season snapshot ─────────────────────────────────────────────
+// A season in progress isn't in players_database.json — that only ever holds
+// finished seasons. This builds a lightweight "where everyone stands right now"
+// snapshot that the site can overlay on top of the finished-season data.
+
+/** Build a snapshot of the season currently loaded in the simulator. */
+export function extractLiveSeasonSnapshot() {
+  const history = gs.episodeHistory || [];
+  if (!history.length) throw new Error('No episodes have been played yet');
+
+  // Reuse the real placement walker: it already handles Rescue Island, twist
+  // boots, returnees and every other way a player can leave.
+  const { permanentExit } = _extractPlayerPlacements();
+
+  const slugOf = new Map(
+    ((typeof window !== 'undefined' && window.FRANCHISE_ROSTER) || [])
+      .filter(p => p.name && p.slug)
+      .map(p => [String(p.name).trim().toLowerCase(), p.slug]));
+
+  const episode = history.length;
+  const names = _allPlayerNames();
+  const jury = new Set(gs.jury || []);
+
+  const players = names.map(name => {
+    const exitEp = permanentExit[name];
+    const isOut = exitEp !== undefined && exitEp !== null;
+    const ch = _extractChallengeData(name);
+    const votes = _extractVotingData(name);
+    return {
+      name,
+      slug: slugOf.get(String(name).trim().toLowerCase()) || null,
+      status: isOut ? (jury.has(name) ? 'jury' : 'out') : 'in',
+      exitEpisode: isOut ? Math.floor(exitEp) : null,
+      immunityWins: ch.immunityWins || 0,
+      rewardWins: ch.rewardWins || 0,
+      challengeWins: (ch.immunityWins || 0) + (ch.rewardWins || 0),
+      votesReceived: votes.totalVotesReceived || 0,
+    };
+  });
+
+  const stillIn = players.filter(p => p.status === 'in').length;
+  return {
+    seasonNumber: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonNumber) || _getSeasonNumber(),
+    title: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonTitle) || null,
+    episode,
+    totalPlayers: players.length,
+    stillIn,
+    players,
+  };
+}
+
+/**
+ * Push the current standings to the site. No commit and no rebuild — this
+ * writes to D1 only, so the pages pick it up on their next load.
+ */
+export async function syncLiveEpisode(onStatus) {
+  const _status = onStatus || (() => {});
+  let base = '', token = '';
+  try {
+    base = (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
+    token = localStorage.getItem('studio_api_token') || '';
+  } catch {}
+  if (!base) throw new Error('No backend configured');
+
+  const snap = extractLiveSeasonSnapshot();
+  _status(`Syncing episode ${snap.episode}…`);
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const r = await fetch(base + '/api/live-season', { method: 'POST', headers, body: JSON.stringify(snap) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
+
+  _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.`);
+  return j;
+}
+
+/** Button handler for "Sync episode to site" (exposed on window via main.js). */
+export async function syncEpisodeToSite() {
+  const btn = document.getElementById('live-sync-btn');
+  const note = document.getElementById('live-sync-note');
+  const say = (msg, bad) => {
+    if (note) { note.textContent = msg; note.style.color = bad ? '#e5484d' : ''; }
+  };
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing…'; }
+  try {
+    await syncLiveEpisode(say);
+  } catch (e) {
+    say(`Sync failed: ${e.message}`, true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔴 Sync episode to site'; }
+  }
+}
+
+/** Take the airing season back off the site (e.g. you're restarting it). */
+export async function clearLiveSeason() {
+  const note = document.getElementById('live-sync-note');
+  let base = '', token = '';
+  try {
+    base = (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '');
+    token = localStorage.getItem('studio_api_token') || '';
+  } catch {}
+  if (!base) return;
+  if (!confirm('Remove the airing season from the site?\n\nThe site goes back to showing only finished seasons. Your simulator save is untouched.')) return;
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const r = await fetch(base + '/api/live-season/clear', { method: 'POST', headers, body: '{}' });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'clear failed');
+    if (note) note.textContent = 'Airing season removed from the site.';
+  } catch (e) {
+    if (note) { note.textContent = `Could not clear: ${e.message}`; note.style.color = '#e5484d'; }
+  }
+}
+
 /**
  * POST the freshly built season documents to the Worker, which commits them to
  * the repo and then rebuilds the D1 tables. Returns a summary on success, or

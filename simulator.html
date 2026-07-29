@@ -811,6 +811,10 @@
             </div>
             <div class="season-controls-note">Reset clears episode history but keeps the cast and setup.</div>
             <div class="divider" style="margin:8px 0"></div>
+            <div class="season-controls-label">Live to Site</div>
+            <button class="btn btn-secondary btn-sm" id="live-sync-btn" onclick="syncEpisodeToSite()" style="margin-bottom:2px;width:100%" title="Push the current standings to the live site. No commit, no rebuild — visitors see it on their next page load.">🔴 Sync episode to site</button>
+            <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px"></div>
+            <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>
             <button class="btn btn-secondary btn-sm" onclick="exportSeason()" style="margin-bottom:2px;width:100%">Export Season</button>

@@ -764,11 +764,47 @@ function updateHeaderStats() {
 // ✅ CALL THE FUNCTION AND CHAIN PROMISES
 // Load the devotees dataset AND the roster (which carries archetype + stats),
 // then merge roster data onto each player by slug/id (falling back to name).
+// The airing season isn't in players_database.json — that only holds finished
+// seasons — so it's fetched separately and overlaid. If the Worker is down this
+// resolves to null and the page just shows finished seasons, exactly as before.
+const LIVE_API = 'https://dc-studio.yannari19.workers.dev/api/live-season';
+
+function showLiveBanner(live) {
+  const style = document.createElement('style');
+  style.textContent = `
+    .live-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;
+      padding:11px 16px;border-radius:12px;font-size:14px;font-weight:600;
+      border:1px solid rgba(255,92,122,.35);background:rgba(255,92,122,.10);color:#ff8fa3}
+    .live-banner .dot{width:9px;height:9px;border-radius:50%;background:#ff5c7a;
+      box-shadow:0 0 0 0 rgba(255,92,122,.7);animation:livePulse 2s infinite}
+    @keyframes livePulse{70%{box-shadow:0 0 0 9px rgba(255,92,122,0)}100%{box-shadow:0 0 0 0 rgba(255,92,122,0)}}
+    @media (prefers-reduced-motion:reduce){.live-banner .dot{animation:none}}
+    .live-banner .sub{color:var(--muted,#bdb4c7);font-weight:500}
+    .badge.live-badge{border-color:rgba(255,92,122,.4);background:rgba(255,92,122,.14);color:#ff8fa3}
+    .badge.live-badge.is-out{border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.12);color:#94a3b8}`;
+  document.head.appendChild(style);
+
+  const el = document.createElement('div');
+  el.className = 'live-banner';
+  el.innerHTML = `<span class="dot"></span>
+    <span>Season ${live.seasonNumber}${live.title ? ' · ' + live.title : ''} is airing — episode ${live.episode}</span>
+    <span class="sub">${live.stillIn} of ${live.totalPlayers} still in</span>`;
+  const host = document.querySelector('main') || document.body;
+  host.insertBefore(el, host.firstChild);
+}
+function loadLiveSeason() {
+  return fetch(LIVE_API)
+    .then(r => r.json())
+    .then(j => (j && j.ok && j.airing) ? j : null)
+    .catch(() => null);
+}
+
 Promise.all([
   loadPlayerData(),
-  fetch('franchise_roster.json').then(r => r.json()).catch(() => null)
+  fetch('franchise_roster.json').then(r => r.json()).catch(() => null),
+  loadLiveSeason()
 ])
-  .then(([data, roster]) => {
+  .then(([data, roster, live]) => {
     // Build a lookup keyed by both slug and lowercased name.
     const rmap = {};
     if (roster) {
@@ -781,16 +817,49 @@ Promise.all([
       });
     }
 
+    // live standings keyed by slug and by lowercased name
+    const lmap = {};
+    if (live) {
+      (live.players || []).forEach(lp => {
+        if (lp.slug) lmap[lp.slug] = lp;
+        if (lp.name) lmap[String(lp.name).toLowerCase()] = lp;
+      });
+    }
+
     allPlayers = data.players.map(player => {
       const emoji = player.emoji || emojiMap[player.name.toLowerCase()] || '👤';
       const rp = rmap[player.id] || rmap[(player.name || '').toLowerCase()] || null;
+      const lp = lmap[player.id] || lmap[(player.name || '').toLowerCase()] || null;
       return {
         ...player,
         emoji,
         archetype: rp?.archetype || null,
-        stats: rp?.stats || null
+        stats: rp?.stats || null,
+        live: lp ? { ...lp, seasonNumber: live.seasonNumber, episode: live.episode } : null
       };
     });
+
+    // Characters cast in the airing season who have never played before aren't
+    // in players_database.json at all, so add them rather than dropping them.
+    if (live) {
+      const known = new Set(data.players.map(p => String(p.name).toLowerCase()));
+      (live.players || []).forEach(lp => {
+        if (known.has(String(lp.name).toLowerCase())) return;
+        const rp = rmap[lp.slug] || rmap[String(lp.name).toLowerCase()] || null;
+        allPlayers.push({
+          id: lp.slug || String(lp.name).toLowerCase(),
+          name: lp.name,
+          emoji: emojiMap[String(lp.name).toLowerCase()] || '🆕',
+          totalSeasons: 0, seasons: [], seasonDetails: [],
+          wins: 0, bestPlacement: null, tier: null,
+          archetype: rp?.archetype || null,
+          stats: rp?.stats || null,
+          live: { ...lp, seasonNumber: live.seasonNumber, episode: live.episode }
+        });
+      });
+    }
+
+    if (live) showLiveBanner(live);
 
     populateArchetypeFilter();
     renderPlayers(allPlayers);
@@ -860,6 +929,15 @@ function renderPlayers(players) {
     }
     badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
     badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
+
+    // Airing-season status, in front of the historical badges
+    if (player.live) {
+      const lv = player.live;
+      const label = lv.status === 'in'
+        ? `S${lv.seasonNumber} · still in`
+        : `S${lv.seasonNumber} · out ep ${lv.exitEpisode ?? '—'}${lv.status === 'jury' ? ' · jury' : ''}`;
+      badgesHtml = `<span class="badge live-badge ${lv.status === 'in' ? 'is-in' : 'is-out'}">${label}</span>` + badgesHtml;
+    }
 
     const emoji = player.emoji || emojiMap[player.name.toLowerCase()] || '👤';
     const name = player.name || 'Unknown';

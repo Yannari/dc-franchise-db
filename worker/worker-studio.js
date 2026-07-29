@@ -53,7 +53,8 @@ export default {
     // The D1 read endpoints serve public data, so they are readable from ANY
     // origin (including localhost during development). The studio write
     // endpoint keeps the strict ALLOWED_ORIGIN check.
-    const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats', '/api/roster'];
+    const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
+                          '/api/roster', '/api/live-season'];
     const isPublicRead = PUBLIC_READS.includes(url.pathname);
     const rcors = isPublicRead ? { ...cors, 'Access-Control-Allow-Origin': '*' } : cors;
 
@@ -95,6 +96,21 @@ export default {
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
       }
       // ── refresh the derived tables from the repo JSON (token-guarded) ─────
+      // ── live season overlay ───────────────────────────────────────────────
+      if (request.method === 'GET' && url.pathname === '/api/live-season') {
+        // Short cache: this changes only when you press sync, but a popular
+        // page shouldn't hit D1 on every visit.
+        return json(await liveSeasonGet(env), 200, rcors, 30);
+      }
+      if (request.method === 'POST' && url.pathname.startsWith('/api/live-season')) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        if (url.pathname === '/api/live-season/clear') return json(await liveSeasonClear(env), 200, cors);
+        const body = await request.json().catch(() => ({}));
+        return json(await liveSeasonPut(env, body), 200, cors);
+      }
       if (request.method === 'POST' && (url.pathname === '/api/sync-seasons' || url.pathname === '/api/publish-season')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
@@ -647,6 +663,83 @@ async function syncSeasons(env) {
   };
 }
 
+// ══ live season: the season currently airing ═══════════════════════════════
+// Written after any episode you're happy with. No commit, no rebuild — the
+// site reads it as an overlay on top of the finished-season JSON.
+
+async function liveSeasonGet(env) {
+  const d = db(env);
+  const [metaRes, rowsRes] = await d.batch([
+    d.prepare('SELECT * FROM live_meta WHERE id = 1'),
+    d.prepare('SELECT * FROM live_season ORDER BY status, player_name'),
+  ]);
+  const meta = (metaRes.results || [])[0];
+  if (!meta || meta.season_number == null) return { ok: true, airing: false, players: [] };
+  return {
+    ok: true,
+    airing: true,
+    seasonNumber: meta.season_number,
+    title: meta.title,
+    episode: meta.episode,
+    totalPlayers: meta.total_players,
+    stillIn: meta.still_in,
+    updatedAt: meta.updated_at,
+    players: (rowsRes.results || []).map(r => ({
+      name: r.player_name,
+      slug: r.player_id,
+      status: r.status,
+      exitEpisode: r.exit_episode,
+      immunityWins: r.immunity_wins,
+      rewardWins: r.reward_wins,
+      challengeWins: r.challenge_wins,
+      votesReceived: r.votes_received,
+    })),
+  };
+}
+
+async function liveSeasonPut(env, payload = {}) {
+  const season = asInt(payload.seasonNumber);
+  const players = Array.isArray(payload.players) ? payload.players : [];
+  if (!season) throw new ValidationError('seasonNumber is required');
+  if (!players.length) throw new ValidationError('no players in the snapshot — refusing to publish an empty season');
+
+  const d = db(env);
+  const stmts = [
+    d.prepare('DELETE FROM live_season'),
+    d.prepare(
+      `INSERT INTO live_meta (id,season_number,title,episode,total_players,still_in,updated_at)
+       VALUES (1,?,?,?,?,?,datetime('now'))
+       ON CONFLICT(id) DO UPDATE SET season_number=excluded.season_number, title=excluded.title,
+         episode=excluded.episode, total_players=excluded.total_players,
+         still_in=excluded.still_in, updated_at=excluded.updated_at`
+    ).bind(season, payload.title || null, asInt(payload.episode),
+      asInt(payload.totalPlayers) || players.length,
+      asInt(payload.stillIn) ?? players.filter(p => p.status === 'in').length),
+  ];
+
+  for (const p of players) {
+    if (!p || !p.name) continue;
+    stmts.push(d.prepare(
+      `INSERT INTO live_season (season_number,player_name,player_id,status,exit_episode,
+        immunity_wins,reward_wins,challenge_wins,votes_received) VALUES (?,?,?,?,?,?,?,?,?)`
+    ).bind(season, String(p.name), p.slug || null, p.status || 'in', asInt(p.exitEpisode),
+      asInt(p.immunityWins) || 0, asInt(p.rewardWins) || 0,
+      asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0));
+  }
+
+  await runChunked(d, stmts);
+  return { ok: true, seasonNumber: season, episode: asInt(payload.episode), players: players.length };
+}
+
+async function liveSeasonClear(env) {
+  const d = db(env);
+  await d.batch([
+    d.prepare('DELETE FROM live_season'),
+    d.prepare('DELETE FROM live_meta'),
+  ]);
+  return { ok: true, cleared: true };
+}
+
 /**
  * Commit the JSON the season export just produced, then refresh D1 from it.
  * This is the step that used to be manual: the export could only download
@@ -687,6 +780,10 @@ async function publishSeason(env, payload = {}) {
       n ? `season ${n}: publish ${path}` : `studio: publish ${path}`, existing && existing.sha);
     wrote.push(path);
   }
+
+  // The season is finished and now part of the permanent history, so the live
+  // overlay would only duplicate it. Clear it.
+  try { await liveSeasonClear(env); } catch { /* overlay is best-effort */ }
 
   // Now that the repo is current, rebuild the derived tables from it.
   let synced = null;

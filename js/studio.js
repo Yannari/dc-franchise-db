@@ -255,6 +255,9 @@ let _seasonCounts = new Map();   // slug -> seasons played (from D1)
 // class or an input value is silently lost while the filter itself stays on.
 let _rosterFilter = 'all';       // all | never  (never = no season history)
 let _rosterQuery = '';           // the search box text
+let _archFilter = (() => {       // one archetype, or '' for all
+  try { return localStorage.getItem('studio_arch_filter') || ''; } catch { return ''; }
+})();
 
 // Hosts live in the roster but never compete, so they'd always look "never
 // played". Keep them out of that filter so a cleanup sweep can't bin them.
@@ -481,6 +484,7 @@ export function renderStudio() {
          <div id="st-retired-panel" hidden></div>
          <div id="st-casts" class="st-casts"></div>
          <div id="st-balance" class="st-balance"></div>
+         <div id="st-archbar" class="st-archbar"></div>
          <div id="st-grid" class="st-grid"></div>
        </section>
        <section class="st-editor" id="st-editor"></section>
@@ -675,6 +679,11 @@ async function _renderGrid(q) {
       : [];
   }
 
+  // Counts are taken here — after search and never-played, before the archetype
+  // filter — so each chip says how many you would get by clicking it.
+  _renderArchBar(list);
+  if (_archFilter) list = list.filter(p => (p.archetype || '') === _archFilter);
+
   // With a cast selected, its starred members float to the top so you can see
   // and tweak the cast without hunting through 166 cards. Order within each
   // group is left alone.
@@ -723,8 +732,37 @@ function _renderBalance() {
   el.innerHTML =
     `<span class="st-chip">${r.length} in pool</span>
      <span class="st-chip">♂ ${g.m || 0}</span><span class="st-chip">♀ ${g.f || 0}</span><span class="st-chip">⚧ ${g.nb || 0}</span>
-     <span class="st-chip st-chip-warn">${villains} schemers/villains</span>
+     <span class="st-chip" title="villain, mastermind and schemer archetypes across the whole library">${villains} villainous (${Math.round(villains / (r.length || 1) * 100)}%)</span>
      <span class="st-hint">Open or create a cast to analyze a lineup.</span>`;
+}
+
+/**
+ * Archetype filter strip. Counts come from the list AFTER the search box and
+ * the never-played filter have been applied, so they describe what is actually
+ * in front of you rather than the library in the abstract — and a count of 0
+ * is worth seeing, so empty archetypes stay visible but dimmed.
+ */
+function _renderArchBar(list) {
+  const bar = document.getElementById('st-archbar');
+  if (!bar) return;
+  const counts = {};
+  list.forEach(p => { const a = p.archetype || '—'; counts[a] = (counts[a] || 0) + 1; });
+
+  const chips = ARCHETYPES.filter(a => counts[a] || _archFilter === a).map(a => {
+    const n = counts[a] || 0;
+    const on = _archFilter === a;
+    return `<button type="button" class="st-arch${on ? ' on' : ''}${n ? '' : ' empty'}" data-arch="${a}"
+      style="--c:${ARCH_COLOR[a] || '#64748b'}" title="${a}">${a.replace(/-/g, ' ')} <b>${n}</b></button>`;
+  }).join('');
+
+  bar.innerHTML =
+    `<button type="button" class="st-arch${_archFilter ? '' : ' on'}" data-arch="">all <b>${list.length}</b></button>` + chips;
+
+  bar.querySelectorAll('.st-arch').forEach(b => b.addEventListener('click', () => {
+    _archFilter = b.dataset.arch === _archFilter ? '' : b.dataset.arch;
+    try { localStorage.setItem('studio_arch_filter', _archFilter); } catch {}
+    _renderGrid(_rosterQuery);
+  }));
 }
 
 function _castAnalysisHTML(members, castName) {
@@ -1527,6 +1565,16 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
+  /* archetype filter strip */
+  .st-archbar{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px}
+  .st-arch{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-left:3px solid var(--c,#64748b);
+    border-radius:7px;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:11px;padding:4px 9px;
+    text-transform:capitalize;transition:color .12s,background .12s}
+  .st-arch:hover{color:inherit;background:#ffffff0d}
+  .st-arch b{color:inherit;font-variant-numeric:tabular-nums;opacity:.75;margin-left:2px}
+  .st-arch.on{background:var(--c,#64748b)22;border-color:var(--c,#64748b);color:inherit;font-weight:700}
+  .st-arch.on b{opacity:1}
+  .st-arch.empty{opacity:.35}
   /* studio view tabs */
   .st-views{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--border,#333)}
   .st-view{background:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;color:var(--muted,#9a9);cursor:pointer;font:inherit;font-size:13px;font-weight:700;margin-bottom:-1px;padding:9px 16px}

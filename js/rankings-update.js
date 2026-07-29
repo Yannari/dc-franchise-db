@@ -475,22 +475,27 @@ function buildPreview() {
     if (row.quit)       parts.push('Quit:\u22126.0');
     if (row.override)   parts.push('Override:' + (row.override>0?'+':'') + row.override.toFixed(1) + (row.overrideReason?' ('+row.overrideReason+')':''));
 
+    // The baseline is the player's ESTABLISHED score — the one in the rankings.
+    //
+    // This used to average scoreHistory, but that array is a log of the score
+    // after each update, not a list of per-season performances: for 82 of the
+    // 86 players with a history, the last entry IS the current score. Averaging
+    // it therefore averaged past states of the same number, producing a figure
+    // that was never anyone's ranking (Wayne: 56.5 -> 89.6 showed a "career
+    // average" of 73.0), and a delta measured from it was meaningless.
     let oldScore = null;
     if (existing) {
       const hist = existing.scoreHistory;
-      if (hist && hist.length > 0) {
-        oldScore = Math.round(hist.reduce((a,b)=>a+b,0) / hist.length * 10) / 10;
-      } else {
-        oldScore = existing.score || 0;
-      }
+      oldScore = (existing.score != null)
+        ? existing.score
+        : (hist && hist.length ? hist[hist.length - 1] : 0);
     }
     const oldTier  = existing?existing.tier:null;
     const newTier  = scoreTier(newScore);
 
     results.push({
       name:row.name, placement:row.placement, isWinner, isNew:wasNew, isFinalist,
-      oldScore, currentScore: existing ? (existing.score ?? null) : null,
-      newScore, oldTier, newTier,
+      oldScore, newScore, oldTier, newTier,
       tierChanged: oldTier!==newTier,
       delta: oldScore!==null ? newScore-oldScore : null,
       breakdown: parts.join(' \u2502 '),
@@ -524,13 +529,7 @@ function renderPreview(results, seasonNum, castSize) {
       (r.isWinner?' \ud83d\udc51':'') +
       (r.row.override?' <span style="font-size:10px;color:#fbbf24;" title="' + r.overrideReason + '">[override]</span>':'') +
     '</td>' +
-    // The baseline is the MEAN of every past season score, not the player's
-    // current score \u2014 Bowie sitting on 94 with a history of [94, 99] shows 96.5
-    // here. Show the live score underneath so the two can't be confused.
-    '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore!==null?r.oldScore:'\u2014') +
-      (r.currentScore!==null && r.currentScore!==undefined && r.currentScore!==r.oldScore
-        ? '<div style="font-size:10px;opacity:0.7;">now ' + r.currentScore + '</div>' : '') +
-    '</td>' +
+    '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore!==null?r.oldScore:'\u2014') + '</td>' +
     '<td style="padding:7px 10px;text-align:center;font-weight:700;color:' + tierColor(r.newTier) + ';">' + r.newScore + '</td>' +
     '<td style="padding:7px 10px;text-align:center;font-weight:600;color:' + dc(r.delta) + ';">' + ds(r.delta) + '</td>' +
     '<td style="padding:7px 10px;text-align:center;">' +
@@ -559,9 +558,9 @@ function renderPreview(results, seasonNum, castSize) {
         '<thead><tr style="background:rgba(255,255,255,0.05);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.65;">' +
           '<th style="padding:8px 10px;text-align:left;">Place</th>' +
           '<th style="padding:8px 10px;text-align:left;">Player</th>' +
-          '<th style="padding:8px 10px;text-align:center;" title="Career average \u2014 the mean of every past season score. This is the baseline the change is measured from, NOT the player\'s current score, which is shown under it when they differ.">Career avg</th>' +
+          '<th style="padding:8px 10px;text-align:center;" title="The player\'s established score \u2014 what the rankings currently show for them.">Current</th>' +
           '<th style="padding:8px 10px;text-align:center;">New</th>' +
-          '<th style="padding:8px 10px;text-align:center;" title="New score minus the career average">\u0394</th>' +
+          '<th style="padding:8px 10px;text-align:center;" title="How far the new score moves them from their established score">\u0394</th>' +
           '<th style="padding:8px 10px;text-align:center;">Tier</th>' +
           '<th style="padding:8px 10px;text-align:left;">Modifiers</th>' +
         '</tr></thead>' +

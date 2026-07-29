@@ -912,13 +912,33 @@ async function _existingVoice(name) {
 // structured bio (age, origin/nationality, orientation) into a lead-in in front
 // of the personality prose. The raw prose is what's kept in the editor and the
 // Studio DB; this composed string is what gets written to voice-profiles.json.
+// A composed voice line starts with a bio lead-in: "24, Canada, gay." Editing a
+// character whose Studio draft is missing loads their voice back out of
+// voice-profiles.json, which already HAS that lead-in — so saving used to
+// prepend a second one, and every such edit added another ("24, Canadian. 24,
+// Canada. Scarred, half-blind loner…"). Strip an existing lead before adding.
+const _VOICE_LEAD_RE = /^\s*\d{1,3},[^.]{0,60}\.\s+/;
+
+function _stripVoiceLead(prose, lead) {
+  let out = String(prose || '').trim();
+  // Strip every stacked lead, not just one — text that already doubled needs to
+  // come out clean in a single save rather than shedding one layer at a time.
+  for (let i = 0; i < 6; i++) {
+    if (lead && out.startsWith(lead)) { out = out.slice(lead.length).trim(); continue; }
+    const m = out.match(_VOICE_LEAD_RE);
+    if (!m) break;
+    out = out.slice(m[0].length).trim();
+  }
+  return out;
+}
+
 function _composeVoice(d) {
   const bits = [];
   if (d.age) bits.push(String(d.age).trim());
   if (d.origin) bits.push(String(d.origin).trim());
   if (d.sexuality && d.sexuality !== 'straight') bits.push(d.sexuality);
   const lead = bits.length ? bits.join(', ') + '.' : '';
-  const prose = (d.voice || '').trim();
+  const prose = _stripVoiceLead(d.voice, lead);
   return (lead && prose) ? `${lead} ${prose}` : (lead || prose);
 }
 

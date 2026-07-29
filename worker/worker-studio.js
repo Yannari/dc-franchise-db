@@ -22,6 +22,10 @@
 //   POST /api/roster/unretire  {slug}
 //   POST /api/roster/publish   -> regenerates franchise_roster.json + voice-profiles.json
 //
+// Avatar files (require the token; both are git commits):
+//   POST /api/avatar           {slug, dataUri}  -> add/replace assets/avatars/<slug>.png
+//   POST /api/avatar/delete    {slug, force?}   -> remove it (refuses if a character uses it)
+//
 // Config (wrangler.toml [vars]): GITHUB_REPO ("owner/repo"), GITHUB_BRANCH,
 // ALLOWED_ORIGIN (your site origin, or "*").
 // Secrets (wrangler secret put): GITHUB_TOKEN (fine-grained PAT, contents:write
@@ -82,6 +86,17 @@ export default {
         if (url.pathname === '/api/roster/unretire') return json(await rosterUnretire(env, body), 200, cors);
         if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env), 200, cors);
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
+      }
+      // ── standalone avatar add / delete (token-guarded) ────────────────────
+      if (request.method === 'POST' && url.pathname.startsWith('/api/avatar')) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const body = await request.json().catch(() => ({}));
+        if (url.pathname === '/api/avatar')        return json(await avatarSave(env, body), 200, cors);
+        if (url.pathname === '/api/avatar/delete') return json(await avatarDelete(env, body), 200, cors);
+        return json({ ok: false, error: 'unknown avatar endpoint' }, 404, cors);
       }
       if (request.method === 'POST' && url.pathname === '/api/character') {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
@@ -383,6 +398,50 @@ async function rosterPublish(env) {
   return { ok: true, published: rows.length, voices: withVoice.length, wrote };
 }
 
+// ══ standalone avatar management ═══════════════════════════════════════════
+// Upload or remove an avatar PNG without creating a character. Avatars are real
+// files in the repo (assets/avatars/<slug>.png), so both operations are git
+// commits — there is nowhere else for an image to live.
+
+async function avatarSave(env, payload) {
+  const slug = String(payload.slug || '').trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) throw new ValidationError('slug must be lowercase letters, digits, and dashes');
+  const dataUri = String(payload.dataUri || '');
+  if (!dataUri.startsWith('data:image') || !dataUri.includes(',')) {
+    throw new ValidationError('dataUri must be a data:image/... payload');
+  }
+  const b64 = dataUri.slice(dataUri.indexOf(',') + 1);
+  const path = `${AVATAR_DIR}/${slug}.png`;
+  const existing = await getFile(env, path);
+  await putFile(env, path, b64,
+    `studio: ${existing ? 'replace' : 'add'} avatar ${slug}`, existing && existing.sha);
+  return { ok: true, slug, path, replaced: !!existing };
+}
+
+/**
+ * Delete an avatar PNG from the repo. If a character in the roster uses that
+ * slug we refuse unless force:true, so you can't silently break a portrait.
+ */
+async function avatarDelete(env, payload) {
+  const slug = String(payload.slug || '').trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) throw new ValidationError('slug is required');
+
+  const path = `${AVATAR_DIR}/${slug}.png`;
+  const file = await getFile(env, path);
+  if (!file) throw httpErr(`no avatar file for "${slug}"`, 404);
+
+  if (!payload.force && env.DB) {
+    const owner = await env.DB.prepare('SELECT name FROM roster WHERE slug = ?').bind(slug).first();
+    if (owner) {
+      return { ok: true, action: 'blocked', slug, usedBy: owner.name,
+               message: `${owner.name} uses this avatar. Deleting it leaves them with no portrait.` };
+    }
+  }
+
+  await deleteFile(env, path, `studio: delete avatar ${slug}`, file.sha);
+  return { ok: true, action: 'deleted', slug, path };
+}
+
 // ── core write logic (mirrors serve.py write_character) ────────────────────
 class ValidationError extends Error {}
 
@@ -471,6 +530,15 @@ async function putFile(env, path, contentB64, message, sha) {
     body: JSON.stringify(body),
   });
   if (!r.ok) throw httpErr(`GitHub PUT ${path} failed (${r.status}): ${await r.text()}`, r.status);
+  return r.json();
+}
+
+async function deleteFile(env, path, message, sha) {
+  const r = await fetch(`${ghBase(env)}/${encodeURI(path)}`, {
+    method: 'DELETE', headers: { ...ghHeaders(env), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, sha, branch: branch(env) }),
+  });
+  if (!r.ok) throw httpErr(`GitHub DELETE ${path} failed (${r.status}): ${await r.text()}`, r.status);
   return r.json();
 }
 

@@ -774,6 +774,7 @@ async function _toggleLibrary() {
   // fallback: the roster slugs all have avatars — works on static hosting too
   if (!_avatarList.length) _avatarList = _roster().map(p => p.slug).filter(Boolean);
   _libQuery = '';
+  _libDeleteMode = false;                 // never open the picker armed to delete
   const letters = _libLetters();
   if (!letters.includes(_libLetter)) _libLetter = letters[0] || '';
   box.hidden = false;
@@ -793,6 +794,9 @@ function _renderLibrary() {
       </div>
       <button type="button" class="st-lib-nav" data-nav="1" aria-label="Next letter">›</button>
       <input type="search" class="st-input st-lib-search" id="st-lib-q" placeholder="Search all…" autocomplete="off">
+      <button type="button" class="st-btn st-lib-add" id="st-lib-add" title="Upload an image to the avatar library without creating a character">＋ Add</button>
+      <button type="button" class="st-btn st-lib-del" id="st-lib-del" title="Delete mode: click an avatar to remove its file from the repo">🗑</button>
+      <input type="file" id="st-lib-file" accept="image/*" hidden>
     </div>
     <div class="st-lib-grid" id="st-lib-grid"></div>
     <p class="st-lib-count" id="st-lib-count"></p>`;
@@ -806,14 +810,93 @@ function _renderLibrary() {
     if (i < 0 || i >= letters.length) return;
     _libLetter = letters[i]; _libQuery = ''; box.querySelector('#st-lib-q').value = ''; _renderLibGrid();
   }));
+  // ── library management: add / delete files without touching a character ──
+  const fileInput = box.querySelector('#st-lib-file');
+  box.querySelector('#st-lib-add').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => _libAddFile(fileInput));
+  box.querySelector('#st-lib-del').addEventListener('click', () => {
+    _libDeleteMode = !_libDeleteMode;
+    _renderLibGrid();
+    _toast(_libDeleteMode
+      ? 'Delete mode on — click an avatar to remove its file'
+      : 'Delete mode off', _libDeleteMode ? 'warn' : 'ok');
+  });
+
   // delegated so it survives every grid re-render
   box.addEventListener('click', async e => {
     const b = e.target.closest('.st-lib-item'); if (!b) return;
+    if (_libDeleteMode) return _libDeleteFile(b.dataset.s);
     try { _draft.avatarDataUri = await _imgToAvatar(`assets/avatars/${b.dataset.s}.png`); _refreshPortrait(); box.hidden = true; }
     catch { _toast('Could not load that avatar', 'err'); }
   });
 
   _renderLibGrid();
+}
+
+let _libDeleteMode = false;
+
+/** Upload a picked image to assets/avatars/<slug>.png — no character needed. */
+async function _libAddFile(input) {
+  const file = input.files && input.files[0];
+  input.value = '';                                   // allow re-picking the same file
+  if (!file) return;
+  if (!_apiBase()) return _toast('No backend configured — cannot upload', 'err');
+
+  const suggested = _slugify(file.name.replace(/\.[a-z0-9]+$/i, ''));
+  const slug = (prompt('Save this avatar under which slug?\n(lowercase letters, digits and dashes — this is the filename)', suggested) || '').trim().toLowerCase();
+  if (!slug) return;
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) return _toast('Slug must be lowercase letters/digits/dashes', 'err');
+  if (_avatarList.includes(slug) && !confirm(`"${slug}" already exists in the library. Replace it?`)) return;
+
+  _toast('Uploading avatar…', 'ok');
+  try {
+    // reuse the same square-crop pipeline the character portrait uses
+    const dataUri = await _imgToAvatar(URL.createObjectURL(file));
+    const r = await fetch(_apiUrl('/api/avatar'), {
+      method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ slug, dataUri }),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'upload failed');
+    if (!_avatarList.includes(slug)) _avatarList.push(slug);
+    _libLetter = _libLetterOf(slug);
+    _libQuery = '';
+    _renderLibrary();
+    _toast(`Avatar "${slug}" ${j.replaced ? 'replaced' : 'added'} — live after the site rebuilds (~1 min)`, 'ok');
+  } catch (e) {
+    _toast('Avatar upload failed: ' + e.message, 'err');
+  }
+}
+
+/** Delete an avatar file from the repo. The Worker refuses if a character uses
+ *  it, and we re-ask with force so you always see whose portrait breaks. */
+async function _libDeleteFile(slug) {
+  if (!_apiBase()) return _toast('No backend configured — cannot delete', 'err');
+  if (!confirm(`Delete the avatar file for "${slug}"?\n\nThis removes assets/avatars/${slug}.png from your repo. It stays in git history, but disappears from the site.`)) return;
+
+  const send = force => fetch(_apiUrl('/api/avatar/delete'), {
+    method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ slug, force }),
+  }).then(r => r.json());
+
+  try {
+    let j = await send(false);
+    if (!j.ok) throw new Error(j.error || 'delete failed');
+
+    if (j.action === 'blocked') {
+      if (!confirm(`${j.message}\n\nDelete it anyway?`)) return;
+      j = await send(true);
+      if (!j.ok) throw new Error(j.error || 'delete failed');
+    }
+
+    _avatarList = _avatarList.filter(s => s !== slug);
+    const letters = _libLetters();
+    if (!letters.includes(_libLetter)) _libLetter = letters[0] || '';
+    _renderLibrary();
+    _toast(`Avatar "${slug}" deleted — gone from the site after the rebuild`, 'ok');
+  } catch (e) {
+    _toast('Avatar delete failed: ' + e.message, 'err');
+  }
 }
 
 // section contents + the bits of chrome that depend on them
@@ -843,7 +926,12 @@ function _renderLibGrid() {
     ? `${shown.length} match${shown.length === 1 ? '' : 'es'} for “${_libQuery.trim()}”`
     : `${shown.length} in ${_libLetter} · ${all.length} total`;
 
+  // delete mode is a visible, deliberate state — the grid turns red and the
+  // toggle stays lit, so a stray click can't quietly remove a file
   const grid = box.querySelector('#st-lib-grid');
+  grid.classList.toggle('del-mode', _libDeleteMode);
+  box.querySelector('#st-lib-del')?.classList.toggle('on', _libDeleteMode);
+
   grid.innerHTML = shown.length
     ? shown.map(s => `<button type="button" class="st-lib-item" data-s="${_esc(s)}" title="${_esc(s)}">
         <span class="st-lib-thumb"><img src="assets/avatars/${encodeURIComponent(s)}.png" alt="" loading="lazy" onerror="this.closest('.st-lib-thumb').classList.add('miss')"></span>
@@ -1129,6 +1217,13 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
+  /* avatar library management */
+  .st-lib-add,.st-lib-del{font-size:11px!important;padding:6px 10px!important}
+  .st-lib-del.on{background:#e5484d22;border-color:#e5484d;color:#ff8a8f}
+  .st-lib-grid.del-mode{outline:1px dashed #e5484d;outline-offset:3px;border-radius:8px}
+  .st-lib-grid.del-mode .st-lib-item{cursor:not-allowed}
+  .st-lib-grid.del-mode .st-lib-item:hover{background:#e5484d22;outline:1px solid #e5484d}
+  .st-lib-grid.del-mode .st-lib-item:hover .st-lib-name::after{content:' 🗑'}
   .st-input{width:100%;background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font:inherit;font-size:13px;padding:8px 10px}
   .st-input:focus{outline:2px solid var(--accent,#f4b23e);outline-offset:0}
   .st-balance{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}

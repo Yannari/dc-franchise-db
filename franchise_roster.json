@@ -39,7 +39,7 @@
       "name": "Anne Maria",
       "slug": "anne-maria",
       "gender": "f",
-      "archetype": "wildcard",
+      "archetype": "hothead",
       "stats": {
         "physical": 6,
         "endurance": 4,
@@ -50,7 +50,8 @@
         "boldness": 7,
         "intuition": 4,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Axel",
@@ -681,7 +682,7 @@
       "name": "Gerry",
       "slug": "gerry",
       "gender": "m",
-      "archetype": "floater",
+      "archetype": "wildcard",
       "stats": {
         "physical": 4,
         "endurance": 2,
@@ -692,7 +693,8 @@
         "boldness": 6,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Gwen",
@@ -2373,7 +2375,7 @@
       "name": "Alessio",
       "slug": "alessio",
       "gender": "m",
-      "archetype": "wildcard",
+      "archetype": "floater",
       "stats": {
         "physical": 4,
         "endurance": 4,

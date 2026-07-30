@@ -3169,7 +3169,7 @@
       "slug": "tobias",
       "gender": "m",
       "sexuality": "straight",
-      "archetype": "underdog",
+      "archetype": "chaos-agent",
       "stats": {
         "physical": 3,
         "endurance": 4,
@@ -3177,7 +3177,7 @@
         "social": 7,
         "strategic": 6,
         "loyalty": 8,
-        "boldness": 5,
+        "boldness": 6,
         "intuition": 4,
         "temperament": 7
       }

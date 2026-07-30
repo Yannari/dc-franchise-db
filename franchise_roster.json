@@ -3109,6 +3109,24 @@
         "intuition": 7,
         "temperament": 7
       }
+    },
+    {
+      "name": "Misha",
+      "slug": "misha",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "hero",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 5,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 4
+      }
     }
   ]
 }

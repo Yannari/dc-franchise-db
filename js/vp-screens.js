@@ -15830,6 +15830,13 @@ export function buildBBWeekScreens(ep) {
   const screens = [
     { id: 'bb-cold', label: (ep.num || 1) === 1 ? 'Move-In' : 'Cold Open', html: rpBuildBBColdOpen(ep) },
   ];
+  // Where everybody stands. Total Drama's camp hierarchy reads a social-status
+  // store a house never fills in, so this is the same idea built from what a
+  // house does record: competition wins, time on the block, and who is aligned.
+  try {
+    const overview = rpBuildBBOverview(ep);
+    if (overview && overview.trim()) screens.push({ id: 'bb-overview', label: 'The House', html: overview });
+  } catch { /* no snapshot, no overview */ }
   let houseSlot = 0, campaignIdx = 0;
 
   // Walk the acts the engine actually produced. House life is its own act now,
@@ -15886,5 +15893,127 @@ export function buildBBWeekScreens(ep) {
     if (rels && rels.trim()) screens.push({ id: 'bb-rels', label: 'Relationships', html: rels });
   } catch { /* ditto */ }
 
+  // The numbers behind the week, behind the same switch Total Drama uses.
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('vp_debug') === 'true') {
+      screens.push({ id: 'bb-debug', label: 'Debug', html: rpBuildBBDebug(ep) });
+    }
+  } catch { /* no storage, no debug screen */ }
+
   return screens;
+}
+
+/**
+ * The house overview — where everybody stands.
+ *
+ * Total Drama's camp hierarchy reads gs.socialStatus, which a house never
+ * populates, so that screen comes back empty for Big Brother. This is the same
+ * idea built from what a house actually records: competition record, how often
+ * somebody has been on the block, who they are aligned with, and how the room
+ * reads them.
+ */
+export function rpBuildBBOverview(ep) {
+  const snap = ep.gsSnapshot || {};
+  const active = snap.activePlayers || gs.activePlayers || [];
+  if (!active.length) return '';
+  const stats = snap.bb?.stats || gs.bb?.stats || {};
+  const alliances = (snap.namedAlliances || gs.namedAlliances || [])
+    .filter(a => a.active !== false && !a.dissolved);
+
+  const alliesOf = name => alliances
+    .filter(a => (a.members || []).includes(name))
+    .flatMap(a => a.members.filter(m => m !== name && active.includes(m)));
+
+  const rows = active.map(name => {
+    const st = stats[name] || {};
+    const mates = [...new Set(alliesOf(name))];
+    // How the room feels about somebody, from the bonds it can see.
+    const others = active.filter(n => n !== name);
+    const standing = others.length
+      ? others.reduce((sum, n) => sum + (typeof getPerceivedBond === 'function' ? getPerceivedBond(n, name) : 0), 0) / others.length
+      : 0;
+    return {
+      name, mates,
+      hoh: st.hohWins || 0, veto: st.vetoWins || 0,
+      block: st.timesOnTheBlock || 0, noms: st.timesNominated || 0,
+      standing,
+      power: (st.hohWins || 0) * 2 + (st.vetoWins || 0) * 1.5 + mates.length * 0.8 + standing * 0.5 - (st.timesOnTheBlock || 0) * 0.6,
+    };
+  }).sort((a, b) => b.power - a.power);
+
+  const band = i => i < Math.ceil(rows.length / 3) ? { label: 'RUNNING THE HOUSE', color: '#f0a500' }
+    : i < Math.ceil(rows.length * 2 / 3) ? { label: 'IN THE MIDDLE', color: '#58a6ff' }
+    : { label: 'ON THE OUTSIDE', color: '#f85149' };
+
+  let html = `<div class="rp-page bb-room bb-open">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div class="rp-title" style="color:#f0a500">THE HOUSE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${active.length} houseguests, ordered by how much of the house they actually control.</div>`;
+
+  let lastBand = null;
+  rows.forEach((r, i) => {
+    const b = band(i);
+    if (b.label !== lastBand) {
+      html += `<div style="margin:16px 0 8px;font-family:var(--font-display);font-size:12px;letter-spacing:2px;color:${b.color}">${b.label}</div>`;
+      lastBand = b.label;
+    }
+    const chips = [
+      r.hoh ? `<span style="color:#f0a500">${r.hoh}× HOH</span>` : '',
+      r.veto ? `<span style="color:#3fb950">${r.veto}× veto</span>` : '',
+      r.block ? `<span style="color:#f85149">${r.block}× on the block</span>` : '',
+      r.mates.length ? `<span style="color:#8b949e">with ${r.mates.join(', ')}</span>` : `<span style="color:#6e7681">no bloc</span>`,
+    ].filter(Boolean).join(' · ');
+    html += `<div class="rp-brant-entry" style="border-left:3px solid ${b.color}">
+      <div class="rp-brant-portraits">${rpPortrait(r.name)}</div>
+      <div class="rp-brant-text"><strong style="color:#f0f6fc">${r.name}</strong><br>
+        <span style="font-size:11px">${chips}</span></div>
+    </div>`;
+  });
+  return html + `</div>`;
+}
+
+/**
+ * The debug screen — the numbers behind the week.
+ *
+ * Shown only when the visual player's debug mode is on, the same switch Total
+ * Drama uses. A simulation that cannot be inspected cannot be tuned, and every
+ * balance problem in this format so far was found by looking at counts.
+ */
+export function rpBuildBBDebug(ep) {
+  const row = (k, v) => `<div style="display:flex;gap:10px;font-size:11px;font-family:var(--font-mono);padding:2px 0"><span style="min-width:210px;color:#8b949e">${k}</span><span>${v}</span></div>`;
+  const acts = ep.acts || [];
+  const beats = acts.flatMap(a => a.socialBeats || []);
+  const byCat = {};
+  beats.forEach(b => { byCat[b.category] = (byCat[b.category] || 0) + 1; });
+
+  let html = `<div class="rp-page bb-room">
+    <div class="rp-eyebrow">Week ${ep.num} — debug</div>
+    <div class="rp-title" style="color:#8b949e">THE NUMBERS</div>`;
+
+  html += `<div style="margin-bottom:18px">
+    ${row('acts', acts.map(a => a.phase || a.type).join(' → '))}
+    ${row('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)}
+    ${row('vote changed by campaign', ep.voteChanges || 0)}
+    ${row('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')}
+  </div>`;
+
+  for (const type of ['hoh', 'veto']) {
+    const comp = acts.find(a => a.type === type)?.competition;
+    if (!comp) continue;
+    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">${type} · ${comp.name} · ${comp.category} · ${comp.debug?.source || '?'}</div>
+      ${row('winner margin', comp.debug?.winnerMargin != null ? comp.debug.winnerMargin.toFixed(2) : '—')}
+      ${row('formula', comp.debug?.formula ? Object.entries(comp.debug.formula).map(([k, v]) => `${k} ${v}`).join(' · ') : '—')}
+      ${Object.entries(comp.debug?.scoreBreakdown || {}).slice(0, 20).map(([name, b]) =>
+        row(name, `score ${Number(b.score ?? b.finalScore ?? 0).toFixed(2)}${b.threw ? '  · THREW' : ''}${b.roundsSurvived != null ? `  · rounds ${b.roundsSurvived}` : ''}`)).join('')}
+      ${(comp.debug?.warnings || []).length ? row('warnings', comp.debug.warnings.join('; ')) : ''}
+    </div>`;
+  }
+
+  const live = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false && !a.dissolved);
+  html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px">
+    <div style="font-size:10px;letter-spacing:1.5px;color:#58a6ff;text-transform:uppercase;margin-bottom:8px">alliances</div>
+    ${live.length ? live.map(a => row(a.name, `${(a.members || []).join(', ')}  · trust ${Number(a.trust || 0).toFixed(2)} · ${a.formationEvidence || '?'}`)).join('') : row('—', 'none live')}
+  </div>`;
+  return html + `</div>`;
 }

@@ -3073,6 +3073,24 @@
         "intuition": 8,
         "temperament": 3
       }
+    },
+    {
+      "name": "Joel",
+      "slug": "joel",
+      "gender": "m",
+      "sexuality": "bi",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 8,
+        "mental": 4,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 3,
+        "temperament": 5
+      }
     }
   ]
 }

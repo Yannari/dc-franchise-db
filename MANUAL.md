@@ -63,10 +63,17 @@ your git history or make you wait.
 
 ### 5. Publish the finished season
 
-Simulator → **Export Season**
+Simulator → Season Hub → **Export & Fill Narratives**
 
-Builds the season documents, commits them, and refreshes the database — one action.
-It also clears the airing-season overlay, because that season is now real history.
+This button only appears once the season is complete, under the simulate buttons.
+It builds the season documents, writes the AI narratives, commits them, and refreshes
+the database — one action. It also clears the airing-season overlay, because that
+season is now real history.
+
+> **Not to be confused with "Export Season"** (also "Export JSON" / "Export"). That one
+> downloads a savestate — `season-name-ep12.json` — for backup or re-import. It
+> publishes nothing. The label is the more obvious of the two, which is exactly the
+> trap: the button that updates your site is **Export & Fill Narratives**.
 
 If the backend can't be reached, it falls back to **downloading** the files so an
 export is never lost. In that case, move them into the repo yourself, commit, and
@@ -151,7 +158,8 @@ matters. Trust the status line above, not the Actions tab.
 | Upload an avatar | Studio → Avatars | **Yes** | ~1 min |
 | ⬆ Publish to site | Studio | **Yes** | ~1 min |
 | 🔴 Sync episode to site | Simulator | No | No |
-| Export Season | Simulator | **Yes** | ~1 min |
+| Export & Fill Narratives | Season Hub (season complete) | **Yes** | ~1 min |
+| Export Season / Export JSON | Season Hub | No — downloads a savestate | No |
 | ✅ Apply & publish (rankings) | Legacy → Rankings | **Yes** | ~1 min |
 | 🔄 Re-sync season data | Season Hub | No | No |
 
@@ -167,7 +175,7 @@ doesn't. Avatars commit because a PNG can't live in D1.
 | Create / edit characters | Simulator → **Cast** → ＋ Create Character |
 | Avatar library | same, **🖼 Avatars** tab |
 | Build a cast, star members | Cast → Build Cast |
-| Run episodes, Export Season, 🔴 Sync episode, 🔄 Re-sync | **Season Hub** → season controls |
+| Run episodes, Export & Fill Narratives, 🔴 Sync episode, 🔄 Re-sync | **Season Hub** → season controls |
 | Franchise history, Hall of Fame, import | **🏆 Legacy → 🏛️ History** |
 | Returnee briefing | **Legacy → 🎟️ Returnee Briefing** |
 | End-of-season rankings | **Legacy → 📊 Rankings** |
@@ -179,7 +187,7 @@ Every tab remembers where you were, including after a refresh.
 **`current-season.html` no longer has a Season Setup tab.** Season Initialization, the
 Complete Season Builder, Season Progress Tracking, End-of-Season Finalization and
 Database Management were all removed — seasons come from the simulator now, and
-Export Season does what that tab used to do by hand. The rankings updater that lived
+Export & Fill Narratives does what that tab used to do by hand. The rankings updater that lived
 there moved to Legacy.
 
 ---
@@ -450,8 +458,8 @@ only humans open can be organised freely.**
 |---|---|---|
 | `roster` | authored | Casting Studio |
 | `roster_deleted` | authored | delete (tombstones, so Publish knows a removal was intended) |
-| `players`, `appearances`, `bonds`, `seasons` | derived | Sync / Export Season |
-| `rankings` | derived | Sync / Export Season |
+| `players`, `appearances`, `bonds`, `seasons` | derived | Export & Fill Narratives / Re-sync |
+| `rankings` | derived | Apply & publish (Legacy → Rankings) |
 | `live_season`, `live_meta` | temporary | Sync episode; cleared when the season is published |
 
 **Public endpoints** (no token, readable from anywhere):

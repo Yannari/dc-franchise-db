@@ -14,60 +14,114 @@ The existing format is **Total Drama**, not Survivor. It borrows Survivor's
 structure, but the data tag is `total-drama` so nobody reading this in a year
 wonders why the seasons are labelled as another show.
 
-## Roadmap — what to do next, and why that order
+## Roadmap
 
-Kept current as things land. The ordering rule: **make it playable, then make it
-deep, then make it pretty.** Content for an engine nobody can run is content
-nobody can see.
+Kept current as things land.
+
+**Ordering rule: make it playable, then make it deep, then make it pretty.**
+Content for an engine nobody can run is content nobody can see.
+
+**Splitting rule: Codex is the smaller budget, so it buys the things that are
+expensive to get wrong and cheap to write — contracts, state ownership, hook
+signatures, adapters, invariants, validation. Claude has the larger budget and
+takes everything that is expensive to write and cheap to correct — libraries,
+volume, narration, integration, the site.** A rule of thumb: if getting it wrong
+means a rewrite, it is Codex's; if getting it wrong means an edit, it is
+Claude's.
+
+Neither agent edits a file the other owns. Neither touches `js/episode.js`.
 
 ### Done
 
 | | Owner |
 |---|---|
-| Data layer — season format tag, Show selector, D1 `seasons.format` + `bb_appearances`, sync, export adapter, career merge | Claude |
+| Data layer — format tag, Show selector, D1 `seasons.format` + `bb_appearances`, sync, export adapter, career merge | Claude |
 | Week engine as acts, house-event scheduler + state API, twist catalog + Double Eviction, VP surface, competition contract | Codex |
-| Event library — ceremonies (9), social (10), shared-substrate read layer | Claude |
+| Event library — ceremonies (9), social (10), registry, shared-substrate read layer | Claude |
 
 ### In flight
 
 | | Owner |
 |---|---|
-| Migration step 1, write half: `remember` → `rememberStrategy`, `setTarget` → shared intentions, relationship/showmance effects through shared APIs, then the threat/heat adapter | Codex |
+| Migration step 1 write half: `remember` → `rememberStrategy`, `setTarget` → shared intentions, relationship/showmance effects through shared APIs, `js/bb/shared-strategy.js`, then the threat/heat adapter | Codex |
 
-### Next — in this order
+---
 
-**1. Make a season runnable end to end.** *(Claude)* Nothing outside the tests
-dispatches the engine, and `options.houseEvents` defaults to empty — so a Big
-Brother season cannot be played, and if it could, the house would be silent.
-Every event, competition and twist written before this is invisible. Needs: an
-event registry, a competition registry, a dispatch from the run surface when the
-season format is `big-brother`, and `window._bbRunnable` set once it is real.
+### Phase 1 — make a season runnable *(the blocker for everything below)*
 
-**2. Competitions.** *(Claude)* Every week needs an HOH and a veto. This is the
-one library the format cannot open a week without.
+Nothing outside the tests dispatches the engine, and `houseEvents` defaults to
+empty. A Big Brother season cannot be played, and if it could, the house would
+be silent.
 
-**3. Season modes and twists.** *(Claude)* AI Arena / Block Buster first — they
-reshape the week itself, so building them late means rebuilding around them.
+**Claude** — dispatch from the run surface when the season format is
+`big-brother`; hand the engine the event and competition registries; set
+`window._bbRunnable`; season setup that produces a house rather than tribes;
+make one full season finish and export.
 
-**4. Event volume.** *(Claude)* `deals` and `house-life`, taking the library
-from 19 toward the 80–120 the acts model needs.
+**Codex** — confirm the season entry point and its options contract, and say
+what the run surface is allowed to assume between weeks.
 
-**5. Site, VP polish and the writer.** *(Claude)* Grouped views, format-aware
-beats. Genuinely blocked until a season can finish.
+### Phase 2 — competitions
 
-### Known gaps with no owner yet
+Every week needs an HOH and a veto. The one library a week cannot open without.
 
-Neither of these is scheduled, and both are places where Big Brother is thinner
-than Total Drama for no good reason:
+**Claude** — `js/bb-comps/`: the competition library. Endurance, puzzle,
+crapshoot, skill and question families, each with narration, per-player
+performance and a stat mix that lets different archetypes win different weeks.
+Plus the throwing-a-comp texture that makes Big Brother read as Big Brother.
 
-* **Alliances never form.** Nothing in Big Brother writes `gs.namedAlliances`,
-  so `allianceStrength()` in `strategy.js` returns zero every time — a dead term
-  in nomination, veto and vote decisions. An alliance event can create the bond,
-  but the alliance itself needs a lifecycle adapter.
+**Codex** — the contract, scheduler and result validation in `js/bb/comps.js`;
+guarantees the week engine can rely on (exactly one winner, eligibility, ties).
+
+### Phase 3 — season modes and twists
+
+Built before the volume because modes reshape the week itself; late means
+rebuilding around them.
+
+**Claude** — `js/bb-twists/`: AI Arena and Block Buster first, then one-shot
+powers (Diamond Veto, Coup d'état, Halting Hex), then Battle of the Block,
+Festie Besties, Camp Comeback.
+
+**Codex** — mode-versus-twist plumbing: how a mode is enabled at setup,
+consulted every week, and switched off at a house size; three-nominee support in
+the week contract; catalog placeholders.
+
+### Phase 4 — event volume
+
+From 19 events toward the 80–120 the acts model needs.
+
+**Claude** — `deals` (pitches, final-two deals, vote-flipping, jury management)
+and `house-life` (have-nots, slop, chores, pranks, sleep, the diary room), then
+deepen ceremonies and social with the relationship dimensions now readable.
+
+**Codex** — nothing, unless the scheduler needs a new slot type.
+
+### Phase 5 — site, VP polish and the writer
+
+Genuinely blocked until a season can finish.
+
+**Claude** — grouped player pages, format switches on `leaderboards.html` and
+`devotees.html`, grouped `seasons.html`, format-aware beats in
+`current-season.html`, MANUAL, and the AI writer's Big Brother voice.
+
+**Codex** — VP act screens keep pace with the engine.
+
+---
+
+### Two gaps that make Big Brother thinner than Total Drama
+
+Both are places where existing depth simply does not run. Split by the same rule:
+
+* **Alliances never form.** Nothing writes `gs.namedAlliances`, so
+  `allianceStrength()` returns zero every time — a dead term in nomination, veto
+  and vote decisions. *Codex:* the alliance lifecycle adapter, so a house can
+  create, hold and dissolve one without faking a tribe. *Claude:* the events that
+  supply the evidence.
 * **Perceived bonds never diverge.** `updatePerceivedBonds` and
   `checkPerceivedBondTriggers` are never called, so the house's read of a
-  relationship always equals the truth. The entire "the house misjudged them"
-  layer — which is what a blindside is made of — does not run.
+  relationship always equals the truth, and nobody can ever be misjudged — which
+  is what a blindside is made of. *Codex:* the house-context adapter that runs
+  divergence per week. *Claude:* the events that create the misreads.
 
 ## The longer goal this serves
 

@@ -2988,7 +2988,6 @@
       "name": "Gyselle",
       "slug": "gyselle",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "floater",
       "stats": {
         "physical": 3,
@@ -3000,7 +2999,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 7
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

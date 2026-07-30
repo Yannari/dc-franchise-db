@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs } from '../js/core.js';
 import { getBond } from '../js/bonds.js';
+import { getRelationshipDimensions } from '../js/relationships.js';
+import { memoriesAbout } from '../js/strategy-memory.js';
 import { createHouseEventApi, houseEventState, scheduleHouseBeats } from '../js/bb/house-events.js';
 import { chooseNominationPlan } from '../js/bb/strategy.js';
 import { simulateBBWeek } from '../js/bb/week.js';
@@ -60,7 +62,9 @@ describe('Big Brother house-event scheduler contract', () => {
     expect(api.remember('A','D','lied',2)).toBe(true);
     expect(getBond('A','B')).toBeGreaterThan(0);
     expect(gs.popularity.A).toBe(3);
-    expect(houseEventState().targets.A.target).toBe('G');
+    expect(gs.intentions.A.targets[0]).toBe('G');
+    expect(memoriesAbout('A','D')[0]).toMatchObject({ subject:'D', type:'lied', details:{ format:'big-brother', act:'campaign' } });
+    expect(houseEventState().targets.A).toMatchObject({ target:'G', week:2, act:'campaign' });
     expect(houseEventState().memories.A[0]).toMatchObject({ subject:'D', type:'lied' });
   });
 
@@ -87,6 +91,24 @@ describe('Big Brother house-event scheduler contract', () => {
     const before = baseline.rankings.find(entry => entry.name === 'B').score;
     const after = influenced.rankings.find(entry => entry.name === 'B').score;
     expect(after).toBeGreaterThan(before + 6);
+  });
+
+  it('never lets a stale render receipt override canonical intentions', () => {
+    const api = createHouseEventApi({ act:'hoh', week:{ num:1 } });
+    api.setTarget('A','B','caught making a deal');
+    houseEventState().targets.A = { target:'C', reason:'stale save receipt', week:0 };
+    const plan = chooseNominationPlan('A', gs.activePlayers, () => 0.5);
+    const b = plan.rankings.find(entry => entry.name === 'B').score;
+    const c = plan.rankings.find(entry => entry.name === 'C').score;
+    expect(b).toBeGreaterThan(c);
+  });
+
+  it('routes showmance sparks through shared relationship dimensions', () => {
+    const api = createHouseEventApi({ act:'campaign', week:{ num:2 } });
+    expect(api.showmance('A','B',{ context:'late-night talk', intensity:0.6 })).toBe(true);
+    expect(gs.romanticSparks).toHaveLength(1);
+    expect(getRelationshipDimensions('A','B').attraction).toBeGreaterThan(0);
+    expect(getRelationshipDimensions('B','A').attraction).toBeGreaterThan(0);
   });
 
   it('uses proportional numeric weights rather than boolean eligibility thresholds', () => {

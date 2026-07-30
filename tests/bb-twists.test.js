@@ -21,6 +21,10 @@ describe('Big Brother twist catalog', () => {
     expect(BB_TWIST_CATALOG.filter(twist => twist.implemented).map(twist => twist.id))
       .toEqual(['double-eviction']);
     expect(getBBTwist('not-real')).toBeNull();
+    expect(BB_TWIST_CATALOG.length).toBeGreaterThanOrEqual(25);
+    expect(new Set(BB_TWIST_CATALOG.map(twist => twist.id)).size).toBe(BB_TWIST_CATALOG.length);
+    expect(getBBTwist('ai-arena')).toMatchObject({ category:'season-mode', mode:true, defaultStopsAtRemaining:9 });
+    expect(getBBTwist('block-buster')).toMatchObject({ category:'season-mode', mode:true, defaultStopsAtRemaining:6 });
   });
 
   it('runs two complete boots while advancing one episode', () => {
@@ -44,7 +48,10 @@ describe('Big Brother twist catalog', () => {
   });
 
   it('exercises all seven settled interception points during the compressed week', () => {
-    const result = simulateDoubleEviction({ rng: seededRng(4) });
+    const result = simulateDoubleEviction({
+      rng: seededRng(4),
+      hooks: { vetoDecision: (decision, ctx) => ({ use:true, save:ctx.nominees[0], reason:'hook-test' }) },
+    });
     expect(result.hookAudit).toEqual(expect.arrayContaining([
       'hohResult', 'nominationResult', 'vetoParticipants', 'vetoOutcome',
       'replacementChoice', 'voteEligibility', 'evictionResult',

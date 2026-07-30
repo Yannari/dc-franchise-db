@@ -6,38 +6,17 @@
 // beats, the way a challenge fires a variable number of social events between
 // its phases.
 import { gs } from '../core.js';
-import { pStats } from '../players.js';
-import { addBond } from '../bonds.js';
 import {
-  campaignAttempt, chooseNominationPlan, chooseReplacement, initialVotePreference,
-  shouldThrowHoh, shouldUseVeto,
+  chooseNominationPlan, chooseReplacement, initialVotePreference,
+  shouldUseVeto,
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
+import { runBBCompetition } from './comps.js';
+import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions } from './shared-strategy.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
   return result === undefined ? value : result;
-}
-
-function compScore(name, type, rng) {
-  const stats = pStats(name);
-  const base = type === 'hoh'
-    ? stats.mental * 0.28 + stats.endurance * 0.25 + stats.physical * 0.18 + stats.intuition * 0.16 + stats.boldness * 0.13
-    : stats.mental * 0.26 + stats.physical * 0.24 + stats.endurance * 0.22 + stats.intuition * 0.16 + stats.strategic * 0.12;
-  return base + rng() * 5;
-}
-
-function runComp(participants, type, rng, house) {
-  return participants.map(name => {
-    let score = compScore(name, type, rng);
-    let threw = false;
-    if (type === 'hoh') {
-      const throwRead = shouldThrowHoh(name, house);
-      threw = rng() < throwRead.throwChance;
-      if (threw) score *= 0.35 + rng() * 0.25;
-    }
-    return { name, score, threw };
-  }).sort((a, b) => b.score - a.score);
 }
 
 function ensureBBState() {
@@ -74,7 +53,10 @@ export function simulateBBWeek(options = {}) {
   if (house.length < 4) throw new Error('The standard Big Brother week engine requires at least four houseguests.');
   ensureBBState();
   const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+  const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
+  week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
+  const competitionLibrary = options.competitions || [];
   const addBeats = (act, extra = {}) => {
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: act.type, hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
@@ -85,12 +67,14 @@ export function simulateBBWeek(options = {}) {
 
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
-  const hohResults = runComp(hohPlayers, 'hoh', rng, house);
-  let hoh = hook(hooks, 'hohResult', hohResults[0].name, { week, results: hohResults, house });
-  if (!hohPlayers.includes(hoh)) hoh = hohResults[0].name;
+  const hohCompetition = runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed });
+  const hohResults = hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }));
+  let hoh = hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
+  if (!hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
   week.hoh = hoh;
   gs.bb.stats[hoh].hohWins++;
-  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, outgoingHoh: gs.bb.outgoingHoh }));
+  week.hohCompetition = hohCompetition;
+  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
 
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   let plan = chooseNominationPlan(hoh, house, rng);
@@ -106,12 +90,14 @@ export function simulateBBWeek(options = {}) {
   let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
   vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
   vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
-  const vetoResults = runComp(vetoPlayers, 'veto', rng, house);
-  let vetoWinner = hook(hooks, 'vetoOutcome', vetoResults[0].name, { week, results: vetoResults, nominees: [...nominees] });
-  if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoResults[0].name;
+  const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed });
+  const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
+  let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
+  if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
   gs.bb.stats[vetoWinner].vetoWins++;
   week.vetoWinner = vetoWinner;
-  week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results: vetoResults }, { nominees: [...nominees], vetoWinner }));
+  week.vetoCompetition = vetoCompetition;
+  week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results:vetoResults, competition:vetoCompetition }, { nominees: [...nominees], vetoWinner }));
 
   // Veto ceremony and replacement hook (Diamond Veto can intercept it).
   let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);
@@ -136,28 +122,17 @@ export function simulateBBWeek(options = {}) {
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
   const ballots = voters.map(voter => ({ voter, ...initialVotePreference(voter, nominees, rng), changed: false }));
   week.preCampaignVotes = tally(ballots, nominees);
+  week.campaign = [];
   const campaignActCount = options.campaignActCount || (house.length >= 12 ? 3 : house.length >= 7 ? 2 : 1);
   for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
-    const events = [];
-    for (const nominee of nominees) {
-      const opponent = nominees.find(name => name !== nominee);
-      const targets = ballots
-        .filter(ballot => ballot.evict === nominee || ballot.margin < 2.2)
-        .sort((a, b) => a.margin - b.margin);
-      if (!targets.length) continue;
-      const target = targets[Math.floor(rng() * Math.min(3, targets.length))];
-      const attempt = campaignAttempt(nominee, target.voter, opponent, rng);
-      if (attempt.success && target.evict === nominee) {
-        target.evict = opponent;
-        target.changed = true;
-        target.changedBy = nominee;
-        addBond(nominee, target.voter, 0.35);
-      } else if (!attempt.success) {
-        addBond(nominee, target.voter, -0.15);
-      }
-      events.push(attempt);
-    }
-    week.acts.push(addBeats({ type: 'campaign', campaignIndex, events, votesAfterAct: tally(ballots, nominees) }, { nominees: [...nominees], ballots }));
+    const campaign = resolveBBCampaignAct({ nominees, ballots, house, campaignIndex, rng });
+    week.campaign.push(campaign);
+    week.acts.push(addBeats({
+      type:'campaign', campaignIndex, events:campaign.pitches,
+      pitches:campaign.pitches, pitchIntel:campaign.intel,
+      counterplay:campaign.counterplay, voteChanges:campaign.changed,
+      votesAfterAct:tally(ballots, nominees),
+    }, { nominees:[...nominees], ballots }));
   }
 
   // Eviction act; HOH breaks a tie.
@@ -182,6 +157,8 @@ export function simulateBBWeek(options = {}) {
 
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
+  week.allianceChanges.betrayals = settleBBAllianceWeek(week);
+  week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   gs.bb.outgoingHoh = hoh;
   gs.bb.weeks.push(week);
   gs.episode = (gs.episode || 0) + 1;

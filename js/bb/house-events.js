@@ -1,8 +1,9 @@
 // Scheduler and state API for Big Brother house events.
 // Event prose/library lives in js/bb-events/ and is supplied to this module.
-import { gs, players, seasonConfig } from '../core.js';
-import { addBond } from '../bonds.js';
-import { romanticCompat } from '../players.js';
+import { gs, players } from '../core.js';
+import {
+  addBBRelationship, addBBShowmanceSpark, rememberBBStrategy, setBBTarget,
+} from './shared-strategy.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -10,6 +11,8 @@ function ensureState() {
   gs.bb ||= {};
   gs.bb.house ||= { suspicion: {}, targets: {}, memories: {}, eventHistory: [] };
   gs.bb.house.suspicion ||= {};
+  // Compatibility/render receipts only. Shared intentions and strategic
+  // memories remain authoritative for decisions.
   gs.bb.house.targets ||= {};
   gs.bb.house.memories ||= {};
   gs.bb.house.eventHistory ||= [];
@@ -24,8 +27,7 @@ export function createHouseEventApi(ctx = {}) {
   return Object.freeze({
     addBond(a, b, delta) {
       if (!a || !b || a === b || !Number.isFinite(Number(delta))) return false;
-      addBond(a, b, Number(delta));
-      return true;
+      return addBBRelationship(a, b, Number(delta));
     },
     popDelta(name, delta) {
       if (!name || !Number.isFinite(Number(delta))) return false;
@@ -40,24 +42,20 @@ export function createHouseEventApi(ctx = {}) {
     },
     setTarget(actor, target, reason = 'house event') {
       if (!actor || !target || actor === target) return false;
-      state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
-      return true;
+      const changed = setBBTarget(actor, target, reason, ctx);
+      if (changed) state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
+      return changed;
     },
     remember(observer, subject, type, strength = 1, detail = {}) {
       if (!observer || !subject || !type) return false;
+      const memory = rememberBBStrategy(observer, subject, type, strength, detail, ctx);
+      if (!memory) return false;
       state.memories[observer] ||= [];
-      state.memories[observer].push({ subject, type, strength: Number(strength) || 1, week: ctx.week?.num || 0, act: ctx.act, detail });
+      state.memories[observer].push({ subject, type, strength:Number(strength) || 1, week:ctx.week?.num || 0, act:ctx.act, detail });
       return true;
     },
     showmance(a, b, detail = {}) {
-      if (seasonConfig.romance === 'disabled' || !a || !b || a === b) return false;
-      if (!romanticCompat(a, b)) return false;
-      const active = gs.showmances.filter(showmance => showmance.phase !== 'broken-up');
-      if (active.length >= 4 || active.some(showmance => showmance.players?.includes(a) || showmance.players?.includes(b))) return false;
-      if (gs.romanticSparks.some(spark => spark.players?.includes(a) && spark.players?.includes(b))) return false;
-      gs.romanticSparks.push({ players: [a, b], sparkEp: (gs.episode || 0) + 1, context: detail.context || 'Big Brother house', intensity: detail.intensity || 0.3, fake: false, saboteur: null });
-      addBond(a, b, detail.bondDelta || 0.5);
-      return true;
+      return addBBShowmanceSpark(a, b, detail, ctx);
     },
   });
 }

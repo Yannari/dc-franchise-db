@@ -3,6 +3,7 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
+import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -11,40 +12,14 @@ function archetype(name) {
   return players.find(player => player.name === name)?.archetype || 'floater';
 }
 
-function allianceStrength(a, b) {
-  return (gs.namedAlliances || []).reduce((best, alliance) => {
-    if (alliance.active !== false && alliance.members?.includes(a) && alliance.members.includes(b)) {
-      return Math.max(best, 1 + alliance.members.filter(name => gs.activePlayers.includes(name)).length * 0.15);
-    }
-    return best;
-  }, 0);
-}
-
-export function bbThreat(name) {
-  const stats = pStats(name);
-  const others = (gs.activePlayers || []).filter(other => other !== name);
-  const socialPosition = others.length
-    ? others.reduce((sum, other) => sum + getBond(name, other), 0) / others.length
-    : 0;
-  const record = gs.bb?.stats?.[name] || {};
-  const compRecord = (record.hohWins || 0) * 0.8 + (record.vetoWins || 0) * 0.55;
-  return stats.strategic * 0.27 + stats.social * 0.18 + stats.physical * 0.12
-    + stats.endurance * 0.12 + stats.mental * 0.13 + stats.intuition * 0.1
-    + socialPosition * 0.22 + compRecord;
-}
+export { bbThreat } from './shared-strategy.js';
 
 export function nominationScore(hoh, candidate, rng = Math.random) {
   const stats = pStats(hoh);
-  const relationship = getPerceivedBond(hoh, candidate);
-  const aligned = allianceStrength(hoh, candidate);
-  const candidateThreat = bbThreat(candidate);
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
-  const houseState = gs.bb?.house;
-  const eventTarget = houseState?.targets?.[hoh]?.target === candidate ? 4 : 0;
-  const suspicion = houseState?.suspicion?.[`${hoh}→${candidate}`] || 0;
-  return candidateThreat * (0.65 + stats.strategic * 0.045)
-    + revenge * 0.75 - relationship * 0.85 - aligned * 2.2
-    + eventTarget + suspicion * 0.45 + noise(rng, 1.6);
+  const heat = bbHeat(hoh, candidate);
+  const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
+  return heat.total + threatAdjustment + revenge * 0.75 + noise(rng, 1.6);
 }
 
 export function chooseNominationPlan(hoh, house, rng = Math.random) {
@@ -87,7 +62,7 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
     const stats = pStats(holder);
     return {
       name,
-      score: getPerceivedBond(holder, name) * 0.9 + allianceStrength(holder, name) * 2
+      score: getPerceivedBond(holder, name) * 0.9 + bbAllianceStrength(holder, name) * 2
         + stats.loyalty * 0.18 - bbThreat(name) * 0.18 + noise(rng, 1.2),
     };
   }).sort((a, b) => b.score - a.score);
@@ -99,8 +74,8 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {
   const score = nominee => getPerceivedBond(voter, nominee) * 0.9 - bbThreat(nominee) * 0.3
-    + allianceStrength(voter, nominee) * 1.4
-    - (gs.bb?.house?.targets?.[voter]?.target === nominee ? 3 : 0)
+    + bbAllianceStrength(voter, nominee) * 1.4
+    - (getBBTarget(voter) === nominee ? 3 : 0)
     - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25
     + noise(rng, 1);
   const scores = nominees.map(name => ({ name, keepScore: score(name) })).sort((a, b) => a.keepScore - b.keepScore);
@@ -121,7 +96,7 @@ export function campaignAttempt(nominee, voter, opponent, rng = Math.random) {
 export function shouldThrowHoh(name, house) {
   const stats = pStats(name);
   const enemies = house.filter(other => other !== name && getPerceivedBond(name, other) <= -3).length;
-  const safety = house.filter(other => other !== name && (getPerceivedBond(name, other) >= 3 || allianceStrength(name, other))).length;
+  const safety = house.filter(other => other !== name && (getPerceivedBond(name, other) >= 3 || bbAllianceStrength(name, other))).length;
   const liability = safety - enemies + (10 - stats.boldness) * 0.35 + (10 - stats.strategic) * 0.12;
   return { throwChance: clamp(liability / 16, 0, 0.62), enemies, safety };
 }

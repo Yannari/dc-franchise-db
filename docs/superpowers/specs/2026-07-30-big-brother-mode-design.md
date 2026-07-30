@@ -82,6 +82,23 @@ rebuilding around them.
 powers (Diamond Veto, Coup d'état, Halting Hex), then Battle of the Block,
 Festie Besties, Camp Comeback.
 
+**Signature competitions belong to this phase, not to phase 2.** OTEV, BB
+Comics, Hide and Go Veto and the rest are the Big Brother equivalent of a Total
+Drama twist challenge — a specific named competition with its own mechanic — and
+the library shipped in phase 2 is deliberately the generic layer underneath
+them, the same way Total Drama's generic challenge sits under its twist
+challenges.
+
+The distinction is mechanical, not decorative, and it is the reason they are
+worth doing properly rather than quickly. A generic competition resolves once:
+score everybody, sort, done — so the best player on paper wins unless the noise
+is large. A signature competition has STRUCTURE. Rounds that score independently
+let a mediocre houseguest survive six of them and knock the strongest player out
+third. Strikes punish one bad moment more than a slow average. An asymmetric
+competition has one houseguest playing a different game from everyone else.
+That structure is what produces winners a single sort never would, and building
+it as a stat mix with a nicer name would miss the entire point.
+
 **Codex** — mode-versus-twist plumbing: how a mode is enabled at setup,
 consulted every week, and switched off at a house size; three-nominee support in
 the week contract; catalog placeholders.

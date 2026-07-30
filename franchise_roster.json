@@ -2965,6 +2965,24 @@
         "temperament": 4
       },
       "sexuality": "straight"
+    },
+    {
+      "name": "Felipe",
+      "slug": "felipe",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 6,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 5
+      }
     }
   ]
 }

@@ -2230,6 +2230,126 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
   };
 }
 
+/**
+ * Fold a finished Big Brother season into players_database.json.
+ *
+ * The Total Drama merge cannot be reused here: it reads chalRecord, idolsFound,
+ * advantageLifecycle and tribe off the raw sim stats, none of which a Big
+ * Brother house produces. Rather than write zeroes into those fields and have
+ * them read as real career numbers later, this is a parallel path over the
+ * season document.
+ *
+ * What crosses between the two shows, and what does not:
+ *
+ *   crosses  — seasons, placement, average and best placement, wins,
+ *              votes against (an eviction vote is an eviction vote), and
+ *              competition wins, since HOH and veto are competitions
+ *   stays put — immunity wins, reward wins and idols found are Total Drama
+ *              shapes; a veto is not an idol and pretending otherwise would
+ *              quietly corrupt every Total Drama career total on the site
+ *
+ * HOH and veto also get their own career totals so a Big Brother résumé can be
+ * read on its own terms.
+ *
+ * Both shows share one season-number space — that is what the `seasons` table
+ * and the `bb_appearances` foreign key already assume.
+ *
+ * Re-running an export for a season already recorded replaces it: the previous
+ * contributions are subtracted first, so corrections do not double-count.
+ */
+export function mergeBigBrotherSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== 'big-brother') {
+    throw new Error('mergeBigBrotherSeason expects a big-brother season document');
+  }
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Big Brother season document has no seasonNumber');
+  if (!db.players) db.players = [];
+
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    const bb = entry.bb || {};
+
+    let player = db.players.find(p => p.id === slug || p.name === name);
+    if (!player) {
+      player = {
+        id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0,
+        totalHohWins: 0, totalVetoWins: 0, tier: '', badges: [], seasonDetails: []
+      };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+
+    // Strip a previous recording of this same season before adding the new one.
+    const prior = player.seasonDetails.find(sd => sd.season === seasonNum);
+    if (prior) {
+      const pb = prior.bb || {};
+      player.totalVotesAgainst = Math.max(0, (player.totalVotesAgainst || 0) - (prior.votesReceived || 0));
+      player.totalJuryVotes = Math.max(0, (player.totalJuryVotes || 0) - (prior.juryVotes || 0));
+      player.totalChallengeWins = Math.max(0, (player.totalChallengeWins || 0) - (prior.challengeWins || 0));
+      player.totalHohWins = Math.max(0, (player.totalHohWins || 0) - (pb.hohWins || 0));
+      player.totalVetoWins = Math.max(0, (player.totalVetoWins || 0) - (pb.vetoWins || 0));
+      if (prior.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
+      player.seasonDetails = player.seasonDetails.filter(sd => sd.season !== seasonNum);
+    }
+
+    const compWins = (bb.hohWins || 0) + (bb.vetoWins || 0);
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    player.totalSeasons = player.seasons.length;
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalVotesAgainst = (player.totalVotesAgainst || 0) + (entry.votesReceived || 0);
+    player.totalJuryVotes = (player.totalJuryVotes || 0) + (entry.juryVotes || 0);
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + compWins;
+    player.totalHohWins = (player.totalHohWins || 0) + (bb.hohWins || 0);
+    player.totalVetoWins = (player.totalVetoWins || 0) + (bb.vetoWins || 0);
+
+    player.seasonDetails.push({
+      season: seasonNum,
+      format: 'big-brother',
+      placement: entry.placement,
+      status: entry.status,
+      challengeWins: compWins,
+      votesReceived: entry.votesReceived || 0,
+      juryVotes: entry.juryVotes || 0,
+      bb: {
+        hohWins: bb.hohWins || 0,
+        vetoWins: bb.vetoWins || 0,
+        timesNominated: bb.timesNominated || 0,
+        timesOnBlock: bb.timesOnBlock || 0,
+        timesSaved: bb.timesSaved || 0,
+      },
+      notes: _clean(entry.notes) ? [entry.notes] : [],
+      gameplayStyle: _clean(entry.gameplayStyle),
+      keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
+                : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
+    });
+
+    // Recomputed across both shows on purpose — one career, several résumés.
+    const places = player.seasonDetails.map(sd => sd.placement).filter(p => p && p < 99);
+    player.avgPlacement = places.length
+      ? Math.round(places.reduce((s, v) => s + v, 0) / places.length * 100) / 100
+      : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      if (!player.badges.includes(`S${seasonNum} Winner`)) player.badges.push(`S${seasonNum} Winner`);
+    }
+  }
+
+  db.franchise = db.franchise || {};
+  // Math.max, not assignment: a Big Brother season must never walk the franchise
+  // season count backwards.
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
 // ── Live season snapshot ─────────────────────────────────────────────
 // A season in progress isn't in players_database.json — that only ever holds
 // finished seasons. This builds a lightweight "where everyone stands right now"

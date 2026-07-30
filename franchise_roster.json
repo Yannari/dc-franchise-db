@@ -3145,6 +3145,24 @@
         "intuition": 7,
         "temperament": 9
       }
+    },
+    {
+      "name": "Stella",
+      "slug": "stella",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "goat",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 4,
+        "social": 7,
+        "strategic": 2,
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 4,
+        "temperament": 7
+      }
     }
   ]
 }

@@ -3181,6 +3181,24 @@
         "intuition": 4,
         "temperament": 7
       }
+    },
+    {
+      "name": "Zella",
+      "slug": "zella",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 4,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 9,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 2
+      }
     }
   ]
 }

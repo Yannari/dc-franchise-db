@@ -3019,6 +3019,24 @@
         "intuition": 4,
         "temperament": 3
       }
+    },
+    {
+      "name": "Jane",
+      "slug": "jane",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 2,
+        "endurance": 3,
+        "mental": 9,
+        "social": 2,
+        "strategic": 6,
+        "loyalty": 9,
+        "boldness": 2,
+        "intuition": 9,
+        "temperament": 9
+      }
     }
   ]
 }

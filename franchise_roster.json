@@ -2970,7 +2970,6 @@
       "name": "Felipe",
       "slug": "felipe",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 3,
@@ -2982,7 +2981,8 @@
         "boldness": 8,
         "intuition": 7,
         "temperament": 5
-      }
+      },
+      "sexuality": "gay"
     }
   ]
 }

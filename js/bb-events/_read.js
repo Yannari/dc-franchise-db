@@ -30,8 +30,16 @@
 
 import { gs, seasonConfig } from '../core.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
-import { pStats, threatScore, romanticCompat } from '../players.js';
+import { pStats, romanticCompat } from '../players.js';
 import { houseEventState, playerArchetype } from '../bb/house-events.js';
+import { bbThreat } from '../bb/strategy.js';
+// The shared strategic substrate. Big Brother reads the SAME stores Total Drama
+// does — one set of relationships, memories and reputations per character, so a
+// houseguest is not a different person from the same name on the island.
+import { memoriesAbout, strategicMemoryScore, strongestStrategicMemory } from '../strategy-memory.js';
+import { relationshipDecisionProfile, hasRelationshipDimensions } from '../relationships.js';
+import { strategicReputation } from '../reputation.js';
+import { getIntentions } from '../intentions.js';
 
 // ── what actually happened in this act ────────────────────────────────
 //
@@ -102,21 +110,86 @@ export function alliancesOf(name) {
 export const sharesAlliance = (a, b) =>
   alliancesOf(a).some(al => (al.members || []).includes(b));
 
-// ── house memory (Codex's state, read-only) ───────────────────────────
+// ── relationship dimensions (canonical, shared with Total Drama) ──────
+//
+// A single bond number collapses everything into one axis. The shared model
+// keeps them apart, and the distinctions matter here: you can trust someone you
+// resent, fear someone you respect, and owe someone you dislike. A veto
+// abandonment is an obligation broken; a blindside is trust broken; a rumour
+// manufactures fear. Reading the right dimension is what stops every Big Brother
+// beat feeling like the same beat at different volumes.
 
-export function memoriesOf(observer) {
-  return houseEventState().memories?.[observer] || [];
+export function profile(a, b) {
+  if (!a || !b || a === b) return null;
+  try { return relationshipDecisionProfile(a, b); } catch { return null; }
 }
 
-/** Everything `observer` is still carrying about `subject`, strongest first. */
+const _dim = (a, b, key) => profile(a, b)?.[key] ?? 0;
+
+export const trustOf = (a, b) => _dim(a, b, 'trust');
+export const resentmentOf = (a, b) => _dim(a, b, 'resentment');
+export const obligationOf = (a, b) => _dim(a, b, 'obligation');
+export const fearOf = (a, b) => _dim(a, b, 'fear');
+export const respectOf = (a, b) => _dim(a, b, 'strategicRespect');
+export const warmthOf = (a, b) => _dim(a, b, 'warmth');
+/** How dangerous `a` finds `b` — respect plus fear, the reason people nominate. */
+export const dangerOf = (a, b) => _dim(a, b, 'strategicDanger');
+
+export const hasDimensions = (a, b) => {
+  try { return hasRelationshipDimensions(a, b); } catch { return false; }
+};
+
+// ── memory (canonical, shared with Total Drama) ───────────────────────
+//
+// gs.strategicMemories is the truth. gs.bb.house.memories is a render receipt
+// the spec explicitly forbids strategy from reading — but Codex's api still
+// writes it while the write side migrates, so these fall back to it rather than
+// going blind in the meantime. When the api routes through rememberStrategy the
+// fallbacks simply stop being reached.
+
+const _receipt = observer => houseEventState().memories?.[observer] || [];
+
+export function memoriesOf(observer) {
+  if (!observer) return [];
+  let shared = [];
+  try { shared = Object.values(gs.strategicMemories?.[observer] || {}).flat(); } catch { shared = []; }
+  return shared.length ? shared : _receipt(observer);
+}
+
+/** Everything `observer` is still carrying about `subject`, as one number. */
 export function grudge(observer, subject) {
-  return memoriesOf(observer)
+  if (!observer || !subject) return 0;
+  try {
+    const score = strategicMemoryScore(observer, subject);
+    if (score) return score;
+  } catch { /* fall through to the receipt */ }
+  return _receipt(observer)
     .filter(m => m.subject === subject)
     .reduce((sum, m) => sum + (m.strength || 1), 0);
 }
 
-export const remembers = (observer, subject, type) =>
-  memoriesOf(observer).some(m => m.subject === subject && m.type === type);
+export function remembers(observer, subject, type) {
+  if (!observer || !subject) return false;
+  try {
+    if (memoriesAbout(observer, subject).some(m => m.type === type)) return true;
+  } catch { /* fall through */ }
+  return _receipt(observer).some(m => m.subject === subject && m.type === type);
+}
+
+/** The single thing `observer` most holds against `subject`, if anything. */
+export function worstMemory(observer, subject) {
+  try {
+    const m = strongestStrategicMemory(observer, subject);
+    if (m) return m;
+  } catch { /* fall through */ }
+  return _receipt(observer).filter(m => m.subject === subject)
+    .sort((a, b) => (b.strength || 1) - (a.strength || 1))[0] || null;
+}
+
+/** Standing earned across the season — and, for a returnee, across seasons. */
+export function reputation(name) {
+  try { return strategicReputation(name) || null; } catch { return null; }
+}
 
 /**
  * A promise made and recorded — the raw material for it being broken.
@@ -134,8 +207,33 @@ export const wasPromised = (observer, subject, before = null) =>
 export const suspicionOf = (observer, subject) =>
   houseEventState().suspicion?.[`${observer}→${subject}`] || 0;
 
-/** Who, if anyone, this player has privately decided to come after. */
-export const targetOf = name => houseEventState().targets?.[name]?.target || null;
+/**
+ * Who, if anyone, this player has privately decided to come after.
+ *
+ * Shared intentions are the canonical answer. Reading them is deliberately
+ * defensive: formIntentions() is still Total Drama-shaped (it branches on
+ * gs.isMerged, which a house does not have), so this never CREATES a plan — it
+ * only reads one that already exists, and falls back to the BB receipt until
+ * Codex's intentions adapter lands.
+ */
+export function targetOf(name) {
+  if (!name) return null;
+  try {
+    const plan = getIntentions(name);
+    const first = plan?.targets?.[0];
+    if (first) return first;
+  } catch { /* fall through to the receipt */ }
+  return houseEventState().targets?.[name]?.target || null;
+}
+
+/** Everyone this player is planning against, not just the first name. */
+export function targetsOf(name) {
+  const all = [];
+  try { all.push(...(getIntentions(name)?.targets || [])); } catch { /* ignore */ }
+  const receipt = houseEventState().targets?.[name]?.target;
+  if (!all.length && receipt) all.push(receipt);
+  return all;
+}
 
 export const isHunting = (hunter, prey) => targetOf(hunter) === prey;
 
@@ -145,7 +243,17 @@ export const huntedBy = (name, pool) =>
 
 // ── standing ──────────────────────────────────────────────────────────
 
-export const threat = name => { try { return threatScore(name) || 0; } catch { return 0; } };
+/**
+ * Composite threat, from the Big Brother side.
+ *
+ * Deliberately NOT players.threatScore: the spec flags it as reusable in formula
+ * but unsafe to call headlessly here, because it reads browser globals and a
+ * Total Drama-shaped challenge record that a house never fills in. bbThreat
+ * already blends the shared stats and bonds with HOH and veto record, which is
+ * the Big Brother evidence. When Codex's threat adapter lands this becomes a
+ * one-line swap.
+ */
+export const threat = name => { try { return bbThreat(name) || 0; } catch { return 0; } };
 
 export function biggestThreat(pool) {
   return [...(pool || [])].sort((a, b) => threat(b) - threat(a))[0] || null;

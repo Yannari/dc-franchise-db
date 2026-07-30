@@ -1,6 +1,10 @@
 @echo off
 title DC Franchise Simulator server
 cd /d "%~dp0"
+
+REM Pull first - the Studio commits to GitHub, so this folder goes stale.
+call "%~dp0update-repo.bat"
+
 echo Serving the simulator (no-cache) on:
 echo   http://localhost:8000/simulator.html
 echo   http://192.168.2.17:8000/simulator.html  (LAN)

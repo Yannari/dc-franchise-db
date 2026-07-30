@@ -3042,7 +3042,6 @@
       "name": "Hasan",
       "slug": "hasan",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
         "physical": 6,
@@ -3054,13 +3053,13 @@
         "boldness": 5,
         "intuition": 4,
         "temperament": 8
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Ireland",
       "slug": "ireland",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "mastermind",
       "stats": {
         "physical": 6,
@@ -3072,13 +3071,13 @@
         "boldness": 9,
         "intuition": 8,
         "temperament": 3
-      }
+      },
+      "sexuality": "bi"
     },
     {
       "name": "Joel",
       "slug": "joel",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 9,
@@ -3090,7 +3089,8 @@
         "boldness": 7,
         "intuition": 3,
         "temperament": 5
-      }
+      },
+      "sexuality": "bi"
     }
   ]
 }

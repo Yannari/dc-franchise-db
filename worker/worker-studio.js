@@ -614,11 +614,13 @@ async function syncSeasons(env) {
     if (s.seasonNumber == null) continue;
     counts.seasons++;
     const w = s.winner || {};
+    // A season with no format is Total Drama — every season predates Big Brother.
+    const format = s.format === 'big-brother' ? 'big-brother' : 'total-drama';
     stmts.push(d.prepare(
-      `INSERT INTO seasons (season_number,title,subtitle,cast_size,episode_count,winner_slug,theme,status)
-       VALUES (?,?,?,?,?,?,?,?)`
+      `INSERT INTO seasons (season_number,title,subtitle,cast_size,episode_count,winner_slug,theme,status,format)
+       VALUES (?,?,?,?,?,?,?,?,?)`
     ).bind(s.seasonNumber, s.title || null, s.subtitle || null, asInt(s.castSize),
-      asInt(s.episodeCount), w.playerSlug || null, s.theme || null, s.status || null));
+      asInt(s.episodeCount), w.playerSlug || null, s.theme || null, s.status || null, format));
   }
 
   const seenApp = new Set(), seenBond = new Set();

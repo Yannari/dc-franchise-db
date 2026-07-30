@@ -879,6 +879,31 @@ export const S10_TRIBES = [
   { name:'Courtney',  tribe:'Contenders' },
   { name:'Tyler',     tribe:'Contenders' },
 ];
+// ── Show formats ─────────────────────────────────────────────────────────
+// The simulator runs more than one reality show over the same character pool.
+// Everything written before Big Brother existed is Total Drama, so BOTH the
+// season config and the twist catalog treat a missing format as 'total-drama'
+// rather than requiring 147 catalog entries and fourteen seasons to be edited.
+export const SEASON_FORMATS = ['total-drama', 'big-brother'];
+export const DEFAULT_FORMAT = 'total-drama';
+
+/** Which show is this season? Accepts a config, a season record, or a bare tag. */
+export function seasonFormat(source) {
+  const raw = typeof source === 'string' ? source : source?.format;
+  return SEASON_FORMATS.includes(raw) ? raw : DEFAULT_FORMAT;
+}
+
+/** Which show does this twist belong to? */
+export function twistFormat(twist) {
+  return SEASON_FORMATS.includes(twist?.format) ? twist.format : DEFAULT_FORMAT;
+}
+
+/** The twists a given season is allowed to draw — a show never offers another's. */
+export function twistsForFormat(source) {
+  const fmt = seasonFormat(source);
+  return TWIST_CATALOG.filter(t => twistFormat(t) === fmt);
+}
+
 export const S10_BONDS_PRESET = [
   { a: 'Cody',  b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
   { a: 'Bowie', b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9' },
@@ -919,7 +944,7 @@ export const S9_BONDS_PRESET = [];
 
 export function defaultConfig() {
   return {
-    name: '', year: '', days: 39, gameMode: 'spectator',
+    name: '', year: '', days: 39, gameMode: 'spectator', format: 'total-drama',
     teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', finaleAssistants: false, jurySize: 9,
     ri: false, riReentryAt: 12, riFormat: 'redemption', riReturnPoints: 1, riSecondReturnAt: 5, journey: false, shotInDark: false,
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,

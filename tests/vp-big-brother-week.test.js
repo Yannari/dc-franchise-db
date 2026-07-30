@@ -7,6 +7,9 @@
 // what the engine produces.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
+import { pStats, pronouns, threatScore } from '../js/players.js';
+import { getBond, getPerceivedBond } from '../js/bonds.js';
+import { ordinal } from '../js/finale.js';
 import { buildVPScreens, buildBBWeekScreens, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
@@ -27,6 +30,14 @@ function reset() {
   globalThis.gs = gs;
   globalThis.players = players;
   globalThis.seasonConfig = seasonConfig;
+  // The shared builders reach for these as bare globals too — main.js puts the
+  // whole module surface on window at boot.
+  globalThis.pStats = pStats;
+  globalThis.pronouns = pronouns;
+  globalThis.threatScore = threatScore;
+  globalThis.getBond = getBond;
+  globalThis.getPerceivedBond = getPerceivedBond;
+  globalThis.ordinal = ordinal;
   gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
   gs.episodeHistory = [];
   gs.popularity = {};
@@ -69,8 +80,10 @@ describe('the Big Brother visual player', () => {
     const ids = screens.map(s => s.id);
     // Cold open, then life and ceremony alternating, ending on the eviction.
     expect(ids[0]).toBe('bb-cold');
-    expect(ids.at(-1)).toBe('bb-evict');
-    const spine = ids.filter(id => !id.startsWith('bb-camp'));
+    // The eviction is the last act; the shared vote, alliance and
+    // relationship sections follow it as appendices.
+    expect(ids).toContain('bb-evict');
+    const spine = ids.filter(id => id !== 'bb-camp' && !['bb-votes','bb-alliances','bb-rels'].includes(id));
     // House life is its own act with its own phase, so the player walks the
     // acts the engine produced rather than guessing where a beat belonged.
     expect(spine).toEqual([
@@ -79,12 +92,20 @@ describe('the Big Brother visual player', () => {
     ]);
   });
 
-  it('opens on the whole house arriving in week one', () => {
-    const html = buildBBWeekScreens(week())[0].html;
-    expect(html).toContain('MOVE-IN DAY');
-    // Every houseguest is shown, through the shared portrait helper.
-    for (const p of CAST) expect(html).toContain(p.name);
-    expect(html).toContain('rp-portrait');
+  it('introduces the cast one at a time on move-in day', () => {
+    const ep = week();
+    const first = buildBBWeekScreens(ep)[0].html;
+    expect(first).toContain('MOVE-IN DAY');
+    // Arrivals are revealed one at a time, so before any reveal they are all
+    // still placeholders behind the door.
+    expect(first).toContain('Next houseguest');
+    expect(first).not.toContain('HOUSEGUEST 1');
+    // Once everybody is in, every houseguest has been introduced by name.
+    const all = revealed(ep)[0].html;
+    expect(all).toContain('HOUSEGUEST 1');
+    for (const p of CAST) expect(all).toContain(p.name);
+    expect(all).toContain('THE DOOR LOCKS');
+    expect(all).toContain('rp-portrait');
   });
 
   it('shows the competition by name, not just its winner', () => {

@@ -1475,7 +1475,7 @@ export function rpBuildEmissaryScouting(ep) {
   const emTC = tribeColor(ep.emissary.tribe);
   const loseTC = tribeColor(ep.emissary.targetTribe);
 
-  let html = `<div class="rp-page tod-dusk">
+  let html = `<div class="rp-page bb-room ${accent === '#f85149' ? 'bb-live' : accent === '#3fb950' ? 'bb-open' : 'bb-power'}">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px rgba(240,165,0,0.3);margin-bottom:6px">🕵️ THE EMISSARY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${ep.emissary.tribe} sends an emissary to ${ep.emissary.targetTribe}'s tribal council.</div>`;
@@ -15499,12 +15499,15 @@ function _bbScene(scene) {
  * A screen of scenes with click-to-reveal, dimming what has not happened yet —
  * lifted from the Total Drama scouting screen so the pacing feels identical.
  */
-function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '' }) {
+function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '', room = 'bb-power' }) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   const done = state.idx >= scenes.length - 1;
 
-  let html = `<div class="rp-page tod-dusk">
+  // Every Big Brother screen is an interior. The room changes with the week —
+  // flat and even before anybody has power, warm where the power sits, cold
+  // once two chairs are occupied, studio red on eviction night.
+  let html = `<div class="rp-page bb-room ${room}">
     <div class="rp-eyebrow">${eyebrow}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${accent};text-shadow:0 0 20px ${accent}33;margin-bottom:6px">${title}</div>
     ${subtitle ? `<div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:18px">${subtitle}</div>` : ''}
@@ -15531,51 +15534,121 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
 
 // ── Cold open ─────────────────────────────────────────────────────────
 
+// How a houseguest walks in, by the kind of player they are. The island
+// introduces its cast one at a time on the dock; a house does it at the door.
+const _BB_ARRIVAL = {
+  mastermind:          n => `${n} walks in, counts the doors, counts the people, and has a working shortlist before the bags are down.`,
+  schemer:             n => `${n} is delighted by everything and everyone, which is either genuine or the single most efficient opening move available.`,
+  villain:             n => `${n} announces that ${'they'} came to play and not to make friends, which everybody laughs at and nobody forgets.`,
+  hero:                n => `${n} carries somebody else's case in and introduces ${'themselves'} to every single person before picking a bed.`,
+  'social-butterfly':  n => `${n} knows all sixteen names inside twenty minutes and uses them constantly, and it works.`,
+  'challenge-beast':   n => `${n} finds the gym before the kitchen and is very quickly the person everybody privately worries about.`,
+  'loyal-soldier':     n => `${n} says almost nothing on the first night and is asked to be somebody's number two on the second.`,
+  underdog:            n => `${n} arrives visibly not believing ${'they'} got cast, and the house files that under harmless.`,
+  goat:                n => `${n} makes an entrance nobody can quite explain afterwards. Two people decide on the spot to keep ${n} around a long time.`,
+  hothead:             n => `${n} is loud, warm and completely unfiltered for four straight hours, and has already annoyed somebody by bedtime.`,
+  wildcard:            n => `Nobody can tell what ${n} is doing, including ${n}, and it is genuinely disarming.`,
+  'chaos-agent':       n => `${n} rearranges the bedroom within an hour of arriving because it "felt wrong", and the house lets ${'them'} do it.`,
+  floater:             n => `${n} is pleasant to everybody, commits to nothing, and will be described as "lovely" by people who cannot remember speaking to ${'them'}.`,
+  'perceptive-player': n => `${n} says very little and watches the room fill up, and by the end of the night knows who is already circling whom.`,
+  showmancer:          n => `${n} finds the person ${'they'} are going to spend the season attached to inside the first hour. Everybody sees it.`,
+};
+
+const _bbArrivalLine = (name) => {
+  const arch = (typeof players !== 'undefined' && players.find(p => p.name === name)?.archetype) || 'floater';
+  const pr = pronouns(name);
+  const fn = _BB_ARRIVAL[arch] || _BB_ARRIVAL.floater;
+  return fn(name)
+    .replace(/\bthey\b/g, pr.sub).replace(/\bthemselves\b/g, pr.ref).replace(/\bthem\b/g, pr.obj);
+};
+
+/**
+ * The cold open.
+ *
+ * Week one introduces the cast one at a time, the way the island introduces
+ * arrivals on the dock — a house of strangers is only interesting if you know
+ * who the strangers are. Later weeks open on the state of play instead.
+ */
 export function rpBuildBBColdOpen(ep) {
   const house = ep.houseAtStart || [];
   const first = (ep.num || 1) === 1;
   const stateKey = `bb_co_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  const header = `<div style="text-align:center;margin-bottom:18px">
-    <div class="rp-portrait-row" style="justify-content:center;flex-wrap:wrap">${house.map(n => rpPortrait(n, 'sm')).join('')}</div>
-  </div>`;
-
-  return _bbSceneScreen(ep, {
-    // seasonConfig is a bare global here, present in the browser and absent in
-    // a module scope, so it is read defensively rather than assumed.
-    eyebrow: `${(typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother'} — Week ${ep.num}`,
-    title: first ? 'MOVE-IN DAY' : `WEEK ${ep.num}`,
-    subtitle: first
-      ? `${house.length} strangers move in. No clocks, no calls home, one door that only opens outward.`
-      : `${house.length} houseguests remain.`,
-    accent: '#f0a500', stateKey, header,
-    scenes: first
-      ? [
-        { text: 'They come through the door in ones and twos, loud with nerves, hugging people they met four minutes ago.', players: house.slice(0, 4), badgeText: 'MOVE-IN', badgeClass: 'gold' },
-        { text: 'Beds are claimed, and the claiming is the first strategic act of the season whether anybody admits it or not.', players: house.slice(4, 8), badgeText: 'FIRST NIGHT', badgeClass: 'blue' },
-        { text: 'The door locks. The first Head of Household competition is about to begin.', players: [], badgeText: 'BIG BROTHER', badgeClass: 'red' },
-      ]
-      : [
+  if (!first) {
+    return _bbSceneScreen(ep, {
+      eyebrow: `${(typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother'} — Week ${ep.num}`,
+      title: `WEEK ${ep.num}`,
+      subtitle: `${house.length} houseguests remain.`,
+      accent: '#f0a500', stateKey, room: 'bb-open',
+      header: `<div class="rp-portrait-row" style="justify-content:center;flex-wrap:wrap;margin-bottom:18px">${house.map(n => rpPortrait(n, 'sm')).join('')}</div>`,
+      scenes: [
         { text: ep.outgoingHoh
-          ? `${ep.outgoingHoh} comes off the wall with no power at all, which in this house is the most dangerous place to stand.`
-          : 'The house wakes up with nobody in charge, and everybody counting.',
+            ? `${ep.outgoingHoh} comes off the wall with no power at all, which in this house is the most dangerous place to stand.`
+            : 'The house wakes up with nobody in charge, and everybody counting.',
           players: [ep.outgoingHoh].filter(Boolean), badgeText: 'POWER LAPSES', badgeClass: 'grey' },
         { text: 'Somebody in this room is about to be handed the only thing that matters this week.', players: [], badgeText: 'BIG BROTHER', badgeClass: 'red' },
       ],
+    });
+  }
+
+  // ── Week one: the move-in, one houseguest at a time ──
+  const arrivals = house;
+  const allRevealed = state.idx >= arrivals.length - 1;
+  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
+    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
+    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const seasonName = (typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother';
+  let html = `<div class="rp-page bb-room bb-open">
+    <div class="rp-co-eyebrow">${seasonName}</div>
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin:10px 0 6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">MOVE-IN DAY</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">${arrivals.length} strangers move into the Big Brother house.</div>
+    <div style="max-width:640px;margin:0 auto 20px;font-size:12.5px;line-height:1.65;color:#c9d1d9;font-style:italic;text-align:center">
+      "No clocks. No calls home. One door, and it only opens outward. For the next few months these ${arrivals.length} people live together, compete against each other, and vote each other out one at a time — and every second of it is on camera. Expect the best of them for about a day."
+    </div>
+    <div class="rp-co-divider"></div>`;
+
+  arrivals.forEach((name, i) => {
+    if (i > state.idx) {
+      html += `<div style="padding:12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.10;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
+      return;
+    }
+    html += `<div class="rp-brant-entry" style="animation:scrollDrop 0.3s var(--ease-broadcast) both">
+      <div class="rp-brant-portraits">${rpPortrait(name)}</div>
+      <div class="rp-brant-text"><strong style="color:#f0f6fc">${name}</strong><br>${_bbArrivalLine(name)}</div>
+      <span class="rp-brant-badge">HOUSEGUEST ${i + 1}</span>
+    </div>`;
   });
+
+  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
+      ${allRevealed ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, arrivals.length - 1))}">Next houseguest</button>`}
+      ${allRevealed ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(arrivals.length - 1)}">Move everybody in</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(arrivals.length, Math.max(0, state.idx + 1))} / ${arrivals.length} moved in</span>
+    </div>`;
+
+  if (allRevealed) {
+    html += `<div style="text-align:center;margin-top:18px;padding:16px;border-top:1px solid var(--border)">
+      <div style="font-family:var(--font-display);font-size:15px;letter-spacing:2px;color:#c9343c">THE DOOR LOCKS</div>
+      <div style="font-size:12px;color:#8b949e;margin-top:6px">The competition for the first Head of Household begins.</div>
+    </div>`;
+  }
+  return html + `</div>`;
 }
 
 // ── Life in the house ─────────────────────────────────────────────────
 
 // The phases a house moves through, and what each one is actually about.
+// The house, and what it is lit like at each point in the week. These are
+// interiors rather than times of day — a houseguest never sees the sky.
 const _BB_PHASE_META = {
-  'pre-hoh':   { title: 'HOUSE LIFE', kicker: 'Before anybody has power', tod: 'tod-midday' },
-  'post-hoh':  { title: 'HOUSE LIFE', kicker: 'The Head of Household is decided', tod: 'tod-afternoon' },
-  'post-noms': { title: 'HOUSE LIFE', kicker: 'Two houseguests are on the block', tod: 'tod-dusk' },
-  'post-veto': { title: 'HOUSE LIFE', kicker: 'The veto has been won, and not yet used', tod: 'tod-dusk' },
-  'campaign':  { title: 'HOUSE LIFE', kicker: 'The vote is still moving', tod: 'tod-night' },
-  'eviction':  { title: 'HOUSE LIFE', kicker: 'The last hours', tod: 'tod-night' },
+  'pre-hoh':   { title: 'HOUSE LIFE', kicker: 'Before anybody has power', tod: 'bb-room bb-open' },
+  'post-hoh':  { title: 'HOUSE LIFE', kicker: 'The Head of Household is decided', tod: 'bb-room bb-power' },
+  'post-noms': { title: 'HOUSE LIFE', kicker: 'Two houseguests are on the block', tod: 'bb-room bb-block' },
+  'post-veto': { title: 'HOUSE LIFE', kicker: 'The veto has been won, and not yet used', tod: 'bb-room bb-block' },
+  campaign:    { title: 'HOUSE LIFE', kicker: 'The vote is still moving', tod: 'bb-room bb-block' },
+  eviction:    { title: 'HOUSE LIFE', kicker: 'The last hours', tod: 'bb-room bb-live' },
 };
 
 // Which beats are strategy and which are texture, so the eye can tell them
@@ -15593,10 +15666,6 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   const meta = _BB_PHASE_META[act?.phase] || _BB_PHASE_META['pre-hoh'];
   const beats = act?.socialBeats || [];
   const house = ep.houseAtStart || [];
-  const stateKey = `bb_house_${ep.num}_${slot}`;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const state = _tvState[stateKey];
-  const done = state.idx >= beats.length - 1;
 
   let html = `<div class="rp-page ${meta.tod}">
     <div class="rp-eyebrow">Week ${ep.num} — ${meta.kicker}</div>
@@ -15614,11 +15683,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
     </button>
     <div id="bbhouse-${ep.num}-${slot}" class="rp-camp-toggle-body">`;
 
-  beats.forEach((beat, i) => {
-    if (i > state.idx) {
-      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
-      return;
-    }
+  beats.forEach((beat) => {
     const cls = beat.badgeClass || 'grey';
     const color = cls === 'red' ? '#f85149' : cls === 'green' ? '#3fb950' : cls === 'gold' ? '#d29922' : cls === 'blue' ? '#58a6ff' : '#8b949e';
     const load = _BB_LOAD.has(beat.category);
@@ -15642,13 +15707,6 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   }
   html += `</div></div>`;
 
-  if (beats.length) {
-    html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, beats.length - 1))}">Reveal next</button>`}
-      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, beats.length - 1)}">Reveal all</button>`}
-      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(beats.length, Math.max(0, state.idx + 1))} / ${beats.length}</span>
-    </div>`;
-  }
   return html + `</div>`;
 }
 
@@ -15679,7 +15737,7 @@ export function rpBuildBBComp(ep, actType) {
     eyebrow: `Week ${ep.num}`,
     title: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO',
     subtitle: isHoh ? 'Power changes hands.' : 'One houseguest can change the whole week.',
-    accent: '#f0a500', header,
+    accent: '#f0a500', header, room: isHoh ? 'bb-power' : 'bb-block',
     stateKey: `bb_comp_${ep.num}_${actType}`,
     scenes,
   });
@@ -15697,7 +15755,7 @@ export function rpBuildBBNominations(ep) {
   </div>`;
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'NOMINATION CEREMONY',
-    subtitle: `${ep.hoh} names two houseguests.`, accent: '#f85149', header,
+    subtitle: `${ep.hoh} names two houseguests.`, accent: '#f85149', header, room: 'bb-block',
     stateKey: `bb_noms_${ep.num}`,
     scenes: [
       { text: `The first key turns. ${noms[0]} is nominated for eviction.`, players: [noms[0]], badgeText: 'NOMINATED', badgeClass: 'red' },
@@ -15720,28 +15778,31 @@ export function rpBuildBBCeremony(ep) {
   scenes.push(..._bbBeats(act));
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'VETO CEREMONY',
-    subtitle: 'The block is decided.', accent: '#3fb950',
+    subtitle: 'The block is decided.', accent: '#3fb950', room: 'bb-block',
     stateKey: `bb_cer_${ep.num}`, scenes,
   });
 }
 
-export function rpBuildBBCampaign(ep, idx) {
+export function rpBuildBBCampaign(ep) {
   const acts = (ep.acts || []).filter(a => a.type === 'campaign');
-  const act = acts[idx];
-  const scenes = (act?.events || []).map(e => ({
-    text: `<strong>${e.nominee}</strong> works on ${e.voter}. ${e.success ? 'It lands — the vote is moving.' : 'It does not take.'}`,
-    players: [e.nominee, e.voter], badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
-    badgeClass: e.success ? 'green' : 'grey',
-  })).concat(_bbBeats(act));
-  const tally = act?.votesAfterAct || {};
+  // All of it, in order: every pitch and every beat from every campaign act.
+  const scenes = acts.flatMap(act => [
+    ...(act.events || []).map(e => ({
+      text: `<strong>${e.nominee}</strong> works on ${e.voter}. ${e.success ? 'It lands — the vote is moving.' : 'It does not take.'}`,
+      players: [e.nominee, e.voter], badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
+      badgeClass: e.success ? 'green' : 'grey',
+    })),
+    ..._bbBeats(act),
+  ]);
+  const tally = acts.at(-1)?.votesAfterAct || {};
   const header = Object.keys(tally).length ? `<div style="margin-bottom:14px;padding:12px;border-radius:8px;border:1px solid var(--border)">
     <div style="font-size:9px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase;margin-bottom:8px">Where the vote stands</div>
     ${Object.entries(tally).map(([n, v]) => `<div style="display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:4px"><span style="min-width:90px">${n}</span><div style="flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(v / Math.max(1, ...Object.values(tally)) * 100)}%;background:#f85149"></div></div><span>${v}</span></div>`).join('')}
   </div>` : '';
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: acts.length > 1 ? `CAMPAIGN ${idx + 1}` : 'THE CAMPAIGN',
-    subtitle: 'Every conversation can move a vote.', accent: '#58a6ff', header,
-    stateKey: `bb_camp_${ep.num}_${idx}`, scenes,
+    eyebrow: `Week ${ep.num}`, title: 'THE CAMPAIGN',
+    subtitle: 'Every conversation can move a vote.', accent: '#58a6ff', header, room: 'bb-block',
+    stateKey: `bb_camp_${ep.num}`, scenes,
   });
 }
 
@@ -15759,7 +15820,7 @@ export function rpBuildBBEviction(ep) {
   ];
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'LIVE EVICTION',
-    subtitle: 'One houseguest leaves tonight.', accent: '#f85149',
+    subtitle: 'One houseguest leaves tonight.', accent: '#f85149', room: 'bb-live',
     stateKey: `bb_evict_${ep.num}`, scenes,
   });
 }
@@ -15791,17 +15852,39 @@ export function buildBBWeekScreens(ep) {
       case 'veto-ceremony':
         screens.push({ id: 'bb-cer', label: 'Ceremony', html: rpBuildBBCeremony(ep) });
         break;
-      case 'campaign': {
-        const i = campaignIdx++;
-        screens.push({ id: `bb-camp-${i}`, label: 'Campaign', html: rpBuildBBCampaign(ep, i) });
+      case 'campaign':
+        // Every campaign act folds into ONE screen. Three near-identical
+        // screens of a handful of pitches each was pacing the week badly; the
+        // campaign is one stretch of house life, not three chapters.
+        if (campaignIdx++ === 0) {
+          screens.push({ id: 'bb-camp', label: 'Campaign', html: rpBuildBBCampaign(ep) });
+        }
         break;
-      }
       case 'eviction':
         screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
+        // The same vote screen Total Drama uses — one tally, one set of bars,
+        // one blindside read, for both shows. Optional furniture: a week must
+        // still play if it cannot build.
+        try {
+          const votes = rpBuildVotes(ep);
+          if (votes && votes.trim()) screens.push({ id: 'bb-votes', label: 'The Vote', html: votes });
+        } catch { /* the eviction screen already carries the result */ }
         break;
       default:
         break;
     }
   }
+
+  // Alliances and relationships are the same sections the island uses, reading
+  // the same canonical state. A house has blocs and bonds like anywhere else.
+  try {
+    const map = rpBuildAllianceMap(ep);
+    if (map && map.trim()) screens.push({ id: 'bb-alliances', label: 'Alliances', html: map });
+  } catch { /* a week with no alliances simply has no screen */ }
+  try {
+    const rels = rpBuildRelationships(ep);
+    if (rels && rels.trim()) screens.push({ id: 'bb-rels', label: 'Relationships', html: rels });
+  } catch { /* ditto */ }
+
   return screens;
 }

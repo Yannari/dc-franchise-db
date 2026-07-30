@@ -19,6 +19,7 @@
 // Everything here is gated on `ctx.phase`, so these cannot fire at the wrong
 // moment — a "don't put me up" pitch is nonsense before anybody has power.
 
+import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, bondFactor, closestTo, furthestFrom, trusts,
@@ -30,6 +31,9 @@ import {
 const _others = (house, ...x) => house.filter(n => n && !x.includes(n));
 const _leastSeen = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
+
+/** Last week's Head of Household, who cannot compete today. */
+const outgoingHoh = () => gs.bb?.outgoingHoh || null;
 const _safe = (house, ctx) => house.filter(n => n !== ctx?.hoh && !_noms(ctx).includes(n));
 
 function _variant(list, ctx, ...salt) {
@@ -258,6 +262,213 @@ const vetoHolderWeighs = {
   },
 };
 
+
+// ── pre-hoh, continued ────────────────────────────────────────────────
+
+const lastNightEqual = {
+  id: 'phase-last-night-equal',
+  category: 'phases',
+  weight(house, ctx) { return at('pre-hoh', ctx, 7); },
+  fire(house, ctx, api) {
+    const group = _leastSeen(house).slice(0, 3);
+    const [a, b, c] = group;
+    const text = _variant([
+      `${a}, ${b} and ${c} stay up knowing one of them will have power by lunchtime and none of them knows which. It makes everybody unusually pleasant.`,
+      `Nobody has done anything to anybody yet this week. ${a} points this out as though it is a joke, and ${b} laughs as though it is.`,
+      `The last hour before a competition is the friendliest the house ever gets, and ${a} has noticed the pattern well enough to distrust it.`,
+      `${a} makes food for people who will be voting on ${pronouns(a).obj} in four days, and does it well.`,
+    ], ctx, a, b, c);
+    for (const x of group) for (const y of group) if (x !== y) api.addBond(x, y, 0.35);
+    api.popDelta(a, 1);
+    return { text, players: group.filter(Boolean), badgeText: 'BEFORE IT STARTS', badgeClass: 'blue' };
+  },
+};
+
+const outgoingHohExposed = {
+  id: 'phase-outgoing-exposed',
+  category: 'phases',
+  weight(house, ctx) {
+    // Read the outgoing HOH from state, not from the acts: during pre-hoh the
+    // HOH act does not exist yet, which is exactly the phase this event is for.
+    const out = outgoingHoh();
+    return out && house.includes(out) ? at('pre-hoh', ctx, 12) : 0;
+  },
+  fire(house, ctx, api) {
+    const out = outgoingHoh();
+    const p = pronouns(out);
+    const angry = _others(house, out).sort((a, b) => grudge(b, out) - grudge(a, out))[0];
+    const text = _variant([
+      `${out} cannot compete today, which means ${p.sub} spends the whole competition watching other people decide ${p.posAdj} week.`,
+      `Last week ${out} had the only room with a door. Today ${p.sub} has a bed in with everyone else and a very short list of friends.`,
+      `${angry} has been waiting seven days for ${out} to be ordinary again, and is not subtle about the timing.`,
+      `${out} works out that every single person still here remembers exactly who ${p.sub} nominated, and that ${p.sub} is now the only one who cannot win protection.`,
+    ], ctx, out, angry);
+    api.popDelta(out, -1);
+    if (angry) {
+      api.suspicion(angry, out, 1.3);
+      api.setTarget(angry, out, 'they finally came down off the wall');
+    }
+    return { text, players: [out, angry].filter(Boolean), badgeText: 'NO LONGER SAFE', badgeClass: 'red' };
+  },
+};
+
+// ── post-hoh, continued ───────────────────────────────────────────────
+
+const hohRoomReveal = {
+  id: 'phase-hoh-room',
+  category: 'phases',
+  weight(house, ctx) { return ctx?.hoh ? at('post-hoh', ctx, 10) : 0; },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    const p = pronouns(hoh);
+    const invited = _leastSeen(_others(house, hoh)).sort((a, b) => bond(hoh, b) - bond(hoh, a)).slice(0, 2);
+    const excluded = furthestFrom(hoh, _others(house, hoh, ...invited));
+    const text = _variant([
+      `The whole house crowds into the HOH room for the photographs, and everyone privately notes which two are still in there an hour later. It is ${invited.join(' and ')}.`,
+      `${hoh} reads out the letter from home and the room is genuinely kind for four minutes. Then the door shuts on everybody except ${invited[0]}.`,
+      `${hoh} gets a room with a lock for the first time in weeks, and discovers ${p.sub} has more close friends today than ${p.sub} had yesterday.`,
+      `${excluded} is in the HOH room for the photographs and gone before the letter. ${pronouns(excluded).Sub} counts the people who stayed.`,
+    ], ctx, hoh, ...invited);
+    invited.forEach(n => { api.addBond(hoh, n, 0.8); api.remember(n, hoh, 'favour', 1, { about: 'the HOH room' }); });
+    if (excluded) {
+      api.addBond(hoh, excluded, -0.5);
+      api.suspicion(excluded, hoh, 0.9);
+    }
+    api.popDelta(hoh, 2);
+    return { text, players: [hoh, ...invited].filter(Boolean), badgeText: 'THE HOH ROOM', badgeClass: 'gold' };
+  },
+};
+
+const targetsAlign = {
+  id: 'phase-targets-align',
+  category: 'phases',
+  weight(house, ctx) {
+    if (!ctx?.hoh) return 0;
+    const pitchers = house.filter(n => n !== ctx.hoh && targetOf(n));
+    return pitchers.length ? at('post-hoh', ctx, pitchers.length * 3) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    const pitcher = _leastSeen(house.filter(n => n !== hoh && targetOf(n)))[0];
+    const mark = targetOf(pitcher);
+    const p = pronouns(pitcher);
+    const text = _variant([
+      `${pitcher} does not ask ${hoh} for safety. ${p.Sub} offers ${pronouns(hoh).obj} a name instead — ${mark} — which is a much better trade and both of them know it.`,
+      `"You don't owe me anything. But if you're looking at ${mark}, so am I." It is the most useful sentence anybody says to ${hoh} today.`,
+      `${pitcher} has wanted ${mark} gone since week one and has finally found somebody with the power to do it for ${p.obj}.`,
+      `${pitcher} plants ${mark}'s name with ${hoh} and leaves before it can look like a campaign, which is the difference between doing this well and badly.`,
+    ], ctx, pitcher, hoh, mark);
+    api.addBond(pitcher, hoh, 0.9);
+    api.suspicion(hoh, mark, 1.6);
+    api.remember(hoh, pitcher, 'intel', 2, { about: mark });
+    return { text, players: [pitcher, hoh, mark].filter(Boolean), badgeText: 'A NAME OFFERED', badgeClass: 'blue' };
+  },
+};
+
+// ── post-noms, continued ──────────────────────────────────────────────
+
+const nomineeReckons = {
+  id: 'phase-nominee-reckons',
+  category: 'phases',
+  weight(house, ctx) { return _noms(ctx).length ? at('post-noms', ctx, 11) : 0; },
+  fire(house, ctx, api) {
+    const nominee = _leastSeen(_noms(ctx))[0];
+    const p = pronouns(nominee);
+    const needed = _safe(house, ctx).sort((a, b) => bond(nominee, b) - bond(nominee, a)).slice(0, 3);
+    const text = _variant([
+      `${nominee} counts the votes on ${p.posAdj} fingers, twice, and gets a number ${p.sub} does not like either time. ${needed[0]} is the difference.`,
+      `Somewhere around two in the morning ${nominee} stops being upset and starts being useful, and writes a list of who ${p.sub} actually needs: ${needed.filter(Boolean).join(', ')}.`,
+      `${nominee} works out that being on the block is a maths problem before it is a feeling, and that the maths currently says ${p.sub} loses.`,
+      `${nominee} has four days and three people to persuade, and the first of them will not look ${p.obj} in the eye.`,
+    ], ctx, nominee, ...needed);
+    needed.filter(Boolean).forEach(n => api.remember(nominee, n, 'needs', 1, { about: 'the vote' }));
+    api.popDelta(nominee, 1);
+    return { text, players: [nominee, ...needed.filter(Boolean).slice(0, 2)], badgeText: 'COUNTING', badgeClass: 'blue' };
+  },
+};
+
+const houseTakesSides = {
+  id: 'phase-house-takes-sides',
+  category: 'phases',
+  weight(house, ctx) { return _noms(ctx).length === 2 ? at('post-noms', ctx, 9) : 0; },
+  fire(house, ctx, api) {
+    const [a, b] = _noms(ctx);
+    const safe = _safe(house, ctx);
+    const forA = safe.filter(n => bond(n, a) > bond(n, b));
+    const forB = safe.filter(n => bond(n, b) > bond(n, a));
+    const text = _variant([
+      `The house does not discuss it and the house has entirely decided. ${forA.length} of them are keeping ${a}; ${forB.length} are keeping ${b}. Neither nominee has been told.`,
+      `Two names on the block and a room that has quietly split down the middle. ${a} is being fed; ${b} is being avoided.`,
+      `Nobody says "I'm voting for you" out loud this early, so ${a} and ${b} both spend the day reading tone of voice for information it cannot carry.`,
+      `Sides form over breakfast without a single strategic word being spoken, which is how most votes in this house are actually decided.`,
+    ], ctx, a, b);
+    forA.forEach(n => api.addBond(n, a, 0.3));
+    forB.forEach(n => api.addBond(n, b, 0.3));
+    return { text, players: [a, b], badgeText: 'THE HOUSE SPLITS', badgeClass: 'grey' };
+  },
+};
+
+// ── post-veto, continued ──────────────────────────────────────────────
+
+const hohPressuresVeto = {
+  id: 'phase-hoh-pressures-veto',
+  category: 'phases',
+  weight(house, ctx) {
+    if (!ctx?.vetoWinner || !ctx?.hoh || ctx.vetoWinner === ctx.hoh) return 0;
+    return at('post-veto', ctx, 12);
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh, holder = ctx.vetoWinner;
+    const p = pronouns(hoh);
+    const heavy = pStats(hoh).temperament <= 5 || isVillainous(hoh);
+    const text = heavy ? _variant([
+      `${hoh} does not ask ${holder} to leave the nominations alone. ${p.Sub} explains what next week looks like for people who make ${p.posAdj} weeks difficult, and lets ${holder} do the rest.`,
+      `"It's your veto. Obviously." The sentence has a full stop in it that neither of them believes.`,
+      `${hoh} reminds ${holder}, twice, who is not on the block this week and why. ${holder} does not enjoy either reminder.`,
+      `The conversation lasts six minutes and ${holder} comes out of it knowing exactly what using the veto would cost.`,
+    ], ctx, hoh, holder) : _variant([
+      `${hoh} tells ${holder} honestly what ${p.sub} wants and then genuinely leaves it alone, which is rarer in this house than any advantage.`,
+      `"Use it if you need to. I'd rather you were straight with me than safe." ${holder} believes ${pronouns(hoh).obj}, and that is worth more to ${hoh} than the nominations.`,
+      `${hoh} makes the case once, badly, and apologises for making it at all.`,
+      `They talk about it like two people rather than two positions, and ${holder} is the one who ends up feeling obliged.`,
+    ], ctx, hoh, holder);
+
+    api.addBond(hoh, holder, heavy ? -0.7 : 0.9);
+    api.remember(holder, hoh, heavy ? 'pressure' : 'respect', 2, { about: 'the veto' });
+    if (heavy) api.suspicion(holder, hoh, 1.4);
+    return {
+      text, players: [hoh, holder],
+      badgeText: heavy ? 'LEANED ON' : 'ASKED STRAIGHT',
+      badgeClass: heavy ? 'red' : 'green',
+    };
+  },
+};
+
+const replacementFear = {
+  id: 'phase-replacement-fear',
+  category: 'phases',
+  weight(house, ctx) {
+    if (!ctx?.vetoWinner) return 0;
+    const exposed = _safe(house, ctx);
+    return exposed.length ? at('post-veto', ctx, 8) : 0;
+  },
+  fire(house, ctx, api) {
+    const exposed = _leastSeen(_safe(house, ctx))
+      .sort((a, b) => bond(a, ctx.hoh) - bond(b, ctx.hoh))[0];
+    const p = pronouns(exposed);
+    const text = _variant([
+      `If the veto gets used, somebody has to go up in the empty chair, and ${exposed} has worked out that ${p.sub} is the obvious somebody.`,
+      `${exposed} spends the day being extremely helpful to ${ctx.hoh}, which fools nobody and is not really meant to.`,
+      `Nobody has said ${exposed}'s name. ${p.Sub} can feel it being not-said, which is worse.`,
+      `${exposed} would quite like the veto not to be used and cannot say so to anybody without explaining why ${p.sub} is worried.`,
+    ], ctx, exposed);
+    api.suspicion(exposed, ctx.hoh, 1.1);
+    api.remember(exposed, ctx.hoh, 'fear', 1, { about: 'the empty chair' });
+    api.popDelta(exposed, 1);
+    return { text, players: [exposed, ctx.hoh].filter(Boolean), badgeText: 'THE EMPTY CHAIR', badgeClass: 'grey' };
+  },
+};
+
 export const PHASE_EVENTS = [
   openField,
   prePositioning,
@@ -267,6 +478,14 @@ export const PHASE_EVENTS = [
   safeRelief,
   lobbyingTheVeto,
   vetoHolderWeighs,
+  lastNightEqual,
+  outgoingHohExposed,
+  hohRoomReveal,
+  targetsAlign,
+  nomineeReckons,
+  houseTakesSides,
+  hohPressuresVeto,
+  replacementFear,
 ];
 
 export default PHASE_EVENTS;

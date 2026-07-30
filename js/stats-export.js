@@ -2098,6 +2098,138 @@ export async function exportAndFillNarratives(onStatus) {
   }
 }
 
+// ── Big Brother season export ────────────────────────────────────────
+// Turns the week objects produced by js/bb/week.js into the same season
+// document shape the rest of the pipeline already understands, so publishing,
+// the D1 sync and the site need no Big Brother special-casing beyond a format
+// tag and a per-player `bb` block.
+//
+// The engine is deliberately headless and knows nothing about `ep` or about
+// season documents; this is the adapter that lives on the integration side.
+
+/**
+ * Derive placements from an eviction order.
+ * Evicted first = worst placement. Finalists take the top spots, and among them
+ * the winner is decided by the jury, which the engine does not model yet — so
+ * finalists are returned in the order given and the caller may reorder.
+ */
+function _bbPlacements(weeks, finalists) {
+  const evictionOrder = weeks.map(w => w.evicted).filter(Boolean);
+  const total = evictionOrder.length + finalists.length;
+  const placement = {};
+  evictionOrder.forEach((name, i) => { placement[name] = total - i; });
+  finalists.forEach((name, i) => { placement[name] = i + 1; });
+  return placement;
+}
+
+/** Per-player Big Brother stats, accumulated across the season's weeks. */
+function _bbStats(weeks) {
+  const stat = {};
+  const ensure = name => (stat[name] ||= {
+    hohWins: 0, vetoWins: 0, timesNominated: 0, timesOnBlock: 0, timesSaved: 0, votesReceived: 0,
+  });
+
+  for (const week of weeks) {
+    if (week.hoh) ensure(week.hoh).hohWins++;
+    if (week.vetoWinner) ensure(week.vetoWinner).vetoWins++;
+
+    // Nominated counts every time a name went up, including as a replacement.
+    const nominated = new Set([...(week.initialNominees || []), ...(week.finalNominees || [])]);
+    nominated.forEach(name => ensure(name).timesNominated++);
+
+    // On the block counts only reaching eviction night still nominated — the
+    // distinction the veto exists to create.
+    (week.finalNominees || []).forEach(name => ensure(name).timesOnBlock++);
+
+    const saved = (week.initialNominees || []).filter(n => !(week.finalNominees || []).includes(n));
+    saved.forEach(name => ensure(name).timesSaved++);
+
+    Object.entries(week.votes || {}).forEach(([name, count]) => { ensure(name).votesReceived += count; });
+  }
+  return stat;
+}
+
+/**
+ * Build a season document for a finished Big Brother season.
+ *
+ * @param {object[]} weeks      the week objects from simulateBBSeason()
+ * @param {string[]} finalists  final placings, best first
+ * @param {object}   meta       { seasonNumber, castSize, jurySize }
+ */
+export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
+  if (!Array.isArray(weeks) || !weeks.length) throw new Error('No Big Brother weeks to export');
+  const finalOrder = [...(finalists || [])];
+  const placement = _bbPlacements(weeks, finalOrder);
+  const stats = _bbStats(weeks);
+  const cast = Object.keys(placement);
+  const winner = finalOrder[0] || null;
+  const jurySize = meta.jurySize ?? 0;
+
+  const placements = cast
+    .map(name => {
+      const bb = stats[name] || {};
+      const place = placement[name];
+      return {
+        placement: place,
+        name,
+        playerSlug: _slug(name),
+        // Shared across both shows, so every existing reader keeps working.
+        status: place === 1 ? 'Winner' : place <= finalOrder.length ? 'Finalist'
+              : place <= jurySize + finalOrder.length ? 'Jury' : 'Pre-Jury',
+        votesReceived: bb.votesReceived || 0,
+        juryVotes: 0,                      // the engine does not model a jury vote yet
+        notes: '[AI_FILL]',
+        story: '[AI_FILL]',
+        gameplayStyle: '[AI_FILL]',
+        keyMoments: '[AI_FILL]',
+        // Big Brother only — nested so it cannot be mistaken for Total Drama stats.
+        bb: {
+          hohWins: bb.hohWins || 0,
+          vetoWins: bb.vetoWins || 0,
+          timesNominated: bb.timesNominated || 0,
+          timesOnBlock: bb.timesOnBlock || 0,
+          timesSaved: bb.timesSaved || 0,
+        },
+      };
+    })
+    .sort((a, b) => a.placement - b.placement);
+
+  return {
+    seasonNumber: meta.seasonNumber ?? 0,
+    format: 'big-brother',
+    title: '[AI_FILL]',
+    subtitle: '[AI_FILL]',
+    castSize: meta.castSize ?? cast.length,
+    episodeCount: weeks.length,
+    jurySize,
+    winner: {
+      name: winner,
+      playerSlug: _slug(winner || ''),
+      vote: '',
+      runnerUp: finalOrder.slice(1).join(' & ') || null,
+      keyStats: '[AI_FILL]',
+      strategy: '[AI_FILL]',
+      legacy: '[AI_FILL]',
+    },
+    finalists: finalOrder.map(name => ({ name, playerSlug: _slug(name), placement: placement[name] })),
+    placements,
+    weeks: weeks.map(w => ({
+      week: w.num,
+      hoh: w.hoh,
+      initialNominees: w.initialNominees,
+      vetoWinner: w.vetoWinner,
+      finalNominees: w.finalNominees,
+      votes: w.votes,
+      voteChanges: w.voteChanges,
+      tieBreak: w.tieBreak,
+      evicted: w.evicted,
+    })),
+    seasonNarrative: '[AI_FILL]',
+    awards: '[AI_FILL]',
+    emoji: '[AI_FILL]',
+  };
+}
+
 // ── Live season snapshot ─────────────────────────────────────────────
 // A season in progress isn't in players_database.json — that only ever holds
 // finished seasons. This builds a lightweight "where everyone stands right now"

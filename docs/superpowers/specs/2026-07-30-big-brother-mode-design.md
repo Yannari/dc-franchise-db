@@ -247,7 +247,8 @@ js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
 js/bb/house-events.js  house life between ceremonies
 js/bb/bb-twists.js     the Big Brother twist catalog
 js/bb/bb-vp.js         the week as acts in the visual player
-tests/bb-*.test.js     tests for the above
+tests/bb-*.test.js     engine tests (this glob is Codex's — integration
+                       tests must NOT be named bb-*)
 ```
 
 Greenfield. Nothing here exists yet, so nothing here can break the live site.
@@ -256,6 +257,7 @@ Greenfield. Nothing here exists yet, so nothing here can break the live site.
 
 ```
 js/core.js             season format tag, format field on TWIST_CATALOG
+tests/season-format.test.js  format helpers + the export adapter
 js/main.js             module registration
 worker/*.sql           seasons.format, bb_appearances
 worker/worker-studio.js  sync + publish for Big Brother seasons

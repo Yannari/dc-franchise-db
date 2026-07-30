@@ -223,8 +223,10 @@ page, one Control Room, one place a bug gets fixed.
 4. **VP screens.** The seven days as acts.
 5. **Site and writer.** Format tags, grouped views, format-aware beats.
 
-Steps 1, 2, 3 are Codex (engine). Steps 4 and 5 are Claude (integration), and
-step 5 only becomes possible once a Big Brother season can finish.
+Steps 1–4 are Codex: they all live in `js/bb/`, including the VP screens.
+Step 5 is Claude, and only becomes possible once a Big Brother season can
+finish — except the data-layer groundwork (format tags, D1 schema), which is
+unblocked and can start immediately.
 
 Steps 1 and 2 are the project. The rest follows patterns that already exist.
 

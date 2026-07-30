@@ -416,8 +416,8 @@ async function _unretire(slug, btn) {
 
 /** Rebuild the derived tables (players/appearances/bonds/seasons/rankings)
  *  from the JSON the season export committed. The roster is not involved. */
-async function _syncSeasonData() {
-  const btn = document.getElementById('st-sync');
+export async function syncSeasonDataFromRepo() {
+  const btn = document.getElementById('season-sync-btn');
   if (!_apiBase()) return _toast('No backend configured — nothing to sync', 'err');
   if (!confirm('Rebuild the season and ranking tables from the repo?\n\nReads players_database.json, seasons_database.json and rankings_database.json and replaces those tables. Your roster is not touched.\n\nRun this after exporting and committing a finished season.')) return;
 
@@ -436,7 +436,7 @@ async function _syncSeasonData() {
   } catch (e) {
     _toast('Sync failed: ' + e.message, 'err');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🔄 Sync season data'; }
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Re-sync season data'; }
   }
 }
 
@@ -521,7 +521,6 @@ export function renderStudio() {
            <button type="button" id="st-never" class="st-btn" aria-pressed="false">🌱 Never played</button>
            <button type="button" id="st-retired" class="st-btn" title="Show characters that were retired instead of deleted, and bring them back.">👻 Retired</button>
            <button type="button" id="st-publish" class="st-btn" title="Regenerate franchise_roster.json + voice-profiles.json from the database.">⬆ Publish to site</button>
-           <button type="button" id="st-sync" class="st-btn" title="Rebuild the season/ranking tables in the database from the repo JSON. Run this after exporting a finished season.">🔄 Sync season data</button>
            <button type="button" id="st-export" class="st-btn" title="Download merged franchise_roster.json + voice-profiles.json + new avatar PNGs to commit">⬇ Export for repo</button>
          </div>
          <div id="st-pubstatus" class="st-pubstatus"></div>
@@ -541,7 +540,6 @@ export function renderStudio() {
     _renderGrid(_rosterQuery);
   });
   panel.querySelector('#st-export').addEventListener('click', _exportRepo);
-  panel.querySelector('#st-sync').addEventListener('click', _syncSeasonData);
   panel.querySelector('#st-publish').addEventListener('click', _rosterPublish);
   panel.querySelector('#st-retired').addEventListener('click', _toggleRetiredPanel);
   panel.querySelector('#st-never').addEventListener('click', () => {

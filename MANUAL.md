@@ -70,7 +70,7 @@ It also clears the airing-season overlay, because that season is now real histor
 
 If the backend can't be reached, it falls back to **downloading** the files so an
 export is never lost. In that case, move them into the repo yourself, commit, and
-press **🔄 Sync season data** in the Studio.
+press **🔄 Re-sync season data** in the Season Hub.
 
 ### 6. Score the season
 
@@ -91,6 +91,32 @@ them today — so Δ means "how far this season moves them".
 
 Your typed placements survive a refresh and a tab switch. **↺ Start over** is the only
 thing that clears them.
+
+---
+
+## Your local folder goes out of date — that's normal
+
+```
+Studio (browser) → Worker → commits to GitHub → live site ✅
+                                    ↓
+                          this folder: knows nothing ❌
+```
+
+The Studio never writes to your computer. It saves through the Worker, which commits
+straight to GitHub — so **the site is correct immediately while your local files are
+stale.** After a few characters you can easily be twenty commits behind.
+
+**You don't need to pull for anything to work.** The site, the database and the Studio
+are all fine without it. Pull only when you want the local files to match:
+
+- a local file looks wrong or is missing a character you just made
+- before running the simulator from `localhost`
+- before running the Python tools in `tools/`
+
+Double-click **`pull-latest.bat`**, or run `git pull`. The .bat refuses to pull when you
+have uncommitted changes rather than tangling them.
+
+If a file looks wrong, pull *before* suspecting a bug — that's usually the whole story.
 
 ---
 
@@ -127,7 +153,7 @@ matters. Trust the status line above, not the Actions tab.
 | 🔴 Sync episode to site | Simulator | No | No |
 | Export Season | Simulator | **Yes** | ~1 min |
 | ✅ Apply & publish (rankings) | Legacy → Rankings | **Yes** | ~1 min |
-| 🔄 Sync season data | Studio | No | No |
+| 🔄 Re-sync season data | Season Hub | No | No |
 
 Anything that writes a **file** commits; anything that writes only the **database**
 doesn't. Avatars commit because a PNG can't live in D1.
@@ -141,7 +167,7 @@ doesn't. Avatars commit because a PNG can't live in D1.
 | Create / edit characters | Simulator → **Cast** → ＋ Create Character |
 | Avatar library | same, **🖼 Avatars** tab |
 | Build a cast, star members | Cast → Build Cast |
-| Run episodes, Export Season, 🔴 Sync episode | **Season Hub** → season controls |
+| Run episodes, Export Season, 🔴 Sync episode, 🔄 Re-sync | **Season Hub** → season controls |
 | Franchise history, Hall of Fame, import | **🏆 Legacy → 🏛️ History** |
 | Returnee briefing | **Legacy → 🎟️ Returnee Briefing** |
 | End-of-season rankings | **Legacy → 📊 Rankings** |

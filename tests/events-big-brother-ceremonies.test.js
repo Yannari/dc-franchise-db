@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs } from '../js/core.js';
 import { addBond, getBond, addPerceivedBond } from '../js/bonds.js';
 import { CEREMONY_EVENTS } from '../js/bb-events/ceremonies.js';
+import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
 import { rememberStrategy } from '../js/strategy-memory.js';
 import { simulateBBSeason } from '../js/bb/week.js';
@@ -222,6 +223,11 @@ describe('Big Brother ceremony events', () => {
   // Every event above passed its unit test while five of the nine could never
   // fire in a real season, because the scheduler's ctx carries none of the
   // act's own fields. Only playing seasons caught it, so a season is played here.
+  // Runs the FULL library, not ceremonies alone. A house with only ceremony
+  // events barely develops any bonds, so a veto used to save someone OTHER than
+  // its winner almost never happens — it fired four times in forty seasons that
+  // way. That is an artefact of the isolated setup, not of the event: in a real
+  // season the social library builds the relationships these turn on.
   it('every event actually fires in real seasons — no dead code', () => {
     const fired = new Set();
     // A full house over many seasons. The rarest event here — a genuine
@@ -229,7 +235,7 @@ describe('Big Brother ceremony events', () => {
     // sample would fail this for the wrong reason.
     for (const seed of [11, 23, 44, 57, 68, 79, 91, 103, 117, 129, 141, 153, 165, 177, 189, 201]) {
       resetBig();
-      const { weeks } = simulateBBSeason({ rng: seededRng(seed), finaleSize: 3, houseEvents: CEREMONY_EVENTS });
+      const { weeks } = simulateBBSeason({ rng: seededRng(seed), finaleSize: 3, houseEvents: HOUSE_EVENTS });
       for (const act of weeks.flatMap(w => w.acts || [])) {
         (act.socialBeats || []).forEach(b => fired.add(b.eventId));
       }

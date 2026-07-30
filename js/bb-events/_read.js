@@ -110,6 +110,24 @@ export function alliancesOf(name) {
 export const sharesAlliance = (a, b) =>
   alliancesOf(a).some(al => (al.members || []).includes(b));
 
+/**
+ * The people someone is effectively aligned with, whether or not it is written
+ * down anywhere.
+ *
+ * Big Brother does not create `gs.namedAlliances` yet — the lifecycle adapter is
+ * still to come — so anything that waits for a formal alliance waits forever.
+ * A pair who trust each other this much are an alliance in every sense that
+ * matters to a houseguest deciding who to betray, so read that instead, and
+ * prefer the real thing wherever it exists.
+ */
+export function deFactoAllies(name, pool, threshold = 4) {
+  const formal = alliancesOf(name).flatMap(al => (al.members || []).filter(m => m !== name));
+  if (formal.length) return formal.filter(n => (pool || []).includes(n));
+  return (pool || []).filter(n => n !== name && bond(name, n) >= threshold);
+}
+
+export const isAligned = (a, b, pool) => sharesAlliance(a, b) || deFactoAllies(a, pool || []).includes(b);
+
 // ── relationship dimensions (canonical, shared with Total Drama) ──────
 //
 // A single bond number collapses everything into one axis. The shared model
@@ -279,6 +297,21 @@ export function showmanceOf(name) {
   const active = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && !sh.broken);
   const match = active.find(sh => (sh.players || []).includes(name));
   return match ? (match.players || []).find(n => n !== name) || null : null;
+}
+
+/**
+ * Who someone has a spark with, formal showmance or not.
+ *
+ * `api.showmance` records a romantic SPARK, and Big Brother has no showmance
+ * progression pipeline to mature one into `gs.showmances` — so anything reading
+ * only showmances never sees a single couple. A spark is a real attachment the
+ * house can see; read both, preferring the established one.
+ */
+export function romanceOf(name) {
+  const established = showmanceOf(name);
+  if (established) return established;
+  const spark = (gs.romanticSparks || []).find(s => !s.broken && (s.players || []).includes(name));
+  return spark ? (spark.players || []).find(n => n !== name) || null : null;
 }
 
 export const couldRomance = (a, b) =>

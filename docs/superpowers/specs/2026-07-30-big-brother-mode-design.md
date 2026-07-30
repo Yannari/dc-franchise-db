@@ -129,16 +129,18 @@ Genuinely blocked until a season can finish.
 
 Both are places where existing depth simply does not run. Split by the same rule:
 
-* **Alliances never form.** Nothing writes `gs.namedAlliances`, so
-  `allianceStrength()` returns zero every time — a dead term in nomination, veto
-  and vote decisions. *Codex:* the alliance lifecycle adapter, so a house can
-  create, hold and dissolve one without faking a tribe. *Claude:* the events that
-  supply the evidence.
-* **Perceived bonds never diverge.** `updatePerceivedBonds` and
-  `checkPerceivedBondTriggers` are never called, so the house's read of a
-  relationship always equals the truth, and nobody can ever be misjudged — which
-  is what a blindside is made of. *Codex:* the house-context adapter that runs
-  divergence per week. *Claude:* the events that create the misreads.
+* **Alliances form, but almost never.** ~~Nothing writes `gs.namedAlliances`~~ —
+  the lifecycle adapter has landed. Measured across thirty seasons afterwards,
+  however, it produced **3 named alliances in total, in 2 of 30 seasons**, so
+  `allianceStrength()` is still zero in nearly every decision it feeds. Worth a
+  look at whether formation is gated too tightly or is only reachable from a
+  path that rarely runs. *Claude's* events are unaffected either way: they prefer
+  a real alliance and fall back to people aligned in practice, which is doing all
+  of the work at present.
+* **Perceived bonds — CLOSED.** The house-context adapter has landed and works:
+  measured over thirty seasons, the house's read of a relationship now differs
+  from the truth for **32.2% of surviving pairs**. Houseguests can finally
+  misjudge each other, which is what a blindside is made of.
 
 ## The longer goal this serves
 
@@ -693,19 +695,27 @@ Rules, in order of how much trouble they save:
 1. **If you create a file, commit it.** Never leave a new file uncommitted once
    anything committed imports it. Ownership is about editing, not about who
    presses commit.
-2. **Both agents push to `main`.** Branch only if Big Brother starts changing
+2. **And never commit code that imports an uncommitted file.** This is the same
+   rule from the other side, and it is the half that keeps getting missed — it
+   broke `main` twice in one day, both times by committing a test against a file
+   the other agent had written but not yet committed. Before pressing commit,
+   check what the other agent has in flight; if your work imports any of it,
+   commit it together or wait.
+3. **Both agents push to `main`.** Branch only if Big Brother starts changing
    shared files — the site pages, `episode.js` — which the design says it must
    not. A long-lived branch would drift badly here, because the Casting Studio
    commits to `main` from the live site continuously.
-3. **`git pull --rebase` before every push.** Those Studio commits land between
+4. **`git pull --rebase` before every push.** Those Studio commits land between
    your commit and your push more often than you would think.
-4. **Stage your own paths explicitly.** `git add js/bb/...`, never `git add -A`,
+5. **Stage your own paths explicitly.** `git add js/bb/...`, never `git add -A`,
    or you will sweep up the other agent's half-finished work.
-5. **Never amend or force-push shared history.** Two agents and a live site pull
+6. **Never amend or force-push shared history.** Two agents and a live site pull
    from it.
 
-A quick way to catch violation 1: clone `HEAD` into a temp directory and run the
-suite there. If it fails, something is only in your working tree.
+A quick way to catch violations 1 and 2: clone `HEAD` into a temp directory and
+run the suite there. If it fails, something is only in a working tree. This
+takes about ninety seconds and has caught the problem every time it has
+happened, which is more than reading the diff has managed.
 
 ### The contract between them
 

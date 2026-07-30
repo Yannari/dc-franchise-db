@@ -2929,6 +2929,24 @@
         "temperament": 5
       },
       "sexuality": "straight"
+    },
+    {
+      "name": "Amberly",
+      "slug": "amberly",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 5,
+        "endurance": 4,
+        "mental": 3,
+        "social": 8,
+        "strategic": 3,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 2
+      }
     }
   ]
 }

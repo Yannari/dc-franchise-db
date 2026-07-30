@@ -3001,6 +3001,24 @@
         "temperament": 7
       },
       "sexuality": "straight"
+    },
+    {
+      "name": "Harriett",
+      "slug": "harriett",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 3
+      }
     }
   ]
 }

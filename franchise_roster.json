@@ -2983,6 +2983,24 @@
         "temperament": 5
       },
       "sexuality": "gay"
+    },
+    {
+      "name": "Gyselle",
+      "slug": "gyselle",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "floater",
+      "stats": {
+        "physical": 3,
+        "endurance": 3,
+        "mental": 5,
+        "social": 8,
+        "strategic": 5,
+        "loyalty": 4,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 7
+      }
     }
   ]
 }

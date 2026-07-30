@@ -13,18 +13,40 @@ const rng = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 429496
 describe('Big Brother alliance lifecycle adapter', () => {
   beforeEach(() => seedGame(CAST, { episode:0, eliminated:[], namedAlliances:[], sideDeals:[] }));
 
-  it('forms a canonical alliance only from a mutually trusted core', () => {
+  it('forms an alliance around a mutually trusted core', () => {
     setBond('A','B',6); setBond('A','C',6); setBond('B','C',6);
     const result = updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 });
-    expect(result.formed).toMatchObject({ members:['A','B','C'], active:true, formationEvidence:'mutual-trust' });
+    expect(result.formed).toMatchObject({ members:['A','B','C'], active:true });
+    expect(result.formed.formationEvidence).toBeTruthy();
     expect(gs.namedAlliances).toContain(result.formed);
   });
 
-  it('does not turn a single friendship into an alliance without a deal', () => {
+  // Formation mirrors the Total Drama camp-event system: a permissive bond
+  // floor plus weighted triggers, rather than a high trust bar. Two people who
+  // are close enough DO ally without a written deal — that is how alliances
+  // start on the island and there is no reason a house should differ.
+  it('lets a close pair ally without a formal deal', () => {
     setBond('A','B',8);
-    expect(updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 }).formed).toBeNull();
-    gs.sideDeals = [{ players:['A','B'], active:true, genuine:true, type:'f2', madeEp:1 }];
-    expect(updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 }).formed?.members).toEqual(['A','B']);
+    const formed = updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 }).formed;
+    expect(formed).toBeTruthy();
+    expect(formed.members).toContain('A');
+    expect(formed.members).toContain('B');
+  });
+
+  // The floor is the real guard, and it is the one Total Drama uses: nobody
+  // allies with somebody they actively dislike, though a strategic player can
+  // bridge a little coldness.
+  it('never allies people who actively dislike each other', () => {
+    for (const a of gs.activePlayers) for (const b of gs.activePlayers) if (a < b) setBond(a, b, -6);
+    const formed = updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 }).formed;
+    expect(formed).toBeNull();
+  });
+
+  it('treats a recorded deal as the strongest evidence there is', () => {
+    gs.sideDeals = [{ players:['G','H'], active:true, genuine:true, type:'f2', madeEp:1 }];
+    const formed = updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0.99 }).formed;
+    expect(formed?.members).toEqual(['G','H']);
+    expect(formed.formationEvidence).toBe('genuine-deal');
   });
 
   it('can advance past an existing core and form another evidenced alliance', () => {
@@ -58,6 +80,10 @@ describe('Big Brother alliance lifecycle adapter', () => {
     setBond('A','B',6); setBond('A','C',6); setBond('B','C',6);
     const week = simulateBBWeek({ rng:rng(11) });
     expect(week.allianceChanges).toEqual(expect.objectContaining({ formed:expect.any(Array), betrayals:expect.any(Array) }));
-    expect(gs.namedAlliances.some(alliance => alliance.formationEvidence === 'mutual-trust')).toBe(true);
+    // Evidence is now the trigger that produced it — a pitch, a close pair, a
+    // shared enemy, a survival pact, a shared block, or a recorded deal.
+    const REASONS = ['strategic-pitch','close-pair','shared-enemy','survival-pact','shared-block','genuine-deal'];
+    expect(gs.namedAlliances.length).toBeGreaterThan(0);
+    expect(REASONS).toContain(gs.namedAlliances[0].formationEvidence);
   });
 });

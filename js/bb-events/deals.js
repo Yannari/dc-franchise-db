@@ -136,6 +136,9 @@ const finalTwo = {
     ], ctx, a, b);
 
     api.addBond(a, b, 1.6);
+    // A final two is the strongest deal in the game; record it as one so the
+    // alliance lifecycle can see it.
+    api.sideDeal?.(a, b, 'f2', { reason: 'final two' });
     api.remember(a, b, 'final-two', 3, { week: ctx.week?.num || 0 });
     api.remember(b, a, 'final-two', 3, { week: ctx.week?.num || 0 });
     api.setTarget(a, biggestThreat(_others(house, a, b)) || furthestFrom(a, house), 'the deal needs a road');
@@ -239,6 +242,9 @@ const safetyDeal = {
     ], ctx, hoh, other);
 
     api.addBond(hoh, other, 0.9);
+    // A safety deal is a real deal, but a one-week one — genuine only when the
+    // person offering it means it.
+    api.sideDeal?.(hoh, other, 'safety', { genuine: honest, reason: 'one week of safety' });
     api.remember(other, hoh, 'promise', honest ? 2 : 3, { promise: 'one week of safety' });
     api.remember(hoh, other, 'promise', 2, { promise: 'one week of safety' });
     if (!honest) api.suspicion(other, hoh, 0.5);

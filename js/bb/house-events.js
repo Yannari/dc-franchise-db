@@ -46,6 +46,27 @@ export function createHouseEventApi(ctx = {}) {
       if (changed) state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
       return changed;
     },
+    /**
+     * Record a real deal between two houseguests.
+     *
+     * gs.sideDeals is canonical shared state and the alliance lifecycle treats a
+     * genuine deal as the strongest evidence there is — but nothing in Big
+     * Brother was writing one, so the entire duo route to an alliance was
+     * unreachable and thirty seasons produced three alliances in total. The
+     * events that make deals now say so here.
+     */
+    sideDeal(a, b, type = 'f2', detail = {}) {
+      if (!a || !b || a === b) return false;
+      gs.sideDeals ||= [];
+      const existing = gs.sideDeals.find(deal => deal.active !== false
+        && deal.players?.includes(a) && deal.players.includes(b) && deal.type === type);
+      if (existing) return true;
+      gs.sideDeals.push({
+        players: [a, b], type, active: true, genuine: detail.genuine !== false,
+        madeEp: ctx.week?.num || 0, format: 'big-brother', ...detail,
+      });
+      return true;
+    },
     remember(observer, subject, type, strength = 1, detail = {}) {
       if (!observer || !subject || !type) return false;
       const memory = rememberBBStrategy(observer, subject, type, strength, detail, ctx);

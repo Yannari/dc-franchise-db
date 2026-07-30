@@ -162,35 +162,81 @@ function nextAllianceName() {
   return `BB Alliance ${number}`;
 }
 
-function viableCores(house) {
-  const genuinePairs = [];
-  for (let i = 0; i < house.length; i++) {
-    for (let j = i + 1; j < house.length; j++) {
-      const a = house[i], b = house[j];
-      if (hasGenuineDeal(a, b)) genuinePairs.push({ members:[a, b], score:pairTrust(a, b) + 4, evidence:'genuine-deal' });
-    }
-  }
-  const triples = [];
-  for (let i = 0; i < house.length; i++) {
-    for (let j = i + 1; j < house.length; j++) {
-      for (let k = j + 1; k < house.length; k++) {
-        const members = [house[i], house[j], house[k]];
-        const scores = [pairTrust(members[0], members[1]), pairTrust(members[0], members[2]), pairTrust(members[1], members[2])];
-        const avg = scores.reduce((sum, value) => sum + value, 0) / scores.length;
-        if (Math.min(...scores) >= 2.5 && avg >= 3.25) triples.push({ members, score:avg, evidence:'mutual-trust' });
-      }
-    }
-  }
-  return [...genuinePairs, ...triples].sort((a, b) => b.score - a.score || a.members.join('|').localeCompare(b.members.join('|')));
+// ── Alliance formation ────────────────────────────────────────────────
+//
+// This mirrors the Total Drama camp-event system rather than inventing its own
+// rules, because that system already works and a houseguest should not behave
+// like a different species from a camper. Taken from it unchanged in spirit:
+//
+//   * a permissive BOND FLOOR rather than a high trust bar — members need only
+//     not actively dislike each other, and a strategic player can bridge even
+//     that. The bar Big Brother had instead demanded three simultaneous strong
+//     bonds, which measured out at one viable trio in twenty thousand.
+//   * WEIGHTED TRIGGERS, so an alliance forms for a reason: a pitch, a close
+//     pair, a shared enemy, or two people at the bottom deciding to stop being
+//     there separately.
+//   * a GLOBAL CAP that scales with the house, and a PER-PLAYER cap that lets
+//     strategic players juggle more than one.
+//
+// What is Big Brother's own is the evidence those triggers read. Total Drama
+// looks at surviving close votes together; a house looks at sitting on the
+// block together, at who holds the power this week, and at a competition record
+// that makes somebody worth having on your side.
+
+const bondFloorFor = members => 0.5 - Math.max(...members.map(m => pStats(m).strategic)) * 0.15;
+
+const alliancesWith = name => allianceStore()
+  .filter(a => a.active !== false && !a.dissolved && (a.members || []).includes(name));
+
+/** Strategic players can carry more alliances before they are overcommitted. */
+const isOvercommitted = name =>
+  alliancesWith(name).length >= 1 + Math.floor(pStats(name).strategic * 0.2);
+
+const alreadyPaired = (a, b) => allianceStore()
+  .some(al => al.active !== false && !al.dissolved && (al.members || []).includes(a) && al.members.includes(b));
+
+/**
+ * How much the house wants this houseguest in an alliance.
+ *
+ * Big Brother's own evidence, layered on the shared relationship model: a
+ * competition winner is worth having and worth protecting, whoever holds power
+ * this week is worth being close to, and somebody sitting on the block is a
+ * riskier bet than somebody who is not.
+ */
+function bbAllianceAppeal(name, week) {
+  const record = gs.bb?.stats?.[name] || {};
+  const comps = (record.hohWins || 0) * 0.6 + (record.vetoWins || 0) * 0.4;
+  const inPower = week?.hoh === name ? 0.8 : 0;
+  const onTheBlock = (week?.finalNominees || []).includes(name) ? -0.4 : 0;
+  return comps + inPower + onTheBlock;
 }
 
+/** Nobody in an alliance may actively dislike anybody else already in it. */
+function memberSetIsViable(members) {
+  if (new Set(members).size !== members.length) return false;
+  if (members.some(isOvercommitted)) return false;
+  const floor = bondFloorFor(members);
+  for (let i = 0; i < members.length; i++) {
+    for (let j = i + 1; j < members.length; j++) {
+      if (getBond(members[i], members[j]) < floor) return false;
+      if (alreadyPaired(members[i], members[j])) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Keep the standing alliances honest each week: recompute their internal trust,
+ * and dissolve the ones that have lost their people or lost faith in each other.
+ */
 function reconcileAlliances(house, weekNum) {
   const live = new Set(house);
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
     const activeMembers = (alliance.members || []).filter(name => live.has(name));
     alliance.trust = activeMembers.length > 1
-      ? activeMembers.reduce((sum, a, index) => sum + activeMembers.slice(index + 1).reduce((n, b) => n + pairTrust(a, b), 0), 0)
+      ? activeMembers.reduce((sum, a, index) =>
+          sum + activeMembers.slice(index + 1).reduce((n, b) => n + pairTrust(a, b), 0), 0)
         / (activeMembers.length * (activeMembers.length - 1) / 2)
       : 0;
     if (activeMembers.length <= 1 || alliance.trust <= -1) {
@@ -201,24 +247,177 @@ function reconcileAlliances(house, weekNum) {
   }
 }
 
+// Joining an existing alliance is judged on the AVERAGE relationship with its
+// members, with a floor rather than a high bar for every single one. Requiring
+// real trust with everybody is what kept alliances stuck at two people: real
+// groups routinely take in somebody who is tight with two members and merely
+// neutral with the third.
+const JOIN_FLOOR = -0.5;    // not actively hostile to anyone already in it
+const JOIN_AVG = 1.2;       // but genuinely wanted by the group overall
+
+/**
+ * Alliances that could take somebody in this week.
+ *
+ * Kept separate from founding a new one, and tried first, because otherwise it
+ * never happens — and growth is what keeps alliances alive. A two-person
+ * alliance dies the moment one of them is evicted, so a house that cannot grow
+ * one is a house permanently full of pairs.
+ */
+function recruitmentOptions(house) {
+  const options = [];
+  for (const alliance of allianceStore()) {
+    if (alliance.active === false || alliance.dissolved) continue;
+    const members = (alliance.members || []).filter(name => house.includes(name));
+    if (members.length < 2 || members.length >= 6) continue;
+    for (const candidate of house) {
+      if (members.includes(candidate)) continue;
+      const scores = members.map(m => pairTrust(candidate, m));
+      const avg = scores.reduce((sum, v) => sum + v, 0) / scores.length;
+      if (Math.min(...scores) < JOIN_FLOOR || avg < JOIN_AVG) continue;
+      // A smaller alliance is hungrier for numbers than one that already has them.
+      options.push({ alliance, members: [...members, candidate], candidate, score: avg + (6 - members.length) * 0.35 });
+    }
+  }
+  return options.sort((a, b) => b.score - a.score || a.candidate.localeCompare(b.candidate));
+}
+
+/**
+ * The reasons an alliance might form this week, mirroring Total Drama's.
+ * Each yields a member list; the caller weights and picks between them.
+ */
+function formationTriggers(house, week, rng) {
+  const triggers = [];
+  const free = house.filter(n => !isOvercommitted(n));
+
+  // 1. A pitch. Anyone can make one, and the chance scales with how persuasive
+  //    or calculating they are — the Total Drama formula, unchanged.
+  const pitchers = free.filter(n => {
+    const st = pStats(n);
+    return rng() < Math.max(st.strategic, st.social) * 0.08;
+  });
+  if (pitchers.length) {
+    const hub = pitchers.sort((a, b) =>
+      (pStats(b).social + pStats(b).strategic + bbAllianceAppeal(b, week))
+      - (pStats(a).social + pStats(a).strategic + bbAllianceAppeal(a, week)))[0];
+    const partners = free.filter(n => n !== hub)
+      .map(n => ({ n, score: getBond(hub, n) + bbAllianceAppeal(n, week) + rng() * 0.5 }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, rng() < 0.45 ? 2 : 1)
+      .map(x => x.n);
+    if (partners.length) triggers.push({ weight: 10, members: [hub, ...partners], evidence: 'strategic-pitch' });
+  }
+
+  // 2. A close pair who are not already allied; likelihood scales with the bond.
+  outer:
+  for (let i = 0; i < free.length; i++) {
+    for (let j = i + 1; j < free.length; j++) {
+      const b = getBond(free[i], free[j]);
+      if (b >= 1 && rng() < (b - 1) * 0.15 && !alreadyPaired(free[i], free[j])) {
+        triggers.push({ weight: 8, members: [free[i], free[j]], evidence: 'close-pair' });
+        break outer;
+      }
+    }
+  }
+
+  // 3. A shared enemy. In a house that is either mutual dislike, as on the
+  //    island, or two people who have independently decided on the same target.
+  for (let i = 0; i < free.length && triggers.length < 6; i++) {
+    for (let j = i + 1; j < free.length; j++) {
+      if (getBond(free[i], free[j]) < -0.5) continue;
+      const shared = house.find(e => {
+        if (e === free[i] || e === free[j]) return false;
+        const h1 = getBond(free[i], e), h2 = getBond(free[j], e);
+        const hated = h1 <= -1 && h2 <= -1 && (h1 + h2) <= -3;
+        const hunted = getBBTarget(free[i]) === e && getBBTarget(free[j]) === e;
+        return hated || hunted;
+      });
+      if (shared) {
+        triggers.push({ weight: 7, members: [free[i], free[j]], evidence: 'shared-enemy', against: shared });
+        break;
+      }
+    }
+  }
+
+  // 4. The bottom of the house banding together.
+  const avgBond = n => house.filter(p => p !== n)
+    .reduce((sum, p) => sum + getBond(n, p), 0) / Math.max(1, house.length - 1);
+  const bottom = [...free].sort((a, b) => avgBond(a) - avgBond(b)).slice(0, 2);
+  if (bottom.length === 2 && getBond(bottom[0], bottom[1]) > -1 && !alreadyPaired(bottom[0], bottom[1])) {
+    triggers.push({ weight: 6, members: bottom, evidence: 'survival-pact' });
+  }
+
+  // 5. Big Brother's version of surviving a vote together: sitting on the block
+  //    beside somebody and both of you walking away from it.
+  const survivors = (week?.finalNominees || []).filter(n => house.includes(n));
+  if (survivors.length === 2 && getBond(survivors[0], survivors[1]) > -1
+    && !alreadyPaired(survivors[0], survivors[1])) {
+    triggers.push({ weight: 7, members: survivors, evidence: 'shared-block' });
+  }
+
+  // 6. A recorded deal remains the strongest evidence there is.
+  for (const deal of gs.sideDeals || []) {
+    if (deal.active === false || deal.genuine === false) continue;
+    const [a, b] = deal.players || [];
+    if (!a || !b || !house.includes(a) || !house.includes(b) || alreadyPaired(a, b)) continue;
+    triggers.push({ weight: 14, members: [a, b], evidence: 'genuine-deal' });
+  }
+
+  return triggers.filter(t => memberSetIsViable(t.members));
+}
+
 export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.activePlayers || [], week = null, rng = Math.random } = {}) {
   const weekNum = currentRound(week);
   reconcileAlliances(house, weekNum);
-  if (phase !== 'opening') return { formed:null, alliances:allianceStore() };
-  const core = viableCores(house).find(candidate => !allianceStore().some(alliance =>
-    alliance.active !== false && !alliance.dissolved && sameMembers(alliance, candidate.members)));
-  if (!core) {
+  if (phase !== 'opening' || house.length < 3) return { formed:null, alliances:allianceStore() };
+
+  // Scales with the house, as on the island: a full house supports several
+  // overlapping alliances, a final six supports very few.
+  const live = allianceStore().filter(a => a.active !== false && !a.dissolved);
+  if (live.length >= Math.max(2, Math.floor(house.length / 2))) {
     return { formed:null, alliances:allianceStore() };
   }
-  const formationChance = core.evidence === 'genuine-deal' ? 0.9 : clamp(0.28 + core.score * 0.09, 0.45, 0.82);
-  if (rng() >= formationChance) return { formed:null, alliances:allianceStore() };
+
+  // Growing an existing alliance comes first. It is how a pair becomes a bloc,
+  // and without it the house fills with duos that die the moment one of the two
+  // is evicted.
+  for (const option of recruitmentOptions(house).slice(0, 4)) {
+    if (isOvercommitted(option.candidate)) continue;
+    const chance = clamp(0.22 + option.score * 0.11, 0.25, 0.7);
+    if (rng() >= chance) continue;
+    option.alliance.members = [...option.members];
+    option.alliance.trust = option.score;
+    (option.alliance.history ||= []).push({ week:weekNum, type:'recruited', member:option.candidate });
+    return { formed:option.alliance, alliances:allianceStore() };
+  }
+
+  const triggers = formationTriggers(house, week, rng);
+  if (!triggers.length) return { formed:null, alliances:allianceStore() };
+
+  // Weighted pick between the reasons rather than always taking the strongest,
+  // so a house does not form the same kind of alliance every single week.
+  const total = triggers.reduce((sum, t) => sum + t.weight, 0);
+  let roll = rng() * total;
+  let chosen = triggers[triggers.length - 1];
+  for (const t of triggers) { roll -= t.weight; if (roll <= 0) { chosen = t; break; } }
+
+  const members = [...chosen.members].sort();
+  const pairCount = Math.max(1, members.length * (members.length - 1) / 2);
   const alliance = {
-    name:nextAllianceName(), members:[...core.members], formed:weekNum, active:true,
-    permanence:'normal', trust:core.score, formationEvidence:core.evidence,
-    betrayals:[], quits:[], history:[{ week:weekNum, type:'formed', evidence:core.evidence }],
+    id: `bb_alliance_${weekNum}_${members.join('_')}`,
+    name: nextAllianceName(), members, formed: weekNum, active: true,
+    permanence: 'normal',
+    trust: members.reduce((sum, a, i) =>
+      sum + members.slice(i + 1).reduce((n, b) => n + pairTrust(a, b), 0), 0) / pairCount,
+    formationEvidence: chosen.evidence, against: chosen.against || null,
+    betrayals: [], quits: [],
+    history: [{ week: weekNum, type: 'formed', evidence: chosen.evidence }],
   };
   allianceStore().push(alliance);
-  return { formed:alliance, alliances:allianceStore() };
+  // Forming one draws the members together, as it does on the island.
+  for (let i = 0; i < members.length; i++) {
+    for (let j = i + 1; j < members.length; j++) addBond(members[i], members[j], 0.2);
+  }
+  return { formed: alliance, alliances: allianceStore() };
 }
 
 export function settleBBAllianceWeek(week) {

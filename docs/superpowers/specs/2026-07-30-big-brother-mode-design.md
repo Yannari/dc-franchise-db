@@ -14,6 +14,61 @@ The existing format is **Total Drama**, not Survivor. It borrows Survivor's
 structure, but the data tag is `total-drama` so nobody reading this in a year
 wonders why the seasons are labelled as another show.
 
+## Roadmap — what to do next, and why that order
+
+Kept current as things land. The ordering rule: **make it playable, then make it
+deep, then make it pretty.** Content for an engine nobody can run is content
+nobody can see.
+
+### Done
+
+| | Owner |
+|---|---|
+| Data layer — season format tag, Show selector, D1 `seasons.format` + `bb_appearances`, sync, export adapter, career merge | Claude |
+| Week engine as acts, house-event scheduler + state API, twist catalog + Double Eviction, VP surface, competition contract | Codex |
+| Event library — ceremonies (9), social (10), shared-substrate read layer | Claude |
+
+### In flight
+
+| | Owner |
+|---|---|
+| Migration step 1, write half: `remember` → `rememberStrategy`, `setTarget` → shared intentions, relationship/showmance effects through shared APIs, then the threat/heat adapter | Codex |
+
+### Next — in this order
+
+**1. Make a season runnable end to end.** *(Claude)* Nothing outside the tests
+dispatches the engine, and `options.houseEvents` defaults to empty — so a Big
+Brother season cannot be played, and if it could, the house would be silent.
+Every event, competition and twist written before this is invisible. Needs: an
+event registry, a competition registry, a dispatch from the run surface when the
+season format is `big-brother`, and `window._bbRunnable` set once it is real.
+
+**2. Competitions.** *(Claude)* Every week needs an HOH and a veto. This is the
+one library the format cannot open a week without.
+
+**3. Season modes and twists.** *(Claude)* AI Arena / Block Buster first — they
+reshape the week itself, so building them late means rebuilding around them.
+
+**4. Event volume.** *(Claude)* `deals` and `house-life`, taking the library
+from 19 toward the 80–120 the acts model needs.
+
+**5. Site, VP polish and the writer.** *(Claude)* Grouped views, format-aware
+beats. Genuinely blocked until a season can finish.
+
+### Known gaps with no owner yet
+
+Neither of these is scheduled, and both are places where Big Brother is thinner
+than Total Drama for no good reason:
+
+* **Alliances never form.** Nothing in Big Brother writes `gs.namedAlliances`,
+  so `allianceStrength()` in `strategy.js` returns zero every time — a dead term
+  in nomination, veto and vote decisions. An alliance event can create the bond,
+  but the alliance itself needs a lifecycle adapter.
+* **Perceived bonds never diverge.** `updatePerceivedBonds` and
+  `checkPerceivedBondTriggers` are never called, so the house's read of a
+  relationship always equals the truth. The entire "the house misjudged them"
+  layer — which is what a blindside is made of — does not run.
+
 ## The longer goal this serves
 
 Big Brother is the second show in what is meant to become a shared reality-TV
@@ -64,8 +119,110 @@ Roughly 40%, concentrated in the parts that are least fun to rebuild.
 | Romance and showmances | Camp life events |
 | Threat perception, popularity | Targeting logic (different power structure) |
 | Roster in D1, avatars, voice profiles | Twist catalog (all Total Drama) |
-| VP kit, text backlog, AI writer, save/load | Strategy layer, week structure, finale |
+| Strategic memory, intentions, knowledge, reputation primitives | TD targeting/heat orchestration, week structure, finale |
 | Franchise ledger, the site | Challenge *meaning* (a comp can be a curse) |
+
+## Shared-system audit — 2026-07-30
+
+Big Brother must reuse the strategic substrate already built for Total Drama.
+It must not reuse Total Drama's round controller. The useful boundary is:
+**share state and decision semantics; adapt format evidence; keep format rules
+separate.** Reimplementing bonds, memory, intentions, information flow, social
+standing, or pitch psychology under `gs.bb` would produce two shallower
+simulators whose contestants behave differently for accidental reasons.
+
+### Reuse classification
+
+| Classification | Existing systems | Big Brother rule |
+|---|---|---|
+| **Direct shared primitive** | scalar and perceived bonds; relationship dimensions and decision profiles; semantic relationship causes (`recordBetrayal`, `recordProtection`, loyalty/respect/attraction); strategic-memory read/write; knowledge facts, beliefs and confidence; player stats and base threat; named-alliance, side-deal and showmance state; pure pitch-response and competing-pitch evaluators | Import and use the public API. These systems own their canonical `gs` state in both formats. |
+| **Reuse through a BB adapter** | composite threat/heat; intentions; strategic reputation; social-status roles; knowledge propagation contacts; alliance lifecycle, betrayal detection and repair; pitch leaks/counterplay; showmance formation; perceived-bond triggers and recovery | Preserve the shared model, but supply Big Brother's house, week, ballots, competition record and power actions as evidence. Do not fake a tribe, merge, immunity challenge or Tribal Council to make an existing orchestrator run. |
+| **Total Drama only** | `computeHeat` as a whole; `formAlliances`; `pickTarget`; `simulateVotes`; immunity/idol/Shot-in-the-Dark/revote logic; tribe and camp grouping; challenge record updates; camp-event and episode orchestration | Do not call from Big Brother. Equivalent BB decisions belong in `js/bb/strategy.js` and `js/bb/week.js`, composed from the shared primitives above. |
+
+Some functions sit on both sides of the boundary. `players.threatScore`, for
+example, combines broadly useful bonds, alliances and competition evidence, but
+currently relies on browser globals and Total Drama-shaped challenge history.
+Its formula is reusable; calling it headlessly from BB is not yet safe.
+Likewise, `alliances.computeHeat` begins with useful social pressure and then
+accumulates immunity, idol, tribe and challenge-specific modifiers. BB must not
+copy that function or inherit those modifiers accidentally.
+
+### Canonical shared state
+
+There is one source of truth for each cross-format concept:
+
+| Concept | Canonical state |
+|---|---|
+| Bonds and perceived bonds | `gs.bonds`, `gs.perceivedBonds` |
+| Directional trust, loyalty, respect and attraction | `gs.relationshipDimensions` |
+| Reasons a relationship changed | `gs.relationshipCauses` |
+| Strategic memories | `gs.strategicMemories` |
+| Personal facts, rumors and beliefs | `gs.knowledge` |
+| Persistent plans and endgame intentions | `gs.intentions` |
+| Alliances and private deals | `gs.namedAlliances`, `gs.sideDeals` |
+| Showmances | `gs.showmances` |
+| Popularity, social roles and reputation | `gs.popularity`, `gs.socialStatus`, `gs.strategicReputations` |
+
+`gs.bb` owns only format facts: weeks, outgoing HOH, nominees, veto and vote
+records, BB competition statistics, twist/mode state, and BB-specific heat
+evidence such as pawn use, backdoor attempts and public nomination promises.
+It must not contain a second strategic-memory, alliance, relationship,
+intention, knowledge, showmance or reputation model.
+
+In particular, `gs.bb.house.memories` is not a decision store. The house-event
+API's `remember` operation writes through `rememberStrategy(...)`. An event may
+also retain a small render/debug receipt (`eventId`, actors, week and memory
+reference), but strategy never reads that receipt. `setTarget` similarly writes
+the actor's shared intention through the BB intentions adapter; it cannot create
+an isolated `gs.bb.house.targets` truth. Any temporary target cache is derived
+and disposable.
+
+### The BB strategic adapter
+
+Codex owns a thin adapter under `js/bb/` that composes public shared APIs. It
+does not fork their formulas or state. The adapter provides four boundaries:
+
+1. **House context:** active houseguests are the social group. No fake
+   `gs.isMerged`, tribe or camp is introduced.
+2. **Round evidence:** a completed week is normalized as strategic evidence:
+   `{ num, format, votingLog, eliminated, pitches, alliances,
+   competitionResults, powerActions }`. `ballots` map to `votingLog` only at
+   this boundary; the public BB week contract remains unchanged.
+3. **Threat and heat:** start with shared player threat, bonds, perceived bonds,
+   memories, reputation, social role and alliance position, then add named BB
+   contributions for HOH/veto wins, nominations, pawns, backdoors, promises and
+   recent power use. Total Drama `_...Heat` fields are never read.
+4. **Decision effects:** campaign pitches use the existing pitch-response,
+   competing-pitch, leak and counterplay semantics; eviction results feed the
+   shared betrayal/alliance-repair, memory, knowledge, reputation and intention
+   systems through normalized evidence.
+
+The adapter must accept an explicit RNG wherever the BB engine already does.
+It must not reach for `Math.random`, browser globals, VP state or DOM state.
+
+### Migration order and acceptance criteria
+
+1. Route house-event `remember`, `setTarget`, relationship changes and
+   showmance effects to the canonical stores above.
+2. Replace duplicated `bbThreat`/heat inputs with the BB adapter while keeping
+   nomination, veto, comp-throwing and eviction decisions BB-specific.
+3. Rebuild campaign resolution on the shared pitch evaluators, preserving the
+   current BB ballot and variable-campaign-beat contracts.
+4. Feed each eviction through normalized betrayal, alliance, memory and
+   knowledge evidence.
+5. Add BB evidence providers for intentions, reputation and social-status roles;
+   add house-context adapters for information spread and romance lifecycle.
+
+Contract tests must prove that a BB week changes canonical shared state, that
+later BB decisions read those changes, and that an equivalent Total Drama
+season remains unchanged. Tests must also reject duplicate strategic stores
+under `gs.bb`, TD-only heat keys in BB decisions, browser globals, and calls to
+`episode.js`. A fixed seed must reproduce the same strategic consequences.
+
+If an extraction or new public hook is needed inside an existing shared module,
+Claude owns that shared-file edit under the ownership protocol below. Codex
+defines and tests the BB-side adapter contract in `js/bb/`; neither agent copies
+the shared implementation to avoid crossing the ownership line.
 
 ## Architecture
 
@@ -91,6 +248,7 @@ Proposed modules under `js/bb/`:
 |---|---|
 | `week.js` | the orchestrator: HOH → noms → veto → eviction |
 | `strategy.js` | nomination targets, veto decisions, comp throwing |
+| `shared-strategy.js` | BB context/evidence adapters over shared strategic APIs |
 | `house-events.js` | house life, distinct from camp events |
 | `bb-twists.js` | the Big Brother twist catalog |
 | `bb-vp.js` | the week as acts in the visual player |
@@ -203,6 +361,31 @@ The engine therefore needs interception points at: HOH result, nomination
 result, veto participants, veto outcome, replacement choice, vote eligibility,
 and eviction result.
 
+### Season modes are not scheduled twists
+
+Some Big Brother mechanics reshape every week for a long stretch of the season.
+They are configured like Rescue Island: enabled at season setup, consulted by
+the week engine every round, and automatically switched off at a defined house
+size. They do **not** occupy one slot in the twist schedule.
+
+The two nominee-arena formats are related but distinct modes:
+
+| Mode | Weekly structure | Canonical duration | Simulator default |
+|---|---|---|---|
+| **AI Arena** (BB26) | HOH names three nominees. After the veto ceremony, all three remaining nominees compete immediately before eviction; the winner becomes safe and the house votes between the other two. | Ran through the pre-jury game and ended as the season reached nine remaining. | Active while a week opens with 10+ houseguests; switches off once 9 remain. |
+| **BB Block Buster** (BB27) | Same three-nominee/live-safety structure, but established as the season's standing eviction format rather than an AI-themed temporary power. | Continued into jury. The final Block Buster decided seventh place, leaving the final six; the following accelerated eviction used the traditional format. | Active while a week opens with 7+ houseguests; switches off once 6 remain. |
+
+Both modes therefore need the same engine capabilities—three initial/final
+nominees, three-person campaign tallies, a safety competition between campaign
+and eviction, and ballots recalculated after one nominee comes down—but they
+must remain separate catalog/config entries because their duration and season
+identity differ. Their stop point should be configurable; the canonical values
+above are defaults, not hard-coded universal rules.
+
+Future season-long formats such as Battle of the Block, Festie Besties, teams,
+or Camp Comeback belong in this same **mode** layer. One-shot powers such as a
+Diamond Veto, Coup d'état, or Halting Hex remain scheduled twists.
+
 ## Crossover is the exception
 
 Total Drama and Big Brother are two different shows in the same universe. A
@@ -244,8 +427,11 @@ page, one Control Room, one place a bug gets fixed.
 4. **VP screens.** The acts.
 5. **Site and writer.** Format tags, grouped views, format-aware beats.
 
-Steps 1–4 are Codex: they all live in `js/bb/`, including the VP screens.
-Step 5 is Claude, and only becomes possible once a Big Brother season can
+Codex owns the contracts and architecture needed by steps 1–4: the week and
+strategy engines, schedulers, catalog placeholders, hook contracts and VP
+surface. Claude owns the volume within those contracts: production events,
+competition families and individual twist implementations. Step 5 remains
+Claude integration and becomes fully actionable once a Big Brother season can
 finish — except the data-layer groundwork (format tags, D1 schema), which is
 unblocked and can start immediately.
 
@@ -260,21 +446,29 @@ collisions actually happen — not by feature.
 **Nobody edits a file the other owns.** If a change seems to need one, say so
 instead of making it.
 
-### Codex owns — the engine (all new files)
+### Codex owns — engine contracts and architecture
 
 ```
 js/bb/week.js          the week orchestrator (acts, not days)
 js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
+js/bb/shared-strategy.js  house context, normalized week evidence, shared-state
+                         writes, and BB threat/heat composition
 js/bb/house-events.js  the event SCHEDULER + state API (not the events
                        themselves — see "Who writes the events" below)
-js/bb/comps.js         competition events (HOH, veto, tiebreakers)
-js/bb/bb-twists.js     the Big Brother twist catalog
+js/bb/comps.js         competition CONTRACT + scheduler + result validation
+                       (not the competition library)
+js/bb/bb-twists.js     twist/mode CATALOG + generic hook plumbing + placeholders
+                       (not individual twist implementations, except the
+                       existing Double Eviction proof of concept)
 js/bb/bb-vp.js         the week as acts in the visual player
 tests/bb-*.test.js     engine tests (this glob is Codex's — integration
                        tests must NOT be named bb-*)
 ```
 
-Greenfield. Nothing here exists yet, so nothing here can break the live site.
+Codex's smaller usage budget is reserved for the work that prevents rewrites:
+stable contracts, state ownership, hook signatures, validation, invariants,
+placeholders, and architectural audits. Codex does not spend that budget writing
+large libraries of competitions or implementing every catalogued twist.
 
 ### Claude owns — integration (all existing files)
 
@@ -288,6 +482,10 @@ js/stats-export.js     exporting a Big Brother season
 js/bb-events/*.js      the event LIBRARY — social, deals, house life,
                        ceremonies (a sibling directory, so no file in
                        js/bb/ is ever touched by both agents)
+js/bb-comps/*.js       the competition LIBRARY — HOH, veto, arena,
+                       tiebreaker and special-mode competitions
+js/bb-twists/*.js      individual twist/mode IMPLEMENTATIONS — one module per
+                       mechanic or tightly related family
 player.html, devotees.html, leaderboards.html, seasons.html   grouped views
 current-season.html    format-aware beat sheet
 MANUAL.md
@@ -296,6 +494,14 @@ MANUAL.md
 These are the files with the traps — name-derived avatar paths, storage-key
 mismatches, the publish pipeline, the D1 sync. They should be changed by the
 agent that has been in them.
+
+Claude also owns the volume-heavy research and implementation work: expanding
+the 80–120 event library, researching recurring Big Brother competitions,
+writing competition narration/variants, and implementing catalogued twists.
+Claude's tests for these libraries use names such as
+`tests/competition-big-brother-*.test.js` and
+`tests/twist-big-brother-*.test.js`; the `tests/bb-*.test.js` glob remains
+Codex-owned contract/invariant coverage.
 
 ### Off limits to both
 
@@ -318,10 +524,11 @@ season's worth of work rather than two.
 So events split from the machinery that fires them:
 
 **Codex owns the scheduler.** `js/bb/house-events.js` decides which slots exist
-on a given day, how many fire, and who is eligible; it also exposes the state
-API events are allowed to call. Codex additionally owns `js/bb/comps.js`,
-because a competition result feeds straight into the week outcome and is
-engine, not colour.
+on a given act, how many fire, and who is eligible; it also exposes the state
+API events are allowed to call. Codex additionally owns the contract and
+scheduler in `js/bb/comps.js`, because competition results feed directly into
+week outcomes; Claude owns the competition implementations registered through
+that contract.
 
 **Claude owns the library.** `js/bb-events/` holds the events themselves, split
 by category so the files stay small and neither agent ever opens the other's:
@@ -372,6 +579,35 @@ Two rules carry over from Total Drama unchanged, and are not negotiable:
 Sequencing: the contract and one vertical slice first - a single category, ten
 events, running end to end through the scheduler - before either agent writes at
 volume. Ten events that work are worth more than two hundred that were guessed.
+
+## Who writes competitions and twists
+
+The same scheduler/library split used for house events applies here.
+
+**Codex defines the contracts and placeholders:**
+
+- `js/bb/comps.js` defines how a competition is registered, weighted, run and
+  returned to the week engine. It validates participants, placements, winner,
+  thrown attempts, stat profile and event consequences.
+- `js/bb/bb-twists.js` keeps the serializable catalog, distinguishes scheduled
+  twists from season modes, and defines the hook/state capabilities each
+  implementation may use.
+- Codex supplies contract fixtures, invariant tests, and architectural review.
+
+**Claude implements the libraries:**
+
+- `js/bb-comps/` contains researched competition families and their narration.
+  Big Brother Wiki is the broad index; consequential rules and timing should be
+  cross-checked against CBS episode guides when possible.
+- `js/bb-twists/` contains actual twist and season-mode mechanics. The catalog
+  entry remains a placeholder until its module and tests exist.
+- Claude handles the large mechanical volume: individual variants, balance,
+  text, and simulator-facing integration.
+
+Neither agent edits the other's directory. A Claude implementation registers
+against or is passed into the Codex-owned contract; it does not add special-case
+logic directly to `week.js`. One competition family and one unimplemented twist
+must pass end to end before either library expands at volume.
 
 ### Committing and pushing
 
@@ -434,9 +670,13 @@ Agree this **before either starts**, because it is the only real coupling:
 
    It also mutates shared state: `gs.activePlayers`, `gs.eliminated`,
    `gs.episode`, and `gs.bb` (`outgoingHoh`, `weeks[]`, `stats{}`).
-2. **What the engine may import** from the shared world: `core.js` state,
-   `bonds.js`, `players.js`, `romance.js`, `voting.js`, the VP kit. It must not
-   import from `episode.js`.
+2. **What the engine may import** from the shared world: `core.js` state;
+   `bonds.js`, `relationships.js`, `relationship-events.js`, `players.js`,
+   `romance.js`, `strategy-memory.js`, `knowledge.js`, `intentions.js`,
+   `reputation.js`, `social-status.js`, `alliances.js` and `voting.js` through
+   the direct/adapter boundary in the shared-system audit; and the VP kit for
+   presentation. Permission to import a module is not permission to call its
+   Total Drama-only orchestrators. It must not import from `episode.js`.
 3. **The `bb: {}` blob fields** a finished season records per player:
    `hohWins`, `vetoWins`, `timesNominated`, `timesSaved`, `timesOnTheBlock`.
 4. **Twist hook signatures** — the seven interception points listed above.

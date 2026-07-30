@@ -223,7 +223,79 @@ page, one Control Room, one place a bug gets fixed.
 4. **VP screens.** The seven days as acts.
 5. **Site and writer.** Format tags, grouped views, format-aware beats.
 
-Steps 1 and 2 are the project. Steps 3 and 4 follow patterns that already exist.
+Steps 1, 2, 3 are Codex (engine). Steps 4 and 5 are Claude (integration), and
+step 5 only becomes possible once a Big Brother season can finish.
+
+Steps 1 and 2 are the project. The rest follows patterns that already exist.
+
+## Division of work
+
+Two agents are building this in parallel: **Codex** on the engine, **Claude** on
+integration and audit. The split is by **file ownership**, because that is where
+collisions actually happen — not by feature.
+
+**Nobody edits a file the other owns.** If a change seems to need one, say so
+instead of making it.
+
+### Codex owns — the engine (all new files)
+
+```
+js/bb/week.js          the seven-day orchestrator
+js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
+js/bb/house-events.js  house life between ceremonies
+js/bb/bb-twists.js     the Big Brother twist catalog
+js/bb/bb-vp.js         the week as acts in the visual player
+tests/bb-*.test.js     tests for the above
+```
+
+Greenfield. Nothing here exists yet, so nothing here can break the live site.
+
+### Claude owns — integration (all existing files)
+
+```
+js/core.js             season format tag, format field on TWIST_CATALOG
+js/main.js             module registration
+worker/*.sql           seasons.format, bb_appearances
+worker/worker-studio.js  sync + publish for Big Brother seasons
+js/stats-export.js     exporting a Big Brother season
+player.html, devotees.html, leaderboards.html, seasons.html   grouped views
+current-season.html    format-aware beat sheet
+MANUAL.md
+```
+
+These are the files with the traps — name-derived avatar paths, storage-key
+mismatches, the publish pipeline, the D1 sync. They should be changed by the
+agent that has been in them.
+
+### Off limits to both
+
+`js/episode.js`. Total Drama's rules stay untouched; that is the whole point of
+the two-engine split. If Big Brother appears to need a change there, it is a
+design problem, not an implementation one.
+
+### The contract between them
+
+Agree this **before either starts**, because it is the only real coupling:
+
+1. **Entry point.** What the host calls to run a week, and what it returns.
+   Proposed: `simulateBigBrotherWeek(ep)` — mirrors `simulateEpisode(ep)`, sets
+   `ep.evicted`, `ep.hoh`, `ep.nominees`, `ep.vetoWinner`, `ep.replacementNominee`,
+   `ep.days[]`, and calls `updateChalRecord(ep)`.
+2. **What the engine may import** from the shared world: `core.js` state,
+   `bonds.js`, `players.js`, `romance.js`, `voting.js`, the VP kit. It must not
+   import from `episode.js`.
+3. **The `bb: {}` blob fields** a finished season records per player:
+   `hohWins`, `vetoWins`, `timesNominated`, `timesSaved`, `timesOnTheBlock`.
+4. **Twist hook signatures** — the seven interception points listed above.
+
+Once those four are fixed, both sides can work without blocking each other.
+
+### Audit
+
+Claude reviews each milestone when Codex marks it done: behaviour against this
+spec, the shared-world contract, whether anything leaked into an owned file, and
+a headless run of a full season. Findings go back as a list, not as edits to
+Codex's files.
 
 ## Branch
 

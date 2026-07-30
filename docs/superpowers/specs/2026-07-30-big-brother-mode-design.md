@@ -244,7 +244,9 @@ instead of making it.
 ```
 js/bb/week.js          the seven-day orchestrator
 js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
-js/bb/house-events.js  house life between ceremonies
+js/bb/house-events.js  the event SCHEDULER + state API (not the events
+                       themselves — see "Who writes the events" below)
+js/bb/comps.js         competition events (HOH, veto, tiebreakers)
 js/bb/bb-twists.js     the Big Brother twist catalog
 js/bb/bb-vp.js         the week as acts in the visual player
 tests/bb-*.test.js     engine tests (this glob is Codex's — integration
@@ -262,6 +264,9 @@ js/main.js             module registration
 worker/*.sql           seasons.format, bb_appearances
 worker/worker-studio.js  sync + publish for Big Brother seasons
 js/stats-export.js     exporting a Big Brother season
+js/bb-events/*.js      the event LIBRARY — social, deals, house life,
+                       ceremonies (a sibling directory, so no file in
+                       js/bb/ is ever touched by both agents)
 player.html, devotees.html, leaderboards.html, seasons.html   grouped views
 current-season.html    format-aware beat sheet
 MANUAL.md
@@ -276,6 +281,72 @@ agent that has been in them.
 `js/episode.js`. Total Drama's rules stay untouched; that is the whole point of
 the two-engine split. If Big Brother appears to need a change there, it is a
 design problem, not an implementation one.
+
+## Who writes the events
+
+A house season runs 10-13 weeks of seven days: roughly 70-90 days, each needing
+several beats. At this project's standing rule of four-plus variants per
+narration category, that is on the order of **200+ distinct events** - the size
+of an entire Total Drama challenge pack. One file cannot hold it and one agent
+should not write it.
+
+So events split from the machinery that fires them:
+
+**Codex owns the scheduler.** `js/bb/house-events.js` decides which slots exist
+on a given day, how many fire, and who is eligible; it also exposes the state
+API events are allowed to call. Codex additionally owns `js/bb/comps.js`,
+because a competition result feeds straight into the week outcome and is
+engine, not colour.
+
+**Claude owns the library.** `js/bb-events/` holds the events themselves, split
+by category so the files stay small and neither agent ever opens the other's:
+
+```
+js/bb-events/social.js      showmances, fights, friendships, paranoia, trust
+js/bb-events/deals.js       pitches, final-two deals, vote flips, jury management
+js/bb-events/house-life.js  have-nots, slop, chores, pranks, sleep, diary room
+js/bb-events/ceremonies.js  nomination, veto and eviction speeches
+```
+
+A sibling directory rather than `js/bb/events/` purely so the ownership rule
+stays mechanical: no file under `js/bb/` is ever touched by both agents.
+
+### The event contract - agree before writing 200 of anything
+
+This is the real risk. Two hundred events written against a shape the scheduler
+does not accept is two hundred events thrown away. Every event is a plain
+object:
+
+```js
+{
+  id: 'showmance-first-flirt',
+  category: 'social',
+  // 0 means ineligible. Proportional, never a threshold - the house rule
+  // about stats applies here exactly as it does in Total Drama.
+  weight(house, ctx) { return number },
+  // Returns a beat. Mutating house state happens ONLY through `api`, so the
+  // engine keeps ownership of its own state.
+  fire(house, ctx, api) {
+    return { text, players: [], badgeText, badgeClass };
+  }
+}
+```
+
+`ctx` carries the day: `{ day, phase, hoh, nominees, vetoWinner, week }`.
+
+`api` is Codex's to define and is the only way an event changes anything:
+`addBond`, `popDelta`, `showmance`, `suspicion`, `setTarget`, `remember`.
+
+Two rules carry over from Total Drama unchanged, and are not negotiable:
+
+- **Every event has a consequence.** No purely cosmetic beats. If one houseguest
+  does something to another, it moves a bond, a target, or a reputation.
+- **`players: []` and a badge are required** on every event, so the visual
+  player and the text backlog can both render it.
+
+Sequencing: the contract and one vertical slice first - a single category, ten
+events, running end to end through the scheduler - before either agent writes at
+volume. Ten events that work are worth more than two hundred that were guessed.
 
 ### The contract between them
 

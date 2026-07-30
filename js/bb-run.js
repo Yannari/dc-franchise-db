@@ -18,6 +18,7 @@ import { gs, seasonConfig, seasonFormat } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
+import { generateBBEvictionInterview } from './bb-aftermath.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -112,6 +113,9 @@ export function simulateBBEpisode() {
   });
 
   const ep = weekToEpisode(week);
+  // The aftermath of a Big Brother week is one person, interviewed on the way
+  // out, finding out what was actually happening around them.
+  ep.evictionInterview = generateBBEvictionInterview(ep, week);
   // The shared text backlog owns transcripts for both shows, so a Big Brother
   // week is written by the same system that writes a Total Drama episode.
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText

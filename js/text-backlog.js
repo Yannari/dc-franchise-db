@@ -4246,5 +4246,20 @@ export function generateBBSummaryText(ep) {
         break;
     }
   }
+
+  const iv = ep.evictionInterview;
+  if (iv) {
+    sec('THE EVICTION INTERVIEW');
+    iv.questions.forEach(q => {
+      ln(`  ${iv.host}: ${q.q}`);
+      ln(`  ${iv.evictee}: ${q.a}${q.wrong ? '   (wrong)' : ''}`);
+    });
+    ln('');
+    ln('  GOODBYE MESSAGES');
+    iv.goodbyes.forEach(g => ln(`    ${g.name} (${g.against ? 'voted against' : 'kept them'}): ${g.text}`));
+    ln('');
+    ln(`  ${iv.evictee}: ${iv.parting}`);
+    if (iv.blamed) ln(`  Leaves believing it was ${iv.blamed}${iv.blameCorrect ? '.' : ' — and is wrong.'}`);
+  }
   return L.join('\n');
 }

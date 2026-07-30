@@ -15872,6 +15872,11 @@ export function buildBBWeekScreens(ep) {
         // The same vote screen Total Drama uses — one tally, one set of bars,
         // one blindside read, for both shows. Optional furniture: a week must
         // still play if it cannot build.
+        // The eviction interview: Big Brother's aftermath, weekly and personal.
+        try {
+          const iv = rpBuildBBEvictionInterview(ep);
+          if (iv && iv.trim()) screens.push({ id: 'bb-interview', label: 'Eviction Interview', html: iv });
+        } catch { /* no interview, no screen */ }
         try {
           const votes = rpBuildVotes(ep);
           if (votes && votes.trim()) screens.push({ id: 'bb-votes', label: 'The Vote', html: votes });
@@ -16015,5 +16020,80 @@ export function rpBuildBBDebug(ep) {
     <div style="font-size:10px;letter-spacing:1.5px;color:#58a6ff;text-transform:uppercase;margin-bottom:8px">alliances</div>
     ${live.length ? live.map(a => row(a.name, `${(a.members || []).join(', ')}  · trust ${Number(a.trust || 0).toFixed(2)} · ${a.formationEvidence || '?'}`)).join('') : row('—', 'none live')}
   </div>`;
+  return html + `</div>`;
+}
+
+/**
+ * The eviction interview.
+ *
+ * Big Brother's aftermath, and unlike Total Drama's it happens every week and
+ * concerns one person. The evictee gives their read of what happened, then the
+ * goodbye messages either confirm it or take it apart — which is the only place
+ * in the format where somebody can be completely honest, because the person
+ * they are talking to cannot use it.
+ */
+export function rpBuildBBEvictionInterview(ep) {
+  const iv = ep.evictionInterview;
+  if (!iv) return '';
+  const stateKey = `bb_iv_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // Questions first, then every goodbye message, then the parting line.
+  const steps = [
+    ...iv.questions.map(q => ({ kind: 'q', ...q })),
+    ...iv.goodbyes.map(g => ({ kind: 'bye', ...g })),
+    { kind: 'parting' },
+  ];
+  const done = state.idx >= steps.length - 1;
+  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
+    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
+    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let html = `<div class="rp-page bb-room bb-live">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.3);margin-bottom:6px">THE EVICTION INTERVIEW</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${iv.evictee} has left the Big Brother house.</div>
+    <div style="display:flex;justify-content:center;margin-bottom:18px">${rpPortrait(iv.evictee, 'evicted')}</div>`;
+
+  steps.forEach((step, i) => {
+    if (i > state.idx) {
+      html += `<div style="padding:10px;margin-bottom:5px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
+      return;
+    }
+    if (step.kind === 'q') {
+      html += `<div class="rp-brant-entry" style="border-left:3px solid #8b949e;flex-direction:column;align-items:flex-start;gap:6px">
+        <div style="font-size:11px;color:#8b949e;font-style:italic">${iv.host}: ${step.q}</div>
+        <div class="rp-brant-text" style="width:100%">${step.a}</div>
+        ${step.wrong ? `<span class="rp-brant-badge red">WRONG</span>` : step.loaded ? `<span class="rp-brant-badge gold">LOADED</span>` : ''}
+      </div>`;
+    } else if (step.kind === 'bye') {
+      const color = step.tone === 'confession' ? '#d29922' : step.tone === 'unapologetic' ? '#f85149' : step.tone === 'warm' ? '#3fb950' : '#8b949e';
+      html += `<div class="rp-brant-entry" style="border-left:3px solid ${color};background:${color}0a">
+        <div class="rp-brant-portraits">${rpPortrait(step.name)}</div>
+        <div class="rp-brant-text">${step.text}</div>
+        <span class="rp-brant-badge ${step.tone === 'unapologetic' || step.tone === 'confession' ? 'red' : step.tone === 'warm' ? 'green' : ''}">${step.tone === 'confession' ? 'CONFESSION' : step.against ? 'VOTED AGAINST' : 'KEPT YOU'}</span>
+      </div>`;
+    } else {
+      html += `<div class="rp-brant-entry" style="border-left:3px solid #c9343c;flex-direction:column;align-items:center;text-align:center;padding:18px">
+        <div class="rp-brant-text" style="font-size:14px;font-style:italic">${iv.parting}</div>
+        <span class="rp-brant-badge red">${iv.evictee.toUpperCase()}</span>
+      </div>`;
+    }
+  });
+
+  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+    ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, steps.length - 1))}">Next</button>`}
+    ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(steps.length - 1)}">Play the whole interview</button>`}
+    <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(steps.length, Math.max(0, state.idx + 1))} / ${steps.length}</span>
+  </div>`;
+
+  if (done && iv.blamed) {
+    html += `<div style="text-align:center;margin-top:16px;padding:14px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase">Leaves believing it was</div>
+      <div style="font-family:var(--font-display);font-size:18px;color:${iv.blameCorrect ? '#3fb950' : '#f85149'};margin-top:4px">${iv.blamed}${iv.blameCorrect ? '' : ' — and is wrong'}</div>
+      ${iv.blameCorrect ? '' : `<div style="font-size:11px;color:#8b949e;margin-top:4px">That is what goes to the jury with ${pronouns(iv.evictee).obj}.</div>`}
+    </div>`;
+  }
   return html + `</div>`;
 }

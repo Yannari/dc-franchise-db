@@ -5,6 +5,7 @@
 // point of writing one category before writing a hundred more events.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs } from '../js/core.js';
+import { addBond, getBond, addPerceivedBond } from '../js/bonds.js';
 import { CEREMONY_EVENTS } from '../js/bb-events/ceremonies.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
 import { simulateBBSeason } from '../js/bb/week.js';
@@ -24,6 +25,19 @@ function seededRng(seed = 7) {
 
 function reset() {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+  gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+  gs.popularity = {};
+}
+
+// A full-size house, for the season-level checks. Rare events need room and
+// weeks to happen in.
+const BIG_CAST = [
+  ...CAST,
+  ['K', 'hothead'], ['L', 'wildcard'], ['M', 'chaos-agent'], ['N', 'perceptive-player'],
+].map(entry => (Array.isArray(entry) ? { name: entry[0], archetype: entry[1] } : entry));
+
+function resetBig() {
+  seedGame(BIG_CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
   gs.popularity = {};
 }
@@ -123,6 +137,116 @@ describe('Big Brother ceremony events', () => {
     });
     expect(backdoor.weight(HOUSE, planned)).toBeGreaterThan(0);
     expect(backdoor.weight(HOUSE, unplanned)).toBe(0);
+  });
+
+  // ── the layering: relationships must actually change outcomes ────────
+  //
+  // These are the tests that matter. An event library that consults only stats
+  // produces the same beat between strangers and between people who have already
+  // betrayed each other, which is the failure mode this whole layer exists to
+  // avoid. Each case below asserts that the WORLD, not the dice, moved the beat.
+
+  it('will not call it a blindside between strangers', () => {
+    const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');
+    reset();
+    // No bond, no promise, no alliance — nobody was betrayed here.
+    expect(blindside.weight(HOUSE, nomCtx())).toBe(0);
+  });
+
+  it('weights a blindside by how much trust there was to break', () => {
+    const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');
+    reset();
+    addBond('A', 'B', 3);
+    const mild = blindside.weight(HOUSE, nomCtx());
+    reset();
+    addBond('A', 'B', 9);
+    const deep = blindside.weight(HOUSE, nomCtx());
+    expect(mild).toBeGreaterThan(0);
+    expect(deep).toBeGreaterThan(mild);
+  });
+
+  it('hurts more when the betrayal broke a promise on the record', () => {
+    const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');
+    const damage = withPromise => {
+      reset();
+      addBond('A', 'B', 6);
+      if (withPromise) {
+        houseEventState().memories.B = [{ subject: 'A', type: 'promise', strength: 1 }];
+      }
+      const before = getBond('A', 'B');
+      scheduleHouseBeats([blindside], HOUSE, nomCtx(), { rng: seededRng(), min: 1, max: 1 });
+      return before - getBond('A', 'B');
+    };
+    expect(damage(true)).toBeGreaterThan(damage(false));
+  });
+
+  it('only costs the HOH publicly when the house could see the alliance', () => {
+    const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');
+    const hohStanding = visible => {
+      reset();
+      addBond('A', 'B', 7);
+      // A hidden alliance: the pair are close, the house believes otherwise.
+      if (!visible) addPerceivedBond('B', 'A', 0, 'kept it quiet');
+      scheduleHouseBeats([blindside], HOUSE, nomCtx(), { rng: seededRng(), min: 1, max: 1 });
+      return gs.popularity.A || 0;
+    };
+    // Betraying an ally in public costs standing; doing it in secret does not.
+    expect(hohStanding(false)).toBeGreaterThan(hohStanding(true));
+  });
+
+  it('gives a burned pawn less comfort than a trusting one', () => {
+    const pawnDeal = CEREMONY_EVENTS.find(e => e.id === 'nom-pawn-reassured');
+    const gained = burned => {
+      reset();
+      addBond('A', 'C', 5);
+      if (burned) houseEventState().memories.C = [{ subject: 'A', type: 'betrayal', strength: 3 }];
+      const before = getBond('A', 'C');
+      scheduleHouseBeats([pawnDeal], HOUSE, nomCtx(), { rng: seededRng(), min: 1, max: 1 });
+      return getBond('A', 'C') - before;
+    };
+    expect(gained(true)).toBeLessThan(gained(false));
+  });
+
+  it('treats an ally sitting on the veto as worse than a stranger doing it', () => {
+    const left = CEREMONY_EVENTS.find(e => e.id === 'veto-left-on-block');
+    const ctx = extra => nomCtx({ act: 'veto-ceremony', used: false, vetoWinner: 'D', nominees: ['B', 'C'], ...extra });
+    reset();
+    addBond('B', 'D', 8);
+    gs.namedAlliances = [{ name: 'The Deal', members: ['B', 'D'] }];
+    const allied = left.weight(HOUSE, ctx());
+    reset();
+    const strangers = left.weight(HOUSE, ctx());
+    expect(allied).toBeGreaterThan(strangers);
+  });
+
+  // Every event above passed its unit test while five of the nine could never
+  // fire in a real season, because the scheduler's ctx carries none of the
+  // act's own fields. Only playing seasons caught it, so a season is played here.
+  it('every event actually fires in real seasons — no dead code', () => {
+    const fired = new Set();
+    // A full house over many seasons. The rarest event here — a genuine
+    // cross-week blindside — lands under once a season by design, so a short
+    // sample would fail this for the wrong reason.
+    for (const seed of [11, 23, 44, 57, 68, 79, 91, 103, 117, 129, 141, 153, 165, 177, 189, 201]) {
+      resetBig();
+      const { weeks } = simulateBBSeason({ rng: seededRng(seed), finaleSize: 3, houseEvents: CEREMONY_EVENTS });
+      for (const act of weeks.flatMap(w => w.acts || [])) {
+        (act.socialBeats || []).forEach(b => fired.add(b.eventId));
+      }
+    }
+    const never = CEREMONY_EVENTS.map(e => e.id).filter(id => !fired.has(id));
+    expect(never, `these events never fire in a real season: ${never.join(', ')}`).toEqual([]);
+  });
+
+  it('does not treat a promise made this ceremony as a betrayal by it', () => {
+    const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');
+    reset();
+    // "You're only a pawn", said during THIS week's nomination act. The nominee
+    // is already on the block; that promise cannot be what betrayed them.
+    houseEventState().memories.B = [{ subject: 'A', type: 'promise', strength: 1, week: 1 }];
+    expect(blindside.weight(HOUSE, nomCtx({ week: { num: 1, plan: {} } }))).toBe(0);
+    // The same promise, made a week earlier and broken now, is a betrayal.
+    expect(blindside.weight(HOUSE, nomCtx({ week: { num: 2, plan: {} } }))).toBeGreaterThan(0);
   });
 
   it('drops into a real season without breaking the engine', () => {

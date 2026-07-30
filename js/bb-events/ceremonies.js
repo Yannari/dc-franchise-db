@@ -22,8 +22,11 @@
 //     of them yet (js/bb/week.js hardcodes `socialBeats: []` there), so farewell
 //     speeches are not written here — they would be dead code.
 
-import { pStats, pronouns } from '../players.js';
-import { playerArchetype } from '../bb/house-events.js';
+import { pronouns } from '../players.js';
+import {
+  pStats, bond, perceived, band, bondFactor, sharesAlliance, trusts, dislikes, actFacts,
+  wasPromised, remembers, grudge, suspicionOf, willScheme, isVillainous, archetype,
+} from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -36,21 +39,18 @@ function _variant(list, ctx, ...salt) {
   return list[hash % list.length];
 }
 
-const VILLAINOUS = ['villain', 'mastermind', 'schemer'];
-const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
-
-// Mirrors the franchise rule: villains scheme freely, nice archetypes never, and
-// neutrals only when they are both calculating and disloyal enough.
-function _willScheme(name) {
-  const arch = playerArchetype(name);
-  if (VILLAINOUS.includes(arch)) return true;
-  if (NICE.includes(arch)) return false;
-  const s = pStats(name);
-  return s.strategic >= 6 && s.loyalty <= 4;
-}
-
 function _nominees(ctx) {
   return (ctx?.nominees || []).filter(Boolean);
+}
+
+const holderOf = ctx => ctx?.vetoWinner || null;
+
+// The nominee the veto could have saved and did not. Picked by who had most
+// reason to expect saving, not by a stat.
+function _strandedNominee(ctx) {
+  const holder = holderOf(ctx);
+  return _nominees(ctx).filter(n => n !== holder)
+    .sort((a, b) => bond(b, holder) - bond(a, holder))[0] || null;
 }
 
 const _bystanders = (house, ctx, ...exclude) =>
@@ -94,10 +94,14 @@ const nomSpeechPersonal = {
   weight(house, ctx) {
     if (ctx.act !== 'nominations' || !ctx.hoh || _nominees(ctx).length < 2) return 0;
     const s = pStats(ctx.hoh);
-    const arch = playerArchetype(ctx.hoh);
-    // Hot tempers and villains make it personal; the composed rarely do.
+    // Hot tempers and villains make it personal; the composed rarely do — and a
+    // standing grudge or an existing target turns the temperature up further.
     const heat = ((10 - s.temperament) / 10) * (s.boldness / 10);
-    return heat * (arch === 'hothead' || VILLAINOUS.includes(arch) ? 11 : 4);
+    const nasty = isVillainous(ctx.hoh) || archetype(ctx.hoh) === 'hothead' ? 11 : 4;
+    const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];
+    const bad = dislikes(ctx.hoh, target) ? 1.6 : 1;
+    const owed = grudge(ctx.hoh, target) >= 2 ? 1.5 : 1;
+    return band(heat * nasty * bad * owed);
   },
   fire(house, ctx, api) {
     const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];
@@ -124,56 +128,111 @@ const nomPawnReassured = {
   id: 'nom-pawn-reassured',
   category: 'ceremonies',
   weight(house, ctx) {
-    if (ctx.act !== 'nominations' || !ctx.pawn || !ctx.hoh) return 0;
-    if (!_nominees(ctx).includes(ctx.pawn)) return 0;
+    if (ctx.act !== 'nominations' || !ctx.hoh) return 0;
+    const { pawn } = actFacts(ctx);
+    if (!pawn || !_nominees(ctx).includes(pawn)) return 0;
     const s = pStats(ctx.hoh);
-    return (s.social / 10) * (s.strategic / 10) * 10;
+    // You only bother reassuring a pawn you have some relationship with — and
+    // you try hardest when they have reason to doubt you already.
+    const rapport = bondFactor(bond(ctx.hoh, pawn));
+    const doubted = suspicionOf(pawn, ctx.hoh) > 2 ? 1.4 : 1;
+    return band((s.social / 10) * (s.strategic / 10) * rapport * doubted * 16);
   },
   fire(house, ctx, api) {
-    const pawn = ctx.pawn;
+    const { pawn } = actFacts(ctx);
     const p = pronouns(pawn);
-    const honest = !_willScheme(ctx.hoh);
+    // A schemer's reassurance is worth less, and a pawn who already remembers a
+    // broken promise from this person believes almost none of it.
+    const honest = !willScheme(ctx.hoh);
+    const burnedBefore = remembers(pawn, ctx.hoh, 'betrayal') || grudge(pawn, ctx.hoh) >= 2;
+    const wary = suspicionOf(pawn, ctx.hoh);
     const text = _variant([
       `${ctx.hoh} finds ${pawn} in the storage room within the hour. "You're not the one going. I need you up there and I need you to trust me for four days." ${pawn} says yes. ${p.Sub} means it, mostly.`,
       `"Say it to my face," ${pawn} says. ${ctx.hoh} does: "You are a pawn. You are safe. If that changes you'll hear it from me before you hear it from anyone else." It is the exact sentence every pawn in the history of this house has been told.`,
       `${ctx.hoh} catches ${pawn} on the stairs and talks fast and low. ${pawn} nods along, and only afterwards, alone, works out that ${p.sub} never actually got a number — just a tone.`,
       `The reassurance is delivered over dishes, which is how ${pawn} knows it is meant to sound casual. "Four days," ${ctx.hoh} says. "Then we never do this again." ${pawn} laughs. It is not entirely a laugh.`,
+      ...(burnedBefore ? [`"You told me something like this before," ${pawn} says. ${ctx.hoh} does not have a good answer, and the pause where the answer should be is the whole conversation. ${pawn} agrees anyway, because on the block there is nothing else to agree to.`] : []),
     ], ctx, ctx.hoh, pawn);
 
-    // A reassured pawn is a loyal pawn — until the veto proves otherwise.
-    api.addBond(ctx.hoh, pawn, honest ? 1.0 : 0.5);
-    api.remember(pawn, ctx.hoh, 'promise', honest ? 1 : 2, { promise: 'you are only a pawn' });
-    if (!honest) api.suspicion(pawn, ctx.hoh, 0.8);
-    return { text, players: [ctx.hoh, pawn], badgeText: 'PAWN DEAL', badgeClass: 'green' };
+    // A reassurance is worth what the relationship behind it is worth. Someone
+    // already burned by this person takes almost nothing from it.
+    const believed = Math.max(0.15, (honest ? 1 : 0.6) * (burnedBefore ? 0.3 : 1) * (1 - Math.min(0.6, wary / 12)));
+    api.addBond(ctx.hoh, pawn, 1.2 * believed);
+    // The promise goes on the record either way — that is what makes breaking it
+    // cost something later, at the veto ceremony or at the vote.
+    api.remember(pawn, ctx.hoh, 'promise', honest ? 1 : 2, { promise: 'you are only a pawn', believed: Math.round(believed * 100) / 100 });
+    if (!honest || burnedBefore) api.suspicion(pawn, ctx.hoh, burnedBefore ? 1.2 : 0.8);
+    return {
+      text, players: [ctx.hoh, pawn],
+      badgeText: burnedBefore ? 'PAWN DEAL · DOUBTED' : 'PAWN DEAL',
+      badgeClass: burnedBefore ? 'grey' : 'green',
+    };
   },
 };
+
+// A blindside is not a stat. It is trust, betrayed — and it hurts in proportion
+// to how much trust there was, how loudly it had been promised, and whether the
+// house could see the alliance that just broke.
+function _blindsideVictim(ctx) {
+  const week = ctx?.week?.num || 0;
+  return _nominees(ctx)
+    .filter(n => trusts(n, ctx.hoh, 2.5) || wasPromised(n, ctx.hoh, week) || sharesAlliance(n, ctx.hoh))
+    .sort((a, b) => bond(b, ctx.hoh) - bond(a, ctx.hoh))[0] || null;
+}
 
 const nomBlindside = {
   id: 'nom-blindside',
   category: 'ceremonies',
   weight(house, ctx) {
     if (ctx.act !== 'nominations' || !ctx.hoh) return 0;
-    // Only a blindside if someone trusted enough to be shocked went up.
-    const shocked = _nominees(ctx).filter(n => pStats(n).loyalty >= 5);
-    if (!shocked.length) return 0;
-    return (pStats(shocked[0]).loyalty / 10) * 8;
+    const victim = _blindsideVictim(ctx);
+    if (!victim) return 0;
+    // Depth of the betrayal: the bond itself, plus a promise on record, plus a
+    // standing alliance. All proportional — a mild friendship barely registers.
+    const closeness = bondFactor(bond(victim, ctx.hoh));
+    const promised = wasPromised(victim, ctx.hoh, ctx?.week?.num || 0) ? 1.4 : 1;
+    const allied = sharesAlliance(victim, ctx.hoh) ? 1.5 : 1;
+    return band(closeness * promised * allied * 12);
   },
   fire(house, ctx, api) {
-    const victim = _nominees(ctx).filter(n => pStats(n).loyalty >= 5)
-      .sort((a, b) => pStats(b).loyalty - pStats(a).loyalty)[0];
+    const victim = _blindsideVictim(ctx);
     const p = pronouns(victim);
+    const depth = bond(victim, ctx.hoh);
+    const promised = wasPromised(victim, ctx.hoh, ctx?.week?.num || 0);
+    const allied = sharesAlliance(victim, ctx.hoh);
+    // Was this alliance visible? A public betrayal costs the HOH standing; a
+    // secret one only costs them this one relationship, and nobody else learns.
+    const wasVisible = perceived(victim, ctx.hoh) >= 2.5;
     const text = _variant([
       `${victim} does not move when ${p.posAdj} name is called. Not shock exactly — recalculation. Somewhere behind ${p.posAdj} eyes a week of conversations is being reread with the ending known.`,
       `"Okay," ${victim} says, to nobody. Just that. ${ctx.hoh} keeps talking and ${victim} keeps not hearing it, already three moves into a game ${p.sub} did not know ${p.sub} was losing.`,
       `The key turns and ${victim}'s face does something complicated. ${p.Sub} had defended ${ctx.hoh} twice this week — out loud, to people who are now watching ${p.obj} find out what that bought.`,
       `${victim} smiles, which is the worst possible response and the only one available. Later, in the dark, ${p.sub} will work out exactly which conversation was the lie. Right now ${p.sub} just holds the smile.`,
+      ...(promised ? [`${ctx.hoh} had said the words out loud — "you are not going up" — and ${victim} had been stupid enough to find that comforting. ${p.Sub} hears ${p.posAdj} own name and thinks, first, not of the block but of that sentence.`] : []),
+      ...(allied ? [`They built something together and ${victim} finds out it was scaffolding. ${p.Sub} looks down the row at the others who were in that alliance, and every one of them looks somewhere else.`] : []),
     ], ctx, victim, ctx.hoh);
 
-    api.addBond(victim, ctx.hoh, -2.0);
-    api.setTarget(victim, ctx.hoh, 'put me up after telling me I was safe');
-    api.remember(victim, ctx.hoh, 'betrayal', 3, { act: 'nominations' });
+    // The damage scales with what was actually broken, rather than a flat number.
+    api.addBond(victim, ctx.hoh, -(1.2 + bondFactor(depth) * 1.8 + (promised ? 0.6 : 0)));
+    api.setTarget(victim, ctx.hoh, promised ? 'put me up after promising me I was safe' : 'put me up');
+    api.remember(victim, ctx.hoh, 'betrayal', promised || allied ? 3 : 2, { act: 'nominations', promised, allied });
     api.popDelta(victim, 1);
-    return { text, players: [victim, ctx.hoh], badgeText: 'BLINDSIDED', badgeClass: 'red' };
+
+    // Only a betrayal the house could SEE costs the HOH publicly. A hidden
+    // alliance breaking is a private wound, and the rest of the house learns
+    // nothing — which is exactly why hidden alliances are worth having.
+    if (wasVisible) {
+      api.popDelta(ctx.hoh, -1);
+      _bystanders(house, ctx, victim).forEach(watcher => {
+        // The perceptive notice betrayal; the oblivious carry on.
+        const sharp = pStats(watcher).intuition / 10;
+        api.suspicion(watcher, ctx.hoh, 0.8 * sharp);
+        if (trusts(watcher, ctx.hoh) && sharp > 0.6) {
+          api.remember(watcher, ctx.hoh, 'warning', 1, { saw: 'betrayed an ally at nominations' });
+        }
+      });
+    }
+    return { text, players: [victim, ctx.hoh], badgeText: wasVisible ? 'BLINDSIDED' : 'QUIET BETRAYAL', badgeClass: 'red' };
   },
 };
 
@@ -211,12 +270,17 @@ const vetoSavedGratitude = {
   id: 'veto-saved-gratitude',
   category: 'ceremonies',
   weight(house, ctx) {
-    if (ctx.act !== 'veto-ceremony' || !ctx.saved || !ctx.vetoWinner) return 0;
-    if (ctx.saved === ctx.vetoWinner) return 0;   // saving yourself earns no thanks
-    return (pStats(ctx.saved).loyalty / 10) * 12;
+    if (ctx.act !== 'veto-ceremony' || !ctx.vetoWinner) return 0;
+    const { saved } = actFacts(ctx);
+    if (!saved || saved === ctx.vetoWinner) return 0;   // saving yourself earns no thanks
+    // Gratitude scales with the relationship AND with how much it cost the
+    // holder: saving someone the house did not expect you to save means more.
+    const closeness = bondFactor(bond(saved, ctx.vetoWinner));
+    const surprising = perceived(saved, ctx.vetoWinner) < 2 ? 1.4 : 1;
+    return band((pStats(saved).loyalty / 10) * (0.4 + closeness) * surprising * 14);
   },
   fire(house, ctx, api) {
-    const saved = ctx.saved;
+    const { saved } = actFacts(ctx);
     const holder = ctx.vetoWinner;
     const p = pronouns(saved);
     const text = _variant([
@@ -237,28 +301,49 @@ const vetoLeftOnBlock = {
   id: 'veto-left-on-block',
   category: 'ceremonies',
   weight(house, ctx) {
-    if (ctx.act !== 'veto-ceremony' || ctx.used || !ctx.vetoWinner) return 0;
-    const stranded = _nominees(ctx).filter(n => n !== ctx.vetoWinner);
-    if (!stranded.length) return 0;
-    // The more the nominee trusted the veto holder, the louder the silence.
-    return (pStats(stranded[0]).loyalty / 10) * 11;
+    if (ctx.act !== 'veto-ceremony' || !ctx.vetoWinner) return 0;
+    if (actFacts(ctx).used) return 0;
+    const stranded = _strandedNominee(ctx);
+    if (!stranded) return 0;
+    // The silence is only loud if there was a reason to expect otherwise: a real
+    // bond, a shared alliance, or a promise on the record.
+    const expected = bondFactor(bond(stranded, holderOf(ctx)));
+    const owed = sharesAlliance(stranded, holderOf(ctx)) ? 1.5 : 1;
+    const promised = wasPromised(stranded, holderOf(ctx), ctx?.week?.num || 0) ? 1.4 : 1;
+    return band(expected * owed * promised * 13);
   },
   fire(house, ctx, api) {
-    const stranded = _nominees(ctx).filter(n => n !== ctx.vetoWinner)
-      .sort((a, b) => pStats(b).loyalty - pStats(a).loyalty)[0];
+    const stranded = _strandedNominee(ctx);
     const holder = ctx.vetoWinner;
     const p = pronouns(stranded);
+    const allied = sharesAlliance(stranded, holder);
+    const closeness = bond(stranded, holder);
+    const publicly = perceived(stranded, holder) >= 2.5;
     const text = _variant([
       `"I have decided not to use the Power of Veto." ${stranded} nods along with the sentence like ${p.sub} had known it was coming. ${p.Sub} had not known it was coming.`,
       `The veto stays in ${holder}'s pocket. ${stranded} looks at it for slightly too long — long enough that two people notice, and one of them files it away.`,
       `${holder} says the words and sits down. ${stranded} says "that's fine" to nobody in particular, twice, which is once more than anyone says a thing they mean.`,
       `Nothing happens at the veto ceremony, and that is the loudest thing that happens all week. ${stranded} goes to bed early. ${p.Sub} does not sleep early.`,
+      ...(allied ? [`They are supposed to be on the same side. ${holder} keeps the veto in ${pronouns(holder).posAdj} pocket and ${stranded} works out, in real time and in front of everyone, what side actually means in this house.`] : []),
     ], ctx, stranded, holder);
 
-    api.addBond(stranded, holder, -1.4);
-    api.remember(stranded, holder, 'abandonment', 2, { act: 'veto-ceremony' });
-    api.setTarget(stranded, holder, 'sat on the veto while I was on the block');
-    return { text, players: [stranded, holder], badgeText: 'VETO UNUSED', badgeClass: 'red' };
+    // Abandonment scales with what was owed. A stranger who did not save you is
+    // barely a story; an ally who did not is the story of the rest of your game.
+    api.addBond(stranded, holder, -(0.7 + bondFactor(closeness) * 1.6 + (allied ? 0.5 : 0)));
+    api.remember(stranded, holder, 'abandonment', allied ? 3 : 1, { act: 'veto-ceremony', allied });
+    // Only worth redirecting your game at someone who owed you something.
+    if (allied || closeness >= 3) {
+      api.setTarget(stranded, holder, 'sat on the veto while I was on the block');
+    }
+    if (publicly) {
+      _bystanders(house, ctx, stranded).forEach(watcher => {
+        api.suspicion(watcher, holder, 0.5 * (pStats(watcher).intuition / 10));
+      });
+    }
+    return {
+      text, players: [stranded, holder],
+      badgeText: allied ? 'LEFT BY AN ALLY' : 'VETO UNUSED', badgeClass: 'red',
+    };
   },
 };
 
@@ -266,13 +351,14 @@ const vetoBackdoorLands = {
   id: 'veto-backdoor-lands',
   category: 'ceremonies',
   weight(house, ctx) {
-    if (ctx.act !== 'veto-ceremony' || !ctx.used || !ctx.replacement) return 0;
+    if (ctx.act !== 'veto-ceremony') return 0;
+    const { used, replacement, backdoorTarget } = actFacts(ctx);
+    if (!used || !replacement) return 0;
     // Only a backdoor if the replacement was the plan all along.
-    const planned = ctx.week?.plan?.backdoorTarget;
-    return planned && planned === ctx.replacement ? 14 : 0;
+    return backdoorTarget && backdoorTarget === replacement ? 14 : 0;
   },
   fire(house, ctx, api) {
-    const victim = ctx.replacement;
+    const { replacement: victim } = actFacts(ctx);
     const p = pronouns(victim);
     const text = _variant([
       `${ctx.hoh} names ${victim} as the replacement and the room understands the whole week at once — the nominations, the pawn, the conversations that went nowhere. ${victim} never played the veto because ${p.sub} was never meant to.`,
@@ -295,14 +381,16 @@ const vetoReplacementShock = {
   id: 'veto-replacement-shock',
   category: 'ceremonies',
   weight(house, ctx) {
-    if (ctx.act !== 'veto-ceremony' || !ctx.used || !ctx.replacement) return 0;
+    if (ctx.act !== 'veto-ceremony') return 0;
+    const { used, replacement, backdoorTarget } = actFacts(ctx);
+    if (!used || !replacement) return 0;
     // The non-backdoor case: an unplanned replacement, which stings differently.
-    const planned = ctx.week?.plan?.backdoorTarget;
-    if (planned && planned === ctx.replacement) return 0;
-    return (pStats(ctx.replacement).loyalty / 10) * 8;
+    if (backdoorTarget && backdoorTarget === replacement) return 0;
+    // Worse when the HOH putting you up was someone you trusted.
+    return band((pStats(replacement).loyalty / 10) * (0.6 + bondFactor(bond(replacement, ctx.hoh))) * 10);
   },
   fire(house, ctx, api) {
-    const victim = ctx.replacement;
+    const { replacement: victim } = actFacts(ctx);
     const p = pronouns(victim);
     const text = _variant([
       `${victim} is named as the replacement and takes the chair still holding the mug ${p.sub} brought in with ${p.obj}. Small detail. It is the one everyone remembers.`,

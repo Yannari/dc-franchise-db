@@ -15,6 +15,9 @@ import { rpBuildMineTitleCard, rpBuildMinePhase1, rpBuildMinePhase2, rpBuildMine
 import { rpBuildTreasureTitleCard, rpBuildTreasurePaddle, rpBuildTreasureDive, rpBuildTreasureCrisis, rpBuildTreasureResults, rpBuildTreasureLeaderboard, treasureRevealNext, treasureRevealAll } from './chal/treasure-island.js';
 import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedWiretap1, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap2, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
+// The Big Brother visual player. Its builders shipped with the engine and
+// nothing ever imported them, so every Big Brother week replayed as nothing.
+import { buildBBVPScreens, bbVpRevealNext, bbVpRevealAll } from './bb/bb-vp.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
@@ -13315,6 +13318,29 @@ export function buildVPScreens(epRecord) {
   delete _reunionRevealed[String(vpEpNum) + '_reunion'];
   delete _gcRevealed[String(vpEpNum) + '_gc'];
   const ep = epRecord;
+
+  // A Big Brother week is a different show with a different visual player, and
+  // none of Total Drama's screens below apply to it — no tribes, no challenge
+  // record, no Tribal Council. Its builders existed but nothing ever imported
+  // them, so the entire Big Brother visual player was unreachable.
+  if (ep.format === 'big-brother' || ep.isBigBrother) {
+    try {
+      vpScreens = buildBBVPScreens({
+        num: ep.num, acts: ep.acts || [], hoh: ep.hoh, vetoWinner: ep.vetoWinner,
+        plan: ep.plan || {}, initialNominees: ep.initialNominees || [],
+        finalNominees: ep.finalNominees || [], votes: ep.votes || {},
+        preCampaignVotes: ep.preCampaignVotes || {}, evicted: ep.eliminated,
+        tieBreak: ep.tieBreak || null, compressed: !!ep.compressed,
+      });
+    } catch (err) {
+      vpScreens = [{ id: 'bb-error', label: 'Week', html:
+        `<div style="padding:24px;color:#f4efe6;background:#111214">
+           <h2>This Big Brother week cannot be replayed</h2>
+           <p style="color:#a9a39a">${String(err && err.message || err)}</p>
+         </div>` }];
+    }
+    return vpScreens;
+  }
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;
   const _isJuryElim = !!(ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);

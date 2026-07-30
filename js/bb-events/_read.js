@@ -141,19 +141,18 @@ export const hasDimensions = (a, b) => {
 
 // ── memory (canonical, shared with Total Drama) ───────────────────────
 //
-// gs.strategicMemories is the truth. gs.bb.house.memories is a render receipt
-// the spec explicitly forbids strategy from reading — but Codex's api still
-// writes it while the write side migrates, so these fall back to it rather than
-// going blind in the meantime. When the api routes through rememberStrategy the
-// fallbacks simply stop being reached.
+// gs.strategicMemories is the truth, and since the house-event api migrated to
+// rememberStrategy it is the ONLY truth — gs.bb.house no longer keeps a memory
+// store at all. The receipt reads below are now dead paths kept as guards, so a
+// half-migrated save or an older snapshot degrades instead of throwing.
 
 const _receipt = observer => houseEventState().memories?.[observer] || [];
 
 export function memoriesOf(observer) {
   if (!observer) return [];
-  let shared = [];
-  try { shared = Object.values(gs.strategicMemories?.[observer] || {}).flat(); } catch { shared = []; }
-  return shared.length ? shared : _receipt(observer);
+  const shared = gs.strategicMemories?.[observer];
+  if (Array.isArray(shared) && shared.length) return shared;
+  return _receipt(observer);
 }
 
 /** Everything `observer` is still carrying about `subject`, as one number. */
@@ -202,7 +201,17 @@ export function reputation(name) {
  */
 export const wasPromised = (observer, subject, before = null) =>
   memoriesOf(observer).some(m =>
-    m.subject === subject && m.type === 'promise' && (before == null || (m.week || 0) < before));
+    m.subject === subject && m.type === 'promise' && (before == null || memoryWeek(m) < before));
+
+/**
+ * When a memory was formed.
+ *
+ * The canonical store stamps `ep`; the old Big Brother receipt stamped `week`.
+ * Reading only one of them silently reintroduces the bug where a promise made
+ * during a ceremony counts as a betrayal by that same ceremony — every
+ * reassured pawn instantly blindsided — so read whichever is present.
+ */
+export const memoryWeek = m => m?.ep ?? m?.week ?? 0;
 
 export const suspicionOf = (observer, subject) =>
   houseEventState().suspicion?.[`${observer}→${subject}`] || 0;

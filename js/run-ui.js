@@ -765,7 +765,11 @@ export function simulateNext() {
       gs.phase = 'post-merge';
     }
   }
-  const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
+  // A Big Brother season is a different game, so it takes a different engine.
+  // episode.js is not involved: no tribes, no merge, no Tribal Council.
+  const ep = isBigBrotherSeason() && !houseIsAtFinale()
+    ? simulateBBEpisode()
+    : gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   // Aftermath Reunion: generate for finale since simulateFinale doesn't call patchEpisodeHistory
   if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {

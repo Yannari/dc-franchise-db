@@ -8,6 +8,7 @@ import { gs } from '../js/core.js';
 import { addBond, getBond, addPerceivedBond } from '../js/bonds.js';
 import { CEREMONY_EVENTS } from '../js/bb-events/ceremonies.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
+import { rememberStrategy } from '../js/strategy-memory.js';
 import { simulateBBSeason } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -170,9 +171,8 @@ describe('Big Brother ceremony events', () => {
     const damage = withPromise => {
       reset();
       addBond('A', 'B', 6);
-      if (withPromise) {
-        houseEventState().memories.B = [{ subject: 'A', type: 'promise', strength: 1 }];
-      }
+      // Canonical store — gs.bb keeps no memory of its own any more.
+      if (withPromise) rememberStrategy('B', 'A', 'promise', 0, 1, {});
       const before = getBond('A', 'B');
       scheduleHouseBeats([blindside], HOUSE, nomCtx(), { rng: seededRng(), min: 1, max: 1 });
       return before - getBond('A', 'B');
@@ -199,7 +199,7 @@ describe('Big Brother ceremony events', () => {
     const gained = burned => {
       reset();
       addBond('A', 'C', 5);
-      if (burned) houseEventState().memories.C = [{ subject: 'A', type: 'betrayal', strength: 3 }];
+      if (burned) rememberStrategy('C', 'A', 'betrayal', 0, 3, {});
       const before = getBond('A', 'C');
       scheduleHouseBeats([pawnDeal], HOUSE, nomCtx(), { rng: seededRng(), min: 1, max: 1 });
       return getBond('A', 'C') - before;
@@ -243,7 +243,7 @@ describe('Big Brother ceremony events', () => {
     reset();
     // "You're only a pawn", said during THIS week's nomination act. The nominee
     // is already on the block; that promise cannot be what betrayed them.
-    houseEventState().memories.B = [{ subject: 'A', type: 'promise', strength: 1, week: 1 }];
+    rememberStrategy('B', 'A', 'promise', 1, 1, {});   // made in week 1
     expect(blindside.weight(HOUSE, nomCtx({ week: { num: 1, plan: {} } }))).toBe(0);
     // The same promise, made a week earlier and broken now, is a betrayal.
     expect(blindside.weight(HOUSE, nomCtx({ week: { num: 2, plan: {} } }))).toBeGreaterThan(0);

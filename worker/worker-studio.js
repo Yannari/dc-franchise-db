@@ -595,7 +595,7 @@ async function syncSeasons(env) {
   for (const p of players) if (p.name && p.id) nameToSlug.set(String(p.name).trim().toLowerCase(), p.id);
 
   const stmts = [];
-  const counts = { players: 0, seasons: 0, appearances: 0, bonds: 0, rankings: 0, skipped: 0 };
+  const counts = { players: 0, seasons: 0, appearances: 0, bbAppearances: 0, bonds: 0, rankings: 0, skipped: 0 };
 
   for (const p of players) {
     if (!p.id) { counts.skipped++; continue; }
@@ -642,6 +642,20 @@ async function syncSeasons(env) {
         asInt(det.votesReceived), asInt(det.idolsFound), asInt(det.strategicRank),
         asInt(det.juryVotes), det.finalVote || null));
 
+      // Big Brother seasons additionally carry HOH/veto/block counts. They live
+      // in their own table rather than as columns on `appearances`, which would
+      // be null for every Total Drama row — that is, for nearly every row.
+      // Driven off det.bb, not det.format, so a season detail that carries the
+      // numbers still records them even if the format tag was missed.
+      if (det.bb) {
+        counts.bbAppearances++;
+        stmts.push(d.prepare(
+          `INSERT INTO bb_appearances (player_id,season_number,hoh_wins,veto_wins,
+            times_nominated,times_on_block,times_saved) VALUES (?,?,?,?,?,?,?)`
+        ).bind(p.id, sn, asInt(det.bb.hohWins), asInt(det.bb.vetoWins),
+          asInt(det.bb.timesNominated), asInt(det.bb.timesOnBlock), asInt(det.bb.timesSaved)));
+      }
+
       for (const ally of (det.unbreakableBonds || [])) {
         const allySlug = nameToSlug.get(String(ally).trim().toLowerCase());
         if (!allySlug || !validSlugs.has(allySlug) || allySlug === p.id) continue;
@@ -681,7 +695,8 @@ async function syncSeasons(env) {
     throw new ValidationError(
       `this sync would run ${stmts.length} statements, over the ${MAX_SYNC_STATEMENTS} ` +
       `safety limit (${counts.players} players, ${counts.appearances} appearances, ` +
-      `${counts.bonds} bonds, ${counts.rankings} rankings). Nothing was changed. ` +
+      `${counts.bonds} bonds, ${counts.bbAppearances} Big Brother rows, ` +
+      `${counts.rankings} rankings). Nothing was changed. ` +
       `The franchise has outgrown a single-request sync — it needs to be split ` +
       `into batches per season.`);
   }
@@ -690,6 +705,7 @@ async function syncSeasons(env) {
   // it is authored data and has nothing to do with this.
   await runChunked(d, [
     d.prepare('DELETE FROM bonds'),
+    d.prepare('DELETE FROM bb_appearances'),
     d.prepare('DELETE FROM appearances'),
     d.prepare('DELETE FROM rankings'),
     d.prepare('DELETE FROM seasons'),

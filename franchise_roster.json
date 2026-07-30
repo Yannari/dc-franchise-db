@@ -3127,6 +3127,24 @@
         "intuition": 6,
         "temperament": 4
       }
+    },
+    {
+      "name": "Nico",
+      "slug": "nico",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 4,
+        "social": 5,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 3,
+        "intuition": 7,
+        "temperament": 9
+      }
     }
   ]
 }

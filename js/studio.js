@@ -1015,6 +1015,7 @@ function _renderEditor() {
       </div>
       <div class="st-stats">
         <div class="st-sliders" id="st-sliders">${STAT_KEYS.map(_sliderHTML).join('')}</div>
+        <div class="st-read" id="st-read" hidden></div>
         <div class="st-radar-wrap"><canvas id="st-radar" width="220" height="220"></canvas></div>
       </div>
 
@@ -1049,7 +1050,7 @@ function _renderEditor() {
   ed.querySelector('#st-f-slug').addEventListener('input', e => { e.target.dataset.auto = '0'; d.slug = _slugify(e.target.value); e.target.value = d.slug; });
   ed.querySelector('#st-f-age').addEventListener('input', e => d.age = e.target.value.replace(/[^0-9]/g, ''));
   ed.querySelector('#st-f-sex').addEventListener('change', e => d.sexuality = e.target.value);
-  ed.querySelector('#st-f-arch').addEventListener('change', e => d.archetype = e.target.value);
+  ed.querySelector('#st-f-arch').addEventListener('change', e => { d.archetype = e.target.value; _updateRead(); });
   ed.querySelector('#st-f-voice').addEventListener('input', e => d.voice = e.target.value);
   ed.querySelector('#st-f-origin').addEventListener('input', e => d.origin = e.target.value);
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
@@ -1058,14 +1059,14 @@ function _renderEditor() {
 
   // stats
   ed.querySelectorAll('.st-slider').forEach(sl => sl.addEventListener('input', e => {
-    const k = e.target.dataset.k; d.stats[k] = +e.target.value; _updateStatUI(k); _drawRadar();
+    const k = e.target.dataset.k; d.stats[k] = +e.target.value; _updateStatUI(k); _drawRadar(); _updateRead();
   }));
   ed.querySelector('#st-seed').addEventListener('click', () => {
     if (!d.archetype) { _toast('Pick an archetype first', 'warn'); return; }
-    d.stats = { ...ARCH_PRESET[d.archetype] }; _syncSliders(); _drawRadar();
+    d.stats = { ...ARCH_PRESET[d.archetype] }; _syncSliders(); _drawRadar(); _updateRead();
   });
-  ed.querySelector('#st-balance-btn').addEventListener('click', () => { _balance(); _syncSliders(); _drawRadar(); });
-  ed.querySelector('#st-rand').addEventListener('click', () => { _randomize(); _syncSliders(); _drawRadar(); });
+  ed.querySelector('#st-balance-btn').addEventListener('click', () => { _balance(); _syncSliders(); _drawRadar(); _updateRead(); });
+  ed.querySelector('#st-rand').addEventListener('click', () => { _randomize(); _syncSliders(); _drawRadar(); _updateRead(); });
 
   // avatar
   ed.querySelector('#st-f-file').addEventListener('change', async e => {
@@ -1082,6 +1083,97 @@ function _renderEditor() {
   ed.querySelector('#st-add-cast')?.addEventListener('click', async () => { await _toggleMember(d.slug); _renderEditor(); });
 
   _drawRadar();
+  _updateRead();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// READ — what the simulator will actually do with this character.
+//
+// Every line here comes from a rule the engine really applies, not from
+// invented personality flavour. It stays hidden until there is something worth
+// saying, so a blank new character doesn't get a panel full of nothing.
+// ═══════════════════════════════════════════════════════════════════════
+const NICE_ARCH_SET = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+
+/** Which archetype template do these stats sit closest to? */
+function _nearestArchetype(stats) {
+  let best = null, bestDist = Infinity;
+  for (const [a, tpl] of Object.entries(ARCH_PRESET)) {
+    let d = 0;
+    for (const k of STAT_KEYS) d += Math.abs((stats[k] || 0) - (tpl[k] || 0));
+    if (d < bestDist) { bestDist = d; best = a; }
+  }
+  return { archetype: best, distance: bestDist };
+}
+
+function _readLines(d) {
+  const s = d.stats || {};
+  const arch = d.archetype || '';
+  const out = [];
+
+  // 1) scheming — the exact rule from social-manipulation.js
+  if (VILLAIN_ARCH.includes(arch)) {
+    out.push(['scheme', `Schemes <b>every episode</b> — ${arch} is a villain archetype`]);
+  } else if (NICE_ARCH_SET.has(arch)) {
+    out.push(['scheme', `<b>Never schemes</b> — nice archetypes are locked out, even at strategic 10`]);
+  } else if (arch) {
+    const pct = Math.round((s.strategic / 10) * ((10 - s.loyalty) / 10) * 100);
+    out.push(['scheme', `Schemes about <b>${pct}%</b> of episodes — strategic ${s.strategic} against loyalty ${s.loyalty}`]);
+  }
+
+  // 2) challenge lean
+  const phys = ((s.physical || 0) + (s.endurance || 0)) / 2;
+  const brain = s.mental || 0;
+  if (phys >= 7.5 && brain >= 7.5) out.push(['chal', `Strong <b>everywhere</b> — physical ${s.physical}, endurance ${s.endurance}, mental ${brain}`]);
+  else if (phys >= 7.5) out.push(['chal', `<b>Physical</b> threat (${s.physical}/${s.endurance}) — weaker on puzzles (mental ${brain})`]);
+  else if (brain >= 7.5) out.push(['chal', `<b>Puzzle</b> solver (mental ${brain}) — carried in physical rounds`]);
+  else if (phys <= 4 && brain <= 4) out.push(['chal', `Loses most challenges — needs a social game to survive`]);
+
+  // 3) how the field will read them
+  if ((s.social || 0) >= 8 && (s.strategic || 0) >= 8) out.push(['threat', `Reads as a <b>threat early</b> — social ${s.social} + strategic ${s.strategic}`]);
+  else if ((s.social || 0) <= 3) out.push(['threat', `Poor social game (${s.social}) — easy vote when a tribe needs one`]);
+
+  // 4) temperament and boldness are the two that surprise people
+  if ((s.temperament || 0) <= 3) out.push(['fuse', `<b>Short fuse</b> (temperament ${s.temperament}) — expect blow-ups`]);
+  if ((s.boldness || 0) >= 8) out.push(['bold', `Bold (${s.boldness}) — volunteers for the dangerous option`]);
+  else if ((s.boldness || 0) <= 3) out.push(['bold', `Timid (${s.boldness}) — chickens out of high-risk moments`]);
+
+  // 5) do the stats match the archetype they were given?
+  const near = _nearestArchetype(s);
+  if (arch && near.archetype && near.archetype !== arch) {
+    out.push(['fit', `Stats read closest to <b>${near.archetype.replace(/-/g, ' ')}</b>, not ${arch.replace(/-/g, ' ')}`]);
+  } else if (arch && near.archetype === arch) {
+    out.push(['fit', `Stats fit the <b>${arch.replace(/-/g, ' ')}</b> template`]);
+  }
+
+  // 6) the biggest deviations from the chosen template
+  if (arch && ARCH_PRESET[arch]) {
+    const tpl = ARCH_PRESET[arch];
+    const off = STAT_KEYS
+      .map(k => ({ k, delta: (s[k] || 0) - (tpl[k] || 0) }))
+      .filter(x => Math.abs(x.delta) >= 4)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+      .slice(0, 3);
+    if (off.length) {
+      out.push(['type', 'Against type: ' + off.map(x =>
+        `${x.k} ${s[x.k]} <span class="st-read-tpl">(template ${tpl[x.k]})</span>`).join(', ')]);
+    }
+  }
+  return out;
+}
+
+function _updateRead() {
+  const box = document.getElementById('st-read');
+  if (!box) return;
+  const d = _draft || {};
+  // Nothing worth saying about an untouched blank character.
+  const touched = d.archetype || STAT_KEYS.some(k => (d.stats?.[k] ?? 5) !== 5);
+  const lines = touched ? _readLines(d) : [];
+  if (!lines.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML =
+    `<div class="st-read-h">How the simulator will play them</div>` +
+    lines.map(([kind, html]) => `<div class="st-read-l" data-kind="${kind}">${html}</div>`).join('');
 }
 
 function _sliderHTML(k) {
@@ -1645,6 +1737,16 @@ function _injectCSS() {
   .st-retired-name{font-weight:700;font-size:13px}
   .st-retired-arch{font-size:11px;color:var(--muted,#9a9);flex:1}
   .st-unretire{font-size:11px!important;padding:5px 10px!important}
+  /* read panel — what the engine will do with this character */
+  .st-read{background:#ffffff06;border:1px solid var(--border,#333);border-left:3px solid var(--accent,#f4b23e);
+    border-radius:8px;margin:10px 0 0;padding:8px 11px}
+  .st-read-h{color:var(--muted,#9a9);font-size:9.5px;font-weight:700;letter-spacing:.09em;
+    margin-bottom:5px;text-transform:uppercase}
+  .st-read-l{color:var(--muted,#9a9);font-size:11.5px;line-height:1.55}
+  .st-read-l b{color:inherit;filter:brightness(1.5)}
+  .st-read-l[data-kind="fit"]{color:#8fa6c4}
+  .st-read-l[data-kind="type"]{color:#e5843e}
+  .st-read-tpl{opacity:.55}
   /* publish status — derived from the site, not remembered */
   .st-pubstatus{font-size:11.5px;margin:0 0 10px;min-height:15px;color:var(--muted,#9a9)}
   .st-pubstatus.ok{color:#4ade80}

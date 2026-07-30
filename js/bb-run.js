@@ -17,6 +17,7 @@
 import { gs, seasonConfig, seasonFormat } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
+import { BB_COMPETITIONS } from './bb-comps/index.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -95,8 +96,10 @@ export function simulateBBEpisode() {
   if (house.length <= houseFinaleSize()) return null;
 
   const week = simulateBBWeek({
-    // Without this the house is silent — the whole reason nothing fired before.
+    // Both libraries default to empty inside the engine, so a season that does
+    // not hand them over runs silent and falls back to one-line competitions.
     houseEvents: HOUSE_EVENTS,
+    competitions: BB_COMPETITIONS,
   });
 
   const ep = weekToEpisode(week);
@@ -117,6 +120,19 @@ export function simulateBBEpisode() {
  * Every act, every social beat, in order — the same standard the Total Drama
  * side holds itself to, so a week is readable without the visual player.
  */
+/**
+ * The competition itself, beat by beat.
+ *
+ * Without this the transcript records only who won, which throws away the part
+ * of the week the competition library exists to produce — who led and lost it,
+ * who threw it, who choked with the yard silent.
+ */
+function _competition(line, comp) {
+  if (!comp) return;
+  line(`  ${comp.name}${comp.category ? ` (${comp.category})` : ''}`);
+  for (const b of comp.beats || []) line(`    · ${b.text}`);
+}
+
 export function summariseWeek(week) {
   const lines = [];
   const line = t => lines.push(t);
@@ -128,6 +144,7 @@ export function summariseWeek(week) {
       case 'hoh':
         line('');
         line('HEAD OF HOUSEHOLD');
+        _competition(line, act.competition);
         line(`  ${act.winner} wins Head of Household.`);
         (act.results || []).filter(r => r.threw).forEach(r => line(`  ${r.name} threw the competition.`));
         break;
@@ -140,6 +157,7 @@ export function summariseWeek(week) {
         line('');
         line('POWER OF VETO');
         line(`  Played by: ${(act.participants || []).join(', ')}.`);
+        _competition(line, act.competition);
         line(`  ${act.winner} wins the Power of Veto.`);
         break;
       case 'veto-ceremony':

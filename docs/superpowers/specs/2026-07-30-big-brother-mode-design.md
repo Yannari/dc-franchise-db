@@ -95,42 +95,63 @@ Proposed modules under `js/bb/`:
 | `bb-twists.js` | the Big Brother twist catalog |
 | `bb-vp.js` | the week as acts in the visual player |
 
-## An episode is a week, and a week is seven days
+## A week is an episode, built from acts — not from days
 
 One episode resolves HOH, nominations, veto, the veto ceremony, the replacement
 nominee and the eviction, and ends with someone leaving. This keeps the
 invariant every other system relies on — **an episode ends in a boot** — so the
 ledger, the live-season overlay, placements and the VP need no new concepts.
 
-But the week must simulate **days**, not resolve as one block. Big Brother is a
-social game first: if the week is HOH → noms → veto → eviction with nothing
-between, the eviction is decided the moment nominations land and the format
-collapses into a comp lottery.
+**REVISED 2026-07-30: no days.** An earlier draft simulated seven numbered days.
+That is dropped. A Big Brother week is built the way a Total Drama episode is
+built — as a run of **acts**, with social beats between them — and for the same
+reason: acts are what the VP renders, what the text backlog transcribes, and
+what events hang off. The day numbers were scaffolding on top of acts that
+already existed, and they multiplied the content bill without adding structure.
 
 ```
-DAY 1  HOH comp                     -> winner (outgoing HOH cannot play)
-       scramble: pitches, "don't put me up" deals, alliance check-ins
-DAY 2  Nomination ceremony          -> 2 nominees (target / pawn / backdoor)
-       fallout: betrayal reads, comfort, panic
-DAY 3  Veto player draw + comp      -> veto winner
-       lobbying the veto holder
-DAY 4  Veto ceremony                -> used or not; replacement if used
-       the backdoor lands, or the plan survives
-DAY 5  Campaigning                  -> nominees work the house, votes drift
-DAY 6  Campaigning                  -> deals harden or break
-DAY 7  Eviction vote                -> house votes, HOH breaks ties
+ACT  HOH competition        -> winner (outgoing HOH cannot play)
+       > social beats: pitches, "don't put me up" deals, alliance check-ins
+ACT  Nomination ceremony    -> 2 nominees (target / pawn / backdoor)
+       > social beats: betrayal reads, comfort, panic
+ACT  Veto competition       -> player draw, then a winner
+       > social beats: lobbying the veto holder
+ACT  Veto ceremony          -> used or not; replacement if used
+       > social beats: the backdoor lands, or the plan survives
+ACT  Campaign               -> nominees work the house, votes drift
+ACT  Eviction               -> house votes, HOH breaks ties
 ```
 
-The mechanical consequence is the important part: **the eviction is not a single
-roll at the end.** Each nominee starts the campaign phase with a vote count
-implied by existing bonds, and days 5–6 move it. The same nominee with the same
-bonds survives or leaves depending on how those days go. This is what makes it a
-social game, and it reuses the bond, trust, perceived-bond and social-
-manipulation systems already in the engine — the part of the codebase best
-suited to Big Brother.
+This is the Total Drama shape exactly: camp events, a multi-beat challenge,
+post-challenge fallout, then a vote that sends someone home.
 
-The visual player presents the seven days as acts, which is also better viewing
-than one long block.
+**What must NOT be lost with the days.** The reason the days were there in the
+first place still stands: if a week runs HOH → noms → veto → eviction with
+nothing between, the eviction is decided the moment nominations land and the
+format collapses into a comp lottery. So **the eviction is still not a single
+roll at the end.** Each nominee enters the Campaign act with a vote count
+implied by existing bonds, and the campaign beats move it. The same nominee with
+the same bonds survives or leaves depending on how that act goes.
+
+The Campaign act therefore carries **a variable number of beats, not a fixed
+two** — the same way a Total Drama challenge fires a variable number of social
+events between its phases. Fewer, denser beats that each change something beat
+seven days of filler.
+
+This reuses the bond, trust, perceived-bond and social-manipulation systems
+already in the engine — the part of the codebase best suited to Big Brother.
+
+### Required engine change (Codex)
+
+`js/bb/week.js` currently emits `week.days[]` with numbered entries. It becomes
+`week.acts[]`, entries keyed by `type` only, with no `day` field and no
+assumption of exactly two campaign entries. The act types themselves are already
+right — `hoh`, `nominations`, `veto`, `veto-ceremony`, `campaign`, `eviction` —
+so this is a rename plus dropping the numbering, not a redesign.
+
+Integration is unaffected: the export adapter reads only week-level fields
+(`hoh`, `vetoWinner`, `initialNominees`, `finalNominees`, `votes`), so nothing in
+`js/stats-export.js` depends on days and nothing there needs to change.
 
 ## Data model
 
@@ -209,9 +230,9 @@ page, one Control Room, one place a bug gets fixed.
 
 ## Build order
 
-1. **The week engine.** The seven days, headless. No UI, no VP, no writer.
+1. **The week engine.** The acts, headless. No UI, no VP, no writer.
    Success: a house of 16 produces plausible evictions week after week down to a
-   final 3, **and the campaign days visibly move votes** — a nominee's fate is
+   final 3, **and the campaign beats visibly move votes** — a nominee's fate is
    not settled at the nomination ceremony. Twist hooks exist but no twist is
    implemented yet.
 2. **The strategy layer.** Who a bot nominates and why; pawns and backdoors;
@@ -220,7 +241,7 @@ page, one Control Room, one place a bug gets fixed.
    weekly lottery.
 3. **The twist catalog.** Double Eviction first — it exercises the week hooks
    hardest and proves the engine can compress.
-4. **VP screens.** The seven days as acts.
+4. **VP screens.** The acts.
 5. **Site and writer.** Format tags, grouped views, format-aware beats.
 
 Steps 1–4 are Codex: they all live in `js/bb/`, including the VP screens.
@@ -242,7 +263,7 @@ instead of making it.
 ### Codex owns — the engine (all new files)
 
 ```
-js/bb/week.js          the seven-day orchestrator
+js/bb/week.js          the week orchestrator (acts, not days)
 js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
 js/bb/house-events.js  the event SCHEDULER + state API (not the events
                        themselves — see "Who writes the events" below)
@@ -284,11 +305,15 @@ design problem, not an implementation one.
 
 ## Who writes the events
 
-A house season runs 10-13 weeks of seven days: roughly 70-90 days, each needing
-several beats. At this project's standing rule of four-plus variants per
-narration category, that is on the order of **200+ distinct events** - the size
-of an entire Total Drama challenge pack. One file cannot hold it and one agent
-should not write it.
+Dropping days changed this number a lot, and for the better. A season is 10-13
+weeks of roughly six acts, with social beats between them: on the order of
+**50-70 social beats per season**, not the 70-90 days an earlier draft implied.
+A library of **80-120 events** covers that with the variety this project
+expects, against the 200+ the day model demanded.
+
+That is still an entire Total Drama challenge pack's worth of writing, and still
+more than one file should hold or one agent should write alone - but it is a
+season's worth of work rather than two.
 
 So events split from the machinery that fires them:
 
@@ -332,7 +357,7 @@ object:
 }
 ```
 
-`ctx` carries the day: `{ day, phase, hoh, nominees, vetoWinner, week }`.
+`ctx` carries the act: `{ act, beat, hoh, nominees, vetoWinner, week }`.
 
 `api` is Codex's to define and is the only way an event changes anything:
 `addBond`, `popDelta`, `showmance`, `suspicion`, `setTarget`, `remember`.
@@ -368,17 +393,17 @@ Agree this **before either starts**, because it is the only real coupling:
    | Field | Meaning |
    |---|---|
    | `num`, `format` | week number, always `'big-brother'` |
-   | `houseAtStart` | who was in the house on day 1 |
+   | `houseAtStart` | who was in the house when the week opened |
    | `hoh` | Head of Household |
    | `plan` | `{ target, pawn, backdoorTarget, rankings }` — the HOH's intent |
    | `initialNominees` / `finalNominees` | before and after the veto ceremony |
    | `vetoWinner` | who won the veto |
-   | `preCampaignVotes` / `votes` | the tally before and after days 5–6 |
+   | `preCampaignVotes` / `votes` | the tally before and after the campaign act |
    | `ballots` | per voter: `{ voter, evict, margin, changed, changedBy }` |
    | `voteChanges` | how many votes the campaign moved |
    | `tieBreak` | `{ voter, evict }` when the HOH broke a tie, else null |
    | `evicted` | who left |
-   | `days[]` | seven entries, each `{ day, type, … }` |
+   | `acts[]` | the week's acts, each `{ type, … }` — no day numbers, and a variable number of `campaign` entries |
 
    It also mutates shared state: `gs.activePlayers`, `gs.eliminated`,
    `gs.episode`, and `gs.bb` (`outgoingHoh`, `weeks[]`, `stats{}`).

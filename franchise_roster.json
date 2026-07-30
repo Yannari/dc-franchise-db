@@ -3096,7 +3096,6 @@
       "name": "Jules",
       "slug": "jules",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 6,
@@ -3108,13 +3107,13 @@
         "boldness": 7,
         "intuition": 7,
         "temperament": 7
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Misha",
       "slug": "misha",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "hero",
       "stats": {
         "physical": 7,
@@ -3126,13 +3125,13 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Nico",
       "slug": "nico",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 7,
@@ -3144,13 +3143,13 @@
         "boldness": 3,
         "intuition": 7,
         "temperament": 9
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Stella",
       "slug": "stella",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "goat",
       "stats": {
         "physical": 3,
@@ -3162,7 +3161,8 @@
         "boldness": 4,
         "intuition": 4,
         "temperament": 7
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

@@ -14,6 +14,28 @@ The existing format is **Total Drama**, not Survivor. It borrows Survivor's
 structure, but the data tag is `total-drama` so nobody reading this in a year
 wonders why the seasons are labelled as another show.
 
+## The longer goal this serves
+
+Big Brother is the second show in what is meant to become a shared reality-TV
+universe: Total Drama, Big Brother, then formats like Traitors, Drag Race, Love
+Island, House of Villains. The point is the **résumé** — a Traitors cast that
+contains a Love Island winner and a Drag Race villain, each carrying what they
+did elsewhere.
+
+Two consequences for this design, both already reflected below:
+
+- **The character is the shared object**, and each show is a lens on them. That
+  is why the roster, avatars and voice profiles stay shared while the rules,
+  twists and per-season stats are per-format.
+- **Adding show number three must not require touching shows one and two.** The
+  two-engines-over-one-world split is chosen for that, not just for Big Brother.
+
+A cross-show **fame level** — forgotten through to legend, earned in every show
+and read by every show — is the connective tissue that makes a résumé mean
+something: casting weight, how a house reads a newcomer, jury bias toward a
+famous player. It is **not part of this spec** and should be designed once two
+formats exist and there is something real to be famous for.
+
 ## Why it is not a reskin
 
 Total Drama's power is *diffuse*: nobody can point at you, and you play to avoid
@@ -73,15 +95,42 @@ Proposed modules under `js/bb/`:
 | `bb-twists.js` | the Big Brother twist catalog |
 | `bb-vp.js` | the week as acts in the visual player |
 
-## An episode is a week
+## An episode is a week, and a week is seven days
 
 One episode resolves HOH, nominations, veto, the veto ceremony, the replacement
 nominee and the eviction, and ends with someone leaving. This keeps the
 invariant every other system relies on — **an episode ends in a boot** — so the
 ledger, the live-season overlay, placements and the VP need no new concepts.
 
-The visual player presents the week as acts, so it still *feels* like separate
-nights without the data pretending to be.
+But the week must simulate **days**, not resolve as one block. Big Brother is a
+social game first: if the week is HOH → noms → veto → eviction with nothing
+between, the eviction is decided the moment nominations land and the format
+collapses into a comp lottery.
+
+```
+DAY 1  HOH comp                     -> winner (outgoing HOH cannot play)
+       scramble: pitches, "don't put me up" deals, alliance check-ins
+DAY 2  Nomination ceremony          -> 2 nominees (target / pawn / backdoor)
+       fallout: betrayal reads, comfort, panic
+DAY 3  Veto player draw + comp      -> veto winner
+       lobbying the veto holder
+DAY 4  Veto ceremony                -> used or not; replacement if used
+       the backdoor lands, or the plan survives
+DAY 5  Campaigning                  -> nominees work the house, votes drift
+DAY 6  Campaigning                  -> deals harden or break
+DAY 7  Eviction vote                -> house votes, HOH breaks ties
+```
+
+The mechanical consequence is the important part: **the eviction is not a single
+roll at the end.** Each nominee starts the campaign phase with a vote count
+implied by existing bonds, and days 5–6 move it. The same nominee with the same
+bonds survives or leaves depending on how those days go. This is what makes it a
+social game, and it reuses the bond, trust, perceived-bond and social-
+manipulation systems already in the engine — the part of the codebase best
+suited to Big Brother.
+
+The visual player presents the seven days as acts, which is also better viewing
+than one long block.
 
 ## Data model
 
@@ -117,6 +166,22 @@ Each catalog entry gains a `format` field, defaulting to `total-drama`, and the
 twist picker only offers a season its own. The Big Brother catalog is a separate
 body of design work and should not be rushed to fill the list.
 
+Big Brother twists are **not decoration** — several rewrite the week's shape, so
+the week engine must expose hooks for them from the start rather than have them
+retrofitted:
+
+| Twist | What it changes |
+|---|---|
+| Double Eviction | a compressed second week runs inside one episode |
+| Diamond Veto | the veto holder names the replacement, not the HOH |
+| Coup d'état | the nominations are overridden after the ceremony |
+| Battle Back | an evicted player re-enters (the Rescue Island precedent) |
+| Pandora's Box | an HOH-only gamble: a reward paired with a house-wide cost |
+
+The engine therefore needs interception points at: HOH result, nomination
+result, veto participants, veto outcome, replacement choice, vote eligibility,
+and eviction result.
+
 ## Crossover is the exception
 
 Total Drama and Big Brother are two different shows in the same universe. A
@@ -144,14 +209,19 @@ page, one Control Room, one place a bug gets fixed.
 
 ## Build order
 
-1. **The week engine.** HOH → noms → veto → eviction, headless. No UI, no VP, no
-   writer. Success: a house of 16 produces plausible evictions week after week
-   down to a final 3.
+1. **The week engine.** The seven days, headless. No UI, no VP, no writer.
+   Success: a house of 16 produces plausible evictions week after week down to a
+   final 3, **and the campaign days visibly move votes** — a nominee's fate is
+   not settled at the nomination ceremony. Twist hooks exist but no twist is
+   implemented yet.
 2. **The strategy layer.** Who a bot nominates and why; pawns and backdoors;
-   whether to use the veto; when winning is bad for you. This is what makes it
-   Big Brother rather than a weekly lottery.
-3. **VP screens.** The week as acts.
-4. **Site and writer.** Format tags, grouped views, format-aware beats.
+   whether to use the veto; when winning is bad for you; how a nominee campaigns
+   and who is persuadable. This is what makes it Big Brother rather than a
+   weekly lottery.
+3. **The twist catalog.** Double Eviction first — it exercises the week hooks
+   hardest and proves the engine can compress.
+4. **VP screens.** The seven days as acts.
+5. **Site and writer.** Format tags, grouped views, format-aware beats.
 
 Steps 1 and 2 are the project. Steps 3 and 4 follow patterns that already exist.
 

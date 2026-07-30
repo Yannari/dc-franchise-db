@@ -2952,7 +2952,6 @@
       "name": "Dylon",
       "slug": "dylon",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "schemer",
       "stats": {
         "physical": 7,
@@ -2964,7 +2963,8 @@
         "boldness": 4,
         "intuition": 9,
         "temperament": 4
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

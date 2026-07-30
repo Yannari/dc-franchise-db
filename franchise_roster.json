@@ -3037,6 +3037,24 @@
         "temperament": 9
       },
       "sexuality": "lesbian"
+    },
+    {
+      "name": "Hasan",
+      "slug": "hasan",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 5,
+        "strategic": 8,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 4,
+        "temperament": 8
+      }
     }
   ]
 }

@@ -3163,6 +3163,24 @@
         "temperament": 7
       },
       "sexuality": "straight"
+    },
+    {
+      "name": "Tobias",
+      "slug": "tobias",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 8,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 4,
+        "temperament": 7
+      }
     }
   ]
 }

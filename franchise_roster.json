@@ -3168,7 +3168,6 @@
       "name": "Tobias",
       "slug": "tobias",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 3,
@@ -3180,13 +3179,13 @@
         "boldness": 6,
         "intuition": 4,
         "temperament": 7
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Zella",
       "slug": "zella",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "hothead",
       "stats": {
         "physical": 6,
@@ -3198,7 +3197,8 @@
         "boldness": 9,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "sexuality": "lesbian"
     }
   ]
 }

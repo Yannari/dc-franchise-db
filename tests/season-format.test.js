@@ -5,7 +5,8 @@
 // real engine rather than fixtures, so it fails if the week object's shape
 // drifts away from the contract the spec pins down.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { gs, seasonFormat, twistFormat, twistsForFormat, TWIST_CATALOG, defaultConfig } from '../js/core.js';
+import { gs, seasonFormat, twistFormat, twistsForFormat, formatIsRunnable, formatName,
+  TWIST_CATALOG, defaultConfig } from '../js/core.js';
 import { simulateBBSeason } from '../js/bb/week.js';
 import { extractBigBrotherSeasonTemplate, mergeBigBrotherSeason } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
@@ -219,5 +220,24 @@ describe('folding a Big Brother season into the career database', () => {
     const existing = { franchise: { totalSeasons: 20 }, players: [] };
     const { db } = merged(16, existing);
     expect(db.franchise.totalSeasons).toBe(20);
+  });
+});
+
+describe('which show a season is', () => {
+  it('never claims an unbuilt engine is runnable', () => {
+    expect(formatIsRunnable('total-drama')).toBe(true);
+    // Big Brother is only runnable once the run loop actually dispatches it.
+    const had = window._bbRunnable;
+    window._bbRunnable = false;
+    expect(formatIsRunnable('big-brother')).toBe(false);
+    window._bbRunnable = true;
+    expect(formatIsRunnable('big-brother')).toBe(true);
+    window._bbRunnable = had;
+  });
+
+  it('names both shows', () => {
+    expect(formatName('big-brother')).toBe('Big Brother');
+    expect(formatName({})).toBe('Total Drama');
+    expect(formatName('nonsense')).toBe('Total Drama');
   });
 });

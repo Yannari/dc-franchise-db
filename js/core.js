@@ -904,6 +904,24 @@ export function twistsForFormat(source) {
   return TWIST_CATALOG.filter(t => twistFormat(t) === fmt);
 }
 
+// Whether a show's engine is actually wired into the run loop yet. This is a
+// fact about the app, not about any one screen, so it lives here — a UI that
+// had to ask another UI module would depend on module load order, and the
+// answer would silently come back wrong before that module loaded.
+//
+// Codex flips Big Brother on from the run-loop side by setting
+// window._bbRunnable once the engine is dispatched.
+export function formatIsRunnable(source) {
+  const fmt = seasonFormat(source);
+  if (fmt === 'total-drama') return true;
+  if (fmt === 'big-brother') return typeof window !== 'undefined' && !!window._bbRunnable;
+  return false;
+}
+
+export function formatName(source) {
+  return seasonFormat(source) === 'big-brother' ? 'Big Brother' : 'Total Drama';
+}
+
 export const S10_BONDS_PRESET = [
   { a: 'Cody',  b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
   { a: 'Bowie', b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9' },

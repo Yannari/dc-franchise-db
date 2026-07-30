@@ -196,6 +196,18 @@
         <div class="setup-two-col">
           <div class="setup-col-left">
             <div class="setup-section-label">SEASON BASICS</div>
+            <!-- Which SHOW this season is. Distinct from the Quick Setup preset
+                 row, which picks a flavour of rules *within* Total Drama. This
+                 picks the engine, and is the axis that grows as the franchise
+                 adds formats. -->
+            <div class="form-group">
+              <label class="form-label">Show</label>
+              <select id="cfg-format" onchange="saveConfig(); qsOnFormatChange && qsOnFormatChange();" class="form-input">
+                <option value="total-drama">Total Drama — tribes, challenges, tribal council</option>
+                <option value="big-brother">Big Brother — one house, HOH, veto, live eviction</option>
+              </select>
+              <div id="cfg-format-note" class="hint" style="margin-top:6px"></div>
+            </div>
             <div class="form-group">
               <label class="form-label">Season Title</label>
               <input type="text" id="cfg-name" class="form-input" placeholder="e.g. Champions vs Contenders" oninput="saveConfig()">

@@ -3,6 +3,9 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
+// Only the helper — `seasonConfig` is a live global here (it is reassigned
+// wholesale in saveConfig, which an import binding would not allow).
+import { seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
@@ -800,6 +803,19 @@ export function toggleRI() {
   saveConfig();
 }
 export function toggleSID() { saveConfig(); }
+// The "not connected yet" warning under the Show select. Called on load as well
+// as on change: someone who picked Big Brother, reloaded, and saw a blank note
+// would have no warning that Run is still going to simulate Total Drama.
+export function updateFormatNote() {
+  const note = document.getElementById('cfg-format-note');
+  if (!note) return;
+  const el = document.getElementById('cfg-format');
+  const fmt = seasonFormat(el?.value);
+  note.textContent = formatIsRunnable(fmt)
+    ? ''
+    : `The ${formatName(fmt)} engine is not connected to Run yet — the season will still simulate Total Drama.`;
+}
+
 export function saveConfig() {
   const g = id => document.getElementById(id);
   seasonConfig = {
@@ -845,6 +861,9 @@ export function saveConfig() {
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
     rewardSharing: g('cfg-reward-sharing')?.checked ?? false,
+    // Which show this season is. seasonConfig is rebuilt from the DOM here, so
+    // a format with no control on the page would be silently dropped on save.
+    format:      seasonFormat(g('cfg-format')?.value),
     host:        g('cfg-host')?.value || 'Chris',
     setting:     g('cfg-setting')?.value || 'hosted-camp',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
@@ -964,6 +983,8 @@ export function renderConfig() {
   const _rsDesc = g('reward-sharing-desc');
   if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
+  set('cfg-format', seasonFormat(seasonConfig));
+  updateFormatNote();
   set('cfg-host', seasonConfig.host || 'Chris');
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
   // Aftermath

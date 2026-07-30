@@ -18,7 +18,7 @@
 // jsdom smoke tests never depend on the full app being wired up.
 // ══════════════════════════════════════════════════════════════════════
 
-import { TWIST_CATALOG, seasonConfig, players } from './core.js';
+import { TWIST_CATALOG, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -382,6 +382,21 @@ function _preset() {
   return p;
 }
 
+// The SHOW is a different axis from the preset row below it: a preset picks a
+// flavour of rules *within* Total Drama, while this picks which game is being
+// played at all. Keeping them apart is what lets the franchise add Traitors,
+// Drag Race and the rest without the preset row becoming nonsense.
+const SHOWS = [
+  { id: 'total-drama', name: 'Total Drama', tag: 'Tribes, challenges, tribal council', icon: '🎬' },
+  { id: 'big-brother', name: 'Big Brother', tag: 'One house, HOH, veto, live eviction', icon: '🏠' },
+];
+
+function _format() {
+  const el = _g('cfg-format');
+  if (el && el.value) return seasonFormat(el.value);
+  return seasonFormat(_cfg());
+}
+
 const PRESETS = [
   { id: 'total-drama', name: 'Total Drama', tag: 'Camp chaos, drama, romance', icon: '🎬' },
   { id: 'survivor', name: 'Survivor', tag: 'Idols, fire-making, the merge', icon: '🔥' },
@@ -425,6 +440,31 @@ function _identityCardHTML() {
   </section>`;
 }
 
+function _showCardHTML() {
+  const fmt = _format();
+  const wired = formatIsRunnable(fmt);
+  const opts = SHOWS.map(sh => `
+    <button class="qs-preset qs-show${fmt === sh.id ? ' active' : ''}" id="qs-show-${sh.id}"
+      onclick="qsSetFormat('${sh.id}')" aria-pressed="${fmt === sh.id}">
+      <span class="qs-preset-icon">${sh.icon}</span>
+      <span class="qs-preset-name">${esc(sh.name)}</span>
+      <span class="qs-preset-tag">${esc(sh.tag)}</span>
+    </button>`).join('');
+  // A switch that silently ran the wrong engine would be worse than no switch,
+  // so an unfinished show says so here rather than at the end of a season.
+  const warn = wired ? '' : `<div class="qs-show-warn" id="qs-show-warn">
+      <strong>Not runnable yet.</strong> The ${esc(formatName(fmt))} engine is still being
+      built. You can set the season up now — Run will still simulate Total Drama
+      until the engine is connected.
+    </div>`;
+  return `<section class="qs-card">
+    <div class="qs-card-head"><span class="qs-card-icon">◉</span><h3>Show</h3>
+      <span class="qs-card-hint">Which game this season plays.</span></div>
+    <div class="qs-presets qs-shows">${opts}</div>
+    ${warn}
+  </section>`;
+}
+
 function _presetCardsHTML() {
   const active = _preset();
   const cards = PRESETS.map(p => `
@@ -434,6 +474,16 @@ function _presetCardsHTML() {
       <span class="qs-preset-name">${esc(p.name)}</span>
       <span class="qs-preset-tag">${esc(p.tag)}</span>
     </button>`).join('');
+  // Every preset is a flavour of Total Drama rules — tribes, merges, idols.
+  // Offering Survivor or Chaos under a Big Brother season would be offering
+  // dials that do not exist in that house.
+  if (_format() !== 'total-drama') {
+    return `<section class="qs-card">
+      <div class="qs-card-head"><span class="qs-card-icon">◆</span><h3>Format preset</h3></div>
+      <div class="qs-preset-na">Presets are Total Drama rule sets — tribes, merges, idols.
+        ${esc(formatName(_format()))} has its own structure, so there is nothing to preset here.</div>
+    </section>`;
+  }
   return `<section class="qs-card">
     <div class="qs-card-head"><span class="qs-card-icon">◆</span><h3>Format preset</h3>
       <span class="qs-card-hint">A starting point — tweak anything below.</span></div>
@@ -584,6 +634,7 @@ function _readyCardHTML() {
 function _bodyHTML() {
   return `<div class="qs-body" id="qs-body">
     ${_identityCardHTML()}
+    ${_showCardHTML()}
     ${_presetCardsHTML()}
     ${_structureCardHTML()}
     ${_objectivesCardHTML()}
@@ -742,6 +793,24 @@ export function qsFinaleFormat() {
   renderQuickSetup();
 }
 
+// ── Show (which game this season plays) ────────────────────────────────
+// Writes through the legacy <select> so saveConfig stays the single source of
+// truth, exactly as the preset buttons do.
+export function qsSetFormat(fmt) {
+  const next = seasonFormat(fmt);
+  const el = _g('cfg-format');
+  if (el) el.value = next;
+  window.saveConfig?.();
+  qsOnFormatChange();
+  renderQuickSetup?.();
+}
+
+// Called from the legacy <select>'s onchange too, so the note stays right
+// whichever control was used.
+export function qsOnFormatChange() {
+  window.updateFormatNote?.();
+}
+
 export function qsApplyPreset(name) { applyQuickPreset(name); }
 
 // Writes the preset through the legacy DOM inputs + saveConfig (one source of
@@ -898,6 +967,14 @@ const QS_CSS = `
 .qs-preset-icon { font-size:22px; }
 .qs-preset-name { font-weight:700; font-size:15px; color:var(--text); }
 .qs-preset-tag { font-size:11px; color:var(--muted); line-height:1.3; }
+/* The Show row sits above the preset row and picks the game itself, so it reads
+   a step louder than the flavour presets underneath it. */
+.qs-shows { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+.qs-show.active { border-color:var(--accent,#4db6ac); box-shadow:0 0 0 1px var(--accent,#4db6ac) inset, 0 8px 22px rgba(0,0,0,.28); }
+.qs-show-warn { margin-top:11px; padding:9px 12px; border-radius:8px; font-size:12px; line-height:1.45;
+  color:var(--text); background:rgba(240,192,64,.10); border:1px solid rgba(240,192,64,.42); }
+.qs-show-warn strong { color:var(--accent-gold,#f0c040); }
+.qs-preset-na { font-size:12px; color:var(--muted); line-height:1.5; }
 
 /* Structure */
 .qs-caststrip { display:flex; align-items:baseline; gap:8px; padding:10px 12px; background:var(--surface2);

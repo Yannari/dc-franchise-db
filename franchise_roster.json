@@ -3091,6 +3091,24 @@
         "temperament": 5
       },
       "sexuality": "bi"
+    },
+    {
+      "name": "Jules",
+      "slug": "jules",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 4,
+        "social": 9,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 7
+      }
     }
   ]
 }

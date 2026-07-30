@@ -15568,23 +15568,88 @@ export function rpBuildBBColdOpen(ep) {
 
 // ── Life in the house ─────────────────────────────────────────────────
 
-export function rpBuildBBHouseLife(ep, actType, slot, kicker) {
-  return rpBuildBBHouseLifeFrom(ep, (ep.acts || []).find(a => a.type === actType), slot, kicker);
-}
+// The phases a house moves through, and what each one is actually about.
+const _BB_PHASE_META = {
+  'pre-hoh':   { title: 'HOUSE LIFE', kicker: 'Before anybody has power', tod: 'tod-midday' },
+  'post-hoh':  { title: 'HOUSE LIFE', kicker: 'The Head of Household is decided', tod: 'tod-afternoon' },
+  'post-noms': { title: 'HOUSE LIFE', kicker: 'Two houseguests are on the block', tod: 'tod-dusk' },
+  'post-veto': { title: 'HOUSE LIFE', kicker: 'The veto has been won, and not yet used', tod: 'tod-dusk' },
+  'campaign':  { title: 'HOUSE LIFE', kicker: 'The vote is still moving', tod: 'tod-night' },
+  'eviction':  { title: 'HOUSE LIFE', kicker: 'The last hours', tod: 'tod-night' },
+};
 
-/** The same screen, from an act already in hand — campaigns repeat by index. */
-export function rpBuildBBHouseLifeFrom(ep, act, slot, kicker) {
-  const scenes = _bbBeats(act);
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`,
-    title: 'LIFE IN THE HOUSE',
-    subtitle: kicker,
-    accent: '#58a6ff',
-    stateKey: `bb_life_${ep.num}_${slot}`,
-    scenes: scenes.length ? scenes : [
-      { text: 'A quiet stretch. The house cooks, sleeps, and says nothing it can be held to.', players: [], badgeText: 'QUIET', badgeClass: 'grey' },
-    ],
+// Which beats are strategy and which are texture, so the eye can tell them
+// apart the way it can on the Total Drama camp screens.
+const _BB_LOAD = new Set(['deals', 'ceremonies', 'phases']);
+
+/**
+ * House life, rendered the way Total Drama renders a camp.
+ *
+ * Same furniture: the page, the title, the full portrait row of who is in the
+ * house, then the events as rp-brant-entry cards with portraits, text and a
+ * badge — strategic beats weighted heavier than ambient ones.
+ */
+export function rpBuildBBHouseLife(ep, act, slot) {
+  const meta = _BB_PHASE_META[act?.phase] || _BB_PHASE_META['pre-hoh'];
+  const beats = act?.socialBeats || [];
+  const house = ep.houseAtStart || [];
+  const stateKey = `bb_house_${ep.num}_${slot}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const done = state.idx >= beats.length - 1;
+
+  let html = `<div class="rp-page ${meta.tod}">
+    <div class="rp-eyebrow">Week ${ep.num} — ${meta.kicker}</div>
+    <div class="rp-title" style="color:#58a6ff">${meta.title}</div>`;
+
+  if (house.length) {
+    html += `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:24px;flex-wrap:wrap">
+      ${house.map(n => rpPortrait(n)).join('')}
+    </div>`;
+  }
+
+  html += `<div class="rp-camp-toggle-section">
+    <button class="rp-camp-toggle-btn" style="border-color:#58a6ff;color:#58a6ff" onclick="vpToggleSection('bbhouse-${ep.num}-${slot}')">
+      HOUSE EVENTS <span class="rp-toggle-arrow">▲</span>
+    </button>
+    <div id="bbhouse-${ep.num}-${slot}" class="rp-camp-toggle-body">`;
+
+  beats.forEach((beat, i) => {
+    if (i > state.idx) {
+      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
+      return;
+    }
+    const cls = beat.badgeClass || 'grey';
+    const color = cls === 'red' ? '#f85149' : cls === 'green' ? '#3fb950' : cls === 'gold' ? '#d29922' : cls === 'blue' ? '#58a6ff' : '#8b949e';
+    const load = _BB_LOAD.has(beat.category);
+    const style = load
+      ? `border-left:3px solid ${color};background:linear-gradient(90deg,${color}16,rgba(22,27,34,.5) 45%)`
+      : 'opacity:.78;background:rgba(17,21,28,.55)';
+    const people = (beat.players || []).filter(Boolean).slice(0, 5);
+    html += `<div class="rp-brant-entry signal-${load ? 'load' : 'ambient'}" style="${style}">`;
+    if (people.length === 2) {
+      html += `<div class="rp-brant-portraits">${rpDuoImg(people[0], people[1])}</div>`;
+    } else if (people.length) {
+      html += `<div class="rp-brant-portraits">${people.map(n => rpPortrait(n)).join('')}</div>`;
+    }
+    html += `<div class="rp-brant-text">${beat.text}</div>`;
+    if (beat.badgeText) html += `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>`;
+    html += `</div>`;
   });
+
+  if (!beats.length) {
+    html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:12px 0">A quiet stretch. Nothing anybody will admit to.</div>`;
+  }
+  html += `</div></div>`;
+
+  if (beats.length) {
+    html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, beats.length - 1))}">Reveal next</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, beats.length - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(beats.length, Math.max(0, state.idx + 1))} / ${beats.length}</span>
+    </div>`;
+  }
+  return html + `</div>`;
 }
 
 // ── Competitions ──────────────────────────────────────────────────────
@@ -15602,6 +15667,7 @@ export function rpBuildBBComp(ep, actType) {
       ? `${act?.winner} is the new Head of Household, and decides who sits on the block.`
       : `${act?.winner} wins the Power of Veto.`,
       players: [act?.winner], badgeText: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', badgeClass: 'gold' },
+    ..._bbBeats(act),
   ];
 
   const header = comp ? `<div style="text-align:center;margin-bottom:16px">
@@ -15637,6 +15703,7 @@ export function rpBuildBBNominations(ep) {
       { text: `The first key turns. ${noms[0]} is nominated for eviction.`, players: [noms[0]], badgeText: 'NOMINATED', badgeClass: 'red' },
       { text: `The second key turns. ${noms[1]} joins ${noms[0]} on the block.`, players: [noms[1]], badgeText: 'NOMINATED', badgeClass: 'red' },
       { text: `"I nominated you both, and this is a game." Nominations are locked.`, players: noms, badgeText: 'LOCKED', badgeClass: 'grey' },
+      ..._bbBeats(act),
     ],
   });
 }
@@ -15650,6 +15717,7 @@ export function rpBuildBBCeremony(ep) {
     ]
     : [{ text: `${ep.vetoWinner} chooses not to use the Power of Veto. The nominations stand.`, players: [ep.vetoWinner], badgeText: 'VETO NOT USED', badgeClass: 'grey' }];
   scenes.push({ text: `The block is final: ${(act?.nominees || []).join(' and ')}.`, players: act?.nominees || [], badgeText: 'FINAL NOMINEES', badgeClass: 'red' });
+  scenes.push(..._bbBeats(act));
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'VETO CEREMONY',
     subtitle: 'The block is decided.', accent: '#3fb950',
@@ -15664,7 +15732,7 @@ export function rpBuildBBCampaign(ep, idx) {
     text: `<strong>${e.nominee}</strong> works on ${e.voter}. ${e.success ? 'It lands — the vote is moving.' : 'It does not take.'}`,
     players: [e.nominee, e.voter], badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
     badgeClass: e.success ? 'green' : 'grey',
-  }));
+  })).concat(_bbBeats(act));
   const tally = act?.votesAfterAct || {};
   const header = Object.keys(tally).length ? `<div style="margin-bottom:14px;padding:12px;border-radius:8px;border:1px solid var(--border)">
     <div style="font-size:9px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase;margin-bottom:8px">Where the vote stands</div>
@@ -15698,28 +15766,42 @@ export function rpBuildBBEviction(ep) {
 
 /** The week, in the order the show runs it. */
 export function buildBBWeekScreens(ep) {
-  const campaigns = (ep.acts || []).filter(a => a.type === 'campaign');
   const screens = [
     { id: 'bb-cold', label: (ep.num || 1) === 1 ? 'Move-In' : 'Cold Open', html: rpBuildBBColdOpen(ep) },
-    { id: 'bb-life-1', label: 'House', html: rpBuildBBHouseLife(ep, 'hoh', 1, 'Before anybody has power.') },
-    { id: 'bb-hoh', label: 'HOH', html: rpBuildBBComp(ep, 'hoh') },
-    { id: 'bb-life-2', label: 'House', html: rpBuildBBHouseLife(ep, 'nominations', 2, 'The Head of Household decides.') },
-    { id: 'bb-noms', label: 'Nominations', html: rpBuildBBNominations(ep) },
-    { id: 'bb-life-3', label: 'House', html: rpBuildBBHouseLife(ep, 'veto', 3, 'The block changes a person.') },
-    { id: 'bb-veto', label: 'Veto', html: rpBuildBBComp(ep, 'veto') },
-    { id: 'bb-life-4', label: 'House', html: rpBuildBBHouseLife(ep, 'veto-ceremony', 4, 'Lobbying the veto holder.') },
-    { id: 'bb-cer', label: 'Ceremony', html: rpBuildBBCeremony(ep) },
   ];
-  campaigns.forEach((act, i) => {
-    // Each campaign act has its own house life around it. Without this screen
-    // those beats are generated and never shown, which is how a quarter of the
-    // week's events went missing.
-    screens.push({
-      id: `bb-life-c${i + 1}`, label: 'House',
-      html: rpBuildBBHouseLifeFrom(ep, act, `c${i + 1}`, 'The vote is still moving.'),
-    });
-    screens.push({ id: `bb-camp-${i}`, label: campaigns.length > 1 ? `Campaign ${i + 1}` : 'Campaign', html: rpBuildBBCampaign(ep, i) });
-  });
-  screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
+  let houseSlot = 0, campaignIdx = 0;
+
+  // Walk the acts the engine actually produced. House life is its own act now,
+  // with its own phase, so the player no longer has to infer where a beat
+  // belonged — it shows the week in the order the week happened.
+  for (const act of ep.acts || []) {
+    switch (act.type) {
+      case 'house':
+        screens.push({ id: `bb-house-${++houseSlot}`, label: 'House Life', html: rpBuildBBHouseLife(ep, act, houseSlot) });
+        break;
+      case 'hoh':
+        screens.push({ id: 'bb-hoh', label: 'HOH', html: rpBuildBBComp(ep, 'hoh') });
+        break;
+      case 'nominations':
+        screens.push({ id: 'bb-noms', label: 'Nominations', html: rpBuildBBNominations(ep) });
+        break;
+      case 'veto':
+        screens.push({ id: 'bb-veto', label: 'Veto', html: rpBuildBBComp(ep, 'veto') });
+        break;
+      case 'veto-ceremony':
+        screens.push({ id: 'bb-cer', label: 'Ceremony', html: rpBuildBBCeremony(ep) });
+        break;
+      case 'campaign': {
+        const i = campaignIdx++;
+        screens.push({ id: `bb-camp-${i}`, label: 'Campaign', html: rpBuildBBCampaign(ep, i) });
+        break;
+      }
+      case 'eviction':
+        screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
+        break;
+      default:
+        break;
+    }
+  }
   return screens;
 }

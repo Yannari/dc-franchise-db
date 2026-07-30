@@ -3363,6 +3363,14 @@ export function _textAudiencePulse(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export function generateSummaryText(ep) {
+  // A Big Brother week is a different show and shares none of the structure
+  // below — no tribes, no challenge, no Tribal Council. It gets its own
+  // transcript, built from the same acts the visual player renders, so the two
+  // never drift apart.
+  if (ep.format === 'big-brother' || ep.isBigBrother) {
+    return generateBBSummaryText(ep);
+  }
+
   // Generate aftermath data before building text (aftermath is created in patchEpisodeHistory,
   // which runs AFTER this function — so we must generate it here to include it in the text backlog)
   if (!ep.aftermath && window.generateAftermathShow) window.generateAftermathShow(ep);
@@ -4135,4 +4143,108 @@ export function buildNextEpQs(ep) {
   ]));
 
   return qs.slice(0, 4);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// BIG BROTHER — text backlog
+// ══════════════════════════════════════════════════════════════════════
+//
+// The written record of a week, walking the same acts the visual player walks
+// so the transcript and the screens can never describe different weeks. A house
+// has no tribes, no challenge and no Tribal Council, so none of the Total Drama
+// sections above apply to it.
+
+const _BB_PHASE_TITLE = {
+  'pre-hoh': 'HOUSE LIFE — before anybody has power',
+  'post-hoh': 'HOUSE LIFE — the Head of Household is decided',
+  'post-noms': 'HOUSE LIFE — two houseguests are on the block',
+  'post-veto': 'HOUSE LIFE — the veto has been won, and not yet used',
+  campaign: 'HOUSE LIFE — the vote is still moving',
+  eviction: 'HOUSE LIFE — the last hours',
+};
+
+export function generateBBSummaryText(ep) {
+  const L = [];
+  const ln = s => L.push(s);
+  const sec = title => { ln(''); ln(title); ln('─'.repeat(Math.max(8, title.length))); };
+  const beats = act => (act?.socialBeats || []).forEach(b =>
+    ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+
+  ln(`WEEK ${ep.num}`);
+  ln('═'.repeat(46));
+  if ((ep.houseAtStart || []).length) {
+    ln(`${ep.houseAtStart.length} houseguests: ${ep.houseAtStart.join(', ')}`);
+  }
+
+  for (const act of ep.acts || []) {
+    switch (act.type) {
+      case 'house':
+        sec(_BB_PHASE_TITLE[act.phase] || 'HOUSE LIFE');
+        beats(act);
+        break;
+
+      case 'hoh':
+        sec('HEAD OF HOUSEHOLD');
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
+        ln(`  ${act.winner} wins Head of Household.`);
+        beats(act);
+        break;
+
+      case 'nominations':
+        sec('NOMINATION CEREMONY');
+        if (ep.plan?.target) ln(`  (HOH's intent — target: ${ep.plan.target}, pawn: ${ep.plan.pawn || '?'}${ep.plan.backdoorTarget ? `, backdoor: ${ep.plan.backdoorTarget}` : ''})`);
+        ln(`  Nominated: ${(act.nominees || []).join(' and ')}.`);
+        beats(act);
+        break;
+
+      case 'veto':
+        sec('POWER OF VETO');
+        ln(`  Played by: ${(act.participants || []).join(', ')}.`);
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln(`  ${act.winner} wins the Power of Veto.`);
+        beats(act);
+        break;
+
+      case 'veto-ceremony':
+        sec('VETO CEREMONY');
+        if (act.used) {
+          ln(`  The veto is used on ${act.saved}.`);
+          if (act.replacement) ln(`  ${act.replacement} is named as the replacement nominee.`);
+        } else {
+          ln('  The veto is not used. Nominations stand.');
+        }
+        ln(`  Final nominees: ${(act.nominees || []).join(' and ')}.`);
+        beats(act);
+        break;
+
+      case 'campaign':
+        sec('CAMPAIGNING');
+        (act.events || []).forEach(e =>
+          ln(`  ${e.nominee} works ${e.voter} — ${e.success ? 'and it lands.' : 'and it does not take.'}`));
+        beats(act);
+        break;
+
+      case 'eviction':
+        sec('LIVE EVICTION');
+        (act.ballots || []).forEach(b =>
+          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${b.changed ? ' (the campaign moved this vote)' : ''}`));
+        Object.entries(act.votes || {}).forEach(([name, count]) =>
+          ln(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
+        if (act.tieBreak) ln(`  Tied — ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`);
+        beats(act);
+        ln(`  ${act.evicted} is evicted from the Big Brother house.`);
+        break;
+
+      default:
+        break;
+    }
+  }
+  return L.join('\n');
 }

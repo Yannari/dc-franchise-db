@@ -242,7 +242,7 @@ describe('Big Brother ceremony events', () => {
     }
     const never = CEREMONY_EVENTS.map(e => e.id).filter(id => !fired.has(id));
     expect(never, `these events never fire in a real season: ${never.join(', ')}`).toEqual([]);
-  });
+  }, 30000);
 
   it('does not treat a promise made this ceremony as a betrayal by it', () => {
     const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');

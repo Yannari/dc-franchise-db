@@ -66,11 +66,11 @@ function playSeasons(seeds) {
 describe('the Big Brother event library as a whole', () => {
   beforeEach(reset);
 
-  it('has four categories and no duplicate ids', () => {
+  it('has five categories and no duplicate ids', () => {
     expect(Object.keys(HOUSE_EVENTS_BY_CATEGORY).sort())
-      .toEqual(['ceremonies', 'deals', 'house-life', 'social']);
+      .toEqual(['ceremonies', 'deals', 'house-life', 'phases', 'social']);
     expect(assertUniqueEventIds()).toBe(true);
-    expect(HOUSE_EVENTS.length).toBeGreaterThanOrEqual(35);
+    expect(HOUSE_EVENTS.length).toBeGreaterThanOrEqual(45);
     // Each event's declared category must match the bucket it is filed under.
     for (const [cat, list] of Object.entries(HOUSE_EVENTS_BY_CATEGORY)) {
       for (const e of list) expect(e.category, `${e.id} filed under ${cat}`).toBe(cat);
@@ -85,10 +85,12 @@ describe('the Big Brother event library as a whole', () => {
 
   // The recurring bug in this project: written, registered, and still unreachable.
   it('fires every event in real seasons — no dead code', () => {
-    const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102]);
+    // Forty-seven events compete for a finite number of beats, so a rare one
+    // needs a real sample before its absence means anything.
+    const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102, 117, 131, 149, 163, 177, 191, 205, 219, 233, 247]);
     const never = HOUSE_EVENTS.map(e => e.id).filter(id => !fired[id]);
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
-  });
+  }, 30000);
 
   it('keeps any one category from taking over the house', () => {
     const fired = playSeasons([11, 23, 37, 44, 58]);

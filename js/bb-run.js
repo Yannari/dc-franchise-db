@@ -108,7 +108,11 @@ export function simulateBBEpisode() {
   });
 
   const ep = weekToEpisode(week);
-  ep.summaryText = summariseWeek(week);
+  // The shared text backlog owns transcripts for both shows, so a Big Brother
+  // week is written by the same system that writes a Total Drama episode.
+  ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
+    ? window.generateSummaryText(ep)
+    : summariseWeek(week);
 
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({

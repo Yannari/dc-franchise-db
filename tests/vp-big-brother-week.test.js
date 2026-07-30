@@ -70,10 +70,12 @@ describe('the Big Brother visual player', () => {
     // Cold open, then life and ceremony alternating, ending on the eviction.
     expect(ids[0]).toBe('bb-cold');
     expect(ids.at(-1)).toBe('bb-evict');
-    const spine = ids.filter(id => !id.startsWith('bb-camp') && !id.startsWith('bb-life-c'));
+    const spine = ids.filter(id => !id.startsWith('bb-camp'));
+    // House life is its own act with its own phase, so the player walks the
+    // acts the engine produced rather than guessing where a beat belonged.
     expect(spine).toEqual([
-      'bb-cold', 'bb-life-1', 'bb-hoh', 'bb-life-2', 'bb-noms',
-      'bb-life-3', 'bb-veto', 'bb-life-4', 'bb-cer', 'bb-evict',
+      'bb-cold', 'bb-house-1', 'bb-hoh', 'bb-house-2', 'bb-noms',
+      'bb-house-3', 'bb-veto', 'bb-house-4', 'bb-cer', 'bb-evict',
     ]);
   });
 
@@ -100,7 +102,7 @@ describe('the Big Brother visual player', () => {
   it('gives house life its own screens', () => {
     const ep = week();
     const screens = revealed(ep);
-    const lifeScreens = screens.filter(s => s.id.startsWith('bb-life'));
+    const lifeScreens = screens.filter(s => s.id.startsWith('bb-house'));
     expect(lifeScreens.length).toBeGreaterThanOrEqual(4);
     const beats = (ep.acts || []).flatMap(a => a.socialBeats || []);
     const lifeHtml = lifeScreens.map(s => s.html).join('');
@@ -109,7 +111,7 @@ describe('the Big Brother visual player', () => {
     const all = screens.map(s => s.html).join('');
     const shown = beats.filter(b => all.includes(b.text.slice(0, 30))).length;
     expect(shown / beats.length).toBeGreaterThan(0.8);
-    expect(lifeHtml).toContain('LIFE IN THE HOUSE');
+    expect(lifeHtml).toContain('HOUSE LIFE');
   });
 
   it('uses the shared visual player kit rather than a private one', () => {

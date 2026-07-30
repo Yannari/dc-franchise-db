@@ -516,6 +516,11 @@ export function snapshotGameState() {
   return {
     episode:      gs.episode,
     phase:        gs.phase,
+    // Big Brother format state. The snapshot is a whitelist, so anything not
+    // named here is simply missing from every episode record — which for a
+    // house means the week count, the competition record and the standing
+    // house state all vanish on replay.
+    bb:           gs.bb ? JSON.parse(JSON.stringify(gs.bb)) : null,
     isMerged:     gs.isMerged,
     activePlayers: [...gs.activePlayers],
     tribes:       gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),

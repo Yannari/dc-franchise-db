@@ -16,6 +16,7 @@ import { CEREMONY_EVENTS } from './ceremonies.js';
 import { SOCIAL_EVENTS } from './social.js';
 import { DEALS_EVENTS } from './deals.js';
 import { HOUSE_LIFE_EVENTS } from './house-life.js';
+import { PHASE_EVENTS } from './phases.js';
 
 /** Every house event, in no particular order — the scheduler weights them. */
 export const HOUSE_EVENTS = [
@@ -23,6 +24,7 @@ export const HOUSE_EVENTS = [
   ...SOCIAL_EVENTS,
   ...DEALS_EVENTS,
   ...HOUSE_LIFE_EVENTS,
+  ...PHASE_EVENTS,
 ];
 
 /** The same events grouped, for debug screens and for testing one slice. */
@@ -31,6 +33,7 @@ export const HOUSE_EVENTS_BY_CATEGORY = {
   social: SOCIAL_EVENTS,
   deals: DEALS_EVENTS,
   'house-life': HOUSE_LIFE_EVENTS,
+  phases: PHASE_EVENTS,
 };
 
 export function houseEventsFor(...categories) {
@@ -54,5 +57,5 @@ export function assertUniqueEventIds(events = HOUSE_EVENTS) {
   return true;
 }
 
-export { CEREMONY_EVENTS, SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS };
+export { CEREMONY_EVENTS, SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS, PHASE_EVENTS };
 export default HOUSE_EVENTS;

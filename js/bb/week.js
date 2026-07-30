@@ -59,11 +59,38 @@ export function simulateBBWeek(options = {}) {
   const competitionLibrary = options.competitions || [];
   const addBeats = (act, extra = {}) => {
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
-      act: act.type, hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
+      act: act.type, phase: act.phase || act.type,
+      hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 1 : 0, max: eventLibrary.length ? 3 : 0 });
     return act;
   };
+
+  /**
+   * A stretch of house life, as its own act.
+   *
+   * The phase matters more than the label. What a house does depends entirely
+   * on what it knows: before the Head of Household is decided nobody is safe
+   * and nobody is a target, and everything after that is a reaction to a fact
+   * that did not exist an hour earlier. Attaching beats only to the ceremonies
+   * meant an event could never tell those apart.
+   *
+   * Runs longer than a ceremony act, because this is where the week lives.
+   */
+  const houseAct = (phase, extra = {}) => {
+    const act = { type: 'house', phase, socialBeats: [] };
+    act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
+      act: 'house', phase,
+      hoh: week.hoh || null,
+      nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
+      vetoWinner: week.vetoWinner || null, week, ...extra,
+    }, { rng, min: eventLibrary.length ? 3 : 0, max: eventLibrary.length ? 6 : 0 });
+    week.acts.push(act);
+    return act;
+  };
+
+  // Before anybody has power. No HOH, no nominees, nothing decided.
+  houseAct('pre-hoh');
 
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
@@ -76,6 +103,9 @@ export function simulateBBWeek(options = {}) {
   week.hohCompetition = hohCompetition;
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
 
+  // The house now knows who holds power, and reacts to it.
+  houseAct('post-hoh');
+
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   let plan = chooseNominationPlan(hoh, house, rng);
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
@@ -85,6 +115,9 @@ export function simulateBBWeek(options = {}) {
   week.initialNominees = [...nominees];
   week.plan = plan;
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget }, { nominees: [...nominees] }));
+
+  // Two people are on the block and the rest of the house is not.
+  houseAct('post-noms', { nominees: [...nominees] });
 
   // Veto act — player draw, competition, and lobbying.
   let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
@@ -98,6 +131,9 @@ export function simulateBBWeek(options = {}) {
   week.vetoWinner = vetoWinner;
   week.vetoCompetition = vetoCompetition;
   week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results:vetoResults, competition:vetoCompetition }, { nominees: [...nominees], vetoWinner }));
+
+  // Somebody holds the veto and has not yet said what they will do with it.
+  houseAct('post-veto', { nominees: [...nominees], vetoWinner });
 
   // Veto ceremony and replacement hook (Diamond Veto can intercept it).
   let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);

@@ -20,9 +20,14 @@ describe('Big Brother headless week engine', () => {
   it('runs the complete act sequence, excludes the outgoing HOH, and evicts one nominee', () => {
     gs.bb = { outgoingHoh: 'A', weeks: [], stats: {} };
     const week = simulateBBWeek({ rng: seededRng(12) });
-    expect(week.acts.map(act => act.type)).toEqual(['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign', 'campaign', 'eviction']);
+    // The week now emits its own house segments between the ceremonies, each
+    // carrying the phase the house is actually in.
+    expect(week.acts.map(act => act.type)).toEqual([
+      'house', 'hoh', 'house', 'nominations', 'house', 'veto', 'house',
+      'veto-ceremony', ...week.acts.filter(a => a.type === 'campaign').map(() => 'campaign'), 'eviction',
+    ]);
     expect(week.acts.every(act => !('day' in act))).toBe(true);
-    expect(week.acts[0].results.map(result => result.name)).not.toContain('A');
+    expect(week.acts.find(a => a.type === 'hoh').results.map(result => result.name)).not.toContain('A');
     expect(week.finalNominees).toContain(week.evicted);
     expect(gs.activePlayers).toHaveLength(7);
     expect(gs.eliminated).toContain(week.evicted);

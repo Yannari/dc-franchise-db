@@ -279,10 +279,36 @@ design problem, not an implementation one.
 
 Agree this **before either starts**, because it is the only real coupling:
 
-1. **Entry point.** What the host calls to run a week, and what it returns.
-   Proposed: `simulateBigBrotherWeek(ep)` — mirrors `simulateEpisode(ep)`, sets
-   `ep.evicted`, `ep.hoh`, `ep.nominees`, `ep.vetoWinner`, `ep.replacementNominee`,
-   `ep.days[]`, and calls `updateChalRecord(ep)`.
+1. **Entry point — SETTLED 2026-07-30.** The engine does **not** take an `ep`.
+   It is called as `simulateBBWeek(options) -> week` and integration reads the
+   returned object. Chosen over an `ep`-shaped signature so the engine stays
+   headless and testable; the adapting happens on the integration side, which is
+   where the `ep` conventions live anyway.
+
+   ```js
+   simulateBBWeek({ rng?, hooks?, house? }) -> week
+   simulateBBSeason({ rng?, hooks?, finaleSize? }) -> { weeks, finalists }
+   ```
+
+   The `week` object is the integration surface:
+
+   | Field | Meaning |
+   |---|---|
+   | `num`, `format` | week number, always `'big-brother'` |
+   | `houseAtStart` | who was in the house on day 1 |
+   | `hoh` | Head of Household |
+   | `plan` | `{ target, pawn, backdoorTarget, rankings }` — the HOH's intent |
+   | `initialNominees` / `finalNominees` | before and after the veto ceremony |
+   | `vetoWinner` | who won the veto |
+   | `preCampaignVotes` / `votes` | the tally before and after days 5–6 |
+   | `ballots` | per voter: `{ voter, evict, margin, changed, changedBy }` |
+   | `voteChanges` | how many votes the campaign moved |
+   | `tieBreak` | `{ voter, evict }` when the HOH broke a tie, else null |
+   | `evicted` | who left |
+   | `days[]` | seven entries, each `{ day, type, … }` |
+
+   It also mutates shared state: `gs.activePlayers`, `gs.eliminated`,
+   `gs.episode`, and `gs.bb` (`outgoingHoh`, `weeks[]`, `stats{}`).
 2. **What the engine may import** from the shared world: `core.js` state,
    `bonds.js`, `players.js`, `romance.js`, `voting.js`, the VP kit. It must not
    import from `episode.js`.

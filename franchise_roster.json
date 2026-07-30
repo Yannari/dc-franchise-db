@@ -2934,7 +2934,6 @@
       "name": "Amberly",
       "slug": "amberly",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "hothead",
       "stats": {
         "physical": 5,
@@ -2946,7 +2945,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "sexuality": "straight"
     }
   ]
 }

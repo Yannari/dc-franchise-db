@@ -3006,7 +3006,6 @@
       "name": "Harriett",
       "slug": "harriett",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "villain",
       "stats": {
         "physical": 5,
@@ -3018,13 +3017,13 @@
         "boldness": 9,
         "intuition": 4,
         "temperament": 3
-      }
+      },
+      "sexuality": "straight"
     },
     {
       "name": "Jane",
       "slug": "jane",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "underdog",
       "stats": {
         "physical": 2,
@@ -3036,7 +3035,8 @@
         "boldness": 2,
         "intuition": 9,
         "temperament": 9
-      }
+      },
+      "sexuality": "lesbian"
     }
   ]
 }

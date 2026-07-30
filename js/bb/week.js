@@ -1,4 +1,10 @@
-// Headless Big Brother week engine: seven simulated days, one eviction.
+// Headless Big Brother week engine: a run of acts, one eviction.
+//
+// Built like a Total Drama episode rather than a calendar. Acts are what the VP
+// renders and what events hang off; the day numbers were scaffolding sitting on
+// top of acts that already existed. The campaign carries a VARIABLE number of
+// beats, the way a challenge fires a variable number of social events between
+// its phases.
 import { gs } from '../core.js';
 import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
@@ -6,6 +12,7 @@ import {
   campaignAttempt, chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldThrowHoh, shouldUseVeto,
 } from './strategy.js';
+import { scheduleHouseBeats } from './house-events.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -66,18 +73,26 @@ export function simulateBBWeek(options = {}) {
   const house = [...(options.house || gs.activePlayers || [])];
   if (house.length < 4) throw new Error('The standard Big Brother week engine requires at least four houseguests.');
   ensureBBState();
-  const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', days: [], houseAtStart: house };
+  const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+  const eventLibrary = options.houseEvents || [];
+  const addBeats = (act, extra = {}) => {
+    act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
+      act: act.type, hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
+      vetoWinner: week.vetoWinner || null, week, ...extra,
+    }, { rng, min: eventLibrary.length ? 1 : 0, max: eventLibrary.length ? 3 : 0 });
+    return act;
+  };
 
-  // Day 1 — HOH and the first scramble.
+  // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
   const hohResults = runComp(hohPlayers, 'hoh', rng, house);
   let hoh = hook(hooks, 'hohResult', hohResults[0].name, { week, results: hohResults, house });
   if (!hohPlayers.includes(hoh)) hoh = hohResults[0].name;
   week.hoh = hoh;
   gs.bb.stats[hoh].hohWins++;
-  week.days.push({ day: 1, type: 'hoh', winner: hoh, results: hohResults, outgoingHoh: gs.bb.outgoingHoh });
+  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, outgoingHoh: gs.bb.outgoingHoh }));
 
-  // Day 2 — directed power: target, pawn, and an optional backdoor plan.
+  // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   let plan = chooseNominationPlan(hoh, house, rng);
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
   let nominees = [...new Set(plan.nominees)].filter(name => house.includes(name) && name !== hoh).slice(0, 2);
@@ -85,9 +100,9 @@ export function simulateBBWeek(options = {}) {
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
   week.initialNominees = [...nominees];
   week.plan = plan;
-  week.days.push({ day: 2, type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget });
+  week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget }, { nominees: [...nominees] }));
 
-  // Day 3 — veto draw, competition, and lobbying.
+  // Veto act — player draw, competition, and lobbying.
   let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
   vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
   vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
@@ -96,9 +111,9 @@ export function simulateBBWeek(options = {}) {
   if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoResults[0].name;
   gs.bb.stats[vetoWinner].vetoWins++;
   week.vetoWinner = vetoWinner;
-  week.days.push({ day: 3, type: 'veto', participants: vetoPlayers, winner: vetoWinner, results: vetoResults });
+  week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results: vetoResults }, { nominees: [...nominees], vetoWinner }));
 
-  // Day 4 — veto ceremony and replacement hook (Diamond Veto can intercept it).
+  // Veto ceremony and replacement hook (Diamond Veto can intercept it).
   let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);
   vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
   let replacement = null;
@@ -113,7 +128,7 @@ export function simulateBBWeek(options = {}) {
   }
   week.finalNominees = [...nominees];
   nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
-  week.days.push({ day: 4, type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] });
+  week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
 
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
   let voters = house.filter(name => name !== hoh && !nominees.includes(name));
@@ -121,7 +136,8 @@ export function simulateBBWeek(options = {}) {
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
   const ballots = voters.map(voter => ({ voter, ...initialVotePreference(voter, nominees, rng), changed: false }));
   week.preCampaignVotes = tally(ballots, nominees);
-  for (const day of [5, 6]) {
+  const campaignActCount = options.campaignActCount || (house.length >= 12 ? 3 : house.length >= 7 ? 2 : 1);
+  for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
     const events = [];
     for (const nominee of nominees) {
       const opponent = nominees.find(name => name !== nominee);
@@ -141,10 +157,10 @@ export function simulateBBWeek(options = {}) {
       }
       events.push(attempt);
     }
-    week.days.push({ day, type: 'campaign', events, votesAfterDay: tally(ballots, nominees) });
+    week.acts.push(addBeats({ type: 'campaign', campaignIndex, events, votesAfterAct: tally(ballots, nominees) }, { nominees: [...nominees], ballots }));
   }
 
-  // Day 7 — eviction; HOH breaks a tie.
+  // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
   let evicted;
   let tieBreak = null;
@@ -162,7 +178,7 @@ export function simulateBBWeek(options = {}) {
   week.ballots = ballots;
   week.tieBreak = tieBreak;
   week.voteChanges = ballots.filter(ballot => ballot.changed).length;
-  week.days.push({ day: 7, type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted });
+  week.acts.push({ type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted, socialBeats: [] });
 
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);

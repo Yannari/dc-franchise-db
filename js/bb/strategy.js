@@ -39,8 +39,12 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   const aligned = allianceStrength(hoh, candidate);
   const candidateThreat = bbThreat(candidate);
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
+  const houseState = gs.bb?.house;
+  const eventTarget = houseState?.targets?.[hoh]?.target === candidate ? 4 : 0;
+  const suspicion = houseState?.suspicion?.[`${hoh}→${candidate}`] || 0;
   return candidateThreat * (0.65 + stats.strategic * 0.045)
-    + revenge * 0.75 - relationship * 0.85 - aligned * 2.2 + noise(rng, 1.6);
+    + revenge * 0.75 - relationship * 0.85 - aligned * 2.2
+    + eventTarget + suspicion * 0.45 + noise(rng, 1.6);
 }
 
 export function chooseNominationPlan(hoh, house, rng = Math.random) {
@@ -95,7 +99,10 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {
   const score = nominee => getPerceivedBond(voter, nominee) * 0.9 - bbThreat(nominee) * 0.3
-    + allianceStrength(voter, nominee) * 1.4 + noise(rng, 1);
+    + allianceStrength(voter, nominee) * 1.4
+    - (gs.bb?.house?.targets?.[voter]?.target === nominee ? 3 : 0)
+    - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25
+    + noise(rng, 1);
   const scores = nominees.map(name => ({ name, keepScore: score(name) })).sort((a, b) => a.keepScore - b.keepScore);
   return { evict: scores[0].name, margin: scores[1].keepScore - scores[0].keepScore };
 }

@@ -67,8 +67,8 @@ function composeHooks(baseHooks, audit) {
  *
  * Both weeks remain in gs.bb.weeks because each has its own HOH, nominees,
  * veto, ballots, and boot. gs.episode advances only once. The second week's
- * seven logical days are retained for the VP but marked compressed so the UI
- * can present them as live-show beats rather than literal calendar days.
+ * logical acts are retained for the VP but marked compressed so the UI
+ * can present them as live-show beats.
  */
 export function simulateDoubleEviction(options = {}) {
   if ((options.house || gs.activePlayers || []).length < 5) {
@@ -85,9 +85,9 @@ export function simulateDoubleEviction(options = {}) {
   const secondWeek = simulateBBWeek(secondOptions);
   secondWeek.compressed = true;
   secondWeek.twist = 'double-eviction';
-  secondWeek.days.forEach(day => {
-    day.compressed = true;
-    day.liveShowBeat = day.day;
+  secondWeek.acts.forEach((act, index) => {
+    act.compressed = true;
+    act.liveShowBeat = index + 1;
   });
 
   // simulateBBWeek correctly advances once per boot. A Double Eviction has two

@@ -1,0 +1,114 @@
+// Scheduler and state API for Big Brother house events.
+// Event prose/library lives in js/bb-events/ and is supplied to this module.
+import { gs, players, seasonConfig } from '../core.js';
+import { addBond } from '../bonds.js';
+import { romanticCompat } from '../players.js';
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+function ensureState() {
+  gs.bb ||= {};
+  gs.bb.house ||= { suspicion: {}, targets: {}, memories: {}, eventHistory: [] };
+  gs.bb.house.suspicion ||= {};
+  gs.bb.house.targets ||= {};
+  gs.bb.house.memories ||= {};
+  gs.bb.house.eventHistory ||= [];
+  gs.popularity ||= {};
+  gs.showmances ||= [];
+  gs.romanticSparks ||= [];
+  return gs.bb.house;
+}
+
+export function createHouseEventApi(ctx = {}) {
+  const state = ensureState();
+  return Object.freeze({
+    addBond(a, b, delta) {
+      if (!a || !b || a === b || !Number.isFinite(Number(delta))) return false;
+      addBond(a, b, Number(delta));
+      return true;
+    },
+    popDelta(name, delta) {
+      if (!name || !Number.isFinite(Number(delta))) return false;
+      gs.popularity[name] = (gs.popularity[name] || 0) + Number(delta);
+      return true;
+    },
+    suspicion(observer, subject, delta) {
+      if (!observer || !subject || observer === subject) return false;
+      const key = `${observer}→${subject}`;
+      state.suspicion[key] = clamp((state.suspicion[key] || 0) + Number(delta || 0), 0, 10);
+      return true;
+    },
+    setTarget(actor, target, reason = 'house event') {
+      if (!actor || !target || actor === target) return false;
+      state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
+      return true;
+    },
+    remember(observer, subject, type, strength = 1, detail = {}) {
+      if (!observer || !subject || !type) return false;
+      state.memories[observer] ||= [];
+      state.memories[observer].push({ subject, type, strength: Number(strength) || 1, week: ctx.week?.num || 0, act: ctx.act, detail });
+      return true;
+    },
+    showmance(a, b, detail = {}) {
+      if (seasonConfig.romance === 'disabled' || !a || !b || a === b) return false;
+      if (!romanticCompat(a, b)) return false;
+      const active = gs.showmances.filter(showmance => showmance.phase !== 'broken-up');
+      if (active.length >= 4 || active.some(showmance => showmance.players?.includes(a) || showmance.players?.includes(b))) return false;
+      if (gs.romanticSparks.some(spark => spark.players?.includes(a) && spark.players?.includes(b))) return false;
+      gs.romanticSparks.push({ players: [a, b], sparkEp: (gs.episode || 0) + 1, context: detail.context || 'Big Brother house', intensity: detail.intensity || 0.3, fake: false, saboteur: null });
+      addBond(a, b, detail.bondDelta || 0.5);
+      return true;
+    },
+  });
+}
+
+function weightedPick(eligible, rng) {
+  const total = eligible.reduce((sum, entry) => sum + entry.weight, 0);
+  if (total <= 0) return null;
+  let roll = rng() * total;
+  for (const entry of eligible) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry.event;
+  }
+  return eligible.at(-1)?.event || null;
+}
+
+function validateBeat(event, beat) {
+  if (!beat || typeof beat.text !== 'string' || !beat.text.trim()) throw new Error(`Big Brother event ${event.id} returned no text.`);
+  if (!Array.isArray(beat.players)) throw new Error(`Big Brother event ${event.id} must return players[].`);
+  if (!beat.badgeText || !beat.badgeClass) throw new Error(`Big Brother event ${event.id} must return badgeText and badgeClass.`);
+  return { ...beat, eventId: event.id, category: event.category };
+}
+
+export function scheduleHouseBeats(events, house, ctx, options = {}) {
+  if (!Array.isArray(events) || !events.length) return [];
+  const rng = options.rng || Math.random;
+  const min = Math.max(0, options.min ?? 1);
+  const max = Math.max(min, options.max ?? 3);
+  const desired = Math.min(max, min + Math.floor(rng() * (max - min + 1)));
+  const fired = [];
+  const used = new Set();
+  const api = createHouseEventApi(ctx);
+
+  for (let beat = 0; beat < desired; beat++) {
+    const beatCtx = { ...ctx, beat };
+    const eligible = events.filter(event => event?.id && !used.has(event.id) && typeof event.weight === 'function' && typeof event.fire === 'function')
+      .map(event => ({ event, weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0) }))
+      .filter(entry => entry.weight > 0);
+    const event = weightedPick(eligible, rng);
+    if (!event) break;
+    used.add(event.id);
+    const result = validateBeat(event, event.fire(house, beatCtx, api));
+    fired.push(result);
+    ensureState().eventHistory.push({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
+  }
+  return fired;
+}
+
+export function houseEventState() {
+  return ensureState();
+}
+
+export function playerArchetype(name) {
+  return players.find(player => player.name === name)?.archetype || 'floater';
+}

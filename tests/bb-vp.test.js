@@ -17,13 +17,13 @@ describe('Big Brother visual player', () => {
     document.body.innerHTML = '';
   });
 
-  it('builds exactly seven ordered acts from the settled week contract', () => {
+  it('builds ordered screens from the variable act contract', () => {
     const week = simulateBBWeek({ rng: rng(7) });
     const screens = buildBBVPScreens(week);
-    expect(screens).toHaveLength(7);
+    expect(screens).toHaveLength(week.acts.length);
     expect(screens.map(screen => screen.label)).toEqual([
-      'Day 1 · HOH', 'Day 2 · Nominations', 'Day 3 · Veto', 'Day 4 · Ceremony',
-      'Day 5 · Campaign', 'Day 6 · Campaign', 'Day 7 · Eviction',
+      'Act 1 · HOH', 'Act 2 · Nominations', 'Act 3 · Veto', 'Act 4 · Ceremony',
+      'Act 5 · Campaign 1', 'Act 6 · Campaign 2', 'Act 7 · Eviction',
     ]);
     expect(screens.every(screen => screen.id && screen.html)).toBe(true);
   });
@@ -42,7 +42,7 @@ describe('Big Brother visual player', () => {
     const week = simulateBBWeek({ rng: rng(27) });
     const screen = buildBBVPScreens(week)[0];
     document.body.innerHTML = screen.html;
-    const key = `bb-w${week.num}-d1`;
+    const key = `bb-w${week.num}-a0`;
     expect(document.querySelectorAll('.bbvp-step--shown')).toHaveLength(0);
     bbVpRevealNext(key, 2);
     expect(document.querySelectorAll('.bbvp-step--shown')).toHaveLength(1);
@@ -61,9 +61,9 @@ describe('Big Brother visual player', () => {
   it('builds fourteen acts for a Double Eviction and marks the live half', () => {
     const result = simulateDoubleEviction({ rng: rng(38) });
     const screens = buildBBDoubleEvictionVPScreens(result);
-    expect(screens).toHaveLength(14);
-    expect(screens.slice(7).every(screen => screen.id.includes('-de-'))).toBe(true);
-    expect(screens[7].html).toContain('LIVE DOUBLE EVICTION');
+    expect(screens).toHaveLength(result.weeks[0].acts.length + result.weeks[1].acts.length);
+    expect(screens.slice(result.weeks[0].acts.length).every(screen => screen.id.includes('-de-'))).toBe(true);
+    expect(screens[result.weeks[0].acts.length].html).toContain('LIVE DOUBLE EVICTION');
     expect(gs.episode).toBe(1);
   });
 });

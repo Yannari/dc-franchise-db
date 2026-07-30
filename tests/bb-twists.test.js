@@ -28,7 +28,7 @@ describe('Big Brother twist catalog', () => {
     expect(result.weeks).toHaveLength(2);
     expect(result.evicted).toHaveLength(2);
     expect(new Set(result.evicted).size).toBe(2);
-    expect(result.weeks.every(week => week.days.length === 7)).toBe(true);
+    expect(result.weeks.every(week => week.acts.length >= 6)).toBe(true);
     expect(gs.activePlayers).toHaveLength(6);
     expect(gs.eliminated).toEqual(expect.arrayContaining(result.evicted));
     expect(gs.episode).toBe(5);
@@ -39,8 +39,8 @@ describe('Big Brother twist catalog', () => {
     const result = simulateDoubleEviction({ rng: seededRng(12) });
     expect(result.weeks[0].compressed).not.toBe(true);
     expect(result.weeks[1]).toMatchObject({ compressed: true, twist: 'double-eviction' });
-    expect(result.weeks[1].days.map(day => day.liveShowBeat)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(result.weeks[1].days.every(day => day.compressed)).toBe(true);
+    expect(result.weeks[1].acts.map(act => act.liveShowBeat)).toEqual(result.weeks[1].acts.map((_, index) => index + 1));
+    expect(result.weeks[1].acts.every(act => act.compressed)).toBe(true);
   });
 
   it('exercises all seven settled interception points during the compressed week', () => {

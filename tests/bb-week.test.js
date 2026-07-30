@@ -17,11 +17,12 @@ function seededRng(seed = 7) {
 describe('Big Brother headless week engine', () => {
   beforeEach(() => seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] }));
 
-  it('runs all seven days, excludes the outgoing HOH, and evicts one nominee', () => {
+  it('runs the complete act sequence, excludes the outgoing HOH, and evicts one nominee', () => {
     gs.bb = { outgoingHoh: 'A', weeks: [], stats: {} };
     const week = simulateBBWeek({ rng: seededRng(12) });
-    expect(week.days.map(day => day.day)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(week.days[0].results.map(result => result.name)).not.toContain('A');
+    expect(week.acts.map(act => act.type)).toEqual(['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign', 'campaign', 'eviction']);
+    expect(week.acts.every(act => !('day' in act))).toBe(true);
+    expect(week.acts[0].results.map(result => result.name)).not.toContain('A');
     expect(week.finalNominees).toContain(week.evicted);
     expect(gs.activePlayers).toHaveLength(7);
     expect(gs.eliminated).toContain(week.evicted);
@@ -40,13 +41,13 @@ describe('Big Brother headless week engine', () => {
     ]));
   });
 
-  it('records the vote position before campaigning and after each campaign day', () => {
+  it('records the vote position before campaigning and after each campaign act', () => {
     const week = simulateBBWeek({ rng: seededRng(3) });
     expect(Object.values(week.preCampaignVotes).reduce((a, b) => a + b, 0)).toBe(5);
-    const campaigns = week.days.filter(day => day.type === 'campaign');
+    const campaigns = week.acts.filter(act => act.type === 'campaign');
     expect(campaigns).toHaveLength(2);
     expect(campaigns.every(day => day.events.length > 0)).toBe(true);
-    expect(campaigns.every(day => day.votesAfterDay)).toBe(true);
+    expect(campaigns.every(act => act.votesAfterAct)).toBe(true);
   });
 
   it('uses bonds in directed nomination strategy', () => {

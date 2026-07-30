@@ -117,7 +117,11 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
     const event = weightedPick(eligible, rng);
     if (!event) break;
     used.add(event.id);
-    const result = validateBeat(event, event.fire(house, beatCtx, api));
+    // Events are handed the seeded rng as a fourth argument. Without it they had
+    // to derive any text variety from a hash of the context, because reaching
+    // for Math.random would stop a seeded season reproducing. Passing the rng
+    // keeps reproducibility and lets an event simply roll.
+    const result = validateBeat(event, event.fire(house, beatCtx, api, rng));
     fired.push(result);
     ensureState().eventHistory.push({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
   }

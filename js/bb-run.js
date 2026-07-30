@@ -62,6 +62,11 @@ export function weekToEpisode(week) {
     format: 'big-brother',
     isBigBrother: true,
     eliminated: evicted,
+    // Carried for the visual player: the cold open opens on the whole house,
+    // and the nomination screen shows the HOH's private plan.
+    houseAtStart: [...(week.houseAtStart || [])],
+    outgoingHoh: (week.acts || []).find(a => a.type === 'hoh')?.outgoingHoh || null,
+    plan: week.plan || null,
     // The HOH is the week's safety, which is the closest true analogue.
     immunityWinner: week.hoh || null,
     hoh: week.hoh || null,

@@ -25,7 +25,7 @@
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, bondFactor, sharesAlliance, trusts, dislikes, actFacts,
-  wasPromised, remembers, grudge, suspicionOf, willScheme, isVillainous, archetype,
+  wasPromised, remembers, grudge, suspicionOf, willScheme, isVillainous, archetype, targetOf,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -406,6 +406,126 @@ const vetoReplacementShock = {
   },
 };
 
+
+// ── eviction night ────────────────────────────────────────────────────
+//
+// The exit interview the format is built around, and until now impossible to
+// write: the eviction act was hardcoded to produce no beats at all, so the last
+// thing a houseguest ever did was be a number in a vote tally.
+//
+// What somebody says on the way out is not decoration. It is the last
+// information the jury gets about the person who evicted them, and the house
+// has to live with whatever was said.
+
+const evictionGracious = {
+  id: 'evict-farewell-gracious',
+  category: 'ceremonies',
+  weight(house, ctx) {
+    if (ctx.act !== 'eviction' || !ctx.evicted) return 0;
+    const s = pStats(ctx.evicted);
+    // Composure and warmth make for a gracious exit; a grudge makes it unlikely.
+    const grace = (s.temperament / 10) * (0.4 + s.loyalty / 20);
+    const bitter = grudge(ctx.evicted, ctx.hoh) >= 2 ? 0.4 : 1;
+    return band(grace * bitter * 14);
+  },
+  fire(house, ctx, api) {
+    const gone = ctx.evicted;
+    const p = pronouns(gone);
+    const closest = _nominees(ctx).includes(gone)
+      ? house.filter(n => n !== gone).sort((a, b) => bond(gone, b) - bond(gone, a))[0]
+      : null;
+    const text = _variant([
+      `${gone} hugs everybody on the way out, and means most of them. "Play hard. I'll be watching every second."`,
+      `"I'm not going to stand here and be bitter about a game I asked to be in." ${gone} says it lightly, and the room believes ${p.obj}, and that is worth more than ${p.sub} realises tonight.`,
+      `${gone} takes the long way to the door, saying one specific thing to each person. Several of them will remember exactly what ${p.sub} said when they are asked to vote for a winner.`,
+      ...(closest ? [`${gone} stops at ${closest} last. Whatever gets said is too quiet for the room, and ${closest} does not sit back down for a while after the door closes.`] : []),
+    ], ctx, gone);
+
+    // A gracious exit is remembered kindly, which matters when a jury forms.
+    api.popDelta(gone, 3);
+    house.filter(n => n !== gone).forEach(n => {
+      if (bond(n, gone) > 0) api.addBond(n, gone, 0.3);
+      api.remember(n, gone, 'respect', 1, { about: 'left with grace' });
+    });
+    if (closest) api.remember(closest, gone, 'kindness', 2, { when: 'the last night' });
+    return { text, players: [gone, closest].filter(Boolean), badgeText: 'GRACIOUS EXIT', badgeClass: 'gold' };
+  },
+};
+
+const evictionScorched = {
+  id: 'evict-farewell-scorched',
+  category: 'ceremonies',
+  weight(house, ctx) {
+    if (ctx.act !== 'eviction' || !ctx.evicted) return 0;
+    const s = pStats(ctx.evicted);
+    const heat = ((10 - s.temperament) / 10) * (s.boldness / 10);
+    const betrayed = grudge(ctx.evicted, ctx.hoh) >= 2 || remembers(ctx.evicted, ctx.hoh, 'betrayal');
+    return band(heat * (betrayed ? 16 : 7));
+  },
+  fire(house, ctx, api) {
+    const gone = ctx.evicted;
+    const p = pronouns(gone);
+    // Name the person they blame, which is who actually put them there.
+    const blamed = targetOf(gone)
+      || house.filter(n => n !== gone).sort((a, b) => grudge(gone, b) - grudge(gone, a))[0]
+      || ctx.hoh;
+    const text = _variant([
+      `${gone} does not hug anybody. "${blamed}. You know what you did, and now so does everyone watching." The door closes on a silent room.`,
+      `"I'd say good luck, but I'd be lying." ${gone} looks directly at ${blamed} on the way past and says nothing else, which is somehow worse than the speech ${p.sub} had prepared.`,
+      `${gone} uses ${p.posAdj} last thirty seconds to lay out, calmly and in order, exactly what ${blamed} has done to three separate people in this house. Two of them did not know.`,
+      `It is not a speech so much as a receipt. ${gone} reads it out, hands it to the room, and leaves.`,
+    ], ctx, gone, blamed);
+
+    // A scorched exit is a gift and a curse: the house learns something true,
+    // and the person who leaves it becomes somebody the jury remembers badly.
+    api.popDelta(gone, 1);
+    api.popDelta(blamed, -2);
+    house.filter(n => n !== gone && n !== blamed).forEach(n => {
+      api.suspicion(n, blamed, 1.4 * (pStats(n).intuition / 10));
+      api.remember(n, blamed, 'warning', 1, { from: gone, when: 'the exit speech' });
+    });
+    api.remember(blamed, gone, 'humiliation', 2, { when: 'the exit speech' });
+    return { text, players: [gone, blamed], badgeText: 'SCORCHED EARTH', badgeClass: 'red' };
+  },
+};
+
+const evictionBlindsided = {
+  id: 'evict-farewell-blindsided',
+  category: 'ceremonies',
+  weight(house, ctx) {
+    if (ctx.act !== 'eviction' || !ctx.evicted || !ctx.votes) return 0;
+    // Only a blindside if they had no idea — a near-unanimous vote against
+    // somebody who thought they were safe.
+    const against = ctx.votes[ctx.evicted] || 0;
+    const other = Object.entries(ctx.votes).find(([n]) => n !== ctx.evicted)?.[1] || 0;
+    if (against <= other + 1) return 0;
+    const trusted = house.filter(n => n !== ctx.evicted && trusts(ctx.evicted, n, 2.5)).length;
+    return band(trusted * 4);
+  },
+  fire(house, ctx, api) {
+    const gone = ctx.evicted;
+    const p = pronouns(gone);
+    const trusted = house.filter(n => n !== gone && trusts(gone, n, 2.5))
+      .sort((a, b) => bond(gone, b) - bond(gone, a));
+    const betrayer = trusted[0] || house.find(n => n !== gone);
+    const text = _variant([
+      `${gone} stands up before the vote is finished being read, because ${p.sub} has already worked out that the number is too big to be anyone but ${p.posAdj} own side.`,
+      `The count comes in and ${gone} looks straight at ${betrayer}, who looks at the floor. That is the entire conversation and everybody in the room hears it.`,
+      `${gone} says "wow" once, quietly. ${p.Sub} does not say anything else on the way out, and the silence does more damage than a speech would have.`,
+      `${gone} had the votes counted this morning. ${p.Sub} had them counted wrong, and the difference is standing three feet away not making eye contact.`,
+    ], ctx, gone, betrayer);
+
+    api.popDelta(gone, 2);
+    api.popDelta(betrayer, -1);
+    api.remember(gone, betrayer, 'betrayal', 3, { when: 'the eviction vote' });
+    // The house saw a group turn on its own. Everyone updates.
+    house.filter(n => n !== gone && n !== betrayer).forEach(n => {
+      api.suspicion(n, betrayer, 1.1 * (pStats(n).intuition / 10));
+    });
+    return { text, players: [gone, betrayer], badgeText: 'BLINDSIDED ON THE WAY OUT', badgeClass: 'red' };
+  },
+};
+
 export const CEREMONY_EVENTS = [
   nomSpeechGame,
   nomSpeechPersonal,
@@ -416,6 +536,9 @@ export const CEREMONY_EVENTS = [
   vetoLeftOnBlock,
   vetoBackdoorLands,
   vetoReplacementShock,
+  evictionGracious,
+  evictionScorched,
+  evictionBlindsided,
 ];
 
 export default CEREMONY_EVENTS;

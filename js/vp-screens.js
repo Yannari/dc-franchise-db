@@ -15,9 +15,6 @@ import { rpBuildMineTitleCard, rpBuildMinePhase1, rpBuildMinePhase2, rpBuildMine
 import { rpBuildTreasureTitleCard, rpBuildTreasurePaddle, rpBuildTreasureDive, rpBuildTreasureCrisis, rpBuildTreasureResults, rpBuildTreasureLeaderboard, treasureRevealNext, treasureRevealAll } from './chal/treasure-island.js';
 import { rpBuildOperationClassifiedTitleCard, rpBuildOperationClassifiedScan, rpBuildOperationClassifiedWiretap1, rpBuildOperationClassifiedLaser, rpBuildOperationClassifiedWiretap2, rpBuildOperationClassifiedDefusal, rpBuildOperationClassifiedDebrief, operationClassifiedRevealNext, operationClassifiedRevealAll } from './chal/operation-classified.js';
 import { rpBuildAlienEggTitleCard, rpBuildAlienEggRounds, rpBuildAlienEggImmunity, rpBuildAlienEggTribeResults, rpBuildAlienEggLeaderboard, alienEggRevealNext, alienEggRevealAll } from './chal/alien-egg.js';
-// The Big Brother visual player. Its builders shipped with the engine and
-// nothing ever imported them, so every Big Brother week replayed as nothing.
-import { buildBBVPScreens, bbVpRevealNext, bbVpRevealAll } from './bb/bb-vp.js';
 import { rpBuildBeachBlanketBogusTitleCard, rpBuildBeachBlanketBogusSurf, rpBuildBeachBlanketBogusSandcastle, rpBuildBeachBlanketBogusHalftime, rpBuildBeachBlanketBogusDanceOff, rpBuildBeachBlanketBogusResults, beachBogusRevealNext, beachBogusRevealAll } from './chal/beach-blanket-bogus.js';
 import { rpBuildCrazytownTitleCard, rpBuildCrazytownHorseDive, rpBuildCrazytownStandoff, rpBuildCrazytownRoundup, rpBuildCrazytownDramaBreak, rpBuildCrazytownResults, crazytownRevealNext, crazytownRevealAll } from './chal/crazytown.js';
 import { rpBuildChefshankTitleCard, rpBuildChefshankPrisonFood, rpBuildChefshankPrisonBreak, rpBuildChefshankDramaBreak, rpBuildChefshankResults, chefshankRevealNext, chefshankRevealAll } from './chal/chefshank.js';
@@ -13307,6 +13304,19 @@ export function rpBuildVotes2(ep) {
 export function buildVPScreens(epRecord) {
   vpScreens = [];
   vpEpNum = epRecord.num || 0;
+
+  if (epRecord.format === 'big-brother' || epRecord.isBigBrother) {
+    try {
+      vpScreens = buildBBWeekScreens(epRecord);
+    } catch (err) {
+      vpScreens = [{ id: 'bb-error', label: 'Week', html:
+        `<div class="rp-page"><div class="rp-eyebrow">Week ${epRecord.num}</div>
+           <div style="text-align:center;color:var(--muted);padding:30px">
+             This Big Brother week cannot be replayed.<br><small>${String(err && err.message || err)}</small>
+           </div></div>` }];
+    }
+    return vpScreens;
+  }
   // Reset vote reveal state — HTML is rebuilt fresh, old state would skip all reveals
   delete _tvState[vpEpNum];
   delete _tvState[String(vpEpNum) + '_v2']; // vote-2 reveal state (surprise double boot)
@@ -13323,24 +13333,7 @@ export function buildVPScreens(epRecord) {
   // none of Total Drama's screens below apply to it — no tribes, no challenge
   // record, no Tribal Council. Its builders existed but nothing ever imported
   // them, so the entire Big Brother visual player was unreachable.
-  if (ep.format === 'big-brother' || ep.isBigBrother) {
-    try {
-      vpScreens = buildBBVPScreens({
-        num: ep.num, acts: ep.acts || [], hoh: ep.hoh, vetoWinner: ep.vetoWinner,
-        plan: ep.plan || {}, initialNominees: ep.initialNominees || [],
-        finalNominees: ep.finalNominees || [], votes: ep.votes || {},
-        preCampaignVotes: ep.preCampaignVotes || {}, evicted: ep.eliminated,
-        tieBreak: ep.tieBreak || null, compressed: !!ep.compressed,
-      });
-    } catch (err) {
-      vpScreens = [{ id: 'bb-error', label: 'Week', html:
-        `<div style="padding:24px;color:#f4efe6;background:#111214">
-           <h2>This Big Brother week cannot be replayed</h2>
-           <p style="color:#a9a39a">${String(err && err.message || err)}</p>
-         </div>` }];
-    }
-    return vpScreens;
-  }
+
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;
   const _isJuryElim = !!(ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
@@ -15457,5 +15450,276 @@ export function generateChallengeNotes(placements, memberScores, maxNotes) {
   return notes.slice(0, maxNotes ?? 2);
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// BIG BROTHER — visual player
+// ══════════════════════════════════════════════════════════════════════
+//
+// Built on the same primitives every Total Drama screen uses — `rp-page`,
+// `rpPortrait`, the badge-pill scene card and the `_tvState` click-to-reveal —
+// rather than a private stylesheet. A houseguest should look like a camper,
+// because they are the same people.
+//
+// The episode alternates the way the show does: cold open, life in the house,
+// HOH, life, nominations, life, veto, life, ceremony, life and campaigning,
+// then eviction.
 
+const _BB_BADGE = {
+  red:   '#f85149',
+  green: '#3fb950',
+  gold:  '#f0a500',
+  blue:  '#58a6ff',
+  grey:  '#8b949e',
+  challenge: '#f0a500',
+  '':    '#8b949e',
+};
+const _bbColor = cls => _BB_BADGE[cls] || _BB_BADGE.grey;
 
+/** The reveal handler every Big Brother screen uses, matching the TD pattern. */
+function _bbReveal(ep, stateKey, targetIdx) {
+  return `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};`
+    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
+    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+}
+
+/**
+ * One scene card: a badge, the people in it, and what happened.
+ * The same shape Total Drama uses for a camp event, because a house event is
+ * the same kind of thing.
+ */
+function _bbScene(scene) {
+  const color = _bbColor(scene.badgeClass);
+  return `<div style="padding:12px;margin-bottom:8px;border-radius:8px;border-left:3px solid ${color};background:${color}0a;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+    ${scene.badgeText ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${color};background:${color}18;padding:2px 6px;border-radius:3px">${scene.badgeText}</span>` : ''}
+    ${(scene.players || []).filter(Boolean).length ? `<div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap">${(scene.players || []).filter(Boolean).map(p => rpPortrait(p, 'sm')).join('')}</div>` : ''}
+    <div style="font-size:12.5px;line-height:1.6">${scene.text}</div>
+  </div>`;
+}
+
+/**
+ * A screen of scenes with click-to-reveal, dimming what has not happened yet —
+ * lifted from the Total Drama scouting screen so the pacing feels identical.
+ */
+function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '' }) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const done = state.idx >= scenes.length - 1;
+
+  let html = `<div class="rp-page tod-dusk">
+    <div class="rp-eyebrow">${eyebrow}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${accent};text-shadow:0 0 20px ${accent}33;margin-bottom:6px">${title}</div>
+    ${subtitle ? `<div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:18px">${subtitle}</div>` : ''}
+    ${header}`;
+
+  scenes.forEach((scene, i) => {
+    html += i <= state.idx
+      ? _bbScene(scene)
+      : `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
+  });
+
+  if (scenes.length) {
+    html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, scenes.length - 1))}">Reveal next</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, scenes.length - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(scenes.length, Math.max(0, state.idx + 1))} / ${scenes.length}</span>
+    </div>`;
+  }
+  return html + `</div>`;
+}
+
+const _bbBeats = act => (act?.socialBeats || []).map(b =>
+  ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass }));
+
+// ── Cold open ─────────────────────────────────────────────────────────
+
+export function rpBuildBBColdOpen(ep) {
+  const house = ep.houseAtStart || [];
+  const first = (ep.num || 1) === 1;
+  const stateKey = `bb_co_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const header = `<div style="text-align:center;margin-bottom:18px">
+    <div class="rp-portrait-row" style="justify-content:center;flex-wrap:wrap">${house.map(n => rpPortrait(n, 'sm')).join('')}</div>
+  </div>`;
+
+  return _bbSceneScreen(ep, {
+    // seasonConfig is a bare global here, present in the browser and absent in
+    // a module scope, so it is read defensively rather than assumed.
+    eyebrow: `${(typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother'} — Week ${ep.num}`,
+    title: first ? 'MOVE-IN DAY' : `WEEK ${ep.num}`,
+    subtitle: first
+      ? `${house.length} strangers move in. No clocks, no calls home, one door that only opens outward.`
+      : `${house.length} houseguests remain.`,
+    accent: '#f0a500', stateKey, header,
+    scenes: first
+      ? [
+        { text: 'They come through the door in ones and twos, loud with nerves, hugging people they met four minutes ago.', players: house.slice(0, 4), badgeText: 'MOVE-IN', badgeClass: 'gold' },
+        { text: 'Beds are claimed, and the claiming is the first strategic act of the season whether anybody admits it or not.', players: house.slice(4, 8), badgeText: 'FIRST NIGHT', badgeClass: 'blue' },
+        { text: 'The door locks. The first Head of Household competition is about to begin.', players: [], badgeText: 'BIG BROTHER', badgeClass: 'red' },
+      ]
+      : [
+        { text: ep.outgoingHoh
+          ? `${ep.outgoingHoh} comes off the wall with no power at all, which in this house is the most dangerous place to stand.`
+          : 'The house wakes up with nobody in charge, and everybody counting.',
+          players: [ep.outgoingHoh].filter(Boolean), badgeText: 'POWER LAPSES', badgeClass: 'grey' },
+        { text: 'Somebody in this room is about to be handed the only thing that matters this week.', players: [], badgeText: 'BIG BROTHER', badgeClass: 'red' },
+      ],
+  });
+}
+
+// ── Life in the house ─────────────────────────────────────────────────
+
+export function rpBuildBBHouseLife(ep, actType, slot, kicker) {
+  return rpBuildBBHouseLifeFrom(ep, (ep.acts || []).find(a => a.type === actType), slot, kicker);
+}
+
+/** The same screen, from an act already in hand — campaigns repeat by index. */
+export function rpBuildBBHouseLifeFrom(ep, act, slot, kicker) {
+  const scenes = _bbBeats(act);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`,
+    title: 'LIFE IN THE HOUSE',
+    subtitle: kicker,
+    accent: '#58a6ff',
+    stateKey: `bb_life_${ep.num}_${slot}`,
+    scenes: scenes.length ? scenes : [
+      { text: 'A quiet stretch. The house cooks, sleeps, and says nothing it can be held to.', players: [], badgeText: 'QUIET', badgeClass: 'grey' },
+    ],
+  });
+}
+
+// ── Competitions ──────────────────────────────────────────────────────
+
+export function rpBuildBBComp(ep, actType) {
+  const act = (ep.acts || []).find(a => a.type === actType);
+  const comp = act?.competition;
+  const isHoh = actType === 'hoh';
+  const threw = (act?.results || []).filter(r => r.threw).map(r => r.name);
+
+  const scenes = [
+    ...((comp?.beats) || []).map(b => ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass || 'challenge' })),
+    ...(threw.length ? [{ text: `${threw.join(', ')} held back on purpose. In this house that is a strategy, not a failure.`, players: threw, badgeText: 'THREW IT', badgeClass: 'grey' }] : []),
+    { text: isHoh
+      ? `${act?.winner} is the new Head of Household, and decides who sits on the block.`
+      : `${act?.winner} wins the Power of Veto.`,
+      players: [act?.winner], badgeText: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', badgeClass: 'gold' },
+  ];
+
+  const header = comp ? `<div style="text-align:center;margin-bottom:16px">
+    <div style="font-family:var(--font-display);font-size:15px;letter-spacing:1px;color:#f0a500">${comp.name}</div>
+    <div style="font-size:10px;color:#8b949e;letter-spacing:1px;text-transform:uppercase">${comp.category || ''} competition${(act?.participants || []).length ? ` · ${act.participants.length} playing` : ''}</div>
+  </div>` : '';
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`,
+    title: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO',
+    subtitle: isHoh ? 'Power changes hands.' : 'One houseguest can change the whole week.',
+    accent: '#f0a500', header,
+    stateKey: `bb_comp_${ep.num}_${actType}`,
+    scenes,
+  });
+}
+
+// ── Ceremonies ────────────────────────────────────────────────────────
+
+export function rpBuildBBNominations(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'nominations');
+  const noms = act?.nominees || [];
+  const plan = ep.plan || {};
+  const header = `<div style="margin-bottom:16px;padding:12px;border-radius:8px;border:1px dashed #f0a50055;background:#f0a5000a;text-align:center">
+    <div style="font-size:9px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase">Inside the HOH room · private intent</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:6px">Target: <strong style="color:#c9d1d9">${plan.target || '?'}</strong> · Pawn: <strong style="color:#c9d1d9">${plan.pawn || '?'}</strong>${plan.backdoorTarget ? ` · Backdoor: <strong style="color:#c9d1d9">${plan.backdoorTarget}</strong>` : ''}</div>
+  </div>`;
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'NOMINATION CEREMONY',
+    subtitle: `${ep.hoh} names two houseguests.`, accent: '#f85149', header,
+    stateKey: `bb_noms_${ep.num}`,
+    scenes: [
+      { text: `The first key turns. ${noms[0]} is nominated for eviction.`, players: [noms[0]], badgeText: 'NOMINATED', badgeClass: 'red' },
+      { text: `The second key turns. ${noms[1]} joins ${noms[0]} on the block.`, players: [noms[1]], badgeText: 'NOMINATED', badgeClass: 'red' },
+      { text: `"I nominated you both, and this is a game." Nominations are locked.`, players: noms, badgeText: 'LOCKED', badgeClass: 'grey' },
+    ],
+  });
+}
+
+export function rpBuildBBCeremony(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
+  const scenes = act?.used
+    ? [
+      { text: `${ep.vetoWinner} uses the Power of Veto on ${act.saved}, who comes off the block.`, players: [act.saved, ep.vetoWinner], badgeText: 'VETO USED', badgeClass: 'green' },
+      ...(act.replacement ? [{ text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair.`, players: [act.replacement], badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
+    ]
+    : [{ text: `${ep.vetoWinner} chooses not to use the Power of Veto. The nominations stand.`, players: [ep.vetoWinner], badgeText: 'VETO NOT USED', badgeClass: 'grey' }];
+  scenes.push({ text: `The block is final: ${(act?.nominees || []).join(' and ')}.`, players: act?.nominees || [], badgeText: 'FINAL NOMINEES', badgeClass: 'red' });
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'VETO CEREMONY',
+    subtitle: 'The block is decided.', accent: '#3fb950',
+    stateKey: `bb_cer_${ep.num}`, scenes,
+  });
+}
+
+export function rpBuildBBCampaign(ep, idx) {
+  const acts = (ep.acts || []).filter(a => a.type === 'campaign');
+  const act = acts[idx];
+  const scenes = (act?.events || []).map(e => ({
+    text: `<strong>${e.nominee}</strong> works on ${e.voter}. ${e.success ? 'It lands — the vote is moving.' : 'It does not take.'}`,
+    players: [e.nominee, e.voter], badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
+    badgeClass: e.success ? 'green' : 'grey',
+  }));
+  const tally = act?.votesAfterAct || {};
+  const header = Object.keys(tally).length ? `<div style="margin-bottom:14px;padding:12px;border-radius:8px;border:1px solid var(--border)">
+    <div style="font-size:9px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase;margin-bottom:8px">Where the vote stands</div>
+    ${Object.entries(tally).map(([n, v]) => `<div style="display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:4px"><span style="min-width:90px">${n}</span><div style="flex:1;height:8px;background:#21262d;border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(v / Math.max(1, ...Object.values(tally)) * 100)}%;background:#f85149"></div></div><span>${v}</span></div>`).join('')}
+  </div>` : '';
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: acts.length > 1 ? `CAMPAIGN ${idx + 1}` : 'THE CAMPAIGN',
+    subtitle: 'Every conversation can move a vote.', accent: '#58a6ff', header,
+    stateKey: `bb_camp_${ep.num}_${idx}`, scenes,
+  });
+}
+
+export function rpBuildBBEviction(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'eviction');
+  const scenes = [
+    ...(act?.ballots || []).map(b => ({
+      text: `"I vote to evict <strong>${b.evict}</strong>."${b.changed ? ' <em style="color:#f0a500">The campaign moved this vote.</em>' : ''}`,
+      players: [b.voter], badgeText: `${b.voter} VOTES`, badgeClass: 'grey',
+    })),
+    ...(act?.tieBreak ? [{ text: `The vote is tied. ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`, players: [act.tieBreak.voter], badgeText: 'HOH BREAKS THE TIE', badgeClass: 'gold' }] : []),
+    ..._bbBeats(act),
+    { text: `<strong>${ep.eliminated}</strong> is evicted from the Big Brother house, by a vote of ${Object.values(act?.votes || {}).sort((a, b) => b - a).join('–') || '0–0'}.`,
+      players: [ep.eliminated], badgeText: 'EVICTED', badgeClass: 'red' },
+  ];
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'LIVE EVICTION',
+    subtitle: 'One houseguest leaves tonight.', accent: '#f85149',
+    stateKey: `bb_evict_${ep.num}`, scenes,
+  });
+}
+
+/** The week, in the order the show runs it. */
+export function buildBBWeekScreens(ep) {
+  const campaigns = (ep.acts || []).filter(a => a.type === 'campaign');
+  const screens = [
+    { id: 'bb-cold', label: (ep.num || 1) === 1 ? 'Move-In' : 'Cold Open', html: rpBuildBBColdOpen(ep) },
+    { id: 'bb-life-1', label: 'House', html: rpBuildBBHouseLife(ep, 'hoh', 1, 'Before anybody has power.') },
+    { id: 'bb-hoh', label: 'HOH', html: rpBuildBBComp(ep, 'hoh') },
+    { id: 'bb-life-2', label: 'House', html: rpBuildBBHouseLife(ep, 'nominations', 2, 'The Head of Household decides.') },
+    { id: 'bb-noms', label: 'Nominations', html: rpBuildBBNominations(ep) },
+    { id: 'bb-life-3', label: 'House', html: rpBuildBBHouseLife(ep, 'veto', 3, 'The block changes a person.') },
+    { id: 'bb-veto', label: 'Veto', html: rpBuildBBComp(ep, 'veto') },
+    { id: 'bb-life-4', label: 'House', html: rpBuildBBHouseLife(ep, 'veto-ceremony', 4, 'Lobbying the veto holder.') },
+    { id: 'bb-cer', label: 'Ceremony', html: rpBuildBBCeremony(ep) },
+  ];
+  campaigns.forEach((act, i) => {
+    // Each campaign act has its own house life around it. Without this screen
+    // those beats are generated and never shown, which is how a quarter of the
+    // week's events went missing.
+    screens.push({
+      id: `bb-life-c${i + 1}`, label: 'House',
+      html: rpBuildBBHouseLifeFrom(ep, act, `c${i + 1}`, 'The vote is still moving.'),
+    });
+    screens.push({ id: `bb-camp-${i}`, label: campaigns.length > 1 ? `Campaign ${i + 1}` : 'Campaign', html: rpBuildBBCampaign(ep, i) });
+  });
+  screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
+  return screens;
+}

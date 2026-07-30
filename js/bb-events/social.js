@@ -54,6 +54,7 @@ function _choose(pool, ctx, ...salt) {
  */
 function _actFit(ctx) {
   switch (ctx?.act) {
+    case 'eviction': return 0.25;      // the exit speech owns eviction night
     case 'nominations':
     case 'veto-ceremony': return 0.22;   // the ceremony is the story here
     case 'campaign': return 0.75;        // shares the act with campaign beats

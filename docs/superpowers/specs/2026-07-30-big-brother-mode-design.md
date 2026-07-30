@@ -510,77 +510,44 @@ unblocked and can start immediately.
 
 Steps 1 and 2 are the project. The rest follows patterns that already exist.
 
-## Division of work
+## Ownership — single owner as of 2026-07-30
 
-Two agents are building this in parallel: **Codex** on the engine, **Claude** on
-integration and audit. The split is by **file ownership**, because that is where
-collisions actually happen — not by feature.
+Big Brother was built by two agents for a day: Codex on the engine in
+`js/bb/`, Claude on integration and volume. **That split has ended. Claude now
+owns the whole system**, and the file-ownership rules that went with it are
+gone: there is no file to avoid, no glob reserved for anyone else, and no
+waiting to report a defect in somebody else's module instead of fixing it.
 
-**Nobody edits a file the other owns.** If a change seems to need one, say so
-instead of making it.
+What survives the split, because it was never about coordination:
 
-### Codex owns — engine contracts and architecture
+* **`js/episode.js` stays untouched.** Total Drama's rules are not Big
+  Brother's, and that separation is the whole point of running two engines. If
+  Big Brother appears to need a change in there, it is a design problem rather
+  than an implementation one.
+* **Clone `HEAD` and run the suite there before trusting a commit.** This began
+  as a check against committing code that imported another agent's uncommitted
+  file. It stays because it also catches the single-owner version of the same
+  mistake: a new file created and never staged. Ninety seconds, and it has
+  caught the problem every time it has happened.
+* **`git pull --rebase` before every push.** The Casting Studio commits to
+  `main` from the live site continuously, so a rebase is still needed.
+* **Measure, do not read.** Every serious defect in this system was found by
+  playing seasons and counting, never by reading a diff: five events that could
+  not fire, an engine nothing dispatched, two libraries never handed over, an
+  alliance system that produced three alliances in thirty seasons, and a visual
+  player that displayed none of the show. Unit tests passed throughout.
 
-```
-js/bb/week.js          the week orchestrator (acts, not days)
-js/bb/strategy.js      nominations, veto decisions, campaigning, comp throwing
-js/bb/shared-strategy.js  house context, normalized week evidence, shared-state
-                         writes, and BB threat/heat composition
-js/bb/house-events.js  the event SCHEDULER + state API (not the events
-                       themselves — see "Who writes the events" below)
-js/bb/comps.js         competition CONTRACT + scheduler + result validation
-                       (not the competition library)
-js/bb/bb-twists.js     twist/mode CATALOG + generic hook plumbing + placeholders
-                       (not individual twist implementations, except the
-                       existing Double Eviction proof of concept)
-js/bb/bb-vp.js         the week as acts in the visual player
-tests/bb-*.test.js     engine tests (this glob is Codex's — integration
-                       tests must NOT be named bb-*)
-```
+### Inherited work
 
-Codex's smaller usage budget is reserved for the work that prevents rewrites:
-stable contracts, state ownership, hook signatures, validation, invariants,
-placeholders, and architectural audits. Codex does not spend that budget writing
-large libraries of competitions or implementing every catalogued twist.
+Items identified while the system was split, left alone at the time because they
+belonged to the other agent, now simply open:
 
-### Claude owns — integration (all existing files)
-
-```
-js/core.js             season format tag, format field on TWIST_CATALOG
-tests/season-format.test.js  format helpers + the export adapter
-js/main.js             module registration
-worker/*.sql           seasons.format, bb_appearances
-worker/worker-studio.js  sync + publish for Big Brother seasons
-js/stats-export.js     exporting a Big Brother season
-js/bb-events/*.js      the event LIBRARY — social, deals, house life,
-                       ceremonies (a sibling directory, so no file in
-                       js/bb/ is ever touched by both agents)
-js/bb-comps/*.js       the competition LIBRARY — HOH, veto, arena,
-                       tiebreaker and special-mode competitions
-js/bb-twists/*.js      individual twist/mode IMPLEMENTATIONS — one module per
-                       mechanic or tightly related family
-player.html, devotees.html, leaderboards.html, seasons.html   grouped views
-current-season.html    format-aware beat sheet
-MANUAL.md
-```
-
-These are the files with the traps — name-derived avatar paths, storage-key
-mismatches, the publish pipeline, the D1 sync. They should be changed by the
-agent that has been in them.
-
-Claude also owns the volume-heavy research and implementation work: expanding
-the 80–120 event library, researching recurring Big Brother competitions,
-writing competition narration/variants, and implementing catalogued twists.
-Claude's tests for these libraries use names such as
-`tests/competition-big-brother-*.test.js` and
-`tests/twist-big-brother-*.test.js`; the `tests/bb-*.test.js` glob remains
-Codex-owned contract/invariant coverage.
-
-### Off limits to both
-
-`js/episode.js`. Total Drama's rules stay untouched; that is the whole point of
-the two-engine split. If Big Brother appears to need a change there, it is a
-design problem, not an implementation one.
+| | |
+|---|---|
+| The eviction act never receives social beats — `week.js` hardcodes `socialBeats: []` — so farewell speeches and eviction-night events cannot exist | done |
+| `fire()` is handed no rng, forcing events to pick text by deterministic hash | done |
+| Sparks never mature into showmances; there is no romance lifecycle for a house | open |
+| Alliance formation could read accumulated evidence — aligned ballots, coordinated veto use — rather than the current week only | open |
 
 ## Who writes the events
 
@@ -692,25 +659,19 @@ test suite was broken for anyone without that tree.
 
 Rules, in order of how much trouble they save:
 
-1. **If you create a file, commit it.** Never leave a new file uncommitted once
-   anything committed imports it. Ownership is about editing, not about who
-   presses commit.
-2. **And never commit code that imports an uncommitted file.** This is the same
-   rule from the other side, and it is the half that keeps getting missed — it
-   broke `main` twice in one day, both times by committing a test against a file
-   the other agent had written but not yet committed. Before pressing commit,
-   check what the other agent has in flight; if your work imports any of it,
-   commit it together or wait.
+1. **If you create a file, commit it.** A new file left unstaged breaks the
+   repository for everybody else the moment anything committed imports it. This
+   broke `main` twice in one day while two agents were working, and the
+   single-owner version of the mistake is just as easy to make.
 3. **Both agents push to `main`.** Branch only if Big Brother starts changing
    shared files — the site pages, `episode.js` — which the design says it must
    not. A long-lived branch would drift badly here, because the Casting Studio
    commits to `main` from the live site continuously.
 4. **`git pull --rebase` before every push.** Those Studio commits land between
    your commit and your push more often than you would think.
-5. **Stage your own paths explicitly.** `git add js/bb/...`, never `git add -A`,
-   or you will sweep up the other agent's half-finished work.
-6. **Never amend or force-push shared history.** Two agents and a live site pull
-   from it.
+5. **Stage paths explicitly.** `git add js/bb/...`, never `git add -A`, or a
+   half-finished experiment goes out with the work.
+6. **Never amend or force-push shared history.** A live site pulls from it.
 
 A quick way to catch violations 1 and 2: clone `HEAD` into a temp directory and
 run the suite there. If it fails, something is only in a working tree. This

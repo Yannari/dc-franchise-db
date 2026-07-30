@@ -74,12 +74,45 @@ describe('Big Brother house-event scheduler contract', () => {
       .toThrow(/badgeText and badgeClass/);
   });
 
-  it('attaches variable social beats to every pre-eviction act', () => {
+  it('attaches variable social beats to every act, eviction included', () => {
     const week = simulateBBWeek({ rng:rng(14), houseEvents:TEN_EVENTS });
-    const socialActs = week.acts.filter(act => act.type !== 'eviction');
-    expect(socialActs.length).toBeGreaterThanOrEqual(5);
-    expect(socialActs.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 3)).toBe(true);
-    expect(week.acts.at(-1)).toMatchObject({ type:'eviction', socialBeats:[] });
+    expect(week.acts.length).toBeGreaterThanOrEqual(6);
+    expect(week.acts.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 3)).toBe(true);
+    // Eviction night used to be hardcoded to silence, which made a farewell
+    // speech impossible to write. It gets its beats like every other act now.
+    const eviction = week.acts.at(-1);
+    expect(eviction.type).toBe('eviction');
+    expect(eviction.socialBeats.length).toBeGreaterThan(0);
+  });
+
+  it('tells eviction-night events who is actually leaving', () => {
+    let seen = null;
+    const probe = [{
+      id:'probe-eviction-ctx', category:'social',
+      weight: (house, ctx) => ctx.act === 'eviction' ? 5 : 0,
+      fire: (house, ctx) => {
+        seen = { evicted: ctx.evicted, votes: ctx.votes };
+        return { text:'probe', players:[house[0]], badgeText:'PROBE', badgeClass:'grey' };
+      },
+    }];
+    const week = simulateBBWeek({ rng:rng(21), houseEvents:probe });
+    expect(seen).toBeTruthy();
+    expect(seen.evicted).toBe(week.evicted);
+    expect(seen.votes).toBeTruthy();
+  });
+
+  it('hands events the seeded rng so they can roll without breaking replay', () => {
+    let got = null;
+    const probe = [{
+      id:'probe-rng', category:'social',
+      weight: () => 5,
+      fire: (house, ctx, api, rngArg) => {
+        got = typeof rngArg;
+        return { text:'probe', players:[house[0]], badgeText:'PROBE', badgeClass:'grey' };
+      },
+    }];
+    simulateBBWeek({ rng:rng(33), houseEvents:probe });
+    expect(got).toBe('function');
   });
 
   it('feeds event targets and suspicion into later nomination strategy', () => {

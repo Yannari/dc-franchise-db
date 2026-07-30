@@ -45,6 +45,7 @@ function _actFit(ctx) {
     case 'hoh': return 1.2;
     case 'veto': return 1;
     case 'campaign': return 0.45;
+    case 'eviction': return 0.2;       // nobody is worrying about chores tonight
     case 'nominations':
     case 'veto-ceremony': return 0.2;
     default: return 1;

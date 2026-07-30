@@ -266,7 +266,9 @@ describe('Big Brother ceremony events', () => {
     for (const act of weeks.flatMap(w => w.acts || [])) {
       if (!(act.socialBeats || []).length) continue;
       if (act.socialBeats.some(b => b.category === 'ceremonies')) {
-        expect(['nominations', 'veto-ceremony']).toContain(act.type);
+        // Farewell speeches are ceremony events too, and they fire on
+        // eviction night.
+        expect(['nominations', 'veto-ceremony', 'eviction']).toContain(act.type);
       }
     }
   });

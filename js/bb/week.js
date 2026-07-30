@@ -153,7 +153,13 @@ export function simulateBBWeek(options = {}) {
   week.ballots = ballots;
   week.tieBreak = tieBreak;
   week.voteChanges = ballots.filter(ballot => ballot.changed).length;
-  week.acts.push({ type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted, socialBeats: [] });
+  // Eviction night gets its beats like every other act. It was the one act
+  // hardcoded to silence, which made a farewell speech - one of the format's
+  // signature moments - impossible to write. The evicted houseguest is passed
+  // through so events can be about the person actually leaving.
+  week.acts.push(addBeats(
+    { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted },
+    { nominees: [...nominees], evicted, votes, ballots }));
 
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);

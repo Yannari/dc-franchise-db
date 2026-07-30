@@ -41,6 +41,7 @@ const _nominees = ctx => (ctx?.nominees || []).filter(Boolean);
 function _actFit(ctx) {
   switch (ctx?.act) {
     case 'campaign': return 1.25;         // the whole act is deal-making
+    case 'eviction': return 0.3;       // deals are done; somebody is leaving
     case 'nominations':
     case 'veto-ceremony': return 0.3;     // the ceremony owns its own act
     default: return 1;

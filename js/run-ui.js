@@ -170,7 +170,12 @@ export function renderSeasonHub() {
   const railHost = document.getElementById('season-episode-rail');
   host.style.setProperty('--hub-accent', model.setting.accent);
   if (railHost) railHost.style.setProperty('--hub-accent', model.setting.accent);
-  const phaseLabel = model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
+  // A house has no tribes and no merge, so Total Drama's phase names describe
+  // nothing about it. What it has is a number of people left.
+  const _bbSeason = isBigBrotherSeason();
+  const phaseLabel = _bbSeason
+    ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
+    : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   const primaryClick = model.primaryAction === 'results' ? "showTab('results')" : model.primaryAction === 'current' ? `viewEpisode(${model.liveEpisode})` : 'simulateNext()';
   // Season Controls default OPEN in every lifecycle; the user's manual
   // open/closed choice is remembered across renders and reloads.
@@ -253,7 +258,7 @@ export function renderSeasonHub() {
     <button type="button" onclick="exportSeason()">Export</button>
   </nav>`;
   host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
-    <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
+    <header class="hub-headline"><div><div class="hub-kicker">${_bbSeason ? '🏠 The House' : `${model.setting.icon} ${_hubEsc(model.setting.label)}`} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
     ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
@@ -767,9 +772,29 @@ export function simulateNext() {
   }
   // A Big Brother season is a different game, so it takes a different engine.
   // episode.js is not involved: no tribes, no merge, no Tribal Council.
-  const ep = isBigBrotherSeason() && !houseIsAtFinale()
-    ? simulateBBEpisode()
-    : gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
+  //
+  // The branch turns on the FORMAT alone, never on how far the season has got.
+  // An earlier version fell through to the Total Drama side once the house
+  // reached its final few, and since gs.phase is never 'finale' in a Big
+  // Brother season, that meant running simulateEpisode — tribes, a challenge,
+  // Tribal Council — on three houseguests.
+  if (isBigBrotherSeason()) {
+    const bbEp = simulateBBEpisode();
+    if (!bbEp) {
+      alert(`The house is down to its final ${gs.activePlayers.length}.\n\n`
+        + 'The Big Brother finale — the jury vote — is not built yet, so the season stops here '
+        + 'rather than handing the house to the Total Drama finale, which would make nonsense of it.');
+      return;
+    }
+    if (seasonConfig.popularityEnabled !== false) { updatePopularity(bbEp); saveGameState(); }
+    _autoRevealSpoiler(bbEp.num);
+    viewingEpNum = bbEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
+
+  const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   // Aftermath Reunion: generate for finale since simulateFinale doesn't call patchEpisodeHistory
   if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {
@@ -791,7 +816,11 @@ export function simulateMultipleEpisodes(count) {
   const max = count || 999;
   let ran = 0;
   const runOne = () => {
-    if (ran >= max || gs.phase === 'complete' || gs.activePlayers.length <= 1) {
+    // A Big Brother season ends at its finale size rather than at one player,
+    // so the loop has to stop there. Otherwise it calls simulateNext forever
+    // against a house that will not shrink — once per alert.
+    const bbDone = isBigBrotherSeason() && houseIsAtFinale();
+    if (ran >= max || bbDone || gs.phase === 'complete' || gs.activePlayers.length <= 1) {
       renderRunTab();
       document.getElementById('run-main').scrollTop = 0;
       return;

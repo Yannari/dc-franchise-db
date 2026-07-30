@@ -373,6 +373,33 @@ Sequencing: the contract and one vertical slice first - a single category, ten
 events, running end to end through the scheduler - before either agent writes at
 volume. Ten events that work are worth more than two hundred that were guessed.
 
+### Committing and pushing
+
+File ownership says who may *edit* a file. It said nothing about who *commits*
+one, and that gap broke the repository once already: the engine lived only in a
+working tree while a committed integration test imported it, so a fresh clone
+failed at import. The site was unaffected — nothing loads `js/bb` yet — but the
+test suite was broken for anyone without that tree.
+
+Rules, in order of how much trouble they save:
+
+1. **If you create a file, commit it.** Never leave a new file uncommitted once
+   anything committed imports it. Ownership is about editing, not about who
+   presses commit.
+2. **Both agents push to `main`.** Branch only if Big Brother starts changing
+   shared files — the site pages, `episode.js` — which the design says it must
+   not. A long-lived branch would drift badly here, because the Casting Studio
+   commits to `main` from the live site continuously.
+3. **`git pull --rebase` before every push.** Those Studio commits land between
+   your commit and your push more often than you would think.
+4. **Stage your own paths explicitly.** `git add js/bb/...`, never `git add -A`,
+   or you will sweep up the other agent's half-finished work.
+5. **Never amend or force-push shared history.** Two agents and a live site pull
+   from it.
+
+A quick way to catch violation 1: clone `HEAD` into a temp directory and run the
+suite there. If it fails, something is only in your working tree.
+
 ### The contract between them
 
 Agree this **before either starts**, because it is the only real coupling:

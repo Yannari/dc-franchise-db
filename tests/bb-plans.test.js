@@ -10,14 +10,27 @@
 // fields that are declared and never filled, and fields that are filled and
 // never read. Both look fine in isolation and only show up by playing seasons
 // and counting.
-import { describe, expect, it } from 'vitest';
+//
+// ── on the fixture ───────────────────────────────────────────────────
+//
+// Nearly every assertion here needs a house that has been playing for weeks,
+// and the first version of this file got that by replaying a season inside each
+// test — eleven seasons for eleven tests, about nine minutes. The season is
+// seeded and therefore identical every time, so ten of those eleven were
+// recomputing a result they already had.
+//
+// So it is played ONCE, in beforeAll, snapshotting the whole of `gs` after
+// every eviction. A test asks for the house size it wants to look at and gets
+// that moment restored. Restoring deep-clones, so a test may scheme all it
+// likes without leaking into the next one.
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale, runBBFinale } from '../js/bb-run.js';
 import { generateBBSummaryText } from '../js/text-backlog.js';
 import { housePlan, houseStage } from '../js/bb/plans.js';
-import { endgameDealsOf, dealBetween, tierOf, makeEndgameDeal, sincerityOf } from '../js/bb/deals.js';
+import { endgameDealsOf, makeEndgameDeal, sincerityOf } from '../js/bb/deals.js';
 import { chooseNominationPlan } from '../js/bb/strategy.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -37,28 +50,118 @@ function reset() {
   gs.intentions = {};
 }
 
+// ── recording and replaying a moment in a season ─────────────────────
+
 /**
- * Play until the house is the size we want to look at.
+ * Copy the world.
  *
- * Seeded, and not optionally. An unseeded run of this measured different
- * seasons on every invocation, which showed up as a shield assertion that
- * passed on its own and failed inside the suite — the classic shape of a test
- * that is really sampling rather than checking.
+ * Per-key rather than wholesale, because `gs` picks up the occasional value
+ * structuredClone refuses (a function, a DOM-ish object) and one of those
+ * should not cost us the other forty keys.
  */
-function playDownTo(size, { seed = 4242, cap = 30 } = {}) {
-  let last = null;
-  withSeededRandom(seed, () => {
-    let guard = 0;
-    while ((gs.activePlayers || []).length > size && guard++ < cap) last = simulateBBEpisode();
-  });
-  return last;
+function snapshot() {
+  const world = {};
+  for (const [key, value] of Object.entries(gs)) {
+    try { world[key] = structuredClone(value); } catch { /* not state we can carry */ }
+  }
+  // Adaptation writes back onto the player objects, so they travel too.
+  return { world, cast: structuredClone(players) };
 }
+
+/**
+ * Put it back.
+ *
+ * Both `gs` and `players` are mutated in place rather than reassigned: every
+ * module in the project holds the original reference, and main.js exposes those
+ * same objects on window, so swapping them out would leave half the codebase
+ * looking at the previous world.
+ */
+function restore(snap) {
+  for (const key of Object.keys(gs)) delete gs[key];
+  for (const [key, value] of Object.entries(snap.world)) gs[key] = structuredClone(value);
+  players.splice(0, players.length, ...structuredClone(snap.cast));
+}
+
+/** One season, recorded: a snapshot per house size, every episode, the finale. */
+function recordSeason(seed) {
+  const byHouseSize = new Map();
+  const episodes = [];
+  let cut = null;
+  reset();
+  withSeededRandom(seed, () => {
+    byHouseSize.set((gs.activePlayers || []).length, snapshot());
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 30) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      episodes.push(ep);
+      byHouseSize.set((gs.activePlayers || []).length, snapshot());
+    }
+    const finale = runBBFinale();
+    cut = (finale?.acts || []).find(a => a.type === 'final-cut') || null;
+  });
+  return { seed, byHouseSize, episodes, cut };
+}
+
+let SEASON = null;
+
+beforeAll(() => { SEASON = recordSeason(4242); }, 300000);
+
+/**
+ * Replay the last night from the recorded final three, arranging it first.
+ *
+ * Reseeding the finale was tried and buys nothing: with three players left the
+ * competitions are stat-dominated, so the same person won all three parts under
+ * every seed and produced four identical cuts. Varying the SITUATION is both
+ * cheaper and a stronger test — rather than sampling the decision and hoping to
+ * catch it going each way, set up a promise worth keeping and a promise worth
+ * breaking, and check it goes the right way each time.
+ */
+function replayFinale(arrange) {
+  restore(SEASON.byHouseSize.get(3));
+  let cut = null;
+  withSeededRandom(7, () => {
+    arrange?.(gs.activePlayers || []);
+    const finale = runBBFinale();
+    cut = (finale?.acts || []).find(a => a.type === 'final-cut') || null;
+  });
+  return cut;
+}
+
+/**
+ * Make this the ONLY promise on the table, at exactly the sincerity we want.
+ *
+ * Clearing the others matters: the cut weighs the most sincere deal it finds,
+ * so a season that arrives at the final three with two organic final twos will
+ * quietly weigh one of those instead of the one the test just planted — and the
+ * test then proves nothing about the case it meant to set up.
+ */
+function soloPromise(a, b, sincerity) {
+  for (const deal of gs.sideDeals || []) {
+    if (deal.tier === 'final-two' || deal.tier === 'final-three') deal.active = false;
+  }
+  const deal = makeEndgameDeal(a, b, 'final-two', { week: { num: 99 } });
+  if (deal) { deal.sincerity = { [a]: sincerity, [b]: sincerity }; }
+  return deal;
+}
+
+/** Restore the recorded season at the moment the house was this big. */
+function atHouseOf(size, season = SEASON) {
+  const snap = season.byHouseSize.get(size);
+  if (!snap) throw new Error(`the recorded season never had ${size} houseguests `
+    + `(it had ${[...season.byHouseSize.keys()].sort((a, b) => b - a).join(', ')})`);
+  restore(snap);
+  return gs.activePlayers || [];
+}
+
+// Every test starts from the same globals main.js would have set at boot.
+beforeEach(() => {
+  Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, ordinal, getBond, getPerceivedBond, romanticCompat, bKey });
+});
 
 describe('houseguests have a plan', () => {
   it('gives everybody one, shaped by how well they plan', () => {
-    reset();
-    withSeededRandom(11, () => simulateBBEpisode());
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(17);
     for (const name of house) {
       expect(housePlan(name), `${name} has no plan at all`).toBeTruthy();
     }
@@ -66,12 +169,10 @@ describe('houseguests have a plan', () => {
     // hardcoded to 'reactive' for every single houseguest.
     const styles = new Set(house.map(n => housePlan(n).planStyle));
     expect(styles.size, 'every houseguest plans exactly the same way').toBeGreaterThan(1);
-  }, 240000);
+  });
 
   it('fills the fields it declares, once the end is in sight', () => {
-    reset();
-    playDownTo(8);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(8);
     expect(houseStage(house.length)).not.toBe('early');
     const filled = field => house.filter(n => {
       const v = housePlan(n)?.[field];
@@ -84,31 +185,29 @@ describe('houseguests have a plan', () => {
     expect(filled('goat'), 'nobody has worked out who they beat').toBeGreaterThan(0);
     expect(filled('preferredCore'), 'nobody is close to anybody').toBeGreaterThan(0);
     expect(filled('betrayalConditions'), 'nobody would ever turn on their own').toBeGreaterThan(0);
-  }, 240000);
+  });
 
   it('does not read a goat as somebody who has to like you', () => {
     // Total Drama needs a goat who keeps choosing you, so it requires a warm
     // relationship. The final Head of Household picks alone and the person
     // picked has no say, so hostility is no obstacle at all. Importing the
     // wrong show's constraint left the late house with no endgame reads.
-    reset();
-    playDownTo(6);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(6);
     const goats = house.map(n => housePlan(n)?.goat).filter(Boolean);
     expect(goats.length, 'the final six have no idea who they would rather sit beside')
       .toBeGreaterThan(0);
-  }, 240000);
+  });
 
   it('explains every revision it makes', () => {
-    reset();
-    const ep = playDownTo(12);
-    const changes = ep.planChanges || [];
-    expect(changes.length, 'nobody changed their mind all week').toBeGreaterThan(0);
-    for (const c of changes) {
-      expect(c.reason, `a plan moved with no reason given: ${JSON.stringify(c)}`).toBeTruthy();
-      expect(c.owner).toBeTruthy();
+    const withChanges = SEASON.episodes.filter(ep => (ep.planChanges || []).length);
+    expect(withChanges.length, 'nobody changed their mind all season').toBeGreaterThan(0);
+    for (const ep of withChanges) {
+      for (const c of ep.planChanges) {
+        expect(c.reason, `a plan moved with no reason given: ${JSON.stringify(c)}`).toBeTruthy();
+        expect(c.owner).toBeTruthy();
+      }
     }
-  }, 240000);
+  });
 });
 
 describe('a plan changes what actually happens', () => {
@@ -117,9 +216,7 @@ describe('a plan changes what actually happens', () => {
     // absorb the shots. An HOH who nominates their own shield has not
     // understood their own strategy — and before the plan was wired in,
     // nominations could not see one.
-    reset();
-    playDownTo(10);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(10);
     let checked = 0, violations = 0;
     for (const hoh of house) {
       const plan = housePlan(hoh);
@@ -132,16 +229,13 @@ describe('a plan changes what actually happens', () => {
       }
       if (up / 40 > 0.35) violations++;
     }
-    if (checked) {
-      expect(violations, 'Heads of Household keep nominating the person they are hiding behind')
-        .toBeLessThanOrEqual(Math.floor(checked * 0.34));
-    }
-  }, 240000);
+    expect(checked, 'nobody in the final ten is hiding behind anybody').toBeGreaterThan(0);
+    expect(violations, 'Heads of Household keep nominating the person they are hiding behind')
+      .toBeLessThanOrEqual(Math.floor(checked * 0.34));
+  });
 
   it('keeps a final two off the block', () => {
-    reset();
-    playDownTo(9);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(9);
     const hoh = house[0];
     const partner = house.find(n => n !== hoh);
     // A sincere, explicit promise between these two.
@@ -154,26 +248,22 @@ describe('a plan changes what actually happens', () => {
     }
     expect(up / 60, 'the person they promised the end to keeps going up anyway')
       .toBeLessThan(0.3);
-  }, 240000);
+  });
 });
 
 describe('promises about the end', () => {
   it('does not let the house saturate with them', () => {
     // Twenty-eight live final twos between ten houseguests makes the strongest
     // promise in the game worth nothing.
-    reset();
-    playDownTo(10);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(10);
     for (const name of house) {
       expect(endgameDealsOf(name).length, `${name} is holding too many endgame deals`)
         .toBeLessThanOrEqual(3);
     }
-  }, 240000);
+  });
 
   it('records the two sides separately, because they rarely agree', () => {
-    reset();
-    playDownTo(11);
-    const house = gs.activePlayers || [];
+    const house = atHouseOf(11);
     const seen = [];
     for (const a of house) for (const d of endgameDealsOf(a)) if (!seen.includes(d)) seen.push(d);
     for (const deal of seen) {
@@ -183,64 +273,78 @@ describe('promises about the end', () => {
         expect(s).toBeLessThanOrEqual(1);
       }
     }
-  }, 240000);
+  });
 
   it('can be broken by a vote, not only at the very end', () => {
     // Only the final cut could break one, so a measured season made thirty-odd
     // final twos and broke exactly zero of them before the final three.
-    reset();
-    let broke = 0;
-    withSeededRandom(63, () => {
-      let guard = 0;
-      while (!houseIsAtFinale() && guard++ < 30) {
-        broke += (simulateBBEpisode().dealBreaks || []).length;
-      }
-    });
+    const broke = SEASON.episodes.reduce((n, ep) => n + (ep.dealBreaks || []).length, 0);
     expect(broke, 'nobody went back on the end all season').toBeGreaterThan(0);
-  }, 240000);
+  });
 
   it('tells the user when somebody does', () => {
-    reset();
-    let ep = null;
-    withSeededRandom(63, () => {
-      let guard = 0;
-      while (!houseIsAtFinale() && guard++ < 30) {
-        ep = simulateBBEpisode();
-        if ((ep.dealBreaks || []).length) break;
-      }
-    });
-    if (!(ep.dealBreaks || []).length) return;
+    const ep = SEASON.episodes.find(e => (e.dealBreaks || []).length);
+    expect(ep, 'no promise was broken in the recorded season').toBeTruthy();
+    // The transcript reads live state for some sections, so put the world back
+    // the way it was when this episode happened.
+    restore(SEASON.byHouseSize.get((ep.houseAtStart || []).length - 1) || SEASON.byHouseSize.get(3));
     const text = generateBBSummaryText(ep);
     expect(text, 'a promise was broken and the transcript never mentions it')
       .toContain('PROMISES BROKEN');
     expect(text).toContain(ep.dealBreaks[0].breaker);
-  }, 240000);
+  });
 });
 
 describe('the final cut', () => {
-  it('is a decision about a promise, not only about a jury projection', () => {
-    // This is the one moment in Big Brother where a final two is publicly
-    // honoured or broken, and it used to be resolved on projected margin alone
-    // — so nobody ever kept their word, because nobody was ever asked to.
-    let honoured = 0, betrayed = 0, hadPromise = 0;
-    // reset() is deterministic, so looping it replays one identical season.
-    // The seed has to actually drive the randomness or this samples nothing.
-    for (const seed of [7, 41, 88]) {
-      withSeededRandom(seed, () => {
-        reset();
-        let guard = 0;
-        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
-        const finale = runBBFinale();
-        const cut = (finale?.acts || []).find(a => a.type === 'final-cut');
-        if (!cut) return;
-        if (cut.hadPromise) hadPromise++;
-        if (cut.honoured) honoured++;
-        if (cut.betrayal) betrayed++;
-      });
-    }
-    expect(hadPromise, 'six seasons and nobody reached the final three with a deal')
-      .toBeGreaterThan(0);
-    expect(honoured + betrayed, 'a promise existed at the final three and was neither kept nor broken')
-      .toBeGreaterThan(0);
-  }, 300000);   // three full seasons, played to the finale
+  it('reaches the last night with something actually promised', () => {
+    const cut = replayFinale();
+    expect(cut, 'the season never reached a final cut').toBeTruthy();
+    expect(cut.finalHoh).toBeTruthy();
+    // The projection is still computed — it is one of the two readings, not
+    // the only one any more.
+    expect(cut.projected, 'the jury projection was never taken').toBeTruthy();
+  });
+
+  it('keeps a promise it means, even against the projection', () => {
+    // The one moment in Big Brother where a final two is publicly honoured or
+    // broken. It used to be resolved on projected jury margin alone, so nobody
+    // ever kept their word because nobody was ever asked to.
+    const base = replayFinale();
+    const cut = replayFinale(house => {
+      const hoh = base.finalHoh;
+      // Deliberately promise the HARDER opponent — the one the projection says
+      // to cut — so keeping it costs something.
+      const harder = house.find(n => n !== hoh && n !== base.projected);
+      if (harder) soloPromise(hoh, harder, 1);
+    });
+    expect(cut.honoured, 'a fully sincere final two was not honoured').toBeTruthy();
+    expect(cut.kept, 'they honoured the deal but sat beside somebody else')
+      .toBe(cut.honoured.partner);
+  });
+
+  it('breaks one it does not, and the jury is told', () => {
+    const base = replayFinale();
+    let partner = null;
+    const cut = replayFinale(house => {
+      const hoh = base.finalHoh;
+      partner = house.find(n => n !== hoh && n !== base.projected);
+      if (!partner) return;
+      soloPromise(hoh, partner, 0);
+      // Somebody who would not keep it for its own sake. Loyalty is the floor
+      // in honoursDeal(), so a loyal player keeps even an insincere deal when
+      // keeping it is free — which is correct, and not what we are testing.
+      const p = players.find(x => x.name === hoh);
+      if (p?.stats) p.stats.loyalty = 0;
+    });
+    if (!partner) return;
+    expect(cut.betrayal, 'an insincere final two survived the final cut').toBeTruthy();
+    expect(cut.betrayal.partner).toBe(partner);
+    expect(cut.kept, 'they broke the deal and still sat beside the same person')
+      .not.toBe(partner);
+    // A broken final two is the most punished move in this game; the jury has
+    // to know it happened.
+    const broken = (gs.sideDeals || []).find(d => d.broken && d.brokenBy === cut.finalHoh);
+    expect(broken, 'the break was never recorded on the deal').toBeTruthy();
+    expect(broken.exposedTo, 'the jury was never told').toContain(partner);
+  });
 });

@@ -13,6 +13,13 @@ import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
 } from '../romance.js';
+import { checkPerceivedBondTriggers, recoverBonds } from '../bonds.js';
+import { decayAllianceTrust } from '../alliances.js';
+import { tickIntentions } from '../intentions.js';
+import { applySocialStatusEffects } from '../relationship-events.js';
+import { updateSocialStatus } from '../social-status.js';
+import { updateEditLayer } from '../edit-layer.js';
+import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldUseVeto,
@@ -120,13 +127,62 @@ function runHouseRomance(week) {
 
 
 /**
+ * The end-of-episode maintenance every Total Drama episode runs, and no Big
+ * Brother week ever did.
+ *
+ * Eight shared systems, all skipped: perceived bonds never diverged on their
+ * own, alliance trust never decayed, intentions never aged out, social roles
+ * were never computed, the edit never updated, learned behaviour never
+ * updated — and, most visibly, bonds never RECOVERED toward neutral. That
+ * last one is why every measured season ended with somebody at a perfect 10:
+ * relationships in a house could only ever ratchet upward.
+ *
+ * updatePlayerStates is deliberately not here. It lives in js/episode.js, and
+ * a Big Brother week does not run the Total Drama engine.
+ *
+ * Each call is guarded on its own so one throwing system cannot take the rest
+ * of the maintenance — or the week — down with it. That is exactly how the
+ * romance pipeline stayed silently broken for as long as it did.
+ */
+function runHouseMaintenance(week) {
+  const ep = {
+    num: week.num,
+    eliminated: week.evicted || null,
+    votingLog: (week.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed })),
+    votes: { ...(week.votes || {}) },
+    alliances: [],
+    campEvents: { merge: { pre: [], post: [] } },
+    knowledgeEvents: [],
+  };
+  const steps = [
+    ['perceived bonds', () => checkPerceivedBondTriggers(ep)],
+    ['bond recovery', () => recoverBonds(ep)],
+    ['alliance trust', () => decayAllianceTrust(week.num)],
+    ['intentions', () => tickIntentions(ep)],
+    ['status effects', () => applySocialStatusEffects(ep)],
+    ['social status', () => updateSocialStatus(ep)],
+    ['edit layer', () => updateEditLayer(ep)],
+    ['adaptation', () => updateAdaptationFromEpisode(ep)],
+  ];
+  week.maintenanceErrors = [];
+  for (const [label, run] of steps) {
+    try { run(); } catch (e) { week.maintenanceErrors.push(`${label}: ${e && e.message}`); }
+  }
+  return ep.campEvents.merge.pre.map(e => ({
+    text: e.text, players: (e.players || []).filter(Boolean),
+    badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
+    eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
+  })).filter(b => b.text);
+}
+
+/**
  * Hang the romance beats on the last stretch of house life.
  *
  * Both exits from a week run this — the ordinary one and the one where
  * somebody walked out — so a departure week still has a love life.
  */
 function _attachRomance(week) {
-  const beats = runHouseRomance(week);
+  const beats = [...runHouseRomance(week), ...runHouseMaintenance(week)];
   if (!beats.length) return;
   const houseActs = (week.acts || []).filter(a => a.type === 'house');
   const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];

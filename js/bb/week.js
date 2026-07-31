@@ -5,10 +5,14 @@
 // top of acts that already existed. The campaign carries a VARIABLE number of
 // beats, the way a challenge fires a variable number of social events between
 // its phases.
-import { gs, players } from '../core.js';
+import { gs, players, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
+import {
+  updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
+  updateShowmancePhases, checkShowmanceBreakup,
+} from '../romance.js';
 import {
   chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldUseVeto,
@@ -69,6 +73,64 @@ function chooseHaveNots(hoh, house, rng, getRead, wanted) {
     .sort((a, b) => a.score - b.score)
     .slice(0, count)
     .map(entry => entry.name);
+}
+
+/**
+ * Run the shared romance pipeline over the house.
+ *
+ * The house created sparks and nothing ever promoted one: eight seasons made
+ * a hundred sparks and zero showmances, which also left the kiss trap — a
+ * scheme that needs a showmance to break — permanently unreachable.
+ *
+ * Total Drama owns the whole pipeline already (spark, intensity, first move,
+ * formation, phases, breakup) and none of it is tribe-specific; it keys camp
+ * events off `merge` whenever a season is merged, which a house always is. So
+ * the house runs the real thing rather than half of it.
+ *
+ * This lives in the WEEK rather than the run adapter on purpose: a headless
+ * season and a played one must produce the same house, and behaviour that
+ * depends on which entry point you used is the bug this format keeps finding.
+ *
+ * Returns the beats it produced so they join the week rather than being left
+ * in a camp-events structure a house never renders.
+ */
+function runHouseRomance(week) {
+  if (seasonConfig.romance === 'disabled') return [];
+  const ep = { num: week.num, campEvents: { merge: { pre: [], post: [] } },
+               eliminated: week.evicted || null, votingLog: week.ballots || [] };
+  // The pipeline is Total Drama code and writes gs.popularity directly, which
+  // walks straight past the house's own switch. Snapshot and restore rather
+  // than edit a module the other simulator depends on.
+  const popOff = seasonConfig.popularityEnabled === false;
+  const popBefore = popOff ? { ...(gs.popularity || {}) } : null;
+  try {
+    updateRomanticSparks(ep);
+    checkFirstMove(ep);
+    checkShowmanceFormation(ep);
+    updateShowmancePhases(ep);
+    checkShowmanceBreakup(ep);
+  } catch { /* romance is texture — it never takes a week down with it */ }
+  if (popOff) gs.popularity = popBefore;
+  return ep.campEvents.merge.pre.map(e => ({
+    text: e.text, players: (e.players || []).filter(Boolean),
+    badgeText: e.badgeText || 'SHOWMANCE', badgeClass: e.badgeClass || 'gold',
+    eventId: `romance-${e.type || 'beat'}`, category: 'social', location: 'bedroom',
+  })).filter(b => b.text);
+}
+
+
+/**
+ * Hang the romance beats on the last stretch of house life.
+ *
+ * Both exits from a week run this — the ordinary one and the one where
+ * somebody walked out — so a departure week still has a love life.
+ */
+function _attachRomance(week) {
+  const beats = runHouseRomance(week);
+  if (!beats.length) return;
+  const houseActs = (week.acts || []).filter(a => a.type === 'house');
+  const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];
+  if (host) (host.socialBeats ||= []).push(...beats);
 }
 
 export function simulateBBWeek(options = {}) {
@@ -298,6 +360,7 @@ export function simulateBBWeek(options = {}) {
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = settleBBAllianceWeek(week);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
+    _attachRomance(week);
     gs.bb.outgoingHoh = hoh;
     gs.bb.weeks.push(week);
     gs.episode = (gs.episode || 0) + 1;
@@ -356,6 +419,7 @@ export function simulateBBWeek(options = {}) {
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   week.allianceChanges.betrayals = settleBBAllianceWeek(week);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
+  _attachRomance(week);
   gs.bb.outgoingHoh = hoh;
   gs.bb.weeks.push(week);
   gs.episode = (gs.episode || 0) + 1;

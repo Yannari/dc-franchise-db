@@ -36,6 +36,12 @@ export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brot
 export function prepareHouse() {
   gs.isMerged = true;
   gs.mergeName = gs.mergeName || 'the house';
+  // A house has no tribes — but the shared Total Drama systems it borrows read
+  // gs.tribes as an array, and an absent one threw straight through the middle
+  // of the romance pipeline (`gs.tribes.some is not a function`), which is why
+  // eight seasons produced a hundred sparks and not one showmance. An empty
+  // array says the true thing and keeps every shared reader working.
+  if (!Array.isArray(gs.tribes)) gs.tribes = [];
   gs.bb ||= { outgoingHoh: null, weeks: [], stats: {} };
   gs.bb.outgoingHoh ??= null;
   gs.bb.weeks ||= [];

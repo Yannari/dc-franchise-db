@@ -11,6 +11,10 @@ const _HUB_SETTING_META = {
   carnival: { label: 'Carnival of Chaos', icon: '🎪', accent: '#ff5a7a' },
   'film-lot': { label: 'Film Lot', icon: '🎬', accent: '#cdd2df' },
   'world-tour': { label: 'World Tour', icon: '✈️', accent: '#57a6e8' },
+  'bb-house': { label: 'The House', icon: '🏠', accent: '#c9343c' },
+  'bb-compound': { label: 'The Compound', icon: '🏭', accent: '#8b949e' },
+  'bb-resort': { label: 'The Resort', icon: '🌴', accent: '#3fb950' },
+  'bb-manor': { label: 'The Manor', icon: '🕯️', accent: '#d29922' },
 };
 
 function _hubEsc(value) {
@@ -139,9 +143,14 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const twistLabel = nextScheduled
     ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
     : 'Standard episode — no scheduled twist';
-  const groups = initialized && displayState.phase === 'pre-merge' && (displayState.tribes || []).length
-    ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
-    : initialized ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }] : [];
+  const _hubHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
+  const groups = !initialized ? []
+    // One house, from the first day to the last. There is nothing to split.
+    : _hubHouse
+      ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'The House', color: setting.accent, members: active }]
+      : displayState.phase === 'pre-merge' && (displayState.tribes || []).length
+        ? displayState.tribes.map(t => ({ name: t.name, color: typeof tribeColor === 'function' ? tribeColor(t.name) : setting.accent, members: (t.members || []).filter(n => active.includes(n)) })).filter(t => t.members.length)
+        : [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }];
   const storylines = [];
   if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
   if (latest?.isMerge) storylines.push('The merge has redrawn every voting relationship.');
@@ -258,7 +267,7 @@ export function renderSeasonHub() {
     <button type="button" onclick="exportSeason()">Export</button>
   </nav>`;
   host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
-    <header class="hub-headline"><div><div class="hub-kicker">${_bbSeason ? '🏠 The House' : `${model.setting.icon} ${_hubEsc(model.setting.label)}`} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
+    <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
     ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
@@ -398,7 +407,10 @@ export function renderGameState() {
     return;
   }
 
-  if (d.phase === 'pre-merge' && d.tribes.length) {
+  // Same rule as the hub: a house never splits, whatever the cast was built
+  // with or what phase the state object still says.
+  const _gsHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
+  if (!_gsHouse && d.phase === 'pre-merge' && d.tribes.length) {
     html += `<div style="margin-top:8px">`;
     d.tribes.forEach(t => {
       const tc = tribeColor(t.name);

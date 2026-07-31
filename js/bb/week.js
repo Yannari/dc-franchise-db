@@ -187,6 +187,74 @@ function runHouseMaintenance(week) {
  * Both exits from a week run this — the ordinary one and the one where
  * somebody walked out — so a departure week still has a love life.
  */
+/**
+ * The end of an alliance, or the survival of one, said out loud.
+ *
+ * Betrayals, repair attempts and collapses all happened silently — they moved
+ * bonds, memories and trust and never once appeared on screen, so a viewer
+ * watched an alliance vanish between weeks with nothing to explain it. Every
+ * transition in the lifecycle now has a beat, because a consequence nobody can
+ * see is indistinguishable from no consequence at all.
+ */
+function _attachAllianceFallout(week, house) {
+  const beats = [];
+  const inHouse = n => house.includes(n) || (gs.activePlayers || []).includes(n);
+
+  for (const incident of week.allianceChanges?.betrayals || []) {
+    const { player, victim, alliance, repair } = incident;
+    beats.push({
+      text: `<strong>${player}</strong> votes out <strong>${victim}</strong>, and they were `
+        + `supposed to be in <strong>${alliance}</strong> together. The room works out who did it `
+        + `before the night is over.`,
+      players: [player, victim].filter(Boolean),
+      badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
+      eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
+    });
+
+    if (!repair) continue;
+    const how = repair.approach === 'apology' ? `${player} apologises, and means it as far as anyone can tell`
+      : repair.approach === 'strategic-explanation' ? `${player} explains the numbers, calmly, like it was arithmetic`
+      : repair.approach === 'refusal' ? `${player} refuses to explain anything at all`
+      : `${player} denies it, to people who watched it happen`;
+    const outcome = repair.outcome === 'forgiven'
+      ? { text: `${how}. <strong>${alliance}</strong> takes ${player} back, and pretends the week did not happen.`,
+          badgeText: 'FORGIVEN', badgeClass: 'green' }
+      : repair.outcome === 'working-truce'
+        ? { text: `${how}. Some of <strong>${alliance}</strong> buy it and some do not, so it carries on as a working arrangement rather than a bond.`,
+            badgeText: 'WORKING TRUCE', badgeClass: 'grey' }
+        : { text: `${how}. <strong>${alliance}</strong> does not buy a word of it, and stops being one thing from here.`,
+            badgeText: repair.outcome === 'fracture' ? 'FRACTURED' : 'REJECTED', badgeClass: 'red' };
+    beats.push({
+      ...outcome, players: [player].filter(inHouse),
+      eventId: 'alliance-repair', category: 'deals', location: 'bedroom',
+    });
+  }
+
+  // Anything that died this week, for whatever reason.
+  for (const alliance of gs.namedAlliances || []) {
+    if (alliance.dissolved !== week.num) continue;
+    if (gs.bb.mourned?.includes(alliance.id)) continue;
+    (gs.bb.mourned ||= []).push(alliance.id);
+    const left = (alliance.members || []).filter(inHouse);
+    const collapsed = alliance.dissolutionReason === 'trust-collapsed';
+    beats.push({
+      text: collapsed
+        ? `<strong>${alliance.name}</strong> stops being a thing anybody says out loud. Nobody dissolves it; `
+          + `it simply stops being true, which is how most of them end.`
+        : `<strong>${alliance.name}</strong> is down to ${left.length === 1 ? `${left[0]}, alone` : 'nobody'}. `
+          + `Whatever it was worth, it is not worth it now.`,
+      players: left.slice(0, 4),
+      badgeText: collapsed ? 'IT STOPS BEING TRUE' : 'OUT OF NUMBERS', badgeClass: 'red',
+      eventId: 'alliance-collapsed', category: 'deals', location: 'living-room',
+    });
+  }
+
+  if (!beats.length) return;
+  const host = (week.acts || []).find(a => a.type === 'eviction')
+    || [...(week.acts || [])].reverse().find(a => a.type === 'house');
+  if (host) (host.socialBeats ||= []).push(...beats);
+}
+
 /** What the house looks like right now: enough for the panels, nothing more. */
 function _snapshotHouse() {
   return {
@@ -301,6 +369,22 @@ export function simulateBBWeek(options = {}) {
       const named = members.length === 2
         ? `${members[0]} and ${members[1]}`
         : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
+
+      // An alliance formed INSIDE another one is a different event, and the
+      // more dangerous of the two: the people who made it are still sitting in
+      // the room they are quietly playing against.
+      if (alliance.parent) {
+        return {
+          text: `${named} make each other a promise they do not make to `
+            + `<strong>${alliance.parentName}</strong>. They go back to the group afterwards `
+            + `and sit in it exactly as they did before, which is the point.`,
+          players: members.slice(0, 4),
+          badgeText: 'AN ALLIANCE INSIDE AN ALLIANCE', badgeClass: 'gold',
+          eventId: 'alliance-inner-circle', category: 'deals', location: 'pantry',
+          newAlliance: true,
+        };
+      }
+
       return {
         text: `It gets said out loud for the first time: ${named} are working together. `
           + `Nobody writes anything down — there is nowhere in this house to hide a list — `
@@ -512,6 +596,7 @@ export function simulateBBWeek(options = {}) {
     gs.activePlayers = house.filter(name => name !== departure.name);
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
+  _attachAllianceFallout(week, house);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week);
     gs.bb.outgoingHoh = hoh;
@@ -583,6 +668,7 @@ export function simulateBBWeek(options = {}) {
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
+  _attachAllianceFallout(week, house);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week);
   gs.bb.outgoingHoh = hoh;

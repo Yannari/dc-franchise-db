@@ -1,7 +1,7 @@
 // Big Brother adapters over the simulator's shared strategic substrate.
 // This module owns format context and evidence translation, never duplicate state.
 import { gs, players, seasonConfig } from '../core.js';
-import { resolveAllianceRepair } from '../alliances.js';
+import { resolveAllianceRepair, nameNewAlliance } from '../alliances.js';
 import { addBond, addPerceivedBond, getBond, getPerceivedBond } from '../bonds.js';
 import { pStats, romanticCompat } from '../players.js';
 import { getRelationshipDimensions } from '../relationships.js';
@@ -157,11 +157,35 @@ function sameMembers(alliance, members) {
   return a.length === b.length && a.every((name, index) => name === b[index]);
 }
 
-function nextAllianceName() {
+/**
+ * Alliances get names, not numbers.
+ *
+ * This produced "BB Alliance 1", which is what a database calls a row and not
+ * what a house calls itself — every screen in the visual player was showing
+ * it. Total Drama already owns a namer with pools by size, and the format this
+ * is imitating is one where the names are half the point: Chilltown, The
+ * Brigade, The Cookout.
+ */
+function nextAllianceName(size = 2, seedText = '') {
   const used = new Set(allianceStore().map(alliance => alliance.name));
+  // nameNewAlliance picks with Math.random, which breaks a seeded season. The
+  // pick is made deterministic from the founding members instead, so the same
+  // seed names the same alliance every time.
+  let hash = 0;
+  const key = `${seedText}|${size}|${used.size}`;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  const real = Math.random;
+  try {
+    for (let attempt = 0; attempt < 40; attempt++) {
+      let state = (hash + attempt * 2654435761) >>> 0;
+      Math.random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296; };
+      const name = nameNewAlliance(size);
+      if (name && !used.has(name)) return name;
+    }
+  } catch { /* fall through to the numbered fallback */ } finally { Math.random = real; }
   let number = 1;
-  while (used.has(`BB Alliance ${number}`)) number++;
-  return `BB Alliance ${number}`;
+  while (used.has(`The Unnamed ${number}`)) number++;
+  return `The Unnamed ${number}`;
 }
 
 // ── Alliance formation ────────────────────────────────────────────────
@@ -442,7 +466,7 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
     const [a, b] = option.members;
     const sub = {
       id: `bb_inner_${weekNum}_${a}_${b}`,
-      name: nextAllianceName(), members: [a, b], formed: weekNum, active: true,
+      name: nextAllianceName(2, `${a}|${b}|${weekNum}`), members: [a, b], formed: weekNum, active: true,
       permanence: 'normal', trust: pairTrust(a, b),
       formationEvidence: `a final two inside ${option.parent.name}`,
       parent: option.parent.id, parentName: option.parent.name,
@@ -466,7 +490,7 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   const pairCount = Math.max(1, members.length * (members.length - 1) / 2);
   const alliance = {
     id: `bb_alliance_${weekNum}_${members.join('_')}`,
-    name: nextAllianceName(), members, formed: weekNum, active: true,
+    name: nextAllianceName(members.length, `${members.join('|')}|${weekNum}`), members, formed: weekNum, active: true,
     permanence: 'normal',
     trust: members.reduce((sum, a, i) =>
       sum + members.slice(i + 1).reduce((n, b) => n + pairTrust(a, b), 0), 0) / pairCount,

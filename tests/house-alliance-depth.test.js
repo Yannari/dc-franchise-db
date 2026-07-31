@@ -93,3 +93,49 @@ describe('alliance depth in the house', () => {
     expect(Object.keys(stat.approaches).length).toBeGreaterThan(2);
   });
 });
+
+// A consequence nobody can see is indistinguishable from no consequence.
+// Betrayals, repair attempts and collapses all moved bonds, memories and trust
+// and never appeared on screen once, so an alliance could vanish between weeks
+// with nothing anywhere explaining it.
+describe('every alliance transition is visible', () => {
+  it('puts a beat on screen for each one', () => {
+    const seen = new Set();
+    for (let s = 0; s < 3 && seen.size < 5; s++) {
+      seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, ordinal, getBond, getPerceivedBond, romanticCompat });
+      Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 9, twistSchedule: [],
+        bbSafetyMode: 'off', bbHaveNots: 'twist', bbDepartures: 'off', romance: 'enabled', setting: 'bb-house' });
+      gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+      gs.episodeHistory = []; gs.showmances = []; gs.romanticSparks = []; gs.sideDeals = [];
+      gs.allianceRepairHistory = [];
+      let g = 0;
+      while (!houseIsAtFinale() && g++ < 30) { if (!simulateBBEpisode()) break; }
+      for (const w of gs.bb.weeks || []) {
+        for (const act of w.acts || []) {
+          for (const b of act.socialBeats || []) {
+            if (String(b.eventId || '').startsWith('alliance-')) seen.add(b.eventId);
+          }
+        }
+      }
+    }
+    for (const id of ['alliance-formed', 'alliance-recruited', 'alliance-betrayal',
+                      'alliance-repair', 'alliance-collapsed']) {
+      expect(seen, `${id} never reaches the screen`).toContain(id);
+    }
+  });
+
+  it('gives an alliance a name, not a row number', () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, ordinal, getBond, getPerceivedBond, romanticCompat });
+    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 9, twistSchedule: [],
+      bbSafetyMode: 'off', bbHaveNots: 'twist', bbDepartures: 'off', romance: 'enabled', setting: 'bb-house' });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.episodeHistory = []; gs.showmances = []; gs.romanticSparks = []; gs.sideDeals = [];
+    let g = 0;
+    while (!houseIsAtFinale() && g++ < 12) { if (!simulateBBEpisode()) break; }
+    const names = (gs.namedAlliances || []).map(a => a.name);
+    expect(names.length).toBeGreaterThan(0);
+    for (const n of names) expect(n, 'still numbering alliances').not.toMatch(/^BB Alliance \d+$/);
+  });
+});

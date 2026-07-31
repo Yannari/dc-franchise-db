@@ -866,6 +866,10 @@ export function saveConfig() {
     format:      seasonFormat(g('cfg-format')?.value),
     host:        g('cfg-host')?.value || 'Chris',
     setting:     g('cfg-setting')?.value || 'hosted-camp',
+    // House options. Read only by the Big Brother engine; harmless defaults on
+    // a Total Drama season, which never looks at them.
+    bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
+    bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
         const en = g('adv-idol-enabled');
@@ -986,7 +990,14 @@ export function renderConfig() {
   set('cfg-format', seasonFormat(seasonConfig));
   updateFormatNote();
   set('cfg-host', seasonConfig.host || 'Chris');
+  // The venue list belongs to the show, so it is rebuilt before the value is
+  // written back — otherwise a house season is handed a camp.
+  window.renderSettingOptions?.();
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
+  set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
+  set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
+  // Show only the controls this show's engine actually reads.
+  window.applyFormatScope?.();
   // Aftermath
   set('cfg-aftermath', seasonConfig.aftermath || 'disabled');
   set('cfg-fan-vote-frequency', seasonConfig.fanVoteFrequency || 'disabled');

@@ -813,6 +813,7 @@ export function qsOnFormatChange() {
   // Switching show changes what can be designed, not just the note under the
   // dropdown: the twist catalogue and the venue list both belong to a format.
   renderSettingOptions();
+  applyFormatScope();
   window.renderTwistCatalog?.();
   window.renderFormatToggle?.();
 }
@@ -839,6 +840,102 @@ export function renderFormatToggle() {
       <span class="fd-show-sub">${s.sub}</span>
       ${formatIsRunnable(s.id) ? '' : '<span class="fd-show-warn">not wired</span>'}
     </button>`).join('');
+}
+
+/**
+ * Which controls belong to which show.
+ *
+ * The rule is evidence, not taste: a control is shown only if that format's
+ * engine reads the value. The Big Brother week reads exactly six keys —
+ * host, setting, romance, finaleSize, jurySize, twistSchedule — plus the two
+ * house options below. Everything else on the setup page is Total Drama
+ * machinery that a house silently ignores: there are no tribes to swap, no
+ * idols to hide, no merge to reach, no Shot in the Dark to play, and the tie
+ * is broken by the Head of Household because that is what the format is.
+ *
+ * Keys are accordion names, element ids or section-label ids; the value is the
+ * list of formats that use them. Anything not listed is shown to everybody.
+ */
+const CONFIG_SCOPE = {
+  accordions: {
+    tiebreaker: ['total-drama'],   // a house tie is broken by the HOH, always
+    ri:         ['total-drama'],   // the house's version is Battle Back (backlog)
+    sid:        ['total-drama'],
+    blackvote:  ['total-drama'],
+    aftermathshow: ['total-drama'], // the house has the eviction interview
+    journey:    ['total-drama'],
+    exile:      ['total-drama'],
+    fan:        ['total-drama'],
+    idol:       ['total-drama'],
+    advantages: ['total-drama'],
+    qem:        ['total-drama'],
+    popularity: ['total-drama'],
+    survival:   ['total-drama'],
+    mole:       ['total-drama'],
+    romance:    ['total-drama', 'big-brother'],
+  },
+  fields: {
+    'cfg-days':              ['total-drama'],  // a house runs to a final three, not a day count
+    'cfg-teams':             ['total-drama'],
+    'cfg-merge':             ['total-drama'],
+    'cfg-finale-format':     ['total-drama'],  // the house finale is the three-part HOH
+    'cfg-finale-assistants': ['total-drama'],
+    'cfg-bb-interview':      ['big-brother'],
+    'cfg-bb-havenots':       ['big-brother'],
+  },
+  sections: {
+    'sec-season-options':     ['total-drama'],
+    'sec-settings-mechanics': ['total-drama'],
+    'sec-bb-options':         ['big-brother'],
+    'sec-bb-divider':         ['big-brother'],
+  },
+};
+
+/** The container a control lives in, so hiding it hides its label too. */
+function _scopeHost(el) {
+  return el.closest('.form-group, .slider-control, .accordion') || el;
+}
+
+/**
+ * Show only the controls the current show uses.
+ *
+ * Hiding rather than disabling: a disabled Shot in the Dark still tells the
+ * reader a house might have one. saveConfig() reads the DOM, so hidden inputs
+ * keep their values and switching back restores the season unchanged.
+ */
+export function applyFormatScope() {
+  if (typeof document === 'undefined') return;
+  const fmt = seasonFormat(seasonConfig);
+  const show = (el, on) => { if (el) el.style.display = on ? '' : 'none'; };
+
+  for (const [key, formats] of Object.entries(CONFIG_SCOPE.accordions)) {
+    const body = _g(`acc-body-${key}`);
+    show(body?.closest('.accordion'), formats.includes(fmt));
+  }
+  for (const [id, formats] of Object.entries(CONFIG_SCOPE.fields)) {
+    const el = _g(id);
+    show(el && _scopeHost(el), formats.includes(fmt));
+  }
+  for (const [id, formats] of Object.entries(CONFIG_SCOPE.sections)) {
+    show(_g(id), formats.includes(fmt));
+  }
+
+  // FORMATS & TWISTS survives in a house only because Romance does; if that
+  // ever stops being true the header should go with it rather than sit above
+  // an empty stretch of page.
+  const twistsUsed = Object.entries(CONFIG_SCOPE.accordions)
+    .some(([, formats]) => formats.includes(fmt) && formats.length > 1);
+  show(_g('sec-formats-twists'), twistsUsed);
+}
+
+/** The controls a given show uses — exported so the scoping can be tested. */
+export function configScopeFor(fmt) {
+  const inFormat = ([, formats]) => formats.includes(fmt);
+  return {
+    accordions: Object.entries(CONFIG_SCOPE.accordions).filter(inFormat).map(([k]) => k),
+    fields: Object.entries(CONFIG_SCOPE.fields).filter(inFormat).map(([k]) => k),
+    sections: Object.entries(CONFIG_SCOPE.sections).filter(inFormat).map(([k]) => k),
+  };
 }
 
 /**

@@ -24,7 +24,7 @@ export const SETTING_LIST = ['hosted-camp', 'survival-island', 'carnival', 'film
  */
 export const SETTINGS_BY_FORMAT = {
   'total-drama': SETTING_LIST,
-  'big-brother': ['bb-house'],
+  'big-brother': ['bb-house', 'bb-compound', 'bb-resort', 'bb-manor'],
 };
 
 export function settingsForFormat(fmt) {
@@ -35,6 +35,20 @@ export function settingsForFormat(fmt) {
 export function defaultSettingFor(fmt) {
   return settingsForFormat(fmt)[0];
 }
+
+/**
+ * The venue a house season is actually in.
+ *
+ * A season carried over from Total Drama can still be pointing at a summer
+ * camp, and house events must never describe one. Resolves to a real house
+ * whatever the config says.
+ */
+export function houseSetting() {
+  const current = seasonConfig?.setting;
+  return settingsForFormat('big-brother').includes(current) ? current : 'bb-house';
+}
+export function houseProfile() { return SEASON_SETTINGS[houseSetting()]; }
+export function houseVocab(token) { return houseProfile().vocab[token] || token; }
 
 export const SEASON_SETTINGS = {
   /**
@@ -72,6 +86,116 @@ export const SEASON_SETTINGS = {
       `Somebody has been in the diary room a long time. {a} and {b} both notice, and both pretend not to.`,
       `The backyard opens after two days shut. {a} and {b} take the first lap together, out of earshot.`,
       `The HOH suite door closes upstairs. Downstairs, {a} and {b} do the arithmetic on who went in with {po}.`,
+    ],
+  },
+
+  /**
+   * The compound — concrete, industrial, deliberately uncomfortable.
+   *
+   * The house as a pressure cooker rather than a home. Nothing here is soft,
+   * the lights are too bright, and there is nowhere to have a private
+   * conversation that does not look like a private conversation.
+   */
+  'bb-compound': {
+    label: 'The Compound', emoji: '🏭',
+    blurb: 'Concrete, steel bunks and strip lighting. Built to be endured rather than lived in, with nowhere to hide a conversation.',
+    vocab: { place: 'the compound', shelter: 'the bunk room', gather: 'the mess hall', water: 'the wash block',
+             sleep: 'the bunks', downtime: 'the yard', foodSource: 'the ration store' },
+    arrival: { vehicle: 'steel door', verb: 'is buzzed through the steel door', point: 'the mess hall',
+               onPoint: 'in the mess hall', headline: 'No comforts. No corners. No way out but a vote.',
+               groupCall: 'Everybody to the mess hall!' },
+    reskin: {
+      meal: [ `{a} and {b} eat rations off metal trays and rank them, which takes under a minute.`,
+              `{a} gives {b} half a portion without making a thing of it. In here that is enormous.`,
+              `The ration store opens for four minutes. {a} grabs enough for {b} too.` ],
+      improve: [ `{p} scrubs {shelter} because the alternative is sitting still with {po}wn thoughts.`,
+                 `{p} rigs a curtain across a corner of {shelter}. It is the only privacy in the building and everybody wants it.`,
+                 `{p} fixes the flickering strip light over {gather}. Nobody asked; everybody notices.` ],
+      wildlife: [ `Something is nesting in the vent above {sleep} and the whole bunk room has opinions about it.`,
+                  `A bird gets into {gather} and the room is briefly, genuinely delighted.` ],
+      weather: [ `The heating fails overnight. {a} and {b} end up back to back in {sleep} and neither mentions it again.`,
+                 `Rain on a steel roof is unbelievably loud. Nobody sleeps, and by 3 a.m. everybody is talking.` ],
+    },
+    atmosphere: [
+      `A klaxon calls a lockdown and the compound files into {shelter} without being told twice.`,
+      `The strip lights come up at six. There is no arguing with them. {a} is already awake and watching {b} pretend to be asleep.`,
+      `{a} and {b} walk laps of {downtime} because it is the only place a conversation is not overheard, and everybody can see them doing it.`,
+      `The wash block runs cold again. The queue outside it is where half this season's deals get made.`,
+      `Somebody has scratched a tally into the wall by {sleep}. It is longer than anybody wants to look at.`,
+      `The ration store is bare by Thursday. {a} and {b} split what is left and call it a strategy meeting.`,
+    ],
+  },
+
+  /**
+   * The resort — a luxury house with a backyard nobody wants to leave.
+   *
+   * Comfort makes people careless. Everything here is pleasant, which is
+   * exactly why nobody notices the game being played around the pool.
+   */
+  'bb-resort': {
+    label: 'The Resort', emoji: '🌴',
+    blurb: 'A luxury house with a pool, a bar and a backyard in permanent summer. Comfortable enough that people forget they are playing.',
+    vocab: { place: 'the resort', shelter: 'the cabanas', gather: 'the poolside', water: 'the pool',
+             sleep: 'the loungers', downtime: 'the backyard bar', foodSource: 'the outdoor kitchen' },
+    arrival: { vehicle: 'gate', verb: 'comes through the gate into the sun', point: 'the poolside',
+               onPoint: 'by the pool', headline: 'Paradise, with one door and a jury.',
+               groupCall: 'Everybody to the pool!' },
+    reskin: {
+      meal: [ `{a} grills for the house and makes sure {b} eats first. Everybody sees it.`,
+              `{a} and {b} eat by the pool long after everyone else has gone in, and the conversation drifts somewhere useful.`,
+              `The outdoor kitchen turns into a production line. {a} and {b} work it together and talk the whole time.` ],
+      improve: [ `{p} skims the pool every morning before anybody is up. It is a small kingdom and {p} runs it.`,
+                 `{p} restocks {downtime} without being asked and banks the goodwill.`,
+                 `{p} drags the loungers into the shade for everybody. Cheap, effective, remembered.` ],
+      wildlife: [ `A lizard takes up residence by {gather} and is named, adopted and argued over within a day.`,
+                  `Something enormous flies through {downtime} at dusk and the whole yard ducks in unison.` ],
+      weather: [ `The heat is unbearable by two. Nobody moves, everybody talks, and {a} says more to {b} than {a} meant to.`,
+                 `A warm night, no wind, and half the house sleeps outside. Conversations happen that would not happen indoors.` ],
+    },
+    atmosphere: [
+      `The pool is loud all afternoon and the quietest people in the house are the ones getting things done.`,
+      `{a} and {b} float at opposite ends of the pool having the most important conversation of the week at a volume nobody can hear.`,
+      `The bar opens. Somebody says something honest, and it is not clear yet whether that was a mistake.`,
+      `Sunset on the backyard and the whole house stops for it. {a} watches {b} instead.`,
+      `The cabanas are the only shade left. Who is sitting in them, and with whom, is the entire map of this season.`,
+      `Music from {downtime} covers everything, which is exactly why {a} picked it for this conversation.`,
+    ],
+  },
+
+  /**
+   * The manor — an old house that was never meant to be a set.
+   *
+   * Cold, creaking and full of rooms, which is the opposite problem to the
+   * compound: there are too many places to disappear to, and disappearing is
+   * itself a statement.
+   */
+  'bb-manor': {
+    label: 'The Manor', emoji: '🕯️',
+    blurb: 'A cold, creaking old house with far too many rooms. Plenty of places to disappear to — and disappearing is itself a statement.',
+    vocab: { place: 'the manor', shelter: 'the east wing', gather: 'the drawing room', water: 'the bathhouse',
+             sleep: 'the four-posters', downtime: 'the library', foodSource: 'the pantry' },
+    arrival: { vehicle: 'front steps', verb: 'climbs the front steps and is let in', point: 'the drawing room',
+               onPoint: 'in the drawing room', headline: 'An old house, a locked door, and thirteen strangers.',
+               groupCall: 'Everybody to the drawing room!' },
+    reskin: {
+      meal: [ `{a} and {b} eat at opposite ends of a table built for thirty, and end up shouting friendly things down it.`,
+              `{a} raids the pantry at midnight and finds {b} already there, which becomes a standing arrangement.`,
+              `{a} lays the long table properly for everybody. It is theatre, and it works.` ],
+      improve: [ `{p} gets a fire going in {gather} and instantly becomes the centre of the house.`,
+                 `{p} sweeps out {shelter}, which nobody had been into for a week, and finds something worth knowing.`,
+                 `{p} shuts the draughty windows in {downtime}. The room becomes the warmest in the manor and {p} is in it.` ],
+      wildlife: [ `Something moves in the walls of {shelter} at night. Half the house refuses to sleep there now.`,
+                  `A crow watches {gather} through the window every morning and the house has decided it means something.` ],
+      weather: [ `The manor is freezing. {a} and {b} end up sharing the fire in {gather} and talking until it goes out.`,
+                 `Wind all night in the chimneys. Nobody sleeps, and by dawn three separate deals have been made.` ],
+    },
+    atmosphere: [
+      `A door closes somewhere in the east wing. Everybody in {gather} hears it and everybody pretends not to count who is missing.`,
+      `{a} and {b} take the long way round through {downtime} because it is the only route nobody else uses.`,
+      `The fire in {gather} is the only warm thing in the manor, so the whole game is played in one room whether anybody likes it or not.`,
+      `Floorboards upstairs. {a} looks at the ceiling, then at {b}, and neither says the name they are both thinking.`,
+      `The manor has too many rooms. Disappearing into one is the loudest thing a houseguest can do here.`,
+      `Candles in {downtime} because the lights went again. {a} and {b} say things in that light they would not say under bulbs.`,
     ],
   },
   'hosted-camp': {

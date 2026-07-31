@@ -259,8 +259,34 @@
                 <button class="gm-btn" id="gm-interactive" onclick="setGameMode('interactive')">Interactive</button>
               </div>
             </div>
+            <!-- HOUSE OPTIONS — only the things a Big Brother week actually
+                 reads. Anything that would be inert in a house belongs in the
+                 Total Drama sections below, which are hidden for this format. -->
+            <div class="divider" id="sec-bb-divider"></div>
+            <div class="setup-section-label" id="sec-bb-options">HOUSE OPTIONS</div>
+            <div class="form-group" id="grp-bb-tiebreak">
+              <label class="form-label">When the vote ties</label>
+              <div class="hint">The Head of Household breaks it, live, in front of the house. No revote, no rock draw &mdash; this is fixed by the format and cannot be changed.</div>
+            </div>
+            <div class="form-group" id="grp-bb-interview">
+              <label class="form-label">Eviction Interview</label>
+              <select id="cfg-bb-interview" onchange="saveConfig()" class="form-input">
+                <option value="enabled">On &mdash; the evicted houseguest is interviewed on the way out</option>
+                <option value="disabled">Off</option>
+              </select>
+            </div>
+            <div class="form-group" id="grp-bb-havenots">
+              <label class="form-label">Have-Nots</label>
+              <select id="cfg-bb-havenots" onchange="saveConfig()" class="form-input">
+                <option value="twist">Only when scheduled as a twist</option>
+                <option value="every-week">Every week &mdash; the HOH always picks</option>
+                <option value="off">Never</option>
+              </select>
+              <div class="hint">Slop, cold water and a real disadvantage in the veto. The Head of Household chooses, and the house remembers who.</div>
+            </div>
+
             <div class="divider"></div>
-            <div class="setup-section-label">FORMATS &amp; TWISTS</div>
+            <div class="setup-section-label" id="sec-formats-twists">FORMATS &amp; TWISTS</div>
 
             <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('tiebreaker')">
@@ -488,7 +514,7 @@
               <div class="cast-size-bar"><div id="cast-size-fill" class="cast-size-fill" style="width:0%"></div></div>
             </div>
 
-            <div class="setup-section-label">SEASON OPTIONS</div>
+            <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <div class="slider-control">
               <label>Initial Teams: <strong id="teams-display">2</strong></label>
               <input type="range" min="1" max="6" value="2" id="cfg-teams" class="setup-slider" oninput="updateSlider('teams');saveConfig()">
@@ -498,7 +524,7 @@
               <input type="range" min="4" max="22" value="12" id="cfg-merge" class="setup-slider" oninput="updateSlider('merge');saveConfig()">
             </div>
 
-            <div class="setup-section-label">END GAME</div>
+            <div class="setup-section-label" id="sec-end-game">END GAME</div>
             <div class="slider-control">
               <label>Finale Size: Final <strong id="finale-display">3</strong></label>
               <input type="range" min="2" max="4" value="3" id="cfg-finale" class="setup-slider" oninput="updateSlider('finale');saveConfig()">
@@ -525,7 +551,7 @@
               <input type="range" min="3" max="15" value="9" id="cfg-jury" class="setup-slider" oninput="updateSlider('jury');saveConfig()">
             </div>
 
-            <div class="setup-section-label">SETTINGS &amp; MECHANICS</div>
+            <div class="setup-section-label" id="sec-settings-mechanics">SETTINGS &amp; MECHANICS</div>
 
             <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('idol')">

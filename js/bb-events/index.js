@@ -18,6 +18,7 @@ import { EDITORIAL_SOCIAL_EVENTS } from './editorial-social.js';
 import { DEALS_EVENTS } from './deals.js';
 import { HOUSE_LIFE_EVENTS } from './house-life.js';
 import { PHASE_EVENTS } from './phases.js';
+import { VENUE_EVENTS } from './venue.js';
 
 /** Every house event, in no particular order — the scheduler weights them. */
 export const HOUSE_EVENTS = [
@@ -27,14 +28,15 @@ export const HOUSE_EVENTS = [
   ...DEALS_EVENTS,
   ...HOUSE_LIFE_EVENTS,
   ...PHASE_EVENTS,
+  ...VENUE_EVENTS,
 ];
 
 /** The same events grouped, for debug screens and for testing one slice. */
 export const HOUSE_EVENTS_BY_CATEGORY = {
   ceremonies: CEREMONY_EVENTS,
   social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS],
-  deals: DEALS_EVENTS,
-  'house-life': HOUSE_LIFE_EVENTS,
+  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals')],
+  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life')],
   phases: PHASE_EVENTS,
 };
 

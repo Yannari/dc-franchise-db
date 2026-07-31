@@ -113,10 +113,18 @@ export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-i
  * silently.
  */
 export function bbTwistsForWeek(weekNum) {
-  return (seasonConfig.twistSchedule || [])
+  const scheduled = (seasonConfig.twistSchedule || [])
     .filter(t => t && Number(t.episode) === Number(weekNum))
     .map(t => t.type)
     .filter(id => BB_TWIST_IDS.has(id));
+
+  // Have-nots can be a standing feature of the season rather than a one-off,
+  // which is how the format usually runs it: somebody is always on slop.
+  const mode = seasonConfig.bbHaveNots || 'twist';
+  const out = new Set(scheduled);
+  if (mode === 'every-week') out.add('bb-have-nots');
+  if (mode === 'off') out.delete('bb-have-nots');
+  return [...out];
 }
 
 export function simulateBBEpisode() {

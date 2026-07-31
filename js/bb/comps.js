@@ -5,7 +5,7 @@
 import { gs, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
-import { shouldThrowHoh } from './strategy.js';
+import { shouldThrowHoh, gunningFor } from './strategy.js';
 
 export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker']);
 const VALID_TYPES = new Set(BB_COMP_TYPES);
@@ -120,8 +120,10 @@ function genericSimulation(comp, participants, context, rng) {
     // still win one — which is the whole story when it happens.
     const haveNot = (context.haveNots || []).includes(name);
     const haveNotPenalty = haveNot ? 1.4 + rng() * 1.6 : 0;
-    const finalScore = statTotal + randomRoll - throwPenalty - haveNotPenalty;
-    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, haveNot, haveNotPenalty, finalScore };
+    // People in danger play harder — the same model the custom competitions use.
+    const gun = gunningFor(name, context, rng);
+    const finalScore = statTotal + randomRoll - throwPenalty - haveNotPenalty + gun.bonus;
+    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, haveNot, haveNotPenalty, gunningFor:gun.reason, gunningBonus:gun.bonus, finalScore };
     return { name, score:finalScore, threw };
   }).sort((a,b) => b.score - a.score);
   return {

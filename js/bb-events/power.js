@@ -60,6 +60,7 @@ const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].in
  */
 const hohPitch = {
   id: 'power-hoh-pitch',
+  location: 'hoh-room',
   category: 'deals',
   weight(house, ctx) {
     const hoh = _hoh(ctx);
@@ -121,6 +122,7 @@ const hohPitch = {
  */
 const hohRoomTraffic = {
   id: 'power-hoh-traffic',
+  location: 'hoh-room',
   category: 'phases',
   weight(house, ctx) {
     const hoh = _hoh(ctx);
@@ -164,6 +166,7 @@ const hohRoomTraffic = {
  */
 const hohWeight = {
   id: 'power-hoh-weight',
+  location: 'hoh-room',
   category: 'house-life',
   weight(house, ctx) {
     const hoh = _hoh(ctx);
@@ -203,6 +206,7 @@ const hohWeight = {
  */
 const hohPromise = {
   id: 'power-hoh-promise',
+  location: 'hoh-room',
   category: 'deals',
   weight(house, ctx) {
     const hoh = _hoh(ctx);
@@ -411,6 +415,7 @@ const pawnResentment = {
  */
 const ceremonyConfrontation = {
   id: 'power-ceremony-confrontation',
+  location: 'living-room',
   category: 'ceremonies',
   weight(house, ctx) {
     if (!['nominations', 'veto-ceremony', 'post-noms', 'post-veto'].includes(ctx?.act)
@@ -463,6 +468,7 @@ const ceremonyConfrontation = {
  */
 const replacementFallout = {
   id: 'power-replacement-fallout',
+  location: 'living-room',
   category: 'ceremonies',
   weight(house, ctx) {
     const f = actFacts(ctx);
@@ -509,6 +515,7 @@ const replacementFallout = {
  */
 const savedGuilt = {
   id: 'power-saved-guilt',
+  location: 'living-room',
   category: 'ceremonies',
   weight(house, ctx) {
     const f = actFacts(ctx);
@@ -543,10 +550,153 @@ const savedGuilt = {
   },
 };
 
+
+/**
+ * The door does not open.
+ *
+ * The HOH room is the one private space in the house and the HOH controls who
+ * is in it. Being turned away is public — everyone sees who came back down the
+ * stairs — and it tells the whole house where somebody stands a day before the
+ * ceremony does.
+ */
+const hohRefusesEntry = {
+  id: 'power-hoh-refuses',
+  location: 'hoh-room',
+  category: 'phases',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || house.length < 5 || _blockKnown(ctx)) return 0;
+    // Only somebody the HOH already dislikes gets turned away.
+    const worst = furthestFrom(hoh, _others(house, hoh));
+    return worst && perceived(hoh, worst) <= -1 ? band(6) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const turned = furthestFrom(hoh, _others(house, hoh));
+    const p = pronouns(turned);
+    const text = _variant([
+      `${turned} knocks on the HOH door and is told, through it, that now is not a good time. The stairs are long on the way back down.`,
+      `${hoh} does not open the door for ${turned}. Four people in the kitchen watch ${p.obj} come back down and nobody asks how it went.`,
+      `"I'm sleeping." ${hoh} is not sleeping, ${turned} knows ${hoh} is not sleeping, and that is the message.`,
+      `The HOH room is the only door in this house that locks, and today ${hoh} uses it on ${turned}.`,
+    ], ctx, hoh, turned);
+
+    api.addBond(hoh, turned, -1.2);
+    api.remember(turned, hoh, 'grievance', 2, { about: 'would not open the door' });
+    api.suspicion(turned, hoh, 1.5);
+    // The house reads the closed door as a nomination announcement.
+    _others(house, hoh, turned).forEach(w => api.suspicion(w, hoh, 0.2));
+    api.popDelta(hoh, -1);
+    return {
+      text, players: [hoh, turned],
+      badgeText: 'DOOR STAYS SHUT', badgeClass: 'red',
+    };
+  },
+};
+
+/**
+ * "Pick me for the veto."
+ *
+ * The draw is the last lever anybody has before the block is final, so people
+ * lobby for it — and whether the HOH agrees says more than the ceremony will.
+ */
+const vetoDrawLobby = {
+  id: 'power-veto-draw-lobby',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    // Between the nominations and the veto: the only window this makes sense in.
+    const window = ctx?.phase === 'post-noms' || ctx?.act === 'nominations' || ctx?.act === 'veto';
+    return hoh && window && _noms(ctx).length && house.length >= 6 ? band(8) : 0;
+  },
+  fire(house, ctx, api, rng) {
+    const hoh = _hoh(ctx);
+    const noms = _noms(ctx);
+    const asker = _quiet(_others(house, hoh, ...noms))[0] || _others(house, hoh)[0];
+    const p = pronouns(asker);
+    const trusted = perceived(hoh, asker) >= 1.5;
+    const agrees = trusted && rng() > 0.3;
+
+    const text = agrees ? _variant([
+      `"If I get drawn, I'm using it how you want it used." ${hoh} does not say yes out loud, which ${asker} correctly reads as yes.`,
+      `${asker} asks to be in the draw and offers the only currency there is: ${p.posAdj} vote, in advance, in writing if it were allowed.`,
+      `${asker} makes the case that ${p.sub} is the safest pair of hands for that veto. ${hoh} agrees, and both of them know what has just been traded.`,
+    ], ctx, hoh, asker) : _variant([
+      `${asker} lobbies to be in the veto draw. ${hoh} makes no promises, and the lack of one is deafening.`,
+      `"I'd rather it was somebody neutral." ${asker} hears the word neutral and understands it means not you.`,
+      `${asker} asks for the draw. ${hoh} says the balls decide, which is true and is also not an answer.`,
+    ], ctx, hoh, asker);
+
+    if (agrees) {
+      api.sideDeal(hoh, asker, 'veto', { genuine: true, about: 'the veto goes the way I want it' });
+      api.addBond(hoh, asker, 0.9);
+      api.remember(hoh, asker, 'obligation', 2, { about: 'promised me the veto' });
+    } else {
+      api.addBond(hoh, asker, -0.4);
+      api.suspicion(asker, hoh, 0.9);
+      api.remember(asker, hoh, 'grievance', 1, { about: 'would not have me in the draw' });
+    }
+    return {
+      text, players: [hoh, asker],
+      badgeText: agrees ? 'A HAND SHAKES ON IT' : 'NO PROMISES',
+      badgeClass: agrees ? 'blue' : 'grey',
+    };
+  },
+};
+
+/**
+ * "I'm going to take you off."
+ *
+ * The veto holder tells a nominee before the ceremony. Said early it is the
+ * strongest bond in the house; said and then broken it is the worst betrayal
+ * the format has, because the nominee stopped campaigning on the strength of it.
+ */
+const vetoPromise = {
+  id: 'power-veto-promise',
+  location: 'pantry',
+  category: 'deals',
+  weight(house, ctx) {
+    const holder = ctx?.vetoWinner || ctx?.week?.vetoWinner;
+    const noms = _noms(ctx);
+    if (!holder || !noms.length || noms.includes(holder)) return 0;
+    return ['post-veto', 'campaign'].includes(ctx?.phase) || ctx?.act === 'veto-ceremony' ? band(9) : 0;
+  },
+  fire(house, ctx, api) {
+    const holder = ctx.vetoWinner || ctx.week?.vetoWinner;
+    const noms = _noms(ctx);
+    const saved = noms.slice().sort((a, b) => perceived(holder, b) - perceived(holder, a))[0];
+    const other = noms.find(n => n !== saved);
+    const p = pronouns(holder);
+    const means = perceived(holder, saved) >= 2 || sharesAlliance(holder, saved);
+
+    const text = means ? _variant([
+      `${holder} finds ${saved} in the pantry and says it plainly: the veto is coming off the wall and ${saved} is coming with it.`,
+      `"You're getting off that block." ${saved} has been braced for four days and takes a second to work out ${p.sub} means it.`,
+      `${holder} tells ${saved} first, before the HOH, before anybody. That order is the whole message.`,
+    ], ctx, holder, saved) : _variant([
+      `${holder} tells ${saved} the veto is coming ${p.posAdj} way. ${holder} has not decided that at all.`,
+      `"Don't worry about it." ${saved} stops campaigning that afternoon, which was the point of saying it.`,
+      `${holder} makes ${saved} a promise that costs nothing today and will cost a great deal on Thursday.`,
+    ], ctx, holder, saved);
+
+    api.sideDeal(holder, saved, 'veto', { genuine: means, about: 'promised the veto' });
+    api.addBond(holder, saved, means ? 1.4 : 0.6);
+    api.remember(saved, holder, means ? 'trust' : 'promise', 3, { about: 'said I was coming off' });
+    if (other) api.suspicion(other, holder, 1.2);
+    return {
+      text, players: [holder, saved],
+      badgeText: means ? 'MEANS IT' : 'SAYS IT ANYWAY',
+      badgeClass: means ? 'green' : 'grey',
+    };
+  },
+};
+
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
+  hohRefusesEntry, vetoDrawLobby, vetoPromise,
 ];
 
 export default POWER_EVENTS;

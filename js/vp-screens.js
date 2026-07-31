@@ -15730,9 +15730,45 @@ const _BB_LOAD = new Set(['deals', 'ceremonies', 'phases']);
  * house, then the events as rp-brant-entry cards with portraits, text and a
  * badge — strategic beats weighted heavier than ambient ones.
  */
-/** Rooms a camera can be pointed at, so every beat happens somewhere. */
-const _BBF_ROOMS = ['LIVING ROOM', 'KITCHEN', 'BEDROOM ONE', 'BEDROOM TWO', 'BACKYARD',
-                    'HOH SUITE', 'STORAGE', 'WASHROOM', 'LOUNGE', 'HAMMOCK'];
+/**
+ * The rooms, in the order the feeds are worth watching.
+ *
+ * The HOH room first because that is where the week is decided, then the
+ * places the house actually gathers, then the corners people go to be alone.
+ * Each has its own accent so a stretch of the week is legible by colour before
+ * a word of it is read.
+ */
+const _BBF_ROOM_ORDER = ['hoh-room', 'living-room', 'kitchen', 'backyard',
+                         'bedroom', 'pantry', 'washroom', 'diary-room'];
+const _BBF_ROOM_META = {
+  'hoh-room':    { label: 'HOH ROOM',    accent: '#f0a500' },
+  'living-room': { label: 'LIVING ROOM', accent: '#c9343c' },
+  kitchen:       { label: 'KITCHEN',     accent: '#3fb950' },
+  backyard:      { label: 'BACKYARD',    accent: '#58a6ff' },
+  bedroom:       { label: 'BEDROOM',     accent: '#a371f7' },
+  pantry:        { label: 'PANTRY',      accent: '#d29922' },
+  washroom:      { label: 'WASHROOM',    accent: '#8b949e' },
+  'diary-room':  { label: 'DIARY ROOM',  accent: '#ff7b72' },
+};
+const _bbfRoom = key => _BBF_ROOM_META[key]
+  || { label: String(key || 'HOUSE').replace(/-/g, ' ').toUpperCase(), accent: '#8b949e' };
+
+/** Drawn, not emoji — each room gets a mark that reads at 14 pixels. */
+function _bbfRoomIcon(key, accent) {
+  const P = { fill: 'none', stroke: accent, 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+  const a = Object.entries(P).map(([k, v]) => `${k}="${v}"`).join(' ');
+  const paths = {
+    'hoh-room':    '<path d="M2 11l1.7-6 2.9 2.6L8.4 3l1.8 4.6L13.1 5 14.8 11z"/><path d="M2.6 13.2h11.6"/>',
+    'living-room': '<path d="M2.5 12V8.2a1.6 1.6 0 0 1 1.6-1.6h8.8a1.6 1.6 0 0 1 1.6 1.6V12"/><path d="M4 6.6V4.8h9V6.6"/><path d="M2.5 12h12"/>',
+    kitchen:       '<path d="M5 2.5v5a1.6 1.6 0 0 0 3.2 0v-5"/><path d="M6.6 7.5v6"/><path d="M11.4 2.5c1.4 1 1.4 3.6 0 4.6v6.4"/>',
+    backyard:      '<circle cx="8.5" cy="6" r="3.2"/><path d="M8.5 9.2v4.4"/><path d="M4.4 13.6h8.2"/>',
+    bedroom:       '<path d="M2.4 12V6.4"/><path d="M2.4 8.8h11.8a1.6 1.6 0 0 1 1.6 1.6V12"/><circle cx="5.4" cy="7" r="1.5"/>',
+    pantry:        '<rect x="3.4" y="3" width="10" height="10.4" rx="1.2"/><path d="M8.4 3v10.4"/><path d="M6.6 7.6h.6M10 7.6h.6"/>',
+    washroom:      '<path d="M3 8h11v1.6a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 8V4.4a1.4 1.4 0 0 1 2.8 0"/>',
+    'diary-room':  '<circle cx="8.4" cy="8" r="4.6"/><circle cx="8.4" cy="8" r="1.7"/><path d="M8.4 1.6v1.4M8.4 13v1.4"/>',
+  };
+  return `<svg class="bbf-room-i" viewBox="0 0 17 16" width="14" height="14" ${a}>${paths[key] || paths['living-room']}</svg>`;
+}
 
 /** Category chips — what kind of beat this is, in the feed's own vocabulary. */
 const _BBF_CAT = {
@@ -15832,38 +15868,43 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       ${_bbfWall(house, status)}`;
 
   if (beats.length) {
-    // Grouped by what kind of beat it is, the way the camp screens group camp
-    // events. Twenty beats in one undifferentiated column is a wall; the same
-    // twenty under four headings is a week you can read.
-    const ORDER = ['ceremonies', 'phases', 'deals', 'social', 'house-life'];
-    const byCat = {};
-    beats.forEach((b, i) => { (byCat[b.category || 'house-life'] ||= []).push({ ...b, i }); });
-    const cats = [...ORDER.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !ORDER.includes(c))];
+    // Grouped by ROOM, because that is how the feeds are watched: you pick a
+    // camera and you see what is happening in that room. A location is a fact
+    // about the event now rather than a label the player stamped on at random,
+    // so the HOH pitches really are in the HOH room and the slop rows really
+    // are in the kitchen.
+    const byRoom = {};
+    beats.forEach((b, i) => { (byRoom[b.location || 'living-room'] ||= []).push({ ...b, i }); });
+    const rooms = _BBF_ROOM_ORDER.filter(r => byRoom[r])
+      .concat(Object.keys(byRoom).filter(r => !_BBF_ROOM_ORDER.includes(r)));
 
-    cats.forEach(key => {
-      const cat = _bbfCat(key);
-      const group = byCat[key];
-      html += `<div class="bbf-group">
-        <div class="bbf-group-h" style="--bbf-c:${cat.fg}">
-          <span class="bbf-group-n">${cat.label}</span>
-          <span class="bbf-group-c">${group.length}</span>
+    rooms.forEach((key, roomIdx) => {
+      const room = _bbfRoom(key);
+      const group = byRoom[key];
+      html += `<div class="bbf-room-block">
+        <div class="bbf-room-h" style="--bbf-c:${room.accent}">
+          ${_bbfRoomIcon(key, room.accent)}
+          <span class="bbf-room-n">${room.label}</span>
+          <span class="bbf-room-cam">CAM ${String(roomIdx + 1).padStart(2, '0')}</span>
+          <span class="bbf-room-c">${group.length}</span>
         </div>
         <div class="bbf-cards">`;
       group.forEach(beat => {
         const i = beat.i;
+        const cat = _bbfCat(beat.category);
         const load = _BB_LOAD.has(beat.category);
         const cls = beat.badgeClass || 'grey';
         const people = (beat.players || []).filter(Boolean).slice(0, 4);
-        const room = _BBF_ROOMS[(i * 3 + (people[0]?.length || 0)) % _BBF_ROOMS.length];
         html += `<div class="bbf-card ${load ? 'is-load' : 'is-amb'}"
             style="border-left-color:${cat.fg}">
-          <span class="bbf-slug">CAM ${String((i % 9) + 1).padStart(2, '0')} · ${room} · ${_bbfClock(phase, i)}</span>
+          <span class="bbf-slug">${_bbfClock(phase, i)}</span>
           <div class="rp-brant-portraits">${
             people.length === 2 ? rpDuoImg(people[0], people[1])
               : people.length ? people.map(n => rpPortrait(n)).join('')
               : ''}</div>
           <div class="bbf-txt">${beat.text}</div>
           <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            <span class="bbf-cat" style="background:${cat.bg};color:${cat.fg}">${cat.label}</span>
             ${beat.badgeText ? `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>` : ''}
           </div>
         </div>`;

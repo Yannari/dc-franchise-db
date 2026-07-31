@@ -16,7 +16,7 @@
 // it freely for both outcome and text. Reproducibility comes from the seed.
 
 import { pStats } from '../players.js';
-import { shouldThrowHoh } from '../bb/strategy.js';
+import { shouldThrowHoh, gunningFor } from '../bb/strategy.js';
 
 export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -103,8 +103,11 @@ export function scoreField(participants, { mix, luck = 3, context, rng, throwPen
     // ones — which was the difference between a twist and a label.
     const haveNot = (context?.haveNots || []).includes(name);
     const haveNotPenalty = haveNot ? 1.4 + rng() * 1.6 : 0;
-    const score = base + roll - penalty - haveNotPenalty;
-    breakdown[name] = { base, roll, threwChance: t.chance, threw: t.threw, penalty, haveNot, haveNotPenalty, score };
+    // The have-not penalty with the sign flipped: people in danger play harder.
+    const gun = gunningFor(name, context, rng);
+    const score = base + roll - penalty - haveNotPenalty + gun.bonus;
+    breakdown[name] = { base, roll, threwChance: t.chance, threw: t.threw, penalty,
+      haveNot, haveNotPenalty, gunningFor: gun.reason, gunningBonus: gun.bonus, score };
     return { name, score, threw: t.threw, base };
   });
   entries.sort((a, b) => b.score - a.score);

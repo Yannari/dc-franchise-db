@@ -95,11 +95,44 @@ function weightedPick(eligible, rng) {
   return eligible.at(-1)?.event || null;
 }
 
-function validateBeat(event, beat) {
+/**
+ * Where in the house a beat happens.
+ *
+ * The rooms were decoration — the visual player stamped a random camera label
+ * on every card — which meant a strategy conversation could be filed in the
+ * washroom and an HOH pitch in the backyard. A location is a fact about an
+ * event now: it is where that kind of thing happens, and the feed is read by
+ * room because that is how the feeds are actually watched.
+ *
+ * Events may declare one. Anything that does not gets the room its category
+ * belongs in, chosen deterministically so it stays put between renders.
+ */
+export const BB_ROOMS = ['hoh-room', 'living-room', 'kitchen', 'backyard',
+                         'bedroom', 'pantry', 'washroom', 'diary-room'];
+
+const _CATEGORY_ROOMS = {
+  ceremonies: ['living-room'],
+  phases: ['living-room', 'kitchen', 'backyard'],
+  deals: ['hoh-room', 'pantry', 'bedroom', 'backyard'],
+  social: ['kitchen', 'bedroom', 'backyard', 'living-room'],
+  'house-life': ['kitchen', 'bedroom', 'washroom', 'pantry', 'backyard'],
+};
+
+function _roomFor(event, beat, ctx) {
+  if (beat.location && BB_ROOMS.includes(beat.location)) return beat.location;
+  if (event.location && BB_ROOMS.includes(event.location)) return event.location;
+  const pool = _CATEGORY_ROOMS[event.category] || BB_ROOMS;
+  const key = `${event.id}|${ctx?.beat || 0}|${(beat.players || []).join(',')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return pool[hash % pool.length];
+}
+
+function validateBeat(event, beat, ctx) {
   if (!beat || typeof beat.text !== 'string' || !beat.text.trim()) throw new Error(`Big Brother event ${event.id} returned no text.`);
   if (!Array.isArray(beat.players)) throw new Error(`Big Brother event ${event.id} must return players[].`);
   if (!beat.badgeText || !beat.badgeClass) throw new Error(`Big Brother event ${event.id} must return badgeText and badgeClass.`);
-  return { ...beat, eventId: event.id, category: event.category };
+  return { ...beat, eventId: event.id, category: event.category, location: _roomFor(event, beat, ctx) };
 }
 
 export function scheduleHouseBeats(events, house, ctx, options = {}) {
@@ -137,7 +170,7 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
     // to derive any text variety from a hash of the context, because reaching
     // for Math.random would stop a seeded season reproducing. Passing the rng
     // keeps reproducibility and lets an event simply roll.
-    const result = validateBeat(event, event.fire(house, beatCtx, api, rng));
+    const result = validateBeat(event, event.fire(house, beatCtx, api, rng), beatCtx);
     fired.push(result);
     ensureState().eventHistory.push({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
   }

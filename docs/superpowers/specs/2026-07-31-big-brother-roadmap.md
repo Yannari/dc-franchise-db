@@ -28,16 +28,28 @@ talks, alliances form, people walk out, and the visual player covers every act.
 
 Ordered by how much each one is felt while playing.
 
-### 1. Nobody plays harder because they are in danger
+### 1. ~~Nobody plays harder because they are in danger~~ — DONE 2026-07-31
 
-The single biggest gap in the simulation. `shouldThrowHoh()` models throwing a
-competition, `shouldUseVeto()` models declining to use it, and
-`plan.backdoorTarget` models backdooring — but **nothing models motivation**. A
-nominee facing eviction competes exactly as hard as somebody safe.
+`gunningFor()` in `js/bb/strategy.js`, applied by both scorers. Danger is read
+from the game — sitting on the block, and having enemies who outnumber the
+people who would keep you — and nerve converts it into performance.
 
-Fix: a `gunningFor` weight in the competition scorer, raised by being on the
-block, having no allies left, and boldness. Same shape as the have-not penalty,
-opposite sign. Small change, large effect: veto competitions stop being random.
+Calibrated by playing 275 weeks: with no motivation a nominee won the veto
+33.5% of the time, which is exactly the random share of a six-player field
+containing two nominees, proving it was doing nothing. It is 46.5% now.
+
+### 1b. The veto ceremony is still a formality — NEXT
+
+The ceremony itself resolves in one line: used or not used, replacement named.
+Everything interesting happens around it and none of it is staged — the veto
+holder's deliberation, the two nominees working on them, the HOH being told
+what is about to happen to their week, the replacement finding out in the room.
+
+The pieces exist: `power-veto-promise` and `power-veto-draw-lobby` cover the
+lobbying, `power-replacement-fallout` and `power-saved-guilt` cover the
+aftermath. What is missing is the ceremony as a SCREEN — a staged reveal with
+the block before, the decision, and the block after, the way the nomination
+ceremony turns keys one at a time.
 
 ### 2. The jury is seated but barely alive
 

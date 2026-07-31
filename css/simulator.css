@@ -220,16 +220,20 @@
                       letter-spacing:1.1px; padding:2px 6px; border-radius:2px; white-space:nowrap; }
     .bbf-txt        { font-size:12.5px; line-height:1.55; color:#c9d1d9; }
 
-    /* Feed groups: twenty beats in one column is a wall, the same twenty under
-       four headings is a week you can read. */
-    .bbf-group      { margin: 0 0 4px; }
-    .bbf-group-h    { display:flex; align-items:center; gap:8px; padding:8px 12px 5px;
-                      font-family:ui-monospace,Consolas,monospace; font-size:9px;
+    /* Feed blocks, by room: you pick a camera and watch that room. Each has
+       its own accent so a stretch of the week is legible by colour before a
+       word of it is read. */
+    .bbf-room-block { margin: 0 0 6px; border-left:2px solid var(--bbf-c,#8b949e);
+                      background:linear-gradient(90deg, color-mix(in srgb, var(--bbf-c,#8b949e) 7%, transparent), transparent 40%); }
+    .bbf-room-h     { display:flex; align-items:center; gap:7px; padding:8px 12px 5px;
+                      font-family:ui-monospace,Consolas,monospace; font-size:9.5px;
                       letter-spacing:1.6px; text-transform:uppercase; color:var(--bbf-c,#8b949e); }
-    .bbf-group-h::after { content:''; flex:1; height:1px;
-                      background:linear-gradient(90deg, var(--bbf-c,#8b949e), transparent); opacity:.35; }
-    .bbf-group-n    { flex-shrink:0; font-weight:700; }
-    .bbf-group-c    { order:3; flex-shrink:0; opacity:.7; }
+    .bbf-room-i     { flex-shrink:0; }
+    .bbf-room-n     { flex-shrink:0; font-weight:800; }
+    .bbf-room-cam   { flex-shrink:0; opacity:.55; font-size:8px; letter-spacing:1.2px; }
+    .bbf-room-h::after { content:''; flex:1; height:1px;
+                      background:linear-gradient(90deg, var(--bbf-c,#8b949e), transparent); opacity:.3; }
+    .bbf-room-c     { order:5; flex-shrink:0; opacity:.7; }
 
     /* ── Relationship rows: who, what kind, and which way it is moving ── */
     .bbf-rel        { display:grid; grid-template-columns:auto 1fr 2fr auto; gap:9px;

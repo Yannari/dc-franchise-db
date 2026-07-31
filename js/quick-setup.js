@@ -882,6 +882,8 @@ const CONFIG_SCOPE = {
     'cfg-finale-assistants': ['total-drama'],
     'cfg-bb-interview':      ['big-brother'],
     'cfg-bb-havenots':       ['big-brother'],
+    'cfg-bb-safety':         ['big-brother'],
+    'cfg-bb-safety-stops':   ['big-brother'],
   },
   sections: {
     'sec-season-options':     ['total-drama'],

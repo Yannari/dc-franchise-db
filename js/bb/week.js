@@ -88,6 +88,28 @@ export function simulateBBWeek(options = {}) {
   week.twists = [...twists];
   week.compressed = compressed;
   if (compressed) week.segment = options.segment || 2;
+
+  /**
+   * Season modes that put a third houseguest on the block.
+   *
+   * The AI Arena and the Block Buster are the same machine with different
+   * paint: three nominees every week, and immediately before the vote those
+   * three compete for one spot off the block. The consequence is that a
+   * nomination stops being a death sentence and starts being a competition,
+   * which changes what an HOH is willing to try — and it means the person
+   * who leaves has now lost twice.
+   *
+   * Both run from week one and stop when the house gets small enough that a
+   * third nominee would leave nobody to vote.
+   */
+  const safetyMode = options.safetyMode && options.safetyMode !== 'off' ? options.safetyMode : null;
+  const stopsAt = Number.isFinite(options.safetyStopsAt) ? options.safetyStopsAt
+    : (safetyMode === 'ai-arena' ? 9 : 6);
+  // Three nominees plus an HOH leaves house.length - 4 voters; below five in
+  // the house that is nobody, so the mode has to stop before it breaks a vote.
+  const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);
+  week.safetyMode = safetyActive ? safetyMode : null;
+  const nomineeCount = safetyActive ? 3 : 2;
   const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
   week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
@@ -158,6 +180,13 @@ export function simulateBBWeek(options = {}) {
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
   let nominees = [...new Set(plan.nominees)].filter(name => house.includes(name) && name !== hoh).slice(0, 2);
   if (nominees.length < 2) nominees = chooseNominationPlan(hoh, house, rng).nominees;
+  // A third chair, named by the same read that names a replacement — the HOH
+  // is choosing another target, not drawing a name out of a hat.
+  while (safetyActive && nominees.length < nomineeCount) {
+    const third = chooseReplacement(hoh, house, [hoh, ...nominees], plan, rng);
+    if (!third || nominees.includes(third)) break;
+    nominees.push(third);
+  }
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
   week.initialNominees = [...nominees];
   week.plan = plan;
@@ -214,6 +243,32 @@ export function simulateBBWeek(options = {}) {
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
   }
+
+  // ── The last competition of the week, played by the people on the block ──
+  // Three went up; two will face the vote. Whoever wins here has saved
+  // themselves rather than been saved, which the house reads very differently
+  // from a veto — and the two who lose have now been beaten in front of
+  // everybody on the night they most needed not to be.
+  if (safetyActive && nominees.length >= 3) {
+    const arena = runBBCompetition({
+      type: 'arena', participants: [...nominees], excluded: house.filter(n => !nominees.includes(n)),
+      house, week, rng, library: competitionLibrary, forcedId: options.forcedCompetitions?.arena,
+      nominees: [...nominees], hoh, seed: options.seed, haveNots: week.haveNots || [],
+    });
+    const results = arena.placements.map(name => ({ name, score: arena.scores[name] }));
+    let saved = hook(hooks, 'safetyOutcome', arena.winner, { week, results, competition: arena, nominees: [...nominees] });
+    if (!nominees.includes(saved)) saved = arena.winner;
+    week.blockBeforeSafety = [...nominees];
+    week.safetyWinner = saved;
+    week.safetyCompetition = arena;
+    gs.bb.stats[saved].timesSaved++;
+    nominees = nominees.filter(name => name !== saved);
+    week.acts.push(addBeats(
+      { type: 'safety', mode: safetyMode, participants: [...week.blockBeforeSafety],
+        winner: saved, results, competition: arena, nominees: [...nominees] },
+      { nominees: [...nominees], vetoWinner: week.vetoWinner || null }));
+  }
+  week.finalNominees = [...nominees];
 
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
   let voters = house.filter(name => name !== hoh && !nominees.includes(name));

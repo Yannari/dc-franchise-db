@@ -870,6 +870,8 @@ export function saveConfig() {
     // a Total Drama season, which never looks at them.
     bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
+    bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
+    bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
         const en = g('adv-idol-enabled');
@@ -996,6 +998,8 @@ export function renderConfig() {
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
   set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
+  set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
+  set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();
   // Aftermath

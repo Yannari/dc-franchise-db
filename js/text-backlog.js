@@ -4205,6 +4205,18 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'safety':
+        sec(act.mode === 'ai-arena' ? 'THE AI ARENA' : 'THE BLOCK BUSTER');
+        ln(`  Played by the nominees: ${(act.participants || []).join(', ')}.`);
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln(`  ${act.winner} wins and comes off the block.`);
+        ln(`  Facing the vote: ${(act.nominees || []).join(' and ')}.`);
+        beats(act);
+        break;
+
       case 'have-nots':
         sec('HAVE-NOTS');
         ln(`  ${act.hoh} puts ${(act.names || []).join(', ')} on slop for the week.`);

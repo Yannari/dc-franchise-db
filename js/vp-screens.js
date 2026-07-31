@@ -15955,14 +15955,59 @@ export function rpBuildBBNominations(ep) {
     <div style="font-size:9px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase">Inside the HOH room · private intent</div>
     <div style="font-size:11px;color:#8b949e;margin-top:6px">Target: <strong style="color:#c9d1d9">${plan.target || '?'}</strong> · Pawn: <strong style="color:#c9d1d9">${plan.pawn || '?'}</strong>${plan.backdoorTarget ? ` · Backdoor: <strong style="color:#c9d1d9">${plan.backdoorTarget}</strong>` : ''}</div>
   </div>`;
+  // A three-nominee season turns every key into its own moment, so the
+  // ceremony is built from however many chairs the format actually uses.
+  const ORDINALS = ['first', 'second', 'third', 'fourth'];
+  const count = ['two', 'three', 'four'][Math.max(0, noms.length - 2)] || `${noms.length}`;
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'NOMINATION CEREMONY',
-    subtitle: `${ep.hoh} names two houseguests.`, accent: '#f85149', header, room: 'bb-block',
+    subtitle: `${ep.hoh} names ${count} houseguests.`, accent: '#f85149', header, room: 'bb-block',
     stateKey: `bb_noms_${ep.num}`,
     scenes: [
-      { text: `The first key turns. ${noms[0]} is nominated for eviction.`, players: [noms[0]], badgeText: 'NOMINATED', badgeClass: 'red' },
-      { text: `The second key turns. ${noms[1]} joins ${noms[0]} on the block.`, players: [noms[1]], badgeText: 'NOMINATED', badgeClass: 'red' },
-      { text: `"I nominated you both, and this is a game." Nominations are locked.`, players: noms, badgeText: 'LOCKED', badgeClass: 'grey' },
+      ...noms.map((name, i) => ({
+        text: i === 0
+          ? `The first key turns. ${name} is nominated for eviction.`
+          : `The ${ORDINALS[i] || `${i + 1}th`} key turns. ${name} joins ${noms.slice(0, i).join(' and ')} on the block.`,
+        players: [name], badgeText: 'NOMINATED', badgeClass: 'red',
+      })),
+      { text: `"I nominated you all, and this is a game." Nominations are locked.`, players: noms, badgeText: 'LOCKED', badgeClass: 'grey' },
+      ..._bbBeats(act),
+    ],
+  });
+}
+
+/**
+ * The AI Arena / Block Buster.
+ *
+ * The last competition of the week, played by the only people who cannot
+ * afford to lose it. Whoever wins saves themselves — which the house reads
+ * completely differently from being saved by somebody else's veto — and the
+ * two who lose have been beaten in public on the night it mattered most.
+ */
+export function rpBuildBBSafety(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'safety');
+  if (!act) return '';
+  const title = act.mode === 'ai-arena' ? 'THE AI ARENA' : 'THE BLOCK BUSTER';
+  const field = act.participants || [];
+  const losers = field.filter(n => n !== act.winner);
+  const comp = act.competition;
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title, accent: '#3fb950', room: 'bb-live',
+    subtitle: 'Three on the block. One walks off it.',
+    stateKey: `bb_safety_${ep.num}`,
+    header: `<div class="rp-portrait-row" style="justify-content:center;gap:18px;margin-bottom:14px">${field.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
+    scenes: [
+      { text: `All three nominees play, and nobody else can. <strong>${field.join(', ')}</strong> — one of you is coming off the block, and the other two are facing the house.`,
+        players: field, badgeText: 'THE FIELD', badgeClass: 'red' },
+      ...(comp ? [{ text: `Tonight it is <strong>${comp.name}</strong>${comp.category ? ` — a ${comp.category} competition.` : '.'}`,
+        players: [], badgeText: 'THE COMPETITION', badgeClass: 'challenge' }] : []),
+      ...((comp?.beats || []).map(b => ({
+        text: b.text, players: b.players || [], badgeText: b.badgeText || 'ARENA', badgeClass: b.badgeClass || 'challenge',
+      }))),
+      { text: `<strong>${act.winner}</strong> wins, and takes ${pronouns(act.winner).pos} own name off the block. Nobody saved ${pronouns(act.winner).obj} — ${pronouns(act.winner).sub} did it.`,
+        players: [act.winner], badgeText: 'SAVES THEMSELVES', badgeClass: 'green' },
+      { text: `${losers.join(' and ')} stay where they are, beaten in front of everybody, with the vote hours away.`,
+        players: losers, badgeText: 'STILL ON THE BLOCK', badgeClass: 'red' },
       ..._bbBeats(act),
     ],
   });
@@ -16122,6 +16167,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'veto-ceremony':
         screens.push({ id: id('bb-cer'), label: 'Ceremony', html: rpBuildBBCeremony(view) });
+        break;
+      case 'safety':
+        screens.push({
+          id: id('bb-safety'),
+          label: act.mode === 'ai-arena' ? 'AI Arena' : 'Block Buster',
+          html: rpBuildBBSafety(view),
+        });
         break;
       case 'campaign':
         if (campaignIdx++ === 0) screens.push({ id: id('bb-camp'), label: 'Campaign', html: rpBuildBBCampaign(view) });

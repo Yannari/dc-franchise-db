@@ -275,6 +275,20 @@
                 <option value="disabled">Off</option>
               </select>
             </div>
+            <div class="form-group" id="grp-bb-safety">
+              <label class="form-label">Three-Nominee Mode</label>
+              <select id="cfg-bb-safety" onchange="saveConfig()" class="form-input">
+                <option value="off">Off &mdash; two nominees, the usual week</option>
+                <option value="ai-arena">AI Arena &mdash; three nominees, one saves themselves</option>
+                <option value="block-buster">BB Block Buster &mdash; three nominees, one busts off the block</option>
+              </select>
+              <div class="hint">Every week the HOH names <strong>three</strong>. Immediately before the vote those three compete, and the winner comes off the block &mdash; saved by their own hands rather than by somebody else's veto. Runs until the house is small enough that a third nominee would leave nobody to vote.</div>
+            </div>
+            <div class="form-group" id="grp-bb-safety-stops">
+              <label class="form-label">Stop when this many remain</label>
+              <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">
+              <div class="hint">The AI Arena traditionally stops earlier (around nine); the Block Buster runs deeper (around six).</div>
+            </div>
             <div class="form-group" id="grp-bb-havenots">
               <label class="form-label">Have-Nots</label>
               <select id="cfg-bb-havenots" onchange="saveConfig()" class="form-input">

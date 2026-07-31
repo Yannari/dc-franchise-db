@@ -141,6 +141,10 @@ export function simulateBBEpisode() {
     houseEvents: HOUSE_EVENTS,
     competitions: BB_COMPETITIONS,
     twists,
+    // Season modes that put a third houseguest on the block every week.
+    safetyMode: seasonConfig.bbSafetyMode || 'off',
+    safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
+      ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     // The HOH picks have-nots off their own read of the house, not the truth.
     readBond: (a, b) => (typeof window !== 'undefined' && window.getPerceivedBond
       ? window.getPerceivedBond(a, b) : 0),
@@ -150,6 +154,9 @@ export function simulateBBEpisode() {
   ep.twists = [...twists];
   ep.haveNots = week.haveNots ? [...week.haveNots] : [];
   ep.instantEviction = twists.includes('bb-instant-eviction');
+  ep.safetyMode = week.safetyMode || null;
+  ep.safetyWinner = week.safetyWinner || null;
+  ep.blockBeforeSafety = week.blockBeforeSafety ? [...week.blockBeforeSafety] : [];
 
   // ── Double eviction: a second, compressed cycle the same night ──
   // A separate week record, because it genuinely is one — the stats, the jury
@@ -161,6 +168,11 @@ export function simulateBBEpisode() {
       competitions: BB_COMPETITIONS,
       compressed: true,
       segment: 2,
+      // A three-nominee season is a three-nominee season, including the half
+      // of the night that runs live.
+      safetyMode: seasonConfig.bbSafetyMode || 'off',
+      safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
+        ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     });
     ep.doubleEviction = {
       hoh: second.hoh,

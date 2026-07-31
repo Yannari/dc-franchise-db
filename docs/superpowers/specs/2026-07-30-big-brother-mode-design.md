@@ -178,9 +178,12 @@ guarantees the week engine can rely on (exactly one winner, eligibility, ties).
 Built before the volume because modes reshape the week itself; late means
 rebuilding around them.
 
-**Claude** — `js/bb-twists/`: AI Arena and Block Buster first, then one-shot
-powers (Diamond Veto, Coup d'état, Halting Hex), then Battle of the Block,
-Festie Besties, Camp Comeback.
+**Claude** — house twists live in `TWIST_CATALOG` (core.js) with
+`format:'big-brother'`, and take effect through week-engine flags. Three are
+built: Double Eviction, Instant Eviction and Have-Nots. The rest are a backlog
+(see "House twist backlog" below), and nothing enters the catalogue before its
+mechanics do — a listed twist that does nothing is the failure mode this
+format has produced repeatedly.
 
 **Signature competitions belong to this phase, not to phase 2.** OTEV, BB
 Comics, Hide and Go Veto and the rest are the Big Brother equivalent of a Total
@@ -423,7 +426,6 @@ Proposed modules under `js/bb/`:
 | `strategy.js` | nomination targets, veto decisions, comp throwing |
 | `shared-strategy.js` | BB context/evidence adapters over shared strategic APIs |
 | `house-events.js` | house life, distinct from camp events |
-| `bb-twists.js` | the Big Brother twist catalog |
 | `bb-vp.js` | the week as acts in the visual player |
 
 ## A week is an episode, built from acts — not from days
@@ -729,9 +731,11 @@ The same scheduler/library split used for house events applies here.
 - `js/bb/comps.js` defines how a competition is registered, weighted, run and
   returned to the week engine. It validates participants, placements, winner,
   thrown attempts, stat profile and event consequences.
-- `js/bb/bb-twists.js` keeps the serializable catalog, distinguishes scheduled
-  twists from season modes, and defines the hook/state capabilities each
-  implementation may use.
+- House twists are entries in the shared `TWIST_CATALOG` marked
+  `format:'big-brother'`, so the designer's existing format scoping shows them
+  and nothing else has to learn about a second catalogue. `js/bb/bb-twists.js`
+  held a parallel 30-entry catalogue that nothing ever imported; it was deleted
+  on 2026-07-31 in favour of the single catalogue the UI already reads.
 - Codex supplies contract fixtures, invariant tests, and architectural review.
 
 **Claude implements the libraries:**
@@ -739,8 +743,9 @@ The same scheduler/library split used for house events applies here.
 - `js/bb-comps/` contains researched competition families and their narration.
   Big Brother Wiki is the broad index; consequential rules and timing should be
   cross-checked against CBS episode guides when possible.
-- `js/bb-twists/` contains actual twist and season-mode mechanics. The catalog
-  entry remains a placeholder until its module and tests exist.
+- Twist mechanics live in the week engine (`js/bb/week.js`) as shape changes,
+  and are scheduled through `bbTwistsForWeek()` in `js/bb-run.js`. A catalogue
+  entry is added only once its mechanics and tests exist.
 - Claude handles the large mechanical volume: individual variants, balance,
   text, and simulator-facing integration.
 
@@ -856,3 +861,44 @@ Total Drama seasons should keep publishing from `main` throughout.
   comps, and which need Big Brother equivalents (endurance wall, OTEV, mental).
 - **House size.** Big Brother runs 16; Total Drama seasons run 18–24. Does the
   strategy layer hold at 24?
+
+## House twist backlog
+
+Preserved from `js/bb/bb-twists.js`, which was deleted on 2026-07-31 after
+sitting unreferenced since it was written. The code was dead; the design work
+was not, so the slate is kept here. Nothing on this list belongs in
+`TWIST_CATALOG` until it actually changes a week.
+
+**Built:** Double Eviction, Instant Eviction, Have-Nots.
+
+| id | name | category | what it does |
+|---|---|---|---|
+| `diamond-veto` | Diamond Power of Veto | veto | The veto holder, rather than the HOH, names the replacement nominee. |
+| `coup-detat` | Coup d'état | nominations | A power holder overrides the nominations after the ceremony. |
+| `battle-back` | Battle Back | return | An evicted houseguest wins a competition to return to the game. |
+| `pandoras-box` | Pandora's Box | hoh-choice | The HOH accepts a private reward paired with a house-wide consequence. |
+| `triple-eviction` | Triple Eviction | week-structure | Three houseguests are evicted during one accelerated episode. |
+| `split-house` | Split House | week-structure | The cast divides into two isolated houses running simultaneous cycles. |
+| `battle-of-the-block` | Battle of the Block | power-structure | Two HOHs nominate two pairs; the winning pair earns safety and dethrones its HOH. |
+| `co-hoh` | Co-HOH | power-structure | Two houseguests share HOH power and must divide nomination authority. |
+| `third-nominee` | Secret Third Nominee | nominations | A secret third nominee is added alongside the HOH's picks. |
+| `hacker` | Hacker Power | nominations | An anonymous winner may replace a nominee, alter veto participation and cancel a vote. |
+| `ai-arena` | AI Arena | season-mode | Three nominees a week; the third competes for one last safety spot before eviction. |
+| `block-buster` | BB Block Buster | season-mode | Three nominees face a standing live safety competition before every eviction. |
+| `safety-suite` | Safety Suite | safety | A limited-use competition houseguests choose when to risk. |
+| `wildcard-safety` | Wildcard Safety | safety | One representative per group competes for immunity with a strategic cost. |
+| `golden-key` | Golden Key | safety | The surviving half of a nominated pair gets safety but cannot compete. |
+| `festie-besties` | Festie Besties | pairs | Linked pairs share nominations, veto eligibility and safety. |
+| `secret-pairs` | Secret Pairs | casting | Hidden pre-existing partners whose discovery reshapes trust. |
+| `twin-switch` | Twin Switch | casting | Two characters alternate as one houseguest until they can enter separately. |
+| `teams` | House Teams | casting | The house begins in teams sharing safety and nomination exposure. |
+| `camp-comeback` | Camp Comeback | return | Early evictees stay in the house as observers until one wins re-entry. |
+| `round-trip-ticket` | Round Trip Ticket | return | A secret ticket cancels its holder's eviction and sends them back in. |
+| `zombie-week` | Zombie Week | return | Recent evictees compete through a suspended week for resurrection. |
+| `americas-care-package` | America's Care Package | audience-power | The audience awards a game power to one eligible houseguest each round. |
+| `den-of-temptation` | Den of Temptation | temptation | A private power with a house-wide consequence attached. |
+| `secret-hoh` | Secret HOH | power-structure | The HOH nominates anonymously while the house hunts for them. |
+| `second-veto` | Second Veto | veto | A second veto allows two saves and forces multiple replacements. |
+| `diamond-veto-draw` | Veto Player Redraw | veto | A secret power discards and redraws the veto competition field. |
+| `halting-hex` | Halting Hex | eviction | A secret power cancels an eviction so nobody leaves that round. |
+| `americas-player` | America's Player | audience-power | Secret audience-directed missions that conflict with personal strategy. |

@@ -8,6 +8,7 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
+import { rollDeparture } from '../departures.js';
 import {
   chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldUseVeto,
@@ -46,58 +47,6 @@ function tally(ballots, nominees) {
   const counts = Object.fromEntries(nominees.map(name => [name, 0]));
   ballots.forEach(ballot => { if (ballot.evict in counts) counts[ballot.evict]++; });
   return counts;
-}
-
-/**
- * Somebody leaves without being voted out.
- *
- * A house is three months with no exit, and people walk. Others are removed
- * for putting hands on somebody. Neither is a random dice roll dressed up as
- * drama: a walkout is built out of the pressure actually on that houseguest —
- * temperament, nerve, slop, and sitting on the block — and an expulsion needs
- * a real rivalry and a temper to go with it.
- *
- * Proportional throughout: no thresholds, just weights. Returns null on the
- * overwhelming majority of weeks, which is the point.
- */
-function checkDeparture(house, week, rng, mode, ctx = {}) {
-  if (!mode || mode === 'off' || house.length <= 4) return null;
-  const base = mode === 'often' ? 0.075 : mode === 'occasional' ? 0.04 : 0.015;
-  const nominees = ctx.nominees || [];
-  const haveNots = ctx.haveNots || [];
-
-  const candidates = house.map(name => {
-    const s = pStats(name);
-    const arch = (players.find(p => p.name === name) || {}).archetype || '';
-    // Walking: worn down rather than beaten. Low temperament and low nerve,
-    // made worse by slop and by sitting on the block.
-    const walk = ((10 - s.temperament) / 10) * 0.55
-      + ((10 - s.boldness) / 10) * 0.25
-      + ((10 - s.loyalty) / 10) * 0.10
-      + (haveNots.includes(name) ? 0.30 : 0)
-      + (nominees.includes(name) ? 0.35 : 0)
-      + Math.min(0.35, (week.num || 1) * 0.03);
-    // Removal: a temper with somebody to point it at. Needs a genuine enemy in
-    // the house, so a hothead alone with friends never gets expelled.
-    const worst = house.filter(n => n !== name)
-      .reduce((lo, n) => Math.min(lo, getBond(name, n)), 0);
-    const volatile = ['hothead', 'villain', 'chaos-agent'].includes(arch) ? 1.6 : 1;
-    const expel = Math.max(0, -worst / 10) * ((10 - s.temperament) / 10) * volatile * 0.9;
-    return { name, walk, expel, worstWith: house.filter(n => n !== name)
-      .sort((a, b) => getBond(name, a) - getBond(name, b))[0] || null };
-  });
-
-  const walker = candidates.sort((a, b) => b.walk - a.walk)[0];
-  const brawler = [...candidates].sort((a, b) => b.expel - a.expel)[0];
-  const walkChance = base * (0.4 + walker.walk);
-  const expelChance = base * 0.7 * (0.2 + brawler.expel);
-
-  const roll = rng();
-  if (roll < walkChance) return { name: walker.name, kind: 'walkout' };
-  if (roll < walkChance + expelChance && brawler.worstWith) {
-    return { name: brawler.name, kind: 'expulsion', other: brawler.worstWith };
-  }
-  return null;
 }
 
 /**
@@ -331,8 +280,10 @@ export function simulateBBWeek(options = {}) {
   // A walkout or an expulsion takes the week's eviction with it: the house is
   // already down one, so there is nothing to vote on. Checked here so the week
   // still played out normally up to the point it went wrong.
-  const departure = checkDeparture(house, week, rng,
-    options.departures || 'off', { nominees, haveNots: week.haveNots || [] });
+  const departure = rollDeparture(house, {
+    mode: options.departures || 'off', rng, round: week.num || 1,
+    atRisk: nominees, deprived: week.haveNots || [],
+  });
   if (departure) {
     week.departure = { ...departure };
     week.evicted = departure.name;

@@ -260,3 +260,52 @@ describe('full-season integration audit', () => {
     expect(R.distinctWinnerArchs).toBeGreaterThan(3);       // different archetypes win
   }, 240000);
 });
+
+// ── Quits & expulsions, played end to end ──
+//
+// seasonConfig.qem was read by nothing for as long as it existed. Now that it
+// drives a real mechanic, the thing worth proving is not that the roll works —
+// that is covered in isolation — but that a season with it switched on still
+// finishes, still accounts for everybody, and still crowns a winner.
+describe('quits and expulsions in a full season', () => {
+  const playWith = (qem, rate, seasons = 12) => {
+    let departures = 0, completed = 0, unaccounted = 0;
+    for (let s = 0; s < seasons; s++) {
+      core.setPlayers(makeCast(16));
+      core.setSeasonConfig({
+        ...core.seasonConfig, name: 'QEM', teams: 2, mergeAt: 10, finaleSize: 3,
+        finaleFormat: 'traditional', jurySize: 7, romance: 'disabled', aftermath: 'disabled',
+        popularityEnabled: false, advantages: { idol: { enabled: true } },
+        qem, qemRate: rate,
+      });
+      savestateMod.initGameState();
+      const sync = () => { window.gs = core.gs; window.players = core.players; window.seasonConfig = core.seasonConfig; };
+      sync();
+      let guard = 0;
+      while (core.gs.phase !== 'complete' && core.gs.activePlayers.length > 1 && guard++ < 80) {
+        sync();
+        const ep = core.gs.phase === 'finale' ? finaleMod.simulateFinale() : episodeMod.simulateEpisode();
+        if (!ep) break;
+        if (ep.departure) departures++;
+      }
+      if (core.gs.phase === 'complete') completed++;
+      const all = new Set([...(core.gs.eliminated || []), ...(core.gs.activePlayers || [])]);
+      if (all.size !== 16) unaccounted++;
+    }
+    return { departures, completed, unaccounted, seasons };
+  };
+
+  it('changes nothing at all when the switch is off', () => {
+    const r = playWith(false, 'often');
+    expect(r.departures).toBe(0);
+    expect(r.completed).toBe(r.seasons);
+  }, 240000);
+
+  it('fires when the switch is on, and the season still finishes', () => {
+    const r = playWith(true, 'often');
+    expect(r.departures, 'nobody walked in twelve seasons at the highest rate').toBeGreaterThan(0);
+    // Every season still reaches a winner with nobody left in limbo.
+    expect(r.completed).toBe(r.seasons);
+    expect(r.unaccounted).toBe(0);
+  }, 240000);
+});

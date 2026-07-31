@@ -657,7 +657,13 @@
                   <input type="checkbox" id="cfg-qem" onchange="saveConfig()">
                   <span>Enable Quits, Expulsions &amp; Medical Evacuations</span>
                 </label>
-                <p class="acc-desc">When enabled, quits, expulsions, and medical evacuations may occur during the season.</p>
+                <p class="acc-desc">When enabled, a player can walk out, or be expelled for putting hands on somebody. It takes that episode's vote with it &mdash; the cast is already down one. Driven by who is actually under pressure: temperament, nerve, hunger, and facing elimination.</p>
+                <label class="form-label" style="margin-top:8px">How often</label>
+                <select id="cfg-qem-rate" onchange="saveConfig()" class="form-input">
+                  <option value="rare">Rare</option>
+                  <option value="occasional">Occasional</option>
+                  <option value="often">Often</option>
+                </select>
               </div>
             </div>
 

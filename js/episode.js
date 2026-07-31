@@ -5,6 +5,7 @@ import { getBond, getPerceivedBond, addBond, checkPerceivedBondTriggers, updateB
 import { wRandom, computeHeat, formAlliances, detectBetrayals, applyPitchAllianceFallout, decayAllianceTrust } from './alliances.js';
 import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions } from './voting.js';
+import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
 import { applyTwist, generateTwistScenes, generateDockArrivals, simulateJourney, applyRewardSocialEffects } from './twists.js';
@@ -3793,13 +3794,50 @@ export function simulateEpisode() {
     }
   }
 
+  // ── QUITS & EXPULSIONS — somebody goes without a vote being cast ──
+  // seasonConfig.qem has been on the setup page for as long as it has existed
+  // and was read by nothing; the medevacs that happen come from the survival
+  // system, not from this switch. A departure takes tonight's vote with it —
+  // the cast is already down one — so it routes through the no-tribal path
+  // below rather than duplicating that branch's bookkeeping.
+  if (seasonConfig.qem && !ep.noTribal && !ep.eliminated && !ep.isFinale) {
+    const _qemAtRisk = ep.tribalPlayers || (gs.isMerged ? gs.activePlayers : []);
+    const _qemHungry = seasonConfig.foodWater === 'enabled'
+      ? gs.activePlayers.filter(p => (gs.survival?.[p]?.food ?? 100) < 35) : [];
+    const _dep = rollDeparture(gs.activePlayers, {
+      mode: seasonConfig.qemRate || 'rare',
+      round: epNum,
+      atRisk: _qemAtRisk.filter(p => p !== (ep.immunityWinner || null)),
+      deprived: _qemHungry,
+    });
+    if (_dep) {
+      ep.departure = { ..._dep };
+      ep.noTribal = true;
+      const campKey = gs.isMerged ? (gs.mergeName || 'merge')
+        : (gs.tribes.find(t => t.members.includes(_dep.name))?.name || 'camp');
+      ep.campEvents ||= {};
+      ep.campEvents[campKey] ||= { pre: [], post: [] };
+      ep.campEvents[campKey].post.push({
+        type: _dep.kind, players: [_dep.name, _dep.other].filter(Boolean),
+        text: departureText(_dep),
+        badgeText: _dep.kind === 'expulsion' ? 'EXPELLED' : 'QUIT',
+        badgeClass: 'red',
+      });
+      handleAdvantageInheritance(_dep.name, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== _dep.name);
+      gs.advantages = gs.advantages.filter(a => a.holder !== _dep.name);
+      if (!gs.eliminated.includes(_dep.name)) gs.eliminated.push(_dep.name);
+    }
+  }
+
   // ── NO TRIBAL — episode ran normally (challenge, camp, journey) but no vote tonight ──
   if (ep.noTribal) {
     // No tribal this episode — journey lost votes are consumed (no vote to lose, penalty spent)
     if (gs.journeyLostVotes?.length) {
       gs.journeyLostVotes = gs.journeyLostVotes.filter(p => !gs.activePlayers.includes(p));
     }
-    ep.eliminated = null;
+    // A quit or expulsion is still an elimination, just not a voted one.
+    ep.eliminated = ep.departure ? ep.departure.name : null;
     ep.alliances = [];
     ep.bondChanges = updateBonds([], null, []);
     detectBetrayals(ep);
@@ -3807,7 +3845,8 @@ export function simulateEpisode() {
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-    gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null,
+    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+      departure: ep.departure || null,
       immunityWinner: ep.immunityWinner || null, challengeType: ep.challengeType || null,
       isMerge: ep.isMerge, votes: {}, alliances: [], noTribal: true,
       twists: (ep.twists||[]).map(t => ({...t})),

@@ -876,6 +876,7 @@ export function saveConfig() {
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
     bbDepartures: g('cfg-bb-departures')?.value || 'off',
+    qemRate:     g('cfg-qem-rate')?.value || 'rare',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
         const en = g('adv-idol-enabled');
@@ -968,6 +969,7 @@ export function renderConfig() {
   }
   set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',        seasonConfig.qem || false);
+  set('cfg-qem-rate',   seasonConfig.qemRate || 'rare');
   chk('cfg-popularity', seasonConfig.popularityEnabled ?? true);
   chk('cfg-hide-popularity', seasonConfig.hidePopularity ?? false);
   // Show/hide the hide-popularity row based on popularity being enabled

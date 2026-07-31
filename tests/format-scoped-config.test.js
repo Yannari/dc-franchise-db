@@ -65,9 +65,20 @@ describe('format-scoped setup screen', () => {
     expect(bb).not.toMatch(/tribe/i);
   });
 
-  it('keeps romance, which both shows run', () => {
-    expect(configScopeFor('big-brother').accordions).toContain('romance');
-    expect(configScopeFor('total-drama').accordions).toContain('romance');
+  // Romance runs in both shows, so it is relocated into House Options rather
+  // than duplicated — one control, one source of truth. It is deliberately not
+  // in the scope table, because the table hides things and this one never hides.
+  it('never hides romance from either show', () => {
+    for (const fmt of ['big-brother', 'total-drama']) {
+      expect(configScopeFor(fmt).accordions).not.toContain('romance');
+    }
+  });
+
+  it('drops the whole Total Drama twist stack from a house', () => {
+    const bb = configScopeFor('big-brother');
+    expect(bb.sections).not.toContain('sec-formats-twists');
+    expect(bb.sections).not.toContain('sec-formats-twists-divider');
+    expect(configScopeFor('total-drama').sections).toContain('sec-formats-twists');
   });
 
   it('gives the house its own options and keeps them out of Total Drama', () => {

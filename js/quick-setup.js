@@ -895,7 +895,6 @@ const CONFIG_SCOPE = {
     popularity: ['total-drama'],
     survival:   ['total-drama'],
     mole:       ['total-drama'],
-    romance:    ['total-drama', 'big-brother'],
   },
   fields: {
     'cfg-days':              ['total-drama'],  // a house runs to a final three, not a day count
@@ -908,6 +907,7 @@ const CONFIG_SCOPE = {
     'cfg-bb-safety':         ['big-brother'],
     'cfg-bb-safety-stops':   ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
+    'cfg-finale':            ['total-drama'],  // a house always ends at three
   },
   sections: {
     'sec-season-options':     ['total-drama'],
@@ -915,6 +915,8 @@ const CONFIG_SCOPE = {
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     'sec-tribes':             ['total-drama'],
+    'sec-formats-twists':          ['total-drama'],
+    'sec-formats-twists-divider':  ['total-drama'],
   },
 };
 
@@ -948,12 +950,7 @@ export function applyFormatScope() {
   }
   if (fmt === 'big-brother') qsOnHouseOptionChange();
 
-  // FORMATS & TWISTS survives in a house only because Romance does; if that
-  // ever stops being true the header should go with it rather than sit above
-  // an empty stretch of page.
-  const twistsUsed = Object.entries(CONFIG_SCOPE.accordions)
-    .some(([, formats]) => formats.includes(fmt) && formats.length > 1);
-  show(_g('sec-formats-twists'), twistsUsed);
+  _placeRomance(fmt);
 }
 
 /**
@@ -977,6 +974,28 @@ export function qsOnHouseOptionChange() {
   if (stops && !stops._wired) {
     stops._wired = true;
     stops.addEventListener('input', () => { stops.dataset.touched = '1'; });
+  }
+}
+
+/**
+ * Romance belongs to both shows, so it moves rather than duplicating.
+ *
+ * It was the only thing keeping FORMATS & TWISTS alive in a house — one
+ * accordion under a heading advertising tribe swaps and idols. Rather than
+ * keep a second copy of the control (and a second source of truth), the single
+ * accordion is moved into House Options for Big Brother and put back exactly
+ * where it came from for Total Drama.
+ */
+let _romanceHome = null;
+function _placeRomance(fmt) {
+  const acc = _g('acc-body-romance')?.closest('.accordion');
+  if (!acc) return;
+  if (!_romanceHome) _romanceHome = { parent: acc.parentNode, next: acc.nextSibling };
+  const houseBody = _g('bb-options-body');
+  if (fmt === 'big-brother' && houseBody) {
+    if (acc.parentNode !== houseBody) houseBody.appendChild(acc);
+  } else if (_romanceHome.parent && acc.parentNode !== _romanceHome.parent) {
+    _romanceHome.parent.insertBefore(acc, _romanceHome.next);
   }
 }
 

@@ -43,8 +43,16 @@ export function prepareHouse() {
   return gs.activePlayers || [];
 }
 
-/** How many houseguests are left when the season stops and the finale runs. */
-export const houseFinaleSize = () => Math.max(2, seasonConfig.finaleSize || 3);
+/**
+ * A house ends at a final three. Not a preference — a constraint.
+ *
+ * The last night is a three-part Head of Household played from three, and the
+ * week engine cannot run a house of fewer than four. A configured final two
+ * therefore crashed the season at three remaining, and a configured final four
+ * ran the finale from four and cut only one, leaving a houseguest neither
+ * evicted nor a finalist. Both were reachable from the Finale Size slider.
+ */
+export const houseFinaleSize = () => 3;
 
 /** Is the house down to its final few? */
 export const houseIsAtFinale = () => (gs.activePlayers || []).length <= houseFinaleSize();

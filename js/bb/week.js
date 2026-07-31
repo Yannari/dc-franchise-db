@@ -279,25 +279,52 @@ export function simulateBBWeek(options = {}) {
    * Runs longer than a ceremony act, because this is where the week lives.
    */
   /**
-   * A beat for an alliance that has just come into existence.
+   * A beat for an alliance that has just changed.
    *
-   * Kept next to the place formation happens so the two can never drift apart
-   * again — the alliance and the scene explaining it are produced together.
+   * The lifecycle returns the same field for two different events: a brand new
+   * alliance, and an existing one that recruited somebody. Treating both as a
+   * formation announced "for the first time" on every recruitment — six
+   * seasons produced 229 formation beats and never more than one live
+   * alliance, which is the tell.
+   *
+   * An alliance is announced once, ever. After that a new member joining is
+   * its own smaller moment.
    */
   const allianceBeat = alliance => {
     const members = (alliance.members || []).filter(n => house.includes(n));
     if (members.length < 2) return null;
-    const named = members.length === 2
-      ? `${members[0]} and ${members[1]}`
-      : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
+    gs.bb.announced ||= [];
+    const isNew = !gs.bb.announced.includes(alliance.id);
+
+    if (isNew) {
+      gs.bb.announced.push(alliance.id);
+      const named = members.length === 2
+        ? `${members[0]} and ${members[1]}`
+        : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
+      return {
+        text: `It gets said out loud for the first time: ${named} are working together. `
+          + `Nobody writes anything down — there is nowhere in this house to hide a list — `
+          + `but from tonight there is a thing called <strong>${alliance.name}</strong>, `
+          + `and everyone in it has something to lose by leaving it.`,
+        players: members.slice(0, 4),
+        badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
+        eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
+        newAlliance: true,
+      };
+    }
+
+    // A recruitment. The newest name in the history is the person who just
+    // came in, and the room they came into already had a name.
+    const joined = [...(alliance.history || [])].reverse()
+      .find(h => h.type === 'recruited')?.member;
+    if (!joined || !house.includes(joined)) return null;
     return {
-      text: `It gets said out loud for the first time: ${named} are working together. `
-        + `Nobody writes anything down — there is nowhere in this house to hide a list — `
-        + `but from tonight there is a thing called <strong>${alliance.name}</strong>, `
-        + `and everyone in it has something to lose by leaving it.`,
-      players: members.slice(0, 4),
-      badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
-      eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
+      text: `<strong>${joined}</strong> is brought into <strong>${alliance.name}</strong>. `
+        + `It is a bigger room than it was this morning, and a bigger room keeps secrets worse.`,
+      players: [joined, ...members.filter(n => n !== joined).slice(0, 3)],
+      badgeText: 'BROUGHT IN', badgeClass: 'blue',
+      eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',
+      newAlliance: false,
     };
   };
 
@@ -320,7 +347,7 @@ export function simulateBBWeek(options = {}) {
       const beat = allianceBeat(formedHere);
       if (beat) {
         act.socialBeats.unshift(beat);
-        week.allianceChanges.formed.push(formedHere.name);
+        if (beat.newAlliance) week.allianceChanges.formed.push(formedHere.name);
       }
     }
 

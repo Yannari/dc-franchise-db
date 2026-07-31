@@ -72,3 +72,36 @@ describe('house life panels', () => {
     expect(missing, `never named: ${missing.join(', ')}`).toEqual([]);
   });
 });
+
+// People decide to work together at any hour, not only in the gap before the
+// week starts. Formation used to run once at the top of a week, so an alliance
+// could only ever be born before house life began.
+describe('alliance formation timing', () => {
+  it('can happen in any stretch of the week', () => {
+    const phases = new Set();
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const { houseActs } = playWeek();
+      houseActs.forEach(act => {
+        if ((act.socialBeats || []).some(b => b.eventId === 'alliance-formed')) phases.add(act.phase);
+      });
+      if (phases.size >= 2) break;
+    }
+    expect(phases.size, 'alliances only ever formed in one stretch').toBeGreaterThan(1);
+  });
+
+  it('announces an alliance once and treats a new member as its own moment', () => {
+    // The lifecycle returns the same field for a brand new alliance and for one
+    // that just recruited somebody. Announcing both as a formation produced a
+    // "said out loud for the first time" beat on every single recruitment.
+    const { houseActs } = playWeek();
+    const beats = houseActs.flatMap(a => a.socialBeats || []);
+    const announced = beats.filter(b => b.eventId === 'alliance-formed');
+    const names = announced.map(b => (b.text.match(/called <strong>([^<]+)<\/strong>/) || [])[1]);
+    expect(new Set(names).size, 'the same alliance was announced twice').toBe(names.length);
+    // Recruitment beats, when they happen, are a different event entirely.
+    for (const b of beats.filter(x => x.eventId === 'alliance-recruited')) {
+      expect(b.badgeText).toBe('BROUGHT IN');
+      expect(b.text).not.toContain('for the first time');
+    }
+  });
+});

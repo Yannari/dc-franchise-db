@@ -16887,6 +16887,74 @@ export function rpBuildBBOverview(ep) {
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody feels strongly about anybody yet.</div>`;
 
   // Only weeks that have already aired — this one is still being watched.
+  // ── Who is hunting whom ──
+  //
+  // Pitches, block pressure, pawn resentment and refused doors all set targets
+  // through setBBTarget, and the intention drives nominations and votes. None
+  // of it appeared on any screen, so the house was quietly deciding who to go
+  // after and the reader could only find out by watching it happen.
+  const intentions = (snap.intentions || (typeof gs !== 'undefined' && gs.intentions) || {});
+  const hunts = stillIn.map(name => {
+    const target = intentions[name]?.targets?.[0] || null;
+    if (!target || !stillIn.includes(target)) return null;
+    const reason = intentions[name]?.reason
+      || (typeof gs !== 'undefined' && gs.bb?.house?.targets?.[name]?.reason) || '';
+    return { name, target, reason };
+  }).filter(Boolean);
+
+  // Who has the most people coming for them: the real target of the house.
+  const hunted = {};
+  hunts.forEach(h => { hunted[h.target] = (hunted[h.target] || 0) + 1; });
+  const mostWanted = Object.entries(hunted).sort((a, b) => b[1] - a[1])[0] || null;
+
+  const targetBody = hunts.length ? `
+    ${mostWanted && mostWanted[1] > 1 ? `<div class="bbh-top">
+      <span class="bbh-top-k">Most wanted</span>
+      ${_bbAvatar(mostWanted[0], 26)}
+      <span><strong>${mostWanted[0]}</strong> — ${mostWanted[1]} houseguests are playing to get ${mostWanted[0] === 'them' ? 'them' : 'them'} out</span>
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:5px">
+    ${hunts.map(h => `<div class="bbh-row">
+      ${_bbAvatar(h.name, 22)}
+      <span class="bbh-arrow">is coming for</span>
+      ${_bbAvatar(h.target, 22)}
+      <span class="bbh-name">${h.target}</span>
+      ${h.reason ? `<span class="bbh-why">${h.reason}</span>` : ''}
+    </div>`).join('')}</div>`
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has settled on anybody yet.</div>`;
+
+  // ── What people believe versus what is true ──
+  //
+  // The house models misreading: an alliance blindspot makes somebody warmer
+  // than they are, paranoia makes them colder, and a betrayal can leave the
+  // betrayed still believing. Every decision runs on the PERCEIVED number and
+  // only the true one was ever drawn.
+  const perceived = (snap.perceivedBonds || (typeof gs !== 'undefined' && gs.perceivedBonds) || {});
+  const misreads = Object.entries(perceived).map(([key, entry]) => {
+    const [observer, subject] = key.split('\u2192');
+    if (!observer || !subject || !stillIn.includes(observer) || !stillIn.includes(subject)) return null;
+    const believes = Number(entry?.perceived ?? entry) || 0;
+    const truth = typeof getBond === 'function' ? getBond(observer, subject) : 0;
+    const gap = believes - truth;
+    if (Math.abs(gap) < 1.5) return null;
+    return { observer, subject, believes, truth, gap, reason: entry?.reason || '' };
+  }).filter(Boolean).sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap)).slice(0, 8);
+
+  const misreadBody = misreads.length ? misreads.map(m => {
+    const warm = m.gap > 0;
+    return `<div class="bbm-row">
+      ${_bbAvatar(m.observer, 22)}
+      <span class="bbm-txt"><strong>${m.observer}</strong> thinks ${m.subject} is
+        <b style="color:${warm ? '#3fb950' : '#f85149'}">${warm ? 'closer' : 'colder'}</b>
+        than ${m.subject} is${m.reason ? ` — ${String(m.reason).replace(/-/g, ' ')}` : ''}.</span>
+      <span class="bbm-num">
+        <i>believes</i> ${m.believes > 0 ? '+' : ''}${m.believes.toFixed(1)}
+        <i>truth</i> ${m.truth > 0 ? '+' : ''}${m.truth.toFixed(1)}
+      </span>
+    </div>`;
+  }).join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Everybody reads the room the way it actually is. For now.</div>`;
+
   const timelineBody = priorWeeks.length ? priorWeeks.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(139,148,158,.08)">
       <span style="min-width:48px;color:#6e7681;font-family:var(--font-mono)">WK ${h.num}</span>
       <span style="display:inline-flex;align-items:center;gap:4px;min-width:96px;color:#f0a500">${_BB_ICON.hoh}${h.hoh || '—'}</span>
@@ -16903,6 +16971,8 @@ export function rpBuildBBOverview(ep) {
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}
     ${section('rel', 'RELATIONSHIPS THAT MATTER', '#3fb950', relBody)}
+    ${section('hunt', `WHO IS COMING FOR WHOM (${hunts.length})`, '#f85149', targetBody)}
+    ${section('read', `WHAT PEOPLE BELIEVE (${misreads.length})`, '#a371f7', misreadBody)}
     ${section('time', 'THE SEASON SO FAR', '#8b949e', timelineBody)}
   </div>`;
 }
@@ -16939,16 +17009,68 @@ export function rpBuildBBDebug(ep) {
       <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">${type} · ${comp.name} · ${comp.category} · ${comp.debug?.source || '?'}</div>
       ${row('winner margin', comp.debug?.winnerMargin != null ? comp.debug.winnerMargin.toFixed(2) : '—')}
       ${row('formula', comp.debug?.formula ? Object.entries(comp.debug.formula).map(([k, v]) => `${k} ${v}`).join(' · ') : '—')}
-      ${Object.entries(comp.debug?.scoreBreakdown || {}).slice(0, 20).map(([name, b]) =>
-        row(name, `score ${Number(b.score ?? b.finalScore ?? 0).toFixed(2)}${b.threw ? '  · THREW' : ''}${b.roundsSurvived != null ? `  · rounds ${b.roundsSurvived}` : ''}`)).join('')}
+      ${Object.entries(comp.debug?.scoreBreakdown || {}).slice(0, 20).map(([name, b]) => {
+        // Every modifier the engine applied, so a surprising result can be
+        // accounted for rather than just accepted.
+        const parts = [`score ${Number(b.score ?? b.finalScore ?? 0).toFixed(2)}`];
+        if (b.base != null || b.statTotal != null) parts.push(`aptitude ${Number(b.base ?? b.statTotal).toFixed(2)}`);
+        if (b.roll != null || b.randomRoll != null) parts.push(`luck ${Number(b.roll ?? b.randomRoll).toFixed(2)}`);
+        if (b.gunningBonus) parts.push(`GUNNING +${Number(b.gunningBonus).toFixed(2)} (${b.gunningFor})`);
+        if (b.haveNotPenalty) parts.push(`slop -${Number(b.haveNotPenalty).toFixed(2)}`);
+        if (b.threw) parts.push(`THREW -${Number(b.penalty ?? b.throwPenalty ?? 0).toFixed(2)}`);
+        else if (b.threwChance ?? b.throwIntentChance) parts.push(`throw odds ${Number(b.threwChance ?? b.throwIntentChance).toFixed(2)}`);
+        if (b.roundsSurvived != null) parts.push(`rounds ${b.roundsSurvived}`);
+        return row(name, parts.join('  ·  '));
+      }).join('')}
       ${(comp.debug?.warnings || []).length ? row('warnings', comp.debug.warnings.join('; ')) : ''}
     </div>`;
   }
 
+  // ── The vote, ballot by ballot, with the reason it landed there ──
+  const evictionAct = acts.find(a => a.type === 'eviction');
+  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+  if (evictionAct?.ballots?.length) {
+    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#f85149;text-transform:uppercase;margin-bottom:8px">the vote</div>
+      ${evictionAct.ballots.map(b => {
+        const c = commitment.get(b.voter);
+        const bits = [`voted ${b.evict}`];
+        if (b.stated && b.stated !== b.evict) bits.push(`was on ${b.stated}`);
+        if (c) bits.push(`commitment ${c.strength.toFixed(2)}${c.promised ? ' · PROMISED' : ''}${c.allied ? ' · ally' : ''}`);
+        if (b.blocMove) bits.push(`bloc ${b.blocMove}`);
+        if (b.bandwagon) bits.push('BANDWAGON');
+        if (b.margin != null) bits.push(`margin ${Number(b.margin).toFixed(2)}`);
+        return row(b.voter, bits.join('  ·  '));
+      }).join('')}
+      ${(ep.voteBroken || []).length ? row('promises broken', ep.voteBroken.map(v => `${v.voter} (${v.promised} → ${v.cast})`).join(', ')) : ''}
+    </div>`;
+  }
+
   const live = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false && !a.dissolved);
-  html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px">
+  html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
     <div style="font-size:10px;letter-spacing:1.5px;color:#58a6ff;text-transform:uppercase;margin-bottom:8px">alliances</div>
-    ${live.length ? live.map(a => row(a.name, `${(a.members || []).join(', ')}  · trust ${Number(a.trust || 0).toFixed(2)} · ${a.formationEvidence || '?'}`)).join('') : row('—', 'none live')}
+    ${live.length ? live.map(a => row(a.name, `${(a.members || []).join(', ')}  · trust ${Number(a.trust || 0).toFixed(2)} · ${a.parentName ? `inside ${a.parentName}` : a.formationEvidence || '?'}`)).join('') : row('—', 'none live')}
+  </div>`;
+
+  // ── The competition record, which only ever appeared as small icons ──
+  const stats = ep.gsSnapshot?.bb?.stats || (typeof gs !== 'undefined' && gs.bb?.stats) || {};
+  const roster = (ep.houseAtStart || []).filter(n => stats[n]);
+  if (roster.length) {
+    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">competition record</div>
+      ${roster.map(n => {
+        const r = stats[n] || {};
+        return row(n, `HOH ${r.hohWins || 0}  ·  veto ${r.vetoWins || 0}  ·  nominated ${r.timesNominated || 0}`
+          + `  ·  on the block ${r.timesOnTheBlock || 0}  ·  saved ${r.timesSaved || 0}`);
+      }).join('')}
+    </div>`;
+  }
+
+  // ── Anything the shared maintenance could not do this week ──
+  const errs = ep.maintenanceErrors || [];
+  html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px">
+    <div style="font-size:10px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase;margin-bottom:8px">upkeep</div>
+    ${errs.length ? errs.map(e => row('FAILED', e)).join('') : row('shared systems', 'all eight ran')}
   </div>`;
   return html + `</div>`;
 }

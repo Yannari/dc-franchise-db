@@ -250,6 +250,7 @@ export function simulateBBEpisode() {
   ep.safetyWinner = week.safetyWinner || null;
   ep.blockBeforeSafety = week.blockBeforeSafety ? [...week.blockBeforeSafety] : [];
   ep.departure = week.departure ? { ...week.departure } : null;
+  ep.maintenanceErrors = [...(week.maintenanceErrors || [])];
 
   // ── Double eviction: a second, compressed cycle the same night ──
   // A separate week record, because it genuinely is one — the stats, the jury

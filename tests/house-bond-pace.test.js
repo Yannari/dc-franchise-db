@@ -74,3 +74,51 @@ describe('the transcript carries the week', () => {
     expect(text).toMatch(/How the plans changed:|promised .* and cast it|went with .* onto/);
   });
 });
+
+// Screen time.
+//
+// One well-connected houseguest was carrying the feed: 142 beats of a week
+// against another's 35. Some of that is legitimate — the Head of Household is
+// in a dozen power events by definition and the week is genuinely about them —
+// but nine beats out of a hundred and ten is not a small part, it is an
+// absence.
+describe('everybody gets to be in the show', () => {
+  it('keeps the quietest houseguest from disappearing', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const seen = {};
+    (ep.houseAtStart || []).forEach(n => { seen[n] = 0; });
+    for (const act of ep.acts || []) {
+      for (const b of act.socialBeats || []) {
+        for (const n of b.players || []) if (n in seen) seen[n]++;
+      }
+    }
+    const counts = Object.values(seen);
+    const total = counts.reduce((a, b) => a + b, 0);
+    const mean = total / counts.length;
+    const quietest = Math.min(...counts);
+
+    // Nobody sits out the week entirely.
+    expect(quietest, 'somebody was in no beats at all').toBeGreaterThan(0);
+    // And the quietest is within reach of the average rather than a rounding
+    // error against it.
+    expect(quietest / mean, 'the quietest houseguest was barely in the week')
+      .toBeGreaterThan(0.4);
+  });
+
+  it('still lets the week be about the people it should be about', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const seen = {};
+    for (const act of ep.acts || []) {
+      for (const b of act.socialBeats || []) {
+        for (const n of b.players || []) seen[n] = (seen[n] || 0) + 1;
+      }
+    }
+    // The fairness pass must not flatten the feed into everybody getting an
+    // identical share — the HOH and the nominees drive the week.
+    const counts = Object.values(seen).sort((a, b) => b - a);
+    expect(counts[0] / (counts.at(-1) || 1), 'the feed was flattened into a rota')
+      .toBeGreaterThan(1.5);
+  });
+});

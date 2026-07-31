@@ -13,6 +13,7 @@
 // rooms lets a pair disappear, and disappearing is itself a statement the rest
 // of the house reads.
 
+import { pronouns } from '../players.js';
 import { houseProfile, houseVocab, houseSetting } from '../settings.js';
 import {
   pStats, bond, band, closestTo, sharesAlliance, trusts, dislikes,
@@ -29,6 +30,11 @@ function _variant(list, ctx, ...salt) {
 }
 
 const _v = token => houseVocab(token);
+
+const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+
+/** Least-seen first, so the forgotten are actually reachable. */
+const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
 
 /** Whichever pair has been on screen least — the venue is where they meet. */
 function _quietPair(house, ctx) {
@@ -184,3 +190,69 @@ const houseAtmosphere = {
 export const VENUE_EVENTS = [sharedSpace, privateCorner, houseAtmosphere];
 
 export default VENUE_EVENTS;
+
+/**
+ * The houseguest nobody has spoken to.
+ *
+ * A structural fix for a structural problem. The Head of Household and the
+ * nominees are in a dozen events by definition, so a week can legitimately
+ * revolve around three or four people — and in a house of eighteen that left
+ * others with nine beats out of a hundred and ten. Invisible for a week is
+ * not a story, it is an absence.
+ *
+ * This fires harder the further somebody has fallen below their share of the
+ * week, and it puts them at the centre of the beat. Being overlooked is also
+ * a real position in this game: it is how a floater survives to the end, and
+ * how somebody arrives at the final five with no allies and no enemies.
+ */
+const overlooked = {
+  id: 'venue-overlooked',
+  category: 'house-life',
+  weight(house, ctx) {
+    if (house.length < 5) return 0;
+    const counts = house.map(beatsInvolving);
+    const average = counts.reduce((sum, n) => sum + n, 0) / counts.length;
+    if (average < 3) return 0;                 // too early in the week to tell
+    const quietest = Math.min(...counts);
+    const shortfall = (average - quietest) / average;
+    if (shortfall < 0.45) return 0;            // nobody is actually being missed
+    return band(shortfall * 14);
+  },
+  fire(house, ctx, api) {
+    const forgotten = _quiet(house)[0];
+    const rest = _others(house, forgotten);
+    // Whoever notices is the person most likely to: high social, or already fond.
+    const noticer = rest.slice().sort((a, b) =>
+      (bond(b, forgotten) + pStats(b).social * 0.3) - (bond(a, forgotten) + pStats(a).social * 0.3))[0];
+    const p = pronouns(forgotten);
+
+    const noticed = !!noticer && (pStats(noticer).social >= 6 || bond(noticer, forgotten) >= 1);
+    const text = noticed ? _variant([
+      `${noticer} works out that nobody has said a word to ${forgotten} all day, and goes and fixes it.`,
+      `${forgotten} has been in the room for every conversation and part of none of them. ${noticer} is the one who notices.`,
+      `"You've been quiet." ${forgotten} says ${p.sub} is fine. ${noticer} sits down anyway.`,
+      `${noticer} pulls ${forgotten} into ${_v('gather')} for no reason at all, which is the first time that has happened this week.`,
+    ], ctx, forgotten, noticer) : _variant([
+      `${forgotten} goes a whole day without being in a single conversation that matters, and nobody notices that ${p.sub} did.`,
+      `${forgotten} drifts through ${_v('place')} being agreed with by everybody and consulted by nobody.`,
+      `Somebody would have to be looking to see how little ${forgotten} has been asked this week. Nobody is looking.`,
+      `${forgotten} eats alone in ${_v('foodSource')} at an hour when the house is full, which takes some doing.`,
+    ], ctx, forgotten);
+
+    if (noticed && noticer) {
+      api.addBond(forgotten, noticer, 0.9);
+      api.remember(forgotten, noticer, 'kindness', 2, { about: 'noticed me when nobody had' });
+    } else {
+      // Being invisible is safety and a dead end at the same time.
+      _others(house, forgotten).forEach(w => api.suspicion(w, forgotten, -0.2));
+      api.popDelta(forgotten, 1);
+    }
+    return {
+      text, players: [forgotten, noticed ? noticer : null].filter(Boolean),
+      badgeText: noticed ? 'SOMEBODY NOTICES' : 'NOBODY IS LOOKING',
+      badgeClass: noticed ? 'green' : 'grey',
+    };
+  },
+};
+
+VENUE_EVENTS.push(overlooked);

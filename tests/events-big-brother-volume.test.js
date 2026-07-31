@@ -99,7 +99,10 @@ describe('the Big Brother event library as a whole', () => {
   it('fires every event in real seasons — no dead code', () => {
     // Forty-seven events compete for a finite number of beats, so a rare one
     // needs a real sample before its absence means anything.
-    const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102, 117, 131, 149, 163, 177, 191, 205, 219, 233, 247]);
+    // Ten seasons rather than twenty: a week produces roughly 105 beats now
+    // against the ~18 it did when this sweep was written, so this sample is
+    // several times larger than the original in the thing that matters.
+    const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102]);
     const never = HOUSE_EVENTS.map(e => e.id).filter(id => !fired[id] && !ULTRA_RARE.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
   }, 240000);

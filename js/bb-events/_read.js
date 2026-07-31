@@ -86,14 +86,50 @@ export const perceived = (a, b) => (a && b && a !== b ? getPerceivedBond(a, b) :
  */
 export const hidden = (a, b) => bond(a, b) - perceived(a, b);
 
+/**
+ * How over-featured somebody already is, relative to the rest of the pool.
+ *
+ * Zero is an average share of the week; positive means they have been on
+ * screen more than their share, negative less. Used to break ties in the cast
+ * pickers so the same well-connected houseguest does not carry every event.
+ */
+function screenShare(name, pool) {
+  const others = (pool || []).filter(Boolean);
+  if (others.length < 2) return 0;
+  const counts = others.map(beatsInvolving);
+  const average = counts.reduce((sum, n) => sum + n, 0) / counts.length;
+  if (average <= 0) return 0;
+  return (beatsInvolving(name) - average) / average;
+}
+
+/**
+ * Enough to break a near-tie, not enough to overrule a real relationship.
+ *
+ * Bonds run -10 to 10. Somebody who has had twice their share of the week
+ * carries a penalty of about one and a half points, so a genuinely closest
+ * ally still wins — but between two people the subject feels much the same
+ * about, the one who has not been on screen gets the scene.
+ */
+const FAIR_WEIGHT = 1.5;
+
+/**
+ * The pickers used to sort on bond alone, which meant they returned the same
+ * name for the same subject every single time. One well-connected houseguest
+ * ended up in 142 beats of a week against another's 35 — the feed read as a
+ * show about one person.
+ */
 export function closestTo(name, pool) {
-  return [...(pool || [])].filter(n => n && n !== name)
-    .sort((x, y) => bond(name, y) - bond(name, x))[0] || null;
+  const options = [...(pool || [])].filter(n => n && n !== name);
+  return options
+    .sort((x, y) => (bond(name, y) - FAIR_WEIGHT * screenShare(y, options))
+                  - (bond(name, x) - FAIR_WEIGHT * screenShare(x, options)))[0] || null;
 }
 
 export function furthestFrom(name, pool) {
-  return [...(pool || [])].filter(n => n && n !== name)
-    .sort((x, y) => bond(name, x) - bond(name, y))[0] || null;
+  const options = [...(pool || [])].filter(n => n && n !== name);
+  return options
+    .sort((x, y) => (bond(name, x) + FAIR_WEIGHT * screenShare(x, options))
+                  - (bond(name, y) + FAIR_WEIGHT * screenShare(y, options)))[0] || null;
 }
 
 /** Trusted enough that a betrayal would actually register as one. */

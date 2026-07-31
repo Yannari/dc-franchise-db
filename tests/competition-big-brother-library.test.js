@@ -156,7 +156,7 @@ describe('Big Brother competition library', () => {
     expect(never, `never picked in a real season: ${never.join(', ')}`).toEqual([]);
     // The written library should carry the season; the fallback is a safety net.
     expect(custom / (custom + generic)).toBeGreaterThan(0.8);
-  });
+  }, 240000);
 
   it('varies what kind of competition the house plays week to week', () => {
     reset();

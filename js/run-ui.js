@@ -1329,15 +1329,21 @@ export function renderTwistCatalog() {
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
   const cats   = ['team','immunity','elim','returns','advantages','social','challenge'];
 
+  // Only ever show twists belonging to the show being designed. A Tribe Swap
+  // means nothing in a house and an HOH means nothing on a beach, so the
+  // catalogue is scoped to the format rather than filtered by the reader.
+  const catalog = (typeof twistsForFormat === 'function' && typeof seasonConfig !== 'undefined')
+    ? twistsForFormat(seasonConfig) : TWIST_CATALOG;
+
   // Update category counts
   cats.forEach(cat => {
     const el = document.getElementById('fd-count-' + cat);
-    if (el) el.textContent = TWIST_CATALOG.filter(t => t.category === cat).length;
+    if (el) el.textContent = catalog.filter(t => t.category === cat).length;
   });
   const allEl = document.getElementById('fd-count-all');
-  if (allEl) allEl.textContent = TWIST_CATALOG.length;
+  if (allEl) allEl.textContent = catalog.length;
 
-  let filtered = TWIST_CATALOG.slice();
+  let filtered = catalog.slice();
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);
   if (currentTwistFilter === 'challenge' && currentChalSeries !== 'all') {
     filtered = filtered.filter(t => t.chalSeries === currentChalSeries);
@@ -1354,8 +1360,8 @@ export function renderTwistCatalog() {
         'ridonculous':'Ridonculous Race',
         'dc1':'DC S1','dc2':'DC S2','dc3':'DC S3','dc4':'DC S4','dc5':'DC S5'
       };
-      const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
-      const chalTwists = TWIST_CATALOG.filter(c => c.category === 'challenge');
+      const allSeries = [...new Set(catalog.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
+      const chalTwists = catalog.filter(c => c.category === 'challenge');
       seriesRow.innerHTML = `<button class="fd-filter-btn ${currentChalSeries === 'all' ? 'active' : ''}" data-chal-series="all" onclick="setChalSeries('all')">All Series ${chalTwists.length}</button>` +
         allSeries.map(s => {
           const cnt = chalTwists.filter(c => c.chalSeries === s).length;
@@ -1368,7 +1374,12 @@ export function renderTwistCatalog() {
   }
 
   if (!filtered.length) {
-    container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">No twists match your search.</div>';
+    // Distinguish "your search found nothing" from "this show has none of these",
+    // which are the same empty box but completely different problems.
+    const show = typeof formatName === 'function' ? formatName(seasonConfig) : 'this show';
+    container.innerHTML = `<div style="padding:16px;color:var(--muted);font-size:13px">${
+      catalog.length ? 'No twists match your search.'
+        : `No ${show} twists are built yet. The format runs its standard week.`}</div>`;
     return;
   }
 

@@ -191,6 +191,9 @@ const functions = [
   'setGs', 'setGsCheckpoints', 'setViewingEpNum',
   'setSelectedEpisodes', 'setCurrentTwistFilter', 'setCurrentChalSeries',
   'setPreGameAlliances', 'setEditingAllianceId', 'setAlliancePerm',
+  // Which show this season is. run-ui.js reads these as bare globals, so the
+  // twist catalogue can scope itself to the format being designed.
+  'seasonFormat', 'twistFormat', 'twistsForFormat', 'formatIsRunnable', 'formatName',
 ];
 
 for (const name of functions) {

@@ -14,7 +14,66 @@ import { seasonConfig } from './core.js';
 
 export const SETTING_LIST = ['hosted-camp', 'survival-island', 'carnival', 'film-lot', 'world-tour'];
 
+/**
+ * Settings belong to a show, not to the franchise.
+ *
+ * A survival island is not a place Big Brother can happen and a house is not a
+ * place Total Drama can happen, so the setting list is scoped by format. The
+ * config screen was offering a house season a choice between a camp and a
+ * film lot, which is a question with no correct answer.
+ */
+export const SETTINGS_BY_FORMAT = {
+  'total-drama': SETTING_LIST,
+  'big-brother': ['bb-house'],
+};
+
+export function settingsForFormat(fmt) {
+  return SETTINGS_BY_FORMAT[fmt] || SETTING_LIST;
+}
+
+/** The default setting for a show — the first one it has. */
+export function defaultSettingFor(fmt) {
+  return settingsForFormat(fmt)[0];
+}
+
 export const SEASON_SETTINGS = {
+  /**
+   * The house.
+   *
+   * Big Brother has exactly one venue and it never changes, which is the
+   * point of it: the same rooms, the same cameras and the same people for
+   * three months. More house themes can be added here the way Total Drama
+   * added venues; the format only needs one to be correct.
+   */
+  'bb-house': {
+    label: 'The House', emoji: '🏠',
+    blurb: 'One house, sealed from the outside. Cameras in every room, a live feed that never stops, and an HOH suite somebody new sleeps in every week.',
+    vocab: { place: 'the house', shelter: 'the bedrooms', gather: 'the living room', water: 'the washroom',
+             sleep: 'the beds', downtime: 'the lounge', foodSource: 'the kitchen' },
+    arrival: { vehicle: 'front door', verb: 'walks through the front door', point: 'the living room',
+               onPoint: 'in the living room', headline: 'One house. No way out but a vote.',
+               groupCall: 'Everybody to the living room!' },
+    reskin: {
+      meal: [ `{a} cooks enough for two and leaves a plate out where {b} will find it.`,
+              `{a} and {b} eat standing at the kitchen counter at 2 a.m., which is when the honest conversations happen.`,
+              `{a} saves {b} the last of the good coffee. In here that is a gesture with weight.` ],
+      improve: [ `{p} cleans {shelter} without being asked. The house notices, which was the idea.`,
+                 `{p} reorganises the kitchen and quietly makes {po}self useful to people who were not thinking about {po}.`,
+                 `{p} does everybody's dishes at midnight. It is a strategy as much as a chore.` ],
+      wildlife: [ `A wasp gets into {gather} through the vent and the whole house evacuates in pyjamas.`,
+                  `Something is living behind the storage room wall. The house has named it and taken sides.` ],
+      weather: [ `Rain hammers the backyard all day. Nobody can go outside, and the conversations turn sharper for it.`,
+                 `The air conditioning is set to freezing again. {a} and {b} end up sharing a blanket in {gather} and talking longer than either meant to.` ],
+    },
+    atmosphere: [
+      `The feeds cut to fish. Whatever was said in {gather} is not on the record.`,
+      `Lockdown is called and the whole house is herded into {shelter} for an hour with nothing to do but talk.`,
+      `The house lights come up at 8 a.m. whether anybody is ready or not. {a} and {b} are already whispering in {sleep}.`,
+      `Somebody has been in the diary room a long time. {a} and {b} both notice, and both pretend not to.`,
+      `The backyard opens after two days shut. {a} and {b} take the first lap together, out of earshot.`,
+      `The HOH suite door closes upstairs. Downstairs, {a} and {b} do the arithmetic on who went in with {po}.`,
+    ],
+  },
   'hosted-camp': {
     label: 'Hosted Camp', emoji: '🏕️',
     blurb: 'A summer camp run by the host — cabins, a mess hall, and Chef doing the cooking.',

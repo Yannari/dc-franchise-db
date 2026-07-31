@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { TWIST_CATALOG, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
+import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -809,6 +810,59 @@ export function qsSetFormat(fmt) {
 // whichever control was used.
 export function qsOnFormatChange() {
   window.updateFormatNote?.();
+  // Switching show changes what can be designed, not just the note under the
+  // dropdown: the twist catalogue and the venue list both belong to a format.
+  renderSettingOptions();
+  window.renderTwistCatalog?.();
+  window.renderFormatToggle?.();
+}
+
+/**
+ * The show switch, at the top of the designer.
+ *
+ * The only control for this lived in Season Basics, several panels away from
+ * the screen whose entire contents depend on it — so designing a house season
+ * meant staring at a catalogue of tribe swaps with no visible way to change it.
+ * Writes through the same <select>, so there is still one source of truth.
+ */
+export function renderFormatToggle() {
+  const host = _g('fd-format-toggle');
+  if (!host) return;
+  const fmt = seasonFormat(seasonConfig);
+  const shows = [
+    { id: 'total-drama', label: 'Total Drama', sub: 'tribes · challenges · tribal council' },
+    { id: 'big-brother', label: 'Big Brother', sub: 'one house · HOH · veto · live eviction' },
+  ];
+  host.innerHTML = shows.map(s => `<button class="fd-show-btn ${s.id === fmt ? 'active' : ''}"
+      onclick="qsSetFormat('${s.id}')">
+      <span class="fd-show-name">${s.label}</span>
+      <span class="fd-show-sub">${s.sub}</span>
+      ${formatIsRunnable(s.id) ? '' : '<span class="fd-show-warn">not wired</span>'}
+    </button>`).join('');
+}
+
+/**
+ * Rebuild the venue dropdown for the show being designed.
+ *
+ * These used to be five hard-coded Total Drama options in the HTML, so a house
+ * season was asked to choose between a summer camp and a film lot. The list is
+ * owned by settings.js and scoped by format; the current value is kept if the
+ * new show has it and reset to that show's default if it does not.
+ */
+export function renderSettingOptions() {
+  const el = _g('cfg-setting');
+  if (!el) return;
+  const fmt = seasonFormat(seasonConfig);
+  const ids = settingsForFormat(fmt);
+  // Read the saved setting, not the <select>'s current value: this runs during
+  // boot too, and at that point the dropdown is still on its HTML default.
+  const prev = seasonConfig?.setting || el.value;
+  el.innerHTML = ids.map(id => {
+    const s = SEASON_SETTINGS[id] || {};
+    return `<option value="${id}">${s.emoji || ''} ${s.label || id}${s.blurb ? ` — ${s.blurb.split(/[.—]/)[0].trim()}` : ''}</option>`;
+  }).join('');
+  el.value = ids.includes(prev) ? prev : defaultSettingFor(fmt);
+  if (el.value !== prev) window.saveConfig?.();
 }
 
 export function qsApplyPreset(name) { applyQuickPreset(name); }

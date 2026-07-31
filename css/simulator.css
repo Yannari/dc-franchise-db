@@ -146,6 +146,7 @@
        Retints the reader's gold accent + lays a faint venue motif behind each
        .rp-page screen. Scoped to .rp-page so twist-challenge shells (own themes)
        are untouched. Motifs are low-opacity CSS textures; hero art is inline SVG. */
+    .rp-set-bb-house      { --set-accent:#c9343c; }
     .rp-set-hosted-camp   { --set-accent:#f0c040; }
     .rp-set-survival-island { --set-accent:#46c7b4; }
     .rp-set-carnival      { --set-accent:#ff5a7a; }
@@ -160,6 +161,13 @@
       content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
       opacity:.5; mix-blend-mode:screen; background-size:cover; }
     @media (prefers-reduced-motion: reduce) { [class*="rp-set-"] .rp-page::before { animation:none; } }
+    /* 🏠 the house — camera grid and the red glow of a live feed */
+    .rp-set-bb-house .rp-page::before {
+      opacity:.09;
+      background:
+        repeating-linear-gradient(0deg, rgba(201,52,60,.20) 0 1px, transparent 1px 46px),
+        repeating-linear-gradient(90deg, rgba(201,52,60,.14) 0 1px, transparent 1px 46px),
+        radial-gradient(ellipse at 50% -10%, rgba(201,52,60,.30), transparent 55%); }
     /* 🏝️ survival island — teal wave bands */
     .rp-set-survival-island .rp-page::before {
       opacity:.10;

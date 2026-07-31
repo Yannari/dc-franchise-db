@@ -15897,40 +15897,18 @@ export function buildBBWeekScreens(ep) {
   return screens;
 }
 
-/**
- * The memory wall.
- *
- * The house's own furniture: every houseguest of the season on one wall, the
- * ones who have gone turned grey. It is a grid because it is a wall — a column
- * of one portrait per row wasted the whole screen and told you less.
- *
- * `stillIn` is the roster at the START of whatever is being shown, so the wall
- * never gives away a result the viewer has not reached yet. On the house status
- * screen that means this week's evictee is still lit; on the aftermath, where
- * the eviction has already played, they have gone dark.
- */
-function _bbMemoryWall(stillIn, { highlight = {}, note = '' } = {}) {
-  const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn]);
-  const live = new Set(stillIn);
-  const cells = all.map(name => {
-    const out = !live.has(name);
-    const tag = highlight[name];
-    const border = tag === 'hoh' ? '#f0a500' : tag === 'veto' ? '#3fb950' : tag === 'nominee' ? '#f85149' : out ? '#21262d' : '#30363d';
-    return `<div style="text-align:center;${out ? 'opacity:.28;filter:grayscale(1)' : ''}">
-      <div style="width:100%;aspect-ratio:1;border-radius:6px;border:2px solid ${border};overflow:hidden;background:#161b22;position:relative">
-        <img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
-        ${out ? `<div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent,transparent 6px,rgba(0,0,0,.35) 6px,rgba(0,0,0,.35) 7px)"></div>` : ''}
-      </div>
-      <div style="font-size:9px;margin-top:4px;color:${out ? '#484f58' : '#c9d1d9'};letter-spacing:.3px">${name}</div>
-      ${tag ? `<div style="font-size:7.5px;letter-spacing:1px;color:${border};text-transform:uppercase">${tag}</div>` : ''}
-    </div>`;
-  }).join('');
+// Small line icons for the status board. Drawn rather than written, and never
+// emoji, so they sit at any size and read at a glance.
+const _BB_ICON = {
+  hoh: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l1.6-6.4L6.4 8 8 3.2 9.6 8l2.8-2.4L14 12z"/><path d="M2.6 13.6h10.8"/></svg>`,
+  veto: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.8l5 2v4.2c0 3-2.1 5.3-5 6.2-2.9-.9-5-3.2-5-6.2V3.8z"/><path d="M5.6 8.2l1.7 1.7 3.3-3.4"/></svg>`,
+  block: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="2.2"/></svg>`,
+  ally: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.6" cy="6" r="2.2"/><circle cx="11" cy="6.6" r="1.8"/><path d="M1.8 13c.4-2.1 1.9-3.2 3.8-3.2S9 10.9 9.4 13"/><path d="M10.6 9.9c1.7 0 2.9 1 3.3 3"/></svg>`,
+  alone: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.6" r="2.4"/><path d="M3.6 13.2c.5-2.4 2.2-3.6 4.4-3.6s3.9 1.2 4.4 3.6"/></svg>`,
+};
 
-  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;margin:14px 0">${cells}</div>
-    ${note ? `<div style="text-align:center;font-size:10px;color:#6e7681;letter-spacing:.5px">${note}</div>` : ''}`;
-}
+const _bbStat = (icon, value, color) =>
+  `<span style="display:inline-flex;align-items:center;gap:3px;color:${color}">${_BB_ICON[icon]}${value !== null && value !== undefined ? `<span style="font-family:var(--font-mono);font-size:10px">${value}</span>` : ''}</span>`;
 
 const _bbSlug = name => {
   const p = (typeof players !== 'undefined') ? players.find(x => x.name === name) : null;
@@ -15938,22 +15916,72 @@ const _bbSlug = name => {
 };
 
 /**
+ * The memory wall.
+ *
+ * Framed portraits on a wall, which is what the format actually has — a grid of
+ * lit frames for the people still in the house and dark, desaturated ones for
+ * everybody who has gone. `stillIn` is the roster at the START of whatever is
+ * being shown, so the wall never gives away a result the viewer has not reached:
+ * on the house status screen this week's evictee is still lit; on the aftermath,
+ * where the eviction has already played, they have gone out.
+ */
+function _bbMemoryWall(stillIn, { note = '' } = {}) {
+  const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn]);
+  const live = new Set(stillIn);
+  const cells = all.map(name => {
+    const out = !live.has(name);
+    return `<div style="text-align:center">
+      <div style="position:relative;padding:5px;border-radius:3px;
+        background:${out ? 'linear-gradient(160deg,#14171c,#0e1116)' : 'linear-gradient(160deg,#2b2f38,#1a1e25)'};
+        box-shadow:${out ? 'inset 0 0 0 1px rgba(255,255,255,.03)' : 'inset 0 0 0 1px rgba(255,255,255,.09), 0 2px 10px rgba(0,0,0,.45)'};">
+        <div style="position:relative;aspect-ratio:1;overflow:hidden;border-radius:2px;background:#0b0e13;
+          box-shadow:inset 0 0 0 1px rgba(0,0,0,.6);${out ? 'filter:grayscale(1) brightness(.5)' : ''}">
+          <img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
+          ${out ? '' : `<div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.10),transparent 42%);pointer-events:none"></div>`}
+        </div>
+        ${out ? `<div style="position:absolute;inset:5px;border-radius:2px;background:rgba(6,8,11,.55);pointer-events:none"></div>` : ''}
+      </div>
+      <div style="font-size:9px;margin-top:4px;letter-spacing:.3px;color:${out ? '#3d444d' : '#c9d1d9'}">${name}</div>
+    </div>`;
+  }).join('');
+
+  return `<div style="padding:14px 12px;border-radius:6px;margin:14px 0;
+      background:linear-gradient(180deg,#171a20,#101318);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5), 0 8px 26px rgba(0,0,0,.35)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:11px">${cells}</div>
+    </div>
+    ${note ? `<div style="text-align:center;font-size:10px;color:#6e7681;letter-spacing:.5px;margin-top:-6px">${note}</div>` : ''}`;
+}
+
+/**
  * House status — the house's version of the camp overview.
  *
- * One screen, the way a Total Drama camp is one screen: the memory wall at the
- * top, then collapsible sections for where everybody stands, who is aligned
- * with whom, which relationships actually matter, and the season so far.
+ * One screen: the memory wall, then collapsible sections for where everybody
+ * stands, who is aligned with whom, which relationships decide votes, and the
+ * season so far.
  *
- * Alliances and relationships were separate screens for a while, which is a
- * whole page each to say something that fits in a paragraph. They belong here.
+ * Everything here reads the house as it was when the week OPENED. The record
+ * is rebuilt from previous weeks rather than taken from gs.bb.stats, because
+ * those counters already include this week — which put the new Head of
+ * Household on the board before the viewer had watched the competition.
  */
 export function rpBuildBBOverview(ep) {
   const snap = ep.gsSnapshot || {};
-  // The house as it stood when the week OPENED — never this week's result.
   const stillIn = ep.houseAtStart?.length ? ep.houseAtStart : (snap.activePlayers || gs.activePlayers || []);
   if (!stillIn.length) return '';
 
-  const stats = snap.bb?.stats || gs.bb?.stats || {};
+  // Record as of the start of this week: only weeks that have already aired.
+  const priorWeeks = (gs.episodeHistory || []).filter(h => h.format === 'big-brother' && h.num < ep.num);
+  const stats = {};
+  const bump = (name, key) => { if (!name) return; (stats[name] ||= { hoh: 0, veto: 0, block: 0 })[key]++; };
+  priorWeeks.forEach(h => {
+    bump(h.hoh, 'hoh');
+    bump(h.vetoWinner, 'veto');
+    (h.finalNominees || []).forEach(n => bump(n, 'block'));
+  });
+
   const alliances = (snap.namedAlliances || gs.namedAlliances || [])
     .filter(a => a.active !== false && !a.dissolved && (a.members || []).some(m => stillIn.includes(m)));
   const alliesOf = name => [...new Set(alliances.filter(a => (a.members || []).includes(name))
@@ -15967,16 +15995,15 @@ export function rpBuildBBOverview(ep) {
     <div id="${id(key)}" class="rp-camp-toggle-body">${body}</div>
   </div>`;
 
-  // ── standing ──
   const rows = stillIn.map(name => {
-    const st = stats[name] || {};
+    const st = stats[name] || { hoh: 0, veto: 0, block: 0 };
     const mates = alliesOf(name);
     const others = stillIn.filter(n => n !== name);
     const standing = others.length
       ? others.reduce((sum, n) => sum + (typeof getPerceivedBond === 'function' ? getPerceivedBond(n, name) : 0), 0) / others.length
       : 0;
-    return { name, mates, hoh: st.hohWins || 0, veto: st.vetoWins || 0, block: st.timesOnTheBlock || 0,
-      power: (st.hohWins || 0) * 2 + (st.vetoWins || 0) * 1.5 + mates.length * 0.8 + standing * 0.5 - (st.timesOnTheBlock || 0) * 0.6 };
+    return { name, mates, ...st,
+      power: st.hoh * 2 + st.veto * 1.5 + mates.length * 0.8 + standing * 0.5 - st.block * 0.6 };
   }).sort((a, b) => b.power - a.power);
 
   const third = Math.ceil(rows.length / 3);
@@ -15988,26 +16015,27 @@ export function rpBuildBBOverview(ep) {
 
   const standingBody = bands.map(b => `<div style="margin-bottom:10px">
     <div style="font-size:10px;letter-spacing:1.5px;color:${b.color};margin-bottom:5px">${b.label}</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:5px">
-      ${b.rows.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${b.color};background:${b.color}0a;border-radius:4px">
-        <strong style="font-size:12px;min-width:72px">${r.name}</strong>
-        <span style="font-size:10px;color:#8b949e">${[
-          r.hoh ? `${r.hoh}× HOH` : '', r.veto ? `${r.veto}× veto` : '',
-          r.block ? `${r.block}× block` : '', r.mates.length ? `+${r.mates.length}` : 'alone',
-        ].filter(Boolean).join(' · ')}</span></div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px">
+      ${b.rows.map(r => `<div style="display:flex;align-items:center;gap:9px;padding:5px 8px;border-left:2px solid ${b.color};background:${b.color}0a;border-radius:4px">
+        <strong style="font-size:12px;min-width:70px">${r.name}</strong>
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          ${r.hoh ? _bbStat('hoh', r.hoh, '#f0a500') : ''}
+          ${r.veto ? _bbStat('veto', r.veto, '#3fb950') : ''}
+          ${r.block ? _bbStat('block', r.block, '#f85149') : ''}
+          ${r.mates.length ? _bbStat('ally', r.mates.length, '#58a6ff') : _bbStat('alone', null, '#4d545c')}
+        </span>
+      </div>`).join('')}
     </div></div>`).join('');
 
-  // ── alliances ──
   const allianceBody = alliances.length ? alliances.map(a => {
     const live = (a.members || []).filter(m => stillIn.includes(m));
     return `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-left:2px solid #58a6ff;background:#58a6ff0a;border-radius:4px;margin-bottom:5px">
       <strong style="font-size:12px;min-width:104px">${a.name}</strong>
       <span style="font-size:11px;color:#c9d1d9;flex:1">${live.join(', ')}</span>
-      <span style="font-size:9px;color:#6e7681;letter-spacing:.5px">${a.formationEvidence || ''}${a.trust != null ? ` · trust ${Number(a.trust).toFixed(1)}` : ''}</span>
+      <span style="font-size:9px;color:#6e7681;letter-spacing:.5px">${a.formationEvidence || ''}</span>
     </div>`;
   }).join('') : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has formalised anything yet.</div>`;
 
-  // ── relationships: the pairs that actually decide votes ──
   const pairs = [];
   for (let i = 0; i < stillIn.length; i++) {
     for (let j = i + 1; j < stillIn.length; j++) {
@@ -16016,24 +16044,22 @@ export function rpBuildBBOverview(ep) {
     }
   }
   pairs.sort((x, y) => Math.abs(y.v) - Math.abs(x.v));
-  const relBody = pairs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:5px">
+  const relBody = pairs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:5px">
     ${pairs.slice(0, 14).map(p => {
-      const good = p.v > 0;
-      const color = good ? '#3fb950' : '#f85149';
+      const good = p.v > 0, color = good ? '#3fb950' : '#f85149';
       return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${color};background:${color}0a;border-radius:4px">
         <span style="font-size:11px;flex:1">${p.a} <span style="color:#6e7681">${good ? '&' : 'vs'}</span> ${p.b}</span>
-        <span style="font-size:10px;color:${color};font-family:var(--font-mono)">${p.v > 0 ? '+' : ''}${p.v.toFixed(1)}</span>
+        <span style="font-size:10px;color:${color};font-family:var(--font-mono)">${good ? '+' : ''}${p.v.toFixed(1)}</span>
       </div>`;
     }).join('')}</div>`
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody feels strongly about anybody yet.</div>`;
 
-  // ── the season so far ──
-  const past = (gs.episodeHistory || []).filter(h => h.num <= ep.num && h.format === 'big-brother');
-  const timelineBody = past.length ? past.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(139,148,158,.08)">
-      <span style="min-width:52px;color:#6e7681;font-family:var(--font-mono)">WK ${h.num}</span>
-      <span style="min-width:96px;color:#f0a500">${h.hoh || '—'}</span>
+  // Only weeks that have already aired — this one is still being watched.
+  const timelineBody = priorWeeks.length ? priorWeeks.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(139,148,158,.08)">
+      <span style="min-width:48px;color:#6e7681;font-family:var(--font-mono)">WK ${h.num}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;min-width:96px;color:#f0a500">${_BB_ICON.hoh}${h.hoh || '—'}</span>
       <span style="flex:1;color:#8b949e">${(h.finalNominees || []).join(' · ')}</span>
-      <span style="color:${h.num === ep.num ? '#6e7681' : '#f85149'}">${h.num === ep.num ? 'in progress' : (h.eliminated || '—')}</span>
+      <span style="color:#f85149">${h.eliminated || '—'}</span>
     </div>`).join('')
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Week one. Nothing has happened yet.</div>`;
 

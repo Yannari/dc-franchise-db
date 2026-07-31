@@ -743,7 +743,10 @@ export function renderVPScreen() {
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
   // Per-setting skin: retint accent + venue motif on the reader (scoped to .rp-page).
   try {
-    const _set = (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
+    // A Big Brother season is not at any of the Total Drama venues, so it takes
+    // its own skin rather than having a camp or a film lot painted over it.
+    const _bb = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother');
+    const _set = _bb ? 'bb-house' : (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
     content.className = (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`;
   } catch (e) {}
   content.innerHTML = '<div class="vp-stage-cue" aria-hidden="true"><span>' + curPhase.icon + '</span>' + curPhase.label + '</div>' + cur.html;

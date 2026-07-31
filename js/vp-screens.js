@@ -15832,35 +15832,54 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       ${_bbfWall(house, status)}`;
 
   if (beats.length) {
-    html += `<div class="bbf-cards">`;
-    beats.forEach((beat, i) => {
-      const cat = _bbfCat(beat.category);
-      const load = _BB_LOAD.has(beat.category);
-      const cls = beat.badgeClass || 'grey';
-      const people = (beat.players || []).filter(Boolean).slice(0, 4);
-      const room = _BBF_ROOMS[(i * 3 + (people[0]?.length || 0)) % _BBF_ROOMS.length];
-      html += `<div class="bbf-card ${load ? 'is-load' : 'is-amb'}"
-          style="border-left-color:${cat.fg}">
-        <span class="bbf-slug">CAM ${String((i % 9) + 1).padStart(2, '0')} · ${room} · ${_bbfClock(phase, i)}</span>
-        <div class="rp-brant-portraits">${
-          people.length === 2 ? rpDuoImg(people[0], people[1])
-            : people.length ? people.map(n => rpPortrait(n)).join('')
-            : ''}</div>
-        <div class="bbf-txt">${beat.text}</div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-          <span class="bbf-cat" style="background:${cat.bg};color:${cat.fg}">${cat.label}</span>
-          ${beat.badgeText ? `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>` : ''}
+    // Grouped by what kind of beat it is, the way the camp screens group camp
+    // events. Twenty beats in one undifferentiated column is a wall; the same
+    // twenty under four headings is a week you can read.
+    const ORDER = ['ceremonies', 'phases', 'deals', 'social', 'house-life'];
+    const byCat = {};
+    beats.forEach((b, i) => { (byCat[b.category || 'house-life'] ||= []).push({ ...b, i }); });
+    const cats = [...ORDER.filter(c => byCat[c]), ...Object.keys(byCat).filter(c => !ORDER.includes(c))];
+
+    cats.forEach(key => {
+      const cat = _bbfCat(key);
+      const group = byCat[key];
+      html += `<div class="bbf-group">
+        <div class="bbf-group-h" style="--bbf-c:${cat.fg}">
+          <span class="bbf-group-n">${cat.label}</span>
+          <span class="bbf-group-c">${group.length}</span>
         </div>
-      </div>`;
+        <div class="bbf-cards">`;
+      group.forEach(beat => {
+        const i = beat.i;
+        const load = _BB_LOAD.has(beat.category);
+        const cls = beat.badgeClass || 'grey';
+        const people = (beat.players || []).filter(Boolean).slice(0, 4);
+        const room = _BBF_ROOMS[(i * 3 + (people[0]?.length || 0)) % _BBF_ROOMS.length];
+        html += `<div class="bbf-card ${load ? 'is-load' : 'is-amb'}"
+            style="border-left-color:${cat.fg}">
+          <span class="bbf-slug">CAM ${String((i % 9) + 1).padStart(2, '0')} · ${room} · ${_bbfClock(phase, i)}</span>
+          <div class="rp-brant-portraits">${
+            people.length === 2 ? rpDuoImg(people[0], people[1])
+              : people.length ? people.map(n => rpPortrait(n)).join('')
+              : ''}</div>
+          <div class="bbf-txt">${beat.text}</div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            ${beat.badgeText ? `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>` : ''}
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
     });
-    html += `</div>`;
   } else {
     html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:18px 0">
       The feeds stay up. Nobody says anything they would repeat on camera.</div>`;
   }
   html += `</div>`;
 
-  if (bookend) html += _bbfPanels(ep, house, slot === 1);
+  // On every stretch of the week, not just the ends: the whole point of a
+  // house screen is watching these numbers move, so they have to be next to
+  // the events that moved them.
+  html += _bbfPanels(ep, house, slot === 1);
   return html + `</div>`;
 }
 
@@ -15869,16 +15888,53 @@ export function rpBuildBBHouseLife(ep, act, slot) {
  * agreed to work together out loud. Read from the episode's own snapshot so a
  * replayed week shows that week rather than the end of the season.
  */
+/**
+ * What a bond of that size actually IS.
+ *
+ * A bar and a number say a relationship moved without ever saying what kind of
+ * relationship it is. These are the words the rest of the simulator already
+ * behaves as if it were using — a pair at 7 votes together, a pair at -4 will
+ * not — so the screen may as well say them out loud.
+ */
+function _bbfBondLabel(v) {
+  if (v >= 7) return { word: 'inseparable', color: '#3fb950' };
+  if (v >= 4) return { word: 'close', color: '#3fb950' };
+  if (v >= 1.5) return { word: 'friendly', color: '#7ee787' };
+  if (v > -1.5) return { word: 'cordial', color: '#8b949e' };
+  if (v > -4) return { word: 'tense', color: '#f0a500' };
+  if (v > -7) return { word: 'bad blood', color: '#f85149' };
+  return { word: 'enemies', color: '#f85149' };
+}
+
+/**
+ * The two things a house is actually made of: who trusts whom, and who has
+ * agreed to work together out loud.
+ *
+ * Read from the episode's own snapshot so a replayed week shows that week
+ * rather than the end of the season, and compared against the PREVIOUS week's
+ * snapshot so the screen can say which way each pair is moving — a bar with no
+ * direction on it does not explain anything.
+ */
 function _bbfPanels(ep, house, opening) {
   const snap = ep.gsSnapshot || {};
   const bonds = snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
   const inHouse = new Set(house);
 
+  // Last week's numbers, for the direction of travel.
+  const prior = (typeof gs !== 'undefined' ? (gs.episodeHistory || []) : [])
+    .filter(h => h.format === 'big-brother' && h.num < ep.num).at(-1);
+  const was = prior?.gsSnapshot?.bonds || {};
+
   const pairs = Object.entries(bonds)
-    .map(([k, v]) => [k.split('||'), Number(v) || 0])
-    .filter(([p]) => p.length === 2 && inHouse.has(p[0]) && inHouse.has(p[1]))
-    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
-    .slice(0, 6);
+    .map(([k, v]) => ({ names: k.split('||'), v: Number(v) || 0, key: k }))
+    .filter(p => p.names.length === 2 && inHouse.has(p.names[0]) && inHouse.has(p.names[1]))
+    .sort((a, b) => Math.abs(b.v) - Math.abs(a.v))
+    .slice(0, 8);
+
+  const showmances = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
+    .filter(sh => !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
+  const isShowmance = (a, b) => showmances.some(sh =>
+    (sh.players || []).includes(a) && (sh.players || []).includes(b));
 
   const alliances = (snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false)
@@ -15886,28 +15942,48 @@ function _bbfPanels(ep, house, opening) {
     .filter(a => a.members.length >= 2)
     .slice(0, 5);
 
-  const bar = v => {
-    const pct = Math.min(100, Math.abs(v) * 10);
-    const col = v >= 0 ? '#3fb950' : '#f85149';
-    return `<span class="bbf-bar"><i style="width:${pct}%;background:${col}"></i></span>`;
+  const row = p => {
+    const [a, b] = p.names;
+    const lab = _bbfBondLabel(p.v);
+    const delta = p.v - (Number(was[p.key]) || 0);
+    const moved = Math.abs(delta) >= 0.4;
+    const pct = Math.min(100, Math.abs(p.v) * 10);
+    return `<div class="bbf-rel">
+      <span class="bbf-rel-faces">${rpDuoImg(a, b)}</span>
+      <span class="bbf-rel-who">${a} &amp; ${b}</span>
+      <span class="bbf-rel-mid">
+        <span class="bbf-rel-lab" style="color:${lab.color}">${lab.word}${
+          isShowmance(a, b) ? ` <em class="bbf-rel-show">showmance</em>` : ''}</span>
+        <span class="bbf-bar"><i style="width:${pct}%;background:${lab.color}"></i></span>
+      </span>
+      <span class="bbf-rel-num">
+        <b style="color:${lab.color}">${p.v > 0 ? '+' : ''}${p.v.toFixed(1)}</b>
+        ${moved ? `<i class="bbf-rel-d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'}${Math.abs(delta).toFixed(1)}</i>`
+          : `<i class="bbf-rel-d flat">—</i>`}
+      </span>
+    </div>`;
   };
 
   return `<div class="bbf-panels">
     <div class="bbf-panel">
-      <div class="bbf-panel-h">${opening ? 'Where the house stands' : 'Where the house ended up'}</div>
-      ${pairs.length ? pairs.map(([[a, b], v]) => `<div class="bbf-row">
-          <span style="min-width:104px">${a} · ${b}</span>${bar(v)}
-          <span class="bbf-tag">${v > 0 ? '+' : ''}${v}</span>
-        </div>`).join('')
+      <div class="bbf-panel-h">${opening ? 'Where the house stands' : 'Where the house stands now'}
+        <small>${prior ? 'change since last week' : 'opening positions'}</small></div>
+      ${pairs.length ? pairs.map(row).join('')
         : `<div style="font-size:11px;color:#484f58">Nobody has committed to anybody yet.</div>`}
     </div>
     <div class="bbf-panel">
-      <div class="bbf-panel-h">Alliances in play</div>
-      ${alliances.length ? alliances.map(a => `<div class="bbf-row">
-          <span style="color:#d29922;min-width:104px">${a.name}</span>
-          <span style="flex:1;font-size:11px">${a.members.join(', ')}</span>
+      <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
+      ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
+          <span class="bbf-ally-n">${a.name}</span>
+          <span class="bbf-ally-m">${a.members.map(m => rpPortrait(m)).join('')}</span>
+          <span class="bbf-ally-c">${a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
+      ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
+        ${showmances.map(sh => `<div class="bbf-ally">
+          <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
+          <span class="bbf-ally-m">${(sh.players || []).map(m => rpPortrait(m)).join('')}</span>
+        </div>`).join('')}` : ''}
     </div>
   </div>`;
 }
@@ -16532,9 +16608,10 @@ export function rpBuildBBOverview(ep) {
   const standingBody = key + bands.map(b => `<div style="margin-bottom:10px">
     <div style="font-size:10px;letter-spacing:1.5px;color:${b.color};margin-bottom:5px">${b.label}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px">
-      ${b.rows.map(r => `<div style="display:flex;align-items:center;gap:9px;padding:5px 8px;border-left:2px solid ${b.color};background:${b.color}0a;border-radius:4px">
-        <strong style="font-size:12px;min-width:70px">${r.name}</strong>
-        <span style="display:inline-flex;align-items:center;gap:8px">
+      ${b.rows.map(r => `<div class="bbst-row" style="border-left:2px solid ${b.color};background:${b.color}0a">
+        <span class="bbst-face">${rpPortrait(r.name)}</span>
+        <strong class="bbst-name">${r.name}</strong>
+        <span class="bbst-stats">
           ${r.hoh ? _bbStat('hoh', r.hoh, '#f0a500') : ''}
           ${r.veto ? _bbStat('veto', r.veto, '#3fb950') : ''}
           ${r.block ? _bbStat('block', r.block, '#f85149') : ''}

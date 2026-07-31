@@ -109,17 +109,30 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
   const max = Math.max(min, options.max ?? 3);
   const desired = Math.min(max, min + Math.floor(rng() * (max - min + 1)));
   const fired = [];
-  const used = new Set();
+  // Uses per event, not a used/unused flag.
+  //
+  // Excluding an event outright once it had fired capped an act at however
+  // many events happened to be eligible for that phase, so asking for more
+  // beats than that silently returned fewer and the house looked empty. A
+  // second airing is allowed but heavily penalised, and a third never happens
+  // — and because the beat index feeds each event's text variant, the second
+  // airing picks different words and different people.
+  const uses = new Map();
   const api = createHouseEventApi(ctx);
 
   for (let beat = 0; beat < desired; beat++) {
     const beatCtx = { ...ctx, beat };
-    const eligible = events.filter(event => event?.id && !used.has(event.id) && typeof event.weight === 'function' && typeof event.fire === 'function')
-      .map(event => ({ event, weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0) }))
+    const usable = events.filter(event => event?.id && typeof event.weight === 'function' && typeof event.fire === 'function')
+      .map(event => ({ event, uses: uses.get(event.id) || 0, weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0) }))
       .filter(entry => entry.weight > 0);
+    // Fresh events are not merely preferred, they are exhausted first. Only
+    // once nothing new is eligible does an event get a second airing, so a
+    // longer act never costs variety it could have had.
+    const fresh = usable.filter(entry => entry.uses === 0);
+    const eligible = fresh.length ? fresh : usable.filter(entry => entry.uses < 2);
     const event = weightedPick(eligible, rng);
     if (!event) break;
-    used.add(event.id);
+    uses.set(event.id, (uses.get(event.id) || 0) + 1);
     // Events are handed the seeded rng as a fourth argument. Without it they had
     // to derive any text variety from a hash of the context, because reaching
     // for Math.random would stop a seeded season reproducing. Passing the rng

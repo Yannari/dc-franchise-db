@@ -77,8 +77,14 @@ describe('Big Brother house-event scheduler contract', () => {
   it('attaches variable social beats to every act, eviction included', () => {
     const week = simulateBBWeek({ rng:rng(14), houseEvents:TEN_EVENTS });
     expect(week.acts.length).toBeGreaterThanOrEqual(6);
-    // House acts run longer than ceremony acts — that is where the week lives.
-    expect(week.acts.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 6)).toBe(true);
+    // House acts run MUCH longer than ceremony acts — that is where the week
+    // lives, and a house that only says three things a stretch reads as empty.
+    // The bound here was 6 for both when a stretch of house life was 3-6 beats.
+    const houseActs = week.acts.filter(a => a.type === 'house');
+    const ceremonies = week.acts.filter(a => a.type !== 'house');
+    expect(ceremonies.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 6)).toBe(true);
+    // This runs on a ten-event fixture, so a stretch tops out around twenty.
+    expect(houseActs.every(act => act.socialBeats.length >= 8)).toBe(true);
     // Eviction night used to be hardcoded to silence, which made a farewell
     // speech impossible to write. It gets its beats like every other act now.
     const eviction = week.acts.at(-1);

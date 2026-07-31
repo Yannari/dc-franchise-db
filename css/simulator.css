@@ -220,6 +220,46 @@
                       letter-spacing:1.1px; padding:2px 6px; border-radius:2px; white-space:nowrap; }
     .bbf-txt        { font-size:12.5px; line-height:1.55; color:#c9d1d9; }
 
+    /* Feed groups: twenty beats in one column is a wall, the same twenty under
+       four headings is a week you can read. */
+    .bbf-group      { margin: 0 0 4px; }
+    .bbf-group-h    { display:flex; align-items:center; gap:8px; padding:8px 12px 5px;
+                      font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                      letter-spacing:1.6px; text-transform:uppercase; color:var(--bbf-c,#8b949e); }
+    .bbf-group-h::after { content:''; flex:1; height:1px;
+                      background:linear-gradient(90deg, var(--bbf-c,#8b949e), transparent); opacity:.35; }
+    .bbf-group-n    { flex-shrink:0; font-weight:700; }
+    .bbf-group-c    { order:3; flex-shrink:0; opacity:.7; }
+
+    /* ── Relationship rows: who, what kind, and which way it is moving ── */
+    .bbf-rel        { display:grid; grid-template-columns:auto 1fr 2fr auto; gap:9px;
+                      align-items:center; padding:6px 0;
+                      border-bottom:1px solid rgba(255,255,255,.04); }
+    .bbf-rel:last-child { border-bottom:0; }
+    .bbf-rel-faces .rp-duo, .bbf-rel-faces img { width:26px; height:26px; }
+    .bbf-rel-who    { font-size:11.5px; color:#c9d1d9; overflow:hidden;
+                      text-overflow:ellipsis; white-space:nowrap; }
+    .bbf-rel-mid    { display:flex; flex-direction:column; gap:3px; }
+    .bbf-rel-lab    { font-size:9.5px; letter-spacing:.6px; text-transform:lowercase; }
+    .bbf-rel-show   { font-style:normal; color:#ff7b72; }
+    .bbf-rel-show::before { content:'· '; }
+    .bbf-rel-num    { display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+                      font-family:ui-monospace,Consolas,monospace; font-size:11px; }
+    .bbf-rel-d      { font-style:normal; font-size:8.5px; letter-spacing:.4px; }
+    .bbf-rel-d.up   { color:#3fb950; }
+    .bbf-rel-d.down { color:#f85149; }
+    .bbf-rel-d.flat { color:#4d545c; }
+
+    .bbf-ally       { display:flex; align-items:center; gap:9px; padding:6px 0;
+                      border-bottom:1px solid rgba(255,255,255,.04); }
+    .bbf-ally:last-child { border-bottom:0; }
+    .bbf-ally-n     { font-size:11.5px; color:#d29922; min-width:96px; flex-shrink:0; }
+    .bbf-ally-m     { display:flex; flex-wrap:wrap; gap:3px; flex:1; }
+    .bbf-ally-m .rp-portrait, .bbf-ally-m img { width:22px; height:22px; }
+    .bbf-ally-c     { font-family:ui-monospace,Consolas,monospace; font-size:10px; color:#6e7681; }
+    .bbf-panel-h small { float:right; font-size:8.5px; letter-spacing:.8px;
+                      text-transform:none; color:#4d545c; }
+
     /* ── Side panels: the two things the house is actually made of ── */
     .bbf-panels     { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-top:12px; }
     .bbf-panel      { border:1px solid var(--border,#30363d); border-radius:6px; padding:10px 12px;
@@ -284,6 +324,15 @@
     .bbw-cell.is-out .bbw-photo img { filter:grayscale(1) brightness(.34); }
     .bbw-cell.is-out .bbw-photo::after { content:''; position:absolute; inset:0; background:rgba(4,6,9,.5); }
     .bbw-cell.is-out .bbw-name  { color:rgba(255,255,255,.42); text-decoration:line-through; }
+
+    /* Standing rows carry a face: a name in a list of fourteen is a lookup,
+       a face is recognition. */
+    .bbst-row       { display:flex; align-items:center; gap:9px; padding:5px 8px; border-radius:4px; }
+    .bbst-face      { display:flex; flex-shrink:0; }
+    .bbst-face .rp-portrait, .bbst-face img { width:26px; height:26px; }
+    .bbst-name      { font-size:12px; flex:1; overflow:hidden;
+                      text-overflow:ellipsis; white-space:nowrap; }
+    .bbst-stats     { display:inline-flex; align-items:center; gap:8px; flex-shrink:0; }
 
     /* Legend for the standing icons — an icon nobody can name is decoration. */
     .bbw-key        { display:flex; flex-wrap:wrap; gap:12px; justify-content:center;

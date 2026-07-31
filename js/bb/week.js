@@ -146,7 +146,7 @@ export function simulateBBWeek(options = {}) {
       hoh: week.hoh || null,
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
-    }, { rng, min: eventLibrary.length ? 3 : 0, max: eventLibrary.length ? 6 : 0 });
+    }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
     week.acts.push(act);
     return act;
   };

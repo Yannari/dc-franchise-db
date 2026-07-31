@@ -92,13 +92,18 @@ describe('the Big Brother event library as a whole', () => {
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
   });
 
+  // Measured in counts, not shares. A stretch of house life now runs 22-30
+  // beats against a ceremony act's 1-3, so ceremonies are a small SHARE of all
+  // beats by design — that says nothing about whether they are being heard.
+  // What matters is that every category actually speaks and none drowns the
+  // rest out.
   it('keeps any one category from taking over the house', () => {
     const fired = playSeasons([11, 23, 37, 44, 58]);
     const total = Object.values(fired).reduce((a, b) => a + b, 0);
     for (const [cat, list] of Object.entries(HOUSE_EVENTS_BY_CATEGORY)) {
-      const share = list.reduce((s, e) => s + (fired[e.id] || 0), 0) / total;
-      expect(share, `${cat} is silent`).toBeGreaterThan(0.03);
-      expect(share, `${cat} dominates the house`).toBeLessThan(0.6);
+      const count = list.reduce((s, e) => s + (fired[e.id] || 0), 0);
+      expect(count, `${cat} is silent`).toBeGreaterThan(20);
+      expect(count / total, `${cat} dominates the house`).toBeLessThan(0.6);
     }
   });
 
@@ -143,11 +148,22 @@ describe('the Big Brother event library as a whole', () => {
     });
     const perWeek = weeks.map(w => (w.acts || []).flatMap(a => a.socialBeats || []).length);
     const average = perWeek.reduce((a, b) => a + b, 0) / perWeek.length;
-    expect(average).toBeGreaterThan(6);
-    // The scheduler de-duplicates by id within an act; confirm it holds.
+    // A house has to look lived in: this is the difference between a week you
+    // read and a week you skim past.
+    expect(average).toBeGreaterThan(60);
+    // Fresh events are exhausted before any event is heard twice, and nothing
+    // is ever heard a third time in one act. A stretch can be asked for more
+    // beats than there are eligible events, so a second airing is allowed —
+    // but only once the new ones have run out.
     for (const act of weeks.flatMap(w => w.acts || [])) {
       const ids = (act.socialBeats || []).map(b => b.eventId);
-      expect(new Set(ids).size).toBe(ids.length);
+      const counts = {};
+      ids.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+      for (const [id, n] of Object.entries(counts)) {
+        expect(n, `${id} aired ${n} times in one act`).toBeLessThanOrEqual(2);
+      }
+      // Repeats only appear in the long stretches that outrun the pool.
+      if (ids.length <= 10) expect(new Set(ids).size).toBe(ids.length);
     }
   });
 

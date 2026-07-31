@@ -779,11 +779,11 @@ export function simulateNext() {
   // Brother season, that meant running simulateEpisode — tribes, a challenge,
   // Tribal Council — on three houseguests.
   if (isBigBrotherSeason()) {
-    const bbEp = simulateBBEpisode();
+    // At the final few the week engine has nothing left to run, so the last
+    // night takes over: the three-part Head of Household, the cut, and the jury.
+    const bbEp = simulateBBEpisode() || runBBFinale();
     if (!bbEp) {
-      alert(`The house is down to its final ${gs.activePlayers.length}.\n\n`
-        + 'The Big Brother finale — the jury vote — is not built yet, so the season stops here '
-        + 'rather than handing the house to the Total Drama finale, which would make nonsense of it.');
+      alert('This Big Brother season is already complete.');
       return;
     }
     if (seasonConfig.popularityEnabled !== false) { updatePopularity(bbEp); saveGameState(); }

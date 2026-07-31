@@ -4164,6 +4164,7 @@ const _BB_PHASE_TITLE = {
 };
 
 export function generateBBSummaryText(ep) {
+  if (ep.isFinale) return generateBBFinaleText(ep);
   const L = [];
   const ln = s => L.push(s);
   const sec = title => { ln(''); ln(title); ln('─'.repeat(Math.max(8, title.length))); };
@@ -4260,6 +4261,47 @@ export function generateBBSummaryText(ep) {
     ln('');
     ln(`  ${iv.evictee}: ${iv.parting}`);
     if (iv.blamed) ln(`  Leaves believing it was ${iv.blamed}${iv.blameCorrect ? '.' : ' — and is wrong.'}`);
+  }
+  return L.join('\n');
+}
+
+/** The last night, in text. */
+export function generateBBFinaleText(ep) {
+  const L = [];
+  const ln = s => L.push(s);
+  const sec = t => { ln(''); ln(t); ln('─'.repeat(Math.max(8, t.length))); };
+
+  ln(`WEEK ${ep.num} — FINALE`);
+  ln('═'.repeat(46));
+
+  for (const act of ep.acts || []) {
+    if (act.type === 'final-hoh-part') {
+      sec(act.part.toUpperCase());
+      ln(`  Played by: ${(act.participants || []).join(', ')}.`);
+      if (act.competition) {
+        ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+        (act.competition.beats || []).forEach(x => ln(`    · ${x.text}`));
+      }
+      ln(`  ${act.winner} takes it.`);
+    } else if (act.type === 'final-cut') {
+      sec('THE FINAL DECISION');
+      ln(`  ${act.finalHoh} is the final Head of Household.`);
+      ln(`  ${act.finalHoh} takes ${act.kept} to the end.`);
+      if (act.cut) ln(`  ${act.cut} is evicted at the final three, and becomes the last juror.`);
+    } else if (act.type === 'jury-vote') {
+      sec('THE JURY VOTE');
+      ln(`  Jury: ${(act.jury || []).join(', ')}.`);
+      (act.reasoning || []).forEach(r => {
+        if (typeof r === 'string') return ln(`  ${r}`);
+        if (r.juror) ln(`  ${r.juror} votes for ${r.vote || r.votedFor || '?'}${r.reason ? ` — ${r.reason}` : ''}`);
+      });
+      ln('');
+      Object.entries(act.votes || {}).forEach(([name, count]) =>
+        ln(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
+      ln('');
+      ln(`  ${act.winner} wins the season.`);
+      if (act.runnerUp) ln(`  ${act.runnerUp} finishes second.`);
+    }
   }
   return L.join('\n');
 }

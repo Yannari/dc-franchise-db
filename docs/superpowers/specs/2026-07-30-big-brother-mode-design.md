@@ -31,6 +31,106 @@ Claude's.
 
 Neither agent edits a file the other owns. Neither touches `js/episode.js`.
 
+### Writing ownership and editorial handoff — revised 2026-07-30
+
+Claude owns event/competition/twist mechanics and may include functional draft
+text while building them. **Codex owns Big Brother's final creative writing and
+editorial quality:** character voice, scene specificity, comedy, dialogue,
+format vocabulary, repetition control and the final prose pass across the VP,
+events, competitions, twists, aftermath and transcript.
+
+This is a deliberate exception to ordinary directory ownership, handled by a
+handoff rather than simultaneous editing:
+
+1. Claude marks a prose batch mechanically complete and stops editing those
+   files.
+2. Codex edits prose and prose-selection helpers only. It does not change event
+   eligibility, weights, consequences, competition scoring or twist mechanics
+   during an editorial pass.
+3. Claude resumes mechanical work after the editorial diff lands. If mechanics
+   change later, new draft text returns through the same handoff.
+
+No test assertion becomes a writing or design rule merely because an agent put
+it in a test. Tests may enforce decided invariants—valid grammar substitutions,
+no Total Drama vocabulary, no undefined names, exact-line repetition limits,
+render fields and deterministic selection—but qualitative voice is reviewed by
+reading representative seasons, not by inventing numeric proxies for good
+writing.
+
+#### Writing audit baseline
+
+The first audit found 56 registered house events: 12 ceremonies, 9 deals,
+9 house-life, 16 phase events and only 10 social events. The library target
+remains 80–120, but rewriting the existing foundation comes before adding
+volume. More generic text would make the repetition problem larger.
+
+**P0 — broken or visibly synthetic:**
+
+- Move-in uses one sentence per archetype. Two characters with the same
+  archetype therefore enter identically; pronoun search-and-replace also creates
+  errors such as “he are” and changes plural referents such as “uses them” into
+  a singular object pronoun. Replace this with character-specific arrival
+  behavior and scene-aware fallbacks for custom contestants.
+- Big Brother campaign reactions currently expose shared Total Drama narration
+  containing “camp” and “Tribal.” BB keeps the shared response math but renders
+  its own house/vote language.
+- `summariseWeek` still reads the retired one-roll campaign shape
+  (`nominee`, `voter`, `success`) rather than resolved pitches, reactions,
+  leaks, counterplay and ballot changes.
+- Run a grammar/render sweep for undefined actors, subject/verb disagreement,
+  incorrect pronoun replacement and duplicated names around portrait labels.
+
+**P1 — rewrite the existing library:**
+
+- Stop treating archetype as character voice. Bowie and Brightly may share a
+  strategic classification without sharing observations, rhythm, humor,
+  confidence or social behavior. Julia and MK must not receive the same line
+  merely because both are schemers.
+- Replace omniscient archetype summaries with observable scenes: who takes which
+  bed, who interrupts whom, who holds court in the kitchen, who watches the
+  memory wall, who is already retelling a conversation, and what another
+  houseguest does in response.
+- Diary Room text should usually be first-person speech in that contestant's
+  voice, not a narrator describing that they explained a plan to the camera.
+- Vary cadence. Current prose overuses “which is…”, “and everybody notices”,
+  “nobody says…”, retrospective certainty and polished three-clause reversals.
+  Human scenes include fragments, interruptions, bad jokes, evasions,
+  misreadings and mundane details.
+- Competition prose needs more than a functional winner sentence: changing
+  leads, mistakes, heckling, thrown attempts, frustration, recoveries and a
+  result that sounds different for the people involved.
+
+**P2 — expand after the rewrite:**
+
+- Add social material around room/bed politics, storage-room rushes, first-night
+  clustering, HOH-room traffic, door guarding, one-on-ones, alliance meetings,
+  outsiders interrupting game talk, visible pairs, vote-check loops, attempted
+  flips, information hoarding, exposed lies, apology tours and jury management.
+- Add house texture around wake-up music reactions, snoring, shared meals,
+  birthdays, boredom games, workouts, pool/hot-tub groups, costumes,
+  punishments, cleaning resentment, food arguments and the emotional crash
+  after live ceremonies. Each still needs a game or relationship consequence.
+- Use real Big Brother structure as scene reference—not copied dialogue or
+  impersonation. The defining texture is continuous surveillance, private Diary
+  Rooms, power concentrating around HOH, nominees campaigning for votes, and
+  ordinary cohabitation becoming strategic evidence.
+
+#### Character voice contract
+
+The prose layer needs a contestant-specific voice card keyed by stable character
+identity, with an archetype fallback only for custom contestants. A card records
+behavioral tells rather than catchphrases: sentence rhythm, directness, humor,
+what they notice first, how they lie, how they handle embarrassment, what makes
+them angry, and how their public voice differs from the Diary Room. The card
+selects or shapes a scene; it never overrides simulation state. A frightened
+Bowie must still sound like Bowie, not like the generic `paranoid` pool.
+
+Editorial acceptance is a rendered 16–18 person move-in plus several seeded
+weeks read end to end. Within one episode, no two contestants may receive the
+same personalized sentence. Across characters, swapping the names in a line
+should usually make the line feel wrong; if it still fits everyone, it is
+fallback copy and should be uncommon.
+
 ### Done
 
 | | Owner |

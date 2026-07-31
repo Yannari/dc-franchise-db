@@ -19,6 +19,7 @@ import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
+import { simulateBBFinale } from './bb-finale.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -218,3 +219,24 @@ export function summariseWeek(week) {
 // this existed the selector correctly warned that Run would fall back to Total
 // Drama; now it must stop warning.
 if (typeof window !== 'undefined') window._bbRunnable = true;
+
+/**
+ * The last night, recorded the way every other week is.
+ *
+ * Returns null when the season is already over, so the run surface can tell
+ * "nothing left to play" from "here is the finale".
+ */
+export function runBBFinale() {
+  if (gs.phase === 'complete' || (gs.activePlayers || []).length < 2) return null;
+  const ep = simulateBBFinale();
+  if (!ep) return null;
+  ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
+    ? window.generateSummaryText(ep) : '';
+  gs.episodeHistory ||= [];
+  gs.episodeHistory.push({
+    ...ep,
+    gsSnapshot: typeof window !== 'undefined' && window.snapshotGameState
+      ? window.snapshotGameState() : null,
+  });
+  return ep;
+}

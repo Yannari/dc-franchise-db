@@ -15867,6 +15867,18 @@ export function buildBBWeekScreens(ep) {
           screens.push({ id: 'bb-camp', label: 'Campaign', html: rpBuildBBCampaign(ep) });
         }
         break;
+      case 'final-hoh-part':
+        // Three parts, one screen — pushed once, on the first of them.
+        if (!screens.some(x => x.id === 'bb-final-hoh')) {
+          screens.push({ id: 'bb-final-hoh', label: 'Final HOH', html: rpBuildBBFinalHoh(ep) });
+        }
+        break;
+      case 'final-cut':
+        screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
+        break;
+      case 'jury-vote':
+        screens.push({ id: 'bb-jury', label: 'The Jury Vote', html: rpBuildBBJuryVote(ep) });
+        break;
       case 'eviction':
         screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
         // The same vote screen Total Drama uses — one tally, one set of bars,
@@ -16202,5 +16214,112 @@ export function rpBuildBBEvictionInterview(ep) {
       ${iv.blameCorrect ? '' : `<div style="font-size:11px;color:#8b949e;margin-top:4px">That is what goes to the jury with ${pronouns(iv.evictee).obj}.</div>`}
     </div>`;
   }
+  return html + `</div>`;
+}
+
+/** The three-part Head of Household, on one screen. */
+export function rpBuildBBFinalHoh(ep) {
+  const parts = (ep.acts || []).filter(a => a.type === 'final-hoh-part');
+  if (!parts.length) return '';
+  const scenes = parts.flatMap(part => [
+    { text: `<strong>${part.part}</strong> — ${part.participants.join(', ')} play${part.participants.length === 1 ? 's' : ''} ${part.competition?.name ? `<em>${part.competition.name}</em>` : 'for the last power in the house'}.`,
+      players: part.participants, badgeText: part.part.split('—')[0].trim().toUpperCase(), badgeClass: 'grey' },
+    ...((part.competition?.beats || []).slice(0, 3).map(b =>
+      ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass || 'challenge' }))),
+    { text: `${part.winner} takes it.`, players: [part.winner], badgeText: 'WINS THE PART', badgeClass: 'gold' },
+  ]);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: 'THE FINAL HEAD OF HOUSEHOLD',
+    subtitle: 'Three parts. One of them ends up choosing who sits at the end.',
+    accent: '#f0a500', room: 'bb-power',
+    stateKey: `bb_fhoh_${ep.num}`, scenes,
+  });
+}
+
+/** The cut: the last decision anybody in this house makes. */
+export function rpBuildBBFinalCut(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'final-cut');
+  if (!act) return '';
+  const p = pronouns(act.finalHoh);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: 'THE FINAL DECISION',
+    subtitle: `${act.finalHoh} chooses who to sit beside.`,
+    accent: '#f85149', room: 'bb-live',
+    stateKey: `bb_fcut_${ep.num}`,
+    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:16px">${rpPortrait(act.finalHoh, 'hoh')}</div>`,
+    scenes: [
+      { text: `${act.finalHoh} has the only vote that matters tonight, and two people who have both been told they are the one.`,
+        players: [act.finalHoh], badgeText: 'FINAL HOH', badgeClass: 'gold' },
+      { text: `${p.Sub} takes <strong>${act.kept}</strong> to the end.`, players: [act.kept], badgeText: 'TAKEN TO THE END', badgeClass: 'green' },
+      ...(act.cut ? [{ text: `<strong>${act.cut}</strong> is evicted at the final three, one night short, and becomes the last member of the jury — with a vote.`,
+        players: [act.cut], badgeText: 'THE LAST JUROR', badgeClass: 'red' }] : []),
+    ],
+  });
+}
+
+/**
+ * The jury vote.
+ *
+ * Revealed one juror at a time, because that is how it is watched — and because
+ * the reasoning attached to each vote is the season's own record of what that
+ * juror is still carrying.
+ */
+export function rpBuildBBJuryVote(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'jury-vote');
+  if (!act) return '';
+  const stateKey = `bb_jury_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const jury = act.jury || [];
+  const done = state.idx >= jury.length;      // one extra step for the result
+  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
+    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
+    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Who each juror voted for, from the shared vote's reasoning where it exists.
+  const reasonFor = {};
+  (act.reasoning || []).forEach(r => { if (r && r.juror) reasonFor[r.juror] = r; });
+
+  let html = `<div class="rp-page bb-room bb-live">
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 22px rgba(201,52,60,.35);margin-bottom:6px">THE JURY VOTE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${jury.length} evicted houseguests decide it.</div>
+    <div class="rp-portrait-row" style="justify-content:center;gap:22px;margin-bottom:20px">
+      ${(ep.finalTwo || []).map(n => rpPortrait(n, 'lg')).join('')}
+    </div>`;
+
+  jury.forEach((juror, i) => {
+    if (i > state.idx) {
+      html += `<div style="padding:10px;margin-bottom:5px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
+      return;
+    }
+    const r = reasonFor[juror] || {};
+    const voted = r.vote || r.votedFor || null;
+    html += `<div class="rp-brant-entry" style="border-left:3px solid #d29922;background:rgba(210,153,34,.06)">
+      <div class="rp-brant-portraits">${rpPortrait(juror)}</div>
+      <div class="rp-brant-text">${voted ? `"I vote for <strong>${voted}</strong> to win this game."` : `${juror} casts a vote.`}
+        ${r.reason ? `<div style="font-size:11px;color:#8b949e;margin-top:4px">${r.reason}</div>` : ''}</div>
+      ${voted ? `<span class="rp-brant-badge gold">${voted}</span>` : ''}
+    </div>`;
+  });
+
+  if (state.idx >= jury.length) {
+    const tally = Object.entries(act.votes || {}).sort((a, b) => b[1] - a[1]);
+    html += `<div style="margin-top:18px;padding:20px;border-radius:10px;border:1px solid rgba(201,52,60,.35);background:rgba(201,52,60,.07);text-align:center">
+      <div style="font-size:10px;letter-spacing:2px;color:#8b949e;text-transform:uppercase">By a vote of ${tally.map(([, v]) => v).join('–')}</div>
+      <div style="margin:14px 0">${rpPortrait(act.winner, 'xl')}</div>
+      <div style="font-family:var(--font-display);font-size:clamp(26px,5vw,44px);line-height:1;color:#fff">${act.winner}</div>
+      <div style="font-size:12px;color:#f0a500;letter-spacing:2px;margin-top:6px">WINS THE SEASON</div>
+      ${act.runnerUp ? `<div style="font-size:11px;color:#8b949e;margin-top:8px">${act.runnerUp} finishes second.</div>` : ''}
+    </div>`;
+  }
+
+  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+    ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, jury.length))}">Read the next vote</button>`}
+    ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(jury.length)}">Read them all</button>`}
+    <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(jury.length, Math.max(0, state.idx + 1))} / ${jury.length} votes</span>
+  </div>`;
   return html + `</div>`;
 }

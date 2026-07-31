@@ -16140,27 +16140,20 @@ function _bbMemoryWall(stillIn, { note = '' } = {}) {
   const live = new Set(stillIn);
   const cells = all.map(name => {
     const out = !live.has(name);
-    return `<div style="text-align:center">
-      <div style="position:relative;padding:5px;border-radius:3px;
-        background:${out ? 'linear-gradient(160deg,#14171c,#0e1116)' : 'linear-gradient(160deg,#2b2f38,#1a1e25)'};
-        box-shadow:${out ? 'inset 0 0 0 1px rgba(255,255,255,.03)' : 'inset 0 0 0 1px rgba(255,255,255,.09), 0 2px 10px rgba(0,0,0,.45)'};">
-        <div style="position:relative;aspect-ratio:1;overflow:hidden;border-radius:2px;background:#0b0e13;
-          box-shadow:inset 0 0 0 1px rgba(0,0,0,.6);${out ? 'filter:grayscale(1) brightness(.5)' : ''}">
-          <img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
+    return `<div class="bbw-cell ${out ? 'is-out' : ''}">
+      <div class="bbw-frame">
+        <div class="bbw-photo">
+          <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
-          ${out ? '' : `<div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.10),transparent 42%);pointer-events:none"></div>`}
+          <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#4a4e48">${(name || '?')[0]}</span>
         </div>
-        ${out ? `<div style="position:absolute;inset:5px;border-radius:2px;background:rgba(6,8,11,.55);pointer-events:none"></div>` : ''}
       </div>
-      <div style="font-size:9px;margin-top:4px;letter-spacing:.3px;color:${out ? '#3d444d' : '#c9d1d9'}">${name}</div>
+      <div class="bbw-name">${name}</div>
     </div>`;
   }).join('');
 
-  return `<div style="padding:14px 12px;border-radius:6px;margin:14px 0;
-      background:linear-gradient(180deg,#171a20,#101318);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5), 0 8px 26px rgba(0,0,0,.35)">
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:11px">${cells}</div>
+  return `<div class="bbw-screen">
+      <div class="bbw-panel"><div class="bbw-grid">${cells}</div></div>
     </div>
     ${note ? `<div style="text-align:center;font-size:10px;color:#6e7681;letter-spacing:.5px;margin-top:-6px">${note}</div>` : ''}`;
 }
@@ -16223,7 +16216,17 @@ export function rpBuildBBOverview(ep) {
     { label: 'ON THE OUTSIDE', color: '#f85149', rows: rows.slice(third * 2) },
   ].filter(b => b.rows.length);
 
-  const standingBody = bands.map(b => `<div style="margin-bottom:10px">
+  // Every icon on this screen, named. An unlabelled glyph is decoration: the
+  // crown, the shield and the target all read as "some marking" without it.
+  const key = `<div class="bbw-key">
+    <span style="color:#f0a500">${_BB_ICON.hoh} times Head of Household</span>
+    <span style="color:#3fb950">${_BB_ICON.veto} vetoes won</span>
+    <span style="color:#f85149">${_BB_ICON.block} times on the block</span>
+    <span style="color:#58a6ff">${_BB_ICON.ally} allies in the house</span>
+    <span style="color:#4d545c">${_BB_ICON.alone} working alone</span>
+  </div>`;
+
+  const standingBody = key + bands.map(b => `<div style="margin-bottom:10px">
     <div style="font-size:10px;letter-spacing:1.5px;color:${b.color};margin-bottom:5px">${b.label}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px">
       ${b.rows.map(r => `<div style="display:flex;align-items:center;gap:9px;padding:5px 8px;border-left:2px solid ${b.color};background:${b.color}0a;border-radius:4px">

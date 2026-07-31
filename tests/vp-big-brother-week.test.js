@@ -96,13 +96,14 @@ describe('the Big Brother visual player', () => {
     const ep = week();
     const first = buildBBWeekScreens(ep)[0].html;
     expect(first).toContain('MOVE-IN DAY');
-    // Arrivals are revealed one at a time, so before any reveal they are all
-    // still placeholders behind the door.
-    expect(first).toContain('Next houseguest');
-    expect(first).not.toContain('HOUSEGUEST 1');
+    // Before anybody arrives the wall is empty frames and the door is shut.
+    expect(first).toContain('Open the door');
+    expect(first).toContain('0 of');
     // Once everybody is in, every houseguest has been introduced by name.
+    // Once everybody is in, the wall carries the whole cast and the spotlight
+    // is on whoever walked in last.
     const all = revealed(ep)[0].html;
-    expect(all).toContain('HOUSEGUEST 1');
+    expect(all).toContain('Houseguest ' + CAST.length);
     for (const p of CAST) expect(all).toContain(p.name);
     expect(all).toContain('THE DOOR LOCKS');
     expect(all).toContain('rp-portrait');

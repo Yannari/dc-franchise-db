@@ -15565,9 +15565,17 @@ const _bbArrivalLine = (name) => {
 /**
  * The cold open.
  *
- * Week one introduces the cast one at a time, the way the island introduces
- * arrivals on the dock — a house of strangers is only interesting if you know
- * who the strangers are. Later weeks open on the state of play instead.
+ * Week one is the move-in. The house fills up in front of you: every slot on
+ * the wall is there from the start as an empty frame, and each arrival lights
+ * one of them while a single spotlight card carries whoever just walked in.
+ *
+ * The earlier version stacked eighteen full-width cards down the page, so
+ * meeting the cast meant clicking and scrolling and clicking again, and the
+ * screen only got longer. Nothing moves now except the wall filling and the
+ * card changing, so the whole thing happens without leaving the viewport.
+ *
+ * Arrival prose lives in _BB_ARRIVAL and belongs to the editorial pass — this
+ * function only decides where it goes.
  */
 export function rpBuildBBColdOpen(ep) {
   const house = ep.houseAtStart || [];
@@ -15593,44 +15601,79 @@ export function rpBuildBBColdOpen(ep) {
     });
   }
 
-  // ── Week one: the move-in, one houseguest at a time ──
-  const arrivals = house;
-  const allRevealed = state.idx >= arrivals.length - 1;
+  const arrived = Math.max(0, Math.min(state.idx + 1, house.length));
+  const done = arrived >= house.length;
+  // Clamp once and use it everywhere: "reveal all" sets the index far past the
+  // end, and an unclamped copy of it reached the label as "Houseguest 100".
+  const at = Math.min(Math.max(state.idx, -1), house.length - 1);
+  const current = at >= 0 ? house[at] : null;
   const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
     + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
     + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
+  // ── the wall, filling ──
+  const slots = house.map((name, i) => {
+    const inHouse = i <= at;
+    const isCurrent = i === at;
+    return `<div style="text-align:center;transition:none">
+      <div style="position:relative;padding:4px;border-radius:3px;
+        background:${inHouse ? 'linear-gradient(160deg,#2b2f38,#1a1e25)' : 'linear-gradient(160deg,#14171c,#0e1116)'};
+        box-shadow:${isCurrent ? '0 0 0 2px #f0a500, 0 0 18px rgba(240,165,0,.45)'
+          : inHouse ? 'inset 0 0 0 1px rgba(255,255,255,.09), 0 2px 8px rgba(0,0,0,.45)'
+          : 'inset 0 0 0 1px rgba(255,255,255,.03)'}">
+        <div style="position:relative;aspect-ratio:1;overflow:hidden;border-radius:2px;background:#0b0e13">
+          ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+             <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#242a33;font-size:18px;font-weight:800">?</div>`}
+        </div>
+      </div>
+      <div style="font-size:8.5px;margin-top:3px;letter-spacing:.3px;color:${inHouse ? '#c9d1d9' : '#2f353d'}">${inHouse ? name : '—'}</div>
+    </div>`;
+  }).join('');
+
   const seasonName = (typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother';
   let html = `<div class="rp-page bb-room bb-open">
     <div class="rp-co-eyebrow">${seasonName}</div>
-    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin:10px 0 6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">MOVE-IN DAY</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">${arrivals.length} strangers move into the Big Brother house.</div>
-    <div style="max-width:640px;margin:0 auto 20px;font-size:12.5px;line-height:1.65;color:#c9d1d9;font-style:italic;text-align:center">
-      "No clocks. No calls home. One door, and it only opens outward. For the next few months these ${arrivals.length} people live together, compete against each other, and vote each other out one at a time — and every second of it is on camera. Expect the best of them for about a day."
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 22px rgba(240,165,0,.45);margin:8px 0 4px">MOVE-IN DAY</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;letter-spacing:1px;margin-bottom:14px">
+      ${arrived} of ${house.length} through the door
     </div>
-    <div class="rp-co-divider"></div>`;
 
-  arrivals.forEach((name, i) => {
-    if (i > state.idx) {
-      html += `<div style="padding:12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.10;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
-      return;
-    }
-    html += `<div class="rp-brant-entry" style="animation:scrollDrop 0.3s var(--ease-broadcast) both">
-      <div class="rp-brant-portraits">${rpPortrait(name)}</div>
-      <div class="rp-brant-text"><strong style="color:#f0f6fc">${name}</strong><br>${_bbArrivalLine(name)}</div>
-      <span class="rp-brant-badge">HOUSEGUEST ${i + 1}</span>
+    <div style="padding:12px 10px;border-radius:6px;margin-bottom:16px;
+      background:linear-gradient(180deg,#171a20,#101318);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:9px">${slots}</div>
     </div>`;
-  });
+
+  // ── the spotlight: only ever the person who just walked in ──
+  if (current) {
+    html += `<div style="display:flex;gap:16px;align-items:center;padding:16px;border-radius:8px;
+        border-left:3px solid #f0a500;background:linear-gradient(90deg,rgba(240,165,0,.10),rgba(22,27,34,.5) 55%);
+        animation:scrollDrop .28s var(--ease-broadcast) both">
+      <div style="flex-shrink:0">${rpPortrait(current, 'lg')}</div>
+      <div>
+        <div style="font-family:var(--font-display);font-size:19px;color:#f0f6fc;line-height:1.1">${current}</div>
+        <div style="font-size:8.5px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin:3px 0 7px">Houseguest ${at + 1}</div>
+        <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current)}</div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="text-align:center;padding:26px 16px;border-radius:8px;border:1px dashed rgba(139,148,158,.22)">
+      <div style="font-size:12.5px;color:#8b949e;line-height:1.6;max-width:520px;margin:0 auto">
+        ${house.length} strangers are about to move in. The door is still open.
+      </div>
+    </div>`;
+  }
 
   html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
-      ${allRevealed ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, arrivals.length - 1))}">Next houseguest</button>`}
-      ${allRevealed ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(arrivals.length - 1)}">Move everybody in</button>`}
-      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(arrivals.length, Math.max(0, state.idx + 1))} / ${arrivals.length} moved in</span>
-    </div>`;
+    ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, house.length - 1))}">${state.idx < 0 ? 'Open the door' : 'Next houseguest'}</button>`}
+    ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(house.length - 1)}">Move everybody in</button>`}
+  </div>`;
 
-  if (allRevealed) {
+  if (done) {
     html += `<div style="text-align:center;margin-top:18px;padding:16px;border-top:1px solid var(--border)">
-      <div style="font-family:var(--font-display);font-size:15px;letter-spacing:2px;color:#c9343c">THE DOOR LOCKS</div>
+      <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:#c9343c">THE DOOR LOCKS</div>
       <div style="font-size:12px;color:#8b949e;margin-top:6px">The competition for the first Head of Household begins.</div>
     </div>`;
   }

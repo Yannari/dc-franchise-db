@@ -1,6 +1,6 @@
 // Scheduler and state API for Big Brother house events.
 // Event prose/library lives in js/bb-events/ and is supplied to this module.
-import { gs, players } from '../core.js';
+import { gs, seasonConfig, players } from '../core.js';
 import {
   addBBRelationship, addBBShowmanceSpark, rememberBBStrategy, setBBTarget,
 } from './shared-strategy.js';
@@ -31,6 +31,9 @@ export function createHouseEventApi(ctx = {}) {
     },
     popDelta(name, delta) {
       if (!name || !Number.isFinite(Number(delta))) return false;
+      // The house was tracking popularity whether or not the season had it
+      // switched on, so turning it off changed nothing.
+      if (seasonConfig.popularityEnabled === false) return false;
       gs.popularity[name] = (gs.popularity[name] || 0) + Number(delta);
       return true;
     },

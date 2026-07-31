@@ -2,7 +2,7 @@
 // Production competition modules live in js/bb-comps/ and are passed in as a
 // library. This file owns selection, the generic fallback, validation and the
 // debug envelope shared by both paths.
-import { gs } from '../core.js';
+import { gs, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
 import { shouldThrowHoh } from './strategy.js';
@@ -96,7 +96,7 @@ function createCompetitionApi(context) {
   gs.popularity ||= {};
   return Object.freeze({
     addBond(a, b, delta) { if (!a || !b || a === b) return false; addBond(a, b, Number(delta) || 0); return true; },
-    popDelta(name, delta) { if (!name) return false; gs.popularity[name] = (gs.popularity[name] || 0) + (Number(delta) || 0); return true; },
+    popDelta(name, delta) { if (!name) return false; if (seasonConfig.popularityEnabled === false) return false; gs.popularity[name] = (gs.popularity[name] || 0) + (Number(delta) || 0); return true; },
     record(name, type, detail = {}) {
       gs.bb ||= {}; gs.bb.competitionMemories ||= {}; gs.bb.competitionMemories[name] ||= [];
       gs.bb.competitionMemories[name].push({ type, competitionId:context.competitionId, week:context.week?.num || 0, detail });

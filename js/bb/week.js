@@ -5,7 +5,9 @@
 // top of acts that already existed. The campaign carries a VARIABLE number of
 // beats, the way a challenge fires a variable number of social events between
 // its phases.
-import { gs } from '../core.js';
+import { gs, players } from '../core.js';
+import { pStats } from '../players.js';
+import { getBond } from '../bonds.js';
 import {
   chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldUseVeto,
@@ -47,6 +49,58 @@ function tally(ballots, nominees) {
 }
 
 /**
+ * Somebody leaves without being voted out.
+ *
+ * A house is three months with no exit, and people walk. Others are removed
+ * for putting hands on somebody. Neither is a random dice roll dressed up as
+ * drama: a walkout is built out of the pressure actually on that houseguest —
+ * temperament, nerve, slop, and sitting on the block — and an expulsion needs
+ * a real rivalry and a temper to go with it.
+ *
+ * Proportional throughout: no thresholds, just weights. Returns null on the
+ * overwhelming majority of weeks, which is the point.
+ */
+function checkDeparture(house, week, rng, mode, ctx = {}) {
+  if (!mode || mode === 'off' || house.length <= 4) return null;
+  const base = mode === 'often' ? 0.075 : mode === 'occasional' ? 0.04 : 0.015;
+  const nominees = ctx.nominees || [];
+  const haveNots = ctx.haveNots || [];
+
+  const candidates = house.map(name => {
+    const s = pStats(name);
+    const arch = (players.find(p => p.name === name) || {}).archetype || '';
+    // Walking: worn down rather than beaten. Low temperament and low nerve,
+    // made worse by slop and by sitting on the block.
+    const walk = ((10 - s.temperament) / 10) * 0.55
+      + ((10 - s.boldness) / 10) * 0.25
+      + ((10 - s.loyalty) / 10) * 0.10
+      + (haveNots.includes(name) ? 0.30 : 0)
+      + (nominees.includes(name) ? 0.35 : 0)
+      + Math.min(0.35, (week.num || 1) * 0.03);
+    // Removal: a temper with somebody to point it at. Needs a genuine enemy in
+    // the house, so a hothead alone with friends never gets expelled.
+    const worst = house.filter(n => n !== name)
+      .reduce((lo, n) => Math.min(lo, getBond(name, n)), 0);
+    const volatile = ['hothead', 'villain', 'chaos-agent'].includes(arch) ? 1.6 : 1;
+    const expel = Math.max(0, -worst / 10) * ((10 - s.temperament) / 10) * volatile * 0.9;
+    return { name, walk, expel, worstWith: house.filter(n => n !== name)
+      .sort((a, b) => getBond(name, a) - getBond(name, b))[0] || null };
+  });
+
+  const walker = candidates.sort((a, b) => b.walk - a.walk)[0];
+  const brawler = [...candidates].sort((a, b) => b.expel - a.expel)[0];
+  const walkChance = base * (0.4 + walker.walk);
+  const expelChance = base * 0.7 * (0.2 + brawler.expel);
+
+  const roll = rng();
+  if (roll < walkChance) return { name: walker.name, kind: 'walkout' };
+  if (roll < walkChance + expelChance && brawler.worstWith) {
+    return { name: brawler.name, kind: 'expulsion', other: brawler.worstWith };
+  }
+  return null;
+}
+
+/**
  * Who goes on slop.
  *
  * The Head of Household picks, which is the point of the twist: it is the
@@ -55,9 +109,12 @@ function tally(ballots, nominees) {
  * punish somebody who was never actually against them, and take the blame for
  * it either way. Noise keeps it from being a pure enemies list.
  */
-function chooseHaveNots(hoh, house, rng, getRead) {
+function chooseHaveNots(hoh, house, rng, getRead, wanted) {
   const pool = house.filter(name => name !== hoh);
-  const count = Math.max(2, Math.min(4, Math.floor(pool.length / 3)));
+  const auto = Math.max(2, Math.min(4, Math.floor(pool.length / 3)));
+  // A fixed count can be asked for, but never more than the house can spare —
+  // putting everybody on slop is not a twist, it is a different show.
+  const count = Math.min(Number(wanted) > 0 ? Number(wanted) : auto, Math.max(1, pool.length - 1));
   return pool
     .map(name => ({ name, score: (getRead ? getRead(hoh, name) : 0) + (rng() * 4 - 2) }))
     .sort((a, b) => a.score - b.score)
@@ -164,7 +221,7 @@ export function simulateBBWeek(options = {}) {
   // house watches them do it. Chosen before nominations so the week's first
   // grievance is already in the room when the block is named.
   if (twists.has('bb-have-nots')) {
-    const haveNots = chooseHaveNots(hoh, house, rng, options.readBond);
+    const haveNots = chooseHaveNots(hoh, house, rng, options.readBond, options.haveNotCount);
     week.haveNots = [...haveNots];
     gs.bb.haveNots = [...haveNots];
     week.acts.push(addBeats({ type: 'have-nots', hoh, names: [...haveNots] }, { haveNots: [...haveNots] }));
@@ -269,6 +326,33 @@ export function simulateBBWeek(options = {}) {
       { nominees: [...nominees], vetoWinner: week.vetoWinner || null }));
   }
   week.finalNominees = [...nominees];
+
+  // ── Somebody leaves before the house gets to decide ──
+  // A walkout or an expulsion takes the week's eviction with it: the house is
+  // already down one, so there is nothing to vote on. Checked here so the week
+  // still played out normally up to the point it went wrong.
+  const departure = checkDeparture(house, week, rng,
+    options.departures || 'off', { nominees, haveNots: week.haveNots || [] });
+  if (departure) {
+    week.departure = { ...departure };
+    week.evicted = departure.name;
+    week.votes = {};
+    week.ballots = [];
+    week.tieBreak = null;
+    week.voteChanges = 0;
+    week.acts.push(addBeats(
+      { type: 'departure', ...departure, nominees: [...nominees] },
+      { nominees: [...nominees], evicted: departure.name }));
+
+    gs.activePlayers = house.filter(name => name !== departure.name);
+    if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
+    week.allianceChanges.betrayals = settleBBAllianceWeek(week);
+    week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
+    gs.bb.outgoingHoh = hoh;
+    gs.bb.weeks.push(week);
+    gs.episode = (gs.episode || 0) + 1;
+    return week;
+  }
 
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
   let voters = house.filter(name => name !== hoh && !nominees.includes(name));

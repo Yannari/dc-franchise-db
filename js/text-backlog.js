@@ -4217,6 +4217,17 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'departure':
+        sec(act.kind === 'expulsion' ? 'EXPULSION' : 'WALKOUT');
+        if (act.kind === 'expulsion') {
+          ln(`  ${act.name} is removed from the house after an altercation with ${act.other}.`);
+        } else {
+          ln(`  ${act.name} walks out of the house.`);
+        }
+        ln('  There is no eviction this week.');
+        beats(act);
+        break;
+
       case 'have-nots':
         sec('HAVE-NOTS');
         ln(`  ${act.hoh} puts ${(act.names || []).join(', ')} on slop for the week.`);

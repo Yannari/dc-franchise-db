@@ -20,8 +20,10 @@ import { VENUE_EVENTS } from '../js/bb-events/venue.js';
 describe('format-scoped setup screen', () => {
   it('hides every Total Drama mechanic from a house', () => {
     const bb = configScopeFor('big-brother');
+    // Popularity is NOT in this list: a house has an audience too, and it is
+    // now wired — the switch turns tracking off rather than being decoration.
     for (const gone of ['tiebreaker', 'ri', 'sid', 'blackvote', 'aftermathshow', 'journey',
-                        'exile', 'fan', 'idol', 'advantages', 'qem', 'popularity',
+                        'exile', 'fan', 'idol', 'advantages', 'qem',
                         'survival', 'mole']) {
       expect(bb.accordions, `${gone} still shown in a house`).not.toContain(gone);
     }
@@ -90,6 +92,10 @@ describe('format-scoped setup screen', () => {
     }
     expect(bb.sections).toContain('sec-bb-options');
     expect(td.sections).not.toContain('sec-bb-options');
+    // The whole container, not just the heading: the fixed-rule lines inside
+    // it are plain divs and would otherwise stay visible in Total Drama.
+    expect(bb.sections).toContain('bb-options-body');
+    expect(td.sections).not.toContain('bb-options-body');
   });
 
   it('leaves the Total Drama machinery alone', () => {

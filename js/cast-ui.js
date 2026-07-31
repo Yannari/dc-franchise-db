@@ -874,6 +874,8 @@ export function saveConfig() {
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
+    bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
+    bbDepartures: g('cfg-bb-departures')?.value || 'off',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
         const en = g('adv-idol-enabled');
@@ -1005,6 +1007,8 @@ export function renderConfig() {
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
+  set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');
+  set('cfg-bb-departures', seasonConfig.bbDepartures || 'off');
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();
   // Aftermath

@@ -893,7 +893,7 @@ const CONFIG_SCOPE = {
     idol:       ['total-drama'],
     advantages: ['total-drama'],
     qem:        ['total-drama'],
-    popularity: ['total-drama'],
+    popularity: ['total-drama', 'big-brother'],  // a house has an audience too
     survival:   ['total-drama'],
     mole:       ['total-drama'],
   },
@@ -907,6 +907,8 @@ const CONFIG_SCOPE = {
     'cfg-bb-havenots':       ['big-brother'],
     'cfg-bb-safety':         ['big-brother'],
     'cfg-bb-safety-stops':   ['big-brother'],
+    'cfg-bb-havenot-count':  ['big-brother'],
+    'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
     'cfg-finale':            ['total-drama'],  // a house always ends at three
   },
@@ -915,6 +917,10 @@ const CONFIG_SCOPE = {
     'sec-settings-mechanics': ['total-drama'],
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
+    // The container, not just its heading. The fixed-rule lines inside it are
+    // not form-groups, so scoping only the individual controls left "Ties" and
+    // "Endgame" sitting in the middle of a Total Drama season.
+    'bb-options-body':        ['big-brother'],
     'sec-tribes':             ['total-drama'],
     'sec-formats-twists':          ['total-drama'],
     'sec-formats-twists-divider':  ['total-drama'],
@@ -973,6 +979,10 @@ export function qsOnHouseOptionChange() {
   if (stops && mode !== 'off' && !stops.dataset.touched) {
     stops.value = mode === 'ai-arena' ? 9 : 6;
   }
+  // Likewise: how many go on slop is meaningless with slop switched off.
+  const hnCount = _g('cfg-bb-havenot-count')?.closest('.form-group');
+  if (hnCount) hnCount.style.display = (_g('cfg-bb-havenots')?.value || 'twist') === 'off' ? 'none' : '';
+
   if (stops && !stops._wired) {
     stops._wired = true;
     stops.addEventListener('input', () => { stops.dataset.touched = '1'; });

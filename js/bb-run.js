@@ -220,6 +220,8 @@ export function simulateBBEpisode() {
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
       ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
+    haveNotCount: seasonConfig.bbHaveNotCount === 'auto' ? 0 : Number(seasonConfig.bbHaveNotCount) || 0,
+    departures: seasonConfig.bbDepartures || 'off',
     // The HOH picks have-nots off their own read of the house, not the truth.
     readBond: (a, b) => (typeof window !== 'undefined' && window.getPerceivedBond
       ? window.getPerceivedBond(a, b) : 0),
@@ -232,6 +234,7 @@ export function simulateBBEpisode() {
   ep.safetyMode = week.safetyMode || null;
   ep.safetyWinner = week.safetyWinner || null;
   ep.blockBeforeSafety = week.blockBeforeSafety ? [...week.blockBeforeSafety] : [];
+  ep.departure = week.departure ? { ...week.departure } : null;
 
   // ── Double eviction: a second, compressed cycle the same night ──
   // A separate week record, because it genuinely is one — the stats, the jury

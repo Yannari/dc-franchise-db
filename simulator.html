@@ -290,12 +290,31 @@
             </div>
             <div class="form-group" id="grp-bb-havenots">
               <label class="form-label">Have-Nots</label>
-              <select id="cfg-bb-havenots" onchange="saveConfig()" class="form-input">
+              <select id="cfg-bb-havenots" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">
                 <option value="twist">When scheduled as a twist</option>
                 <option value="every-week">Every week</option>
                 <option value="off">Never</option>
               </select>
               <div class="hint hint-tight">Slop and cold water, and a real disadvantage in the veto. The HOH picks.</div>
+            </div>
+            <div class="form-group" id="grp-bb-havenot-count">
+              <label class="form-label">Have-Nots per week</label>
+              <select id="cfg-bb-havenot-count" onchange="saveConfig()" class="form-input">
+                <option value="auto">Auto &mdash; scales with the house</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div class="form-group" id="grp-bb-departures">
+              <label class="form-label">Walkouts &amp; Expulsions</label>
+              <select id="cfg-bb-departures" onchange="saveConfig()" class="form-input">
+                <option value="off">Off</option>
+                <option value="rare">Rare</option>
+                <option value="occasional">Occasional</option>
+                <option value="often">Often</option>
+              </select>
+              <div class="hint hint-tight">Somebody can walk out, or be removed for putting hands on another houseguest. It takes that week's eviction with it &mdash; the house is already down one.</div>
             </div>
             <div class="form-group" id="grp-bb-interview">
               <label class="form-label">Eviction Interview</label>

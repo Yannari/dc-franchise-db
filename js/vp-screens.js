@@ -16103,6 +16103,44 @@ export function rpBuildBBHaveNots(ep) {
   });
 }
 
+/**
+ * Somebody leaves without the house deciding.
+ *
+ * The one week nobody campaigned for and nobody won. It takes the eviction
+ * with it, so this screen stands where the vote would have been.
+ */
+export function rpBuildBBDeparture(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'departure');
+  if (!act) return '';
+  const expelled = act.kind === 'expulsion';
+  const p = pronouns(act.name);
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`,
+    title: expelled ? 'EXPULSION' : 'A HOUSEGUEST WALKS',
+    subtitle: expelled ? 'Removed from the house.' : 'Nobody voted. Nobody had to.',
+    accent: '#f85149', room: 'bb-live',
+    stateKey: `bb_dep_${ep.num}`,
+    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${rpPortrait(act.name, 'xl')}</div>`,
+    scenes: expelled ? [
+      { text: `It stops being an argument. <strong>${act.name}</strong> puts hands on <strong>${act.other}</strong>, and the house goes very quiet very quickly.`,
+        players: [act.name, act.other].filter(Boolean), badgeText: 'ALTERCATION', badgeClass: 'red' },
+      { text: `${p.Sub} is taken out through the door ${p.sub} came in by, and does not come back.`,
+        players: [act.name], badgeText: 'EXPELLED', badgeClass: 'red' },
+      { text: `There is no eviction this week. The house is already down one, and everybody in it saw why.`,
+        players: [], badgeText: 'NO VOTE', badgeClass: 'grey' },
+      ..._bbBeats(act),
+    ] : [
+      { text: `<strong>${act.name}</strong> has been counting days for a while, and today the number stops meaning anything.`,
+        players: [act.name], badgeText: 'AT THEIR LIMIT', badgeClass: 'grey' },
+      { text: `${p.Sub} asks to leave. Not as a threat and not as a move — ${p.sub} is finished, and the house realises it is not a bluff.`,
+        players: [act.name], badgeText: 'WALKS OUT', badgeClass: 'red' },
+      { text: `There is no eviction this week. Somebody who was going to be voted out just got another one.`,
+        players: [], badgeText: 'NO VOTE', badgeClass: 'grey' },
+      ..._bbBeats(act),
+    ],
+  });
+}
+
 /** No veto. The pair the HOH named is the pair the house votes on. */
 export function rpBuildBBInstantEviction(ep) {
   const act = (ep.acts || []).find(a => a.type === 'instant-eviction');
@@ -16167,6 +16205,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'veto-ceremony':
         screens.push({ id: id('bb-cer'), label: 'Ceremony', html: rpBuildBBCeremony(view) });
+        break;
+      case 'departure':
+        screens.push({ id: id('bb-departure'), label: act.kind === 'expulsion' ? 'Expulsion' : 'Walkout', html: rpBuildBBDeparture(view) });
         break;
       case 'safety':
         screens.push({

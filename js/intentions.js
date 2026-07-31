@@ -210,6 +210,14 @@ function _scrub(plan, gone) {
 
 // ── evolution: persist by default, mutate ONLY on believable triggers ──
 export function evolveIntentions(name, ep = null) {
+  // A house revises its own plans.
+  //
+  // This function branches on gs.isMerged and on tribes, neither of which a Big
+  // Brother house has, and it was being run over house plans every week by
+  // tickIntentions — quietly undoing what js/bb/plans.js had just decided. The
+  // maintenance around it (dropping departed players, ballot consequences) is
+  // shared and still applies; the evolution is not.
+  if (store()[name]?.format === 'big-brother') return store()[name];
   const e = ep ?? curEp();
   const plan = store()[name];
   if (!plan) return null;
@@ -275,8 +283,12 @@ export function evolveIntentions(name, ep = null) {
     const removed = oldConfirmed.filter(n => n !== name && !nextConfirmed.includes(n));
     added.forEach(n => { plan.origins.finalThree = plan.origins.finalThree || {}; plan.origins.finalThree[n] = 'confirmed by an active Final 2/Final 3 deal event'; });
     removed.forEach(n => { if (plan.origins.finalThree) delete plan.origins.finalThree[n]; });
-    logChange(plan, e, 'finalThree', oldConfirmed, nextConfirmed,
-      added.length ? `a real endgame deal was made with ${added.join(' & ')}` : `the endgame deal with ${removed.join(' & ')} ended`);
+    // Order-only changes leave both lists empty, which used to log the removal
+    // branch with nobody in it: "the endgame deal with  ended".
+    const reason = added.length ? `a real endgame deal was made with ${added.join(' & ')}`
+      : removed.length ? `the endgame deal with ${removed.join(' & ')} ended`
+      : 'the endgame deal was reordered';
+    logChange(plan, e, 'finalThree', oldConfirmed, nextConfirmed, reason);
     plan.finalThree = nextConfirmed;
   }
 

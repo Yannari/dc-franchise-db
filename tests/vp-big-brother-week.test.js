@@ -83,7 +83,13 @@ describe('the Big Brother visual player', () => {
     // The eviction is the last act; the shared vote, alliance and
     // relationship sections follow it as appendices.
     expect(ids).toContain('bb-evict');
-    const spine = ids.filter(id => id !== 'bb-camp' && !['bb-overview','bb-interview','bb-votes','bb-alliances','bb-rels','bb-debug'].includes(id));
+    // House Status is a bookend rather than part of the spine — there is one
+    // before the week and one after it, so both are filtered out here. Only
+    // 'bb-overview' used to be, which went unnoticed because the screen was
+    // throwing on a bare-global `bKey` and neither of them was being built.
+    const appendix = ['bb-interview', 'bb-votes', 'bb-alliances', 'bb-rels', 'bb-debug'];
+    const spine = ids.filter(id => id !== 'bb-camp'
+      && !id.startsWith('bb-overview') && !appendix.includes(id));
     // House life is its own act with its own phase, so the player walks the
     // acts the engine produced rather than guessing where a beat belonged.
     expect(spine).toEqual([

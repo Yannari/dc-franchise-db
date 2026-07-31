@@ -4,6 +4,7 @@ import { gs, seasonConfig, players } from '../core.js';
 import {
   addBBRelationship, addBBShowmanceSpark, rememberBBStrategy, setBBTarget,
 } from './shared-strategy.js';
+import { makeEndgameDeal, breakDeal, exposeDeal, tierOf } from './deals.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -61,15 +62,40 @@ export function createHouseEventApi(ctx = {}) {
     sideDeal(a, b, type = 'f2', detail = {}) {
       if (!a || !b || a === b) return false;
       gs.sideDeals ||= [];
+
+      // An endgame promise is a different object from a week's business, so it
+      // goes through the deal module: it gets a tier the rest of the game can
+      // rank, and a private sincerity for each side. The two of them shaking on
+      // the same words does not mean they meant it equally, and that gap is the
+      // whole reason final twos are interesting.
+      const tier = tierOf({ type, tier: detail.tier });
+      if (tier !== 'working') {
+        const deal = makeEndgameDeal(a, b, tier, {
+          week: ctx.week, about: detail.about || detail.reason || '', third: detail.third || null,
+        });
+        if (deal) Object.assign(deal, { ...detail, tier, type });
+        return !!deal;
+      }
+
       const existing = gs.sideDeals.find(deal => deal.active !== false
         && deal.players?.includes(a) && deal.players.includes(b) && deal.type === type);
       if (existing) return true;
       gs.sideDeals.push({
-        players: [a, b], type, active: true, genuine: detail.genuine !== false,
+        players: [a, b], type, tier: 'working', active: true, genuine: detail.genuine !== false,
         madeEp: ctx.week?.num || 0, format: 'big-brother', ...detail,
       });
       return true;
     },
+    /** Shake on the end explicitly — final two, or final three with a third. */
+    endgameDeal(a, b, tier = 'final-two', detail = {}) {
+      return !!makeEndgameDeal(a, b, tier, { week: ctx.week, ...detail });
+    },
+    /** Go back on one, on the record. */
+    breakDeal(deal, breaker, reason = '') {
+      return breakDeal(deal, breaker, { week: ctx.week, reason });
+    },
+    /** Tell somebody about a promise they were not part of. */
+    exposeDeal(deal, toWhom) { return exposeDeal(deal, toWhom); },
     remember(observer, subject, type, strength = 1, detail = {}) {
       if (!observer || !subject || !type) return false;
       const memory = rememberBBStrategy(observer, subject, type, strength, detail, ctx);

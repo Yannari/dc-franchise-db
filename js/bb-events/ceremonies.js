@@ -22,6 +22,7 @@
 //     of them yet (js/bb/week.js hardcodes `socialBeats: []` there), so farewell
 //     speeches are not written here — they would be dead code.
 
+import { housePlan } from '../bb/plans.js';
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, bondFactor, sharesAlliance, trusts, dislikes, actFacts,
@@ -101,7 +102,13 @@ const nomSpeechPersonal = {
     const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];
     const bad = dislikes(ctx.hoh, target) ? 1.6 : 1;
     const owed = grudge(ctx.hoh, target) >= 2 ? 1.5 : 1;
-    return band(heat * nasty * bad * owed);
+    // Nominations follow a plan now, which pulls the block toward strategic
+    // threats rather than people the Head of Household happens to dislike — and
+    // that quietly starved this event out of a measured season entirely. But
+    // the plan is also where a grudge is written down: somebody on the revenge
+    // list is the likeliest person in the house to get a speech about it.
+    const personal = (housePlan(ctx.hoh)?.revenge || []).includes(target) ? 2.2 : 1;
+    return band(heat * nasty * bad * owed * personal);
   },
   fire(house, ctx, api) {
     const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];

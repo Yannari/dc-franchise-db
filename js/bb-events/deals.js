@@ -15,7 +15,9 @@
 // and fire() so they cannot disagree, proportional weights, act-aware, state
 // changed only through `api`, text chosen deterministically.
 
+import { gs } from '../core.js';
 import { pronouns } from '../players.js';
+import { endgameDealsOf, dealBetween, tierOf, sincerityOf, isEndgameDeal } from '../bb/deals.js';
 import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
@@ -437,8 +439,198 @@ const voteFlip = {
   },
 };
 
+// ── the endgame tier ──────────────────────────────────────────────────
+//
+// A final two is the strongest promise in this game, and until the deal module
+// existed the house could only make weekly ones — a vote, a week of safety, a
+// veto. These four are what the tier makes possible: a wider pact, the second
+// deal that guarantees somebody gets cut, the moment it comes out, and the
+// check-in that keeps one alive.
+
+/** Three people already close enough to say it out loud. */
+function _pactTrio(house) {
+  if (house.length < 6) return null;
+  for (const a of _leastSeen(house)) {
+    const friends = _others(house, a)
+      .filter(n => bond(a, n) >= 2.5 && trustOf(a, n) >= 0)
+      .sort((x, y) => bond(a, y) - bond(a, x));
+    for (let i = 0; i < friends.length; i++) {
+      for (let j = i + 1; j < friends.length; j++) {
+        if (bond(friends[i], friends[j]) >= 1.5) return { a, b: friends[i], c: friends[j] };
+      }
+    }
+  }
+  return null;
+}
+
+const finalThreePact = {
+  id: 'deals-final-three-pact',
+  category: 'deals',
+  weight(house, ctx) {
+    const trio = _pactTrio(house);
+    if (!trio) return 0;
+    if (endgameDealsOf(trio.a).some(d => tierOf(d) === 'final-three')) return 0;
+    const late = house.length <= 9 ? 1.4 : house.length <= 12 ? 1 : 0.45;
+    return _w(bondFactor(bond(trio.a, trio.b)) * late * 10, ctx);
+  },
+  fire(house, ctx, api) {
+    const { a, b, c } = _pactTrio(house);
+    const text = _variant([
+      `${a}, ${b} and ${c} end up in the same room without planning to, and somebody finally says the thing all three have been circling: the last three chairs, and they are sitting in them. Nobody mentions that one of those chairs does not come with a cheque.`,
+      `"Three," ${a} says, holding up fingers. "Us three, all the way." ${b} and ${c} agree immediately. All three are already quietly working out which of the other two they would rather beat.`,
+      `${b} floats it carefully and ${a} finishes the sentence. ${c} is in before either of them asks. It is the easiest deal any of them have made and the one most likely to end badly.`,
+      `The three of them shake on a final three. It costs nothing today, which is exactly why all three of them mean it.`,
+    ], ctx, a, b, c);
+    api.addBond(a, b, 1.1); api.addBond(a, c, 1.1); api.addBond(b, c, 1);
+    api.endgameDeal?.(a, b, 'final-three', { third: c, about: 'the last three chairs' });
+    [a, b, c].forEach(x => [a, b, c].forEach(y => { if (x !== y) api.remember(x, y, 'final-three', 2); }));
+    return { text, players: [a, b, c], badgeText: 'FINAL THREE', badgeClass: 'gold' };
+  },
+};
+
+/** Somebody with a final two already, shaking on a second one. */
+function _hedger(house) {
+  for (const a of _leastSeen(house)) {
+    const held = endgameDealsOf(a).filter(d => tierOf(d) === 'final-two');
+    if (!held.length) continue;
+    const existing = held[0].players.find(n => n !== a);
+    const mark = _others(house, a, existing).find(n =>
+      bond(a, n) >= 1.5 && !dealBetween(a, n) && trustOf(n, a) >= 0);
+    if (mark) return { a, mark, existing };
+  }
+  return null;
+}
+
+const hedgedDeal = {
+  id: 'deals-hedged',
+  category: 'deals',
+  weight(house, ctx) {
+    const h = _hedger(house);
+    if (!h) return 0;
+    const s = pStats(h.a);
+    const nerve = (s.strategic * 0.6 + s.boldness * 0.4) / 10;
+    return _w(nerve * (house.length <= 8 ? 1.5 : 1) * 11, ctx);
+  },
+  fire(house, ctx, api) {
+    const { a, mark, existing } = _hedger(house);
+    const p = pronouns(a);
+    const does = p.sub === 'they' ? 'do' : 'does';
+    const holds = p.sub === 'they' ? 'hold' : 'holds';
+    const tells = p.sub === 'they' ? 'tell' : 'tells';
+    const text = _variant([
+      `${mark} asks ${a} the question directly — final two, the pair of us — and ${a} says yes without hesitating. ${p.Sub} already said yes to ${existing} weeks ago. One of those conversations was a lie and ${p.sub} ${does} not yet know which.`,
+      `${a} shakes on a final two with ${mark}. It is the second one ${p.sub} ${holds}. ${p.Sub} ${tells} ${p.ref} it is insurance rather than a lie, which is what everybody who does this tells themselves.`,
+      `"Me and you at the end." ${mark} means it completely. ${a} says it back and means it about sixty percent, which is still more than ${p.sub} meant it with ${existing}.`,
+      `${a} makes a second final two with ${mark} and walks out doing the arithmetic. Two deals, one seat. Somebody finds out eventually.`,
+    ], ctx, a, mark, existing);
+    api.addBond(a, mark, 1.3);
+    api.endgameDeal?.(a, mark, 'final-two', { about: 'the second one' });
+    api.remember(mark, a, 'final-two', 3);
+    return { text, players: [a, mark], badgeText: 'SECOND DEAL', badgeClass: 'purple' };
+  },
+};
+
+/** A promise somebody was not supposed to know about. */
+function _exposure(house) {
+  for (const finder of _leastSeen(house)) {
+    const s = pStats(finder);
+    if (s.intuition < 5 && s.social < 6) continue;
+    for (const deal of gs.sideDeals || []) {
+      if (!isEndgameDeal(deal) || deal.broken || deal.active === false) continue;
+      const members = deal.players || [];
+      if (members.includes(finder) || !members.every(n => house.includes(n))) continue;
+      if ((deal.exposedTo || []).includes(finder)) continue;
+      return { finder, deal, members };
+    }
+  }
+  return null;
+}
+
+const dealExposed = {
+  id: 'deals-exposed',
+  category: 'deals',
+  weight(house, ctx) {
+    const e = _exposure(house);
+    if (!e) return 0;
+    const s = pStats(e.finder);
+    return _w(((s.intuition * 0.6 + s.social * 0.4) / 10) * 12, ctx);
+  },
+  fire(house, ctx, api) {
+    const { finder, deal, members } = _exposure(house);
+    const [x, y] = members;
+    const p = pronouns(finder);
+    const does = p.sub === 'they' ? 'do' : 'does';
+    const starts = p.sub === 'they' ? 'start' : 'starts';
+    const tier = tierOf(deal) === 'final-two' ? 'final two' : 'final three';
+    const text = _variant([
+      `${finder} has watched ${x} and ${y} come out of the same room one after another all week, and finally says it out loud to somebody: they have a ${tier}. Saying it makes it true in a way that thinking it did not.`,
+      `It is ${y} who gives it away — a sentence half-finished, a look across the kitchen — and ${finder} puts it together on the spot. ${p.Sub} ${does} not confront either of them. ${p.Sub} ${starts} telling other people.`,
+      `${finder} asks ${x} a question with an obvious answer and watches ${pronouns(x).obj} pick a different one. Confirmation enough: ${x} and ${y} are going to the end together and everybody else here is furniture.`,
+      `The ${tier} between ${x} and ${y} stops being a secret the moment ${finder} decides it is worth more shared than kept.`,
+    ], ctx, finder, x, y);
+    const told = _others(house, finder, ...members).slice(0, 3);
+    api.exposeDeal?.(deal, [finder, ...told]);
+    members.forEach(m => {
+      api.remember(finder, m, 'endgame-deal-discovered', 2, { tier: tierOf(deal) });
+      api.setTarget(finder, m, `found out about the ${tier}`);
+      api.addBond(finder, m, -0.7);
+    });
+    return { text, players: [finder, ...members], badgeText: 'DEAL EXPOSED', badgeClass: 'red' };
+  },
+};
+
+/** Two people with something at the end, checking it is still there. */
+function _partners(house) {
+  for (const a of _leastSeen(house)) {
+    const deal = endgameDealsOf(a)[0];
+    if (!deal) continue;
+    const b = (deal.players || []).find(n => n !== a && house.includes(n));
+    if (b) return { a, b, deal };
+  }
+  return null;
+}
+
+const reaffirmDeal = {
+  id: 'deals-reaffirm',
+  category: 'deals',
+  weight(house, ctx) {
+    const pair = _partners(house);
+    if (!pair) return 0;
+    // The shakier the promise, the more it needs saying again.
+    return _w((0.5 + (1 - sincerityOf(pair.deal, pair.a))) * 8, ctx);
+  },
+  fire(house, ctx, api) {
+    const { a, b, deal } = _partners(house);
+    const solid = sincerityOf(deal, a) > 0.55 && sincerityOf(deal, b) > 0.55;
+    const p = pronouns(a);
+    const files = p.sub === 'they' ? 'file' : 'files';
+    const text = solid ? _variant([
+      `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
+      `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,
+      `"We good?" "We're good." ${a} and ${b} have had this exchange a dozen times and it has not stopped being true yet.`,
+      `${a} runs the next three weeks past ${b} out loud — who goes, in what order, who they need. ${b} corrects one name. That is the whole disagreement.`,
+    ], ctx, a, b) : _variant([
+      `${a} asks ${b} whether they are still good, and listens to how long the pause is. It is not long. It is not nothing, either.`,
+      `"Still us, right?" ${b} says all the right words. ${a} walks away not entirely convinced and unable to say which word did it.`,
+      `${a} tests ${b} with a name — floats losing somebody ${b} would never agree to lose — and watches ${pronouns(b).obj} agree far too easily. ${p.Sub} ${files} that away.`,
+      `They reaffirm the deal. Both of them mean it slightly less than they did last week and neither says so.`,
+    ], ctx, a, b);
+    api.addBond(a, b, solid ? 0.8 : 0.2);
+    if (!solid) api.remember(a, b, 'doubted-the-deal', 1);
+    return {
+      text, players: [a, b],
+      badgeText: solid ? 'STILL SOLID' : 'DOUBT CREEPING IN',
+      badgeClass: solid ? 'green' : 'orange',
+    };
+  },
+};
+
 export const DEALS_EVENTS = [
   finalTwo,
+  finalThreePact,
+  hedgedDeal,
+  dealExposed,
+  reaffirmDeal,
   votePitch,
   brokenPromise,
   safetyDeal,

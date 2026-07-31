@@ -2472,8 +2472,24 @@ export function _juryLayerRead(juror, finalist) {
   // Did the finalist break — or keep — a stated plan that included this juror?
   const fPlan = getIntentions(finalist);
   const promised = fPlan ? [...(fPlan.finalThree || []), ...(fPlan.preferredCore || []), ...(fPlan.backupAllies || [])].includes(juror) : false;
-  const brokePromise = promised && votedMeOut;
-  const keptPromise = promised && !votedMeOut && trust >= 1;   // only counts if the trust actually held
+  // A promise can also be broken without a vote.
+  //
+  // The final Head of Household cuts somebody by choosing, not by writing a
+  // name, so a final two broken at the final three registered as nothing at
+  // all — the most punished move in this game scored the same as a quiet week.
+  // A deal on the record that this finalist broke is read directly, and every
+  // juror who KNOWS about it carries it into the vote, not only the person who
+  // was cut.
+  const brokenDeal = (gs.sideDeals || []).find(d => d.broken && d.brokenBy === finalist
+    && (d.players || []).includes(juror));
+  const witnessedBreak = !brokenDeal && (gs.sideDeals || []).some(d => d.broken
+    && d.brokenBy === finalist && (d.exposedTo || []).includes(juror));
+  const brokePromise = (promised && votedMeOut) || !!brokenDeal;
+  // Keeping one costs something, and the person you kept it with knows exactly
+  // what it cost you.
+  const keptDeal = (gs.sideDeals || []).some(d => !d.broken && d.honoured
+    && d.honouredBy === finalist && (d.players || []).includes(juror));
+  const keptPromise = keptDeal || (promised && !votedMeOut && trust >= 1);   // only counts if the trust actually held
   // A straight shooter (high trust, never crossed them) vs a respected threat
   // the juror never controlled (fear + respect, little warmth).
   const straightShooter = trust >= 4 && !votedMeOut && resentment < 3;
@@ -2499,9 +2515,14 @@ export function _juryLayerRead(juror, finalist) {
     + credit * (strategicJuror ? 0.3 : 0.12)   // reward the player they BELIEVE ran the game
     - (knewBetrayal ? 0.6 : 0)
     - (brokePromise ? 0.7 : 0)
+    // Being cut out of a final two is its own wound on top of the broken
+    // promise, and the rest of the jury does not forget watching it either.
+    - (brokenDeal ? 0.55 : 0)
+    - (witnessedBreak ? 0.3 : 0)
     + (keptPromise ? 0.5 : 0)
     + valueMod;
   return { resentment, respect, trust, fear, credit, votedMeOut, knewBetrayal, believedBooter, brokePromise, keptPromise,
+    brokenDeal: !!brokenDeal, witnessedBreak,
     straightShooter, respectedThreat, strategicJuror, grievanceReason, respectReason, trustReason, topValue, mod };
 }
 

@@ -16,6 +16,8 @@
 import { gs, seasonConfig } from './core.js';
 import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
+import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
+import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
@@ -125,11 +127,20 @@ export function simulateBBFinale(rng = Math.random) {
     acts.push({ type: 'final-hoh-part', ...three });
     finalHoh = three.winner;
 
-    // The final Head of Household takes whoever they think they beat. The
-    // projection is the shared one, so they are reading the same jury the
-    // jury is about to be.
+    // The one decision the whole season has been pointing at.
+    //
+    // This used to be resolved on projected jury margin alone, which meant the
+    // single moment in Big Brother where a final two deal is publicly honoured
+    // or broken was decided by a spreadsheet. Nobody ever kept their word
+    // because nobody was ever asked to.
+    //
+    // Now there are two readings and they can disagree. The head says take the
+    // one you beat. The promise says take the one you told you would. Which one
+    // wins depends on how much they meant it and how much it costs.
     const options = house.filter(n => n !== finalHoh);
+    const margins = new Map(options.map(n => [n, 0]));
     let keep = options[0];
+    let projected = null;
     try {
       const projections = options.map(other => {
         const proj = projectJuryVotes([finalHoh, other]);
@@ -137,15 +148,75 @@ export function simulateBBFinale(rng = Math.random) {
         const theirs = proj?.votes?.[other] ?? 0;
         return { other, margin: mine - theirs };
       }).sort((a, b) => b.margin - a.margin);
-      keep = projections[0].other;
+      projections.forEach(p => margins.set(p.other, p.margin));
+      projected = projections[0].other;
+      keep = projected;
     } catch {
       // No projection available: take the person the house liked least.
       keep = options.sort((a, b) =>
         house.reduce((s, n) => s + getBond(n, a), 0) - house.reduce((s, n) => s + getBond(n, b), 0))[0];
+      projected = keep;
     }
+
+    // Is there a promise here at all?
+    const promises = options
+      .map(other => ({ other, deal: dealBetween(finalHoh, other) }))
+      .filter(entry => entry.deal);
+    // Somebody holding a deal with BOTH of them has already guaranteed they
+    // break one, which is the most Big Brother position there is.
+    const bound = promises.sort((a, b) =>
+      sincerityOf(b.deal, finalHoh) - sincerityOf(a.deal, finalHoh))[0] || null;
+
+    let honoured = null;
+    let betrayal = null;
+    if (bound) {
+      const partner = bound.other;
+      // What keeping the promise costs: the jury margin given up by sitting
+      // beside the harder opponent, scaled into 0..1.
+      const cost = Math.max(0, (margins.get(projected) || 0) - (margins.get(partner) || 0));
+      const pressure = Math.min(1, cost / 5);
+      if (honoursDeal(finalHoh, bound.deal, pressure)) {
+        keep = partner;
+        // On the record, so the person they kept it with can weigh it at the
+        // vote — and so can anybody who watched them do it.
+        bound.deal.honoured = true;
+        bound.deal.honouredBy = finalHoh;
+        bound.deal.honouredEp = week.num;
+        honoured = {
+          partner, tier: tierOf(bound.deal), madeEp: bound.deal.madeEp,
+          cost: Number(cost.toFixed(2)),
+          // Keeping your word against your own interest is a different act from
+          // keeping it when it was free, and the jury should hear which it was.
+          costly: cost > 0.5,
+        };
+      } else {
+        keep = projected;
+        if (partner !== keep) {
+          betrayal = breakDeal(bound.deal, finalHoh, { week, reason: 'cut them at the final three' });
+          // Everybody on that jury is about to hear about it — this one happens
+          // in front of them, at the last possible moment, on the way out.
+          exposeDeal(bound.deal, [...(gs.jury || []), ...house]);
+          try {
+            rememberStrategy(partner, finalHoh, 'broken-final-two', week.num, 3,
+              { format: 'big-brother', at: 'final-three' });
+            for (const juror of gs.jury || []) {
+              if (juror !== partner) rememberStrategy(juror, finalHoh, 'broke-a-final-two', week.num, 2,
+                { format: 'big-brother', victim: partner });
+            }
+          } catch { /* the cut still happened */ }
+        }
+      }
+    }
+
     cut = options.find(n => n !== keep) || null;
     finalTwo = [finalHoh, keep];
-    acts.push({ type: 'final-cut', finalHoh, kept: keep, cut });
+    acts.push({
+      type: 'final-cut', finalHoh, kept: keep, cut,
+      // How they got here, because a result with no reasoning is not a story.
+      projected, honoured, betrayal: betrayal ? { partner: betrayal.victims[0], tier: tierOf(bound.deal) } : null,
+      hadPromise: !!bound,
+      margins: Object.fromEntries(margins),
+    });
 
     if (cut) {
       gs.activePlayers = house.filter(n => n !== cut);

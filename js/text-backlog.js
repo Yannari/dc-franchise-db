@@ -4177,6 +4177,38 @@ export function generateBBSummaryText(ep) {
     ln(`${ep.houseAtStart.length} houseguests: ${ep.houseAtStart.join(', ')}`);
   }
 
+  // WHAT EVERYBODY IS PLAYING FOR.
+  //
+  // The plan layer decides the nominations, the veto and the vote. The
+  // transcript is the other place somebody can find out how a week went, so it
+  // opens with the same thing the screen does — who is aiming at whom, who is
+  // hiding behind whom, and who has promised whom the end.
+  const openPlans = ep.openingState?.intentions || {};
+  const planLines = (ep.houseAtStart || []).map(name => {
+    const p = openPlans[name];
+    if (!p) return '';
+    const bits = [];
+    if (p.targets?.[0]) bits.push(`wants ${p.targets[0]} out`);
+    if (p.shield) bits.push(`hiding behind ${p.shield}`);
+    if (p.goat) bits.push(`would sit beside ${p.goat}`);
+    const partners = (p.finalThree || []).filter(n => n !== name && (ep.houseAtStart || []).includes(n));
+    if (partners.length) bits.push(`shook on the end with ${partners.join(' & ')}`);
+    return bits.length ? `  ${name}: ${bits.join('; ')}.` : '';
+  }).filter(Boolean);
+  if (planLines.length) {
+    sec('GOING IN');
+    planLines.forEach(ln);
+  }
+  const openDeals = (ep.openingDeals || []).filter(d =>
+    (d.players || []).every(n => (ep.houseAtStart || []).includes(n)));
+  if (openDeals.length) {
+    ln('');
+    ln('  Promised the end:');
+    openDeals.forEach(d => ln(`    ${d.tier === 'final-two' ? 'Final two' : 'Final three'}: `
+      + `${(d.players || []).join(' & ')}`
+      + `${d.lopsided ? '  — one of them means it considerably more than the other' : ''}`));
+  }
+
   let announcedSecond = false;
   for (const act of ep.acts || []) {
     // A double eviction runs the whole week twice in one episode. Without this
@@ -4357,6 +4389,26 @@ export function generateBBSummaryText(ep) {
     ln(`  ${iv.evictee}: ${iv.parting}`);
     if (iv.blamed) ln(`  Leaves believing it was ${iv.blamed}${iv.blameCorrect ? '.' : ' — and is wrong.'}`);
   }
+
+  // A promise that was broken this week, and by whom. This is the loudest thing
+  // that can happen in this game and it should never be something the user has
+  // to infer from a vote count.
+  if ((ep.dealBreaks || []).length) {
+    sec('PROMISES BROKEN');
+    ep.dealBreaks.forEach(b => ln(`  ${b.breaker} had a `
+      + `${b.tier === 'final-two' ? 'final two' : 'final three'} with ${b.victim} `
+      + `from week ${b.madeEp}, and voted them out.`));
+  }
+
+  // And how the week moved everybody's thinking. Not every revision — the ones
+  // with a reason worth reading.
+  const moved = (ep.planChanges || []).filter(c => c.reason);
+  if (moved.length) {
+    sec('HOW THE PLANS CHANGED');
+    moved.slice(0, 18).forEach(c => ln(`  ${c.owner}: ${c.reason}.`));
+    if (moved.length > 18) ln(`  (${moved.length - 18} smaller revisions not listed)`);
+  }
+
   return L.join('\n');
 }
 
@@ -4381,6 +4433,14 @@ export function generateBBFinaleText(ep) {
     } else if (act.type === 'final-cut') {
       sec('THE FINAL DECISION');
       ln(`  ${act.finalHoh} is the final Head of Household.`);
+      if (act.honoured) {
+        ln(`  ${act.finalHoh} shook on this with ${act.honoured.partner} in week ${act.honoured.madeEp}`
+          + `${act.honoured.costly ? ', and keeps it at a cost.' : ', and keeps it.'}`);
+      }
+      if (act.betrayal) {
+        ln(`  ${act.finalHoh} had a ${act.betrayal.tier === 'final-two' ? 'final two' : 'final three'} `
+          + `with ${act.betrayal.partner}, and breaks it here, in front of the jury.`);
+      }
       ln(`  ${act.finalHoh} takes ${act.kept} to the end.`);
       if (act.cut) ln(`  ${act.cut} is evicted at the final three, and becomes the last juror.`);
     } else if (act.type === 'jury-vote') {

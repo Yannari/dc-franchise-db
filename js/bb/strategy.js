@@ -4,6 +4,8 @@ import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
+import { housePlan } from './plans.js';
+import { dealBetween, sincerityOf, tierOf } from './deals.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -19,7 +21,47 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
   const heat = bbHeat(hoh, candidate);
   const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
-  return heat.total + threatAdjustment + revenge * 0.75 + noise(rng, 1.6);
+  return heat.total + threatAdjustment + revenge * 0.75
+    + nominationPlanPull(hoh, candidate) + noise(rng, 1.6);
+}
+
+/**
+ * What the Head of Household's own plan does to a name.
+ *
+ * Nominations used to be computed from heat and threat alone, which meant the
+ * plan a houseguest had been building for six weeks had no bearing on the one
+ * week they could act on it. A shield is the sharpest case: the whole reason to
+ * keep a bigger player in the house is that they absorb the shots, and an HOH
+ * who nominates their own shield has not understood their own strategy.
+ *
+ * Proportional to how well this person plans — a reactive player barely
+ * consults a plan, an architect is not doing anything else.
+ */
+export function nominationPlanPull(hoh, candidate) {
+  const plan = housePlan(hoh);
+  if (!plan) return 0;
+  const weight = clamp(pStats(hoh).strategic / 10, 0.35, 1);
+  let pull = 0;
+  const rank = plan.targets?.indexOf(candidate) ?? -1;
+  if (rank === 0) pull += 3.4;
+  else if (rank > 0) pull += 1.5;
+  if (plan.revenge?.includes(candidate)) pull += 1.8;
+  // The people you are not putting up.
+  //
+  // The shield discount has to be large, and it is the one number here that
+  // cannot be timid. A shield is BY DEFINITION the biggest threat in the room,
+  // so it already carries the maximum heat and threat this function is adding
+  // up — a modest discount just loses to the very thing that made them a shield
+  // in the first place, and Heads of Household went on nominating the person
+  // they were hiding behind.
+  if (plan.shield === candidate) pull -= 7;
+  if (plan.goat === candidate) pull -= 2.2;
+  if (plan.preferredCore?.includes(candidate)) pull -= 2.4;
+  if (plan.backupAllies?.includes(candidate)) pull -= 1.1;
+  // A promise about the end is the strongest reason there is not to do this.
+  const deal = dealBetween(hoh, candidate);
+  if (deal) pull -= (tierOf(deal) === 'final-two' ? 4.5 : 3) * sincerityOf(deal, hoh);
+  return pull * weight;
 }
 
 export function chooseNominationPlan(hoh, house, rng = Math.random) {
@@ -33,11 +75,19 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   const backdoorChance = clamp((hohStats.strategic * 0.07 + hohStats.boldness * 0.04)
     * clamp((primary.score - ranked[Math.min(2, ranked.length - 1)].score + 3) / 6, 0.25, 1), 0.08, 0.72);
   const useBackdoor = eligible.length >= 5 && rng() < backdoorChance;
-  const pawnPool = ranked.slice(1).sort((a, b) => {
-    const aPawn = getPerceivedBond(hoh, a.name) - bbThreat(a.name) * 0.35;
-    const bPawn = getPerceivedBond(hoh, b.name) - bbThreat(b.name) * 0.35;
-    return bPawn - aPawn;
-  });
+  // A pawn is somebody you are reasonably confident survives the week and does
+  // not hold it against you. Somebody you have already read as beatable at the
+  // end is the obvious chair, and somebody you shook hands with is not.
+  const plan = housePlan(hoh);
+  const pawnFit = name => {
+    let fit = getPerceivedBond(hoh, name) - bbThreat(name) * 0.35;
+    if (plan?.goat === name) fit += 1.6;
+    if (plan?.shield === name) fit -= 3;
+    if (dealBetween(hoh, name)) fit -= 2.5;
+    if (plan?.preferredCore?.includes(name)) fit -= 1.2;
+    return fit;
+  };
+  const pawnPool = ranked.slice(1).sort((a, b) => pawnFit(b.name) - pawnFit(a.name));
   const pawn = pawnPool[0]?.name || ranked[1].name;
   const initialTarget = useBackdoor ? (ranked.find(entry => entry.name !== primary.name && entry.name !== pawn)?.name || ranked[1].name) : primary.name;
   return {
@@ -63,7 +113,17 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
     return {
       name,
       score: getPerceivedBond(holder, name) * 0.9 + bbAllianceStrength(holder, name) * 2
-        + stats.loyalty * 0.18 - bbThreat(name) * 0.18 + noise(rng, 1.2),
+        + stats.loyalty * 0.18 - bbThreat(name) * 0.18
+        // The one you promised the end to comes down first. A final two that
+        // does not survive contact with a veto was never a final two.
+        + (() => {
+          const deal = dealBetween(holder, name);
+          if (!deal) return 0;
+          return (tierOf(deal) === 'final-two' ? 4.2 : 2.6) * sincerityOf(deal, holder);
+        })()
+        + (housePlan(holder)?.shield === name ? 1.6 : 0)
+        - (housePlan(holder)?.targets?.[0] === name ? 2.4 : 0)
+        + noise(rng, 1.2),
     };
   }).sort((a, b) => b.score - a.score);
   const best = options[0];
@@ -73,11 +133,23 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
 }
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {
-  const score = nominee => getPerceivedBond(voter, nominee) * 0.9 - bbThreat(nominee) * 0.3
-    + bbAllianceStrength(voter, nominee) * 1.4
-    - (getBBTarget(voter) === nominee ? 3 : 0)
-    - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25
-    + noise(rng, 1);
+  // getBBTarget already reads the plan, so a target on the block is punished
+  // here for free. What was missing was the other direction: the person you
+  // promised the end to is somebody you actively keep, not merely somebody you
+  // are not gunning for.
+  const score = nominee => {
+    const deal = dealBetween(voter, nominee);
+    const keep = deal ? (tierOf(deal) === 'final-two' ? 3.6 : 2.2) * sincerityOf(deal, voter) : 0;
+    const plan = housePlan(voter);
+    return getPerceivedBond(voter, nominee) * 0.9 - bbThreat(nominee) * 0.3
+      + bbAllianceStrength(voter, nominee) * 1.4
+      - (getBBTarget(voter) === nominee ? 3 : 0)
+      + keep
+      + (plan?.shield === nominee ? 1.4 : 0)
+      + (plan?.goat === nominee ? 1.1 : 0)
+      - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25
+      + noise(rng, 1);
+  };
   const scores = nominees.map(name => ({ name, keepScore: score(name) })).sort((a, b) => a.keepScore - b.keepScore);
   return { evict: scores[0].name, margin: scores[1].keepScore - scores[0].keepScore };
 }
@@ -177,11 +249,28 @@ export function houseVoteCommitment(ballot, nominees) {
 
   const allied = keeping ? bbAllianceStrength(voter, keeping) > 0 : false;
 
+  // A promise about the end outranks a promise about the week, and outranks
+  // the alliance too. This is the vote where somebody's real game becomes
+  // visible: an alliance can whip six people and still lose the one who is
+  // quietly taking somebody else to the final two.
+  const endgame = keeping ? dealBetween(voter, keeping) : null;
+  const againstDeal = dealBetween(voter, ballot.evict);
+  const endgameHold = endgame
+    ? (tierOf(endgame) === 'final-two' ? 0.42 : 0.26) * sincerityOf(endgame, voter) : 0;
+  // Being asked to evict the person you promised the end to is the hardest a
+  // vote gets. They are not immovable — but moving them costs something.
+  const cutting = againstDeal ? sincerityOf(againstDeal, voter) : 0;
+
   const strength = clarity * 0.45
     + (promised ? 0.3 : 0)
     + (allied ? 0.22 : 0)
+    + endgameHold
     + (s.loyalty / 10) * 0.25;
-  return { voter, keeping, strength: Math.max(0, Math.min(1, strength)), promised, allied };
+  return {
+    voter, keeping, strength: Math.max(0, Math.min(1, strength)), promised, allied,
+    endgameDeal: endgame ? { with: keeping, tier: tierOf(endgame) } : null,
+    cuttingPartner: cutting > 0.45 ? ballot.evict : null,
+  };
 }
 
 /**

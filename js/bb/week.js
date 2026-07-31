@@ -27,6 +27,9 @@ import {
 import { scheduleHouseBeats } from './house-events.js';
 import { runBBCompetition } from './comps.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions } from './shared-strategy.js';
+import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
+import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf } from './deals.js';
+import { rememberStrategy } from '../strategy-memory.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -389,6 +392,9 @@ export function simulateBBWeek(options = {}) {
   // screen shown at the top of an episode reads this, so it cannot show an
   // alliance nobody has formed yet or a target nobody has set.
   week.openingState = _snapshotHouse();
+  // What was promised walking in, so the opening screen cannot show a deal
+  // that had not been made yet.
+  week.openingDeals = endgameDealSummary(house);
 
   // Reconcile first; formation itself happens inside the stretches below, so
   // that a new alliance always has a scene in the same act that created it.
@@ -554,6 +560,34 @@ export function simulateBBWeek(options = {}) {
     return act;
   };
 
+  /**
+   * Push everybody's plan through what just happened, and say so.
+   *
+   * Plans that only ever get written are decoration; plans that get written
+   * and never shown are worse, because the game starts behaving on reasons the
+   * user cannot see. Every revision comes back with a sentence, and the
+   * sentences ride on the act that caused them.
+   */
+  const revise = (trigger, extra = {}) => {
+    let changes = [];
+    try {
+      changes = reviseHousePlans({
+        house: (gs.activePlayers || house).filter(Boolean), week, trigger, ...extra });
+    } catch { changes = []; }
+    week.planChanges.push(...changes.map(c => ({ ...c, trigger })));
+    const act = week.acts[week.acts.length - 1];
+    if (act && changes.length) act.planChanges = changes;
+    return changes;
+  };
+
+  // Everybody arrives with a plan, even if the plan is thin.
+  week.planChanges = [];
+  for (const name of house) {
+    try { ensureHousePlan(name, { house, week }); } catch { /* a thin plan is still a plan */ }
+  }
+  try { settleDeals({ house, week }); } catch { /* deals outlive a bad week */ }
+  revise('week');
+
   // Before anybody has power. No HOH, no nominees, nothing decided.
   if (!compressed) houseAct('pre-hoh');
 
@@ -567,6 +601,9 @@ export function simulateBBWeek(options = {}) {
   gs.bb.stats[hoh].hohWins++;
   week.hohCompetition = hohCompetition;
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
+  // The most disruptive moment of the week. One person can no longer be
+  // evicted, so for seven days everybody else's plan bends around theirs.
+  revise('hoh', { hoh });
 
   // Slop is the first thing a new Head of Household does with power, and the
   // house watches them do it. Chosen before nominations so the week's first
@@ -603,6 +640,7 @@ export function simulateBBWeek(options = {}) {
   week.initialNominees = [...nominees];
   week.plan = plan;
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget }, { nominees: [...nominees] }));
+  revise('noms', { hoh, nominees: [...nominees] });
 
   // Two people are on the block and the rest of the house is not.
   if (!compressed) houseAct('post-noms', { nominees: [...nominees] });
@@ -654,6 +692,7 @@ export function simulateBBWeek(options = {}) {
     week.finalNominees = [...nominees];
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
+    revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
   }
 
   // ── The last competition of the week, played by the people on the block ──
@@ -693,6 +732,7 @@ export function simulateBBWeek(options = {}) {
   if (departure) {
     week.departure = { ...departure };
     week.evicted = departure.name;
+    try { dropFromHousePlans(departure.name); } catch { /* plans survive it */ }
     week.votes = {};
     week.ballots = [];
     week.tieBreak = null;
@@ -705,6 +745,9 @@ export function simulateBBWeek(options = {}) {
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
   _attachAllianceFallout(week, house);
+  week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
+  week.housePlans = Object.fromEntries((gs.activePlayers || [])
+    .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week);
@@ -774,10 +817,40 @@ export function simulateBBWeek(options = {}) {
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted },
     { nominees: [...nominees], evicted, votes, ballots }));
 
+  // Voting out the person you promised the end to IS breaking the deal, and it
+  // was going unrecorded: thirty-two final twos were made across a season and
+  // not one of them was ever broken before the final three, because only the
+  // final cut could break one. The vote is where most betrayals actually
+  // happen — somebody walks to the jury knowing exactly who did it.
+  week.dealBreaks = [];
+  for (const ballot of ballots) {
+    if (ballot.evict !== evicted) continue;
+    const deal = dealBetween(ballot.voter, evicted);
+    if (!deal) continue;
+    const broken = breakDeal(deal, ballot.voter, { week, reason: 'voted them out' });
+    if (!broken) continue;
+    // The person leaving knows. So does anybody who was in the room when the
+    // votes were read, which in this house is everybody.
+    exposeDeal(deal, [evicted, ...gs.activePlayers]);
+    try {
+      rememberStrategy(evicted, ballot.voter, 'broken-final-two', week.num, 3,
+        { format: 'big-brother', tier: tierOf(deal) });
+    } catch { /* the break still stands */ }
+    week.dealBreaks.push({ breaker: ballot.voter, victim: evicted, tier: tierOf(deal), madeEp: deal.madeEp });
+  }
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
+  // Somebody leaving rearranges everybody's plan: a shield walks out and the
+  // person hiding behind them is suddenly the biggest thing in the room, and a
+  // promise made to somebody who is now in the jury is not a promise any more.
+  try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ }
+  try { settleDeals({ house: gs.activePlayers, week }); } catch { /* deals too */ }
+  revise('eviction', { evicted });
   week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
   _attachAllianceFallout(week, house);
+  week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
+  week.housePlans = Object.fromEntries((gs.activePlayers || [])
+    .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week);

@@ -915,6 +915,69 @@ trusting the simulation.
 Reading the diff does not count. Every defect listed above passed its unit
 tests.
 
+## Game plans and endgame deals
+
+Big Brother is a game about what people are trying to do, and the house was
+playing it without that layer. `gs.intentions` existed but was a shell: every
+field was initialised empty and only `targets` was ever written again, so a
+mastermind on strategic 9 planned identically to a floater on strategic 2.
+`planStyle` was hardcoded `'reactive'` for everybody. Nothing in the format read
+`.shield` or `.goat` at all — zero references — so filling them would have
+changed nothing anyway.
+
+### Two modules
+
+`js/bb/plans.js` forms and revises plans. It is deliberately not a copy of
+`formIntentions()`, which branches on `gs.isMerged` — a house does not merge.
+The axis is how far along the season is, measured the only way a house measures
+it: `early` (10+), `jury` (6–9), `endgame` (5 or fewer).
+
+`js/bb/deals.js` owns promises about the end. A deal has a **tier** — `working`
+(this week's safety, vote or veto, which expires on Thursday), `final-three`, or
+`final-two` — and a **sincerity per side**, private to each, because two people
+shaking on the same words rarely mean it to the same degree. That gap is the
+story of how a season ends.
+
+### Rules that are load-bearing
+
+- **A shield must be a bigger threat than the planner.** Keeping somebody
+  smaller is not a shield, it is a goat, and they are opposite jobs.
+- **A goat read does NOT require a warm relationship.** Total Drama requires
+  one because you have to keep being chosen. The final Head of Household picks
+  alone and the person picked has no say, so hostility is no obstacle. Importing
+  that constraint left the final six with no endgame reads at all.
+- **Beatability is relative, centred on 5.** Demanding 5.5+ demands a clear win
+  over people who got this far, which almost nobody has.
+- **Three endgame deals per person, maximum.** Hedging is the point of the tier;
+  saturation is not. Uncapped, a measured week nine had 28 live final twos
+  between ten houseguests.
+- **A deal can be broken by a vote, not only at the final cut.** Voting out the
+  person you promised the end to *is* breaking it, and it is where most
+  betrayals actually happen.
+- **The final cut is a decision about a promise.** It reads the projection AND
+  the deal, and `honoursDeal()` weighs sincerity against what keeping it costs.
+  It used to be resolved on projected jury margin alone, so nobody ever kept
+  their word because nobody was ever asked to.
+- **The jury punishes a broken final two** — the person cut, and everybody who
+  found out. A final-three cut is a choice rather than a vote, so it registered
+  as nothing until `_juryLayerRead` learned to read broken deals directly.
+
+### Where the user sees it
+
+Per the visibility rule above, every part of this is reachable:
+
+| What | Where |
+|---|---|
+| What each houseguest is playing for | House Status → WHAT EVERYBODY IS PLAYING FOR |
+| Who has promised whom the end, and whether it is lopsided | House Status → PROMISED THE END |
+| Why any plan moved, with its reason | House Status (closing) → WHY PLANS CHANGED |
+| Promises broken this week | Transcript → PROMISES BROKEN |
+| Plans going in | Transcript → GOING IN |
+| Sincerity percentages, goat beatability, every deal ever made | Debug |
+
+Sincerity is the one number no houseguest can see about anybody but themselves,
+so it lives in debug only. Everything else is on a screen.
+
 ## House twist backlog
 
 Preserved from `js/bb/bb-twists.js`, which was deleted on 2026-07-31 after

@@ -2,6 +2,13 @@
 // vp-screens.js — VP screen builders, helpers, and the main buildVPScreens controller
 // ══════════════════════════════════════════════════════════════════════
 
+// bKey was being used here as a bare global, which main.js happens to provide
+// by spreading the bonds module onto window. That works in the browser and
+// nowhere else — so House Status threw in every headless render, and because
+// buildVPScreens wraps it in a try/catch the screen simply vanished instead of
+// failing loudly. Imported explicitly so the screen does not depend on boot
+// order to exist.
+import { bKey } from './bonds.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
@@ -16724,6 +16731,12 @@ const _bbStat = (icon, value, color) =>
  * repeats the name that is already in the row and the frame overflows the line
  * it sits on. These rows want the picture and nothing else.
  */
+// The file's other `esc` is declared inside a function, so it is not in scope
+// out here. Houseguest names are user-supplied through the casting studio and
+// go straight into markup, so they get escaped.
+const _bbEsc = v => String(v ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 const _bbAvatar = (name, px = 26) => `<span class="bb-av" style="width:${px}px;height:${px}px">
   <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -16969,6 +16982,69 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     </div>`).join('')
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Week one. Nothing has happened yet.</div>`;
 
+  // ── What each of them is actually playing for ──
+  //
+  // The plan layer decides nominations, the veto and the vote, and until this
+  // section existed none of it was on screen: the house behaved on a shield and
+  // a goat the user had no way of seeing. Everybody gets a row, whether or not
+  // they have worked out much of a plan — an empty plan is information too.
+  const plans = snap.intentions || (state ? {} : (typeof gs !== 'undefined' && gs.intentions) || {});
+  const planRows = stillIn.map(name => {
+    const plan = plans[name];
+    if (!plan) return null;
+    const bits = [];
+    if (plan.targets?.[0]) {
+      bits.push(`<span class="bbg-chip bbg-t">wants out <b>${_bbEsc(plan.targets[0])}</b></span>`);
+    }
+    if (plan.shield) bits.push(`<span class="bbg-chip bbg-s">behind <b>${_bbEsc(plan.shield)}</b></span>`);
+    if (plan.goat) bits.push(`<span class="bbg-chip bbg-g">would sit beside <b>${_bbEsc(plan.goat)}</b></span>`);
+    const partners = (plan.finalThree || []).filter(n => n !== name && stillIn.includes(n));
+    if (partners.length) {
+      bits.push(`<span class="bbg-chip bbg-d">shook on the end with <b>${partners.map(_bbEsc).join(' &amp; ')}</b></span>`);
+    }
+    const style = plan.planStyle === 'endgame-architect' ? 'playing the whole board'
+      : plan.planStyle === 'structured' ? 'has a structure' : 'playing week to week';
+    return `<div class="bbg-row">
+      ${_bbAvatar(name, 26)}
+      <div class="bbg-body">
+        <div class="bbg-name">${_bbEsc(name)} <i>${style}</i></div>
+        <div class="bbg-chips">${bits.length ? bits.join('')
+          : '<span class="bbg-chip bbg-n">no plan worth the name yet</span>'}</div>
+      </div>
+    </div>`;
+  }).filter(Boolean);
+  const planBody = planRows.length ? planRows.join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has a plan yet. It is early.</div>`;
+
+  // ── What has been promised about the end ──
+  //
+  // A final two is the strongest thing anybody says in this house, and the two
+  // of them do not always mean it to the same degree. Where they do not, say so
+  // — that gap is the whole story of how the season ends.
+  const promises = (opening ? ep.openingDeals : ep.endgameDeals) || ep.endgameDeals || [];
+  const live = promises.filter(d => (d.players || []).every(n => stillIn.includes(n)));
+  const dealBody = live.length ? live.map(d => {
+    const label = d.tier === 'final-two' ? 'FINAL TWO' : 'FINAL THREE';
+    return `<div class="bbg-deal ${d.tier === 'final-two' ? 'is-f2' : ''}">
+      <span class="bbg-tier">${label}</span>
+      <span class="bbg-who">${(d.players || []).map(n =>
+        `${_bbAvatar(n, 22)}<b>${_bbEsc(n)}</b>`).join('<i>+</i>')}</span>
+      ${d.lopsided
+        ? '<span class="bbg-warn">one of them means it a great deal more than the other</span>'
+        : '<span class="bbg-ok">both of them mean it</span>'}
+    </div>`;
+  }).join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has promised anybody the end yet.</div>`;
+
+  // ── And what moved, and why ──
+  const moves = (ep.planChanges || []).filter(c => stillIn.includes(c.owner)).slice(-14);
+  const moveBody = moves.length ? moves.map(c => `<div class="bbm-row">
+      ${_bbAvatar(c.owner, 22)}
+      <span class="bbm-txt"><strong>${_bbEsc(c.owner)}</strong> — ${_bbEsc(c.reason)}</span>
+      <span class="bbm-num"><i>${_bbEsc(String(c.field).replace(/([A-Z])/g, ' $1').toLowerCase())}</i></span>
+    </div>`).join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody changed their mind this week.</div>`;
+
   const gone = ((typeof players !== 'undefined' ? players.length : stillIn.length) - stillIn.length);
   return `<div class="rp-page bb-room bb-open">
     <div class="rp-eyebrow">Week ${ep.num}</div>
@@ -16977,10 +17053,13 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       opening ? 'Before anything happens this week.' : 'After everything that happened this week.'}</div>
     ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
+    ${section('plan', 'WHAT EVERYBODY IS PLAYING FOR', '#d29922', planBody)}
+    ${section('deal', `PROMISED THE END (${live.length})`, '#e3b341', dealBody)}
     ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}
     ${section('rel', 'RELATIONSHIPS THAT MATTER', '#3fb950', relBody)}
     ${section('hunt', `WHO IS COMING FOR WHOM (${hunts.length})`, '#f85149', targetBody)}
     ${section('read', `WHAT PEOPLE BELIEVE (${misreads.length})`, '#a371f7', misreadBody)}
+    ${opening ? '' : section('moved', 'WHY PLANS CHANGED', '#a371f7', moveBody)}
     ${section('time', 'THE SEASON SO FAR', '#8b949e', timelineBody)}
   </div>`;
 }
@@ -17008,7 +17087,55 @@ export function rpBuildBBDebug(ep) {
     ${row('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)}
     ${row('vote changed by campaign', ep.voteChanges || 0)}
     ${row('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')}
+    ${row('plan revisions', (ep.planChanges || []).length)}
+    ${row('endgame deals live', (ep.endgameDeals || []).length
+      + ((ep.endgameDeals || []).some(d => d.lopsided)
+        ? ` (${(ep.endgameDeals || []).filter(d => d.lopsided).length} lopsided)` : ''))}
+    ${row('promises broken', (ep.dealBreaks || []).length)}
   </div>`;
+
+  // ── the plan layer, in full ──
+  //
+  // The summary screen says what everybody is playing for; this says what the
+  // engine actually read when it chose the nominations, the veto and the vote —
+  // including how much each side of a deal privately meant it, which is the one
+  // number no houseguest can see about anybody but themselves.
+  const dbgPlans = ep.closingState?.intentions || (typeof gs !== 'undefined' && gs.intentions) || {};
+  const alive = ep.houseAtEnd || ep.houseAtStart || Object.keys(dbgPlans);
+  const planned = alive.filter(n => dbgPlans[n]);
+  if (planned.length) {
+    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:8px">game plans</div>
+      ${planned.map(n => {
+        const p = dbgPlans[n];
+        const why = Object.entries(p.origins?.targets || {})[0];
+        return row(n, [
+          `style ${p.planStyle}`,
+          `stage ${p.stage}`,
+          `conf ${Number(p.confidence || 0).toFixed(2)}`,
+          `target ${p.targets?.[0] || '—'}`,
+          `shield ${p.shield || '—'}`,
+          `goat ${p.goat || '—'}`
+            + (p.goatAssessment ? ` (${Number(p.goatAssessment.beatability).toFixed(1)} @ ${Math.round(p.goatAssessment.confidence * 100)}%)` : ''),
+        ].join(' · ') + (why ? `<div style="color:#6e7681;font-size:10px;padding-left:2px">${_bbEsc(String(why[1]))}</div>` : ''));
+      }).join('')}
+    </div>`;
+  }
+
+  const dbgDeals = (typeof gs !== 'undefined' && gs.sideDeals || [])
+    .filter(d => (d.tier === 'final-two' || d.tier === 'final-three'));
+  if (dbgDeals.length) {
+    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:#e3b341;text-transform:uppercase;margin-bottom:8px">endgame deals · every one ever made</div>
+      ${dbgDeals.slice(-24).map(d => row(
+        `${d.tier} wk${d.madeEp}`,
+        `${(d.players || []).map(n => `${n} ${(Number(d.sincerity?.[n] ?? 0.5) * 100).toFixed(0)}%`).join('  ·  ')}`
+        + (d.broken ? `   BROKEN by ${d.brokenBy} wk${d.brokenEp} (${d.brokenReason || 'no reason recorded'})`
+          : d.honoured ? `   HONOURED by ${d.honouredBy}`
+          : d.active === false ? `   lapsed — ${d.lapsedBecause || 'unknown'}` : '   live'),
+      )).join('')}
+    </div>`;
+  }
 
   for (const type of ['hoh', 'veto']) {
     const comp = acts.find(a => a.type === type)?.competition;
@@ -17202,6 +17329,21 @@ export function rpBuildBBFinalCut(ep) {
     scenes: [
       { text: `${act.finalHoh} has the only vote that matters tonight, and two people who have both been told they are the one.`,
         players: [act.finalHoh], badgeText: 'FINAL HOH', badgeClass: 'gold' },
+      // Whether a promise was kept or broken is the whole meaning of this
+      // decision, and it used to be nowhere on the screen because the cut was
+      // resolved on projected jury margin alone and there was no promise in it.
+      ...(act.honoured ? [{
+        text: act.honoured.costly
+          ? `${p.Sub} shook on this with <strong>${act.honoured.partner}</strong> back in week ${act.honoured.madeEp}, and the arithmetic says take the other one. ${p.Sub} keeps ${p.posAdj} word anyway. It may well cost ${p.obj} the money.`
+          : `${p.Sub} shook on this with <strong>${act.honoured.partner}</strong> in week ${act.honoured.madeEp}, and keeping it happens to be the smart play too. Not every promise has to be expensive to be real.`,
+        players: [act.finalHoh, act.honoured.partner],
+        badgeText: act.honoured.costly ? 'KEPT THEIR WORD' : 'PROMISE KEPT', badgeClass: 'gold',
+      }] : []),
+      ...(act.betrayal ? [{
+        text: `${p.Sub} shook on a ${act.betrayal.tier === 'final-two' ? 'final two' : 'final three'} with <strong>${act.betrayal.partner}</strong>, and everybody watching remembers it. ${p.Sub} cuts ${p.obj} anyway, in front of the jury that decides this.`,
+        players: [act.finalHoh, act.betrayal.partner],
+        badgeText: 'BROKE THE DEAL', badgeClass: 'red',
+      }] : []),
       { text: `${p.Sub} takes <strong>${act.kept}</strong> to the end.`, players: [act.kept], badgeText: 'TAKEN TO THE END', badgeClass: 'green' },
       ...(act.cut ? [{ text: `<strong>${act.cut}</strong> is evicted at the final three, one night short, and becomes the last member of the jury — with a vote.`,
         players: [act.cut], badgeText: 'THE LAST JUROR', badgeClass: 'red' }] : []),

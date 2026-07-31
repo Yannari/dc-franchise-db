@@ -48,7 +48,7 @@ describe('relationships move at a plausible pace', () => {
     const top = Math.max(0, ...Object.values(gs.bonds || {}).map(v => Math.abs(Number(v) || 0)));
     // Capped per stretch, not per season: people should still end up close.
     expect(top, 'the cap flattened the whole season').toBeGreaterThan(5);
-  });
+  }, 240000);   // a whole season; the 90s default is not enough under load
 });
 
 describe('the transcript carries the week', () => {

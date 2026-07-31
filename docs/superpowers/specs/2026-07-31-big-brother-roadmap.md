@@ -12,14 +12,14 @@ Measured, not estimated:
 
 | | |
 |---|---|
-| House events | **80** — ceremonies 15, social 24, deals 13, house-life 11, phases 17 |
+| House events | **85** — ceremonies 15, social 24, deals 17, house-life 12, phases 17 |
 | Competitions | **8** across hoh / veto / arena / tiebreaker |
 | Events per week | **~105** (22–30 per stretch of house life) |
 | Twists built | Double Eviction, Instant Eviction, Have-Nots |
 | Season modes | BB Block Buster (three nominees) |
 | Venues | The House, The Compound, The Resort, The Manor |
-| Source files | 25 |
-| Tests | 100 files, 837 passing |
+| Source files | 27 |
+| Tests | 101 files, 889 passing |
 
 A season plays from move-in to a jury vote. The week has a shape, the house
 talks, alliances form, people walk out, and the visual player covers every act.
@@ -51,7 +51,7 @@ aftermath. What is missing is the ceremony as a SCREEN — a staged reveal with
 the block before, the decision, and the block after, the way the nomination
 ceremony turns keys one at a time.
 
-### 1c. The house's vote planning is shallower than Total Drama's
+### 1c. ~~The house's vote planning is shallower than Total Drama's~~ — DONE 2026-07-31
 
 Asked directly, and the honest answer is no. The two are not at the same level.
 
@@ -71,24 +71,22 @@ voter is already targeting them and how suspicious they are; `campaignAttempt`
 then runs persuasion against resistance and can flip it. That is a good
 first-order model and it is genuinely less than the above.
 
-What is missing, in order of what a viewer would notice:
+**Closed 2026-07-31.** All four gaps below are built; the section is kept
+because the reasoning still explains why the vote is shaped the way it is.
 
-- **Bandwagoning.** Nobody abandons a doomed vote. In the show that is most of
-  the drama of a Thursday — the moment the house realises which way it is
-  going and the stragglers move.
-- **Alliance vote plans.** Big Brother alliances exist and form properly now,
-  but they never agree a target as a bloc. Each member decides alone and
-  happens to agree.
-- **Commitment strength.** Deals exist — `sideDeal(a, b, 'vote')` is written by
-  the campaign and scheme events — but the vote does not read them, so a
-  promised vote is worth the same as an unpromised one.
-- **Stated versus actual.** Ballots carry a `changed` flag and the betrayal
-  layer reads it, but nothing records what a voter SAID they would do, so
-  nobody can be caught lying about a vote they never intended to cast.
-
-The pieces are all present: `js/vote-planning.js` for the machinery,
-`gs.sideDeals` for the promises, and the alliance layer for the blocs. This is
-another bridge rather than a build.
+- ~~**Bandwagoning.**~~ `applyHouseBandwagon` — a target sitting on a lone vote
+  is abandoned for a leader unless the voter's commitment is strong.
+- ~~**Alliance vote plans.**~~ `applyAllianceVoteBloc` — a bloc agrees a target
+  and whips the members who were not firmly committed elsewhere. The ones who
+  were stay put, which is how a bloc discovers it has a problem.
+- ~~**Commitment strength.**~~ `houseVoteCommitment` reads clarity of
+  preference, whether they shook on it, alliance membership and loyalty — and,
+  since the endgame tier exists, whether the person they are keeping is somebody
+  they promised the end to. A final two outranks the alliance whip, which is
+  where somebody's real game becomes visible.
+- ~~**Stated versus actual.**~~ Ballots carry `stated` alongside `evict`, so a
+  vote somebody promised and did not cast is on the record and in the transcript
+  under "how the plans changed".
 
 ### 2. The jury is seated but barely alive
 
@@ -159,6 +157,17 @@ Each is a self-contained build.
 
 ## Done since this was written
 
+- **Game plans and endgame deals** (2026-07-31) — `gs.intentions` was a shell in
+  this format: every field empty but `targets`, `planStyle` hardcoded
+  `'reactive'` for everybody, and zero references to `.shield` or `.goat`
+  anywhere in the house. Now `js/bb/plans.js` forms and revises real plans
+  (shield / goat / core / betrayal conditions / jury plan, style from stats) and
+  `js/bb/deals.js` adds a tier — working, final three, final two — with a
+  private per-side sincerity. They are read at nominations, the veto, the vote
+  and the final cut, which used to be decided on projected jury margin alone, so
+  nobody ever kept their word because nobody was ever asked to. A broken final
+  two is now punished by the jury and shown on screen and in the transcript.
+  See the design spec for the load-bearing rules.
 - **Competition motivation** (§1) — nominees now play like it matters
 - **The HOH room and the block** — thirteen events for the two places a week
   actually happens, including refusing entry and promising the veto

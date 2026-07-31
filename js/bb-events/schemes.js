@@ -40,6 +40,12 @@ import {
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
 const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const _textPick = (lines, result, salt = '') => {
+  const key = `${salt}|${(result.players || []).join('|')}|${result.text || ''}|${result.badgeText || ''}`;
+  let hash = 2166136261;
+  for (const ch of key) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619) >>> 0;
+  return lines[hash % lines.length];
+};
 
 /** A house is not a tribe. The only thing these events need translating. */
 const _house = text => String(text || '')
@@ -58,64 +64,196 @@ const _house = text => String(text || '')
  * a plain connective scene here instead of gluing unrelated narration into a
  * single paragraph.
  */
-function _bbResultText(result) {
+function _bbResultText(result, salt = '') {
   const p = result.players || [];
   switch (result.type) {
     case 'forgeNote': {
       const [schemer, reader, alleged] = p;
       if (result.badgeText === 'EXPOSED') {
-        return `${reader} reads the note carefully and realizes it was planted. When ${reader} confronts ${schemer}, ${schemer} cannot explain where it came from.`;
+        return _textPick([
+          `${reader} compares the handwriting with a note ${schemer} left in the kitchen. When ${reader} asks about the match, ${schemer} has no answer.`,
+          `${reader} notices the note uses a phrase ${schemer} says all the time. ${reader} brings both the note and ${schemer} into the living room and asks everyone to listen.`,
+          `${reader} asks ${alleged || 'the person named in the note'} about the message. Their stories line up immediately, and both turn to ${schemer}.`,
+          `${reader} checks one detail in the note with another houseguest. It is wrong. A second detail is wrong too. By dinner, ${reader} has traced it back to ${schemer}.`,
+          `${reader} finds an indentation from the forged message on a pad in ${schemer}'s things. ${reader} confronts ${schemer} with both pages.`,
+          `${reader} reads the note aloud. ${schemer} corrects a detail that was never mentioned, then realizes everyone heard the mistake.`,
+          `${reader} pretends to believe the note and asks ${schemer} to explain the plan again. The story changes on the second telling.`,
+          `${reader} recognizes that the note is trying too hard to sound like ${alleged || 'someone else'}. ${reader} asks who benefits from the lie, and the room lands on ${schemer}.`,
+        ], result, salt);
       }
       if (!alleged) return _house(result.text);
       const doubt = String(result.consequences || '').includes('seed of doubt');
       return doubt
-        ? `${schemer} leaves a forged note where ${reader} will find it, making it look as though ${alleged} has been working against them. ${reader} is not fully convinced, but starts keeping a closer eye on ${alleged}.`
-        : `${schemer} leaves a forged note for ${reader}, making it look as though ${alleged} has been working against them. ${reader} believes it and says nothing to ${alleged}.`;
+        ? _textPick([
+          `${schemer} slips a note into ${reader}'s drawer claiming ${alleged} has been sharing their conversations. ${reader} does not believe all of it, but stops speaking freely around ${alleged}.`,
+          `${reader} finds a handwritten vote count with ${alleged}'s name beside a plan they never discussed. The handwriting looks wrong, but the numbers bother ${reader} anyway.`,
+          `${schemer} leaves ${reader} an unsigned warning about ${alleged}. ${reader} keeps the note and quietly checks whether anyone else heard the same story.`,
+          `${reader} finds a note suggesting ${alleged} has another final two. ${reader} suspects a setup, but still asks ${alleged} several pointed questions that night.`,
+          `${schemer} plants a short message saying ${alleged} wants ${reader} nominated. ${reader} cannot verify it and decides not to show ${alleged} the note yet.`,
+          `${reader} finds what looks like a message from ${alleged} arranging a private meeting. One detail is off. ${reader} watches the meeting place anyway.`,
+          `${schemer} leaves a fake alliance list where ${reader} will see it. ${alleged} is on the list and ${reader} is not. ${reader} calls it suspicious, then folds it into a pocket.`,
+          `${reader} receives a note accusing ${alleged} of leaking information. ${reader} doubts the source more than the accusation, but trust between them still cools.`,
+        ], result, salt)
+        : _textPick([
+          `${schemer} hides a note in ${reader}'s suitcase claiming ${alleged} has been pushing their name. ${reader} reads it twice and decides not to warn ${alleged}.`,
+          `${reader} finds a fake vote tally showing ${alleged} organizing the numbers against them. The count looks convincing, and ${reader} starts planning a response.`,
+          `${schemer} leaves an unsigned message saying ${alleged} repeated something personal about ${reader}. ${reader} believes it and goes looking for an explanation.`,
+          `${reader} finds what appears to be ${alleged}'s list of allies and targets. ${reader}'s name is underlined in the wrong column.`,
+          `${schemer} plants a note suggesting ${alleged} promised the same deal to several people. ${reader} recognizes enough real names to trust the rest.`,
+          `${reader} discovers a message saying ${alleged} wants them used as a pawn. ${reader} pockets it before anyone else enters the room.`,
+          `${schemer} leaves a note that looks like a private message from ${alleged} to another ally. ${reader} believes they were never meant to see it.`,
+          `${reader} finds a warning that ${alleged} plans to blame them if the vote flips. ${reader} immediately stops sharing information with ${alleged}.`,
+          `${schemer} plants a fake final-three proposal bearing ${alleged}'s name. ${reader} reads it as proof that their own deal with ${alleged} was never exclusive.`,
+          `${reader} finds a folded note beside their bed claiming ${alleged} has been laughing about them. The accusation feels personal enough to be true.`,
+        ], result, salt);
     }
     case 'spreadLies': {
       const [first, second, third] = p;
       if (result.badgeText === 'CONFRONTATION') {
-        return `${first} confronts ${second} about what they were told. ${second} denies saying it, and the argument draws the rest of the house into the room.`;
+        return _textPick([
+          `${first} confronts ${second} in the kitchen about what they were told. ${second} denies it, asks who started the story and gets no answer.`,
+          `${first} waits until everyone is in the living room, then asks ${second} to repeat the comment to their face. ${second} says the comment never happened.`,
+          `${first} corners ${second} near the storage room. Both start talking over each other, and several houseguests come inside to hear what started it.`,
+          `${first} asks ${second} one calm question. ${second}'s confused answer makes it clear they have heard two completely different versions of the same conversation.`,
+          `${first} accuses ${second} of spreading their name. ${second} demands names and times; ${first} only has the story they were given.`,
+          `${second} is halfway through denying the rumor when ${first} raises their voice. The argument moves from the bedroom into the hallway and becomes public.`,
+        ], result, salt);
       }
       if (result.badgeText === 'WARNED') {
-        return `${first} finds ${second} afterward and explains what was said about them. ${second} is upset, but now knows who started the story.`;
+        return _textPick([
+          `${first} finds ${second} afterward and repeats exactly what was said. ${second} asks them not to correct the rumor yet; they want to see who else brings it up.`,
+          `${first} warns ${second} that somebody is using their name. ${second} is angry, but thanks ${first} for coming directly to them.`,
+          `${first} pulls ${second} into the pantry and explains the story before it spreads further. Together they compare who could have started it.`,
+          `${first} tells ${second} about the accusation and names the source. ${second} asks one question, then heads straight for the source.`,
+          `${first} repeats the rumor to ${second} word for word. ${second} recognizes which real conversation was twisted to create it.`,
+          `${first} lets ${second} know their name is circulating. ${second} decides to act unaware while checking the story with everyone involved.`,
+        ], result, salt);
       }
       if (third) {
-        return `${first} tells ${second} that ${third} has been talking about them behind their back. ${second} believes the story and starts looking for ${third}.`;
+        return _textPick([
+          `${first} tells ${second} that ${third} has been pushing their name in private. ${second} believes it and begins comparing notes with other people.`,
+          `${first} claims ${third} mocked ${second} after they left the room. ${second} takes it personally and goes looking for ${third}.`,
+          `${first} warns ${second} that ${third} offered them up as an easy nominee. ${second} believes the warning and stops sharing plans with ${third}.`,
+          `${first} tells ${second} that ${third} called their alliance fake. ${second} asks who else heard it, and ${first} supplies just enough detail.`,
+          `${first} says ${third} has been promising safety to everyone except ${second}. The story fits what ${second} already fears.`,
+          `${first} tells ${second} that ${third} leaked their final-two deal. ${second} believes it and starts preparing for the relationship to break.`,
+          `${first} claims ${third} wants ${second} blamed for a possible vote flip. ${second} decides to confront ${third} before the plan can spread.`,
+          `${first} tells ${second} that ${third} laughed at the idea of taking them seriously. ${second} remembers every earlier slight and believes the rest.`,
+        ], result, salt);
       }
-      return `${first} tries to turn ${second} against another houseguest. ${second} does not believe the story and becomes suspicious of ${first} instead.`;
+      return _textPick([
+        `${first} tries to convince ${second} that another houseguest is targeting them. ${second} asks for details, catches two contradictions and stops the conversation.`,
+        `${second} listens to ${first}'s warning, then checks it with the person supposedly involved. The story falls apart immediately.`,
+        `${first} brings ${second} a rumor with no names, no time and no witnesses. ${second} asks why ${first} is the only person saying it.`,
+        `${second} lets ${first} finish the story, then says, “That doesn't sound like them.” ${first} changes the subject.`,
+        `${first} pushes too hard for ${second} to believe the rumor. ${second} leaves the conversation more worried about ${first} than the alleged target.`,
+        `${second} notices that every part of ${first}'s story benefits ${first}. Instead of reacting, ${second} files away the attempted manipulation.`,
+      ], result, salt);
     }
     case 'comfortVictim': {
       const [comforter, victim] = p;
-      return `${comforter} checks on ${victim} after the confrontation. ${comforter} lets ${victim} explain what happened and stays until ${victim} is ready to rejoin the house.`;
+      return _textPick([
+        `${comforter} checks on ${victim} after the confrontation and asks for ${victim}'s side before offering an opinion.`,
+        `${comforter} finds ${victim} alone in the bedroom, brings water and stays while ${victim} goes over what happened.`,
+        `${comforter} tells ${victim} that not everyone believes the story being spread. ${victim} finally stops trying to defend themself for a moment.`,
+        `${comforter} sits with ${victim} after the argument and helps separate what was actually said from what somebody added later.`,
+        `${comforter} asks ${victim} whether they want advice or just company. ${victim} chooses company, and ${comforter} stays.`,
+        `${comforter} finds ${victim} in the storage room and lets them vent without turning the conversation into another vote pitch.`,
+        `${comforter} makes sure ${victim} eats after the confrontation, then listens while ${victim} decides what to do next.`,
+        `${comforter} tells ${victim} exactly who defended them when the rumor spread. It is the first useful information ${victim} has heard all night.`,
+      ], result, salt);
     }
     case 'exposeSchemer': {
       const [exposer, schemer] = p;
-      return `${exposer} compares what ${schemer} told different people and brings the contradictions to the group. When everyone asks ${schemer} for an explanation, the stories do not match.`;
+      return _textPick([
+        `${exposer} compares what ${schemer} told different people and brings the contradictions to the group. When everyone asks ${schemer} for an explanation, the stories do not match.`,
+        `${exposer} asks three houseguests to repeat what ${schemer} told them. Each heard a different target, a different deal and the same promise of secrecy.`,
+        `${exposer} confronts ${schemer} in front of the people named in the rumor. ${schemer} tries to answer them one at a time, but they stop allowing private conversations.`,
+        `${exposer} lays out a timeline of ${schemer}'s conversations on the kitchen table. The gaps disappear as other houseguests add what they heard.`,
+        `${exposer} catches ${schemer} repeating a story that was already disproved. Instead of arguing privately, ${exposer} calls everyone into the room.`,
+        `${exposer} tells the house that ${schemer} has been making the same final-two promise to several people. Two of them immediately confirm it.`,
+      ], result, salt);
     }
     case 'whisperCampaign': {
       const [schemer, target] = p;
-      return `${schemer} spends the day pulling people aside and raising the same doubts about ${target}. By evening, several houseguests are repeating the concerns as though they reached them on their own.`;
+      return _textPick([
+        `${schemer} spends the day pulling people aside and raising the same doubts about ${target}. By evening, several houseguests are repeating the concerns as their own.`,
+        `${schemer} asks different people the same question: “What happens if ${target} wins next week?” Nobody is told what to think, but everyone leaves thinking about it.`,
+        `${schemer} mentions ${target}'s closest deals in one room and their competition record in another. The arguments change; the name stays the same.`,
+        `${schemer} never directly says to target ${target}. Instead, every private conversation ends with somebody else saying it.`,
+        `${schemer} spends breakfast wondering aloud whether ${target} is too well connected, then lets the house carry the conversation for the rest of the day.`,
+        `${schemer} quietly tells half the house that ${target} named them as a future nominee. By night, people who never compared notes share the same concern.`,
+      ], result, salt);
     }
     case 'campaignRally': {
       const [rallier, target] = p;
-      return `${rallier} goes from room to room making the case against ${target}. Some people agree immediately; others begin checking whether the votes are actually there.`;
+      return _textPick([
+        `${rallier} goes from room to room making the case against ${target}. Some people agree immediately; others begin checking whether the votes are there.`,
+        `${rallier} gathers several voters in the bedroom and says splitting up over ${target} only helps ${target}. The group begins counting together.`,
+        `${rallier} makes the case against ${target} at the kitchen table instead of whispering it. The direct approach forces everyone present to react.`,
+        `${rallier} reminds each voter of a different reason to evict ${target}: a broken promise, a competition win, a deal that excludes them.`,
+        `${rallier} asks everyone who feels safe with ${target} still in the house. The silence becomes the start of a campaign.`,
+        `${rallier} stops pitching the move as a favor and starts pitching it as the only way several people reach next week. More voters stay to listen.`,
+      ], result, salt);
     }
     case 'falseMajority': {
       const [schemer, victim] = p;
-      return `${schemer} tells ${victim} that the house has already settled on a vote and quietly walks them through the supposed numbers. ${victim} believes the plan and agrees not to check it with anyone else.`;
+      return _textPick([
+        `${schemer} tells ${victim} the house has already settled on a vote and walks through the supposed numbers. ${victim} believes the plan and agrees to keep quiet.`,
+        `${schemer} catches ${victim} alone before bed and says the vote changed an hour ago. The list of names sounds complete enough that ${victim} stops asking around.`,
+        `${schemer} sketches a vote count for ${victim} using cereal pieces on the table. Every piece is in the right place; none of the promises behind them are real.`,
+        `${schemer} tells ${victim} they are the last person being brought into a unanimous plan. Relieved not to be excluded, ${victim} promises not to upset it.`,
+        `${schemer} gives ${victim} a specific voter-by-voter count and warns that checking it could make the group nervous. ${victim} follows the instruction.`,
+        `${schemer} claims the HOH and both nominees already know where the vote is going. ${victim} decides there is no reason to risk being the lone holdout.`,
+        `${schemer} tells ${victim} the alliance changed its target during a meeting ${victim} missed. ${victim} is embarrassed enough to pretend the story makes sense.`,
+      ], result, salt);
     }
     case 'falseMajorityResisted': {
       const [schemer, victim] = p;
-      return `${schemer} tells ${victim} that the vote is already decided. ${victim} checks with one other person, finds out the numbers are false and confronts ${schemer} about the lie.`;
+      return _textPick([
+        `${schemer} tells ${victim} the vote is already decided. ${victim} checks with one other person, discovers the numbers are false and confronts ${schemer}.`,
+        `${victim} asks ${schemer} to name the supposed majority. One name is impossible, and ${victim} refuses the plan on the spot.`,
+        `${schemer} gives ${victim} a clean vote count. ${victim} immediately checks the messiest voter on the list and learns there was never an agreement.`,
+        `${victim} listens to ${schemer}'s plan, then asks why nobody else has mentioned it all day. ${schemer}'s answer changes twice.`,
+        `${schemer} warns ${victim} not to verify the numbers. That warning is exactly why ${victim} walks into the next room and verifies them.`,
+        `${victim} notices ${schemer} counted one voter who cannot vote this week. The rest of the fake majority collapses with the mistake.`,
+        `${schemer} says the vote flipped minutes ago. ${victim} finds the alleged swing voter, who laughs and says they have not spoken to ${schemer} all day.`,
+      ], result, salt);
     }
     case 'kissTrap': {
+      if (String(result.consequences || '').includes('failed')) {
+        const [schemer, kissTarget] = p;
+        return _textPick([
+          `${schemer} tries to get ${kissTarget} alone, but ${kissTarget} recognizes the setup and leaves before anything happens.`,
+          `${kissTarget} notices that people keep trying to clear the room for ${schemer}. ${kissTarget} calls it out, and the plan ends there.`,
+          `${schemer} makes a move on ${kissTarget} at exactly the wrong moment. ${kissTarget} steps back and asks who put ${schemer} up to this.`,
+          `${schemer}'s accomplice gives the signal too early. ${kissTarget} sees the exchange, realizes the private conversation is staged and walks away.`,
+        ], result, salt);
+      }
+      if (result.badgeText === 'SHOWMANCE DESTROYED') {
+        const [witness, partner] = p;
+        return `${witness} tells ${partner} the relationship is over. ${partner} asks to explain one more time, but ${witness} leaves the room.`;
+      }
       if (p.length >= 4) {
         const [schemer, accomplice, kissTarget, witness] = p;
-        return `${accomplice} draws ${witness} out of the room while ${schemer} makes a move on ${kissTarget}. ${witness} returns early, sees them together and demands to know what happened.`;
+        return _textPick([
+          `${accomplice} draws ${witness} out of the room while ${schemer} makes a move on ${kissTarget}. ${witness} returns early and demands to know what happened.`,
+          `${accomplice} asks ${witness} for help in the storage room. When ${witness} comes back, ${schemer} and ${kissTarget} are standing much closer than before.`,
+          `${schemer} waits until ${accomplice} gets ${witness} into the backyard, then corners ${kissTarget} in the bedroom. ${witness} returns before either hears the door.`,
+          `${accomplice} keeps ${witness} busy with a fake problem while ${schemer} flirts openly with ${kissTarget}. Another houseguest sends ${witness} back inside.`,
+          `${schemer} asks ${kissTarget} for a private talk after ${accomplice} leads ${witness} away. ${witness} comes back and catches the end of it.`,
+          `${accomplice} tells ${witness} that production needs them in another room. The excuse buys ${schemer} only a few minutes with ${kissTarget}, but it is enough.`,
+        ], result, salt);
       }
       const [witness, partner] = p;
-      return `${witness} confronts ${partner} in front of the house. ${partner} tries to explain, but ${witness} no longer knows what to believe.`;
+      return _textPick([
+        `${witness} confronts ${partner} in front of the house. ${partner} tries to explain, but ${witness} no longer knows what to believe.`,
+        `${witness} asks ${partner} whether the moment was planned. ${partner} says no, then hesitates when asked why they stayed.`,
+        `${witness} refuses to talk privately and makes ${partner} explain what happened in front of everyone who helped set it up.`,
+        `${partner} follows ${witness} through two rooms trying to explain. ${witness} finally turns around and asks whether the relationship was ever real.`,
+        `${witness} goes quiet after seeing ${partner} with someone else. When ${partner} reaches for them, ${witness} steps away.`,
+        `${witness} asks ${partner} for the truth once. The answer takes too long, and ${witness} ends the conversation.`,
+      ], result, salt);
     }
     default:
       return _house(result.text);
@@ -131,7 +269,7 @@ function _bbResultText(result) {
  * this is purely presentation: the texts read as one moment because that is
  * what they are.
  */
-function _fold(results, badgeText, badgeClass) {
+function _fold(results, badgeText, badgeClass, salt = '') {
   const list = (results || []).filter(r => r && r.text);
   if (!list.length) return null;
   // The badge names the PRIMARY action, not the last thing that happened as a
@@ -139,7 +277,7 @@ function _fold(results, badgeText, badgeClass) {
   // still a kiss trap, and labelling it COMFORTED buries the event.
   const first = list[0];
   return {
-    text: list.map(_bbResultText).join(' '),
+    text: list.map((result, index) => _bbResultText(result, `${salt}|${index}`)).join(' '),
     players: [...new Set(list.flatMap(r => r.players || []))].filter(Boolean),
     badgeText: first.badgeText || badgeText,
     badgeClass: first.badgeClass || badgeClass,
@@ -185,7 +323,7 @@ function _run(ctx, generate, badgeText, badgeClass, quiet, rng) {
   if (ep._socialSchemer) gs._lastBBSchemer = ep._socialSchemer;
   if (ep._socialVictim) gs._lastBBVictim = ep._socialVictim;
   if (ep._socialVictimTarget) gs._lastBBVictimTarget = ep._socialVictimTarget;
-  return _fold(results, badgeText, badgeClass) || quiet;
+  return _fold(results, badgeText, badgeClass, `${ctx?.week?.num || 0}|${ctx?.act || ''}`) || quiet;
 }
 
 /** Who is willing to scheme, least-seen first so it is not always one player. */

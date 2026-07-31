@@ -167,6 +167,13 @@ export function weekToEpisode(week) {
       stated: b.stated || null, blocMove: b.blocMove || null, bandwagon: !!b.bandwagon,
     })),
     voteCommitments: (week.voteCommitments || []).map(c => ({ ...c })),
+    // Why anybody's plan moved this week, and what is currently promised. Both
+    // are shown, not merely stored — a game that behaves on reasons the user
+    // cannot see is the failure mode this format keeps rediscovering.
+    planChanges: (week.planChanges || []).map(c => ({ ...c })),
+    housePlans: { ...(week.housePlans || {}) },
+    endgameDeals: (week.endgameDeals || []).map(d => ({ ...d })),
+    dealBreaks: (week.dealBreaks || []).map(d => ({ ...d })),
     blocMoves: (week.blocMoves || []).map(m => ({ ...m })),
     bandwagon: (week.bandwagon || []).map(m => ({ ...m })),
     voteBroken: (week.voteBroken || []).map(m => ({ ...m })),
@@ -252,6 +259,7 @@ export function simulateBBEpisode() {
   ep.departure = week.departure ? { ...week.departure } : null;
   ep.maintenanceErrors = [...(week.maintenanceErrors || [])];
   ep.openingState = week.openingState || null;
+  ep.openingDeals = (week.openingDeals || []).map(d => ({ ...d }));
   ep.closingState = week.closingState || null;
 
   // ── Double eviction: a second, compressed cycle the same night ──

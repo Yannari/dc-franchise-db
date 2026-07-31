@@ -51,6 +51,45 @@ aftermath. What is missing is the ceremony as a SCREEN — a staged reveal with
 the block before, the decision, and the block after, the way the nomination
 ceremony turns keys one at a time.
 
+### 1c. The house's vote planning is shallower than Total Drama's
+
+Asked directly, and the honest answer is no. The two are not at the same level.
+
+Total Drama models a vote as a set of COMMITMENTS: each voter has a preferred
+target, an alliance plan that may assign them a different one, and a
+`commitmentStrength` describing how firmly they have promised it. On top of
+that sit reliability summaries (do this alliance's plans usually hold),
+late ballot transitions with named triggers — `plan-held`,
+`initial-commitment-held`, `modeled-option` — a comparison of what people said
+against what they did, and fringe consolidation, which is the bandwagon: a
+target sitting on a single vote gets abandoned for one of the leaders unless
+the voter's commitment is strong.
+
+A house models a vote as PREFERENCE PLUS PERSUASION. `initialVotePreference`
+scores each nominee on perceived bond, threat, alliance strength, whether the
+voter is already targeting them and how suspicious they are; `campaignAttempt`
+then runs persuasion against resistance and can flip it. That is a good
+first-order model and it is genuinely less than the above.
+
+What is missing, in order of what a viewer would notice:
+
+- **Bandwagoning.** Nobody abandons a doomed vote. In the show that is most of
+  the drama of a Thursday — the moment the house realises which way it is
+  going and the stragglers move.
+- **Alliance vote plans.** Big Brother alliances exist and form properly now,
+  but they never agree a target as a bloc. Each member decides alone and
+  happens to agree.
+- **Commitment strength.** Deals exist — `sideDeal(a, b, 'vote')` is written by
+  the campaign and scheme events — but the vote does not read them, so a
+  promised vote is worth the same as an unpromised one.
+- **Stated versus actual.** Ballots carry a `changed` flag and the betrayal
+  layer reads it, but nothing records what a voter SAID they would do, so
+  nobody can be caught lying about a vote they never intended to cast.
+
+The pieces are all present: `js/vote-planning.js` for the machinery,
+`gs.sideDeals` for the promises, and the alliance layer for the blocs. This is
+another bridge rather than a build.
+
 ### 2. The jury is seated but barely alive
 
 `seatBBJury` records who evicted whom and `simulateJuryVote` reads it, but the
@@ -118,18 +157,33 @@ Each is a self-contained build.
   Total Drama's medevacs still come from the survival system rather than from
   the shared departures module. Worth unifying.
 
+## Done since this was written
+
+- **Competition motivation** (§1) — nominees now play like it matters
+- **The HOH room and the block** — thirteen events for the two places a week
+  actually happens, including refusing entry and promising the veto
+- **Rooms** — location is a property of an event and the feed reads by camera
+- **Volume** — 22-30 beats a stretch, about 105 a week, up from eighteen
+- **The scheme layer** — Total Drama's nine social schemes, bridged not rebuilt
+- **The romance pipeline** — was creating sparks and promoting none of them
+- **Per-episode maintenance** — eight shared systems the house never ran
+
 ## Sequence
 
 The order that gets to "complete" fastest, because each step makes the next
 one more visible:
 
-1. **Competition motivation** (§1) — smallest change, biggest felt difference
-2. **Eviction night + jury screens** (§7) — the week already produces the data
-3. **Jury house life** (§2) — makes the ending mean something
-4. **Battle Back** (§3) — the mid-season swing
-5. **Battle of the Block, Pandora's Box, secret powers** (§4)
-6. **Signature competitions** (§5) — one at a time, each a set piece
-7. **Punishments, audience powers, the draw** (§6)
+1. ~~Competition motivation~~ — done
+2. **Eviction night + jury screens** (§7) — the week already produces the data;
+   this is the last thin screen and the one with the most theatre in it
+3. **Vote planning** (§1c) — bandwagoning first, then alliance blocs and
+   commitment strength. Mostly a bridge to js/vote-planning.js
+4. **Veto ceremony as a staged screen** (§1b)
+5. **Jury house life** (§2) — makes the ending mean something
+6. **Battle Back** (§3) — the mid-season swing
+7. **Battle of the Block, Pandora's Box, secret powers** (§4)
+8. **Signature competitions** (§5) — one at a time, each a set piece
+9. **Punishments, audience powers, the draw** (§6)
 
-Steps 1–3 are what stand between the current state and a season that feels
+Steps 2-5 are what stand between the current state and a season that feels
 complete to play. Everything after that is depth.

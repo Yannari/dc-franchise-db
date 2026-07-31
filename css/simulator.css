@@ -3095,6 +3095,58 @@
     .hint-tight     { font-size: 10px; line-height: 1.5; margin-top: 5px;
                       font-style: italic; color: var(--muted); opacity: .62;
                       max-width: 34em; }
+    /* ── VP: the competition board ──
+       The competition fires twice a week and was the thinnest screen in the
+       player. Everything worth watching was already in the data and never
+       drawn, so the board IS the screen: it fills from the bottom up as the
+       reveal runs, and the bars make a walkover and a photo finish look
+       different instead of reading as the same sentence. */
+    .bbc-plate      { text-align:center; margin-bottom:14px; padding:10px 12px; border-radius:6px;
+                      background:linear-gradient(180deg, color-mix(in srgb, var(--bbc-accent) 14%, transparent), transparent);
+                      border-top:2px solid var(--bbc-accent); }
+    .bbc-cat        { font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:2px;
+                      color:var(--bbc-accent); }
+    .bbc-title      { font-family:var(--font-display); font-size:17px; letter-spacing:.5px;
+                      color:#f0f6fc; margin-top:3px; }
+
+    .bbc-board      { border:1px solid var(--border); border-radius:8px; overflow:hidden;
+                      margin-bottom:18px; background:rgba(13,17,23,.55); }
+    .bbc-head       { display:flex; gap:8px; padding:6px 11px;
+                      border-bottom:1px solid var(--border); background:rgba(255,255,255,.02);
+                      font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                      letter-spacing:1.4px; text-transform:uppercase; color:#6e7681; }
+    .bbc-head-sp    { margin-left:auto; color:#f0a500; }
+
+    .bbc-row        { display:grid; grid-template-columns:22px auto 1fr 3fr auto;
+                      gap:9px; align-items:center; padding:5px 11px;
+                      border-bottom:1px solid rgba(255,255,255,.04);
+                      transition:opacity .25s ease, background .25s ease; }
+    .bbc-row:last-child { border-bottom:0; }
+    .bbc-row.is-hidden  { opacity:.16; }
+    .bbc-row.is-win     { background:linear-gradient(90deg, rgba(240,165,0,.16), transparent 70%); }
+    .bbc-pos        { font-family:ui-monospace,Consolas,monospace; font-size:11px; color:#6e7681;
+                      text-align:right; }
+    .bbc-row.is-win .bbc-pos { color:#f0a500; font-weight:800; }
+    .bbc-face       { display:flex; }
+    .bbc-face .rp-portrait, .bbc-face img { width:26px; height:26px; }
+    .bbc-name       { font-size:12px; color:#c9d1d9; overflow:hidden;
+                      text-overflow:ellipsis; white-space:nowrap; }
+    .bbc-row.is-win .bbc-name { color:#f0f6fc; font-weight:700; }
+    .bbc-bar        { height:5px; border-radius:3px; background:rgba(255,255,255,.06); overflow:hidden; }
+    .bbc-bar i      { display:block; height:100%; border-radius:3px; transition:width .35s ease; }
+    .bbc-threw      { min-width:38px; text-align:right; font-family:ui-monospace,Consolas,monospace;
+                      font-size:7.5px; letter-spacing:1px; color:#8b949e; }
+
+    .bbc-sat        { display:flex; gap:8px; align-items:baseline; padding:7px 11px;
+                      border-top:1px solid var(--border); background:rgba(255,255,255,.015);
+                      font-size:10.5px; color:#6e7681; }
+    .bbc-sat-k      { flex-shrink:0; font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                      letter-spacing:1.2px; text-transform:uppercase; color:#4d545c; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bbc-row, .bbc-bar i { transition:none; }
+    }
+
     /* ── House season shape ──
        The chain a house season runs on. Same read as the Total Drama blueprint
        line: each link is a fact, and a link that cannot happen goes red with

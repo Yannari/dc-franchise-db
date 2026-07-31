@@ -862,6 +862,59 @@ Total Drama seasons should keep publishing from `main` throughout.
 - **House size.** Big Brother runs 16; Total Drama seasons run 18–24. Does the
   strategy layer hold at 24?
 
+## The visibility rule
+
+**A result is never presented without its cause being visible somewhere.**
+
+Not every debug detail — the reader does not need the scoring breakdown of a
+competition to enjoy it. But they must never be shown an outcome they have no
+way to account for. If the simulator knows why something happened, the player
+has to be able to find out.
+
+This is the single most repeated failure in this format. Every one of these
+shipped as a mechanic that worked perfectly and could not be seen:
+
+| built | invisible until |
+|---|---|
+| alliance betrayal, repair, collapse | three commits after the repair model landed |
+| the romance pipeline | it turned out to be throwing silently for its whole life |
+| vote commitments, blocs, the bandwagon | still only in the data at time of writing |
+| who is targeting whom | still only in the data |
+| perceived versus real bonds | still only in the data |
+| competition records | a row of small icons |
+| season settings | changed nothing at all |
+| the format axis | the designer never called it |
+
+The pattern is always the same: build the mechanic, never ask how it reaches
+the screen. A consequence nobody can see is indistinguishable from no
+consequence, and a viewer who is shown a result they cannot account for stops
+trusting the simulation.
+
+### What this requires, concretely
+
+1. **Every state transition gets a beat.** If a thing forms, changes, breaks or
+   ends, there is a line in the feed saying so, in the act where it happened.
+2. **Every number that drives a decision is reachable.** Not necessarily on the
+   main screen — a panel, a status view or the debug screen is fine — but
+   somewhere, and it must be the number the engine actually used.
+3. **The debug screen is the backstop, not the answer.** If the only place a
+   fact appears is the debug screen, the fact is not really visible. Debug is
+   for the arithmetic; the screens are for the story.
+4. **Say it in the act it happened in.** A consequence narrated three screens
+   later reads as unrelated. State that moves during a stretch of house life is
+   snapshotted per stretch so the panels beside it agree with the beats.
+5. **When a mechanic cannot be shown, say so.** An event with prerequisites
+   that never align is documented as such, with a test proving it works when
+   they do — see the kiss trap.
+
+### The check to run before calling anything done
+
+> Play a season and find the thing on screen. If it is only in `gs`, it is not
+> finished.
+
+Reading the diff does not count. Every defect listed above passed its unit
+tests.
+
 ## House twist backlog
 
 Preserved from `js/bb/bb-twists.js`, which was deleted on 2026-07-31 after

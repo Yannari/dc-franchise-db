@@ -159,7 +159,17 @@ export function weekToEpisode(week) {
     // The shared vote screen reads votingLog, so a Big Brother ballot is
     // translated once here rather than the player growing a second way to draw
     // a vote. Same screen, same tally bars, same blindside detection.
-    votingLog: (week.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed })),
+    // Everything the vote screen needs to show its own working: what each
+    // voter said before anything moved them, whether they had shaken on it,
+    // and which force moved them if one did.
+    votingLog: (week.ballots || []).map(b => ({
+      voter: b.voter, voted: b.evict, changed: !!b.changed,
+      stated: b.stated || null, blocMove: b.blocMove || null, bandwagon: !!b.bandwagon,
+    })),
+    voteCommitments: (week.voteCommitments || []).map(c => ({ ...c })),
+    blocMoves: (week.blocMoves || []).map(m => ({ ...m })),
+    bandwagon: (week.bandwagon || []).map(m => ({ ...m })),
+    voteBroken: (week.voteBroken || []).map(m => ({ ...m })),
     voteChanges: week.voteChanges || 0,
     tieBreak: week.tieBreak || null,
     acts: week.acts || [],

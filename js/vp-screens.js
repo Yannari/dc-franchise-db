@@ -16317,22 +16317,155 @@ export function rpBuildBBCampaign(ep) {
   });
 }
 
+/**
+ * Who has the numbers.
+ *
+ * The most important fact in a house and no screen said it. An alliance that
+ * holds a majority of the eligible votes decides the week before anybody
+ * campaigns, and the wiki puts it plainly: a group "can seize control in a
+ * game if they manage to get a majority".
+ *
+ * Counted against the people who can actually vote tonight, not the house.
+ */
+function _bbTheNumbers(ep, voters) {
+  if (!voters.length) return null;
+  const snap = ep.gsSnapshot || {};
+  const alliances = (snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .filter(a => a.active !== false)
+    .map(a => ({ name: a.name, inside: (a.members || []).filter(m => voters.includes(m)) }))
+    .filter(a => a.inside.length >= 2)
+    .sort((a, b) => b.inside.length - a.inside.length);
+  const majority = Math.floor(voters.length / 2) + 1;
+  const biggest = alliances[0] || null;
+  return { majority, voters: voters.length, alliances: alliances.slice(0, 4), biggest,
+    controls: !!biggest && biggest.inside.length >= majority };
+}
+
+/**
+ * How the plans changed.
+ *
+ * Modelled on Total Drama's panel of the same name, which explains a vote by
+ * naming the thing that moved each ballot rather than leaving the reader to
+ * infer it. The house has its own set of reasons, so the triggers are its
+ * own: a bloc agreeing a name, somebody stepping onto the winning side, a
+ * promise kept, a promise broken, a campaign that worked.
+ *
+ * A bloc that fails is worth as much as one that holds, so the alliance line
+ * reports what the room ASKED for against what it got.
+ */
+function _bbPlansChanged(ep, act) {
+  const ballots = act?.ballots || [];
+  if (!ballots.length) return '';
+  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+
+  // What each bloc wanted, and how much of it survived.
+  const blocs = {};
+  for (const move of ep.blocMoves || []) {
+    (blocs[move.alliance] ||= { target: move.target, asked: [], held: [] }).asked.push(move.voter);
+  }
+  for (const [, bloc] of Object.entries(blocs)) {
+    bloc.held = bloc.asked.filter(v => ballots.find(b => b.voter === v)?.evict === bloc.target);
+  }
+  const blocRows = Object.entries(blocs).map(([name, bloc]) => {
+    const lost = bloc.asked.filter(v => !bloc.held.includes(v));
+    return `<div class="bbp-bloc">
+      <strong>${name}</strong> asked ${bloc.asked.length} ${bloc.asked.length === 1 ? 'member' : 'members'}
+      for <strong>${bloc.target}</strong> and got ${bloc.held.length}.
+      ${lost.length ? `${lost.join(', ')} did not go with the room.` : 'Every one of them held.'}
+    </div>`;
+  });
+
+  // Why each ballot ended up where it did. Only the ones with a story.
+  const rows = ballots.map(b => {
+    const c = commitment.get(b.voter);
+    const moved = b.stated && b.stated !== b.evict;
+    const broke = moved && c?.promised;
+    let why = null, tone = 'grey';
+    if (broke) { why = `shook on <strong>${b.stated}</strong> and voted <strong>${b.evict}</strong> anyway`; tone = 'bad'; }
+    else if (b.blocMove) { why = `went with <strong>${b.blocMove}</strong> onto <strong>${b.evict}</strong>`; tone = 'bloc'; }
+    else if (b.bandwagon) { why = `left <strong>${b.stated}</strong> once it was clearly losing and joined <strong>${b.evict}</strong>`; tone = 'wagon'; }
+    else if (moved) { why = `was talked off <strong>${b.stated}</strong> during the week and voted <strong>${b.evict}</strong>`; tone = 'grey'; }
+    else if (c?.promised) { why = `promised <strong>${b.evict}</strong> and cast it`; tone = 'good'; }
+    else if (c && c.strength >= 0.7) { why = `was never going to be moved off <strong>${b.evict}</strong>`; tone = 'good'; }
+    if (!why) return '';
+    return `<div class="bbp-row is-${tone}">
+      <span class="bbp-face">${_bbAvatar(b.voter, 24)}</span>
+      <span class="bbp-txt"><strong>${b.voter}</strong> ${why}.</span>
+    </div>`;
+  }).filter(Boolean);
+
+  if (!rows.length && !blocRows.length) return '';
+  return `<div class="bbp">
+    <div class="bbp-h">HOW THE PLANS CHANGED</div>
+    ${blocRows.join('')}
+    ${rows.join('')}
+  </div>`;
+}
+
+/**
+ * Live eviction night.
+ *
+ * The vote is the one moment where everything the week built either holds or
+ * does not, and this screen used to be a list of sentences that all read the
+ * same. It shows its working now: who holds the numbers going in, and for each
+ * ballot whether the voter had promised it, whether their alliance moved them,
+ * whether they jumped to the winning side, and whether they broke their word.
+ */
 export function rpBuildBBEviction(ep) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
+  const ballots = act?.ballots || [];
+  const voters = ballots.map(b => b.voter);
+  const numbers = _bbTheNumbers(ep, voters);
+  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+
+  // The numbers, before a single vote is read.
+  const header = numbers ? `<div class="bbn">
+      <div class="bbn-h">
+        <span>THE NUMBERS</span>
+        <span class="bbn-maj">${numbers.majority} of ${numbers.voters} decides it</span>
+      </div>
+      ${numbers.alliances.length ? numbers.alliances.map(a => {
+        const holds = a.inside.length >= numbers.majority;
+        return `<div class="bbn-row ${holds ? 'is-control' : ''}">
+          <span class="bbn-name">${a.name}</span>
+          <span class="bbn-faces">${a.inside.map(m => _bbAvatar(m, 22)).join('')}</span>
+          <span class="bbn-count">${a.inside.length}<i>/${numbers.voters}</i></span>
+          ${holds ? '<span class="bbn-tag">HOLDS THE HOUSE</span>' : ''}
+        </div>`;
+      }).join('')
+        : '<div class="bbn-none">Nobody has the numbers. Every vote tonight is its own decision.</div>'}
+      ${numbers.alliances.length && !numbers.controls
+        ? '<div class="bbn-none">No alliance can carry it alone — this one is decided by whoever is not in the room.</div>' : ''}
+    </div>` : '';
+
+  const plans = _bbPlansChanged(ep, act);
+
   const scenes = [
-    ...(act?.ballots || []).map(b => ({
-      text: `"I vote to evict <strong>${b.evict}</strong>."${b.changed ? ' <em style="color:#f0a500">The campaign moved this vote.</em>' : ''}`,
-      players: [b.voter], badgeText: `${b.voter} VOTES`, badgeClass: 'grey',
-    })),
+    ...ballots.map(b => {
+      const c = commitment.get(b.voter);
+      const broke = b.stated && b.stated !== b.evict && c?.promised;
+      return {
+        text: `"I vote to evict <strong>${b.evict}</strong>."`,
+        players: [b.voter],
+        badgeText: broke ? 'BROKE A PROMISE'
+          : b.blocMove ? 'VOTED WITH THE BLOC'
+          : b.bandwagon ? 'JOINED THE WINNING SIDE'
+          : c?.promised ? 'KEPT A PROMISE'
+          : `${b.voter} VOTES`,
+        badgeClass: broke ? 'red' : b.blocMove ? 'blue' : b.bandwagon ? 'gold'
+          : c?.promised ? 'green' : 'grey',
+      };
+    }),
     ...(act?.tieBreak ? [{ text: `The vote is tied. ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`, players: [act.tieBreak.voter], badgeText: 'HOH BREAKS THE TIE', badgeClass: 'gold' }] : []),
     ..._bbBeats(act),
     { text: `<strong>${ep.eliminated}</strong> is evicted from the Big Brother house, by a vote of ${Object.values(act?.votes || {}).sort((a, b) => b - a).join('–') || '0–0'}.`,
       players: [ep.eliminated], badgeText: 'EVICTED', badgeClass: 'red' },
   ];
+
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'LIVE EVICTION',
     subtitle: 'One houseguest leaves tonight.', accent: '#f85149', room: 'bb-live',
-    stateKey: `bb_evict_${ep.num}`, scenes,
+    stateKey: `bb_evict_${ep.num}`, header: header + plans, scenes,
   });
 }
 

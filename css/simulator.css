@@ -254,6 +254,16 @@
     .bbf-rel-d.down { color:#f85149; }
     .bbf-rel-d.flat { color:#4d545c; }
 
+    /* The written read on a pair — the sentence, not just the bar. */
+    .bbf-read       { display:grid; grid-template-columns:auto 1fr auto; gap:10px;
+                      align-items:center; padding:7px 0;
+                      border-bottom:1px solid rgba(255,255,255,.04); }
+    .bbf-read:last-child { border-bottom:0; }
+    .bbf-read-faces { display:flex; gap:2px; flex-shrink:0; }
+    .bbf-read-txt   { display:flex; flex-direction:column; gap:2px; }
+    .bbf-read-txt b { font-size:12px; font-weight:500; color:#c9d1d9; line-height:1.45; }
+    .bbf-read-txt i { font-size:10.5px; font-style:italic; color:#6e7681; line-height:1.4; }
+
     .bbf-ally       { display:flex; align-items:center; gap:9px; padding:6px 0;
                       border-bottom:1px solid rgba(255,255,255,.04); }
     .bbf-ally:last-child { border-bottom:0; }

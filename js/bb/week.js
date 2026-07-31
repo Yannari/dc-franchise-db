@@ -164,10 +164,16 @@ function runHouseMaintenance(week) {
     ['edit layer', () => updateEditLayer(ep)],
     ['adaptation', () => updateAdaptationFromEpisode(ep)],
   ];
+  // Same guard as the romance and scheme bridges: these are shared Total Drama
+  // systems and several of them write gs.popularity directly rather than
+  // through the house's api, which walks straight past the season's switch.
+  const popOff = seasonConfig.popularityEnabled === false;
+  const popBefore = popOff ? { ...(gs.popularity || {}) } : null;
   week.maintenanceErrors = [];
   for (const [label, run] of steps) {
     try { run(); } catch (e) { week.maintenanceErrors.push(`${label}: ${e && e.message}`); }
   }
+  if (popOff) gs.popularity = popBefore;
   return ep.campEvents.merge.pre.map(e => ({
     text: e.text, players: (e.players || []).filter(Boolean),
     badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
@@ -181,6 +187,19 @@ function runHouseMaintenance(week) {
  * Both exits from a week run this — the ordinary one and the one where
  * somebody walked out — so a departure week still has a love life.
  */
+/** What the house looks like right now: enough for the panels, nothing more. */
+function _snapshotHouse() {
+  return {
+    bonds: { ...(gs.bonds || {}) },
+    alliances: (gs.namedAlliances || [])
+      .filter(a => a.active !== false && !a.dissolved)
+      .map(a => ({ name: a.name, members: [...(a.members || [])], formed: a.formed })),
+    showmances: (gs.showmances || [])
+      .filter(sh => sh.phase !== 'broken-up')
+      .map(sh => ({ players: [...(sh.players || [])], phase: sh.phase })),
+  };
+}
+
 function _attachRomance(week) {
   const beats = [...runHouseRomance(week), ...runHouseMaintenance(week)];
   if (!beats.length) return;
@@ -235,6 +254,10 @@ export function simulateBBWeek(options = {}) {
   const nomineeCount = safetyActive ? 3 : 2;
   const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
   week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
+  // Alliances form at the top of the week, before a single act has run, and
+  // nothing ever narrated it — so a name appeared in the panels on the first
+  // screen of the week with no scene anywhere explaining where it came from.
+  const _formedThisWeek = allianceOpening.formed || null;
   const eventLibrary = options.houseEvents || [];
   const competitionLibrary = options.competitions || [];
   const addBeats = (act, extra = {}) => {
@@ -265,12 +288,41 @@ export function simulateBBWeek(options = {}) {
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
+    // The state as it stands when this stretch ends.
+    //
+    // The panels used to read the episode's single end-of-week snapshot, so
+    // the FIRST screen of the week already showed the numbers the week
+    // finished on — bonds that had not happened yet and alliances nobody had
+    // formed on screen. Each stretch carries its own picture now.
+    act.state = _snapshotHouse();
     week.acts.push(act);
     return act;
   };
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
-  if (!compressed) houseAct('pre-hoh');
+  if (!compressed) {
+    const opening = houseAct('pre-hoh');
+    if (_formedThisWeek) {
+      const members = (_formedThisWeek.members || []).filter(n => house.includes(n));
+      if (members.length >= 2) {
+        const named = members.length === 2
+          ? `${members[0]} and ${members[1]}`
+          : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
+        opening.socialBeats.unshift({
+          text: `It gets said out loud for the first time: ${named} are working together. `
+            + `Nobody writes anything down — there is nowhere in this house to hide a list — `
+            + `but from tonight there is a thing called <strong>${_formedThisWeek.name}</strong>, `
+            + `and everyone in it has something to lose by leaving it.`,
+          players: members.slice(0, 4),
+          badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
+          eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
+        });
+        // The snapshot for this stretch was taken before the beat was added,
+        // but the alliance itself already existed when it was taken, so the
+        // panel and the beat agree.
+      }
+    }
+  }
 
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);

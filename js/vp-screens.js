@@ -15920,7 +15920,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   // On every stretch of the week, not just the ends: the whole point of a
   // house screen is watching these numbers move, so they have to be next to
   // the events that moved them.
-  html += _bbfPanels(ep, house, slot === 1);
+  html += _bbfPanels(ep, house, slot === 1, act, houseActs);
   return html + `</div>`;
 }
 
@@ -15956,28 +15956,49 @@ function _bbfBondLabel(v) {
  * snapshot so the screen can say which way each pair is moving — a bar with no
  * direction on it does not explain anything.
  */
-function _bbfPanels(ep, house, opening) {
+function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
+  // Read the state as it stood at the END OF THIS STRETCH, not the end of the
+  // week. The panels used to take the episode's single closing snapshot, so
+  // the first screen of a week showed numbers that had not happened yet and
+  // alliances nobody had formed on screen.
+  const here = act?.state || null;
   const snap = ep.gsSnapshot || {};
-  const bonds = snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
+  const bonds = here?.bonds || snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
   const inHouse = new Set(house);
 
-  // Last week's numbers, for the direction of travel.
+  // Compare against the PREVIOUS stretch of this same week where there is one,
+  // so the arrows mean "since the last screen" rather than "since last week".
+  const idx = houseActs.indexOf(act);
+  const priorAct = idx > 0 ? houseActs[idx - 1] : null;
   const prior = (typeof gs !== 'undefined' ? (gs.episodeHistory || []) : [])
     .filter(h => h.format === 'big-brother' && h.num < ep.num).at(-1);
-  const was = prior?.gsSnapshot?.bonds || {};
+  const was = priorAct?.state?.bonds || prior?.gsSnapshot?.bonds || {};
+  const sinceLabel = priorAct ? 'change since the last feed'
+    : prior ? 'change since last week' : 'opening positions';
 
-  const pairs = Object.entries(bonds)
+  const all = Object.entries(bonds)
     .map(([k, v]) => ({ names: k.split('||'), v: Number(v) || 0, key: k }))
     .filter(p => p.names.length === 2 && inHouse.has(p.names[0]) && inHouse.has(p.names[1]))
-    .sort((a, b) => Math.abs(b.v) - Math.abs(a.v))
-    .slice(0, 8);
+    .sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
 
-  const showmances = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
-    .filter(sh => !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
+  // The strongest feelings first — then, so nobody in an eighteen-person house
+  // is invisible, the best row for anybody the list has not mentioned yet.
+  const pairs = all.slice(0, 8);
+  const seen = new Set(pairs.flatMap(p => p.names));
+  for (const name of house) {
+    if (seen.has(name)) continue;
+    const best = all.find(p => p.names.includes(name));
+    if (!best) continue;
+    pairs.push(best);
+    best.names.forEach(n => seen.add(n));
+  }
+
+  const showmances = (here?.showmances || snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || [])
+    .filter(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).every(n => inHouse.has(n)));
   const isShowmance = (a, b) => showmances.some(sh =>
     (sh.players || []).includes(a) && (sh.players || []).includes(b));
 
-  const alliances = (snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
+  const alliances = (here?.alliances || snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
     .filter(a => a.active !== false)
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
     .filter(a => a.members.length >= 2)
@@ -16005,10 +16026,39 @@ function _bbfPanels(ep, house, opening) {
     </div>`;
   };
 
+  // The written read, not just the bar.
+  //
+  // Total Drama already describes a pair in words — what they are to each
+  // other, and where the two of them disagree about it — through
+  // getTribeRelationshipHighlights and describeRelationshipPair. A house was
+  // showing a number and a colour and none of the sentence.
+  let written = '';
+  try {
+    const highlights = (typeof getTribeRelationshipHighlights === 'function'
+      ? getTribeRelationshipHighlights(house, ep.gsSnapshot) : [])
+      .filter(h => h?.presentation?.summary)
+      .slice(0, 5);
+    if (highlights.length) {
+      written = `<div class="bbf-panel" style="grid-column:1/-1">
+        <div class="bbf-panel-h">What is actually going on<small>${highlights.length}</small></div>
+        ${highlights.map(h => `<div class="bbf-read">
+          <span class="bbf-read-faces">${_bbAvatar(h.a, 24)}${_bbAvatar(h.b, 24)}</span>
+          <span class="bbf-read-txt">
+            <b>${h.presentation.summary.replace(/[.!?]+$/, '')}</b>
+            ${h.presentation.subline ? `<i>${h.presentation.subline}</i>` : ''}
+          </span>
+          ${h.presentation.badgeText
+            ? `<span class="rp-brant-badge ${h.presentation.badgeClass || 'grey'}">${h.presentation.badgeText}</span>` : ''}
+        </div>`).join('')}
+      </div>`;
+    }
+  } catch { /* the written read is a bonus; the bars still stand without it */ }
+
   return `<div class="bbf-panels">
+    ${written}
     <div class="bbf-panel">
-      <div class="bbf-panel-h">${opening ? 'Where the house stands' : 'Where the house stands now'}
-        <small>${prior ? 'change since last week' : 'opening positions'}</small></div>
+      <div class="bbf-panel-h">Where the house stands
+        <small>${sinceLabel}</small></div>
       ${pairs.length ? pairs.map(row).join('')
         : `<div style="font-size:11px;color:#484f58">Nobody has committed to anybody yet.</div>`}
     </div>

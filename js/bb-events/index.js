@@ -14,6 +14,7 @@
 
 import { CEREMONY_EVENTS } from './ceremonies.js';
 import { SOCIAL_EVENTS } from './social.js';
+import { EDITORIAL_SOCIAL_EVENTS } from './editorial-social.js';
 import { DEALS_EVENTS } from './deals.js';
 import { HOUSE_LIFE_EVENTS } from './house-life.js';
 import { PHASE_EVENTS } from './phases.js';
@@ -22,6 +23,7 @@ import { PHASE_EVENTS } from './phases.js';
 export const HOUSE_EVENTS = [
   ...CEREMONY_EVENTS,
   ...SOCIAL_EVENTS,
+  ...EDITORIAL_SOCIAL_EVENTS,
   ...DEALS_EVENTS,
   ...HOUSE_LIFE_EVENTS,
   ...PHASE_EVENTS,
@@ -30,7 +32,7 @@ export const HOUSE_EVENTS = [
 /** The same events grouped, for debug screens and for testing one slice. */
 export const HOUSE_EVENTS_BY_CATEGORY = {
   ceremonies: CEREMONY_EVENTS,
-  social: SOCIAL_EVENTS,
+  social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS],
   deals: DEALS_EVENTS,
   'house-life': HOUSE_LIFE_EVENTS,
   phases: PHASE_EVENTS,
@@ -57,5 +59,5 @@ export function assertUniqueEventIds(events = HOUSE_EVENTS) {
   return true;
 }
 
-export { CEREMONY_EVENTS, SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS, PHASE_EVENTS };
+export { CEREMONY_EVENTS, SOCIAL_EVENTS, EDITORIAL_SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS, PHASE_EVENTS };
 export default HOUSE_EVENTS;

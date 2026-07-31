@@ -192,8 +192,11 @@ export function summariseWeek(week) {
         line('');
         line('CAMPAIGNING');
         (act.events || []).forEach(e => {
-          line(`  ${e.nominee} works ${e.voter} — ${e.success ? 'and it lands.' : 'and it does not take.'}`);
+          line(`  ${e.pitcher} campaigns to evict ${e.pitchTarget}.`);
+          if (e.reactionSummary) line(`    ${e.reactionSummary}`);
+          for (const reaction of e.reactions || []) if (reaction.narration?.text) line(`    ${reaction.narration.text}`);
         });
+        for (const change of act.changed || []) line(`  ${change.voter}'s vote moves from ${change.from} to ${change.to} after talking with ${change.changedBy}.`);
         break;
       case 'eviction': {
         line('');

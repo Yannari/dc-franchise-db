@@ -8,9 +8,10 @@ import { pitchTrust, tacticalCooperation, targetProtection } from '../relationsh
 import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import {
-  describePitchReaction, evaluatePitchResponse, propagatePitchLeaks,
-  resolveCompetingPitches, resolvePitchCounterplay, summarizePitchReactions,
+  evaluatePitchResponse, propagatePitchLeaks,
+  resolveCompetingPitches, resolvePitchCounterplay,
 } from '../voting.js';
+import { describeBBCampaignReaction, summarizeBBCampaignReactions } from '../bb-writing.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const currentRound = week => Number(week?.num || (gs.episode || 0) + 1);
@@ -585,10 +586,10 @@ export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.a
       changed.push({ voter, from, to:pitch.pitchTarget, changedBy:pitch.pitcher, reason:ballot.changeReason });
     }
     for (const response of pitch.responses.filter(item => !item.accepted)) addBond(pitch.pitcher, response.voter, -0.15);
-    pitch.reactionSummary = summarizePitchReactions(pitch, pitch.responses);
+    pitch.reactionSummary = summarizeBBCampaignReactions(pitch, pitch.responses);
     // Narration selection must not consume the gameplay RNG or change whether
     // the same pitch subsequently leaks or triggers counterplay.
-    pitch.reactions = pitch.responses.map(response => ({ ...response, narration:describePitchReaction(pitch, response, () => 0) }));
+    pitch.reactions = pitch.responses.map(response => ({ ...response, narration:describeBBCampaignReaction(pitch, response, () => 0) }));
   }
 
   const activeAlliances = (gs.namedAlliances || []).filter(alliance => alliance.active !== false && !alliance.dissolved);

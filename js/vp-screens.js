@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
+import { bbArrivalLine } from './bb-writing.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
 import { rpBuildWawanakwaGoneWild } from './chal/wawanakwa-gone-wild.js';
 import { rpBuildTriArmedTriathlon } from './chal/tri-armed-triathlon.js';
@@ -15534,32 +15535,15 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
 
 // ── Cold open ─────────────────────────────────────────────────────────
 
-// How a houseguest walks in, by the kind of player they are. The island
-// introduces its cast one at a time on the dock; a house does it at the door.
-const _BB_ARRIVAL = {
-  mastermind:          n => `${n} walks in, counts the doors, counts the people, and has a working shortlist before the bags are down.`,
-  schemer:             n => `${n} is delighted by everything and everyone, which is either genuine or the single most efficient opening move available.`,
-  villain:             n => `${n} announces that ${'they'} came to play and not to make friends, which everybody laughs at and nobody forgets.`,
-  hero:                n => `${n} carries somebody else's case in and introduces ${'themselves'} to every single person before picking a bed.`,
-  'social-butterfly':  n => `${n} knows all sixteen names inside twenty minutes and uses them constantly, and it works.`,
-  'challenge-beast':   n => `${n} finds the gym before the kitchen and is very quickly the person everybody privately worries about.`,
-  'loyal-soldier':     n => `${n} says almost nothing on the first night and is asked to be somebody's number two on the second.`,
-  underdog:            n => `${n} arrives visibly not believing ${'they'} got cast, and the house files that under harmless.`,
-  goat:                n => `${n} makes an entrance nobody can quite explain afterwards. Two people decide on the spot to keep ${n} around a long time.`,
-  hothead:             n => `${n} is loud, warm and completely unfiltered for four straight hours, and has already annoyed somebody by bedtime.`,
-  wildcard:            n => `Nobody can tell what ${n} is doing, including ${n}, and it is genuinely disarming.`,
-  'chaos-agent':       n => `${n} rearranges the bedroom within an hour of arriving because it "felt wrong", and the house lets ${'them'} do it.`,
-  floater:             n => `${n} is pleasant to everybody, commits to nothing, and will be described as "lovely" by people who cannot remember speaking to ${'them'}.`,
-  'perceptive-player': n => `${n} says very little and watches the room fill up, and by the end of the night knows who is already circling whom.`,
-  showmancer:          n => `${n} finds the person ${'they'} are going to spend the season attached to inside the first hour. Everybody sees it.`,
-};
-
-const _bbArrivalLine = (name) => {
-  const arch = (typeof players !== 'undefined' && players.find(p => p.name === name)?.archetype) || 'floater';
-  const pr = pronouns(name);
-  const fn = _BB_ARRIVAL[arch] || _BB_ARRIVAL.floater;
-  return fn(name)
-    .replace(/\bthey\b/g, pr.sub).replace(/\bthemselves\b/g, pr.ref).replace(/\bthem\b/g, pr.obj);
+const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
+  const player = typeof players !== 'undefined' ? players.find(p => p.name === name) : null;
+  const arch = player?.archetype || 'floater';
+  return bbArrivalLine(name, {
+    archetype: arch,
+    season: seasonKey || (typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother',
+    slot,
+    stats: player?.stats || {},
+  });
 };
 
 /**
@@ -15574,7 +15558,7 @@ const _bbArrivalLine = (name) => {
  * screen only got longer. Nothing moves now except the wall filling and the
  * card changing, so the whole thing happens without leaving the viewport.
  *
- * Arrival prose lives in _BB_ARRIVAL and belongs to the editorial pass — this
+ * Arrival prose lives in bb-writing.js and belongs to the editorial pass — this
  * function only decides where it goes.
  */
 export function rpBuildBBColdOpen(ep) {
@@ -15655,7 +15639,7 @@ export function rpBuildBBColdOpen(ep) {
       <div>
         <div style="font-family:var(--font-display);font-size:19px;color:#f0f6fc;line-height:1.1">${current}</div>
         <div style="font-size:8.5px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin:3px 0 7px">Houseguest ${at + 1}</div>
-        <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current)}</div>
+        <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current, at, `${seasonName}|${house.join('|')}`)}</div>
       </div>
     </div>`;
   } else {

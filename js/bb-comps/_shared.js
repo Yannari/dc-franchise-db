@@ -97,8 +97,14 @@ export function scoreField(participants, { mix, luck = 3, context, rng, throwPen
     const roll = (rng() - 0.5) * luck * 2;
     const t = throwRead(name, context, rng);
     const penalty = t.threw ? throwPenalty + rng() * 3 : 0;
-    const score = base + roll - penalty;
-    breakdown[name] = { base, roll, threwChance: t.chance, threw: t.threw, penalty, score };
+    // Slop and no sleep, applied before the field is ranked so the narration
+    // never contradicts the result. Every competition scores through here, so
+    // a have-not is disadvantaged in all of them rather than only the generic
+    // ones — which was the difference between a twist and a label.
+    const haveNot = (context?.haveNots || []).includes(name);
+    const haveNotPenalty = haveNot ? 1.4 + rng() * 1.6 : 0;
+    const score = base + roll - penalty - haveNotPenalty;
+    breakdown[name] = { base, roll, threwChance: t.chance, threw: t.threw, penalty, haveNot, haveNotPenalty, score };
     return { name, score, threw: t.threw, base };
   });
   entries.sort((a, b) => b.score - a.score);

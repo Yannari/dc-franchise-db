@@ -46,6 +46,25 @@ function tally(ballots, nominees) {
   return counts;
 }
 
+/**
+ * Who goes on slop.
+ *
+ * The Head of Household picks, which is the point of the twist: it is the
+ * first thing a new HOH does with power, it is public, and it is remembered.
+ * The read is the HOH's own — perceived bond, not real bond — so an HOH can
+ * punish somebody who was never actually against them, and take the blame for
+ * it either way. Noise keeps it from being a pure enemies list.
+ */
+function chooseHaveNots(hoh, house, rng, getRead) {
+  const pool = house.filter(name => name !== hoh);
+  const count = Math.max(2, Math.min(4, Math.floor(pool.length / 3)));
+  return pool
+    .map(name => ({ name, score: (getRead ? getRead(hoh, name) : 0) + (rng() * 4 - 2) }))
+    .sort((a, b) => a.score - b.score)
+    .slice(0, count)
+    .map(entry => entry.name);
+}
+
 export function simulateBBWeek(options = {}) {
   const rng = options.rng || Math.random;
   const hooks = options.hooks || {};
@@ -53,6 +72,22 @@ export function simulateBBWeek(options = {}) {
   if (house.length < 4) throw new Error('The standard Big Brother week engine requires at least four houseguests.');
   ensureBBState();
   const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+
+  /**
+   * Twists change the SHAPE of a week, not just its numbers.
+   *
+   * Instant Eviction removes the veto — nominations stand and the house votes
+   * the same night. A compressed cycle drops house life entirely and runs one
+   * campaign act, which is what the back half of a double eviction is: the
+   * same week with no time in it. Everything else is unchanged, so a twist
+   * week is still a week rather than a separate engine.
+   */
+  const twists = new Set(options.twists || []);
+  const compressed = !!options.compressed;
+  const skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
+  week.twists = [...twists];
+  week.compressed = compressed;
+  if (compressed) week.segment = options.segment || 2;
   const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
   week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
@@ -90,7 +125,7 @@ export function simulateBBWeek(options = {}) {
   };
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
-  houseAct('pre-hoh');
+  if (!compressed) houseAct('pre-hoh');
 
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
@@ -103,8 +138,20 @@ export function simulateBBWeek(options = {}) {
   week.hohCompetition = hohCompetition;
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
 
+  // Slop is the first thing a new Head of Household does with power, and the
+  // house watches them do it. Chosen before nominations so the week's first
+  // grievance is already in the room when the block is named.
+  if (twists.has('bb-have-nots')) {
+    const haveNots = chooseHaveNots(hoh, house, rng, options.readBond);
+    week.haveNots = [...haveNots];
+    gs.bb.haveNots = [...haveNots];
+    week.acts.push(addBeats({ type: 'have-nots', hoh, names: [...haveNots] }, { haveNots: [...haveNots] }));
+  } else {
+    gs.bb.haveNots = [];
+  }
+
   // The house now knows who holds power, and reacts to it.
-  houseAct('post-hoh');
+  if (!compressed) houseAct('post-hoh');
 
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   let plan = chooseNominationPlan(hoh, house, rng);
@@ -117,40 +164,56 @@ export function simulateBBWeek(options = {}) {
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget }, { nominees: [...nominees] }));
 
   // Two people are on the block and the rest of the house is not.
-  houseAct('post-noms', { nominees: [...nominees] });
+  if (!compressed) houseAct('post-noms', { nominees: [...nominees] });
 
-  // Veto act — player draw, competition, and lobbying.
-  let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
-  vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
-  vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
-  const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed });
-  const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
-  let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
-  if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
-  gs.bb.stats[vetoWinner].vetoWins++;
-  week.vetoWinner = vetoWinner;
-  week.vetoCompetition = vetoCompetition;
-  week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results:vetoResults, competition:vetoCompetition }, { nominees: [...nominees], vetoWinner }));
-
-  // Somebody holds the veto and has not yet said what they will do with it.
-  houseAct('post-veto', { nominees: [...nominees], vetoWinner });
-
-  // Veto ceremony and replacement hook (Diamond Veto can intercept it).
-  let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);
-  vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
-  let replacement = null;
-  if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
-    const protectedNames = [hoh, vetoWinner, ...nominees.filter(name => name !== vetoDecision.save)];
-    replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
-    replacement = hook(hooks, 'replacementChoice', replacement, { week, house, hoh, vetoWinner, saved: vetoDecision.save, protectedNames }) || replacement;
-    if (!house.includes(replacement) || protectedNames.includes(replacement)) replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
-    nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
-    gs.bb.stats[vetoDecision.save].timesSaved++;
-    gs.bb.stats[replacement].timesNominated++;
+  // ── Instant Eviction: there is no veto, so nominations stand ──
+  // The whole middle of the week — the draw, the competition, the ceremony and
+  // the two stretches of house life around them — simply does not happen. The
+  // pair named by the HOH are the pair the house votes on.
+  if (skipVeto) {
+    week.vetoWinner = null;
+    week.vetoCompetition = null;
+    week.finalNominees = [...nominees];
+    nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
+    week.acts.push(addBeats(
+      { type: 'instant-eviction', nominees: [...nominees], hoh },
+      { nominees: [...nominees] }));
   }
-  week.finalNominees = [...nominees];
-  nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
-  week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
+
+  if (!skipVeto) {
+    // Veto act — player draw, competition, and lobbying.
+    let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
+    vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
+    vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
+    const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
+    const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
+    let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
+    if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
+    gs.bb.stats[vetoWinner].vetoWins++;
+    week.vetoWinner = vetoWinner;
+    week.vetoCompetition = vetoCompetition;
+    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results:vetoResults, competition:vetoCompetition }, { nominees: [...nominees], vetoWinner }));
+
+    // Somebody holds the veto and has not yet said what they will do with it.
+    if (!compressed) houseAct('post-veto', { nominees: [...nominees], vetoWinner });
+
+    // Veto ceremony and replacement hook (Diamond Veto can intercept it).
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);
+    vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
+    let replacement = null;
+    if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
+      const protectedNames = [hoh, vetoWinner, ...nominees.filter(name => name !== vetoDecision.save)];
+      replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
+      replacement = hook(hooks, 'replacementChoice', replacement, { week, house, hoh, vetoWinner, saved: vetoDecision.save, protectedNames }) || replacement;
+      if (!house.includes(replacement) || protectedNames.includes(replacement)) replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
+      nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
+      gs.bb.stats[vetoDecision.save].timesSaved++;
+      gs.bb.stats[replacement].timesNominated++;
+    }
+    week.finalNominees = [...nominees];
+    nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
+    week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
+  }
 
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
   let voters = house.filter(name => name !== hoh && !nominees.includes(name));
@@ -159,7 +222,10 @@ export function simulateBBWeek(options = {}) {
   const ballots = voters.map(voter => ({ voter, ...initialVotePreference(voter, nominees, rng), changed: false }));
   week.preCampaignVotes = tally(ballots, nominees);
   week.campaign = [];
-  const campaignActCount = options.campaignActCount || (house.length >= 12 ? 3 : house.length >= 7 ? 2 : 1);
+  // A compressed cycle has no time in it: one round of campaigning, live, with
+  // the house voting on the spot. That compression IS the twist.
+  const campaignActCount = compressed ? 1
+    : (options.campaignActCount || (house.length >= 12 ? 3 : house.length >= 7 ? 2 : 1));
   for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
     const campaign = resolveBBCampaignAct({ nominees, ballots, house, campaignIndex, rng });
     week.campaign.push(campaign);

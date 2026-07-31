@@ -36,10 +36,17 @@ describe('show formats', () => {
     expect(defaultConfig().format).toBe('total-drama');
   });
 
-  it('files every existing twist under Total Drama without editing the catalog', () => {
-    expect(TWIST_CATALOG.every(t => twistFormat(t) === 'total-drama')).toBe(true);
-    expect(twistsForFormat('total-drama')).toHaveLength(TWIST_CATALOG.length);
-    expect(twistsForFormat('big-brother')).toHaveLength(0);
+  // Written when the house had no twists of its own. What it was really
+  // guarding is that a twist belongs to exactly one show and an unmarked entry
+  // stays Total Drama, which is what it checks now that the house has three.
+  it('files an unmarked twist under Total Drama and never shares one between shows', () => {
+    expect(TWIST_CATALOG.filter(t => !t.format).every(t => twistFormat(t) === 'total-drama')).toBe(true);
+    const td = twistsForFormat('total-drama');
+    const bb = twistsForFormat('big-brother');
+    expect(td.length + bb.length).toBe(TWIST_CATALOG.length);
+    const bbIds = new Set(bb.map(t => t.id));
+    expect(td.some(t => bbIds.has(t.id))).toBe(false);
+    expect(bb.length).toBeGreaterThan(0);
   });
 });
 

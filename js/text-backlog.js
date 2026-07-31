@@ -4177,7 +4177,17 @@ export function generateBBSummaryText(ep) {
     ln(`${ep.houseAtStart.length} houseguests: ${ep.houseAtStart.join(', ')}`);
   }
 
+  let announcedSecond = false;
   for (const act of ep.acts || []) {
+    // A double eviction runs the whole week twice in one episode. Without this
+    // the transcript reads as one confusing week with two Heads of Household.
+    if (act.segment === 2 && !announcedSecond) {
+      announcedSecond = true;
+      ln('');
+      ln('═'.repeat(46));
+      ln('DOUBLE EVICTION — THE SECOND CYCLE, LIVE');
+      ln('═'.repeat(46));
+    }
     switch (act.type) {
       case 'house':
         sec(_BB_PHASE_TITLE[act.phase] || 'HOUSE LIFE');
@@ -4192,6 +4202,20 @@ export function generateBBSummaryText(ep) {
         }
         (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
         ln(`  ${act.winner} wins Head of Household.`);
+        beats(act);
+        break;
+
+      case 'have-nots':
+        sec('HAVE-NOTS');
+        ln(`  ${act.hoh} puts ${(act.names || []).join(', ')} on slop for the week.`);
+        ln('  Cold water, the have-not room, and the veto to play on an empty stomach.');
+        beats(act);
+        break;
+
+      case 'instant-eviction':
+        sec('INSTANT EVICTION');
+        ln('  There is no Power of Veto this week.');
+        ln(`  ${(act.nominees || []).join(' and ')} are locked on the block, and the house votes tonight.`);
         beats(act);
         break;
 

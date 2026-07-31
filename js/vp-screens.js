@@ -15501,6 +15501,10 @@ function _bbScene(scene) {
  * lifted from the Total Drama scouting screen so the pacing feels identical.
  */
 function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '', room = 'bb-power' }) {
+  // A double eviction plays the same acts twice in one episode, so every
+  // reveal state has to be told which half it belongs to — otherwise the
+  // second HOH shares a click-state with the first and they reveal together.
+  if (ep?._seg) stateKey = `${stateKey}_s${ep._seg}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   const done = state.idx >= scenes.length - 1;
@@ -16024,6 +16028,147 @@ export function rpBuildBBEviction(ep) {
 }
 
 /** The week, in the order the show runs it. */
+/**
+ * The house on slop.
+ *
+ * The Head of Household's first public act, and the one the house is still
+ * annoyed about on eviction night. Named on the wall so the disadvantage is
+ * visible for the rest of the week rather than mentioned once and forgotten.
+ */
+export function rpBuildBBHaveNots(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'have-nots');
+  if (!act) return '';
+  const names = act.names || [];
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'HAVE-NOTS',
+    subtitle: `${act.hoh} decides who goes without.`, accent: '#58a6ff', room: 'bb-block',
+    stateKey: `bb_hn_${ep.num}`,
+    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${names.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
+    scenes: [
+      { text: `${act.hoh} has the room and the list. Being liked this week just became expensive.`,
+        players: [act.hoh], badgeText: 'HOH DECIDES', badgeClass: 'gold' },
+      ...names.map(n => ({
+        text: `<strong>${n}</strong> is a have-not: slop, cold water, and the worst beds in the house.`,
+        players: [n], badgeText: 'HAVE-NOT', badgeClass: 'blue',
+      })),
+      { text: `A week of it, and the veto to play through on an empty stomach.`,
+        players: names, badgeText: 'DISADVANTAGED', badgeClass: 'grey' },
+      ..._bbBeats(act),
+    ],
+  });
+}
+
+/** No veto. The pair the HOH named is the pair the house votes on. */
+export function rpBuildBBInstantEviction(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'instant-eviction');
+  if (!act) return '';
+  const noms = act.nominees || [];
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'INSTANT EVICTION', accent: '#f85149', room: 'bb-live',
+    subtitle: 'No veto. No ceremony. The block is already final.',
+    stateKey: `bb_inst_${ep.num}`,
+    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${noms.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
+    scenes: [
+      { text: `There is no Power of Veto this week. Nothing is going to come off that wall.`,
+        players: [], badgeText: 'NO VETO', badgeClass: 'red' },
+      { text: `<strong>${noms.join('</strong> and <strong>')}</strong> are locked on the block, and the house votes tonight.`,
+        players: noms, badgeText: 'BLOCK IS FINAL', badgeClass: 'red' },
+      { text: `${act.hoh} nominated them a few hours ago. Whatever plan either of them had needed a week, and they have an evening.`,
+        players: [act.hoh], badgeText: 'NO TIME', badgeClass: 'grey' },
+      ..._bbBeats(act),
+    ],
+  });
+}
+
+/** The break between a double eviction's two halves. */
+function _bbDoubleBreak(ep) {
+  const d = ep.doubleEviction || {};
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num}`, title: 'AND WE ARE NOT DONE', accent: '#f0a500', room: 'bb-live',
+    subtitle: 'The front door has not finished closing.',
+    stateKey: `bb_dbl_${ep.num}`,
+    scenes: [
+      { text: `The house is told to sit back down. There will be a second eviction tonight, and it starts now.`,
+        players: [], badgeText: 'DOUBLE EVICTION', badgeClass: 'red' },
+      { text: `A whole week — competition, nominations, veto, vote — in the time it usually takes to argue about one.`,
+        players: [...(d.houseAtStart || [])].slice(0, 6), badgeText: 'LIVE', badgeClass: 'gold' },
+    ],
+  });
+}
+
+/** The acts of one cycle, in the order they happened. */
+function _bbCycleScreens(view, screens, suffix = '') {
+  let houseSlot = 0, campaignIdx = 0;
+  const id = base => `${base}${suffix}`;
+  for (const act of view.acts || []) {
+    switch (act.type) {
+      case 'house':
+        screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life', html: rpBuildBBHouseLife(view, act, houseSlot) });
+        break;
+      case 'have-nots':
+        screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
+        break;
+      case 'hoh':
+        screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
+        break;
+      case 'nominations':
+        screens.push({ id: id('bb-noms'), label: 'Nominations', html: rpBuildBBNominations(view) });
+        break;
+      case 'instant-eviction':
+        screens.push({ id: id('bb-instant'), label: 'Instant Eviction', html: rpBuildBBInstantEviction(view) });
+        break;
+      case 'veto':
+        screens.push({ id: id('bb-veto'), label: 'Veto', html: rpBuildBBComp(view, 'veto') });
+        break;
+      case 'veto-ceremony':
+        screens.push({ id: id('bb-cer'), label: 'Ceremony', html: rpBuildBBCeremony(view) });
+        break;
+      case 'campaign':
+        if (campaignIdx++ === 0) screens.push({ id: id('bb-camp'), label: 'Campaign', html: rpBuildBBCampaign(view) });
+        break;
+      case 'eviction':
+        screens.push({ id: id('bb-evict'), label: 'Eviction', html: rpBuildBBEviction(view) });
+        try {
+          const iv = rpBuildBBEvictionInterview(view);
+          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Eviction Interview', html: iv });
+        } catch { /* no interview, no screen */ }
+        try {
+          const votes = rpBuildVotes(view);
+          if (votes && votes.trim()) screens.push({ id: id('bb-votes'), label: 'The Vote', html: votes });
+        } catch { /* the eviction screen already carries the result */ }
+        break;
+      default:
+        break;
+    }
+  }
+  return screens;
+}
+
+/**
+ * The second half of a double eviction, as its own episode-shaped view.
+ *
+ * Every screen builder reads the week off `ep`, so rather than teaching all of
+ * them about segments they are handed a view of the episode in which the
+ * second cycle IS the week. `_seg` keeps the reveal states apart.
+ */
+function _bbSecondCycleView(ep) {
+  const d = ep.doubleEviction || {};
+  return {
+    ...ep, _seg: 2,
+    acts: (ep.acts || []).filter(a => (a.segment || 1) === 2),
+    hoh: d.hoh || null,
+    immunityWinner: d.hoh || null,
+    initialNominees: [...(d.nominees || [])],
+    finalNominees: [...(d.nominees || [])],
+    vetoWinner: d.vetoWinner || null,
+    eliminated: d.evicted || null,
+    votes: { ...(d.votes || {}) },
+    houseAtStart: [...(d.houseAtStart || ep.houseAtStart || [])],
+    votingLog: (ep.votingLog || []).filter(v => v.segment === 2),
+    evictionInterview: null,
+  };
+}
+
 export function buildBBWeekScreens(ep) {
   const screens = [
     { id: 'bb-cold', label: (ep.num || 1) === 1 ? 'Move-In' : 'Cold Open', html: rpBuildBBColdOpen(ep) },
@@ -16035,66 +16180,34 @@ export function buildBBWeekScreens(ep) {
     const overview = rpBuildBBOverview(ep);
     if (overview && overview.trim()) screens.push({ id: 'bb-overview', label: 'House Status', html: overview });
   } catch { /* no snapshot, no overview */ }
-  let houseSlot = 0, campaignIdx = 0;
-
   // Walk the acts the engine actually produced. House life is its own act now,
   // with its own phase, so the player no longer has to infer where a beat
   // belonged — it shows the week in the order the week happened.
+  //
+  // A double eviction produces two cycles of those acts in one episode, so the
+  // first cycle is rendered from a view holding only its own acts and the
+  // second gets a view where it IS the week. Without the split, every builder
+  // would find the first 'hoh' act twice and draw the same screen again.
+  const hasSecond = !!ep.doubleEviction;
+  const firstView = hasSecond
+    ? { ...ep, acts: (ep.acts || []).filter(a => (a.segment || 1) === 1) }
+    : ep;
+  _bbCycleScreens(firstView, screens);
+
+  // The finale's acts belong to no cycle and are rendered once, in order.
   for (const act of ep.acts || []) {
-    switch (act.type) {
-      case 'house':
-        screens.push({ id: `bb-house-${++houseSlot}`, label: 'House Life', html: rpBuildBBHouseLife(ep, act, houseSlot) });
-        break;
-      case 'hoh':
-        screens.push({ id: 'bb-hoh', label: 'HOH', html: rpBuildBBComp(ep, 'hoh') });
-        break;
-      case 'nominations':
-        screens.push({ id: 'bb-noms', label: 'Nominations', html: rpBuildBBNominations(ep) });
-        break;
-      case 'veto':
-        screens.push({ id: 'bb-veto', label: 'Veto', html: rpBuildBBComp(ep, 'veto') });
-        break;
-      case 'veto-ceremony':
-        screens.push({ id: 'bb-cer', label: 'Ceremony', html: rpBuildBBCeremony(ep) });
-        break;
-      case 'campaign':
-        // Every campaign act folds into ONE screen. Three near-identical
-        // screens of a handful of pitches each was pacing the week badly; the
-        // campaign is one stretch of house life, not three chapters.
-        if (campaignIdx++ === 0) {
-          screens.push({ id: 'bb-camp', label: 'Campaign', html: rpBuildBBCampaign(ep) });
-        }
-        break;
-      case 'final-hoh-part':
-        // Three parts, one screen — pushed once, on the first of them.
-        if (!screens.some(x => x.id === 'bb-final-hoh')) {
-          screens.push({ id: 'bb-final-hoh', label: 'Final HOH', html: rpBuildBBFinalHoh(ep) });
-        }
-        break;
-      case 'final-cut':
-        screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
-        break;
-      case 'jury-vote':
-        screens.push({ id: 'bb-jury', label: 'The Jury Vote', html: rpBuildBBJuryVote(ep) });
-        break;
-      case 'eviction':
-        screens.push({ id: 'bb-evict', label: 'Eviction', html: rpBuildBBEviction(ep) });
-        // The same vote screen Total Drama uses — one tally, one set of bars,
-        // one blindside read, for both shows. Optional furniture: a week must
-        // still play if it cannot build.
-        // The eviction interview: Big Brother's aftermath, weekly and personal.
-        try {
-          const iv = rpBuildBBEvictionInterview(ep);
-          if (iv && iv.trim()) screens.push({ id: 'bb-interview', label: 'Eviction Interview', html: iv });
-        } catch { /* no interview, no screen */ }
-        try {
-          const votes = rpBuildVotes(ep);
-          if (votes && votes.trim()) screens.push({ id: 'bb-votes', label: 'The Vote', html: votes });
-        } catch { /* the eviction screen already carries the result */ }
-        break;
-      default:
-        break;
+    if (act.type === 'final-hoh-part' && !screens.some(x => x.id === 'bb-final-hoh')) {
+      screens.push({ id: 'bb-final-hoh', label: 'Final HOH', html: rpBuildBBFinalHoh(ep) });
+    } else if (act.type === 'final-cut') {
+      screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
+    } else if (act.type === 'jury-vote') {
+      screens.push({ id: 'bb-jury', label: 'The Jury Vote', html: rpBuildBBJuryVote(ep) });
     }
+  }
+
+  if (hasSecond) {
+    screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
+    _bbCycleScreens(_bbSecondCycleView(ep), screens, '-2');
   }
 
   // The numbers behind the week, behind the same switch Total Drama uses.

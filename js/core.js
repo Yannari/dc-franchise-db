@@ -310,6 +310,23 @@ export const TWIST_CATALOG = [
     desc:"Schedule-adaptive carnival challenge. Scheduled as the season opener it runs two phases — a Shelter Scramble (trek to camp, build a shelter from midway scrap; best sturdiness+theme wins the tarp and a dry night while the losers face a storm) leading into the Demon's Plainer coaster. Any other pre-merge slot or post-merge, only the coaster runs: ride the number-one coaster on the midway, memorize the colored flags you pass, then rebuild the order at the bottom. Get it wrong and two riders go back up. Nausea, fear hand-holds, and archetype-driven captains. Pre-merge: fastest correct tribe wins immunity. Post-merge: fewest errors wins individual immunity.",
     engineType:'demons-plainer',
     incompatible:['say-uncle','operation-classified','super-hero-ld','princess-pride','get-a-clue','crouching-courtney','houston','top-dog','walk-like-an-egyptian','crazy-fun-time','frozen-crossing','picnic-hanging-dork','slap-slap-revolution','broadway-baby','viking-sour','planes-trains','bridal-brawls','great-fake-out','amazon-race','night-at-museum','truth-or-shark','rock-the-dock','tropical-takedown','midnight-manhunt','bigger-badder-brutaler','rock-n-rule','brunch-of-disgustingness','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','truth-or-dare-train','a-maze-ing-grip','poles-apart','hells-kitchen','trust-challenge','basic-straining','monster-cash','mine-over-matter','treasure-island','alien-egg','beach-blanket-bogus','crazytown','chefshank','one-flu','masters-of-disasters','oceans-heist','million-bucks-bc','sports-marathon','full-metal-drama','x-treme-torture','lucky-hunt','hide-and-be-sneaky','off-the-chain','wawanakwa-gone-wild','tri-armed-triathlon','camp-castaways','are-we-there-yeti','greeces-pieces','hangar-black','african-lying-safari','rapa-phooey','drumheller','ice-ice-baby','project-runaway','finders-creepers','backstabbers-ahoy','haunted-house','hung-out-to-dry','merry-go-round-up','maze-of-the-fallen'] },
+
+  // ── Big Brother ──
+  // Scoped by `format`, so none of these ever appear in a Total Drama season
+  // and none of the above ever appear in a house. A twist here changes the
+  // SHAPE of the week — what happens, in what order, and how many people leave.
+  { id:'bb-double-eviction', emoji:'⏩', name:'Double Eviction', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'Two evictions in one night. The week plays normally, and the moment the first houseguest walks out the house runs a second, compressed cycle live: new Head of Household, nominations, veto and vote with no time to campaign properly. Two people leave.',
+    engineType:'bb-double-eviction', incompatible:['bb-instant-eviction'] },
+  { id:'bb-instant-eviction', emoji:'⚡', name:'Instant Eviction', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'No veto this week. The Head of Household nominates and the nominations stand — the house votes the same night, with no competition to save anybody and no ceremony to change the pair.',
+    engineType:'bb-instant-eviction', incompatible:['bb-double-eviction'] },
+  { id:'bb-have-nots', emoji:'🥣', name:'Have-Nots', format:'big-brother',
+    category:'social', phase:'any',
+    desc:'The new Head of Household puts part of the house on slop, cold showers and the have-not room for the week. Have-nots compete at a real disadvantage in the veto, and nobody forgets who chose them.',
+    engineType:'bb-have-nots' },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

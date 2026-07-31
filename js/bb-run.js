@@ -101,19 +101,74 @@ export function weekToEpisode(week) {
  * Returns an `ep`-shaped object so `simulateNext()` can carry on unchanged, or
  * null when the house has nobody left to evict.
  */
+/** The twists this format has, so a Total Drama entry can never reach the house. */
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction']);
+
+/**
+ * Which twists are scheduled for the week about to be played.
+ *
+ * The designer schedules by episode number and a Big Brother episode is a
+ * week, so they are the same axis. Anything not built for this format is
+ * dropped rather than passed through to an engine that would ignore it
+ * silently.
+ */
+export function bbTwistsForWeek(weekNum) {
+  return (seasonConfig.twistSchedule || [])
+    .filter(t => t && Number(t.episode) === Number(weekNum))
+    .map(t => t.type)
+    .filter(id => BB_TWIST_IDS.has(id));
+}
+
 export function simulateBBEpisode() {
   prepareHouse();
   const house = (gs.activePlayers || []).filter(Boolean);
   if (house.length <= houseFinaleSize()) return null;
+
+  const weekNum = (gs.bb.weeks?.length || 0) + 1;
+  const twists = bbTwistsForWeek(weekNum);
 
   const week = simulateBBWeek({
     // Both libraries default to empty inside the engine, so a season that does
     // not hand them over runs silent and falls back to one-line competitions.
     houseEvents: HOUSE_EVENTS,
     competitions: BB_COMPETITIONS,
+    twists,
+    // The HOH picks have-nots off their own read of the house, not the truth.
+    readBond: (a, b) => (typeof window !== 'undefined' && window.getPerceivedBond
+      ? window.getPerceivedBond(a, b) : 0),
   });
 
   const ep = weekToEpisode(week);
+  ep.twists = [...twists];
+  ep.haveNots = week.haveNots ? [...week.haveNots] : [];
+  ep.instantEviction = twists.includes('bb-instant-eviction');
+
+  // ── Double eviction: a second, compressed cycle the same night ──
+  // A separate week record, because it genuinely is one — the stats, the jury
+  // and the competition history all have to see two HOHs and two evictions —
+  // but a single episode, because that is how it is watched.
+  if (twists.includes('bb-double-eviction') && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
+    const second = simulateBBWeek({
+      houseEvents: HOUSE_EVENTS,
+      competitions: BB_COMPETITIONS,
+      compressed: true,
+      segment: 2,
+    });
+    ep.doubleEviction = {
+      hoh: second.hoh,
+      nominees: [...(second.finalNominees || [])],
+      vetoWinner: second.vetoWinner || null,
+      evicted: second.evicted,
+      votes: { ...(second.votes || {}) },
+      houseAtStart: [...(second.houseAtStart || [])],
+    };
+    ep.alsoEliminated = second.evicted;
+    ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment: 2 }))];
+    ep.votingLog = [
+      ...(ep.votingLog || []),
+      ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 2 })),
+    ];
+  }
   // The aftermath of a Big Brother week is one person, interviewed on the way
   // out, finding out what was actually happening around them.
   ep.evictionInterview = generateBBEvictionInterview(ep, week);

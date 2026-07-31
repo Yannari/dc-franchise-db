@@ -115,8 +115,13 @@ function genericSimulation(comp, participants, context, rng) {
     const throwRead = context.type === 'hoh' ? shouldThrowHoh(name, context.house || participants) : { throwChance:0, enemies:0, safety:0 };
     const threw = context.allowThrowing !== false && rng() < throwRead.throwChance;
     const throwPenalty = threw ? 4.5 + rng() * 3 : 0;
-    const finalScore = statTotal + randomRoll - throwPenalty;
-    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, finalScore };
+    // A week of cold showers and slop is a real disadvantage, not a costume.
+    // Big enough to cost a close competition, small enough that a have-not can
+    // still win one — which is the whole story when it happens.
+    const haveNot = (context.haveNots || []).includes(name);
+    const haveNotPenalty = haveNot ? 1.4 + rng() * 1.6 : 0;
+    const finalScore = statTotal + randomRoll - throwPenalty - haveNotPenalty;
+    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, haveNot, haveNotPenalty, finalScore };
     return { name, score:finalScore, threw };
   }).sort((a,b) => b.score - a.score);
   return {
@@ -175,6 +180,9 @@ export function runBBCompetition(options = {}) {
     type, house:[...(options.house || participants)], excluded:[...(options.excluded || [])],
     week:options.week || null, seed:options.seed, allowThrowing:options.allowThrowing,
     nominees:[...(options.nominees || [])], hoh:options.hoh || null,
+    // Who is on slop this week. Custom competitions can read it; the generic
+    // scorer applies it directly.
+    haveNots:[...(options.haveNots || [])],
   };
   const selection = chooseCompetition(options.library || [], type, context, rng, options.forcedId);
   const comp = selection.comp;

@@ -46,13 +46,32 @@ export function blueprintFor(config = {}, castSize = 0) {
   const finaleSize = Number(config.finaleSize) || 0;
   const fmt = config.finaleFormat || 'traditional';
   const N = Number(castSize) || 0;
+  const house = seasonFormat(config) === 'big-brother';
   const segs = [];
 
   segs.push({
-    label: `${N} player${N === 1 ? '' : 's'}`,
+    label: `${N} ${house ? 'houseguest' : 'player'}${N === 1 ? '' : 's'}`,
     ok: N >= 4,
-    why: N >= 4 ? undefined : 'Cast at least 4 players',
+    why: N >= 4 ? undefined : `Cast at least 4 ${house ? 'houseguests' : 'players'}`,
   });
+
+  // A house has no tribes and no merge: everybody is in from day one.
+  if (house) {
+    segs.push({ label: 'one house', ok: true });
+    const juryOk = jurySize >= 1 && jurySize + finaleSize <= N;
+    segs.push({
+      label: `jury of ${jurySize}`,
+      ok: juryOk,
+      why: juryOk ? undefined : `Jury ${jurySize} + Final ${finaleSize} exceeds ${N} houseguests`,
+    });
+    const finOk = finaleSize >= 2 && finaleSize < N;
+    segs.push({
+      label: `Final ${finaleSize}`,
+      ok: finOk,
+      why: finOk ? undefined : `Final ${finaleSize} must be 2+ and below the cast size`,
+    });
+    return segs;
+  }
 
   if (teams >= 2) {
     const enough = N >= teams * 2;
@@ -121,8 +140,12 @@ export function validateQuickSetup(config = {}, playerList = []) {
     rows.push({ key: 'cast', ok, msg });
   }
 
+  const house = seasonFormat(config) === 'big-brother';
+
   // ── tribes ──
-  {
+  // Skipped entirely for a house: there is nothing to assign and nothing to
+  // balance, so a "players unassigned to a tribe" warning is pure noise.
+  if (!house) {
     if (teams < 2) {
       rows.push({ key: 'tribes', ok: true, msg: 'Single starting tribe — no tribe assignment needed.' });
     } else {
@@ -154,7 +177,7 @@ export function validateQuickSetup(config = {}, playerList = []) {
   }
 
   // ── merge ──
-  {
+  if (!house) {
     let ok = true, msg = `Merge at ${mergeAt} with ${N} players.`;
     if (!(mergeAt < N)) {
       ok = false; msg = `Merge at ${mergeAt} but only ${N} players — lower it below ${N} or add players.`;
@@ -884,12 +907,14 @@ const CONFIG_SCOPE = {
     'cfg-bb-havenots':       ['big-brother'],
     'cfg-bb-safety':         ['big-brother'],
     'cfg-bb-safety-stops':   ['big-brother'],
+    'f-tribe':               ['total-drama'],  // a house has no tribes to join
   },
   sections: {
     'sec-season-options':     ['total-drama'],
     'sec-settings-mechanics': ['total-drama'],
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
+    'sec-tribes':             ['total-drama'],
   },
 };
 
@@ -921,6 +946,7 @@ export function applyFormatScope() {
   for (const [id, formats] of Object.entries(CONFIG_SCOPE.sections)) {
     show(_g(id), formats.includes(fmt));
   }
+  if (fmt === 'big-brother') qsOnHouseOptionChange();
 
   // FORMATS & TWISTS survives in a house only because Romance does; if that
   // ever stops being true the header should go with it rather than sit above
@@ -928,6 +954,30 @@ export function applyFormatScope() {
   const twistsUsed = Object.entries(CONFIG_SCOPE.accordions)
     .some(([, formats]) => formats.includes(fmt) && formats.length > 1);
   show(_g('sec-formats-twists'), twistsUsed);
+}
+
+/**
+ * House options that only matter once another one is on.
+ *
+ * "Stops with this many left" is meaningless while the three-nominee mode is
+ * off, and a dead number field invites the reader to work out whether it does
+ * something. Called on change and on render.
+ */
+export function qsOnHouseOptionChange() {
+  if (typeof document === 'undefined') return;
+  const mode = _g('cfg-bb-safety')?.value || 'off';
+  const stops = _g('cfg-bb-safety-stops');
+  const host = stops && stops.closest('.form-group');
+  if (host) host.style.display = mode === 'off' ? 'none' : '';
+  // Each mode has a traditional stopping point; follow it unless the reader
+  // has already moved the number themselves.
+  if (stops && mode !== 'off' && !stops.dataset.touched) {
+    stops.value = mode === 'ai-arena' ? 9 : 6;
+  }
+  if (stops && !stops._wired) {
+    stops._wired = true;
+    stops.addEventListener('input', () => { stops.dataset.touched = '1'; });
+  }
 }
 
 /** The controls a given show uses — exported so the scoping can be tested. */

@@ -9,7 +9,8 @@
 // format's engine reads the value.
 import { describe, expect, it } from 'vitest';
 import { seasonConfig } from '../js/core.js';
-import { configScopeFor } from '../js/quick-setup.js';
+import { configScopeFor, validateQuickSetup, blueprintFor } from '../js/quick-setup.js';
+import { castWarnings } from '../js/cast-room.js';
 import {
   SEASON_SETTINGS, SETTINGS_BY_FORMAT, settingsForFormat, houseSetting, houseProfile,
 } from '../js/settings.js';
@@ -29,6 +30,39 @@ describe('format-scoped setup screen', () => {
     }
     expect(bb.sections).not.toContain('sec-season-options');
     expect(bb.sections).not.toContain('sec-settings-mechanics');
+    // Tribes: neither the per-player field nor the builder belongs in a house.
+    expect(bb.fields).not.toContain('f-tribe');
+    expect(bb.sections).not.toContain('sec-tribes');
+  });
+
+  it('never asks a house about tribes or a merge', () => {
+    const bb = { format: 'big-brother', teams: 2, mergeAt: 12, jurySize: 7, finaleSize: 3 };
+    const cast = Array.from({ length: 12 }, (_, i) => ({ name: `P${i}`, stats: {} }));
+    const rows = validateQuickSetup(bb, cast);
+    expect(rows.map(r => r.key)).not.toContain('tribes');
+    expect(rows.map(r => r.key)).not.toContain('merge');
+    // And the blueprint describes a house rather than a tribe split.
+    const segs = blueprintFor(bb, 12).map(s => s.label);
+    expect(segs.join(' ')).toContain('houseguests');
+    expect(segs.join(' ')).toContain('one house');
+    expect(segs.join(' ')).not.toContain('tribes');
+    expect(segs.join(' ')).not.toContain('merge');
+    // Total Drama is untouched.
+    const td = { format: 'total-drama', teams: 2, mergeAt: 8, jurySize: 7, finaleSize: 3 };
+    expect(validateQuickSetup(td, cast).map(r => r.key)).toContain('tribes');
+    expect(blueprintFor(td, 12).map(s => s.label).join(' ')).toContain('tribes');
+  });
+
+  it('drops tribe-shaped casting warnings in a house', () => {
+    const cast = [
+      { name: 'A', tribe: 'Alpha', stats: {} }, { name: 'B', tribe: 'Alpha', stats: {} },
+      { name: 'C', tribe: 'Beta', stats: {} }, { name: 'D', stats: {} },
+    ];
+    const td = castWarnings(cast, [], ['Alpha', 'Beta', 'Ghost']).map(w => w.text).join(' ');
+    expect(td).toMatch(/tribe/i);
+    const bb = castWarnings(cast, [], ['Alpha', 'Beta', 'Ghost'], { format: 'big-brother' })
+      .map(w => w.text).join(' ');
+    expect(bb).not.toMatch(/tribe/i);
   });
 
   it('keeps romance, which both shows run', () => {

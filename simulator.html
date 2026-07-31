@@ -67,7 +67,7 @@
           <label class="form-label">Avatar slug <span class="hint">(optional)</span></label>
           <input type="text" id="f-slug" class="form-input" placeholder="e.g. bowie">
         </div>
-        <div class="form-group">
+        <div class="form-group" id="grp-f-tribe">
           <label class="form-label">Tribe</label>
           <select id="f-tribe" class="form-select">
             <option value="">— set up tribes in Season Setup —</option>
@@ -264,39 +264,41 @@
                  Total Drama sections below, which are hidden for this format. -->
             <div class="divider" id="sec-bb-divider"></div>
             <div class="setup-section-label" id="sec-bb-options">HOUSE OPTIONS</div>
-            <div class="form-group" id="grp-bb-tiebreak">
-              <label class="form-label">When the vote ties</label>
-              <div class="hint">The Head of Household breaks it, live, in front of the house. No revote, no rock draw &mdash; this is fixed by the format and cannot be changed.</div>
-            </div>
-            <div class="form-group" id="grp-bb-interview">
-              <label class="form-label">Eviction Interview</label>
-              <select id="cfg-bb-interview" onchange="saveConfig()" class="form-input">
-                <option value="enabled">On &mdash; the evicted houseguest is interviewed on the way out</option>
-                <option value="disabled">Off</option>
-              </select>
+            <!-- Fixed by the format: stated once, compactly, not argued. -->
+            <div class="bbopt-fixed">
+              <span class="bbopt-fixed-k">Ties</span>
+              <span>Broken by the Head of Household, live. No revote, no rocks.</span>
             </div>
             <div class="form-group" id="grp-bb-safety">
               <label class="form-label">Three-Nominee Mode</label>
-              <select id="cfg-bb-safety" onchange="saveConfig()" class="form-input">
-                <option value="off">Off &mdash; two nominees, the usual week</option>
-                <option value="ai-arena">AI Arena &mdash; three nominees, one saves themselves</option>
-                <option value="block-buster">BB Block Buster &mdash; three nominees, one busts off the block</option>
+              <select id="cfg-bb-safety" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">
+                <option value="off">Off &mdash; two nominees</option>
+                <option value="ai-arena">AI Arena</option>
+                <option value="block-buster">BB Block Buster</option>
               </select>
-              <div class="hint">Every week the HOH names <strong>three</strong>. Immediately before the vote those three compete, and the winner comes off the block &mdash; saved by their own hands rather than by somebody else's veto. Runs until the house is small enough that a third nominee would leave nobody to vote.</div>
+              <div class="hint hint-tight">Three go up. The three compete before the vote and one saves themselves.</div>
             </div>
             <div class="form-group" id="grp-bb-safety-stops">
-              <label class="form-label">Stop when this many remain</label>
+              <label class="form-label">Stops with this many left</label>
               <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">
-              <div class="hint">The AI Arena traditionally stops earlier (around nine); the Block Buster runs deeper (around six).</div>
+              <div class="hint hint-tight">Arena stops around 9 &middot; Block Buster runs to 6.</div>
             </div>
             <div class="form-group" id="grp-bb-havenots">
               <label class="form-label">Have-Nots</label>
               <select id="cfg-bb-havenots" onchange="saveConfig()" class="form-input">
-                <option value="twist">Only when scheduled as a twist</option>
-                <option value="every-week">Every week &mdash; the HOH always picks</option>
+                <option value="twist">When scheduled as a twist</option>
+                <option value="every-week">Every week</option>
                 <option value="off">Never</option>
               </select>
-              <div class="hint">Slop, cold water and a real disadvantage in the veto. The Head of Household chooses, and the house remembers who.</div>
+              <div class="hint hint-tight">Slop and cold water, and a real disadvantage in the veto. The HOH picks.</div>
+            </div>
+            <div class="form-group" id="grp-bb-interview">
+              <label class="form-label">Eviction Interview</label>
+              <select id="cfg-bb-interview" onchange="saveConfig()" class="form-input">
+                <option value="enabled">On</option>
+                <option value="disabled">Off</option>
+              </select>
+              <div class="hint hint-tight">The evicted houseguest is interviewed on the way out.</div>
             </div>
 
             <div class="divider"></div>
@@ -514,10 +516,13 @@
           </div>
 
           <div class="setup-col-right">
-            <div class="setup-section-label">TRIBES</div>
-            <div id="tribe-builder-list" style="margin-bottom:6px"></div>
-            <button class="btn btn-secondary" onclick="addTribe()" style="font-size:12px;padding:5px 12px;width:auto;margin-bottom:10px">+ Add Tribe</button>
-            <div class="divider" style="margin:0 0 10px"></div>
+            <!-- A house has no tribes. Hidden, not disabled, for Big Brother. -->
+            <div id="sec-tribes">
+              <div class="setup-section-label">TRIBES</div>
+              <div id="tribe-builder-list" style="margin-bottom:6px"></div>
+              <button class="btn btn-secondary" onclick="addTribe()" style="font-size:12px;padding:5px 12px;width:auto;margin-bottom:10px">+ Add Tribe</button>
+              <div class="divider" style="margin:0 0 10px"></div>
+            </div>
 
             <div class="setup-section-label">SEASON STRUCTURE</div>
             <div class="slider-block">

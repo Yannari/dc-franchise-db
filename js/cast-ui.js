@@ -708,7 +708,8 @@ export function renderCard(p) {
       <div class="card-info">
         <div class="card-name" title="${p.name}">${p.name}</div>
         <div class="card-badges">
-          ${p.tribe?`<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>`:''}
+          ${p.tribe && seasonFormat(seasonConfig) !== 'big-brother'
+            ? `<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>` : ''}
           <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
         </div>

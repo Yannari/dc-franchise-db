@@ -15,6 +15,7 @@
 
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
 import { threat, threatTier, overall, tribeColor } from './players.js';
+import { seasonFormat } from './core.js';
 import { saveCast, renderCast, editPlayer, cancelEdit } from './cast-ui.js';
 import { franchiseHistorySummary } from './franchise-meta.js';
 
@@ -108,15 +109,18 @@ export function castRoomFilter(pool, filters = {}) {
 
 // Casting warnings — pure. `configuredTribes` optional (names) enables the
 // empty-configured-tribe check without breaking the 2-arg contract.
-export function castWarnings(pool, rels, configuredTribes) {
+export function castWarnings(pool, rels, configuredTribes, opts = {}) {
   const out = [];
   const cast = pool || [];
+  // A house has no tribes, so every tribe-shaped warning is about a thing the
+  // format does not have. Optional 4th argument keeps the 3-arg contract.
+  const house = opts.format === 'big-brother';
   const groups = {};
   cast.filter(p => p.tribe).forEach(p => (groups[p.tribe] ??= []).push(p));
   const names = Object.keys(groups);
 
   // 1. Severe stat imbalance
-  if (names.length >= 2) {
+  if (!house && names.length >= 2) {
     const avgs = names.map(t => groups[t].reduce((s, p) => s + statTotal(p.stats), 0) / groups[t].length);
     const spread = Math.max(...avgs) - Math.min(...avgs);
     if (spread > 6) out.push({ level: 'warn', text: `Stat imbalance — tribe average totals differ by ${spread.toFixed(0)} points.` });
@@ -124,10 +128,10 @@ export function castWarnings(pool, rels, configuredTribes) {
 
   // 2. Missing tribes: unassigned players (while others are assigned) + empty configured tribes
   const noTribe = cast.filter(p => !p.tribe);
-  if (noTribe.length && names.length) {
+  if (!house && noTribe.length && names.length) {
     out.push({ level: 'info', text: `${noTribe.length} player${noTribe.length === 1 ? '' : 's'} unassigned to a tribe.` });
   }
-  if (Array.isArray(configuredTribes)) {
+  if (!house && Array.isArray(configuredTribes)) {
     configuredTribes.forEach(t => { if (t && !groups[t]) out.push({ level: 'info', text: `Tribe "${t}" has no members.` }); });
   }
 
@@ -159,7 +163,7 @@ export function castWarnings(pool, rels, configuredTribes) {
   if (names.length >= 2) {
     const sizes = names.map(t => groups[t].length);
     const diff = Math.max(...sizes) - Math.min(...sizes);
-    if (diff >= 2) out.push({ level: 'warn', text: `Uneven tribes — sizes range ${Math.min(...sizes)} to ${Math.max(...sizes)}.` });
+    if (!house && diff >= 2) out.push({ level: 'warn', text: `Uneven tribes — sizes range ${Math.min(...sizes)} to ${Math.max(...sizes)}.` });
   }
 
   return out;
@@ -328,7 +332,7 @@ function _filterBarHTML() {
 }
 
 function _warningsHTML() {
-  const w = castWarnings(players, relationships, _configuredTribeNames());
+  const w = castWarnings(players, relationships, _configuredTribeNames(), { format: seasonFormat(seasonConfig) });
   if (!w.length) return '';
   const rows = w.map(x => `<span class="cr-warn-row cr-warn-${x.level}">${esc(x.text)}</span>`).join('');
   return `<div class="cr-warnings" id="cr-warnings">

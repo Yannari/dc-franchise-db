@@ -20,6 +20,7 @@
 
 import { TWIST_CATALOG, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
+import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -951,6 +952,7 @@ export function applyFormatScope() {
   if (fmt === 'big-brother') qsOnHouseOptionChange();
 
   _placeRomance(fmt);
+  renderHouseStructure();
 }
 
 /**
@@ -997,6 +999,27 @@ function _placeRomance(fmt) {
   } else if (_romanceHome.parent && acc.parentNode !== _romanceHome.parent) {
     _romanceHome.parent.insertBefore(acc, _romanceHome.next);
   }
+}
+
+/**
+ * The house season, drawn as a chain.
+ *
+ * Same visual language as the Total Drama blueprint line, because it answers
+ * the same question — what is this season going to be — and a house should not
+ * get a worse answer for having less to configure.
+ */
+export function renderHouseStructure() {
+  const host = _g('bb-structure');
+  if (!host) return;
+  if (seasonFormat(seasonConfig) !== 'big-brother') { host.innerHTML = ''; host.style.display = 'none'; return; }
+  host.style.display = '';
+  const segs = houseStructure(seasonConfig, _players().length);
+  host.innerHTML = `<div class="bbst">
+    <div class="bbst-title">This season</div>
+    <div class="bbst-chain">${segs.map(s => `<span class="bbst-seg ${s.ok ? '' : 'bad'}"${
+      s.why ? ` title="${String(s.why).replace(/"/g, '&quot;')}"` : ''}>${s.label}</span>`).join('')}</div>
+    ${segs.filter(s => !s.ok && s.why).map(s => `<div class="bbst-why">${s.why}</div>`).join('')}
+  </div>`;
 }
 
 /** The controls a given show uses — exported so the scoping can be tested. */

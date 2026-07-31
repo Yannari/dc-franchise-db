@@ -3086,6 +3086,28 @@
        tighter, and short enough to take in without deciding to read it. */
     .hint-tight     { font-size: 10.5px; line-height: 1.45; opacity: .72; margin-top: 4px;
                       max-width: 34em; }
+    /* ── House season shape ──
+       The chain a house season runs on. Same read as the Total Drama blueprint
+       line: each link is a fact, and a link that cannot happen goes red with
+       the reason on hover and spelled out underneath. */
+    .bbst          { margin: 4px 0 14px; }
+    .bbst-title    { font-size: 9px; font-weight: 800; letter-spacing: 1.4px;
+                     text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    .bbst-chain    { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .bbst-seg      { position: relative; padding: 4px 9px; border-radius: 4px;
+                     font-size: 11px; line-height: 1.3; white-space: nowrap;
+                     color: var(--text); background: rgba(99,102,241,.10);
+                     border: 1px solid rgba(99,102,241,.28); }
+    /* the arrow between links */
+    .bbst-seg + .bbst-seg::before {
+                     content: '→'; position: absolute; left: -13px; top: 50%;
+                     transform: translateY(-50%); font-size: 10px;
+                     color: var(--muted); opacity: .6; }
+    .bbst-seg.bad  { color: #fca5a5; background: rgba(248,81,73,.12);
+                     border-color: rgba(248,81,73,.45); }
+    .bbst-why      { margin-top: 6px; font-size: 10.5px; line-height: 1.45;
+                     color: #fca5a5; }
+
     /* A rule the format fixes, stated once — not offered as a choice. */
     .bbopt-fixed    { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;
                       padding: 7px 10px; border-radius: 5px;

@@ -694,6 +694,7 @@ export function renderCast() {
   players.forEach(p => { const t=p.tribe||'No Tribe'; tribes[t]=(tribes[t]||0)+1; });
   document.getElementById('cast-tribe-summary').textContent = '\u2014 '+Object.entries(tribes).map(([t,c])=>`${t} (${c})`).join(' \u00b7 ');
   renderFranchiseHistoryPanel();
+  window.renderHouseStructure?.();
   try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
 }
 export function renderCard(p) {
@@ -911,6 +912,9 @@ export function saveConfig() {
   // duels always return exactly 1 winner, so hide the choice for that format.
   const _riPerGrp = g('ri-per-event-group');
   if (_riPerGrp) _riPerGrp.style.display = (seasonConfig.ri && seasonConfig.riFormat === 'rescue') ? 'block' : 'none';
+  // The house season shape is derived from jury size, cast size and the twist
+  // schedule, so it is redrawn whenever any of them is written.
+  window.renderHouseStructure?.();
 }
 export function renderConfig() {
   const g = id => document.getElementById(id);

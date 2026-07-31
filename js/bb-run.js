@@ -58,6 +58,73 @@ export const houseFinaleSize = () => 3;
 export const houseIsAtFinale = () => (gs.activePlayers || []).length <= houseFinaleSize();
 
 /**
+ * The shape of a house season, worked out before it is played.
+ *
+ * A house has almost nothing to configure — one group, no tribes, no merge —
+ * so the setup column is better filled with what the season WILL be than with
+ * knobs invented to fill it. Everything here is derived; there is no state
+ * behind it to get out of sync.
+ *
+ * Pure, so it can be tested without a DOM: (config, castSize) → segments.
+ */
+export function houseStructure(config = {}, castSize = 0) {
+  const N = Number(castSize) || 0;
+  const jurySize = Math.max(0, Number(config.jurySize) || 0);
+  const segs = [];
+
+  // Four is the floor: the week engine will not run a smaller house, and the
+  // finale needs three to play a three-part Head of Household from.
+  segs.push({
+    label: `${N} houseguest${N === 1 ? '' : 's'}`,
+    ok: N >= 4,
+    why: N >= 4 ? undefined : 'A house needs at least 4 houseguests',
+  });
+
+  // One eviction a week down to the final three, minus the extra body each
+  // scheduled double eviction takes in the same episode.
+  const evictions = Math.max(0, N - 3);
+  const doubles = (config.twistSchedule || [])
+    .filter(t => t && t.type === 'bb-double-eviction').length;
+  const weeks = Math.max(0, evictions - Math.min(doubles, Math.max(0, evictions - 1)));
+  segs.push({
+    label: `${weeks} week${weeks === 1 ? '' : 's'}${doubles ? ` (${doubles} double)` : ''}`,
+    ok: weeks >= 1,
+    why: weeks >= 1 ? undefined : 'No weeks to play — cast more houseguests',
+  });
+
+  // The jury is the last `jurySize` people out, and the houseguest cut at the
+  // final three is one of them — so the rest come from the weekly evictions.
+  if (jurySize > 0) {
+    const opensAt = jurySize + 2;
+    const fits = jurySize <= evictions + 1;
+    segs.push({
+      label: fits ? `jury opens at ${opensAt}` : `jury of ${jurySize}`,
+      ok: fits,
+      why: fits ? undefined
+        : `A jury of ${jurySize} needs ${jurySize + 2} houseguests but only ${N} are cast`,
+    });
+  } else {
+    segs.push({ label: 'no jury', ok: true });
+  }
+
+  // A three-nominee mode is part of the season's shape, not a detail.
+  const mode = config.bbSafetyMode && config.bbSafetyMode !== 'off' ? config.bbSafetyMode : null;
+  if (mode) {
+    const stopsAt = Math.max(Number(config.bbSafetyStopsAt) || 0, 5);
+    const name = mode === 'ai-arena' ? 'AI Arena' : 'Block Buster';
+    const runs = N > stopsAt;
+    segs.push({
+      label: `${name} to ${stopsAt}`,
+      ok: runs,
+      why: runs ? undefined : `The house starts at ${N}, so ${name} would never run`,
+    });
+  }
+
+  segs.push({ label: 'final three', ok: N >= 4 });
+  return segs;
+}
+
+/**
  * Turn a finished week into the record the run surface renders.
  *
  * Only the fields the timeline, episode view and history actually read are

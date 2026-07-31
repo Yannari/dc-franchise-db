@@ -16299,8 +16299,12 @@ export function rpBuildBBCampaign(ep) {
   // All of it, in order: every pitch and every beat from every campaign act.
   const scenes = acts.flatMap(act => [
     ...(act.events || []).map(e => ({
-      text: `<strong>${e.nominee}</strong> works on ${e.voter}. ${e.success ? 'It lands — the vote is moving.' : 'It does not take.'}`,
-      players: [e.nominee, e.voter], badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
+      text: `<strong>${e.pitcher}</strong> campaigns to evict <strong>${e.pitchTarget}</strong>. `
+        + (e.reactionSummary || (e.success
+          ? `At least one voter agrees to reconsider the vote.`
+          : `Nobody gives ${e.pitcher} a usable promise.`)),
+      players: [e.pitcher, e.pitchTarget, ...(e.responses || []).map(r => r.voter)].filter(Boolean).slice(0, 4),
+      badgeText: e.success ? 'PITCH LANDS' : 'PITCH RESISTED',
       badgeClass: e.success ? 'green' : 'grey',
     })),
     ..._bbBeats(act),
@@ -16666,9 +16670,10 @@ export function buildBBWeekScreens(ep) {
   // Where everybody stands. Total Drama's camp hierarchy reads a social-status
   // store a house never fills in, so this is the same idea built from what a
   // house does record: competition wins, time on the block, and who is aligned.
+  // Before the week: what the house looked like walking in.
   try {
-    const overview = rpBuildBBOverview(ep);
-    if (overview && overview.trim()) screens.push({ id: 'bb-overview', label: 'House Status', html: overview });
+    const before = rpBuildBBOverview(ep, 'opening');
+    if (before && before.trim()) screens.push({ id: 'bb-overview', label: 'House Status · Before', html: before });
   } catch { /* no snapshot, no overview */ }
   // Walk the acts the engine actually produced. House life is its own act now,
   // with its own phase, so the player no longer has to infer where a beat
@@ -16699,6 +16704,12 @@ export function buildBBWeekScreens(ep) {
     screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
     _bbCycleScreens(_bbSecondCycleView(ep), screens, '-2');
   }
+
+  // And after it: the same screen, once everything has actually happened.
+  try {
+    const after = rpBuildBBOverview(ep, 'closing');
+    if (after && after.trim()) screens.push({ id: 'bb-overview-after', label: 'House Status · After', html: after });
+  } catch { /* no snapshot, no overview */ }
 
   // The numbers behind the week, behind the same switch Total Drama uses.
   try {
@@ -16786,13 +16797,22 @@ function _bbMemoryWall(stillIn, { note = '' } = {}) {
  * those counters already include this week — which put the new Head of
  * Household on the board before the viewer had watched the competition.
  */
-export function rpBuildBBOverview(ep) {
-  const snap = ep.gsSnapshot || {};
+export function rpBuildBBOverview(ep, phase = 'closing') {
+  // WHICH moment this is a picture of.
+  //
+  // This screen used to read the episode's end-of-week snapshot no matter
+  // where it sat, so the copy shown at the TOP of an episode listed alliances
+  // nobody had formed yet, targets nobody had set and bonds nothing had moved.
+  // Week one opened by spoiling week one.
+  const opening = phase === 'opening';
+  const state = (opening ? ep.openingState : ep.closingState) || null;
+  const snap = state || ep.gsSnapshot || {};
   const stillIn = ep.houseAtStart?.length ? ep.houseAtStart : (snap.activePlayers || gs.activePlayers || []);
   if (!stillIn.length) return '';
 
   // Record as of the start of this week: only weeks that have already aired.
-  const priorWeeks = (gs.episodeHistory || []).filter(h => h.format === 'big-brother' && h.num < ep.num);
+  const priorWeeks = (gs.episodeHistory || []).filter(h => h.format === 'big-brother'
+    && (opening ? h.num < ep.num : h.num <= ep.num));
   const stats = {};
   const bump = (name, key) => { if (!name) return; (stats[name] ||= { hoh: 0, veto: 0, block: 0 })[key]++; };
   priorWeeks.forEach(h => {
@@ -16801,7 +16821,7 @@ export function rpBuildBBOverview(ep) {
     (h.finalNominees || []).forEach(n => bump(n, 'block'));
   });
 
-  const alliances = (snap.namedAlliances || gs.namedAlliances || [])
+  const alliances = (snap.alliances || snap.namedAlliances || gs.namedAlliances || [])
     .filter(a => a.active !== false && !a.dissolved && (a.members || []).some(m => stillIn.includes(m)));
   const alliesOf = name => [...new Set(alliances.filter(a => (a.members || []).includes(name))
     .flatMap(a => a.members.filter(m => m !== name && stillIn.includes(m))))];
@@ -16870,7 +16890,8 @@ export function rpBuildBBOverview(ep) {
   const pairs = [];
   for (let i = 0; i < stillIn.length; i++) {
     for (let j = i + 1; j < stillIn.length; j++) {
-      const v = typeof getBond === 'function' ? getBond(stillIn[i], stillIn[j]) : 0;
+      const v = snap.bonds ? (Number(snap.bonds[bKey(stillIn[i], stillIn[j])]) || 0)
+        : (typeof getBond === 'function' ? getBond(stillIn[i], stillIn[j]) : 0);
       if (Math.abs(v) >= 2.5) pairs.push({ a: stillIn[i], b: stillIn[j], v });
     }
   }
@@ -16893,7 +16914,7 @@ export function rpBuildBBOverview(ep) {
   // through setBBTarget, and the intention drives nominations and votes. None
   // of it appeared on any screen, so the house was quietly deciding who to go
   // after and the reader could only find out by watching it happen.
-  const intentions = (snap.intentions || (typeof gs !== 'undefined' && gs.intentions) || {});
+  const intentions = snap.intentions || (state ? {} : (typeof gs !== 'undefined' && gs.intentions) || {});
   const hunts = stillIn.map(name => {
     const target = intentions[name]?.targets?.[0] || null;
     if (!target || !stillIn.includes(target)) return null;
@@ -16929,7 +16950,7 @@ export function rpBuildBBOverview(ep) {
   // than they are, paranoia makes them colder, and a betrayal can leave the
   // betrayed still believing. Every decision runs on the PERCEIVED number and
   // only the true one was ever drawn.
-  const perceived = (snap.perceivedBonds || (typeof gs !== 'undefined' && gs.perceivedBonds) || {});
+  const perceived = snap.perceivedBonds || (state ? {} : (typeof gs !== 'undefined' && gs.perceivedBonds) || {});
   const misreads = Object.entries(perceived).map(([key, entry]) => {
     const [observer, subject] = key.split('\u2192');
     if (!observer || !subject || !stillIn.includes(observer) || !stillIn.includes(subject)) return null;
@@ -16967,6 +16988,8 @@ export function rpBuildBBOverview(ep) {
   return `<div class="rp-page bb-room bb-open">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div class="rp-title" style="color:#f0a500">HOUSE STATUS</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">${
+      opening ? 'Before anything happens this week.' : 'After everything that happened this week.'}</div>
     ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}

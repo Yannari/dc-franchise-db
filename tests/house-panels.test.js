@@ -96,12 +96,16 @@ describe('alliance formation timing', () => {
     const { houseActs } = playWeek();
     const beats = houseActs.flatMap(a => a.socialBeats || []);
     const announced = beats.filter(b => b.eventId === 'alliance-formed');
-    const names = announced.map(b => (b.text.match(/called <strong>([^<]+)<\/strong>/) || [])[1]);
-    expect(new Set(names).size, 'the same alliance was announced twice').toBe(names.length);
+    // Read the identity off the beat, never out of the prose — the wording
+    // belongs to the editorial pass and has already been rewritten once
+    // underneath this test.
+    const ids = announced.map(b => b.allianceId);
+    expect(ids.every(Boolean), 'a formation beat carried no alliance id').toBe(true);
+    expect(new Set(ids).size, 'the same alliance was announced twice').toBe(ids.length);
     // Recruitment beats, when they happen, are a different event entirely.
     for (const b of beats.filter(x => x.eventId === 'alliance-recruited')) {
       expect(b.badgeText).toBe('BROUGHT IN');
-      expect(b.text).not.toContain('for the first time');
+      expect(b.allianceId, 'a recruitment beat carried no alliance id').toBeTruthy();
     }
   });
 });

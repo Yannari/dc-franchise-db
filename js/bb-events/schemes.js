@@ -46,7 +46,81 @@ const _house = text => String(text || '')
   .replace(/\bThe tribe\b/g, 'The house')
   .replace(/\bthe tribe\b/g, 'the house')
   .replace(/\btribe\b/g, 'house')
-  .replace(/\bTribe\b/g, 'House');
+  .replace(/\bTribe\b/g, 'House')
+  .replace(/\bthe camp\b/g, 'the house')
+  .replace(/\bcamp\b/g, 'the house')
+  .replace(/\b(He|She) weren't\b/g, '$1 wasn\'t')
+  .replace(/\b(he|she) weren't\b/g, '$1 wasn\'t');
+
+/**
+ * The shared generators return mechanics receipts written for Total Drama.
+ * Big Brother can receive several receipts from one scheme, so each one gets
+ * a plain connective scene here instead of gluing unrelated narration into a
+ * single paragraph.
+ */
+function _bbResultText(result) {
+  const p = result.players || [];
+  switch (result.type) {
+    case 'forgeNote': {
+      const [schemer, reader, alleged] = p;
+      if (result.badgeText === 'EXPOSED') {
+        return `${reader} reads the note carefully and realizes it was planted. When ${reader} confronts ${schemer}, ${schemer} cannot explain where it came from.`;
+      }
+      if (!alleged) return _house(result.text);
+      const doubt = String(result.consequences || '').includes('seed of doubt');
+      return doubt
+        ? `${schemer} leaves a forged note where ${reader} will find it, making it look as though ${alleged} has been working against them. ${reader} is not fully convinced, but starts keeping a closer eye on ${alleged}.`
+        : `${schemer} leaves a forged note for ${reader}, making it look as though ${alleged} has been working against them. ${reader} believes it and says nothing to ${alleged}.`;
+    }
+    case 'spreadLies': {
+      const [first, second, third] = p;
+      if (result.badgeText === 'CONFRONTATION') {
+        return `${first} confronts ${second} about what they were told. ${second} denies saying it, and the argument draws the rest of the house into the room.`;
+      }
+      if (result.badgeText === 'WARNED') {
+        return `${first} finds ${second} afterward and explains what was said about them. ${second} is upset, but now knows who started the story.`;
+      }
+      if (third) {
+        return `${first} tells ${second} that ${third} has been talking about them behind their back. ${second} believes the story and starts looking for ${third}.`;
+      }
+      return `${first} tries to turn ${second} against another houseguest. ${second} does not believe the story and becomes suspicious of ${first} instead.`;
+    }
+    case 'comfortVictim': {
+      const [comforter, victim] = p;
+      return `${comforter} checks on ${victim} after the confrontation. ${comforter} lets ${victim} explain what happened and stays until ${victim} is ready to rejoin the house.`;
+    }
+    case 'exposeSchemer': {
+      const [exposer, schemer] = p;
+      return `${exposer} compares what ${schemer} told different people and brings the contradictions to the group. When everyone asks ${schemer} for an explanation, the stories do not match.`;
+    }
+    case 'whisperCampaign': {
+      const [schemer, target] = p;
+      return `${schemer} spends the day pulling people aside and raising the same doubts about ${target}. By evening, several houseguests are repeating the concerns as though they reached them on their own.`;
+    }
+    case 'campaignRally': {
+      const [rallier, target] = p;
+      return `${rallier} goes from room to room making the case against ${target}. Some people agree immediately; others begin checking whether the votes are actually there.`;
+    }
+    case 'falseMajority': {
+      const [schemer, victim] = p;
+      return `${schemer} tells ${victim} that the house has already settled on a vote and quietly walks them through the supposed numbers. ${victim} believes the plan and agrees not to check it with anyone else.`;
+    }
+    case 'falseMajorityResisted': {
+      const [schemer, victim] = p;
+      return `${schemer} tells ${victim} that the vote is already decided. ${victim} checks with one other person, finds out the numbers are false and confronts ${schemer} about the lie.`;
+    }
+    case 'kissTrap': {
+      if (p.length >= 4) {
+        const [schemer, accomplice, kissTarget, witness] = p;
+        return `${accomplice} draws ${witness} out of the room while ${schemer} makes a move on ${kissTarget}. ${witness} returns early, sees them together and demands to know what happened.`;
+      }
+      const [witness, partner] = p;
+      return `${witness} confronts ${partner} in front of the house. ${partner} tries to explain, but ${witness} no longer knows what to believe.`;
+    }
+    default:
+      return _house(result.text);
+  }
+}
 
 /**
  * Fold a generator's results into one renderable beat.
@@ -65,7 +139,7 @@ function _fold(results, badgeText, badgeClass) {
   // still a kiss trap, and labelling it COMFORTED buries the event.
   const first = list[0];
   return {
-    text: _house(list.map(r => r.text).join(' ')),
+    text: list.map(_bbResultText).join(' '),
     players: [...new Set(list.flatMap(r => r.players || []))].filter(Boolean),
     badgeText: first.badgeText || badgeText,
     badgeClass: first.badgeClass || badgeClass,

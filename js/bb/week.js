@@ -118,8 +118,38 @@ function runHouseRomance(week) {
     checkShowmanceBreakup(ep);
   } catch { /* romance is texture — it never takes a week down with it */ }
   if (popOff) gs.popularity = popBefore;
+  const bbRomanceText = e => {
+    const [a, b, c] = e.players || [];
+    switch (e.type) {
+      case 'firstMove':
+        return `${a} asks ${b} for a private conversation and finally makes a move. ${b} does not pull away, and the two return to the house together.`;
+      case 'showmanceSpark':
+        return `${a} and ${b} stop denying that something is happening between them. They agree to see where it goes, knowing everyone else will notice.`;
+      case 'showmanceRekindle':
+        return `${a} and ${b} talk privately after being brought back together. The hurt is still there, but neither is ready to walk away from the relationship.`;
+      case 'showmanceBreakup':
+        return `${a} and ${b} admit that the relationship is no longer working. They agree to give each other space and move to opposite sides of the house.`;
+      case 'showmanceRideOrDie':
+        return `${a} and ${b} promise to protect each other through the end of the game. They stop hiding the deal from the rest of the house.`;
+      case 'showmanceHoneymoon':
+        return `${a} and ${b} spend another late night together, talking long after everyone else has gone to bed.`;
+      case 'showmanceNoticed':
+        return `${a} warns another houseguest that ${b} and ${c} will always choose each other. The conversation turns to which one should leave first.`;
+      case 'showmanceTarget':
+        return `${a} begins asking people to split up ${b} and ${c}. By the end of the day, several houseguests are discussing the pair as a single target.`;
+      case 'showmanceJealousy':
+        return `${a} notices that ${b} now spends every free moment with ${c}. ${a} insists it does not bother them, then starts avoiding both of them.`;
+      case 'friendshipJealousy':
+        return `${a} tries to spend time with ${b}, but ${b} is already with ${c}. ${a} leaves without joining them and keeps their distance for the rest of the night.`;
+      default:
+        return String(e.text || '')
+          .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')
+          .replace(/\btribe\b/g, 'house').replace(/\bTribe\b/g, 'House')
+          .replace(/\bthe camp\b/g, 'the house').replace(/\bcamp\b/g, 'the house');
+    }
+  };
   return ep.campEvents.merge.pre.map(e => ({
-    text: e.text, players: (e.players || []).filter(Boolean),
+    text: bbRomanceText(e), players: (e.players || []).filter(Boolean),
     badgeText: e.badgeText || 'SHOWMANCE', badgeClass: e.badgeClass || 'gold',
     eventId: `romance-${e.type || 'beat'}`, category: 'social', location: 'bedroom',
   })).filter(b => b.text);
@@ -174,8 +204,36 @@ function runHouseMaintenance(week) {
     try { run(); } catch (e) { week.maintenanceErrors.push(`${label}: ${e && e.message}`); }
   }
   if (popOff) gs.popularity = popBefore;
+  const bbMaintenanceText = e => {
+    const [a, b] = e.players || [];
+    switch (e.type) {
+      case 'villainManipulation':
+        return `${a} spends an hour reassuring ${b} and agreeing with every concern ${b} raises. As soon as ${b} leaves, ${a} gives the camera a very different account of the conversation.`;
+      case 'goatKeeping':
+        return `${b} tells ${a} they are going to the end together. ${a} believes the deal is exclusive; ${b} has made the same promise elsewhere.`;
+      case 'allianceBlindspot':
+        return `${a} checks in with the alliance and hears that the plan has not changed. After ${a} leaves, the group resumes discussing a vote that includes ${a}'s name.`;
+      case 'betrayalDenial':
+        return `${a} insists ${b} did not choose to betray them and must have been forced by the numbers. The other alliance members know ${b} made the decision willingly.`;
+      case 'showmanceBlindspot':
+        return `${a} believes ${b} is protecting them above everyone else. Meanwhile, ${b} keeps holding strategy meetings that ${a} does not know about.`;
+      case 'providerEntitlement':
+        return `${a} points to everything they do around the house as proof that nobody should nominate them. The rest of the house does not see chores as a deal for safety.`;
+      case 'swapLoyaltyAssumption':
+        return `${a} mistakes a few friendly conversations for a firm agreement. Nobody has promised ${a} safety, but ${a} begins acting as though they have.`;
+      case 'perceptionRealization':
+        return b
+          ? `${a} compares what ${b} said with what actually happened during the vote. For the first time, ${a} accepts that the relationship was not what they believed it was.`
+          : `${a} goes back over the week and realizes they misunderstood where they stood in the house.`;
+      default:
+        return String(e.text || '')
+          .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')
+          .replace(/\btribe\b/g, 'house').replace(/\bTribe\b/g, 'House')
+          .replace(/\bthe camp\b/g, 'the house').replace(/\bcamp\b/g, 'the house');
+    }
+  };
   return ep.campEvents.merge.pre.map(e => ({
-    text: e.text, players: (e.players || []).filter(Boolean),
+    text: bbMaintenanceText(e), players: (e.players || []).filter(Boolean),
     badgeText: e.badgeText || 'THE HOUSE SHIFTS', badgeClass: e.badgeClass || 'grey',
     eventId: `upkeep-${e.type || 'beat'}`, category: 'social', location: 'living-room',
   })).filter(b => b.text);
@@ -261,10 +319,17 @@ function _snapshotHouse() {
     bonds: { ...(gs.bonds || {}) },
     alliances: (gs.namedAlliances || [])
       .filter(a => a.active !== false && !a.dissolved)
-      .map(a => ({ name: a.name, members: [...(a.members || [])], formed: a.formed })),
+      .map(a => ({ name: a.name, members: [...(a.members || [])], formed: a.formed,
+                   parentName: a.parentName || null, formationEvidence: a.formationEvidence || null })),
     showmances: (gs.showmances || [])
       .filter(sh => sh.phase !== 'broken-up')
       .map(sh => ({ players: [...(sh.players || [])], phase: sh.phase })),
+    // The status screen also reads who is hunting whom and who is misreading
+    // whom, and both of those move during a week — so they belong in the
+    // snapshot rather than being pulled live and spoiling the opening screen.
+    intentions: JSON.parse(JSON.stringify(gs.intentions || {})),
+    perceivedBonds: JSON.parse(JSON.stringify(gs.perceivedBonds || {})),
+    stats: JSON.parse(JSON.stringify(gs.bb?.stats || {})),
   };
 }
 
@@ -320,6 +385,11 @@ export function simulateBBWeek(options = {}) {
   const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);
   week.safetyMode = safetyActive ? safetyMode : null;
   const nomineeCount = safetyActive ? 3 : 2;
+  // The house as it stands before a single thing happens this week. The status
+  // screen shown at the top of an episode reads this, so it cannot show an
+  // alliance nobody has formed yet or a target nobody has set.
+  week.openingState = _snapshotHouse();
+
   // Reconcile first; formation itself happens inside the stretches below, so
   // that a new alliance always has a scene in the same act that created it.
   const allianceOpening = updateBBAllianceLifecycle({ phase:'reconcile', house, week, rng });
@@ -380,7 +450,7 @@ export function simulateBBWeek(options = {}) {
           players: members.slice(0, 4),
           badgeText: 'AN ALLIANCE INSIDE AN ALLIANCE', badgeClass: 'gold',
           eventId: 'alliance-inner-circle', category: 'deals', location: 'pantry',
-          newAlliance: true,
+          newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
         };
       }
 
@@ -391,7 +461,7 @@ export function simulateBBWeek(options = {}) {
         players: members.slice(0, 4),
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
-        newAlliance: true,
+        newAlliance: true, allianceName: alliance.name, allianceId: alliance.id,
       };
     }
 
@@ -406,7 +476,7 @@ export function simulateBBWeek(options = {}) {
       players: [joined, ...members.filter(n => n !== joined).slice(0, 3)],
       badgeText: 'BROUGHT IN', badgeClass: 'blue',
       eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',
-      newAlliance: false,
+      newAlliance: false, allianceName: alliance.name, allianceId: alliance.id, joined,
     };
   };
 
@@ -595,6 +665,7 @@ export function simulateBBWeek(options = {}) {
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
   _attachAllianceFallout(week, house);
+  week.closingState = _snapshotHouse();
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week);
     gs.bb.outgoingHoh = hoh;
@@ -667,6 +738,7 @@ export function simulateBBWeek(options = {}) {
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
   _attachAllianceFallout(week, house);
+  week.closingState = _snapshotHouse();
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week);
   gs.bb.outgoingHoh = hoh;

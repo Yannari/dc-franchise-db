@@ -31,7 +31,6 @@ describe('format-scoped setup screen', () => {
       expect(bb.fields, `${gone} still shown in a house`).not.toContain(gone);
     }
     expect(bb.sections).not.toContain('sec-season-options');
-    expect(bb.sections).not.toContain('sec-settings-mechanics');
     // Tribes: neither the per-player field nor the builder belongs in a house.
     expect(bb.fields).not.toContain('f-tribe');
     expect(bb.sections).not.toContain('sec-tribes');

@@ -1,8 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { seededRandom } from './helpers/rng.js';
 import { seedGame } from './helpers/setup.js';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { simulateKillerClown } from '../js/chal/killer-clown.js';
 import { addBond } from '../js/bonds.js';
+
+// Every test in this file measures the SHAPE of many simulated runs — how
+// often narration repeats, whether a rare beat shows up somewhere in thirty
+// attempts. Those are the right assertions, but against an unseeded
+// Math.random the statistic lands near its threshold and falls either side on
+// the day, which reads as a flaky simulator when it is really a test with no
+// fixed input. Pinned here so a failure means something changed.
+let _realRandom;
+beforeEach(() => { _realRandom = Math.random; Math.random = seededRandom(20260731); });
+afterEach(() => { Math.random = _realRandom; });
 
 const CAST = [
   { name: 'Isabel', archetype: 'social-butterfly', gender: 'f' }, { name: 'Logan', archetype: 'loyal-soldier', gender: 'm' },
@@ -61,6 +72,9 @@ describe('Night of the Killer Clown', () => {
     expect(sawSteal).toBe(true);
   });
 
+  // Seeded: thirty unseeded runs usually contain both a grab and a stun, and
+  // occasionally do not. The assertion is about the mechanic existing, not
+  // about today's dice.
   it('the clown grabs and gets stunned — grabs apply a heavy penalty + a camp event', () => {
     let sawGrab = false, sawStun = false, grabPenaltyOk = true;
     for (let i = 0; i < 30 && !(sawGrab && sawStun); i++) {

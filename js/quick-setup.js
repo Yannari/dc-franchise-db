@@ -914,7 +914,7 @@ const CONFIG_SCOPE = {
   },
   sections: {
     'sec-season-options':     ['total-drama'],
-    'sec-settings-mechanics': ['total-drama'],
+    'sec-settings-mechanics': ['total-drama', 'big-brother'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are

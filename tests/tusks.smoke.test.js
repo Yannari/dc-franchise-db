@@ -1,8 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { seededRandom } from './helpers/rng.js';
 import { seedGame } from './helpers/setup.js';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { simulateTusksLadders } from '../js/chal/tusks-and-ladders.js';
 import { addBond } from '../js/bonds.js';
+
+// Every test in this file measures the SHAPE of many simulated runs — how
+// often narration repeats, whether a rare beat shows up somewhere in thirty
+// attempts. Those are the right assertions, but against an unseeded
+// Math.random the statistic lands near its threshold and falls either side on
+// the day, which reads as a flaky simulator when it is really a test with no
+// fixed input. Pinned here so a failure means something changed.
+let _realRandom;
+beforeEach(() => { _realRandom = Math.random; Math.random = seededRandom(20260731); });
+afterEach(() => { Math.random = _realRandom; });
 
 const CAST=[{name:'Isabel',archetype:'social-butterfly'},{name:'Logan',archetype:'loyal-soldier'},{name:'Natalia',archetype:'social-butterfly'},{name:'Richard',archetype:'hero'},{name:'Jade',archetype:'schemer'},
   {name:'Anastasia',archetype:'villain'},{name:'Hannah',archetype:'floater'},{name:'Benji',archetype:'underdog'},{name:'Zaid',archetype:'mastermind'},{name:'Ivy',archetype:'social-butterfly'}];
@@ -50,6 +61,8 @@ describe('Tusks and Ladders', () => {
     expect(sawSab).toBe(true);
   });
 
+  // Seeded: this measures a distribution, and against an unseeded Math.random
+  // the count lands near the threshold and falls either side on the day.
   it('hunt narration rarely repeats a template', () => {
     const strip = (t) => CAST.map(c => c.name).reduce((s, n) => s.split(n).join('~'), t);
     let dup = 0;

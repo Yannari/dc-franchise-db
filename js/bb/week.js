@@ -203,26 +203,26 @@ function _attachAllianceFallout(week, house) {
   for (const incident of week.allianceChanges?.betrayals || []) {
     const { player, victim, alliance, repair } = incident;
     beats.push({
-      text: `<strong>${player}</strong> votes out <strong>${victim}</strong>, and they were `
-        + `supposed to be in <strong>${alliance}</strong> together. The room works out who did it `
-        + `before the night is over.`,
+      text: `<strong>${player}</strong> votes to evict <strong>${victim}</strong>, even though they `
+        + `were together in <strong>${alliance}</strong>. By the time everyone gets back inside, `
+        + `the remaining members are comparing votes and asking where ${player} was.`,
       players: [player, victim].filter(Boolean),
       badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
       eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
     });
 
     if (!repair) continue;
-    const how = repair.approach === 'apology' ? `${player} apologises, and means it as far as anyone can tell`
-      : repair.approach === 'strategic-explanation' ? `${player} explains the numbers, calmly, like it was arithmetic`
-      : repair.approach === 'refusal' ? `${player} refuses to explain anything at all`
-      : `${player} denies it, to people who watched it happen`;
+    const how = repair.approach === 'apology' ? `${player} admits the vote was a betrayal and apologizes`
+      : repair.approach === 'strategic-explanation' ? `${player} walks everyone through the votes and insists there was no other option`
+      : repair.approach === 'refusal' ? `${player} says the vote was personal game information and refuses to discuss it`
+      : `${player} denies flipping, even as the others tell ${player} the numbers only work one way`;
     const outcome = repair.outcome === 'forgiven'
-      ? { text: `${how}. <strong>${alliance}</strong> takes ${player} back, and pretends the week did not happen.`,
+      ? { text: `${how}. After a long conversation, <strong>${alliance}</strong> agrees to keep working with ${player}. Nobody calls the trust repaired.`,
           badgeText: 'FORGIVEN', badgeClass: 'green' }
       : repair.outcome === 'working-truce'
-        ? { text: `${how}. Some of <strong>${alliance}</strong> buy it and some do not, so it carries on as a working arrangement rather than a bond.`,
+        ? { text: `${how}. Some members of <strong>${alliance}</strong> accept the explanation. The others agree to work with ${player} only until the next vote.`,
             badgeText: 'WORKING TRUCE', badgeClass: 'grey' }
-        : { text: `${how}. <strong>${alliance}</strong> does not buy a word of it, and stops being one thing from here.`,
+        : { text: `${how}. The rest of <strong>${alliance}</strong> reject the explanation. The meeting ends with people leaving separately.`,
             badgeText: repair.outcome === 'fracture' ? 'FRACTURED' : 'REJECTED', badgeClass: 'red' };
     beats.push({
       ...outcome, players: [player].filter(inHouse),
@@ -239,10 +239,10 @@ function _attachAllianceFallout(week, house) {
     const collapsed = alliance.dissolutionReason === 'trust-collapsed';
     beats.push({
       text: collapsed
-        ? `<strong>${alliance.name}</strong> stops being a thing anybody says out loud. Nobody dissolves it; `
-          + `it simply stops being true, which is how most of them end.`
+        ? `Nobody calls a meeting to end <strong>${alliance.name}</strong>. Its members simply stop sharing information, `
+          + `stop checking in before votes and eventually stop using the name.`
         : `<strong>${alliance.name}</strong> is down to ${left.length === 1 ? `${left[0]}, alone` : 'nobody'}. `
-          + `Whatever it was worth, it is not worth it now.`,
+          + `There are not enough members left to keep the alliance going.`,
       players: left.slice(0, 4),
       badgeText: collapsed ? 'IT STOPS BEING TRUE' : 'OUT OF NUMBERS', badgeClass: 'red',
       eventId: 'alliance-collapsed', category: 'deals', location: 'living-room',
@@ -375,9 +375,8 @@ export function simulateBBWeek(options = {}) {
       // the room they are quietly playing against.
       if (alliance.parent) {
         return {
-          text: `${named} make each other a promise they do not make to `
-            + `<strong>${alliance.parentName}</strong>. They go back to the group afterwards `
-            + `and sit in it exactly as they did before, which is the point.`,
+          text: `${named} meet without the rest of <strong>${alliance.parentName}</strong>. `
+            + `They agree to protect each other first, then return to the larger group without mentioning the new deal.`,
           players: members.slice(0, 4),
           badgeText: 'AN ALLIANCE INSIDE AN ALLIANCE', badgeClass: 'gold',
           eventId: 'alliance-inner-circle', category: 'deals', location: 'pantry',
@@ -386,10 +385,9 @@ export function simulateBBWeek(options = {}) {
       }
 
       return {
-        text: `It gets said out loud for the first time: ${named} are working together. `
-          + `Nobody writes anything down — there is nowhere in this house to hide a list — `
-          + `but from tonight there is a thing called <strong>${alliance.name}</strong>, `
-          + `and everyone in it has something to lose by leaving it.`,
+        text: `${named} meet in the bedroom and finally make the agreement official. `
+          + `They name the alliance <strong>${alliance.name}</strong>, decide who is allowed to know about it `
+          + `and leave the room one at a time.`,
         players: members.slice(0, 4),
         badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
         eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
@@ -403,8 +401,8 @@ export function simulateBBWeek(options = {}) {
       .find(h => h.type === 'recruited')?.member;
     if (!joined || !house.includes(joined)) return null;
     return {
-      text: `<strong>${joined}</strong> is brought into <strong>${alliance.name}</strong>. `
-        + `It is a bigger room than it was this morning, and a bigger room keeps secrets worse.`,
+      text: `The members of <strong>${alliance.name}</strong> bring <strong>${joined}</strong> into the bedroom `
+        + `and offer them a place in the alliance. ${joined} agrees, then asks who outside the room already knows.`,
       players: [joined, ...members.filter(n => n !== joined).slice(0, 3)],
       badgeText: 'BROUGHT IN', badgeClass: 'blue',
       eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',

@@ -90,7 +90,7 @@ describe('the Big Brother event library as a whole', () => {
     const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102, 117, 131, 149, 163, 177, 191, 205, 219, 233, 247]);
     const never = HOUSE_EVENTS.map(e => e.id).filter(id => !fired[id]);
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
-  }, 30000);
+  });
 
   it('keeps any one category from taking over the house', () => {
     const fired = playSeasons([11, 23, 37, 44, 58]);

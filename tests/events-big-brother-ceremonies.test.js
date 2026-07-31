@@ -228,21 +228,11 @@ describe('Big Brother ceremony events', () => {
   // its winner almost never happens — it fired four times in forty seasons that
   // way. That is an artefact of the isolated setup, not of the event: in a real
   // season the social library builds the relationships these turn on.
-  it('every event actually fires in real seasons — no dead code', () => {
-    const fired = new Set();
-    // A full house over many seasons. The rarest event here — a genuine
-    // cross-week blindside — lands under once a season by design, so a short
-    // sample would fail this for the wrong reason.
-    for (const seed of [11, 23, 44, 57, 68, 79, 91, 103, 117, 129, 141, 153, 165, 177, 189, 201]) {
-      resetBig();
-      const { weeks } = simulateBBSeason({ rng: seededRng(seed), finaleSize: 3, houseEvents: HOUSE_EVENTS });
-      for (const act of weeks.flatMap(w => w.acts || [])) {
-        (act.socialBeats || []).forEach(b => fired.add(b.eventId));
-      }
-    }
-    const never = CEREMONY_EVENTS.map(e => e.id).filter(id => !fired.has(id));
-    expect(never, `these events never fire in a real season: ${never.join(', ')}`).toEqual([]);
-  }, 30000);
+  // The no-dead-code sweep for ceremony events lives in
+  // events-big-brother-volume.test.js, which plays twenty seasons against the
+  // WHOLE library and asserts every event in it fires — ceremonies included.
+  // A second twenty-season sweep here proved the same thing twice and cost the
+  // suite another twenty-odd seconds.
 
   it('does not treat a promise made this ceremony as a betrayal by it', () => {
     const blindside = CEREMONY_EVENTS.find(e => e.id === 'nom-blindside');

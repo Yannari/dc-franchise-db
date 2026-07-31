@@ -240,7 +240,7 @@
                       align-items:center; padding:6px 0;
                       border-bottom:1px solid rgba(255,255,255,.04); }
     .bbf-rel:last-child { border-bottom:0; }
-    .bbf-rel-faces .rp-duo, .bbf-rel-faces img { width:26px; height:26px; }
+    .bbf-rel-faces  { display:flex; gap:2px; flex-shrink:0; }
     .bbf-rel-who    { font-size:11.5px; color:#c9d1d9; overflow:hidden;
                       text-overflow:ellipsis; white-space:nowrap; }
     .bbf-rel-mid    { display:flex; flex-direction:column; gap:3px; }
@@ -259,7 +259,7 @@
     .bbf-ally:last-child { border-bottom:0; }
     .bbf-ally-n     { font-size:11.5px; color:#d29922; min-width:96px; flex-shrink:0; }
     .bbf-ally-m     { display:flex; flex-wrap:wrap; gap:3px; flex:1; }
-    .bbf-ally-m .rp-portrait, .bbf-ally-m img { width:22px; height:22px; }
+
     .bbf-ally-c     { font-family:ui-monospace,Consolas,monospace; font-size:10px; color:#6e7681; }
     .bbf-panel-h small { float:right; font-size:8.5px; letter-spacing:.8px;
                       text-transform:none; color:#4d545c; }
@@ -329,11 +329,21 @@
     .bbw-cell.is-out .bbw-photo::after { content:''; position:absolute; inset:0; background:rgba(4,6,9,.5); }
     .bbw-cell.is-out .bbw-name  { color:rgba(255,255,255,.42); text-decoration:line-through; }
 
+    /* A face on its own — no frame, no caption, fixed size. Used anywhere a
+       row is too tight for the full portrait component. */
+    .bb-av          { display:inline-flex; flex-shrink:0; position:relative;
+                      border-radius:3px; overflow:hidden; background:#0b0e13;
+                      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+    .bb-av img      { width:100%; height:100%; object-fit:cover; display:block; }
+    .bb-av i        { display:none; width:100%; height:100%; align-items:center;
+                      justify-content:center; font-style:normal; font-weight:800;
+                      font-size:10px; color:#4d545c; }
+
     /* Standing rows carry a face: a name in a list of fourteen is a lookup,
        a face is recognition. */
-    .bbst-row       { display:flex; align-items:center; gap:9px; padding:5px 8px; border-radius:4px; }
+    .bbst-row       { display:flex; align-items:center; gap:9px; padding:5px 8px;
+                      border-radius:4px; min-height:38px; overflow:hidden; }
     .bbst-face      { display:flex; flex-shrink:0; }
-    .bbst-face .rp-portrait, .bbst-face img { width:26px; height:26px; }
     .bbst-name      { font-size:12px; flex:1; overflow:hidden;
                       text-overflow:ellipsis; white-space:nowrap; }
     .bbst-stats     { display:inline-flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -3180,8 +3190,7 @@
     .bbc-pos        { font-family:ui-monospace,Consolas,monospace; font-size:11px; color:#6e7681;
                       text-align:right; }
     .bbc-row.is-win .bbc-pos { color:#f0a500; font-weight:800; }
-    .bbc-face       { display:flex; }
-    .bbc-face .rp-portrait, .bbc-face img { width:26px; height:26px; }
+    .bbc-face       { display:flex; flex-shrink:0; }
     .bbc-name       { font-size:12px; color:#c9d1d9; overflow:hidden;
                       text-overflow:ellipsis; white-space:nowrap; }
     .bbc-row.is-win .bbc-name { color:#f0f6fc; font-weight:700; }

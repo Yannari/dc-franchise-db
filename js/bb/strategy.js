@@ -148,3 +148,112 @@ export function gunningFor(name, context = {}, rng = Math.random) {
     reason: onTheBlock ? (stake === 1 ? 'playing for their life' : 'on the block') : 'no cover left',
   };
 }
+
+/**
+ * How firmly a vote is actually committed.
+ *
+ * Total Drama models a vote as a COMMITMENT — a preference, a plan that may
+ * override it, and a strength describing how hard it would be to move. A house
+ * had only preference and persuasion, which meant a vote somebody had promised
+ * in writing weighed exactly the same as one they had never mentioned. Deals
+ * were already being written by the campaign and scheme events and the vote
+ * simply never read them.
+ *
+ * Strength is 0..1 and comes from four things the game already knows: how
+ * clear the voter's own preference was, whether they shook on it, whether the
+ * person they are keeping is an ally, and how loyal they are by nature.
+ */
+export function houseVoteCommitment(ballot, nominees) {
+  const voter = ballot.voter;
+  const keeping = nominees.find(n => n !== ballot.evict) || null;
+  const s = pStats(voter);
+
+  // A wide margin means they were never really torn.
+  const clarity = Math.min(1, Math.abs(Number(ballot.margin) || 0) / 4);
+
+  const promised = (gs.sideDeals || []).some(deal => deal.active !== false
+    && deal.type === 'vote' && deal.players?.includes(voter)
+    && (deal.players.includes(keeping) || deal.players.includes(ballot.evict)));
+
+  const allied = keeping ? bbAllianceStrength(voter, keeping) > 0 : false;
+
+  const strength = clarity * 0.45
+    + (promised ? 0.3 : 0)
+    + (allied ? 0.22 : 0)
+    + (s.loyalty / 10) * 0.25;
+  return { voter, keeping, strength: Math.max(0, Math.min(1, strength)), promised, allied };
+}
+
+/**
+ * An alliance votes together, or discovers that it does not.
+ *
+ * Alliances form properly in a house now and then every member decided the
+ * vote alone and happened to agree. A bloc picks the nominee who is NOT one of
+ * theirs and brings along the members who were not firmly committed elsewhere;
+ * anybody who was stays where they are, which is how a bloc finds out it has a
+ * problem.
+ *
+ * Returns the moves it made so the week can narrate them.
+ */
+export function applyAllianceVoteBloc({ ballots = [], nominees = [], commitments = new Map() } = {}) {
+  const moves = [];
+  const alliances = (gs.namedAlliances || []).filter(a => a.active !== false && Array.isArray(a.members));
+  for (const alliance of alliances) {
+    const inside = alliance.members.filter(m => ballots.some(b => b.voter === m));
+    if (inside.length < 2) continue;
+    // The bloc protects its own: it targets a nominee who is not a member.
+    const outsider = nominees.find(n => !alliance.members.includes(n));
+    if (!outsider) continue;
+    for (const voter of inside) {
+      const ballot = ballots.find(b => b.voter === voter);
+      if (!ballot || ballot.evict === outsider) continue;
+      const c = commitments.get(voter);
+      // A firm commitment elsewhere beats the bloc — that is a real crack.
+      if (c && c.strength >= 0.6) continue;
+      ballot.evict = outsider;
+      ballot.changed = true;
+      ballot.blocMove = alliance.name || 'an alliance';
+      moves.push({ voter, target: outsider, alliance: alliance.name || 'an alliance' });
+    }
+  }
+  return moves;
+}
+
+/**
+ * The bandwagon.
+ *
+ * The thing a house does that nothing here modelled: once the vote is clearly
+ * going one way, the people who are not committed stop being on the wrong side
+ * of it. Total Drama's fringe consolidation cannot be reused directly — it
+ * needs four or more distinct targets and a house vote has exactly two — so
+ * this is the same idea in the shape the format actually has.
+ *
+ * Only the weakly committed move, only toward a lead that already exists, and
+ * never far enough to make every vote unanimous.
+ */
+export function applyHouseBandwagon({ ballots = [], nominees = [], commitments = new Map(), rng = Math.random } = {}) {
+  if (nominees.length !== 2 || ballots.length < 4) return [];
+  const count = name => ballots.filter(b => b.evict === name).length;
+  const [a, b] = nominees;
+  const lead = count(a) - count(b);
+  if (Math.abs(lead) < 2) return [];          // no lead worth joining
+  const leader = lead > 0 ? a : b;
+  const trailing = ballots.filter(ballot => ballot.evict !== leader);
+  // Somebody always stays with the sinking side; a unanimous house is boring
+  // and, more importantly, hides who was actually loyal.
+  const movable = Math.max(0, Math.floor(trailing.length * 0.6));
+  const moves = [];
+  for (const ballot of trailing.sort((x, y) =>
+    (commitments.get(x.voter)?.strength || 0) - (commitments.get(y.voter)?.strength || 0))) {
+    if (moves.length >= movable) break;
+    const strength = commitments.get(ballot.voter)?.strength ?? 0.5;
+    // The bigger the lead and the looser the commitment, the more likely.
+    const chance = Math.min(0.8, (Math.abs(lead) / ballots.length) * 1.6 * (1 - strength));
+    if (rng() >= chance) continue;
+    ballot.evict = leader;
+    ballot.changed = true;
+    ballot.bandwagon = true;
+    moves.push({ voter: ballot.voter, target: leader });
+  }
+  return moves;
+}

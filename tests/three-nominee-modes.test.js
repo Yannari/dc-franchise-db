@@ -39,8 +39,14 @@ const mode = 'block-buster', textTitle = 'THE BLOCK BUSTER', screenLabel = 'Bloc
 
 describe('the Block Buster', () => {
   it('puts three on the block and takes one off before the vote', () => {
-    reset(mode, 6);
-    const ep = simulateBBEpisode();
+    // Two or three is the HOH's call, so play until a three-chair week happens.
+    let ep = null;
+    for (let attempt = 0; attempt < 25 && !ep; attempt++) {
+      reset(mode, 6);
+      const week = simulateBBEpisode();
+      if (week.initialNominees.length === 3) ep = week;
+    }
+    expect(ep, 'never saw a three-nominee week in 25 tries').toBeTruthy();
 
     // Three nominated.
     expect(ep.initialNominees).toHaveLength(3);
@@ -77,8 +83,13 @@ describe('the Block Buster', () => {
   });
 
   it('gets its own screen and its own transcript section', () => {
-    reset(mode, 6);
-    const ep = simulateBBEpisode();
+    let ep = null;
+    for (let attempt = 0; attempt < 25 && !ep; attempt++) {
+      reset(mode, 6);
+      const week = simulateBBEpisode();
+      if (actOf(week, 'safety')) ep = week;
+    }
+    expect(ep, 'never saw a Block Buster in 25 tries').toBeTruthy();
     const screens = buildBBWeekScreens(ep);
     const arena = screens.find(s => s.id === 'bb-safety');
     expect(arena, 'no Block Buster screen').toBeTruthy();
@@ -96,26 +107,42 @@ describe('the Block Buster', () => {
 describe('the Block Buster over a season', () => {
   it('stops before a third nominee would leave nobody to vote', () => {
     reset('block-buster', 6);
-    let guard = 0, sawArena = 0, sawPlain = 0;
+    let guard = 0, sawArena = 0, sawTwo = 0;
     while (!houseIsAtFinale() && guard++ < 40) {
       const ep = simulateBBEpisode();
       if (!ep) break;
       const house = ep.houseAtStart.length;
+      // The block is two or three - the HOH decides - and the Block Buster
+      // only happens when there is a third chair for it to empty.
+      expect([2, 3]).toContain(ep.initialNominees.length);
       if (actOf(ep, 'safety')) {
         sawArena++;
         expect(house, 'Block Buster ran in too small a house').toBeGreaterThan(6);
         expect(ep.initialNominees).toHaveLength(3);
       } else {
-        sawPlain++;
-        expect(house).toBeLessThanOrEqual(6);
-        expect(ep.initialNominees).toHaveLength(2);
+        sawTwo++;
+        // Either the house got small, or the HOH only named two.
+        expect(house <= 6 || ep.initialNominees.length === 2).toBe(true);
       }
-      // Whatever the mode, exactly one person leaves each week.
+      // Whatever happens, exactly one person leaves each week.
       expect(ep.eliminated).toBeTruthy();
     }
     expect(sawArena).toBeGreaterThan(0);
-    expect(sawPlain).toBeGreaterThan(0);   // it really does stop
+    expect(sawTwo).toBeGreaterThan(0);
     expect(gs.activePlayers).toHaveLength(3);
+  });
+
+  it('never runs a Block Buster once the house is at the stopping point', () => {
+    reset('block-buster', 6);
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 40) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      if (ep.houseAtStart.length <= 6) {
+        expect(actOf(ep, 'safety'), 'ran below the stopping point').toBeUndefined();
+        expect(ep.initialNominees).toHaveLength(2);
+      }
+    }
   });
 
   // The three twists and the two modes are all week-shape changes, so they are
@@ -135,25 +162,41 @@ describe('the Block Buster over a season', () => {
     reset('block-buster', 6);
     seasonConfig.twistSchedule = [{ episode: 1, type: 'bb-double-eviction' }];
     const ep = simulateBBEpisode();
-    const first = (ep.acts || []).filter(a => a.type === 'safety' && (a.segment || 1) === 1);
-    const second = (ep.acts || []).filter(a => a.type === 'safety' && a.segment === 2);
-    expect(first).toHaveLength(1);
-    expect(second).toHaveLength(1);
+    // Either half may be a two-nominee week, so require at least one arena
+    // across the night rather than exactly one in each half.
+    expect((ep.acts || []).filter(a => a.type === 'safety').length).toBeGreaterThanOrEqual(1);
     expect(gs.activePlayers).toHaveLength(CAST.length - 2);
     const ids = buildBBWeekScreens(ep).map(s => s.id);
     expect(new Set(ids).size, 'duplicate screen ids').toBe(ids.length);
-    expect(ids).toContain('bb-safety');
-    expect(ids).toContain('bb-safety-2');
+    expect(ids.some(id => id === 'bb-safety' || id === 'bb-safety-2')).toBe(true);
   });
 
   // There were briefly two modes. A season saved then should still open.
   it('loads a season saved under the old AI Arena mode as a Block Buster', () => {
-    reset('ai-arena', 6);
-    const ep = simulateBBEpisode();
+    let ep = null;
+    for (let attempt = 0; attempt < 25 && !ep; attempt++) {
+      reset('ai-arena', 6);
+      const week = simulateBBEpisode();
+      if (actOf(week, 'safety')) ep = week;
+    }
+    expect(ep, 'never saw a Block Buster in 25 tries').toBeTruthy();
     expect(ep.initialNominees).toHaveLength(3);
     expect(ep.safetyMode).toBe('block-buster');
     expect(actOf(ep, 'safety').mode).toBe('block-buster');
     expect(ep.finalNominees).toHaveLength(2);
+  });
+
+  it('lets the Head of Household name only two, and then holds no Block Buster', () => {
+    let ep = null;
+    for (let attempt = 0; attempt < 25 && !ep; attempt++) {
+      reset('block-buster', 6);
+      const week = simulateBBEpisode();
+      if (week.initialNominees.length === 2) ep = week;
+    }
+    expect(ep, 'the HOH named three every time in 25 tries').toBeTruthy();
+    expect(actOf(ep, 'safety')).toBeUndefined();
+    expect(ep.finalNominees).toHaveLength(2);
+    expect(ep.eliminated).toBeTruthy();
   });
 
   it('is off by default, and off means two nominees', () => {

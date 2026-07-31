@@ -15990,7 +15990,7 @@ function _bbfPanels(ep, house, opening) {
     const moved = Math.abs(delta) >= 0.4;
     const pct = Math.min(100, Math.abs(p.v) * 10);
     return `<div class="bbf-rel">
-      <span class="bbf-rel-faces">${rpDuoImg(a, b)}</span>
+      <span class="bbf-rel-faces">${_bbAvatar(a, 24)}${_bbAvatar(b, 24)}</span>
       <span class="bbf-rel-who">${a} &amp; ${b}</span>
       <span class="bbf-rel-mid">
         <span class="bbf-rel-lab" style="color:${lab.color}">${lab.word}${
@@ -16016,14 +16016,14 @@ function _bbfPanels(ep, house, opening) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => rpPortrait(m)).join('')}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbAvatar(m, 22)).join('')}</span>
           <span class="bbf-ally-c">${a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => rpPortrait(m)).join('')}</span>
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbAvatar(m, 22)).join('')}</span>
         </div>`).join('')}` : ''}
     </div>
   </div>`;
@@ -16132,7 +16132,7 @@ export function rpBuildBBComp(ep, actType) {
       const gold = r.place === 1;
       return `<div class="bbc-row ${lit ? '' : 'is-hidden'} ${gold && lit ? 'is-win' : ''}">
         <span class="bbc-pos">${lit ? r.place : '&nbsp;'}</span>
-        <span class="bbc-face">${lit ? rpPortrait(r.name) : ''}</span>
+        <span class="bbc-face">${lit ? _bbAvatar(r.name, 26) : ''}</span>
         <span class="bbc-name">${lit ? r.name : '—'}</span>
         <span class="bbc-bar"><i style="width:${lit ? Math.max(4, pct) : 0}%;background:${gold ? '#f0a500' : cat.accent}"></i></span>
         ${lit && r.threw ? `<span class="bbc-threw">THREW</span>` : '<span class="bbc-threw"></span>'}
@@ -16540,6 +16540,19 @@ const _BB_ICON = {
 const _bbStat = (icon, value, color) =>
   `<span style="display:inline-flex;align-items:center;gap:3px;color:${color}">${_BB_ICON[icon]}${value !== null && value !== undefined ? `<span style="font-family:var(--font-mono);font-size:10px">${value}</span>` : ''}</span>`;
 
+/**
+ * A face on its own.
+ *
+ * rpPortrait is a whole component — a sized frame plus a name caption — which
+ * is right for a portrait row and wrong inside a compact list: the caption
+ * repeats the name that is already in the row and the frame overflows the line
+ * it sits on. These rows want the picture and nothing else.
+ */
+const _bbAvatar = (name, px = 26) => `<span class="bb-av" style="width:${px}px;height:${px}px">
+  <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <i>${(name || '?')[0]}</i></span>`;
+
 const _bbSlug = name => {
   const p = (typeof players !== 'undefined') ? players.find(x => x.name === name) : null;
   return p?.slug || String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -16650,7 +16663,7 @@ export function rpBuildBBOverview(ep) {
     <div style="font-size:10px;letter-spacing:1.5px;color:${b.color};margin-bottom:5px">${b.label}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px">
       ${b.rows.map(r => `<div class="bbst-row" style="border-left:2px solid ${b.color};background:${b.color}0a">
-        <span class="bbst-face">${rpPortrait(r.name)}</span>
+        <span class="bbst-face">${_bbAvatar(r.name, 28)}</span>
         <strong class="bbst-name">${r.name}</strong>
         <span class="bbst-stats">
           ${r.hoh ? _bbStat('hoh', r.hoh, '#f0a500') : ''}
@@ -16665,6 +16678,7 @@ export function rpBuildBBOverview(ep) {
     const live = (a.members || []).filter(m => stillIn.includes(m));
     return `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-left:2px solid #58a6ff;background:#58a6ff0a;border-radius:4px;margin-bottom:5px">
       <strong style="font-size:12px;min-width:104px">${a.name}</strong>
+      <span style="display:flex;gap:3px;flex-shrink:0">${live.map(m => _bbAvatar(m, 22)).join('')}</span>
       <span style="font-size:11px;color:#c9d1d9;flex:1">${live.join(', ')}</span>
       <span style="font-size:9px;color:#6e7681;letter-spacing:.5px">${a.formationEvidence || ''}</span>
     </div>`;
@@ -16682,6 +16696,7 @@ export function rpBuildBBOverview(ep) {
     ${pairs.slice(0, 14).map(p => {
       const good = p.v > 0, color = good ? '#3fb950' : '#f85149';
       return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${color};background:${color}0a;border-radius:4px">
+        <span style="display:flex;gap:2px;flex-shrink:0">${_bbAvatar(p.a, 22)}${_bbAvatar(p.b, 22)}</span>
         <span style="font-size:11px;flex:1">${p.a} <span style="color:#6e7681">${good ? '&' : 'vs'}</span> ${p.b}</span>
         <span style="font-size:10px;color:${color};font-family:var(--font-mono)">${good ? '+' : ''}${p.v.toFixed(1)}</span>
       </div>`;

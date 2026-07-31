@@ -15815,24 +15815,6 @@ function _bbfStatus(ep, phase) {
   return s;
 }
 
-/** The wall of faces, with everybody's standing marked on it. */
-function _bbfWall(house, status, out = []) {
-  const label = { hoh: 'HOH', nom: 'NOM', veto: 'VETO' };
-  return `<div class="bbf-wall">${house.map(name => {
-    const gone = out.includes(name);
-    const k = gone ? '' : (status[name] || '');
-    return `<div class="bbf-tile ${k ? `is-${k}` : ''} ${gone ? 'is-out' : ''}">
-      <div class="bbf-frame">
-        <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
-      </div>
-      <div class="bbf-name">${name}</div>
-      ${k ? `<span class="bbf-mark">${label[k]}</span>` : ''}
-    </div>`;
-  }).join('')}</div>`;
-}
-
 /**
  * House life, as a live feed.
  *
@@ -15865,7 +15847,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span>WEEK ${ep.num}</span>
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
-      ${_bbfWall(house, status)}`;
+      ${_bbMemoryWall(house, { status })}`;
 
   if (beats.length) {
     // Grouped by ROOM, because that is how the feeds are watched: you pick a
@@ -16762,13 +16744,16 @@ const _bbSlug = name => {
  * on the house status screen this week's evictee is still lit; on the aftermath,
  * where the eviction has already played, they have gone out.
  */
-function _bbMemoryWall(stillIn, { note = '' } = {}) {
+function _bbMemoryWall(stillIn, { note = '', status = {} } = {}) {
   const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn]);
   const live = new Set(stillIn);
+  const label = { hoh: 'HOH', nom: 'NOM', veto: 'VETO' };
   const cells = all.map(name => {
     const out = !live.has(name);
-    return `<div class="bbw-cell ${out ? 'is-out' : ''}">
+    const mark = out ? '' : (status[name] || '');
+    return `<div class="bbw-cell ${out ? 'is-out' : ''} ${mark ? `is-${mark}` : ''}">
       <div class="bbw-frame">
+        ${mark ? `<span class="bbw-mark">${label[mark]}</span>` : ''}
         <div class="bbw-photo">
           <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

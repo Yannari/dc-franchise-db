@@ -320,8 +320,8 @@
                       background:linear-gradient(104deg, rgba(255,255,255,.16) 0 14%, transparent 34%),
                                  linear-gradient(0deg, rgba(0,0,0,.22), transparent 45%); }
     .bbw-grid       { position:relative; z-index:1; display:flex; flex-wrap:wrap;
-                      justify-content:center; gap:11px; }
-    .bbw-cell       { width:78px; text-align:center; }
+                      justify-content:center; gap:12px; }
+    .bbw-cell       { width:86px; text-align:center; }
     .bbw-frame      { position:relative; padding:4px; border-radius:3px;
                       background:linear-gradient(160deg,#5fe3f0,#1f93b4 55%,#0e6a86);
                       box-shadow:0 0 14px rgba(70,215,240,.45), 0 3px 10px rgba(0,0,0,.45),
@@ -329,9 +329,30 @@
     .bbw-photo      { position:relative; aspect-ratio:1.08; overflow:hidden; border-radius:1px;
                       background:linear-gradient(180deg,#8a8d86,#6d716b); }
     .bbw-photo img  { width:100%; height:100%; object-fit:cover; display:block; }
-    .bbw-name       { margin-top:5px; font-size:9px; letter-spacing:.4px; color:#fff;
-                      text-shadow:0 1px 3px rgba(0,0,0,.75); overflow:hidden;
+    .bbw-name       { margin-top:5px; font-size:10px; font-weight:600; letter-spacing:.4px;
+                      color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.8); overflow:hidden;
                       text-overflow:ellipsis; white-space:nowrap; }
+
+    /* This week's standing, marked on the wall itself — the wall is the thing
+       the house stares at every day, so it is where the week should be read. */
+    .bbw-frame      { position:relative; }
+    .bbw-mark       { position:absolute; top:-1px; left:-1px; right:-1px; z-index:2;
+                      font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                      font-weight:800; letter-spacing:1.2px; padding:2px 0;
+                      border-radius:2px 2px 0 0; }
+    .bbw-cell.is-hoh  .bbw-frame { background:linear-gradient(160deg,#ffd76a,#c98a00 60%,#8a5c00);
+                      box-shadow:0 0 20px rgba(240,165,0,.55), 0 3px 10px rgba(0,0,0,.45),
+                                 inset 0 1px 0 rgba(255,255,255,.6); }
+    .bbw-cell.is-hoh  .bbw-mark { background:#f0a500; color:#1a1206; }
+    .bbw-cell.is-nom  .bbw-frame { background:linear-gradient(160deg,#ff8b84,#b3231b 60%,#7a140f);
+                      box-shadow:0 0 18px rgba(248,81,73,.5), 0 3px 10px rgba(0,0,0,.45),
+                                 inset 0 1px 0 rgba(255,255,255,.45); }
+    .bbw-cell.is-nom  .bbw-mark { background:#f85149; color:#2a0a08; }
+    .bbw-cell.is-nom  .bbw-photo img { filter:grayscale(.3) contrast(1.05); }
+    .bbw-cell.is-veto .bbw-frame { background:linear-gradient(160deg,#86efac,#1f9d4d 60%,#0d5f2c);
+                      box-shadow:0 0 18px rgba(63,185,80,.45), 0 3px 10px rgba(0,0,0,.45),
+                                 inset 0 1px 0 rgba(255,255,255,.5); }
+    .bbw-cell.is-veto .bbw-mark { background:#3fb950; color:#08210d; }
     /* gone: the frame goes dead and the glass goes dark */
     .bbw-cell.is-out .bbw-frame { background:linear-gradient(160deg,#3c4048,#22262c);
                       box-shadow:0 2px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); }

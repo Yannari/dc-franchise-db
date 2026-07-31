@@ -15595,64 +15595,101 @@ export function rpBuildBBColdOpen(ep) {
     + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
     + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
+  const seasonName = (typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother';
+
   // ── the wall, filling ──
+  // Same wall the rest of the week is read off, so move-in day is visibly the
+  // moment those frames get faces in them rather than a separate widget.
   const slots = house.map((name, i) => {
     const inHouse = i <= at;
-    const isCurrent = i === at;
-    return `<div style="text-align:center;transition:none">
-      <div style="position:relative;padding:4px;border-radius:3px;
-        background:${inHouse ? 'linear-gradient(160deg,#2b2f38,#1a1e25)' : 'linear-gradient(160deg,#14171c,#0e1116)'};
-        box-shadow:${isCurrent ? '0 0 0 2px #f0a500, 0 0 18px rgba(240,165,0,.45)'
-          : inHouse ? 'inset 0 0 0 1px rgba(255,255,255,.09), 0 2px 8px rgba(0,0,0,.45)'
-          : 'inset 0 0 0 1px rgba(255,255,255,.03)'}">
-        <div style="position:relative;aspect-ratio:1;overflow:hidden;border-radius:2px;background:#0b0e13">
-          ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-             <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>`
-            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#242a33;font-size:18px;font-weight:800">?</div>`}
-        </div>
+    return `<div class="bbf-tile ${i === at ? 'is-now' : ''} ${inHouse ? '' : 'is-empty'}">
+      <div class="bbf-frame">
+        ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+           <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#222831;font-size:17px;font-weight:800">?</div>`}
       </div>
-      <div style="font-size:8.5px;margin-top:3px;letter-spacing:.3px;color:${inHouse ? '#c9d1d9' : '#2f353d'}">${inHouse ? name : '—'}</div>
+      <div class="bbf-name">${inHouse ? name : '—'}</div>
     </div>`;
   }).join('');
 
-  const seasonName = (typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother';
+  // ── the hero: the door, and the eye that was here first ──
+  // The light through the doorway widens as the house fills, then the bolt goes
+  // red when the last one is inside. It is the only thing on the screen that
+  // reports progress without a number.
+  const frac = house.length ? arrived / house.length : 0;
+  const gap = done ? 0 : 5 + frac * 34;
+  const spill = done ? 0 : 0.18 + frac * 0.55;
+  const door = `<svg class="bbf-door" viewBox="0 0 300 156" role="img" aria-label="The front door of the house">
+    <defs>
+      <linearGradient id="bbfLight" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffe1a0" stop-opacity=".95"/>
+        <stop offset="100%" stop-color="#f0a500" stop-opacity=".25"/>
+      </linearGradient>
+      <radialGradient id="bbfIris"><stop offset="0%" stop-color="#c9343c"/><stop offset="100%" stop-color="#5c1216"/></radialGradient>
+    </defs>
+    <!-- the eye, above the door, already open -->
+    <path d="M118 34 Q150 8 182 34 Q150 60 118 34 Z" fill="#0b0e13" stroke="#c9343c" stroke-width="1.6" opacity=".85"/>
+    <circle cx="150" cy="34" r="11" fill="url(#bbfIris)"/>
+    <circle class="bbf-eye-pupil" cx="150" cy="34" r="4.6" fill="#07090c"/>
+    <circle cx="146" cy="30" r="1.8" fill="#fff" opacity=".55"/>
+    <!-- light thrown across the floor -->
+    ${spill > 0 ? `<polygon points="${150 - gap / 2},148 ${150 + gap / 2},148 ${150 + gap * 2.4},156 ${150 - gap * 2.4},156"
+      fill="#f0a500" opacity="${spill * 0.5}"/>` : ''}
+    <!-- frame -->
+    <rect x="106" y="62" width="88" height="86" rx="2" fill="#0b0e13" stroke="#2b3138" stroke-width="2"/>
+    <!-- the gap, lit from inside -->
+    ${gap > 0 ? `<rect x="${150 - gap / 2}" y="66" width="${gap}" height="82" fill="url(#bbfLight)" opacity="${spill}"/>` : ''}
+    <!-- the door itself, swung to one side -->
+    <rect x="106" y="62" width="${Math.max(6, 44 - gap / 2)}" height="86" rx="2" fill="#161b22" stroke="#2b3138"/>
+    <circle cx="${106 + Math.max(6, 44 - gap / 2) - 7}" cy="106" r="2.6" fill="${done ? '#f85149' : '#8b949e'}"/>
+    <text x="150" y="14" text-anchor="middle" font-size="7.5" letter-spacing="2.4"
+      fill="${done ? '#f85149' : '#6e7681'}" font-family="ui-monospace,Consolas,monospace">${done ? 'SEALED' : 'THE HOUSE IS OPEN'}</text>
+  </svg>`;
+
   let html = `<div class="rp-page bb-room bb-open">
     <div class="rp-co-eyebrow">${seasonName}</div>
-    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 22px rgba(240,165,0,.45);margin:8px 0 4px">MOVE-IN DAY</div>
-    <div style="text-align:center;font-size:11px;color:#8b949e;letter-spacing:1px;margin-bottom:14px">
-      ${arrived} of ${house.length} through the door
-    </div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 22px rgba(240,165,0,.45);margin:8px 0 10px">MOVE-IN DAY</div>
 
-    <div style="padding:12px 10px;border-radius:6px;margin-bottom:16px;
-      background:linear-gradient(180deg,#171a20,#101318);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.35)">
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:9px">${slots}</div>
-    </div>`;
+    <div class="bbf-feed">
+      <div class="bbf-hud">
+        <span class="bbf-rec">LIVE</span>
+        <span>CAM 01 · FRONT DOOR</span>
+        <span>DAY 1</span>
+        <span class="bbf-hud-sp">${arrived} / ${house.length} THROUGH THE DOOR</span>
+      </div>
+      <div style="padding:14px 12px 4px">${door}</div>
+      ${slots ? `<div class="bbf-wall">${slots}</div>` : ''}`;
 
-  // ── the spotlight: only ever the person who just walked in ──
+  // ── the close-up: only ever the person who just walked in ──
   if (current) {
-    html += `<div style="display:flex;gap:16px;align-items:center;padding:16px;border-radius:8px;
-        border-left:3px solid #f0a500;background:linear-gradient(90deg,rgba(240,165,0,.10),rgba(22,27,34,.5) 55%);
-        animation:scrollDrop .28s var(--ease-broadcast) both">
-      <div style="flex-shrink:0">${rpPortrait(current, 'lg')}</div>
-      <div>
-        <div style="font-family:var(--font-display);font-size:19px;color:#f0f6fc;line-height:1.1">${current}</div>
-        <div style="font-size:8.5px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin:3px 0 7px">Houseguest ${at + 1}</div>
-        <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current, at, `${seasonName}|${house.join('|')}`)}</div>
+    html += `<div style="padding:0 12px 12px">
+      <div class="bbf-spot">
+        <div>${rpPortrait(current, 'lg')}</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:20px;color:#f0f6fc;line-height:1.1">${current}</div>
+          <div style="font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.6px;color:#f0a500;text-transform:uppercase;margin:4px 0 8px">
+            HOUSEGUEST ${String(at + 1).padStart(2, '0')} · ${_bbfClock('pre-hoh', at)}
+          </div>
+          <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current, at, `${seasonName}|${house.join('|')}`)}</div>
+        </div>
       </div>
     </div>`;
   } else {
-    html += `<div style="text-align:center;padding:26px 16px;border-radius:8px;border:1px dashed rgba(139,148,158,.22)">
-      <div style="font-size:12.5px;color:#8b949e;line-height:1.6;max-width:520px;margin:0 auto">
-        ${house.length} strangers are about to move in. The door is still open.
+    html += `<div style="padding:0 12px 14px">
+      <div style="text-align:center;padding:20px 16px;border-radius:6px;border:1px dashed rgba(139,148,158,.2)">
+        <div style="font-size:12.5px;color:#8b949e;line-height:1.6;max-width:520px;margin:0 auto">
+          ${house.length} strangers, one door, and a wall of frames with nobody in them.
+        </div>
       </div>
     </div>`;
   }
+  html += `</div>`;
 
-  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
+  html += `<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:14px">
     ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, house.length - 1))}">${state.idx < 0 ? 'Open the door' : 'Next houseguest'}</button>`}
     ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(house.length - 1)}">Move everybody in</button>`}
+    ${done ? '' : `<span style="font-family:ui-monospace,Consolas,monospace;font-size:9.5px;color:#6e7681;letter-spacing:1.2px">${arrived} / ${house.length}</span>`}
   </div>`;
 
   if (done) {
@@ -15689,52 +15726,186 @@ const _BB_LOAD = new Set(['deals', 'ceremonies', 'phases']);
  * house, then the events as rp-brant-entry cards with portraits, text and a
  * badge — strategic beats weighted heavier than ambient ones.
  */
+/** Rooms a camera can be pointed at, so every beat happens somewhere. */
+const _BBF_ROOMS = ['LIVING ROOM', 'KITCHEN', 'BEDROOM ONE', 'BEDROOM TWO', 'BACKYARD',
+                    'HOH SUITE', 'STORAGE', 'WASHROOM', 'LOUNGE', 'HAMMOCK'];
+
+/** Category chips — what kind of beat this is, in the feed's own vocabulary. */
+const _BBF_CAT = {
+  ceremonies:   { label: 'CEREMONY',  bg: 'rgba(240,165,0,.16)',  fg: '#f0a500' },
+  deals:        { label: 'STRATEGY',  bg: 'rgba(201,52,60,.18)',  fg: '#ff7b72' },
+  phases:       { label: 'THE BLOCK', bg: 'rgba(88,166,255,.16)', fg: '#58a6ff' },
+  social:       { label: 'SOCIAL',    bg: 'rgba(163,113,247,.16)', fg: '#a371f7' },
+  'house-life': { label: 'HOUSE',     bg: 'rgba(139,148,158,.14)', fg: '#8b949e' },
+};
+const _bbfCat = c => _BBF_CAT[c]
+  || { label: String(c || 'house').toUpperCase().slice(0, 10), bg: 'rgba(139,148,158,.14)', fg: '#8b949e' };
+
+/**
+ * The clock.
+ *
+ * A house has no daylight and no episode breaks, so the only thing marking
+ * time is the timestamp burned into the corner of the feed. Each phase starts
+ * at a plausible hour and the beats walk forward from there.
+ */
+const _BBF_START = { 'pre-hoh': 554, 'post-hoh': 842, 'post-noms': 1120,
+                     'post-veto': 1275, campaign: 1350, eviction: 1010 };
+const _bbfClock = (phase, i) => {
+  const t = ((_BBF_START[phase] ?? 720) + i * 11 + (i % 3) * 4) % 1440;
+  return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+};
+
+/**
+ * What the house knows by this point in the week — and never more than that.
+ *
+ * The wall is drawn from this, so a screen set before the nomination ceremony
+ * cannot show a nominee. Spoiling the week on its own status strip is the
+ * easiest mistake this screen could make.
+ */
+function _bbfStatus(ep, phase) {
+  const s = {};
+  const set = (n, k) => { if (n && !s[n]) s[n] = k; };
+  if (phase === 'pre-hoh') return s;
+  set(ep.hoh, 'hoh');
+  if (phase === 'post-hoh') return s;
+  const noms = (phase === 'post-noms' || phase === 'post-veto') ? ep.initialNominees : ep.finalNominees;
+  (noms || []).forEach(n => set(n, 'nom'));
+  if (phase === 'post-noms') return s;
+  set(ep.vetoWinner, 'veto');
+  return s;
+}
+
+/** The wall of faces, with everybody's standing marked on it. */
+function _bbfWall(house, status, out = []) {
+  const label = { hoh: 'HOH', nom: 'NOM', veto: 'VETO' };
+  return `<div class="bbf-wall">${house.map(name => {
+    const gone = out.includes(name);
+    const k = gone ? '' : (status[name] || '');
+    return `<div class="bbf-tile ${k ? `is-${k}` : ''} ${gone ? 'is-out' : ''}">
+      <div class="bbf-frame">
+        <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
+      </div>
+      <div class="bbf-name">${name}</div>
+      ${k ? `<span class="bbf-mark">${label[k]}</span>` : ''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/**
+ * House life, as a live feed.
+ *
+ * Total Drama watches a camp from outside with a crew; a house has nobody in
+ * it but the people playing, so the screen is the surveillance itself — a
+ * camera and a timestamp on every beat, and the wall of faces the houseguests
+ * spend all week reading. The relationship and alliance panels are attached to
+ * the first and last stretch of the week only: what the house looked like
+ * walking in, and what it looks like walking into a vote.
+ */
 export function rpBuildBBHouseLife(ep, act, slot) {
-  const meta = _BB_PHASE_META[act?.phase] || _BB_PHASE_META['pre-hoh'];
+  const phase = act?.phase || 'pre-hoh';
+  const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
   const beats = act?.socialBeats || [];
   const house = ep.houseAtStart || [];
+  const status = _bbfStatus(ep, phase);
+
+  const houseActs = (ep.acts || []).filter(a => a.type === 'house');
+  const total = houseActs.length || 1;
+  const bookend = slot === 1 || slot >= total;
 
   let html = `<div class="rp-page ${meta.tod}">
     <div class="rp-eyebrow">Week ${ep.num} — ${meta.kicker}</div>
-    <div class="rp-title" style="color:#58a6ff">${meta.title}</div>`;
+    <div class="rp-title" style="color:#58a6ff">${meta.title}</div>
 
-  if (house.length) {
-    html += `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:24px;flex-wrap:wrap">
-      ${house.map(n => rpPortrait(n)).join('')}
-    </div>`;
-  }
+    <div class="bbf-feed">
+      <div class="bbf-hud">
+        <span class="bbf-rec">LIVE</span>
+        <span>FEED ${String(slot).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>
+        <span>WEEK ${ep.num}</span>
+        <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
+      </div>
+      ${_bbfWall(house, status)}`;
 
-  html += `<div class="rp-camp-toggle-section">
-    <button class="rp-camp-toggle-btn" style="border-color:#58a6ff;color:#58a6ff" onclick="vpToggleSection('bbhouse-${ep.num}-${slot}')">
-      HOUSE EVENTS <span class="rp-toggle-arrow">▲</span>
-    </button>
-    <div id="bbhouse-${ep.num}-${slot}" class="rp-camp-toggle-body">`;
-
-  beats.forEach((beat) => {
-    const cls = beat.badgeClass || 'grey';
-    const color = cls === 'red' ? '#f85149' : cls === 'green' ? '#3fb950' : cls === 'gold' ? '#d29922' : cls === 'blue' ? '#58a6ff' : '#8b949e';
-    const load = _BB_LOAD.has(beat.category);
-    const style = load
-      ? `border-left:3px solid ${color};background:linear-gradient(90deg,${color}16,rgba(22,27,34,.5) 45%)`
-      : 'opacity:.78;background:rgba(17,21,28,.55)';
-    const people = (beat.players || []).filter(Boolean).slice(0, 5);
-    html += `<div class="rp-brant-entry signal-${load ? 'load' : 'ambient'}" style="${style}">`;
-    if (people.length === 2) {
-      html += `<div class="rp-brant-portraits">${rpDuoImg(people[0], people[1])}</div>`;
-    } else if (people.length) {
-      html += `<div class="rp-brant-portraits">${people.map(n => rpPortrait(n)).join('')}</div>`;
-    }
-    html += `<div class="rp-brant-text">${beat.text}</div>`;
-    if (beat.badgeText) html += `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>`;
+  if (beats.length) {
+    html += `<div class="bbf-cards">`;
+    beats.forEach((beat, i) => {
+      const cat = _bbfCat(beat.category);
+      const load = _BB_LOAD.has(beat.category);
+      const cls = beat.badgeClass || 'grey';
+      const people = (beat.players || []).filter(Boolean).slice(0, 4);
+      const room = _BBF_ROOMS[(i * 3 + (people[0]?.length || 0)) % _BBF_ROOMS.length];
+      html += `<div class="bbf-card ${load ? 'is-load' : 'is-amb'}"
+          style="border-left-color:${cat.fg}">
+        <span class="bbf-slug">CAM ${String((i % 9) + 1).padStart(2, '0')} · ${room} · ${_bbfClock(phase, i)}</span>
+        <div class="rp-brant-portraits">${
+          people.length === 2 ? rpDuoImg(people[0], people[1])
+            : people.length ? people.map(n => rpPortrait(n)).join('')
+            : ''}</div>
+        <div class="bbf-txt">${beat.text}</div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <span class="bbf-cat" style="background:${cat.bg};color:${cat.fg}">${cat.label}</span>
+          ${beat.badgeText ? `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>` : ''}
+        </div>
+      </div>`;
+    });
     html += `</div>`;
-  });
-
-  if (!beats.length) {
-    html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:12px 0">A quiet stretch. Nothing anybody will admit to.</div>`;
+  } else {
+    html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:18px 0">
+      The feeds stay up. Nobody says anything they would repeat on camera.</div>`;
   }
-  html += `</div></div>`;
+  html += `</div>`;
 
+  if (bookend) html += _bbfPanels(ep, house, slot === 1);
   return html + `</div>`;
+}
+
+/**
+ * The two things a house is actually made of: who trusts whom, and who has
+ * agreed to work together out loud. Read from the episode's own snapshot so a
+ * replayed week shows that week rather than the end of the season.
+ */
+function _bbfPanels(ep, house, opening) {
+  const snap = ep.gsSnapshot || {};
+  const bonds = snap.bonds || (typeof gs !== 'undefined' && gs.bonds) || {};
+  const inHouse = new Set(house);
+
+  const pairs = Object.entries(bonds)
+    .map(([k, v]) => [k.split('||'), Number(v) || 0])
+    .filter(([p]) => p.length === 2 && inHouse.has(p[0]) && inHouse.has(p[1]))
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, 6);
+
+  const alliances = (snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .filter(a => a.active !== false)
+    .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
+    .filter(a => a.members.length >= 2)
+    .slice(0, 5);
+
+  const bar = v => {
+    const pct = Math.min(100, Math.abs(v) * 10);
+    const col = v >= 0 ? '#3fb950' : '#f85149';
+    return `<span class="bbf-bar"><i style="width:${pct}%;background:${col}"></i></span>`;
+  };
+
+  return `<div class="bbf-panels">
+    <div class="bbf-panel">
+      <div class="bbf-panel-h">${opening ? 'Where the house stands' : 'Where the house ended up'}</div>
+      ${pairs.length ? pairs.map(([[a, b], v]) => `<div class="bbf-row">
+          <span style="min-width:104px">${a} · ${b}</span>${bar(v)}
+          <span class="bbf-tag">${v > 0 ? '+' : ''}${v}</span>
+        </div>`).join('')
+        : `<div style="font-size:11px;color:#484f58">Nobody has committed to anybody yet.</div>`}
+    </div>
+    <div class="bbf-panel">
+      <div class="bbf-panel-h">Alliances in play</div>
+      ${alliances.length ? alliances.map(a => `<div class="bbf-row">
+          <span style="color:#d29922;min-width:104px">${a.name}</span>
+          <span style="flex:1;font-size:11px">${a.members.join(', ')}</span>
+        </div>`).join('')
+        : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
+    </div>
+  </div>`;
 }
 
 // ── Competitions ──────────────────────────────────────────────────────

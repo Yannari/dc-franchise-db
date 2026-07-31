@@ -98,12 +98,12 @@ describe('the Big Brother visual player', () => {
     expect(first).toContain('MOVE-IN DAY');
     // Before anybody arrives the wall is empty frames and the door is shut.
     expect(first).toContain('Open the door');
-    expect(first).toContain('0 of');
+    expect(first).toContain('0 / ' + CAST.length);
     // Once everybody is in, every houseguest has been introduced by name.
     // Once everybody is in, the wall carries the whole cast and the spotlight
     // is on whoever walked in last.
     const all = revealed(ep)[0].html;
-    expect(all).toContain('Houseguest ' + CAST.length);
+    expect(all).toContain('HOUSEGUEST ' + CAST.length);
     for (const p of CAST) expect(all).toContain(p.name);
     expect(all).toContain('THE DOOR LOCKS');
     expect(all).toContain('rp-portrait');

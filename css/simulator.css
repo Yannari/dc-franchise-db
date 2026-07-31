@@ -142,6 +142,118 @@
                       radial-gradient(120% 75% at 50% 0%, rgba(201,52,60,.16), transparent 58%),
                       linear-gradient(to bottom, #170d0f, #090607); }
 
+    /* ── VP: BIG BROTHER live feed ──
+       Total Drama is a show with a camera crew; Big Brother is a house with no
+       crew in it at all, so the only voice the format has is the feed itself.
+       Everything here is built to read as surveillance rather than as coverage:
+       a camera identifier on every beat, a clock that never stops, and the wall
+       of faces the house itself stares at. The identity is the watching. */
+
+    .bbf-feed       { position: relative; border: 1px solid rgba(201,52,60,.22); border-radius: 8px;
+                      background: linear-gradient(180deg, rgba(14,17,22,.92), rgba(9,11,15,.92));
+                      box-shadow: 0 10px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+                      padding: 0 0 4px; overflow: hidden; }
+    /* Scanlines: faint enough to read through, present enough to feel recorded. */
+    .bbf-feed::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.5;
+                      background: repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px); }
+    .bbf-feed > *   { position: relative; z-index: 1; }
+    /* Corner brackets — a viewfinder, not a frame. */
+    .bbf-feed::after { content:''; position:absolute; inset:7px; z-index:0; pointer-events:none;
+                      border: 1px solid transparent;
+                      background:
+                        linear-gradient(90deg,rgba(201,52,60,.5) 0 16px,transparent 16px) 0 0/100% 1px no-repeat,
+                        linear-gradient(90deg,transparent calc(100% - 16px),rgba(201,52,60,.5) calc(100% - 16px)) 0 0/100% 1px no-repeat,
+                        linear-gradient(90deg,rgba(201,52,60,.5) 0 16px,transparent 16px) 0 100%/100% 1px no-repeat,
+                        linear-gradient(90deg,transparent calc(100% - 16px),rgba(201,52,60,.5) calc(100% - 16px)) 0 100%/100% 1px no-repeat,
+                        linear-gradient(0deg,rgba(201,52,60,.5) 0 16px,transparent 16px) 0 100%/1px 100% no-repeat,
+                        linear-gradient(0deg,transparent calc(100% - 16px),rgba(201,52,60,.5) calc(100% - 16px)) 0 0/1px 100% no-repeat,
+                        linear-gradient(0deg,rgba(201,52,60,.5) 0 16px,transparent 16px) 100% 100%/1px 100% no-repeat,
+                        linear-gradient(0deg,transparent calc(100% - 16px),rgba(201,52,60,.5) calc(100% - 16px)) 100% 0/1px 100% no-repeat; }
+
+    /* The HUD strip: camera, clock, and the state of the week. */
+    .bbf-hud        { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+                      padding:8px 12px; border-bottom:1px solid rgba(201,52,60,.18);
+                      background:linear-gradient(90deg, rgba(201,52,60,.12), transparent 65%);
+                      font-family:ui-monospace,'SFMono-Regular',Consolas,monospace;
+                      font-size:9.5px; letter-spacing:1.4px; color:#8b949e; text-transform:uppercase; }
+    .bbf-rec        { display:inline-flex; align-items:center; gap:5px; color:#f85149; font-weight:700; }
+    .bbf-rec::before { content:''; width:7px; height:7px; border-radius:50%; background:#f85149;
+                      box-shadow:0 0 8px rgba(248,81,73,.9); animation:bbfRec 1.6s ease-in-out infinite; }
+    @keyframes bbfRec { 0%,100%{opacity:1} 50%{opacity:.22} }
+    .bbf-hud-sp     { margin-left:auto; }
+
+    /* ── The wall: where everybody stands, at a glance ── */
+    .bbf-wall       { display:grid; grid-template-columns:repeat(auto-fill,minmax(62px,1fr));
+                      gap:10px; padding:14px 12px 12px; }
+    .bbf-tile       { text-align:center; }
+    .bbf-frame      { position:relative; aspect-ratio:1; border-radius:4px; overflow:hidden;
+                      background:#0b0e13; box-shadow:inset 0 0 0 1px rgba(255,255,255,.07); }
+    .bbf-frame img  { width:100%; height:100%; object-fit:cover; display:block; }
+    .bbf-name       { font-size:8.5px; letter-spacing:.3px; color:#c9d1d9; margin-top:4px;
+                      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    /* Status is a physical marker on the wall, the way the house reads it. */
+    .bbf-mark       { display:block; margin-top:3px; font-size:7.5px; font-weight:800; letter-spacing:1.2px;
+                      border-radius:2px; padding:1.5px 0; font-family:ui-monospace,Consolas,monospace; }
+    .bbf-tile.is-hoh  .bbf-frame { box-shadow:inset 0 0 0 2px #f0a500, 0 0 16px rgba(240,165,0,.45); }
+    .bbf-tile.is-hoh  .bbf-mark  { background:#f0a500; color:#1a1206; }
+    .bbf-tile.is-veto .bbf-frame { box-shadow:inset 0 0 0 2px #3fb950, 0 0 14px rgba(63,185,80,.35); }
+    .bbf-tile.is-veto .bbf-mark  { background:#3fb950; color:#08210d; }
+    .bbf-tile.is-nom  .bbf-frame { box-shadow:inset 0 0 0 2px #f85149, 0 0 14px rgba(248,81,73,.35); }
+    .bbf-tile.is-nom  .bbf-mark  { background:#f85149; color:#2a0a08; }
+    .bbf-tile.is-nom  .bbf-frame img { filter:grayscale(.35) contrast(1.05); }
+    .bbf-tile.is-out  .bbf-frame { box-shadow:inset 0 0 0 1px rgba(255,255,255,.05); }
+    .bbf-tile.is-out  .bbf-frame img { filter:grayscale(1) brightness(.42); }
+    .bbf-tile.is-out  .bbf-name  { color:#3d444d; text-decoration:line-through; }
+
+    /* ── Feed cards: one beat, one camera ── */
+    .bbf-cards      { padding:0 12px 12px; }
+    .bbf-card       { position:relative; display:grid; grid-template-columns:auto 1fr auto;
+                      gap:10px; align-items:center; padding:9px 11px; margin-bottom:7px;
+                      border-radius:5px; background:rgba(17,21,28,.6);
+                      border-left:3px solid rgba(139,148,158,.35); }
+    .bbf-card.is-load { background:linear-gradient(90deg, rgba(201,52,60,.10), rgba(17,21,28,.6) 55%); }
+    .bbf-card.is-amb  { opacity:.8; }
+    .bbf-slug       { position:absolute; top:-6px; left:9px; font-family:ui-monospace,Consolas,monospace;
+                      font-size:7.5px; letter-spacing:1.2px; color:#6e7681; background:#0d1117;
+                      padding:0 5px; border-radius:2px; }
+    .bbf-cat        { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; font-weight:700;
+                      letter-spacing:1.1px; padding:2px 6px; border-radius:2px; white-space:nowrap; }
+    .bbf-txt        { font-size:12.5px; line-height:1.55; color:#c9d1d9; }
+
+    /* ── Side panels: the two things the house is actually made of ── */
+    .bbf-panels     { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-top:12px; }
+    .bbf-panel      { border:1px solid var(--border,#30363d); border-radius:6px; padding:10px 12px;
+                      background:rgba(13,17,23,.6); }
+    .bbf-panel-h    { font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px;
+                      color:#6e7681; text-transform:uppercase; margin-bottom:8px; }
+    .bbf-row        { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:11.5px; color:#c9d1d9; }
+    .bbf-bar        { flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,.07); overflow:hidden; }
+    .bbf-bar i      { display:block; height:100%; border-radius:2px; }
+    .bbf-tag        { font-size:9px; letter-spacing:.8px; color:#6e7681; font-family:ui-monospace,Consolas,monospace; }
+
+    /* Move-in day: frames on the wall that have nobody in them yet. */
+    .bbf-tile.is-empty .bbf-frame { background:#0d1014; box-shadow:inset 0 0 0 1px rgba(255,255,255,.03); }
+    .bbf-tile.is-empty .bbf-name  { color:#2b3138; }
+    .bbf-tile.is-now   .bbf-frame { box-shadow:inset 0 0 0 2px #f0a500, 0 0 22px rgba(240,165,0,.55); }
+
+    /* The door, and the eye over it. The house is watching before anybody is
+       in it — that is the whole premise, so it is the first thing drawn. */
+    .bbf-door       { display:block; width:100%; max-width:420px; margin:0 auto; }
+    .bbf-eye-pupil  { animation:bbfLook 7s ease-in-out infinite; transform-origin:center; }
+    @keyframes bbfLook { 0%,100%{transform:translateX(0)} 30%{transform:translateX(5px)} 65%{transform:translateX(-5px)} }
+
+    /* The arrival close-up: one face, held. */
+    .bbf-spot       { display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center;
+                      padding:16px; border-radius:6px; border-left:3px solid #f0a500;
+                      background:linear-gradient(90deg, rgba(240,165,0,.12), rgba(13,17,23,.55) 58%);
+                      animation:bbfCut .3s var(--ease-broadcast, ease-out) both; }
+    @keyframes bbfCut { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bbf-rec::before, .bbf-eye-pupil { animation:none; }
+      .bbf-spot { animation:none; }
+    }
+
     /* ── VP: per-SETTING skin (applied to #vp-screen-content as .rp-set-<x>) ──
        Retints the reader's gold accent + lays a faint venue motif behind each
        .rp-page screen. Scoped to .rp-page so twist-challenge shells (own themes)

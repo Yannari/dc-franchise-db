@@ -1,10 +1,9 @@
-// AI Arena and Block Buster: three nominees every week, one saves themselves.
+// The Block Buster: three nominees every week, one wins their way off.
 //
-// The same machine with different paint. What both change is that a
-// nomination stops being a sentence and becomes a competition — so these
-// check the block is genuinely three, that the arena reduces it to two before
-// anybody votes, and that the vote still works with the smaller electorate a
-// third nominee leaves behind.
+// What it changes is that a nomination stops being a sentence and becomes a
+// competition — so these check the block is genuinely three, that the Block
+// Buster reduces it to two before anybody votes, and that the vote still works
+// with the smaller electorate a third nominee leaves behind.
 import { describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, ordinal } from '../js/players.js';
@@ -36,10 +35,9 @@ function reset(mode, stopsAt) {
 
 const actOf = (ep, type) => (ep.acts || []).find(a => a.type === type);
 
-describe.each([
-  ['ai-arena', 'THE AI ARENA', 'AI Arena'],
-  ['block-buster', 'THE BLOCK BUSTER', 'Block Buster'],
-])('%s', (mode, textTitle, screenLabel) => {
+const mode = 'block-buster', textTitle = 'THE BLOCK BUSTER', screenLabel = 'Block Buster';
+
+describe('the Block Buster', () => {
   it('puts three on the block and takes one off before the vote', () => {
     reset(mode, 6);
     const ep = simulateBBEpisode();
@@ -83,7 +81,7 @@ describe.each([
     const ep = simulateBBEpisode();
     const screens = buildBBWeekScreens(ep);
     const arena = screens.find(s => s.id === 'bb-safety');
-    expect(arena, 'no arena screen').toBeTruthy();
+    expect(arena, 'no Block Buster screen').toBeTruthy();
     expect(arena.label).toBe(screenLabel);
     expect(arena.html).toContain(ep.safetyWinner);
     // All three nominees appear on it, not just the winner.
@@ -95,7 +93,7 @@ describe.each([
   });
 });
 
-describe('three-nominee modes over a season', () => {
+describe('the Block Buster over a season', () => {
   it('stops before a third nominee would leave nobody to vote', () => {
     reset('block-buster', 6);
     let guard = 0, sawArena = 0, sawPlain = 0;
@@ -105,7 +103,7 @@ describe('three-nominee modes over a season', () => {
       const house = ep.houseAtStart.length;
       if (actOf(ep, 'safety')) {
         sawArena++;
-        expect(house, 'arena ran in too small a house').toBeGreaterThan(6);
+        expect(house, 'Block Buster ran in too small a house').toBeGreaterThan(6);
         expect(ep.initialNominees).toHaveLength(3);
       } else {
         sawPlain++;
@@ -122,8 +120,8 @@ describe('three-nominee modes over a season', () => {
 
   // The three twists and the two modes are all week-shape changes, so they are
   // the most likely things in this format to break each other.
-  it('survives an instant eviction — no veto, but still an arena', () => {
-    reset('ai-arena', 6);
+  it('survives an instant eviction — no veto, but still a Block Buster', () => {
+    reset('block-buster', 6);
     seasonConfig.twistSchedule = [{ episode: 1, type: 'bb-instant-eviction' }];
     const ep = simulateBBEpisode();
     expect(ep.initialNominees).toHaveLength(3);
@@ -146,6 +144,16 @@ describe('three-nominee modes over a season', () => {
     expect(new Set(ids).size, 'duplicate screen ids').toBe(ids.length);
     expect(ids).toContain('bb-safety');
     expect(ids).toContain('bb-safety-2');
+  });
+
+  // There were briefly two modes. A season saved then should still open.
+  it('loads a season saved under the old AI Arena mode as a Block Buster', () => {
+    reset('ai-arena', 6);
+    const ep = simulateBBEpisode();
+    expect(ep.initialNominees).toHaveLength(3);
+    expect(ep.safetyMode).toBe('block-buster');
+    expect(actOf(ep, 'safety').mode).toBe('block-buster');
+    expect(ep.finalNominees).toHaveLength(2);
   });
 
   it('is off by default, and off means two nominees', () => {

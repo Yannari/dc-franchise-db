@@ -15977,7 +15977,7 @@ export function rpBuildBBNominations(ep) {
 }
 
 /**
- * The AI Arena / Block Buster.
+ * The Block Buster.
  *
  * The last competition of the week, played by the only people who cannot
  * afford to lose it. Whoever wins saves themselves — which the house reads
@@ -15987,7 +15987,7 @@ export function rpBuildBBNominations(ep) {
 export function rpBuildBBSafety(ep) {
   const act = (ep.acts || []).find(a => a.type === 'safety');
   if (!act) return '';
-  const title = act.mode === 'ai-arena' ? 'THE AI ARENA' : 'THE BLOCK BUSTER';
+  const title = 'THE BLOCK BUSTER';
   const field = act.participants || [];
   const losers = field.filter(n => n !== act.winner);
   const comp = act.competition;
@@ -16212,7 +16212,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'safety':
         screens.push({
           id: id('bb-safety'),
-          label: act.mode === 'ai-arena' ? 'AI Arena' : 'Block Buster',
+          label: 'Block Buster',
           html: rpBuildBBSafety(view),
         });
         break;

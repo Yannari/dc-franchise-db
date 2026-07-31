@@ -4206,7 +4206,7 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'safety':
-        sec(act.mode === 'ai-arena' ? 'THE AI ARENA' : 'THE BLOCK BUSTER');
+        sec('THE BLOCK BUSTER');
         ln(`  Played by the nominees: ${(act.participants || []).join(', ')}.`);
         if (act.competition) {
           ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);

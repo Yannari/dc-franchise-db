@@ -50,22 +50,19 @@ describe('house season structure', () => {
     expect(segs[0].why).toContain('at least 4');
   });
 
-  it('shows a three-nominee mode as part of the shape', () => {
-    const arena = houseStructure({ jurySize: 9, bbSafetyMode: 'ai-arena', bbSafetyStopsAt: 9 }, 16);
-    expect(find(arena, 'AI Arena').label).toBe('AI Arena to 9');
-    expect(find(arena, 'AI Arena').ok).toBe(true);
-
-    const buster = houseStructure({ jurySize: 7, bbSafetyMode: 'block-buster', bbSafetyStopsAt: 6 }, 14);
-    expect(find(buster, 'Block Buster').label).toBe('Block Buster to 6');
+  it('shows the Block Buster as part of the shape', () => {
+    const on = houseStructure({ jurySize: 7, bbSafetyMode: 'block-buster', bbSafetyStopsAt: 6 }, 14);
+    expect(find(on, 'Block Buster').label).toBe('Block Buster to 6');
+    expect(find(on, 'Block Buster').ok).toBe(true);
 
     // A mode that could never run in this cast is worth saying so.
-    const never = houseStructure({ jurySize: 5, bbSafetyMode: 'ai-arena', bbSafetyStopsAt: 9 }, 8);
-    const seg = find(never, 'AI Arena');
+    const never = houseStructure({ jurySize: 5, bbSafetyMode: 'block-buster', bbSafetyStopsAt: 9 }, 8);
+    const seg = find(never, 'Block Buster');
     expect(seg.ok).toBe(false);
     expect(seg.why).toContain('never run');
 
     // Off means it is not mentioned at all.
-    expect(find(houseStructure({ jurySize: 9, bbSafetyMode: 'off' }, 16), 'Arena')).toBeUndefined();
+    expect(find(houseStructure({ jurySize: 9, bbSafetyMode: 'off' }, 16), 'Block Buster')).toBeUndefined();
   });
 
   it('never returns a segment without a label', () => {

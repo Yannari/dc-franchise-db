@@ -111,12 +111,11 @@ export function houseStructure(config = {}, castSize = 0) {
   const mode = config.bbSafetyMode && config.bbSafetyMode !== 'off' ? config.bbSafetyMode : null;
   if (mode) {
     const stopsAt = Math.max(Number(config.bbSafetyStopsAt) || 0, 5);
-    const name = mode === 'ai-arena' ? 'AI Arena' : 'Block Buster';
     const runs = N > stopsAt;
     segs.push({
-      label: `${name} to ${stopsAt}`,
+      label: `Block Buster to ${stopsAt}`,
       ok: runs,
-      why: runs ? undefined : `The house starts at ${N}, so ${name} would never run`,
+      why: runs ? undefined : `The house starts at ${N}, so the Block Buster would never run`,
     });
   }
 

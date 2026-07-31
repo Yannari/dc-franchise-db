@@ -3084,7 +3084,16 @@
        which reads as a document rather than a form and so gets skipped. The
        explanation is demoted below the thing it explains: smaller, dimmer,
        tighter, and short enough to take in without deciding to read it. */
-    .hint-tight     { font-size: 10.5px; line-height: 1.45; opacity: .72; margin-top: 4px;
+    /* Label and hint were both ~11px in --muted, so the hint under one control
+       read as the label of the next one. Three clearly different levels now:
+       a bright bold label, the control, then dim italic prose underneath it,
+       with the gap between GROUPS bigger than the gap inside one. */
+    #bb-options-body .form-label {
+                      font-size: 11.5px; font-weight: 700; letter-spacing: .2px;
+                      color: var(--text); display: block; margin-bottom: 5px; }
+    #bb-options-body .form-group { margin-bottom: 20px; }
+    .hint-tight     { font-size: 10px; line-height: 1.5; margin-top: 5px;
+                      font-style: italic; color: var(--muted); opacity: .62;
                       max-width: 34em; }
     /* ── House season shape ──
        The chain a house season runs on. Same read as the Total Drama blueprint

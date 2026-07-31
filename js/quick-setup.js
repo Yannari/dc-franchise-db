@@ -974,11 +974,9 @@ export function qsOnHouseOptionChange() {
   const stops = _g('cfg-bb-safety-stops');
   const host = stops && stops.closest('.form-group');
   if (host) host.style.display = mode === 'off' ? 'none' : '';
-  // Each mode has a traditional stopping point; follow it unless the reader
+  // The Block Buster traditionally runs to six; follow that unless the reader
   // has already moved the number themselves.
-  if (stops && mode !== 'off' && !stops.dataset.touched) {
-    stops.value = mode === 'ai-arena' ? 9 : 6;
-  }
+  if (stops && mode !== 'off' && !stops.dataset.touched) stops.value = 6;
   // Likewise: how many go on slop is meaningless with slop switched off.
   const hnCount = _g('cfg-bb-havenot-count')?.closest('.form-group');
   if (hnCount) hnCount.style.display = (_g('cfg-bb-havenots')?.value || 'twist') === 'off' ? 'none' : '';

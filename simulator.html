@@ -512,18 +512,17 @@
               <span>Always a final three: a three-part Head of Household, then the jury votes.</span>
             </div>
             <div class="form-group" id="grp-bb-safety">
-              <label class="form-label">Three-Nominee Mode</label>
+              <label class="form-label">BB Block Buster</label>
               <select id="cfg-bb-safety" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">
                 <option value="off">Off &mdash; two nominees</option>
-                <option value="ai-arena">AI Arena</option>
-                <option value="block-buster">BB Block Buster</option>
+                <option value="block-buster">On &mdash; three nominees</option>
               </select>
               <div class="hint hint-tight">Three on the block; one wins their way off before the vote.</div>
             </div>
             <div class="form-group" id="grp-bb-safety-stops">
               <label class="form-label">Stops with this many left</label>
               <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">
-              <div class="hint hint-tight">Arena stops around 9 &middot; Block Buster runs to 6.</div>
+              <div class="hint hint-tight">Two nominees again once the house is this small.</div>
             </div>
             <div class="form-group" id="grp-bb-havenots">
               <label class="form-label">Have-Nots</label>
@@ -551,7 +550,7 @@
                 <option value="occasional">Occasional</option>
                 <option value="often">Often</option>
               </select>
-              <div class="hint hint-tight">Somebody can walk out, or be removed for putting hands on another houseguest. It takes that week's eviction with it &mdash; the house is already down one.</div>
+              <div class="hint hint-tight">Somebody walks, or is removed. It takes that week's eviction with it.</div>
             </div>
             <div class="form-group" id="grp-bb-interview">
               <label class="form-label">Eviction Interview</label>

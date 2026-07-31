@@ -98,19 +98,18 @@ export function simulateBBWeek(options = {}) {
   /**
    * Season modes that put a third houseguest on the block.
    *
-   * The AI Arena and the Block Buster are the same machine with different
-   * paint: three nominees every week, and immediately before the vote those
-   * three compete for one spot off the block. The consequence is that a
-   * nomination stops being a death sentence and starts being a competition,
-   * which changes what an HOH is willing to try — and it means the person
-   * who leaves has now lost twice.
+   * The Block Buster: three nominees every week, and immediately before the
+   * vote those three compete for one spot off the block. A nomination stops
+   * being a death sentence and becomes a competition, which changes what an
+   * HOH is willing to try — and the person who leaves has now lost twice.
    *
-   * Both run from week one and stop when the house gets small enough that a
-   * third nominee would leave nobody to vote.
+   * Runs from week one and stops when the house gets small enough that a third
+   * nominee would leave nobody to vote.
    */
-  const safetyMode = options.safetyMode && options.safetyMode !== 'off' ? options.safetyMode : null;
-  const stopsAt = Number.isFinite(options.safetyStopsAt) ? options.safetyStopsAt
-    : (safetyMode === 'ai-arena' ? 9 : 6);
+  // Any value that is not "off" means the Block Buster — seasons saved while
+  // there were two modes still load.
+  const safetyMode = options.safetyMode && options.safetyMode !== 'off' ? 'block-buster' : null;
+  const stopsAt = Number.isFinite(options.safetyStopsAt) ? options.safetyStopsAt : 6;
   // Three nominees plus an HOH leaves house.length - 4 voters; below five in
   // the house that is nobody, so the mode has to stop before it breaks a vote.
   const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);

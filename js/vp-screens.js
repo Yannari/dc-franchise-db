@@ -15835,7 +15835,7 @@ export function buildBBWeekScreens(ep) {
   // house does record: competition wins, time on the block, and who is aligned.
   try {
     const overview = rpBuildBBOverview(ep);
-    if (overview && overview.trim()) screens.push({ id: 'bb-overview', label: 'The House', html: overview });
+    if (overview && overview.trim()) screens.push({ id: 'bb-overview', label: 'House Status', html: overview });
   } catch { /* no snapshot, no overview */ }
   let houseSlot = 0, campaignIdx = 0;
 
@@ -15887,17 +15887,6 @@ export function buildBBWeekScreens(ep) {
     }
   }
 
-  // Alliances and relationships are the same sections the island uses, reading
-  // the same canonical state. A house has blocs and bonds like anywhere else.
-  try {
-    const map = rpBuildAllianceMap(ep);
-    if (map && map.trim()) screens.push({ id: 'bb-alliances', label: 'Alliances', html: map });
-  } catch { /* a week with no alliances simply has no screen */ }
-  try {
-    const rels = rpBuildRelationships(ep);
-    if (rels && rels.trim()) screens.push({ id: 'bb-rels', label: 'Relationships', html: rels });
-  } catch { /* ditto */ }
-
   // The numbers behind the week, behind the same switch Total Drama uses.
   try {
     if (typeof localStorage !== 'undefined' && localStorage.getItem('vp_debug') === 'true') {
@@ -15909,72 +15898,155 @@ export function buildBBWeekScreens(ep) {
 }
 
 /**
- * The house overview — where everybody stands.
+ * The memory wall.
  *
- * Total Drama's camp hierarchy reads gs.socialStatus, which a house never
- * populates, so that screen comes back empty for Big Brother. This is the same
- * idea built from what a house actually records: competition record, how often
- * somebody has been on the block, who they are aligned with, and how the room
- * reads them.
+ * The house's own furniture: every houseguest of the season on one wall, the
+ * ones who have gone turned grey. It is a grid because it is a wall — a column
+ * of one portrait per row wasted the whole screen and told you less.
+ *
+ * `stillIn` is the roster at the START of whatever is being shown, so the wall
+ * never gives away a result the viewer has not reached yet. On the house status
+ * screen that means this week's evictee is still lit; on the aftermath, where
+ * the eviction has already played, they have gone dark.
+ */
+function _bbMemoryWall(stillIn, { highlight = {}, note = '' } = {}) {
+  const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn]);
+  const live = new Set(stillIn);
+  const cells = all.map(name => {
+    const out = !live.has(name);
+    const tag = highlight[name];
+    const border = tag === 'hoh' ? '#f0a500' : tag === 'veto' ? '#3fb950' : tag === 'nominee' ? '#f85149' : out ? '#21262d' : '#30363d';
+    return `<div style="text-align:center;${out ? 'opacity:.28;filter:grayscale(1)' : ''}">
+      <div style="width:100%;aspect-ratio:1;border-radius:6px;border:2px solid ${border};overflow:hidden;background:#161b22;position:relative">
+        <img src="assets/avatars/${_bbSlug(name)}.png" style="width:100%;height:100%;object-fit:cover"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>
+        ${out ? `<div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent,transparent 6px,rgba(0,0,0,.35) 6px,rgba(0,0,0,.35) 7px)"></div>` : ''}
+      </div>
+      <div style="font-size:9px;margin-top:4px;color:${out ? '#484f58' : '#c9d1d9'};letter-spacing:.3px">${name}</div>
+      ${tag ? `<div style="font-size:7.5px;letter-spacing:1px;color:${border};text-transform:uppercase">${tag}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;margin:14px 0">${cells}</div>
+    ${note ? `<div style="text-align:center;font-size:10px;color:#6e7681;letter-spacing:.5px">${note}</div>` : ''}`;
+}
+
+const _bbSlug = name => {
+  const p = (typeof players !== 'undefined') ? players.find(x => x.name === name) : null;
+  return p?.slug || String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+};
+
+/**
+ * House status — the house's version of the camp overview.
+ *
+ * One screen, the way a Total Drama camp is one screen: the memory wall at the
+ * top, then collapsible sections for where everybody stands, who is aligned
+ * with whom, which relationships actually matter, and the season so far.
+ *
+ * Alliances and relationships were separate screens for a while, which is a
+ * whole page each to say something that fits in a paragraph. They belong here.
  */
 export function rpBuildBBOverview(ep) {
   const snap = ep.gsSnapshot || {};
-  const active = snap.activePlayers || gs.activePlayers || [];
-  if (!active.length) return '';
+  // The house as it stood when the week OPENED — never this week's result.
+  const stillIn = ep.houseAtStart?.length ? ep.houseAtStart : (snap.activePlayers || gs.activePlayers || []);
+  if (!stillIn.length) return '';
+
   const stats = snap.bb?.stats || gs.bb?.stats || {};
   const alliances = (snap.namedAlliances || gs.namedAlliances || [])
-    .filter(a => a.active !== false && !a.dissolved);
+    .filter(a => a.active !== false && !a.dissolved && (a.members || []).some(m => stillIn.includes(m)));
+  const alliesOf = name => [...new Set(alliances.filter(a => (a.members || []).includes(name))
+    .flatMap(a => a.members.filter(m => m !== name && stillIn.includes(m))))];
+  const id = suffix => `bbst-${ep.num}-${suffix}`;
 
-  const alliesOf = name => alliances
-    .filter(a => (a.members || []).includes(name))
-    .flatMap(a => a.members.filter(m => m !== name && active.includes(m)));
+  const section = (key, label, color, body) => `<div class="rp-camp-toggle-section">
+    <button class="rp-camp-toggle-btn" style="border-color:${color};color:${color}" onclick="vpToggleSection('${id(key)}')">
+      ${label} <span class="rp-toggle-arrow">▲</span>
+    </button>
+    <div id="${id(key)}" class="rp-camp-toggle-body">${body}</div>
+  </div>`;
 
-  const rows = active.map(name => {
+  // ── standing ──
+  const rows = stillIn.map(name => {
     const st = stats[name] || {};
-    const mates = [...new Set(alliesOf(name))];
-    // How the room feels about somebody, from the bonds it can see.
-    const others = active.filter(n => n !== name);
+    const mates = alliesOf(name);
+    const others = stillIn.filter(n => n !== name);
     const standing = others.length
       ? others.reduce((sum, n) => sum + (typeof getPerceivedBond === 'function' ? getPerceivedBond(n, name) : 0), 0) / others.length
       : 0;
-    return {
-      name, mates,
-      hoh: st.hohWins || 0, veto: st.vetoWins || 0,
-      block: st.timesOnTheBlock || 0, noms: st.timesNominated || 0,
-      standing,
-      power: (st.hohWins || 0) * 2 + (st.vetoWins || 0) * 1.5 + mates.length * 0.8 + standing * 0.5 - (st.timesOnTheBlock || 0) * 0.6,
-    };
+    return { name, mates, hoh: st.hohWins || 0, veto: st.vetoWins || 0, block: st.timesOnTheBlock || 0,
+      power: (st.hohWins || 0) * 2 + (st.vetoWins || 0) * 1.5 + mates.length * 0.8 + standing * 0.5 - (st.timesOnTheBlock || 0) * 0.6 };
   }).sort((a, b) => b.power - a.power);
 
-  const band = i => i < Math.ceil(rows.length / 3) ? { label: 'RUNNING THE HOUSE', color: '#f0a500' }
-    : i < Math.ceil(rows.length * 2 / 3) ? { label: 'IN THE MIDDLE', color: '#58a6ff' }
-    : { label: 'ON THE OUTSIDE', color: '#f85149' };
+  const third = Math.ceil(rows.length / 3);
+  const bands = [
+    { label: 'RUNNING THE HOUSE', color: '#f0a500', rows: rows.slice(0, third) },
+    { label: 'IN THE MIDDLE', color: '#58a6ff', rows: rows.slice(third, third * 2) },
+    { label: 'ON THE OUTSIDE', color: '#f85149', rows: rows.slice(third * 2) },
+  ].filter(b => b.rows.length);
 
-  let html = `<div class="rp-page bb-room bb-open">
-    <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div class="rp-title" style="color:#f0a500">THE HOUSE</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${active.length} houseguests, ordered by how much of the house they actually control.</div>`;
+  const standingBody = bands.map(b => `<div style="margin-bottom:10px">
+    <div style="font-size:10px;letter-spacing:1.5px;color:${b.color};margin-bottom:5px">${b.label}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:5px">
+      ${b.rows.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${b.color};background:${b.color}0a;border-radius:4px">
+        <strong style="font-size:12px;min-width:72px">${r.name}</strong>
+        <span style="font-size:10px;color:#8b949e">${[
+          r.hoh ? `${r.hoh}× HOH` : '', r.veto ? `${r.veto}× veto` : '',
+          r.block ? `${r.block}× block` : '', r.mates.length ? `+${r.mates.length}` : 'alone',
+        ].filter(Boolean).join(' · ')}</span></div>`).join('')}
+    </div></div>`).join('');
 
-  let lastBand = null;
-  rows.forEach((r, i) => {
-    const b = band(i);
-    if (b.label !== lastBand) {
-      html += `<div style="margin:16px 0 8px;font-family:var(--font-display);font-size:12px;letter-spacing:2px;color:${b.color}">${b.label}</div>`;
-      lastBand = b.label;
-    }
-    const chips = [
-      r.hoh ? `<span style="color:#f0a500">${r.hoh}× HOH</span>` : '',
-      r.veto ? `<span style="color:#3fb950">${r.veto}× veto</span>` : '',
-      r.block ? `<span style="color:#f85149">${r.block}× on the block</span>` : '',
-      r.mates.length ? `<span style="color:#8b949e">with ${r.mates.join(', ')}</span>` : `<span style="color:#6e7681">no bloc</span>`,
-    ].filter(Boolean).join(' · ');
-    html += `<div class="rp-brant-entry" style="border-left:3px solid ${b.color}">
-      <div class="rp-brant-portraits">${rpPortrait(r.name)}</div>
-      <div class="rp-brant-text"><strong style="color:#f0f6fc">${r.name}</strong><br>
-        <span style="font-size:11px">${chips}</span></div>
+  // ── alliances ──
+  const allianceBody = alliances.length ? alliances.map(a => {
+    const live = (a.members || []).filter(m => stillIn.includes(m));
+    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-left:2px solid #58a6ff;background:#58a6ff0a;border-radius:4px;margin-bottom:5px">
+      <strong style="font-size:12px;min-width:104px">${a.name}</strong>
+      <span style="font-size:11px;color:#c9d1d9;flex:1">${live.join(', ')}</span>
+      <span style="font-size:9px;color:#6e7681;letter-spacing:.5px">${a.formationEvidence || ''}${a.trust != null ? ` · trust ${Number(a.trust).toFixed(1)}` : ''}</span>
     </div>`;
-  });
-  return html + `</div>`;
+  }).join('') : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has formalised anything yet.</div>`;
+
+  // ── relationships: the pairs that actually decide votes ──
+  const pairs = [];
+  for (let i = 0; i < stillIn.length; i++) {
+    for (let j = i + 1; j < stillIn.length; j++) {
+      const v = typeof getBond === 'function' ? getBond(stillIn[i], stillIn[j]) : 0;
+      if (Math.abs(v) >= 2.5) pairs.push({ a: stillIn[i], b: stillIn[j], v });
+    }
+  }
+  pairs.sort((x, y) => Math.abs(y.v) - Math.abs(x.v));
+  const relBody = pairs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:5px">
+    ${pairs.slice(0, 14).map(p => {
+      const good = p.v > 0;
+      const color = good ? '#3fb950' : '#f85149';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${color};background:${color}0a;border-radius:4px">
+        <span style="font-size:11px;flex:1">${p.a} <span style="color:#6e7681">${good ? '&' : 'vs'}</span> ${p.b}</span>
+        <span style="font-size:10px;color:${color};font-family:var(--font-mono)">${p.v > 0 ? '+' : ''}${p.v.toFixed(1)}</span>
+      </div>`;
+    }).join('')}</div>`
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody feels strongly about anybody yet.</div>`;
+
+  // ── the season so far ──
+  const past = (gs.episodeHistory || []).filter(h => h.num <= ep.num && h.format === 'big-brother');
+  const timelineBody = past.length ? past.map(h => `<div style="display:flex;align-items:center;gap:10px;padding:4px 8px;font-size:11px;border-bottom:1px solid rgba(139,148,158,.08)">
+      <span style="min-width:52px;color:#6e7681;font-family:var(--font-mono)">WK ${h.num}</span>
+      <span style="min-width:96px;color:#f0a500">${h.hoh || '—'}</span>
+      <span style="flex:1;color:#8b949e">${(h.finalNominees || []).join(' · ')}</span>
+      <span style="color:${h.num === ep.num ? '#6e7681' : '#f85149'}">${h.num === ep.num ? 'in progress' : (h.eliminated || '—')}</span>
+    </div>`).join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Week one. Nothing has happened yet.</div>`;
+
+  const gone = ((typeof players !== 'undefined' ? players.length : stillIn.length) - stillIn.length);
+  return `<div class="rp-page bb-room bb-open">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div class="rp-title" style="color:#f0a500">HOUSE STATUS</div>
+    ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
+    ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
+    ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}
+    ${section('rel', 'RELATIONSHIPS THAT MATTER', '#3fb950', relBody)}
+    ${section('time', 'THE SEASON SO FAR', '#8b949e', timelineBody)}
+  </div>`;
 }
 
 /**
@@ -16081,6 +16153,15 @@ export function rpBuildBBEvictionInterview(ep) {
       </div>`;
     }
   });
+
+  if (done) {
+    // The wall after the eviction: whoever just walked out has gone grey.
+    const left = (ep.houseAtStart || []).filter(n => n !== iv.evictee);
+    html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="text-align:center;font-size:10px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px">The memory wall</div>
+      ${_bbMemoryWall(left, { note: `${left.length} houseguests remain` })}
+    </div>`;
+  }
 
   html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
     ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, steps.length - 1))}">Next</button>`}

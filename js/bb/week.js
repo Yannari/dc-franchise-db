@@ -232,6 +232,7 @@ export function simulateBBWeek(options = {}) {
   // the house that is nobody, so the mode has to stop before it breaks a vote.
   const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);
   week.safetyMode = safetyActive ? safetyMode : null;
+  const nomineeCount = safetyActive ? 3 : 2;
   const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
   week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
@@ -302,23 +303,13 @@ export function simulateBBWeek(options = {}) {
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
   let nominees = [...new Set(plan.nominees)].filter(name => house.includes(name) && name !== hoh).slice(0, 2);
   if (nominees.length < 2) nominees = chooseNominationPlan(hoh, house, rng).nominees;
-  // Two or three, not always three.
+  // A Block Buster week is always three on the block — the third chair is the
+  // mode, not a choice the Head of Household gets to make. Three go up, the
+  // three compete, and two face the vote.
   //
-  // A Block Buster week does not force the Head of Household's hand: naming a
-  // third chair is a decision, and a bold HOH with somebody specific in mind
-  // takes the extra shot while a cautious one keeps it to the pair they can
-  // defend. With only two up there is nobody for the Block Buster to save, so
-  // the competition simply does not happen that week — which is the cost of
-  // playing it safe.
-  const hohNerve = pStats(hoh);
-  const wantsThree = safetyActive
-    && rng() < 0.45 + (hohNerve.boldness / 10) * 0.3 + (hohNerve.strategic / 10) * 0.2;
-  const nomineeCount = wantsThree ? 3 : 2;
-  week.namedThree = !!wantsThree;
-
-  // A third chair, named by the same read that names a replacement — the HOH
-  // is choosing another target, not drawing a name out of a hat.
-  while (wantsThree && nominees.length < nomineeCount) {
+  // The third is named by the same read that names a replacement, so it is
+  // another target rather than a name out of a hat.
+  while (safetyActive && nominees.length < nomineeCount) {
     const third = chooseReplacement(hoh, house, [hoh, ...nominees], plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);

@@ -4279,16 +4279,64 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
-      case 'eviction':
+      case 'eviction': {
         sec('LIVE EVICTION');
+
+        // THE NUMBERS. The transcript is the other way somebody can find out
+        // how a week went, so it carries the same fact the screen opens with:
+        // who could decide this before anybody voted.
+        const voters = (act.ballots || []).map(b => b.voter);
+        if (voters.length) {
+          const majority = Math.floor(voters.length / 2) + 1;
+          ln(`  The numbers: ${majority} of ${voters.length} decides it.`);
+          const blocs = (ep.gsSnapshot?.namedAlliances || [])
+            .filter(a => a.active !== false)
+            .map(a => ({ name: a.name, inside: (a.members || []).filter(m => voters.includes(m)) }))
+            .filter(a => a.inside.length >= 2)
+            .sort((a, b) => b.inside.length - a.inside.length);
+          blocs.forEach(b => ln(`    ${b.name}: ${b.inside.length} of ${voters.length}`
+            + `${b.inside.length >= majority ? '  — holds the house' : ''}  (${b.inside.join(', ')})`));
+          if (!blocs.length) ln('    Nobody has the numbers.');
+        }
+
+        ln('');
         (act.ballots || []).forEach(b =>
-          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${b.changed ? ' (the campaign moved this vote)' : ''}`));
+          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${b.changed ? ' (moved this week)' : ''}`));
+
+        // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
+        // transcript is not a thinner account of the same night.
+        const commitments = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+        const reasons = (act.ballots || []).map(b => {
+          const c = commitments.get(b.voter);
+          const moved = b.stated && b.stated !== b.evict;
+          if (moved && c?.promised) return `  ${b.voter} shook on ${b.stated} and voted ${b.evict} anyway.`;
+          if (b.blocMove) return `  ${b.voter} went with ${b.blocMove} onto ${b.evict}.`;
+          if (b.bandwagon) return `  ${b.voter} left ${b.stated} once it was losing and joined ${b.evict}.`;
+          if (moved) return `  ${b.voter} was talked off ${b.stated} during the week.`;
+          if (c?.promised) return `  ${b.voter} promised ${b.evict} and cast it.`;
+          return '';
+        }).filter(Boolean);
+        if (reasons.length) {
+          ln('');
+          ln('  How the plans changed:');
+          reasons.forEach(ln);
+        }
+        for (const [name, bloc] of Object.entries((ep.blocMoves || []).reduce((acc, m) => {
+          (acc[m.alliance] ||= { target: m.target, asked: [] }).asked.push(m.voter);
+          return acc;
+        }, {}))) {
+          const held = bloc.asked.filter(v => (act.ballots || []).find(b => b.voter === v)?.evict === bloc.target);
+          ln(`    ${name} asked ${bloc.asked.length} for ${bloc.target} and got ${held.length}.`);
+        }
+
+        ln('');
         Object.entries(act.votes || {}).forEach(([name, count]) =>
           ln(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
         if (act.tieBreak) ln(`  Tied — ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`);
         beats(act);
         ln(`  ${act.evicted} is evicted from the Big Brother house.`);
         break;
+      }
 
       default:
         break;

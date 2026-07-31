@@ -396,12 +396,49 @@ export function simulateBBWeek(options = {}) {
   week.allianceChanges = { formed:[], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
   const competitionLibrary = options.competitions || [];
+  /**
+   * How far a relationship can move in one stretch of a day.
+   *
+   * With twenty to thirty beats in a stretch, a pair that keeps coming up can
+   * accumulate the entire scale in a single morning — a measured week one had
+   * two strangers reach +10.0, inseparable, before the first competition. That
+   * is not a pace any relationship moves at, and it made the opening screen
+   * read as nonsense next to the events that supposedly caused it.
+   *
+   * Applied at the act boundary rather than inside the event api on purpose:
+   * the romance pipeline, the scheme bridge and the shared upkeep all call
+   * addBond directly through Total Drama's own modules, so a cap that only
+   * covered the house api would miss most of the movement.
+   */
+  const STRETCH_BOND_CAP = 2.5;
+  const _capBondMovement = before => {
+    for (const [key, was] of Object.entries(before)) {
+      const now = Number(gs.bonds[key]);
+      if (!Number.isFinite(now)) continue;
+      const delta = now - was;
+      if (Math.abs(delta) <= STRETCH_BOND_CAP) continue;
+      gs.bonds[key] = was + Math.sign(delta) * STRETCH_BOND_CAP;
+    }
+    // Pairs that had no bond at all before this stretch.
+    for (const [key, now] of Object.entries(gs.bonds)) {
+      if (key in before) continue;
+      const v = Number(now);
+      if (Number.isFinite(v) && Math.abs(v) > STRETCH_BOND_CAP) {
+        gs.bonds[key] = Math.sign(v) * STRETCH_BOND_CAP;
+      }
+    }
+  };
+
   const addBeats = (act, extra = {}) => {
+    // Ceremony acts schedule beats too, and a competition night can move a
+    // relationship as far as a whole morning of house life. Same limit.
+    const bondsBefore = { ...(gs.bonds || {}) };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: act.type, phase: act.phase || act.type,
       hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 1 : 0, max: eventLibrary.length ? 3 : 0 });
+    _capBondMovement(bondsBefore);
     return act;
   };
 
@@ -482,6 +519,7 @@ export function simulateBBWeek(options = {}) {
 
   const houseAct = (phase, extra = {}) => {
     const act = { type: 'house', phase, socialBeats: [] };
+    const bondsBefore = { ...(gs.bonds || {}) };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: 'house', phase,
       hoh: week.hoh || null,
@@ -502,6 +540,8 @@ export function simulateBBWeek(options = {}) {
         if (beat.newAlliance) week.allianceChanges.formed.push(formedHere.name);
       }
     }
+
+    _capBondMovement(bondsBefore);
 
     // The state as it stands when this stretch ends.
     //

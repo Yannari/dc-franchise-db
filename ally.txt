@@ -1,0 +1,4 @@
+seasons=6 weeks=90
+alliances formed on screen: 229 (2.54 per week)
+which stretch they formed in: {"pre-hoh":67,"post-hoh":59,"post-noms":54,"post-veto":49}
+most alliances live at once: 1

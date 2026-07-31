@@ -72,8 +72,8 @@ const nomSpeechGame = {
     const p = pronouns(ctx.hoh);
     const text = _variant([
       `${ctx.hoh} keeps the ceremony short. "${a}, ${b} — this is not personal, and I'm not going to insult either of you by pretending it was hard." Nobody in the room believes the second half.`,
-      `"I want to be clear," ${ctx.hoh} says, turning the key. "${a}, ${b}, you're sitting there because of where the numbers are this week. Not because of anything you did to me." It is the most reasonable thing anyone has said all week, which is exactly why ${p.sub} is being watched so carefully.`,
-      `${ctx.hoh} names ${a} and ${b} without raising ${p.posAdj} voice once. No speech, no justification, no apology. The house reads the calm as competence, which is worse for ${p.obj} than anger would have been.`,
+      `“I want to be clear,” ${ctx.hoh} says while turning the key. “${a}, ${b}, this is about where the numbers are. It isn't personal.” Several people avoid looking at the nominees.`,
+      `${ctx.hoh} names ${a} and ${b}, closes the box and sits down. There is no long speech and no apology. The room stays quiet.`,
       `"${a}. ${b}." ${ctx.hoh} sets the keys down. "You'll both have a shot at the veto and I'd rather one of you take yourself off than have me explain myself twice." It lands as fair. It is also, precisely, a plan.`,
     ], ctx, ctx.hoh, a, b);
 
@@ -150,7 +150,7 @@ const nomPawnReassured = {
       `${ctx.hoh} finds ${pawn} in the storage room within the hour. "You're not the one going. I need you up there and I need you to trust me for four days." ${pawn} says yes. ${p.Sub} means it, mostly.`,
       `"Say it to my face," ${pawn} says. ${ctx.hoh} does: "You are a pawn. You are safe. If that changes you'll hear it from me before you hear it from anyone else." It is the exact sentence every pawn in the history of this house has been told.`,
       `${ctx.hoh} catches ${pawn} on the stairs and talks fast and low. ${pawn} nods along, and only afterwards, alone, works out that ${p.sub} never actually got a number — just a tone.`,
-      `The reassurance is delivered over dishes, which is how ${pawn} knows it is meant to sound casual. "Four days," ${ctx.hoh} says. "Then we never do this again." ${pawn} laughs. It is not entirely a laugh.`,
+      `While they wash dishes, ${ctx.hoh} tells ${pawn}, “Four days, then you're off the block and we never do this again.” ${pawn} asks whether the votes are really there.`,
       ...(burnedBefore ? [`"You told me something like this before," ${pawn} says. ${ctx.hoh} does not have a good answer, and the pause where the answer should be is the whole conversation. ${pawn} agrees anyway, because on the block there is nothing else to agree to.`] : []),
     ], ctx, ctx.hoh, pawn);
 
@@ -207,7 +207,7 @@ const nomBlindside = {
       `${victim} does not move when ${p.posAdj} name is called. Not shock exactly — recalculation. Somewhere behind ${p.posAdj} eyes a week of conversations is being reread with the ending known.`,
       `"Okay," ${victim} says, to nobody. Just that. ${ctx.hoh} keeps talking and ${victim} keeps not hearing it, already three moves into a game ${p.sub} did not know ${p.sub} was losing.`,
       `The key turns and ${victim}'s face does something complicated. ${p.Sub} had defended ${ctx.hoh} twice this week — out loud, to people who are now watching ${p.obj} find out what that bought.`,
-      `${victim} smiles, which is the worst possible response and the only one available. Later, in the dark, ${p.sub} will work out exactly which conversation was the lie. Right now ${p.sub} just holds the smile.`,
+      `${victim} forces a smile through the rest of the ceremony. That night, ${p.sub} lies awake trying to work out which conversation was the lie.`,
       ...(promised ? [`${ctx.hoh} had said the words out loud — "you are not going up" — and ${victim} had been stupid enough to find that comforting. ${p.Sub} hears ${p.posAdj} own name and thinks, first, not of the block but of that sentence.`] : []),
       ...(allied ? [`They built something together and ${victim} finds out it was scaffolding. ${p.Sub} looks down the row at the others who were in that alliance, and every one of them looks somewhere else.`] : []),
     ], ctx, victim, ctx.hoh);
@@ -322,9 +322,9 @@ const vetoLeftOnBlock = {
     const text = _variant([
       `"I have decided not to use the Power of Veto." ${stranded} nods along with the sentence like ${p.sub} had known it was coming. ${p.Sub} had not known it was coming.`,
       `The veto stays in ${holder}'s pocket. ${stranded} looks at it for slightly too long — long enough that two people notice, and one of them files it away.`,
-      `${holder} says the words and sits down. ${stranded} says "that's fine" to nobody in particular, twice, which is once more than anyone says a thing they mean.`,
+      `${holder} announces that the veto will not be used. ${stranded} says, “That's fine,” twice without looking at anyone.`,
       `Nothing happens at the veto ceremony, and that is the loudest thing that happens all week. ${stranded} goes to bed early. ${p.Sub} does not sleep early.`,
-      ...(allied ? [`They are supposed to be on the same side. ${holder} keeps the veto in ${pronouns(holder).posAdj} pocket and ${stranded} works out, in real time and in front of everyone, what side actually means in this house.`] : []),
+      ...(allied ? [`${holder} and ${stranded} are supposed to be working together. When ${holder} keeps the veto, ${stranded} stares at them through the rest of the ceremony.`] : []),
     ], ctx, stranded, holder);
 
     // Abandonment scales with what was owed. A stranger who did not save you is
@@ -471,7 +471,7 @@ const evictionScorched = {
       || ctx.hoh;
     const text = _variant([
       `${gone} does not hug anybody. "${blamed}. You know what you did, and now so does everyone watching." The door closes on a silent room.`,
-      `"I'd say good luck, but I'd be lying." ${gone} looks directly at ${blamed} on the way past and says nothing else, which is somehow worse than the speech ${p.sub} had prepared.`,
+      `“I'd say good luck, but I'd be lying.” ${gone} looks directly at ${blamed}, picks up ${p.posAdj} bag and walks out.`,
       `${gone} uses ${p.posAdj} last thirty seconds to lay out, calmly and in order, exactly what ${blamed} has done to three separate people in this house. Two of them did not know.`,
       `It is not a speech so much as a receipt. ${gone} reads it out, hands it to the room, and leaves.`,
     ], ctx, gone, blamed);
@@ -510,7 +510,7 @@ const evictionBlindsided = {
     const betrayer = trusted[0] || house.find(n => n !== gone);
     const text = _variant([
       `${gone} stands up before the vote is finished being read, because ${p.sub} has already worked out that the number is too big to be anyone but ${p.posAdj} own side.`,
-      `The count comes in and ${gone} looks straight at ${betrayer}, who looks at the floor. That is the entire conversation and everybody in the room hears it.`,
+      `When the vote is announced, ${gone} looks straight at ${betrayer}. ${betrayer} looks down at the floor and does not look up again.`,
       `${gone} says "wow" once, quietly. ${p.Sub} does not say anything else on the way out, and the silence does more damage than a speech would have.`,
       `${gone} had the votes counted this morning. ${p.Sub} had them counted wrong, and the difference is standing three feet away not making eye contact.`,
     ], ctx, gone, betrayer);

@@ -18,10 +18,10 @@ const bedroomPolitics = {
   fire(h, c, api, rng) {
     const [a,b,d] = trio(h, rng);
     const text = pick([
-      `${a} moves ${b}'s laundry off the good bed. ${b} moves it back. By the third exchange, ${d} is providing live commentary from under a blanket.`,
-      `${a} proposes a bedroom rotation nobody asked for. ${b} hears fairness; ${d} hears a very elaborate attempt to sleep beside the right people.`,
-      `${b} wakes up to find ${a} has claimed the only outlet with a handwritten sign. The argument begins over a charger and ends with both of them naming alliances.`,
-      `The lights go out, ${a} asks who keeps stealing the pillows, and ${b} answers much too quickly. ${d} laughs hard enough to guarantee this will be discussed tomorrow.`,
+      `${a} dumps ${b}'s clothes off the empty bed. “I was saving that,” ${b} says. ${a} shrugs and starts unpacking anyway while ${d} watches from across the room.`,
+      `${a} wants everyone to switch beds so the rooms are “more balanced.” ${b} asks why ${a} gets to decide that. ${d} stays out of it, but clearly agrees with ${b}.`,
+      `${b} wakes up and finds ${a}'s charger plugged into the outlet beside the bed. Neither will unplug it. Ten minutes later, they are arguing about every little thing that has happened all week.`,
+      `After lights-out, ${a} accuses ${b} of taking the extra pillows. ${b} tells ${a} to check under their own bed. ${d} tries not to laugh and fails.`,
     ], rng);
     api.addBond(a,b,-.8); api.suspicion(d,a,1); api.remember(b,a,'territorial',1,{ room:'bedroom' });
     return result(text,[a,b,d],'BEDROOM WAR','red');
@@ -34,10 +34,10 @@ const interruptedWhisper = {
   fire(h,c,api,rng) {
     const [a,b,d] = trio(h,rng);
     const text = pick([
-      `${a} and ${b} stop talking the instant ${d} enters the storage room. ${d} says, “Don't stop on my account,” and nobody is convincing enough to laugh.`,
-      `${d} catches ${a} whispering to ${b} behind the open refrigerator door. The milk takes a long time to choose.`,
-      `${a} says ${b}'s name into a microphone that is much better than either of them remembered. Across the house, ${d} looks up.`,
-      `${d} opens the bathroom door on the words “but we cannot tell ${d}.” There is no graceful version of the next ten seconds.`,
+      `${a} and ${b} stop talking as soon as ${d} walks into the storage room. “What?” ${d} asks. Both of them say “nothing” at the same time.`,
+      `${d} walks into the kitchen and catches ${a} whispering to ${b} behind the refrigerator door. ${a} immediately starts talking about what to make for dinner.`,
+      `${a} whispers ${b}'s name, not realizing ${d} is lying on the couch in the next room. ${d} stays completely still and listens.`,
+      `${d} opens the bathroom door just as ${a} says, “We can't tell ${d}.” ${a} freezes. ${b} looks down at the floor.`,
     ],rng);
     api.addBond(a,b,.5); api.suspicion(d,a,2.2); api.suspicion(d,b,1.6); api.remember(d,a,'caught-whispering',2,{ with:b });
     return result(text,[a,b,d],'CAUGHT TALKING','purple');
@@ -50,10 +50,10 @@ const kitchenAfterDark = {
   fire(h,c,api,rng) {
     const [a,b,d] = trio(h,rng);
     const text = pick([
-      `At 2:17 a.m., ${a} burns the quesadillas, ${b} eats one anyway, and ${d} laughs until production tells them to keep it down. Tomorrow they will call this trust. Tonight it is melted cheese.`,
-      `${a} and ${b} turn leftovers into a meal for the house. ${d} does none of the cooking and receives most of the credit, which is also a useful social skill.`,
-      `${b} admits a first-week lie while ${a} is elbow-deep in dishes. ${a} keeps washing. The lack of eye contact makes honesty possible.`,
-      `${d} begins an impression of ${a} at the kitchen island. ${a} walks in halfway through, watches silently, then supplies a better ending.`,
+      `${a} burns a quesadilla at two in the morning. ${b} eats it anyway, and ${d} laughs so loudly that production tells them to keep it down.`,
+      `${a} and ${b} make a late-night meal out of whatever is left in the fridge. ${d} sits at the counter talking to them until all three lose track of the time.`,
+      `While ${a} washes dishes, ${b} admits they lied about something during the first week. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
+      `${d} starts doing an impression of ${a} in the kitchen. ${a} walks in halfway through it, stares for a moment, then joins in and makes everyone laugh harder.`,
     ],rng);
     api.addBond(a,b,1.1); api.addBond(a,d,.5); api.addBond(b,d,.5); api.remember(b,a,'late-night-trust',1,{});
     return result(text,[a,b,d],'2 A.M. CREW','green');
@@ -66,10 +66,10 @@ const secretSpill = {
   fire(h,c,api,rng) {
     const [a,b,d] = trio(h,rng);
     const text = pick([
-      `${a} says, “When ${b} told me—” and stops. ${b} had not told ${d}. ${d} thanks them both for clearing that up.`,
-      `${a} retells a private conversation as a funny story. It is funny right until ${b} notices ${d} listening from the couch.`,
-      `${a} uses the phrase “our final three” in front of the fourth person in the room. ${d} counts the people twice.`,
-      `${b} asks how ${a} knew about the plan. ${a} points at ${d}; ${d} points back. The secret now has three owners and no home.`,
+      `${a} starts to say, “When ${b} told me—” and cuts themself off. ${b} looks straight at ${d}. That conversation was supposed to stay private.`,
+      `${a} repeats something ${b} said in private because it makes a funny story. ${b} does not laugh when they notice ${d} listening from the couch.`,
+      `${a} mentions “our final three” with ${d} still in the room. Nobody speaks for a second. ${a} tries to change the subject, but it is too late.`,
+      `${b} asks how ${a} found out about the plan. ${a} says ${d} told them. ${d} immediately denies it, and all three start talking over one another.`,
     ],rng);
     api.addBond(a,b,-1.2); api.suspicion(d,a,2); api.remember(b,a,'leaked-information',3,{ witness:d });
     return result(text,[a,b,d],'SECRET SPILLED','red');
@@ -82,10 +82,10 @@ const hohOrbit = {
   fire(h,c,api,rng) {
     const hoh=c.hoh, a=other(h,hoh,rng), b=other(h,hoh,rng);
     const text=pick([
-      `${a} has visited the HOH room four times today and brought a different excuse each time. On visit five, ${hoh} stops pretending not to notice.`,
-      `${a} settles into the HOH bed like a cabinet minister. ${b}, waiting in the hallway, begins timing how long the meeting lasts.`,
-      `${hoh} opens the HOH door and finds ${a} already outside with coffee and a pitch. ${b} is three steps behind with the same coffee and the opposite pitch.`,
-      `${a} laughs at every one of ${hoh}'s stories. ${b} watches from downstairs and revises ${a}'s threat level upward for enthusiasm alone.`,
+      `${a} comes up to the HOH room for the fourth time that day. This time the excuse is a missing water bottle. ${hoh} lets them in, but asks what they really want.`,
+      `${a} stretches out on the HOH bed and settles in for a long talk. ${b} passes the open door twice, waiting for a turn alone with ${hoh}.`,
+      `${hoh} opens the HOH door and finds ${a} waiting with coffee. Before they can close it, ${b} appears at the top of the stairs asking to talk too.`,
+      `${a} spends most of the afternoon in the HOH room with ${hoh}. Downstairs, ${b} points out that ${a} has barely spoken to anyone else all day.`,
     ],rng);
     api.addBond(a,hoh,.8); api.suspicion(b,a,1.8); api.remember(b,a,'hoh-orbit',2,{ hoh });
     return result(text,[hoh,a,b],'HOH TRAFFIC','gold');
@@ -98,10 +98,10 @@ const apologyTour = {
   fire(h,c,api,rng) {
     const a=actor(h,rng); const b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     const text=pick([
-      `${a} asks ${b} for five minutes and uses four of them explaining why the apology should count. ${b} notices the arithmetic.`,
-      `${a} arrives with coffee, a blanket and the phrase “I own that.” ${b} accepts two of the three.`,
-      `${a}'s apology to ${b} is clumsy, specific and—against the house consensus—probably sincere. That makes it harder to dismiss.`,
-      `${a} tells ${b} the fight was game, not personal. ${b} says the game is played by people. Neither has a prepared response to that.`,
+      `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really their fault. ${b} listens without saying much.`,
+      `${a} brings ${b} a cup of coffee and says, “I handled that badly.” ${b} accepts the coffee, then asks what exactly ${a} is sorry for.`,
+      `${a} tells ${b} they were wrong about what happened and should not have snapped at them. The apology is awkward, but ${b} can tell it is real.`,
+      `${a} tells ${b} the argument was only game. “It didn't feel like game,” ${b} says. ${a} goes quiet and lets them finish.`,
     ],rng);
     const lands=pStats(a).social + rng()*6 >= 8; api.addBond(a,b,lands?1.2:-.4); api.remember(b,a,lands?'made-amends':'bad-apology',lands?1:2,{});
     return result(text,[a,b],lands?'APOLOGY LANDS':'NOT BUYING IT',lands?'green':'red');
@@ -115,10 +115,10 @@ const poolsideSpark = {
     const pairs=[]; for(const a of h) for(const b of h) if(a<b&&couldRomance(a,b)) pairs.push([a,b]);
     const [a,b]=pick(pairs,rng);
     const text=pick([
-      `${a} and ${b} volunteer to clean the pool and spend forty minutes on one corner. The pool is not cleaner. The feeds have found their afternoon story.`,
-      `${a} steals ${b}'s sunglasses. ${b} spends the next hour pretending to want them back. Three houseguests begin naming the showmance before either participant does.`,
-      `${a} rubs sunscreen onto ${b}'s shoulders while a nearby conversation slowly dies. Nobody is subtle enough for this house.`,
-      `${b} makes ${a} laugh hard enough to snort, then swears not to tell anyone. The promise lasts. The camera zoom does not.`,
+      `${a} and ${b} volunteer to clean the pool, but spend most of the time sitting at the edge with their feet in the water and talking.`,
+      `${a} takes ${b}'s sunglasses and refuses to give them back. ${b} follows ${a} around the yard, laughing, while everyone else starts exchanging looks.`,
+      `${a} offers to put sunscreen on ${b}'s shoulders. The conversation beside them trails off as the rest of the yard notices.`,
+      `${b} makes ${a} laugh so hard they snort. ${a} covers their face and tells ${b} never to repeat it. ${b} promises between laughs.`,
     ],rng);
     api.addBond(a,b,1.1); api.showmance(a,b,{ source:'poolside-spark' }); api.remember(a,b,'romantic-spark',1,{});
     return result(text,[a,b],'CHEMISTRY','pink');
@@ -131,10 +131,10 @@ const voteFlipRoom = {
   fire(h,c,api,rng) {
     const noms=c.nominees, [a,b,d]=trio(h.filter(n=>!noms.includes(n)),rng), target=pick(noms,rng);
     const text=pick([
-      `${a} says the votes are there. ${b} asks for names. ${a} names ${d}, who is sitting close enough to hear and has not agreed to anything.`,
-      `${a}, ${b} and ${d} count the vote six times and get three different answers. The flip exists; whether the voters do is less clear.`,
-      `${b} closes the bedroom door and says, “If we do this, we all do it.” ${d} immediately asks who “we” includes.`,
-      `${a} pitches evicting ${target} as the obvious move. ${b} agrees too fast. ${d} leaves the room wondering which of them is setting the other up.`,
+      `${a} insists they have the votes to evict ${target}. ${b} asks for names. When ${a} names ${d}, ${d} cuts in: “I never said that.”`,
+      `${a}, ${b} and ${d} count the votes again. Each of them thinks a different person is the swing, and nobody wants to be the first one to commit.`,
+      `${b} shuts the bedroom door. “If we're flipping this, I need both of you with me.” ${d} asks who else knows before giving an answer.`,
+      `${a} tells ${b} and ${d} that evicting ${target} is better for all three of them. ${b} agrees. ${d} asks ${b} why they answered so quickly.`,
     ],rng);
     api.addBond(a,b,.5); api.suspicion(d,a,1.2); api.setTarget(a,target,'late vote flip'); api.remember(b,a,'vote-flip-pitch',2,{ target });
     return result(text,[a,b,d,target],'VOTES IN MOTION','purple');
@@ -147,10 +147,10 @@ const houseRoast = {
   fire(h,c,api,rng) {
     const [a,b,d]=trio(h,rng); const lands=pStats(a).social+rng()*6>=8;
     const text=pick([
-      `${a}'s impression of ${b} is so exact that ${b} laughs first and worries later. ${d} requests an encore with more diary-room pacing.`,
-      `${a} turns dinner into an awards show. ${b} wins “Most Likely to Say This Isn't a Strategy Meeting During a Strategy Meeting” and does not clap.`,
-      `${a} reenacts ${b}'s veto speech using a dish towel as a cape. The room collapses. ${b} smiles with only the television half of their face.`,
-      `${a}'s joke about ${b} lands perfectly with everyone except ${b}. The laughter ends; the footage does not.`,
+      `${a} does an impression of the way ${b} walks into a strategy talk. ${d} nearly falls off the couch laughing, and even ${b} has to admit it is accurate.`,
+      `${a} starts handing out fake awards at dinner. ${b} wins “Most Likely to Turn Any Conversation Into a Meeting” and forces a smile.`,
+      `${a} reenacts ${b}'s veto speech with a dish towel over their shoulders. Everyone laughs. ${b} laughs too, but asks ${a} to drop it when they try to do it again.`,
+      `${a} makes a joke about ${b} that gets a huge reaction from the room. ${b} goes quiet, and ${d} is the first person to realize the joke went too far.`,
     ],rng);
     api.addBond(a,b,lands?.5:-1.1); api.addBond(a,d,.4); api.remember(b,a,lands?'shared-joke':'humiliated',lands?1:2,{});
     return result(text,[a,b,d],lands?'HOUSE IN TEARS':'JOKE CUTS DEEP',lands?'green':'red');
@@ -163,10 +163,10 @@ const storageRoomBreakdown = {
   fire(h,c,api,rng) {
     const a=actor(h,rng), b=closestTo(a,h.filter(n=>n!==a))||other(h,a,rng);
     const text=pick([
-      `${a} goes to the storage room for batteries and stays there crying beside the paper towels. ${b} enters, backs out, then returns without pretending not to have seen.`,
-      `${a} says the house is getting to them. ${b} does not offer strategy, only the last clean towel and enough silence to make the room feel private.`,
-      `${b} finds ${a} staring into the freezer. “I miss normal food,” ${a} says, meaning several things at once.`,
-      `${a} finally admits the block is frightening. ${b} sits on a crate of cereal and lets the cameras wait for a cleaner sentence.`,
+      `${a} goes into the storage room for batteries and starts crying beside the paper towels. ${b} walks in, hesitates, then closes the door and sits down with them.`,
+      `${a} admits the house is getting to them. ${b} hands them a towel, sits on the floor and listens without bringing up the game.`,
+      `${b} finds ${a} standing in front of the open freezer. “I just miss home,” ${a} says. ${b} stays with them until they are ready to go back outside.`,
+      `${a} tells ${b} they are scared of going home this week. ${b} sits beside them on a box of cereal and lets them talk it out.`,
     ],rng);
     api.addBond(a,b,1.5); api.remember(a,b,'emotional-support',3,{}); api.popDelta(b,.5);
     return result(text,[a,b],'A REAL MOMENT','green');
@@ -179,10 +179,10 @@ const meetingCrash = {
   fire(h,c,api,rng) {
     const [a,b,d]=trio(h,rng);
     const text=pick([
-      `${a} opens the HOH-room door without knocking. ${b} and ${d} are sitting six feet apart with four empty chairs between them. Somehow that looks guiltier.`,
-      `${a} walks into the bedroom; ${b} says “perfect timing” with the voice people use for terrible timing. ${d} starts discussing laundry at strategic speed.`,
-      `${a} joins ${b} and ${d} on the couch and refuses to leave first. The conversation about weather lasts eleven punishing minutes.`,
-      `${b} hides the chess pieces when ${a} approaches, as though the board itself contains the plan. ${a} notices the empty table before the smiles.`,
+      `${a} opens the HOH-room door without knocking. ${b} and ${d} immediately stop talking and move farther apart on the bed.`,
+      `${a} walks into the bedroom. ${b} says, “Perfect timing,” a little too quickly, while ${d} suddenly starts folding clothes.`,
+      `${a} sits down beside ${b} and ${d} and waits to see whether they will continue their conversation. They spend the next several minutes talking about the weather instead.`,
+      `${b} and ${d} are using the chessboard to count votes. When ${a} comes outside, ${b} sweeps the pieces back into the box. ${a} notices.`,
     ],rng);
     api.addBond(b,d,.4); api.suspicion(a,b,2); api.suspicion(a,d,2); api.remember(a,b,'closed-door-meeting',2,{ with:d });
     return result(text,[a,b,d],'MEETING CRASHED','purple');
@@ -195,10 +195,10 @@ const silentStandoff = {
   fire(h,c,api,rng) {
     const a=actor(h,rng), b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     const text=pick([
-      `${a} makes coffee for everyone except ${b}. ${b} makes eye contact while pouring a cup from the same pot. Nobody says the thing the whole kitchen just watched.`,
-      `${a} and ${b} clean opposite ends of the counter in total silence until there is no counter left and neither is willing to leave.`,
-      `${b} asks the room a question. ${a} answers the room. The room would like to be removed from the conversation.`,
-      `${a} moves one seat when ${b} sits down. ${b} moves one seat closer. The backyard goes quiet for a game with no stated rules.`,
+      `${a} pours coffee for everyone at the table except ${b}. ${b} gets up, takes the pot from ${a}'s hand and pours their own cup without saying a word.`,
+      `${a} and ${b} wipe down opposite ends of the kitchen counter in silence. When they meet in the middle, neither one moves out of the way.`,
+      `${b} asks if anyone wants to use the pool. ${a} answers someone else instead of looking at them. Everyone at the table notices.`,
+      `${a} changes seats when ${b} sits beside them. ${b} moves one chair closer. “Is there a problem?” ${b} asks. ${a} says no.`,
     ],rng);
     api.addBond(a,b,-.7); api.remember(a,b,'cold-war',2,{}); if(!targetOf(a)) api.setTarget(a,b,'personal standoff');
     return result(text,[a,b],'COLD WAR','red');

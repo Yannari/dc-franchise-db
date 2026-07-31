@@ -137,7 +137,7 @@ const prank = {
       `${victim} walks into it, sees exactly what has happened, and says "${joker}" to an empty room with real affection.`,
       `${joker} has been building this for two days. It works perfectly. ${victim} demands to know how and then demands to help with the next one.`,
     ], ctx, joker, victim) : _variant([
-      `The prank is funny to everybody except ${victim}, which is the only opinion that turns out to matter.`,
+      `Everyone laughs at the prank except ${victim}. When ${joker} tries to explain it was harmless, ${victim} walks away.`,
       `${victim} does not laugh. The room laughs, then notices ${p.sub} is not laughing, then stops.`,
       `${joker} misjudges it badly. What was meant as a joke lands as a message about where ${victim} sits in this house.`,
       `${victim} says "very funny" in the voice people use when it was not, and goes to bed early.`,
@@ -183,7 +183,7 @@ const chores = {
       `${tidy} does the dishes again and says nothing again, and files it with everything else ${p.sub} is not saying.`,
       `Somebody has to do it. It is ${tidy}. It is always ${tidy}, and ${p.sub} has decided that being the person who does it is worth something.`,
       `${tidy} cleans the kitchen at one in the morning because it is the only time it is quiet and the only thing ${p.sub} can control.`,
-      `${slob} thanks ${tidy} without noticing what ${pronouns(slob).sub} is thanking ${pronouns(tidy).obj} for, which is somehow worse than not thanking ${pronouns(tidy).obj}.`,
+      `${slob} thanks ${tidy} for cleaning, then leaves another plate on the counter. ${tidy} stares at it until ${slob} finally notices.`,
     ], ctx, tidy, slob);
 
     api.addBond(tidy, slob, boils ? -1.1 : -0.4);
@@ -277,7 +277,7 @@ const homesick = {
     const helper = closestTo(a, _others(house, a));
     const p = pronouns(a);
     const text = _variant([
-      `${a} does the arithmetic on how long ${p.sub} has been in here and has to stop doing it.`,
+      `${a} starts counting how many days ${p.sub} has been in the house, gets halfway through and decides ${p.sub} does not want the answer.`,
       `Somebody mentions a birthday ${a} is going to miss and the whole table watches ${pronouns(a).obj} decide not to react.`,
       `${a} has stopped talking about home, which everyone who has been in here long enough recognises as the bad sign rather than the good one.`,
       `It arrives out of nothing, in the middle of an ordinary afternoon, and ${a} has to go and stand outside for a while.`,
@@ -302,7 +302,7 @@ const kitchenTable = {
     const group = _leastSeen(house).slice(0, 3);
     const [a, b, c] = group;
     const text = _variant([
-      `Nothing happens at the kitchen table for two hours, which is the most valuable two hours of the day: ${group.join(', ')} find out who laughs at what.`,
+      `${group.join(', ')} spend two hours at the kitchen table telling stories and making each other laugh. Nobody talks game, and nobody leaves early.`,
       `${a} tells a story about ${pronouns(a).posAdj} job that has nothing to do with anything and by the end ${b} and ${c} have decided how they feel about ${pronouns(a).obj}.`,
       `The conversation is about food, and then about home, and then, without anyone steering it, about who has been acting strangely this week.`,
       `${group.join(', ')} stay up long past the point of usefulness. Nobody says a single strategic word and all three leave knowing more than they came with.`,
@@ -337,7 +337,7 @@ const showmanceDomestic = {
     ], ctx, a, b) : _variant([
       `${a} and ${b} take up a whole afternoon doing nothing in particular, and the rest of the house watches two people forget there are cameras.`,
       `It is not subtle. It has not been subtle for a while. ${a} has stopped trying to make it subtle.`,
-      `Somebody makes a joke about the pair of them and ${b} does not deny it, which is new.`,
+      `Somebody jokes that ${a} and ${b} are attached at the hip. ${b} usually denies it. This time, ${b} just smiles.`,
       `${a} and ${b} are the only two people in this house who look properly rested, and everybody has noticed.`,
     ], ctx, a, b);
 

@@ -252,12 +252,10 @@ export function simulateBBWeek(options = {}) {
   const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);
   week.safetyMode = safetyActive ? safetyMode : null;
   const nomineeCount = safetyActive ? 3 : 2;
-  const allianceOpening = updateBBAllianceLifecycle({ phase:'opening', house, week, rng });
-  week.allianceChanges = { formed:allianceOpening.formed ? [allianceOpening.formed.name] : [], betrayals:[] };
-  // Alliances form at the top of the week, before a single act has run, and
-  // nothing ever narrated it — so a name appeared in the panels on the first
-  // screen of the week with no scene anywhere explaining where it came from.
-  const _formedThisWeek = allianceOpening.formed || null;
+  // Reconcile first; formation itself happens inside the stretches below, so
+  // that a new alliance always has a scene in the same act that created it.
+  const allianceOpening = updateBBAllianceLifecycle({ phase:'reconcile', house, week, rng });
+  week.allianceChanges = { formed:[], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
   const competitionLibrary = options.competitions || [];
   const addBeats = (act, extra = {}) => {
@@ -280,6 +278,29 @@ export function simulateBBWeek(options = {}) {
    *
    * Runs longer than a ceremony act, because this is where the week lives.
    */
+  /**
+   * A beat for an alliance that has just come into existence.
+   *
+   * Kept next to the place formation happens so the two can never drift apart
+   * again — the alliance and the scene explaining it are produced together.
+   */
+  const allianceBeat = alliance => {
+    const members = (alliance.members || []).filter(n => house.includes(n));
+    if (members.length < 2) return null;
+    const named = members.length === 2
+      ? `${members[0]} and ${members[1]}`
+      : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
+    return {
+      text: `It gets said out loud for the first time: ${named} are working together. `
+        + `Nobody writes anything down — there is nowhere in this house to hide a list — `
+        + `but from tonight there is a thing called <strong>${alliance.name}</strong>, `
+        + `and everyone in it has something to lose by leaving it.`,
+      players: members.slice(0, 4),
+      badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
+      eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
+    };
+  };
+
   const houseAct = (phase, extra = {}) => {
     const act = { type: 'house', phase, socialBeats: [] };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
@@ -288,6 +309,21 @@ export function simulateBBWeek(options = {}) {
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
+    // People decide to work together at any hour of the day, not only in the
+    // gap before the week starts. Formation is attempted in every stretch of
+    // house life and the lifecycle's own caps decide whether one happens —
+    // so an alliance can be born after an HOH win, in the middle of
+    // nominations, or during the campaign, and the scene appears exactly
+    // where it happened.
+    const formedHere = updateBBAllianceLifecycle({ phase: 'opening', house, week, rng }).formed;
+    if (formedHere) {
+      const beat = allianceBeat(formedHere);
+      if (beat) {
+        act.socialBeats.unshift(beat);
+        week.allianceChanges.formed.push(formedHere.name);
+      }
+    }
+
     // The state as it stands when this stretch ends.
     //
     // The panels used to read the episode's single end-of-week snapshot, so
@@ -300,29 +336,7 @@ export function simulateBBWeek(options = {}) {
   };
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
-  if (!compressed) {
-    const opening = houseAct('pre-hoh');
-    if (_formedThisWeek) {
-      const members = (_formedThisWeek.members || []).filter(n => house.includes(n));
-      if (members.length >= 2) {
-        const named = members.length === 2
-          ? `${members[0]} and ${members[1]}`
-          : `${members.slice(0, -1).join(', ')} and ${members[members.length - 1]}`;
-        opening.socialBeats.unshift({
-          text: `It gets said out loud for the first time: ${named} are working together. `
-            + `Nobody writes anything down — there is nowhere in this house to hide a list — `
-            + `but from tonight there is a thing called <strong>${_formedThisWeek.name}</strong>, `
-            + `and everyone in it has something to lose by leaving it.`,
-          players: members.slice(0, 4),
-          badgeText: 'ALLIANCE FORMED', badgeClass: 'gold',
-          eventId: 'alliance-formed', category: 'deals', location: 'bedroom',
-        });
-        // The snapshot for this stretch was taken before the beat was added,
-        // but the alliance itself already existed when it was taken, so the
-        // panel and the beat agree.
-      }
-    }
-  }
+  if (!compressed) houseAct('pre-hoh');
 
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);

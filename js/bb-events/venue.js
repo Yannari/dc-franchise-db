@@ -77,7 +77,7 @@ const sharedSpace = {
     const text = warm ? _variant([
       `${a} and ${b} end up in ${_v('gather')} with nowhere else to be, and stay there long after the reason to.`,
       `Everybody drifts out of ${_v('gather')} except ${a} and ${b}, which neither of them engineered and both of them notice.`,
-      `${a} finds ${b} already in ${_v('downtime')}. Neither leaves. That is the whole event and it matters.`,
+      `${a} finds ${b} already in ${_v('downtime')}. ${a} sits down, and they spend the next half hour talking without anyone else interrupting.`,
       `${a} and ${b} talk in ${_v('gather')} about nothing for an hour, which in here is how trust is actually built.`,
     ], ctx, a, b) : _variant([
       `${a} and ${b} are stuck in ${_v('gather')} together being scrupulously polite, and the whole house can feel it.`,

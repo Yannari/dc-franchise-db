@@ -131,8 +131,8 @@ const finalTwo = {
     const p = pronouns(a);
     const text = _variant([
       `${a} says the words out loud — "final two, whatever happens" — and ${b} says them back. Neither of them writes anything down and both of them will remember the exact wording.`,
-      `It is not a conversation so much as a confirmation of something that has been true for two weeks. ${a} and ${b} shake on it, which in this house is either sacred or nothing at all.`,
-      `"If it's us at the end I'm not going to feel bad about beating you." ${b} laughs. "You won't beat me." That is the deal, made.`,
+      `${a} asks ${b} whether their deal is really final two. ${b} says it has been for weeks. They shake on it anyway.`,
+      `“If it's us at the end, I'm not going to feel bad about beating you,” ${a} says. ${b} laughs. “You won't beat me.” They agree to get there together.`,
       `${a} has been circling this all week and finally asks. ${b} agrees so quickly that ${p.sub} wonders, briefly, how many other people have been asked the same thing.`,
     ], ctx, a, b);
 
@@ -166,13 +166,13 @@ const votePitch = {
     const lands = force > guard;
 
     const text = lands ? _variant([
-      `${pitcher} does not beg, which is the only reason it works. ${p.Sub} lays out what the house looks like next week with ${p.obj} in it and lets ${mark} do the arithmetic ${p.ref}.`,
-      `"You don't owe me anything. I'm asking anyway." ${mark} says ${pronouns(mark).sub}'ll think about it, and means it, which is more than ${pitcher} got from anyone else today.`,
+      `${pitcher} tells ${mark} exactly who becomes the next target if ${pitcher} leaves. ${mark} asks for the names again and starts counting votes.`,
+      `“You don't owe me anything. I'm asking anyway,” ${pitcher} says. ${mark} promises to think about it and stays to hear the rest of the pitch.`,
       `${pitcher} finds the one thing ${mark} is actually worried about and talks about that instead of about the vote. By the end ${mark} is the one making the argument.`,
       `It takes ${pitcher} four minutes and one very well-chosen name${other ? ` — ${other}'s` : ''} — and ${mark} stops nodding politely and starts nodding.`,
     ], ctx, pitcher, mark) : _variant([
       `${pitcher} makes the pitch and ${mark} listens to all of it with the patience people reserve for something they decided about days ago.`,
-      `"I hear you." ${mark} does not say anything else, and ${pitcher} has been in this house long enough to know what that means.`,
+      `“I hear you,” ${mark} says. When ${pitcher} asks where their vote is going, ${mark} repeats the same answer.`,
       `${pitcher} pushes slightly too hard at the end, and watches ${mark}'s face close.`,
       `The pitch is good. ${mark} is simply not available to be pitched to, and both of them know it before ${pitcher} finishes.`,
     ], ctx, pitcher, mark);
@@ -204,7 +204,7 @@ const brokenPromise = {
     const { victim, liar } = _brokenPromise(house, ctx);
     const p = pronouns(victim);
     const text = _variant([
-      `${victim} finally says it to ${liar}'s face: "You gave me your word." ${liar} has an answer ready, which is somehow the worst part.`,
+      `${victim} confronts ${liar}: “You gave me your word.” ${liar} immediately starts explaining why the promise had to be broken.`,
       `The promise was made three weeks ago and ${victim} has been carrying it around since. Today ${p.sub} puts it down, publicly, in front of two other people.`,
       `"I'm not angry," ${victim} tells ${liar}, and is plainly furious. Nobody in the room corrects ${p.obj}.`,
       `${liar} tries to explain what the promise had actually meant. ${victim} listens to the whole explanation and comes out of it certain of exactly one thing.`,
@@ -237,7 +237,7 @@ const safetyDeal = {
     const honest = !willScheme(hoh);
     const text = _variant([
       `"One week. You don't come after me, I don't come after you." ${other} takes the deal because the alternative is finding out what happens without it.`,
-      `${other} goes to ${hoh} before ${hoh} can come to ${p.obj}, which is the correct order and both of them know it.`,
+      `${other} asks ${hoh} for a private talk before nominations. ${hoh} agrees and closes the door behind them.`,
       `They agree not to nominate each other next week, an agreement that has never once survived contact with a veto ceremony, and shake on it anyway.`,
       `It takes about ninety seconds and neither of them says the word "deal" at any point.`,
     ], ctx, hoh, other);
@@ -343,7 +343,7 @@ const juryManagement = {
       `${player} says "no hard feelings" to somebody who has nothing but hard feelings.`,
       `${juror} listens to ${player} explain ${p.posAdj} game and comes away with a much clearer sense of who to vote against.`,
     ], ctx, player, juror) : _variant([
-      `${player} does not apologise, which is the smart play. ${p.Sub} explains the move instead, and ${juror} hates that it was a good one.`,
+      `${player} explains why cutting ${juror} was necessary instead of apologizing for it. ${juror} does not like the answer, but cannot find a hole in it.`,
       `"I'd do it again." ${juror} respects that more than ${pronouns(juror).sub} expected to, and ${player} knew ${pronouns(juror).sub} would.`,
       `${player} starts building the case for the end of the game weeks before anyone else remembers there is an end.`,
       `It is not a conversation about tonight. ${juror} works out about halfway through that it is a conversation about the last night, and answers accordingly.`,
@@ -375,7 +375,7 @@ const competingDeals = {
     const p = pronouns(player);
     const text = _variant([
       `${player} has promised the end of the game to two different people and both of them mentioned it today, four hours apart, in almost identical words.`,
-      `${x} and ${y} are each certain they are sitting beside ${player} at the end. ${player} has done the arithmetic on this and it does not come out.`,
+      `${x} tells ${player} they are still final two. Later, ${y} says the same thing. ${player} realizes both deals are about to be compared.`,
       `Two final twos. One ${player}. ${p.Sub} has been managing it beautifully for a fortnight and can feel the exact week it stops being manageable.`,
       `${player} realises, mid-conversation with ${x}, that ${p.sub} cannot remember which version of the plan ${p.sub} told ${y}.`,
     ], ctx, player, x, y);

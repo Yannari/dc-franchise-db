@@ -66,7 +66,7 @@ const openField = {
     const text = _variant([
       `Nobody has power for another few hours, and it is the only time all week the house talks like people rather than positions. ${a} and ${b} get further in one conversation than they have in nine days.`,
       `${a} works out that this is the last hour ${p.sub} is safe by default, and spends it doing nothing at all about that.`,
-      `The house is loud in the way it only gets before a competition. ${a}, ${b} and three others take up the kitchen and say nothing that matters, which is its own kind of relief.`,
+      `The house gets louder as everyone waits for the competition. ${a} and ${b} sit in the kitchen joking with anyone too nervous to stay alone.`,
       `Everybody is equal for exactly as long as it takes to run one competition, and ${a} is the only person in the room who seems to know it.`,
     ], ctx, a, b);
     api.addBond(a, b, 0.6);
@@ -88,7 +88,7 @@ const prePositioning = {
     const mark = biggestThreat(_others(house, a, b)) || _others(house, a, b)[0];
     const p = pronouns(a);
     const text = _variant([
-      `${a} does the arithmetic before the competition rather than after it. "Whoever wins this, ${mark} goes up. Agreed?" ${b} agrees, and neither of them yet knows whether that promise will cost them anything.`,
+      `${a} pulls ${b} aside before the competition. “If either of us wins, ${mark} goes up. Agreed?” ${b} agrees and asks whether anyone else knows.`,
       `"I'm not saying I'll win," ${a} tells ${b}. "I'm saying if I do, you already know what happens." It is the cheapest deal in the game — made before anyone has anything to trade.`,
       `${a} gets a commitment out of ${b} while it is still free. By tonight it will not be free, and ${p.sub} knows exactly how much it will be worth then.`,
       `The competition has not started and ${a} has already told three people the same thing about ${mark}. That is not a plan yet. It is groundwork.`,
@@ -216,9 +216,9 @@ const lobbyingTheVeto = {
     const p = pronouns(nominee);
     const hopeful = bond(nominee, holder) >= 2;
     const text = hopeful ? _variant([
-      `${nominee} does not have to ask ${holder} outright, which is the strongest position anybody on the block can be in. ${p.Sub} asks anyway, once, quietly.`,
+      `${nominee} believes ${holder} will use the veto, but asks anyway. ${holder} tells ${p.obj} to stop worrying and gives ${p.obj} a hug.`,
       `"You know what I'd do if it were the other way round." ${holder} does know. That is exactly the problem ${holder} has been sitting with all afternoon.`,
-      `${nominee} makes the case in about ninety seconds and then leaves ${holder} alone with it, which is the smartest thing ${p.sub} does all week.`,
+      `${nominee} gives ${holder} a short pitch, asks them to think about it and leaves before the conversation turns into begging.`,
       `They have been close since the first night. Now one of them holds the only thing the other needs, and neither is enjoying it.`,
     ], ctx, nominee, holder) : _variant([
       `${nominee} has nothing to offer ${holder} but a future, and spends an hour describing one.`,
@@ -353,10 +353,10 @@ const targetsAlign = {
     const mark = targetOf(pitcher);
     const p = pronouns(pitcher);
     const text = _variant([
-      `${pitcher} does not ask ${hoh} for safety. ${p.Sub} offers ${pronouns(hoh).obj} a name instead — ${mark} — which is a much better trade and both of them know it.`,
+      `${pitcher} tells ${hoh} that ${mark} would nominate them next week. ${hoh} asks how ${pitcher} knows and listens closely to the answer.`,
       `"You don't owe me anything. But if you're looking at ${mark}, so am I." It is the most useful sentence anybody says to ${hoh} today.`,
       `${pitcher} has wanted ${mark} gone since week one and has finally found somebody with the power to do it for ${p.obj}.`,
-      `${pitcher} plants ${mark}'s name with ${hoh} and leaves before it can look like a campaign, which is the difference between doing this well and badly.`,
+      `${pitcher} mentions that several people are worried about ${mark}, then leaves the HOH room before ${hoh} can ask who “several people” means.`,
     ], ctx, pitcher, hoh, mark);
     api.addBond(pitcher, hoh, 0.9);
     api.suspicion(hoh, mark, 1.6);
@@ -400,7 +400,7 @@ const houseTakesSides = {
       `The house does not discuss it and the house has entirely decided. ${forA.length} of them are keeping ${a}; ${forB.length} are keeping ${b}. Neither nominee has been told.`,
       `Two names on the block and a room that has quietly split down the middle. ${a} is being fed; ${b} is being avoided.`,
       `Nobody says "I'm voting for you" out loud this early, so ${a} and ${b} both spend the day reading tone of voice for information it cannot carry.`,
-      `Sides form over breakfast without a single strategic word being spoken, which is how most votes in this house are actually decided.`,
+      `By breakfast, the same people are sitting together again. Nobody mentions the vote, but the empty seats between the groups say enough.`,
     ], ctx, a, b);
     forA.forEach(n => api.addBond(n, a, 0.3));
     forB.forEach(n => api.addBond(n, b, 0.3));
@@ -427,7 +427,7 @@ const hohPressuresVeto = {
       `${hoh} reminds ${holder}, twice, who is not on the block this week and why. ${holder} does not enjoy either reminder.`,
       `The conversation lasts six minutes and ${holder} comes out of it knowing exactly what using the veto would cost.`,
     ], ctx, hoh, holder) : _variant([
-      `${hoh} tells ${holder} honestly what ${p.sub} wants and then genuinely leaves it alone, which is rarer in this house than any advantage.`,
+      `${hoh} tells ${holder} what ${p.sub} wants, then says the final decision belongs to ${holder}. ${holder} asks if ${hoh} really means that.`,
       `"Use it if you need to. I'd rather you were straight with me than safe." ${holder} believes ${pronouns(hoh).obj}, and that is worth more to ${hoh} than the nominations.`,
       `${hoh} makes the case once, badly, and apologises for making it at all.`,
       `They talk about it like two people rather than two positions, and ${holder} is the one who ends up feeling obliged.`,
@@ -459,7 +459,7 @@ const replacementFear = {
     const text = _variant([
       `If the veto gets used, somebody has to go up in the empty chair, and ${exposed} has worked out that ${p.sub} is the obvious somebody.`,
       `${exposed} spends the day being extremely helpful to ${ctx.hoh}, which fools nobody and is not really meant to.`,
-      `Nobody has said ${exposed}'s name. ${p.Sub} can feel it being not-said, which is worse.`,
+      `Nobody has said ${exposed}'s name all morning. When ${p.sub} enters a room, people keep changing the subject.`,
       `${exposed} would quite like the veto not to be used and cannot say so to anybody without explaining why ${p.sub} is worried.`,
     ], ctx, exposed);
     api.suspicion(exposed, ctx.hoh, 1.1);

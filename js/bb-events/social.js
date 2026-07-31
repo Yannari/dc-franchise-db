@@ -133,10 +133,10 @@ const allianceForms = {
     const p = pronouns(a);
     const strategic = (pStats(a).strategic + pStats(b).strategic) / 2;
     const text = _variant([
-      `${a} and ${b} end up in the same room at the wrong hour and the conversation turns, the way it always does. Nothing is written down. By the time they separate there is an agreement, and neither of them said the word.`,
-      `"I'm not asking you to pick a side," ${a} says, which is exactly what ${p.sub} is asking. ${b} takes long enough to answer that the answer is obvious before it arrives.`,
-      `They test each other for twenty minutes — a name floated, a reaction watched, a second name floated — and somewhere in there it stops being a test. ${a} and ${b} have a deal, of the kind this house breaks weekly.`,
-      `${b} says "so who do you actually trust in here?" and ${a} gives an honest answer, which in this house is either the smartest or the most expensive thing ${p.sub} could have done.`,
+      `${a} and ${b} are the last two awake. ${a} finally asks, “Are we actually looking out for each other?” ${b} says yes, then asks who else needs to know.`,
+      `“I'm not asking you to pick a side,” ${a} tells ${b}. ${b} laughs. “You kind of are.” After a long pause, ${b} agrees anyway.`,
+      `${a} brings up one name, then another, watching ${b}'s reaction each time. ${b} catches on and asks, “Are you trying to make something with me?” ${a} says yes.`,
+      `${b} asks ${a} who they really trust. ${a} looks toward the door before answering, then says ${b}'s name. They agree to keep it between them.`,
     ], ctx, a, b);
 
     // A real alliance is worth real bond, scaled by how strategic the pair are.
@@ -162,10 +162,10 @@ const lateNightTrust = {
     const p = pronouns(a);
     const secret = pStats(a).loyalty >= 6;
     const text = _variant([
-      `The house goes to bed and ${a} and ${b} do not. What gets said at that hour is not strategy exactly — it is the thing underneath strategy, and it is why neither of them will be able to write the other's name down without it costing something.`,
-      `${a} tells ${b} something true about ${p.ref}. Not game. True. ${b} understands what has been handed over and puts it somewhere safe.`,
-      `Two in the morning, one lamp, and ${a} finally says the name ${p.sub} has been carrying around all week. ${b} does not flinch, and that is the whole conversation.`,
-      `They talk about home, which in this house is the most dangerous subject there is, because afterwards you cannot pretend the other person is only a number.`,
+      `Everyone else goes to bed, but ${a} and ${b} stay at the kitchen table. They stop talking game and spend another hour telling stories about home.`,
+      `${a} tells ${b} something personal they have not shared with anyone else in the house. ${b} thanks them for trusting them and promises it stays there.`,
+      `Around two in the morning, ${a} finally tells ${b} what has been bothering them all week. ${b} listens without interrupting or trying to fix it.`,
+      `${a} and ${b} lie awake talking about the people they miss outside the house. When they finally say goodnight, both of them feel closer.`,
     ], ctx, a, b);
 
     api.addBond(a, b, secret ? 1.8 : 1.1);
@@ -195,10 +195,10 @@ const blowUp = {
     const p = pronouns(a);
     const pub = _others(house, a, b);
     const text = _variant([
-      `It starts over dishes and it is not about dishes. ${a} and ${b} say things in front of everyone that neither can walk back, and the house rearranges itself around the wreckage before either of them stops talking.`,
-      `"Say it again." ${b} says it again. ${a} is across the room before ${p.sub} decides to be, and three people are already standing up.`,
-      `The argument is loud, public and short, which is the worst combination — long enough for everyone to hear, short enough that nobody gets to explain. ${a} and ${b} are finished as anything but enemies.`,
-      `${a} has been holding this in for a week and it comes out badly, all at once, at ${b}, in the kitchen, at volume. Afterwards ${p.sub} knows it was a mistake. That does not make it untrue.`,
+      `${a} asks ${b} to wash the dishes they left in the sink. ${b} tells ${a} to stop ordering people around, and within seconds they are yelling about everything except the dishes.`,
+      `“Say it again,” ${a} tells ${b}. ${b} does. ${a} crosses the room, and several houseguests jump up before the argument gets any closer.`,
+      `${a} and ${b} start shouting at each other in the kitchen. Nobody else can get a word in, and by the time they separate, both have promised to send the other home.`,
+      `${a} finally confronts ${b} about what happened earlier in the week. ${a} gets louder with every sentence until ${b} starts shouting back.`,
     ], ctx, a, b);
 
     api.addBond(a, b, -2.6);
@@ -235,10 +235,10 @@ const paranoiaSpiral = {
     const p = pronouns(a);
     const wrong = bond(a, victim) >= 3;   // they were, in fact, loyal
     const text = _variant([
-      `${a} replays a conversation from Tuesday and hears it differently. By morning ${p.sub} has built an entire case against ${victim} out of a pause and a change of subject.`,
-      `Nobody has said anything to ${a}. That is exactly what is wrong. ${p.Sub} decides the silence is about ${p.obj}, and decides ${victim} is at the centre of it.`,
-      `${a} counts the votes four times and gets a different answer each time. Somewhere in the fourth count ${victim} becomes the problem, on evidence that would not survive daylight.`,
-      `"They're being weird with me." They are not being weird with ${a}. But ${p.sub} has said it out loud now, and saying it out loud is how it becomes true.`,
+      `${a} keeps replaying a conversation with ${victim}. By morning, a long pause and one strange look have become proof that ${victim} is hiding something.`,
+      `Nobody has checked in with ${a} all afternoon. ${a} starts asking whether ${victim} told everyone to keep their distance.`,
+      `${a} counts the votes again and cannot make the numbers work. After a while, ${a} decides ${victim} must be lying about where they stand.`,
+      `“${victim} is being weird with me,” ${a} tells anyone who will listen. When somebody says they have not noticed anything, ${a} becomes even more certain.`,
     ], ctx, a, victim);
 
     api.suspicion(a, victim, 2.2);
@@ -266,10 +266,10 @@ const infoTrade = {
     const { a, b, subject } = _infoTrio(house, ctx);
 
     const text = _variant([
-      `${a} tells ${b} what ${subject} said, and who ${subject} said it about. It is a gift and an investment at the same time, which is the only kind of gift this house gives.`,
-      `"You didn't hear this from me." ${b} nods. ${b} will absolutely tell someone it came from ${a}, but not this week.`,
-      `Information moves from ${a} to ${b} in about nine seconds, and by dinner ${subject} is a topic in two conversations ${subject} is not in.`,
-      `${a} trades what ${p_of(a)} knows about ${subject} for what ${b} knows about the vote. Both sides overpay, and both sides walk away feeling clever.`,
+      `${a} tells ${b} exactly what ${subject} said and who else was in the room. ${b} asks them to repeat the wording before answering.`,
+      `“You didn't hear this from me,” ${a} says before telling ${b} what ${subject} has been saying. ${b} promises, then asks who else knows.`,
+      `${a} pulls ${b} into the storage room with new information about ${subject}. By dinner, both of them are quietly checking the story with other people.`,
+      `${a} tells ${b} what ${p_of(a)} heard about ${subject}. In return, ${b} shares where the vote stood that morning.`,
     ], ctx, a, b, subject);
 
     api.addBond(a, b, 0.8);
@@ -301,15 +301,15 @@ const rumour = {
     // Does it land? Persuasion against perception — proportional, not a coin flip.
     const lands = skilled * (1 - sharp * 0.8) > 0.28;
     const text = lands ? _variant([
-      `${liar} does not lie, exactly. ${p.Sub} repeats something ${victim} said, with one word moved, to ${mark}. The word matters. By evening ${mark} cannot look at ${victim} the same way.`,
-      `"I'm only telling you because I'd want to know." ${mark} believes it, because it arrives in the voice people use for favours.`,
-      `The story ${liar} tells ${mark} about ${victim} is ninety percent true, which is what makes the other ten percent impossible to find.`,
-      `${liar} plants it and walks away, which is the trick — stay to watch and it looks like what it is. ${mark} carries it around all evening, getting heavier.`,
+      `${liar} tells ${mark} something ${victim} really said, but changes one important word. ${mark} asks twice whether that was the exact quote. ${liar} says it was.`,
+      `“I'm only telling you because I'd want to know,” ${liar} says. Then ${p.sub} tells ${mark} that ${victim} has been using their name as a target.`,
+      `${liar} gives ${mark} a mostly true story about ${victim}, with just enough changed to make it sound personal. ${mark} believes it.`,
+      `${liar} warns ${mark} that ${victim} cannot be trusted, then leaves before ${mark} can ask too many questions. ${mark} spends the evening watching ${victim}.`,
     ], ctx, liar, mark, victim) : _variant([
-      `${liar} tries it on ${mark} and watches it fail in real time. ${mark} asks one question too many and ${liar} has to retreat into "I might have misheard."`,
-      `${mark} listens to the whole thing about ${victim}, says "huh," and does not believe a word of it. Worse — now ${mark} is wondering why ${liar} wanted ${p.obj} to.`,
-      `The lie is a shade too neat. ${mark} has been watching this house closely enough to know that ${victim} does not talk like that, and ${liar} has just told ${mark} something true about ${liar}.`,
-      `It does not take. ${mark} nods along and files it under things people say when they want something, which is where most of what ${liar} says now lives.`,
+      `${mark} asks where ${liar} heard it, who was there and what ${victim} said word for word. ${liar} finally backs off and says, “Maybe I misunderstood.”`,
+      `${mark} listens to the story about ${victim} and only says, “Okay.” As soon as ${liar} leaves, ${mark} goes looking for ${victim}.`,
+      `${liar}'s story sounds too clean. ${mark} knows ${victim} would never use those words and asks ${liar} why they are trying to start something.`,
+      `${mark} nods while ${liar} talks, but does not believe the rumor. Now ${mark} wants to know why ${liar} thought it would work.`,
     ], ctx, liar, mark, victim);
 
     if (lands) {
@@ -345,10 +345,10 @@ const showmanceSpark = {
 
     const p = pronouns(a);
     const text = _variant([
-      `${a} and ${b} have been finding reasons to be in the same room for three days, and today neither of them bothers with the reason.`,
-      `It is nothing anyone could point to — a hand on a shoulder that stays a beat too long, a joke that is only funny to two people. The rest of the house notices before they do.`,
-      `${a} says something quiet to ${b} and whatever it was, ${b} laughs properly, and ${p.sub} looks pleased with ${p.ref} for the rest of the evening.`,
-      `They stay up talking after everyone else folds. Nothing happens. Something has clearly happened.`,
+      `${a} and ${b} spend most of the day together. When somebody asks what they have been talking about, neither gives a clear answer.`,
+      `${a} rests a hand on ${b}'s shoulder while they talk. It stays there long enough for two people across the yard to notice.`,
+      `${a} whispers something to ${b}, and ${b} bursts out laughing. For the rest of the evening, they keep finding each other across the room.`,
+      `${a} and ${b} stay up talking after everyone else goes to bed. When they finally separate, both check whether anyone is still awake.`,
     ], ctx, a, b);
 
     const started = api.showmance(a, b, { context: 'the Big Brother house', intensity: 0.35, bondDelta: 1.2 });
@@ -383,10 +383,10 @@ const grudgeHardens = {
     const kind = worst?.type || 'betrayal';
 
     const text = _variant([
-      `${a} has stopped being upset about ${enemy}, which is much worse for ${enemy}. Upset is loud. This is quiet, and it has a date on it.`,
-      `Somewhere between the ${kind} and tonight, ${a} finished deciding. ${p.Sub} is perfectly pleasant to ${enemy} at dinner. That is how you can tell.`,
-      `"I'm over it," ${a} tells someone, about ${enemy}, unprompted, which is not a thing people say when they are over it.`,
-      `${a} does the arithmetic on ${enemy} one last time — what was done, what it cost, who else knows — and puts the answer away somewhere ${p.sub} can reach it in a hurry.`,
+      `${a} tells a close ally that ${enemy}'s ${kind} changed everything. ${a} is done arguing about it; now they want ${enemy} out.`,
+      `${a} is friendly to ${enemy} at dinner, then waits until ${enemy} leaves and says, “The next time I have power, they're going up.”`,
+      `“I'm over it,” ${a} says when ${enemy}'s name comes up. A minute later, ${a} is listing every reason ${enemy} cannot stay.`,
+      `${a} goes over what ${enemy} did, who helped and who knew. By the end of the conversation, ${a} has decided exactly when to take the shot.`,
     ], ctx, a, enemy);
 
     api.setTarget(a, enemy, `has not forgiven the ${kind}`);
@@ -413,10 +413,10 @@ const comfortOnTheBlock = {
     const nominee = noms.sort((a, b) => bond(helper, b) - bond(helper, a))[0];
     const p = pronouns(nominee);
     const text = _variant([
-      `${helper} does not offer ${nominee} a plan or a vote count. ${pronouns(helper).Sub} sits down next to ${p.obj} and stays there, and it turns out that is the thing that was needed.`,
-      `"You don't have to be fine," ${helper} says, and ${nominee} stops being fine for about four minutes, and then is fine again, and is not going to forget who was there for those four minutes.`,
-      `Everybody else has been very busy and very elsewhere since the ceremony. ${helper} makes ${nominee} a cup of tea, which in this house is practically a declaration.`,
-      `${helper} finds ${nominee} sitting where people sit when they do not want to be found, and does not leave. Nothing strategic is discussed. Something strategic happens anyway.`,
+      `${helper} sits beside ${nominee} after the ceremony and asks if they want company. ${pronouns(helper).Sub} stays even when ${nominee} does not feel like talking.`,
+      `“You don't have to pretend you're okay with me,” ${helper} tells ${nominee}. ${nominee} finally admits how scared they are.`,
+      `${helper} makes ${nominee} a cup of tea and brings it to the bedroom. They talk about anything except votes until ${nominee} feels ready to get up.`,
+      `${helper} finds ${nominee} alone in the backyard and sits beside ${p.obj}. ${helper} listens while ${nominee} talks through the ceremony.`,
     ], ctx, helper, nominee);
 
     api.addBond(helper, nominee, 1.9);
@@ -441,10 +441,10 @@ const driftingOut = {
     const p = pronouns(a);
     const nearest = closestTo(a, _others(house, a));
     const text = _variant([
-      `${a} walks into a room and the conversation does not stop, which sounds like acceptance and is the opposite. Nobody bothers to hide anything from ${p.obj}, because nobody counts ${p.obj}.`,
-      `There is a version of this game where being nobody's enemy is the same as being safe. ${a} is beginning to suspect this is not that version.`,
-      `${a} realises, doing the washing up, that ${p.sub} has not had a real conversation in two days and nobody has noticed. Including, until now, ${p.obj}.`,
-      `Everyone likes ${a}. Nobody needs ${a}. ${p.Sub} works out tonight which of those two things keeps you in this house.`,
+      `${a} walks into the bedroom and nobody stops talking. After a minute, ${a} realizes the group is making plans without asking what ${p.sub} thinks.`,
+      `${a} asks two different people where the vote stands and gets the same vague answer. For the first time, ${a} wonders whether being left alone means being left out.`,
+      `While washing dishes, ${a} realizes ${p.sub} has not had a private conversation with anyone in two days. ${a} dries ${p.posAdj} hands and goes looking for one.`,
+      `Everybody is friendly with ${a}, but nobody has brought ${p.obj} into a plan. That night, ${a} decides to stop waiting for an invitation.`,
     ], ctx, a);
 
     // Drifting is not neutral: it is a decision to fix it, aimed at the nearest hand.

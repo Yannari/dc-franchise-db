@@ -87,7 +87,7 @@ const hohPitch = {
     const text = lands ? _variant([
       `${pitcher} finds a reason to be upstairs, admires the room for exactly as long as politeness needs, and then says ${mark}'s name out loud.`,
       `"I'm not telling you what to do." ${pitcher} then tells ${hoh} what to do, and ${hoh} finds ${p.ref} agreeing with it.`,
-      `${pitcher} makes the case against ${mark} without ever sounding like ${p.sub} came up here to make it. That is the skill.`,
+      `${pitcher} lets the conversation drift toward ${mark}, then asks ${hoh} whether keeping ${mark} is really good for their game.`,
       `It takes ${pitcher} four minutes to turn ${hoh}'s own doubts about ${mark} into ${hoh}'s own idea.`,
     ], ctx, pitcher, mark) : _variant([
       `${pitcher} pitches ${mark} hard, and a little too hard. ${hoh} nods along and privately moves ${pitcher} up the list.`,
@@ -180,7 +180,7 @@ const hohWeight = {
     const rattled = s.temperament <= 5;
     const text = rattled ? _variant([
       `${hoh} lies awake in the best bed in the house doing arithmetic that keeps coming out wrong.`,
-      `The room is quiet and enormous and ${hoh} has never wanted company more, which is exactly the thing ${p.sub} cannot ask for now.`,
+      `${hoh} sits alone in the HOH room with the door open. Twice, ${p.sub} hears someone on the stairs, but nobody comes in.`,
       `${hoh} practises saying two names out loud. Neither of them sounds any better the fourth time.`,
       `Everyone downstairs thinks ${hoh} is safe. ${hoh} is discovering that safe and comfortable are different words.`,
     ], ctx, hoh) : _variant([
@@ -219,7 +219,7 @@ const hohPromise = {
     const honest = perceived(hoh, ally) >= 2 && !willScheme(hoh);
     const text = honest ? _variant([
       `"You're not going up. Not this week, not while I've got it." ${hoh} means it, and ${ally} can tell.`,
-      `${hoh} tells ${ally} the plan before telling anybody else, which is worth more than the plan.`,
+      `${hoh} tells ${ally} the plan before anyone else. ${ally} asks if this means their deal is still real. ${hoh} says it does.`,
       `It is not a grand alliance. It is one sentence — you are safe with me — and ${ally} takes it as one.`,
     ], ctx, hoh, ally) : _variant([
       `${hoh} promises ${ally} safety in a tone that costs nothing and buys a week of quiet.`,
@@ -274,7 +274,7 @@ const nomCampaign = {
       `"I'm not asking you to like me. I'm asking you to count." ${mark} counts, and does not like the answer.`,
       `${nom} works ${mark} for twenty minutes and never once mentions being on the block. By the end ${mark} brings it up ${p.ref}.`,
     ], ctx, nom, mark) : _variant([
-      `${nom} makes the pitch to ${mark} twice, which is once more than it needed, and watches it stop landing halfway through.`,
+      `${nom} repeats the same pitch to ${mark} later that day. This time, ${mark} cuts them off and says they already heard it.`,
       `${mark} is kind about it, agrees with all of it, and has already decided. ${nom} can hear that ${p.sub} has.`,
       `${nom} runs out of argument in front of ${mark} and fills the gap with a promise ${p.sub} cannot keep.`,
       `"I'll think about it." In this house that sentence has one meaning and ${nom} knows it.`,
@@ -483,7 +483,7 @@ const replacementFallout = {
     const text = blindsided ? _variant([
       `${replacement} was told this morning ${p.sub} was safe. ${p.Sub} sits down in the chair anyway, because there is nowhere else to sit.`,
       `The name is ${replacement}'s and it takes ${p.obj} a full second to move, which the whole house sees.`,
-      `${replacement} looks at ${hoh} while walking to the chair. ${hoh} does not look back, which is its own answer.`,
+      `${replacement} looks directly at ${hoh} while walking to the empty chair. ${hoh} keeps their eyes on the table.`,
       `"Safe" turned out to have a shelf life of about four hours, and ${replacement} learns that standing up.`,
     ], ctx, replacement) : _variant([
       `${replacement} takes the chair without surprise. ${p.Sub} has been counting on being here since the veto came off the wall.`,
@@ -625,7 +625,7 @@ const vetoDrawLobby = {
     ], ctx, hoh, asker) : _variant([
       `${asker} lobbies to be in the veto draw. ${hoh} makes no promises, and the lack of one is deafening.`,
       `"I'd rather it was somebody neutral." ${asker} hears the word neutral and understands it means not you.`,
-      `${asker} asks for the draw. ${hoh} says the balls decide, which is true and is also not an answer.`,
+      `${asker} asks ${hoh} to choose them if Houseguest's Choice is drawn. ${hoh} says, “We'll see what happens,” and changes the subject.`,
     ], ctx, hoh, asker);
 
     if (agrees) {

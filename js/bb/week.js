@@ -511,7 +511,7 @@ export function simulateBBWeek(options = {}) {
 
     gs.activePlayers = house.filter(name => name !== departure.name);
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
-    week.allianceChanges.betrayals = settleBBAllianceWeek(week);
+    week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week);
     gs.bb.outgoingHoh = hoh;
@@ -582,7 +582,7 @@ export function simulateBBWeek(options = {}) {
 
   gs.activePlayers = house.filter(name => name !== evicted);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
-  week.allianceChanges.betrayals = settleBBAllianceWeek(week);
+  week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week);
   gs.bb.outgoingHoh = hoh;

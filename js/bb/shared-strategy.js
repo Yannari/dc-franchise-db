@@ -1,6 +1,7 @@
 // Big Brother adapters over the simulator's shared strategic substrate.
 // This module owns format context and evidence translation, never duplicate state.
 import { gs, players, seasonConfig } from '../core.js';
+import { resolveAllianceRepair } from '../alliances.js';
 import { addBond, addPerceivedBond, getBond, getPerceivedBond } from '../bonds.js';
 import { pStats, romanticCompat } from '../players.js';
 import { getRelationshipDimensions } from '../relationships.js';
@@ -190,11 +191,55 @@ const alliancesWith = name => allianceStore()
   .filter(a => a.active !== false && !a.dissolved && (a.members || []).includes(name));
 
 /** Strategic players can carry more alliances before they are overcommitted. */
+// How many rooms one person can be in at once.
+//
+// This was 1 + strategic/5, which caps almost everybody at two and produced
+// houses with two live alliances in them. That is not this format: people are
+// routinely in a big group, a smaller one inside it, and a final two on the
+// side, and the wiki's own account of a season is a list of overlapping deals.
+// A strategic player runs several rooms; a floater is lucky to hold one.
 const isOvercommitted = name =>
-  alliancesWith(name).length >= 1 + Math.floor(pStats(name).strategic * 0.2);
+  alliancesWith(name).length >= 2 + Math.floor(pStats(name).strategic * 0.25);
 
 const alreadyPaired = (a, b) => allianceStore()
   .some(al => al.active !== false && !al.dissolved && (al.members || []).includes(a) && al.members.includes(b));
+
+/**
+ * The alliance inside the alliance.
+ *
+ * This is the structure the format is actually built on, and it was
+ * impossible: alreadyPaired refused to let two people who were already allied
+ * form anything else, so a house could never produce the nested deals every
+ * real season is made of — a final three inside a final six, and a final two
+ * inside that.
+ *
+ * A sub-alliance forms among people whose trust in each other runs well ahead
+ * of the group they are already in. It is the same instinct that makes the
+ * parent alliance dangerous to be in: the people at the centre of it have
+ * already decided who they are really playing for.
+ */
+function innerCircleOptions(house) {
+  const options = [];
+  for (const alliance of allianceStore()) {
+    if (alliance.active === false || alliance.dissolved) continue;
+    if (alliance.parent) continue;                       // no third layer
+    const members = (alliance.members || []).filter(n => house.includes(n));
+    if (members.length < 4) continue;                    // needs a group to hide inside
+    const parentTrust = alliance.trust || 0;
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        const a = members[i], b = members[j];
+        const trust = pairTrust(a, b);
+        // Meaningfully tighter with each other than the room they are in.
+        if (trust < parentTrust + 1.6 || trust < 2.5) continue;
+        if (allianceStore().some(al => al.active !== false && al.parent === alliance.id
+          && (al.members || []).includes(a) && al.members.includes(b))) continue;
+        options.push({ parent: alliance, members: [a, b], score: trust - parentTrust });
+      }
+    }
+  }
+  return options.sort((x, y) => y.score - x.score);
+}
 
 /**
  * How much the house wants this houseguest in an alliance.
@@ -391,6 +436,22 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
     return { formed:option.alliance, alliances:allianceStore() };
   }
 
+  // The alliance inside the alliance, before founding anything new.
+  for (const option of innerCircleOptions(house).slice(0, 3)) {
+    if (rng() >= clamp(0.12 + option.score * 0.09, 0.12, 0.4)) continue;
+    const [a, b] = option.members;
+    const sub = {
+      id: `bb_inner_${weekNum}_${a}_${b}`,
+      name: nextAllianceName(), members: [a, b], formed: weekNum, active: true,
+      permanence: 'normal', trust: pairTrust(a, b),
+      formationEvidence: `a final two inside ${option.parent.name}`,
+      parent: option.parent.id, parentName: option.parent.name,
+      against: null, history: [{ week: weekNum, type: 'formed-inside', parent: option.parent.name }],
+    };
+    allianceStore().push(sub);
+    return { formed: sub, alliances: allianceStore() };
+  }
+
   const triggers = formationTriggers(house, week, rng);
   if (!triggers.length) return { formed:null, alliances:allianceStore() };
 
@@ -421,7 +482,7 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   return { formed: alliance, alliances: allianceStore() };
 }
 
-export function settleBBAllianceWeek(week) {
+export function settleBBAllianceWeek(week, rng = Math.random) {
   if (!week?.ballots?.length) return [];
   const incidents = [];
   for (const alliance of allianceStore()) {
@@ -437,7 +498,21 @@ export function settleBBAllianceWeek(week) {
       alliance.history.push({ week:week.num, type:'betrayal', player:ballot.voter, victim:ballot.evict });
       recordBetrayal(ballot.evict, ballot.voter, { severity:1, ep:week.num });
       rememberStrategy(ballot.evict, ballot.voter, 'alliance-betrayal', week.num, 2, { alliance:alliance.name, format:'big-brother' });
-      incidents.push({ alliance:alliance.name, ...incident });
+
+      // A defection is not automatically the end of an alliance. Real houses
+      // survive one — the person explains themselves, some of the room buys
+      // it, and the group carries on weaker and warier. Total Drama already
+      // models exactly that, including which approach somebody takes (apology,
+      // strategic explanation, denial, refusal), how credible it is, and
+      // whether they have used the same excuse before.
+      let repair = null;
+      try {
+        repair = resolveAllianceRepair({
+          alliance: alliance.name, traitor: ballot.voter, votedFor: ballot.evict,
+          votedAlly: true, severity: 'major', allyEliminated: week.evicted === ballot.evict,
+        }, week.num, rng);
+      } catch { /* repair is a bonus; the betrayal still counts without it */ }
+      incidents.push({ alliance:alliance.name, ...incident, repair });
     }
   }
   reconcileAlliances(gs.activePlayers || [], week.num);

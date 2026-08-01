@@ -16462,33 +16462,145 @@ export function rpBuildBBComp(ep, actType) {
 
 // ── Ceremonies ────────────────────────────────────────────────────────
 
+/**
+ * The nomination ceremony.
+ *
+ * Rebuilt around what actually happens, because the old version had the
+ * mechanic backwards: it turned keys to reveal the NOMINATED. In the house the
+ * Head of Household loads the box with the keys of everybody who is SAFE and
+ * pulls them one at a time — the nominees are whoever is left when the box is
+ * empty. Inverting that removed the only source of suspense the ceremony has,
+ * which is watching the pile of unclaimed names get smaller.
+ *
+ * It also opened on a panel headed "private intent" listing the target, the
+ * pawn and the backdoor. Nobody announces that, and printing it above the
+ * ceremony spoils the ceremony. The HOH's thinking belongs in the HOH room
+ * beforehand, in conversation, and in the speech afterwards — which is where
+ * it now is.
+ */
 export function rpBuildBBNominations(ep) {
   const act = (ep.acts || []).find(a => a.type === 'nominations');
-  const noms = act?.nominees || [];
+  const noms = (act?.nominees || []).filter(Boolean);
+  if (!noms.length) return '';
+  const hoh = ep.hoh || act?.hoh;
+  const house = (ep.houseAtStart || []).filter(Boolean);
   const plan = ep.plan || {};
-  const header = `<div style="margin-bottom:16px;padding:12px;border-radius:8px;border:1px dashed #f0a50055;background:#f0a5000a;text-align:center">
-    <div style="font-size:9px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase">Inside the HOH room · private intent</div>
-    <div style="font-size:11px;color:#8b949e;margin-top:6px">Target: <strong style="color:#c9d1d9">${plan.target || '?'}</strong> · Pawn: <strong style="color:#c9d1d9">${plan.pawn || '?'}</strong>${plan.backdoorTarget ? ` · Backdoor: <strong style="color:#c9d1d9">${plan.backdoorTarget}</strong>` : ''}</div>
-  </div>`;
-  // A three-nominee season turns every key into its own moment, so the
-  // ceremony is built from however many chairs the format actually uses.
-  const ORDINALS = ['first', 'second', 'third', 'fourth'];
-  const count = ['two', 'three', 'four'][Math.max(0, noms.length - 2)] || `${noms.length}`;
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'NOMINATION CEREMONY',
-    subtitle: `${ep.hoh} names ${count} houseguests.`, accent: '#f85149', header, room: 'bb-block',
-    stateKey: `bb_noms_${ep.num}`,
-    scenes: [
-      ...noms.map((name, i) => ({
-        text: i === 0
-          ? `The first key turns. ${name} is nominated for eviction.`
-          : `The ${ORDINALS[i] || `${i + 1}th`} key turns. ${name} joins ${noms.slice(0, i).join(' and ')} on the block.`,
-        players: [name], badgeText: 'NOMINATED', badgeClass: 'red',
-      })),
-      { text: `"I nominated you all, and this is a game." Nominations are locked.`, players: noms, badgeText: 'LOCKED', badgeClass: 'grey' },
-      ..._bbBeats(act),
-    ],
+
+  // The keys go into the box in a fixed order that is not the roster order —
+  // the Head of Household loads it, and the order they pull is its own small
+  // decision. Derived from the week so a replay pulls them the same way.
+  const safe = house.filter(n => n !== hoh && !noms.includes(n));
+  const seed = `${ep.num}|${hoh}|${safe.join(',')}`;
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const order = safe.map((n, i) => ({ n, k: (h + i * 2654435761) >>> 0 }))
+    .sort((a, b) => a.k - b.k).map(x => x.n);
+
+  const stateKey = `bb_noms_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // One step per key, then the empty box, then the speech, then the room.
+  const steps = [];
+  order.forEach((name, i) => {
+    const left = house.filter(n => n !== hoh && !order.slice(0, i + 1).includes(n));
+    steps.push({ kind: 'key', name, slot: i + 1, remaining: left.length });
   });
+  steps.push({ kind: 'empty' });
+  steps.push({ kind: 'speech' });
+  (act?.socialBeats || []).forEach(b => steps.push({ kind: 'beat', beat: b }));
+
+  const done = state.idx >= steps.length - 1;
+  const revealed = Math.max(0, state.idx + 1);
+  const pulled = order.slice(0, Math.min(revealed, order.length));
+  const stillWaiting = house.filter(n => n !== hoh && !pulled.includes(n));
+  const boxEmpty = state.idx >= order.length - 1 && order.length > 0;
+
+  // ── the box: numbered slots, filling as keys come out ──
+  const boxHtml = `<div class="bbk-box">
+    <div class="bbk-ring">
+      ${order.map((name, i) => {
+        const out = i < pulled.length;
+        return `<span class="bbk-slot ${out ? 'is-out' : ''}" title="${out ? _bbEsc(name) : 'unpulled'}">${String(i + 1).padStart(2, '0')}</span>`;
+      }).join('')}
+      ${order.length ? '' : '<span class="bbk-slot is-out">—</span>'}
+    </div>
+    <div class="bbk-count">${pulled.length} of ${order.length} keys pulled</div>
+  </div>`;
+
+  // ── who is still without one ──
+  const waitingHtml = `<div class="bbk-wait">
+    <div class="bbk-wait-h">${boxEmpty ? 'NOT GIVEN A KEY' : `STILL WITHOUT A KEY (${stillWaiting.length})`}</div>
+    <div class="bbk-faces">
+      ${house.filter(n => n !== hoh).map(n => {
+        const has = pulled.includes(n);
+        const nominated = boxEmpty && !has;
+        return `<span class="bbk-face ${has ? 'is-safe' : ''} ${nominated ? 'is-nom' : ''}">
+          ${_bbAvatar(n, 34)}<i>${_bbEsc(n)}</i></span>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // ── the scenes ──
+  const KEY_LINES = [
+    n => `${hoh} pulls a key and spins the box to <strong>${n}</strong>. ${n} takes it and puts it on without a word.`,
+    n => `The next key is <strong>${n}</strong>'s. ${n} lifts it over their head and lets out a breath they had been holding since the competition.`,
+    n => `<strong>${n}</strong>. Safe. The key goes round ${n}'s neck and ${n} looks at the two chairs nobody wants.`,
+    n => `${hoh} does not look up while pulling. <strong>${n}</strong> — safe — and the room gets one name quieter.`,
+    n => `<strong>${n}</strong> is called. There is a small sound from somebody else in the room who wanted that key to be theirs.`,
+  ];
+  const line = (name, i) => KEY_LINES[(i + name.length) % KEY_LINES.length](name);
+
+  const speechLine = () => {
+    const target = plan.target && noms.includes(plan.target) ? plan.target : noms[0];
+    const pawn = noms.find(n => n !== target);
+    const s = typeof pStats === 'function' ? pStats(hoh) : {};
+    // The reasoning, in the HOH's own voice — this is the only place the room
+    // hears why, and how honest it is depends on who is saying it.
+    if ((s.temperament ?? 5) <= 4 || (s.boldness ?? 5) >= 8) {
+      return `${hoh} stands up. "<strong>${target}</strong>, you know exactly why you're sitting there. <strong>${pawn}</strong>, you don't, and that's the nicest thing I can say about this week."`;
+    }
+    if ((s.strategic ?? 5) >= 7) {
+      return `${hoh} stands up. "This is a game and I had to pick two names. <strong>${pawn}</strong>, I need you to trust me. <strong>${target}</strong> — I'd rather you heard it from me than worked it out."`;
+    }
+    return `${hoh} stands up. "<strong>${target}</strong>, <strong>${pawn}</strong> — I'm sorry. Nothing about this was easy and I'm not going to pretend it was strategy."`;
+  };
+
+  const sceneHtml = (step, i) => {
+    if (i > state.idx) {
+      return `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
+    }
+    if (step.kind === 'key') {
+      return _bbScene({ text: line(step.name, step.slot), players: [step.name],
+        badgeText: 'SAFE', badgeClass: 'green' });
+    }
+    if (step.kind === 'empty') {
+      return _bbScene({
+        text: `${hoh} turns the box around. It is empty. <strong>${noms.join('</strong> and <strong>')}</strong> — you have not been given a key. You are nominated for eviction.`,
+        players: noms, badgeText: 'NOMINATED', badgeClass: 'red' });
+    }
+    if (step.kind === 'speech') return _bbScene({ text: speechLine(), players: [hoh, ...noms], badgeText: 'THE REASONING', badgeClass: 'gold' });
+    return _bbScene({ text: step.beat.text, players: step.beat.players,
+      badgeText: step.beat.badgeText, badgeClass: step.beat.badgeClass });
+  };
+
+  let html = `<div class="rp-page bb-room bb-block">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:6px">NOMINATION CEREMONY</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
+      hoh ? `${hoh} has loaded the box. Every key in it belongs to somebody who is safe.` : ''}</div>
+    ${boxHtml}
+    ${waitingHtml}`;
+
+  steps.forEach((step, i) => { html += sceneHtml(step, i); });
+
+  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${state.idx < order.length - 1 ? 'Pull the next key' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, steps.length - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(steps.length, revealed)} / ${steps.length}</span>
+    </div>`;
+
+  return html + `</div>`;
 }
 
 /**

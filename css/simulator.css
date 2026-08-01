@@ -544,6 +544,50 @@
     .bbg-warn       { flex:1; text-align:right; font-size:10px; color:#d29922; font-style:italic; }
     .bbg-ok         { flex:1; text-align:right; font-size:10px; color:#4d545c; font-style:italic; }
 
+    /* ── The nomination box ──
+       A circular rack of numbered key slots. The Head of Household loads it
+       with the keys of everybody who is SAFE and pulls them one at a time, so
+       the drama is in the slots emptying and the faces that never get called. */
+    .bbk-box        { margin:0 0 14px; padding:12px; border-radius:10px;
+                      border:1px solid rgba(248,81,73,.22);
+                      background:radial-gradient(circle at 50% 0%, rgba(248,81,73,.08), rgba(13,17,23,.6) 70%); }
+    .bbk-ring       { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+    .bbk-slot       { display:inline-flex; align-items:center; justify-content:center;
+                      width:26px; height:32px; border-radius:3px;
+                      font-family:ui-monospace,Consolas,monospace; font-size:9px; font-weight:700;
+                      color:#8b949e; background:rgba(255,255,255,.04);
+                      border:1px solid rgba(255,255,255,.09);
+                      box-shadow:inset 0 -6px 10px rgba(0,0,0,.35);
+                      transition:background .2s ease, color .2s ease, border-color .2s ease; }
+    /* A pulled key leaves its slot empty and lit. */
+    .bbk-slot.is-out { color:#3fb950; border-color:rgba(63,185,80,.45);
+                      background:rgba(63,185,80,.1); box-shadow:0 0 10px rgba(63,185,80,.25); }
+    .bbk-count      { margin-top:9px; text-align:center;
+                      font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                      letter-spacing:1.4px; color:#6e7681; }
+
+    /* Who has not been called yet. This is the ceremony: the list gets shorter
+       and everybody in the room is doing the same arithmetic. */
+    .bbk-wait       { margin-bottom:16px; }
+    .bbk-wait-h     { text-align:center; font-family:ui-monospace,Consolas,monospace;
+                      font-size:9px; font-weight:800; letter-spacing:1.8px;
+                      color:#8b949e; margin-bottom:8px; }
+    .bbk-faces      { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+    .bbk-face       { display:flex; flex-direction:column; align-items:center; gap:3px;
+                      width:46px; opacity:1; transition:opacity .2s ease, filter .2s ease; }
+    .bbk-face i     { font-style:normal; font-size:8.5px; letter-spacing:.3px; color:#c9d1d9;
+                      max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    /* Safe: dimmed and out of the story. */
+    .bbk-face.is-safe          { opacity:.32; filter:grayscale(.7); }
+    .bbk-face.is-safe i        { color:#6e7681; }
+    /* Nominated: the two the box never reached. */
+    .bbk-face.is-nom .bb-av    { box-shadow:0 0 0 2px #f85149, 0 0 18px rgba(248,81,73,.5); }
+    .bbk-face.is-nom i         { color:#ffb3ae; font-weight:700; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bbk-slot, .bbk-face { transition:none; }
+    }
+
     /* Legend for the standing icons — an icon nobody can name is decoration. */
     .bbw-key        { display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
                       margin:8px 0 12px; font-size:9.5px; letter-spacing:.6px; color:#8b949e; }

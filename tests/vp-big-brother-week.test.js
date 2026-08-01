@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -252,5 +252,78 @@ describe('the debug screen', () => {
     // The tab buttons and the episode nav both look the screen up by this id.
     expect(debug.html).toContain("s.id==='bb-debug'");
     expect(ep.num).toBe(1);
+  }, 240000);
+});
+
+// The nomination ceremony.
+//
+// The old version had the mechanic backwards — it turned keys to reveal the
+// NOMINATED. In the house the Head of Household loads the box with the keys of
+// everybody who is SAFE and pulls them one at a time; the nominees are whoever
+// is left when the box is empty. Inverting that removed the only suspense the
+// ceremony has. It also printed the target, the pawn and the backdoor plan in a
+// panel above the whole thing.
+describe('the nomination ceremony', () => {
+  it('gives nothing away before the first key', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const act = (ep.acts || []).find(a => a.type === 'nominations');
+    _tvState[`bb_noms_${ep.num}`] = { idx: -1 };
+    const html = rpBuildBBNominations(ep);
+    expect(html, 'the ceremony announces the private plan above itself').not.toContain('private intent');
+    for (const n of act.nominees || []) {
+      expect(html, `${n} is named as a nominee before a single key is pulled`)
+        .not.toContain(`<strong>${n}</strong>`);
+    }
+    expect((html.match(/bbk-slot is-out/g) || []).length, 'keys were already pulled').toBe(0);
+    expect((html.match(/is-nom/g) || []).length, 'nominees were marked before the box emptied').toBe(0);
+  }, 240000);
+
+  it('pulls keys for the SAFE, one at a time', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const act = (ep.acts || []).find(a => a.type === 'nominations');
+    const key = `bb_noms_${ep.num}`;
+    const house = (ep.houseAtStart || []).filter(n => n !== ep.hoh);
+    const safeCount = house.length - (act.nominees || []).length;
+
+    const pulledAt = idx => {
+      _tvState[key] = { idx };
+      const html = rpBuildBBNominations(ep);
+      return {
+        keys: (html.match(/bbk-slot is-out/g) || []).length,
+        safe: (html.match(/bbk-face is-safe/g) || []).length,
+        nom: (html.match(/is-nom/g) || []).length,
+        html,
+      };
+    };
+    // One key per step, and each pulled key marks somebody safe.
+    const one = pulledAt(0);
+    expect(one.keys).toBe(1);
+    expect(one.safe).toBe(1);
+    const half = pulledAt(Math.floor(safeCount / 2));
+    expect(half.keys).toBeGreaterThan(one.keys);
+    // Nobody is nominated until every key is out of the box.
+    expect(half.nom, 'the block was revealed while keys were still in the box').toBe(0);
+
+    // The last key empties the box, and the faces nobody called light up. The
+    // words come on the next click — the picture tells you first, which is how
+    // it happens in the room.
+    const lastKey = pulledAt(safeCount - 1);
+    expect(lastKey.keys, 'the box did not empty').toBe(safeCount);
+    expect(lastKey.nom, 'the box emptied and nobody was on the block').toBeGreaterThan(0);
+
+    const spoken = pulledAt(safeCount);
+    expect(spoken.html).toContain('It is empty');
+    for (const n of act.nominees || []) expect(spoken.html).toContain(n);
+  }, 240000);
+
+  it('ends on the reasoning, in the HOH voice', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    _tvState[`bb_noms_${ep.num}`] = { idx: 99 };
+    const html = rpBuildBBNominations(ep);
+    expect(html).toContain('THE REASONING');
+    expect(html).toContain('NOMINATION CEREMONY');
   }, 240000);
 });

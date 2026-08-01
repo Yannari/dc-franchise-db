@@ -200,7 +200,7 @@ const blowUp = {
     const calculated = aStats.strategic >= 7 && aStats.temperament >= 4;
     const text = _variant(volatile ? [
       `${a} finds another one of ${b}'s dirty pans in the sink and carries it into the bedroom. ${b} tells ${a} to put it down. ${a} drops it on the floor instead.`,
-      `${b} interrupts ${a} during a group conversation. ${a} snaps, “You do that every time I talk,” and begins listing every example from the last three weeks.`,
+      `${b} interrupts ${a} during a group conversation. ${a} snaps, “You do that every time I talk,” and begins listing every example ${a} can remember.`,
       `${a} hears that ${b} called them difficult. ${a} storms into the kitchen and asks ${b} to say it to their face. ${b} does.`,
       `${b} eats food ${a} had been saving. ${a} opens the empty container in front of the house and demands to know why ${b} never thinks about anyone else.`,
       `${a} wakes up after another bad night and tells ${b} to stop whispering in the bedroom. ${b} laughs, and ${a} is out of bed before anyone can calm them down.`,
@@ -476,7 +476,7 @@ const driftingOut = {
     const text = _variant([
       `${a} walks into the bedroom and nobody stops talking. After a minute, ${a} realizes the group is making plans without asking what ${p.sub} thinks.`,
       `${a} asks two different people where the vote stands and gets the same vague answer. For the first time, ${a} wonders whether being left alone means being left out.`,
-      `While washing dishes, ${a} realizes ${p.sub} has not had a private conversation with anyone in two days. ${a} dries ${p.posAdj} hands and goes looking for one.`,
+      `While washing dishes, ${a} realizes ${p.sub} has gone the entire stretch without a private conversation. ${a} dries ${p.posAdj} hands and goes looking for one.`,
       `Everybody is friendly with ${a}, but nobody has brought ${p.obj} into a plan. That night, ${a} decides to stop waiting for an invitation.`,
     ], ctx, a);
 

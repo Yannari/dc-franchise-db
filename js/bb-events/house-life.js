@@ -100,7 +100,7 @@ const haveNots = {
       `The have-not room goes to ${picked.join(', ')}, which surprises exactly nobody and is noted by all three of them.`,
       `Cold showers and slop for ${picked.join(' and ')}. ${first} takes it well in public and considerably worse at two in the morning.`,
       `${picked.join(', ')} draw the short straw, and the vote that decided it was not close, and everybody knows the vote was not close.`,
-      `${first} works out that being a have-not twice in three weeks is not bad luck, it is information.`,
+      `${first} works out that being made a have-not again is not bad luck anymore; it is information.`,
     ], ctx, ...picked);
 
     // Being cold and hungry costs you the week — and the house choosing you is
@@ -135,7 +135,7 @@ const prank = {
       `${joker} rearranges every single item in ${victim}'s drawer and ${victim} takes forty minutes to notice, then laughs harder than ${joker} did.`,
       `The prank is stupid, elaborate and genuinely funny, and for about an hour the house forgets what it is.`,
       `${victim} walks into it, sees exactly what has happened, and says "${joker}" to an empty room with real affection.`,
-      `${joker} has been building this for two days. It works perfectly. ${victim} demands to know how and then demands to help with the next one.`,
+      `${joker} has been setting this up whenever ${victim} leaves the room. It works perfectly. ${victim} demands to know how and then demands to help with the next one.`,
     ], ctx, joker, victim) : _variant([
       `Everyone laughs at the prank except ${victim}. When ${joker} tries to explain it was harmless, ${victim} walks away.`,
       `${victim} does not laugh. The room laughs, then notices ${p.sub} is not laughing, then stops.`,
@@ -175,10 +175,10 @@ const chores = {
     const p = pronouns(tidy);
     const boils = resentmentOf(tidy, slob) > 2 || pStats(tidy).temperament <= 6;
     const text = boils ? _variant([
-      `It is about the dishes and it is absolutely not about the dishes. ${tidy} has been counting for eleven days and tonight ${p.sub} says the number out loud.`,
+      `It is about the dishes and it is absolutely not about the dishes. ${tidy} has been counting every mess and tonight ${p.sub} says the number out loud.`,
       `${tidy} cleans up after ${slob} for the last time, announces that it was the last time, and is cleaning up after ${pronouns(slob).obj} again by Thursday.`,
       `"I'm not your mother." ${slob} points out, not unreasonably, that nobody asked ${tidy} to do it. This does not help.`,
-      `The pan has been in the sink for three days. ${tidy} puts it, still dirty, on ${slob}'s bed.`,
+      `The same pan is in the sink again. ${tidy} puts it, still dirty, on ${slob}'s bed.`,
     ], ctx, tidy, slob) : _variant([
       `${tidy} does the dishes again and says nothing again, and files it with everything else ${p.sub} is not saying.`,
       `Somebody has to do it. It is ${tidy}. It is always ${tidy}, and ${p.sub} has decided that being the person who does it is worth something.`,
@@ -215,7 +215,7 @@ const diaryRoom = {
     const text = isVillainous(speaker) || willScheme(speaker) ? _variant([
       `"Everyone in this house thinks they know what I'm doing." ${speaker} is enjoying this considerably more than ${p.sub} lets on out there.`,
       `${speaker} explains the plan to the camera in full, in order, with names. It is a very good plan. ${p.Sub} has told nobody in the house any of it.`,
-      `"${subject} trusts me completely," ${speaker} says, "which is going to be a problem for ${pronouns(subject).obj} in about nine days."`,
+      `"${subject} trusts me completely," ${speaker} says, "which is going to become a problem for ${pronouns(subject).obj} when the numbers get smaller."`,
       `${speaker} smiles at the lens in a way ${p.sub} has been careful not to smile at anybody.`,
     ], ctx, speaker, subject) : _variant([
       `${speaker} sits down and, for the first time in about a week, stops performing. What comes out is mostly about being tired.`,
@@ -331,7 +331,7 @@ const showmanceDomestic = {
     const strained = bond(a, b) < 3 || _nominees(ctx).includes(a) || _nominees(ctx).includes(b);
     const text = strained ? _variant([
       `${a} and ${b} have their first proper argument, in whispers, in a house with eleven other people in it and nowhere to have it.`,
-      `Being a pair was fun for two weeks. This week it is a target on two backs and ${a} says so, badly.`,
+      `Being seen as a pair was fun until the house started treating it as a target on two backs. ${a} says so, badly.`,
       `${b} wants to talk about the vote. ${a} wants to not be in the house. Neither gets what they want.`,
       `They are still together and they have both started thinking about the week where one of them has to write the other's name down.`,
     ], ctx, a, b) : _variant([

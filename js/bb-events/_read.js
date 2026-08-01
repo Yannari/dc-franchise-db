@@ -456,7 +456,7 @@ export function campaignArgument(nominee, voter, opponent) {
     return `"${opponent} is in ${theirAllies[0].name} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
   }
   if (theirComps >= 2 && theirComps > myComps) {
-    return `"${opponent} has won ${theirComps} competitions. I have won ${myComps}. One of us is your problem in four weeks and it is not me."`;
+    return `"${opponent} has won ${theirComps} competitions. I have won ${myComps}. One of us becomes your problem when the numbers get smaller, and it is not me."`;
   }
   if (opponent && threat(opponent) > threat(nominee) + 1) {
     return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;

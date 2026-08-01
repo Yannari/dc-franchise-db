@@ -126,7 +126,7 @@ const nomSpeechPersonal = {
     const other = _nominees(ctx).find(n => n !== target) || _nominees(ctx)[1];
     const p = pronouns(ctx.hoh);
     const text = _variant([
-      `${ctx.hoh} does not keep it civil. "${target}, you've been running your mouth about me since week one and you thought I wasn't hearing it." The room goes very still. ${other} stares at the floor, grateful and ashamed of being grateful.`,
+      `${ctx.hoh} does not keep it civil. "${target}, you've been running your mouth about me since we moved in, and you thought I wasn't hearing it." The room goes very still. ${other} stares at the floor, grateful and ashamed of being grateful.`,
       `"People keep telling me to say it's just a game," ${ctx.hoh} says. "It isn't. ${target}, this one's personal." ${p.Sub} doesn't sit back down so much as drop into the chair, and half the house quietly moves ${p.posAdj} name up their list.`,
       `${ctx.hoh} gets through ${target}'s nomination and then keeps going, three sentences past where the speech should have ended. By the last one ${other} has stopped looking relieved and started looking worried about the precedent.`,
       `"I'm not going to lie to your face the way you lied to mine," ${ctx.hoh} tells ${target}. It is satisfying. It is also the moment ${p.sub} stops being an HOH with a plan and becomes an HOH with an enemy.`,
@@ -165,10 +165,10 @@ const nomPawnReassured = {
     const burnedBefore = remembers(pawn, ctx.hoh, 'betrayal') || grudge(pawn, ctx.hoh) >= 2;
     const wary = suspicionOf(pawn, ctx.hoh);
     const text = _variant([
-      `${ctx.hoh} finds ${pawn} in the storage room within the hour. "You're not the one going. I need you up there and I need you to trust me for four days." ${pawn} says yes. ${p.Sub} means it, mostly.`,
+      `${ctx.hoh} finds ${pawn} in the storage room within the hour. "You're not the one going. I need you up there until the vote, and I need you to trust me." ${pawn} says yes. ${p.Sub} means it, mostly.`,
       `"Say it to my face," ${pawn} says. ${ctx.hoh} does: "You are a pawn. You are safe. If that changes you'll hear it from me before you hear it from anyone else." It is the exact sentence every pawn in the history of this house has been told.`,
       `${ctx.hoh} catches ${pawn} on the stairs and talks fast and low. ${pawn} nods along, and only afterwards, alone, works out that ${p.sub} never actually got a number — just a tone.`,
-      `While they wash dishes, ${ctx.hoh} tells ${pawn}, “Four days, then you're off the block and we never do this again.” ${pawn} asks whether the votes are really there.`,
+      `While they wash dishes, ${ctx.hoh} tells ${pawn}, “You stay through the vote, then you're off the block and we never do this again.” ${pawn} asks whether the votes are really there.`,
       ...(burnedBefore ? [`"You told me something like this before," ${pawn} says. ${ctx.hoh} does not have a good answer, and the pause where the answer should be is the whole conversation. ${pawn} agrees anyway, because on the block there is nothing else to agree to.`] : []),
     ], ctx, ctx.hoh, pawn);
 
@@ -381,7 +381,7 @@ const vetoBackdoorLands = {
     const text = _variant([
       `${ctx.hoh} names ${victim} as the replacement and the room understands the whole week at once — the nominations, the pawn, the conversations that went nowhere. ${victim} never played the veto because ${p.sub} was never meant to.`,
       `"As the replacement nominee, I have to name... ${victim}." Somebody exhales. ${victim} does not, for several seconds. The backdoor closes with almost no sound at all.`,
-      `It was built four days ago and it lands in four seconds. ${victim} walks to the chair like the floor has moved, because for ${p.obj} it has.`,
+      `The plan was built before the veto was played and lands in four seconds. ${victim} walks to the chair like the floor has moved, because for ${p.obj} it has.`,
       `${victim} had spent the week being told ${p.sub} was not a target, by people who were counting on ${p.obj} believing it. ${p.Sub} did. That was the plan.`,
     ], ctx, victim, ctx.hoh);
 

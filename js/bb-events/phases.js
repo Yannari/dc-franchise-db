@@ -64,7 +64,7 @@ const openField = {
     const [a, b] = [pool[0], pool[1]];
     const p = pronouns(a);
     const text = _variant([
-      `Nobody has power for another few hours, and it is the only time all week the house talks like people rather than positions. ${a} and ${b} get further in one conversation than they have in nine days.`,
+      `Nobody has power for another few hours, and it is the only time all week the house talks like people rather than positions. ${a} and ${b} get further in one conversation than they have since the last competition.`,
       `${a} works out that this is the last hour ${p.sub} is safe by default, and spends it doing nothing at all about that.`,
       `The house gets louder as everyone waits for the competition. ${a} and ${b} sit in the kitchen joking with anyone too nervous to stay alone.`,
       `Everybody is equal for exactly as long as it takes to run one competition, and ${a} is the only person in the room who seems to know it.`,
@@ -115,7 +115,7 @@ const scramble = {
     const text = desperate ? _variant([
       `${scrambler} is up the stairs before ${hoh} has finished celebrating, and the conversation is not subtle. Neither of them pretends it is about anything but survival.`,
       `"We're good, right?" ${hoh} says something reassuring. ${scrambler} leaves knowing ${p.sub} got nothing at all and having to act as though ${p.sub} did.`,
-      `${scrambler} has not spoken to ${hoh} properly in eleven days and makes up for all of it in one afternoon, which fools nobody including ${pronouns(hoh).obj}.`,
+      `${scrambler} has barely spoken to ${hoh} until now and tries to make up for all of it in one afternoon, which fools nobody including ${pronouns(hoh).obj}.`,
       `The queue outside the HOH room is not literal, but ${scrambler} is definitely in it, and definitely aware of who is ahead of ${p.obj}.`,
     ], ctx, scrambler, hoh) : _variant([
       `${scrambler} goes up to congratulate ${hoh} and stays an hour. Nothing is promised. Everything is understood.`,
@@ -174,7 +174,7 @@ const blockIsolation = {
       `The house is careful around ${nominee} in the way people are careful around the recently bereaved. ${avoider} in particular has developed somewhere else to be.`,
       `${nominee} sits down at a full table and it is not full for very long. Nobody is unkind. Everybody leaves.`,
       `Being on the block is mostly being alone in a crowded house, and ${nominee} learns that inside about six hours.`,
-      `${avoider} was ${nominee}'s closest thing to a friend on Tuesday. It is Thursday, and ${avoider} has answered three direct questions with two words.`,
+      `${avoider} was ${nominee}'s closest thing to a friend before nominations. Since the keys turned, ${avoider} has answered three direct questions with two words.`,
     ], ctx, nominee, avoider);
     api.addBond(nominee, avoider, -1.2);
     api.remember(nominee, avoider, 'abandonment', 2, { when: 'on the block' });
@@ -219,11 +219,11 @@ const lobbyingTheVeto = {
       `${nominee} believes ${holder} will use the veto, but asks anyway. ${holder} tells ${p.obj} to stop worrying and gives ${p.obj} a hug.`,
       `"You know what I'd do if it were the other way round." ${holder} does know. That is exactly the problem ${holder} has been sitting with all afternoon.`,
       `${nominee} gives ${holder} a short pitch, asks them to think about it and leaves before the conversation turns into begging.`,
-      `They have been close since the first night. Now one of them holds the only thing the other needs, and neither is enjoying it.`,
+      `They have been close since ${ctx?.week?.num > 1 ? 'the first night' : 'move-in'}. Now one of them holds the only thing the other needs, and neither is enjoying it.`,
     ], ctx, nominee, holder) : _variant([
       `${nominee} has nothing to offer ${holder} but a future, and spends an hour describing one.`,
       `${holder} listens to the whole pitch politely. ${nominee} can tell from about the third sentence that it is not going to work and keeps going regardless.`,
-      `"I'm not asking you to like me." It is the right approach and it is roughly nine days too late.`,
+      `"I'm not asking you to like me." It is the right approach, delivered only after every earlier conversation went wrong.`,
       `${nominee} finds ${holder} alone four separate times, and the fourth is one too many.`,
     ], ctx, nominee, holder);
 
@@ -282,7 +282,7 @@ const lastNightEqual = {
       `${a}, ${b} and ${c} stay up knowing one of them will have power by lunchtime and none of them knows which. It makes everybody unusually pleasant.`,
       `Nobody has done anything to anybody yet this week. ${a} points this out as though it is a joke, and ${b} laughs as though it is.`,
       `The last hour before a competition is the friendliest the house ever gets, and ${a} has noticed the pattern well enough to distrust it.`,
-      `${a} makes food for people who will be voting on ${pronouns(a).obj} in four days, and does it well.`,
+      `${a} makes food for people who may eventually be voting on ${pronouns(a).obj}, and does it well.`,
     ], ctx, a, b, c);
     for (const x of group) for (const y of group) if (x !== y) api.addBond(x, y, 0.35);
     api.popDelta(a, 1);
@@ -333,7 +333,7 @@ const hohRoomReveal = {
     const text = _variant([
       `The whole house crowds into the HOH room for the photographs, and everyone privately notes which two are still in there an hour later. It is ${invited.join(' and ')}.`,
       `${hoh} reads out the letter from home and the room is genuinely kind for four minutes. Then the door shuts on everybody except ${invited[0]}.`,
-      `${hoh} gets a room with a lock for the first time in weeks, and discovers ${p.sub} has more close friends today than ${p.sub} had yesterday.`,
+      `${hoh} gets the only room with a lock and discovers ${p.sub} has more close friends today than ${p.sub} had before the competition.`,
       `${excluded} is in the HOH room for the photographs and gone before the letter. ${pronouns(excluded).Sub} counts the people who stayed.`,
     ], ctx, hoh, ...invited);
     invited.forEach(n => { api.addBond(hoh, n, 0.8); api.remember(n, hoh, 'favour', 1, { about: 'the HOH room' }); });
@@ -362,7 +362,7 @@ const targetsAlign = {
     const text = _variant([
       `${pitcher} tells ${hoh} that ${mark} would nominate them next week. ${hoh} asks how ${pitcher} knows and listens closely to the answer.`,
       `"You don't owe me anything. But if you're looking at ${mark}, so am I." It is the most useful sentence anybody says to ${hoh} today.`,
-      `${pitcher} has wanted ${mark} gone since week one and has finally found somebody with the power to do it for ${p.obj}.`,
+      `${pitcher} has wanted ${mark} gone since ${ctx?.week?.num > 1 ? 'week one' : 'the first days in the house'} and has finally found somebody with the power to do it for ${p.obj}.`,
       `${pitcher} mentions that several people are worried about ${mark}, then leaves the HOH room before ${hoh} can ask who “several people” means.`,
     ], ctx, pitcher, hoh, mark);
     api.addBond(pitcher, hoh, 0.9);
@@ -386,7 +386,7 @@ const nomineeReckons = {
       `${nominee} counts the votes on ${p.posAdj} fingers, twice, and gets a number ${p.sub} does not like either time. ${needed[0]} is the difference.`,
       `Somewhere around two in the morning ${nominee} stops being upset and starts being useful, and writes a list of who ${p.sub} actually needs: ${needed.filter(Boolean).join(', ')}.`,
       `${nominee} works out that being on the block is a maths problem before it is a feeling, and that the maths currently says ${p.sub} loses.`,
-      `${nominee} has four days and three people to persuade, and the first of them will not look ${p.obj} in the eye.`,
+      `${nominee} has until the eviction and three people to persuade, and the first of them will not look ${p.obj} in the eye.`,
     ], ctx, nominee, ...needed);
     needed.filter(Boolean).forEach(n => api.remember(nominee, n, 'needs', 1, { about: 'the vote' }));
     api.popDelta(nominee, 1);

@@ -133,7 +133,7 @@ const finalTwo = {
     const p = pronouns(a);
     const text = _variant([
       `${a} says the words out loud — "final two, whatever happens" — and ${b} says them back. Neither of them writes anything down and both of them will remember the exact wording.`,
-      `${a} asks ${b} whether their deal is really final two. ${b} says it has been for weeks. They shake on it anyway.`,
+      `${a} asks ${b} whether what they have is really a final two. ${b} says it has been since the first time they discussed the end. They shake on it anyway.`,
       `“If it's us at the end, I'm not going to feel bad about beating you,” ${a} says. ${b} laughs. “You won't beat me.” They agree to get there together.`,
       `${a} has been circling this all week and finally asks. ${b} agrees so quickly that ${p.sub} wonders, briefly, how many other people have been asked the same thing.`,
     ], ctx, a, b);
@@ -208,7 +208,7 @@ const brokenPromise = {
     const p = pronouns(victim);
     const text = _variant([
       `${victim} confronts ${liar}: “You gave me your word.” ${liar} immediately starts explaining why the promise had to be broken.`,
-      `The promise was made three weeks ago and ${victim} has been carrying it around since. Today ${p.sub} puts it down, publicly, in front of two other people.`,
+      `The promise has been sitting between them since the day it was made. Today ${victim} puts it down, publicly, in front of two other people.`,
       `"I'm not angry," ${victim} tells ${liar}, and is plainly furious. Nobody in the room corrects ${p.obj}.`,
       `${liar} tries to explain what the promise had actually meant. ${victim} listens to the whole explanation and comes out of it certain of exactly one thing.`,
     ], ctx, victim, liar);
@@ -611,7 +611,7 @@ const reaffirmDeal = {
       `${a} finds ${b} alone and says it again, plainly: still us, still the end. ${b} does not need to hear it and is glad to anyway.`,
       `Neither of them says much. ${a} bumps ${b}'s shoulder on the way past and ${b} nods once. Weeks in, that is the entire conversation and it is enough.`,
       `"We good?" "We're good." ${a} and ${b} have had this exchange a dozen times and it has not stopped being true yet.`,
-      `${a} runs the next three weeks past ${b} out loud — who goes, in what order, who they need. ${b} corrects one name. That is the whole disagreement.`,
+      `${a} runs the next few evictions past ${b} out loud — who goes, in what order, who they need. ${b} corrects one name. That is the whole disagreement.`,
     ], ctx, a, b) : _variant([
       `${a} asks ${b} whether they are still good, and listens to how long the pause is. It is not long. It is not nothing, either.`,
       `"Still us, right?" ${b} says all the right words. ${a} walks away not entirely convinced and unable to say which word did it.`,

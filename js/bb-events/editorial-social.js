@@ -53,7 +53,7 @@ const kitchenAfterDark = {
     const text = pick([
       `${a} burns a quesadilla at two in the morning. ${b} eats it anyway, and ${d} laughs so loudly that production tells ${pronouns(d).obj} to keep it down.`,
       `${a} and ${b} make a late-night meal out of whatever is left in the fridge. ${d} sits at the counter talking to them until all three lose track of the time.`,
-      `While ${a} washes dishes, ${b} admits ${pronouns(b).sub} lied about something during the first week. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
+      `While ${a} washes dishes, ${b} admits ${pronouns(b).sub} lied about something early in the game. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
       `${d} starts doing an impression of ${a} in the kitchen. ${a} walks in halfway through it, stares for a moment, then joins in and makes everyone laugh harder.`,
     ],rng);
     api.addBond(a,b,1.1); api.addBond(a,d,.5); api.addBond(b,d,.5); api.remember(b,a,'late-night-trust',1,{});

@@ -113,7 +113,14 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
     const from = pickable.length ? pickable : left;
     const wanted = from.slice().sort((a, b) => read(drawer, b) - read(drawer, a))[0];
     playing.push(wanted);
-    draws.push({ drawer, chip: 'choice', drew: null, chose: wanted });
+    // Why that name. A choice chip is a decision made in front of everybody,
+    // and the house reads who somebody reaches for.
+    const why = drawer === hoh
+      ? (avoid && pickable.length < left.length
+        ? `${hoh} picks ${wanted} and pointedly does not pick ${avoid}.`
+        : `${hoh} picks ${wanted}, who has no reason to want the block changed.`)
+      : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`;
+    draws.push({ drawer, chip: 'choice', drew: null, chose: wanted, why });
   }
 
   // Anything the bag could not fill, fill at random rather than leave short.

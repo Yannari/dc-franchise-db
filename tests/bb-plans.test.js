@@ -172,19 +172,27 @@ describe('houseguests have a plan', () => {
   });
 
   it('fills the fields it declares, once the end is in sight', () => {
-    const house = atHouseOf(8);
-    expect(houseStage(house.length)).not.toBe('early');
-    const filled = field => house.filter(n => {
-      const v = housePlan(n)?.[field];
-      return Array.isArray(v) ? v.some(x => x && x !== n) : !!v;
-    }).length;
+    // Each field is checked where it MEANS something rather than all at one
+    // snapshot. A shield has to be a bigger threat than you, so by the final
+    // eight there is often nobody left to hide behind and zero is the correct
+    // answer — measured, shields run 3-6 of the house from seventeen down to
+    // nine and then taper out. A goat is the mirror: it needs a jury to be
+    // beatable in front of, so it does not exist early.
+    const filledAt = (size, field) => {
+      const house = atHouseOf(size);
+      return house.filter(n => {
+        const v = housePlan(n)?.[field];
+        return Array.isArray(v) ? v.some(x => x && x !== n) : !!v;
+      }).length;
+    };
 
     // Every one of these was 0/N across a full measured season.
-    expect(filled('targets'), 'nobody is coming for anybody').toBeGreaterThan(0);
-    expect(filled('shield'), 'nobody is hiding behind anybody').toBeGreaterThan(0);
-    expect(filled('goat'), 'nobody has worked out who they beat').toBeGreaterThan(0);
-    expect(filled('preferredCore'), 'nobody is close to anybody').toBeGreaterThan(0);
-    expect(filled('betrayalConditions'), 'nobody would ever turn on their own').toBeGreaterThan(0);
+    expect(houseStage(atHouseOf(8).length)).not.toBe('early');
+    expect(filledAt(12, 'shield'), 'nobody in the mid-game is hiding behind anybody').toBeGreaterThan(0);
+    expect(filledAt(8, 'goat'), 'nobody has worked out who they beat').toBeGreaterThan(0);
+    expect(filledAt(8, 'targets'), 'nobody is coming for anybody').toBeGreaterThan(0);
+    expect(filledAt(12, 'preferredCore'), 'nobody is close to anybody').toBeGreaterThan(0);
+    expect(filledAt(8, 'betrayalConditions'), 'nobody would ever turn on their own').toBeGreaterThan(0);
   });
 
   it('does not read a goat as somebody who has to like you', () => {

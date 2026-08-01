@@ -35,6 +35,21 @@ function _variant(list, ctx, ...salt) {
   return list[hash % list.length];
 }
 
+/** Weight an event onto one phase of the week — the same scaling phases.js uses. */
+const at = (phase, ctx, value) => (ctx?.phase === phase ? band(value * 2.6, 34) : 0);
+
+/**
+ * After the veto ceremony, which is NOT the 'post-veto' phase.
+ *
+ * post-veto is the stretch between the competition and the ceremony — the veto
+ * exists and nobody has said what they are doing with it. The fallout happens
+ * afterwards, in the campaign, once somebody has come down and somebody else
+ * has taken their chair. Gating the fallout on post-veto meant none of it could
+ * ever fire: at that point there is no saved and no replacement to react to.
+ */
+const afterCeremony = (ctx, value) =>
+  (ctx?.act === 'campaign' || ctx?.phase === 'campaign' ? band(value * 2.2, 30) : 0);
+
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _hoh = ctx => ctx?.hoh || ctx?.week?.hoh || null;
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
@@ -1045,10 +1060,181 @@ const nomEveGuessing = {
   },
 };
 
+// ── after the veto ceremony ──────────────────────────────────────────
+//
+// The ceremony resolved in a line and the house went straight back to talking
+// about nothing. Everything below happens in the hour after somebody's week
+// changed: the person who took themselves off it, the person who took their
+// chair, the Head of Household who had to name them, and the room deciding
+// whether any of it was a surprise.
+
+const savedThemselves = {
+  id: 'power-saved-themselves',
+  category: 'deals',
+  weight(house, ctx) {
+    const { saved } = actFacts(ctx);
+    // Only when the person who came down is the one who won it.
+    if (!saved || saved !== ctx?.vetoWinner) return 0;
+    return afterCeremony(ctx, 12);
+  },
+  fire(house, ctx, api) {
+    const { saved } = actFacts(ctx);
+    const hoh = _hoh(ctx);
+    const p = pronouns(saved);
+    const s = pStats(saved);
+    const text = _variant([
+      `${saved} took ${p.ref} off the block with ${p.posAdj} own hands and nobody in this house can take that away from ${p.obj}. ${p.Sub} also cost ${hoh} a week, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} that too.`,
+      `There is a particular kind of quiet that follows somebody saving themselves. ${saved} is safe, everybody else is one chair short, and the room is doing the arithmetic out loud.`,
+      `${saved} does not celebrate. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on the block once now, which means the house has already had the conversation about ${p.obj} — and will have it again.`,
+      `"I didn't have a choice." ${saved} says it to everybody who will listen. Nobody has suggested ${p.sub} did.`,
+    ], ctx, saved, hoh);
+    api.popDelta(saved, 2);
+    if (hoh) {
+      api.remember(hoh, saved, 'cost-me-a-week', 2);
+      api.suspicion(hoh, saved, 0.7);
+      api.addBond(hoh, saved, -0.5);
+    }
+    return { text, players: [saved, hoh].filter(Boolean), badgeText: 'SAVED THEMSELVES', badgeClass: 'green' };
+  },
+};
+
+const replacementReacts = {
+  id: 'power-replacement-reacts',
+  category: 'social',
+  weight(house, ctx) {
+    const { replacement } = actFacts(ctx);
+    return replacement ? afterCeremony(ctx, 13) : 0;
+  },
+  fire(house, ctx, api) {
+    const { replacement, saved } = actFacts(ctx);
+    const hoh = _hoh(ctx);
+    const s = pStats(replacement);
+    const p = pronouns(replacement);
+    const arch = archetype(replacement);
+    // Anger, despair, or a very cold calm — decided by who they are, not by a
+    // roll, so the same houseguest reacts the same way twice.
+    const mode = (s.temperament <= 4 || arch === 'hothead') ? 'angry'
+      : (s.boldness <= 4 || arch === 'goat') ? 'crushed' : 'cold';
+    const text = mode === 'angry' ? _variant([
+      `${replacement} is on the block twenty minutes after ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} safe, and does not do the thing where you take it well. ${hoh} gets the whole of it, in the kitchen, in front of everybody.`,
+      `"Say it to me properly." ${replacement} wants ${hoh} to explain it standing up, and ${hoh} does, and it does not help either of them.`,
+      `${replacement} slams a cupboard that did nothing to ${p.obj}. Two people leave the room. ${saved || 'The person who came down'} is not one of them, which ${replacement} notices.`,
+    ], ctx, replacement, hoh) : mode === 'crushed' ? _variant([
+      `${replacement} says it is fine. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'} it four times in ten minutes, to four different people, and by the last one ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} stopped meaning it.`,
+      `Nobody sees ${replacement} for two hours. When ${p.sub} ${p.sub === 'they' ? 'come' : 'comes'} back out ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} washed ${p.posAdj} face and is being very pleasant to everybody.`,
+      `${replacement} sits down on the end of a bed and stays there. Somebody brings ${p.obj} a plate. It goes cold.`,
+    ], ctx, replacement, hoh) : _variant([
+      `${replacement} congratulates ${saved || 'them'} on the veto, thanks ${hoh} for being straight about it, and starts counting votes before the room has emptied.`,
+      `${replacement} takes it without a flicker. Within the hour ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} spoken to four people and ${hoh} is no longer certain this was the easy option.`,
+      `"That's the game." ${replacement} means it, which is worse for ${hoh} than if ${p.sub} did not.`,
+    ], ctx, replacement, hoh);
+
+    if (hoh) {
+      api.addBond(replacement, hoh, mode === 'angry' ? -2.2 : mode === 'crushed' ? -1.1 : -0.6);
+      api.setTarget(replacement, hoh, 'put me up when I was already safe');
+      api.remember(replacement, hoh, 'renominated-me', 3);
+      if (mode === 'angry') api.popDelta(replacement, -1);
+      if (mode === 'cold') api.popDelta(replacement, 1);
+    }
+    if (saved) api.addBond(replacement, saved, -0.7);
+    return {
+      text, players: [replacement, hoh].filter(Boolean),
+      badgeText: mode === 'angry' ? 'TAKES IT BADLY' : mode === 'crushed' ? 'SAYS IT IS FINE' : 'TAKES IT COLDLY',
+      badgeClass: mode === 'angry' ? 'red' : mode === 'crushed' ? 'blue' : 'grey',
+    };
+  },
+};
+
+const vetoHolderFallout = {
+  id: 'power-veto-fallout',
+  category: 'deals',
+  weight(house, ctx) {
+    const { saved } = actFacts(ctx);
+    const holder = ctx?.vetoWinner;
+    // Somebody else's veto, used on somebody who was not them.
+    if (!holder || !saved || holder === saved || holder === _hoh(ctx)) return 0;
+    return afterCeremony(ctx, 11);
+  },
+  fire(house, ctx, api) {
+    const holder = ctx.vetoWinner;
+    const { saved, replacement } = actFacts(ctx);
+    const hoh = _hoh(ctx);
+    const p = pronouns(holder);
+    const text = _variant([
+      `${hoh} does not raise it with ${holder} and that is the problem. They are perfectly polite to each other for the rest of the day and everybody in the house can hear it.`,
+      `"You could have told me first." ${hoh} is not talking about the veto. ${holder} understands that and says nothing, because there is no answer that helps.`,
+      `${holder} used it on ${saved} and now has to live in a house with ${replacement || 'the person who took the chair'}. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} started rehearsing the conversation and has not had it yet.`,
+      `The veto came off the wall and ${holder} used it, which means ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} now a person who makes moves. The house adjusts its list accordingly.`,
+    ], ctx, holder, hoh, saved);
+
+    if (hoh) {
+      api.addBond(holder, hoh, -1.4);
+      api.suspicion(hoh, holder, 1.2);
+      api.remember(hoh, holder, 'crossed-me', 2, { about: 'the veto' });
+    }
+    if (saved) { api.addBond(holder, saved, 1.6); api.remember(saved, holder, 'saved-me', 3); }
+    api.popDelta(holder, 1);
+    return { text, players: [holder, hoh].filter(Boolean), badgeText: 'BLOOD ON THEIR HANDS', badgeClass: 'red' };
+  },
+};
+
+const nobodySurprised = {
+  id: 'power-veto-no-surprise',
+  category: 'house-life',
+  weight(house, ctx) {
+    const f = actFacts(ctx);
+    // The weeks that go exactly as expected: nobody came down, or the person
+    // who came down was always going to.
+    const flat = !f.saved || f.saved === f.pawn || f.saved === ctx?.vetoWinner;
+    return flat ? afterCeremony(ctx, 7) : 0;
+  },
+  fire(house, ctx, api) {
+    const f = actFacts(ctx);
+    const noms = _noms(ctx);
+    const watchers = _quiet(_others(house, ...noms, _hoh(ctx))).slice(0, 2);
+    const text = _variant([
+      `The ceremony takes four minutes and surprises nobody. Two people go back to bed. The house has known how this week ends since Monday.`,
+      `Nothing about the veto changes anything, which everybody privately expected and nobody says out loud in case it sounds like gloating.`,
+      `${watchers[0] || 'Somebody'} asks what happened at the ceremony and is told, and does not look up from what ${pronouns(watchers[0] || 'they').sub} ${'is'} doing.`,
+      `There is no scene after it. ${noms.join(' and ')} are the same two names they were this morning, and the vote was decided before any of it.`,
+    ], ctx, ...watchers);
+    // A week with no surprise is still a week: the block hardens.
+    noms.forEach(n => watchers.forEach(w => api.suspicion(w, n, 0.2)));
+    return { text, players: watchers.filter(Boolean), badgeText: 'NOBODY IS SURPRISED', badgeClass: 'grey' };
+  },
+};
+
+const savedThanks = {
+  id: 'power-saved-thanks',
+  category: 'social',
+  weight(house, ctx) {
+    const { saved } = actFacts(ctx);
+    const holder = ctx?.vetoWinner;
+    if (!saved || !holder || saved === holder) return 0;
+    return afterCeremony(ctx, 10);
+  },
+  fire(house, ctx, api) {
+    const { saved, replacement } = actFacts(ctx);
+    const holder = ctx.vetoWinner;
+    const p = pronouns(saved);
+    const text = _variant([
+      `${saved} thanks ${holder} properly, alone, without an audience — which is the only version of it that means anything and both of them know it.`,
+      `"I owe you." ${saved} says it once and does not repeat it. ${holder} says ${p.sub} ${'does'} not, and neither of them believes that.`,
+      `${saved} is off the block and cannot stop looking at ${replacement || 'the person in the chair'}. Relief and guilt turn out to be the same feeling with the volume changed.`,
+      `${saved} hugs ${holder} in front of the whole house, which is thanks and a public statement about who ${p.sub} ${'is'} with. ${p.Sub} means both.`,
+    ], ctx, saved, holder);
+    api.addBond(saved, holder, 2.0);
+    api.remember(saved, holder, 'took-me-off', 3);
+    if (replacement) api.remember(saved, replacement, 'sat-down-for-me', 1);
+    return { text, players: [saved, holder], badgeText: 'OWES THEM ONE', badgeClass: 'green' };
+  },
+};
+
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
   hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
   hohDeciding, pawnAsk, backdoorPlan, nomEveGuessing,
+  savedThemselves, replacementReacts, vetoHolderFallout, nobodySurprised, savedThanks,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
   hohRefusesEntry, vetoDrawLobby, vetoPromise,

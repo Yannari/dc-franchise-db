@@ -160,3 +160,80 @@ describe('Big Brother house-event scheduler contract', () => {
     expect(seen).toEqual([0]);
   });
 });
+
+// Every beat is a receipt.
+//
+// The feed used to read as a series of things that happened to nobody in
+// particular: the events have always moved bonds, targets, suspicion and
+// deals, and no card ever said so.
+//
+// The property worth protecting is that effects are MEASURED rather than
+// self-reported. A ledger built only from api calls misses everything that
+// goes around the api — and the beats a viewer most wants a receipt for do
+// exactly that: the scheme layer hands off to Total Drama's
+// social-manipulation module, so a forged note and a whisper campaign came
+// back with nothing while a remark about the weather did not.
+describe('beats say what they changed', () => {
+  beforeEach(() => seedGame(CAST, { episode:0, eliminated:[], namedAlliances:[], popularity:{}, showmances:[], romanticSparks:[] }));
+
+  it('attaches an effect to a beat that changes something', () => {
+    const week = { num: 1 };
+    const beats = scheduleHouseBeats(TEN_EVENTS, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week }, { rng: rng(5), min: 10, max: 10 });
+    const withEffects = beats.filter(b => (b.effects || []).length);
+    expect(withEffects.length, 'ten events all changed the house and none of them said so')
+      .toBeGreaterThanOrEqual(8);
+    for (const b of withEffects) {
+      for (const fx of b.effects) {
+        expect(fx.kind, 'an effect with no kind cannot be drawn').toBeTruthy();
+        expect(fx.text, 'an effect with no words is not a receipt').toBeTruthy();
+      }
+    }
+  });
+
+  it('measures a bond move the event never declared', () => {
+    // addBond deliberately does NOT record anything. The bond effect comes
+    // from diffing the world around the beat, which is the only way to catch
+    // the modules that do not go through this api at all.
+    const sneaky = [{
+      id: 'goes-around-the-api', category: 'vertical-slice',
+      weight: () => 10,
+      fire(house, ctx) {
+        // Straight at shared state, the way the scheme bridge does it.
+        gs.bonds[['A', 'B'].sort().join('||')] = (gs.bonds[['A', 'B'].sort().join('||')] || 0) + 2;
+        return { text: 'Something happened off the books.', players: ['A', 'B'],
+                 badgeText: 'OFF THE BOOKS', badgeClass: 'grey' };
+      },
+    }];
+    const beats = scheduleHouseBeats(sneaky, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week:{ num:1 } }, { rng: rng(9), min: 1, max: 1 });
+    const fx = beats[0]?.effects || [];
+    expect(fx.some(e => e.kind === 'bond'),
+      'a relationship moved during the beat and the feed did not notice').toBe(true);
+  });
+
+  it('only counts a movement worth mentioning', () => {
+    const trivial = [{
+      id: 'rounding-noise', category: 'vertical-slice',
+      weight: () => 10,
+      fire(house, ctx, api) {
+        api.addBond('A', 'B', 0.05);
+        return { text: 'Barely anything.', players: ['A', 'B'], badgeText: 'NOTHING', badgeClass: 'grey' };
+      },
+    }];
+    const beats = scheduleHouseBeats(trivial, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week:{ num:1 } }, { rng: rng(3), min: 1, max: 1 });
+    expect((beats[0]?.effects || []).some(e => e.kind === 'bond'),
+      'rounding noise was dressed up as a consequence').toBe(false);
+  });
+
+  it('gives each beat only its own effects', () => {
+    const week = { num: 1 };
+    const beats = scheduleHouseBeats(TEN_EVENTS, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week }, { rng: rng(5), min: 10, max: 10 });
+    // The ledger is drained per beat; if it were not, the last card would carry
+    // everything that happened all act.
+    const counts = beats.map(b => (b.effects || []).length);
+    expect(Math.max(...counts), 'one card absorbed the whole act').toBeLessThan(8);
+  });
+});

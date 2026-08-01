@@ -205,27 +205,109 @@
     .bbf-tile.is-out  .bbf-frame img { filter:grayscale(1) brightness(.42); }
     .bbf-tile.is-out  .bbf-name  { color:#3d444d; text-decoration:line-through; }
 
-    /* ── Feed cards: one beat, one camera ── */
-    .bbf-cards      { padding:0 12px 12px; }
-    .bbf-card       { position:relative; display:grid; grid-template-columns:auto 1fr auto;
-                      gap:10px; align-items:center; padding:9px 11px; margin-bottom:7px;
-                      border-radius:5px; background:rgba(17,21,28,.6);
-                      border-left:3px solid rgba(139,148,158,.35); }
-    .bbf-card.is-load { background:linear-gradient(90deg, rgba(201,52,60,.10), rgba(17,21,28,.6) 55%); }
-    .bbf-card.is-amb  { opacity:.8; }
-    .bbf-slug       { position:absolute; top:-6px; left:9px; font-family:ui-monospace,Consolas,monospace;
-                      font-size:7.5px; letter-spacing:1.2px; color:#6e7681; background:#0d1117;
-                      padding:0 5px; border-radius:2px; }
+    /* ── The camera bank ──
+       A stretch of house life should be takeable in before it is read: which
+       rooms were live, how busy each was, and where the loud things happened.
+       The underline on a tab means something in that room moved the season. */
+    .bbf-bank       { display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+                      padding:9px 12px; margin:0 0 4px;
+                      border-top:1px solid rgba(255,255,255,.05);
+                      border-bottom:1px solid rgba(255,255,255,.05); }
+    .bbf-bank-l     { font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                      letter-spacing:1.6px; color:#4d545c; margin-right:2px; }
+    .bbf-bank-n     { margin-left:auto; font-family:ui-monospace,Consolas,monospace;
+                      font-size:8.5px; letter-spacing:.6px; color:#5b6472; }
+    .bbf-tab        { position:relative; display:inline-flex; align-items:center; gap:5px;
+                      padding:4px 8px 5px; border-radius:4px;
+                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 9%, transparent);
+                      border:1px solid color-mix(in srgb, var(--bbf-c,#8b949e) 26%, transparent); }
+    .bbf-tab b      { font-size:9px; font-weight:700; letter-spacing:.7px;
+                      text-transform:uppercase; color:var(--bbf-c,#8b949e); }
+    .bbf-tab i      { font-style:normal; font-family:ui-monospace,Consolas,monospace;
+                      font-size:7.5px; letter-spacing:.8px; color:#4d545c; }
+    .bbf-tab em     { font-style:normal; font-family:ui-monospace,Consolas,monospace;
+                      font-size:9px; font-weight:700; color:#c9d1d9; }
+    .bbf-tab u      { position:absolute; left:6px; right:6px; bottom:1px; height:2px;
+                      border-radius:2px; background:var(--bbf-c,#8b949e); }
+
+    /* ── Feed cards: one beat, one camera ──
+       Three weights, because every card looking the same made a stretch of the
+       week an undifferentiated wall with nowhere for the eye to land. */
+    .bbf-cards      { position:relative; padding:2px 12px 12px 26px; }
+    /* The time rail. A stretch of house life is a few hours passing, and it
+       should read that way rather than as an unordered pile. */
+    .bbf-cards::before { content:''; position:absolute; left:13px; top:4px; bottom:12px;
+                      width:1px; background:linear-gradient(180deg,
+                        color-mix(in srgb, var(--bbf-c,#8b949e) 55%, transparent),
+                        transparent); }
+
+    .bbf-card       { position:relative; margin-bottom:8px; padding:9px 11px;
+                      border-radius:6px; background:rgba(17,21,28,.62);
+                      border:1px solid rgba(255,255,255,.05);
+                      border-left:3px solid var(--bbf-a,rgba(139,148,158,.35)); }
+    .bbf-node       { position:absolute; left:-16px; top:15px; width:7px; height:7px;
+                      border-radius:50%; background:#0d1117;
+                      box-shadow:0 0 0 2px var(--bbf-a,#8b949e); }
+
+    /* The beats that move the season. Bigger type, a lit edge, and room to
+       breathe — a final two should not look like a remark about the slop. */
+    .bbf-card.is-headline { background:linear-gradient(100deg,
+                        color-mix(in srgb, var(--bbf-a,#8b949e) 13%, rgba(17,21,28,.72)),
+                        rgba(17,21,28,.72) 62%);
+                      border-color:color-mix(in srgb, var(--bbf-a,#8b949e) 34%, transparent);
+                      box-shadow:0 2px 14px rgba(0,0,0,.32); padding:11px 13px; }
+    .bbf-card.is-headline .bbf-txt { font-size:13.5px; line-height:1.6; color:#e6edf3; }
+    .bbf-card.is-headline .bbf-node { width:9px; height:9px; left:-17px;
+                      box-shadow:0 0 0 2px var(--bbf-a,#8b949e), 0 0 12px var(--bbf-a,#8b949e); }
+    .bbf-card.is-standard { opacity:.94; }
+
+    .bbf-head       { display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+    .bbf-slug       { font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                      letter-spacing:1.2px; color:#6e7681; }
+    .bbf-head .bbf-cat { margin-left:auto; }
     .bbf-cat        { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; font-weight:700;
                       letter-spacing:1.1px; padding:2px 6px; border-radius:2px; white-space:nowrap; }
-    .bbf-txt        { font-size:12.5px; line-height:1.55; color:#c9d1d9; }
+    .bbf-body       { display:flex; align-items:flex-start; gap:10px; }
+    .bbf-faces      { flex-shrink:0; display:flex; gap:3px; }
+    .bbf-txt        { flex:1; font-size:12.5px; line-height:1.55; color:#c9d1d9; }
+
+    /* Ambient chatter: one skimmable line. The house is always talking and not
+       all of it is the story, but leaving it out entirely made the place feel
+       empty between the moments that counted. */
+    .bbf-row        { display:flex; align-items:baseline; gap:9px; padding:3px 0 3px 2px; }
+    .bbf-row::before { content:''; position:absolute; left:10px; width:3px; height:3px;
+                      margin-top:6px; border-radius:50%;
+                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 60%, transparent); }
+    .bbf-row-t      { flex-shrink:0; font-family:ui-monospace,Consolas,monospace;
+                      font-size:7.5px; letter-spacing:1px; color:#414850; }
+    .bbf-row-x      { flex:1; font-size:11.5px; line-height:1.5; color:#7d8590; font-style:italic; }
+
+    /* ── What the beat actually changed ──
+       The events have always moved bonds, targets, suspicion and deals, and the
+       feed never once said so. */
+    .bbf-fx         { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;
+                      padding-top:7px; border-top:1px dashed rgba(255,255,255,.07); }
+    .bbf-chip       { display:inline-flex; align-items:center; gap:4px;
+                      font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                      letter-spacing:.3px; padding:2px 7px; border-radius:9px;
+                      background:rgba(255,255,255,.04); color:#8b949e;
+                      border:1px solid rgba(255,255,255,.07); }
+    .bbf-chip i     { font-style:normal; font-size:7px; opacity:.9; }
+    .bbf-chip.is-bond.is-up   { color:#7ee787; border-color:rgba(63,185,80,.3);  background:rgba(63,185,80,.08); }
+    .bbf-chip.is-bond.is-down { color:#ffb3ae; border-color:rgba(248,81,73,.3);  background:rgba(248,81,73,.08); }
+    .bbf-chip.is-target { color:#ffb3ae; border-color:rgba(248,81,73,.34); background:rgba(248,81,73,.09); }
+    .bbf-chip.is-deal   { color:#f0d48a; border-color:rgba(227,179,65,.38); background:rgba(227,179,65,.1); }
+    .bbf-chip.is-break  { color:#ff9d96; border-color:rgba(248,81,73,.5);  background:rgba(248,81,73,.14); }
+    .bbf-chip.is-expose { color:#d2a8ff; border-color:rgba(163,113,247,.34); background:rgba(163,113,247,.1); }
+    .bbf-chip.is-susp   { color:#e3b341; border-color:rgba(227,179,65,.26); background:rgba(227,179,65,.07); }
+    .bbf-chip.is-rom    { color:#ff9ec4; border-color:rgba(255,158,196,.3); background:rgba(255,158,196,.08); }
+    .bbf-chip.is-pop    { color:#79c0ff; border-color:rgba(88,166,255,.28); background:rgba(88,166,255,.08); }
 
     /* Feed blocks, by room: you pick a camera and watch that room. Each has
        its own accent so a stretch of the week is legible by colour before a
        word of it is read. */
-    .bbf-room-block { margin: 0 0 6px; border-left:2px solid var(--bbf-c,#8b949e);
-                      background:linear-gradient(90deg, color-mix(in srgb, var(--bbf-c,#8b949e) 7%, transparent), transparent 40%); }
-    .bbf-room-h     { display:flex; align-items:center; gap:7px; padding:8px 12px 5px;
+    .bbf-room-block { position:relative; margin: 0 0 10px; }
+    .bbf-room-h     { display:flex; align-items:center; gap:7px; padding:9px 12px 6px;
                       font-family:ui-monospace,Consolas,monospace; font-size:9.5px;
                       letter-spacing:1.6px; text-transform:uppercase; color:var(--bbf-c,#8b949e); }
     .bbf-room-i     { flex-shrink:0; }
@@ -235,7 +317,6 @@
                       background:linear-gradient(90deg, var(--bbf-c,#8b949e), transparent); opacity:.3; }
     .bbf-room-c     { order:5; flex-shrink:0; opacity:.7; }
 
-    /* ── Relationship rows: who, what kind, and which way it is moving ── */
     .bbf-rel        { display:grid; grid-template-columns:auto 1fr 2fr auto; gap:9px;
                       align-items:center; padding:6px 0;
                       border-bottom:1px solid rgba(255,255,255,.04); }
@@ -427,6 +508,12 @@
                       margin-bottom:6px; border-radius:6px;
                       border:1px solid rgba(227,179,65,.22); background:rgba(227,179,65,.05); }
     .bbg-deal.is-f2 { border-color:rgba(227,179,65,.5); background:rgba(227,179,65,.1); }
+    /* A promise that did not survive the week. Struck through, because it is
+       still a fact about the season — it just is not a plan any more. */
+    .bbg-deal.is-broken { border-color:rgba(248,81,73,.45); background:rgba(248,81,73,.07); }
+    .bbg-deal.is-broken .bbg-tier { background:#f85149; color:#2a0a08; }
+    .bbg-deal.is-broken .bbg-who b { text-decoration:line-through; opacity:.75; }
+    .bbg-deal.is-broken .bbg-warn  { color:#f85149; }
     .bbg-tier       { font-family:ui-monospace,Consolas,monospace; font-size:8.5px; font-weight:800;
                       letter-spacing:1.1px; color:#1a1206; background:#e3b341;
                       padding:2px 6px; border-radius:3px; flex-shrink:0; }

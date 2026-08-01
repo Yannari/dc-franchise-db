@@ -907,6 +907,33 @@ trusting the simulation.
    that never align is documented as such, with a test proving it works when
    they do — see the kiss trap.
 
+### Effects are measured, never self-reported
+
+Every house beat carries an `effects[]` ledger, drawn on the card as chips —
+`Bowie & Chase +1.6`, `C is coming for I`, `J & F shook on a final two`. It is
+built by **diffing the world around the beat** (bonds, alliance membership,
+perceived bonds) and not by asking the event what it did.
+
+That distinction is load-bearing. The first version had events report through
+the api, and measuring it showed the exact inversion this format keeps
+producing: forged notes, whisper campaigns and alliance recruitments came back
+with **no effects at all**, while a remark about the weather came back full.
+The scheme layer hands off to Total Drama's `social-manipulation.js` and the
+alliance layer writes through the lifecycle — neither touches the house api, so
+a self-reported ledger is blind to precisely the beats a viewer most wants a
+receipt for.
+
+Two consequences follow, both learned the hard way:
+
+- **"No effects" does not mean "unimportant."** Alliance and upkeep beats are
+  produced outside the scheduler in `js/bb/week.js` and are never measured, so
+  the quiet card tier is gated on `category === 'house-life'`. Dimming somebody
+  being brought into an alliance to a grey one-liner is the opposite of what it
+  deserves.
+- **A hierarchy where everything is loud is not a hierarchy.** Keying the
+  headline tier off badge colour or a new target made twenty of twenty-six
+  cards a headline. It is promises, betrayals, romance and ceremonies only.
+
 ### The check to run before calling anything done
 
 > Play a season and find the thing on screen. If it is only in `gs`, it is not

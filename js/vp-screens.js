@@ -15832,6 +15832,74 @@ function _bbfStatus(ep, phase) {
  * the first and last stretch of the week only: what the house looked like
  * walking in, and what it looks like walking into a vote.
  */
+/**
+ * What a beat did, in chips.
+ *
+ * The events have always changed the world — bonds, targets, suspicion, deals —
+ * and the feed has never once said so. A card that reads "they talked in the
+ * kitchen" is a paragraph; the same card with "Bowie & Chase +1.6" under it is
+ * a receipt, and this is a simulator.
+ */
+const _BBF_EFFECT = {
+  bond:      { cls: 'is-bond',    icon: '●' },
+  target:    { cls: 'is-target',  icon: '▲' },
+  deal:      { cls: 'is-deal',    icon: '◆' },
+  break:     { cls: 'is-break',   icon: '✕' },
+  expose:    { cls: 'is-expose',  icon: '◎' },
+  suspicion: { cls: 'is-susp',    icon: '◑' },
+  romance:   { cls: 'is-rom',     icon: '♥' },
+  memory:    { cls: 'is-mem',     icon: '■' },
+  pop:       { cls: 'is-pop',     icon: '✦' },
+};
+
+// Ranked, because a beat can produce a dozen effects and only four fit. A
+// broken promise outranks a shift in suspicion every time; taking the first
+// four as recorded would bury the interesting one under six trust nudges.
+const _BBF_FX_RANK = ['break', 'deal', 'expose', 'romance', 'target', 'bond', 'pop', 'suspicion', 'memory'];
+
+function _bbfEffects(beat) {
+  const all = beat.effects || [];
+  if (!all.length) return '';
+  const fx = [...all]
+    .sort((a, b) => _BBF_FX_RANK.indexOf(a.kind) - _BBF_FX_RANK.indexOf(b.kind))
+    .slice(0, 4);
+  return `<div class="bbf-fx">${fx.map(e => {
+    const meta = _BBF_EFFECT[e.kind] || _BBF_EFFECT.memory;
+    // A bond chip is coloured by which way it went, not by being a bond.
+    const dir = e.kind === 'bond' ? (Number(e.delta) >= 0 ? ' is-up' : ' is-down') : '';
+    return `<span class="bbf-chip ${meta.cls}${dir}"><i>${meta.icon}</i>${_bbEsc(e.text)}</span>`;
+  }).join('')}</div>`;
+}
+
+/**
+ * How loudly a beat should be drawn.
+ *
+ * Every card used to look the same: a final two and somebody complaining about
+ * the slop were both a rounded box with a coloured left edge, so a stretch of
+ * house life read as an undifferentiated wall and the eye had nowhere to land.
+ * Three weights instead — the beats that move the season, the beats that fill
+ * it in, and the ambient chatter that should be skimmable in one line.
+ */
+const _BBF_LOUD_FX = new Set(['deal', 'break', 'expose', 'romance']);
+function _bbfWeight(beat) {
+  const fx = beat.effects || [];
+  // Measured before settling on these: keying off badgeClass or a new target
+  // made twenty of twenty-six cards a headline, which is the same wall of
+  // identical cards this was meant to fix — a hierarchy where everything is
+  // loud is not a hierarchy. Promises, betrayals and romance only.
+  if (fx.some(e => _BBF_LOUD_FX.has(e.kind))) return 'headline';
+  if (beat.category === 'deals' || beat.category === 'ceremonies') return 'headline';
+  // Quiet ONLY for house-life texture with nothing behind it.
+  //
+  // "No effects means ambient" was tried and is wrong here: alliance
+  // recruitments and the upkeep beats are produced outside the event scheduler,
+  // in js/bb/week.js, so they never get measured and come back empty — and
+  // dimming somebody being brought into an alliance to a grey one-liner is the
+  // exact opposite of what it deserves. Only the venue/house texture qualifies.
+  if (!fx.length && beat.category === 'house-life') return 'whisper';
+  return 'standard';
+}
+
 export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
@@ -15841,7 +15909,16 @@ export function rpBuildBBHouseLife(ep, act, slot) {
 
   const houseActs = (ep.acts || []).filter(a => a.type === 'house');
   const total = houseActs.length || 1;
-  const bookend = slot === 1 || slot >= total;
+
+  // Grouped by ROOM, because that is how the feeds are watched: you pick a
+  // camera and you see what is happening in that room. A location is a fact
+  // about the event now rather than a label the player stamped on at random.
+  const byRoom = {};
+  beats.forEach((b, i) => { (byRoom[b.location || 'living-room'] ||= []).push({ ...b, i }); });
+  const rooms = _BBF_ROOM_ORDER.filter(r => byRoom[r])
+    .concat(Object.keys(byRoom).filter(r => !_BBF_ROOM_ORDER.includes(r)));
+
+  const headlines = beats.filter(b => _bbfWeight(b) === 'headline').length;
 
   let html = `<div class="rp-page ${meta.tod}">
     <div class="rp-eyebrow">Week ${ep.num} — ${meta.kicker}</div>
@@ -15857,15 +15934,24 @@ export function rpBuildBBHouseLife(ep, act, slot) {
       ${_bbMemoryWall(house, { status })}`;
 
   if (beats.length) {
-    // Grouped by ROOM, because that is how the feeds are watched: you pick a
-    // camera and you see what is happening in that room. A location is a fact
-    // about the event now rather than a label the player stamped on at random,
-    // so the HOH pitches really are in the HOH room and the slop rows really
-    // are in the kitchen.
-    const byRoom = {};
-    beats.forEach((b, i) => { (byRoom[b.location || 'living-room'] ||= []).push({ ...b, i }); });
-    const rooms = _BBF_ROOM_ORDER.filter(r => byRoom[r])
-      .concat(Object.keys(byRoom).filter(r => !_BBF_ROOM_ORDER.includes(r)));
+    // A camera bank, so the stretch can be taken in before it is read: which
+    // rooms were live, how busy each one was, and where the loud things were.
+    html += `<div class="bbf-bank">
+      <span class="bbf-bank-l">CAMERAS</span>
+      ${rooms.map((key, idx) => {
+        const room = _bbfRoom(key);
+        const group = byRoom[key];
+        const loud = group.filter(b => _bbfWeight(b) === 'headline').length;
+        return `<span class="bbf-tab" style="--bbf-c:${room.accent}">
+          ${_bbfRoomIcon(key, room.accent)}
+          <b>${room.label}</b>
+          <i>${String(idx + 1).padStart(2, '0')}</i>
+          <em>${group.length}</em>
+          ${loud ? `<u title="${loud} that mattered"></u>` : ''}
+        </span>`;
+      }).join('')}
+      <span class="bbf-bank-n">${beats.length} beats · ${headlines} that moved something</span>
+    </div>`;
 
     rooms.forEach((key, roomIdx) => {
       const room = _bbfRoom(key);
@@ -15877,26 +15963,40 @@ export function rpBuildBBHouseLife(ep, act, slot) {
           <span class="bbf-room-cam">CAM ${String(roomIdx + 1).padStart(2, '0')}</span>
           <span class="bbf-room-c">${group.length}</span>
         </div>
-        <div class="bbf-cards">`;
+        <div class="bbf-cards" style="--bbf-c:${room.accent}">`;
+
       group.forEach(beat => {
         const i = beat.i;
         const cat = _bbfCat(beat.category);
-        const load = _BB_LOAD.has(beat.category);
+        const weight = _bbfWeight(beat);
         const cls = beat.badgeClass || 'grey';
         const people = (beat.players || []).filter(Boolean).slice(0, 4);
-        html += `<div class="bbf-card ${load ? 'is-load' : 'is-amb'}"
-            style="border-left-color:${cat.fg}">
-          <span class="bbf-slug">${_bbfClock(phase, i)}</span>
-          <div class="rp-brant-portraits">${
-            people.length === 2 ? rpDuoImg(people[0], people[1])
-              : people.length ? people.map(n => rpPortrait(n)).join('')
-              : ''}</div>
-          <div class="bbf-txt">${beat.text}</div>
-          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        const clock = _bbfClock(phase, i);
+
+        if (weight === 'whisper') {
+          // One line. The house is always talking; not all of it is the story.
+          html += `<div class="bbf-row">
+            <span class="bbf-row-t">${clock}</span>
+            <span class="bbf-row-x">${beat.text}</span>
+          </div>`;
+          return;
+        }
+
+        html += `<article class="bbf-card is-${weight}" style="--bbf-a:${cat.fg}">
+          <span class="bbf-node"></span>
+          <header class="bbf-head">
+            <span class="bbf-slug">${clock}</span>
             <span class="bbf-cat" style="background:${cat.bg};color:${cat.fg}">${cat.label}</span>
             ${beat.badgeText ? `<span class="rp-brant-badge ${cls}">${beat.badgeText}</span>` : ''}
+          </header>
+          <div class="bbf-body">
+            ${people.length ? `<div class="bbf-faces">${
+              people.length === 2 ? rpDuoImg(people[0], people[1])
+                : people.map(n => rpPortrait(n)).join('')}</div>` : ''}
+            <div class="bbf-txt">${beat.text}</div>
           </div>
-        </div>`;
+          ${_bbfEffects(beat)}
+        </article>`;
       });
       html += `</div></div>`;
     });
@@ -16453,6 +16553,20 @@ export function rpBuildBBEviction(ep) {
     ..._bbBeats(act),
     { text: `<strong>${ep.eliminated}</strong> is evicted from the Big Brother house, by a vote of ${Object.values(act?.votes || {}).sort((a, b) => b - a).join('–') || '0–0'}.`,
       players: [ep.eliminated], badgeText: 'EVICTED', badgeClass: 'red' },
+    // A promise about the END, broken by a vote.
+    //
+    // The single most dramatic thing that happens in this game, and until now
+    // it existed only in the transcript and as a row count on the debug screen.
+    // It goes AFTER the eviction on purpose: the house finds out who is leaving
+    // first, and only then does it become clear what it cost.
+    ...(ep.dealBreaks || []).map(b => ({
+      text: `<strong>${b.breaker}</strong> shook on ${b.tier === 'final-two' ? 'a final two' : 'a final three'} with `
+        + `<strong>${b.victim}</strong> in week ${b.madeEp}. ${b.breaker} just voted ${b.victim} out of the house, `
+        + `and ${b.victim} walks to the jury knowing exactly who did it.`,
+      players: [b.breaker, b.victim],
+      badgeText: b.tier === 'final-two' ? 'BROKE A FINAL TWO' : 'BROKE A FINAL THREE',
+      badgeClass: 'red',
+    })),
   ];
 
   return _bbSceneScreen(ep, {
@@ -17036,6 +17150,15 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   }).join('')
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has promised anybody the end yet.</div>`;
 
+  // What was promised and is no longer. A panel that only lists the promises
+  // still standing quietly implies nothing was ever broken.
+  const brokenBody = opening ? '' : (ep.dealBreaks || []).map(b => `<div class="bbg-deal is-broken">
+      <span class="bbg-tier">BROKEN</span>
+      <span class="bbg-who">${_bbAvatar(b.breaker, 22)}<b>${_bbEsc(b.breaker)}</b>
+        <i>cut</i>${_bbAvatar(b.victim, 22)}<b>${_bbEsc(b.victim)}</b></span>
+      <span class="bbg-warn">${b.tier === 'final-two' ? 'a final two' : 'a final three'} from week ${b.madeEp}</span>
+    </div>`).join('');
+
   // ── And what moved, and why ──
   const moves = (ep.planChanges || []).filter(c => stillIn.includes(c.owner)).slice(-14);
   const moveBody = moves.length ? moves.map(c => `<div class="bbm-row">
@@ -17054,7 +17177,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('plan', 'WHAT EVERYBODY IS PLAYING FOR', '#d29922', planBody)}
-    ${section('deal', `PROMISED THE END (${live.length})`, '#e3b341', dealBody)}
+    ${section('deal', `PROMISED THE END (${live.length}${brokenBody ? `, ${(ep.dealBreaks || []).length} broken` : ''})`, '#e3b341', brokenBody + dealBody)}
     ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}
     ${section('rel', 'RELATIONSHIPS THAT MATTER', '#3fb950', relBody)}
     ${section('hunt', `WHO IS COMING FOR WHOM (${hunts.length})`, '#f85149', targetBody)}

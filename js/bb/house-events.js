@@ -23,11 +23,31 @@ function ensureState() {
   return gs.bb.house;
 }
 
+/**
+ * What a beat actually did.
+ *
+ * Every event changes the world through this api and nowhere else, which makes
+ * it the one place that can honestly answer "and what did that do?". The
+ * answers are collected per beat and travel with it to the screen, so a card
+ * becomes a receipt rather than a paragraph — the feed used to read as a series
+ * of things that happened to nobody in particular.
+ *
+ * Deliberately an array on the api rather than a return value: events call
+ * these methods a dozen times each, and threading a ledger through every one
+ * would mean rewriting ninety events to record something they should not have
+ * to think about.
+ */
 export function createHouseEventApi(ctx = {}) {
   const state = ensureState();
+  const ledger = [];
+  const note = (kind, text, extra = {}) => { ledger.push({ kind, text, ...extra }); };
   return Object.freeze({
+    _ledger: ledger,
+    _drainLedger() { const out = ledger.slice(); ledger.length = 0; return out; },
     addBond(a, b, delta) {
       if (!a || !b || a === b || !Number.isFinite(Number(delta))) return false;
+      // No note here on purpose — relationship movement is measured around the
+      // whole beat instead. See _bondsMoved below for why.
       return addBBRelationship(a, b, Number(delta));
     },
     popDelta(name, delta) {
@@ -36,18 +56,27 @@ export function createHouseEventApi(ctx = {}) {
       // switched on, so turning it off changed nothing.
       if (seasonConfig.popularityEnabled === false) return false;
       gs.popularity[name] = (gs.popularity[name] || 0) + Number(delta);
+      note('pop', `${name} ${Number(delta) > 0 ? 'plays well' : 'plays badly'} on camera`,
+        { players: [name], delta: Number(delta) });
       return true;
     },
     suspicion(observer, subject, delta) {
       if (!observer || !subject || observer === subject) return false;
       const key = `${observer}→${subject}`;
       state.suspicion[key] = clamp((state.suspicion[key] || 0) + Number(delta || 0), 0, 10);
+      if (Math.abs(Number(delta) || 0) >= 0.3) {
+        note('suspicion', `${observer} → ${subject} ${Number(delta) > 0 ? 'warier' : 'easier'}`,
+          { players: [observer, subject], delta: Number(delta) });
+      }
       return true;
     },
     setTarget(actor, target, reason = 'house event') {
       if (!actor || !target || actor === target) return false;
       const changed = setBBTarget(actor, target, reason, ctx);
-      if (changed) state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
+      if (changed) {
+        state.targets[actor] = { target, reason, week: ctx.week?.num || 0, act: ctx.act };
+        note('target', `${actor} is coming for ${target}`, { players: [actor, target] });
+      }
       return changed;
     },
     /**
@@ -73,7 +102,11 @@ export function createHouseEventApi(ctx = {}) {
         const deal = makeEndgameDeal(a, b, tier, {
           week: ctx.week, about: detail.about || detail.reason || '', third: detail.third || null,
         });
-        if (deal) Object.assign(deal, { ...detail, tier, type });
+        if (deal) {
+          Object.assign(deal, { ...detail, tier, type });
+          note('deal', `${a} & ${b} shook on ${tier === 'final-two' ? 'a final two' : 'a final three'}`,
+            { players: [a, b], tier });
+        }
         return !!deal;
       }
 
@@ -84,30 +117,132 @@ export function createHouseEventApi(ctx = {}) {
         players: [a, b], type, tier: 'working', active: true, genuine: detail.genuine !== false,
         madeEp: ctx.week?.num || 0, format: 'big-brother', ...detail,
       });
+      note('deal', `${a} & ${b} shook on ${detail.about || `a ${type}`}`,
+        { players: [a, b], tier: 'working' });
       return true;
     },
     /** Shake on the end explicitly — final two, or final three with a third. */
     endgameDeal(a, b, tier = 'final-two', detail = {}) {
-      return !!makeEndgameDeal(a, b, tier, { week: ctx.week, ...detail });
+      const deal = makeEndgameDeal(a, b, tier, { week: ctx.week, ...detail });
+      if (deal) {
+        note('deal', `${(deal.players || []).join(' & ')} shook on `
+          + `${tier === 'final-two' ? 'a final two' : 'a final three'}`,
+          { players: deal.players, tier });
+      }
+      return !!deal;
     },
     /** Go back on one, on the record. */
     breakDeal(deal, breaker, reason = '') {
-      return breakDeal(deal, breaker, { week: ctx.week, reason });
+      const broken = breakDeal(deal, breaker, { week: ctx.week, reason });
+      if (broken) {
+        note('break', `${breaker} went back on ${broken.victims.join(' & ')}`,
+          { players: [breaker, ...broken.victims] });
+      }
+      return broken;
     },
     /** Tell somebody about a promise they were not part of. */
-    exposeDeal(deal, toWhom) { return exposeDeal(deal, toWhom); },
+    exposeDeal(deal, toWhom) {
+      const added = exposeDeal(deal, toWhom);
+      if (added) {
+        note('expose', `${(deal.players || []).join(' & ')} — deal is out`,
+          { players: deal.players || [] });
+      }
+      return added;
+    },
     remember(observer, subject, type, strength = 1, detail = {}) {
       if (!observer || !subject || !type) return false;
       const memory = rememberBBStrategy(observer, subject, type, strength, detail, ctx);
       if (!memory) return false;
       state.memories[observer] ||= [];
       state.memories[observer].push({ subject, type, strength:Number(strength) || 1, week:ctx.week?.num || 0, act:ctx.act, detail });
+      if ((Number(strength) || 1) >= 2) {
+        note('memory', `${observer} remembers this`, { players: [observer, subject] });
+      }
       return true;
     },
     showmance(a, b, detail = {}) {
-      return addBBShowmanceSpark(a, b, detail, ctx);
+      const ok = addBBShowmanceSpark(a, b, detail, ctx);
+      if (ok) note('romance', `something is happening between ${a} and ${b}`, { players: [a, b] });
+      return ok;
     },
   });
+}
+
+/**
+ * Which relationships this beat actually moved.
+ *
+ * Measured by diffing the bonds around the event rather than trusted to the
+ * event to declare, and that distinction is the whole point. A self-reported
+ * ledger only ever records what goes through this api — and the beats a viewer
+ * most wants a receipt for do not. The scheme layer calls Total Drama's
+ * social-manipulation module directly and the alliance layer writes through the
+ * lifecycle, so a forged note, a whisper campaign and an alliance recruitment
+ * all came back with no effects at all: the most consequential events in the
+ * house were the ones the feed said nothing about.
+ *
+ * Capped at the six largest movements. Everything here is written into episode
+ * history, and a chatty beat can touch thirty pairs.
+ */
+function _worldBefore() {
+  return {
+    bonds: { ...(gs.bonds || {}) },
+    // Who believes what about whom. The whisper campaign moves this and
+    // nothing else, which is exactly why it is the subtlest scheme in the game.
+    perceived: Object.fromEntries(Object.entries(gs.perceivedBonds || {})
+      .map(([k, v]) => [k, Number(v?.perceived ?? v) || 0])),
+    // Membership, not the alliance list — people are recruited into alliances
+    // that already exist.
+    alliances: Object.fromEntries((gs.namedAlliances || [])
+      .map(a => [a.name, [...(a.members || [])]])),
+  };
+}
+
+function _worldMoved(before) {
+  const moved = [];
+
+  for (const [key, now] of Object.entries(gs.bonds || {})) {
+    const delta = (Number(now) || 0) - (Number(before.bonds[key]) || 0);
+    if (!Number.isFinite(delta) || Math.abs(delta) < 0.25) continue;
+    const [a, b] = key.split('||');
+    if (!a || !b) continue;
+    moved.push({ kind: 'bond', text: `${a} & ${b} ${delta > 0 ? '+' : ''}${delta.toFixed(1)}`,
+      players: [a, b], delta });
+  }
+  moved.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+  const out = moved.slice(0, 5);
+
+  // Somebody joined something. An alliance recruitment came back with no
+  // effects at all, which made one of the loudest moves in the house render as
+  // ambient chatter.
+  for (const alliance of gs.namedAlliances || []) {
+    const was = before.alliances[alliance.name];
+    const now = alliance.members || [];
+    if (!was) {
+      if (now.length) out.push({ kind: 'deal', text: `${alliance.name} exists now`, players: [...now] });
+      continue;
+    }
+    const joined = now.filter(n => !was.includes(n));
+    const left = was.filter(n => !now.includes(n));
+    if (joined.length) out.push({ kind: 'deal', text: `${joined.join(' & ')} → ${alliance.name}`, players: joined });
+    if (left.length) out.push({ kind: 'break', text: `${left.join(' & ')} out of ${alliance.name}`, players: left });
+  }
+
+  // What people now BELIEVE, which the house acts on rather than the truth.
+  const reads = [];
+  for (const [key, now] of Object.entries(gs.perceivedBonds || {})) {
+    const value = Number(now?.perceived ?? now) || 0;
+    const delta = value - (before.perceived[key] || 0);
+    if (!Number.isFinite(delta) || Math.abs(delta) < 0.4) continue;
+    const [observer, subject] = key.split('\u2192');
+    if (!observer || !subject) continue;
+    reads.push({ kind: 'suspicion', delta,
+      text: `${observer} now reads ${subject} as ${delta > 0 ? 'closer' : 'colder'}`,
+      players: [observer, subject] });
+  }
+  reads.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+  out.push(...reads.slice(0, 2));
+
+  return out;
 }
 
 function weightedPick(eligible, rng) {
@@ -196,7 +331,12 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
     // to derive any text variety from a hash of the context, because reaching
     // for Math.random would stop a seeded season reproducing. Passing the rng
     // keeps reproducibility and lets an event simply roll.
+    // Drained per beat, so each card carries only what ITS event changed
+    // rather than everything that has happened in the act so far.
+    api._drainLedger();
+    const worldBefore = _worldBefore();
     const result = validateBeat(event, event.fire(house, beatCtx, api, rng), beatCtx);
+    result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
     fired.push(result);
     ensureState().eventHistory.push({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
   }

@@ -56,9 +56,16 @@ describe('House Status shows what drives the house', () => {
 
 describe('the debug screen accounts for the week', () => {
   const ep = playWeeks(4);
-  const html = rpBuildBBDebug(ep);
+  // The debug screen is tabbed now, the same way Total Drama's is, so a test
+  // has to open the tab it is asking about rather than expecting one page to
+  // carry everything.
+  const onTab = tab => {
+    localStorage.setItem('vp_bbdebug_tab', tab);
+    try { return rpBuildBBDebug(ep); } finally { localStorage.removeItem('vp_bbdebug_tab'); }
+  };
 
   it('shows every lever behind a competition score', () => {
+    const html = onTab('comps');
     // A surprising winner has to be explainable: aptitude, luck, and each
     // modifier the engine actually applied.
     expect(html).toMatch(/aptitude [\d.]+/);
@@ -68,16 +75,19 @@ describe('the debug screen accounts for the week', () => {
   });
 
   it('shows the vote ballot by ballot with its reason', () => {
+    const html = onTab('votes');
     expect(html).toContain('the vote');
     expect(html).toMatch(/commitment [\d.]+/);
   });
 
   it('shows the competition record, not just icons', () => {
+    const html = onTab('stats');
     expect(html).toContain('competition record');
     expect(html).toMatch(/HOH \d+  ·  veto \d+  ·  nominated \d+/);
   });
 
   it('reports whether the shared upkeep ran', () => {
+    const html = onTab('week');
     expect(html).toContain('upkeep');
     // Eight shared systems run each week; silence about them is how the
     // romance pipeline stayed broken.

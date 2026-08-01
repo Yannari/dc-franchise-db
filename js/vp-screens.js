@@ -9,6 +9,9 @@
 // failing loudly. Imported explicitly so the screen does not depend on boot
 // order to exist.
 import { bKey } from './bonds.js';
+// The debug screen reports the numbers the house actually decides on, so it
+// reads them from the engine rather than recomputing its own version.
+import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
@@ -17287,154 +17290,307 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
  * Drama uses. A simulation that cannot be inspected cannot be tuned, and every
  * balance problem in this format so far was found by looking at counts.
  */
+/**
+ * The numbers behind the week.
+ *
+ * Deliberately the same screen as Total Drama's: identical chrome, identical
+ * episode navigator, identical tab strip, identical row and section styling —
+ * because it is the same job and there is no reason for the two shows to make
+ * somebody learn two debug screens. What differs is the content, since a house
+ * has no tribes, no camp access and no idols, and does have competitions,
+ * game plans and endgame deals that a camp does not.
+ */
 export function rpBuildBBDebug(ep) {
-  const row = (k, v) => `<div style="display:flex;gap:10px;font-size:11px;font-family:var(--font-mono);padding:2px 0"><span style="min-width:210px;color:#8b949e">${k}</span><span>${v}</span></div>`;
+  const snap = ep.closingState || ep.gsSnapshot || {};
+  const house = ep.houseAtEnd || ep.houseAtStart || (typeof gs !== 'undefined' && gs.activePlayers) || [];
+  const allEps = ((typeof gs !== 'undefined' && gs.episodeHistory) || [])
+    .filter(e => e.format === 'big-brother');
+  const _maxEp = allEps.length ? allEps[allEps.length - 1].num : ep.num;
+
+  const tab = (typeof localStorage !== 'undefined' && localStorage.getItem('vp_bbdebug_tab')) || 'week';
+  const tabBtn = (id, label) => `<button onclick="localStorage.setItem('vp_bbdebug_tab','${id}');const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='bb-debug');if(di>=0)vpCurrentScreen=di;renderVPScreen();}" style="padding:4px 12px;font-size:11px;font-weight:600;border:1px solid ${tab === id ? '#f0883e' : 'rgba(255,255,255,0.1)'};border-radius:4px;background:${tab === id ? 'rgba(240,136,62,0.15)' : 'transparent'};color:${tab === id ? '#f0883e' : '#8b949e'};cursor:pointer">${label}</button>`;
+  const epNav = target => `const ep=gs.episodeHistory.find(e=>e.num===${target});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='bb-debug');if(di>=0)vpCurrentScreen=di;renderVPScreen();}`;
+
+  // Shared row and section furniture, matching the Total Drama debug exactly.
+  const row = (k, v) => `<div style="display:flex;gap:10px;font-size:11px;font-family:var(--font-mono);padding:2px 0"><span style="min-width:210px;color:#8b949e">${k}</span><span style="flex:1">${v}</span></div>`;
+  const head = t => `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin:16px 0 8px">${t}</div>`;
+  const line = (name, right, opts = {}) => `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${opts.dim ? 'opacity:.5;' : ''}">
+      ${rpPortrait(name, 'sm')}
+      <div style="flex:1;font-weight:600;color:#e6edf3">${_bbEsc(name)}${opts.tagHtml || ''}</div>
+      ${right}
+    </div>`;
+  const tier = v => (v <= 4 ? { label: 'Low', color: '#10b981' }
+    : v <= 6 ? { label: 'Medium', color: '#f59e0b' }
+    : v <= 8 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' });
+
   const acts = ep.acts || [];
   const beats = acts.flatMap(a => a.socialBeats || []);
-  const byCat = {};
-  beats.forEach(b => { byCat[b.category] = (byCat[b.category] || 0) + 1; });
+  const plans = snap.intentions || (typeof gs !== 'undefined' && gs.intentions) || {};
 
-  let html = `<div class="rp-page bb-room">
-    <div class="rp-eyebrow">Week ${ep.num} — debug</div>
-    <div class="rp-title" style="color:#8b949e">THE NUMBERS</div>`;
+  let html = `<div class="rp-page tod-morning" style="font-size:12px">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:8px">DEBUG DATA</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
+      <button onclick="${epNav(Math.max(1, ep.num - 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num <= 1 ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num <= 1 ? 'disabled' : ''}>◀ Wk ${Math.max(1, ep.num - 1)}</button>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${allEps.map(e => `<button onclick="${epNav(e.num)}" style="width:24px;height:24px;font-size:10px;border:1px solid ${e.num === ep.num ? '#f0883e' : 'rgba(255,255,255,0.08)'};border-radius:4px;background:${e.num === ep.num ? 'rgba(240,136,62,0.2)' : 'transparent'};color:${e.num === ep.num ? '#f0883e' : '#6e7681'};cursor:pointer">${e.num}</button>`).join('')}</div>
+      <button onclick="${epNav(Math.min(_maxEp, ep.num + 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num >= _maxEp ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num >= _maxEp ? 'disabled' : ''}>Wk ${Math.min(_maxEp, ep.num + 1)} ▶</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+      ${tabBtn('week', 'This Week')}
+      ${tabBtn('threats', 'Threats &amp; Heat')}
+      ${tabBtn('comps', 'Competitions')}
+      ${tabBtn('plans', 'Game Plans')}
+      ${tabBtn('deals', 'Deals &amp; Alliances')}
+      ${tabBtn('votes', 'Vote Commitments')}
+      ${tabBtn('bonds', 'Perceived Bonds')}
+      ${tabBtn('stats', 'Player Stats')}
+      ${tabBtn('beats', 'Beats &amp; Effects')}
+    </div>`;
 
-  html += `<div style="margin-bottom:18px">
-    ${row('acts', acts.map(a => a.phase || a.type).join(' → '))}
-    ${row('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)}
-    ${row('vote changed by campaign', ep.voteChanges || 0)}
-    ${row('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')}
-    ${row('plan revisions', (ep.planChanges || []).length)}
-    ${row('endgame deals live', (ep.endgameDeals || []).length
-      + ((ep.endgameDeals || []).some(d => d.lopsided)
-        ? ` (${(ep.endgameDeals || []).filter(d => d.lopsided).length} lopsided)` : ''))}
-    ${row('promises broken', (ep.dealBreaks || []).length)}
-  </div>`;
+  // ── This week ─────────────────────────────────────────────────────
+  if (tab === 'week') {
+    const byCat = {};
+    beats.forEach(b => { byCat[b.category] = (byCat[b.category] || 0) + 1; });
+    html += head('THE WEEK')
+      + row('acts', acts.map(a => a.phase || a.type).join(' → '))
+      + row('head of household', ep.hoh || '—')
+      + row('nominees', (ep.finalNominees || ep.initialNominees || []).join(', ') || '—')
+      + row('veto', ep.vetoWinner ? `${ep.vetoWinner}${ep.vetoUsed ? ' — used' : ' — not used'}` : '—')
+      + row('have-nots', (ep.haveNots || []).join(', ') || '—')
+      + row('evicted', ep.eliminated || '—')
+      + row('vote', Object.entries(ep.votes || {}).map(([n, c]) => `${n} ${c}`).join(' · ') || '—')
+      + row('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')
+      + row('changed by the campaign', ep.voteChanges || 0)
+      + row('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)
+      + row('plan revisions', (ep.planChanges || []).length)
+      + row('promises broken', (ep.dealBreaks || []).length);
 
-  // ── the plan layer, in full ──
-  //
-  // The summary screen says what everybody is playing for; this says what the
-  // engine actually read when it chose the nominations, the veto and the vote —
-  // including how much each side of a deal privately meant it, which is the one
-  // number no houseguest can see about anybody but themselves.
-  const dbgPlans = ep.closingState?.intentions || (typeof gs !== 'undefined' && gs.intentions) || {};
-  const alive = ep.houseAtEnd || ep.houseAtStart || Object.keys(dbgPlans);
-  const planned = alive.filter(n => dbgPlans[n]);
-  if (planned.length) {
-    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:8px">game plans</div>
-      ${planned.map(n => {
-        const p = dbgPlans[n];
+    if ((ep.planChanges || []).length) {
+      html += head('WHY PLANS MOVED');
+      ep.planChanges.slice(0, 30).forEach(c => {
+        html += row(`${c.owner} · ${c.field}`, `<span style="color:#8b949e">${_bbEsc(c.reason)}</span>`);
+      });
+    }
+    // Whether the eight shared Total Drama systems ran. Silence about them is
+    // exactly how the romance pipeline stayed broken for as long as it did:
+    // every one is wrapped in its own guard, so a throwing system disappears
+    // rather than failing loudly.
+    const failed = ep.maintenanceErrors || [];
+    html += head('SHARED UPKEEP');
+    html += row('upkeep', failed.length
+      ? `<span style="color:#f47067">${failed.length} FAILED</span>`
+      : '<span style="color:#3fb950">all eight ran</span>');
+    failed.forEach(e => { html += row(e.step || 'step', `<span style="color:#f47067">${_bbEsc(e.message || String(e))}</span>`); });
+  }
+
+  // ── Threats & heat ────────────────────────────────────────────────
+  if (tab === 'threats') {
+    html += head(`THREAT SCORES (WEEK ${ep.num})`);
+    house.map(name => ({ name, profile: bbThreatProfile(name) }))
+      .sort((a, b) => b.profile.total - a.profile.total)
+      .forEach(({ name, profile }) => {
+        const t = tier(profile.total);
+        const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
+        html += line(name, `
+          <div style="width:52px;text-align:right"><span style="color:${t.color};font-weight:700">${profile.total.toFixed(1)}</span></div>
+          <div style="width:62px;text-align:right;color:#8b949e;font-size:10px">${t.label}</div>
+          <div style="flex:0 0 260px;text-align:right;color:#6e7681;font-size:9px;font-family:var(--font-mono)">
+            base ${profile.base.toFixed(1)} · social ${profile.socialPosition.toFixed(1)}
+            · comps ${profile.competition.toFixed(1)}
+            · ${rec.hohWins || 0}H/${rec.vetoWins || 0}V/${rec.timesNominated || 0}N
+          </div>`);
+      });
+
+    // Heat is directional: who each houseguest is warmest to putting up.
+    html += head('HEAT — WHO EACH HOUSEGUEST WOULD NOMINATE');
+    for (const observer of house) {
+      const ranked = house.filter(n => n !== observer)
+        .map(n => ({ n, heat: bbHeat(observer, n) }))
+        .sort((a, b) => b.heat.total - a.heat.total)
+        .slice(0, 3);
+      if (!ranked.length) continue;
+      html += line(observer, `<div style="flex:1;text-align:right;font-size:10px;font-family:var(--font-mono);color:#8b949e">${
+        ranked.map(({ n, heat }) => {
+          const c = heat.components;
+          return `<span title="threat ${c.threat.toFixed(1)} · relationship ${c.relationship.toFixed(1)} · alliance ${c.alliance.toFixed(1)} · target ${c.target} · suspicion ${c.suspicion.toFixed(1)} · memory ${c.memory.toFixed(1)}"
+            style="margin-left:10px">${_bbEsc(n)} <b style="color:${tier(heat.total).color}">${heat.total.toFixed(1)}</b></span>`;
+        }).join('')}</div>`);
+    }
+    html += `<div style="font-size:9px;color:#4d545c;margin-top:6px">Hover a name for the full breakdown: threat, relationship, alliance, target, suspicion, memory.</div>`;
+  }
+
+  // ── Competitions ──────────────────────────────────────────────────
+  if (tab === 'comps') {
+    const comps = acts.filter(a => a.competition).map(a => ({ type: a.type, comp: a.competition }));
+    if (!comps.length) html += head('NO COMPETITION THIS WEEK');
+    for (const { type, comp } of comps) {
+      html += `<div style="margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:8px">
+        <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">${type} · ${comp.name} · ${comp.category} · ${comp.debug?.source || '?'}</div>
+        ${row('winner', `${comp.winner} (margin ${comp.debug?.winnerMargin != null ? comp.debug.winnerMargin.toFixed(2) : '—'})`)}
+        ${row('order', (comp.placements || []).join(' > '))}
+        ${Object.entries(comp.debug?.scoreBreakdown || {})
+          // The two competition engines report the SAME numbers under different
+          // names — generic comps write statTotal/randomRoll/throwPenalty/
+          // throwIntentChance, the custom ones write base/roll/penalty/
+          // threwChance. Reading only one set printed NaN for every custom
+          // competition in the game, which is most of them.
+          .map(([name, raw]) => [name, {
+            score: raw.score ?? raw.finalScore ?? 0,
+            aptitude: raw.statTotal ?? raw.base,
+            roll: raw.randomRoll ?? raw.roll,
+            threw: raw.threw,
+            throwPenalty: raw.throwPenalty ?? raw.penalty,
+            throwChance: raw.throwIntentChance ?? raw.threwChance,
+            slopRisk: raw.throwSlopRisk,
+            haveNot: raw.haveNot, haveNotPenalty: raw.haveNotPenalty,
+            gunningFor: raw.gunningFor, gunningBonus: raw.gunningBonus,
+          }])
+          .sort((a, b) => b[1].score - a[1].score).map(([name, b]) => {
+            const num = (v, d = 2) => (Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '?');
+            const parts = [`score <b style="color:#e6edf3">${num(b.score)}</b>`];
+            if (b.aptitude != null) parts.push(`aptitude ${num(b.aptitude)}`);
+            if (b.roll != null) parts.push(`luck ${num(b.roll)}`);
+            if (b.gunningBonus) parts.push(`<span style="color:#3fb950">gunning +${num(b.gunningBonus)}${b.gunningFor ? ` (${b.gunningFor})` : ''}</span>`);
+            if (b.haveNot) parts.push(`<span style="color:#f47067">slop -${num(b.haveNotPenalty)}</span>`);
+            if (b.threw) parts.push(`<span style="color:#f47067">threw -${num(b.throwPenalty)}</span>`);
+            if (b.throwChance) parts.push(`throw odds ${(Number(b.throwChance) * 100).toFixed(0)}%${b.slopRisk ? ` (slop risk -${num(b.slopRisk, 1)})` : ''}`);
+            return row(name, parts.join(' · '));
+          }).join('')}
+      </div>`;
+    }
+  }
+
+  // ── Game plans ────────────────────────────────────────────────────
+  if (tab === 'plans') {
+    const planned = house.filter(n => plans[n]);
+    if (!planned.length) html += head('NOBODY HAS A PLAN YET');
+    else {
+      html += head('WHAT EACH HOUSEGUEST IS PLAYING FOR');
+      planned.forEach(n => {
+        const p = plans[n];
         const why = Object.entries(p.origins?.targets || {})[0];
-        return row(n, [
-          `style ${p.planStyle}`,
-          `stage ${p.stage}`,
-          `conf ${Number(p.confidence || 0).toFixed(2)}`,
-          `target ${p.targets?.[0] || '—'}`,
-          `shield ${p.shield || '—'}`,
-          `goat ${p.goat || '—'}`
-            + (p.goatAssessment ? ` (${Number(p.goatAssessment.beatability).toFixed(1)} @ ${Math.round(p.goatAssessment.confidence * 100)}%)` : ''),
-        ].join(' · ') + (why ? `<div style="color:#6e7681;font-size:10px;padding-left:2px">${_bbEsc(String(why[1]))}</div>` : ''));
-      }).join('')}
-    </div>`;
+        html += line(n, `<div style="flex:1;text-align:right;font-size:10px;font-family:var(--font-mono);color:#8b949e">
+            ${p.planStyle} · ${p.stage} · conf ${Number(p.confidence || 0).toFixed(2)}
+            · target <b style="color:#f47067">${_bbEsc(p.targets?.[0] || '—')}</b>
+            · shield <b style="color:#79c0ff">${_bbEsc(p.shield || '—')}</b>
+            · goat <b style="color:#3fb950">${_bbEsc(p.goat || '—')}</b>${
+              p.goatAssessment ? ` (${Number(p.goatAssessment.beatability).toFixed(1)} @ ${Math.round(p.goatAssessment.confidence * 100)}%)` : ''}
+          </div>`);
+        if (why) html += `<div style="font-size:9px;color:#4d545c;padding:0 8px 5px 34px">${_bbEsc(String(why[1]))}</div>`;
+      });
+    }
   }
 
-  const dbgDeals = (typeof gs !== 'undefined' && gs.sideDeals || [])
-    .filter(d => (d.tier === 'final-two' || d.tier === 'final-three'));
-  if (dbgDeals.length) {
-    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#e3b341;text-transform:uppercase;margin-bottom:8px">endgame deals · every one ever made</div>
-      ${dbgDeals.slice(-24).map(d => row(
-        `${d.tier} wk${d.madeEp}`,
-        `${(d.players || []).map(n => `${n} ${(Number(d.sincerity?.[n] ?? 0.5) * 100).toFixed(0)}%`).join('  ·  ')}`
-        + (d.broken ? `   BROKEN by ${d.brokenBy} wk${d.brokenEp} (${d.brokenReason || 'no reason recorded'})`
-          : d.honoured ? `   HONOURED by ${d.honouredBy}`
-          : d.active === false ? `   lapsed — ${d.lapsedBecause || 'unknown'}` : '   live'),
-      )).join('')}
-    </div>`;
+  // ── Deals & alliances ─────────────────────────────────────────────
+  if (tab === 'deals') {
+    const deals = ((typeof gs !== 'undefined' && gs.sideDeals) || [])
+      .filter(d => d.tier === 'final-two' || d.tier === 'final-three');
+    html += head(`ENDGAME DEALS — EVERY ONE EVER MADE (${deals.length})`);
+    if (!deals.length) html += row('—', 'nobody has promised anybody the end');
+    deals.slice(-30).forEach(d => {
+      const state = d.broken ? `<span style="color:#f47067">BROKEN by ${d.brokenBy} wk${d.brokenEp}${d.brokenReason ? ` (${_bbEsc(d.brokenReason)})` : ''}</span>`
+        : d.honoured ? `<span style="color:#3fb950">HONOURED by ${d.honouredBy}</span>`
+        : d.active === false ? `<span style="color:#6e7681">lapsed — ${_bbEsc(d.lapsedBecause || 'unknown')}</span>`
+        : '<span style="color:#e3b341">live</span>';
+      html += row(`${d.tier} wk${d.madeEp}`,
+        `${(d.players || []).map(n => `${_bbEsc(n)} <b style="color:#8b949e">${(Number(d.sincerity?.[n] ?? 0.5) * 100).toFixed(0)}%</b>`).join(' · ')} — ${state}`);
+    });
+
+    const alliances = (snap.alliances || snap.namedAlliances
+      || (typeof gs !== 'undefined' && gs.namedAlliances) || []).filter(a => a.active !== false);
+    html += head(`ALLIANCES (${alliances.length})`);
+    if (!alliances.length) html += row('—', 'nobody is working together out loud');
+    alliances.forEach(a => {
+      const live = (a.members || []).filter(m => house.includes(m));
+      html += row(a.name, `${live.join(', ') || '—'} <span style="color:#6e7681">· ${live.length} live${
+        a.trust != null ? ` · trust ${Number(a.trust).toFixed(1)}` : ''}${a.formedEp ? ` · formed wk${a.formedEp}` : ''}</span>`);
+    });
   }
 
-  for (const type of ['hoh', 'veto']) {
-    const comp = acts.find(a => a.type === type)?.competition;
-    if (!comp) continue;
-    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">${type} · ${comp.name} · ${comp.category} · ${comp.debug?.source || '?'}</div>
-      ${row('winner margin', comp.debug?.winnerMargin != null ? comp.debug.winnerMargin.toFixed(2) : '—')}
-      ${row('formula', comp.debug?.formula ? Object.entries(comp.debug.formula).map(([k, v]) => `${k} ${v}`).join(' · ') : '—')}
-      ${Object.entries(comp.debug?.scoreBreakdown || {}).slice(0, 20).map(([name, b]) => {
-        // Every modifier the engine applied, so a surprising result can be
-        // accounted for rather than just accepted.
-        const parts = [`score ${Number(b.score ?? b.finalScore ?? 0).toFixed(2)}`];
-        if (b.base != null || b.statTotal != null) parts.push(`aptitude ${Number(b.base ?? b.statTotal).toFixed(2)}`);
-        if (b.roll != null || b.randomRoll != null) parts.push(`luck ${Number(b.roll ?? b.randomRoll).toFixed(2)}`);
-        if (b.gunningBonus) parts.push(`GUNNING +${Number(b.gunningBonus).toFixed(2)} (${b.gunningFor})`);
-        if (b.haveNotPenalty) parts.push(`slop -${Number(b.haveNotPenalty).toFixed(2)}`);
-        if (b.threw) parts.push(`THREW -${Number(b.penalty ?? b.throwPenalty ?? 0).toFixed(2)}`);
-        else if (b.threwChance ?? b.throwIntentChance) parts.push(`throw odds ${Number(b.threwChance ?? b.throwIntentChance).toFixed(2)}`);
-        if (b.roundsSurvived != null) parts.push(`rounds ${b.roundsSurvived}`);
-        return row(name, parts.join('  ·  '));
-      }).join('')}
-      ${(comp.debug?.warnings || []).length ? row('warnings', comp.debug.warnings.join('; ')) : ''}
-    </div>`;
+  // ── Vote commitments ──────────────────────────────────────────────
+  if (tab === 'votes') {
+    const commitments = ep.voteCommitments || [];
+    const ballots = (acts.find(a => a.type === 'eviction')?.ballots) || [];
+    html += head('HOW FIRMLY EACH VOTE WAS HELD');
+    html += row('the vote', `${ballots.length} cast · ${ep.voteChanges || 0} moved by the campaign`);
+    if (!commitments.length && !ballots.length) html += row('—', 'no vote this week');
+    for (const b of ballots) {
+      const c = commitments.find(x => x.voter === b.voter);
+      const bits = [];
+      // Label and number kept together inside the colour, rather than split by
+      // markup — it is a figure somebody reads and searches for as one thing.
+      if (c) bits.push(`<b style="color:${c.strength > 0.6 ? '#3fb950' : c.strength > 0.35 ? '#e3b341' : '#f47067'}">commitment ${c.strength.toFixed(2)}</b>`);
+      if (c?.promised) bits.push('shook on it');
+      if (c?.allied) bits.push('allied to who they kept');
+      if (c?.endgameDeal) bits.push(`<span style="color:#e3b341">${c.endgameDeal.tier} with ${_bbEsc(c.endgameDeal.with)}</span>`);
+      if (c?.cuttingPartner) bits.push(`<span style="color:#f47067">cutting ${_bbEsc(c.cuttingPartner)}</span>`);
+      if (b.stated && b.stated !== b.evict) bits.push(`<span style="color:#f47067">said ${_bbEsc(b.stated)}</span>`);
+      if (b.blocMove) bits.push(`bloc: ${_bbEsc(b.blocMove)}`);
+      if (b.bandwagon) bits.push('joined the winning side');
+      html += row(`${b.voter} → ${b.evict}`, bits.join(' · ') || 'no pressure on this one');
+    }
+    if ((ep.blocMoves || []).length) {
+      html += head('WHAT THE BLOCS ASKED FOR');
+      ep.blocMoves.forEach(m => { html += row(m.alliance, `${m.voter} → ${m.target}`); });
+    }
   }
 
-  // ── The vote, ballot by ballot, with the reason it landed there ──
-  const evictionAct = acts.find(a => a.type === 'eviction');
-  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
-  if (evictionAct?.ballots?.length) {
-    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#f85149;text-transform:uppercase;margin-bottom:8px">the vote</div>
-      ${evictionAct.ballots.map(b => {
-        const c = commitment.get(b.voter);
-        const bits = [`voted ${b.evict}`];
-        if (b.stated && b.stated !== b.evict) bits.push(`was on ${b.stated}`);
-        if (c) bits.push(`commitment ${c.strength.toFixed(2)}${c.promised ? ' · PROMISED' : ''}${c.allied ? ' · ally' : ''}`);
-        if (b.blocMove) bits.push(`bloc ${b.blocMove}`);
-        if (b.bandwagon) bits.push('BANDWAGON');
-        if (b.margin != null) bits.push(`margin ${Number(b.margin).toFixed(2)}`);
-        return row(b.voter, bits.join('  ·  '));
-      }).join('')}
-      ${(ep.voteBroken || []).length ? row('promises broken', ep.voteBroken.map(v => `${v.voter} (${v.promised} → ${v.cast})`).join(', ')) : ''}
-    </div>`;
+  // ── Perceived bonds ───────────────────────────────────────────────
+  if (tab === 'bonds') {
+    html += head('WHAT PEOPLE BELIEVE, AGAINST WHAT IS TRUE');
+    const perceived = snap.perceivedBonds || (typeof gs !== 'undefined' && gs.perceivedBonds) || {};
+    const rows = Object.entries(perceived).map(([key, entry]) => {
+      const [observer, subject] = key.split('→');
+      if (!observer || !subject || !house.includes(observer) || !house.includes(subject)) return null;
+      const believes = Number(entry?.perceived ?? entry) || 0;
+      const truth = typeof getBond === 'function' ? getBond(observer, subject) : 0;
+      return { observer, subject, believes, truth, gap: believes - truth, reason: entry?.reason || '' };
+    }).filter(Boolean).sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap)).slice(0, 40);
+    if (!rows.length) html += row('—', 'everybody reads the room the way it actually is');
+    rows.forEach(r => {
+      html += row(`${r.observer} → ${r.subject}`,
+        `believes <b style="color:${r.gap > 0 ? '#3fb950' : '#f47067'}">${r.believes.toFixed(1)}</b>`
+        + ` · truth ${r.truth.toFixed(1)}`
+        + ` · gap ${r.gap > 0 ? '+' : ''}${r.gap.toFixed(1)}`
+        + (r.reason ? ` <span style="color:#6e7681">— ${_bbEsc(String(r.reason).replace(/-/g, ' '))}</span>` : ''));
+    });
   }
 
-  const live = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false && !a.dissolved);
-  html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-    <div style="font-size:10px;letter-spacing:1.5px;color:#58a6ff;text-transform:uppercase;margin-bottom:8px">alliances</div>
-    ${live.length ? live.map(a => row(a.name, `${(a.members || []).join(', ')}  · trust ${Number(a.trust || 0).toFixed(2)} · ${a.parentName ? `inside ${a.parentName}` : a.formationEvidence || '?'}`)).join('') : row('—', 'none live')}
-  </div>`;
-
-  // ── The competition record, which only ever appeared as small icons ──
-  const stats = ep.gsSnapshot?.bb?.stats || (typeof gs !== 'undefined' && gs.bb?.stats) || {};
-  const roster = (ep.houseAtStart || []).filter(n => stats[n]);
-  if (roster.length) {
-    html += `<div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">competition record</div>
-      ${roster.map(n => {
-        const r = stats[n] || {};
-        return row(n, `HOH ${r.hohWins || 0}  ·  veto ${r.vetoWins || 0}  ·  nominated ${r.timesNominated || 0}`
-          + `  ·  on the block ${r.timesOnTheBlock || 0}  ·  saved ${r.timesSaved || 0}`);
-      }).join('')}
-    </div>`;
+  // ── Player stats ──────────────────────────────────────────────────
+  if (tab === 'stats') {
+    html += head('STATS AND COMPETITION RECORD');
+    const keys = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
+    house.forEach(name => {
+      const st = (typeof pStats === 'function' ? pStats(name) : {}) || {};
+      const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
+      html += line(name, `<div style="flex:1;text-align:right;font-size:9px;font-family:var(--font-mono);color:#8b949e">
+          ${keys.map(k => `${k.slice(0, 3)} <b style="color:#c9d1d9">${st[k] ?? '—'}</b>`).join(' · ')}
+        </div>`);
+      html += `<div style="font-size:9px;color:#6e7681;padding:0 8px 5px 34px;font-family:var(--font-mono)">competition record — HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}</div>`;
+    });
   }
 
-  // ── Anything the shared maintenance could not do this week ──
-  const errs = ep.maintenanceErrors || [];
-  html += `<div style="padding:12px;border:1px solid var(--border);border-radius:8px">
-    <div style="font-size:10px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase;margin-bottom:8px">upkeep</div>
-    ${errs.length ? errs.map(e => row('FAILED', e)).join('') : row('shared systems', 'all eight ran')}
-  </div>`;
+  // ── Beats & effects ───────────────────────────────────────────────
+  if (tab === 'beats') {
+    html += head(`EVERY BEAT THIS WEEK (${beats.length})`);
+    const withFx = beats.filter(b => (b.effects || []).length).length;
+    html += row('carrying a measured effect', `${withFx} of ${beats.length}`);
+    acts.filter(a => (a.socialBeats || []).length).forEach(a => {
+      html += head(`${(a.phase || a.type).toUpperCase()} — ${(a.socialBeats || []).length} beats`);
+      a.socialBeats.forEach(b => {
+        html += row(`${b.eventId || 'engine'} · ${b.location || '—'}`,
+          `<span style="color:#c9d1d9">${_bbEsc(b.badgeText || '')}</span> `
+          + `<span style="color:#6e7681">${(b.players || []).join(', ')}</span>`
+          + ((b.effects || []).length
+            ? ` <span style="color:#8b949e">— ${b.effects.map(e => _bbEsc(e.text)).join(' · ')}</span>`
+            : ' <span style="color:#4d545c">— no measured effect</span>'));
+      });
+    });
+  }
+
   return html + `</div>`;
 }
 
-/**
- * The eviction interview.
- *
- * Big Brother's aftermath, and unlike Total Drama's it happens every week and
- * concerns one person. The evictee gives their read of what happened, then the
- * goodbye messages either confirm it or take it apart — which is the only place
- * in the format where somebody can be completely honest, because the person
- * they are talking to cannot use it.
- */
 export function rpBuildBBEvictionInterview(ep) {
   const iv = ep.evictionInterview;
   if (!iv) return '';

@@ -112,7 +112,9 @@ function genericSimulation(comp, participants, context, rng) {
     const statComponents = Object.fromEntries(Object.entries(comp.stats).map(([stat, weight]) => [stat, stats[stat] * weight]));
     const statTotal = Object.values(statComponents).reduce((sum, value) => sum + value, 0);
     const randomRoll = (rng() * 4) - 2;
-    const throwRead = context.type === 'hoh' ? shouldThrowHoh(name, context.house || participants) : { throwChance:0, enemies:0, safety:0 };
+    const throwRead = context.type === 'hoh'
+      ? shouldThrowHoh(name, context.house || participants, context)
+      : { throwChance:0, enemies:0, safety:0, slopRisk:0 };
     const threw = context.allowThrowing !== false && rng() < throwRead.throwChance;
     const throwPenalty = threw ? 4.5 + rng() * 3 : 0;
     // A week of cold showers and slop is a real disadvantage, not a costume.
@@ -123,7 +125,7 @@ function genericSimulation(comp, participants, context, rng) {
     // People in danger play harder — the same model the custom competitions use.
     const gun = gunningFor(name, context, rng);
     const finalScore = statTotal + randomRoll - throwPenalty - haveNotPenalty + gun.bonus;
-    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, haveNot, haveNotPenalty, gunningFor:gun.reason, gunningBonus:gun.bonus, finalScore };
+    breakdown[name] = { statComponents, statTotal, randomRoll, throwIntentChance:throwRead.throwChance, threw, throwPenalty, throwSlopRisk:throwRead.slopRisk || 0, haveNot, haveNotPenalty, gunningFor:gun.reason, gunningBonus:gun.bonus, finalScore };
     return { name, score:finalScore, threw };
   }).sort((a,b) => b.score - a.score);
   return {

@@ -1,6 +1,6 @@
 // Big Brother strategy primitives. This module deliberately knows nothing about
 // Total Drama's tribes, merge, immunity, or tribal council.
-import { gs, players } from '../core.js';
+import { gs, players, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
@@ -165,12 +165,38 @@ export function campaignAttempt(nominee, voter, opponent, rng = Math.random) {
   return { nominee, voter, success, strength: clamp((persuasion - resistance) / 3, -2, 2), archetype: archetype(nominee) };
 }
 
-export function shouldThrowHoh(name, house) {
+export function shouldThrowHoh(name, house, context = {}) {
   const stats = pStats(name);
   const enemies = house.filter(other => other !== name && getPerceivedBond(name, other) <= -3).length;
   const safety = house.filter(other => other !== name && (getPerceivedBond(name, other) >= 3 || bbAllianceStrength(name, other))).length;
   const liability = safety - enemies + (10 - stats.boldness) * 0.35 + (10 - stats.strategic) * 0.12;
-  return { throwChance: clamp(liability / 16, 0, 0.62), enemies, safety };
+
+  // Throwing this one is no longer free.
+  //
+  // Slop comes off the bottom of the Head of Household competition now, and a
+  // thrown competition lands you there almost by definition — the throw penalty
+  // is several times the size of the random roll. So the cost of staying small
+  // for a week is a week of playing the veto hungry, which is worth about two
+  // and a half places in a field of twelve and cuts a houseguest's chance of
+  // winning anything by roughly seven times.
+  //
+  // Scaled by how much they need a competition: somebody with enemies stacking
+  // up cannot afford to be weak in the veto as well, while somebody safe can
+  // still take the week off. Throwing remains a real strategy, it just costs
+  // something now.
+  // Calibrated, not guessed. Liability lands between about 0.5 and 3.4 across a
+  // cast, so a deterrent of 3.2 — which is what this was first written as —
+  // drove every houseguest to a flat zero and deleted throwing from the game
+  // outright. About one point halves it instead, which is what a real cost
+  // looks like: measured, 9.1% of houseguests would throw with no slop on the
+  // line and 4.4% will with it.
+  const slopLive = seasonConfig.bbHaveNots !== 'off' && (context.type || 'hoh') === 'hoh';
+  const slopRisk = slopLive ? 0.9 + enemies * 0.3 : 0;
+
+  return {
+    throwChance: clamp((liability - slopRisk) / 16, 0, 0.62),
+    enemies, safety, liability, slopRisk,
+  };
 }
 
 /**

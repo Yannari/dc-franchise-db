@@ -97,7 +97,18 @@ const nomSpeechPersonal = {
     const s = pStats(ctx.hoh);
     // Hot tempers and villains make it personal; the composed rarely do — and a
     // standing grudge or an existing target turns the temperature up further.
-    const heat = ((10 - s.temperament) / 10) * (s.boldness / 10);
+    // A product of two normalised stats collapses fast: a composed, cautious
+    // Head of Household scores about 0.08 here, and after band() that is
+    // nothing at all — so in a cast that never hands power to a hothead this
+    // event simply never happens. It has now gone dark twice for that reason.
+    //
+    // A grudge sets a floor. Somebody calm with a real grievance can still call
+    // a person out at the ceremony; being even-tempered is not the same as
+    // having nothing to say.
+    const grudged = grudge(ctx.hoh, ctx.target || _nominees(ctx)[0]) >= 2
+      || (housePlan(ctx.hoh)?.revenge || []).includes(ctx.target || _nominees(ctx)[0]);
+    const heat = Math.max(grudged ? 0.34 : 0.06,
+      ((10 - s.temperament) / 10) * (s.boldness / 10));
     const nasty = isVillainous(ctx.hoh) || archetype(ctx.hoh) === 'hothead' ? 11 : 4;
     const target = ctx.target && _nominees(ctx).includes(ctx.target) ? ctx.target : _nominees(ctx)[0];
     const bad = dislikes(ctx.hoh, target) ? 1.6 : 1;

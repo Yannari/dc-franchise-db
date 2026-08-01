@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, bbfCamera, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -213,5 +213,44 @@ describe('camera tabs', () => {
     document.body.innerHTML = again.html;
     const after = [...document.querySelectorAll('[data-bbf-room]')].filter(b => b.style.display !== 'none');
     expect(after.length, 'the camera reset when the screen was rebuilt').toBe(1);
+  }, 240000);
+});
+
+// The debug screen, which is the same screen Total Drama has.
+//
+// It lives behind a localStorage flag, so nothing routine renders it and a tab
+// can break — or quietly render nothing at all — for a long time before
+// anybody notices.
+describe('the debug screen', () => {
+  const TABS = ['week', 'threats', 'comps', 'plans', 'deals', 'votes', 'bonds', 'stats', 'beats'];
+
+  it('renders every tab without holes', () => {
+    reset();
+    let ep = null;
+    for (let i = 0; i < 3; i++) ep = simulateBBEpisode();
+    for (const tab of TABS) {
+      localStorage.setItem('vp_bbdebug_tab', tab);
+      const html = rpBuildBBDebug(ep);
+      expect(html, `${tab} rendered nothing`).toContain('DEBUG DATA');
+      // A tab that renders only its own chrome is an empty tab.
+      expect(html.length, `${tab} has no content`).toBeGreaterThan(6000);
+      expect(/undefined|NaN/.test(html), `${tab} printed undefined or NaN`).toBe(false);
+      // Every tab is reachable from every other tab.
+      for (const other of TABS) expect(html).toContain(`'vp_bbdebug_tab','${other}'`);
+    }
+    localStorage.removeItem('vp_bbdebug_tab');
+  }, 240000);
+
+  it('is wired to the screen the tabs navigate to', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    localStorage.setItem('vp_debug', 'true');
+    const screens = buildVPScreens(gs.episodeHistory[0]);
+    localStorage.removeItem('vp_debug');
+    const debug = screens.find(s => s.id === 'bb-debug');
+    expect(debug, 'the debug screen is not in the player at all').toBeTruthy();
+    // The tab buttons and the episode nav both look the screen up by this id.
+    expect(debug.html).toContain("s.id==='bb-debug'");
+    expect(ep.num).toBe(1);
   }, 240000);
 });

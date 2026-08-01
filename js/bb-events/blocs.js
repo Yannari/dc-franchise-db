@@ -27,6 +27,7 @@ import {
   listBlocs, knowledgeOf, knownBlocsFor, readPower, pointOfAttack, chooseBlocTarget,
   tellAbout, exposeBloc, outsidersTo, hasPlanAgainst, recordPlanAgainst, blocExposure,
 } from '../bb/blocs.js';
+import { timesVotedTogether, evictionCount } from '../bb/fallout.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -101,8 +102,8 @@ const blocNoticed = {
       `${seer} works out that ${bloc.members[0]} and ${bloc.members[1]} will never, under any circumstances, write each other's names down. Everything else follows from that.`,
     ], ctx, seer, bloc.id) : _variant([
       `${seer} has been keeping a list of who ends up in the same room and the same names keep appearing on it. ${names} — always, and never by accident.`,
-      `The conversation stops when ${seer} walks in. It has stopped three times this week, and always around the same people.`,
-      `${seer} does the arithmetic ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been avoiding: if ${names} are together, then the last two evictions were not close at all, they were decided before the vote.`,
+      `The conversation stops when ${seer} walks in. It is not the first time, and the same people always seem to be in the room.`,
+      `${seer} does the arithmetic ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been avoiding: if ${names} are together, the votes are being decided before everybody else enters the room.`,
       `${seer} cannot prove it and does not need to. ${names} move like people who have already agreed.`,
     ], ctx, seer, bloc.id);
 
@@ -134,9 +135,17 @@ const blocVoteTell = {
       players: [counter], badgeText: 'COUNTING', badgeClass: 'grey' };
     const bloc = entry.bloc;
     const p = pronouns(counter);
+    // How many times this has actually happened, rather than a number chosen to
+    // sound good. These lines used to claim "again" and "twice running" with
+    // nothing behind them, which is how an event ended up describing two
+    // previous evictions in week two.
+    const together = timesVotedTogether(bloc);
+    const evictions = evictionCount();
+    const again = together >= 2 ? ` That is ${together} votes in a row.` : '';
+
     const text = _variant([
-      `${counter} goes back through the last vote out loud, name by name, and stops. "${bloc.members.slice(0, 3).join(', ')} all voted the same way. Again."`,
-      `Nobody has to be told what happened at the last eviction; ${counter} just has to count it in front of somebody. ${bloc.members.length} votes, one name, twice running.`,
+      `${counter} goes back through the last vote out loud, name by name, and stops. "${_list(bloc.members.slice(0, 3))} all landed on the same person."${again}`,
+      `Nobody has to be told what happened at the last eviction; ${counter} just has to count it in front of somebody. ${bloc.members.length} votes moved in the same direction${evictions >= 2 ? `, and it is not the first time` : ''}.`,
       `"Tell me that's a coincidence." ${counter} lists who voted with whom and waits. Nobody in the room takes the bet.`,
       `${counter} has stopped guessing about ${bloc.label}. The tally did the work — ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} looking at the wrong thing all week.`,
     ], ctx, counter, bloc.id);
@@ -167,8 +176,8 @@ const blocTargetPicked = {
     const confidant = closestTo(plotter, outsidersTo(bloc, plotter));
 
     const text = bloc.kind === 'couple' ? _variant([
-      `"You cannot beat them both, so you do not try." ${plotter} has settled on ${target} — break the pair and whatever is left is one person with a grudge instead of two votes.`,
-      `${plotter} says it plainly${confidant ? ` to ${confidant}` : ''}: ${bloc.members.join(' and ')} are going to the end together unless somebody stops it, and ${target} is the half of it that can actually be reached.`,
+      `"You cannot take them both out at once." ${plotter} has settled on ${target} — break the pair and what remains is one angry houseguest instead of two locked votes.`,
+      `${plotter} says it plainly${confidant ? ` to ${confidant}` : ''}: ${bloc.members.join(' and ')} will keep choosing each other unless somebody separates them, and ${target} has less protection around the house.`,
       `${plotter} does not care which of them goes. ${p.Sub} ${p.sub === 'they' ? 'care' : 'cares'} that one of them does, and ${target} is the name with the fewest people behind it.`,
     ], ctx, plotter, target) : _variant([
       `${plotter} stops talking about ${bloc.label} as a rumour and starts talking about it as a problem with a solution. ${why}.`,
@@ -237,12 +246,13 @@ const blocRecruit = {
     }
 
     const p = pronouns(plotter);
+    const spoken = joined.length + refused.length;
     const text = joined.length ? _variant([
-      `${plotter} spends the afternoon having the same conversation four times. ${_list(joined)} ${joined.length > 1 ? 'come' : 'comes'} out of it agreeing that ${target} goes first.`,
+      `${plotter} spends the afternoon making the same case ${spoken === 1 ? 'once' : `${spoken} separate times`}. ${_list(joined)} ${joined.length > 1 ? 'come' : 'comes'} out of it agreeing that ${target} goes first.`,
       `"I am not asking you to like me, I am asking you to count." ${_list(joined)} ${joined.length > 1 ? 'do' : 'does'} the counting and ${joined.length > 1 ? 'arrive' : 'arrives'} where ${plotter} did.${refused.length ? ` ${_list(refused)} ${refused.length > 1 ? 'do' : 'does'} not.` : ''}`,
-      `${plotter} pulls people aside one at a time, which is the only way this ever works. By evening ${joined.length === 1 ? 'one more person has' : `${joined.length} more people have`} ${target}'s name in ${joined.length === 1 ? 'their' : 'their'} mouth.`,
+      `${plotter} pulls people aside one at a time, which is the only way this ever works. By evening ${joined.length === 1 ? 'one more person is' : `${joined.length} more people are`} prepared to say ${target}'s name.`,
     ], ctx, plotter, target) : _variant([
-      `${plotter} makes the case to three separate people and watches it land nowhere. ${_list(refused)} either do not see ${bloc.label} or do not trust the person pointing at it.`,
+      `${plotter} makes the case to ${spoken === 1 ? 'the one person who will listen' : `${spoken} separate people`} and watches it land nowhere.${refused.length ? ` ${_list(refused)} ${refused.length > 1 ? 'either do not' : 'does not'} see ${bloc.label} or ${refused.length > 1 ? 'do not' : 'does not'} trust the person pointing at it.` : ''}`,
       `"Think about who benefits from you saying that." ${refused[0] || 'Nobody'} does not disagree with ${plotter} about ${bloc.label} so much as disagree with ${plotter}.`,
       `Everybody ${plotter} talks to nods and does nothing. The plan is sound and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} the wrong person to be carrying it.`,
     ], ctx, plotter, target);
@@ -277,7 +287,7 @@ const blocTold = {
     const result = tellAbout(teller, listener, bloc);
     const p = pronouns(listener);
     const text = result.believed ? _variant([
-      `${teller} tells ${listener} about ${bloc.label}. ${listener} does not argue — ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been half-seeing it for a week and needed somebody else to say it first.`,
+      `${teller} tells ${listener} about ${bloc.label}. ${listener} does not argue — ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already noticed enough to need somebody else to say it first.`,
       `"You know they are working together." ${listener} says nothing for a moment, then starts naming votes that suddenly make sense.`,
       `${teller} lays it out and ${listener} believes it, because ${result.why}.`,
     ], ctx, teller, listener) : _variant([
@@ -327,8 +337,8 @@ const blocBlowup = {
     const p = pronouns(angry);
 
     const text = _variant([
-      `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know. Stop pretending this house has been voting." Nobody has to be told twice; there is no unhearing it.`,
-      `${angry} has been holding it for two weeks and lets go of it at the worst possible moment, in front of the entire house. ${bloc.label} is not a theory any more, it is a thing that was shouted.`,
+      `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know. Stop pretending those votes are independent." Nobody has to be told twice; there is no unhearing it.`,
+      `${angry} has been holding it in since ${pronouns(angry).sub} first noticed the pattern and lets go at the worst possible moment, in front of the entire house. ${bloc.label} is not a theory any more; it is a thing that was shouted.`,
       `"Say it to my face that you are not working together." ${bloc.members[0]} says nothing, which is the loudest answer available, and every person in the room does the arithmetic at the same time.`,
       `The argument is about something else for about forty seconds. Then ${angry} names ${_count(bloc.members.length)} of them out loud and the house stops being able to pretend.`,
     ], ctx, angry, bloc.id);

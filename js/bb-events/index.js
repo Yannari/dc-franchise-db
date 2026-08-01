@@ -24,6 +24,7 @@ import { SCHEME_EVENTS } from './schemes.js';
 import { LOCATION_TEXTURE_EVENTS } from './location-texture.js';
 import { STORY_FOLLOWUP_EVENTS } from './story-followups.js';
 import { BLOC_EVENTS } from './blocs.js';
+import { FALLOUT_EVENTS } from './fallout.js';
 
 /** Every house event, in no particular order — the scheduler weights them. */
 export const HOUSE_EVENTS = [
@@ -39,14 +40,15 @@ export const HOUSE_EVENTS = [
   ...LOCATION_TEXTURE_EVENTS,
   ...STORY_FOLLOWUP_EVENTS,
   ...BLOC_EVENTS,
+  ...FALLOUT_EVENTS,
 ];
 
 /** The same events grouped, for debug screens and for testing one slice. */
 export const HOUSE_EVENTS_BY_CATEGORY = {
   ceremonies: [...CEREMONY_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'ceremonies')],
   social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'social'), ...SCHEME_EVENTS.filter(e => e.category === 'social'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'social'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'social'), ...BLOC_EVENTS.filter(e => e.category === 'social')],
-  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'deals'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'deals'), ...BLOC_EVENTS.filter(e => e.category === 'deals')],
-  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'house-life')],
+  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'deals'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'deals'), ...BLOC_EVENTS.filter(e => e.category === 'deals'), ...FALLOUT_EVENTS.filter(e => e.category === 'deals')],
+  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'house-life'), ...FALLOUT_EVENTS.filter(e => e.category === 'house-life')],
   phases: [...PHASE_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'phases')],
 };
 

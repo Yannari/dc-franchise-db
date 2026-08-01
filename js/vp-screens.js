@@ -17667,7 +17667,7 @@ function _bbStories(ep, stillIn) {
     if (blindside) {
       add(100, 'eviction', 'BLINDSIDE',
         `${ep.eliminated} never saw it`,
-        `${against} of ${total} votes, and ${flips || 'several'} of them changed hands after the ceremony. ${p.Sub} walked out believing ${p.sub} had the numbers.`,
+        `${against} of ${total} votes, and ${flips || 'several'} moved after the ceremony. ${p.Sub} walked out believing ${p.sub} had the numbers.`,
         [ep.eliminated]);
     } else if (unanimous) {
       add(78, 'eviction', 'EVICTED',
@@ -17693,7 +17693,7 @@ function _bbStories(ep, stillIn) {
   } else if (vetoUsed && saved.length) {
     add(70, 'veto', 'VETO USED',
       `${ep.vetoWinner} pulls ${saved[0]} down`,
-      `${replacement[0] ? `${replacement[0]} takes the empty chair — a nomination nobody campaigned for.` : 'The block changes shape.'}`,
+      `${replacement[0] ? `${replacement[0]} takes the empty chair — a nomination nobody saw coming.` : 'The block changes shape.'}`,
       [ep.vetoWinner, saved[0], replacement[0]]);
   } else if (ep.vetoWinner && finalNoms.length) {
     add(46, 'veto', 'VETO',
@@ -17706,11 +17706,20 @@ function _bbStories(ep, stillIn) {
   if (ep.hoh) {
     const prior = (gs.episodeHistory || []).filter(h => h.format === 'big-brother'
       && h.num < ep.num && h.hoh === ep.hoh).length;
+    // Three different stories, and they were collapsed into two.
+    //
+    // `prior` counts THIS PERSON'S previous reigns, so zero meant "their first
+    // win" — and the copy read "the first week of real power", which is only
+    // true in week one of the season. A first win in week six is the opposite
+    // story: somebody who has been powerless for a month and finally is not.
+    const firstOfTheSeason = Number(ep.num) === 1;
     add(prior ? 52 : 60, 'power', 'HEAD OF HOUSEHOLD',
       prior ? `${ep.hoh} takes the room back` : `${ep.hoh} takes the room`,
       prior
         ? `A ${typeof ordinal === 'function' ? ordinal(prior + 1) : `${prior + 1}th`} reign. The house has now watched ${ep.hoh} win when it mattered more than once, and that is a number people count.`
-        : `${finalNoms.length ? `${finalNoms.join(' and ')} pay for it.` : 'The first week of real power.'}`,
+        : firstOfTheSeason
+          ? `The first week of real power${finalNoms.length ? `, and ${finalNoms.join(' and ')} pay for it` : ''}.`
+          : `${ep.num - 1} weeks with no say in anything, and now the only say that matters${finalNoms.length ? ` — ${finalNoms.join(' and ')} pay for it` : ''}.`,
       [ep.hoh]);
   }
 
@@ -17739,7 +17748,7 @@ function _bbStories(ep, stillIn) {
     const [a, b] = sh.players;
     add(72, 'romance', 'SHOWMANCE',
       `${a} and ${b} stop pretending`,
-      `Two votes that will never come apart, in a house that counts votes for a living. Somebody will say so out loud within the week.`,
+      `Two votes the house now expects to move together. In a game built on counting, everybody else has to plan around that.`,
       [a, b]);
   });
   const splitUp = (gs.showmances || []).filter(sh => Number(sh.breakupEp) === Number(ep.num)

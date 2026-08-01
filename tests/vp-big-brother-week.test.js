@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, rpBuildBBEviction, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, rpBuildBBEviction, rpBuildBBVotingPlans, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -99,7 +99,9 @@ describe('the Big Brother visual player', () => {
     const ceremonies = spine.filter(id => !id.startsWith('bb-house') && id !== 'bb-camp');
     // The veto draw is its own stop, immediately before the competition it
     // decides — six play and three of them find out there.
-    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-evict']);
+    // Voting Plans sits between the ceremony and the live show: the reads and
+    // the result no longer share a page.
+    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-plans', 'bb-evict']);
     // ...with stretches of house life between them, and no campaign screen:
     // campaigning belongs in the feed with everything else that happens in a
     // bedroom at two in the morning.
@@ -163,7 +165,10 @@ describe('the Big Brother visual player', () => {
     const html = buildBBWeekScreens(week()).map(s => s.html).join('');
     // Unrevealed scenes render as dimmed placeholders, as in Total Drama.
     expect(html).toContain('opacity:0.12');
-    expect(html).toContain('Reveal next');
+    // The set pieces name their buttons after the moment ("Go live", "Next
+    // vote", "The decision"), so the stable marker of an ungated reveal is the
+    // Reveal-all escape hatch every one of them offers.
+    expect(html).toContain('Reveal all');
   });
 
   it('replays every week of a finished season without error', () => {
@@ -368,8 +373,9 @@ describe('vote planning before the eviction', () => {
     reset();
     let ep = null;
     for (let i = 0; i < 2; i++) ep = simulateBBEpisode();
-    _tvState[`bb_evict_${ep.num}`] = { idx: -1 };
-    const html = rpBuildBBEviction(ep);
+    // The count lives on the Voting Plans screen now — the reads and the live
+    // show are separate pages, so nothing here needs a reveal state.
+    const html = rpBuildBBVotingPlans(ep);
     expect(html).toContain('THE COUNT GOING IN');
     // A row per voter and a side per nominee.
     const voters = ((ep.acts || []).find(a => a.type === 'eviction')?.ballots || []).length;

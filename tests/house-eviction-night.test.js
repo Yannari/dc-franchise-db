@@ -10,7 +10,7 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
-import { rpBuildBBEviction, getTribeRelationshipHighlights, _tvState } from '../js/vp-screens.js';
+import { rpBuildBBEviction, rpBuildBBVotingPlans, getTribeRelationshipHighlights, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Bowie','Chase','Ripper','Scary','Nichelle','Axel','Zee','Brightly','Hicks',
@@ -30,7 +30,10 @@ function reset() {
 
 function render(ep) {
   _tvState[`bb_evict_${ep.num}`] = { idx: 99 };
-  return rpBuildBBEviction(ep);
+  // Eviction night split in two: Voting Plans carries the reads (the numbers,
+  // the plan board, what moved), the live show carries the ballots. These
+  // tests are about the working, so they read both pages together.
+  return rpBuildBBVotingPlans(ep) + rpBuildBBEviction(ep);
 }
 
 describe('eviction night shows its working', () => {
@@ -84,7 +87,7 @@ describe('eviction night shows its working', () => {
       const ep = simulateBBEpisode();
       if (!ep) break;
       const html = render(ep);
-      for (const kind of ['KEPT A PROMISE', 'BROKE A PROMISE', 'VOTED WITH THE BLOC', 'JOINED THE WINNING SIDE']) {
+      for (const kind of ['KEEPS A PROMISE', 'BREAKS THEIR WORD', 'VOTES WITH THE BLOC', 'JOINS THE WINNING SIDE']) {
         if (html.includes(kind)) badges.add(kind);
       }
     }

@@ -17490,15 +17490,23 @@ function _bbVotePlanVerdict(ep) {
   </div>`;
 }
 
-export function rpBuildBBEviction(ep) {
+/**
+ * VOTING PLANS — the house counting, before a single vote is cast.
+ *
+ * This used to live inside the eviction screen, which meant the reads and the
+ * result shared a page: the board that says who INTENDS what sat above the
+ * ballots that say what happened, and the suspense of the night was spent
+ * before it started. Split out, it is Total Drama's voting-plans screen for a
+ * house — the numbers, who holds them, and every plan that moved this week —
+ * and the verdict on those plans waits for Eviction Night, where it belongs.
+ */
+export function rpBuildBBVotingPlans(ep) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
   const ballots = act?.ballots || [];
   const voters = ballots.map(b => b.voter);
   const numbers = _bbTheNumbers(ep, voters);
-  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
 
-  // The numbers, before a single vote is read.
-  const header = numbers ? `<div class="bbn">
+  const numbersHtml = numbers ? `<div class="bbn">
       <div class="bbn-h">
         <span>THE NUMBERS</span>
         <span class="bbn-maj">${numbers.majority} of ${numbers.voters} decides it</span>
@@ -17517,52 +17525,230 @@ export function rpBuildBBEviction(ep) {
         ? '<div class="bbn-none">No alliance can carry it alone — this one is decided by whoever is not in the room.</div>' : ''}
     </div>` : '';
 
-  const plans = _bbPlansChanged(ep, act);
-  // The house counting before anybody votes, and the reckoning afterwards.
-  const board = _bbVotePlanBoard(ep, (act?.nominees || []).filter(Boolean));
+  return `<div class="rp-page bb-room bb-block">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#58a6ff;text-shadow:0 0 20px #58a6ff33;margin-bottom:4px">VOTING PLANS</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">What everybody intends, before the Diary Room asks.</div>
+    ${_bbVotePlanBoard(ep, (act?.nominees || []).filter(Boolean))}
+    ${numbersHtml}
+    ${_bbPlansChanged(ep, act)}
+  </div>`;
+}
 
-  const scenes = [
-    ...ballots.map(b => {
-      const c = commitment.get(b.voter);
-      const broke = b.stated && b.stated !== b.evict && c?.promised;
-      return {
-        text: `"I vote to evict <strong>${b.evict}</strong>."`,
-        players: [b.voter],
-        badgeText: broke ? 'BROKE A PROMISE'
-          : b.blocMove ? 'VOTED WITH THE BLOC'
-          : b.bandwagon ? 'JOINED THE WINNING SIDE'
-          : c?.promised ? 'KEPT A PROMISE'
-          : `${b.voter} VOTES`,
-        badgeClass: broke ? 'red' : b.blocMove ? 'blue' : b.bandwagon ? 'gold'
-          : c?.promised ? 'green' : 'grey',
-      };
-    }),
-    ...(act?.tieBreak ? [{ text: `The vote is tied. ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`, players: [act.tieBreak.voter], badgeText: 'HOH BREAKS THE TIE', badgeClass: 'gold' }] : []),
-    ..._bbBeats(act),
-    { text: `<strong>${ep.eliminated}</strong> is evicted from the Big Brother house, by a vote of ${Object.values(act?.votes || {}).sort((a, b) => b - a).join('–') || '0–0'}.`,
-      players: [ep.eliminated], badgeText: 'EVICTED', badgeClass: 'red' },
-    // A promise about the END, broken by a vote.
-    //
-    // The single most dramatic thing that happens in this game, and until now
-    // it existed only in the transcript and as a row count on the debug screen.
-    // It goes AFTER the eviction on purpose: the house finds out who is leaving
-    // first, and only then does it become clear what it cost.
-    ...(ep.dealBreaks || []).map(b => ({
-      text: `<strong>${b.breaker}</strong> shook on ${b.tier === 'final-two' ? 'a final two' : 'a final three'} with `
-        + `<strong>${b.victim}</strong> in week ${b.madeEp}. ${b.breaker} just voted ${b.victim} out of the house, `
-        + `and ${b.victim} walks to the jury knowing exactly who did it.`,
-      players: [b.breaker, b.victim],
-      badgeText: b.tier === 'final-two' ? 'BROKE A FINAL TWO' : 'BROKE A FINAL THREE',
-      badgeClass: 'red',
-    })),
+/**
+ * EVICTION NIGHT — the live show, run the way the show runs it.
+ *
+ * The liturgy, per the format: the nominees stand and give brief final pleas
+ * to the house; the eligible voters go one at a time to the Diary Room, where
+ * the vote is secret from the house but the audience hears every one of them;
+ * the Head of Household and the nominees do not vote, except that a tie is
+ * broken by the Head of Household in front of everybody; then the totals —
+ * "by a vote of X to Y... you are evicted from the Big Brother house" — one
+ * minute for goodbyes, and the front door.
+ *
+ * The stage is the studio: the nominees in their chairs with a live tally
+ * stacking under each of them like torches going out, the majority marked so
+ * every click is measurable against it, and the front door on the end — shut
+ * all night, open exactly once. The verdict on the week's voting plans (who
+ * kept their word, who flipped) lands here, after the door, because a
+ * blindside is only a blindside once the person is through it.
+ */
+export function rpBuildBBEviction(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'eviction');
+  const noms = (act?.nominees || []).filter(Boolean);
+  const ballots = act?.ballots || [];
+  const evicted = act?.evicted || ep.eliminated;
+  const hoh = ep.hoh;
+  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+
+  const stateKey = `bb_evict_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+  const vvar = (list, ...salt) => {
+    const key = `${ep.num}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
+  };
+
+  // ── final pleas, each in the nominee's own register ──
+  const plea = name => {
+    const p = pv(name);
+    let stats = {};
+    try { stats = pStats(name); } catch { stats = {}; }
+    if ((stats.boldness || 5) >= 7) return vvar([
+      `${name} stands up and does not soften it. "Vote how you want tonight. Just remember that I remember." ${p.Sub} ${p.sub === 'they' ? 'sit' : 'sits'} back down into a very loud silence.`,
+      `"Keep me and I'll keep fighting. Send me out and you've made this house more boring and more dangerous in one vote." ${name} means both halves.`,
+      `${name} uses the last twenty seconds to name, cheerfully, the two people ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} already have their ballots written. Nobody laughs and nobody denies it.`,
+    ], name, 'bold');
+    if ((stats.social || 5) <= 4) return vvar([
+      `${name} thanks the house, says ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been ${p.ref || 'themselves'} the whole way through, and sits down. Eleven seconds. Some of the best speeches are.`,
+      `"Whatever happens, no hard feelings from me." From ${name}, everybody knows that is actually true, which makes it harder to vote for than any argument.`,
+      `${name} is not built for this part and does not pretend to be. The speech is small and honest and lands on exactly the two people it needed to.`,
+    ], name, 'quiet');
+    if ((stats.loyalty || 5) >= 7) return vvar([
+      `${name} does not campaign. ${p.Sub} ${p.sub === 'they' ? 'thank' : 'thanks'} the people who were good to ${p.obj}, by name, and tells the rest they know who they are. Both lists are accurate.`,
+      `"I never wrote a name I promised not to write. If that costs me tonight, it was worth what it bought me." ${name} sits down without looking at anybody in particular, which is its own message.`,
+      `${name} spends the whole plea on other people — who deserves to go far, who has been carrying whom. It is either the classiest exit speech of the season or the smartest, and possibly both.`,
+    ], name, 'loyal');
+    return vvar([
+      `${name} keeps it brief and aims it precisely: one reason to keep ${p.obj}, one reason the alternative is worse for the people voting, and a thank you. Rehearsed, and none the worse for it.`,
+      `"I'm not going to beg, and I'm not going to threaten. I'm going to be here tomorrow or I'm not — but you should think about which version of next week you'd rather live in."`,
+      `${name} makes the case like a closing argument: calm, counted, and finished four seconds under the limit.`,
+    ], name, 'measured');
+  };
+
+  // ── the steps ──
+  const steps = [
+    { kind: 'live' },
+    ...noms.map(name => ({ kind: 'plea', name })),
+    { kind: 'tovote' },
+    ...ballots.map(b => ({ kind: 'ballot', b })),
+    ...(act?.tieBreak ? [{ kind: 'tie' }] : []),
+    { kind: 'verdict' },
+    { kind: 'goodbyes' },
+    { kind: 'door' },
+    ...(ep.dealBreaks || []).map(d => ({ kind: 'dealbreak', d })),
+    ...(act?.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
   ];
 
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'EVICTION NIGHT',
-    subtitle: 'One houseguest leaves tonight.', accent: '#f85149', room: 'bb-live',
-    stateKey: `bb_evict_${ep.num}`, header: board + header + plans, scenes,
-    footer: _bbVotePlanVerdict(ep),
-  });
+  const total = steps.length;
+  const revealed = Math.max(0, state.idx + 1);
+  const done = state.idx >= total - 1;
+  const at = kind => steps.findIndex(st => st.kind === kind);
+  const firstBallot = steps.findIndex(st => st.kind === 'ballot');
+  // How many ballots the audience has heard so far.
+  const heard = firstBallot < 0 ? 0
+    : Math.max(0, Math.min(ballots.length, state.idx - firstBallot + 1));
+  const verdictAt = at('verdict');
+  const doorOpen = state.idx >= at('door');
+  const decided = state.idx >= verdictAt;
+
+  // ── the stage: chairs, live tally, and the front door ──
+  const tally = Object.fromEntries(noms.map(n => [n, 0]));
+  ballots.slice(0, heard).forEach(b => { if (b.evict in tally) tally[b.evict]++; });
+  if (decided && act?.tieBreak && act.tieBreak.evict in tally) tally[act.tieBreak.evict]++;
+  const majority = Math.floor(ballots.length / 2) + 1;
+  const maxVotes = Math.max(majority, ...Object.values(tally));
+
+  const chairs = noms.map(name => {
+    const out = decided && name === evicted;
+    const safe = decided && name !== evicted;
+    return `<div class="bbev-chair ${out ? 'is-evicted' : ''} ${safe ? 'is-survived' : ''}">
+      <div class="bbev-frame">${_bbAvatar(name, 92)}</div>
+      <div class="bbev-cname">${_bbEsc(name)}</div>
+      <div class="bbev-keys">
+        ${Array.from({ length: maxVotes }, (_, i) => `<span class="bbev-key ${
+          i < tally[name] ? 'is-cast' : ''} ${i === majority - 1 ? 'is-maj' : ''}"></span>`).join('')}
+      </div>
+      <div class="bbev-count">${tally[name]}<i> to evict</i></div>
+      <div class="bbev-tag">${out ? 'EVICTED' : safe ? 'SURVIVES' : 'ON THE BLOCK'}</div>
+    </div>`;
+  }).join('');
+
+  const stage = `<div class="bbev-stage ${decided ? 'is-decided' : ''}">
+    <div class="bbev-onair"><i></i>${decided ? 'EVICTION' : 'LIVE'}</div>
+    <div class="bbev-chairs">${chairs}</div>
+    <div class="bbev-door ${doorOpen ? 'is-open' : ''}">
+      <div class="bbev-door-slab"><span></span><span></span></div>
+      <div class="bbev-door-t">${doorOpen ? `${_bbEsc(evicted)} HAS LEFT THE HOUSE` : 'THE FRONT DOOR'}</div>
+    </div>
+    <div class="bbev-meta">
+      <span>${ballots.length} VOTES</span><span>${majority} EVICTS</span>
+      <span>${hoh ? `${_bbEsc(hoh)} VOTES ONLY TO BREAK A TIE` : ''}</span>
+    </div>
+  </div>`;
+
+  // ── the cards ──
+  const voteCount = () => {
+    const sorted = Object.entries(act?.votes || {}).sort((x, y) => y[1] - x[1]);
+    return sorted.map(([, v]) => v).join(' to ');
+  };
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'live':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">WE ARE LIVE</span></div>
+          <div class="bbns-card-b">The house is on the couches in show clothes, and nobody is good at pretending this is a normal evening. <strong>${noms.map(_bbEsc).join(' and ')}</strong> sit in the nomination chairs. Before the vote, each of them gets a final plea.</div></div>`;
+      case 'plea':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill blue">FINAL PLEA</span></div>
+          <div class="bbns-card-b">${plea(step.name)}</div></div>`;
+      case 'tovote':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill grey">THE HOUSE VOTES</span></div>
+          <div class="bbns-card-b">One at a time, the voters cross the living room to the Diary Room. The vote is secret from the house — only the audience hears it — and ${hoh ? `<strong>${_bbEsc(hoh)}</strong> and the nominees do not vote at all` : 'the nominees do not vote'}.</div></div>`;
+      case 'ballot': {
+        const b = step.b;
+        const c = commitment.get(b.voter);
+        const broke = b.stated && b.stated !== b.evict && c?.promised;
+        return `<div class="bbns-card bbev-ballot ${broke ? 'is-broke' : ''}">
+          <div class="bbns-card-h">${_bbAvatar(b.voter, 30)}<span class="bbns-pill ${
+            broke ? 'red' : b.blocMove ? 'blue' : b.bandwagon ? 'gold' : c?.promised ? 'green' : 'grey'}">${
+            broke ? 'BREAKS THEIR WORD' : b.blocMove ? 'VOTES WITH THE BLOC'
+            : b.bandwagon ? 'JOINS THE WINNING SIDE' : c?.promised ? 'KEEPS A PROMISE' : 'THE DIARY ROOM'}</span></div>
+          <div class="bbns-card-b">${_bbEsc(b.voter)} closes the Diary Room door. "I vote to evict <strong>${_bbEsc(b.evict)}</strong>."${
+            broke ? ` ${_bbEsc(b.voter)} told ${_bbEsc(b.stated)}'s side something different, and in about four minutes that stops being a secret.` : ''}</div></div>`;
+      }
+      case 'tie':
+        return `<div class="bbns-card is-final bbev-tie">
+          <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill gold">THE VOTE IS TIED</span></div>
+          <div class="bbns-card-b">A tie — the one result that drags the Head of Household off the sideline. <strong>${_bbEsc(act.tieBreak.voter)}</strong> has to break it standing up, in front of everybody, with nowhere to hide the choice: "I vote to evict <strong>${_bbEsc(act.tieBreak.evict)}</strong>."</div></div>`;
+      case 'verdict':
+        return `<div class="bbns-card is-final bbev-verdict">
+          <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE RESULT</span></div>
+          <div class="bbns-card-b">"By a vote of <strong>${voteCount() || '0 to 0'}</strong>... <strong>${_bbEsc(evicted)}</strong>, you are evicted from the Big Brother house."</div></div>`;
+      case 'goodbyes':
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill grey">ONE MINUTE</span></div>
+          <div class="bbns-card-b">${vvar([
+            `One minute for goodbyes. ${_bbEsc(evicted)} hugs the people who voted to keep ${pv(evicted).obj} and, with slightly more precision, the people who did not.`,
+            `Bags by the door, one minute on the clock. Some of the hugs are real. ${_bbEsc(evicted)} keeps count of which.`,
+            `${_bbEsc(evicted)} does the round of the room in under a minute — a word for almost everybody, and a very deliberate nothing for one person.`,
+          ], 'bye')}</div></div>`;
+      case 'door':
+        return `<div class="bbns-card is-final bbev-door-card">
+          <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE FRONT DOOR</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(evicted)}</strong> picks up the bag, and the front door opens for the only time all week. Cheers from the other side, and then it shuts — and the house is one vote smaller and considerably quieter.</div></div>`;
+      case 'dealbreak': {
+        const d = step.d;
+        return `<div class="bbns-card is-final">
+          <div class="bbns-card-h">${_bbAvatar(d.breaker, 30)}${_bbAvatar(d.victim, 30)}<span class="bbns-pill red">${
+            d.tier === 'final-two' ? 'BROKE A FINAL TWO' : 'BROKE A FINAL THREE'}</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(d.breaker)}</strong> shook on ${d.tier === 'final-two' ? 'a final two' : 'a final three'} with <strong>${_bbEsc(d.victim)}</strong> in week ${d.madeEp}. ${_bbEsc(d.breaker)} just voted ${_bbEsc(d.victim)} out of the house, and ${_bbEsc(d.victim)} walks to the jury knowing exactly who did it.</div></div>`;
+      }
+      default: {
+        const b = step.beat || {};
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
+          <div class="bbns-card-b">${b.text}</div></div>`;
+      }
+    }
+  };
+
+  const nextLabel = state.idx < 0 ? 'Go live'
+    : steps[state.idx + 1]?.kind === 'ballot' ? 'Next vote'
+    : steps[state.idx + 1]?.kind === 'verdict' ? 'The result'
+    : 'Reveal next';
+
+  return `<div class="rp-page bb-room bb-live bbns bbev">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">EVICTION NIGHT</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">One houseguest leaves tonight.</div>
+    ${stage}
+    <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
+    ${done ? _bbVotePlanVerdict(ep) : ''}
+    <div class="bbns-controls">
+      ${done ? '<span class="bbns-done">The house is one vote smaller.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${nextLabel}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="bbns-count">${Math.min(total, revealed)} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /** The week, in the order the show runs it. */
@@ -17792,6 +17978,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // The night runs in the order it happens: the count and the ballots,
         // then the vote broken down, then the person who lost it talking about
         // it. The interview was sitting between the vote and its own breakdown.
+        // The reads first, then the show. Voting Plans is the house counting —
+        // Total Drama's plans screen for a house — and Eviction Night is the
+        // live hour, so the intentions and the result stop sharing a page.
+        screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
         screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
         try {
           const votes = rpBuildVotes(view);

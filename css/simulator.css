@@ -520,6 +520,89 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* ── eviction night ────────────────────────────────────────────────
+       The live hour as a studio: nominee chairs with a tally stacking under
+       each like torches going out, the majority slot ringed so every vote is
+       measurable against it, and the front door on the end — shut all night,
+       open exactly once. */
+    .bbev-stage    { position:sticky; top:46px; z-index:30; display:flex; gap:12px;
+                     align-items:stretch; padding:14px; border-radius:10px;
+                     background:linear-gradient(180deg, rgba(34,10,10,.97), rgba(16,6,7,.99));
+                     border:1px solid rgba(248,81,73,.28);
+                     box-shadow:0 14px 34px rgba(0,0,0,.55); margin-bottom:14px; }
+    .bbev-onair    { position:absolute; top:-9px; left:14px; display:flex; align-items:center;
+                     gap:6px; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:2.4px; font-weight:800; color:#ff6b63;
+                     background:#1a0806; border:1px solid rgba(248,81,73,.5);
+                     border-radius:3px; padding:2px 8px; }
+    .bbev-onair i  { width:7px; height:7px; border-radius:50%; background:#f85149;
+                     animation:bbevBlink 1.4s ease-in-out infinite; }
+    @keyframes bbevBlink { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+    .bbev-stage.is-decided .bbev-onair i { animation:none; }
+
+    .bbev-chairs   { flex:1; display:flex; gap:12px; justify-content:center; }
+    .bbev-chair    { width:150px; text-align:center; padding:10px 8px 8px; border-radius:9px;
+                     background:rgba(248,81,73,.06); border:1.5px solid rgba(248,81,73,.4);
+                     transition:all .4s ease; }
+    .bbev-frame .bb-av { width:92px !important; height:92px !important; border-radius:7px;
+                     border:2px solid rgba(248,81,73,.5); }
+    .bbev-cname    { font-family:var(--font-display); font-size:15px; letter-spacing:1px;
+                     color:#fff; margin:6px 0 7px; text-shadow:0 2px 8px rgba(0,0,0,.7); }
+    /* The tally: one key per possible vote, the majority slot ringed. */
+    .bbev-keys     { display:flex; justify-content:center; gap:4px; margin-bottom:5px; }
+    .bbev-key      { width:13px; height:19px; border-radius:3px 3px 5px 5px;
+                     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+                     transition:all .3s ease; }
+    .bbev-key.is-maj { border-color:rgba(240,165,0,.6); box-shadow:inset 0 0 0 1px rgba(240,165,0,.25); }
+    .bbev-key.is-cast { background:linear-gradient(180deg,#ff8b84,#b3231b);
+                     border-color:#f85149; box-shadow:0 0 10px rgba(248,81,73,.55);
+                     animation:bbevCast .3s ease-out both; }
+    @keyframes bbevCast { from { transform:translateY(-5px); opacity:0; } to { transform:none; opacity:1; } }
+    .bbev-count    { font-family:ui-monospace,Consolas,monospace; font-size:12px;
+                     font-weight:800; color:#ff8b84; }
+    .bbev-count i  { font-style:normal; font-size:8px; letter-spacing:1.2px; color:#8b949e; }
+    .bbev-tag      { margin-top:5px; font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                     letter-spacing:1.8px; font-weight:800; color:#f85149; }
+    .bbev-chair.is-evicted { border-color:rgba(139,148,158,.45); background:rgba(139,148,158,.05); }
+    .bbev-chair.is-evicted .bbev-frame .bb-av { filter:grayscale(1) brightness(.7);
+                     border-color:rgba(139,148,158,.5); }
+    .bbev-chair.is-evicted .bbev-tag { color:#8b949e; }
+    .bbev-chair.is-survived { border-color:rgba(63,185,80,.55);
+                     box-shadow:0 0 18px rgba(63,185,80,.2); }
+    .bbev-chair.is-survived .bbev-tag { color:#3fb950; }
+
+    /* The front door. Shut is two dark slabs; open is light from outside. */
+    .bbev-door     { width:96px; flex-shrink:0; display:flex; flex-direction:column;
+                     align-items:center; justify-content:center; gap:8px;
+                     padding:10px 8px; border-radius:8px;
+                     background:rgba(255,255,255,.025); border:1px dashed rgba(255,255,255,.12); }
+    .bbev-door-slab{ display:flex; gap:2px; width:56px; height:84px; }
+    .bbev-door-slab span { flex:1; border-radius:3px;
+                     background:linear-gradient(180deg,#2b3138,#171b20);
+                     border:1px solid rgba(255,255,255,.12); transition:all .5s ease; }
+    .bbev-door.is-open .bbev-door-slab { gap:26px; }
+    .bbev-door.is-open .bbev-door-slab span {
+                     background:linear-gradient(180deg,#ffe9a8,#e3b341);
+                     box-shadow:0 0 26px rgba(240,165,0,.6); }
+    .bbev-door-t   { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.4px; color:#8b949e; text-align:center; line-height:1.5; }
+    .bbev-door.is-open .bbev-door-t { color:#e3b341; }
+
+    .bbev-meta     { position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
+                     display:flex; gap:14px; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8px; letter-spacing:1.4px; color:#8b949e;
+                     background:#160607; border:1px solid rgba(248,81,73,.3);
+                     border-radius:3px; padding:2px 10px; white-space:nowrap; }
+    .bbev-stage    { position:relative; position:sticky; }
+    .bbev-ballot.is-broke { border-left:3px solid #f85149; }
+    .bbev-tie      { border-left:3px solid #f0a500; }
+    .bbev-verdict  { border-left:3px solid #f85149;
+                     background:linear-gradient(90deg, rgba(248,81,73,.12), transparent 65%); }
+    .bbev-verdict .bbns-card-b { font-size:15px; line-height:1.6; }
+    @media (prefers-reduced-motion:reduce) {
+      .bbev-onair i, .bbev-key.is-cast { animation:none; }
+    }
+
     /* ── the veto ceremony ─────────────────────────────────────────────
        Same stage grammar as the nomination ceremony, with the medallion as the
        centrepiece: unlit until "I have decided", gold when used, ash when the

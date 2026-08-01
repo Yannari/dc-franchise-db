@@ -492,8 +492,21 @@ function runHouseMaintenance(week, rng = Math.random) {
   const popOff = seasonConfig.popularityEnabled === false;
   const popBefore = popOff ? { ...(gs.popularity || {}) } : null;
   week.maintenanceErrors = [];
-  for (const [label, run] of steps) {
-    try { run(); } catch (e) { week.maintenanceErrors.push(`${label}: ${e && e.message}`); }
+  // The same loan the romance pipeline gets, for the same reason. Several of
+  // these are shared Total Drama systems that roll bare Math.random — the
+  // betrayal-denial trigger in bonds.js alone has half a dozen calls — and an
+  // unseeded roll inside a seeded week means the same seed stops replaying the
+  // same season. It stayed invisible for months because the trigger paths were
+  // rarely reachable in a house; the bond events made them reachable, and the
+  // replay test caught it within a day.
+  const realRandom = Math.random;
+  if (typeof rng === 'function') Math.random = rng;
+  try {
+    for (const [label, run] of steps) {
+      try { run(); } catch (e) { week.maintenanceErrors.push(`${label}: ${e && e.message}`); }
+    }
+  } finally {
+    Math.random = realRandom;
   }
   if (popOff) gs.popularity = popBefore;
   const bbMaintenanceText = e => {

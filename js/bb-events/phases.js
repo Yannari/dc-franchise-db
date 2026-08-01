@@ -316,6 +316,7 @@ const outgoingHohExposed = {
 
 const hohRoomReveal = {
   id: 'phase-hoh-room',
+  location: 'hoh-room',
   category: 'phases',
   weight(house, ctx) { return ctx?.hoh ? at('post-hoh', ctx, 10) : 0; },
   fire(house, ctx, api) {

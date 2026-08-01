@@ -16501,6 +16501,68 @@ export function rpBuildBBComp(ep, actType) {
  * ...then the keys, then the Head of Household stands and explains, then
  * nominations are complete.
  */
+/**
+ * Why this person, in the Head of Household's own words.
+ *
+ * A ceremony where somebody says "this is a game, nothing personal" twice and
+ * sits down is not a ceremony. Each nominee gets a reason, and the reason is
+ * drawn from what actually happened: competitions won, an alliance everybody
+ * can see, a grudge on the record, a promise that was not kept, or the plain
+ * fact of being the person nobody would mind losing.
+ *
+ * Which reason gets used is whichever is most TRUE of that houseguest, so the
+ * same nominee does not get the same speech twice in a season.
+ */
+function _bbNomReason(hoh, name, role, ep) {
+  const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
+  const comps = (rec.hohWins || 0) + (rec.vetoWins || 0);
+  const st = typeof pStats === 'function' ? pStats(name) : {};
+  const bond = typeof getPerceivedBond === 'function' ? getPerceivedBond(hoh, name) : 0;
+  const allies = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
+    .filter(a => a.active !== false && (a.members || []).includes(name) && !(a.members || []).includes(hoh));
+  const plan = (typeof gs !== 'undefined' && gs.intentions?.[hoh]) || {};
+  const grudge = (plan.revenge || []).includes(name);
+
+  if (role === 'pawn') {
+    if (bond >= 3) return `"<strong>${name}</strong>, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`;
+    if ((st.social ?? 5) >= 7) return `"<strong>${name}</strong>, you can talk to anybody in here. You will have the votes by Thursday and we both know it."`;
+    return `"<strong>${name}</strong>, I need a second chair filled and I picked the person least likely to hold it against me. I hope I picked right."`;
+  }
+
+  if (grudge) {
+    return `"<strong>${name}</strong>, this is personal and I am not going to insult you by saying it is not. You know what you did and so does everybody in this room."`;
+  }
+  if (comps >= 2) {
+    return `"<strong>${name}</strong>, you have won ${comps} competitions. I cannot beat you at the end and I am not going to wait around and hope somebody else takes the shot."`;
+  }
+  if (allies.length) {
+    return `"<strong>${name}</strong>, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`;
+  }
+  if (bond <= -3) {
+    return `"<strong>${name}</strong>, we have not been able to have a straight conversation in three weeks. I would rather do this than keep pretending we are fine."`;
+  }
+  if ((st.social ?? 5) >= 7) {
+    return `"<strong>${name}</strong>, everybody in this house likes you. That is a résumé, and it beats mine, and I only get one week where I can do anything about it."`;
+  }
+  if ((st.strategic ?? 5) >= 7) {
+    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather be wrong about that than find out in four weeks that I was right."`;
+  }
+  return `"<strong>${name}</strong>, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`;
+}
+
+/**
+ * The nomination ceremony.
+ *
+ * Built the way the house runs it now: the nomination box holds the keys of the
+ * NOMINEES, the Head of Household turns them one at a time, and each turn
+ * lights that houseguest on the nomination screens.
+ *
+ * The screens are the set piece and they stay put — a sticky stage of one big
+ * panel per nomination, blank with a question mark until its key turns, with
+ * the memory wall alongside for the rest of the house. The controls are pinned
+ * to the bottom, so the whole ceremony is played without the page moving under
+ * you.
+ */
 export function rpBuildBBNominations(ep) {
   const act = (ep.acts || []).find(a => a.type === 'nominations');
   const noms = (act?.nominees || []).filter(Boolean);
@@ -16508,63 +16570,66 @@ export function rpBuildBBNominations(ep) {
   const hoh = ep.hoh || act?.hoh;
   const house = (ep.houseAtStart || []).filter(Boolean);
   const wall = typeof players !== 'undefined' ? players.map(p => p.name) : house;
+  const plan = ep.plan || {};
 
   const stateKey = `bb_noms_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-
   const WORD = ['two', 'three', 'four', 'five'][Math.max(0, noms.length - 2)] || `${noms.length}`;
 
-  // ── the steps ──
+  // Each nominee gets a key, then a reason. That pairing is the ceremony.
+  const roleOf = name => (name === plan.pawn ? 'pawn' : name === plan.target ? 'target' : 'other');
+
   const written = act?.socialBeats || [];
   const speeches = written.filter(b => String(b.eventId || '').startsWith('nom-speech'));
   const reactions = written.filter(b => !speeches.includes(b));
 
   const steps = [{ kind: 'open' }];
-  noms.forEach((name, i) => steps.push({ kind: 'key', name, n: i + 1 }));
-  if (speeches.length) speeches.forEach(b => steps.push({ kind: 'beat', beat: b, speech: true }));
-  else steps.push({ kind: 'speech' });
+  noms.forEach((name, i) => {
+    steps.push({ kind: 'key', name, n: i + 1 });
+    steps.push({ kind: 'reason', name, role: roleOf(name) });
+  });
+  speeches.forEach(b => steps.push({ kind: 'beat', beat: b }));
   steps.push({ kind: 'complete' });
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
   const revealed = Math.max(0, state.idx + 1);
-  // How many keys have been turned so far.
-  const turned = noms.filter((_, i) => state.idx >= 1 + i);
+  const turnedAt = i => state.idx >= 1 + i * 2;               // the key step for nominee i
+  const turned = noms.filter((_, i) => turnedAt(i));
   const locked = turned.length >= noms.length;
 
-  // ── the nomination box: one keyhole per nominee ──
-  const KEY_SVG = `<svg viewBox="0 0 40 14" aria-hidden="true">
-      <circle cx="7" cy="7" r="5.4" fill="none" stroke="currentColor" stroke-width="1.9"/>
-      <circle cx="7" cy="7" r="1.8" fill="currentColor"/>
-      <path d="M12 7h23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M29 7v4.4M34 7v3.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-    </svg>`;
-  const boxHtml = `<div class="bbnc-box ${locked ? 'is-locked' : ''}">
-    <span class="bbnc-box-l">NOMINATION BOX</span>
-    <div class="bbnc-keys">
-      ${noms.map((_, i) => `<span class="bbnc-key ${i < turned.length ? 'is-turned' : ''}">${KEY_SVG}</span>`).join('')}
-    </div>
-    <span class="bbnc-box-c">${turned.length} of ${noms.length} keys turned</span>
+  // ── the screens: one per nomination, blank until the key turns ──
+  const screensHtml = `<div class="bbns-screens" data-n="${noms.length}">
+    ${noms.map((name, i) => {
+      const on = turnedAt(i);
+      return `<div class="bbns-screen ${on ? 'is-on' : ''}">
+        <span class="bbns-num">${String(i + 1).padStart(2, '0')}</span>
+        <div class="bbns-inner">
+          ${on
+            ? `<div class="bbns-shot">${_bbAvatar(name, 108)}</div>
+               <div class="bbns-name">${_bbEsc(name)}</div>
+               <div class="bbns-tag">NOMINATED</div>`
+            : `<div class="bbns-q">?</div><div class="bbns-wait">KEY NOT TURNED</div>`}
+        </div>
+      </div>`;
+    }).join('')}
   </div>`;
 
-  // ── the memory wall: the screen the faces appear on ──
-  const gone = new Set((typeof gs !== 'undefined' ? gs.eliminated : []) || []);
-  const wallHtml = `<div class="bbnc-wall">
-    <div class="bbnc-grid">
+  // ── the wall alongside, for everybody else ──
+  const wallHtml = `<div class="bbns-wall">
+    <div class="bbns-wall-h">MEMORY WALL</div>
+    <div class="bbns-wall-grid">
       ${wall.map(name => {
         const out = !house.includes(name);
         const nominated = turned.includes(name);
-        const order = turned.indexOf(name);
-        return `<div class="bbnc-cell ${out ? 'is-out' : ''} ${nominated ? 'is-nom' : ''}"
-            ${nominated ? `style="animation-delay:${Math.max(0, order) * 0.05}s"` : ''}>
-          <div class="bbnc-frame">
-            <div class="bbnc-face">${_bbAvatar(name, 56)}</div>
-            <div class="bbnc-back"><span>NOMINATED</span></div>
-          </div>
-          <span class="bbnc-name">${_bbEsc(name)}</span>
-        </div>`;
+        return `<span class="bbns-cell ${out ? 'is-out' : ''} ${nominated ? 'is-nom' : ''}"
+          title="${_bbEsc(name)}">${_bbAvatar(name, 30)}</span>`;
       }).join('')}
+    </div>
+    <div class="bbns-keys">
+      ${noms.map((_, i) => `<span class="bbns-kh ${turnedAt(i) ? 'is-turned' : ''}"></span>`).join('')}
+      <span class="bbns-kc">${turned.length}/${noms.length} KEYS</span>
     </div>
   </div>`;
 
@@ -16575,59 +16640,67 @@ export function rpBuildBBNominations(ep) {
     + ` I will turn ${WORD} keys to lock in my nominations, and their faces will appear on the memory wall."`;
 
   const KEY_LINES = [
-    (n, i) => `${hoh} turns the ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key. On the wall, <strong>${n}</strong>'s photograph turns.`,
-    (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key goes round. <strong>${n}</strong> is on the wall, and ${pronouns(n).sub} ${pronouns(n).sub === 'they' ? 'do' : 'does'} not look away from it.`,
-    (n) => `A second turn of the wrist and <strong>${n}</strong>'s face lights up red. Somebody behind ${pronouns(n).obj} breathes out.`,
+    (n, i) => `${hoh} turns the ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key. The screen goes from a question mark to <strong>${n}</strong>.`,
+    (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key goes round and <strong>${n}</strong> lights up on the wall. ${pronouns(n).Sub} ${pronouns(n).sub === 'they' ? 'do' : 'does'} not look away from it.`,
+    n => `A turn of the wrist and <strong>${n}</strong> is up there in red. Somebody behind ${pronouns(n).obj} breathes out.`,
   ];
-  const keyLine = (n, i) => KEY_LINES[(i + n.length) % KEY_LINES.length](n, i);
 
-  const speechLine = () => {
-    const plan = ep.plan || {};
-    const target = plan.target && noms.includes(plan.target) ? plan.target : noms[0];
-    const others = noms.filter(n => n !== target);
-    const st = typeof pStats === 'function' ? pStats(hoh) : {};
-    if ((st.temperament ?? 5) <= 4 || (st.boldness ?? 5) >= 8) {
-      return `${hoh} stands up. "<strong>${target}</strong>, you know exactly why you're on that wall. ${others.length ? `<strong>${others.join('</strong>, <strong>')}</strong> — you're there because I needed somebody beside ${pronouns(target).obj}.` : ''}"`;
-    }
-    if ((st.strategic ?? 5) >= 7) {
-      return `${hoh} stands up. "This is a game and I had to turn ${WORD} keys. ${others.length ? `<strong>${others.join('</strong> and <strong>')}</strong>, I need you to trust me. ` : ''}<strong>${target}</strong> — I'd rather you heard it from me than worked it out."`;
-    }
-    return `${hoh} stands up. "<strong>${noms.join('</strong>, <strong>')}</strong> — I'm sorry. None of this was easy and I'm not going to pretend it was all strategy."`;
-  };
-
-  const sceneFor = (step, i) => {
+  const card = (step, i) => {
     if (i > state.idx) {
-      return `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
+      return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     }
-    if (step.kind === 'open') return _bbScene({ text: openLine, players: [hoh].filter(Boolean), badgeText: 'THE CEREMONY BEGINS', badgeClass: 'grey' });
-    if (step.kind === 'key') return _bbScene({ text: keyLine(step.name, step.n - 1), players: [step.name], badgeText: 'NOMINATED', badgeClass: 'red' });
-    if (step.kind === 'speech') return _bbScene({ text: speechLine(), players: [hoh, ...noms].filter(Boolean), badgeText: 'THE REASONING', badgeClass: 'gold' });
+    if (step.kind === 'open') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h"><span class="bbns-pill grey">THE CEREMONY BEGINS</span></div>
+        <div class="bbns-card-b">${openLine}</div></div>`;
+    }
+    if (step.kind === 'key') {
+      const idx = step.n - 1;
+      return `<div class="bbns-card is-key">
+        <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill red">KEY ${step.n} TURNED</span></div>
+        <div class="bbns-card-b">${KEY_LINES[(idx + step.name.length) % KEY_LINES.length](step.name, idx)}</div></div>`;
+    }
+    if (step.kind === 'reason') {
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill gold">WHY ${_bbEsc(step.name).toUpperCase()}</span></div>
+        <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}</div></div>`;
+    }
     if (step.kind === 'complete') {
-      return _bbScene({
-        text: `"${noms.join(', ')} — I have nominated you for eviction because that is my responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`,
-        players: noms, badgeText: 'NOMINATIONS ARE COMPLETE', badgeClass: 'red' });
+      return `<div class="bbns-card is-final">
+        <div class="bbns-card-h"><span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
+        <div class="bbns-card-b">"${noms.join(', ')} — I have nominated you for eviction because that is my
+          responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."</div></div>`;
     }
-    return _bbScene({ text: step.beat.text, players: step.beat.players, badgeText: step.beat.badgeText, badgeClass: step.beat.badgeClass });
+    const b = step.beat;
+    return `<div class="bbns-card">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
   };
 
-  let html = `<div class="rp-page bb-room bb-block">
+  const nextLabel = state.idx < 0 ? 'Begin the ceremony'
+    : (state.idx + 1) % 2 === 1 && state.idx + 1 <= noms.length * 2 ? 'Turn the next key' : 'Reveal next';
+
+  return `<div class="rp-page bb-room bb-block bbns">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:6px">NOMINATION CEREMONY</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
-      hoh ? `${hoh} turns ${WORD} keys. The wall does the rest.` : ''}</div>
-    ${wallHtml}
-    ${boxHtml}`;
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">NOMINATION CEREMONY</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${
+      hoh ? `${hoh} turns ${WORD} keys.` : ''}</div>
 
-  steps.forEach((step, i) => { html += sceneFor(step, i); });
+    <div class="bbns-stage ${locked ? 'is-locked' : ''}">
+      ${screensHtml}
+      ${wallHtml}
+    </div>
 
-  const nextLabel = state.idx >= 0 && state.idx < noms.length ? 'Turn the next key' : 'Reveal next';
-  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${nextLabel}</button>`}
-      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, steps.length - 1)}">Reveal all</button>`}
-      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(steps.length, revealed)} / ${steps.length}</span>
-    </div>`;
+    <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
 
-  return html + `</div>`;
+    <div class="bbns-controls">
+      ${done ? '<span class="bbns-done">Nominations are complete.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${nextLabel}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, steps.length - 1)}">Reveal all</button>`}
+      <span class="bbns-count">${Math.min(steps.length, revealed)} / ${steps.length}</span>
+    </div>
+  </div>`;
 }
 
 /**

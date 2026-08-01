@@ -257,72 +257,91 @@ describe('the debug screen', () => {
 
 // The nomination ceremony.
 //
-// There are two real formats and the first build used the wrong one. The older
-// ceremony loads the box with the keys of everybody SAFE and pulls them until
-// it is empty. The modern house does the reverse: the box holds the keys of the
-// NOMINEES, the Head of Household turns them one at a time, and each turn
-// lights that houseguest's photograph on the memory wall.
-//
-// Before either of those it printed the target, the pawn and the backdoor plan
-// in a panel above the whole thing.
+// The screens are the set piece: one big panel per nomination, blank with a
+// question mark until its key turns, the memory wall alongside, and the Head of
+// Household justifying each name separately rather than giving one blanket
+// speech. Before any of that it printed the target, the pawn and the backdoor
+// plan in a panel above the whole thing.
 describe('the nomination ceremony', () => {
-  const wallState = html => ({
-    turned: (html.match(/bbnc-cell[^"]*is-nom/g) || []).length,
-    keys: (html.match(/bbnc-key is-turned/g) || []).length,
+  const read = html => ({
+    lit: (html.match(/bbns-screen is-on/g) || []).length,
+    blank: (html.match(/bbns-q/g) || []).length,
+    keys: (html.match(/bbns-kh is-turned/g) || []).length,
+    walled: (html.match(/bbns-cell[^"]*is-nom/g) || []).length,
+    reasons: (html.match(/bbns-pill gold/g) || []).length,
   });
   const at = (ep, idx) => {
     _tvState[`bb_noms_${ep.num}`] = { idx };
     return rpBuildBBNominations(ep);
   };
 
-  it('gives nothing away before the first key turns', () => {
+  it('opens on blank screens and gives nothing away', () => {
     reset();
     const ep = simulateBBEpisode();
     const act = (ep.acts || []).find(a => a.type === 'nominations');
+    const noms = act.nominees || [];
     const html = at(ep, -1);
     expect(html, 'the ceremony announces the private plan above itself').not.toContain('private intent');
-    for (const n of act.nominees || []) {
+    const st = read(html);
+    expect(st.blank, 'there is not a blank screen per nomination').toBe(noms.length);
+    expect(st.lit, 'a screen was already showing somebody').toBe(0);
+    expect(st.keys, 'a key was already turned').toBe(0);
+    for (const n of noms) {
       expect(html, `${n} is named before a key is turned`).not.toContain(`<strong>${n}</strong>`);
     }
-    const { turned, keys } = wallState(html);
-    expect(turned, 'a face was already turned on the wall').toBe(0);
-    expect(keys, 'a key was already turned').toBe(0);
   }, 240000);
 
-  it('turns one key, and one face, at a time', () => {
+  it('turns one key, lights one screen, and justifies that name', () => {
     reset();
     const ep = simulateBBEpisode();
     const act = (ep.acts || []).find(a => a.type === 'nominations');
     const noms = act.nominees || [];
     expect(noms.length).toBeGreaterThan(1);
 
-    // Step 0 is the formal opening; the keys start at step 1.
     const opening = at(ep, 0);
     expect(opening).toContain('This is the nomination ceremony');
-    expect(wallState(opening).turned, 'the opening line already turned a face').toBe(0);
+    expect(read(opening).lit, 'the opening line already lit a screen').toBe(0);
 
+    // Each nominee gets a key step then a reason step.
     for (let i = 0; i < noms.length; i++) {
-      const html = at(ep, 1 + i);
-      const st = wallState(html);
-      expect(st.keys, `key ${i + 1} did not turn`).toBe(i + 1);
-      expect(st.turned, `${i + 1} keys turned but ${st.turned} faces are lit`).toBe(i + 1);
-      expect(html, `${noms[i]} was not named when their key turned`).toContain(noms[i]);
-      // And the ones still to come are not on the wall yet.
+      const keyHtml = at(ep, 1 + i * 2);
+      const k = read(keyHtml);
+      expect(k.keys, `key ${i + 1} did not turn`).toBe(i + 1);
+      expect(k.lit, `${i + 1} keys turned but ${k.lit} screens are lit`).toBe(i + 1);
+      expect(k.walled, 'the wall did not follow the screens').toBe(i + 1);
+      expect(keyHtml).toContain(noms[i]);
+
+      const reasonHtml = at(ep, 2 + i * 2);
+      expect(read(reasonHtml).reasons, `${noms[i]} was nominated without a reason`).toBe(i + 1);
+      expect(reasonHtml, 'the reason does not name who it is about')
+        .toContain(`WHY ${noms[i].toUpperCase()}`);
+
+      // Nominees still to come remain hidden.
       for (let j = i + 1; j < noms.length; j++) {
-        expect(html, `${noms[j]} appeared before their key was turned`)
+        expect(reasonHtml, `${noms[j]} appeared before their key`)
           .not.toContain(`<strong>${noms[j]}</strong>`);
       }
     }
   }, 240000);
 
-  it('ends on the reasoning and the closing line', () => {
+  it('justifies every nominee separately, not once for all of them', () => {
     reset();
     const ep = simulateBBEpisode();
+    const noms = ((ep.acts || []).find(a => a.type === 'nominations').nominees) || [];
     const html = at(ep, 99);
-    expect(html).toContain('NOMINATION CEREMONY');
-    expect(html).toContain('THE REASONING');
+    expect(read(html).reasons, 'the Head of Household did not explain each name')
+      .toBe(noms.length);
+    for (const n of noms) expect(html).toContain(`WHY ${n.toUpperCase()}`);
     expect(html).toContain('Nominations are complete');
-    expect(wallState(html).turned, 'not every nominee is on the wall at the end')
-      .toBe(((ep.acts || []).find(a => a.type === 'nominations').nominees || []).length);
+    expect(read(html).lit, 'not every screen is lit at the end').toBe(noms.length);
+  }, 240000);
+
+  it('pins the stage and the controls so the page does not move', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const html = at(ep, 2);
+    expect(html).toContain('bbns-stage');
+    expect(html).toContain('bbns-controls');
+    expect(html).toContain('MEMORY WALL');
   }, 240000);
 });

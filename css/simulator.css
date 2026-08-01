@@ -545,70 +545,125 @@
     .bbg-ok         { flex:1; text-align:right; font-size:10px; color:#4d545c; font-style:italic; }
 
     /* ── The nomination ceremony ──
-       The modern house does it on the wall: the nomination box holds the keys
-       of the NOMINEES, the Head of Household turns them one at a time, and each
-       turn lights that houseguest's photograph on the memory wall. Everybody in
-       the room is looking at the same board and one by one a face on it turns.
+       The screens are the set piece, so they stay put: a sticky stage of one
+       big panel per nomination, blank with a question mark until its key turns,
+       with the memory wall alongside for the rest of the house. Controls are
+       pinned to the bottom, so the ceremony plays without the page moving. */
+    .bbns          { padding-bottom:76px; }
 
-       The earlier build had the older format — pulling the keys of everybody
-       safe until the box emptied — which is a real ceremony but not this one,
-       and it put the drama in an object instead of on the wall. */
-    .bbnc-wall      { margin:0 0 14px; padding:14px 12px 12px; border-radius:12px;
-                      border:1px solid rgba(248,81,73,.18);
-                      background:linear-gradient(180deg, rgba(20,26,34,.9), rgba(13,17,23,.95));
-                      box-shadow:inset 0 0 60px rgba(0,0,0,.5); }
-    .bbnc-grid      { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-    .bbnc-cell      { width:62px; text-align:center; }
+    .bbns-stage    { position:sticky; top:46px; z-index:6; display:flex; gap:14px;
+                     align-items:stretch; margin:0 0 18px; padding:14px;
+                     border-radius:12px; border:1px solid rgba(248,81,73,.2);
+                     background:linear-gradient(180deg, rgba(16,21,28,.98), rgba(10,13,18,.99));
+                     box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 70px rgba(0,0,0,.45);
+                     backdrop-filter:blur(8px); }
+    .bbns-stage.is-locked { border-color:rgba(248,81,73,.45);
+                     box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 70px rgba(248,81,73,.09); }
 
-    /* The photograph, which turns. */
-    .bbnc-frame     { position:relative; width:62px; height:62px; border-radius:5px;
-                      transform-style:preserve-3d; }
-    .bbnc-face,
-    .bbnc-back      { position:absolute; inset:0; border-radius:5px; overflow:hidden;
-                      backface-visibility:hidden; display:flex; align-items:center; justify-content:center; }
-    .bbnc-face      { background:#0d1117; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
-    .bbnc-face .bb-av { width:56px !important; height:56px !important; }
-    .bbnc-back      { transform:rotateY(180deg);
-                      background:linear-gradient(160deg,#ff6b62,#b3231b 62%,#7a140f);
-                      box-shadow:inset 0 0 0 1px rgba(255,255,255,.2), 0 0 22px rgba(248,81,73,.55); }
-    .bbnc-back span { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; font-weight:800;
-                      letter-spacing:1px; color:#2a0a08; }
+    /* The screens. */
+    .bbns-screens  { flex:1; display:grid; gap:12px;
+                     grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); }
+    .bbns-screen   { position:relative; border-radius:9px; overflow:hidden; aspect-ratio:3/4;
+                     background:linear-gradient(180deg, #11161d, #080b0f);
+                     border:1px solid rgba(255,255,255,.07);
+                     box-shadow:inset 0 0 40px rgba(0,0,0,.7); }
+    /* A dead screen still hums. */
+    .bbns-screen::after { content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+                     background:repeating-linear-gradient(180deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px); }
+    .bbns-num      { position:absolute; top:6px; left:7px; z-index:2;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                     letter-spacing:1.2px; color:#39424e; }
+    .bbns-inner    { position:absolute; inset:0; display:flex; flex-direction:column;
+                     align-items:center; justify-content:center; gap:5px; }
+    .bbns-q        { font-family:var(--font-display); font-size:52px; line-height:1; color:#232c37;
+                     text-shadow:0 0 26px rgba(88,166,255,.12); animation:bbns-pulse 2.8s ease-in-out infinite; }
+    @keyframes bbns-pulse { 0%,100% { opacity:.55; } 50% { opacity:1; } }
+    .bbns-wait     { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.4px; color:#2c3540; }
 
-    /* The turn itself. Half a rotation, a beat of hang, and it stays red. */
-    .bbnc-cell.is-nom .bbnc-frame { animation:bbnc-turn .72s cubic-bezier(.6,.02,.2,1) both; }
-    @keyframes bbnc-turn {
-      0%   { transform:rotateY(0deg)   scale(1); }
-      55%  { transform:rotateY(110deg) scale(1.09); }
-      100% { transform:rotateY(180deg) scale(1); }
+    .bbns-screen.is-on { border-color:rgba(248,81,73,.65);
+                     background:linear-gradient(180deg, rgba(60,16,14,.9), rgba(20,8,8,.98));
+                     box-shadow:0 0 26px rgba(248,81,73,.3), inset 0 0 46px rgba(248,81,73,.12);
+                     animation:bbns-flash .62s ease-out both; }
+    @keyframes bbns-flash {
+      0%   { filter:brightness(3.4); transform:scale(1.05); }
+      35%  { filter:brightness(1.2); }
+      100% { filter:none; transform:none; }
     }
-    .bbnc-cell.is-nom .bbnc-name { color:#ffb3ae; font-weight:700; }
-    .bbnc-cell.is-out .bbnc-face { filter:grayscale(1) brightness(.34); }
-    .bbnc-cell.is-out .bbnc-name { color:#3d444d; text-decoration:line-through; }
-    .bbnc-name      { display:block; margin-top:5px; font-size:9px; letter-spacing:.3px;
-                      color:#c9d1d9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bbns-shot .bb-av { width:104px !important; height:104px !important; border-radius:6px; }
+    .bbns-name     { font-family:var(--font-display); font-size:16px; letter-spacing:1px; color:#fff;
+                     text-shadow:0 2px 10px rgba(0,0,0,.8); }
+    .bbns-tag      { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; font-weight:800;
+                     letter-spacing:1.6px; color:#2a0a08; background:#f85149;
+                     padding:2px 7px; border-radius:2px; }
 
-    /* The box, with one keyhole per nomination. */
-    .bbnc-box       { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;
-                      margin:0 0 16px; padding:10px 14px; border-radius:9px;
-                      border:1px solid rgba(227,179,65,.2); background:rgba(227,179,65,.05); }
-    .bbnc-box.is-locked { border-color:rgba(248,81,73,.45); background:rgba(248,81,73,.07); }
-    .bbnc-box-l     { font-family:ui-monospace,Consolas,monospace; font-size:8px;
-                      letter-spacing:1.6px; color:#8b949e; }
-    .bbnc-box-c     { font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
-                      letter-spacing:1px; color:#6e7681; }
-    .bbnc-keys      { display:flex; gap:10px; }
-    .bbnc-key       { display:inline-flex; width:40px; height:16px; color:#4d545c;
-                      transition:color .2s ease; }
-    .bbnc-key svg   { width:100%; height:100%; }
-    .bbnc-key.is-turned { color:#e3b341;
-                      filter:drop-shadow(0 0 7px rgba(227,179,65,.6));
-                      animation:bbnc-key-turn .5s ease-out both; }
-    @keyframes bbnc-key-turn { from { transform:rotate(-38deg); opacity:.3; }
-                               to   { transform:rotate(0deg);   opacity:1; } }
+    /* The wall, beside it. */
+    .bbns-wall     { width:186px; flex-shrink:0; display:flex; flex-direction:column; gap:7px;
+                     padding:9px; border-radius:8px; background:rgba(255,255,255,.02);
+                     border:1px solid rgba(255,255,255,.05); }
+    .bbns-wall-h   { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#5b6472; text-align:center; }
+    .bbns-wall-grid{ display:flex; flex-wrap:wrap; gap:4px; justify-content:center; }
+    .bbns-cell     { display:inline-flex; border-radius:3px; overflow:hidden;
+                     box-shadow:0 0 0 1px rgba(255,255,255,.06); transition:box-shadow .25s ease; }
+    .bbns-cell.is-out .bb-av img { filter:grayscale(1) brightness(.34); }
+    .bbns-cell.is-nom { box-shadow:0 0 0 2px #f85149, 0 0 12px rgba(248,81,73,.55); }
+    .bbns-keys     { display:flex; align-items:center; gap:5px; justify-content:center; margin-top:auto;
+                     padding-top:7px; border-top:1px solid rgba(255,255,255,.05); }
+    .bbns-kh       { width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,.05);
+                     box-shadow:inset 0 0 0 1px rgba(255,255,255,.1); transition:all .25s ease; }
+    .bbns-kh.is-turned { background:#e3b341; box-shadow:0 0 9px rgba(227,179,65,.7); }
+    .bbns-kc       { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1px; color:#5b6472; margin-left:3px; }
 
+    /* The cards. */
+    .bbns-feed     { display:flex; flex-direction:column; gap:8px; }
+    .bbns-card     { border-radius:8px; padding:11px 13px;
+                     background:linear-gradient(180deg, rgba(22,28,36,.85), rgba(15,19,25,.9));
+                     border:1px solid rgba(255,255,255,.06);
+                     border-left:3px solid rgba(139,148,158,.4);
+                     box-shadow:0 2px 12px rgba(0,0,0,.3);
+                     animation:bbns-in .35s ease-out both; }
+    @keyframes bbns-in { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
+    .bbns-card.is-hidden { display:flex; align-items:center; justify-content:center; padding:9px;
+                     opacity:.1; border-left-color:transparent; animation:none;
+                     font-family:var(--font-display); font-size:15px; color:var(--muted); }
+    .bbns-card.is-open   { border-left-color:#8b949e; }
+    .bbns-card.is-key    { border-left-color:#f85149;
+                     background:linear-gradient(100deg, rgba(248,81,73,.13), rgba(15,19,25,.9) 58%); }
+    .bbns-card.is-reason { border-left-color:#f0a500;
+                     background:linear-gradient(100deg, rgba(240,165,0,.11), rgba(15,19,25,.9) 58%); }
+    .bbns-card.is-final  { border-left-color:#f85149; border-color:rgba(248,81,73,.3);
+                     background:linear-gradient(180deg, rgba(60,16,14,.5), rgba(15,19,25,.92)); }
+    .bbns-card-h   { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .bbns-card-b   { font-size:13px; line-height:1.62; color:#d6dde5; }
+    .bbns-card.is-reason .bbns-card-b { font-size:14px; color:#f2e7cf; font-style:italic; }
+    .bbns-pill     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     font-weight:800; letter-spacing:1.3px; padding:3px 8px; border-radius:3px;
+                     background:rgba(255,255,255,.06); color:#8b949e; }
+    .bbns-pill.red  { background:#f85149; color:#2a0a08; }
+    .bbns-pill.gold { background:#f0a500; color:#1a1206; }
+    .bbns-pill.green{ background:#3fb950; color:#08210d; }
+    .bbns-pill.blue { background:#58a6ff; color:#06203f; }
+    .bbns-pill.purple { background:#a371f7; color:#1b0b34; }
+    .bbns-pill.orange { background:#f0883e; color:#2a1405; }
+
+    /* Pinned controls: the ceremony plays without the page moving. */
+    .bbns-controls { position:fixed; left:0; right:0; bottom:0; z-index:40;
+                     display:flex; gap:9px; align-items:center; justify-content:center;
+                     padding:11px 16px; background:rgba(7,9,13,.95);
+                     border-top:1px solid rgba(248,81,73,.22); backdrop-filter:blur(14px); }
+    .bbns-count    { font-family:ui-monospace,Consolas,monospace; font-size:10px;
+                     letter-spacing:1px; color:#6e7681; }
+    .bbns-done     { font-size:11px; letter-spacing:.6px; color:#8b949e; }
+
+    @media (max-width: 760px) {
+      .bbns-stage  { flex-direction:column; }
+      .bbns-wall   { width:auto; }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .bbnc-cell.is-nom .bbnc-frame { animation:none; transform:rotateY(180deg); }
-      .bbnc-key.is-turned { animation:none; }
+      .bbns-q, .bbns-screen.is-on, .bbns-card { animation:none; }
+      .bbns-cell, .bbns-kh { transition:none; }
     }
 
     /* Legend for the standing icons — an icon nobody can name is decoration. */

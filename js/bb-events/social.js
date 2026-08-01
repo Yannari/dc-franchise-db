@@ -338,7 +338,7 @@ const rumour = {
     ], ctx, liar, mark, victim) : _variant([
       `${mark} asks where ${liar} heard it, who was there and what ${victim} said word for word. ${liar} finally backs off and says, “Maybe I misunderstood.”`,
       `${mark} listens to the story about ${victim} and only says, “Okay.” As soon as ${liar} leaves, ${mark} goes looking for ${victim}.`,
-      `${liar}'s story sounds too clean. ${mark} knows ${victim} would never use those words and asks ${liar} why they are trying to start something.`,
+      `${liar} pulls ${mark} aside and repeats a cutting comment ${victim} supposedly made in private. The story sounds too clean, and ${mark} knows ${victim} would never use those words. ${mark} asks ${liar} why ${liar} is trying to start something.`,
       `${mark} nods while ${liar} talks, but does not believe the rumor. Now ${mark} wants to know why ${liar} thought it would work.`,
     ], ctx, liar, mark, victim);
 

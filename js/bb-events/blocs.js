@@ -36,6 +36,14 @@ function _variant(list, ctx, ...salt) {
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+
+/** "Raj, Brightly and Ripper" — not "Raj and Brightly and Ripper". */
+const _list = names => (names.length <= 1 ? (names[0] || '')
+  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/** "both of them" for a pair; "all four of them" for a group. */
+const WORDS = ['', '', 'both', 'all three', 'all four', 'all five', 'all six', 'all seven'];
+const _count = n => WORDS[n] || `all ${n}`;
 /** Least-seen first, so the same two people do not carry every beat. */
 const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
 
@@ -230,11 +238,11 @@ const blocRecruit = {
 
     const p = pronouns(plotter);
     const text = joined.length ? _variant([
-      `${plotter} spends the afternoon having the same conversation four times. ${joined.join(' and ')} ${joined.length > 1 ? 'come' : 'comes'} out of it agreeing that ${target} goes first.`,
-      `"I am not asking you to like me, I am asking you to count." ${joined.join(' and ')} ${joined.length > 1 ? 'do' : 'does'} the counting and ${joined.length > 1 ? 'arrive' : 'arrives'} where ${plotter} did.${refused.length ? ` ${refused.join(' and ')} ${refused.length > 1 ? 'do' : 'does'} not.` : ''}`,
+      `${plotter} spends the afternoon having the same conversation four times. ${_list(joined)} ${joined.length > 1 ? 'come' : 'comes'} out of it agreeing that ${target} goes first.`,
+      `"I am not asking you to like me, I am asking you to count." ${_list(joined)} ${joined.length > 1 ? 'do' : 'does'} the counting and ${joined.length > 1 ? 'arrive' : 'arrives'} where ${plotter} did.${refused.length ? ` ${_list(refused)} ${refused.length > 1 ? 'do' : 'does'} not.` : ''}`,
       `${plotter} pulls people aside one at a time, which is the only way this ever works. By evening ${joined.length === 1 ? 'one more person has' : `${joined.length} more people have`} ${target}'s name in ${joined.length === 1 ? 'their' : 'their'} mouth.`,
     ], ctx, plotter, target) : _variant([
-      `${plotter} makes the case to three separate people and watches it land nowhere. ${refused.join(' and ')} either do not see ${bloc.label} or do not trust the person pointing at it.`,
+      `${plotter} makes the case to three separate people and watches it land nowhere. ${_list(refused)} either do not see ${bloc.label} or do not trust the person pointing at it.`,
       `"Think about who benefits from you saying that." ${refused[0] || 'Nobody'} does not disagree with ${plotter} about ${bloc.label} so much as disagree with ${plotter}.`,
       `Everybody ${plotter} talks to nods and does nothing. The plan is sound and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} the wrong person to be carrying it.`,
     ], ctx, plotter, target);
@@ -322,7 +330,7 @@ const blocBlowup = {
       `It comes out in the kitchen with everybody standing there. "${bloc.members.slice(0, 3).join(', ')} — we all know. Stop pretending this house has been voting." Nobody has to be told twice; there is no unhearing it.`,
       `${angry} has been holding it for two weeks and lets go of it at the worst possible moment, in front of the entire house. ${bloc.label} is not a theory any more, it is a thing that was shouted.`,
       `"Say it to my face that you are not working together." ${bloc.members[0]} says nothing, which is the loudest answer available, and every person in the room does the arithmetic at the same time.`,
-      `The argument is about something else for about forty seconds. Then ${angry} names all ${bloc.members.length} of them out loud and the house stops being able to pretend.`,
+      `The argument is about something else for about forty seconds. Then ${angry} names ${_count(bloc.members.length)} of them out loud and the house stops being able to pretend.`,
     ], ctx, angry, bloc.id);
 
     // Everybody heard it. No belief check — they were standing there.

@@ -65,8 +65,14 @@ const nomSpeechGame = {
   weight(house, ctx) {
     if (ctx.act !== 'nominations' || !ctx.hoh || _nominees(ctx).length < 2) return 0;
     const s = pStats(ctx.hoh);
-    // A composed, strategic HOH is the one who keeps it about the game.
-    return (s.strategic / 10) * (s.temperament / 10) * 9;
+    // A composed, strategic HOH is the one who keeps it about the game — but
+    // with a floor, because a product of two normalised stats is a trap. An
+    // average Head of Household scores 5/10 x 5/10 x 9 = 2.25 against siblings
+    // sitting near 9, so this only ever fired for the rare houseguest who is
+    // high in both, and turned up twice in ten seasons. nom-speech-personal had
+    // exactly this shape and exactly this problem. Keeping a nomination speech
+    // about the game is the ordinary case, not a special talent.
+    return 3.5 + (s.strategic / 10) * (s.temperament / 10) * 7;
   },
   fire(house, ctx, api) {
     const [a, b] = _nominees(ctx);

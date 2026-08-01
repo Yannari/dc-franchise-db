@@ -33,6 +33,7 @@ import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePla
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf } from './deals.js';
 import { rememberStrategy } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
+import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -373,7 +374,7 @@ function runHouseRomance(week, rng) {
  * of the maintenance — or the week — down with it. That is exactly how the
  * romance pipeline stayed silently broken for as long as it did.
  */
-function runHouseMaintenance(week) {
+function runHouseMaintenance(week, rng = Math.random) {
   const ep = {
     num: week.num,
     eliminated: week.evicted || null,
@@ -396,6 +397,13 @@ function runHouseMaintenance(week) {
     // in anybody: a group can be careful in the kitchen for a month and then
     // put four votes on the same name twice.
     ['vote tells', () => { week.voteTells = readVoteTells(ep.votingLog, gs.activePlayers || []); }],
+    // The ballots become facts that exactly one person each has observed. The
+    // house watched somebody leave and knows nothing about who did it — which
+    // is the whole difference between this format and one where the votes are
+    // read out loud.
+    ['ballot knowledge', () => { recordBBVotes(week); }],
+    // Then a week of people talking, which is the only way any of it moves.
+    ['knowledge spread', () => { week.knowledgeEvents = tickBBKnowledge(week, rng); }],
   ];
   // Same guard as the romance and scheme bridges: these are shared Total Drama
   // systems and several of them write gs.popularity directly rather than
@@ -537,7 +545,7 @@ function _snapshotHouse() {
 }
 
 function _attachRomance(week, rng) {
-  const beats = [...runHouseRomance(week, rng), ...runHouseMaintenance(week)];
+  const beats = [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)];
   if (!beats.length) return;
   const houseActs = (week.acts || []).filter(a => a.type === 'house');
   const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];

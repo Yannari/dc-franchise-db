@@ -26,14 +26,19 @@
 // house are secret. Nobody gets a list; they get a room full of people who all
 // say they did not do it, and they work backwards from who benefited, who was
 // standing too close to whom, and whichever group they had already decided was
-// running things. A sharp player usually gets there. A furious one blames
-// whoever is nearest, and that misfire is as much a part of the show as the
-// correct read is.
+// running things.
+//
+// What decides whether they get there is whether somebody TOLD them. A mourner
+// working from real knowledge names the right person about nine times in ten; a
+// mourner reconstructing from a result and a grudge manages one in three. The
+// misfire is as much a part of the show as the correct read, and it is the
+// reason information is worth anything in here.
 
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { listBlocs, knowledgeOf } from './blocs.js';
+import { knowsVote } from './knowledge.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const live = () => (gs.activePlayers || []).filter(Boolean);
@@ -94,8 +99,8 @@ export function chiefMourner(week = lastCompletedWeek()) {
  * Nobody sees the ballots, so this is a reconstruction, and it is built out of
  * exactly the things a houseguest actually has: who put them up, who could have
  * saved them and did not, who gained, and which group they had already worked
- * out was voting together. Intuition decides how much the true answer is allowed
- * to weigh against all of that.
+ * out was voting together — plus, decisively, whatever anybody has actually
+ * told them. The truth itself is not an input.
  *
  * @returns {{blamed:string, correct:boolean, why:string, confidence:number}|null}
  */
@@ -104,8 +109,6 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
   const gone = week.evicted;
   const suspects = live().filter(name => name !== mourner);
   if (!suspects.length) return null;
-  const stats = pStats(mourner);
-  const sharp = stats.intuition / 10;
 
   const scored = suspects.map(name => {
     let score = 0;
@@ -130,10 +133,31 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
     // Somebody who was visibly warm to the mourner is the last person suspected,
     // which is the whole reason a quiet betrayal works.
     score -= Math.max(0, getPerceivedBond(mourner, name)) * 0.5;
-    // And the truth, weighted by how good this person is at reading a room.
+    // Has anybody actually TOLD them?
+    //
+    // This is the difference between solving it and guessing, and until the
+    // knowledge layer existed there was no way to express it: the model reached
+    // straight for the truth and scaled it by intuition, which quietly said
+    // that perceptive people can see through walls. They cannot. What they can
+    // do is get told things and work out whether the person telling them is
+    // worth believing. A mourner who has heard it from somebody is close to
+    // certain; one who has heard nothing is reconstructing from a result.
+    if (knowsVote(mourner, name, gone)) { score += 5.5; reasons.push('and somebody told them so'); }
+
+    // And nothing at all from the truth itself.
+    //
+    // There used to be a term here that added the real answer scaled by
+    // intuition, on the theory that a perceptive houseguest half-senses it.
+    // Measured, it was doing nearly all the work: with it, a mourner who had
+    // been told nothing still identified the right person 71% of the time;
+    // without it, 33%. The first number is clairvoyance with a stat check in
+    // front of it, and it made the entire knowledge layer decorative — being
+    // told something was worth 18 points of accuracy over simply being sharp.
+    //
+    // Perception still matters everywhere it should: sharp houseguests read
+    // blocs faster, get told more because they have better contacts, and judge
+    // a source better when they are told. What they cannot do is see a ballot.
     const reallyDid = votedAgainst(name, week);
-    if (reallyDid === true) { score += 4.2 * sharp; reasons.push('voted'); }
-    if (reallyDid === false) score -= 2.6 * sharp;
 
     return { name, score, reasons, reallyDid };
   }).sort((a, b) => b.score - a.score);

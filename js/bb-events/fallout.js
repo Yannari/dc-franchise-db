@@ -26,6 +26,8 @@ import {
   lastCompletedWeek, reactionsTo, chiefMourner, assignBlame, keptThem,
   wroteTheName, votedAgainst, evictionCount,
 } from '../bb/fallout.js';
+import { knowsVote } from '../bb/knowledge.js';
+import { factId, learn } from '../knowledge.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -347,6 +349,76 @@ const somebodyStayedLoyal = {
   },
 };
 
+// ── the house talking ─────────────────────────────────────────────────
+
+const wordGetsAround = {
+  id: 'fallout-word-gets-around',
+  category: 'deals',
+  weight(house, ctx) {
+    const week = _fresh(ctx);
+    if (!week) return 0;
+    if (_spent('fallout-word-gets-around', ctx)) return 0;
+    return _teller(house, week) ? _morning(ctx, 10) : 0;
+  },
+  fire(house, ctx, api, rng = Math.random) {
+    const week = _fresh(ctx);
+    _spend(this.id, ctx);
+    const pair = _teller(house, week);
+    if (!pair) {
+      return { text: `Nobody has anything to trade this morning.`, players: [],
+        badgeText: 'NOTHING MOVES', badgeClass: 'grey' };
+    }
+    const { teller, listener, about } = pair;
+    const gone = week.evicted;
+    const p = pronouns(teller);
+
+    const text = _variant([
+      `${teller} tells ${listener} how ${about} voted, which ${teller} only knows because ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} in the room when ${about} said it out loud. That is how everything in here travels.`,
+      `"${about} wrote ${gone}'s name down." ${listener} did not know that an hour ago and cannot unknow it now, and ${teller} has just spent something to make that true.`,
+      `${teller} trades what ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} about ${about}'s vote for something ${listener} knows. Both of them come out of it better informed and slightly more dangerous.`,
+      `It takes ${teller} one sentence to change how ${listener} sees ${about}, and the sentence is true, which is the rarest version of this conversation.`,
+    ], ctx, teller, listener, about);
+
+    // The information itself is the consequence: the listener now genuinely
+    // knows, which the blame layer reads directly.
+    try {
+      // The seeded generator, not Math.random. `told` is a persuasion roll
+      // inside learn(), so an unseeded one here means the same seed stops
+      // replaying the same season — which is exactly how it broke.
+      learn(listener, factId('vote', about, gone),
+        { source: teller, sourceType: 'told', confidence: 0.85, from: teller,
+          ep: week.num || 0, rng });
+    } catch { /* the fact has aged out */ }
+    api.addBond(teller, listener, 0.8);
+    api.suspicion(listener, about, 1.2);
+    api.remember(listener, teller, 'told-me-something-real', 2, { about });
+    return { text, players: [teller, listener, about],
+      badgeText: 'WORD GETS AROUND', badgeClass: 'orange' };
+  },
+};
+
+/**
+ * Somebody who knows a vote, and somebody who would want to hear it.
+ *
+ * Only real knowledge is tradeable: the teller has to actually believe the
+ * fact, which in this house means they cast the vote, watched it happen, or
+ * were told by somebody they believed.
+ */
+function _teller(house, week) {
+  const gone = week?.evicted;
+  if (!gone) return null;
+  for (const teller of _quiet(house)) {
+    for (const about of house) {
+      if (about === teller || !knowsVote(teller, about, gone)) continue;
+      const listener = _quiet(house).find(n => n !== teller && n !== about
+        && !knowsVote(n, about, gone) && bond(teller, n) >= 1);
+      if (listener) return { teller, listener, about };
+    }
+  }
+  return null;
+}
+
 export const FALLOUT_EVENTS = [
   mourning, cryingOverAName, goodRiddance, findingTheCulprit, itWasNotMe, somebodyStayedLoyal,
+  wordGetsAround,
 ];

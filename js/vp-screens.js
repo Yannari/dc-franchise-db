@@ -17079,6 +17079,30 @@ export function rpBuildBBSafety(ep) {
  * being on that opening block. `used` with no replacement cannot produce a
  * handover step.
  */
+function _bbSpeechProfile(ep, name, counterpart = null) {
+  const snap = ep?.gsSnapshot || {};
+  const live = typeof gs !== 'undefined' ? gs : {};
+  const cast = typeof players !== 'undefined' && Array.isArray(players) ? players : [];
+  const arch = cast.find(p => p.name === name)?.archetype || 'floater';
+  const alliances = (snap.namedAlliances || live.namedAlliances || []).filter(a => a.active !== false);
+  const alliance = alliances.find(a => (a.members || []).includes(name)) || null;
+  const allies = (alliance?.members || []).filter(n => n !== name);
+  const showmances = (snap.showmances || live.showmances || []).filter(sh => sh.phase !== 'broken-up' && !sh.broken);
+  const showmance = showmances.find(sh => (sh.players || []).includes(name)) || null;
+  const partner = (showmance?.players || []).find(n => n !== name) || null;
+  let threat = 0; let warmth = 0;
+  try { threat = Number(threatScore(name)) || 0; } catch { threat = 0; }
+  try { warmth = counterpart ? Number(getBond(name, counterpart)) || 0 : 0; } catch { warmth = 0; }
+  const rec = snap.bb?.stats?.[name] || live.bb?.stats?.[name] || {};
+  const comps = Number(rec.hohWins || 0) + Number(rec.vetoWins || 0) + Number(rec.blockBusterWins || 0);
+  const blockCount = Number(rec.timesOnTheBlock || 0);
+  const plan = ep?.plan || {};
+  const role = plan.target === name ? 'target'
+    : plan.pawn === name ? 'pawn'
+    : plan.backdoorTarget === name ? 'backdoor' : 'nominee';
+  return { arch, alliance, allies, partner, threat, warmth, comps, blockCount, role };
+}
+
 export function rpBuildBBCeremony(ep) {
   const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
   const holder = act?.holder || ep.vetoWinner;
@@ -17111,29 +17135,81 @@ export function rpBuildBBCeremony(ep) {
     let stats = {}; let warmth = 0;
     try { stats = pStats(name); } catch { stats = {}; }
     try { warmth = getBond(name, holder); } catch { warmth = 0; }
-    if (warmth >= 4) return vvar([
+    const profile = _bbSpeechProfile(ep, name, holder);
+    if (profile.partner === holder) return vvar([
+      `“I do not want this relationship to become a reason you cannot use the veto.” ${name} looks at ${holder}. “Let it be the reason you can.”`,
+      `${name} tells ${holder} that protecting the showmance privately means nothing if ${pronouns(holder).sub} leaves ${p.obj} exposed publicly.`,
+      `“Everybody already sees us as a pair.” ${name} gestures toward the veto. “We may as well have both votes tomorrow.”`,
+      `${name} does not ask ${holder} to choose love over the game. ${p.Sub} explains why keeping ${p.obj} is better for both.`,
+      `“If I stay up, they split us without winning anything.” ${name} asks ${holder} not to hand the house that move.`,
+      `${name} reminds ${holder} that a showmance with one person on the block is not two votes—it is one person waiting to be isolated.`,
+    ], name, holder, 'showmance');
+    if (profile.role === 'pawn') return vvar([
+      `“I was told I was the pawn.” ${name} looks from the Head of Household to ${holder}. “The veto is how you prove that was more than a sentence.”`,
+      `${name} says the plan only works if the pawn survives it. Leaving ${p.obj} exposed turns a temporary chair into a real eviction.`,
+      `“If the target is beside me, take me down and make the vote simple.” ${name} asks ${holder} to honor the role the week assigned ${p.obj}.`,
+      `${name} reminds the room that pawns go home when everybody assumes somebody else has the votes. ${p.Sub} asks ${holder} to remove the assumption.`,
+      `“You did not put me here to lose me.” ${name} directs the sentence at the Head of Household, but the veto belongs to ${holder}.`,
+      `${name} asks why the house should gamble on a pawn surviving when the medallion can guarantee it.`,
+    ], name, holder, 'pawn');
+    if (profile.threat >= 7 || profile.comps >= 2) return vvar([
+      `${name} does not deny being dangerous. “That is exactly why keeping me helps you. Let the house aim at me before it aims at you.”`,
+      `“You know I can win,” ${name} tells ${holder}. “Use the veto and the next competition can belong to both of us.”`,
+      `${name} argues that a visible threat is more useful as a shield than as an easy eviction. ${holder} is invited to stand behind ${p.obj}.`,
+      `“If I leave, somebody else becomes the biggest target.” ${name} looks around until the likely replacement understands the point.`,
+      `${name} puts ${profile.comps || 'every'} competition win on the table as an asset: safety now in exchange for protection when ${p.sub} wins power again.`,
+      `${name} tells ${holder} that strong players are dangerous on the other side and valuable on yours. The veto decides which side ${p.sub} leaves this meeting on.`,
+    ], name, holder, profile.threat, profile.comps, 'threat');
+    if (profile.blockCount >= 3) return vvar([
+      `${name} has made this speech before. This time ${p.sub} skips the gratitude and asks ${holder} what surviving the block repeatedly is worth.`,
+      `“Everybody keeps calling me expendable and then failing to evict me.” ${name} asks ${holder} to turn that survival into an alliance.`,
+      `${name} says another week on the block will not break ${p.obj}, but it may finally teach ${p.obj} who never intended to help.`,
+      `“You know I can survive the vote. The question is whether you want me surviving it angry with you.” ${name} lets ${holder} consider the difference.`,
+      `${name} asks ${holder} to end the cycle instead of trusting the same uncertain numbers that put ${p.obj} here before.`,
+      `${name} counts ${profile.blockCount} nominations and one available veto. “Eventually somebody has to decide I am worth more off the block.”`,
+    ], name, holder, profile.blockCount, 'repeat-block');
+    if (warmth >= 4 || (profile.alliance && profile.allies.includes(holder))) return vvar([
       `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
       `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
       `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
       `${name} reminds ${holder} of the vote they planned together and the promise that came with it. “If that still means something, use it.”`,
       `“I have trusted you with my game,” ${name} tells ${holder}. “I'm asking you to trust me with yours.” The room hears how personal the decision already is.`,
       `${name} looks at ${holder}, not the rest of the house. “You know what I would do if our places were reversed.” ${holder} has to sit with that answer in public.`,
+      `“You have heard every version of my plan because I trusted you with it.” ${name} turns to ${holder}. “Please don't make that the reason I leave.”`,
+      `${name} reminds ${holder} of the night they promised to protect each other. Nobody else knows the whole conversation, but everybody recognizes a promise being collected.`,
+      `“I am not asking as a nominee. I am asking as your ally.” ${name} sits down before the relationship can be explained away as strategy.`,
+      `${name} tells ${holder}, “If I stay up, you lose somebody who was never coming after you.” The word “was” hangs over the rest of the plea.`,
+      `“You told me I mattered to your game.” ${name} keeps ${p.posAdj} voice steady. “This is where I find out whether that was true.”`,
+      `${name} offers no new deal. ${p.Sub} simply repeats the one ${holder} already accepted and asks whether it survives contact with power.`,
     ], name, 'ally');
-    if ((stats.boldness || 5) >= 7) return vvar([
+    if (['challenge-beast', 'hothead', 'chaos-agent', 'villain'].includes(profile.arch)
+      || (stats.boldness || 5) >= 7) return vvar([
       `${name} stands up like it is a competition. "Use it on me and I'll win my way through this house. Leave me up here and I'll do it anyway — but you'll have made an enemy doing it." Half the room admires it. The other half writes it down.`,
       `"I'm not going to beg." ${name} then delivers, at volume, something that is not begging only on a technicality — and finishes by telling ${holder} exactly what leaving ${p.obj} up there will cost.`,
       `${name} uses the whole minute. It is confident, it is aimed at ${holder}, and it does not contain the word please once.`,
       `“Take me down and I will make this worth it. Leave me there and I will remember who had the choice.” ${name} sits before ${holder} can respond.`,
       `${name} points out that the veto is supposed to change the week. “If you're going to keep everything the same, why did any of us play?”`,
       `${name} promises safety, information and a vote. The offer is aggressive enough that half the room hears a deal and the other half hears a threat.`,
+      `${name} stands without notes. “Use it on me and I will owe you a move, not a conversation.” ${holder} knows exactly how large an offer that is.`,
+      `“Everybody here wants the veto used until they imagine the replacement.” ${name} looks around the room. “I am the only one willing to say I still want it.”`,
+      `${name} tells ${holder} that leaving a strong player on the block is useful only until that player survives. The warning is aimed at next week.`,
+      `“I played to win the veto and lost. I am still playing to make you use it.” ${name} turns the plea into one last round of the competition.`,
+      `${name} names what ${p.sub} can do for ${holder}: win, draw fire and return the favor. “You will not get a better offer from somebody in that chair.”`,
+      `“Make the safe move if you want,” ${name} says. “Just do not confuse safe for good.” The Head of Household stops smiling.`,
     ], name, 'bold');
-    if ((stats.social || 5) <= 4) return vvar([
+    if (['goat', 'underdog'].includes(profile.arch) || (stats.social || 5) <= 4) return vvar([
       `${name} says four sentences, quietly, and sits down. ${pv(name).Sub} ${p.sub === 'they' ? 'are' : 'is'} not good at this and the not-being-good-at-it is its own kind of honest.`,
       `"I'd like to stay. I think you know I'm not the threat here." That is the whole speech. In a room full of performers, it almost works.`,
       `${name} thanks ${holder} for the chance to speak and barely uses it. What ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} say is entirely true, which is more than most veto speeches manage.`,
       `${name} grips the back of the chair and says, “I don't have a big speech. I just don't want to go home.” Then ${p.sub} sits before the room can make it more embarrassing.`,
       `“If you use it on me, I won't forget it.” ${name} glances around the room, realizes everybody is waiting for more and quietly says, “That's it.”`,
       `${name} starts twice, loses the sentence both times and finally asks ${holder} directly for the veto. The lack of polish makes the request harder to dismiss.`,
+      `${name} looks down at ${p.posAdj} hands. “I know there are bigger reasons. Mine is that I am scared and I want to stay.”`,
+      `“I practiced something better than this.” ${name} gives a nervous laugh. “Please use it on me.” Nothing rehearsed follows.`,
+      `${name} thanks ${holder} for listening, says ${p.sub} would return the favor and sits. The whole plea fits inside one honest promise.`,
+      `${name} begins by saying ${p.sub} hates public speaking. Somebody whispers, “We know.” The laugh settles ${p.obj} enough to ask for the veto.`,
+      `“I do not think I am your best move to lose.” ${name} cannot quite look at ${holder}, but the sentence reaches ${pronouns(holder).obj}.`,
+      `${name} says, “I need help.” It is the only strategic language in the speech and, from ${name}, it carries more weight than a list of numbers.`,
     ], name, 'quiet');
     return vvar([
       `${name} makes the practical case: who ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} not coming after, what ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} worth to the people listening, and why the block is the wrong place for ${p.obj}. Measured, rehearsed, and aimed at exactly one person.`,
@@ -17142,6 +17218,12 @@ export function rpBuildBBCeremony(ep) {
       `${name} names the person who benefits most if the nominations stay the same—and it is not ${holder}. A few heads turn before ${name} sits down.`,
       `${name} offers ${holder} a clean exchange: safety now for protection later. No emotion, no performance, and no confusion about what is being proposed.`,
       `“You can leave me here because it is easy,” ${name} says, “or use the veto because it improves your position.” ${p.Sub} explains exactly how.`,
+      `${name} gives ${holder} three outcomes: the current nominees stay, one returns angry, or the veto creates a target the house already wants. ${p.Sub} asks which outcome helps ${holder}.`,
+      `“Do not use this veto for me. Use it against the person who benefits if I leave.” ${name} names that person and lets the room react.`,
+      `${name} offers information instead of loyalty: two names that would target ${holder}, one that would not, and a promise to prove it after the ceremony.`,
+      `${name} points out that keeping the nominations intact also keeps the week's largest threat comfortable. “You won power. Make somebody feel it.”`,
+      `“If you save me, the replacement blames you. If you do not, I blame you.” ${name} pauses. “Which relationship is more useful?”`,
+      `${name} explains why ${p.sub} is a shield for ${holder}, not a rival. The pitch is cold, self-interested and difficult to argue with.`,
     ], name, 'measured');
   };
 
@@ -17632,6 +17714,9 @@ export function rpBuildBBEviction(ep) {
   const stateKey = `bb_evict_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
+  // Don, unless the season says otherwise. NOT seasonConfig.host — that is
+  // Total Drama's knob and its default is the wrong show.
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.bbHost) || 'Don';
 
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
   const vvar = (list, ...salt) => {
@@ -17653,6 +17738,12 @@ export function rpBuildBBEviction(ep) {
       `“If you want me gone, own it. If you want me here, prove it.” ${name} sits down before anybody can mistake the plea for permission.`,
       `${name} points at the empty space beside the nomination chairs. “Somebody will fill that seat next week. Decide whether you want me helping you or coming after you.”`,
       `${name} thanks the people keeping ${p.obj}, then looks directly at the people who are not. “I hope your numbers are as good as you think they are.”`,
+      `${name} stands and says, “If I stay, I am winning the next HOH and I will remember tonight.” Nobody needs clarification about whether that is a promise.`,
+      `“Some of you are making a move. Some of you are only helping somebody else make one.” ${name} challenges the second group to reconsider.`,
+      `${name} tells the house exactly why ${p.sub} became the target and names the player most relieved to see ${p.obj} leave. That player does not look up.`,
+      `“You can evict me, but do not call it unanimous after you spent all week telling me I was safe.” ${name} looks down both sides of the couch.`,
+      `${name} promises no forgiveness tour. “Keep me because I am useful, or vote me out because you are afraid. At least be honest about which.”`,
+      `“The easy vote is sitting beside me.” ${name} turns toward the other nominee. “If you want easy, take it. If you want me gone, admit this is a shot.”`,
     ], name, 'bold');
     if ((stats.social || 5) <= 4) return vvar([
       `${name} thanks the house, says ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been ${p.ref || 'themselves'} the whole way through, and sits down before the silence becomes uncomfortable.`,
@@ -17661,6 +17752,12 @@ export function rpBuildBBEviction(ep) {
       `${name} unfolds a prepared speech, loses ${p.posAdj} place and finally says, “I want to stay. I hope you want me here.” The paper stays shaking after ${p.sub} sits.`,
       `“I don't know what else to say that I haven't already said to you privately.” ${name} looks around the couches and leaves it there.`,
       `${name} thanks everybody for listening, asks for another week and sits down too quickly. A friend reaches across the couch and squeezes ${p.posAdj} hand.`,
+      `${name} says the names of the people ${p.sub} loves outside the house, loses the next sentence and quietly asks for the chance to keep playing.`,
+      `“I do not have a clever reason.” ${name} swallows. “I am asking the people who know me to decide whether they want me here.”`,
+      `${name} looks at the other nominee and says, “I am sorry one of us has to leave.” Then ${p.sub} asks the house not to make it ${p.obj}.`,
+      `“Thank you for making this feel like home, even when it did not.” ${name}'s voice breaks on the final word, and one voter starts crying too.`,
+      `${name} forgets the speech ${p.sub} prepared and talks instead about the first night in the house. By the end, the plea is simply for one more memory.`,
+      `“I am nervous, so I am going to keep this short.” ${name} asks for the votes, thanks the house and sits with visible relief that the speaking part is over.`,
     ], name, 'quiet');
     if ((stats.loyalty || 5) >= 7) return vvar([
       `${name} does not campaign. ${p.Sub} ${p.sub === 'they' ? 'thank' : 'thanks'} the people who were good to ${p.obj}, by name, and tells the rest they know who they are. Both lists are accurate.`,
@@ -17669,6 +17766,12 @@ export function rpBuildBBEviction(ep) {
       `${name} reminds the house that ${p.sub} kept every agreement ${p.sub} made. “You may not need loyalty tonight. You will when you're sitting here.”`,
       `“I know some of you already promised your votes. Keep your word—even if it is not to me.” ${name} refuses to ask anyone to become the player ${p.sub} would not be.`,
       `${name} names the people who stood beside ${p.obj} and thanks them without asking for anything else. One undecided voter looks suddenly miserable.`,
+      `${name} tells the house, “I protected people when it was bad for my game. I am asking those people whether that meant anything.”`,
+      `“My word is the one thing I can still offer from this chair.” ${name} promises safety to anyone who keeps ${p.obj}, and several voters know ${p.sub} means it.`,
+      `${name} refuses to expose private deals in a final plea. “If we had something real, you already know what to do.”`,
+      `${name} asks nobody to betray an ally. Instead, ${p.sub} asks the people who called ${p.obj} an ally to behave like one.`,
+      `“I have taken risks for this group without asking for receipts.” ${name} looks toward the people involved. “Tonight I am asking.”`,
+      `${name} says ${p.sub} can forgive a game decision but not a dishonest one. The voters who promised safety hear the distinction.`,
     ], name, 'loyal');
     return vvar([
       `${name} keeps it brief and aims it precisely: one reason to keep ${p.obj}, one reason the alternative is worse for the people voting, and a thank you. Rehearsed, and none the worse for it.`,
@@ -17677,6 +17780,12 @@ export function rpBuildBBEviction(ep) {
       `${name} tells the voters to picture the next HOH competition with each nominee still in the house. “Keep the outcome that gives you more options.”`,
       `${name} offers no grand promise—only a smaller target, a usable vote and a reason not to strengthen the other side.`,
       `“This vote is not about which of us you like more. It is about which of us leaving helps the people you cannot beat.” ${name} lets the room supply the names.`,
+      `${name} identifies the likely next nominees under both outcomes and asks every voter which version keeps ${pronouns(name).obj} off the block.`,
+      `“Keeping me leaves a target in front of you and a vote beside you.” ${name} makes self-preservation sound like a service to the room.`,
+      `${name} argues that the other nominee has fewer enemies and more paths to the end. The compliment sounds generous until the strategy becomes clear.`,
+      `“Do not vote for tonight. Vote for the next time somebody wins power.” ${name} walks the house through who benefits from each eviction.`,
+      `${name} offers a voting bloc, not a friendship: keep ${p.obj} and three people can control the next decision together.`,
+      `${name} closes with one question: “Who becomes the biggest target if I walk through that door?” More than one voter looks at the same person.`,
     ], name, 'measured');
   };
 
@@ -17815,7 +17924,7 @@ export function rpBuildBBEviction(ep) {
       case 'live':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">WE ARE LIVE</span></div>
-          <div class="bbns-card-b">The house is on the couches in show clothes, and nobody is good at pretending this is a normal evening. <strong>${noms.map(_bbEsc).join(' and ')}</strong> sit in the nomination chairs. Before the vote, each of them gets a final plea.</div></div>`;
+          <div class="bbns-card-b">The house is on the couches in show clothes, ${_bbEsc(host)} is live on the living-room screen, and nobody is good at pretending this is a normal evening. <strong>${noms.map(_bbEsc).join(' and ')}</strong> sit in the nomination chairs. Before the vote, each of them gets a final plea.</div></div>`;
       case 'plea':
         return `<div class="bbns-card is-key">
           <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill blue">FINAL PLEA</span></div>
@@ -17846,8 +17955,8 @@ export function rpBuildBBEviction(ep) {
           ], act.tieBreak.voter, act.tieBreak.evict, 'tie')}</div></div>`;
       case 'verdict':
         return `<div class="bbns-card is-final bbev-verdict">
-          <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE RESULT</span></div>
-          <div class="bbns-card-b">"By a vote of <strong>${voteCount() || '0 to 0'}</strong>... <strong>${_bbEsc(evicted)}</strong>, you are evicted from the Big Brother house."</div></div>`;
+          <div class="bbns-card-h">${_bbAvatar(host, 30)}${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE RESULT</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen, with the envelope voice he saves for exactly this: "By a vote of <strong>${voteCount() || '0 to 0'}</strong>... <strong>${_bbEsc(evicted)}</strong>, you are evicted from the Big Brother house."</div></div>`;
       case 'goodbyes':
         return `<div class="bbns-card">
           <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill grey">ONE MINUTE</span></div>
@@ -19360,7 +19469,7 @@ export function rpBuildBBEvictionInterview(ep) {
     }
     if (step.kind === 'q') {
       html += `<div class="rp-brant-entry" style="border-left:3px solid #8b949e;flex-direction:column;align-items:flex-start;gap:6px">
-        <div style="font-size:11px;color:#8b949e;font-style:italic">${iv.host}: ${step.q}</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#8b949e;font-style:italic">${_bbAvatar(iv.host, 22)}<span><strong style="font-style:normal;color:#c9d1d9">${_bbEsc(iv.host)}</strong> — ${step.q}</span></div>
         <div class="rp-brant-text" style="width:100%">${step.a}</div>
         ${step.wrong ? `<span class="rp-brant-badge red">WRONG</span>` : step.loaded ? `<span class="rp-brant-badge gold">LOADED</span>` : ''}
       </div>`;

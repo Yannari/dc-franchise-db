@@ -99,7 +99,10 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   const house = (week.houseAtStart || []).filter(Boolean);
   const read = readOfTheRoom(evictee, week, house);
   const p = pronouns(evictee);
-  const host = seasonConfig.host || 'Chris';
+  // Big Brother's host is Don, not Chris. seasonConfig.host is the Total
+  // Drama setting and defaults to Chris, so inheriting it put the wrong man in
+  // the interview chair; the house gets its own knob and its own default.
+  const host = seasonConfig.bbHost || 'Don';
   const [top, second] = read.margin;
   const blindsided = (second ?? 0) === 0 || (top - (second ?? 0)) >= Math.max(2, house.length / 3);
 

@@ -28,6 +28,10 @@ import {
   pStats, bond, perceived, band, bondFactor, sharesAlliance, trusts, dislikes, actFacts,
   wasPromised, remembers, grudge, suspicionOf, willScheme, isVillainous, archetype, targetOf,
 } from './_read.js';
+import { gs } from '../core.js';
+import { listBlocs, knowledgeOf, exposeBloc } from '../bb/blocs.js';
+import { knowsVote } from '../bb/knowledge.js';
+import { factId, learn } from '../knowledge.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -534,7 +538,52 @@ const evictionScorched = {
       api.remember(n, blamed, 'warning', 1, { from: gone, when: 'the exit speech' });
     });
     api.remember(blamed, gone, 'humiliation', 2, { when: 'the exit speech' });
-    return { text, players: [gone, blamed], badgeText: 'SCORCHED EARTH', badgeClass: 'red' };
+
+    // And the revelation is REAL now, not narrated. The text has always
+    // claimed the evictee "names the deal and the lie" — while mechanically
+    // the speech moved suspicion and nothing else, so the house was told a
+    // secret and did not learn it. A person walking out that door has nothing
+    // left to lose and a microphone, so whatever they genuinely know lands as
+    // knowledge: strongest single revelation only, because a list read at the
+    // door is a rant and one name is a detonation.
+    let revealed = '';
+    try {
+      // The group they are sure of, said in front of everybody.
+      const bloc = listBlocs().find(b => b.members.includes(blamed)
+        && !b.members.includes(gone) && knowledgeOf(gone, b.id) >= 0.55);
+      if (bloc) {
+        exposeBloc(bloc, { everybody: true, week: ctx?.week?.num || 0, how: 'named at the door' });
+        revealed = ` The name lands because the group behind it does: <strong>${bloc.label}</strong>, said out loud with everybody standing there, and there is no unhearing it.`;
+      } else {
+        // The lie they were the victim of, hung on the liar in public.
+        const claim = (gs.bb?.falseClaims || []).find(c => !c.exposed
+          && c.mark === gone && house.includes(c.liar));
+        if (claim) {
+          claim.exposed = true;
+          house.filter(n => n !== claim.liar && n !== gone).forEach(n => {
+            api.suspicion(n, claim.liar, 1.2);
+            api.remember(n, claim.liar, 'made-it-up', 2, { about: gone });
+          });
+          api.popDelta(claim.liar, -2);
+          revealed = ` And on the way out, the receipts: the double-dealing story about ${gone} was invented, and <strong>${claim.liar}</strong> invented it.`;
+        } else {
+          // Or a ballot they know about, made public from the doorway.
+          const week = (gs.bb?.weeks || []).find(w => w.evicted
+            && w.evicted !== gone && knowsVote(gone, blamed, w.evicted));
+          if (week) {
+            house.filter(n => n !== gone).forEach(n => {
+              try {
+                learn(n, factId('vote', blamed, week.evicted),
+                  { sourceType: 'public', ep: ctx?.week?.num || 0 });
+              } catch { /* the fact aged out */ }
+            });
+            revealed = ` And one fact, left on the doorstep for whoever wants it: <strong>${blamed}</strong> voted out ${week.evicted}, whatever ${pronouns(blamed).sub} told you.`;
+          }
+        }
+      }
+    } catch { /* the exit still burns without the receipts */ }
+
+    return { text: text + revealed, players: [gone, blamed], badgeText: 'SCORCHED EARTH', badgeClass: 'red' };
   },
 };
 

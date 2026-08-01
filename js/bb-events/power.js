@@ -805,7 +805,7 @@ const hohRoomQueue = {
     const text = _variant([
       `There is a queue on the stairs. ${queue.join(', then ')} — each of them wanting five minutes, each of them certain their five minutes is the important one. ${hoh} listens to all three and believes about half of one.`,
       `${queue[0]} goes up, comes down looking pleased. ${queue[1]} goes up. ${hoh} has heard the same three sentences from everybody and has started counting how many of them name the same person.`,
-      `Nobody says the word "queue" but there is one, and everybody in the kitchen is watching who joins it and in what order.`,
+      `Nobody says the word "queue" but there is one on the HOH-room stairs, and everybody downstairs is watching who joins it and in what order.`,
       `${hoh} does not leave the room all afternoon and does not need to. The house comes to ${p.obj}, one at a time, saying versions of the same thing.`,
     ], ctx, hoh, ...queue);
 
@@ -996,6 +996,7 @@ const backdoorPlan = {
 
 const nomEveGuessing = {
   id: 'power-nom-eve-guessing',
+  location: 'living-room',
   category: 'social',
   weight(house, ctx) {
     const hoh = _hoh(ctx);
@@ -1012,10 +1013,10 @@ const nomEveGuessing = {
     const rightGuess = guess === real;
     const p = pronouns(a);
     const text = _variant([
-      `${a} and ${b} run through the whole house downstairs, name by name, working out who is going up. They land on <strong>${guess}</strong>. ${rightGuess ? 'They are right, and neither of them looks pleased about it.' : `They are wrong, and they will find that out in the morning.`}`,
-      `"It's ${guess}. It has to be ${guess}." ${a} says it like arithmetic. ${b} is not so sure, and ${b} is ${rightGuess ? 'wrong' : 'right'}.`,
-      `Nobody sleeps much the night before nominations. ${a} lies awake counting who ${hoh} has spoken to today and does not like the answer.`,
-      `${b} asks ${a} straight out: "Am I going up?" ${a} says no. ${a} does not know, and says it anyway, because that is what you say.`,
+      `${a} and ${b} take opposite ends of the living-room couch and run through the house name by name. They land on <strong>${guess}</strong>. ${rightGuess ? 'They are right, and neither looks pleased about it.' : 'They are wrong. Morning will handle that.'}`,
+      `"It's ${guess}. It has to be ${guess}." ${a} says it like arithmetic from the living-room couch. ${b} is not so sure, and ${b} is ${rightGuess ? 'wrong' : 'right'}.`,
+      `Nobody is ready to go to bed before nominations. In the living room, ${a} counts every person ${hoh} spoke to that day while ${b} keeps finding reasons the list must be wrong.`,
+      `${b} asks ${a} across the living room, "Am I going up?" ${a} says no. ${a} cannot possibly know that, but it is the only answer that lets the conversation end.`,
     ], ctx, a, b, guess);
 
     api.suspicion(a, hoh, 0.5);

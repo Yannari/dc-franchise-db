@@ -16478,165 +16478,151 @@ export function rpBuildBBComp(ep, actType) {
  * beforehand, in conversation, and in the speech afterwards — which is where
  * it now is.
  */
+/**
+ * The nomination ceremony.
+ *
+ * Built on how the house actually runs it now. There have been two formats and
+ * I had the wrong one: the old ceremony loaded the box with the keys of
+ * everybody SAFE and pulled them until it was empty. The modern one is the
+ * reverse and is a far better piece of television — the nomination box holds
+ * the keys of the NOMINEES, the Head of Household turns them one at a time, and
+ * each turn lights that houseguest's photograph on the memory wall.
+ *
+ * So the wall is the screen and the wall is the reveal. Everybody is looking at
+ * the same board, and one by one a face on it turns.
+ *
+ * The script is the house's own:
+ *
+ *   "This is the nomination ceremony. It is my responsibility as Head of
+ *    Household to nominate two people for eviction. In my nomination box are
+ *    the keys of the houseguests I am nominating. I will turn two keys to lock
+ *    in my nominations and their faces will appear on the memory wall."
+ *
+ * ...then the keys, then the Head of Household stands and explains, then
+ * nominations are complete.
+ */
 export function rpBuildBBNominations(ep) {
   const act = (ep.acts || []).find(a => a.type === 'nominations');
   const noms = (act?.nominees || []).filter(Boolean);
   if (!noms.length) return '';
   const hoh = ep.hoh || act?.hoh;
   const house = (ep.houseAtStart || []).filter(Boolean);
-  const plan = ep.plan || {};
-
-  // The keys go into the box in a fixed order that is not the roster order —
-  // the Head of Household loads it, and the order they pull is its own small
-  // decision. Derived from the week so a replay pulls them the same way.
-  const safe = house.filter(n => n !== hoh && !noms.includes(n));
-  const seed = `${ep.num}|${hoh}|${safe.join(',')}`;
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  const order = safe.map((n, i) => ({ n, k: (h + i * 2654435761) >>> 0 }))
-    .sort((a, b) => a.k - b.k).map(x => x.n);
+  const wall = typeof players !== 'undefined' ? players.map(p => p.name) : house;
 
   const stateKey = `bb_noms_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
 
-  // One step per key, then the empty box, then the speech, then the room.
-  const steps = [];
-  order.forEach((name, i) => {
-    const left = house.filter(n => n !== hoh && !order.slice(0, i + 1).includes(n));
-    steps.push({ kind: 'key', name, slot: i + 1, remaining: left.length });
-  });
-  steps.push({ kind: 'empty' });
+  const WORD = ['two', 'three', 'four', 'five'][Math.max(0, noms.length - 2)] || `${noms.length}`;
 
-  // The ceremony has WRITTEN events for the speech — nom-speech-game and
-  // nom-speech-personal, chosen by who the Head of Household is — and they were
-  // being dumped in an undifferentiated tail after a generic line said the same
-  // thing worse. If the house wrote a speech, the house gives the speech.
+  // ── the steps ──
   const written = act?.socialBeats || [];
   const speeches = written.filter(b => String(b.eventId || '').startsWith('nom-speech'));
   const reactions = written.filter(b => !speeches.includes(b));
+
+  const steps = [{ kind: 'open' }];
+  noms.forEach((name, i) => steps.push({ kind: 'key', name, n: i + 1 }));
   if (speeches.length) speeches.forEach(b => steps.push({ kind: 'beat', beat: b, speech: true }));
   else steps.push({ kind: 'speech' });
+  steps.push({ kind: 'complete' });
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
   const revealed = Math.max(0, state.idx + 1);
-  const pulled = order.slice(0, Math.min(revealed, order.length));
-  const stillWaiting = house.filter(n => n !== hoh && !pulled.includes(n));
-  const boxEmpty = state.idx >= order.length - 1 && order.length > 0;
+  // How many keys have been turned so far.
+  const turned = noms.filter((_, i) => state.idx >= 1 + i);
+  const locked = turned.length >= noms.length;
 
-  // ── the box: numbered slots, filling as keys come out ──
-  // The box is a Lazy Susan and it turns. Each key pulled spins the plate so
-  // the next slot comes up under the hand — which is the moment the room reads,
-  // because everybody is watching the numbers come round and counting how many
-  // are left. A rack of static squares is not a ceremony.
-  const slots = Math.max(order.length, 1);
-  const step = 360 / slots;
-  const at = n => -step * Math.min(n, slots);         // plate angle after n keys
-  const angleTo = at(pulled.length);
-  const angleFrom = at(Math.max(0, pulled.length - 1));
-  const justPulled = pulled.length ? pulled[pulled.length - 1] : null;
-
-  const KEY_SVG = `<svg class="bbk-key" viewBox="0 0 44 16" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/>
-      <circle cx="8" cy="8" r="2.1" fill="currentColor"/>
-      <path d="M14 8h26" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M33 8v5M38 8v4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+  // ── the nomination box: one keyhole per nominee ──
+  const KEY_SVG = `<svg viewBox="0 0 40 14" aria-hidden="true">
+      <circle cx="7" cy="7" r="5.4" fill="none" stroke="currentColor" stroke-width="1.9"/>
+      <circle cx="7" cy="7" r="1.8" fill="currentColor"/>
+      <path d="M12 7h23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M29 7v4.4M34 7v3.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
     </svg>`;
-
-  const boxHtml = `<div class="bbk-box ${boxEmpty ? 'is-empty' : ''}">
-    <div class="bbk-stage">
-      <div class="bbk-hand">${pulled.length ? KEY_SVG : ''}</div>
-      <div class="bbk-dial">
-        <div class="bbk-plate" style="--from:${angleFrom}deg;--to:${angleTo}deg">
-          ${order.map((name, i) => {
-            const out = i < pulled.length;
-            const a = step * i;
-            return `<span class="bbk-slot ${out ? 'is-out' : ''}" style="--a:${a}deg;--anti:${-(angleTo + a)}deg"
-              title="${out ? _bbEsc(name) : 'still in the box'}"><i>${String(i + 1).padStart(2, '0')}</i></span>`;
-          }).join('')}
-        </div>
-        <div class="bbk-hub">
-          <b>${pulled.length}</b>
-          <i>of ${order.length}</i>
-        </div>
-      </div>
-      <div class="bbk-called">
-        ${justPulled
-          ? `${_bbAvatar(justPulled, 44)}<b>${_bbEsc(justPulled)}</b><i>${boxEmpty ? 'the last key' : 'is safe'}</i>`
-          : `<span class="bbk-idle">the box is full</span>`}
-      </div>
+  const boxHtml = `<div class="bbnc-box ${locked ? 'is-locked' : ''}">
+    <span class="bbnc-box-l">NOMINATION BOX</span>
+    <div class="bbnc-keys">
+      ${noms.map((_, i) => `<span class="bbnc-key ${i < turned.length ? 'is-turned' : ''}">${KEY_SVG}</span>`).join('')}
     </div>
+    <span class="bbnc-box-c">${turned.length} of ${noms.length} keys turned</span>
   </div>`;
 
-  // ── who is still without one ──
-  const waitingHtml = `<div class="bbk-wait">
-    <div class="bbk-wait-h">${boxEmpty ? 'NOT GIVEN A KEY' : `STILL WITHOUT A KEY (${stillWaiting.length})`}</div>
-    <div class="bbk-faces">
-      ${house.filter(n => n !== hoh).map(n => {
-        const has = pulled.includes(n);
-        const nominated = boxEmpty && !has;
-        return `<span class="bbk-face ${has ? 'is-safe' : ''} ${nominated ? 'is-nom' : ''}">
-          ${_bbAvatar(n, 34)}<i>${_bbEsc(n)}</i></span>`;
+  // ── the memory wall: the screen the faces appear on ──
+  const gone = new Set((typeof gs !== 'undefined' ? gs.eliminated : []) || []);
+  const wallHtml = `<div class="bbnc-wall">
+    <div class="bbnc-grid">
+      ${wall.map(name => {
+        const out = !house.includes(name);
+        const nominated = turned.includes(name);
+        const order = turned.indexOf(name);
+        return `<div class="bbnc-cell ${out ? 'is-out' : ''} ${nominated ? 'is-nom' : ''}"
+            ${nominated ? `style="animation-delay:${Math.max(0, order) * 0.05}s"` : ''}>
+          <div class="bbnc-frame">
+            <div class="bbnc-face">${_bbAvatar(name, 56)}</div>
+            <div class="bbnc-back"><span>NOMINATED</span></div>
+          </div>
+          <span class="bbnc-name">${_bbEsc(name)}</span>
+        </div>`;
       }).join('')}
     </div>
   </div>`;
 
-  // ── the scenes ──
+  // ── the words ──
+  const openLine = `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
+    + ` It is my responsibility as Head of Household to nominate ${WORD} people for eviction.`
+    + ` In my nomination box are the keys of the houseguests I am nominating.`
+    + ` I will turn ${WORD} keys to lock in my nominations, and their faces will appear on the memory wall."`;
+
   const KEY_LINES = [
-    n => `${hoh} pulls a key and spins the box to <strong>${n}</strong>. ${n} takes it and puts it on without a word.`,
-    n => `The next key is <strong>${n}</strong>'s. ${n} lifts it over their head and lets out a breath they had been holding since the competition.`,
-    n => `<strong>${n}</strong>. Safe. The key goes round ${n}'s neck and ${n} looks at the two chairs nobody wants.`,
-    n => `${hoh} does not look up while pulling. <strong>${n}</strong> — safe — and the room gets one name quieter.`,
-    n => `<strong>${n}</strong> is called. There is a small sound from somebody else in the room who wanted that key to be theirs.`,
+    (n, i) => `${hoh} turns the ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key. On the wall, <strong>${n}</strong>'s photograph turns.`,
+    (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key goes round. <strong>${n}</strong> is on the wall, and ${pronouns(n).sub} ${pronouns(n).sub === 'they' ? 'do' : 'does'} not look away from it.`,
+    (n) => `A second turn of the wrist and <strong>${n}</strong>'s face lights up red. Somebody behind ${pronouns(n).obj} breathes out.`,
   ];
-  const line = (name, i) => KEY_LINES[(i + name.length) % KEY_LINES.length](name);
+  const keyLine = (n, i) => KEY_LINES[(i + n.length) % KEY_LINES.length](n, i);
 
   const speechLine = () => {
+    const plan = ep.plan || {};
     const target = plan.target && noms.includes(plan.target) ? plan.target : noms[0];
-    const pawn = noms.find(n => n !== target);
-    const s = typeof pStats === 'function' ? pStats(hoh) : {};
-    // The reasoning, in the HOH's own voice — this is the only place the room
-    // hears why, and how honest it is depends on who is saying it.
-    if ((s.temperament ?? 5) <= 4 || (s.boldness ?? 5) >= 8) {
-      return `${hoh} stands up. "<strong>${target}</strong>, you know exactly why you're sitting there. <strong>${pawn}</strong>, you don't, and that's the nicest thing I can say about this week."`;
+    const others = noms.filter(n => n !== target);
+    const st = typeof pStats === 'function' ? pStats(hoh) : {};
+    if ((st.temperament ?? 5) <= 4 || (st.boldness ?? 5) >= 8) {
+      return `${hoh} stands up. "<strong>${target}</strong>, you know exactly why you're on that wall. ${others.length ? `<strong>${others.join('</strong>, <strong>')}</strong> — you're there because I needed somebody beside ${pronouns(target).obj}.` : ''}"`;
     }
-    if ((s.strategic ?? 5) >= 7) {
-      return `${hoh} stands up. "This is a game and I had to pick two names. <strong>${pawn}</strong>, I need you to trust me. <strong>${target}</strong> — I'd rather you heard it from me than worked it out."`;
+    if ((st.strategic ?? 5) >= 7) {
+      return `${hoh} stands up. "This is a game and I had to turn ${WORD} keys. ${others.length ? `<strong>${others.join('</strong> and <strong>')}</strong>, I need you to trust me. ` : ''}<strong>${target}</strong> — I'd rather you heard it from me than worked it out."`;
     }
-    return `${hoh} stands up. "<strong>${target}</strong>, <strong>${pawn}</strong> — I'm sorry. Nothing about this was easy and I'm not going to pretend it was strategy."`;
+    return `${hoh} stands up. "<strong>${noms.join('</strong>, <strong>')}</strong> — I'm sorry. None of this was easy and I'm not going to pretend it was all strategy."`;
   };
 
-  const sceneHtml = (step, i) => {
+  const sceneFor = (step, i) => {
     if (i > state.idx) {
       return `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
     }
-    if (step.kind === 'key') {
-      return _bbScene({ text: line(step.name, step.slot), players: [step.name],
-        badgeText: 'SAFE', badgeClass: 'green' });
-    }
-    if (step.kind === 'empty') {
+    if (step.kind === 'open') return _bbScene({ text: openLine, players: [hoh].filter(Boolean), badgeText: 'THE CEREMONY BEGINS', badgeClass: 'grey' });
+    if (step.kind === 'key') return _bbScene({ text: keyLine(step.name, step.n - 1), players: [step.name], badgeText: 'NOMINATED', badgeClass: 'red' });
+    if (step.kind === 'speech') return _bbScene({ text: speechLine(), players: [hoh, ...noms].filter(Boolean), badgeText: 'THE REASONING', badgeClass: 'gold' });
+    if (step.kind === 'complete') {
       return _bbScene({
-        text: `${hoh} turns the box around. It is empty. <strong>${noms.join('</strong> and <strong>')}</strong> — you have not been given a key. You are nominated for eviction.`,
-        players: noms, badgeText: 'NOMINATED', badgeClass: 'red' });
+        text: `"${noms.join(', ')} — I have nominated you for eviction because that is my responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`,
+        players: noms, badgeText: 'NOMINATIONS ARE COMPLETE', badgeClass: 'red' });
     }
-    if (step.kind === 'speech') return _bbScene({ text: speechLine(), players: [hoh, ...noms], badgeText: 'THE REASONING', badgeClass: 'gold' });
-    return _bbScene({ text: step.beat.text, players: step.beat.players,
-      badgeText: step.beat.badgeText, badgeClass: step.beat.badgeClass });
+    return _bbScene({ text: step.beat.text, players: step.beat.players, badgeText: step.beat.badgeText, badgeClass: step.beat.badgeClass });
   };
 
   let html = `<div class="rp-page bb-room bb-block">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:6px">NOMINATION CEREMONY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
-      hoh ? `${hoh} has loaded the box. Every key in it belongs to somebody who is safe.` : ''}</div>
-    ${boxHtml}
-    ${waitingHtml}`;
+      hoh ? `${hoh} turns ${WORD} keys. The wall does the rest.` : ''}</div>
+    ${wallHtml}
+    ${boxHtml}`;
 
-  steps.forEach((step, i) => { html += sceneHtml(step, i); });
+  steps.forEach((step, i) => { html += sceneFor(step, i); });
 
+  const nextLabel = state.idx >= 0 && state.idx < noms.length ? 'Turn the next key' : 'Reveal next';
   html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${state.idx < order.length - 1 ? 'Pull the next key' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${nextLabel}</button>`}
       ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, steps.length - 1)}">Reveal all</button>`}
       <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(steps.length, revealed)} / ${steps.length}</span>
     </div>`;
@@ -17037,7 +17023,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
         break;
       case 'nominations':
-        screens.push({ id: id('bb-noms'), label: 'Nominations', html: rpBuildBBNominations(view) });
+        screens.push({ id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view) });
         break;
       case 'instant-eviction':
         screens.push({ id: id('bb-instant'), label: 'Instant Eviction', html: rpBuildBBInstantEviction(view) });

@@ -4353,11 +4353,12 @@ export function generateBBSummaryText(ep) {
           if (c?.promised) return `  ${b.voter} promised ${b.evict} and cast it.`;
           return '';
         }).filter(Boolean);
-        if (reasons.length) {
-          ln('');
-          ln('  How the plans changed:');
-          reasons.forEach(ln);
-        }
+        ln('');
+        ln('  How the plans changed:');
+        if (reasons.length) reasons.forEach(ln);
+        // A quiet vote is still an account of the vote. Saying nothing at all
+        // leaves the transcript unable to explain the one night it exists for.
+        else ln('    Nobody promised anything and nobody moved. The house agreed and that was that.');
         for (const [name, bloc] of Object.entries((ep.blocMoves || []).reduce((acc, m) => {
           (acc[m.alliance] ||= { target: m.target, asked: [] }).asked.push(m.voter);
           return acc;

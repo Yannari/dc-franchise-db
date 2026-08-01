@@ -21,6 +21,7 @@ import { PHASE_EVENTS } from './phases.js';
 import { VENUE_EVENTS } from './venue.js';
 import { POWER_EVENTS } from './power.js';
 import { SCHEME_EVENTS } from './schemes.js';
+import { LOCATION_TEXTURE_EVENTS } from './location-texture.js';
 
 /** Every house event, in no particular order — the scheduler weights them. */
 export const HOUSE_EVENTS = [
@@ -33,14 +34,15 @@ export const HOUSE_EVENTS = [
   ...VENUE_EVENTS,
   ...POWER_EVENTS,
   ...SCHEME_EVENTS,
+  ...LOCATION_TEXTURE_EVENTS,
 ];
 
 /** The same events grouped, for debug screens and for testing one slice. */
 export const HOUSE_EVENTS_BY_CATEGORY = {
   ceremonies: [...CEREMONY_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'ceremonies')],
-  social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'social'), ...SCHEME_EVENTS.filter(e => e.category === 'social')],
-  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals')],
-  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life')],
+  social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'social'), ...SCHEME_EVENTS.filter(e => e.category === 'social'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'social')],
+  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'deals')],
+  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'house-life')],
   phases: [...PHASE_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'phases')],
 };
 
@@ -65,5 +67,5 @@ export function assertUniqueEventIds(events = HOUSE_EVENTS) {
   return true;
 }
 
-export { CEREMONY_EVENTS, SOCIAL_EVENTS, EDITORIAL_SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS, PHASE_EVENTS };
+export { CEREMONY_EVENTS, SOCIAL_EVENTS, EDITORIAL_SOCIAL_EVENTS, DEALS_EVENTS, HOUSE_LIFE_EVENTS, PHASE_EVENTS, LOCATION_TEXTURE_EVENTS };
 export default HOUSE_EVENTS;

@@ -50,6 +50,19 @@ export function setBBTarget(actor, target, reason = 'house event', context = {})
   const previous = [...plan.targets];
   plan.targets = [target, ...plan.targets.filter(name => name !== target)].slice(0, 3);
   plan.origins.targets[target] = reason;
+  // Nobody is both the wall you hide behind and the person you are coming for.
+  //
+  // The periodic revision resolves this, but revision only runs at act
+  // boundaries and targets get set BETWEEN them — the pawn ask fires during
+  // house life after the last revision and before nominations are chosen, so a
+  // clash created there survived into the ceremony. The two pulls then cancel
+  // (+3.4 for a top target against -7 for a shield) and the Head of Household
+  // nominates their own shield. Enforced where the write happens instead.
+  if (plan.shield === target) {
+    plan.shield = null;
+    plan.history.push({ ep: round, field: 'shield', from: target, to: null,
+      reason: `stopped hiding behind ${target} — you cannot shelter behind somebody you are coming for` });
+  }
   plan.history.push({ ep: round, field: 'targets', from: previous, to: [...plan.targets], reason });
   if (plan.history.length > 20) plan.history.splice(0, plan.history.length - 20);
   plan.lastRevisedEp = round;

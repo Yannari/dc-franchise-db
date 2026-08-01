@@ -117,7 +117,7 @@ describe('a Big Brother season can actually be played', () => {
     expect(text).toContain('HEAD OF HOUSEHOLD');
     expect(text).toContain('NOMINATION CEREMONY');
     expect(text).toContain('POWER OF VETO');
-    expect(text).toContain('LIVE EVICTION');
+    expect(text).toContain('EVICTION NIGHT');
     expect(text).toContain(ep.eliminated);
     // House life appears in the transcript too, not only in the visual player.
     expect(text).toMatch(/\[[A-Z ·']+\]/);

@@ -17045,7 +17045,7 @@ export function rpBuildBBEviction(ep) {
   ];
 
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'LIVE EVICTION',
+    eyebrow: `Week ${ep.num}`, title: 'EVICTION NIGHT',
     subtitle: 'One houseguest leaves tonight.', accent: '#f85149', room: 'bb-live',
     stateKey: `bb_evict_${ep.num}`, header: board + header + plans, scenes,
     footer: _bbVotePlanVerdict(ep),
@@ -17231,10 +17231,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
         });
         break;
       case 'eviction':
-        screens.push({ id: id('bb-evict'), label: 'Eviction', html: rpBuildBBEviction(view) });
+        screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
         try {
           const iv = rpBuildBBEvictionInterview(view);
-          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Eviction Interview', html: iv });
+          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });
         } catch { /* no interview, no screen */ }
         try {
           const votes = rpBuildVotes(view);
@@ -18050,7 +18050,7 @@ export function rpBuildBBEvictionInterview(ep) {
 
   let html = `<div class="rp-page bb-room bb-live">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.3);margin-bottom:6px">THE EVICTION INTERVIEW</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.3);margin-bottom:6px">THE EVICTEE INTERVIEW</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${iv.evictee} has left the Big Brother house.</div>
     <div style="display:flex;justify-content:center;margin-bottom:18px">${rpPortrait(iv.evictee, 'evicted')}</div>`;
 

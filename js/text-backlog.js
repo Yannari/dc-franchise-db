@@ -4353,7 +4353,7 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'eviction': {
-        sec('LIVE EVICTION');
+        sec('EVICTION NIGHT');
 
         // THE NUMBERS. The transcript is the other way somebody can find out
         // how a week went, so it carries the same fact the screen opens with:
@@ -4419,7 +4419,7 @@ export function generateBBSummaryText(ep) {
 
   const iv = ep.evictionInterview;
   if (iv) {
-    sec('THE EVICTION INTERVIEW');
+    sec('THE EVICTEE INTERVIEW');
     iv.questions.forEach(q => {
       ln(`  ${iv.host}: ${q.q}`);
       ln(`  ${iv.evictee}: ${q.a}${q.wrong ? '   (wrong)' : ''}`);

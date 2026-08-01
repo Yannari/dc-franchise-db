@@ -377,7 +377,7 @@ export function summariseWeek(week) {
         break;
       case 'eviction': {
         line('');
-        line('LIVE EVICTION');
+        line('EVICTION NIGHT');
         Object.entries(act.votes || {}).forEach(([name, count]) => line(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
         if (act.tieBreak) line(`  Tied — ${act.tieBreak.voter} breaks it.`);
         line(`  ${act.evicted} is evicted from the Big Brother house.`);

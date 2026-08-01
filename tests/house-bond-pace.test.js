@@ -69,7 +69,7 @@ describe('the transcript carries the week', () => {
     for (let i = 0; i < 2; i++) ep = simulateBBEpisode();
     const text = generateBBSummaryText(ep);
     expect(text).toMatch(/The numbers: \d+ of \d+ decides it\./);
-    expect(text).toContain('LIVE EVICTION');
+    expect(text).toContain('EVICTION NIGHT');
     // The screen and the transcript should not be two different accounts.
     expect(text).toMatch(/How the plans changed:|promised .* and cast it|went with .* onto/);
   });

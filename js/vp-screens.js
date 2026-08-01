@@ -16507,8 +16507,17 @@ export function rpBuildBBNominations(ep) {
     steps.push({ kind: 'key', name, slot: i + 1, remaining: left.length });
   });
   steps.push({ kind: 'empty' });
-  steps.push({ kind: 'speech' });
-  (act?.socialBeats || []).forEach(b => steps.push({ kind: 'beat', beat: b }));
+
+  // The ceremony has WRITTEN events for the speech — nom-speech-game and
+  // nom-speech-personal, chosen by who the Head of Household is — and they were
+  // being dumped in an undifferentiated tail after a generic line said the same
+  // thing worse. If the house wrote a speech, the house gives the speech.
+  const written = act?.socialBeats || [];
+  const speeches = written.filter(b => String(b.eventId || '').startsWith('nom-speech'));
+  const reactions = written.filter(b => !speeches.includes(b));
+  if (speeches.length) speeches.forEach(b => steps.push({ kind: 'beat', beat: b, speech: true }));
+  else steps.push({ kind: 'speech' });
+  reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
   const done = state.idx >= steps.length - 1;
   const revealed = Math.max(0, state.idx + 1);
@@ -16517,15 +16526,47 @@ export function rpBuildBBNominations(ep) {
   const boxEmpty = state.idx >= order.length - 1 && order.length > 0;
 
   // ── the box: numbered slots, filling as keys come out ──
-  const boxHtml = `<div class="bbk-box">
-    <div class="bbk-ring">
-      ${order.map((name, i) => {
-        const out = i < pulled.length;
-        return `<span class="bbk-slot ${out ? 'is-out' : ''}" title="${out ? _bbEsc(name) : 'unpulled'}">${String(i + 1).padStart(2, '0')}</span>`;
-      }).join('')}
-      ${order.length ? '' : '<span class="bbk-slot is-out">—</span>'}
+  // The box is a Lazy Susan and it turns. Each key pulled spins the plate so
+  // the next slot comes up under the hand — which is the moment the room reads,
+  // because everybody is watching the numbers come round and counting how many
+  // are left. A rack of static squares is not a ceremony.
+  const slots = Math.max(order.length, 1);
+  const step = 360 / slots;
+  const at = n => -step * Math.min(n, slots);         // plate angle after n keys
+  const angleTo = at(pulled.length);
+  const angleFrom = at(Math.max(0, pulled.length - 1));
+  const justPulled = pulled.length ? pulled[pulled.length - 1] : null;
+
+  const KEY_SVG = `<svg class="bbk-key" viewBox="0 0 44 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="8" cy="8" r="2.1" fill="currentColor"/>
+      <path d="M14 8h26" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M33 8v5M38 8v4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>`;
+
+  const boxHtml = `<div class="bbk-box ${boxEmpty ? 'is-empty' : ''}">
+    <div class="bbk-stage">
+      <div class="bbk-hand">${pulled.length ? KEY_SVG : ''}</div>
+      <div class="bbk-dial">
+        <div class="bbk-plate" style="--from:${angleFrom}deg;--to:${angleTo}deg">
+          ${order.map((name, i) => {
+            const out = i < pulled.length;
+            const a = step * i;
+            return `<span class="bbk-slot ${out ? 'is-out' : ''}" style="--a:${a}deg;--anti:${-(angleTo + a)}deg"
+              title="${out ? _bbEsc(name) : 'still in the box'}"><i>${String(i + 1).padStart(2, '0')}</i></span>`;
+          }).join('')}
+        </div>
+        <div class="bbk-hub">
+          <b>${pulled.length}</b>
+          <i>of ${order.length}</i>
+        </div>
+      </div>
+      <div class="bbk-called">
+        ${justPulled
+          ? `${_bbAvatar(justPulled, 44)}<b>${_bbEsc(justPulled)}</b><i>${boxEmpty ? 'the last key' : 'is safe'}</i>`
+          : `<span class="bbk-idle">the box is full</span>`}
+      </div>
     </div>
-    <div class="bbk-count">${pulled.length} of ${order.length} keys pulled</div>
   </div>`;
 
   // ── who is still without one ──

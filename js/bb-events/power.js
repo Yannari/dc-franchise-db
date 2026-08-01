@@ -876,9 +876,163 @@ const hohRoomSpy = {
   },
 };
 
+// ── the days before the ceremony ──────────────────────────────────────
+//
+// The visual player used to print a panel headed "private intent" listing the
+// target, the pawn and the backdoor above the ceremony. Nobody announces that,
+// and printing it spoils the only suspense the week has. The Head of Household
+// works it out in the HOH room, out loud, with somebody — and the rest of the
+// house works on it from downstairs, guessing. That is where this belongs.
+
+const hohDeciding = {
+  id: 'power-hoh-deciding',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || _blockKnown(ctx) || house.length < 5) return 0;
+    if (!targetOf(hoh)) return 0;
+    return band(11);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const mark = targetOf(hoh);
+    // Somebody they trust enough to say a name to. That is the whole risk.
+    const confidant = closestTo(hoh, _others(house, hoh, mark)) || _others(house, hoh, mark)[0];
+    const p = pronouns(hoh);
+    const s = pStats(hoh);
+    const text = _variant([
+      `${hoh} says the name out loud for the first time. "<strong>${mark}</strong>." ${confidant} does not react fast enough, and ${hoh} notices that too.`,
+      `"If I don't do it this week, somebody else gets the chance and I lose it." ${hoh} is talking about <strong>${mark}</strong>, and ${confidant} already knew that before the sentence finished.`,
+      `${hoh} lays it out for ${confidant} like a problem with one answer: <strong>${mark}</strong> goes up, and the only question left is who sits beside ${pronouns(mark).obj}.`,
+      `${confidant} asks who it is. ${hoh} takes long enough to answer that ${confidant} works it out anyway. "<strong>${mark}</strong>." "Yeah," ${confidant} says. "Yeah."`,
+    ], ctx, hoh, mark);
+
+    api.addBond(hoh, confidant, 0.9);
+    api.remember(confidant, hoh, 'told-me-first', 2, { about: mark });
+    // Being told first is the most valuable thing in this house, and it is also
+    // the moment the plan stops being private.
+    api.suspicion(confidant, mark, 0.5);
+    return { text, players: [hoh, confidant, mark].filter(Boolean), badgeText: 'A NAME OUT LOUD', badgeClass: 'gold' };
+  },
+};
+
+const pawnAsk = {
+  id: 'power-pawn-ask',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || _blockKnown(ctx) || house.length < 6) return 0;
+    return band(9);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const mark = targetOf(hoh);
+    // You ask somebody who likes you. That is what makes it a cruel favour.
+    const pawn = closestTo(hoh, _others(house, hoh, mark)) || _others(house, hoh, mark)[0];
+    const s = pStats(pawn);
+    const p = pronouns(pawn);
+    // Whether they say yes is about nerve and trust, not niceness.
+    const agrees = (s.loyalty * 0.5 + s.boldness * 0.35 + bond(pawn, hoh) * 0.6) > 5.4;
+    const text = agrees ? _variant([
+      `"I need you to go up beside ${mark ? `<strong>${mark}</strong>` : 'them'}. You are not the one going home." ${pawn} says yes before ${hoh} has finished the sentence, and spends the rest of the night wondering why ${p.sub} did that.`,
+      `${hoh} asks ${pawn} to be the pawn. ${pawn} agrees, on the condition that ${hoh} says it to ${p.posAdj} face if that ever changes.`,
+      `"Pawns go home," ${pawn} says. "Not this one," ${hoh} says. ${pawn} agrees anyway, which tells ${hoh} everything about how safe ${pawn} feels.`,
+    ], ctx, hoh, pawn) : _variant([
+      `${hoh} asks ${pawn} to sit beside ${mark || 'them'}. ${pawn} says no. Nobody in this house has said no to a Head of Household in weeks and the room does not quite know what to do with it.`,
+      `"Ask somebody else." ${pawn} does not raise ${p.posAdj} voice and does not move. ${hoh} is going to have to nominate ${p.obj} anyway now, and they both know it.`,
+      `${pawn} has watched three pawns go home and says so. ${hoh} runs out of reassurance about a minute before ${pawn} runs out of patience.`,
+    ], ctx, hoh, pawn);
+
+    if (agrees) {
+      api.sideDeal(hoh, pawn, 'safety', { genuine: true, about: 'you are not the one going home' });
+      api.addBond(hoh, pawn, 1.1);
+      api.remember(pawn, hoh, 'asked-me-to-sit', 2);
+    } else {
+      api.addBond(hoh, pawn, -1.2);
+      api.suspicion(hoh, pawn, 1.1);
+      api.setTarget(hoh, pawn, 'refused to go up for me');
+      api.remember(hoh, pawn, 'told-me-no', 2);
+    }
+    return {
+      text, players: [hoh, pawn],
+      badgeText: agrees ? 'AGREES TO SIT' : 'REFUSES THE CHAIR',
+      badgeClass: agrees ? 'green' : 'red',
+    };
+  },
+};
+
+const backdoorPlan = {
+  id: 'power-backdoor-plan',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    // Only once the block exists, and only when there is a real plan behind it.
+    const hoh = _hoh(ctx);
+    if (!hoh || !_blockKnown(ctx)) return 0;
+    return ctx?.week?.plan?.backdoorTarget ? band(13) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const real = ctx.week.plan.backdoorTarget;
+    const noms = _noms(ctx);
+    const ally = closestTo(hoh, _others(house, hoh, real, ...noms)) || _others(house, hoh, real)[0];
+    const p = pronouns(hoh);
+    const text = _variant([
+      `"Those two were never the point." ${hoh} explains it to ${ally} in one breath: the veto comes down, somebody comes off, and <strong>${real}</strong> goes up with no time to campaign.`,
+      `${hoh} draws it out for ${ally} — two names on the block who are not the target, a veto, and <strong>${real}</strong> sitting there on Thursday having never seen it coming.`,
+      `"If I put ${real} up on Monday, ${pronouns(real).sub} ${pronouns(real).sub === 'they' ? 'have' : 'has'} four days to work the house." ${hoh} is not giving <strong>${real}</strong> four days.`,
+      `${ally} asks why ${noms.join(' and ')}. ${hoh} smiles at that. The answer is <strong>${real}</strong>, and it does not happen until the veto.`,
+    ], ctx, hoh, real, ally);
+
+    api.remember(ally, hoh, 'showed-me-the-plan', 3, { about: real });
+    api.addBond(hoh, ally, 0.8);
+    api.setTarget(hoh, real, 'the whole week is about them');
+    api.suspicion(ally, real, 0.6);
+    return { text, players: [hoh, ally, real].filter(Boolean), badgeText: 'THE REAL PLAN', badgeClass: 'purple' };
+  },
+};
+
+const nomEveGuessing = {
+  id: 'power-nom-eve-guessing',
+  category: 'social',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || _blockKnown(ctx) || house.length < 5) return 0;
+    return band(10);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const talkers = _quiet(_others(house, hoh)).slice(0, 2);
+    const [a, b] = talkers;
+    const real = targetOf(hoh);
+    // What the house GUESSES, which is the whole game — and it is often wrong.
+    const guess = _others(house, hoh, a, b).sort((x, y) => threat(y) - threat(x))[0] || real;
+    const rightGuess = guess === real;
+    const p = pronouns(a);
+    const text = _variant([
+      `${a} and ${b} run through the whole house downstairs, name by name, working out who is going up. They land on <strong>${guess}</strong>. ${rightGuess ? 'They are right, and neither of them looks pleased about it.' : `They are wrong, and they will find that out in the morning.`}`,
+      `"It's ${guess}. It has to be ${guess}." ${a} says it like arithmetic. ${b} is not so sure, and ${b} is ${rightGuess ? 'wrong' : 'right'}.`,
+      `Nobody sleeps much the night before nominations. ${a} lies awake counting who ${hoh} has spoken to today and does not like the answer.`,
+      `${b} asks ${a} straight out: "Am I going up?" ${a} says no. ${a} does not know, and says it anyway, because that is what you say.`,
+    ], ctx, a, b, guess);
+
+    api.suspicion(a, hoh, 0.5);
+    api.suspicion(b, hoh, 0.5);
+    api.addBond(a, b, 0.5);
+    if (rightGuess) api.remember(a, guess, 'called-it', 1);
+    return {
+      text, players: [a, b, guess].filter(Boolean),
+      badgeText: 'THE NIGHT BEFORE', badgeClass: rightGuess ? 'orange' : 'grey',
+    };
+  },
+};
+
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
   hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
+  hohDeciding, pawnAsk, backdoorPlan, nomEveGuessing,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
   hohRefusesEntry, vetoDrawLobby, vetoPromise,

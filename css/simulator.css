@@ -545,47 +545,86 @@
     .bbg-ok         { flex:1; text-align:right; font-size:10px; color:#4d545c; font-style:italic; }
 
     /* ── The nomination box ──
-       A circular rack of numbered key slots. The Head of Household loads it
-       with the keys of everybody who is SAFE and pulls them one at a time, so
-       the drama is in the slots emptying and the faces that never get called. */
-    .bbk-box        { margin:0 0 14px; padding:12px; border-radius:10px;
-                      border:1px solid rgba(248,81,73,.22);
-                      background:radial-gradient(circle at 50% 0%, rgba(248,81,73,.08), rgba(13,17,23,.6) 70%); }
-    .bbk-ring       { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
-    .bbk-slot       { display:inline-flex; align-items:center; justify-content:center;
-                      width:26px; height:32px; border-radius:3px;
-                      font-family:ui-monospace,Consolas,monospace; font-size:9px; font-weight:700;
-                      color:#8b949e; background:rgba(255,255,255,.04);
-                      border:1px solid rgba(255,255,255,.09);
-                      box-shadow:inset 0 -6px 10px rgba(0,0,0,.35);
-                      transition:background .2s ease, color .2s ease, border-color .2s ease; }
-    /* A pulled key leaves its slot empty and lit. */
-    .bbk-slot.is-out { color:#3fb950; border-color:rgba(63,185,80,.45);
-                      background:rgba(63,185,80,.1); box-shadow:0 0 10px rgba(63,185,80,.25); }
-    .bbk-count      { margin-top:9px; text-align:center;
-                      font-family:ui-monospace,Consolas,monospace; font-size:9px;
-                      letter-spacing:1.4px; color:#6e7681; }
+       A Lazy Susan of numbered key slots. The Head of Household loads it with
+       the keys of everybody who is SAFE and pulls them one at a time; the
+       nominees are whoever the box never reaches. It TURNS on every pull,
+       because that is the moment the room reads — the numbers coming round and
+       everybody counting how many are left. */
+    .bbk-box        { margin:0 0 16px; padding:16px 12px 14px; border-radius:12px;
+                      border:1px solid rgba(248,81,73,.2);
+                      background:radial-gradient(ellipse at 50% 0%, rgba(248,81,73,.1), rgba(13,17,23,.75) 68%); }
+    .bbk-box.is-empty { border-color:rgba(248,81,73,.5);
+                      box-shadow:0 0 34px rgba(248,81,73,.16) inset; }
+    .bbk-stage      { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; }
 
-    /* Who has not been called yet. This is the ceremony: the list gets shorter
-       and everybody in the room is doing the same arithmetic. */
+    .bbk-dial       { position:relative; width:186px; height:186px; flex-shrink:0; border-radius:50%;
+                      background:radial-gradient(circle at 50% 42%, #1b222c, #0d1117 72%);
+                      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),
+                                 inset 0 10px 26px rgba(0,0,0,.6), 0 6px 24px rgba(0,0,0,.45); }
+    .bbk-plate      { position:absolute; inset:0; animation:bbk-turn .62s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes bbk-turn { from { transform:rotate(var(--from,0deg)); } to { transform:rotate(var(--to,0deg)); } }
+
+    .bbk-slot       { position:absolute; top:50%; left:50%; width:26px; height:30px; margin:-15px 0 0 -13px;
+                      display:flex; align-items:center; justify-content:center; border-radius:3px;
+                      transform:rotate(var(--a)) translateY(-74px);
+                      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+                      border:1px solid rgba(255,255,255,.1);
+                      box-shadow:inset 0 -5px 8px rgba(0,0,0,.4); }
+    .bbk-slot i     { display:block; transform:rotate(var(--anti)); font-style:normal;
+                      font-family:ui-monospace,Consolas,monospace; font-size:9px; font-weight:700; color:#8b949e; }
+    /* A pulled key leaves an empty, lit slot behind it. */
+    .bbk-slot.is-out { background:rgba(63,185,80,.12); border-color:rgba(63,185,80,.45);
+                      box-shadow:0 0 12px rgba(63,185,80,.3), inset 0 0 8px rgba(63,185,80,.18); }
+    .bbk-slot.is-out i { color:#3fb950; }
+
+    .bbk-hub        { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                      width:74px; height:74px; border-radius:50%; display:flex; flex-direction:column;
+                      align-items:center; justify-content:center; gap:1px;
+                      background:radial-gradient(circle at 50% 35%, #232b36, #10151c 70%);
+                      box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), 0 4px 14px rgba(0,0,0,.5); }
+    .bbk-hub b      { font-family:var(--font-display); font-size:24px; line-height:1; color:#f85149; }
+    .bbk-hub i      { font-style:normal; font-family:ui-monospace,Consolas,monospace;
+                      font-size:8px; letter-spacing:1.2px; color:#6e7681; }
+
+    /* The key itself, held above the box after each pull. */
+    .bbk-hand       { width:56px; display:flex; align-items:center; justify-content:center; color:#e3b341; }
+    .bbk-key        { width:52px; height:20px; animation:bbk-lift .5s ease-out both;
+                      filter:drop-shadow(0 0 8px rgba(227,179,65,.55)); }
+    @keyframes bbk-lift { from { opacity:0; transform:translateY(10px) rotate(-16deg); }
+                          to   { opacity:1; transform:none; } }
+
+    .bbk-called     { min-width:112px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .bbk-called b   { font-size:13px; color:#e6edf3; }
+    .bbk-called i   { font-style:normal; font-size:9px; letter-spacing:1.2px;
+                      text-transform:uppercase; color:#3fb950; }
+    .bbk-idle       { font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:#4d545c; }
+
+    /* Who is still without one. The ceremony is this list getting shorter. */
     .bbk-wait       { margin-bottom:16px; }
     .bbk-wait-h     { text-align:center; font-family:ui-monospace,Consolas,monospace;
                       font-size:9px; font-weight:800; letter-spacing:1.8px;
                       color:#8b949e; margin-bottom:8px; }
     .bbk-faces      { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
     .bbk-face       { display:flex; flex-direction:column; align-items:center; gap:3px;
-                      width:46px; opacity:1; transition:opacity .2s ease, filter .2s ease; }
+                      width:46px; transition:opacity .25s ease, filter .25s ease; }
     .bbk-face i     { font-style:normal; font-size:8.5px; letter-spacing:.3px; color:#c9d1d9;
                       max-width:46px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    /* Safe: dimmed and out of the story. */
-    .bbk-face.is-safe          { opacity:.32; filter:grayscale(.7); }
-    .bbk-face.is-safe i        { color:#6e7681; }
-    /* Nominated: the two the box never reached. */
-    .bbk-face.is-nom .bb-av    { box-shadow:0 0 0 2px #f85149, 0 0 18px rgba(248,81,73,.5); }
-    .bbk-face.is-nom i         { color:#ffb3ae; font-weight:700; }
+    .bbk-face.is-safe       { opacity:.3; filter:grayscale(.75); }
+    .bbk-face.is-safe i     { color:#6e7681; }
+    .bbk-face.is-nom .bb-av { box-shadow:0 0 0 2px #f85149, 0 0 20px rgba(248,81,73,.55);
+                              animation:bbk-onblock 1.6s ease-in-out infinite; }
+    .bbk-face.is-nom i      { color:#ffb3ae; font-weight:700; }
+    @keyframes bbk-onblock { 0%,100% { box-shadow:0 0 0 2px #f85149, 0 0 14px rgba(248,81,73,.4); }
+                             50%     { box-shadow:0 0 0 2px #f85149, 0 0 26px rgba(248,81,73,.75); } }
+
+    /* The speech the house wrote, rather than a line about the speech. */
+    .bbk-speech     { border-left:3px solid #f0a500 !important;
+                      background:linear-gradient(90deg, rgba(240,165,0,.1), rgba(17,21,28,.6) 60%) !important; }
 
     @media (prefers-reduced-motion: reduce) {
-      .bbk-slot, .bbk-face { transition:none; }
+      .bbk-plate, .bbk-key, .bbk-face.is-nom .bb-av { animation:none; }
+      .bbk-plate { transform:rotate(var(--to,0deg)); }
+      .bbk-face  { transition:none; }
     }
 
     /* Legend for the standing icons — an icon nobody can name is decoration. */

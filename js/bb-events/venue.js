@@ -215,7 +215,12 @@ const overlooked = {
     if (average < 3) return 0;                 // too early in the week to tell
     const quietest = Math.min(...counts);
     const shortfall = (average - quietest) / average;
-    if (shortfall < 0.45) return 0;            // nobody is actually being missed
+    // Recalibrated after ten HOH-room and pre-ceremony events joined the
+    // library and spread the feed out: the worst shortfall in a measured season
+    // fell from over half to 42%, so a 45% gate made this unreachable. Somebody
+    // on nineteen beats where the average is thirty-two is still being
+    // overlooked, which is the whole point of the event.
+    if (shortfall < 0.3) return 0;            // nobody is actually being missed
     return band(shortfall * 14);
   },
   fire(house, ctx, api) {

@@ -737,7 +737,7 @@ const hohRoomReveal = {
     const text = _variant([
       `The door opens and the house piles in behind ${hoh} — the bed, the shower nobody else gets, the basket of food. Then ${hoh} finds the photographs, and the room goes quiet the way it always does. ${guests[0] || 'Somebody'} looks at the floor rather than at ${p.obj}.`,
       `${hoh} reads the letter out loud and gets four lines in before ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} to stop. Nobody says anything. ${guests[0] || 'Somebody'} puts a hand on ${p.posAdj} shoulder and everybody pretends to be looking at the photographs.`,
-      `Photographs first, then the letter, then the food. ${hoh} does them in that order because ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been planning the order for six days. ${holdsIt ? `${p.Sub} ${p.sub === 'they' ? 'get' : 'gets'} through it.` : `${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not get through it.`}`,
+      `Photographs first, then the letter, then the food. ${hoh} has been thinking about this moment since the competition ended. ${holdsIt ? `${p.Sub} ${p.sub === 'they' ? 'get' : 'gets'} through the letter.` : `${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not get through the letter.`}`,
       `For twenty minutes the HOH room is the warmest place in the house and everyone in it means what they are saying. ${hoh} will remember that later, when the same people are counting votes on ${p.obj}.`,
     ], ctx, hoh);
 
@@ -1007,9 +1007,9 @@ const backdoorPlan = {
     const ally = closestTo(hoh, _others(house, hoh, real, ...noms)) || _others(house, hoh, real)[0];
     const p = pronouns(hoh);
     const text = _variant([
-      `"Those two were never the point." ${hoh} explains it to ${ally} in one breath: the veto comes down, somebody comes off, and <strong>${real}</strong> goes up with no time to campaign.`,
-      `${hoh} draws it out for ${ally} — two names on the block who are not the target, a veto, and <strong>${real}</strong> sitting there on Thursday having never seen it coming.`,
-      `"I could have put ${real} up at the ceremony and given ${pronouns(real).obj} four days to work the house." ${hoh} did not. <strong>${real}</strong> gets a few hours instead, on veto day, with the votes already counted.`,
+      `"Those two were never the point." ${hoh} explains it to ${ally} in one breath: the veto comes down, somebody comes off, and <strong>${real}</strong> goes up after losing the chance to play for safety.`,
+      `${hoh} draws it out for ${ally} — two names on the block who are not the target, a veto, and <strong>${real}</strong> taking the empty chair without ever getting a shot at the necklace.`,
+      `"If I put ${real} up at nominations, ${pronouns(real).sub} could get picked for veto and save ${pronouns(real).ref}." ${hoh} did not. The plan is to wait until that chance is gone.`,
       `${ally} asks why ${noms.join(' and ')}. ${hoh} smiles at that. The answer is <strong>${real}</strong>, and it does not happen until the veto.`,
     ], ctx, hoh, real, ally);
 
@@ -1083,7 +1083,7 @@ const savedThemselves = {
     const p = pronouns(saved);
     const s = pStats(saved);
     const text = _variant([
-      `${saved} took ${p.ref} off the block with ${p.posAdj} own hands and nobody in this house can take that away from ${p.obj}. ${p.Sub} also cost ${hoh} a week, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} that too.`,
+      `${saved} took ${p.ref} off the block with ${p.posAdj} own hands and nobody in this house can take that away from ${p.obj}. ${p.Sub} also forced ${hoh} to put another name in the chair, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} that too.`,
       `There is a particular kind of quiet that follows somebody saving themselves. ${saved} is safe, everybody else is one chair short, and the room is doing the arithmetic out loud.`,
       `${saved} does not celebrate. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on the block once now, which means the house has already had the conversation about ${p.obj} — and will have it again.`,
       `"I didn't have a choice." ${saved} says it to everybody who will listen. Nobody has suggested ${p.sub} did.`,
@@ -1195,7 +1195,7 @@ const nobodySurprised = {
     const text = _variant([
       `The ceremony takes four minutes and surprises nobody. Two people go back to bed. The house has known how this week ends since Monday.`,
       `Nothing about the veto changes anything, which everybody privately expected and nobody says out loud in case it sounds like gloating.`,
-      `${watchers[0] || 'Somebody'} asks what happened at the ceremony and is told, and does not look up from what ${pronouns(watchers[0] || 'they').sub} ${'is'} doing.`,
+      `${watchers[0] || 'Somebody'} asks what happened at the ceremony, gets the answer and goes straight back to what ${pronouns(watchers[0] || 'Somebody').sub} ${pronouns(watchers[0] || 'Somebody').sub === 'they' ? 'were' : 'was'} doing.`,
       `There is no scene after it. ${noms.join(' and ')} are the same two names they were this morning, and the vote was decided before any of it.`,
     ], ctx, ...watchers);
     // A week with no surprise is still a week: the block hardens.
@@ -1204,37 +1204,17 @@ const nobodySurprised = {
   },
 };
 
-const savedThanks = {
-  id: 'power-saved-thanks',
-  category: 'social',
-  weight(house, ctx) {
-    const { saved } = actFacts(ctx);
-    const holder = ctx?.vetoWinner;
-    if (!saved || !holder || saved === holder) return 0;
-    return afterCeremony(ctx, 10);
-  },
-  fire(house, ctx, api) {
-    const { saved, replacement } = actFacts(ctx);
-    const holder = ctx.vetoWinner;
-    const p = pronouns(saved);
-    const text = _variant([
-      `${saved} thanks ${holder} properly, alone, without an audience — which is the only version of it that means anything and both of them know it.`,
-      `"I owe you." ${saved} says it once and does not repeat it. ${holder} says ${p.sub} ${'does'} not, and neither of them believes that.`,
-      `${saved} is off the block and cannot stop looking at ${replacement || 'the person in the chair'}. Relief and guilt turn out to be the same feeling with the volume changed.`,
-      `${saved} hugs ${holder} in front of the whole house, which is thanks and a public statement about who ${p.sub} ${'is'} with. ${p.Sub} means both.`,
-    ], ctx, saved, holder);
-    api.addBond(saved, holder, 2.0);
-    api.remember(saved, holder, 'took-me-off', 3);
-    if (replacement) api.remember(saved, replacement, 'sat-down-for-me', 1);
-    return { text, players: [saved, holder], badgeText: 'OWES THEM ONE', badgeClass: 'green' };
-  },
-};
+// There is deliberately no "saved houseguest thanks the holder" event here.
+// ceremonies.js already has veto-saved-gratitude, which fires at the ceremony
+// itself — where the thanks actually happens — and weights it by how
+// surprising the save was. A second one written here only competed with it for
+// the same beat, and won, which killed the better version.
 
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
   hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
   hohDeciding, pawnAsk, backdoorPlan, nomEveGuessing,
-  savedThemselves, replacementReacts, vetoHolderFallout, nobodySurprised, savedThanks,
+  savedThemselves, replacementReacts, vetoHolderFallout, nobodySurprised,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
   hohRefusesEntry, vetoDrawLobby, vetoPromise,

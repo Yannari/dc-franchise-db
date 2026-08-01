@@ -21,6 +21,7 @@ import { gs, players } from '../core.js';
 import { getBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { evaluateEndgameBeatability } from '../intentions.js';
+import { bbThreatProfile, bbHeat } from './shared-strategy.js';
 
 const clamp01 = n => Math.max(0, Math.min(1, n));
 
@@ -60,14 +61,20 @@ const planStyleFor = skill => (skill >= 7.5 ? 'endgame-architect' : skill >= 5 ?
  * because it is the one thing everybody has watched happen.
  */
 export function houseThreat(name) {
+  // The same observed model the nominations use, rather than a second opinion
+  // built from the stat sheet.
+  //
+  // This was the real leak. bbThreatProfile was taught to weigh what the house
+  // has actually WATCHED, but plans kept their own reading straight off
+  // strategic/social/physical — and plans set targets, and targets pull hard on
+  // nominations. So a houseguest with strategic 10 still sat on top of every
+  // early target list; the knowledge had simply moved one layer back.
+  try { return bbThreatProfile(name).total; } catch { /* fall through */ }
   const s = statsOf(name);
   const rec = recordOf(name);
-  const comps = (rec.hohWins || 0) * 1.15 + (rec.vetoWins || 0) * 0.85
-    + (rec.blockBusterWins || 0) * 0.9;
-  const survived = (rec.timesSaved || 0) * 0.5;
   return (s.strategic || 5) * 0.34 + (s.social || 5) * 0.26
     + Math.max(s.physical || 5, s.endurance || 5) * 0.16 + (s.boldness || 5) * 0.08
-    + comps + survived;
+    + (rec.hohWins || 0) * 1.15 + (rec.vetoWins || 0) * 0.85 + (rec.blockBusterWins || 0) * 0.9;
 }
 
 /**
@@ -105,10 +112,30 @@ function dealPartners(name, pool) {
  */
 function readShield(name, pool, skill) {
   if (skill < 5.5) return null;
-  const mine = houseThreat(name);
+  // Ranked on EARNED standing rather than raw threat.
+  //
+  // Once threat started counting isolation and suspicion — which is right for
+  // deciding who is easy to nominate — the biggest number in the room began
+  // belonging to whoever the house had turned on. Plans then picked that person
+  // as a shield, which is exactly backwards: they go first, and the houseguest
+  // hiding behind them is standing in the open the following week.
+  const standingOf = n => { try { return bbThreatProfile(n).standing; } catch { return houseThreat(n); } };
+  const mine = standingOf(name);
+
+  // You cannot hide behind the person you would nominate first.
+  //
+  // The same contradiction as holding somebody as shield and target at once,
+  // one step earlier: if this houseguest is already the top of your own heat
+  // list, calling them a shield does not stop you putting them up — it just
+  // means your plan disagrees with itself, and the plan loses. Excluded at
+  // selection so the shield is somebody you would actually protect.
+  const heatOf = n => { try { return bbHeat(name, n).total; } catch { return 0; } };
+  const hottest = pool.slice().sort((a, b) => heatOf(b) - heatOf(a))[0] || null;
+
   const options = pool
-    .filter(n => houseThreat(n) > mine + 0.6 && trustOf(name, n) > -2 && resentOf(name, n) < 4)
-    .sort((a, b) => houseThreat(b) - houseThreat(a));
+    .filter(n => n !== hottest
+      && standingOf(n) > mine + 0.6 && trustOf(name, n) > -2 && resentOf(name, n) < 4)
+    .sort((a, b) => standingOf(b) - standingOf(a));
   const pick = options[0];
   if (!pick) return null;
   const rec = recordOf(pick);

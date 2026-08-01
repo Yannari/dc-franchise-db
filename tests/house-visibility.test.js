@@ -70,8 +70,14 @@ describe('the debug screen accounts for the week', () => {
     // modifier the engine actually applied.
     expect(html).toMatch(/aptitude [\d.]+/);
     expect(html).toMatch(/luck -?[\d.]+/);
-    // Slop is on every week in this fixture, so its penalty must appear.
-    expect(html, 'the have-not penalty never showed').toMatch(/slop -[\d.]+/);
+    // Slop only shows when a have-not actually played the competition. Whether
+    // one did depends on the draw, so asserting it unconditionally made this a
+    // test about who got picked rather than about the debug screen.
+    const playedOnSlop = (ep.acts || []).some(a => a.competition
+      && Object.values(a.competition.debug?.scoreBreakdown || {}).some(b => b.haveNot));
+    if (playedOnSlop) {
+      expect(html, 'a have-not played and the penalty never showed').toMatch(/slop -[\d.]+/);
+    }
   });
 
   it('shows the vote ballot by ballot with its reason', () => {

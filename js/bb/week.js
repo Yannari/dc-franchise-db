@@ -830,7 +830,14 @@ export function simulateBBWeek(options = {}) {
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
-      nominees: [...nominees] }, { nominees: [...nominees] }));
+      nominees: [...nominees] },
+      // Handed over explicitly rather than left to be inferred. actFacts works
+      // `saved` out by diffing week.initialNominees against week.finalNominees,
+      // and finalNominees is not written until after this act exists — so every
+      // event on this act that needs to know who came down was reading null,
+      // and veto-saved-gratitude could never fire.
+      { nominees: [...nominees], vetoWinner,
+        saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
     revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
   }
 

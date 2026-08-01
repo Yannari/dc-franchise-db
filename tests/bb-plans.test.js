@@ -229,16 +229,27 @@ describe('a plan changes what actually happens', () => {
     // version counted individual offenders against a threshold, and with only
     // four shields in the house that made one unlucky draw a failure — a test
     // that samples rather than checks.
-    const house = atHouseOf(10);
+    // Sampled across three points in the season rather than one. A single
+    // snapshot yields a handful of shield-holders, and with four of them the
+    // difference between passing and failing is one person having a noisy week.
     const rates = [];
-    for (const hoh of house) {
-      const plan = housePlan(hoh);
-      if (!plan?.shield || !house.includes(plan.shield)) continue;
-      let up = 0;
-      for (let i = 0; i < 60; i++) {
-        if (chooseNominationPlan(hoh, house).nominees.includes(plan.shield)) up++;
+    for (const size of [12, 10, 8]) {
+      let house;
+      try { house = atHouseOf(size); } catch { continue; }
+      for (const hoh of house) {
+        const plan = housePlan(hoh);
+        if (!plan?.shield || !house.includes(plan.shield)) continue;
+        // Seeded. chooseNominationPlan falls back to Math.random, so sampling
+        // it bare made this test roll fresh dice on every run — it passed alone
+        // and failed in the suite purely because that is a different roll, and
+        // the true rate sits close enough to the boundary to flip.
+        let up = 0, seed = 1337 + hoh.length * 31 + size;
+        const rng = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+        for (let i = 0; i < 60; i++) {
+          if (chooseNominationPlan(hoh, house, rng).nominees.includes(plan.shield)) up++;
+        }
+        rates.push(up / 60);
       }
-      rates.push(up / 60);
     }
     expect(rates.length, 'nobody in the final ten is hiding behind anybody').toBeGreaterThan(0);
 

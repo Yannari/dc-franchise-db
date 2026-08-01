@@ -117,21 +117,112 @@ export function bbAllianceStrength(a, b) {
   return allianceStrength(a, b);
 }
 
+/**
+ * How dangerous somebody looks TO THE HOUSE.
+ *
+ * This used to be their stat sheet. A houseguest with strategic 10 read as the
+ * biggest threat in the building on day three, before anybody had watched them
+ * do anything — and the nomination heat inherited that, so the same profiles
+ * sat on top of every early target list. Measured over twenty-five week-one
+ * nominations, the three highest-strategic houseguests took 26% of the slots
+ * against an even share of 17%.
+ *
+ * The stats are design information. The house should not have them.
+ *
+ * So threat is split. What the house has WATCHED counts in full from day one:
+ * competitions won, how isolated somebody is, how much suspicion points at
+ * them, how many groups they sit in, and whether their votes keep matching the
+ * boot. What it cannot see — raw ability — is scaled by how much of themselves
+ * that person has actually shown, and only reaches full weight once there is
+ * evidence for it.
+ *
+ * The early game therefore targets the way the show does: whoever is isolated,
+ * abrasive, obviously paired, over-extended, or simply the easy answer nobody
+ * will object to. A brilliant player who stays quiet and keeps their friends
+ * gets to stay brilliant and quiet for a while, which is the entire art of it.
+ */
 export function bbThreatProfile(name) {
   const stats = pStats(name);
   const others = (gs.activePlayers || players.map(player => player.name)).filter(other => other !== name);
-  const socialPosition = others.length
-    ? others.reduce((sum, other) => sum + getBond(name, other), 0) / others.length
-    : 0;
   const record = gs.bb?.stats?.[name] || {};
-  // Every competition the house has watched somebody win. A Block Buster win is
-  // the most public of the three — it happens with the whole house watching
-  // somebody survive on purpose — so it is not discounted below a veto.
+  const week = (gs.episode || 0) + 1;
+
+  // ── what the house has seen ──
+
+  // Competitions. The loudest signal there is, because everybody watched it.
   const competition = (record.hohWins || 0) * 0.8 + (record.vetoWins || 0) * 0.55
     + (record.blockBusterWins || 0) * 0.6;
+
+  const bonds = others.map(other => getBond(name, other));
+  const socialPosition = bonds.length ? bonds.reduce((sum, v) => sum + v, 0) / bonds.length : 0;
+  const close = bonds.filter(v => v >= 3).length;
+  // The easy answer. Nobody has to be talked into losing somebody that nobody
+  // is close to, which is how most first evictions actually happen.
+  // Two ways of being the easy answer, because on day three nobody has close
+  // allies yet and a count of them cannot tell anybody apart. Standing relative
+  // to the room does that from the first conversation.
+  const isolation = Math.max(0, 2 - close) * 0.5 + Math.max(0, 1.2 - socialPosition) * 0.8;
+
+  // Friction. Suspicion is what the house has decided about you rather than
+  // what is true, which is the right basis for a nomination.
+  const suspicion = others.reduce((sum, other) =>
+    sum + (gs.bb?.house?.suspicion?.[`${other}→${name}`] || 0), 0) / Math.max(1, others.length);
+  // The loudest early signal there is: what the house has decided about you.
+  const friction = clamp(suspicion, 0, 6) * 0.62;
+
+  // Being at the middle of things. Two alliances is a spider; an obvious pair
+  // is a unit that votes twice, and the house reads both long before it can
+  // read anybody's cleverness.
+  const alliances = (gs.namedAlliances || []).filter(a =>
+    a.active !== false && (a.members || []).includes(name));
+  const paired = (gs.showmances || []).some(sh => !sh.broken && (sh.players || []).includes(name))
+    || bonds.some(v => v >= 7);
+  const centrality = alliances.length * 0.55 + (paired ? 0.7 : 0);
+
+  // Votes that kept landing on the person who left. Demonstrated, not assumed.
+  const history = gs.episodeHistory || [];
+  const ballots = history.flatMap(ep => (ep.votingLog || []).filter(v => v.voter === name && v.voted));
+  const matched = ballots.filter(v => {
+    const ep = history.find(h => (h.votingLog || []).includes(v));
+    return ep?.eliminated && v.voted === ep.eliminated;
+  }).length;
+  const control = ballots.length >= 2 ? (matched / ballots.length) * 1.2 : 0;
+
+  const observed = competition + isolation + friction + centrality + control;
+
+  // ── what nobody can see yet ──
   const base = stats.strategic * 0.27 + stats.social * 0.18 + stats.physical * 0.12
     + stats.endurance * 0.12 + stats.mental * 0.13 + stats.intuition * 0.1;
-  return { base, socialPosition, competition, total: base + socialPosition * 0.22 + competition };
+
+  // How much of themselves this houseguest has shown. Time passing counts for
+  // something — you cannot hide for eight weeks — but doing things counts more.
+  const evidence = (week - 1) * 0.5 + competition * 1.4
+    + (record.timesNominated || 0) * 0.45 + alliances.length * 0.55
+    + Math.min(3, ballots.length) * 0.3;
+  // Measured and retuned. A floor of 0.3 over a ramp of 6.5 still had raw
+  // ability supplying more than half of a houseguest's threat at the end of
+  // week one — 3.5 of 6.3 for the highest-strategic player in the cast, which
+  // is the house knowing something it has had no chance to learn. Starting near
+  // an eighth and taking most of a season to arrive means somebody has to be
+  // SEEN being good before the room treats them as good.
+  const visibility = clamp(0.12 + evidence / 9, 0.12, 1);
+
+  // Being liked cuts both ways, and which way depends on how well the house
+  // knows you. Early it protects — nobody wants to lose the person everybody
+  // likes. Late it is the résumé that beats them at the end.
+  const social = socialPosition * (visibility - 0.5) * 0.44;
+
+  return {
+    base, socialPosition, competition,
+    observed, visibility, isolation, friction, centrality, control,
+    // Earned standing: the part of somebody's threat that comes from being
+    // GOOD rather than from being disliked. Isolation and friction make a
+    // houseguest easy to nominate, which is not the same thing — and anybody
+    // choosing a shield needs the difference, because hiding behind the person
+    // the house already wants gone is not hiding at all.
+    standing: competition + centrality + control + base * visibility + Math.max(0, social),
+    total: observed + base * visibility + social,
+  };
 }
 
 export function bbThreat(name) {

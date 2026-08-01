@@ -54,7 +54,11 @@ export function nominationPlanPull(hoh, candidate) {
   // up — a modest discount just loses to the very thing that made them a shield
   // in the first place, and Heads of Household went on nominating the person
   // they were hiding behind.
-  if (plan.shield === candidate) pull -= 7;
+  // Raised from 7 when threat started counting isolation and friction: that
+  // widened the spread of nomination heat, so a discount calibrated against the
+  // old range stopped being able to hold a shield off the block. The size is
+  // set by the scale it has to work against, not by preference.
+  if (plan.shield === candidate) pull -= 9;
   if (plan.goat === candidate) pull -= 2.2;
   if (plan.preferredCore?.includes(candidate)) pull -= 2.4;
   if (plan.backupAllies?.includes(candidate)) pull -= 1.1;

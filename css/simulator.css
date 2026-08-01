@@ -520,6 +520,82 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* ── competition results ───────────────────────────────────────────
+       Counted up from last place, so the board fills bottom-up and the last two
+       are alone on it. The controls are pinned to the viewport because a
+       fourteen-person reveal is fourteen clicks and the button was at the
+       bottom of the page for every one of them. */
+    .bbc           { padding-bottom:74px; }        /* room for the pinned bar */
+
+    /* What the competition is, which the screen never used to say. */
+    .bbc-what      { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+                     border-radius:8px; padding:12px 14px; margin-bottom:14px; }
+    .bbc-what-h    { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+    .bbc-what-cat  { font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                     letter-spacing:1.8px; border:1px solid; border-radius:3px; padding:2px 6px; }
+    .bbc-what-h b  { font-size:15px; color:#e6edf3; }
+    .bbc-what-d    { margin:0 0 10px; font-size:12.5px; line-height:1.55; color:#8b949e; }
+    .bbc-what-w    { display:flex; flex-wrap:wrap; gap:7px 14px; margin-bottom:9px; }
+    .bbc-stat      { display:flex; align-items:center; gap:6px; font-size:10px; }
+    .bbc-stat i    { font-style:normal; color:#8b949e; text-transform:uppercase;
+                     letter-spacing:.8px; font-size:8.5px; min-width:64px; }
+    .bbc-stat-bar  { width:54px; height:3px; border-radius:2px;
+                     background:rgba(255,255,255,.08); overflow:hidden; }
+    .bbc-stat-bar b{ display:block; height:100%; border-radius:2px; }
+    .bbc-stat u    { text-decoration:none; font-family:ui-monospace,Consolas,monospace;
+                     font-size:9px; color:#6e7681; }
+    .bbc-what-f    { display:flex; gap:14px; font-family:ui-monospace,Consolas,monospace;
+                     font-size:9px; letter-spacing:1px; color:#6e7681;
+                     border-top:1px solid rgba(255,255,255,.06); padding-top:8px; }
+
+    /* The board fills from the bottom. */
+    .bbc-row.is-hidden { opacity:.16; }
+    .bbc-row.is-lit    { animation:bbcIn .28s ease-out both; }
+    @keyframes bbcIn { from { opacity:0; transform:translateX(-6px); } to { opacity:1; transform:none; } }
+    .bbc-blank     { display:block; width:26px; height:26px; border-radius:5px;
+                     background:rgba(255,255,255,.05); }
+
+    .bbc-verdict   { text-align:center; font-size:12px; color:#f0a500; letter-spacing:.4px;
+                     margin:10px 0 4px; }
+
+    /* One card per placement. */
+    .bbc-cards     { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .bbc-card      { border:1px solid rgba(255,255,255,.08); border-left:3px solid #30363d;
+                     border-radius:7px; padding:10px 12px; background:#12181f;
+                     animation:bbcIn .3s ease-out both; }
+    .bbc-card.is-hidden { opacity:.1; text-align:center; color:#484f58; padding:9px;
+                     border-left-color:#30363d; animation:none; }
+    .bbc-card.is-second { border-left-color:#58a6ff; }
+    .bbc-card.is-threw  { border-left-color:#8b949e; border-style:dashed; }
+    .bbc-card.is-win    { border-left-color:#f0a500; background:linear-gradient(90deg,
+                     rgba(240,165,0,.10), transparent 60%); }
+    .bbc-card header { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+    .bbc-card-pos  { font-family:ui-monospace,Consolas,monospace; font-size:15px;
+                     font-weight:700; color:#484f58; min-width:22px; }
+    .bbc-card.is-win .bbc-card-pos { color:#f0a500; }
+    .bbc-card-tag  { font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                     letter-spacing:1.8px; color:#8b949e; }
+    .bbc-card.is-win .bbc-card-tag { color:#f0a500; }
+    .bbc-card-threw{ margin-left:auto; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8px; letter-spacing:1.4px; color:#8b949e;
+                     border:1px dashed rgba(139,148,158,.4); border-radius:3px; padding:1px 5px; }
+    .bbc-card-b    { display:flex; align-items:center; gap:11px; }
+    .bbc-card-b p  { margin:0; font-size:12.5px; line-height:1.55; color:#c9d1d9; }
+
+    /* Pinned, because the reveal is the whole screen. */
+    .bbc-controls  { position:fixed; left:0; right:0; bottom:0; z-index:40;
+                     display:flex; align-items:center; justify-content:center; gap:9px;
+                     padding:10px 14px; background:rgba(13,17,23,.94);
+                     border-top:1px solid rgba(255,255,255,.09);
+                     backdrop-filter:blur(8px); }
+    .bbc-count     { font-family:ui-monospace,Consolas,monospace; font-size:10px;
+                     letter-spacing:1.2px; color:#6e7681; }
+    .bbc-done      { font-size:11px; color:#6e7681; letter-spacing:.6px; }
+
+    @media (prefers-reduced-motion:reduce) {
+      .bbc-row.is-lit, .bbc-card { animation:none; }
+    }
+
     /* ── the house meeting ─────────────────────────────────────────────
        Everybody in one room, so the card is the room: the caller on the left,
        the person it is about on the right, and the whole house standing

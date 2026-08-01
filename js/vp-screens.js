@@ -16565,109 +16565,175 @@ export function rpBuildBBVetoDraw(ep) {
   </div>`;
 }
 
+/**
+ * A competition, revealed the way a competition should be.
+ *
+ * The old version got three things wrong. It never said what the competition
+ * WAS — the library has written a `desc` for every one of them and the screen
+ * showed a generic category blurb instead. It revealed in tiers (everybody out
+ * of contention, then second, then the winner), which throws away the only
+ * structure a result has: the order people finished. And it hung the reveal
+ * button at the bottom of a long page, so watching a fourteen-person comp meant
+ * scrolling back down after every single click.
+ *
+ * Now it counts UP from last place. One name at a time, worst first, each with
+ * its own line about how they went out, so the board fills from the bottom and
+ * the last two are alone on it — which is what the format actually feels like.
+ * The controls are pinned to the bottom of the viewport and the newly revealed
+ * row scrolls itself into view.
+ */
 export function rpBuildBBComp(ep, actType) {
   const act = (ep.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
   const isHoh = actType === 'hoh';
   const cat = _bbcCat(comp?.category);
   const stateKey = `bb_comp_${ep.num}_${actType}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
 
-  // Best to worst. `results` already arrives in placement order.
   const rows = (act?.results || []).map((r, i) => ({ ...r, place: i + 1 }));
   const satOut = (comp?.excluded || []).filter(Boolean);
-  // The draw has a screen of its own ahead of this one, so it is not repeated
-  // here — only who did not get in.
-  const drawHtml = '';
   const winner = act?.winner || rows[0]?.name;
   const top = rows[0]?.score ?? 0;
   const low = rows.length ? rows[rows.length - 1].score : 0;
   const span = Math.max(0.001, top - low);
   const runnerUp = rows[1];
-  // How close it actually was, as a share of the field's whole spread.
   const margin = runnerUp ? (top - runnerUp.score) / span : 1;
   const closeness = margin < 0.08 ? 'a photo finish'
     : margin < 0.2 ? 'close' : margin > 0.55 ? 'a walkover' : 'comfortable';
 
-  // ── reveal tiers ──
-  // 0 the field, 1 everybody out of contention, 2 the runner-up, 3 the winner.
-  const beats = (comp?.beats || []).map(b => ({
-    text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass || 'challenge',
-  }));
-  const threw = rows.filter(r => r.threw).map(r => r.name);
-  const scenes = [
-    { text: comp
-        ? `<strong>${comp.name}</strong>. ${cat.blurb}${satOut.length ? ` ${satOut.length} sitting it out.` : ''}`
-        : 'The houseguests are called out to play.',
-      players: (act?.participants || []).slice(0, 6), badgeText: cat.label, badgeClass: 'challenge' },
-    ...beats,
-    { text: rows.length > 2
-        ? `It comes down to two. Everybody else is out of it.`
-        : `It comes down to the two of them.`,
-      players: rows.slice(2).map(r => r.name).slice(0, 6), badgeText: 'OUT OF CONTENTION', badgeClass: 'grey' },
-    ...(threw.length ? [{
-      text: `${threw.join(' and ')} held back on purpose. In this house that is a strategy, not a failure — but somebody always notices.`,
-      players: threw, badgeText: 'THREW IT', badgeClass: 'grey' }] : []),
-    ...(runnerUp ? [{
-      text: `<strong>${runnerUp.name}</strong> finishes second${
-        margin < 0.08 ? ', by almost nothing, and will be replaying it all week'
-        : margin < 0.2 ? ', close enough to feel it'
-        : margin > 0.55 ? ', a long way back' : ''}.`,
-      players: [runnerUp.name], badgeText: 'SECOND', badgeClass: 'blue' }] : []),
-    { text: isHoh
-        ? `<strong>${winner}</strong> is the new Head of Household — and decides who sits on the block.`
-        : `<strong>${winner}</strong> wins the Power of Veto, and can change the whole week with it.`,
-      players: [winner], badgeText: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', badgeClass: 'gold' },
-    ..._bbBeats(act),
-  ];
+  // ── what this competition actually is ──
+  //
+  // The description and the stat weights both live on the competition and
+  // neither was ever drawn. A viewer cannot read a result without knowing what
+  // was being tested.
+  const weights = Object.entries(comp?.stats || comp?.debug?.formula || {})
+    .sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const explainer = `<div class="bbc-what">
+    <div class="bbc-what-h">
+      <span class="bbc-what-cat" style="color:${cat.accent};border-color:${cat.accent}55">${cat.label}</span>
+      <b>${_bbEsc(comp?.name || (isHoh ? 'Head of Household' : 'Power of Veto'))}</b>
+    </div>
+    ${comp?.desc ? `<p class="bbc-what-d">${_bbEsc(comp.desc)}</p>` : ''}
+    ${weights.length ? `<div class="bbc-what-w">
+      ${weights.map(([stat, w]) => `<span class="bbc-stat">
+        <i>${_bbEsc(stat)}</i>
+        <span class="bbc-stat-bar"><b style="width:${Math.round(w * 100)}%;background:${cat.accent}"></b></span>
+        <u>${Math.round(w * 100)}%</u></span>`).join('')}
+    </div>` : ''}
+    <div class="bbc-what-f">
+      <span>${(act?.participants || rows).length} playing</span>
+      ${satOut.length ? `<span>Sat out: ${satOut.map(_bbEsc).join(', ')}${
+        isHoh && act?.outgoingHoh ? ` &middot; ${_bbEsc(act.outgoingHoh)} cannot defend the room` : ''}</span>` : ''}
+    </div>
+  </div>`;
 
-  // Which board rows are legible at this point in the reveal.
-  const idx = (_tvState[stateKey]?.idx ?? -1);
-  const outAt = 1 + beats.length;                     // "out of contention"
-  const secondAt = outAt + (threw.length ? 1 : 0) + (runnerUp ? 1 : 0);
-  const winnerAt = secondAt + 1;
-  const shown = place => {
-    if (place === 1) return idx >= winnerAt;
-    if (place === 2) return idx >= secondAt;
-    return idx >= outAt;
-  };
+  // ── the reveal: last place first, one at a time ──
+  const order = rows.slice().reverse();          // worst → best
+  const steps = order.map((r, i) => ({
+    row: r,
+    // The competition's own line for this houseguest — and only theirs.
+    //
+    // Matching on "mentions this name" pulled in atmosphere beats: a card for
+    // thirteenth place read "the wall starts level and stays that way for about
+    // four minutes", which is the weather, not an exit. A drop line is about one
+    // person and lists exactly one.
+    beat: (comp?.beats || []).find(b => (b.players || []).length === 1
+      && b.players[0] === r.name) || null,
+    last: i === order.length - 1,
+  }));
+  // Mark used beats so two houseguests do not share one line.
+  const seen = new Set();
+  steps.forEach(s => {
+    if (!s.beat) return;
+    if (seen.has(s.beat)) { s.beat = null; return; }
+    seen.add(s.beat);
+  });
+
+  const total = steps.length;
+  const revealed = Math.max(0, state.idx + 1);
+  const done = state.idx >= total - 1;
+  // The lowest place currently lit. With nothing revealed this must sit BEYOND
+  // last place, or the board gives away the bottom of the field before the
+  // first click — which is what it did.
+  const litFrom = total - revealed + 1;
+
+  const placeWord = (place, n) => place === 1 ? (isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO')
+    : place === 2 ? 'RUNNER-UP'
+    : place === n ? 'LAST' : `${_bbOrdinal(place)}`;
 
   const board = rows.length ? `<div class="bbc-board">
-    <div class="bbc-head">
-      <span>${(act?.participants || rows).length} playing</span>
-      <span class="bbc-head-sp">${idx >= winnerAt ? closeness.toUpperCase() : '&nbsp;'}</span>
-    </div>
     ${rows.map(r => {
-      const lit = shown(r.place);
+      const lit = r.place >= litFrom;
       const pct = Math.round(((r.score - low) / span) * 100);
       const gold = r.place === 1;
-      return `<div class="bbc-row ${lit ? '' : 'is-hidden'} ${gold && lit ? 'is-win' : ''}">
-        <span class="bbc-pos">${lit ? r.place : '&nbsp;'}</span>
-        <span class="bbc-face">${lit ? _bbAvatar(r.name, 26) : ''}</span>
-        <span class="bbc-name">${lit ? r.name : '—'}</span>
+      return `<div class="bbc-row ${lit ? 'is-lit' : 'is-hidden'} ${gold && lit ? 'is-win' : ''}"
+                   id="bbc-row-${stateKey}-${r.place}">
+        <span class="bbc-pos">${lit ? r.place : '&middot;'}</span>
+        <span class="bbc-face">${lit ? _bbAvatar(r.name, 26) : '<span class="bbc-blank"></span>'}</span>
+        <span class="bbc-name">${lit ? _bbEsc(r.name) : ''}</span>
         <span class="bbc-bar"><i style="width:${lit ? Math.max(4, pct) : 0}%;background:${gold ? '#f0a500' : cat.accent}"></i></span>
-        ${lit && r.threw ? `<span class="bbc-threw">THREW</span>` : '<span class="bbc-threw"></span>'}
+        ${lit && r.threw ? '<span class="bbc-threw">THREW</span>' : '<span class="bbc-threw"></span>'}
       </div>`;
     }).join('')}
-    ${satOut.length ? `<div class="bbc-sat">
-      <span class="bbc-sat-k">Sat out</span>
-      <span>${satOut.join(', ')}${isHoh && act?.outgoingHoh ? ` — ${act.outgoingHoh} cannot defend the room` : ''}</span>
-    </div>` : ''}
-    ${drawHtml}
   </div>` : '';
 
-  const header = `<div class="bbc-plate" style="--bbc-accent:${cat.accent}">
-      <div class="bbc-cat">${cat.label}</div>
-      <div class="bbc-title">${comp?.name || (isHoh ? 'Head of Household' : 'Power of Veto')}</div>
-    </div>${board}`;
+  // One card per placement, in reveal order.
+  const cards = steps.map((s, i) => {
+    if (i > state.idx) return `<div class="bbc-card is-hidden"><span>?</span></div>`;
+    const r = s.row;
+    const isWin = r.place === 1;
+    const tone = isWin ? 'is-win' : r.place === 2 ? 'is-second' : r.threw ? 'is-threw' : '';
+    const line = s.beat?.text
+      || (isWin
+        ? `${r.name} ${isHoh ? 'is the new Head of Household, and decides who sits on the block.'
+            : 'takes the Power of Veto, and can change the whole week with it.'}`
+        : r.threw
+          ? `${r.name} held back on purpose. In this house that is a strategy, not a failure — but somebody always notices.`
+          : r.place === 2
+            ? `${r.name} finishes second${margin < 0.08 ? ', by almost nothing, and will be replaying it all week'
+                : margin < 0.2 ? ', close enough to feel it' : ''}.`
+            : `${r.name} is out.`);
+    return `<article class="bbc-card ${tone}" id="bbc-card-${stateKey}-${i}">
+      <header>
+        <span class="bbc-card-pos">${r.place}</span>
+        <span class="bbc-card-tag">${placeWord(r.place, rows.length)}</span>
+        ${r.threw ? '<span class="bbc-card-threw">THREW IT</span>' : ''}
+      </header>
+      <div class="bbc-card-b">
+        ${_bbAvatar(r.name, 40)}
+        <p>${line}</p>
+      </div>
+    </article>`;
+  }).join('');
 
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`,
-    title: isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO',
-    subtitle: isHoh ? 'Power changes hands.' : 'One houseguest can change the whole week.',
-    accent: cat.accent, header, room: isHoh ? 'bb-power' : 'bb-block',
-    stateKey: `bb_comp_${ep.num}_${actType}`,
-    scenes,
-  });
+  const verdict = done && runnerUp
+    ? `<div class="bbc-verdict">${_bbEsc(winner)} over ${_bbEsc(runnerUp.name)} — ${closeness}.</div>` : '';
+
+  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} bbc">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${cat.accent};text-shadow:0 0 20px ${cat.accent}33;margin-bottom:6px">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
+      isHoh ? 'Power changes hands.' : 'One houseguest can change the whole week.'}</div>
+    ${explainer}
+    ${board}
+    ${verdict}
+    <div class="bbc-cards">${cards}</div>
+    <div class="bbc-controls">
+      ${done ? '<span class="bbc-done">Every place is in.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+          state.idx < 0 ? 'Start the reveal' : 'Next place'}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="bbc-count">${Math.min(total, revealed)} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/** 1st, 2nd, 3rd — small enough not to be worth importing the finale's. */
+function _bbOrdinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 // ── Ceremonies ────────────────────────────────────────────────────────
@@ -17439,6 +17505,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'hoh':
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
+        // Whatever else happened around the competition is house life, not the
+        // competition. A grudge hardening over dinner and a rumour landing were
+        // being played on the results screen between the placements, which is
+        // the wrong screen and the wrong moment — the comp screen is now only
+        // the comp.
+        if ((act.socialBeats || []).length) {
+          screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+            html: rpBuildBBHouseLife(view, act, houseSlot) });
+        }
         break;
       case 'nominations':
         screens.push({ id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view) });

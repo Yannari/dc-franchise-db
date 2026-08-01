@@ -162,6 +162,10 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
   if (!raw.text) warnings.push('competition produced no plain-text narration');
   const result = {
     id:comp.id, name:comp.name, type:context.type, category:comp.category,
+    // What the competition IS. Every entry in the library has written one and
+    // nothing downstream could reach it, so the results screen described the
+    // category instead of the thing fourteen people just played.
+    desc:comp.desc || '', stats:comp.stats ? { ...comp.stats } : null,
     variant:raw.variant || null, participants:[...participants], excluded:[...(context.excluded || [])],
     winner, placements, scores:Object.fromEntries(participants.map(name => [name, Number(scores[name])])),
     beats, events, text:raw.text || beats.map(beat => beat.text).join(' '),

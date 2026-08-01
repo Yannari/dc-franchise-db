@@ -75,7 +75,10 @@ describe.each([['hoh'], ['veto']])('the %s board', (type) => {
     const html = rpBuildBBComp(ep, type);
     for (const r of act.results) expect(html).toContain(r.name);
     expect((html.match(/class="bbc-bar"/g) || []).length).toBe(act.results.length);
-    expect(html).toContain('bbc-plate');
+    // The header is the explainer now: what the competition is, and what it
+    // tested. 'bbc-plate' was a title and a category label.
+    expect(html).toContain('bbc-what');
+    expect(html).toContain('bbc-stat');
     expect(html).toContain(act.competition.name);
   });
 });

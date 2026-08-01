@@ -9,6 +9,7 @@ import { pitchTrust, tacticalCooperation, targetProtection } from '../relationsh
 import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { visibleCentrality } from './blocs.js';
+import { reignHeat } from './reign.js';
 import {
   evaluatePitchResponse, propagatePitchLeaks,
   resolveCompetingPitches, resolvePitchCounterplay,
@@ -266,10 +267,20 @@ export function bbHeat(observer, candidate) {
   const beenUp = gs.bb?.stats?.[candidate]?.timesNominated || 0;
   const familiar = Math.min(3, beenUp) * 0.45;
 
+  // The week after a bad reign is when you go up.
+  //
+  // This is the mechanism the format is best known for and the house had no
+  // version of it: winning Head of Household was pure upside, and how somebody
+  // spent the week followed them precisely nowhere. A disastrous reign now
+  // outweighs most grudges, and it fades — two weeks on there is a newer thing
+  // to be annoyed about.
+  let reign = 0;
+  try { reign = reignHeat(candidate, (gs.episode || 0) + 1); } catch { reign = 0; }
+
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
     alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
-    memory: clamp(memory, -4, 6) * 0.65, familiar,
+    memory: clamp(memory, -4, 6) * 0.65, familiar, reign,
   };
   return { components, total: Object.values(components).reduce((sum, value) => sum + value, 0) };
 }

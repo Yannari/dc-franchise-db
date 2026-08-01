@@ -1,0 +1,295 @@
+// ══════════════════════════════════════════════════════════════════════
+// bb-events/reign.js — the week the power goes to somebody's head
+// ══════════════════════════════════════════════════════════════════════
+//
+// HOHitis, and the quieter failure on the other side of it.
+//
+// These are the scenes that MAKE a reign bad rather than commentary on one
+// that already is. Each one is available only to a Head of Household whose
+// temperament points that way — a nervous houseguest does not call a house
+// meeting, a swaggering one does not ask the house who to nominate — and each
+// one records the enemies it makes, which is what the reign is scored on when
+// the week ends.
+//
+// The house meeting is the canonical version and it is drawn from the canonical
+// example: stand everybody in one room, tell them this is not a dictatorship,
+// then ask your own alliance which of them wants your target to stay. Somebody
+// answers honestly. It is not that the answer is bad — it is that the question
+// was asked in front of eleven people, and now they have all watched the
+// alliance disagree with itself.
+
+import { gs } from '../core.js';
+import { pronouns } from '../players.js';
+import {
+  pStats, bond, perceived, band, closestTo, furthestFrom, beatsInvolving,
+  alliancesOf, archetype, targetOf,
+} from './_read.js';
+import { reignTemperament, reignMadeAnEnemy } from '../bb/reign.js';
+
+function _variant(list, ctx, ...salt) {
+  const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return list[hash % list.length];
+}
+const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
+const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+const _list = names => (names.length <= 1 ? (names[0] || 'nobody')
+  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
+
+/** The days between winning and the ceremony, when the damage gets done. */
+const _reigning = (ctx, value) => {
+  const window = ctx?.phase === 'post-hoh' || ctx?.phase === 'post-noms'
+    || ctx?.act === 'house' || ctx?.act === 'veto';
+  return window && ctx?.hoh ? band(value) : 0;
+};
+
+/** Whoever is on the block, wherever the act happens to keep it. */
+const _noms = ctx => ((ctx?.nominees && ctx.nominees.length ? ctx.nominees
+  : (ctx?.week?.finalNominees || ctx?.week?.initialNominees || [])) || []).filter(Boolean);
+
+/** Once per reign — a house meeting is not a thing you do twice. */
+const _spent = (id, ctx) => !!ctx?.week?._reignFired?.[id];
+const _spend = (id, ctx) => { if (ctx?.week) (ctx.week._reignFired ||= {})[id] = true; };
+
+// ── the power goes to their head ──────────────────────────────────────
+
+const houseMeeting = {
+  id: 'reign-house-meeting',
+  category: 'house-life',
+  location: 'living-room',
+  weight(house, ctx) {
+    const hoh = ctx?.hoh;
+    if (!hoh || house.length < 6 || _spent('reign-house-meeting', ctx)) return 0;
+    const { ego, mode } = reignTemperament(hoh);
+    return mode === 'hohitis' ? _reigning(ctx, 4.5 * ego) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    _spend(this.id, ctx);
+    const room = _others(house, hoh);
+    const p = pronouns(hoh);
+    // Somebody says the quiet part in front of everybody, which is the entire
+    // mechanism: the meeting does not fail because of the answer, it fails
+    // because the question was asked in public.
+    const honest = _quiet(room).find(n => pStats(n).boldness >= 6) || room[0];
+
+    const text = _variant([
+      `${hoh} calls everybody into the living room and opens with "this is not a dictatorship," which is a sentence only ever said by somebody being one. By the end of it the house has stopped listening to ${p.obj} and started looking at each other.`,
+      `The house meeting lasts eleven minutes. ${hoh} spends nine of them explaining why nobody should take any of this personally, and ${_list(room.slice(0, 3))} take all of it personally.`,
+      `${hoh} stands in the middle of the living room and asks, one at a time, who wants ${p.posAdj} target to stay. ${honest} answers honestly. Everybody watches ${hoh} hear it.`,
+      `Nobody asked for a house meeting. ${hoh} calls one anyway, to clear the air, and manages to fill it with something considerably worse.`,
+    ], ctx, hoh, honest);
+
+    room.forEach(n => {
+      api.addBond(hoh, n, -0.9);
+      api.suspicion(n, hoh, 1.1);
+      reignMadeAnEnemy(ctx.week, n);
+    });
+    // The room bonds over it, which is the part that actually ends people.
+    room.forEach((a, i) => { const b = room[i + 1]; if (b) api.addBond(a, b, 0.5); });
+    api.remember(honest, hoh, 'made-me-say-it-out-loud', 2, {});
+    api.popDelta(hoh, -3);
+    return { text, players: [hoh, honest], badgeText: 'HOUSE MEETING', badgeClass: 'red' };
+  },
+};
+
+const saysItOutLoud = {
+  id: 'reign-announces-target',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = ctx?.hoh;
+    if (!hoh || _spent('reign-announces-target', ctx)) return 0;
+    const { ego, mode } = reignTemperament(hoh);
+    return mode === 'hohitis' && targetOf(hoh) ? _reigning(ctx, 6 * ego) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    _spend(this.id, ctx);
+    const mark = targetOf(hoh) || furthestFrom(hoh, _others(house, hoh));
+    const audience = _quiet(_others(house, hoh, mark)).slice(0, 2);
+    const p = pronouns(hoh);
+    const text = _variant([
+      `${hoh} tells ${_list(audience)} exactly who is going up and why. Within the hour ${mark} knows, because that is what happens to information in this house.`,
+      `"I'm not going to pretend." ${hoh} names ${mark} to a room ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not control, and gives ${mark} four days to do something about it.`,
+      `${hoh} enjoys knowing something everybody else wants to know, right up until ${p.sub} ${p.sub === 'they' ? 'give' : 'gives'} it away to make the moment last.`,
+    ], ctx, hoh, mark);
+
+    // The target now has time, which is the only thing a target ever needs.
+    api.suspicion(mark, hoh, 2);
+    api.setTarget(mark, hoh, `told the house I was going up before telling me`);
+    api.addBond(mark, hoh, -1.4);
+    reignMadeAnEnemy(ctx.week, mark);
+    audience.forEach(n => api.remember(n, hoh, 'cannot-keep-quiet', 1, {}));
+    return { text, players: [hoh, mark], badgeText: 'SAYS IT OUT LOUD', badgeClass: 'orange' };
+  },
+};
+
+const testsTheAlliance = {
+  id: 'reign-loyalty-test',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = ctx?.hoh;
+    if (!hoh || _spent('reign-loyalty-test', ctx)) return 0;
+    const { ego, mode } = reignTemperament(hoh);
+    return mode === 'hohitis' && alliancesOf(hoh).length ? _reigning(ctx, 5 * ego) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    _spend(this.id, ctx);
+    const alliance = alliancesOf(hoh)[0];
+    const mates = ((alliance?.members) || []).filter(n => n !== hoh && house.includes(n));
+    if (!mates.length) {
+      return { text: `${hoh} looks for somebody to test and finds nobody worth testing.`,
+        players: [hoh], badgeText: 'NOBODY TO ASK', badgeClass: 'grey' };
+    }
+    const p = pronouns(hoh);
+    const doubter = _quiet(mates).find(n => bond(n, hoh) < 4) || mates[0];
+
+    const text = _variant([
+      `${hoh} goes round ${alliance?.name || 'the group'} one by one asking each of them to say, out loud, that they are with ${p.obj}. ${doubter} hesitates for about a second and a half, and everybody hears the second and a half.`,
+      `"I just need to know where everybody is." What ${hoh} learns is that asking the question is what creates the doubt, and by then ${doubter} is already looking at the others differently.`,
+      `${hoh} makes ${_list(mates.slice(0, 3))} confirm their loyalty in front of each other. Two of them mean it. All three of them resent being asked.`,
+    ], ctx, hoh, doubter);
+
+    mates.forEach(n => {
+      api.addBond(hoh, n, -0.7);
+      api.remember(n, hoh, 'made-me-prove-it', 1, {});
+    });
+    api.suspicion(hoh, doubter, 1.3);
+    api.suspicion(doubter, hoh, 1);
+    reignMadeAnEnemy(ctx.week, doubter);
+    return { text, players: [hoh, doubter], badgeText: 'LOYALTY TEST', badgeClass: 'orange' };
+  },
+};
+
+// ── or they are too frightened to use it ──────────────────────────────
+
+const letsTheHouseDecide = {
+  id: 'reign-house-decides',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = ctx?.hoh;
+    if (!hoh || _spent('reign-house-decides', ctx)) return 0;
+    const { nerves, mode } = reignTemperament(hoh);
+    return mode === 'frightened' ? _reigning(ctx, 6 * nerves) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    _spend(this.id, ctx);
+    const advisor = closestTo(hoh, _others(house, hoh)) || _others(house, hoh)[0];
+    const p = pronouns(hoh);
+    const text = _variant([
+      `${hoh} asks ${advisor} who ${p.sub} should nominate, and then asks two other people the same thing, and then nominates whoever came up most often. It is the safest week anybody has ever had with all the power.`,
+      `"I don't want to make enemies." ${hoh} says it to ${advisor} like it is a strategy. ${advisor} does not have the heart to explain that a Head of Household who makes no enemies has also made no friends worth having.`,
+      `${hoh} spends four days trying to find two people nobody likes. There are none, so ${p.sub} ${p.sub === 'they' ? 'settle' : 'settles'} for two nobody minds.`,
+    ], ctx, hoh, advisor);
+
+    // The cost is invisible this week and enormous next week: nobody owes them
+    // anything and nobody is afraid of them.
+    api.addBond(hoh, advisor, 0.4);
+    api.remember(advisor, hoh, 'let-me-pick', 2, { about: 'their own nominations' });
+    _others(house, hoh).forEach(n => api.suspicion(n, hoh, -0.3));
+    api.popDelta(hoh, -1);
+    return { text, players: [hoh, advisor], badgeText: 'SOMEBODY ELSE DECIDES', badgeClass: 'grey' };
+  },
+};
+
+const apologisesForIt = {
+  id: 'reign-apologises',
+  category: 'social',
+  // No location. It needs the block to exist, which already narrows it to the
+  // back half of the week; pinning it to the HOH room as well left it firing
+  // once in ten seasons. Somebody who cannot stop apologising does it wherever
+  // they find the person.
+  weight(house, ctx) {
+    const hoh = ctx?.hoh;
+    if (!hoh || _spent('reign-apologises', ctx)) return 0;
+    const { nerves, mode } = reignTemperament(hoh);
+    // ctx.nominees is only populated in the acts built around the block, and
+    // this scene belongs to the quiet days afterwards — so it falls back to the
+    // week, which is where the nominations actually live. Without that it fired
+    // once in ten seasons.
+    const noms = _noms(ctx);
+    return mode === 'frightened' && noms.length ? _reigning(ctx, 8 * nerves) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = ctx.hoh;
+    _spend(this.id, ctx);
+    const nom = _noms(ctx)[0];
+    const p = pronouns(hoh);
+    const text = _variant([
+      `${hoh} apologises to ${nom} three separate times in one afternoon. By the third ${nom} has worked out that ${hoh} is more upset about this than ${nom} is, and that it can be used.`,
+      `"You know it's nothing personal, right?" ${nom} says of course. ${nom} does not think it is nothing personal, and now knows ${hoh} needs to believe it is.`,
+      `${hoh} cannot stop explaining ${p.posAdj} nominations to the person ${p.sub} nominated. ${nom} lets ${p.obj} talk, and files away every soft spot it reveals.`,
+    ], ctx, hoh, nom);
+
+    // Weakness is information, and a nominee has nothing to do all week but
+    // collect it.
+    api.addBond(hoh, nom, 0.6);
+    api.remember(nom, hoh, 'can-be-guilted', 2, {});
+    api.suspicion(nom, hoh, -0.5);
+    return { text, players: [hoh, nom], badgeText: 'CANNOT STOP APOLOGISING', badgeClass: 'grey' };
+  },
+};
+
+// ── and the week after, the house adds it up ──────────────────────────
+
+const theReckoning = {
+  id: 'reign-reckoning',
+  category: 'social',
+  weight(house, ctx) {
+    const last = gs.bb?.outgoingHoh;
+    if (!last || !house.includes(last)) return 0;
+    if (_spent('reign-reckoning', ctx)) return 0;
+    const reigns = gs.bb?.reigns?.[last] || [];
+    const recent = reigns[reigns.length - 1];
+    if (!recent || (ctx?.week?.num || 0) !== recent.week + 1) return 0;
+    // Only worth a scene when the week was memorable in either direction.
+    // The morning the keys change hands, and nowhere else. Ungated it fired in
+    // the campaign act too, where the beats are few and the vote-flip scenes
+    // live — editorial-vote-flip-room went dead across ten seasons.
+    const morning = ctx?.phase === 'pre-hoh' || ctx?.act === 'house' || ctx?.act === 'hoh';
+    if (!morning) return 0;
+    return recent.verdict === 'disastrous' || recent.verdict === 'poor'
+      || recent.verdict === 'strong' ? band(9) : 0;
+  },
+  fire(house, ctx, api) {
+    const last = gs.bb.outgoingHoh;
+    _spend(this.id, ctx);
+    const reigns = gs.bb.reigns[last] || [];
+    const recent = reigns[reigns.length - 1];
+    const critic = _quiet(_others(house, last))[0];
+    const bad = recent.verdict === 'disastrous' || recent.verdict === 'poor';
+    const p = pronouns(last);
+
+    const text = bad ? _variant([
+      `${last} is not Head of Household any more and the difference is immediate. Nobody comes upstairs, because there is no upstairs, and ${critic} says out loud what several people have been thinking about how that week was run.`,
+      `The keys change hands and so does the mood. ${critic} points out — carefully, to two people, in a bedroom — that ${last} had all the power and used it to make everybody in this house slightly angrier.`,
+      `${last} spent a week being the most important person in the building. It is Friday, ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} nobody again, and the bill for how ${p.sub} spent it is being quietly added up in three separate rooms.`,
+    ], ctx, last, critic) : _variant([
+      `${last} hands the power over having done exactly what ${p.sub} said ${p.sub} would, which in this house is unusual enough to be worth something.`,
+      `Nobody is frightened of ${last} now that the keys have moved. Several people are, however, still fairly glad to be working with ${p.obj}, which lasts longer.`,
+    ], ctx, last, critic);
+
+    if (bad) {
+      _others(house, last).forEach(n => {
+        api.suspicion(n, last, 0.8);
+        api.addBond(n, last, -0.4);
+      });
+      api.setTarget(critic, last, `spent a week of power badly and made it everybody's problem`);
+      api.popDelta(last, -2);
+    } else {
+      _others(house, last).slice(0, 3).forEach(n => api.addBond(n, last, 0.5));
+      api.popDelta(last, 2);
+    }
+    return { text, players: [last, critic],
+      badgeText: bad ? 'THE BILL FOR THAT WEEK' : 'WORE IT WELL',
+      badgeClass: bad ? 'red' : 'green' };
+  },
+};
+
+export const REIGN_EVENTS = [
+  houseMeeting, saysItOutLoud, testsTheAlliance,
+  letsTheHouseDecide, apologisesForIt, theReckoning,
+];

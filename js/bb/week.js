@@ -34,6 +34,7 @@ import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, ti
 import { rememberStrategy } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
+import { recordReign } from './reign.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -1006,7 +1007,10 @@ export function simulateBBWeek(options = {}) {
   week.closingState = _snapshotHouse();
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
-    gs.bb.outgoingHoh = hoh;
+    // How they wore it, judged on what the week actually achieved rather than on
+  // what they meant. The house holds this against them next week.
+  try { week.reign = recordReign(week); } catch { week.reign = null; }
+  gs.bb.outgoingHoh = hoh;
     gs.bb.weeks.push(week);
     gs.episode = (gs.episode || 0) + 1;
     return week;
@@ -1144,6 +1148,9 @@ export function simulateBBWeek(options = {}) {
   week.closingState = _snapshotHouse();
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week, rng);
+  // How they wore it, judged on what the week actually achieved rather than on
+  // what they meant. The house holds this against them next week.
+  try { week.reign = recordReign(week); } catch { week.reign = null; }
   gs.bb.outgoingHoh = hoh;
   gs.bb.weeks.push(week);
   gs.episode = (gs.episode || 0) + 1;

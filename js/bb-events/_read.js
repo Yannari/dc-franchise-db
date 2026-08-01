@@ -402,13 +402,90 @@ export const beatsInvolving = name => beatCounts()[name] || 0;
  * every time the library wants somebody who has been quiet.
  */
 export function spotlightWeight(name) {
+  if (!name) return 0;
   const s = gs.bb?.spotlight;
-  if (!s || !name) return 0;
-  if (name === s.hoh) return 0.45;
-  if ((s.nominees || []).includes(name)) return 0.45;
-  if (name === s.vetoWinner) return 0.3;
-  if ((s.vetoPlayers || []).includes(name)) return 0.2;
-  return 0;
+  let weight = 0;
+  if (s) {
+    if (name === s.hoh || (s.nominees || []).includes(name)) weight = 0.45;
+    else if (name === s.vetoWinner) weight = 0.3;
+    else if ((s.vetoPlayers || []).includes(name)) weight = 0.2;
+  }
+  return Math.min(0.68, weight + storyPull(name) + screenPresence(name) * 0.3);
+}
+
+/**
+ * How much television this person is, before anything happens to them.
+ *
+ * The edit-analysis community separates two axes, and this file had collapsed
+ * them into one. RATING is what kind of edit somebody gets — invisible, under
+ * the radar, middle of the road, complex personality, over the top — and
+ * VISIBILITY is how much of the episode they occupy. The over-the-top players
+ * are described as "usually very present" whatever their position, and the
+ * under-the-radar ones get "at most a sentence or two".
+ *
+ * Measured before this existed, the house had the axis exactly backwards: a
+ * floater averaged 35 beats a week and a villain 30, a hothead 30. The three
+ * loudest archetypes in the game were the three quietest on screen. That is the
+ * least-seen-first casting helper doing its job too well — a loud houseguest
+ * earns beats in dramatic scenes and is then benched in favour of whoever has
+ * been sitting quietly, week after week, until the cast flattens into one
+ * texture.
+ *
+ * Deliberately not enormous. Edit analysis is clear that the highest visibility
+ * belongs to one-note characters rather than to the people who go furthest, and
+ * a house where the hothead is in everything is as wrong as one where they are
+ * in nothing.
+ */
+export function screenPresence(name) {
+  const stats = pStats(name);
+  const arch = playerArchetype(name) || '';
+  // Over the top: loud, reactive, entertaining, not necessarily good.
+  const OTT = { hothead: 1, 'chaos-agent': 0.95, villain: 0.85, showmancer: 0.8, wildcard: 0.7 };
+  // Complex personality: the game is legible through them.
+  const CP = { mastermind: 0.7, schemer: 0.65, 'perceptive-player': 0.6, 'social-butterfly': 0.6 };
+  // Under the radar, by design and by temperament.
+  const UTR = { floater: -0.5, goat: -0.4, 'loyal-soldier': -0.15 };
+  const base = OTT[arch] ?? CP[arch] ?? UTR[arch] ?? 0.2;
+  // A short fuse is television; so is nerve. Being agreeable is not.
+  const volatility = ((10 - stats.temperament) * 0.05 + stats.boldness * 0.04
+    + stats.social * 0.02) / 1.1;
+  return Math.max(0, Math.min(1, (base + volatility) / 2));
+}
+
+/**
+ * How much of the week somebody is worth for reasons that are not the game.
+ *
+ * Position is only half of screen time. A showmance is on television whether or
+ * not either of them is in danger; two people who cannot be in the same room
+ * are on television; so is the person the whole house has decided to go after.
+ * Weighting purely by power and the block gives a correct but airless episode
+ * where the only story is the block, and the couple nobody has nominated
+ * quietly disappears for a fortnight.
+ *
+ * Capped in aggregate, so a safe houseguest in a showmance AND a feud reaches
+ * about a nominee's pull — which is right. That person is the episode.
+ */
+export function storyPull(name) {
+  const house = gs.activePlayers || [];
+  let pull = 0;
+
+  // A couple is a storyline the moment it exists.
+  if ((gs.showmances || []).some(sh => sh.phase !== 'broken-up'
+    && (sh.players || []).includes(name))) pull += 0.18;
+
+  // Somebody the house has turned on. Being hunted is a story even when the
+  // week's power has not got to you yet.
+  const hunters = house.filter(other => other !== name && targetOf(other) === name).length;
+  if (hunters >= 2) pull += 0.14;
+  else if (hunters === 1) pull += 0.06;
+
+  // And an open feud: a grudge that runs both ways is two people who cannot be
+  // in a room together, which is the cheapest television there is.
+  const feud = house.some(other => other !== name
+    && grudge(name, other) >= 3 && grudge(other, name) >= 3);
+  if (feud) pull += 0.12;
+
+  return pull;
 }
 
 /**

@@ -301,7 +301,10 @@ const vetoSavedGratitude = {
     // holder: saving someone the house did not expect you to save means more.
     const closeness = bondFactor(bond(saved, ctx.vetoWinner));
     const surprising = perceived(saved, ctx.vetoWinner) < 2 ? 1.4 : 1;
-    return band((pStats(saved).loyalty / 10) * (0.4 + closeness) * surprising * 14);
+    // Floored, for the same reason nom-speech-game needed one: a product of
+    // normalised factors bottoms out near zero for an ordinary pair, and being
+    // taken off the block is not an ordinary thing to say nothing about.
+    return band(4 + (pStats(saved).loyalty / 10) * (0.4 + closeness) * surprising * 10);
   },
   fire(house, ctx, api) {
     const { saved } = actFacts(ctx);

@@ -274,3 +274,74 @@ describe('the week belongs to the people in it', () => {
     expect(safe).toBeGreaterThan(6);
   }, 150000);
 });
+
+// ── a couple is a storyline ────────────────────────────────────────────
+//
+// Of 123 events in this library, two mentioned a showmance before this: one
+// line in the social file and the kiss trap. So a couple could form, be
+// noticed, be targeted and be separated by an eviction without ever having a
+// scene of its own — and measured, a safe houseguest in a showmance carried
+// 0.95x the beats of a safe houseguest in nothing. Being in the most televised
+// relationship in the format made you marginally less visible.
+//
+// No weighting could fix that. Casting order only chooses between people an
+// event is already willing to use, and none was willing.
+describe('a showmance gets screen time', () => {
+  it('gives the couple scenes of their own', () => {
+    house();
+    const fired = {};
+    let coupleWeeks = 0, guard = 0;
+    while (!houseIsAtFinale() && guard++ < 12) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      if ((gs.showmances || []).some(sh => sh.phase !== 'broken-up')) coupleWeeks++;
+      for (const act of ep.acts || []) {
+        for (const b of act.socialBeats || []) {
+          if (/^showmance-/.test(b.eventId || '')) fired[b.eventId] = (fired[b.eventId] || 0) + 1;
+        }
+      }
+    }
+    // Romance is on and the cast is compatible, so a season should produce at
+    // least one couple; if it does, that couple must have had its own week.
+    if (coupleWeeks > 0) {
+      const total = Object.values(fired).reduce((a, b) => a + b, 0);
+      expect(total, 'a couple existed and never had a scene').toBeGreaterThan(0);
+      // More than one KIND of scene — hiding it, the blind spot, the fight, the
+      // choice between their game and their person.
+      expect(Object.keys(fired).length, `only ever: ${Object.keys(fired).join(', ')}`)
+        .toBeGreaterThan(1);
+    }
+  }, 180000);
+
+  it('does not let the couple outrank the block', () => {
+    // The correction has a ceiling: a showmance is a storyline, not the week.
+    // The people who might go home are still the week.
+    house();
+    const beats = { nominee: [], couple: [] };
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 10) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const noms = new Set([...(ep.initialNominees || []), ...(ep.finalNominees || [])]);
+      const counts = {};
+      for (const act of ep.acts || []) {
+        for (const b of act.socialBeats || []) {
+          for (const n of new Set(b.players || [])) counts[n] = (counts[n] || 0) + 1;
+        }
+      }
+      const inCouple = new Set((gs.showmances || [])
+        .filter(sh => (sh.sparkEp || 0) <= ep.num && (!sh.breakupEp || sh.breakupEp >= ep.num))
+        .flatMap(sh => sh.players || []));
+      for (const name of ep.houseAtStart || []) {
+        const c = counts[name] || 0;
+        if (noms.has(name)) beats.nominee.push(c);
+        else if (inCouple.has(name)) beats.couple.push(c);
+      }
+    }
+    const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    if (beats.couple.length && beats.nominee.length) {
+      expect(mean(beats.nominee), 'a safe couple is out-screening the block')
+        .toBeGreaterThan(mean(beats.couple));
+    }
+  }, 150000);
+});

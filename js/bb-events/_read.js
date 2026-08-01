@@ -450,7 +450,7 @@ export function campaignArgument(nominee, voter, opponent) {
     .some(b => b.voter === nominee && b.voted === voter));
 
   if (huntsVoter) {
-    return `"${opponent} has your name in their mouth every time you leave the room. I am not the one you need to worry about."`;
+    return `"Every time you leave the room, ${opponent} brings up your name. I am not the one you need to worry about."`;
   }
   if (theirAllies.length) {
     return `"${opponent} is in ${theirAllies[0].name} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
@@ -462,10 +462,10 @@ export function campaignArgument(nominee, voter, opponent) {
     return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
   }
   if (!everVoted) {
-    return `"I have never written your name down. Not once. ${opponent || 'They'} cannot say that to you and I can."`;
+    return `"I have never written your name down. Not once. ${opponent ? `${opponent} cannot say the same` : 'The other side cannot say that'} and I can."`;
   }
   if (bond(nominee, voter) >= 2) {
-    return `"You do not owe me anything. But you need a number next week, and I will be a number for you. ${opponent || 'They'} will not."`;
+    return `"You do not owe me anything. But you need a number next week, and I will be one for you. ${opponent ? `${opponent} will not` : 'The other side will not'}."`;
   }
   return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
 }

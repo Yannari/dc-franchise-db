@@ -98,13 +98,16 @@ const apologyTour = {
   weight:(h,c) => h.length >= 4 ? fit(c, 1.9) : 0,
   fire(h,c,api,rng) {
     const a=actor(h,rng); const b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
-    const text=pick([
-      `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really ${pronouns(a).posAdj} fault. ${b} listens without saying much.`,
-      `${a} brings ${b} a cup of coffee and says, “I handled that badly.” ${b} accepts the coffee, then asks what exactly ${a} is sorry for.`,
+    const textRoll=rng();
+    const lands=pStats(a).social + rng()*6 >= 8;
+    const text=pick(lands ? [
       `${a} tells ${b}, “I was wrong about what happened. I shouldn't have snapped at you.” The apology is awkward, but ${b} can tell it is real.`,
+      `${a} brings ${b} a cup of coffee and names exactly what went wrong without making an excuse. ${b} does not forgive everything at once, but the conversation ends better than it began.`,
+    ] : [
+      `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really ${pronouns(a).posAdj} fault. ${b} listens without saying much.`,
       `${a} tells ${b} the argument was only game. “It didn't feel like game,” ${b} says. ${a} goes quiet and lets ${pronouns(b).obj} finish.`,
-    ],rng);
-    const lands=pStats(a).social + rng()*6 >= 8; api.addBond(a,b,lands?1.2:-.4); api.remember(b,a,lands?'made-amends':'bad-apology',lands?1:2,{});
+    ],()=>textRoll);
+    api.addBond(a,b,lands?1.2:-.4); api.remember(b,a,lands?'made-amends':'bad-apology',lands?1:2,{});
     return result(text,[a,b],lands?'APOLOGY LANDS':'NOT BUYING IT',lands?'green':'red');
   },
 };
@@ -147,10 +150,11 @@ const houseRoast = {
   weight:(h,c) => h.length>=5 ? fit(c,2) : 0,
   fire(h,c,api,rng) {
     const [a,b,d]=trio(h,rng); const lands=pStats(a).social+rng()*6>=8;
-    const text=pick([
+    const text=pick(lands ? [
       `${a} does an impression of the way ${b} walks into a strategy talk. ${d} nearly falls off the couch laughing, and even ${b} has to admit it is accurate.`,
+      `${a} reenacts ${b}'s veto speech with a dish towel over ${pronouns(a).posAdj} shoulders. Everyone laughs, including ${b}, who jumps in to correct the parts ${a} gets wrong.`,
+    ] : [
       `${a} starts handing out fake awards at dinner. ${b} wins “Most Likely to Turn Any Conversation Into a Meeting” and forces a smile.`,
-      `${a} reenacts ${b}'s veto speech with a dish towel over ${pronouns(a).posAdj} shoulders. Everyone laughs. ${b} laughs too, but asks ${a} to drop it when ${a} tries again.`,
       `${a} makes a joke about ${b} that gets a huge reaction from the room. ${b} goes quiet, and ${d} is the first person to realize the joke went too far.`,
     ],rng);
     api.addBond(a,b,lands?.5:-1.1); api.addBond(a,d,.4); api.remember(b,a,lands?'shared-joke':'humiliated',lands?1:2,{});

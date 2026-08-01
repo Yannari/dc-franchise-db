@@ -24,7 +24,7 @@
 // they were written for one; a house is a house.
 
 import { gs, seasonConfig } from '../core.js';
-import { romanticCompat } from '../players.js';
+import { pronouns, romanticCompat } from '../players.js';
 import {
   _generateForgeNote, _generateSpreadLies, _generateKissTrap,
   _generateWhisperCampaign, _generateCampaignRally, _generateFalseMajority,
@@ -85,26 +85,26 @@ function _bbResultText(result, salt = '') {
       const doubt = String(result.consequences || '').includes('seed of doubt');
       return doubt
         ? _textPick([
-          `${schemer} slips a note into ${reader}'s drawer claiming ${alleged} has been sharing their conversations. ${reader} does not believe all of it, but stops speaking freely around ${alleged}.`,
+          `${schemer} slips a note into ${reader}'s drawer claiming ${alleged} has been sharing private conversations with ${reader}. ${reader} does not believe all of it, but stops speaking freely around ${alleged}.`,
           `${reader} finds a handwritten vote count with ${alleged}'s name beside a plan they never discussed. The handwriting looks wrong, but the numbers bother ${reader} anyway.`,
           `${schemer} leaves ${reader} an unsigned warning about ${alleged}. ${reader} keeps the note and quietly checks whether anyone else heard the same story.`,
           `${reader} finds a note suggesting ${alleged} has another final two. ${reader} suspects a setup, but still asks ${alleged} several pointed questions that night.`,
           `${schemer} plants a short message saying ${alleged} wants ${reader} nominated. ${reader} cannot verify it and decides not to show ${alleged} the note yet.`,
           `${reader} finds what looks like a message from ${alleged} arranging a private meeting. One detail is off. ${reader} watches the meeting place anyway.`,
           `${schemer} leaves a fake alliance list where ${reader} will see it. ${alleged} is on the list and ${reader} is not. ${reader} calls it suspicious, then folds it into a pocket.`,
-          `${reader} receives a note accusing ${alleged} of leaking information. ${reader} doubts the source more than the accusation, but trust between them still cools.`,
+          `${reader} receives a note accusing ${alleged} of leaking information. ${reader} doubts the source more than the accusation, but trust between ${reader} and ${alleged} still cools.`,
         ], result, salt)
         : _textPick([
-          `${schemer} hides a note in ${reader}'s suitcase claiming ${alleged} has been pushing their name. ${reader} reads it twice and decides not to warn ${alleged}.`,
-          `${reader} finds a fake vote tally showing ${alleged} organizing the numbers against them. The count looks convincing, and ${reader} starts planning a response.`,
+          `${schemer} hides a note in ${reader}'s suitcase claiming ${alleged} has been pushing ${reader}'s name. ${reader} reads it twice and decides not to warn ${alleged}.`,
+          `${reader} finds a fake vote tally showing ${alleged} organizing the numbers against ${pronouns(reader).obj}. The count looks convincing, and ${reader} starts planning a response.`,
           `${schemer} leaves an unsigned message saying ${alleged} repeated something personal about ${reader}. ${reader} believes it and goes looking for an explanation.`,
           `${reader} finds what appears to be ${alleged}'s list of allies and targets. ${reader}'s name is underlined in the wrong column.`,
           `${schemer} plants a note suggesting ${alleged} promised the same deal to several people. ${reader} recognizes enough real names to trust the rest.`,
-          `${reader} discovers a message saying ${alleged} wants them used as a pawn. ${reader} pockets it before anyone else enters the room.`,
-          `${schemer} leaves a note that looks like a private message from ${alleged} to another ally. ${reader} believes they were never meant to see it.`,
-          `${reader} finds a warning that ${alleged} plans to blame them if the vote flips. ${reader} immediately stops sharing information with ${alleged}.`,
-          `${schemer} plants a fake final-three proposal bearing ${alleged}'s name. ${reader} reads it as proof that their own deal with ${alleged} was never exclusive.`,
-          `${reader} finds a folded note beside their bed claiming ${alleged} has been laughing about them. The accusation feels personal enough to be true.`,
+          `${reader} discovers a message saying ${alleged} wants ${pronouns(reader).obj} used as a pawn. ${reader} pockets it before anyone else enters the room.`,
+          `${schemer} leaves a note that looks like a private message from ${alleged} to another ally. ${reader} believes the message was never meant for ${pronouns(reader).obj}.`,
+          `${reader} finds a warning that ${alleged} plans to blame ${pronouns(reader).obj} if the vote flips. ${reader} immediately stops sharing information with ${alleged}.`,
+          `${schemer} plants a fake final-three proposal bearing ${alleged}'s name. ${reader} reads it as proof that ${pronouns(reader).posAdj} own deal with ${alleged} was never exclusive.`,
+          `${reader} finds a folded note beside ${pronouns(reader).posAdj} bed claiming ${alleged} has been laughing about ${pronouns(reader).obj}. The accusation feels personal enough to be true.`,
         ], result, salt);
     }
     case 'spreadLies': {
@@ -155,12 +155,12 @@ function _bbResultText(result, salt = '') {
       return _textPick([
         `${comforter} checks on ${victim} after the confrontation and asks for ${victim}'s side before offering an opinion.`,
         `${comforter} finds ${victim} alone in the bedroom, brings water and stays while ${victim} goes over what happened.`,
-        `${comforter} tells ${victim} that not everyone believes the story being spread. ${victim} finally stops trying to defend themself for a moment.`,
+        `${comforter} tells ${victim} that not everyone believes the story being spread. ${victim} finally stops trying to defend ${pronouns(victim).ref} for a moment.`,
         `${comforter} sits with ${victim} after the argument and helps separate what was actually said from what somebody added later.`,
-        `${comforter} asks ${victim} whether they want advice or just company. ${victim} chooses company, and ${comforter} stays.`,
-        `${comforter} finds ${victim} in the storage room and lets them vent without turning the conversation into another vote pitch.`,
+        `${comforter} asks ${victim} whether advice or company would help more. ${victim} chooses company, and ${comforter} stays.`,
+        `${comforter} finds ${victim} in the storage room and lets ${pronouns(victim).obj} vent without turning the conversation into another vote pitch.`,
         `${comforter} makes sure ${victim} eats after the confrontation, then listens while ${victim} decides what to do next.`,
-        `${comforter} tells ${victim} exactly who defended them when the rumor spread. It is the first useful information ${victim} has heard all night.`,
+        `${comforter} tells ${victim} exactly who defended ${pronouns(victim).obj} when the rumor spread. It is the first useful information ${victim} has heard all night.`,
       ], result, salt);
     }
     case 'exposeSchemer': {
@@ -242,7 +242,7 @@ function _bbResultText(result, salt = '') {
           `${schemer} waits until ${accomplice} gets ${witness} into the backyard, then corners ${kissTarget} in the bedroom. ${witness} returns before either hears the door.`,
           `${accomplice} keeps ${witness} busy with a fake problem while ${schemer} flirts openly with ${kissTarget}. Another houseguest sends ${witness} back inside.`,
           `${schemer} asks ${kissTarget} for a private talk after ${accomplice} leads ${witness} away. ${witness} comes back and catches the end of it.`,
-          `${accomplice} tells ${witness} that production needs them in another room. The excuse buys ${schemer} only a few minutes with ${kissTarget}, but it is enough.`,
+          `${accomplice} tells ${witness} that production needs ${pronouns(witness).obj} in another room. The excuse buys ${schemer} only a few minutes with ${kissTarget}, but it is enough.`,
         ], result, salt);
       }
       const [witness, partner] = p;
@@ -251,7 +251,7 @@ function _bbResultText(result, salt = '') {
         `${witness} asks ${partner} whether the moment was planned. ${partner} says no, then hesitates when asked why they stayed.`,
         `${witness} refuses to talk privately and makes ${partner} explain what happened in front of everyone who helped set it up.`,
         `${partner} follows ${witness} through two rooms trying to explain. ${witness} finally turns around and asks whether the relationship was ever real.`,
-        `${witness} goes quiet after seeing ${partner} with someone else. When ${partner} reaches for them, ${witness} steps away.`,
+        `${witness} goes quiet after seeing ${partner} with someone else. When ${partner} reaches for ${pronouns(witness).obj}, ${witness} steps away.`,
         `${witness} asks ${partner} for the truth once. The answer takes too long, and ${witness} ends the conversation.`,
       ], result, salt);
     }

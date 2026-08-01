@@ -2309,6 +2309,132 @@ export function rpBuildFanVoteReturn(ep) {
 }
 
 
+// ══════════════════════════════════════════════════════════════════════
+// Shared debug furniture.
+//
+// Both shows have a debug screen and there is no reason for them to be two
+// different screens. Everything visual lives here and is called by both, so
+// they cannot drift: the first Big Brother version reimplemented the look from
+// memory and ended up a flat monospace key/value list that carried the same
+// facts and resembled nothing.
+//
+// What differs between the shows is which tabs exist and what goes in them —
+// a house has no tribes, camps or idols; a camp has no competitions, slop or
+// endgame deals — so the CONTENT is passed in and the CHROME is shared.
+// ══════════════════════════════════════════════════════════════════════
+
+/** The tinted block with a coloured heading that every debug section sits in. */
+export const DBG_TINT = {
+  grey: ['#8b949e', '139,148,158'], red: ['#f47067', '244,112,103'],
+  gold: ['#f0883e', '240,136,62'], amber: ['#d29922', '210,153,34'],
+  green: ['#3fb950', '63,185,80'], blue: ['#57a6e8', '87,166,232'],
+  purple: ['#a371f7', '163,113,247'],
+};
+
+export function dbgPanel(title, colour, body) {
+  const [hex, rgb] = DBG_TINT[colour] || DBG_TINT.grey;
+  return `<div style="margin-bottom:16px;padding:10px;background:rgba(${rgb},0.06);border:1px solid rgba(${rgb},0.18);border-radius:8px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:${hex};margin-bottom:6px">${title}</div>${body}</div>`;
+}
+
+/** A bare section heading, for content that does not want a tinted box. */
+export const dbgHead = t =>
+  `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin:16px 0 8px">${t}</div>`;
+
+/** A key and a value. For facts that are genuinely numbers rather than people. */
+export const dbgRow = (k, v) =>
+  `<div style="display:flex;gap:10px;font-size:11px;padding:3px 0"><span style="min-width:190px;color:#8b949e">${k}</span><span style="flex:1;color:#c9d1d9">${v}</span></div>`;
+
+/** The row that carries a person — portrait first, exactly as Total Drama does. */
+export function dbgPortraitRow(name, cells, opts = {}) {
+  return `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${opts.dim ? 'opacity:0.5;background:rgba(244,112,103,0.06);' : ''}">
+    ${rpPortrait(name, 'sm')}
+    <div style="flex:1;color:#e6edf3;font-weight:600">${name}${opts.tag || ''}</div>
+    ${cells}
+  </div>`;
+}
+
+export const dbgNote = t => `<div style="font-size:10px;color:#6e7681;padding:2px 8px 4px 34px">${t}</div>`;
+export const dbgEmpty = t => `<div style="color:#484f58;font-size:11px;padding:4px 8px">${t}</div>`;
+
+/**
+ * The stat table. Nine stats, coloured by how good they are, plus whatever
+ * columns the show wants on the end.
+ */
+export function dbgStatTable(names, extraCols = [], statsOf = pStats) {
+  const KEYS = [['physical', 'PHY'], ['endurance', 'END'], ['mental', 'MNT'], ['social', 'SOC'],
+    ['strategic', 'STR'], ['loyalty', 'LOY'], ['boldness', 'BLD'], ['intuition', 'INT'], ['temperament', 'TMP']];
+  const sc = v => (v >= 8 ? '#3fb950' : v >= 6 ? '#e6edf3' : v <= 3 ? '#f47067' : '#8b949e');
+  let html = `<div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.08)">
+        <th style="text-align:left;padding:4px;color:#e6edf3">Player</th>
+        ${KEYS.map(([, label]) => `<th style="padding:4px">${label}</th>`).join('')}
+        ${extraCols.map(c => `<th style="padding:4px;color:${c.colour || '#8b949e'}">${c.label}</th>`).join('')}
+      </tr>`;
+  names.forEach(name => {
+    const st = statsOf(name) || {};
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:4px;color:#e6edf3;font-weight:600">${name}</td>
+      ${KEYS.map(([key]) => `<td style="padding:4px;text-align:center;color:${sc(st[key])}">${st[key] ?? '—'}</td>`).join('')}
+      ${extraCols.map(c => {
+        const v = c.value(name);
+        return `<td style="padding:4px;text-align:center;color:${c.colourFor ? c.colourFor(name) : (c.colour || '#8b949e')};${c.bold ? 'font-weight:700;' : ''}font-size:${c.small ? '9px' : '10px'}">${v}</td>`;
+      }).join('')}
+    </tr>`;
+  });
+  return html + `</table></div>`;
+}
+
+/**
+ * What people believe against what is true.
+ *
+ * Identical in both shows: the whole simulator decides on the PERCEIVED number
+ * and only the real one was ever drawn anywhere.
+ */
+export function dbgPerceivedGaps(entries, bondOf) {
+  if (!entries.length) return dbgEmpty('No gaps active this episode.');
+  return entries.map(([key, entry]) => {
+    const [from, to] = key.split('\u2192');
+    const real = bondOf(from, to);
+    const believes = Number(entry?.perceived ?? entry) || 0;
+    const gap = believes - real;
+    const col = gap > 0 ? '#3fb950' : '#f47067';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="flex:1;color:#e6edf3;font-size:11px"><strong>${from}</strong> \u2192 ${to}</div>
+      <div style="color:#8b949e;font-size:10px">${entry?.reason || ''}</div>
+      <div style="font-size:11px"><span style="color:#8b949e">real:</span> <span style="color:#e6edf3">${real.toFixed(1)}</span></div>
+      <div style="font-size:11px"><span style="color:#8b949e">thinks:</span> <span style="color:${col}">${believes.toFixed(1)}</span></div>
+      <div style="font-size:10px;color:${col}">${gap > 0 ? '+' : ''}${gap.toFixed(1)}</div>
+    </div>`;
+  }).join('');
+}
+
+/**
+ * The page: title, episode navigator, tab strip.
+ *
+ * `unit` is "Ep" or "Wk"; everything else is the same screen.
+ */
+export function dbgShell({ epNum, allEps, screenId, storageKey, activeTab, tabs, unit = 'Ep', eyebrow, body }) {
+  const maxEp = allEps.length ? allEps[allEps.length - 1].num : epNum;
+  const jump = target => `const ep=gs.episodeHistory.find(e=>e.num===${target});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='${screenId}');if(di>=0)vpCurrentScreen=di;renderVPScreen();}`;
+  const tabBtn = (id, label) => `<button onclick="localStorage.setItem('${storageKey}','${id}');${jump(epNum)}" style="padding:4px 12px;font-size:11px;font-weight:600;border:1px solid ${activeTab === id ? '#f0883e' : 'rgba(255,255,255,0.1)'};border-radius:4px;background:${activeTab === id ? 'rgba(240,136,62,0.15)' : 'transparent'};color:${activeTab === id ? '#f0883e' : '#8b949e'};cursor:pointer">${label}</button>`;
+
+  return `<div class="rp-page tod-morning" style="font-size:12px">
+    <div class="rp-eyebrow">${eyebrow}</div>
+    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:8px">DEBUG DATA</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
+      <button onclick="${jump(Math.max(1, epNum - 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${epNum <= 1 ? '#484f58' : '#8b949e'};cursor:pointer" ${epNum <= 1 ? 'disabled' : ''}>◀ ${unit} ${Math.max(1, epNum - 1)}</button>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${allEps.map(e => `<button onclick="${jump(e.num)}" style="width:24px;height:24px;font-size:10px;border:1px solid ${e.num === epNum ? '#f0883e' : 'rgba(255,255,255,0.08)'};border-radius:4px;background:${e.num === epNum ? 'rgba(240,136,62,0.2)' : 'transparent'};color:${e.num === epNum ? '#f0883e' : '#6e7681'};cursor:pointer">${e.num}</button>`).join('')}</div>
+      <button onclick="${jump(Math.min(maxEp, epNum + 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${epNum >= maxEp ? '#484f58' : '#8b949e'};cursor:pointer" ${epNum >= maxEp ? 'disabled' : ''}>${unit} ${Math.min(maxEp, epNum + 1)} ▶</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+      ${tabs.map(([id, label]) => tabBtn(id, label)).join('')}
+    </div>
+    ${body}
+  </div>`;
+}
+
 export function rpBuildDebug(ep) {
   const snap = ep.gsSnapshot || {};
   const activePlayers = snap.activePlayers || gs.activePlayers || [];
@@ -2875,38 +3001,17 @@ export function rpBuildDebug(ep) {
     const _statsSnap = ep.gsSnapshot;
     if (_statsSnap) { gs = _statsSnap; if (typeof repairGsSets === 'function') repairGsSets(gs); }
 
-    html += `<div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.08)">
-        <th style="text-align:left;padding:4px;color:#e6edf3">Player</th>
-        <th style="padding:4px">PHY</th><th style="padding:4px">END</th><th style="padding:4px">MNT</th>
-        <th style="padding:4px">SOC</th><th style="padding:4px">STR</th><th style="padding:4px">LOY</th>
-        <th style="padding:4px">BLD</th><th style="padding:4px">INT</th><th style="padding:4px">TMP</th>
-        <th style="padding:4px;color:#f0883e">Threat</th>
-        <th style="padding:4px">State</th>
-      </tr>`;
-    activePlayers.forEach(name => {
-      const s = pStats(name);
-      const ts = threatScore(name);
-      const state = snap.playerStates?.[name]?.emotional || gs.playerStates?.[name]?.emotional || 'content';
-      const stateCol = state === 'desperate' ? '#f47067' : state === 'paranoid' ? '#f0883e' : state === 'uneasy' ? '#d29922' : '#8b949e';
-      const sc = v => v >= 8 ? '#3fb950' : v >= 6 ? '#e6edf3' : v <= 3 ? '#f47067' : '#8b949e';
-      html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
-        <td style="padding:4px;color:#e6edf3;font-weight:600">${name}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.physical)}">${s.physical}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.endurance)}">${s.endurance}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.mental)}">${s.mental}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.social)}">${s.social}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.strategic)}">${s.strategic}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.loyalty)}">${s.loyalty}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.boldness)}">${s.boldness}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.intuition)}">${s.intuition}</td>
-        <td style="padding:4px;text-align:center;color:${sc(s.temperament)}">${s.temperament}</td>
-        <td style="padding:4px;text-align:center;color:#f0883e;font-weight:700">${ts.toFixed(1)}</td>
-        <td style="padding:4px;text-align:center;color:${stateCol};font-size:9px">${state}</td>
-      </tr>`;
-    });
-    html += `</table></div>`;
+    // The shared table, so the two shows' debug screens cannot drift apart.
+    html += dbgStatTable(activePlayers, [
+      { label: 'Threat', colour: '#f0883e', bold: true, value: n => threatScore(n).toFixed(1) },
+      { label: 'State', small: true,
+        value: n => (snap.playerStates?.[n]?.emotional || gs.playerStates?.[n]?.emotional || 'content'),
+        colourFor: n => {
+          const st = snap.playerStates?.[n]?.emotional || gs.playerStates?.[n]?.emotional || 'content';
+          return st === 'desperate' ? '#f47067' : st === 'paranoid' ? '#f0883e'
+            : st === 'uneasy' ? '#d29922' : '#8b949e';
+        } },
+    ]);
     if (_statsSnap) gs = _statsSavedGs;
   }
 
@@ -2918,23 +3023,7 @@ export function rpBuildDebug(ep) {
     const pbEntries = Object.entries(_pb);
     html += `<div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ACTIVE GAPS (${pbEntries.length})</div>`;
-    if (pbEntries.length) {
-      pbEntries.forEach(([key, entry]) => {
-        const [from, to] = key.split('\u2192');
-        const realBond = getBond(from, to);
-        const gap = entry.perceived - realBond;
-        const gapCol = gap > 0 ? '#3fb950' : '#f47067';
-        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div style="flex:1;color:#e6edf3;font-size:11px"><strong>${from}</strong> \u2192 ${to}</div>
-          <div style="color:#8b949e;font-size:10px">${entry.reason}</div>
-          <div style="font-size:11px"><span style="color:#8b949e">real:</span> <span style="color:#e6edf3">${realBond.toFixed(1)}</span></div>
-          <div style="font-size:11px"><span style="color:#8b949e">thinks:</span> <span style="color:${gapCol}">${entry.perceived.toFixed(1)}</span></div>
-          <div style="font-size:10px;color:${gapCol}">${gap > 0 ? '+' : ''}${gap.toFixed(1)}</div>
-        </div>`;
-      });
-    } else {
-      html += `<div style="color:#484f58;font-size:11px">No gaps active this episode.</div>`;
-    }
+    html += dbgPerceivedGaps(pbEntries, getBond);
     html += `</div>`;
     // Season history
     const _allPBGaps = _viewEps.flatMap(e => {
@@ -17300,184 +17389,198 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
  * has no tribes, no camp access and no idols, and does have competitions,
  * game plans and endgame deals that a camp does not.
  */
+/**
+ * The numbers behind the week.
+ *
+ * Built on the shared debug furniture, so it is the same SCREEN as Total
+ * Drama's — same panels, same portrait rows, same stat table, same episode
+ * navigator — carrying Big Brother's content. A house has no tribes, camps or
+ * idols; it has competitions, slop, game plans and endgame deals, and those are
+ * what its tabs are about.
+ */
 export function rpBuildBBDebug(ep) {
   const snap = ep.closingState || ep.gsSnapshot || {};
   const house = ep.houseAtEnd || ep.houseAtStart || (typeof gs !== 'undefined' && gs.activePlayers) || [];
-  const allEps = ((typeof gs !== 'undefined' && gs.episodeHistory) || [])
-    .filter(e => e.format === 'big-brother');
-  const _maxEp = allEps.length ? allEps[allEps.length - 1].num : ep.num;
-
+  const allEps = ((typeof gs !== 'undefined' && gs.episodeHistory) || []).filter(e => e.format === 'big-brother');
   const tab = (typeof localStorage !== 'undefined' && localStorage.getItem('vp_bbdebug_tab')) || 'week';
-  const tabBtn = (id, label) => `<button onclick="localStorage.setItem('vp_bbdebug_tab','${id}');const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='bb-debug');if(di>=0)vpCurrentScreen=di;renderVPScreen();}" style="padding:4px 12px;font-size:11px;font-weight:600;border:1px solid ${tab === id ? '#f0883e' : 'rgba(255,255,255,0.1)'};border-radius:4px;background:${tab === id ? 'rgba(240,136,62,0.15)' : 'transparent'};color:${tab === id ? '#f0883e' : '#8b949e'};cursor:pointer">${label}</button>`;
-  const epNav = target => `const ep=gs.episodeHistory.find(e=>e.num===${target});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='bb-debug');if(di>=0)vpCurrentScreen=di;renderVPScreen();}`;
-
-  // Shared row and section furniture, matching the Total Drama debug exactly.
-  const row = (k, v) => `<div style="display:flex;gap:10px;font-size:11px;font-family:var(--font-mono);padding:2px 0"><span style="min-width:210px;color:#8b949e">${k}</span><span style="flex:1">${v}</span></div>`;
-  const head = t => `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin:16px 0 8px">${t}</div>`;
-  const line = (name, right, opts = {}) => `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${opts.dim ? 'opacity:.5;' : ''}">
-      ${rpPortrait(name, 'sm')}
-      <div style="flex:1;font-weight:600;color:#e6edf3">${_bbEsc(name)}${opts.tagHtml || ''}</div>
-      ${right}
-    </div>`;
-  const tier = v => (v <= 4 ? { label: 'Low', color: '#10b981' }
-    : v <= 6 ? { label: 'Medium', color: '#f59e0b' }
-    : v <= 8 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' });
 
   const acts = ep.acts || [];
   const beats = acts.flatMap(a => a.socialBeats || []);
   const plans = snap.intentions || (typeof gs !== 'undefined' && gs.intentions) || {};
+  const arch = n => (typeof players !== 'undefined' ? players.find(x => x.name === n)?.archetype : '') || '';
+  const threatOf = n => { try { return bbThreatProfile(n).total; } catch { return 0; } };
+  const recOf = n => (typeof gs !== 'undefined' && gs.bb?.stats?.[n]) || {};
+  const tierOfScore = v => (v <= 4 ? { label: 'Low', color: '#10b981' } : v <= 6 ? { label: 'Medium', color: '#f59e0b' }
+    : v <= 8 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' });
 
-  let html = `<div class="rp-page tod-morning" style="font-size:12px">
-    <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:8px">DEBUG DATA</div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
-      <button onclick="${epNav(Math.max(1, ep.num - 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num <= 1 ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num <= 1 ? 'disabled' : ''}>◀ Wk ${Math.max(1, ep.num - 1)}</button>
-      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${allEps.map(e => `<button onclick="${epNav(e.num)}" style="width:24px;height:24px;font-size:10px;border:1px solid ${e.num === ep.num ? '#f0883e' : 'rgba(255,255,255,0.08)'};border-radius:4px;background:${e.num === ep.num ? 'rgba(240,136,62,0.2)' : 'transparent'};color:${e.num === ep.num ? '#f0883e' : '#6e7681'};cursor:pointer">${e.num}</button>`).join('')}</div>
-      <button onclick="${epNav(Math.min(_maxEp, ep.num + 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num >= _maxEp ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num >= _maxEp ? 'disabled' : ''}>Wk ${Math.min(_maxEp, ep.num + 1)} ▶</button>
-    </div>
-    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
-      ${tabBtn('week', 'This Week')}
-      ${tabBtn('threats', 'Threats &amp; Heat')}
-      ${tabBtn('comps', 'Competitions')}
-      ${tabBtn('plans', 'Game Plans')}
-      ${tabBtn('deals', 'Deals &amp; Alliances')}
-      ${tabBtn('votes', 'Vote Commitments')}
-      ${tabBtn('bonds', 'Perceived Bonds')}
-      ${tabBtn('stats', 'Player Stats')}
-      ${tabBtn('beats', 'Beats &amp; Effects')}
-    </div>`;
+  let html = '';
 
   // ── This week ─────────────────────────────────────────────────────
   if (tab === 'week') {
+    if (ep.eliminated) {
+      html += dbgPanel('EVICTED', 'red', dbgPortraitRow(ep.eliminated, `
+        <div style="color:#f47067;font-size:11px">${(ep.votes || {})[ep.eliminated] || 0} votes</div>
+        <div style="color:#f0883e;font-size:11px">threat ${threatOf(ep.eliminated).toFixed(1)}</div>
+        <div style="color:#8b949e;font-size:10px">${arch(ep.eliminated)}</div>`, { dim: true }));
+    }
+    if (ep.hoh) {
+      const comp = acts.find(a => a.type === 'hoh')?.competition;
+      const rec = recOf(ep.hoh);
+      html += dbgPanel('HEAD OF HOUSEHOLD', 'gold', dbgPortraitRow(ep.hoh, `
+        <div style="color:#f0883e;font-size:11px">${comp ? _bbEsc(comp.name) : 'won the week'}</div>
+        <div style="color:#8b949e;font-size:10px">${rec.hohWins || 1} total</div>
+        <div style="color:#8b949e;font-size:10px">${arch(ep.hoh)}</div>`));
+    }
+    const noms = ep.finalNominees || ep.initialNominees || [];
+    if (noms.length) {
+      const nomAct = acts.find(a => a.type === 'nominations');
+      html += dbgPanel('THE BLOCK', 'red', noms.map(n => dbgPortraitRow(n, `
+          <div style="color:${n === ep.eliminated ? '#f47067' : '#3fb950'};font-size:11px">${n === ep.eliminated ? 'evicted' : 'survived'}</div>
+          <div style="color:#8b949e;font-size:11px">${(ep.votes || {})[n] || 0} votes</div>
+          <div style="color:#6e7681;font-size:10px">${n === nomAct?.target ? 'the target' : n === nomAct?.pawn ? 'the pawn' : ''}</div>`,
+        { dim: n === ep.eliminated })).join('')
+        + (nomAct?.backdoorTarget ? dbgNote(`backdoor plan: ${_bbEsc(nomAct.backdoorTarget)}`) : ''));
+    }
+    if (ep.vetoWinner) {
+      const cer = acts.find(a => a.type === 'veto-ceremony');
+      html += dbgPanel('POWER OF VETO', 'green', dbgPortraitRow(ep.vetoWinner, `
+          <div style="color:${cer?.used ? '#3fb950' : '#6e7681'};font-size:11px">${cer?.used ? `used on ${_bbEsc(cer.saved || '?')}` : 'not used'}</div>
+          <div style="color:#8b949e;font-size:10px">${recOf(ep.vetoWinner).vetoWins || 1} total</div>`)
+        + (cer?.replacement ? dbgNote(`${_bbEsc(cer.replacement)} went up in their place`) : ''));
+    }
+    if ((ep.haveNots || []).length) {
+      const hn = acts.find(a => a.type === 'have-nots');
+      html += dbgPanel('HAVE-NOTS', 'blue', ep.haveNots.map(n => {
+        const why = (hn?.reasons || []).find(r => r.name === n);
+        return dbgPortraitRow(n, `<div style="color:#57a6e8;font-size:11px">${why ? _bbEsc(why.why) : 'on slop'}</div>`);
+      }).join('') + ((hn?.exempt || []).length ? dbgNote(`${hn.exempt.join(', ')} sat the competition out`) : ''));
+    }
+    if ((ep.dealBreaks || []).length) {
+      html += dbgPanel('PROMISES BROKEN', 'red', ep.dealBreaks.map(b => dbgPortraitRow(b.breaker, `
+        <div style="color:#f47067;font-size:11px">cut ${_bbEsc(b.victim)}</div>
+        <div style="color:#8b949e;font-size:10px">${b.tier} from week ${b.madeEp}</div>`)).join(''));
+    }
+
     const byCat = {};
     beats.forEach(b => { byCat[b.category] = (byCat[b.category] || 0) + 1; });
-    html += head('THE WEEK')
-      + row('acts', acts.map(a => a.phase || a.type).join(' → '))
-      + row('head of household', ep.hoh || '—')
-      + row('nominees', (ep.finalNominees || ep.initialNominees || []).join(', ') || '—')
-      + row('veto', ep.vetoWinner ? `${ep.vetoWinner}${ep.vetoUsed ? ' — used' : ' — not used'}` : '—')
-      + row('have-nots', (ep.haveNots || []).join(', ') || '—')
-      + row('evicted', ep.eliminated || '—')
-      + row('vote', Object.entries(ep.votes || {}).map(([n, c]) => `${n} ${c}`).join(' · ') || '—')
-      + row('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')
-      + row('changed by the campaign', ep.voteChanges || 0)
-      + row('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)
-      + row('plan revisions', (ep.planChanges || []).length)
-      + row('promises broken', (ep.dealBreaks || []).length);
+    const failed = ep.maintenanceErrors || [];
+    html += dbgPanel('THE WEEK', 'grey',
+      dbgRow('acts', acts.map(a => a.phase || a.type).join(' → '))
+      + dbgRow('vote', Object.entries(ep.votes || {}).map(([n, c]) => `${n} ${c}`).join(' · ') || '—')
+      + dbgRow('tie broken', ep.tieBreak ? `${ep.tieBreak.voter} → ${ep.tieBreak.evict}` : 'no')
+      + dbgRow('changed by the campaign', ep.voteChanges || 0)
+      + dbgRow('house beats', `${beats.length} (${Object.entries(byCat).map(([k, v]) => `${k} ${v}`).join(', ')})`)
+      + dbgRow('plan revisions', (ep.planChanges || []).length)
+      + dbgRow('promises broken', (ep.dealBreaks || []).length)
+      // Whether the eight shared systems ran. Silence about them is exactly how
+      // the romance pipeline stayed broken for as long as it did.
+      + dbgRow('upkeep', failed.length
+        ? `<span style="color:#f47067">${failed.length} FAILED</span>`
+        : '<span style="color:#3fb950">all eight ran</span>')
+      + failed.map(e => dbgRow(e.step || 'step', `<span style="color:#f47067">${_bbEsc(e.message || String(e))}</span>`)).join(''));
 
     if ((ep.planChanges || []).length) {
-      html += head('WHY PLANS MOVED');
-      ep.planChanges.slice(0, 30).forEach(c => {
-        html += row(`${c.owner} · ${c.field}`, `<span style="color:#8b949e">${_bbEsc(c.reason)}</span>`);
-      });
+      // Grouped by reason. Ungrouped this ran to forty-eight lines of which
+      // seventeen said the same sentence, burying the revision that mattered.
+      const byReason = new Map();
+      for (const c of ep.planChanges) {
+        const key = `${c.field}|${c.reason}`;
+        if (!byReason.has(key)) byReason.set(key, { field: c.field, reason: c.reason, who: [] });
+        byReason.get(key).who.push(c.owner);
+      }
+      const groups = [...byReason.values()].sort((a, b) => a.who.length - b.who.length);
+      html += dbgPanel(`WHY PLANS MOVED (${ep.planChanges.length} revisions, ${groups.length} distinct)`, 'purple',
+        groups.map(g => dbgRow(`${g.field}${g.who.length > 1 ? ` <span style="color:#6e7681">×${g.who.length}</span>` : ''}`,
+          `${_bbEsc(g.reason)}<div style="color:#6e7681;font-size:10px;margin-top:1px">${g.who.join(', ')}</div>`)).join(''));
     }
-    // Whether the eight shared Total Drama systems ran. Silence about them is
-    // exactly how the romance pipeline stayed broken for as long as it did:
-    // every one is wrapped in its own guard, so a throwing system disappears
-    // rather than failing loudly.
-    const failed = ep.maintenanceErrors || [];
-    html += head('SHARED UPKEEP');
-    html += row('upkeep', failed.length
-      ? `<span style="color:#f47067">${failed.length} FAILED</span>`
-      : '<span style="color:#3fb950">all eight ran</span>');
-    failed.forEach(e => { html += row(e.step || 'step', `<span style="color:#f47067">${_bbEsc(e.message || String(e))}</span>`); });
   }
 
   // ── Threats & heat ────────────────────────────────────────────────
   if (tab === 'threats') {
-    html += head(`THREAT SCORES (WEEK ${ep.num})`);
-    house.map(name => ({ name, profile: bbThreatProfile(name) }))
-      .sort((a, b) => b.profile.total - a.profile.total)
-      .forEach(({ name, profile }) => {
-        const t = tier(profile.total);
-        const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
-        html += line(name, `
-          <div style="width:52px;text-align:right"><span style="color:${t.color};font-weight:700">${profile.total.toFixed(1)}</span></div>
-          <div style="width:62px;text-align:right;color:#8b949e;font-size:10px">${t.label}</div>
-          <div style="flex:0 0 260px;text-align:right;color:#6e7681;font-size:9px;font-family:var(--font-mono)">
-            base ${profile.base.toFixed(1)} · social ${profile.socialPosition.toFixed(1)}
-            · comps ${profile.competition.toFixed(1)}
-            · ${rec.hohWins || 0}H/${rec.vetoWins || 0}V/${rec.timesNominated || 0}N
-          </div>`);
-      });
+    html += dbgPanel(`THREAT SCORES (WEEK ${ep.num})`, 'gold',
+      house.map(name => ({ name, profile: bbThreatProfile(name) }))
+        .sort((a, b) => b.profile.total - a.profile.total)
+        .map(({ name, profile }) => {
+          const t = tierOfScore(profile.total);
+          const rec = recOf(name);
+          return dbgPortraitRow(name, `
+            <div style="width:50px;text-align:right;color:${t.color};font-weight:700">${profile.total.toFixed(1)}</div>
+            <div style="width:62px;text-align:right;color:#8b949e;font-size:10px">${t.label}</div>
+            <div style="flex:0 0 240px;text-align:right;color:#6e7681;font-size:9px">
+              base ${profile.base.toFixed(1)} · social ${profile.socialPosition.toFixed(1)} · comps ${profile.competition.toFixed(1)}
+              · ${rec.hohWins || 0}H/${rec.vetoWins || 0}V/${rec.timesNominated || 0}N</div>`);
+        }).join(''));
 
-    // Heat is directional: who each houseguest is warmest to putting up.
-    html += head('HEAT — WHO EACH HOUSEGUEST WOULD NOMINATE');
-    for (const observer of house) {
-      const ranked = house.filter(n => n !== observer)
-        .map(n => ({ n, heat: bbHeat(observer, n) }))
-        .sort((a, b) => b.heat.total - a.heat.total)
-        .slice(0, 3);
-      if (!ranked.length) continue;
-      html += line(observer, `<div style="flex:1;text-align:right;font-size:10px;font-family:var(--font-mono);color:#8b949e">${
-        ranked.map(({ n, heat }) => {
-          const c = heat.components;
-          return `<span title="threat ${c.threat.toFixed(1)} · relationship ${c.relationship.toFixed(1)} · alliance ${c.alliance.toFixed(1)} · target ${c.target} · suspicion ${c.suspicion.toFixed(1)} · memory ${c.memory.toFixed(1)}"
-            style="margin-left:10px">${_bbEsc(n)} <b style="color:${tier(heat.total).color}">${heat.total.toFixed(1)}</b></span>`;
-        }).join('')}</div>`);
-    }
-    html += `<div style="font-size:9px;color:#4d545c;margin-top:6px">Hover a name for the full breakdown: threat, relationship, alliance, target, suspicion, memory.</div>`;
+    html += dbgPanel('HEAT — WHO EACH HOUSEGUEST WOULD PUT UP', 'red',
+      house.map(observer => {
+        const ranked = house.filter(n => n !== observer)
+          .map(n => ({ n, heat: bbHeat(observer, n) }))
+          .sort((a, b) => b.heat.total - a.heat.total).slice(0, 3);
+        if (!ranked.length) return '';
+        return dbgPortraitRow(observer, `<div style="flex:1;text-align:right;font-size:10px;color:#8b949e">${
+          ranked.map(({ n, heat }) => {
+            const c = heat.components;
+            return `<span title="threat ${c.threat.toFixed(1)} · relationship ${c.relationship.toFixed(1)} · alliance ${c.alliance.toFixed(1)} · target ${c.target} · suspicion ${c.suspicion.toFixed(1)} · memory ${c.memory.toFixed(1)}" style="margin-left:10px">${_bbEsc(n)} <b style="color:${tierOfScore(heat.total).color}">${heat.total.toFixed(1)}</b></span>`;
+          }).join('')}</div>`);
+      }).join('')
+      + dbgNote('Hover a name for the breakdown: threat, relationship, alliance, target, suspicion, memory.'));
   }
 
   // ── Competitions ──────────────────────────────────────────────────
   if (tab === 'comps') {
     const comps = acts.filter(a => a.competition).map(a => ({ type: a.type, comp: a.competition }));
-    if (!comps.length) html += head('NO COMPETITION THIS WEEK');
+    if (!comps.length) html += dbgPanel('COMPETITIONS', 'grey', dbgEmpty('No competition this week.'));
     for (const { type, comp } of comps) {
-      html += `<div style="margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:8px">
-        <div style="font-size:10px;letter-spacing:1.5px;color:#f0a500;text-transform:uppercase;margin-bottom:8px">${type} · ${comp.name} · ${comp.category} · ${comp.debug?.source || '?'}</div>
-        ${row('winner', `${comp.winner} (margin ${comp.debug?.winnerMargin != null ? comp.debug.winnerMargin.toFixed(2) : '—'})`)}
-        ${row('order', (comp.placements || []).join(' > '))}
-        ${Object.entries(comp.debug?.scoreBreakdown || {})
-          // The two competition engines report the SAME numbers under different
-          // names — generic comps write statTotal/randomRoll/throwPenalty/
-          // throwIntentChance, the custom ones write base/roll/penalty/
-          // threwChance. Reading only one set printed NaN for every custom
-          // competition in the game, which is most of them.
-          .map(([name, raw]) => [name, {
-            score: raw.score ?? raw.finalScore ?? 0,
-            aptitude: raw.statTotal ?? raw.base,
-            roll: raw.randomRoll ?? raw.roll,
-            threw: raw.threw,
-            throwPenalty: raw.throwPenalty ?? raw.penalty,
-            throwChance: raw.throwIntentChance ?? raw.threwChance,
-            slopRisk: raw.throwSlopRisk,
-            haveNot: raw.haveNot, haveNotPenalty: raw.haveNotPenalty,
-            gunningFor: raw.gunningFor, gunningBonus: raw.gunningBonus,
-          }])
-          .sort((a, b) => b[1].score - a[1].score).map(([name, b]) => {
-            const num = (v, d = 2) => (Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '?');
-            const parts = [`score <b style="color:#e6edf3">${num(b.score)}</b>`];
-            if (b.aptitude != null) parts.push(`aptitude ${num(b.aptitude)}`);
-            if (b.roll != null) parts.push(`luck ${num(b.roll)}`);
-            if (b.gunningBonus) parts.push(`<span style="color:#3fb950">gunning +${num(b.gunningBonus)}${b.gunningFor ? ` (${b.gunningFor})` : ''}</span>`);
-            if (b.haveNot) parts.push(`<span style="color:#f47067">slop -${num(b.haveNotPenalty)}</span>`);
-            if (b.threw) parts.push(`<span style="color:#f47067">threw -${num(b.throwPenalty)}</span>`);
-            if (b.throwChance) parts.push(`throw odds ${(Number(b.throwChance) * 100).toFixed(0)}%${b.slopRisk ? ` (slop risk -${num(b.slopRisk, 1)})` : ''}`);
-            return row(name, parts.join(' · '));
-          }).join('')}
-      </div>`;
+      const rows = Object.entries(comp.debug?.scoreBreakdown || {})
+        // The two competition engines report the same numbers under different
+        // names: generic comps write statTotal/randomRoll/throwPenalty, the
+        // custom ones write base/roll/penalty. Reading one set printed NaN for
+        // every custom competition, which is most of them.
+        .map(([name, raw]) => [name, {
+          score: raw.score ?? raw.finalScore ?? 0,
+          aptitude: raw.statTotal ?? raw.base, luck: raw.randomRoll ?? raw.roll,
+          threw: raw.threw, throwPenalty: raw.throwPenalty ?? raw.penalty,
+          throwChance: raw.throwIntentChance ?? raw.threwChance, slopRisk: raw.throwSlopRisk,
+          haveNot: raw.haveNot, haveNotPenalty: raw.haveNotPenalty,
+          gunningFor: raw.gunningFor, gunningBonus: raw.gunningBonus,
+        }])
+        .sort((a, b) => b[1].score - a[1].score);
+      const num = (v, d = 2) => (Number.isFinite(Number(v)) ? Number(v).toFixed(d) : '?');
+      html += dbgPanel(`${type.toUpperCase()} · ${_bbEsc(comp.name)} · ${comp.category || '?'} · ${comp.debug?.source || '?'}`, 'gold',
+        dbgRow('winner', `${comp.winner} <span style="color:#6e7681">margin ${num(comp.debug?.winnerMargin)}</span>`)
+        + rows.map(([name, b], i) => dbgPortraitRow(name, `
+            <div style="width:46px;text-align:right;color:#e6edf3;font-weight:700">${num(b.score)}</div>
+            <div style="flex:1;text-align:right;font-size:9px;color:#8b949e">
+              ${b.aptitude != null ? `aptitude ${num(b.aptitude)}` : ''}
+              ${b.luck != null ? ` · luck ${num(b.luck)}` : ''}
+              ${b.gunningBonus ? ` · <span style="color:#3fb950">gunning +${num(b.gunningBonus)}${b.gunningFor ? ` (${b.gunningFor})` : ''}</span>` : ''}
+              ${b.haveNot ? ` · <span style="color:#f47067">slop -${num(b.haveNotPenalty)}</span>` : ''}
+              ${b.threw ? ` · <span style="color:#f47067">threw -${num(b.throwPenalty)}</span>` : ''}
+              ${b.throwChance ? ` · throw odds ${(Number(b.throwChance) * 100).toFixed(0)}%${b.slopRisk ? ` (slop risk -${num(b.slopRisk, 1)})` : ''}` : ''}
+            </div>`, { tag: i === 0 ? ' <span style="color:#f0883e;font-size:9px">WON</span>' : '' })).join(''));
     }
   }
 
   // ── Game plans ────────────────────────────────────────────────────
   if (tab === 'plans') {
     const planned = house.filter(n => plans[n]);
-    if (!planned.length) html += head('NOBODY HAS A PLAN YET');
+    if (!planned.length) html += dbgPanel('GAME PLANS', 'grey', dbgEmpty('Nobody has a plan yet.'));
     else {
-      html += head('WHAT EACH HOUSEGUEST IS PLAYING FOR');
-      planned.forEach(n => {
-        const p = plans[n];
-        const why = Object.entries(p.origins?.targets || {})[0];
-        html += line(n, `<div style="flex:1;text-align:right;font-size:10px;font-family:var(--font-mono);color:#8b949e">
-            ${p.planStyle} · ${p.stage} · conf ${Number(p.confidence || 0).toFixed(2)}
-            · target <b style="color:#f47067">${_bbEsc(p.targets?.[0] || '—')}</b>
-            · shield <b style="color:#79c0ff">${_bbEsc(p.shield || '—')}</b>
-            · goat <b style="color:#3fb950">${_bbEsc(p.goat || '—')}</b>${
-              p.goatAssessment ? ` (${Number(p.goatAssessment.beatability).toFixed(1)} @ ${Math.round(p.goatAssessment.confidence * 100)}%)` : ''}
-          </div>`);
-        if (why) html += `<div style="font-size:9px;color:#4d545c;padding:0 8px 5px 34px">${_bbEsc(String(why[1]))}</div>`;
-      });
+      html += dbgPanel('WHAT EACH HOUSEGUEST IS PLAYING FOR', 'purple', planned.map(n => {
+        const pl = plans[n];
+        const why = Object.entries(pl.origins?.targets || {})[0];
+        return dbgPortraitRow(n, `
+            <div style="width:112px;text-align:right;color:#8b949e;font-size:9px">${pl.planStyle}<br>${pl.stage} · conf ${Number(pl.confidence || 0).toFixed(2)}</div>
+            <div style="flex:1;text-align:right;font-size:10px;color:#8b949e">
+              target <b style="color:#f47067">${_bbEsc(pl.targets?.[0] || '—')}</b>
+              · shield <b style="color:#57a6e8">${_bbEsc(pl.shield || '—')}</b>
+              · goat <b style="color:#3fb950">${_bbEsc(pl.goat || '—')}</b>${
+                pl.goatAssessment ? ` <span style="color:#6e7681">(${Number(pl.goatAssessment.beatability).toFixed(1)} @ ${Math.round(pl.goatAssessment.confidence * 100)}%)</span>` : ''}
+            </div>`)
+          + (why ? dbgNote(_bbEsc(String(why[1]))) : '')
+          + ((pl.betrayalConditions || []).length
+            ? dbgNote(pl.betrayalConditions.map(b => `would turn on ${_bbEsc(b.ally)} — ${_bbEsc(b.condition)}`).join('; ')) : '');
+      }).join(''));
     }
   }
 
@@ -17485,110 +17588,124 @@ export function rpBuildBBDebug(ep) {
   if (tab === 'deals') {
     const deals = ((typeof gs !== 'undefined' && gs.sideDeals) || [])
       .filter(d => d.tier === 'final-two' || d.tier === 'final-three');
-    html += head(`ENDGAME DEALS — EVERY ONE EVER MADE (${deals.length})`);
-    if (!deals.length) html += row('—', 'nobody has promised anybody the end');
-    deals.slice(-30).forEach(d => {
-      const state = d.broken ? `<span style="color:#f47067">BROKEN by ${d.brokenBy} wk${d.brokenEp}${d.brokenReason ? ` (${_bbEsc(d.brokenReason)})` : ''}</span>`
-        : d.honoured ? `<span style="color:#3fb950">HONOURED by ${d.honouredBy}</span>`
-        : d.active === false ? `<span style="color:#6e7681">lapsed — ${_bbEsc(d.lapsedBecause || 'unknown')}</span>`
-        : '<span style="color:#e3b341">live</span>';
-      html += row(`${d.tier} wk${d.madeEp}`,
-        `${(d.players || []).map(n => `${_bbEsc(n)} <b style="color:#8b949e">${(Number(d.sincerity?.[n] ?? 0.5) * 100).toFixed(0)}%</b>`).join(' · ')} — ${state}`);
-    });
+    html += dbgPanel(`ENDGAME DEALS — EVERY ONE EVER MADE (${deals.length})`, 'amber',
+      deals.length ? deals.slice(-30).map(d => {
+        const state = d.broken ? `<span style="color:#f47067">BROKEN by ${d.brokenBy} wk${d.brokenEp}</span>`
+          : d.honoured ? `<span style="color:#3fb950">HONOURED by ${d.honouredBy}</span>`
+          : d.active === false ? `<span style="color:#6e7681">lapsed</span>`
+          : '<span style="color:#e3b341">live</span>';
+        const lead = (d.players || [])[0];
+        return dbgPortraitRow(lead, `
+            <div style="flex:1;text-align:right;font-size:10px;color:#8b949e">
+              ${(d.players || []).map(n => `${_bbEsc(n)} <b style="color:#c9d1d9">${(Number(d.sincerity?.[n] ?? 0.5) * 100).toFixed(0)}%</b>`).join(' &amp; ')}
+            </div>
+            <div style="width:150px;text-align:right;font-size:10px">${state}</div>
+            <div style="width:96px;text-align:right;color:#6e7681;font-size:9px">${d.tier} wk${d.madeEp}</div>`,
+          { dim: !!d.broken })
+          + (d.brokenReason ? dbgNote(_bbEsc(d.brokenReason)) : '');
+      }).join('') : dbgEmpty('Nobody has promised anybody the end.'));
 
     const alliances = (snap.alliances || snap.namedAlliances
       || (typeof gs !== 'undefined' && gs.namedAlliances) || []).filter(a => a.active !== false);
-    html += head(`ALLIANCES (${alliances.length})`);
-    if (!alliances.length) html += row('—', 'nobody is working together out loud');
-    alliances.forEach(a => {
-      const live = (a.members || []).filter(m => house.includes(m));
-      html += row(a.name, `${live.join(', ') || '—'} <span style="color:#6e7681">· ${live.length} live${
-        a.trust != null ? ` · trust ${Number(a.trust).toFixed(1)}` : ''}${a.formedEp ? ` · formed wk${a.formedEp}` : ''}</span>`);
-    });
+    html += dbgPanel(`ALLIANCES (${alliances.length})`, 'blue',
+      alliances.length ? alliances.map(a => {
+        const live = (a.members || []).filter(m => house.includes(m));
+        return dbgRow(_bbEsc(a.name),
+          `${live.join(', ') || '—'} <span style="color:#6e7681">· ${live.length} live${
+            a.trust != null ? ` · trust ${Number(a.trust).toFixed(1)}` : ''}${a.formedEp ? ` · formed wk${a.formedEp}` : ''}</span>`);
+      }).join('') : dbgEmpty('Nobody is working together out loud.'));
   }
 
   // ── Vote commitments ──────────────────────────────────────────────
   if (tab === 'votes') {
     const commitments = ep.voteCommitments || [];
     const ballots = (acts.find(a => a.type === 'eviction')?.ballots) || [];
-    html += head('HOW FIRMLY EACH VOTE WAS HELD');
-    html += row('the vote', `${ballots.length} cast · ${ep.voteChanges || 0} moved by the campaign`);
-    if (!commitments.length && !ballots.length) html += row('—', 'no vote this week');
-    for (const b of ballots) {
-      const c = commitments.find(x => x.voter === b.voter);
-      const bits = [];
-      // Label and number kept together inside the colour, rather than split by
-      // markup — it is a figure somebody reads and searches for as one thing.
-      if (c) bits.push(`<b style="color:${c.strength > 0.6 ? '#3fb950' : c.strength > 0.35 ? '#e3b341' : '#f47067'}">commitment ${c.strength.toFixed(2)}</b>`);
-      if (c?.promised) bits.push('shook on it');
-      if (c?.allied) bits.push('allied to who they kept');
-      if (c?.endgameDeal) bits.push(`<span style="color:#e3b341">${c.endgameDeal.tier} with ${_bbEsc(c.endgameDeal.with)}</span>`);
-      if (c?.cuttingPartner) bits.push(`<span style="color:#f47067">cutting ${_bbEsc(c.cuttingPartner)}</span>`);
-      if (b.stated && b.stated !== b.evict) bits.push(`<span style="color:#f47067">said ${_bbEsc(b.stated)}</span>`);
-      if (b.blocMove) bits.push(`bloc: ${_bbEsc(b.blocMove)}`);
-      if (b.bandwagon) bits.push('joined the winning side');
-      html += row(`${b.voter} → ${b.evict}`, bits.join(' · ') || 'no pressure on this one');
-    }
+    html += dbgPanel('HOW FIRMLY EACH VOTE WAS HELD', 'green',
+      dbgRow('the vote', `${ballots.length} cast · ${ep.voteChanges || 0} moved by the campaign`)
+      + (ballots.length ? ballots.map(b => {
+        const c = commitments.find(x => x.voter === b.voter);
+        const bits = [];
+        if (c) bits.push(`<b style="color:${c.strength > 0.6 ? '#3fb950' : c.strength > 0.35 ? '#e3b341' : '#f47067'}">commitment ${c.strength.toFixed(2)}</b>`);
+        if (c?.promised) bits.push('shook on it');
+        if (c?.allied) bits.push('allied to who they kept');
+        if (c?.endgameDeal) bits.push(`<span style="color:#e3b341">${c.endgameDeal.tier} with ${_bbEsc(c.endgameDeal.with)}</span>`);
+        if (c?.cuttingPartner) bits.push(`<span style="color:#f47067">cutting ${_bbEsc(c.cuttingPartner)}</span>`);
+        if (b.stated && b.stated !== b.evict) bits.push(`<span style="color:#f47067">said ${_bbEsc(b.stated)}</span>`);
+        if (b.blocMove) bits.push(`bloc: ${_bbEsc(b.blocMove)}`);
+        if (b.bandwagon) bits.push('joined the winning side');
+        return dbgPortraitRow(b.voter, `
+          <div style="width:100px;text-align:right;color:#f47067;font-size:11px">evict ${_bbEsc(b.evict)}</div>
+          <div style="flex:1;text-align:right;font-size:9px;color:#8b949e">${bits.join(' · ') || 'no pressure on this one'}</div>`);
+      }).join('') : dbgEmpty('No vote this week.')));
+
     if ((ep.blocMoves || []).length) {
-      html += head('WHAT THE BLOCS ASKED FOR');
-      ep.blocMoves.forEach(m => { html += row(m.alliance, `${m.voter} → ${m.target}`); });
+      html += dbgPanel('WHAT THE BLOCS ASKED FOR', 'purple',
+        ep.blocMoves.map(m => dbgRow(_bbEsc(m.alliance), `${_bbEsc(m.voter)} → ${_bbEsc(m.target)}`)).join(''));
     }
   }
 
   // ── Perceived bonds ───────────────────────────────────────────────
   if (tab === 'bonds') {
-    html += head('WHAT PEOPLE BELIEVE, AGAINST WHAT IS TRUE');
     const perceived = snap.perceivedBonds || (typeof gs !== 'undefined' && gs.perceivedBonds) || {};
-    const rows = Object.entries(perceived).map(([key, entry]) => {
-      const [observer, subject] = key.split('→');
-      if (!observer || !subject || !house.includes(observer) || !house.includes(subject)) return null;
-      const believes = Number(entry?.perceived ?? entry) || 0;
-      const truth = typeof getBond === 'function' ? getBond(observer, subject) : 0;
-      return { observer, subject, believes, truth, gap: believes - truth, reason: entry?.reason || '' };
-    }).filter(Boolean).sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap)).slice(0, 40);
-    if (!rows.length) html += row('—', 'everybody reads the room the way it actually is');
-    rows.forEach(r => {
-      html += row(`${r.observer} → ${r.subject}`,
-        `believes <b style="color:${r.gap > 0 ? '#3fb950' : '#f47067'}">${r.believes.toFixed(1)}</b>`
-        + ` · truth ${r.truth.toFixed(1)}`
-        + ` · gap ${r.gap > 0 ? '+' : ''}${r.gap.toFixed(1)}`
-        + (r.reason ? ` <span style="color:#6e7681">— ${_bbEsc(String(r.reason).replace(/-/g, ' '))}</span>` : ''));
-    });
+    const entries = Object.entries(perceived)
+      .filter(([key]) => { const [a, b] = key.split('→'); return house.includes(a) && house.includes(b); })
+      .sort((a, b) => {
+        const gap = ([k, e]) => {
+          const [x, y] = k.split('→');
+          return Math.abs((Number(e?.perceived ?? e) || 0) - (typeof getBond === 'function' ? getBond(x, y) : 0));
+        };
+        return gap(b) - gap(a);
+      });
+    html += dbgPanel(`ACTIVE GAPS (${entries.length})`, 'blue',
+      dbgPerceivedGaps(entries.slice(0, 40), (a, b) => (typeof getBond === 'function' ? getBond(a, b) : 0)));
   }
 
   // ── Player stats ──────────────────────────────────────────────────
   if (tab === 'stats') {
-    html += head('STATS AND COMPETITION RECORD');
-    const keys = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
-    house.forEach(name => {
-      const st = (typeof pStats === 'function' ? pStats(name) : {}) || {};
-      const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
-      html += line(name, `<div style="flex:1;text-align:right;font-size:9px;font-family:var(--font-mono);color:#8b949e">
-          ${keys.map(k => `${k.slice(0, 3)} <b style="color:#c9d1d9">${st[k] ?? '—'}</b>`).join(' · ')}
-        </div>`);
-      html += `<div style="font-size:9px;color:#6e7681;padding:0 8px 5px 34px;font-family:var(--font-mono)">competition record — HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}</div>`;
-    });
+    html += dbgPanel('STATS AND COMPETITION RECORD', 'grey', dbgStatTable(house, [
+      { label: 'Threat', colour: '#f0883e', bold: true, value: n => threatOf(n).toFixed(1) },
+      { label: 'HOH', value: n => recOf(n).hohWins || 0 },
+      { label: 'Veto', value: n => recOf(n).vetoWins || 0 },
+      { label: 'Nom', value: n => recOf(n).timesNominated || 0 },
+      { label: 'Saved', value: n => recOf(n).timesSaved || 0 },
+    ]) + house.filter(n => {
+      const r = recOf(n);
+      return (r.hohWins || r.vetoWins || r.timesNominated || r.timesSaved || r.timesOnTheBlock);
+    }).map(n => {
+      const rec = recOf(n);
+      // Only for houseguests who have one. The columns above already carry the
+      // numbers; a line of zeroes per person is clutter, not information.
+      return dbgNote(`${_bbEsc(n)} — competition record: HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}`);
+    }).join(''));
   }
 
   // ── Beats & effects ───────────────────────────────────────────────
   if (tab === 'beats') {
-    html += head(`EVERY BEAT THIS WEEK (${beats.length})`);
     const withFx = beats.filter(b => (b.effects || []).length).length;
-    html += row('carrying a measured effect', `${withFx} of ${beats.length}`);
+    html += dbgPanel('THE FEED', 'grey',
+      dbgRow('beats this week', beats.length)
+      + dbgRow('carrying a measured effect', `${withFx} of ${beats.length}`));
     acts.filter(a => (a.socialBeats || []).length).forEach(a => {
-      html += head(`${(a.phase || a.type).toUpperCase()} — ${(a.socialBeats || []).length} beats`);
-      a.socialBeats.forEach(b => {
-        html += row(`${b.eventId || 'engine'} · ${b.location || '—'}`,
-          `<span style="color:#c9d1d9">${_bbEsc(b.badgeText || '')}</span> `
-          + `<span style="color:#6e7681">${(b.players || []).join(', ')}</span>`
+      html += dbgPanel(`${(a.phase || a.type).toUpperCase()} — ${(a.socialBeats || []).length} BEATS`, 'grey',
+        a.socialBeats.map(b => dbgRow(
+          `${b.eventId || 'engine'} <span style="color:#4d545c">${b.location || ''}</span>`,
+          `<span style="color:#c9d1d9">${_bbEsc(b.badgeText || '')}</span> <span style="color:#6e7681">${(b.players || []).join(', ')}</span>`
           + ((b.effects || []).length
-            ? ` <span style="color:#8b949e">— ${b.effects.map(e => _bbEsc(e.text)).join(' · ')}</span>`
-            : ' <span style="color:#4d545c">— no measured effect</span>'));
-      });
+            ? `<div style="color:#8b949e;font-size:10px;margin-top:1px">${b.effects.map(e => _bbEsc(e.text)).join(' · ')}</div>`
+            : `<div style="color:#4d545c;font-size:10px;margin-top:1px">no measured effect</div>`))).join(''));
     });
   }
 
-  return html + `</div>`;
+  return dbgShell({
+    epNum: ep.num, allEps, screenId: 'bb-debug', storageKey: 'vp_bbdebug_tab',
+    activeTab: tab, unit: 'Wk', eyebrow: `Week ${ep.num}`,
+    tabs: [
+      ['week', 'This Week'], ['threats', 'Threats &amp; Heat'], ['comps', 'Competitions'],
+      ['plans', 'Game Plans'], ['deals', 'Deals &amp; Alliances'], ['votes', 'Vote Commitments'],
+      ['bonds', 'Perceived Bonds'], ['stats', 'Player Stats'], ['beats', 'Beats &amp; Effects'],
+    ],
+    body: html,
+  });
 }
 
 export function rpBuildBBEvictionInterview(ep) {

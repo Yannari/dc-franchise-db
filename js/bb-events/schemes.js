@@ -663,6 +663,10 @@ const falseAccusation = {
     (gs.bb.falseClaims ||= []).push({
       liar, mark, kind: 'double-dealing', week: ctx?.week?.num || 0,
       believers: [...convinced], exposed: false,
+      // How many deals the accused actually had AT THE TIME. A claim is false
+      // when it is made, and the house keeps playing: somebody accused of
+      // double-dealing in week three can genuinely be doing it by week ten.
+      partnersAtClaim: doubleDealPartners(mark).length,
     });
     return { text, players: [liar, mark],
       badgeText: convinced.length ? 'A LIE THAT LANDS' : 'NOBODY BUYS IT',
@@ -713,11 +717,22 @@ const accusationCollapses = {
 };
 
 /** A lie told at least a week ago, still standing, with everybody still here. */
+/**
+ * A lie told at least a week ago, still standing, and still a lie.
+ *
+ * That last condition is the one worth stating. An accusation is false when it
+ * is made and the season keeps going — a houseguest accused of double-dealing
+ * in week three can be doing exactly that by week ten. Collapsing the story
+ * then would have the house prove there is no web of deals about somebody who
+ * has since built one. The accuser does not get caught for a thing that came
+ * true; they simply stop being wrong, which is its own kind of luck.
+ */
 function _liveFalseClaim(house, ctx) {
   const week = ctx?.week?.num || 0;
   return (gs.bb?.falseClaims || []).find(claim => !claim.exposed
     && claim.week < week
     && house.includes(claim.liar) && house.includes(claim.mark)
+    && doubleDealPartners(claim.mark).length < 2
     // Somebody has to still believe it, or there is nothing to correct.
     && claim.believers.some(n => house.includes(n)));
 }

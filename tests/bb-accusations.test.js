@@ -80,10 +80,13 @@ describe('a false accusation is a move with a price', () => {
     for (const claim of claims) {
       expect(claim.kind).toBe('double-dealing');
       expect(claim.liar).not.toBe(claim.mark);
-      // The whole point: the accused is NOT actually double-dealing.
-      const real = endgameDealsOf(claim.mark).filter(d => d.active !== false
-        && (d.tier === 'final-two' || !d.tier));
-      expect(real.length, `${claim.mark} was actually double-dealing`).toBeLessThan(2);
+      // The whole point: the accused was NOT double-dealing when accused.
+      //
+      // Checked against the count recorded at the time rather than the count
+      // now — the season keeps going, and somebody accused in week three can
+      // genuinely be doing it by week ten. That is not the lie becoming
+      // retroactively true, it is the accuser getting lucky.
+      expect(claim.partnersAtClaim, `${claim.mark} was actually double-dealing`).toBeLessThan(2);
     }
   }, 120000);
 

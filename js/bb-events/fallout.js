@@ -320,14 +320,26 @@ const somebodyStayedLoyal = {
         players: [mourner.name], badgeText: 'ALONE IN IT', badgeClass: 'grey' };
     }
     const p = pronouns(loyal);
-    const text = _variant([
+    // Whether these two were already close decides which story this is, and the
+    // copy has to ask rather than assume. One variant called the loyal voter "a
+    // stranger at best" without checking, and picked somebody the mourner was
+    // already at maximum bond with — where the +2 also silently vanished into
+    // the clamp, so the card showed a friendship forming and moved nothing.
+    const already = bond(mourner.name, loyal);
+    const text = already >= 5 ? _variant([
+      `${mourner.name} finds out ${loyal} was the vote to keep ${gone} and is not remotely surprised. It is still the first thing all morning that has made ${p.obj} feel less alone in here.`,
+      `"You kept ${gone}." "Obviously I kept ${gone}." ${mourner.name} does not have many certainties left in this house. ${loyal} is one of them.`,
+      `Everybody else spends the morning explaining themselves to ${mourner.name}. ${loyal} does not have to, and both of them notice that.`,
+    ], ctx, mourner.name, loyal) : _variant([
       `${mourner.name} finds out that ${loyal} was the vote to keep ${gone}. ${p.Sub} had nothing to gain from it and did it anyway, and that is worth more to ${mourner.name} than anything anybody has promised ${p.obj} in three weeks.`,
       `"You voted to keep ${gone}." ${loyal} does not deny it and does not make a thing of it either, which is exactly why ${mourner.name} believes it.`,
       `It comes out sideways, in the middle of a conversation about something else: ${loyal} was one vote on the wrong side of a result ${p.sub} could not change. ${mourner.name} has been looking for somebody to trust and has just found one.`,
       `${mourner.name} had ${loyal} down as a stranger at best. Then the count comes out, and a stranger turns out to be the only person who tried.`,
     ], ctx, mourner.name, loyal);
 
-    api.addBond(mourner.name, loyal, 2);
+    // Room to move, or the receipt is a lie: at the cap this changes nothing and
+    // the card would claim a friendship it did not create.
+    api.addBond(mourner.name, loyal, already >= 8 ? 0.6 : 2);
     api.remember(mourner.name, loyal, 'stood-by-my-friend', 2, { about: gone });
     api.suspicion(mourner.name, loyal, -0.8);
     return { text, players: [mourner.name, loyal],

@@ -354,7 +354,7 @@ const blockPressure = {
       `${nom} stops campaigning halfway through a sentence, and does not pick it back up.`,
       `${nom} sits in the ${_variant(['backyard', 'washroom', 'storage room'], ctx, nom)} for most of an hour. Two people see ${p.obj}. Neither goes in.`,
       `${nom} starts saying goodbye to people in ways that are not quite goodbyes.`,
-      `The thing that breaks ${nom} is not the block. It is somebody being nice about the block.`,
+      `${nom} holds it together until somebody quietly asks if ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} okay. ${p.Sub} tries to answer and cannot get the words out.`,
     ], ctx, nom) : _variant([
       `${nom} goes very quiet and very organised, and the house finds that more alarming than shouting.`,
       `${nom} works out exactly how many votes ${p.sub} needs and exactly whose they are, and starts at the top of the list.`,

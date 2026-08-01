@@ -19,7 +19,7 @@ const bedroomPolitics = {
   fire(h, c, api, rng) {
     const [a,b,d] = trio(h, rng);
     const text = pick([
-      `${a} dumps ${b}'s clothes off the empty bed. “I was saving that,” ${b} says. ${a} shrugs and starts unpacking anyway while ${d} watches from across the room.`,
+      `${b} leaves ${pronouns(b).posAdj} clothes folded on an empty bed to claim it. ${a} dumps them onto the floor and opens ${pronouns(a).posAdj} suitcase. “I was saving that bed,” ${b} says. “You weren't sleeping in it,” ${a} answers, and keeps unpacking while ${d} watches from across the room.`,
       `${a} wants everyone to switch beds so the rooms are “more balanced.” ${b} asks why ${a} gets to decide that. ${d} stays out of it, but clearly agrees with ${b}.`,
       `${b} wakes up and finds ${a}'s charger plugged into the outlet beside the bed. Neither will unplug it. Ten minutes later, they are arguing about every little thing that has happened all week.`,
       `After lights-out, ${a} accuses ${b} of taking the extra pillows. ${b} tells ${a} to check under ${pronouns(a).posAdj} own bed. ${d} tries not to laugh and fails.`,

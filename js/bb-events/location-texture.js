@@ -59,7 +59,7 @@ const bedroomSnoring = {
       `${exhausted} waits until morning to tell ${sleeper} that the entire bedroom was awake. ${sleeper} laughs. ${exhausted} has not slept enough to find that charming.`,
       `${sleeper}'s snoring stops every time somebody says ${sleeper}'s name and starts again when the bedroom settles. By three in the morning, ${exhausted} is taking it personally.`,
       `${exhausted} builds a wall of pillows between the beds. ${sleeper} wakes up, studies the construction and asks whether this counts as a nomination.`,
-      `${exhausted} moves to the bedroom floor halfway through the night. In the morning, ${sleeper} offers an apology and earplugs. Only one is accepted.`,
+      `${sleeper}'s snoring keeps ${exhausted} awake until ${exhausted} gives up and moves to the bedroom floor. In the morning, ${sleeper} apologizes and offers earplugs for the next night. ${exhausted} takes the earplugs, not the apology.`,
     ],c,sleeper,exhausted);
     api.addBond(exhausted,sleeper,-.7); api.remember(exhausted,sleeper,'irritation',1,{about:'kept the bedroom awake'});
     return out(text,[sleeper,exhausted],'NO SLEEP','grey');
@@ -76,7 +76,7 @@ const washroomHaircut = {
     const text=variant(works?[
       `${client} sits on a washroom stool with a towel around ${pronouns(client).posAdj} shoulders. ${stylist} makes the first careful cut and somehow seems to know exactly what to do.`,
       `${stylist} trims ${client}'s hair in the washroom while half the house offers useless instructions from the doorway. Against all available evidence, it turns out well.`,
-      `${client} asks for “just a little off.” ${stylist} repeats the request, works slowly and earns a relieved grin when the washroom mirror is uncovered.`,
+      `${client} admits ${pronouns(client).posAdj} hair is driving ${pronouns(client).obj} crazy and asks whether ${stylist} knows how to trim it. In the washroom, ${stylist} checks the length before every cut. When the towel comes off, ${client} looks in the mirror and smiles.`,
       `${stylist} turns ${client} toward the washroom mirror. ${client} checks both sides, smiles and immediately starts recommending ${stylist} to everybody else.`,
     ]:[
       `${stylist} says, “I can fix that,” in the washroom. Ten minutes later, ${client} is wearing a hat indoors and ${stylist} has stopped making promises.`,

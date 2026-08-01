@@ -89,7 +89,7 @@ const sharedSpace = {
       `${a} and ${b} are stuck in ${_v('gather')} together being scrupulously polite, and the whole house can feel it.`,
       `There is one room and both of them are in it. ${a} and ${b} talk about ${_v('foodSource')} for ten minutes rather than the obvious.`,
       `${a} and ${b} share ${_v('downtime')} without sharing anything else. Everybody watching learns something anyway.`,
-      `${b} waits for ${a} to leave ${_v('gather')} first. ${a} does not. Neither of them will admit that was the game being played.`,
+      `${b} settles into ${_v('gather')} hoping for a room to ${pronouns(b).ref}. ${a} sits at the opposite end and stays. Neither is willing to give the other the satisfaction of leaving first, so they remain there in silence.`,
     ], ctx, a, b);
 
     api.addBond(a, b, warm ? 0.8 : -0.3);

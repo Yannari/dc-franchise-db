@@ -15900,6 +15900,59 @@ function _bbfWeight(beat) {
   return 'standard';
 }
 
+
+/**
+ * Which camera each house-life screen is currently on.
+ *
+ * Kept outside the markup so a screen switched away from and back to comes back
+ * on the same camera rather than resetting to ALL.
+ */
+const _bbfCamState = {};
+
+const _bbfBankNote = (beats, loud, roomLabel) =>
+  `${beats} beat${beats === 1 ? '' : 's'} · ${loud} that moved something`
+  + (roomLabel ? ` · ${roomLabel.toLowerCase()} only` : '');
+
+/**
+ * Pick up a camera.
+ *
+ * DOM-only, like every other reveal in the player: show and hide the room
+ * blocks that are already on the page rather than rebuilding the screen. A
+ * rebuild here would throw away the scroll position and flash the whole week
+ * past on every click.
+ */
+export function bbfCamera(key, room) {
+  _bbfCamState[key] = room;
+  const bank = document.getElementById(`bbf-bank-${key}`);
+  const feed = bank?.closest('.bbf-feed');
+  if (!bank || !feed) return;
+
+  let beats = 0, loud = 0;
+  feed.querySelectorAll('[data-bbf-room]').forEach(block => {
+    const on = room === 'all' || block.dataset.bbfRoom === room;
+    block.style.display = on ? '' : 'none';
+    if (on) {
+      beats += Number(block.dataset.bbfBeats) || 0;
+      loud += Number(block.dataset.bbfLoud) || 0;
+    }
+  });
+  bank.querySelectorAll('[data-bbf-tab]').forEach(tab => {
+    tab.classList.toggle('is-on', tab.dataset.bbfTab === room);
+  });
+
+  const note = document.getElementById(`bbf-bankn-${key}`);
+  if (note) {
+    const label = room === 'all' ? null
+      : bank.querySelector(`[data-bbf-tab="${room}"] b`)?.textContent || null;
+    note.textContent = _bbfBankNote(beats, loud, label);
+  }
+  // Keep the bank in view: switching camera should not leave the reader
+  // halfway down the room they just hid. Guarded because the filtering is the
+  // feature and the scroll is a courtesy — it must not be able to throw and
+  // take the switch down with it.
+  bank.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+}
+
 export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
@@ -15936,27 +15989,44 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which
     // rooms were live, how busy each one was, and where the loud things were.
-    html += `<div class="bbf-bank">
+    // Clickable, not a legend. A week produces a hundred and thirty beats and
+    // reading all of them top to bottom is a chore; picking up a camera and
+    // watching one room is how the feeds are actually used, and it costs no
+    // vertical space to offer it.
+    const camKey = `${ep.num}-${slot}`;
+    const selected = _bbfCamState[camKey] || 'all';
+    html += `<div class="bbf-bank" id="bbf-bank-${camKey}">
       <span class="bbf-bank-l">CAMERAS</span>
+      <button type="button" class="bbf-tab bbf-all${selected === 'all' ? ' is-on' : ''}"
+        data-bbf-tab="all" onclick="bbfCamera('${camKey}','all')">
+        <b>ALL</b><em>${beats.length}</em>
+      </button>
       ${rooms.map((key, idx) => {
         const room = _bbfRoom(key);
         const group = byRoom[key];
         const loud = group.filter(b => _bbfWeight(b) === 'headline').length;
-        return `<span class="bbf-tab" style="--bbf-c:${room.accent}">
+        return `<button type="button" class="bbf-tab${selected === key ? ' is-on' : ''}"
+          style="--bbf-c:${room.accent}" data-bbf-tab="${key}"
+          onclick="bbfCamera('${camKey}','${key}')">
           ${_bbfRoomIcon(key, room.accent)}
           <b>${room.label}</b>
           <i>${String(idx + 1).padStart(2, '0')}</i>
           <em>${group.length}</em>
           ${loud ? `<u title="${loud} that mattered"></u>` : ''}
-        </span>`;
+        </button>`;
       }).join('')}
-      <span class="bbf-bank-n">${beats.length} beats · ${headlines} that moved something</span>
+      <span class="bbf-bank-n" id="bbf-bankn-${camKey}">${
+        _bbfBankNote(beats.length, headlines, selected === 'all' ? null : _bbfRoom(selected).label)}</span>
     </div>`;
 
     rooms.forEach((key, roomIdx) => {
       const room = _bbfRoom(key);
       const group = byRoom[key];
-      html += `<div class="bbf-room-block">
+      const hidden = selected !== 'all' && selected !== key;
+      html += `<div class="bbf-room-block" data-bbf-room="${key}"
+          data-bbf-beats="${group.length}"
+          data-bbf-loud="${group.filter(b => _bbfWeight(b) === 'headline').length}"
+          ${hidden ? 'style="display:none"' : ''}>
         <div class="bbf-room-h" style="--bbf-c:${room.accent}">
           ${_bbfRoomIcon(key, room.accent)}
           <span class="bbf-room-n">${room.label}</span>

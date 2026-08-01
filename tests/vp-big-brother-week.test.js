@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, bbfCamera, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -168,4 +168,50 @@ describe('the Big Brother visual player', () => {
       expect(screens.length).toBeGreaterThan(8);
     }
   });
+});
+
+// The camera bank is a control, not a legend.
+//
+// A week runs to about a hundred and thirty beats and reading all of them
+// top to bottom is a chore. Picking up one camera and watching one room is
+// how the feeds are actually used, and it costs no vertical space to offer.
+describe('camera tabs', () => {
+  it('filters the feed to one room', () => {
+    reset();
+    let ep = null;
+    for (let i = 0; i < 2; i++) ep = simulateBBEpisode();
+
+    const screen = buildBBWeekScreens(ep).find(s => s.id.startsWith('bb-house-'));
+    document.body.innerHTML = screen.html;
+
+    const bank = document.querySelector('.bbf-bank');
+    const key = bank.id.replace('bbf-bank-', '');
+    const blocks = [...document.querySelectorAll('[data-bbf-room]')];
+    const tabs = [...document.querySelectorAll('[data-bbf-tab]')];
+
+    expect(blocks.length, 'no room blocks').toBeGreaterThan(1);
+    expect(tabs.length, 'no tabs').toBe(blocks.length + 1);        // + ALL
+    expect(tabs[0].className, 'ALL is not lit at rest').toContain('is-on');
+    expect(blocks.every(b => b.style.display !== 'none'), 'something is hidden at rest').toBe(true);
+
+    const pick = blocks[1].dataset.bbfRoom;
+    bbfCamera(key, pick);
+    const shown = blocks.filter(b => b.style.display !== 'none');
+    expect(shown.length, 'picking a camera did not filter').toBe(1);
+    expect(shown[0].dataset.bbfRoom).toBe(pick);
+    expect(document.querySelector(`[data-bbf-tab="${pick}"]`).className).toContain('is-on');
+    expect(tabs[0].className, 'ALL stayed lit').not.toContain('is-on');
+    const note = document.getElementById(`bbf-bankn-${key}`).textContent;
+    expect(note, 'the count did not follow the camera').toContain('only');
+
+    bbfCamera(key, 'all');
+    expect(blocks.every(b => b.style.display !== 'none'), 'ALL did not restore the feed').toBe(true);
+
+    // The chosen camera survives a rebuild of the same screen.
+    bbfCamera(key, pick);
+    const again = buildBBWeekScreens(ep).find(s => s.id === screen.id);
+    document.body.innerHTML = again.html;
+    const after = [...document.querySelectorAll('[data-bbf-room]')].filter(b => b.style.display !== 'none');
+    expect(after.length, 'the camera reset when the screen was rebuilt').toBe(1);
+  }, 240000);
 });

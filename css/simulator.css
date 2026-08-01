@@ -217,18 +217,40 @@
                       letter-spacing:1.6px; color:#4d545c; margin-right:2px; }
     .bbf-bank-n     { margin-left:auto; font-family:ui-monospace,Consolas,monospace;
                       font-size:8.5px; letter-spacing:.6px; color:#5b6472; }
+    /* Tabs are buttons: pick up a camera and watch one room. A week runs to a
+       hundred and thirty beats and reading all of them top to bottom is a
+       chore, so the bank earns its space by filtering rather than labelling. */
     .bbf-tab        { position:relative; display:inline-flex; align-items:center; gap:5px;
-                      padding:4px 8px 5px; border-radius:4px;
-                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 9%, transparent);
-                      border:1px solid color-mix(in srgb, var(--bbf-c,#8b949e) 26%, transparent); }
+                      padding:4px 8px 6px; border-radius:4px; cursor:pointer;
+                      font:inherit; -webkit-appearance:none; appearance:none;
+                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 7%, transparent);
+                      border:1px solid color-mix(in srgb, var(--bbf-c,#8b949e) 20%, transparent);
+                      opacity:.62; transition:opacity .14s ease, background .14s ease,
+                                              border-color .14s ease, transform .14s ease; }
+    .bbf-tab:hover  { opacity:.9; transform:translateY(-1px);
+                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 13%, transparent); }
+    .bbf-tab:focus-visible { outline:2px solid var(--bbf-c,#8b949e); outline-offset:2px; }
+    .bbf-tab.is-on  { opacity:1;
+                      background:color-mix(in srgb, var(--bbf-c,#8b949e) 20%, transparent);
+                      border-color:color-mix(in srgb, var(--bbf-c,#8b949e) 62%, transparent);
+                      box-shadow:0 0 14px color-mix(in srgb, var(--bbf-c,#8b949e) 26%, transparent),
+                                 inset 0 1px 0 rgba(255,255,255,.06); }
     .bbf-tab b      { font-size:9px; font-weight:700; letter-spacing:.7px;
                       text-transform:uppercase; color:var(--bbf-c,#8b949e); }
     .bbf-tab i      { font-style:normal; font-family:ui-monospace,Consolas,monospace;
                       font-size:7.5px; letter-spacing:.8px; color:#4d545c; }
     .bbf-tab em     { font-style:normal; font-family:ui-monospace,Consolas,monospace;
                       font-size:9px; font-weight:700; color:#c9d1d9; }
-    .bbf-tab u      { position:absolute; left:6px; right:6px; bottom:1px; height:2px;
-                      border-radius:2px; background:var(--bbf-c,#8b949e); }
+    /* The live-camera underline, drawn only on the camera being watched. */
+    .bbf-tab u      { position:absolute; left:6px; right:6px; bottom:2px; height:2px;
+                      border-radius:2px; background:var(--bbf-c,#8b949e); opacity:.45; }
+    .bbf-tab.is-on u { opacity:1; box-shadow:0 0 8px var(--bbf-c,#8b949e); }
+    .bbf-all        { --bbf-c:#8b949e; }
+    .bbf-all.is-on  { --bbf-c:#c9d1d9; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bbf-tab, .bbf-tab:hover { transition:none; transform:none; }
+    }
 
     /* ── Feed cards: one beat, one camera ──
        Three weights, because every card looking the same made a stretch of the

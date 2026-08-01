@@ -21,7 +21,7 @@
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
-  pStats, bond, perceived, band, closestTo, furthestFrom, beatsInvolving,
+  pStats, bond, perceived, band, closestTo, furthestFrom, beatsInvolving, spotlightOrder,
   alliancesOf, archetype, targetOf,
 } from './_read.js';
 import { reignTemperament, reignMadeAnEnemy } from '../bb/reign.js';
@@ -33,7 +33,8 @@ function _variant(list, ctx, ...salt) {
   return list[hash % list.length];
 }
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 const _list = names => (names.length <= 1 ? (names[0] || 'nobody')
   : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 

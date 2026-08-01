@@ -393,6 +393,43 @@ function beatCounts() {
 
 export const beatsInvolving = name => beatCounts()[name] || 0;
 
+/**
+ * How much of this week belongs to this houseguest.
+ *
+ * 0 for somebody nobody is playing against, up to 0.45 for the two roles the
+ * episode is actually about. Used to bias casting, not to gate it — a safe
+ * houseguest still gets scenes, they just stop being the first name reached for
+ * every time the library wants somebody who has been quiet.
+ */
+export function spotlightWeight(name) {
+  const s = gs.bb?.spotlight;
+  if (!s || !name) return 0;
+  if (name === s.hoh) return 0.45;
+  if ((s.nominees || []).includes(name)) return 0.45;
+  if (name === s.vetoWinner) return 0.3;
+  if ((s.vetoPlayers || []).includes(name)) return 0.2;
+  return 0;
+}
+
+/**
+ * Casting order: least-seen first, weighted by who the week is about.
+ *
+ * Every event file had its own copy of "sort by fewest beats", which spreads
+ * the spotlight evenly across fourteen people and flattens the one hierarchy
+ * the format guarantees. Measured, a nominee carried 1.5x the beats of somebody
+ * safe — present, but nowhere near what an episode of this show looks like,
+ * where the block and the power are most of the hour.
+ *
+ * Discounting the count rather than adding a bonus keeps it proportional: a
+ * nominee two hundred beats into a season still sorts ahead of a floater on a
+ * hundred and forty, which is the whole point late in the game when everybody's
+ * totals are large.
+ */
+export function spotlightOrder(pool) {
+  return [...pool].sort((a, b) =>
+    beatsInvolving(a) * (1 - spotlightWeight(a)) - beatsInvolving(b) * (1 - spotlightWeight(b)));
+}
+
 // ── archetype behaviour, mirroring the franchise rules ────────────────
 
 const VILLAINOUS = ['villain', 'mastermind', 'schemer'];

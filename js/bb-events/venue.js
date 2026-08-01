@@ -17,7 +17,7 @@ import { pronouns } from '../players.js';
 import { houseProfile, houseVocab, houseSetting } from '../settings.js';
 import {
   pStats, bond, band, closestTo, sharesAlliance, trusts, dislikes,
-  romanceOf, threat, beatsInvolving,
+  romanceOf, threat, beatsInvolving, spotlightOrder,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -34,7 +34,8 @@ const _v = token => houseVocab(token);
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 /** Least-seen first, so the forgotten are actually reachable. */
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 
 /** Whichever pair has been on screen least — the venue is where they meet. */
 function _quietPair(house, ctx) {

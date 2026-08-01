@@ -235,3 +235,42 @@ describe('nobody sees anybody else vote', () => {
     expect(witnessed, `beats describing a public vote: ${witnessed.join(' | ')}`).toEqual([]);
   }, 120000);
 });
+
+// ── whose week is it ──────────────────────────────────────────────────
+//
+// Every event file casts by asking who has been seen least, which spreads the
+// spotlight evenly across fourteen people and flattens the one hierarchy this
+// format guarantees: an episode belongs to the person with the power and the
+// people who might go home. Measured before this, a nominee carried 1.5x the
+// beats of somebody safe. An episode of the real show is not 1.5x.
+describe('the week belongs to the people in it', () => {
+  it('gives the block and the power more of the episode than the safe', () => {
+    house();
+    const beats = { hoh: [], nominee: [], safe: [] };
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 8) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const noms = new Set([...(ep.initialNominees || []), ...(ep.finalNominees || [])]);
+      const counts = {};
+      for (const act of ep.acts || []) {
+        for (const b of act.socialBeats || []) {
+          for (const n of new Set(b.players || [])) counts[n] = (counts[n] || 0) + 1;
+        }
+      }
+      for (const name of ep.houseAtStart || []) {
+        const c = counts[name] || 0;
+        if (name === ep.hoh) beats.hoh.push(c);
+        else if (noms.has(name)) beats.nominee.push(c);
+        else if (name !== ep.vetoWinner) beats.safe.push(c);
+      }
+    }
+    const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    const safe = mean(beats.safe);
+    expect(safe, 'nobody safe was in anything').toBeGreaterThan(0);
+    expect(mean(beats.hoh) / safe, 'the Head of Household is background').toBeGreaterThan(1.6);
+    expect(mean(beats.nominee) / safe, 'the block is background').toBeGreaterThan(1.4);
+    // And not so far that a safe houseguest disappears — they still live here.
+    expect(safe).toBeGreaterThan(6);
+  }, 150000);
+});

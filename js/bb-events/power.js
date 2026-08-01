@@ -22,7 +22,7 @@ import { pronouns } from '../players.js';
 import {
   pStats, bond, band, perceived, closestTo, furthestFrom, trusts, dislikes, campaignArgument,
   sharesAlliance, grudge, remembers, suspicionOf, targetOf, threat, willScheme,
-  isNice, isVillainous, archetype, resentmentOf, trustOf, beatsInvolving,
+  isNice, isVillainous, archetype, resentmentOf, trustOf, beatsInvolving, spotlightOrder,
   actFacts, alliancesOf, deFactoAllies,
 } from './_read.js';
 
@@ -59,7 +59,8 @@ const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(
 const _hoh = ctx => ctx?.hoh || ctx?.week?.hoh || null;
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
 /** Least-seen first, so the same three names do not carry every week. */
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 
 /** Is the block known yet? Everything on this list depends on that. */
 const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)

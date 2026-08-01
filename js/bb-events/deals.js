@@ -23,7 +23,7 @@ import {
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
   suspicionOf, targetOf, isHunting, huntedBy, threat, biggestThreat, willScheme, deFactoAllies,
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
-  resentmentOf, beatsInvolving, actFacts,
+  resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -36,7 +36,8 @@ function _variant(list, ctx, ...salt) {
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
-const _leastSeen = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _leastSeen = pool => spotlightOrder(pool);
 const _nominees = ctx => (ctx?.nominees || []).filter(Boolean);
 
 /** Deal-making happens in the gaps, and hardest while the vote is live. */

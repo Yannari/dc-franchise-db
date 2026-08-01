@@ -19,7 +19,7 @@ import {
   pStats, bond, band, bondFactor, closestTo, furthestFrom, trusts, dislikes,
   sharesAlliance, grudge, remembers, suspicionOf, targetOf, threat, willScheme,
   isNice, isVillainous, archetype, romanceOf, trustOf, resentmentOf,
-  beatsInvolving,
+  beatsInvolving, spotlightOrder,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -32,7 +32,8 @@ function _variant(list, ctx, ...salt) {
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
-const _leastSeen = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _leastSeen = pool => spotlightOrder(pool);
 const _nominees = ctx => (ctx?.nominees || []).filter(Boolean);
 
 /**

@@ -21,7 +21,7 @@
 import { pronouns } from '../players.js';
 import {
   pStats, bond, perceived, band, closestTo, furthestFrom, suspicionOf, targetOf,
-  archetype, isVillainous, beatsInvolving, willScheme,
+  archetype, isVillainous, beatsInvolving, spotlightOrder, willScheme,
 } from './_read.js';
 import {
   listBlocs, knowledgeOf, knownBlocsFor, readPower, pointOfAttack, chooseBlocTarget,
@@ -46,7 +46,8 @@ const _list = names => (names.length <= 1 ? (names[0] || '')
 const WORDS = ['', '', 'both', 'all three', 'all four', 'all five', 'all six', 'all seven'];
 const _count = n => WORDS[n] || `all ${n}`;
 /** Least-seen first, so the same two people do not carry every beat. */
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 
 /**
  * House life, not ceremony.

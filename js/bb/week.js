@@ -41,6 +41,24 @@ function hook(hooks, name, value, context) {
   return result === undefined ? value : result;
 }
 
+/**
+ * Who this week is ABOUT.
+ *
+ * Published as the week goes, because the event library decides who carries the
+ * next beat by asking who has been seen least — which is good for variety and
+ * actively hostile to the shape of an episode. A week belongs to the person
+ * with the power and the people who might go home; a houseguest nobody is
+ * playing against should be background.
+ *
+ * Kept on gs rather than threaded through ctx because eleven event files order
+ * their casting pools through the same one-line helper, and none of them takes
+ * a context.
+ */
+function setSpotlight(patch) {
+  gs.bb ||= {};
+  gs.bb.spotlight = { ...(gs.bb.spotlight || {}), ...patch };
+}
+
 function ensureBBState() {
   gs.bb ||= {};
   gs.bb.outgoingHoh ??= null;
@@ -570,6 +588,8 @@ export function simulateBBWeek(options = {}) {
   // end, in the upkeep, which is the right order — you learn from a vote after
   // you have watched it.
   try { week.blocReads = observeBlocs({ house, rng }); } catch { week.blocReads = []; }
+  // A fresh week is nobody's yet.
+  setSpotlight({ hoh: null, nominees: [], vetoWinner: null, vetoPlayers: [] });
 
   /**
    * Twists change the SHAPE of a week, not just its numbers.
@@ -817,6 +837,7 @@ export function simulateBBWeek(options = {}) {
   let hoh = hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
   week.hoh = hoh;
+  setSpotlight({ hoh });
   gs.bb.stats[hoh].hohWins++;
   week.hohCompetition = hohCompetition;
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
@@ -862,6 +883,7 @@ export function simulateBBWeek(options = {}) {
     nominees.push(third);
   }
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
+  setSpotlight({ nominees: [...nominees] });
   week.initialNominees = [...nominees];
   week.plan = plan;
 
@@ -951,6 +973,7 @@ export function simulateBBWeek(options = {}) {
     if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;
+    setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
     week.vetoCompetition = vetoCompetition;
     week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner,
       results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
@@ -1028,6 +1051,7 @@ export function simulateBBWeek(options = {}) {
       { nominees: [...nominees], vetoWinner: week.vetoWinner || null }));
   }
   week.finalNominees = [...nominees];
+  setSpotlight({ nominees: [...new Set([...(gs.bb.spotlight?.nominees || []), ...nominees])] });
 
   // ── Somebody leaves before the house gets to decide ──
   // A walkout or an expulsion takes the week's eviction with it: the house is

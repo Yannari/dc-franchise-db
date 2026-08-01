@@ -20,7 +20,7 @@
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
-  pStats, bond, perceived, band, closestTo, beatsInvolving, archetype, isNice,
+  pStats, bond, perceived, band, closestTo, beatsInvolving, spotlightOrder, archetype, isNice,
 } from './_read.js';
 import {
   lastCompletedWeek, reactionsTo, chiefMourner, assignBlame, keptThem,
@@ -35,7 +35,8 @@ function _variant(list, ctx, ...salt) {
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
   return list[hash % list.length];
 }
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 const _list = names => (names.length <= 1 ? (names[0] || '')
   : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 

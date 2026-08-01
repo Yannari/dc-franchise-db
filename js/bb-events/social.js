@@ -22,7 +22,7 @@ import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, memoriesOf,
   suspicionOf, targetOf, isHunting, threat, biggestThreat, couldRomance,
-  showmanceOf, willScheme, isNice, isVillainous, archetype, beatsInvolving,
+  showmanceOf, willScheme, isNice, isVillainous, archetype, beatsInvolving, spotlightOrder,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -69,7 +69,8 @@ const _w = (value, ctx) => band(value * _actFit(ctx));
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 
 /** Prefer people who have not already carried a beat, so the spotlight moves. */
-const _leastSeen = (pool) => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _leastSeen = pool => spotlightOrder(pool);
 
 // ── casting ───────────────────────────────────────────────────────────
 //

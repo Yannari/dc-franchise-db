@@ -33,7 +33,7 @@ import {
 import { getBond } from '../bonds.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
 import {
-  pStats, band, furthestFrom, willScheme, isNice, beatsInvolving,
+  pStats, band, furthestFrom, willScheme, isNice, beatsInvolving, spotlightOrder,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
@@ -57,7 +57,8 @@ function doubleDealPartners(name) {
 }
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
-const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _quiet = pool => spotlightOrder(pool);
 const _listNames = names => (names.length <= 1 ? (names[0] || 'nobody')
   : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 const _pick = arr => arr[Math.floor(Math.random() * arr.length)];

@@ -25,11 +25,12 @@ import {
   pStats, bond, perceived, band, bondFactor, closestTo, furthestFrom, trusts,
   dislikes, sharesAlliance, deFactoAllies, grudge, remembers, suspicionOf,
   targetOf, threat, biggestThreat, willScheme, isNice, isVillainous, archetype,
-  trustOf, resentmentOf, beatsInvolving, actFacts,
+  trustOf, resentmentOf, beatsInvolving, spotlightOrder, actFacts,
 } from './_read.js';
 
 const _others = (house, ...x) => house.filter(n => n && !x.includes(n));
-const _leastSeen = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+/** Least-seen first, weighted toward whoever this week is about. */
+const _leastSeen = pool => spotlightOrder(pool);
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
 
 /** Last week's Head of Household, who cannot compete today. */

@@ -111,7 +111,14 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
     const avoid = drawer === hoh ? backdoorTarget : null;
     const pickable = left.filter(n => n !== avoid);
     const from = pickable.length ? pickable : left;
-    const wanted = from.slice().sort((a, b) => read(drawer, b) - read(drawer, a))[0];
+    // Somebody who spent the last two days promising to take this nominee down
+    // has bought themselves a place at the front of the queue. It is the whole
+    // point of making the promise, and without this the lobbying was theatre.
+    const promised = new Set((gs.sideDeals || [])
+      .filter(deal => deal.active !== false && deal.type === 'veto' && deal.players?.includes(drawer))
+      .flatMap(deal => deal.players.filter(name => name !== drawer)));
+    const pull = name => read(drawer, name) + (promised.has(name) ? 3 : 0);
+    const wanted = from.slice().sort((a, b) => pull(b) - pull(a))[0];
     playing.push(wanted);
     // Why that name. A choice chip is a decision made in front of everybody,
     // and the house reads who somebody reaches for.
@@ -119,7 +126,9 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
       ? (avoid && pickable.length < left.length
         ? `${hoh} picks ${wanted} and pointedly does not pick ${avoid}.`
         : `${hoh} picks ${wanted}, who has no reason to want the block changed.`)
-      : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`;
+      : promised.has(wanted)
+        ? `${drawer} is on the block and picks ${wanted}, who spent two days promising exactly this.`
+        : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`;
     draws.push({ drawer, chip: 'choice', drew: null, chose: wanted, why });
   }
 

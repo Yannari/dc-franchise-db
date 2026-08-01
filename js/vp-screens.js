@@ -16662,7 +16662,10 @@ export function rpBuildBBComp(ep, actType) {
  */
 function _bbNomReason(hoh, name, role, ep) {
   const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
-  const comps = (rec.hohWins || 0) + (rec.vetoWins || 0);
+  // Block Buster wins count. Somebody who has fought their way off the block
+  // twice is a competitor the house has watched win under the most pressure
+  // there is, and the nomination speech was pretending it had not happened.
+  const comps = (rec.hohWins || 0) + (rec.vetoWins || 0) + (rec.blockBusterWins || 0);
   const st = typeof pStats === 'function' ? pStats(name) : {};
   const bond = typeof getPerceivedBond === 'function' ? getPerceivedBond(hoh, name) : 0;
   const allies = ((typeof gs !== 'undefined' && gs.namedAlliances) || [])
@@ -17836,10 +17839,20 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     }
     const style = plan.planStyle === 'endgame-architect' ? 'playing the whole board'
       : plan.planStyle === 'structured' ? 'has a structure' : 'playing week to week';
+    // What they have won, beside what they are planning. A record is the one
+    // part of somebody's threat the whole house can see, and it was only on the
+    // debug screen.
+    const rec = (typeof gs !== 'undefined' && gs.bb?.stats?.[name]) || {};
+    const wins = [
+      (rec.hohWins || 0) ? `${rec.hohWins}&times; HOH` : '',
+      (rec.vetoWins || 0) ? `${rec.vetoWins}&times; veto` : '',
+      (rec.blockBusterWins || 0) ? `${rec.blockBusterWins}&times; block buster` : '',
+    ].filter(Boolean).join(' &middot; ');
     return `<div class="bbg-row">
       ${_bbAvatar(name, 26)}
       <div class="bbg-body">
-        <div class="bbg-name">${_bbEsc(name)} <i>${style}</i></div>
+        <div class="bbg-name">${_bbEsc(name)} <i>${style}</i>${
+          wins ? `<u class="bbg-rec">${wins}</u>` : ''}</div>
         <div class="bbg-chips">${bits.length ? bits.join('')
           : '<span class="bbg-chip bbg-n">no plan worth the name yet</span>'}</div>
       </div>
@@ -18041,7 +18054,7 @@ export function rpBuildBBDebug(ep) {
             <div style="width:62px;text-align:right;color:#8b949e;font-size:10px">${t.label}</div>
             <div style="flex:0 0 240px;text-align:right;color:#6e7681;font-size:9px">
               base ${profile.base.toFixed(1)} · social ${profile.socialPosition.toFixed(1)} · comps ${profile.competition.toFixed(1)}
-              · ${rec.hohWins || 0}H/${rec.vetoWins || 0}V/${rec.timesNominated || 0}N</div>`);
+              · ${rec.hohWins || 0}H/${rec.vetoWins || 0}V/${rec.blockBusterWins || 0}B/${rec.timesNominated || 0}N</div>`);
         }).join(''));
 
     html += dbgPanel('HEAT — WHO EACH HOUSEGUEST WOULD PUT UP', 'red',
@@ -18053,7 +18066,7 @@ export function rpBuildBBDebug(ep) {
         return dbgPortraitRow(observer, `<div style="flex:1;text-align:right;font-size:10px;color:#8b949e">${
           ranked.map(({ n, heat }) => {
             const c = heat.components;
-            return `<span title="threat ${c.threat.toFixed(1)} · relationship ${c.relationship.toFixed(1)} · alliance ${c.alliance.toFixed(1)} · target ${c.target} · suspicion ${c.suspicion.toFixed(1)} · memory ${c.memory.toFixed(1)}" style="margin-left:10px">${_bbEsc(n)} <b style="color:${tierOfScore(heat.total).color}">${heat.total.toFixed(1)}</b></span>`;
+            return `<span title="threat ${c.threat.toFixed(1)} · relationship ${c.relationship.toFixed(1)} · alliance ${c.alliance.toFixed(1)} · target ${c.target} · suspicion ${c.suspicion.toFixed(1)} · memory ${c.memory.toFixed(1)} · been up before ${(c.familiar || 0).toFixed(1)}" style="margin-left:10px">${_bbEsc(n)} <b style="color:${tierOfScore(heat.total).color}">${heat.total.toFixed(1)}</b></span>`;
           }).join('')}</div>`);
       }).join('')
       + dbgNote('Hover a name for the breakdown: threat, relationship, alliance, target, suspicion, memory.'));
@@ -18199,16 +18212,17 @@ export function rpBuildBBDebug(ep) {
       { label: 'Threat', colour: '#f0883e', bold: true, value: n => threatOf(n).toFixed(1) },
       { label: 'HOH', value: n => recOf(n).hohWins || 0 },
       { label: 'Veto', value: n => recOf(n).vetoWins || 0 },
+      { label: 'Buster', value: n => recOf(n).blockBusterWins || 0 },
       { label: 'Nom', value: n => recOf(n).timesNominated || 0 },
       { label: 'Saved', value: n => recOf(n).timesSaved || 0 },
     ]) + house.filter(n => {
       const r = recOf(n);
-      return (r.hohWins || r.vetoWins || r.timesNominated || r.timesSaved || r.timesOnTheBlock);
+      return (r.hohWins || r.vetoWins || r.blockBusterWins || r.timesNominated || r.timesSaved || r.timesOnTheBlock);
     }).map(n => {
       const rec = recOf(n);
       // Only for houseguests who have one. The columns above already carry the
       // numbers; a line of zeroes per person is clutter, not information.
-      return dbgNote(`${_bbEsc(n)} — competition record: HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}`);
+      return dbgNote(`${_bbEsc(n)} — competition record: HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  block buster ${rec.blockBusterWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}`);
     }).join(''));
   }
 

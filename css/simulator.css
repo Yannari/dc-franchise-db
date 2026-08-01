@@ -515,6 +515,11 @@
     .bbg-name       { font-size:12px; font-weight:600; color:#e6edf3; margin-bottom:4px; }
     .bbg-name i     { font-style:normal; font-size:9px; letter-spacing:.5px; color:#6e7681;
                       text-transform:uppercase; margin-left:6px; }
+    /* What they have actually won — the one part of somebody's threat that the
+       whole house can see. */
+    .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
+                      font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                      letter-spacing:.4px; color:#e3b341; }
     .bbg-chips      { display:flex; flex-wrap:wrap; gap:5px; }
     .bbg-chip       { font-size:10px; line-height:1.5; padding:2px 7px; border-radius:9px;
                       border:1px solid rgba(255,255,255,.09); color:#c9d1d9;

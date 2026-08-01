@@ -235,10 +235,19 @@ export function bbHeat(observer, candidate) {
   const memory = strategicMemoryScore(observer, candidate, (gs.episode || 0) + 1);
   const relationship = getPerceivedBond(observer, candidate);
   const alliance = allianceStrength(observer, candidate);
+  // Having sat there before makes it easier to send somebody back.
+  //
+  // The first time a name goes up it is an accusation; the second time it is a
+  // pattern, and the house has already had the argument about whether they
+  // deserve it. Nobody has to be talked into it twice, which is why the same
+  // houseguests keep appearing on the block in a real season.
+  const beenUp = gs.bb?.stats?.[candidate]?.timesNominated || 0;
+  const familiar = Math.min(3, beenUp) * 0.45;
+
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
     alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
-    memory: clamp(memory, -4, 6) * 0.65,
+    memory: clamp(memory, -4, 6) * 0.65, familiar,
   };
   return { components, total: Object.values(components).reduce((sum, value) => sum + value, 0) };
 }

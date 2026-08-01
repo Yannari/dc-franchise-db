@@ -89,7 +89,9 @@ describe('the debug screen accounts for the week', () => {
   it('shows the competition record, not just icons', () => {
     const html = onTab('stats');
     expect(html).toContain('competition record');
-    expect(html).toMatch(/HOH \d+  ·  veto \d+  ·  nominated \d+/);
+    // Block Buster wins sit between the veto and the nominations now: winning
+    // your own way off the block is a competition win the house watched.
+    expect(html).toMatch(/HOH \d+  ·  veto \d+  ·  block buster \d+  ·  nominated \d+/);
   });
 
   it('reports whether the shared upkeep ran', () => {

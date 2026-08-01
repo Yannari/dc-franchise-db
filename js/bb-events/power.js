@@ -1215,11 +1215,111 @@ const nobodySurprised = {
 // surprising the save was. A second one written here only competed with it for
 // the same beat, and won, which killed the better version.
 
+// ── working the draw ─────────────────────────────────────────────────
+//
+// The bag has not been opened yet and everybody already knows who they want in
+// it. power-veto-draw-lobby covers somebody offering the Head of Household a
+// safe pair of hands. These two are the other directions: a houseguest selling
+// themselves to a nominee — pick me and I will get you down — and somebody who
+// has worked out they are the real target trying to get into a competition
+// they cannot afford to be outside of.
+
+const pickMeIllSaveYou = {
+  id: 'power-pick-me-lobby',
+  location: 'bedroom',
+  category: 'deals',
+  weight(house, ctx) {
+    const noms = _noms(ctx);
+    if (!noms.length || house.length < 6) return 0;
+    // Between the block being set and the bag being opened.
+    const window = ctx?.phase === 'post-noms' || ctx?.act === 'nominations';
+    return window ? band(9) : 0;
+  },
+  fire(house, ctx, api, rng) {
+    const noms = _noms(ctx);
+    const nom = _quiet(noms)[0] || noms[0];
+    const seller = _quiet(_others(house, _hoh(ctx), ...noms))[0] || _others(house, nom)[0];
+    const s = pStats(seller);
+    const p = pronouns(seller);
+    // Does the nominee believe them? Trust and how well the seller sells it.
+    const believable = perceived(nom, seller) + (s.social - 5) * 0.4;
+    const bought = believable > 0.5;
+    // And whether the offer is honest is a different question entirely.
+    const honest = (s.loyalty || 5) >= 6 || bond(seller, nom) >= 3;
+
+    const text = bought ? _variant([
+      `"If you pull a choice chip, pick me. I win that veto and it comes down on you." ${nom} has no better offer and takes it.`,
+      `${seller} makes the pitch early, before anybody else thinks of it: pick ${p.obj} for the draw and the veto comes off the wall for ${nom}. ${nom} agrees, and spends the rest of the day hoping ${p.sub} meant it.`,
+      `${seller} does not pretend it is a favour. "You need somebody in there who wants you to stay. That is me, and there is a price later." ${nom} nods.`,
+    ], ctx, nom, seller) : _variant([
+      `${seller} offers to play for ${nom} and be the one who takes ${pronouns(nom).obj} down. ${nom} says thank you and does not mean it — ${p.sub} has done nothing all week to earn being believed.`,
+      `"Pick me and I'll save you." ${nom} has heard ${seller} say a version of that to somebody else this week, and says so.`,
+      `${seller} spends ten minutes explaining why ${p.sub} is the safest choice. ${nom} listens, and picks a name ${p.sub} has known longer.`,
+    ], ctx, nom, seller);
+
+    if (bought) {
+      api.sideDeal(seller, nom, 'veto', { genuine: honest, about: 'I will take you down' });
+      api.addBond(nom, seller, honest ? 1.2 : 0.6);
+      api.remember(nom, seller, honest ? 'offered-to-save-me' : 'promise', 2, { about: 'the veto' });
+    } else {
+      api.addBond(nom, seller, -0.5);
+      api.suspicion(nom, seller, 0.8);
+      api.remember(nom, seller, 'sold-me-something', 1);
+    }
+    return {
+      text, players: [nom, seller],
+      badgeText: bought ? 'PICK ME' : 'NOT BUYING IT',
+      badgeClass: bought ? 'green' : 'grey',
+    };
+  },
+};
+
+const fearsTheBackdoor = {
+  id: 'power-fears-backdoor',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    const noms = _noms(ctx);
+    if (!hoh || !noms.length || house.length < 6) return 0;
+    const window = ctx?.phase === 'post-noms' || ctx?.act === 'nominations';
+    if (!window) return 0;
+    // Somebody off the block who can feel the week pointing at them. Reading it
+    // is a skill, so intuition decides whether they work it out in time.
+    const mark = _others(house, hoh, ...noms)
+      .find(n => targetOf(hoh) === n || suspicionOf(n, hoh) >= 2);
+    if (!mark) return 0;
+    return band((pStats(mark).intuition / 10) * 12);
+  },
+  fire(house, ctx, api, rng) {
+    const hoh = _hoh(ctx);
+    const noms = _noms(ctx);
+    const mark = _others(house, hoh, ...noms)
+      .find(n => targetOf(hoh) === n || suspicionOf(n, hoh) >= 2) || _others(house, hoh, ...noms)[0];
+    const p = pronouns(mark);
+    const s = pStats(mark);
+    const text = _variant([
+      `${mark} has worked out that two names on that block are not the point, and that the only way to be certain of Saturday is to be playing in it. ${p.Sub} starts asking everybody who holds a chip.`,
+      `"I just want to play." ${mark} says it lightly, four separate times, to four separate people. Nobody is fooled by the fourth.`,
+      `${mark} cannot be nominated if ${p.sub} ${p.sub === 'they' ? 'win' : 'wins'} that veto, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} done the arithmetic that everybody else is pretending not to have done.`,
+      `${mark} asks ${hoh} directly whether ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} safe this week. ${hoh} says of course. ${mark} goes and lobbies to be in the draw anyway.`,
+    ], ctx, mark, hoh);
+
+    // Lobbying out loud is itself information: the house learns who is worried.
+    _others(house, mark).slice(0, 3).forEach(n => api.suspicion(n, mark, 0.5));
+    api.suspicion(mark, hoh, 1.1);
+    api.remember(mark, hoh, 'coming-for-me', 2);
+    api.setTarget(mark, hoh, 'was going to backdoor me');
+    api.popDelta(mark, s.boldness >= 7 ? 1 : -1);
+    return { text, players: [mark, hoh], badgeText: 'SEES IT COMING', badgeClass: 'orange' };
+  },
+};
+
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
   hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
   hohDeciding, pawnAsk, backdoorPlan, nomEveGuessing,
   savedThemselves, replacementReacts, vetoHolderFallout, nobodySurprised,
+  pickMeIllSaveYou, fearsTheBackdoor,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
   hohRefusesEntry, vetoDrawLobby, vetoPromise,

@@ -392,14 +392,14 @@ describe('the final cut', () => {
       .not.toBe(partner);
     // A broken final two is the most punished move in this game; the jury has
     // to know it happened.
-    // The deal broken AT THE FINALE, not merely the first one this person ever
-    // broke. Nominating somebody you promised safety now breaks that promise
-    // during the season, so a Head of Household can arrive at the final three
-    // with an older break already on their record — and a bare find() picks
-    // that one, which was never exposed to a jury because it happened in week
-    // four.
+    // The deal broken AT THE FINALE, matched by the reason the finale writes.
+    // Two narrower matches both picked the wrong deal: nominations now break
+    // promises mid-season, so the same PAIR can carry an older break — never
+    // exposed to a jury, because it happened in week four — and find() returns
+    // whichever came first in the array.
     const broken = (gs.sideDeals || []).find(d => d.broken && d.brokenBy === cut.finalHoh
-      && (d.players || []).includes(partner));
+      && (d.players || []).includes(partner)
+      && d.brokenReason === 'cut them at the final three');
     expect(broken, 'the break was never recorded on the deal').toBeTruthy();
     expect(broken.exposedTo, 'the jury was never told').toContain(partner);
   });

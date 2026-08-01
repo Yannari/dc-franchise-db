@@ -392,7 +392,14 @@ describe('the final cut', () => {
       .not.toBe(partner);
     // A broken final two is the most punished move in this game; the jury has
     // to know it happened.
-    const broken = (gs.sideDeals || []).find(d => d.broken && d.brokenBy === cut.finalHoh);
+    // The deal broken AT THE FINALE, not merely the first one this person ever
+    // broke. Nominating somebody you promised safety now breaks that promise
+    // during the season, so a Head of Household can arrive at the final three
+    // with an older break already on their record — and a bare find() picks
+    // that one, which was never exposed to a jury because it happened in week
+    // four.
+    const broken = (gs.sideDeals || []).find(d => d.broken && d.brokenBy === cut.finalHoh
+      && (d.players || []).includes(partner));
     expect(broken, 'the break was never recorded on the deal').toBeTruthy();
     expect(broken.exposedTo, 'the jury was never told').toContain(partner);
   });

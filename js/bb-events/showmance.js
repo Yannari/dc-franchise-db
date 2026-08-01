@@ -93,10 +93,12 @@ const hidingIt = {
     const watcher = _quiet(_others(house, a, b))[0];
     const p = pronouns(a);
     const text = _variant([
-      `${a} and ${b} have agreed to keep it quiet. They arrive at breakfast four minutes apart, which is the least subtle thing either of them has ever done.`,
-      `"Nobody knows." ${a} says it with total confidence to ${b}, who agrees. ${watcher} has known since the second night and has already told two people.`,
-      `They are careful in every room with a camera in it, which is every room. ${watcher} watches ${a} not look at ${b} for a full minute and understands exactly what that is.`,
-      `${a} and ${b} think the whispering is the discreet part. The discreet part would have been not going to the same place to whisper.`,
+      `${a} and ${b} agree to keep the relationship quiet, then arrive at breakfast separately without looking at each other once. ${watcher} notices the effort immediately.`,
+      `“Nobody knows,” ${a} tells ${b}. Across the bedroom, ${watcher} pretends to search for a shirt and hears the entire conversation.`,
+      `${a} and ${b} avoid sitting together whenever other people are around. ${watcher} notices they still leave every room together.`,
+      `${a} and ${b} wait until the bedroom empties before whispering. ${watcher} returns for a forgotten water bottle and finds them sharing the same pillow.`,
+      `${b} moves away when ${watcher} enters the room. ${a} overcorrects by starting a loud conversation about laundry, convincing nobody.`,
+      `${a} tells ${watcher} that ${b} is “just a friend.” ${watcher} nods, then watches ${a} save the seat beside ${pronouns(a).obj} for ${b}.`,
     ], ctx, a, b);
 
     api.addBond(a, b, 0.7);
@@ -132,10 +134,12 @@ const blindSpot = {
     const p = pronouns(deaf);
 
     const text = _variant([
-      `${teller} tries to tell ${deaf} what ${other} has been saying in other rooms. ${deaf} listens politely and does not believe a word of it, and ${teller} learns not to bother again.`,
-      `"I'm not asking you to break up with ${other}. I'm asking you to count." ${deaf} hears an attack on ${other} and stops listening at the word count.`,
-      `${teller} has real information and the wrong person to give it to. ${deaf} repeats it to ${other} within the hour, which is exactly what ${teller} was afraid of.`,
-      `Everything ${teller} says about ${other} is true. None of it survives contact with ${deaf}, who has decided in advance which side of this ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} on.`,
+      `${teller} tells ${deaf} what ${other} has been saying in other rooms. ${deaf} asks for details, rejects each one and ends the conversation by defending ${other}.`,
+      `“I'm not asking you to break up with ${other}. I'm asking you to count.” ${deaf} hears the first part and treats everything after it as an attack.`,
+      `${teller} gives ${deaf} information that was meant to stay away from ${other}. The next time ${teller} enters the kitchen, ${other} is waiting with the exact wording.`,
+      `${teller} names a promise ${other} made to somebody else. ${deaf} explains it away before ${teller} finishes describing what happened.`,
+      `${teller} asks ${deaf} to imagine making this decision without ${other}. ${deaf} says there is no reason to imagine that and gets up.`,
+      `${deaf} listens while ${teller} lays out the problem with ${other}'s game. Then ${p.sub} ${p.sub === 'they' ? 'take' : 'takes'} the warning straight back to ${other} and identifies the source.`,
     ], ctx, deaf, teller);
 
     // The cost is information: they stop being told things, which is how a
@@ -172,10 +176,12 @@ const thirdWheel = {
     const p = pronouns(left);
 
     const text = _variant([
-      `${left} used to have somebody to talk to at night. ${closer} is not available at night any more, and ${left} has started noticing exactly how unavailable.`,
-      `"I'm happy for you." ${left} means it and also does not, and both of those are visible from across the room.`,
-      `${left} waits for a moment alone with ${closer} that does not come. By the third day ${p.sub} ${p.sub === 'they' ? 'stop' : 'stops'} waiting and starts talking to other people instead — which is the part that will matter.`,
-      `Nobody has done anything to ${left}. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} simply been demoted without a conversation, and there is nothing to raise without sounding like this.`,
+      `${left} used to end every night talking with ${closer}. Now ${closer} is always beside somebody else, and ${left} has stopped saving a seat.`,
+      `“I'm happy for you,” ${left} tells ${closer}. The words are sincere; the silence afterward is not.`,
+      `${left} waits for a private moment with ${closer}. When another evening passes without one, ${p.sub} ${p.sub === 'they' ? 'join' : 'joins'} a different group in the backyard.`,
+      `${closer} promises ${left} they will catch up later, then follows the showmance upstairs. ${left} watches the door close and does not ask again.`,
+      `${left} tries to tell ${closer} something important while the couple is together. ${closer} keeps checking the other person's reaction, so ${left} cuts the story short.`,
+      `${left} jokes about becoming the third wheel. ${closer} laughs and says that is not true, then leaves ${left} alone to go find the other half of the couple.`,
     ], ctx, left, closer);
 
     api.addBond(left, closer, -1);
@@ -213,13 +219,17 @@ const gameOverHeart = {
     const loyal = pStats(safe).loyalty >= 6 || bond(safe, atRisk) >= 6;
 
     const text = loyal ? _variant([
-      `${safe} spends the week campaigning for ${atRisk} openly, to everybody, without pretending it is strategy. It is the most honest thing anybody does all week and it costs ${p.obj} two friendships.`,
-      `"If ${atRisk} goes, I'm useless to all of you anyway." ${safe} says the quiet part in a room of six people, and every one of them writes it down.`,
-      `${safe} could quietly keep ${p.posAdj} own game clean this week. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not, and by Thursday everybody knows exactly where ${p.sub} ${p.sub === 'they' ? 'stand' : 'stands'}.`,
+      `${safe} campaigns openly for ${atRisk}, even after an ally warns that the effort is making the pair look inseparable. ${safe} answers, “We are.”`,
+      `“If ${atRisk} goes, you lose my vote too.” ${safe} says it in front of enough people that the threat reaches every room.`,
+      `${safe} could distance ${p.ref} from ${atRisk}. Instead, ${p.sub} visits every undecided voter and makes the relationship part of the pitch.`,
+      `${safe} asks people to judge ${atRisk} as a player rather than half of a couple. Nobody misses that ${safe} is staking ${p.posAdj} own game on the distinction.`,
+      `${safe} is advised to campaign quietly. ${p.Sub} responds by pulling the next voter into the living room and asking, in front of witnesses, what it will take to keep ${atRisk}.`,
     ], ctx, safe, atRisk) : _variant([
-      `${safe} tells ${atRisk} everything will be fine and does not work a single vote toward making it so. It is the right move and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} exactly what it is.`,
-      `${safe} campaigns for ${atRisk} where ${atRisk} can hear it and stops the moment ${p.sub} ${p.sub === 'they' ? 'leave' : 'leaves'} the room.`,
-      `"I'm doing everything I can." ${safe} is not doing everything ${p.sub} can. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} decided that a week of being sad is cheaper than a week of being obvious.`,
+      `${safe} tells ${atRisk} the votes are moving, then spends the day protecting relationships that might survive the eviction.`,
+      `${safe} campaigns while ${atRisk} is in the room and changes the subject after ${atRisk} leaves. One voter notices both versions.`,
+      `“I'm doing everything I can,” ${safe} says. Later, an ally offers one more person to approach and ${safe} says pushing harder would expose ${p.obj}.`,
+      `${atRisk} asks who ${safe} has spoken to. ${safe} gives two names and avoids explaining that neither conversation included a real request.`,
+      `${safe} decides that visibly saving ${atRisk} would make ${p.obj} the next target. The decision may be strategic, but ${atRisk} still spends the evening campaigning alone.`,
     ], ctx, safe, atRisk);
 
     if (loyal) {
@@ -261,10 +271,12 @@ const theirFight = {
     const p = pronouns(a);
 
     const text = _variant([
-      `${a} and ${b} have an argument in a house with no doors. It lasts eleven minutes and is witnessed, in whole or in part, by everybody.`,
-      `It starts about a conversation ${b} had with somebody else and stops being about that within a minute. ${audience[0] || 'The house'} finds a reason to be in another room and does not entirely succeed.`,
-      `"You're playing me." ${a} does not believe it and says it anyway, because it is three in the morning and being right is not the point.`,
-      `They keep their voices down, which somehow makes it worse to be in the next bed for. ${audience[0] || 'Somebody'} hears most of it and repeats a version of it by lunchtime.`,
+      `${a} and ${b} try to argue quietly in the bedroom. The whispering becomes shouting, and people begin leaving with armfuls of clothes they did not need.`,
+      `It starts with a conversation ${b} had with somebody else. ${a} brings up an older promise, ${b} brings up the vote, and ${audience[0] || 'the person in the next bed'} gives up pretending to sleep.`,
+      `“You're playing me.” ${a} says it in anger. ${b} asks whether this is about the relationship or the game, and ${a} cannot separate the answer.`,
+      `${a} and ${b} keep their voices low, forcing everyone in the bedroom to hear every word. ${audience[0] || 'Somebody'} quietly carries a pillow to another room.`,
+      `${b} asks why ${a} questioned the relationship in front of other people. ${a} says ${b} made it public first, and neither can agree on what “it” means.`,
+      `${a} walks away before saying something worse. ${b} follows, so the argument travels from the bedroom to the kitchen with an audience collecting behind it.`,
     ], ctx, a, b);
 
     api.addBond(a, b, -1.4);
@@ -299,10 +311,12 @@ const votingTogether = {
     const observer = _quiet(_others(house, a, b))[0];
 
     const text = _variant([
-      `${a} and ${b} decide how they are voting in about forty seconds, in bed, before anybody has pitched either of them. Everything the house says to them for the next three days is decoration.`,
-      `Somebody works ${a} for an hour and gets nowhere, then works ${b} for an hour and gets the same nowhere in the same words.`,
-      `"We'll do whatever you're doing." ${b} says it to ${a} without appearing to think about it, and ${a} does not appear to notice that ${p.sub} has just been handed a vote for nothing.`,
-      `${observer} pitches ${a}, watches ${a} glance at ${b}, and understands that this was never a conversation with one person.`,
+      `${a} and ${b} settle on the same vote before either nominee finishes campaigning. Every later pitch receives the same polite answer.`,
+      `${observer} makes the case to ${a}, then tries ${b} and hears the same objection in nearly the same words.`,
+      `“I'll vote however you're voting,” ${b} tells ${a}. ${a} accepts the extra vote without asking what ${b} wanted.`,
+      `${observer} pitches ${a}. Before answering, ${a} looks across the room at ${b}, and ${observer} realizes the conversation has three people in it.`,
+      `${a} and ${b} compare what each nominee offered and choose together. When ${observer} asks for separate answers, neither sees the point.`,
+      `${observer} asks ${b} where the vote stands. ${b} says, “You should talk to ${a},” turning two houseguests into one stop on the campaign trail.`,
     ], ctx, a, b, observer);
 
     api.addBond(a, b, 0.6);

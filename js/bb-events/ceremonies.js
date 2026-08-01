@@ -451,9 +451,18 @@ const evictionGracious = {
     if (ctx.act !== 'eviction' || !ctx.evicted) return 0;
     const s = pStats(ctx.evicted);
     // Composure and warmth make for a gracious exit; a grudge makes it unlikely.
+    // Floored, and that is the THIRD event in this file to need it — the same
+    // shape as nom-speech-game and veto-saved-gratitude. A weight built as a
+    // product of normalised stats bottoms out near zero for an ordinary
+    // houseguest: 0.5 x 0.65 x 14 is 4.5 against siblings sitting near 14, so
+    // the event only ever fires for the rare person who is high in everything,
+    // and any reshuffle of the season knocks it out entirely.
+    //
+    // Most people leaving this house say something decent on the way out. That
+    // is the ordinary case and it should not need an exceptional temperament.
     const grace = (s.temperament / 10) * (0.4 + s.loyalty / 20);
     const bitter = grudge(ctx.evicted, ctx.hoh) >= 2 ? 0.4 : 1;
-    return band(grace * bitter * 14);
+    return band(4 + grace * bitter * 10);
   },
   fire(house, ctx, api) {
     const gone = ctx.evicted;

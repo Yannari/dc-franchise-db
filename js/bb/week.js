@@ -6,7 +6,7 @@
 // beats, the way a challenge fires a variable number of social events between
 // its phases.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import {
@@ -300,29 +300,91 @@ function runHouseRomance(week, rng) {
     Math.random = realRandom;
   }
   if (popOff) gs.popularity = popBefore;
+  const romanceLine = (type, lines, ...names) => {
+    const key = `${week.num || 0}|${type}|${names.filter(Boolean).join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return lines[hash % lines.length];
+  };
   const bbRomanceText = e => {
     const [a, b, c] = e.players || [];
+    const pa = pronouns(a);
     switch (e.type) {
       case 'firstMove':
-        return `${a} asks ${b} for a private conversation and finally makes a move. ${b} does not pull away, and the two return to the house together.`;
+        return romanceLine(e.type, [
+          `${a} asks ${b} to stay behind after everyone leaves the backyard. The conversation stalls, ${a} admits why, and ${b} reaches for ${pa.posAdj} hand.`,
+          `${a} pulls ${b} into the storage room, starts with “This is awkward,” and finally says what half the house has already guessed. ${b} smiles before ${a} finishes.`,
+          `${a} tells ${b} that pretending there is nothing between them has become harder than admitting it. ${b} answers by moving closer.`,
+          `${a} waits until the bedroom is empty and asks whether ${b} feels this too. ${b} says yes, then laughs at how relieved ${a} looks.`,
+          `${a} tries to make the first move casually. It is not casual at all, but ${b} meets ${pa.obj} halfway.`,
+        ], a, b);
       case 'showmanceSpark':
-        return `${a} and ${b} stop denying that something is happening between them. They agree to see where it goes, knowing everyone else will notice.`;
+        return romanceLine(e.type, [
+          `${a} and ${b} stop calling it flirting. They tell each other this is real, then spend breakfast failing to act normal around everyone else.`,
+          `${b} asks what ${a} plans to call this in the Diary Room. By the time ${a} answers, both of them are smiling too much to keep denying it.`,
+          `${a} and ${b} agree they are together. The decision is private; the way they walk back into the kitchen is not.`,
+          `${a} says, “So we're really doing this?” ${b} says yes. Outside the room, someone hears them laugh and immediately goes looking for details.`,
+          `${a} and ${b} finally put a name to what has been happening between them. Neither expects the house to treat it as only romantic.`,
+        ], a, b);
       case 'showmanceRekindle':
-        return `${a} and ${b} talk privately after being brought back together. The hurt is still there, but neither is ready to walk away from the relationship.`;
+        return romanceLine(e.type, [
+          `${a} and ${b} sit on opposite ends of the bed and talk through the argument without an audience. They do not solve everything, but neither leaves.`,
+          `${b} returns something ${a} left on the other side of the bedroom. The handoff becomes an apology, then a conversation neither was ready to start earlier.`,
+          `${a} tells ${b} exactly what still hurts. ${b} listens without defending it, and that is enough to keep the door open.`,
+          `${a} and ${b} agree that making up does not erase what happened. They also agree they are not finished trying.`,
+        ], a, b);
       case 'showmanceBreakup':
-        return `${a} and ${b} admit that the relationship is no longer working. They agree to give each other space and move to opposite sides of the house.`;
+        return romanceLine(e.type, [
+          `${a} and ${b} sit down to repair things and realize neither is describing the same relationship. ${b} moves ${pronouns(b).posAdj} things before bedtime.`,
+          `${a} tells ${b} that every personal conversation has started feeling like strategy. ${b} does not argue. They agree to stop pretending this still works.`,
+          `${a} asks for space. ${b} says, “In this house?” and almost laughs, but the breakup is real even if privacy is not.`,
+          `${a} and ${b} end it quietly in the bedroom. The rest of the house notices when they come to dinner separately and choose different seats.`,
+          `${b} asks whether they are still a couple or only two votes protecting each other. ${a} cannot answer quickly enough.`,
+        ], a, b);
       case 'showmanceRideOrDie':
-        return `${a} and ${b} promise to protect each other through the end of the game. They stop hiding the deal from the rest of the house.`;
+        return romanceLine(e.type, [
+          `${a} and ${b} promise that neither will cut the other before the end. They make the agreement in private and defend it publicly before the day is over.`,
+          `${b} asks whether ${a} would choose the relationship over the easier path to the finale. ${a} says yes without asking who is listening.`,
+          `${a} tells ${b}, “If one of us gets there, both of us got there.” It is romantic, strategic and immediately dangerous.`,
+          `${a} and ${b} stop discussing separate endgames. From now on every plan has two seats in it, and the house can see both.`,
+        ], a, b);
       case 'showmanceHoneymoon':
-        return `${a} and ${b} spend another late night together, talking long after everyone else has gone to bed.`;
+        return romanceLine(e.type, [
+          `${a} and ${b} whisper across their beds until somebody throws a pillow and tells them to sleep. They only get quieter.`,
+          `${a} makes breakfast for ${b} and gets ${pronouns(b).posAdj} order exactly right. Three people at the table exchange a look.`,
+          `${a} and ${b} claim the hammock and lose track of the conversation happening around them. The house does not lose track of either of them.`,
+          `${b} finds an excuse to follow ${a} into the storage room. They return with no supplies and matching smiles.`,
+          `${a} and ${b} spend the evening inventing reasons to sit beside each other. By the third reason, nobody is fooled.`,
+        ], a, b);
       case 'showmanceNoticed':
-        return `${a} warns another houseguest that ${b} and ${c} will always choose each other. The conversation turns to which one should leave first.`;
+        return romanceLine(e.type, [
+          `${a} points out that ${b} checks ${c}'s reaction before agreeing to any plan. The person listening asks which half of the pair is easier to remove.`,
+          `${a} counts ${b} and ${c} as one vote during a kitchen conversation. Nobody corrects the math.`,
+          `${a} tells an ally that pitching ${b} without ${c} is a waste of time. They begin comparing which of the two has fewer people protecting them.`,
+          `${a} watches ${b} abandon a conversation the moment ${c} leaves the room. That night, ${a} starts describing them as a pair instead of two names.`,
+        ], a, b, c);
       case 'showmanceTarget':
-        return `${a} begins asking people to split up ${b} and ${c}. By the end of the day, several houseguests are discussing the pair as a single target.`;
+        return romanceLine(e.type, [
+          `${a} tells two people that leaving ${b} and ${c} together means surrendering two votes every week. The next conversation is about which name goes up first.`,
+          `${a} starts a campaign to split ${b} and ${c}. Instead of attacking the relationship, ${a} lists every vote the pair can control together.`,
+          `${a} asks who benefits from keeping both ${b} and ${c}. Nobody has a convincing answer, and the pair becomes the day's easiest target discussion.`,
+          `${a} pitches breaking up ${b} and ${c} before either wins power. By dinner, the idea has travelled farther than ${a} expected.`,
+          `${a} stops referring to ${b} and ${c} separately. “The pair” needs to lose a number, and ${a} begins testing which name the house will accept.`,
+        ], a, b, c);
       case 'showmanceJealousy':
-        return `${a} notices that ${b} now spends every free moment with ${c}. ${a} insists it does not bother them, then starts avoiding both of them.`;
+        return romanceLine(e.type, [
+          `${a} asks ${b} to talk, but ${b} is waiting for ${c}. “It's fine,” ${a} says, then eats dinner in another room.`,
+          `${a} jokes that ${b} and ${c} have become impossible to separate. The joke lands badly because ${a} is the only person not smiling.`,
+          `${a} walks into the bedroom, sees ${b} and ${c} sharing a bed and turns around before either notices. ${pa.Sub} keeps ${pa.posAdj} distance afterward.`,
+          `${b} cancels another conversation with ${a} to spend time with ${c}. This time ${a} stops asking for a replacement time.`,
+        ], a, b, c);
       case 'friendshipJealousy':
-        return `${a} tries to spend time with ${b}, but ${b} is already with ${c}. ${a} leaves without joining them and keeps their distance for the rest of the night.`;
+        return romanceLine(e.type, [
+          `${a} brings two mugs to the kitchen table and finds ${b} already there with ${c}. ${a} leaves one mug behind and takes the other outside.`,
+          `${a} asks ${b} whether they can finish yesterday's conversation. ${b} looks toward ${c} before answering, and ${a} says, “Never mind.”`,
+          `${a} joins ${b} and ${c} in the backyard, but every story has context only the couple understands. ${a} stops trying to enter the conversation.`,
+          `${b} promises ${a} they will talk later, then disappears upstairs with ${c}. ${a} waits long enough to realize later is not coming.`,
+        ], a, b, c);
       default:
         return String(e.text || '')
           .replace(/\bThe tribe\b/g, 'The house').replace(/\bthe tribe\b/g, 'the house')

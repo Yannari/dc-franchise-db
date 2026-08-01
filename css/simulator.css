@@ -3058,7 +3058,16 @@
     /* ══ VISUAL PLAYER — REBUILT ══ */
     @keyframes vpPageIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
     #visual-player { position:fixed; inset:0; z-index:200; background:#090d12; display:flex; font-family:var(--font-body); }
-    .rp-page { animation: vpPageIn 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+    /* `backwards`, not `both`.
+       `both` keeps the last keyframe applied forever, and the last keyframe of
+       vpPageIn is a transform. A transformed ancestor becomes the containing
+       block for every position:fixed descendant, so pinned controls anchor to
+       the page box instead of the viewport and scroll away with it — and it
+       disturbs position:sticky in the same subtree. The final keyframe here is
+       translateY(0)/opacity:1, which is identical to the element's resting
+       style, so dropping the forwards fill changes nothing visually and gives
+       fixed and sticky back to every screen in the player. */
+    .rp-page { animation: vpPageIn 0.28s cubic-bezier(0.22,1,0.36,1) backwards; }
     /* ── Sidebar ── */
     .rp-sidebar { width:172px; flex-shrink:0; border-right:1px solid #1a2130; overflow-y:auto; padding:20px 0 40px; display:flex; flex-direction:column; background:#07090d; position:relative; z-index:5; }
     .rp-sidebar-ep { display:flex; justify-content:space-between; gap:8px; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#607083; padding:0 16px 16px; font-family:var(--font-body); }

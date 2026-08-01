@@ -90,7 +90,16 @@ const houseMeeting = {
     room.forEach((a, i) => { const b = room[i + 1]; if (b) api.addBond(a, b, 0.5); });
     api.remember(honest, hoh, 'made-me-say-it-out-loud', 2, {});
     api.popDelta(hoh, -3);
-    return { text, players: [hoh, honest], badgeText: 'HOUSE MEETING', badgeClass: 'red' };
+    return { text, players: [hoh, honest], badgeText: 'HOUSE MEETING', badgeClass: 'red',
+      // Same scene, same treatment on the screen.
+      meeting: { caller: hoh, about: honest, outcome: 'backfires', cause: 'power', room: [...room],
+        beats: [
+          { kind: 'call', who: hoh, text: `${hoh} does not shout it. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not have to — the Head of Household asking everybody to come to the living room is not a request, and all ${room.length} of them know it.` },
+          { kind: 'assemble', who: null, text: `They arrive in the order people arrive when they have been summoned rather than invited: quickly, and without talking on the way.` },
+          { kind: 'case', who: hoh, text: `"This is not a dictatorship." It is the first thing ${hoh} says and it is the only thing anybody will quote afterwards.` },
+          { kind: 'answer', who: honest, text: `${honest} answers the question honestly, because it was asked out loud in front of everybody and there was no version of lying that survived the room.` },
+          { kind: 'verdict', who: null, text: `${hoh} has a week of power left and has just spent the part of it that mattered. Nobody comes upstairs that night.` },
+        ] } };
   },
 };
 

@@ -520,6 +520,73 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* ── the house meeting ─────────────────────────────────────────────
+       Everybody in one room, so the card is the room: the caller on the left,
+       the person it is about on the right, and the whole house standing
+       between them deciding whether to speak. The four outcomes are coloured
+       differently because they leave the house in different places. */
+    .bbf-meet      { position:relative; margin:14px 0; padding:14px 16px 12px;
+                     border-radius:8px; background:#12181f;
+                     border:1px solid rgba(255,255,255,.09);
+                     border-left:4px solid var(--meet, #8b949e); }
+    .bbf-meet.is-lands  { --meet:#e3b341; }
+    .bbf-meet.is-turns  { --meet:#f85149; }
+    .bbf-meet.is-silent { --meet:#58a6ff; }
+    .bbf-meet.is-flat   { --meet:#6e7681; }
+    .bbf-meet-h    { display:flex; align-items:center; gap:9px; margin-bottom:11px; }
+    .bbf-meet-call { font-family:ui-monospace,Consolas,monospace; font-size:10px;
+                     letter-spacing:3px; font-weight:700; color:var(--meet);
+                     text-shadow:0 0 14px color-mix(in srgb, var(--meet) 45%, transparent); }
+    .bbf-meet-room { display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+    .bbf-meet-who  { margin:0; text-align:center; flex-shrink:0; }
+    .bbf-meet-who .bb-av { border:2px solid var(--meet); border-radius:6px; }
+    .bbf-meet-who.is-about .bb-av { border-color:rgba(255,255,255,.25); }
+    .bbf-meet-who figcaption { font-size:10px; color:#c9d1d9; margin-top:4px; line-height:1.3; }
+    .bbf-meet-who figcaption i { display:block; font-style:normal; font-size:8px;
+                     letter-spacing:1.1px; text-transform:uppercase; color:#6e7681; }
+    /* The house itself: a crowd, deliberately smaller than the two who matter. */
+    .bbf-meet-crowd{ flex:1; min-width:0; display:flex; align-items:center;
+                     flex-wrap:wrap; gap:3px; padding:7px 9px; border-radius:6px;
+                     background:rgba(255,255,255,.03);
+                     border:1px dashed rgba(255,255,255,.08); }
+    .bbf-meet-face .bb-av { border-radius:4px; opacity:.75; }
+    .bbf-meet.is-silent .bbf-meet-face .bb-av { opacity:.4; filter:grayscale(1); }
+    .bbf-meet-count{ width:100%; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8.5px; letter-spacing:1.2px; color:#6e7681; margin-top:4px; }
+    /* The meeting as a sequence: a spine down the left, one beat per step, the
+       speaker's face where somebody speaks and a node where the room does. */
+    .bbf-meet-beats{ list-style:none; margin:0 0 11px; padding:0 0 0 4px;
+                     position:relative; }
+    .bbf-meet-beats::before { content:''; position:absolute; left:14px; top:10px; bottom:10px;
+                     width:1px; background:linear-gradient(180deg,
+                       transparent, rgba(255,255,255,.14) 12%, rgba(255,255,255,.14) 88%, transparent); }
+    .bbf-meet-beats li { position:relative; display:flex; gap:10px; align-items:flex-start;
+                     padding:6px 0; }
+    .bbf-meet-b-who{ flex-shrink:0; width:22px; z-index:1; }
+    .bbf-meet-b-who .bb-av { border-radius:4px; border:1px solid rgba(255,255,255,.18); }
+    .bbf-meet-b-dot{ flex-shrink:0; width:22px; height:22px; border-radius:50%; z-index:1;
+                     background:#12181f; border:1px solid rgba(255,255,255,.16);
+                     position:relative; }
+    .bbf-meet-b-dot::after { content:''; position:absolute; inset:7px; border-radius:50%;
+                     background:var(--meet); opacity:.55; }
+    .bbf-meet-b-txt{ font-size:12.5px; line-height:1.55; color:#c9d1d9; padding-top:2px; }
+    /* The two loudest steps carry the accent. */
+    .bbf-meet-beats li.is-case .bbf-meet-b-txt,
+    .bbf-meet-beats li.is-answer .bbf-meet-b-txt { color:#e6edf3; }
+    .bbf-meet-beats li.is-verdict .bbf-meet-b-txt { color:var(--meet); font-size:12px; }
+    .bbf-meet-beats li.is-assemble .bbf-meet-b-txt { color:#8b949e; font-size:11.5px; }
+
+    .bbf-meet-txt  { font-size:13px; line-height:1.6; color:#c9d1d9; margin-bottom:10px; }
+    .bbf-meet-out  { display:flex; flex-direction:column; gap:2px;
+                     padding-top:9px; border-top:1px solid rgba(255,255,255,.07); }
+    .bbf-meet-out span { font-size:9.5px; letter-spacing:1px; text-transform:uppercase;
+                     color:#6e7681; font-family:ui-monospace,Consolas,monospace; }
+    .bbf-meet-out b{ font-size:12px; color:var(--meet); font-weight:600; }
+    @media (max-width:700px) {
+      .bbf-meet-room { flex-wrap:wrap; }
+      .bbf-meet-crowd { order:3; width:100%; }
+    }
+
     /* ── THE HOUSE GAZETTE ──────────────────────────────────────────────
        A front page, printed on paper, pasted into a very dark screen. The
        contrast is the point: every other panel here is a lit surface reporting

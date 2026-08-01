@@ -15978,12 +15978,67 @@ function _bbfEffects(beat) {
  * it in, and the ambient chatter that should be skimmable in one line.
  */
 const _BBF_LOUD_FX = new Set(['deal', 'break', 'expose', 'romance']);
+/**
+ * A house meeting, drawn as the thing it is.
+ *
+ * Everybody stands in one room and the outcome is decided by who is willing to
+ * speak. So the card shows the whole room rather than two portraits: the person
+ * who called it on one side, the person it is about on the other, and between
+ * them every houseguest who had to stand there and choose whether to say
+ * something. The four outcomes are visually distinct because they are
+ * strategically distinct — a meeting that lands and a meeting nobody will speak
+ * at leave the house in opposite places.
+ */
+function _bbfMeeting(beat, clock, badgeCls) {
+  const m = beat.meeting || {};
+  const room = (m.room || []).filter(n => n && n !== m.caller && n !== m.about);
+  const tone = m.outcome === 'lands' ? 'lands'
+    : m.outcome === 'backfires' ? 'turns'
+    : m.outcome === 'nobody talks' ? 'silent' : 'flat';
+  const summary = m.outcome === 'lands' ? `${_bbEsc(m.about)} has to answer in front of everybody`
+    : m.outcome === 'backfires' ? `the room closes around ${_bbEsc(m.about)}`
+    : m.outcome === 'nobody talks' ? `nobody will say it with ${_bbEsc(m.about)} in the room`
+    : 'everybody agrees to do better';
+  const why = m.cause === 'lie' ? 'called over something that was said about them'
+    : m.cause === 'nothing-to-lose' ? 'called by somebody with nothing left to lose'
+    : m.cause === 'power' ? 'called by the Head of Household'
+    : 'called over something that stopped fitting in a bedroom';
+
+  return `<article class="bbf-meet is-${tone}">
+    <header class="bbf-meet-h">
+      <span class="bbf-slug">${clock}</span>
+      <span class="bbf-meet-call">HOUSE MEETING</span>
+      ${beat.badgeText ? `<span class="rp-brant-badge ${badgeCls}">${beat.badgeText}</span>` : ''}
+    </header>
+    <div class="bbf-meet-room">
+      <figure class="bbf-meet-who is-caller">${_bbAvatar(m.caller, 46)}
+        <figcaption>${_bbEsc(m.caller)}<i>called it</i></figcaption></figure>
+      <div class="bbf-meet-crowd">
+        ${room.map(n => `<span class="bbf-meet-face">${_bbAvatar(n, 26)}</span>`).join('')}
+        <span class="bbf-meet-count">${(m.room || []).length} in the room</span>
+      </div>
+      ${m.about ? `<figure class="bbf-meet-who is-about">${_bbAvatar(m.about, 46)}
+        <figcaption>${_bbEsc(m.about)}<i>about them</i></figcaption></figure>` : ''}
+    </div>
+    ${(m.beats || []).length
+      ? `<ol class="bbf-meet-beats">${m.beats.map(step => `<li class="is-${step.kind}">
+          ${step.who ? `<span class="bbf-meet-b-who">${_bbAvatar(step.who, 22)}</span>` : '<span class="bbf-meet-b-dot"></span>'}
+          <span class="bbf-meet-b-txt">${step.text}</span>
+        </li>`).join('')}</ol>`
+      : `<div class="bbf-meet-txt">${beat.text}</div>`}
+    <div class="bbf-meet-out"><span>${why}</span><b>${summary}</b></div>
+    ${_bbfEffects(beat)}
+  </article>`;
+}
+
 function _bbfWeight(beat) {
   const fx = beat.effects || [];
   // Measured before settling on these: keying off badgeClass or a new target
   // made twenty of twenty-six cards a headline, which is the same wall of
   // identical cards this was meant to fix — a hierarchy where everything is
   // loud is not a hierarchy. Promises, betrayals and romance only.
+  // Everybody in one room is a headline by definition.
+  if (beat.meeting) return 'headline';
   if (fx.some(e => _BBF_LOUD_FX.has(e.kind))) return 'headline';
   if (beat.category === 'deals' || beat.category === 'ceremonies') return 'headline';
   // Quiet ONLY for house-life texture with nothing behind it.
@@ -16146,6 +16201,13 @@ export function rpBuildBBHouseLife(ep, act, slot) {
             <span class="bbf-row-t">${clock}</span>
             <span class="bbf-row-x">${beat.text}</span>
           </div>`;
+          return;
+        }
+
+        // A house meeting is not a conversation between two people, so it does
+        // not get the two-portrait card. It gets the room.
+        if (beat.meeting) {
+          html += _bbfMeeting(beat, clock, cls);
           return;
         }
 

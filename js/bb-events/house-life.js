@@ -500,6 +500,12 @@ const houseMeeting = {
 
     return {
       text, players: [caller, about].filter(Boolean),
+      // The whole room, so the screen can draw what a house meeting actually is
+      // — everybody in one place — instead of two portraits like any other
+      // conversation. This is the loudest thing that happens in a week and it
+      // was rendering identically to an argument about the washing up.
+      meeting: { caller, about, outcome, cause, room: [...room],
+        beats: _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) },
       badgeText: outcome === 'lands' ? 'THEY HAD RECEIPTS'
         : outcome === 'backfires' ? 'THE ROOM TURNS'
         : outcome === 'nobody talks' ? 'NOBODY WILL SAY IT' : 'NOTHING CHANGES',
@@ -509,6 +515,77 @@ const houseMeeting = {
     };
   },
 };
+
+/**
+ * The meeting, moment by moment.
+ *
+ * A house meeting is not a paragraph, it is a sequence: somebody shouts, the
+ * room fills, a case gets made, the person it is about answers or does not, and
+ * then everybody finds out where they stand. Rendering it as one card
+ * compressed the only scene of the week where all fourteen people are in shot
+ * into the same shape as an argument about the washing up.
+ *
+ * Four to five beats, each attributed, so the screen can play them one at a
+ * time and the room can visibly change between them.
+ */
+function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
+  const p = pronouns(caller);
+  const q = about ? pronouns(about) : p;
+  const witness = room.find(n => n !== about) || null;
+
+  const called = _variant([
+    `"HOUSE MEETING." ${caller} says it twice, once from the kitchen and once from the doorway, and the house comes because in here nobody can afford not to.`,
+    `${caller} shouts it down the corridor and then stands in the living room waiting, which is the last easy moment ${p.sub} will have today.`,
+    `Somebody calls a house meeting. Within ninety seconds there are ${room.length + 1} people in one room and no way for any of them to leave first.`,
+  ], ctx, caller, 'call');
+
+  const assembled = _variant([
+    `They come in the order they always do — the ones with nothing to worry about first, ${about || 'the person it is about'} last, and last is its own kind of answer.`,
+    `Nobody sits down. Fourteen people standing in a living room is not a meeting, it is a standoff with cushions.`,
+    `${about ? `${about} arrives, works out in about four seconds what this is, and takes the seat nearest the door.` : 'The room fills and nobody is quite sure who this is about, which is briefly worse.'}`,
+  ], ctx, caller, 'assemble');
+
+  const theCase = cause === 'lie' ? _variant([
+    `${caller} does not raise ${p.posAdj} voice. ${p.Sub} repeats, exactly, what ${about} has been telling people about ${p.obj}, and asks ${about} to say it again now.`,
+    `"Somebody in this room has been saying I made deals I never made." ${caller} looks at nobody in particular, which fools nobody in particular.`,
+  ], ctx, caller, 'case') : cause === 'nothing-to-lose' ? _variant([
+    `${caller} is on the block and has four days left, so ${p.sub} spends them. Every private conversation ${p.sub} has had this week goes into the room at once.`,
+    `"I'm going home anyway, so let me save you all some time." What follows is accurate, unkind, and about six names longer than anybody expected.`,
+  ], ctx, caller, 'case') : _variant([
+    `${caller} has been carrying this since before the last eviction and it comes out in one long sentence that ${p.sub} has clearly said to the mirror.`,
+    `It starts as a point about respect and arrives, within a minute, at ${about}.`,
+  ], ctx, caller, 'case');
+
+  const answer = outcome === 'nobody talks' ? _variant([
+    `${about} says nothing. ${q.Sub} ${q.sub === 'they' ? 'do' : 'does'} not need to — ${q.sub} ${q.sub === 'they' ? 'look' : 'looks'} around the room once, slowly, and three people who were nodding stop nodding.`,
+    `The silence goes on long enough to stop being a pause. ${witness || 'Somebody'} studies the carpet. ${about} waits, entirely comfortable, for somebody braver.`,
+  ], ctx, caller, 'answer') : outcome === 'lands' ? _variant([
+    `${about} answers, and then answers again slightly differently, and the second version is the one everybody remembers.`,
+    `${about} asks who else has a problem. It is meant as a challenge. Two hands go up and it stops being one.`,
+  ], ctx, caller, 'answer') : outcome === 'backfires' ? _variant([
+    `${about} does not defend ${q.ref || q.obj}. ${q.Sub} ${q.sub === 'they' ? 'let' : 'lets'} ${caller} keep going, which is the smartest thing anybody does all afternoon.`,
+    `"Are you finished?" ${about} says it kindly, which is worse than saying it any other way, and the room agrees with the kindness.`,
+  ], ctx, caller, 'answer') : _variant([
+    `Somebody makes a joke about the washing up. It lands. The temperature drops about nine degrees and everybody is relieved.`,
+    `${witness || 'Somebody'} says what everybody is thinking, which is that this could have been a conversation, and the room murmurs agreement.`,
+  ], ctx, caller, 'answer');
+
+  const verdict = outcome === 'lands'
+    ? `It breaks up without anybody saying it is over. ${about} spends the rest of the evening explaining ${q.posAdj} answer to people one at a time, which is exactly the position ${caller} wanted ${q.obj} in.`
+    : outcome === 'backfires'
+      ? `People drift out in twos, and every pair is talking about ${caller}. Not one of them is talking about ${about}.`
+      : outcome === 'nobody talks'
+        ? `Nothing was decided and everybody learned the same thing: this house does not say ${about}'s name out loud yet.`
+        : `Everybody agrees the house is better than this. By nine that evening the house is exactly as it was.`;
+
+  return [
+    { kind: 'call', who: caller, text: called },
+    { kind: 'assemble', who: null, text: assembled },
+    { kind: 'case', who: caller, text: theCase },
+    { kind: 'answer', who: about, text: answer },
+    { kind: 'verdict', who: null, text: verdict },
+  ];
+}
 
 /**
  * Who would call one, and about what.

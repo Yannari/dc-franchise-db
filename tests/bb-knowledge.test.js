@@ -79,8 +79,10 @@ describe('the vote is secret', () => {
   it('lets a vote travel when somebody passes it on', () => {
     const week = stageWeek({ evicted: 'Zee', hoh: 'Bowie', against: ['Chase'], kept: ['Scary'] });
     expect(knowsVote('Emmah', 'Chase', 'Zee')).toBe(false);
+    // Fixed rng: 'told' is a persuasion roll inside learn(), so an unseeded one
+    // makes this test about whether Emmah happened to believe Chase.
     learn('Emmah', factId('vote', 'Chase', 'Zee'),
-      { source: 'Chase', sourceType: 'told', confidence: 0.85, from: 'Chase', ep: week.num });
+      { source: 'Chase', sourceType: 'told', confidence: 0.85, from: 'Chase', ep: week.num, rng: () => 0 });
     expect(knowsVote('Emmah', 'Chase', 'Zee')).toBe(true);
     expect(believedVoters('Emmah', 'Zee')).toContain('Chase');
   });

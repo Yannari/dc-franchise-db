@@ -335,7 +335,13 @@ describe('a showmance gets screen time', () => {
       for (const name of ep.houseAtStart || []) {
         const c = counts[name] || 0;
         if (noms.has(name)) beats.nominee.push(c);
-        else if (inCouple.has(name)) beats.couple.push(c);
+        // A SAFE couple. Somebody who is in a showmance and also Head of
+        // Household carries the power role's weight with them, and counting
+        // them here measures the power, not the couple — which is how this
+        // assertion failed the first time it ran.
+        else if (inCouple.has(name) && name !== ep.hoh && name !== ep.vetoWinner) {
+          beats.couple.push(c);
+        }
       }
     }
     const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);

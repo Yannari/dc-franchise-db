@@ -202,7 +202,11 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     // decision. A promise nobody meant costs a good deal less.
     const promise = (gs.sideDeals || []).find(deal => deal.active !== false && deal.type === 'veto'
       && deal.players?.includes(holder) && deal.players?.includes(name));
-    if (promise) cost += promise.genuine === false ? 0.7 : 2.6;
+    // Heavy, but not decisive. At 2.6 a promise settled the decision outright,
+    // and the whole scene of a nominee watching somebody who swore they would
+    // use it leave them sitting there stopped happening — veto-left-on-block
+    // went dead across ten seasons. People do go back on this one.
+    if (promise) cost += promise.genuine === false ? 0.6 : 1.6;
     return cost;
   };
 

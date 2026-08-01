@@ -28,10 +28,11 @@ import {
 import { scheduleHouseBeats } from './house-events.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
-import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions } from './shared-strategy.js';
+import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf } from './deals.js';
 import { rememberStrategy } from '../strategy-memory.js';
+import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -309,11 +310,48 @@ function runHouseRomance(week, rng) {
           .replace(/\bthe camp\b/g, 'the house').replace(/\bcamp\b/g, 'the house');
     }
   };
-  return ep.campEvents.merge.pre.map(e => ({
-    text: bbRomanceText(e), players: (e.players || []).filter(Boolean),
-    badgeText: e.badgeText || 'SHOWMANCE', badgeClass: e.badgeClass || 'gold',
-    eventId: `romance-${e.type || 'beat'}`, category: 'social', location: 'bedroom',
-  })).filter(b => b.text);
+  // "Several houseguests are discussing the pair as a single target."
+  //
+  // That sentence was the whole of it. showmanceTarget is Total Drama's event
+  // and Total Drama has nowhere to put a strategic target, so in a house it
+  // narrated a targeting conversation and wrote nothing: the plotter could
+  // spend a day asking people to split a couple up and then nominate somebody
+  // unrelated on Thursday. A couple is a bloc, so it goes through the same
+  // layer as an alliance does — somebody works out which half is reachable, and
+  // that half is on their list.
+  const consequences = [];
+  for (const e of ep.campEvents.merge.pre) {
+    if (e.type !== 'showmanceTarget' && e.type !== 'showmanceNoticed') continue;
+    const [plotter, x, y] = (e.players || []).filter(Boolean);
+    if (!plotter || !x || !y) continue;
+    try {
+      const bloc = listBlocs().find(b => b.kind === 'couple'
+        && b.members.includes(x) && b.members.includes(y));
+      if (!bloc || bloc.members.includes(plotter)) continue;
+      // They are talking about it, so they can see it.
+      learnAbout(plotter, bloc, 0.45, 'watched them');
+      if (e.type !== 'showmanceTarget') continue;
+      const aim = pointOfAttack(plotter, bloc);
+      if (!aim) continue;
+      setBBTarget(plotter, aim.target, `to break up ${bloc.label}`, { week });
+      rememberStrategy(plotter, aim.target, 'bloc-threat', week.num, 2,
+        { format: 'big-brother', about: bloc.label });
+      consequences.push({ plotter, target: aim.target, why: aim.why });
+    } catch { /* the couple has already broken up, or the house has moved on */ }
+  }
+  week.coupleTargets = consequences;
+
+  return ep.campEvents.merge.pre.map(e => {
+    const hit = e.type === 'showmanceTarget'
+      && consequences.find(c => c.plotter === (e.players || [])[0]);
+    return {
+      text: bbRomanceText(e) + (hit ? ` ${hit.plotter} settles on ${hit.target} — ${hit.why}.` : ''),
+      players: (e.players || []).filter(Boolean),
+      badgeText: hit ? 'A NAME, NOT A COMPLAINT' : (e.badgeText || 'SHOWMANCE'),
+      badgeClass: hit ? 'red' : (e.badgeClass || 'gold'),
+      eventId: `romance-${e.type || 'beat'}`, category: 'social', location: 'bedroom',
+    };
+  }).filter(b => b.text);
 }
 
 
@@ -354,6 +392,10 @@ function runHouseMaintenance(week) {
     ['social status', () => updateSocialStatus(ep)],
     ['edit layer', () => updateEditLayer(ep)],
     ['adaptation', () => updateAdaptationFromEpisode(ep)],
+    // The tally is the one piece of evidence about a bloc that needs no trust
+    // in anybody: a group can be careful in the kitchen for a month and then
+    // put four votes on the same name twice.
+    ['vote tells', () => { week.voteTells = readVoteTells(ep.votingLog, gs.activePlayers || []); }],
   ];
   // Same guard as the romance and scheme bridges: these are shared Total Drama
   // systems and several of them write gs.popularity directly rather than
@@ -509,6 +551,16 @@ export function simulateBBWeek(options = {}) {
   if (house.length < 4) throw new Error('The standard Big Brother week engine requires at least four houseguests.');
   ensureBBState();
   const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
+
+  // A week of living in the same building, before anybody does anything.
+  //
+  // This runs FIRST because what the house has worked out about its own power
+  // structures is an input to the week, not a summary of it: nominations, the
+  // veto and the vote all read targets, and targets come from somebody having
+  // noticed a group. Reading the tells from the last vote happens at the other
+  // end, in the upkeep, which is the right order — you learn from a vote after
+  // you have watched it.
+  try { week.blocReads = observeBlocs({ house, rng }); } catch { week.blocReads = []; }
 
   /**
    * Twists change the SHAPE of a week, not just its numbers.

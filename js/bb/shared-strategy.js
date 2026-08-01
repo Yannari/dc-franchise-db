@@ -8,6 +8,7 @@ import { getRelationshipDimensions } from '../relationships.js';
 import { pitchTrust, tacticalCooperation, targetProtection } from '../relationships.js';
 import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
+import { visibleCentrality } from './blocs.js';
 import {
   evaluatePitchResponse, propagatePitchLeaks,
   resolveCompetingPitches, resolvePitchCounterplay,
@@ -181,14 +182,24 @@ export function bbThreatProfile(name) {
   // The loudest early signal there is: what the house has decided about you.
   const friction = clamp(suspicion, 0, 6) * 0.62;
 
-  // Being at the middle of things. Two alliances is a spider; an obvious pair
-  // is a unit that votes twice, and the house reads both long before it can
-  // read anybody's cleverness.
+  // Being at the middle of things.
+  //
+  // This used to be `alliances.length * 0.55`, which got two things wrong at
+  // once. Size did not count, so sitting at the centre of a six that had run
+  // the last four evictions was worth exactly what belonging to two loose pairs
+  // was worth. And visibility did not count either, so a secret alliance made
+  // its members threats to a house that had no idea it existed — which meant
+  // keeping one quiet was worth nothing at all.
+  //
+  // Both now come from the bloc layer: how much of the room a group actually
+  // controls, weighted by how many people outside it have worked out that it is
+  // there. A quiet operator reads quiet until somebody counts the votes.
   const alliances = (gs.namedAlliances || []).filter(a =>
     a.active !== false && (a.members || []).includes(name));
   const paired = (gs.showmances || []).some(sh => !sh.broken && (sh.players || []).includes(name))
     || bonds.some(v => v >= 7);
-  const centrality = alliances.length * 0.55 + (paired ? 0.7 : 0);
+  let centrality = 0;
+  try { centrality = visibleCentrality(name); } catch { centrality = alliances.length * 0.55; }
 
   // Votes that kept landing on the person who left. Demonstrated, not assumed.
   const history = gs.episodeHistory || [];

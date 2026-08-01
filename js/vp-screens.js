@@ -12,6 +12,7 @@ import { bKey } from './bonds.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
+import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
@@ -17760,6 +17761,36 @@ function _bbStories(ep, stillIn) {
     }
   }
 
+  // ── the house organising against a group ──
+  //
+  // The biggest story most weeks of a real season, and the one the gazette had
+  // no way to tell: somebody worked out what the house is made of and started
+  // taking it apart.
+  const blowup = beats.find(x => x.eventId === 'bloc-blowup' && x.badgeText === 'SAID OUT LOUD');
+  if (blowup) {
+    add(90, 'split', 'IT IS OUT',
+      `${(blowup.players || [])[0]} says it in front of everybody`,
+      String(blowup.text || '').split('. ')[0] + '. There is no unhearing it, and the group has to play the rest of the season as a group.',
+      blowup.players);
+  }
+  const plan = beats.find(x => x.eventId === 'bloc-target-picked');
+  if (plan && !blowup) {
+    const [plotter, mark] = plan.players || [];
+    add(66, 'split', 'THE PLAN',
+      `${plotter} picks ${mark}`,
+      String(plan.text || '').split('. ').slice(0, 2).join('. ') + '.',
+      plan.players);
+  }
+  const recruit = beats.find(x => x.eventId === 'bloc-recruit' && /ON BOARD/.test(x.badgeText || ''));
+  if (recruit) {
+    briefs.push(`${(recruit.players || [])[0]} spent the day counting, and the numbers moved.`);
+  }
+  const notBelieved = beats.find(x => x.eventId === 'bloc-told' && x.badgeText === 'NOT BELIEVED');
+  if (notBelieved) {
+    const [teller, listener] = notBelieved.players || [];
+    briefs.push(`${teller} told ${listener} the truth about the house. ${listener} did not believe it.`);
+  }
+
   // ── the feud ──
   const feud = beats.find(x => /CONFRONT|BLOW|FURIOUS|SHOUT|RAGE|GRUDGE|EXPOSED|CAUGHT/.test(x.badgeText || ''));
   if (feud) {
@@ -18125,6 +18156,54 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     </div>`).join('')
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody changed their mind this week.</div>`;
 
+  // ── What the house is actually made of, and who can see it ──
+  //
+  // Couples and alliances are the same object to everybody outside them: a set
+  // of votes that arrive together. Both were driving the game and neither was
+  // drawn, so the one number that decides whether a group is safe — how many
+  // people have worked out it exists — was invisible. A secret four and a four
+  // the whole house has been shouting about looked identical on this screen and
+  // behaved identically in the threat model.
+  let blocRows = [];
+  try {
+    blocRows = (typeof listBlocs === 'function' ? listBlocs() : [])
+      .filter(b => (b.members || []).every(m => stillIn.includes(m)));
+  } catch { blocRows = []; }
+
+  const blocBody = blocRows.length ? blocRows.map(b => {
+    const seen = (() => { try { return blocExposure(b); } catch { return 0; } })();
+    const pct = Math.round(seen * 100);
+    const state = seen >= 0.8 ? { label: 'EVERYBODY KNOWS', color: '#f85149' }
+      : seen >= 0.5 ? { label: 'AN OPEN SECRET', color: '#d29922' }
+      : seen >= 0.25 ? { label: 'SUSPECTED', color: '#58a6ff' }
+      : { label: 'STILL SECRET', color: '#3fb950' };
+    // Who is hunting somebody because of THIS group.
+    // Matched on the group NAMED in the reason, not merely on the target being
+    // a member — somebody in three alliances would otherwise show up as a hunt
+    // against all three, which reads as the house ganging up on one group when
+    // it is one plan against one of them.
+    const hunters = Object.entries(intentions || {})
+      .filter(([who, plan]) => !b.members.includes(who)
+        && b.members.includes(plan?.targets?.[0])
+        && String(plan?.origins?.targets?.[plan.targets[0]] || '')
+          .includes(`break up ${b.label}`))
+      .map(([who, plan]) => ({ who, target: plan.targets[0] }));
+    return `<div class="bbb-row" style="border-left:2px solid ${state.color}">
+      <div class="bbb-head">
+        <span class="bbb-kind">${b.kind === 'couple' ? 'COUPLE' : 'ALLIANCE'}</span>
+        <strong>${_bbEsc(b.label)}</strong>
+        <span class="bbb-state" style="color:${state.color}">${state.label}</span>
+      </div>
+      <div class="bbb-faces">${b.members.map(m => _bbAvatar(m, 22)).join('')}
+        <span class="bbb-votes">${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
+      <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
+        <span>${pct}% of the house outside it has worked it out</span></div>
+      ${hunters.length ? `<div class="bbb-hunt">${hunters.map(h =>
+        `${_bbEsc(h.who)} is coming for ${_bbEsc(h.target)} to break it up`).join(' &middot; ')}</div>` : ''}
+    </div>`;
+  }).join('')
+    : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody has grouped up into anything the house can point at yet.</div>`;
+
   // The front page. On the closing screen it is this week's; on the opening one
   // there is nothing to report yet, so it runs last week's — which is exactly
   // what somebody arriving at the top of an episode wants to be reminded of.
@@ -18149,6 +18228,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('plan', 'WHAT EVERYBODY IS PLAYING FOR', '#d29922', planBody)}
     ${section('deal', `PROMISED THE END (${live.length}${brokenBody ? `, ${(ep.dealBreaks || []).length} broken` : ''})`, '#e3b341', brokenBody + dealBody)}
+    ${section('bloc', `POWER STRUCTURES (${blocRows.length})`, '#d2a8ff', blocBody)}
     ${section('all', `ALLIANCES (${alliances.length})`, '#58a6ff', allianceBody)}
     ${section('rel', 'RELATIONSHIPS THAT MATTER', '#3fb950', relBody)}
     ${section('hunt', `WHO IS COMING FOR WHOM (${hunts.length})`, '#f85149', targetBody)}
@@ -18464,6 +18544,27 @@ export function rpBuildBBDebug(ep) {
       // numbers; a line of zeroes per person is clutter, not information.
       return dbgNote(`${_bbEsc(n)} — competition record: HOH ${rec.hohWins || 0}  ·  veto ${rec.vetoWins || 0}  ·  block buster ${rec.blockBusterWins || 0}  ·  nominated ${rec.timesNominated || 0}  ·  saved ${rec.timesSaved || 0}  ·  on the block ${rec.timesOnTheBlock || 0}`);
     }).join(''));
+
+    // The bloc arithmetic, spelled out. Centrality is the term that moved from
+    // `alliances.length * 0.55` to something size-aware and visibility-scaled,
+    // and a number that changed that much should be checkable rather than
+    // trusted.
+    let blocs = [];
+    try { blocs = listBlocs().filter(b => (b.members || []).every(m => house.includes(m))); } catch { blocs = []; }
+    if (blocs.length) {
+      html += dbgPanel('POWER STRUCTURES', 'purple',
+        dbgNote('power = share of the house × how well it holds × size. exposure = mean knowledge among everybody outside it. A group nobody has noticed contributes nothing to its members’ threat.')
+        + blocs.map(b => {
+          const seen = (() => { try { return blocExposure(b); } catch { return 0; } })();
+          const knownBy = house.filter(n => !b.members.includes(n) && (() => {
+            try { return knowledgeOf(n, b.id) >= 0.5; } catch { return false; }
+          })());
+          return dbgNote(`${_bbEsc(b.label)} (${b.kind}) — ${b.members.length} votes  ·  `
+            + `share ${(b.share * 100).toFixed(0)}%  ·  holds ${b.loyalty.toFixed(2)}  ·  `
+            + `power ${b.power.toFixed(2)}  ·  exposure ${(seen * 100).toFixed(0)}%  ·  `
+            + `${knownBy.length ? `sure of it: ${knownBy.map(_bbEsc).join(', ')}` : 'nobody outside is sure'}`);
+        }).join(''));
+    }
   }
 
   // ── Beats & effects ───────────────────────────────────────────────

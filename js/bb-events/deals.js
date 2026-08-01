@@ -153,6 +153,7 @@ const votePitch = {
   id: 'deals-vote-pitch',
   category: 'deals',
   weight(house, ctx) {
+    if (ctx?.act === 'eviction') return 0;
     const pair = _pitchPair(house, ctx);
     if (!pair) return 0;
     const s = pStats(pair.pitcher);
@@ -227,9 +228,11 @@ const brokenPromise = {
 const safetyDeal = {
   id: 'deals-safety',
   category: 'deals',
+  location: 'hoh-room',
   weight(house, ctx) {
     const pair = _safetyPair(house, ctx);
-    if (!pair || ctx.act === 'eviction') return 0;
+    const beforeNominations = ctx?.phase === 'post-hoh' || ctx?.act === 'hoh';
+    if (!pair || !beforeNominations) return 0;
     // You buy safety from the person most able to take it from you.
     return _w(band(4 + threat(pair.other) * 0.5), ctx);
   },
@@ -238,10 +241,10 @@ const safetyDeal = {
     const p = pronouns(other);
     const honest = !willScheme(hoh);
     const text = _variant([
-      `"One week. You don't come after me, I don't come after you." ${other} takes the deal because the alternative is finding out what happens without it.`,
-      `${other} asks ${hoh} for a private talk before nominations. ${hoh} agrees and closes the door behind them.`,
-      `They agree not to nominate each other next week, an agreement that has never once survived contact with a veto ceremony, and shake on it anyway.`,
-      `It takes about ninety seconds and neither of them says the word "deal" at any point.`,
+      `In the HOH room, ${other} offers one quiet week: no nomination now, no retaliation if ${other} wins next. ${hoh} repeats the terms before shaking on it.`,
+      `${other} asks ${hoh} directly whether ${other} is going up. ${hoh} says no—if ${other} leaves ${hoh} alone next week. ${other} agrees before the offer can change.`,
+      `${hoh} tells ${other}, “You keep my name out of next week, and I keep yours out of the box.” ${other} asks whether that includes a replacement nomination. It does. They shake on it.`,
+      `${other} enters the HOH room expecting to plead. Instead, ${hoh} offers safety in exchange for one week without a shot coming back. ${other} accepts, then asks to hear the promise once more.`,
     ], ctx, hoh, other);
 
     api.addBond(hoh, other, 0.9);

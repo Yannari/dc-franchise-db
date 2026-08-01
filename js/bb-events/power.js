@@ -612,7 +612,7 @@ const vetoDrawLobby = {
   weight(house, ctx) {
     const hoh = _hoh(ctx);
     // Between the nominations and the veto: the only window this makes sense in.
-    const window = ctx?.phase === 'post-noms' || ctx?.act === 'nominations' || ctx?.act === 'veto';
+    const window = ctx?.phase === 'post-noms' || ctx?.act === 'nominations';
     return hoh && window && _noms(ctx).length && house.length >= 6 ? band(8) : 0;
   },
   fire(house, ctx, api, rng) {
@@ -629,7 +629,7 @@ const vetoDrawLobby = {
       `${asker} makes the case that ${p.sub} is the safest pair of hands for that veto. ${hoh} agrees, and both of them know what has just been traded.`,
     ], ctx, hoh, asker) : _variant([
       `${asker} lobbies to be in the veto draw. ${hoh} makes no promises, and the lack of one is deafening.`,
-      `"I'd rather it was somebody neutral." ${asker} hears the word neutral and understands it means not you.`,
+      `${hoh} says, “I'd rather choose somebody neutral.” ${asker} hears the word clearly: ${hoh} does not trust ${pronouns(asker).obj} with the veto.`,
       `${asker} asks ${hoh} to choose them if Houseguest's Choice is drawn. ${hoh} says, “We'll see what happens,” and changes the subject.`,
     ], ctx, hoh, asker);
 
@@ -665,7 +665,7 @@ const vetoPromise = {
     const holder = ctx?.vetoWinner || ctx?.week?.vetoWinner;
     const noms = _noms(ctx);
     if (!holder || !noms.length || noms.includes(holder)) return 0;
-    return ['post-veto', 'campaign'].includes(ctx?.phase) || ctx?.act === 'veto-ceremony' ? band(9) : 0;
+    return ctx?.phase === 'post-veto' || ctx?.act === 'veto' ? band(9) : 0;
   },
   fire(house, ctx, api) {
     const holder = ctx.vetoWinner || ctx.week?.vetoWinner;

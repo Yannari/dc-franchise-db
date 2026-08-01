@@ -16655,7 +16655,7 @@ export function rpBuildBBNominations(ep) {
     }
     if (step.kind === 'open') {
       return `<div class="bbns-card is-open">
-        <div class="bbns-card-h"><span class="bbns-pill grey">THE CEREMONY BEGINS</span></div>
+        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill grey">THE CEREMONY BEGINS</span></div>
         <div class="bbns-card-b">${openLine}</div></div>`;
     }
     if (step.kind === 'key') {
@@ -16671,7 +16671,7 @@ export function rpBuildBBNominations(ep) {
     }
     if (step.kind === 'complete') {
       return `<div class="bbns-card is-final">
-        <div class="bbns-card-h"><span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
+        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
         <div class="bbns-card-b">"${noms.join(', ')} — I have nominated you for eviction because that is my
           responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."</div></div>`;
     }

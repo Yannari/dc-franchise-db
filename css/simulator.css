@@ -746,9 +746,16 @@
     [class*="rp-set-"] .rp-page { --accent-gold: var(--set-accent, #f0c040); }
     /* motif layer + keep content above it */
     [class*="rp-set-"] .rp-page { position: relative; }
-    [class*="rp-set-"] .rp-page > * { position: relative; z-index: 1; }
+    /* The motif sits BEHIND the content on its own, at a negative z-index.
+       This used to be done by forcing `position: relative; z-index: 1` onto
+       every direct child of .rp-page — which works for layering and quietly
+       overrides any position a screen sets on one of those children. Every
+       sticky header and every pinned control in the player was being reset to
+       `relative` by it, in both shows, because the rule is more specific than
+       the screen's own. A negative-z pseudo-element paints above the page's
+       background and below its content without positioning anything. */
     [class*="rp-set-"] .rp-page::before {
-      content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+      content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
       opacity:.5; mix-blend-mode:screen; background-size:cover; }
     @media (prefers-reduced-motion: reduce) { [class*="rp-set-"] .rp-page::before { animation:none; } }
     /* 🏠 the house — camera grid and the red glow of a live feed */

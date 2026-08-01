@@ -4,6 +4,7 @@ import { getBond } from '../js/bonds.js';
 import { getRelationshipDimensions } from '../js/relationships.js';
 import { memoriesAbout } from '../js/strategy-memory.js';
 import { createHouseEventApi, houseEventState, scheduleHouseBeats } from '../js/bb/house-events.js';
+import { beatsInvolving } from '../js/bb-events/_read.js';
 import { chooseNominationPlan } from '../js/bb/strategy.js';
 import { simulateBBWeek } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
@@ -235,5 +236,58 @@ describe('beats say what they changed', () => {
     // everything that happened all act.
     const counts = beats.map(b => (b.effects || []).length);
     expect(Math.max(...counts), 'one card absorbed the whole act').toBeLessThan(8);
+  });
+});
+
+// A week must not get slower because the season got longer.
+//
+// beatsInvolving() is called from roughly seventy places in the event library,
+// almost all inside weight(), which runs for every event on every beat. While
+// it scanned the whole event history the cost of a week was proportional to
+// everything that had ever happened: episode one took 1.1s and episode six took
+// 5.9s, with the same number of beats and FEWER houseguests in the house.
+describe('a week costs the same in week ten as in week one', () => {
+  beforeEach(() => seedGame(CAST, { episode:0, eliminated:[], namedAlliances:[], popularity:{}, showmances:[], romanticSparks:[] }));
+
+  it('counts screen time instead of re-reading the season', () => {
+    // The tally is derived state; it has to agree with the thing it summarises,
+    // or the fairness weighting silently drifts as a season goes on.
+    const week = { num: 1 };
+    scheduleHouseBeats(TEN_EVENTS, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week }, { rng: rng(5), min: 10, max: 10 });
+    const history = houseEventState().eventHistory || [];
+    for (const name of gs.activePlayers) {
+      const scanned = history.filter(h => (h.players || []).includes(name)).length;
+      expect(beatsInvolving(name), `${name}: tally disagrees with the history`).toBe(scanned);
+    }
+  });
+
+  it('rebuilds the tally when the history changes underneath it', () => {
+    // A loaded save, or anything appending without going through recordBeat.
+    const week = { num: 1 };
+    scheduleHouseBeats(TEN_EVENTS, [...gs.activePlayers],
+      { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week }, { rng: rng(7), min: 4, max: 4 });
+    const before = beatsInvolving('A');
+    houseEventState().eventHistory.push({ week: 1, act: 'hoh', eventId: 'smuggled-in', players: ['A'] });
+    expect(beatsInvolving('A'), 'the tally went stale against its own history').toBe(before + 1);
+  });
+
+  it('does not get slower as the history grows', () => {
+    // A smoke alarm, not a benchmark — the regression it exists for was five
+    // times and climbing, so the threshold is deliberately loose enough to
+    // survive a loaded machine.
+    const time = (weekNum, seed) => {
+      const t0 = performance.now();
+      scheduleHouseBeats(TEN_EVENTS, [...gs.activePlayers],
+        { act:'hoh', hoh:'A', nominees:[], vetoWinner:null, week:{ num: weekNum } },
+        { rng: rng(seed), min: 10, max: 10 });
+      return performance.now() - t0;
+    };
+    const early = time(1, 5);
+    for (let w = 2; w < 22; w++) time(w, w * 13);   // pile up ~200 beats of history
+    const late = time(22, 99);
+    expect(houseEventState().eventHistory.length).toBeGreaterThan(180);
+    expect(late, `a week costs ${late.toFixed(0)}ms after 200 beats vs ${early.toFixed(0)}ms at the start`)
+      .toBeLessThan(Math.max(40, early * 4));
   });
 });

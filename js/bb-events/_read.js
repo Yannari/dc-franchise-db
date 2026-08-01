@@ -362,9 +362,36 @@ export const hasFired = eventId => history().some(h => h.eventId === eventId);
 export const firedThisWeek = (eventId, weekNum) =>
   history().some(h => h.eventId === eventId && h.week === weekNum);
 
-/** How many times this player has already been at the centre of a beat. */
-export const beatsInvolving = name =>
-  history().filter(h => (h.players || []).includes(name)).length;
+/**
+ * How many times this player has already been at the centre of a beat.
+ *
+ * Counted, not scanned. This used to filter the entire event history on every
+ * call, and it is called from roughly seventy places across the event library —
+ * almost all of them inside weight(), which runs for all ninety-six events on
+ * every one of the ~130 beats in a week. That made the cost of a week
+ * proportional to everything that had ever happened in the season: measured,
+ * episode one took 1.1s and episode six took 5.9s, with the same number of
+ * beats and FEWER houseguests. By the end of a season it is unusable.
+ *
+ * The tally is derived state, so it is rebuilt whenever it does not match the
+ * history it claims to summarise — a loaded save, or anything that appends
+ * without going through recordBeat().
+ */
+function beatCounts() {
+  const state = houseEventState();
+  const hist = state.eventHistory || [];
+  if (!state._beatCounts || state._beatCountsAt !== hist.length) {
+    const counts = {};
+    for (const entry of hist) {
+      for (const name of entry.players || []) counts[name] = (counts[name] || 0) + 1;
+    }
+    state._beatCounts = counts;
+    state._beatCountsAt = hist.length;
+  }
+  return state._beatCounts;
+}
+
+export const beatsInvolving = name => beatCounts()[name] || 0;
 
 // ── archetype behaviour, mirroring the franchise rules ────────────────
 

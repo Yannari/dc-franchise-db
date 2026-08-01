@@ -245,6 +245,26 @@ function _worldMoved(before) {
   return out;
 }
 
+
+/**
+ * Append to the history AND keep the derived tallies in step.
+ *
+ * beatsInvolving() reads a running count rather than scanning, so the count has
+ * to move when the history does. It is also rebuilt on a length mismatch, which
+ * makes this an optimisation rather than a correctness requirement — but going
+ * around it silently costs the whole season a rebuild per call.
+ */
+function recordBeat(entry) {
+  const state = ensureState();
+  state.eventHistory.push(entry);
+  if (state._beatCounts && state._beatCountsAt === state.eventHistory.length - 1) {
+    for (const name of entry.players || []) {
+      state._beatCounts[name] = (state._beatCounts[name] || 0) + 1;
+    }
+    state._beatCountsAt = state.eventHistory.length;
+  }
+}
+
 function weightedPick(eligible, rng) {
   const total = eligible.reduce((sum, entry) => sum + entry.weight, 0);
   if (total <= 0) return null;
@@ -338,7 +358,7 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
     const result = validateBeat(event, event.fire(house, beatCtx, api, rng), beatCtx);
     result.effects = [...api._drainLedger(), ..._worldMoved(worldBefore)];
     fired.push(result);
-    ensureState().eventHistory.push({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
+    recordBeat({ week: ctx.week?.num || 0, act: ctx.act, eventId: event.id, players: [...result.players] });
   }
   return fired;
 }

@@ -372,8 +372,179 @@ const showmanceDomestic = {
   },
 };
 
+/**
+ * Somebody calls a house meeting, and it is nobody's week to call one.
+ *
+ * The Head of Household version lives in reign.js and is a specific failure of
+ * power. This is the commoner one: anybody can stand up in the living room, and
+ * the reason it is famous is that it almost never works. A house meeting takes
+ * a problem two people had and makes it a problem eleven people have opinions
+ * about, in front of the person it is about, with no way to walk any of it back.
+ *
+ * Grounded rather than random. There has to be an actual grievance behind it —
+ * a live lie somebody is carrying, a nominee with nothing left to lose, or a
+ * grudge that has stopped fitting in a bedroom — because a meeting called about
+ * nothing is the one version of this that never happens.
+ *
+ * Three ways it goes, decided by whether the caller has a real case and the
+ * composure to make it:
+ *
+ *   lands       — the person they named has to answer in front of everybody
+ *   fizzles     — everybody agrees to be nicer and nothing whatsoever changes
+ *   backfires   — the house closes ranks and the caller becomes the story
+ *   nobody talks — the subject is standing right there, so the room says
+ *                  nothing at all, which tells everybody who the room belongs to
+ */
+const houseMeeting = {
+  id: 'life-house-meeting',
+  category: 'house-life',
+  location: 'living-room',
+  weight(house, ctx) {
+    if (house.length < 6) return 0;
+    // Once a week at the very most. They are memorable because they are rare,
+    // and a house that holds two of them is a sitcom.
+    if (ctx?.week?._houseMeetingCalled) return 0;
+    // The meeting IS the scene, so it needs a room with nothing else happening
+    // in it — never during a ceremony or on eviction night.
+    if (['nominations', 'veto-ceremony', 'eviction'].includes(ctx?.act)) return 0;
+    return _meetingCaller(house, ctx) ? _w(2.6, ctx) : 0;
+  },
+  fire(house, ctx, api) {
+    const call = _meetingCaller(house, ctx);
+    if (ctx?.week) ctx.week._houseMeetingCalled = true;
+    if (!call) {
+      return { text: 'Somebody thinks about calling a house meeting and has the sense not to.',
+        players: [], badgeText: 'THOUGHT BETTER OF IT', badgeClass: 'grey' };
+    }
+    const { caller, about, cause } = call;
+    const room = _others(house, caller);
+    const p = pronouns(caller);
+    const stats = pStats(caller);
+
+    // Composure separates an accusation from a meltdown; having an actual case
+    // separates it from a rant. It needs both.
+    const composed = stats.temperament >= 5 && stats.social >= 5;
+    const hasACase = cause === 'lie' || cause === 'grudge';
+
+    // And before any of that: will the room actually speak?
+    //
+    // The Frank Eudy version, which is the one nobody expects. He called a
+    // meeting to get the house on the same page, and everybody came — which was
+    // the problem, because the person the meeting was about came too, and
+    // nobody would say a word in front of them. A house meeting is public by
+    // definition and that is exactly what makes it useless against somebody the
+    // room is frightened of.
+    // Both, not either. Being a threat is not enough — plenty of threats get
+    // shouted at. The room goes quiet when the person is dangerous AND a good
+    // part of the room is tied to them, which is when speaking up costs
+    // something real. Gated on either, this swallowed seven meetings in ten.
+    const tied = _others(house, caller, about).filter(n => bond(n, about) >= 3).length;
+    const feared = threat(about) >= 6.5 && tied >= Math.ceil(room.length / 3);
+    const outcome = feared ? 'nobody talks'
+      : composed && hasACase ? 'lands'
+      : composed ? 'fizzles' : 'backfires';
+
+    const text = outcome === 'nobody talks' ? _variant([
+      `Somebody shouts "HOUSE MEETING" and everybody comes, which turns out to be the problem. ${about} comes too, sits down, and says nothing, and so does everybody else.`,
+      `${caller} gets the whole house into one room and then discovers what a whole house in one room means: ${about} is in it. Three people who agreed with ${caller} an hour ago study the floor.`,
+      `The meeting cannot happen. Not because nobody agrees with ${caller} — because agreeing out loud, with ${about} four feet away, costs more than any of them want to pay.`,
+      `${caller} asks the room a direct question and the room looks at ${about} before answering it. That is the entire meeting, and everybody understood it.`,
+    ], ctx, caller, about) : outcome === 'lands' ? _variant([
+      `${caller} asks everybody to sit down, then asks ${about} one question, slowly, in front of the whole house. ${about} answers it twice and the two answers are different.`,
+      `It is not a rant. ${caller} lays out what ${about} said, who ${about} said it to and when, then stops talking and lets the room do the rest.`,
+      `${caller} calls the meeting and spends the first minute making clear this is not about ${p.obj}. By the end nobody is looking at ${caller} at all; they are all looking at ${about}.`,
+    ], ctx, caller, about) : outcome === 'fizzles' ? _variant([
+      `${caller} calls a house meeting about respect and the washing up. Everybody agrees. Nothing changes. It is over in four minutes and mentioned for a week.`,
+      `The meeting produces a general commitment to communicate better, which lasts until roughly nine that evening.`,
+      `${caller} says ${p.posAdj} piece, several people say theirs, everybody agrees the house is better than this, and not one person's plan is different afterwards.`,
+    ], ctx, caller, about) : _variant([
+      `${caller} calls the house together and loses the room in thirty seconds by starting with the word "everyone". By the end ${about} has said almost nothing and looks like the reasonable one.`,
+      `The meeting is meant to be about ${about}. It becomes about ${caller}, the way these always do, and the house closes around ${about} out of pure discomfort.`,
+      `${caller} has clearly been rehearsing this, which is the problem — it comes out rehearsed, and eleven people watch ${p.obj} perform something ${p.sub} should have said quietly to one person.`,
+      `Halfway through, ${caller} says "I'm not attacking anybody," which is the exact moment everybody in the room decides otherwise.`,
+    ], ctx, caller, about);
+
+    if (outcome === 'lands') {
+      room.filter(n => n !== about).forEach(n => {
+        api.suspicion(n, about, 0.9);
+        api.addBond(n, about, -0.4);
+        api.addBond(n, caller, 0.3);
+      });
+      api.remember(about, caller, 'humiliation', 2, { at: 'a house meeting' });
+      api.popDelta(caller, 2);
+      api.popDelta(about, -2);
+    } else if (outcome === 'backfires') {
+      // The room bonds over the discomfort, which is the whole danger of it.
+      room.forEach(n => {
+        api.suspicion(n, caller, 0.8);
+        api.addBond(n, caller, -0.7);
+      });
+      room.forEach((a, i) => { const b = room[i + 1]; if (b) api.addBond(a, b, 0.4); });
+      if (about) api.addBond(about, caller, -1.2);
+      api.remember(caller, about, 'humiliation', 2, { at: 'a house meeting' });
+      api.popDelta(caller, -2);
+    } else if (outcome === 'nobody talks') {
+      // Nothing is said, and everybody learns something anyway: how much of
+      // this room belongs to the person nobody would speak in front of.
+      api.addBond(caller, about, -0.8);
+      room.filter(n => n !== about).forEach(n => {
+        api.suspicion(n, about, 0.5);
+        api.remember(n, about, 'nobody-would-speak', 1, { at: 'a house meeting' });
+      });
+      api.popDelta(caller, -1);
+      api.popDelta(about, 1);
+    } else {
+      room.forEach(n => api.addBond(n, caller, 0.15));
+      api.popDelta(caller, 1);
+    }
+
+    return {
+      text, players: [caller, about].filter(Boolean),
+      badgeText: outcome === 'lands' ? 'THEY HAD RECEIPTS'
+        : outcome === 'backfires' ? 'THE ROOM TURNS'
+        : outcome === 'nobody talks' ? 'NOBODY WILL SAY IT' : 'NOTHING CHANGES',
+      badgeClass: outcome === 'lands' ? 'orange'
+        : outcome === 'backfires' ? 'red'
+        : outcome === 'nobody talks' ? 'blue' : 'grey',
+    };
+  },
+};
+
+/**
+ * Who would call one, and about what.
+ *
+ * In order of how likely each is to get somebody on their feet: a person who
+ * has been lied about and knows it, a nominee with nothing left to lose, and a
+ * grudge that has outgrown a private conversation.
+ */
+function _meetingCaller(house, ctx) {
+  const noms = ((ctx?.nominees && ctx.nominees.length ? ctx.nominees
+    : (ctx?.week?.finalNominees || [])) || []).filter(n => house.includes(n));
+
+  for (const claim of (gs.bb?.falseClaims || [])) {
+    if (!house.includes(claim.mark) || !house.includes(claim.liar)) continue;
+    if (suspicionOf(claim.mark, claim.liar) < 1.5) continue;
+    return { caller: claim.mark, about: claim.liar, cause: 'lie' };
+  }
+
+  for (const nom of _leastSeen(noms)) {
+    if (pStats(nom).boldness < 6) continue;
+    const enemy = furthestFrom(nom, _others(house, nom));
+    if (enemy) return { caller: nom, about: enemy, cause: 'nothing-to-lose' };
+  }
+
+  for (const name of _leastSeen(house)) {
+    const worst = _others(house, name)
+      .filter(other => grudge(name, other) >= 3)
+      .sort((a, b) => grudge(name, b) - grudge(name, a))[0];
+    if (worst) return { caller: name, about: worst, cause: 'grudge' };
+  }
+  return null;
+}
+
 export const HOUSE_LIFE_EVENTS = [
   haveNots,
+  houseMeeting,
   prank,
   chores,
   diaryRoom,

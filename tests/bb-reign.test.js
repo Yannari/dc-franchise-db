@@ -23,6 +23,7 @@ import {
   reignTemperament, scoreReign, recordReign, lastReign, reignHeat, reignMadeAnEnemy,
 } from '../js/bb/reign.js';
 import { bbHeat } from '../js/bb/shared-strategy.js';
+import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
@@ -161,5 +162,67 @@ describe('it happens in a real season', () => {
     expect(bad, 'every single reign went well').toBeGreaterThan(0);
     expect(wentUp, 'a bad week never once cost anybody').toBeGreaterThan(0);
     expect(fired.size, 'none of the reign scenes fired').toBeGreaterThan(2);
+  }, 180000);
+});
+
+// ── and the meeting anybody can call ──────────────────────────────────
+//
+// The HOH version above is a failure of power. This is the commoner one, and
+// the reason it is famous is that it almost never works: it takes a problem two
+// people had and makes it a problem eleven people have opinions about, in front
+// of the person it is about.
+//
+// Four outcomes, and the one worth having is drawn from Frank Eudy calling a
+// meeting in season eighteen — everybody came, which was the problem, because
+// the person it was about came too and nobody would say a word in front of them.
+describe('anybody can call a house meeting', () => {
+  it('needs a real grievance behind it', () => {
+    house();
+    const meeting = HOUSE_EVENTS.find(e => e.id === 'life-house-meeting');
+    const ctx = { act: 'house', beat: 0, week: { num: 2, finalNominees: [] } };
+    // A house with no grudges, no lies and no bold nominee has nothing to hold
+    // a meeting about, and holds none.
+    expect(meeting.weight(NAMES, ctx)).toBe(0);
+  });
+
+  it('fires at most once a week', () => {
+    house();
+    const meeting = HOUSE_EVENTS.find(e => e.id === 'life-house-meeting');
+    const week = { num: 2, finalNominees: [], _houseMeetingCalled: true };
+    expect(meeting.weight(NAMES, { act: 'house', beat: 0, week })).toBe(0);
+  });
+
+  it('stays out of the ceremonies and eviction night', () => {
+    house();
+    // Somebody with a real grudge, so the only thing stopping it is the act.
+    gs.bb.falseClaims = [{ liar: 'Chase', mark: 'Bowie', kind: 'double-dealing',
+      week: 1, believers: [], exposed: false }];
+    gs.bb.house = { suspicion: { 'Bowie→Chase': 4 }, targets: {}, memories: {}, eventHistory: [] };
+    const meeting = HOUSE_EVENTS.find(e => e.id === 'life-house-meeting');
+    const week = { num: 2, finalNominees: ['Zee', 'Caleb'] };
+    for (const act of ['nominations', 'veto-ceremony', 'eviction']) {
+      expect(meeting.weight(NAMES, { act, beat: 0, week }), `${act} should own its own room`).toBe(0);
+    }
+    expect(meeting.weight(NAMES, { act: 'house', beat: 0, week })).toBeGreaterThan(0);
+  });
+
+  it('produces all four outcomes across a run of seasons', () => {
+    const seen = new Set();
+    for (let season = 0; season < 4; season++) {
+      house();
+      let guard = 0;
+      while (!houseIsAtFinale() && guard++ < 12) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        for (const act of ep.acts || []) {
+          for (const beat of act.socialBeats || []) {
+            if (beat.eventId === 'life-house-meeting') seen.add(beat.badgeText);
+          }
+        }
+      }
+    }
+    expect(seen.size, `only saw: ${[...seen].join(', ')}`).toBeGreaterThan(1);
+    // The one that makes it worth having: the room refusing to speak.
+    expect([...seen].join(' ')).toMatch(/NOBODY WILL SAY IT|THE ROOM TURNS/);
   }, 180000);
 });

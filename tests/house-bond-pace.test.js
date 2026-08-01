@@ -122,3 +122,50 @@ describe('everybody gets to be in the show', () => {
       .toBeGreaterThan(1.5);
   });
 });
+
+// The transcript is the other way somebody reads a week.
+//
+// It had drifted from the screen in three ways at once: it still printed the
+// "HOH's intent — target / pawn / backdoor" line that was removed from the
+// visual player for spoiling the ceremony, it summarised the nomination
+// ceremony as one line of names rather than transcribing it, and it carried
+// raw <strong> tags into what is supposed to be plain text.
+describe('the transcript carries the whole week', () => {
+  it('is plain text', () => {
+    reset();
+    let ep = null;
+    for (let i = 0; i < 3; i++) ep = simulateBBEpisode();
+    const text = generateBBSummaryText(ep);
+    const tagged = text.split('\n').filter(l => /<[a-z/][^>]*>/i.test(l));
+    expect(tagged.length, `markup in the backlog: ${tagged[0] || ''}`).toBe(0);
+    expect(text, 'an HTML entity survived into plain text').not.toMatch(/&(amp|quot|lt|gt|#39);/);
+  }, 240000);
+
+  it('does not spoil the ceremony it is about to transcribe', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const text = generateBBSummaryText(ep);
+    expect(text, 'the transcript announces the private plan').not.toContain("HOH's intent");
+    const plan = ep.plan || {};
+    if (plan.backdoorTarget) {
+      const nomIdx = text.indexOf('NOMINATION CEREMONY');
+      const head = text.slice(0, nomIdx);
+      expect(head, 'the backdoor is given away before the ceremony').not.toContain('backdoor:');
+    }
+  }, 240000);
+
+  it('transcribes the ceremony rather than summarising it', () => {
+    reset();
+    const ep = simulateBBEpisode();
+    const act = (ep.acts || []).find(a => a.type === 'nominations');
+    const text = generateBBSummaryText(ep);
+    // The same script the screen runs.
+    expect(text).toContain('This is the nomination ceremony');
+    expect(text).toContain('their faces will appear on the memory wall');
+    expect(text).toContain('Nominations are complete');
+    for (const n of act.nominees || []) {
+      expect(text, `${n}'s key is never turned in the transcript`)
+        .toContain(`key. ${n}'s photograph turns on the memory wall`);
+    }
+  }, 240000);
+});

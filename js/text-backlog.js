@@ -4166,7 +4166,16 @@ const _BB_PHASE_TITLE = {
 export function generateBBSummaryText(ep) {
   if (ep.isFinale) return generateBBFinaleText(ep);
   const L = [];
-  const ln = s => L.push(s);
+  // A transcript is plain text. Beat prose is written for the screen and carries
+  // <strong> around every name, and those tags were going straight into the
+  // backlog — fourteen lines of a single week reading "<strong>B</strong> votes
+  // to evict <strong>H</strong>". Stripped once, here, so no caller has to
+  // remember to do it.
+  const plain = v => String(v ?? '')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+  const ln = s => L.push(plain(s));
   const sec = title => { ln(''); ln(title); ln('─'.repeat(Math.max(8, title.length))); };
   const beats = act => (act?.socialBeats || []).forEach(b =>
     ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
@@ -4279,12 +4288,39 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
-      case 'nominations':
+      case 'nominations': {
         sec('NOMINATION CEREMONY');
-        if (ep.plan?.target) ln(`  (HOH's intent — target: ${ep.plan.target}, pawn: ${ep.plan.pawn || '?'}${ep.plan.backdoorTarget ? `, backdoor: ${ep.plan.backdoorTarget}` : ''})`);
-        ln(`  Nominated: ${(act.nominees || []).join(' and ')}.`);
-        beats(act);
+        // No "HOH's intent — target / pawn / backdoor" line any more. It was
+        // removed from the screen for spoiling the ceremony and printing the
+        // one thing nobody in the house announces, and it had been left sitting
+        // in the transcript doing exactly the same damage.
+        //
+        // The ceremony itself is transcribed instead — the same script the
+        // visual player runs, because the backlog is meant to be a complete
+        // retranscription rather than a summary of one.
+        const nomNames = (act.nominees || []).filter(Boolean);
+        const nomWord = ['two', 'three', 'four', 'five'][Math.max(0, nomNames.length - 2)] || `${nomNames.length}`;
+        const nomHoh = ep.hoh || act.hoh || 'The Head of Household';
+        ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
+        ln(`  Household to nominate ${nomWord} people for eviction. In my nomination box are the keys`);
+        ln(`  of the houseguests I am nominating. I will turn ${nomWord} keys to lock in my`);
+        ln('  nominations, and their faces will appear on the memory wall."');
+        ln('');
+        nomNames.forEach((name, i) => {
+          const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
+          ln(`    ${nomHoh} turns the ${which} key. ${name}'s photograph turns on the memory wall.`);
+        });
+        ln('');
+        // The reasoning is a written event where the house produced one.
+        const spoken = (act.socialBeats || []).filter(b => String(b.eventId || '').startsWith('nom-speech'));
+        spoken.forEach(b => ln(`  [${b.badgeText || 'THE REASONING'}] ${b.text}`));
+        ln(`  ${nomHoh}: "${nomNames.join(', ')} — I have nominated you for eviction. This is the`);
+        ln('  nomination ceremony. Nominations are complete."');
+        // Everything else that happened in the room.
+        (act.socialBeats || []).filter(b => !spoken.includes(b))
+          .forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
         break;
+      }
 
       case 'veto':
         sec('POWER OF VETO');

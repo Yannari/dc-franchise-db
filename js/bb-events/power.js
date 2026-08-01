@@ -976,7 +976,14 @@ const backdoorPlan = {
     // Only once the block exists, and only when there is a real plan behind it.
     const hoh = _hoh(ctx);
     if (!hoh || !_blockKnown(ctx)) return 0;
-    return ctx?.week?.plan?.backdoorTarget ? band(13) : 0;
+    const real = ctx?.week?.plan?.backdoorTarget;
+    // A backdoor is putting somebody up who is NOT up. Once the target is on
+    // the block there is nothing left to explain, and the card was describing a
+    // plan to nominate a houseguest who had already been nominated.
+    if (!real || _noms(ctx).includes(real)) return 0;
+    // And the person holding the veto has to be somebody who might use it.
+    if (ctx?.vetoWinner === real) return 0;
+    return band(13);
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);

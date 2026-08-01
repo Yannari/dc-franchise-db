@@ -16363,6 +16363,46 @@ const _bbcCat = c => _BBC_CATEGORY[c] || { label: String(c || 'COMPETITION').toU
  * relative to the winner, so a walkover and a photo finish look different at
  * a glance instead of reading as the same sentence.
  */
+/**
+ * The veto draw, on the way into the competition.
+ *
+ * Six play: the Head of Household, the nominees, and three pulled out of a bag
+ * in front of everybody. The house had them appearing at the competition with
+ * no explanation of how they got there, which loses one of the few moments in
+ * the week where somebody has to make a choice in public and cannot lie about
+ * it — a nominee picking who they think will save them, and everybody watching
+ * who that is.
+ */
+function _bbVetoDraw(act) {
+  const draws = act?.draw || [];
+  const automatic = act?.automatic || [];
+  if (!draws.length && !automatic.length) return '';
+
+  return `<div class="bbvd">
+    <div class="bbvd-h"><span class="bbvd-t">THE DRAW</span>
+      <span class="bbvd-n">${(act.participants || []).length} play</span></div>
+
+    <div class="bbvd-auto">
+      ${automatic.map((n, i) => `<span class="bbvd-seat is-auto">
+        ${_bbAvatar(n, 34)}<b>${_bbEsc(n)}</b><i>${i === 0 ? 'HOH' : 'nominated'}</i></span>`).join('')}
+    </div>
+
+    ${draws.length ? `<div class="bbvd-draws">
+      ${draws.map(d => `<div class="bbvd-draw">
+        ${_bbAvatar(d.drawer, 26)}
+        <span class="bbvd-who">${_bbEsc(d.drawer)}</span>
+        ${d.chip === 'choice'
+          ? `<span class="bbvd-chip is-choice">HOUSEGUEST&rsquo;S CHOICE</span>
+             <span class="bbvd-arrow">picks</span>
+             <span class="bbvd-got">${_bbAvatar(d.chose, 26)}<b>${_bbEsc(d.chose)}</b></span>`
+          : `<span class="bbvd-chip">DREW A NAME</span>
+             <span class="bbvd-arrow">&rarr;</span>
+             <span class="bbvd-got">${_bbAvatar(d.drew, 26)}<b>${_bbEsc(d.drew)}</b></span>`}
+      </div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
 export function rpBuildBBComp(ep, actType) {
   const act = (ep.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
@@ -16373,6 +16413,8 @@ export function rpBuildBBComp(ep, actType) {
   // Best to worst. `results` already arrives in placement order.
   const rows = (act?.results || []).map((r, i) => ({ ...r, place: i + 1 }));
   const satOut = (comp?.excluded || []).filter(Boolean);
+  // How the six got there. The HOH competition has no draw — everybody plays.
+  const drawHtml = isHoh ? '' : _bbVetoDraw(act);
   const winner = act?.winner || rows[0]?.name;
   const top = rows[0]?.score ?? 0;
   const low = rows.length ? rows[rows.length - 1].score : 0;
@@ -16447,6 +16489,7 @@ export function rpBuildBBComp(ep, actType) {
       <span class="bbc-sat-k">Sat out</span>
       <span>${satOut.join(', ')}${isHoh && act?.outgoingHoh ? ` — ${act.outgoingHoh} cannot defend the room` : ''}</span>
     </div>` : ''}
+    ${drawHtml}
   </div>` : '';
 
   const header = `<div class="bbc-plate" style="--bbc-accent:${cat.accent}">
@@ -16746,12 +16789,30 @@ export function rpBuildBBSafety(ep) {
 
 export function rpBuildBBCeremony(ep) {
   const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
+  const holder = act?.holder || ep.vetoWinner;
+  // Why, in the holder's own terms. The engine has always had a reason and the
+  // ceremony has never once said it — the screen reported a decision with no
+  // thinking behind it, which is what made the veto feel like a coin toss.
+  const REASON_LABEL = {
+    self: 'SAVING THEMSELVES', backdoor: 'THIS WAS THE PLAN',
+    'own-deal': 'A PROMISE OUTRANKS A NOMINATION', relationship: 'WORTH THE BLOOD',
+    'own-nominations': 'STANDING BY THEIR OWN BLOCK', 'leave-nominations': 'NOT THEIR PROBLEM',
+  };
+  const reasoning = act?.why
+    ? [{ text: act.why, players: [holder].filter(Boolean),
+        badgeText: REASON_LABEL[act.reason] || 'THE REASONING', badgeClass: act?.used ? 'gold' : 'grey' }]
+    : [];
+
   const scenes = act?.used
     ? [
-      { text: `${ep.vetoWinner} uses the Power of Veto on ${act.saved}, who comes off the block.`, players: [act.saved, ep.vetoWinner], badgeText: 'VETO USED', badgeClass: 'green' },
-      ...(act.replacement ? [{ text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair.`, players: [act.replacement], badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
+      ...reasoning,
+      { text: `${holder} uses the Power of Veto on ${act.saved}, who comes off the block.`, players: [act.saved, holder], badgeText: 'VETO USED', badgeClass: 'green' },
+      ...(act.replacement ? [{ text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair — and the veto winner cannot be put there, which is the whole reason a backdoor works.`, players: [act.replacement], badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
     ]
-    : [{ text: `${ep.vetoWinner} chooses not to use the Power of Veto. The nominations stand.`, players: [ep.vetoWinner], badgeText: 'VETO NOT USED', badgeClass: 'grey' }];
+    : [
+      ...reasoning,
+      { text: `${holder} chooses not to use the Power of Veto. The nominations stand.`, players: [holder].filter(Boolean), badgeText: 'VETO NOT USED', badgeClass: 'grey' },
+    ];
   scenes.push({ text: `The block is final: ${(act?.nominees || []).join(' and ')}.`, players: act?.nominees || [], badgeText: 'FINAL NOMINEES', badgeClass: 'red' });
   scenes.push(..._bbBeats(act));
   return _bbSceneScreen(ep, {

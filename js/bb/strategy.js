@@ -106,30 +106,117 @@ export function chooseReplacement(hoh, house, protectedNames, plan, rng = Math.r
   return eligible.sort((a, b) => nominationScore(hoh, b, rng) - nominationScore(hoh, a, rng))[0];
 }
 
-export function shouldUseVeto(holder, nominees, plan, rng = Math.random) {
-  if (nominees.includes(holder)) return { use: true, save: holder, reason: 'self' };
-  const options = nominees.map(name => {
-    const stats = pStats(holder);
-    return {
-      name,
-      score: getPerceivedBond(holder, name) * 0.9 + bbAllianceStrength(holder, name) * 2
-        + stats.loyalty * 0.18 - bbThreat(name) * 0.18
-        // The one you promised the end to comes down first. A final two that
-        // does not survive contact with a veto was never a final two.
-        + (() => {
-          const deal = dealBetween(holder, name);
-          if (!deal) return 0;
-          return (tierOf(deal) === 'final-two' ? 4.2 : 2.6) * sincerityOf(deal, holder);
-        })()
-        + (housePlan(holder)?.shield === name ? 1.6 : 0)
-        - (housePlan(holder)?.targets?.[0] === name ? 2.4 : 0)
-        + noise(rng, 1.2),
-    };
-  }).sort((a, b) => b.score - a.score);
+/**
+ * Whether the veto gets used, and — the part that was missing — why.
+ *
+ * The decision came back as 'relationship' or 'leave-nominations', which is a
+ * category rather than a reason, so nothing could tell the house WHY somebody
+ * did or did not pull a nominee down. Every branch now carries a sentence.
+ *
+ * The Head of Household holding their own veto is its own case and was not
+ * modelled at all. Using it means taking down a person you nominated four days
+ * ago and putting up somebody else, which is not a change of heart — it is the
+ * backdoor, and it is the only reason to do it. An HOH with no backdoor plan
+ * who pulls their own nominee has simply undone their own week.
+ */
+export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context = {}) {
+  if (nominees.includes(holder)) {
+    return { use: true, save: holder, reason: 'self',
+      why: `${holder} is on the block and holding the only thing that takes them off it.` };
+  }
+
+  const hoh = context.hoh || null;
+  const stats = pStats(holder);
+  const scoreOf = name =>
+    getPerceivedBond(holder, name) * 0.9 + bbAllianceStrength(holder, name) * 2
+      + stats.loyalty * 0.18 - bbThreat(name) * 0.18
+      // The one you promised the end to comes down first. A final two that
+      // does not survive contact with a veto was never a final two.
+      + (() => {
+        const deal = dealBetween(holder, name);
+        if (!deal) return 0;
+        return (tierOf(deal) === 'final-two' ? 4.2 : 2.6) * sincerityOf(deal, holder);
+      })()
+      + (housePlan(holder)?.shield === name ? 1.6 : 0)
+      - (housePlan(holder)?.targets?.[0] === name ? 2.4 : 0)
+      // Does this person actually need saving?
+      //
+      // A pawn is up to sit beside somebody, and the house knows it. Spending
+      // the veto on a houseguest who was never going home wastes the only move
+      // you get and crosses the Head of Household for nothing — which is why in
+      // the house a pawn usually stays on the block and usually survives. The
+      // target is the opposite: leave them up and they are gone on Thursday.
+      - (name === plan?.pawn && name !== plan?.target ? 2.8 : 0)
+      + (name === plan?.target ? 1.3 : 0)
+      + noise(rng, 1.2);
+
+  // Blood on your hands.
+  //
+  // Using a veto you did not need costs something: you have crossed the Head of
+  // Household in public and put somebody else on the block who will know it was
+  // you. Without that cost the veto came off the wall 87% of the time, which
+  // makes the ceremony a formality — in the house, leaving nominations exactly
+  // as they are is an ordinary and often correct week.
+  //
+  // Nerve decides how much the cost weighs. A bold, strategic houseguest will
+  // take the heat; a cautious one finds a reason not to be involved.
+  const nerve = (stats.boldness * 0.6 + stats.strategic * 0.4) / 10;
+  const blood = (1 - nerve) * 3.1 + (hoh && getPerceivedBond(holder, hoh) >= 3 ? 0.9 : 0);
+
+  const options = nominees.map(name => ({ name, score: scoreOf(name) - blood }))
+    .sort((a, b) => b.score - a.score);
   const best = options[0];
-  return best.score > 2.2
-    ? { use: true, save: best.name, reason: 'relationship' }
-    : { use: false, save: null, reason: 'leave-nominations' };
+
+  // ── the Head of Household holding their own veto ──
+  if (holder === hoh) {
+    const backdoor = plan?.backdoorTarget;
+    if (backdoor && !nominees.includes(backdoor)) {
+      // This was the plan all along: two names up who were never the point.
+      const pull = options.sort((a, b) => b.score - a.score)[0].name;
+      return { use: true, save: pull, reason: 'backdoor', replacement: backdoor,
+        why: `${holder} nominated ${nominees.join(' and ')} to get here. `
+          + `Taking ${pull} down puts ${backdoor} up with no time to work the house — `
+          + `which was the point of the week.` };
+    }
+    // A nominee they have since promised the end to is worth undoing a
+    // nomination for. Nothing else is.
+    const promised = nominees.find(n => {
+      const deal = dealBetween(holder, n);
+      return deal && sincerityOf(deal, holder) > 0.6;
+    });
+    if (promised) {
+      return { use: true, save: promised, reason: 'own-deal',
+        why: `${holder} put ${promised} up and has since shaken on the end with them. `
+          + `Leaving them there costs more than the embarrassment of taking them down.` };
+    }
+    return { use: false, save: null, reason: 'own-nominations',
+      why: `${holder} made these nominations four days ago and nothing has changed since. `
+        + `Using their own veto would only mean explaining why they were wrong the first time.` };
+  }
+
+  // ── anybody else ──
+  // The bar for using a veto you did not need.
+  //
+  // It was 2.2 against scores that routinely run to 5-8, so almost anything
+  // cleared it and the veto came off the wall in 77% of the weeks where the
+  // holder was not on the block. Leaving nominations alone is an ordinary week
+  // in this house, and it should read as a decision rather than as a failure to
+  // act. Calibrated by playing seasons, not chosen.
+  if (best.score > 5.2) {
+    const deal = dealBetween(holder, best.name);
+    const why = deal
+      ? `${holder} and ${best.name} have a ${tierOf(deal) === 'final-two' ? 'final two' : 'deal about the end'}. `
+        + `A promise that does not survive a veto was never a promise.`
+      : bbAllianceStrength(holder, best.name) > 0
+        ? `${best.name} is one of ${holder}'s people, and ${holder} is not spending a week explaining why they left them up.`
+        : `${holder} would rather have ${best.name} in this house than not, and this is the only week that is ${holder}'s to decide.`;
+    return { use: true, save: best.name, reason: 'relationship', why };
+  }
+
+  const closest = best.name;
+  return { use: false, save: null, reason: 'leave-nominations',
+    why: `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
+      + `else on the block who will know exactly who did it. ${holder} decides the block is not their problem.` };
 }
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {
@@ -293,6 +380,54 @@ export function shouldThrowHoh(name, house, context = {}) {
  * Deliberately smaller than the gap between a strong and a weak player at the
  * relevant stat: it decides close competitions, it does not overturn the field.
  */
+/**
+ * Throwing the veto.
+ *
+ * Only the Head of Household competition could be thrown, which left out the
+ * more interesting half of it. The wiki is explicit that the veto gets thrown
+ * on purpose — to let it land with somebody who will use it the way the plan
+ * needs, and to keep the person throwing it out of the decision entirely.
+ *
+ * Two reasons somebody drops this one, and they pull in different directions:
+ *
+ *   BLOOD. Winning the veto when you are not on the block hands you a choice
+ *   with no good answer — use it and you cross the Head of Household, leave it
+ *   and you cross whoever stays up. A houseguest who would rather not be asked
+ *   throws it, and that is a real strategy rather than cowardice.
+ *
+ *   THE PLAN. Somebody working with the Head of Household on a backdoor wants
+ *   the veto used, and wants it used by somebody whose hands are already dirty.
+ *   If they are not that person, they get out of the way.
+ *
+ * Nobody on the block ever throws it. It is the only thing that saves them.
+ */
+export function shouldThrowVeto(name, context = {}) {
+  const nominees = context.nominees || [];
+  if (nominees.includes(name)) return { throwChance: 0, reason: 'on the block' };
+
+  const hoh = context.hoh || null;
+  const s = pStats(name);
+  const plan = housePlan(name);
+
+  // Nerve is what stops you ducking it. Boldness and strategic confidence both
+  // make somebody willing to hold a decision nobody wants.
+  const nerve = (s.boldness * 0.6 + s.strategic * 0.4) / 10;
+  let blood = (1 - nerve) * 0.5;
+
+  // Being close to the Head of Household makes the decision worse, not better:
+  // you are the one who would have to say no to them.
+  if (hoh && getPerceivedBond(name, hoh) >= 3) blood += 0.12;
+  // Being close to somebody on the block makes it worse from the other side.
+  if (nominees.some(n => getPerceivedBond(name, n) >= 3)) blood += 0.12;
+  // Somebody with a target of their own wants the week to stay pointed at it.
+  if (plan?.targets?.length && !nominees.includes(plan.targets[0])) blood += 0.06;
+
+  const reason = blood > 0.34
+    ? 'would rather not be the one holding the decision'
+    : 'wants it';
+  return { throwChance: clamp(blood, 0, 0.5), reason, nerve };
+}
+
 export function gunningFor(name, context = {}, rng = Math.random) {
   const nominees = context.nominees || [];
   const house = context.house || [];

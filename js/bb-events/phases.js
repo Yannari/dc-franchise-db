@@ -242,7 +242,13 @@ const vetoHolderWeighs = {
   id: 'phase-veto-holder-weighs',
   category: 'phases',
   weight(house, ctx) {
+    // Not the nominees — their decision is made for them — and not the Head of
+    // Household either. This event is about being caught between the person in
+    // power and the person on the block; an HOH who wins their own veto is not
+    // caught between anything, and the card read as them making an enemy of
+    // themselves.
     if (!ctx?.vetoWinner || _noms(ctx).includes(ctx.vetoWinner)) return 0;
+    if (ctx.vetoWinner === ctx.hoh) return 0;
     return at('post-veto', ctx, 10);
   },
   fire(house, ctx, api) {

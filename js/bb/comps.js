@@ -5,7 +5,7 @@
 import { gs, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
-import { shouldThrowHoh, gunningFor } from './strategy.js';
+import { shouldThrowHoh, shouldThrowVeto, gunningFor } from './strategy.js';
 
 export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker']);
 const VALID_TYPES = new Set(BB_COMP_TYPES);
@@ -112,9 +112,13 @@ function genericSimulation(comp, participants, context, rng) {
     const statComponents = Object.fromEntries(Object.entries(comp.stats).map(([stat, weight]) => [stat, stats[stat] * weight]));
     const statTotal = Object.values(statComponents).reduce((sum, value) => sum + value, 0);
     const randomRoll = (rng() * 4) - 2;
+    // Both competitions can be thrown, for different reasons: the HOH to stay
+    // small, the veto to stay out of a decision nobody wants to hold.
     const throwRead = context.type === 'hoh'
       ? shouldThrowHoh(name, context.house || participants, context)
-      : { throwChance:0, enemies:0, safety:0, slopRisk:0 };
+      : context.type === 'veto'
+        ? { ...shouldThrowVeto(name, context), enemies: 0, safety: 0, slopRisk: 0 }
+        : { throwChance:0, enemies:0, safety:0, slopRisk:0 };
     const threw = context.allowThrowing !== false && rng() < throwRead.throwChance;
     const throwPenalty = threw ? 4.5 + rng() * 3 : 0;
     // A week of cold showers and slop is a real disadvantage, not a costume.

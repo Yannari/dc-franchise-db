@@ -722,6 +722,42 @@
 
     @media (max-width: 640px) { .bbct-sides { flex-direction:column; } }
 
+    /* ── The veto draw ──
+       Six play: the Head of Household, the nominees, and three pulled out of a
+       bag in front of everybody. Drawing a name is luck; drawing HOUSEGUEST'S
+       CHOICE is a decision made in public that cannot be taken back, and the
+       house watches who a nominee reaches for. */
+    .bbvd          { margin:12px 0 0; padding:11px; border-radius:9px;
+                     border:1px solid rgba(63,185,80,.2); background:rgba(63,185,80,.04); }
+    .bbvd-h        { display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+    .bbvd-t        { font-family:ui-monospace,Consolas,monospace; font-size:8.5px; font-weight:800;
+                     letter-spacing:1.7px; color:#3fb950; }
+    .bbvd-n        { margin-left:auto; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8.5px; letter-spacing:1px; color:#6e7681; }
+
+    .bbvd-auto     { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:9px; }
+    .bbvd-seat     { display:flex; flex-direction:column; align-items:center; gap:2px; width:56px; }
+    .bbvd-seat b   { font-size:9.5px; color:#e6edf3; max-width:56px; overflow:hidden;
+                     text-overflow:ellipsis; white-space:nowrap; }
+    .bbvd-seat i   { font-style:normal; font-family:ui-monospace,Consolas,monospace;
+                     font-size:7px; letter-spacing:.9px; text-transform:uppercase; color:#6e7681; }
+    .bbvd-seat.is-auto .bb-av { box-shadow:0 0 0 1px rgba(63,185,80,.45); }
+
+    .bbvd-draws    { display:flex; flex-direction:column; gap:4px;
+                     padding-top:8px; border-top:1px dashed rgba(255,255,255,.07); }
+    .bbvd-draw     { display:flex; align-items:center; gap:7px; font-size:11px; }
+    .bbvd-who      { font-weight:600; color:#e6edf3; min-width:72px; }
+    .bbvd-chip     { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; font-weight:700;
+                     letter-spacing:1px; padding:2px 7px; border-radius:10px;
+                     background:rgba(255,255,255,.05); color:#8b949e;
+                     border:1px solid rgba(255,255,255,.08); }
+    /* The chip that turns luck into a decision. */
+    .bbvd-chip.is-choice { background:rgba(227,179,65,.14); color:#e3b341;
+                     border-color:rgba(227,179,65,.4); }
+    .bbvd-arrow    { color:#4d545c; font-size:9.5px; }
+    .bbvd-got      { display:inline-flex; align-items:center; gap:5px; margin-left:auto; }
+    .bbvd-got b    { font-size:11px; color:#c9d1d9; }
+
     /* Legend for the standing icons — an icon nobody can name is decoration. */
     .bbw-key        { display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
                       margin:8px 0 12px; font-size:9.5px; letter-spacing:.6px; color:#8b949e; }

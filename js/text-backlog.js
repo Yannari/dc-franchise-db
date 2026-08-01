@@ -4343,6 +4343,7 @@ export function generateBBSummaryText(ep) {
         }
         ln(`  Final nominees: ${(act.nominees || []).join(' and ')}.`);
         beats(act);
+                if (act.why) ln(`  ${act.why}`);
         break;
 
       case 'campaign':

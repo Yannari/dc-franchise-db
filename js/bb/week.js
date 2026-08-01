@@ -7,7 +7,7 @@
 // its phases.
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
-import { getBond } from '../bonds.js';
+import { getBond, getPerceivedBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
@@ -51,13 +51,77 @@ function ensureBBState() {
   }
 }
 
-function chooseVetoPlayers(house, hoh, nominees, rng) {
-  const automatic = [hoh, ...nominees];
-  const pool = house.filter(name => !automatic.includes(name));
-  while (automatic.length < Math.min(6, house.length) && pool.length) {
-    automatic.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+/**
+ * The veto draw.
+ *
+ * Six houseguests play: the Head of Household, the nominees, and three drawn
+ * out of a bag. This used to be three names picked at random with nothing
+ * around them, which threw away one of the few moments in the week where the
+ * house has to make a decision in public and cannot lie about it.
+ *
+ * The real thing: the HOH and each nominee reach into a bag of chips carrying
+ * houseguests' names and some marked HOUSEGUEST'S CHOICE. A name means that
+ * person plays. A choice — or drawing your own name — means the drawer picks
+ * somebody, in front of everybody, and everybody watches who they pick.
+ *
+ * Who a drawer picks is not random either. A nominee picks whoever they think
+ * will take them off; a Head of Household picks whoever they think will leave
+ * their nominations alone. Both read PERCEIVED bonds, so a houseguest can pick
+ * somebody they are wrong about, which is the best version of this moment.
+ */
+function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = null) {
+  const playing = [hoh, ...nominees].filter(Boolean);
+  const eligible = house.filter(name => !playing.includes(name));
+  const seats = Math.max(0, Math.min(3, house.length - playing.length));
+  const read = (a, b) => (typeof readBond === 'function' ? readBond(a, b) : 0);
+
+  // One chip per eligible houseguest, plus a couple of choice chips.
+  const bag = [
+    ...eligible.map(name => ({ kind: 'name', name })),
+    { kind: 'choice' }, { kind: 'choice' },
+  ];
+  const draws = [];
+  const drawers = [hoh, ...nominees].filter(Boolean);
+
+  for (let i = 0; i < seats; i++) {
+    const drawer = drawers[i % drawers.length];
+    if (!bag.length) break;
+    const chip = bag.splice(Math.floor(rng() * bag.length), 1)[0];
+
+    // A name chip belonging to somebody already playing is a choice chip: the
+    // house rule is that drawing your own — or an unusable — chip hands you the
+    // pick instead.
+    const usable = chip.kind === 'name' && !playing.includes(chip.name);
+    if (usable) {
+      playing.push(chip.name);
+      draws.push({ drawer, chip: 'name', drew: chip.name, chose: null });
+      continue;
+    }
+
+    const left = house.filter(name => !playing.includes(name));
+    if (!left.length) break;
+    // Nominees want somebody who would take them down. The Head of Household
+    // wants somebody who would leave the block alone. Both are reading their
+    // own idea of the room.
+    //
+    // And an HOH running a backdoor will not pick the person they are trying to
+    // backdoor, for the reason the whole move exists: the veto winner cannot be
+    // named as a replacement, so a target who plays and wins is safe. Keeping
+    // them out of the competition IS the strategy.
+    const avoid = drawer === hoh ? backdoorTarget : null;
+    const pickable = left.filter(n => n !== avoid);
+    const from = pickable.length ? pickable : left;
+    const wanted = from.slice().sort((a, b) => read(drawer, b) - read(drawer, a))[0];
+    playing.push(wanted);
+    draws.push({ drawer, chip: 'choice', drew: null, chose: wanted });
   }
-  return automatic;
+
+  // Anything the bag could not fill, fill at random rather than leave short.
+  const rest = house.filter(name => !playing.includes(name));
+  while (playing.length < Math.min(6, house.length) && rest.length) {
+    playing.push(rest.splice(Math.floor(rng() * rest.length), 1)[0]);
+  }
+  return { players: playing, draws, automatic: [hoh, ...nominees].filter(Boolean) };
 }
 
 function tally(ballots, nominees) {
@@ -710,7 +774,11 @@ export function simulateBBWeek(options = {}) {
 
   if (!skipVeto) {
     // Veto act — player draw, competition, and lobbying.
-    let vetoPlayers = chooseVetoPlayers(house, hoh, nominees, rng);
+    const vetoDraw = drawVetoPlayers(house, hoh, nominees, rng,
+      (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } },
+      plan?.backdoorTarget || null);
+    week.vetoDraw = vetoDraw;
+    let vetoPlayers = vetoDraw.players;
     vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
     vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
     const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
@@ -720,13 +788,15 @@ export function simulateBBWeek(options = {}) {
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;
     week.vetoCompetition = vetoCompetition;
-    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner, results:vetoResults, competition:vetoCompetition }, { nominees: [...nominees], vetoWinner }));
+    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner,
+      results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
+      automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
 
     // Somebody holds the veto and has not yet said what they will do with it.
     if (!compressed) houseAct('post-veto', { nominees: [...nominees], vetoWinner });
 
     // Veto ceremony and replacement hook (Diamond Veto can intercept it).
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng);
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
     let replacement = null;
     if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
@@ -740,7 +810,13 @@ export function simulateBBWeek(options = {}) {
     }
     week.finalNominees = [...nominees];
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
-    week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use, saved: vetoDecision.save, replacement, nominees: [...nominees] }, { nominees: [...nominees] }));
+    // The reasoning travels with the decision. Without it the ceremony could
+    // report what happened and never why, which is the whole complaint.
+    week.vetoDecision = { ...vetoDecision, holder: vetoWinner, replacement };
+    week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
+      saved: vetoDecision.save, replacement, holder: vetoWinner,
+      reason: vetoDecision.reason, why: vetoDecision.why,
+      nominees: [...nominees] }, { nominees: [...nominees] }));
     revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
   }
 

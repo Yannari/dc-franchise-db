@@ -758,6 +758,41 @@
     .bbvd-got      { display:inline-flex; align-items:center; gap:5px; margin-left:auto; }
     .bbvd-got b    { font-size:11px; color:#c9d1d9; }
 
+    /* ── The veto draw stage ──
+       Six seats. Three fill by right and three come out of a bag, a chip at a
+       time, with a choice chip meaning somebody says a name out loud in front
+       of the house and lives with it. */
+    .bbvs-stage    { position:sticky; top:46px; z-index:6; margin:0 0 18px; padding:14px;
+                     border-radius:12px; border:1px solid rgba(63,185,80,.22);
+                     background:linear-gradient(180deg, rgba(16,21,28,.98), rgba(10,13,18,.99));
+                     box-shadow:0 14px 40px rgba(0,0,0,.5); backdrop-filter:blur(8px); }
+    .bbvs-seats    { display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(78px, 1fr));
+                     margin-bottom:12px; }
+    .bbvs-seat     { display:flex; flex-direction:column; align-items:center; gap:4px;
+                     padding:9px 5px; border-radius:8px;
+                     background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+    .bbvs-seat b   { font-size:11px; color:#e6edf3; max-width:74px; overflow:hidden;
+                     text-overflow:ellipsis; white-space:nowrap; }
+    .bbvs-seat i   { font-style:normal; font-family:ui-monospace,Consolas,monospace;
+                     font-size:7px; letter-spacing:1.1px; text-transform:uppercase; color:#5b6472; }
+    .bbvs-seat.is-in    { border-color:rgba(63,185,80,.4); background:rgba(63,185,80,.07);
+                          animation:bbvs-in .45s ease-out both; }
+    .bbvs-seat.is-auto  { border-color:rgba(88,166,255,.35); background:rgba(88,166,255,.06); }
+    @keyframes bbvs-in { from { opacity:0; transform:translateY(8px) scale(.96); }
+                         to   { opacity:1; transform:none; } }
+    .bbvs-empty    { font-family:var(--font-display); font-size:30px; line-height:1.4; color:#232c37; }
+
+    .bbvs-bag      { display:flex; align-items:center; gap:8px; justify-content:center;
+                     padding-top:10px; border-top:1px solid rgba(255,255,255,.06); }
+    .bbvs-bag-l,
+    .bbvs-bag-c    { font-family:ui-monospace,Consolas,monospace; font-size:8px;
+                     letter-spacing:1.5px; color:#5b6472; }
+    .bbvs-chip     { width:20px; height:20px; color:#39424e; transition:color .25s ease; }
+    .bbvs-chip svg { width:100%; height:100%; }
+    .bbvs-chip.is-out { color:#3fb950; filter:drop-shadow(0 0 7px rgba(63,185,80,.6)); }
+
+    @media (prefers-reduced-motion: reduce) { .bbvs-seat.is-in { animation:none; } }
+
     /* Legend for the standing icons — an icon nobody can name is decoration. */
     .bbw-key        { display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
                       margin:8px 0 12px; font-size:9.5px; letter-spacing:.6px; color:#8b949e; }

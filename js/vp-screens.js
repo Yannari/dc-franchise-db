@@ -16403,6 +16403,105 @@ function _bbVetoDraw(act) {
   </div>`;
 }
 
+/**
+ * The veto draw, as its own moment.
+ *
+ * It was a strip at the top of the competition screen, which is where a summary
+ * goes rather than where a ceremony goes. Six people play and three of them get
+ * there out of a bag in front of everybody — a chip at a time, with a choice
+ * chip meaning somebody has to pick a name out loud and live with it.
+ *
+ * Same shape as the nomination ceremony: a sticky stage that does not leave the
+ * screen, one seat per player filling as the bag empties, and pinned controls.
+ */
+export function rpBuildBBVetoDraw(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'veto');
+  const draws = act?.draw || [];
+  const automatic = (act?.automatic || []).filter(Boolean);
+  if (!automatic.length) return '';
+  const players_ = act?.participants || [];
+  const hoh = ep.hoh || null;
+
+  const stateKey = `bb_vdraw_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // The automatic seats are known before anybody reaches into anything.
+  const steps = [{ kind: 'open' }, ...draws.map(d => ({ kind: 'draw', d })), { kind: 'set' }];
+  const done = state.idx >= steps.length - 1;
+  const revealed = Math.max(0, state.idx + 1);
+  const pulledCount = Math.max(0, Math.min(draws.length, state.idx));
+  const drawn = draws.slice(0, pulledCount).map(d => d.chose || d.drew).filter(Boolean);
+  const seated = [...automatic, ...drawn];
+  const seats = Math.max(players_.length, automatic.length + draws.length);
+
+  const CHIP = `<svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
+    </svg>`;
+
+  const stage = `<div class="bbvs-stage">
+    <div class="bbvs-seats">
+      ${Array.from({ length: seats }, (_, i) => {
+        const who = seated[i];
+        const auto = i < automatic.length;
+        return `<div class="bbvs-seat ${who ? 'is-in' : ''} ${auto && who ? 'is-auto' : ''}">
+          ${who
+            ? `${_bbAvatar(who, 46)}<b>${_bbEsc(who)}</b>
+               <i>${auto ? (who === hoh ? 'HOH' : 'nominated') : 'drawn'}</i>`
+            : `<span class="bbvs-empty">?</span><i>in the bag</i>`}
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="bbvs-bag">
+      <span class="bbvs-bag-l">THE BAG</span>
+      ${draws.map((_, i) => `<span class="bbvs-chip ${i < pulledCount ? 'is-out' : ''}">${CHIP}</span>`).join('')}
+      <span class="bbvs-bag-c">${pulledCount} of ${draws.length} drawn</span>
+    </div>
+  </div>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'open') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h">${automatic.map(n => _bbAvatar(n, 30)).join('')}
+          <span class="bbns-pill grey">AUTOMATIC</span></div>
+        <div class="bbns-card-b">${automatic.join(', ')} play by right — the Head of Household and
+          the nominees. ${draws.length} more ${draws.length === 1 ? 'seat comes' : 'seats come'} out of the bag,
+          and whoever draws a HOUSEGUEST&rsquo;S CHOICE chip has to say a name in front of everybody.</div></div>`;
+    }
+    if (step.kind === 'draw') {
+      const d = step.d;
+      const got = d.chose || d.drew;
+      return `<div class="bbns-card ${d.chip === 'choice' ? 'is-reason' : 'is-key'}">
+        <div class="bbns-card-h">${_bbAvatar(d.drawer, 30)}${got ? _bbAvatar(got, 30) : ''}
+          <span class="bbns-pill ${d.chip === 'choice' ? 'gold' : 'blue'}">${
+            d.chip === 'choice' ? 'HOUSEGUEST&rsquo;S CHOICE' : 'DREW A NAME'}</span></div>
+        <div class="bbns-card-b">${d.chip === 'choice'
+          ? `${_bbEsc(d.why || `${d.drawer} picks ${got}.`)}`
+          : `${d.drawer} reaches in and pulls <strong>${_bbEsc(got)}</strong>. Nobody chose that; the bag did.`}</div></div>`;
+    }
+    return `<div class="bbns-card is-final">
+      <div class="bbns-card-h">${players_.slice(0, 6).map(n => _bbAvatar(n, 26)).join('')}
+        <span class="bbns-pill red">PLAYING FOR THE VETO</span></div>
+      <div class="bbns-card-b">${players_.join(', ')}. Everybody else watches.</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">THE VETO DRAW</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Six play. Three of them find out here.</div>
+    ${stage}
+    <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
+    <div class="bbns-controls">
+      ${done ? '<span class="bbns-done">The field is set.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, steps.length - 1))}">${state.idx < 0 ? 'Open the bag' : 'Draw the next chip'}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, steps.length - 1)}">Reveal all</button>`}
+      <span class="bbns-count">${Math.min(steps.length, revealed)} / ${steps.length}</span>
+    </div>
+  </div>`;
+}
+
 export function rpBuildBBComp(ep, actType) {
   const act = (ep.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
@@ -16413,8 +16512,9 @@ export function rpBuildBBComp(ep, actType) {
   // Best to worst. `results` already arrives in placement order.
   const rows = (act?.results || []).map((r, i) => ({ ...r, place: i + 1 }));
   const satOut = (comp?.excluded || []).filter(Boolean);
-  // How the six got there. The HOH competition has no draw — everybody plays.
-  const drawHtml = isHoh ? '' : _bbVetoDraw(act);
+  // The draw has a screen of its own ahead of this one, so it is not repeated
+  // here — only who did not get in.
+  const drawHtml = '';
   const winner = act?.winner || rows[0]?.name;
   const top = rows[0]?.score ?? 0;
   const low = rows.length ? rows[rows.length - 1].score : 0;
@@ -16569,6 +16669,12 @@ function _bbNomReason(hoh, name, role, ep) {
     .filter(a => a.active !== false && (a.members || []).includes(name) && !(a.members || []).includes(hoh));
   const plan = (typeof gs !== 'undefined' && gs.intentions?.[hoh]) || {};
   const grudge = (plan.revenge || []).includes(name);
+  const weekNumber = Math.max(1, Number(ep?.num) || Number(gs?.episode) || 1);
+  const frictionTime = weekNumber === 1
+    ? 'since we moved in'
+    : weekNumber === 2
+      ? 'for two weeks'
+      : `for ${weekNumber} weeks`;
 
   if (role === 'pawn') {
     if (bond >= 3) return `"<strong>${name}</strong>, you are the only person in this house I could ask to do this, and that is exactly why I am asking. You are not the one going home."`;
@@ -16586,13 +16692,13 @@ function _bbNomReason(hoh, name, role, ep) {
     return `"<strong>${name}</strong>, there is a group in this house that does not include me, and you are in it. That is the whole reason. Nothing about you personally."`;
   }
   if (bond <= -3) {
-    return `"<strong>${name}</strong>, we have not been able to have a straight conversation in three weeks. I would rather do this than keep pretending we are fine."`;
+    return `"<strong>${name}</strong>, we have not been able to have a straight conversation ${frictionTime}. I would rather do this than keep pretending we are fine."`;
   }
   if ((st.social ?? 5) >= 7) {
     return `"<strong>${name}</strong>, everybody in this house likes you. That is a résumé, and it beats mine, and I only get one week where I can do anything about it."`;
   }
   if ((st.strategic ?? 5) >= 7) {
-    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather be wrong about that than find out in four weeks that I was right."`;
+    return `"<strong>${name}</strong>, you are running more of this house than you let on. I would rather take the shot now than wait until everybody else sees it too."`;
   }
   return `"<strong>${name}</strong>, somebody had to go up and there was no version of this week where it was going to feel fair. I am sorry it is you."`;
 }
@@ -16806,7 +16912,12 @@ export function rpBuildBBCeremony(ep) {
   const scenes = act?.used
     ? [
       ...reasoning,
-      { text: `${holder} uses the Power of Veto on ${act.saved}, who comes off the block.`, players: [act.saved, holder], badgeText: 'VETO USED', badgeClass: 'green' },
+      { text: act.saved === holder
+          ? `${holder} uses the Power of Veto on ${pronouns(holder).ref} and comes off the block. `
+            + `${pronouns(holder).Sub} cannot be nominated again this week, and ${ep.hoh} has a chair to fill.`
+          : `${holder} uses the Power of Veto on ${act.saved}, who comes off the block.`,
+        players: [act.saved, holder].filter((v, i, a) => v && a.indexOf(v) === i),
+        badgeText: act.saved === holder ? 'SAVES THEMSELVES' : 'VETO USED', badgeClass: 'green' },
       ...(act.replacement ? [{
         text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair.`
           + (act.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''),
@@ -17249,6 +17360,8 @@ function _bbDoubleBreak(ep) {
 /** The acts of one cycle, in the order they happened. */
 function _bbCycleScreens(view, screens, suffix = '') {
   let houseSlot = 0, campaignIdx = 0;
+  // Screens that are built when their act comes up but shown later.
+  const deferred = [];
   const id = base => `${base}${suffix}`;
   for (const act of view.acts || []) {
     switch (act.type) {
@@ -17268,6 +17381,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
         screens.push({ id: id('bb-instant'), label: 'Instant Eviction', html: rpBuildBBInstantEviction(view) });
         break;
       case 'veto':
+        try {
+          const draw = rpBuildBBVetoDraw(view);
+          if (draw && draw.trim()) screens.push({ id: id('bb-vdraw'), label: 'The Draw', html: draw });
+        } catch { /* no draw recorded, no screen */ }
         screens.push({ id: id('bb-veto'), label: 'Veto', html: rpBuildBBComp(view, 'veto') });
         break;
       case 'veto-ceremony':
@@ -17277,7 +17394,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
         screens.push({ id: id('bb-departure'), label: act.kind === 'expulsion' ? 'Expulsion' : 'Walkout', html: rpBuildBBDeparture(view) });
         break;
       case 'safety':
-        screens.push({
+        // Held back and emitted just before eviction night.
+        //
+        // The engine resolves the Block Buster before the campaign because the
+        // vote is modelled over the final two, but on screen it belongs where
+        // the house plays it: the last competition of the week, immediately
+        // before the vote. Pushing it in act order put it ahead of three days
+        // of house life it actually follows.
+        deferred.push({
           id: id('bb-safety'),
           label: 'Block Buster',
           html: rpBuildBBSafety(view),
@@ -17307,6 +17431,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       }
       case 'eviction':
+        // The Block Buster first, if there was one: it is the last thing that
+        // happens before the vote.
+        screens.push(...deferred.splice(0, deferred.length));
         // The night runs in the order it happens: the count and the ballots,
         // then the vote broken down, then the person who lost it talking about
         // it. The interview was sitting between the vote and its own breakdown.
@@ -17323,6 +17450,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       default:
         break;
     }
+  }
+  // A week with no eviction — a walkout or an expulsion — still played the
+  // competition, so it must not vanish with the vote.
+  if (deferred.length) {
+    screens.push(...deferred.splice(0, deferred.length));
   }
   return screens;
 }

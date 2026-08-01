@@ -82,8 +82,14 @@ describe('Big Brother house-event scheduler contract', () => {
     // lives, and a house that only says three things a stretch reads as empty.
     // The bound here was 6 for both when a stretch of house life was 3-6 beats.
     const houseActs = week.acts.filter(a => a.type === 'house');
-    const ceremonies = week.acts.filter(a => a.type !== 'house');
+    // Campaign acts are counted separately. Their beats are not scheduler
+    // draws — there is one per voter a nominee actually got alone, the same way
+    // the alliance lifecycle attaches one per real event — so two nominees
+    // working four people each is eight beats and that is correct.
+    const ceremonies = week.acts.filter(a => a.type !== 'house' && a.type !== 'campaign');
+    const campaigns = week.acts.filter(a => a.type === 'campaign');
     expect(ceremonies.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 6)).toBe(true);
+    expect(campaigns.every(act => act.socialBeats.length >= 1)).toBe(true);
     // This runs on a ten-event fixture, so a stretch tops out around twenty.
     expect(houseActs.every(act => act.socialBeats.length >= 8)).toBe(true);
     // Eviction night used to be hardcoded to silence, which made a farewell

@@ -97,7 +97,9 @@ describe('the Big Brother visual player', () => {
     expect(spine.at(-1)).toBe('bb-evict');
     // The set pieces happen in the order the week runs them...
     const ceremonies = spine.filter(id => !id.startsWith('bb-house') && id !== 'bb-camp');
-    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-veto', 'bb-cer', 'bb-evict']);
+    // The veto draw is its own stop, immediately before the competition it
+    // decides — six play and three of them find out there.
+    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-vdraw', 'bb-veto', 'bb-cer', 'bb-evict']);
     // ...with stretches of house life between them, and no campaign screen:
     // campaigning belongs in the feed with everything else that happens in a
     // bedroom at two in the morning.

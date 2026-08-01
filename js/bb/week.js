@@ -933,20 +933,29 @@ export function simulateBBWeek(options = {}) {
     // With that screen gone they become beats like everything else, so
     // campaigning reads in the feed alongside the rest of the day — and carries
     // the actual argument rather than the fact that one was made.
-    const pitchBeats = (campaign.pitches || []).map(pitch => {
-      const rival = nominees.find(n => n !== pitch.nominee) || null;
-      let words = '';
-      try { words = campaignArgument(pitch.nominee, pitch.voter, rival); } catch { words = ''; }
-      return {
-        text: `${pitch.nominee} gets ${pitch.voter} alone. ${words}`
-          + ` ${pitch.success ? `${pitch.voter} listens, and something in the count changes.`
-            : `${pitch.voter} hears all of it and does not move.`}`,
-        players: [pitch.nominee, pitch.voter],
-        badgeText: pitch.success ? 'RECEPTIVE' : 'UNMOVED',
-        badgeClass: pitch.success ? 'green' : 'grey',
-        eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
-      };
-    });
+    // One beat per VOTER WORKED, not per pitch.
+    //
+    // A pitch is one nominee's whole campaign — it carries `pitcher`,
+    // `pitchTarget` and a `responses` array, one entry per person they got
+    // alone. Reading it as though it were a single conversation produced
+    // "undefined gets undefined alone" and printed the same argument three
+    // times, because the argument is a read of the VOTER and there was no voter
+    // to read.
+    const pitchBeats = (campaign.pitches || []).flatMap(pitch =>
+      (pitch.responses || []).map(response => {
+        let words = '';
+        try { words = campaignArgument(pitch.pitcher, response.voter, pitch.pitchTarget); } catch { words = ''; }
+        return {
+          text: `${pitch.pitcher} gets ${response.voter} alone. ${words}`
+            + ` ${response.accepted
+              ? `${response.voter} listens, and something in the count changes.`
+              : `${response.voter} hears all of it and does not move.`}`,
+          players: [pitch.pitcher, response.voter],
+          badgeText: response.accepted ? 'RECEPTIVE' : 'UNMOVED',
+          badgeClass: response.accepted ? 'green' : 'grey',
+          eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
+        };
+      }));
     campaignAct.socialBeats = [...pitchBeats, ...(campaignAct.socialBeats || [])];
     week.acts.push(campaignAct);
   }

@@ -166,6 +166,70 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
   return { evict: scores[0].name, margin: scores[1].keepScore - scores[0].keepScore };
 }
 
+/**
+ * What the house thinks is going to happen, before it happens.
+ *
+ * Total Drama models a vote as a set of commitments AND as a set of BELIEFS:
+ * every voter carries their own count of who is with them, that count is built
+ * from what they perceive rather than what is true, and the gap between the two
+ * is where a blindside comes from. A house had the commitments and none of the
+ * beliefs, so nobody could walk into a vote wrong.
+ *
+ * Each voter is asked two things: who are you voting out, and how many people
+ * do you think are voting with you. The second is answered off PERCEIVED bonds
+ * and alliances — their read of the room — so a houseguest who is badly wrong
+ * about who likes them is badly wrong about the count, which is exactly how it
+ * goes in the house.
+ */
+export function buildHouseVotePlans({ ballots = [], nominees = [], hoh = null } = {}) {
+  if (!ballots.length || nominees.length < 2) return [];
+  const voters = ballots.map(b => b.voter);
+  const majority = Math.floor(voters.length / 2) + 1;
+  const intent = new Map(ballots.map(b => [b.voter, b.evict]));
+
+  // What ONE voter believes another will do. Not the truth — their read.
+  const believesAbout = (voter, other) => {
+    if (voter === other) return intent.get(voter);
+    // Somebody you are working with, you assume is with you.
+    if (bbAllianceStrength(voter, other) > 0) return intent.get(voter);
+    if (getPerceivedBond(voter, other) >= 3) return intent.get(voter);
+    // Otherwise you guess from how you think they feel about the two of them.
+    const [a, b] = nominees;
+    const readA = getPerceivedBond(other, a);
+    const readB = getPerceivedBond(other, b);
+    if (Math.abs(readA - readB) < 0.8) return null;    // too close to call
+    return readA < readB ? a : b;
+  };
+
+  const actual = {};
+  nominees.forEach(n => { actual[n] = ballots.filter(b => b.evict === n).length; });
+
+  return ballots.map(ballot => {
+    const target = ballot.evict;
+    let believed = 0, unsure = 0;
+    for (const other of voters) {
+      const read = believesAbout(ballot.voter, other);
+      if (read === target) believed++;
+      else if (read == null) unsure++;
+    }
+    const truth = actual[target] || 0;
+    return {
+      voter: ballot.voter,
+      target,
+      keeping: nominees.find(n => n !== target) || null,
+      believed,
+      unsure,
+      truth,
+      majority,
+      // Do they think their side wins?
+      confident: believed >= majority,
+      // And are they right? This is the number the whole night turns on.
+      error: believed - truth,
+      wrong: (believed >= majority) !== (truth >= majority),
+    };
+  });
+}
+
 export function campaignAttempt(nominee, voter, opponent, rng = Math.random) {
   const stats = pStats(nominee);
   const voterStats = pStats(voter);

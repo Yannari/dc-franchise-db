@@ -15599,7 +15599,7 @@ function _bbScene(scene) {
  * A screen of scenes with click-to-reveal, dimming what has not happened yet —
  * lifted from the Total Drama scouting screen so the pacing feels identical.
  */
-function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '', room = 'bb-power' }) {
+function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '', footer = '', room = 'bb-power' }) {
   // A double eviction plays the same acts twice in one episode, so every
   // reveal state has to be told which half it belongs to — otherwise the
   // second HOH shares a click-state with the first and they reveal together.
@@ -15622,6 +15622,10 @@ function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stat
       ? _bbScene(scene)
       : `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
   });
+
+  // The footer is the answer to whatever the header asked, so it waits until
+  // every scene has been revealed.
+  if (footer && state.idx >= scenes.length - 1) html += footer;
 
   if (scenes.length) {
     html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
@@ -16878,6 +16882,101 @@ function _bbPlansChanged(ep, act) {
  * ballot whether the voter had promised it, whether their alliance moved them,
  * whether they jumped to the winning side, and whether they broke their word.
  */
+/**
+ * The count, as the house has it going in.
+ *
+ * Total Drama shows a vote as a set of plans before it shows it as a result:
+ * who each person is voting for, how firmly, and — the part that matters — how
+ * many votes they THINK they have. A house had none of that; the eviction
+ * screen went straight to reading ballots, so a blindside arrived with no
+ * setup and read as an accident.
+ *
+ * Nothing here spoils the vote. It is what everybody believes on the way in,
+ * which is the only reason the ballots that follow mean anything.
+ */
+function _bbVotePlanBoard(ep, nominees) {
+  const plans = ep.votePlans || [];
+  if (!plans.length || nominees.length < 2) return '';
+  const commitments = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+  const majority = plans[0].majority;
+
+  // Each side of the room, as the house has it.
+  const sides = nominees.map(name => ({
+    name,
+    voters: plans.filter(p => p.target === name),
+  })).sort((a, b) => b.voters.length - a.voters.length);
+
+  const why = plan => {
+    const c = commitments.get(plan.voter);
+    if (c?.cuttingPartner) return 'cutting somebody they promised the end';
+    if (c?.endgameDeal) return `keeping their ${c.endgameDeal.tier}`;
+    if (c?.promised) return 'shook on it';
+    if (c?.allied) return 'voting with their people';
+    if ((c?.strength ?? 0) < 0.35) return 'could still be moved';
+    return 'their own read';
+  };
+
+  const rows = plans.slice().sort((a, b) => (b.believed - b.majority) - (a.believed - a.majority));
+
+  return `<div class="bbvp">
+    <div class="bbct-h">
+      <span class="bbct-t">THE COUNT GOING IN</span>
+      <span class="bbct-m">${majority} of ${plans.length} decides it</span>
+    </div>
+
+    <div class="bbct-sides">
+      ${sides.map(side => `<div class="bbct-side ${side.voters.length >= majority ? 'is-ahead' : ''}">
+        <div class="bbct-side-h">${_bbAvatar(side.name, 34)}
+          <span class="bbct-side-n">${_bbEsc(side.name)}</span>
+          <span class="bbct-side-c">${side.voters.length}</span>
+        </div>
+        <div class="bbct-side-f">${side.voters.map(p => _bbAvatar(p.voter, 24)).join('') || '<i>nobody</i>'}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="bbct-rows">
+      ${rows.map(plan => {
+        const c = commitments.get(plan.voter);
+        const firm = c ? c.strength : 0.5;
+        const band = firm > 0.6 ? 'firm' : firm > 0.35 ? 'soft' : 'loose';
+        return `<div class="bbct-row">
+          ${_bbAvatar(plan.voter, 26)}
+          <span class="bbct-v">${_bbEsc(plan.voter)}</span>
+          <span class="bbct-arrow">is voting out</span>
+          <span class="bbct-tgt">${_bbEsc(plan.target)}</span>
+          <span class="bbct-why">${why(plan)}</span>
+          <span class="bbct-firm is-${band}">${band}</span>
+          <span class="bbct-belief ${plan.confident ? 'is-sure' : ''}">
+            thinks <b>${plan.believed}</b>${plan.unsure ? ` <i>+${plan.unsure}?</i>` : ''}
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="bbct-foot">Every number above is what that houseguest believes, not what is true.</div>
+  </div>`;
+}
+
+/**
+ * And afterwards: who had it wrong.
+ *
+ * Shown only once the votes are read, because it is the answer to the board
+ * above rather than part of it.
+ */
+function _bbVotePlanVerdict(ep) {
+  const wrong = (ep.votePlans || []).filter(p => p.wrong);
+  if (!wrong.length) return '';
+  return `<div class="bbct-verdict">
+    <div class="bbct-h"><span class="bbct-t">WHO HAD IT WRONG</span></div>
+    ${wrong.map(p => `<div class="bbct-row is-wrong">
+      ${_bbAvatar(p.voter, 26)}
+      <span class="bbct-v">${_bbEsc(p.voter)}</span>
+      <span class="bbct-why">counted <b>${p.believed}</b> for ${_bbEsc(p.target)}; there were <b>${p.truth}</b></span>
+      <span class="bbct-firm is-loose">${p.error > 0 ? `over by ${p.error}` : `under by ${-p.error}`}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
 export function rpBuildBBEviction(ep) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
   const ballots = act?.ballots || [];
@@ -16906,6 +17005,8 @@ export function rpBuildBBEviction(ep) {
     </div>` : '';
 
   const plans = _bbPlansChanged(ep, act);
+  // The house counting before anybody votes, and the reckoning afterwards.
+  const board = _bbVotePlanBoard(ep, (act?.nominees || []).filter(Boolean));
 
   const scenes = [
     ...ballots.map(b => {
@@ -16946,7 +17047,8 @@ export function rpBuildBBEviction(ep) {
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'LIVE EVICTION',
     subtitle: 'One houseguest leaves tonight.', accent: '#f85149', room: 'bb-live',
-    stateKey: `bb_evict_${ep.num}`, header: header + plans, scenes,
+    stateKey: `bb_evict_${ep.num}`, header: board + header + plans, scenes,
+    footer: _bbVotePlanVerdict(ep),
   });
 }
 

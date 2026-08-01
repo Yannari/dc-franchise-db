@@ -23,6 +23,7 @@ import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, initialVotePreference,
   shouldUseVeto, houseVoteCommitment, applyAllianceVoteBloc, applyHouseBandwagon,
+  buildHouseVotePlans,
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
 import { campaignArgument } from '../bb-events/_read.js';
@@ -859,6 +860,11 @@ export function simulateBBWeek(options = {}) {
   ballots.forEach(ballot => { ballot.stated = ballot.evict; });
   const commitments = new Map(ballots.map(b => [b.voter, houseVoteCommitment(b, nominees)]));
   week.voteCommitments = [...commitments.values()];
+  // What everybody THINKS is about to happen, taken before the blocs whip and
+  // the bandwagon rolls. Somebody walking into Thursday certain they have the
+  // numbers, and not having them, is the whole of a blindside — and it can only
+  // be shown if the belief was written down before the vote moved.
+  week.votePlans = buildHouseVotePlans({ ballots, nominees, hoh });
   week.blocMoves = applyAllianceVoteBloc({ ballots, nominees, commitments });
   week.bandwagon = applyHouseBandwagon({ ballots, nominees, commitments, rng });
   week.voteBroken = ballots

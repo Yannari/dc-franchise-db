@@ -167,6 +167,7 @@ export function weekToEpisode(week) {
       stated: b.stated || null, blocMove: b.blocMove || null, bandwagon: !!b.bandwagon,
     })),
     voteCommitments: (week.voteCommitments || []).map(c => ({ ...c })),
+    votePlans: (week.votePlans || []).map(v => ({ ...v })),
     // Why anybody's plan moved this week, and what is currently promised. Both
     // are shown, not merely stored — a game that behaves on reasons the user
     // cannot see is the failure mode this format keeps rediscovering.

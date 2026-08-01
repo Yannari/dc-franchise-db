@@ -666,6 +666,62 @@
       .bbns-cell, .bbns-kh { transition:none; }
     }
 
+    /* ── The count going in ──
+       Prefixed bbct- rather than bbvp-: the latter is a tripwire. A test
+       asserts no screen contains it, to stop anybody rebuilding a private Big
+       Brother visual-player kit instead of using the shared one. */
+       Total Drama shows a vote as a set of plans before it shows it as a
+       result. A house went straight to reading ballots, so a blindside arrived
+       with no setup and read as an accident. Every number here is what a
+       houseguest BELIEVES, which is the only reason the ballots mean anything. */
+    .bbvp          { margin:0 0 16px; padding:12px; border-radius:10px;
+                     border:1px solid rgba(88,166,255,.2); background:rgba(88,166,255,.04); }
+    .bbct-h        { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .bbct-t        { font-family:ui-monospace,Consolas,monospace; font-size:9px; font-weight:800;
+                     letter-spacing:1.7px; color:#58a6ff; }
+    .bbct-m        { margin-left:auto; font-family:ui-monospace,Consolas,monospace;
+                     font-size:9px; letter-spacing:1px; color:#6e7681; }
+
+    .bbct-sides    { display:flex; gap:10px; margin-bottom:12px; }
+    .bbct-side     { flex:1; padding:9px; border-radius:8px; background:rgba(255,255,255,.02);
+                     border:1px solid rgba(255,255,255,.06); }
+    .bbct-side.is-ahead { border-color:rgba(248,81,73,.45); background:rgba(248,81,73,.07); }
+    .bbct-side-h   { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .bbct-side-n   { font-size:12px; font-weight:600; color:#e6edf3; }
+    .bbct-side-c   { margin-left:auto; font-family:var(--font-display); font-size:21px; color:#f85149; }
+    .bbct-side-f   { display:flex; flex-wrap:wrap; gap:3px; min-height:24px; }
+    .bbct-side-f i { font-style:italic; font-size:10px; color:#4d545c; }
+
+    .bbct-rows     { display:flex; flex-direction:column; }
+    .bbct-row      { display:flex; align-items:center; gap:7px; padding:4px 2px;
+                     border-bottom:1px solid rgba(255,255,255,.04); font-size:11px; }
+    .bbct-row:last-child { border-bottom:0; }
+    .bbct-v        { font-weight:600; color:#e6edf3; min-width:74px; }
+    .bbct-arrow    { color:#4d545c; font-size:9.5px; }
+    .bbct-tgt      { color:#ffb3ae; font-weight:600; min-width:74px; }
+    .bbct-why      { flex:1; color:#6e7681; font-size:10px; font-style:italic; }
+    .bbct-firm     { font-family:ui-monospace,Consolas,monospace; font-size:8px; font-weight:700;
+                     letter-spacing:1px; padding:2px 6px; border-radius:3px; text-transform:uppercase; }
+    .bbct-firm.is-firm  { background:rgba(63,185,80,.14);  color:#7ee787; }
+    .bbct-firm.is-soft  { background:rgba(227,179,65,.14); color:#e3b341; }
+    .bbct-firm.is-loose { background:rgba(248,81,73,.14);  color:#ffb3ae; }
+    .bbct-belief   { font-family:ui-monospace,Consolas,monospace; font-size:9px; color:#6e7681;
+                     min-width:84px; text-align:right; }
+    .bbct-belief b { color:#c9d1d9; font-size:11px; }
+    .bbct-belief i { font-style:normal; color:#4d545c; }
+    .bbct-belief.is-sure b { color:#58a6ff; }
+    .bbct-foot     { margin-top:9px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.07);
+                     font-size:9.5px; color:#4d545c; text-align:center; font-style:italic; }
+
+    /* The reckoning, once the votes are read. */
+    .bbct-verdict  { margin:16px 0 0; padding:12px; border-radius:10px;
+                     border:1px solid rgba(248,81,73,.35); background:rgba(248,81,73,.06); }
+    .bbct-verdict .bbct-t { color:#f85149; }
+    .bbct-row.is-wrong .bbct-why { color:#8b949e; font-style:normal; }
+    .bbct-row.is-wrong .bbct-why b { color:#ffb3ae; }
+
+    @media (max-width: 640px) { .bbct-sides { flex-direction:column; } }
+
     /* Legend for the standing icons — an icon nobody can name is decoration. */
     .bbw-key        { display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
                       margin:8px 0 12px; font-size:9.5px; letter-spacing:.6px; color:#8b949e; }

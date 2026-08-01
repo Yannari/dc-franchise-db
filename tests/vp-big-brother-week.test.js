@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, rpBuildBBEviction, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -352,5 +352,67 @@ describe('the nomination ceremony', () => {
     expect(html).toContain('bbns-stage');
     expect(html).toContain('bbns-controls');
     expect(html).toContain('MEMORY WALL');
+  }, 240000);
+});
+
+// The count going in.
+//
+// Total Drama shows a vote as a set of plans before it shows it as a result:
+// who each person is voting for, how firmly, and how many votes they THINK
+// they have. A house went straight to reading ballots, so a blindside arrived
+// with no setup and read as an accident rather than as somebody being wrong.
+describe('vote planning before the eviction', () => {
+  it('opens on the count, before a single ballot', () => {
+    reset();
+    let ep = null;
+    for (let i = 0; i < 2; i++) ep = simulateBBEpisode();
+    _tvState[`bb_evict_${ep.num}`] = { idx: -1 };
+    const html = rpBuildBBEviction(ep);
+    expect(html).toContain('THE COUNT GOING IN');
+    // A row per voter and a side per nominee.
+    const voters = ((ep.acts || []).find(a => a.type === 'eviction')?.ballots || []).length;
+    expect((html.match(/class="bbct-row"/g) || []).length).toBe(voters);
+    expect((html.match(/bbct-side /g) || []).length).toBe(2);
+    expect(/undefined|NaN/.test(html)).toBe(false);
+  }, 240000);
+
+  it('holds the reckoning back until the votes are read', () => {
+    reset();
+    let ep = null, guard = 0;
+    // Find a week where somebody actually misread the room.
+    while (guard++ < 8 && !(ep?.votePlans || []).some(p => p.wrong)) ep = simulateBBEpisode();
+    if (!(ep?.votePlans || []).some(p => p.wrong)) return;
+
+    _tvState[`bb_evict_${ep.num}`] = { idx: -1 };
+    expect(rpBuildBBEviction(ep), 'the answer is on screen before the question')
+      .not.toContain('WHO HAD IT WRONG');
+    _tvState[`bb_evict_${ep.num}`] = { idx: 99 };
+    expect(rpBuildBBEviction(ep), 'somebody misread the room and it was never said')
+      .toContain('WHO HAD IT WRONG');
+  }, 240000);
+
+  it('counts what a houseguest believes, not what is true', () => {
+    reset();
+    let ep = null;
+    for (let i = 0; i < 3; i++) ep = simulateBBEpisode();
+    const plans = ep.votePlans || [];
+    expect(plans.length).toBeGreaterThan(0);
+    for (const p of plans) {
+      // A belief is a count of real voters, and the truth is recorded beside it.
+      expect(p.believed).toBeGreaterThanOrEqual(0);
+      expect(p.believed).toBeLessThanOrEqual(plans.length);
+      expect(p.truth).toBe(plans.filter(q => q.target === p.target).length);
+      expect(p.wrong).toBe((p.believed >= p.majority) !== (p.truth >= p.majority));
+    }
+    // If everybody always read the room correctly there would be no blindside
+    // in the format at all — but a single quiet week where the count is
+    // obvious to everybody is legitimate, so this is asked of a season.
+    let misread = 0, seen = 0;
+    for (let i = 0; i < 4; i++) {
+      const week = simulateBBEpisode();
+      for (const p of week.votePlans || []) { seen++; if (p.believed !== p.truth) misread++; }
+    }
+    expect(seen).toBeGreaterThan(0);
+    expect(misread, 'nobody in an entire season ever misread the room').toBeGreaterThan(0);
   }, 240000);
 });

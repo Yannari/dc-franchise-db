@@ -31,14 +31,35 @@ import {
   _generateExposeSchemer, _generateComfortVictim,
 } from '../social-manipulation.js';
 import { getBond } from '../bonds.js';
+import { endgameDealsOf, tierOf } from '../bb/deals.js';
 import {
   pStats, band, furthestFrom, willScheme, isNice, beatsInvolving,
 } from './_read.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
+/**
+ * Who this person has actually promised the end to.
+ *
+ * The one fact in the exposure pool that can be true or false, so it gets
+ * looked up rather than asserted. Two or more standing final-two promises is
+ * the thing worth telling the house about; one is just a game.
+ */
+function doubleDealPartners(name) {
+  if (!name) return [];
+  let deals = [];
+  try { deals = endgameDealsOf(name) || []; } catch { return []; }
+  return deals
+    .filter(deal => deal.active !== false && tierOf(deal) === 'final-two')
+    .flatMap(deal => (deal.players || []).filter(other => other !== name))
+    .filter((other, i, all) => other && all.indexOf(other) === i
+      && (gs.activePlayers || []).includes(other));
+}
+
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _quiet = pool => [...pool].sort((a, b) => beatsInvolving(a) - beatsInvolving(b));
+const _listNames = names => (names.length <= 1 ? (names[0] || 'nobody')
+  : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`);
 const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const _textPick = (lines, result, salt = '') => {
   const key = `${salt}|${(result.players || []).join('|')}|${result.text || ''}|${result.badgeText || ''}`;
@@ -165,14 +186,27 @@ function _bbResultText(result, salt = '') {
     }
     case 'exposeSchemer': {
       const [exposer, schemer] = p;
-      return _textPick([
+      // Everything here is a claim about what the schemer did, and one of these
+      // used to be a claim about something CHECKABLE: that they had promised
+      // several people a final two, with two of them confirming it on the spot.
+      // It was in the pool unconditionally, so the house announced a specific,
+      // verifiable fact about somebody who very often had exactly one deal or
+      // none at all — and then two people confirmed a thing that had not
+      // happened. The rest of these describe contradictions in what was said,
+      // which the exposure firing at all already establishes. This one names a
+      // number, so it has to earn it.
+      const partners = doubleDealPartners(schemer);
+      const lines = [
         `${exposer} compares what ${schemer} told different people and brings the contradictions to the group. When everyone asks ${schemer} for an explanation, the stories do not match.`,
         `${exposer} asks three houseguests to repeat what ${schemer} told them. Each heard a different target, a different deal and the same promise of secrecy.`,
         `${exposer} confronts ${schemer} in front of the people named in the rumor. ${schemer} tries to answer them one at a time, but they stop allowing private conversations.`,
         `${exposer} lays out a timeline of ${schemer}'s conversations on the kitchen table. The gaps disappear as other houseguests add what they heard.`,
         `${exposer} catches ${schemer} repeating a story that was already disproved. Instead of arguing privately, ${exposer} calls everyone into the room and asks ${schemer} to tell it again. With the whole house listening, the story changes almost immediately.`,
-        `${exposer} tells the house that ${schemer} has been making the same final-two promise to several people. Two of them immediately confirm it.`,
-      ], result, salt);
+      ];
+      if (partners.length >= 2) {
+        lines.push(`${exposer} tells the house that ${schemer} has promised a final two to ${partners.length} different people. ${partners[0]} and ${partners[1]} confirm it in the same breath, and neither knew about the other.`);
+      }
+      return _textPick(lines, result, salt);
     }
     case 'whisperCampaign': {
       const [schemer, target] = p;
@@ -558,9 +592,139 @@ const comfortVictim = {
   },
 };
 
+// ── the accusation that is not true ───────────────────────────────────
+//
+// Saying somebody is double-dealing is the single most effective thing you can
+// say about another houseguest, which is exactly why people say it about
+// houseguests who are not. The exposure above only fires on a real scheme and
+// only names a number it can prove; this is the other half — the same
+// accusation deployed as a weapon, marked as false where it is false, and
+// carrying the risk that makes it a gamble rather than a free shot.
+//
+// The two are deliberately symmetrical. A true exposure damages the schemer. A
+// false one damages the schemer too, right up until the people supposedly
+// promised a final two talk to each other.
+
+const falseAccusation = {
+  id: 'scheme-false-accusation',
+  category: 'social',
+  location: 'kitchen',
+  weight(house, ctx) {
+    if (house.length < 5) return 0;
+    // Somebody willing to lie, about somebody who is not actually doing it.
+    if (ctx?.act === 'eviction') return 0;
+    const liar = house.find(n => willScheme(n)
+      && _others(house, n).some(mark => doubleDealPartners(mark).length < 2));
+    return liar ? _w(5, ctx) : 0;
+  },
+  fire(house, ctx, api, rng) {
+    const liar = _quiet(house.filter(n => willScheme(n)
+      && _others(house, n).some(mark => doubleDealPartners(mark).length < 2)))[0];
+    const mark = furthestFrom(liar, _others(house, liar)
+      .filter(n => doubleDealPartners(n).length < 2)) || _others(house, liar)[0];
+    if (!liar || !mark) {
+      return _quietBeat('Nobody has anything worth making up today.', []);
+    }
+    const audience = _quiet(_others(house, liar, mark)).slice(0, 3);
+    const p = pronouns(liar);
+
+    // A lie about somebody lands on the teller's standing, not on evidence —
+    // there is none, because none exists.
+    const convinced = audience.filter(listener => {
+      const trust = getBond(listener, liar) * 0.3 + (pStats(liar).social - 5) * 0.28
+        - pStats(listener).intuition * 0.16 - getBond(listener, mark) * 0.35;
+      return trust > -0.3;
+    });
+
+    // _textPick, not _pick: the latter is Math.random and a seeded season has to
+    // replay identically. Two events reached for the convenient one and the
+    // reproducibility guarantee went with them.
+    const seed = { players: [liar, mark], text: `${convinced.length}`, badgeText: 'lie' };
+    const text = convinced.length ? _textPick([
+      `${liar} tells ${_listNames(audience)} that ${mark} has promised a final two to half the house. It is not true. ${_listNames(convinced)} ${convinced.length > 1 ? 'believe' : 'believes'} it anyway, because it sounds exactly like something ${mark} would do.`,
+      `"Ask ${mark} who ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} going to the end with. Then ask somebody else." ${liar} has invented the whole thing and ${_listNames(convinced)} ${convinced.length > 1 ? 'go' : 'goes'} away to check.`,
+      `${liar} does not accuse ${mark} of anything ${p.sub} can be pinned to — just wonders aloud how many people ${mark} has made promises to. The number ${p.sub} implies is a number ${p.sub} made up.`,
+    ], seed, 'false-accusation') : _textPick([
+      `${liar} tries to sell the room on ${mark} having several final twos. Nobody has seen any evidence of it, largely because there is not any, and the conversation dies.`,
+      `"How many people has ${mark} promised?" It is a good question and ${liar} has no answer to it, having started from the answer ${p.sub} wanted.`,
+    ], seed, 'false-accusation-flat');
+
+    convinced.forEach(listener => {
+      api.suspicion(listener, mark, 1.3);
+      api.addBond(listener, mark, -0.7);
+      api.remember(listener, liar, 'told-me-about-the-deals', 1, { about: mark, false: true });
+    });
+    _others(house, liar, mark).filter(n => !convinced.includes(n))
+      .forEach(n => api.suspicion(n, liar, 0.6));
+
+    // On the record as a lie, so the house can find out later.
+    gs.bb ||= {};
+    (gs.bb.falseClaims ||= []).push({
+      liar, mark, kind: 'double-dealing', week: ctx?.week?.num || 0,
+      believers: [...convinced], exposed: false,
+    });
+    return { text, players: [liar, mark],
+      badgeText: convinced.length ? 'A LIE THAT LANDS' : 'NOBODY BUYS IT',
+      badgeClass: convinced.length ? 'orange' : 'grey' };
+  },
+};
+
+const accusationCollapses = {
+  id: 'scheme-accusation-collapses',
+  category: 'social',
+  location: 'living-room',
+  weight(house, ctx) {
+    // Eviction night belongs to the farewell speech; these two crowded it out.
+    if (ctx?.act === 'eviction') return 0;
+    const claim = _liveFalseClaim(house, ctx);
+    return claim ? _w(7, ctx) : 0;
+  },
+  fire(house, ctx, api, rng) {
+    const claim = _liveFalseClaim(house, ctx);
+    if (!claim) return _quietBeat('Nothing gets checked today.', []);
+    const { liar, mark } = claim;
+    const checker = _quiet(claim.believers.filter(n => house.includes(n)))[0]
+      || _others(house, liar, mark)[0];
+    claim.exposed = true;
+    const p = pronouns(liar);
+
+    const text = _textPick([
+      `${checker} finally does the obvious thing and asks ${mark} directly, then asks the people ${mark} was supposed to have promised. Nobody has been promised anything. ${liar} said it, and only ${liar}.`,
+      `It takes one conversation to undo. ${mark} has no secret final twos, the people named have never heard of them, and everybody now knows which houseguest invented the story.`,
+      `"Who told you that?" ${mark} asks it calmly and waits, and the answer works its way back to ${liar} in front of everybody.`,
+      `The accusation had one problem, which is that it was not true, and ${checker} is the one who bothers to find out. ${p.Sub} spends the rest of the day being asked what else ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} made up.`,
+    ], { players: [checker, liar, mark], text: '', badgeText: 'collapse' }, 'collapse');
+
+    // The gamble, collected. A false accuser is worse than a schemer, because
+    // the house now has to discount everything they have ever said.
+    house.filter(n => n !== liar).forEach(n => {
+      api.suspicion(n, liar, 1.4);
+      api.addBond(n, liar, -0.8);
+      api.remember(n, liar, 'made-it-up', 2, { about: mark });
+    });
+    api.addBond(mark, liar, -2.2);
+    api.setTarget(mark, liar, `invented an accusation about ${mark}`);
+    api.popDelta(liar, -3);
+    api.popDelta(mark, 1);
+    return { text, players: [checker, liar, mark],
+      badgeText: 'IT WAS NEVER TRUE', badgeClass: 'red' };
+  },
+};
+
+/** A lie told at least a week ago, still standing, with everybody still here. */
+function _liveFalseClaim(house, ctx) {
+  const week = ctx?.week?.num || 0;
+  return (gs.bb?.falseClaims || []).find(claim => !claim.exposed
+    && claim.week < week
+    && house.includes(claim.liar) && house.includes(claim.mark)
+    // Somebody has to still believe it, or there is nothing to correct.
+    && claim.believers.some(n => house.includes(n)));
+}
+
 export const SCHEME_EVENTS = [
   forgeNote, spreadLies, whisperCampaign, campaignRally,
   falseMajority, kissTrap, exposeSchemer, comfortVictim,
+  falseAccusation, accusationCollapses,
 ];
 
 export default SCHEME_EVENTS;

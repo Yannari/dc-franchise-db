@@ -17053,47 +17053,225 @@ export function rpBuildBBSafety(ep) {
   });
 }
 
+/**
+ * The veto ceremony, run the way the show runs it.
+ *
+ * The old screen was four generic cards: decision, replacement, final block,
+ * beats. No script, no pleas, no adjournment, no stage — the most suspenseful
+ * meeting of the week rendered as a changelog.
+ *
+ * The real ceremony has a fixed liturgy and the fixed lines are the drama:
+ * the holder calls the meeting ("this is the veto meeting"), each nominee is
+ * given the chance to say why the veto should be used on them, the holder
+ * stands and says "I have decided..." — and then either somebody comes off the
+ * wall and the Head of Household is forced to name a replacement on the spot,
+ * or the nominations stand. Either way it ends "this veto meeting is
+ * adjourned."
+ *
+ * The stage mirrors the nomination ceremony's: the block as wall screens that
+ * change state live as the meeting unfolds — a saved nominee's frame clears to
+ * green, the replacement's lights up red — with the veto medallion between
+ * them, unlit until the decision.
+ *
+ * Logic notes, because the data is easy to get wrong: `act.nominees` is the
+ * block AFTER the swap, so the ceremony's opening block is that list with the
+ * replacement swapped back for the saved houseguest. A self-save is the holder
+ * being on that opening block. `used` with no replacement cannot produce a
+ * handover step.
+ */
 export function rpBuildBBCeremony(ep) {
   const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
   const holder = act?.holder || ep.vetoWinner;
-  // Why, in the holder's own terms. The engine has always had a reason and the
-  // ceremony has never once said it — the screen reported a decision with no
-  // thinking behind it, which is what made the veto feel like a coin toss.
+  const hoh = ep.hoh;
+  const used = !!act?.used;
+  const saved = used ? act?.saved : null;
+  const replacement = used ? (act?.replacement || null) : null;
+  const finalNoms = (act?.nominees || []).filter(Boolean);
+  // The block as the meeting OPENS: swap the replacement back out.
+  const startNoms = replacement
+    ? finalNoms.map(n => n === replacement ? saved : n)
+    : [...finalNoms];
+  const selfSave = used && saved === holder;
+
+  const stateKey = `bb_vcer_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', Sub: 'They' }; } };
+  const vvar = (list, ...salt) => {
+    const key = `${ep.num}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
+  };
+
+  // ── each nominee's plea, in their own register ──
+  const plea = name => {
+    const p = pv(name);
+    let stats = {}; let warmth = 0;
+    try { stats = pStats(name); } catch { stats = {}; }
+    try { warmth = getBond(name, holder); } catch { warmth = 0; }
+    if (warmth >= 4) return vvar([
+      `"You know me. You know what we've talked about in this house. I'm not going to stand here and pretend that doesn't count for something." ${name} looks straight at ${holder} the whole time.`,
+      `${name} does not make a speech so much as a reminder: "Everything I've said to you, I meant. Do with that what you want." ${holder} does not look away, which everybody notices.`,
+      `"I could list reasons. You already know all of them." ${name} sits back down, and it is somehow the strongest pitch of the day.`,
+    ], name, 'ally');
+    if ((stats.boldness || 5) >= 7) return vvar([
+      `${name} stands up like it is a competition. "Use it on me and I'll win my way through this house. Leave me up here and I'll do it anyway — but you'll have made an enemy doing it." Half the room admires it. The other half writes it down.`,
+      `"I'm not going to beg." ${name} then delivers, at volume, something that is not begging only on a technicality — and finishes by telling ${holder} exactly what leaving ${p.obj} up there will cost.`,
+      `${name} uses the whole minute. It is confident, it is aimed at ${holder}, and it does not contain the word please once.`,
+    ], name, 'bold');
+    if ((stats.social || 5) <= 4) return vvar([
+      `${name} says four sentences, quietly, and sits down. ${pv(name).Sub} ${p.sub === 'they' ? 'are' : 'is'} not good at this and the not-being-good-at-it is its own kind of honest.`,
+      `"I'd like to stay. I think you know I'm not the threat here." That is the whole speech. In a room full of performers, it almost works.`,
+      `${name} thanks ${holder} for the chance to speak and barely uses it. What ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} say is entirely true, which is more than most veto speeches manage.`,
+    ], name, 'quiet');
+    return vvar([
+      `${name} makes the practical case: who ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} not coming after, what ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} worth to the people listening, and why the block is the wrong place for ${p.obj}. Measured, rehearsed, and aimed at exactly one person.`,
+      `"I'm asking you to think about next week, not this one." ${name} pitches the future — who wins if ${p.sub} ${p.sub === 'they' ? 'leave' : 'leaves'}, and whether ${holder} likes that answer.`,
+      `${name} keeps it short and keeps it about the game, and lands one line that visibly sticks: "you don't owe the house this. You owe yourself a reason."`,
+    ], name, 'measured');
+  };
+
+  // ── the steps ──
   const REASON_LABEL = {
     self: 'SAVING THEMSELVES', backdoor: 'THIS WAS THE PLAN',
     'own-deal': 'A PROMISE OUTRANKS A NOMINATION', relationship: 'WORTH THE BLOOD',
     'own-nominations': 'STANDING BY THEIR OWN BLOCK', 'leave-nominations': 'NOT THEIR PROBLEM',
   };
-  const reasoning = act?.why
-    ? [{ text: act.why, players: [holder].filter(Boolean),
-        badgeText: REASON_LABEL[act.reason] || 'THE REASONING', badgeClass: act?.used ? 'gold' : 'grey' }]
-    : [];
+  const pleaders = startNoms.filter(n => n !== holder);
+  const steps = [
+    { kind: 'open' },
+    ...pleaders.map(name => ({ kind: 'plea', name })),
+    { kind: 'stand' },
+    { kind: 'decision' },
+    ...(act?.why ? [{ kind: 'why' }] : []),
+    ...(replacement ? [{ kind: 'handover' }, { kind: 'replacement' }] : []),
+    { kind: 'adjourn' },
+    ...(act?.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
+  ];
 
-  const scenes = act?.used
-    ? [
-      ...reasoning,
-      { text: act.saved === holder
-          ? `${holder} uses the Power of Veto on ${pronouns(holder).ref} and comes off the block. `
-            + `${pronouns(holder).Sub} cannot be nominated again this week, and ${ep.hoh} has a chair to fill.`
-          : `${holder} uses the Power of Veto on ${act.saved}, who comes off the block.`,
-        players: [act.saved, holder].filter((v, i, a) => v && a.indexOf(v) === i),
-        badgeText: act.saved === holder ? 'SAVES THEMSELVES' : 'VETO USED', badgeClass: 'green' },
-      ...(act.replacement ? [{
-        text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair.`
-          + (act.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''),
-        players: [act.replacement, ep.hoh].filter(Boolean), badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
-    ]
-    : [
-      ...reasoning,
-      { text: `${holder} chooses not to use the Power of Veto. The nominations stand.`, players: [holder].filter(Boolean), badgeText: 'VETO NOT USED', badgeClass: 'grey' },
-    ];
-  scenes.push({ text: `The block is final: ${(act?.nominees || []).join(' and ')}.`, players: act?.nominees || [], badgeText: 'FINAL NOMINEES', badgeClass: 'red' });
-  scenes.push(..._bbBeats(act));
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'VETO CEREMONY',
-    subtitle: 'The block is decided.', accent: '#3fb950', room: 'bb-block',
-    stateKey: `bb_cer_${ep.num}`, scenes,
-  });
+  const total = steps.length;
+  const revealed = Math.max(0, state.idx + 1);
+  const done = state.idx >= total - 1;
+  const at = kind => steps.findIndex(st => st.kind === kind);
+  const decided = state.idx >= at('decision');
+  const replaced = replacement && state.idx >= at('replacement');
+
+  // ── the stage: the block, live, with the medallion between ──
+  const MEDAL = `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs><radialGradient id="bbvc-g" cx="38%" cy="32%">
+        <stop offset="0%" stop-color="#ffe9a8"/><stop offset="55%" stop-color="#e3b341"/>
+        <stop offset="100%" stop-color="#8a5c00"/></radialGradient></defs>
+      <circle cx="32" cy="34" r="26" fill="url(#bbvc-g)" stroke="#5c3d00" stroke-width="2"/>
+      <circle cx="32" cy="34" r="19" fill="none" stroke="#5c3d00" stroke-width="1.4" opacity=".55"/>
+      <path d="M23 26 L32 45 L41 26" fill="none" stroke="#3a2600" stroke-width="4.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M24 10 L32 20 L40 10" fill="none" stroke="#5c3d00" stroke-width="3" opacity=".7"/>
+    </svg>`;
+
+  // Slots: the opening block, with the saved houseguest STAYING on stage in
+  // green once vetoed — they are the story of the meeting, not a vacancy — and
+  // the replacement appearing as a new slot when the Head of Household names
+  // them. A first cut had the replacement take over the saved slot, which made
+  // the person the veto was used on vanish from their own ceremony.
+  const cell = (who, cls, tag, stamp = '') => `<div class="bbns-screen is-on bbvc-slot ${cls}">
+      <span class="bbns-num">${cls === 'is-repl' ? 'RE' : 'NM'}</span>
+      <div class="bbns-inner">
+        <div class="bbns-shot">${_bbAvatar(who, 108)}</div>
+        <div class="bbns-name">${_bbEsc(who)}</div>
+        <div class="bbns-tag">${tag}</div>
+        ${stamp}
+      </div>
+    </div>`;
+  const slots = startNoms.map(name => {
+    const savedNow = decided && used && name === saved;
+    return savedNow
+      ? cell(name, 'is-saved', 'VETOED · SAFE', '<div class="bbvc-stamp">VETO</div>')
+      : cell(name, 'is-nom', 'NOMINATED');
+  }).join('') + (replaced ? cell(replacement, 'is-repl', 'REPLACEMENT NOMINEE') : '');
+
+  const stage = `<div class="bbns-stage bbvc-stage ${decided ? (used ? 'is-used' : 'is-kept') : ''}">
+    <div class="bbns-screens" data-n="${startNoms.length + (replaced ? 1 : 0)}">${slots}</div>
+    <div class="bbvc-medalbox ${decided ? 'is-lit' : ''}">
+      <span class="bbvc-medal">${MEDAL}</span>
+      <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : 'POWER OF VETO'}</span>
+      <span class="bbvc-medal-s">${decided
+        ? (used ? `on ${_bbEsc(saved)}` : 'the nominations stand')
+        : `${_bbEsc(holder || '')} holds it`}</span>
+    </div>
+  </div>`;
+
+  // ── the cards ──
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'open':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill grey">THE VETO MEETING</span></div>
+          <div class="bbns-card-b">The house gathers in the living room, and <strong>${_bbEsc(holder)}</strong> stands with the medallion. "This is the veto meeting. ${startNoms.map(_bbEsc).join(' and ')}${startNoms.length > 1 ? ' have' : ' has'} been nominated for eviction, but I have the power to veto one of the nominations.${pleaders.length ? ' I’ve decided to give each of you the chance to say why I should use the veto on you.' : ''}"${selfSave ? ` ${_bbEsc(holder)} is one of the nominees, and everybody in the room already knows how this half of it ends.` : ''}</div></div>`;
+      case 'plea':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill blue">${_bbEsc(step.name).toUpperCase()} SPEAKS</span></div>
+          <div class="bbns-card-b">${plea(step.name)}</div></div>`;
+      case 'stand':
+        return `<div class="bbns-card is-open bbvc-stand">
+          <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill gold">THE DECISION</span></div>
+          <div class="bbns-card-b">${_bbEsc(holder)} stands. The room goes quiet the way it only goes quiet twice a week. "I have decided..."</div></div>`;
+      case 'decision':
+        return used
+          ? `<div class="bbns-card is-final bbvc-used">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}${saved !== holder ? _bbAvatar(saved, 30) : ''}<span class="bbns-pill green">VETO USED</span></div>
+              <div class="bbns-card-b">${selfSave
+                ? `"...to use the Power of Veto on myself." <strong>${_bbEsc(holder)}</strong> takes ${pv(holder).posAdj} own face off the block, and cannot be renominated this week.`
+                : `"...to use the Power of Veto on <strong>${_bbEsc(saved)}</strong>." ${_bbEsc(saved)} is off the block. ${pv(saved).Sub} ${pv(saved).sub === 'they' ? 'exhale' : 'exhales'} for the first time in four days.`}</div></div>`
+          : `<div class="bbns-card is-final bbvc-kept">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}<span class="bbns-pill grey">VETO NOT USED</span></div>
+              <div class="bbns-card-b">"...not to use the Power of Veto." The medallion goes back in its box, and the block does not move. ${startNoms.map(_bbEsc).join(' and ')} face the vote exactly as nominated.</div></div>`;
+      case 'why':
+        return `<div class="bbns-card is-reason">
+          <div class="bbns-card-h">${_bbAvatar(holder, 30)}<span class="bbns-pill gold">${REASON_LABEL[act?.reason] || 'THE REASONING'}</span></div>
+          <div class="bbns-card-b">${act.why}</div></div>`;
+      case 'handover':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">THE HANDOVER</span></div>
+          <div class="bbns-card-b">"${_bbEsc(hoh)}, since I have just vetoed one of your nominations, you must name a replacement nominee." Every head in the room turns to the Head of Household at once, and ${_bbEsc(hoh)} has nowhere to put the pause.</div></div>`;
+      case 'replacement':
+        return `<div class="bbns-card is-final">
+          <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
+          <div class="bbns-card-b">${_bbEsc(hoh)} stands. "<strong>${_bbEsc(replacement)}</strong>, take a seat." ${pv(replacement).Sub} ${pv(replacement).sub === 'they' ? 'cross' : 'crosses'} the room to a chair that was somebody else's a minute ago.${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}</div></div>`;
+      case 'adjourn':
+        return `<div class="bbns-card is-final bbvc-adjourn">
+          <div class="bbns-card-h">${_bbAvatar(holder, 30)}${finalNoms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">ADJOURNED</span></div>
+          <div class="bbns-card-b">"This veto meeting is adjourned." The block is final: <strong>${finalNoms.map(_bbEsc).join(' and ')}</strong> face the vote.</div></div>`;
+      default: {
+        const b = step.beat || {};
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
+          <div class="bbns-card-b">${b.text}</div></div>`;
+      }
+    }
+  };
+
+  const nextLabel = state.idx < 0 ? 'Call the meeting'
+    : steps[state.idx + 1]?.kind === 'decision' ? 'The decision'
+    : steps[state.idx + 1]?.kind === 'replacement' ? 'Name the replacement'
+    : 'Reveal next';
+
+  return `<div class="rp-page bb-room bb-block bbns bbvc">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">VETO CEREMONY</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${_bbEsc(holder || '')} holds the only power left this week.</div>
+    ${stage}
+    <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
+    <div class="bbns-controls">
+      ${done ? '<span class="bbns-done">This veto meeting is adjourned.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${nextLabel}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="bbns-count">${Math.min(total, revealed)} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 export function rpBuildBBCampaign(ep) {
@@ -17565,7 +17743,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
         screens.push({ id: id('bb-veto'), label: 'Veto', html: rpBuildBBComp(view, 'veto') });
         break;
       case 'veto-ceremony':
-        screens.push({ id: id('bb-cer'), label: 'Ceremony', html: rpBuildBBCeremony(view) });
+        screens.push({ id: id('bb-cer'), label: 'Veto Ceremony', html: rpBuildBBCeremony(view) });
         break;
       case 'departure':
         screens.push({ id: id('bb-departure'), label: act.kind === 'expulsion' ? 'Expulsion' : 'Walkout', html: rpBuildBBDeparture(view) });

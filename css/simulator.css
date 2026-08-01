@@ -520,6 +520,58 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* ── the veto ceremony ─────────────────────────────────────────────
+       Same stage grammar as the nomination ceremony, with the medallion as the
+       centrepiece: unlit until "I have decided", gold when used, ash when the
+       block stands. The saved houseguest's frame clears to green and STAYS —
+       they are the story of the meeting — and the replacement lights up as a
+       new frame beside them. */
+    .bbvc-stage    { align-items:stretch; }
+    .bbvc-medalbox { display:flex; flex-direction:column; align-items:center;
+                     justify-content:center; gap:6px; min-width:118px;
+                     padding:12px 10px; border-radius:8px;
+                     background:rgba(255,255,255,.03);
+                     border:1px dashed rgba(227,179,65,.25); }
+    .bbvc-medal    { width:58px; height:58px; opacity:.28;
+                     filter:grayscale(1); transition:all .5s ease; }
+    .bbvc-medal svg{ width:100%; height:100%; }
+    .bbvc-medalbox.is-lit .bbvc-medal { opacity:1; filter:none;
+                     animation:bbvcGlow 2.4s ease-in-out infinite; }
+    @keyframes bbvcGlow { 0%,100% { transform:scale(1); } 50% { transform:scale(1.06); } }
+    .bbvc-stage.is-kept .bbvc-medalbox.is-lit .bbvc-medal { filter:grayscale(.8);
+                     animation:none; opacity:.6; }
+    .bbvc-medal-t  { font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:2px; font-weight:700; color:#e3b341; }
+    .bbvc-stage.is-kept .bbvc-medal-t { color:#8b949e; }
+    .bbvc-medal-s  { font-size:10px; color:#8b949e; text-align:center; }
+
+    /* Doubled selectors on purpose: `.bbns-screen.is-on` sets the red frame,
+       red wash and red tag later in the sheet, so the saved state has to win
+       the specificity fight or the vetoed houseguest keeps reading as
+       nominated with a green stamp floating over it — which is exactly how the
+       first render came out. */
+    .bbns-screen.bbvc-slot.is-saved { border-color:rgba(63,185,80,.75);
+                     background:linear-gradient(180deg, rgba(14,46,22,.9), rgba(6,18,9,.98));
+                     box-shadow:0 0 26px rgba(63,185,80,.32), inset 0 0 46px rgba(63,185,80,.1); }
+    .bbns-screen.bbvc-slot.is-saved .bbns-tag { color:#08210d; background:#3fb950; }
+    .bbns-screen.bbvc-slot.is-repl { animation:bbvcIn .4s ease-out both,
+                     bbns-flash .62s ease-out both; }
+    @keyframes bbvcIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    /* The stamp across a saved face: the medallion did this. */
+    .bbvc-stamp    { position:absolute; top:38%; left:50%;
+                     transform:translate(-50%,-50%) rotate(-14deg);
+                     font-family:ui-monospace,Consolas,monospace; font-size:15px;
+                     font-weight:800; letter-spacing:5px; color:#3fb950;
+                     border:2.5px solid #3fb950; border-radius:4px; padding:2px 9px;
+                     background:rgba(8,33,13,.55); text-shadow:0 0 12px rgba(63,185,80,.6); }
+    .bbvc-slot     { position:relative; }
+    .bbvc-used     { border-left:3px solid #3fb950; }
+    .bbvc-kept     { border-left:3px solid #6e7681; }
+    .bbvc-adjourn  { border-left:3px solid #f85149; }
+    @media (prefers-reduced-motion:reduce) {
+      .bbvc-medalbox.is-lit .bbvc-medal, .bbvc-slot.is-repl { animation:none; }
+    }
+
     /* A nomination that broke a promise. The handshake happened one screen
        earlier, so the ceremony has to acknowledge it or the two scenes are
        telling different stories. */

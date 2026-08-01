@@ -1,6 +1,7 @@
 // Big Brother house-life scenes: ordinary rooms becoming strategic territory.
 // Each event has four written cuts and leaves state behind for later decisions.
 import { bond, closestTo, couldRomance, pStats, targetOf } from './_read.js';
+import { pronouns } from '../players.js';
 
 const pick = (list, rng) => list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
 const actor = (house, rng) => pick(house, rng);
@@ -21,7 +22,7 @@ const bedroomPolitics = {
       `${a} dumps ${b}'s clothes off the empty bed. “I was saving that,” ${b} says. ${a} shrugs and starts unpacking anyway while ${d} watches from across the room.`,
       `${a} wants everyone to switch beds so the rooms are “more balanced.” ${b} asks why ${a} gets to decide that. ${d} stays out of it, but clearly agrees with ${b}.`,
       `${b} wakes up and finds ${a}'s charger plugged into the outlet beside the bed. Neither will unplug it. Ten minutes later, they are arguing about every little thing that has happened all week.`,
-      `After lights-out, ${a} accuses ${b} of taking the extra pillows. ${b} tells ${a} to check under their own bed. ${d} tries not to laugh and fails.`,
+      `After lights-out, ${a} accuses ${b} of taking the extra pillows. ${b} tells ${a} to check under ${pronouns(a).posAdj} own bed. ${d} tries not to laugh and fails.`,
     ], rng);
     api.addBond(a,b,-.8); api.suspicion(d,a,1); api.remember(b,a,'territorial',1,{ room:'bedroom' });
     return result(text,[a,b,d],'BEDROOM WAR','red');
@@ -50,9 +51,9 @@ const kitchenAfterDark = {
   fire(h,c,api,rng) {
     const [a,b,d] = trio(h,rng);
     const text = pick([
-      `${a} burns a quesadilla at two in the morning. ${b} eats it anyway, and ${d} laughs so loudly that production tells them to keep it down.`,
+      `${a} burns a quesadilla at two in the morning. ${b} eats it anyway, and ${d} laughs so loudly that production tells ${pronouns(d).obj} to keep it down.`,
       `${a} and ${b} make a late-night meal out of whatever is left in the fridge. ${d} sits at the counter talking to them until all three lose track of the time.`,
-      `While ${a} washes dishes, ${b} admits they lied about something during the first week. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
+      `While ${a} washes dishes, ${b} admits ${pronouns(b).sub} lied about something during the first week. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
       `${d} starts doing an impression of ${a} in the kitchen. ${a} walks in halfway through it, stares for a moment, then joins in and makes everyone laugh harder.`,
     ],rng);
     api.addBond(a,b,1.1); api.addBond(a,d,.5); api.addBond(b,d,.5); api.remember(b,a,'late-night-trust',1,{});
@@ -66,10 +67,10 @@ const secretSpill = {
   fire(h,c,api,rng) {
     const [a,b,d] = trio(h,rng);
     const text = pick([
-      `${a} starts to say, “When ${b} told me—” and cuts themself off. ${b} looks straight at ${d}. That conversation was supposed to stay private.`,
-      `${a} repeats something ${b} said in private because it makes a funny story. ${b} does not laugh when they notice ${d} listening from the couch.`,
+      `${a} starts to say, “When ${b} told me—” and cuts ${pronouns(a).ref} off. ${b} looks straight at ${d}. That conversation was supposed to stay private.`,
+      `${a} repeats something ${b} said in private because it makes a funny story. ${b} does not laugh after noticing ${d} listening from the couch.`,
       `${a} mentions “our final three” with ${d} still in the room. Nobody speaks for a second. ${a} tries to change the subject, but it is too late.`,
-      `${b} asks how ${a} found out about the plan. ${a} says ${d} told them. ${d} immediately denies it, and all three start talking over one another.`,
+      `${b} asks how ${a} found out about the plan. ${a} says ${d} told ${pronouns(a).obj}. ${d} immediately denies it, and all three start talking over one another.`,
     ],rng);
     api.addBond(a,b,-1.2); api.suspicion(d,a,2); api.remember(b,a,'leaked-information',3,{ witness:d });
     return result(text,[a,b,d],'SECRET SPILLED','red');
@@ -82,9 +83,9 @@ const hohOrbit = {
   fire(h,c,api,rng) {
     const hoh=c.hoh, a=other(h,hoh,rng), b=other(h,hoh,rng);
     const text=pick([
-      `${a} comes up to the HOH room for the fourth time that day. This time the excuse is a missing water bottle. ${hoh} lets them in, but asks what they really want.`,
+      `${a} comes up to the HOH room for the fourth time that day. This time the excuse is a missing water bottle. ${hoh} lets ${pronouns(a).obj} in, then asks what ${a} really wants.`,
       `${a} stretches out on the HOH bed and settles in for a long talk. ${b} passes the open door twice, waiting for a turn alone with ${hoh}.`,
-      `${hoh} opens the HOH door and finds ${a} waiting with coffee. Before they can close it, ${b} appears at the top of the stairs asking to talk too.`,
+      `${hoh} opens the HOH door and finds ${a} waiting with coffee. Before ${hoh} can close it, ${b} appears at the top of the stairs asking to talk too.`,
       `${a} spends most of the afternoon in the HOH room with ${hoh}. Downstairs, ${b} points out that ${a} has barely spoken to anyone else all day.`,
     ],rng);
     api.addBond(a,hoh,.8); api.suspicion(b,a,1.8); api.remember(b,a,'hoh-orbit',2,{ hoh });
@@ -98,10 +99,10 @@ const apologyTour = {
   fire(h,c,api,rng) {
     const a=actor(h,rng); const b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     const text=pick([
-      `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really their fault. ${b} listens without saying much.`,
+      `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really ${pronouns(a).posAdj} fault. ${b} listens without saying much.`,
       `${a} brings ${b} a cup of coffee and says, “I handled that badly.” ${b} accepts the coffee, then asks what exactly ${a} is sorry for.`,
-      `${a} tells ${b} they were wrong about what happened and should not have snapped at them. The apology is awkward, but ${b} can tell it is real.`,
-      `${a} tells ${b} the argument was only game. “It didn't feel like game,” ${b} says. ${a} goes quiet and lets them finish.`,
+      `${a} tells ${b}, “I was wrong about what happened. I shouldn't have snapped at you.” The apology is awkward, but ${b} can tell it is real.`,
+      `${a} tells ${b} the argument was only game. “It didn't feel like game,” ${b} says. ${a} goes quiet and lets ${pronouns(b).obj} finish.`,
     ],rng);
     const lands=pStats(a).social + rng()*6 >= 8; api.addBond(a,b,lands?1.2:-.4); api.remember(b,a,lands?'made-amends':'bad-apology',lands?1:2,{});
     return result(text,[a,b],lands?'APOLOGY LANDS':'NOT BUYING IT',lands?'green':'red');
@@ -116,9 +117,9 @@ const poolsideSpark = {
     const [a,b]=pick(pairs,rng);
     const text=pick([
       `${a} and ${b} volunteer to clean the pool, but spend most of the time sitting at the edge with their feet in the water and talking.`,
-      `${a} takes ${b}'s sunglasses and refuses to give them back. ${b} follows ${a} around the yard, laughing, while everyone else starts exchanging looks.`,
-      `${a} offers to put sunscreen on ${b}'s shoulders. The conversation beside them trails off as the rest of the yard notices.`,
-      `${b} makes ${a} laugh so hard they snort. ${a} covers their face and tells ${b} never to repeat it. ${b} promises between laughs.`,
+      `${a} takes ${b}'s sunglasses and refuses to give ${pronouns(b).obj} the glasses back. ${b} follows ${a} around the yard, laughing, while everyone else starts exchanging looks.`,
+      `${a} offers to put sunscreen on ${b}'s shoulders. The conversation beside the pair trails off as the rest of the yard notices.`,
+      `${b} makes ${a} laugh so hard that ${a} snorts. ${a} covers ${pronouns(a).posAdj} face and tells ${b} never to repeat it. ${b} promises between laughs.`,
     ],rng);
     api.addBond(a,b,1.1); api.showmance(a,b,{ source:'poolside-spark' }); api.remember(a,b,'romantic-spark',1,{});
     return result(text,[a,b],'CHEMISTRY','pink');
@@ -131,7 +132,7 @@ const voteFlipRoom = {
   fire(h,c,api,rng) {
     const noms=c.nominees, [a,b,d]=trio(h.filter(n=>!noms.includes(n)),rng), target=pick(noms,rng);
     const text=pick([
-      `${a} insists they have the votes to evict ${target}. ${b} asks for names. When ${a} names ${d}, ${d} cuts in: “I never said that.”`,
+      `${a} insists the votes are there to evict ${target}. ${b} asks for names. When ${a} names ${d}, ${d} cuts in: “I never said that.”`,
       `${a}, ${b} and ${d} count the votes again. Each of them thinks a different person is the swing, and nobody wants to be the first one to commit.`,
       `${b} shuts the bedroom door. “If we're flipping this, I need both of you with me.” ${d} asks who else knows before giving an answer.`,
       `${a} tells ${b} and ${d} that evicting ${target} is better for all three of them. ${b} agrees. ${d} asks ${b} why they answered so quickly.`,
@@ -149,7 +150,7 @@ const houseRoast = {
     const text=pick([
       `${a} does an impression of the way ${b} walks into a strategy talk. ${d} nearly falls off the couch laughing, and even ${b} has to admit it is accurate.`,
       `${a} starts handing out fake awards at dinner. ${b} wins “Most Likely to Turn Any Conversation Into a Meeting” and forces a smile.`,
-      `${a} reenacts ${b}'s veto speech with a dish towel over their shoulders. Everyone laughs. ${b} laughs too, but asks ${a} to drop it when they try to do it again.`,
+      `${a} reenacts ${b}'s veto speech with a dish towel over ${pronouns(a).posAdj} shoulders. Everyone laughs. ${b} laughs too, but asks ${a} to drop it when ${a} tries again.`,
       `${a} makes a joke about ${b} that gets a huge reaction from the room. ${b} goes quiet, and ${d} is the first person to realize the joke went too far.`,
     ],rng);
     api.addBond(a,b,lands?.5:-1.1); api.addBond(a,d,.4); api.remember(b,a,lands?'shared-joke':'humiliated',lands?1:2,{});
@@ -163,10 +164,10 @@ const storageRoomBreakdown = {
   fire(h,c,api,rng) {
     const a=actor(h,rng), b=closestTo(a,h.filter(n=>n!==a))||other(h,a,rng);
     const text=pick([
-      `${a} goes into the storage room for batteries and starts crying beside the paper towels. ${b} walks in, hesitates, then closes the door and sits down with them.`,
-      `${a} admits the house is getting to them. ${b} hands them a towel, sits on the floor and listens without bringing up the game.`,
-      `${b} finds ${a} standing in front of the open freezer. “I just miss home,” ${a} says. ${b} stays with them until they are ready to go back outside.`,
-      `${a} tells ${b} they are scared of going home this week. ${b} sits beside them on a box of cereal and lets them talk it out.`,
+      `${a} goes into the storage room for batteries and starts crying beside the paper towels. ${b} walks in, hesitates, then closes the door and sits beside ${pronouns(a).obj}.`,
+      `${a} admits the house is getting to ${pronouns(a).obj}. ${b} hands ${pronouns(a).obj} a towel, sits on the floor and listens without bringing up the game.`,
+      `${b} finds ${a} standing in front of the open freezer. “I just miss home,” ${a} says. ${b} stays until ${a} is ready to go back outside.`,
+      `${a} tells ${b}, “I'm scared I'm going home this week.” ${b} sits beside ${pronouns(a).obj} on a box of cereal and lets ${pronouns(a).obj} talk it out.`,
     ],rng);
     api.addBond(a,b,1.5); api.remember(a,b,'emotional-support',3,{}); api.popDelta(b,.5);
     return result(text,[a,b],'A REAL MOMENT','green');
@@ -195,10 +196,10 @@ const silentStandoff = {
   fire(h,c,api,rng) {
     const a=actor(h,rng), b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     const text=pick([
-      `${a} pours coffee for everyone at the table except ${b}. ${b} gets up, takes the pot from ${a}'s hand and pours their own cup without saying a word.`,
+      `${a} pours coffee for everyone at the table except ${b}. ${b} gets up, takes the pot from ${a}'s hand and pours ${pronouns(b).ref} a cup without saying a word.`,
       `${a} and ${b} wipe down opposite ends of the kitchen counter in silence. When they meet in the middle, neither one moves out of the way.`,
-      `${b} asks if anyone wants to use the pool. ${a} answers someone else instead of looking at them. Everyone at the table notices.`,
-      `${a} changes seats when ${b} sits beside them. ${b} moves one chair closer. “Is there a problem?” ${b} asks. ${a} says no.`,
+      `${b} asks if anyone wants to use the pool. ${a} answers someone else instead of looking at ${pronouns(b).obj}. Everyone at the table notices.`,
+      `${a} changes seats when ${b} sits beside ${pronouns(a).obj}. ${b} moves one chair closer. “Is there a problem?” ${b} asks. ${a} says no.`,
     ],rng);
     api.addBond(a,b,-.7); api.remember(a,b,'cold-war',2,{}); if(!targetOf(a)) api.setTarget(a,b,'personal standoff');
     return result(text,[a,b],'COLD WAR','red');

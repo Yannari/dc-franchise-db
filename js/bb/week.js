@@ -72,17 +72,57 @@ function tally(ballots, nominees) {
  * punish somebody who was never actually against them, and take the blame for
  * it either way. Noise keeps it from being a pure enemies list.
  */
-function chooseHaveNots(hoh, house, rng, getRead, wanted) {
-  const pool = house.filter(name => name !== hoh);
-  const auto = Math.max(2, Math.min(4, Math.floor(pool.length / 3)));
-  // A fixed count can be asked for, but never more than the house can spare —
+/**
+ * Who goes on slop: the bottom of the Head of Household competition.
+ *
+ * This used to be the HOH's private pick, scored on their PERCEIVED bond toward
+ * each houseguest plus noise — which meant the most public punishment in the
+ * week landed on whoever the person in power happened to dislike, with no way
+ * for anybody to have avoided it and nothing on screen explaining it.
+ *
+ * The show did it by competition for its first fifteen seasons and only handed
+ * the choice to the Head of Household from the sixteenth. Competition is the
+ * better rule here for the same reason it was the original one: it is earned
+ * rather than decreed, everybody had the same chance to avoid it, and it needs
+ * no explanation beyond the scoreboard.
+ *
+ * Two things follow from the real rules. The Head of Household is automatically
+ * a Have — they won, so they cannot be last anyway, but it is guarded rather
+ * than assumed. And anybody who did not play cannot be last in a competition
+ * they were not in: the outgoing HOH sits out by rule, so they are exempt.
+ */
+function chooseHaveNots(placements, house, wanted, hoh) {
+  // Worst-first among the people who actually competed.
+  const played = (placements || []).filter(name => house.includes(name) && name !== hoh);
+  if (!played.length) return { names: [], reasons: [], count: 0, field: 0 };
+  const worstFirst = [...played].reverse();
+
+  const auto = Math.max(2, Math.min(4, Math.floor(played.length / 3)));
+  // A fixed count can be asked for, but never more than the field can spare —
   // putting everybody on slop is not a twist, it is a different show.
-  const count = Math.min(Number(wanted) > 0 ? Number(wanted) : auto, Math.max(1, pool.length - 1));
-  return pool
-    .map(name => ({ name, score: (getRead ? getRead(hoh, name) : 0) + (rng() * 4 - 2) }))
-    .sort((a, b) => a.score - b.score)
-    .slice(0, count)
-    .map(entry => entry.name);
+  const count = Math.min(Number(wanted) > 0 ? Number(wanted) : auto, Math.max(1, played.length - 1));
+  const chosen = worstFirst.slice(0, count);
+
+  // Placings are quoted against the REAL field, including the winner. Counting
+  // only the people eligible for slop made the scoreboard lie: somebody who
+  // came last of twelve was told they finished last of eleven.
+  const field = (placements || []).filter(name => house.includes(name)).length;
+  return {
+    names: chosen,
+    reasons: chosen.map(name => {
+      const place = (placements || []).filter(n => house.includes(n)).indexOf(name) + 1;
+      return {
+        name, place, field,
+        why: place === field ? `finished last of ${field}`
+          : place === field - 1 ? `second from last of ${field}`
+          : `finished ${place} of ${field}`,
+      };
+    }),
+    count,
+    field,
+    // Nobody chose this, and the screen should be able to say so.
+    exempt: house.filter(n => n !== hoh && !played.includes(n)),
+  };
 }
 
 /**
@@ -609,10 +649,16 @@ export function simulateBBWeek(options = {}) {
   // house watches them do it. Chosen before nominations so the week's first
   // grievance is already in the room when the block is named.
   if (twists.has('bb-have-nots')) {
-    const haveNots = chooseHaveNots(hoh, house, rng, options.readBond, options.haveNotCount);
+    // Read off the competition that just happened, so the two acts are the same
+    // story rather than a result followed by an unrelated punishment.
+    const slop = chooseHaveNots(hohCompetition.placements, house, options.haveNotCount, hoh);
+    const haveNots = slop.names;
     week.haveNots = [...haveNots];
     gs.bb.haveNots = [...haveNots];
-    week.acts.push(addBeats({ type: 'have-nots', hoh, names: [...haveNots] }, { haveNots: [...haveNots] }));
+    week.acts.push(addBeats(
+      { type: 'have-nots', hoh, names: [...haveNots], reasons: slop.reasons,
+        field: slop.field, exempt: slop.exempt },
+      { haveNots: [...haveNots] }));
   } else {
     gs.bb.haveNots = [];
   }

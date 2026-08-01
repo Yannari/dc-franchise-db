@@ -244,9 +244,6 @@ export function simulateBBEpisode() {
       ? Number(seasonConfig.bbSafetyStopsAt) : undefined,
     haveNotCount: seasonConfig.bbHaveNotCount === 'auto' ? 0 : Number(seasonConfig.bbHaveNotCount) || 0,
     departures: seasonConfig.bbDepartures || 'off',
-    // The HOH picks have-nots off their own read of the house, not the truth.
-    readBond: (a, b) => (typeof window !== 'undefined' && window.getPerceivedBond
-      ? window.getPerceivedBond(a, b) : 0),
   });
 
   const ep = weekToEpisode(week);

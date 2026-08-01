@@ -170,7 +170,7 @@ function _bbResultText(result, salt = '') {
         `${exposer} asks three houseguests to repeat what ${schemer} told them. Each heard a different target, a different deal and the same promise of secrecy.`,
         `${exposer} confronts ${schemer} in front of the people named in the rumor. ${schemer} tries to answer them one at a time, but they stop allowing private conversations.`,
         `${exposer} lays out a timeline of ${schemer}'s conversations on the kitchen table. The gaps disappear as other houseguests add what they heard.`,
-        `${exposer} catches ${schemer} repeating a story that was already disproved. Instead of arguing privately, ${exposer} calls everyone into the room.`,
+        `${exposer} catches ${schemer} repeating a story that was already disproved. Instead of arguing privately, ${exposer} calls everyone into the room and asks ${schemer} to tell it again. With the whole house listening, the story changes almost immediately.`,
         `${exposer} tells the house that ${schemer} has been making the same final-two promise to several people. Two of them immediately confirm it.`,
       ], result, salt);
     }

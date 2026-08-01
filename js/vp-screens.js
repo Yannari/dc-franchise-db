@@ -16654,23 +16654,46 @@ export function rpBuildBBEviction(ep) {
  * annoyed about on eviction night. Named on the wall so the disadvantage is
  * visible for the rest of the week rather than mentioned once and forgotten.
  */
+
+/** "LAST", "2ND LAST", or a plain placing — for the have-not badges. */
+function _bbOrdinalish(place) {
+  if (!Number.isFinite(place)) return 'HAVE-NOT';
+  return String(place);
+}
+
 export function rpBuildBBHaveNots(ep) {
   const act = (ep.acts || []).find(a => a.type === 'have-nots');
   if (!act) return '';
   const names = act.names || [];
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'HAVE-NOTS',
-    subtitle: `${act.hoh} decides who goes without.`, accent: '#58a6ff', room: 'bb-block',
+    subtitle: 'The bottom of the competition goes on slop.',
+    accent: '#58a6ff', room: 'bb-block',
     stateKey: `bb_hn_${ep.num}`,
     header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${names.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
     scenes: [
-      { text: `${act.hoh} has the room and the list. Being liked this week just became expensive.`,
-        players: [act.hoh], badgeText: 'HOH DECIDES', badgeClass: 'gold' },
-      ...names.map(n => ({
-        text: `<strong>${n}</strong> is a have-not: slop, cold water, and the worst beds in the house.`,
-        players: [n], badgeText: 'HAVE-NOT', badgeClass: 'blue',
-      })),
-      { text: `A week of it, and the veto to play through on an empty stomach.`,
+      { text: `Nobody picks the have-nots. The scoreboard from the Head of Household`
+          + ` competition does — the bottom ${names.length} of ${act.field || '—'} go on slop.`
+          + `${act.hoh ? ` <strong>${act.hoh}</strong> won it, so ${act.hoh} eats.` : ''}`,
+        players: [act.hoh].filter(Boolean), badgeText: 'THE SCOREBOARD DECIDES', badgeClass: 'gold' },
+      ...names.map(n => {
+        // WHY this person. The list used to appear with no reasoning attached at
+        // all, which was the whole problem with the old rule as well as the way
+        // it was drawn.
+        const why = (act.reasons || []).find(r => r.name === n);
+        return {
+          text: `<strong>${n}</strong> is a have-not: slop, cold water, and the worst beds in the house.`
+            + (why ? `<span class="bbh-why">${_bbEsc(why.why)}</span>` : ''),
+          players: [n], badgeText: why ? `${_bbOrdinalish(why.place)} OF ${why.field}` : 'HAVE-NOT',
+          badgeClass: 'blue',
+        };
+      }),
+      ...((act.exempt || []).length ? [{
+        text: `${act.exempt.join(' and ')} did not play — the outgoing Head of Household sits the`
+          + ` competition out, and cannot come last in one ${act.exempt.length > 1 ? 'they' : 'they'} were not in.`,
+        players: [...act.exempt], badgeText: 'SAT IT OUT', badgeClass: 'grey' }] : []),
+      { text: `A week of it, and the veto to play through on an empty stomach —`
+        + ` slop costs a point and a half to three points of competition score.`,
         players: names, badgeText: 'DISADVANTAGED', badgeClass: 'grey' },
       ..._bbBeats(act),
     ],

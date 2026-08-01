@@ -74,3 +74,70 @@ describe('Big Brother headless week engine', () => {
     expect(gs.eliminated).toHaveLength(5);
   });
 });
+
+// Who goes on slop.
+//
+// This used to be the Head of Household's private pick, scored on their
+// PERCEIVED bond toward each houseguest plus noise — so the most public
+// punishment of the week landed on whoever the person in power happened to
+// dislike, nobody could have avoided it, and no screen said why.
+//
+// The show decided it by competition for its first fifteen seasons and only
+// handed the choice to the HOH from the sixteenth. Competition is the better
+// rule for the same reason it was the original one: it is earned rather than
+// decreed, and it explains itself.
+describe('have-nots come off the scoreboard', () => {
+  beforeEach(() => seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] }));
+
+  it('puts the bottom of the HOH competition on slop', () => {
+    const week = simulateBBWeek({ rng: seededRng(31), twists: ['bb-have-nots'] });
+    const act = (week.acts || []).find(a => a.type === 'have-nots');
+    if (!act) return;
+    const comp = (week.acts || []).find(a => a.type === 'hoh')?.competition;
+    const placements = (comp?.placements || []);
+    expect(placements.length).toBeGreaterThan(3);
+    const bottom = placements.slice(-act.names.length);
+    for (const name of act.names) {
+      expect(bottom, `${name} is on slop without being at the bottom`).toContain(name);
+    }
+  });
+
+  it('never puts the Head of Household on slop', () => {
+    // The HOH is automatically a Have. They won it, so they cannot be last —
+    // but the rule is guarded rather than assumed.
+    for (const seed of [7, 19, 44]) {
+      seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      const week = simulateBBWeek({ rng: seededRng(seed), twists: ['bb-have-nots'] });
+      const act = (week.acts || []).find(a => a.type === 'have-nots');
+      if (!act) continue;
+      expect(act.names, 'the Head of Household is eating slop').not.toContain(week.hoh);
+    }
+  });
+
+  it('quotes the placing against the real field', () => {
+    // Counting only the people eligible for slop made the scoreboard lie:
+    // somebody who came last of twelve was told they finished last of eleven.
+    const week = simulateBBWeek({ rng: seededRng(52), twists: ['bb-have-nots'] });
+    const act = (week.acts || []).find(a => a.type === 'have-nots');
+    if (!act?.reasons?.length) return;
+    const comp = (week.acts || []).find(a => a.type === 'hoh')?.competition;
+    const field = (comp?.placements || []).length;
+    for (const r of act.reasons) {
+      expect(r.field, 'the placing is quoted against the wrong field').toBe(field);
+      expect(r.place, `${r.name} placed outside the field`).toBeLessThanOrEqual(field);
+      expect(r.why, 'a have-not with no reason given').toBeTruthy();
+    }
+  });
+
+  it('exempts anybody who was not allowed to play', () => {
+    // The outgoing Head of Household sits the competition out by rule, and
+    // cannot come last in one they were not in.
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    const first = simulateBBWeek({ rng: seededRng(11), twists: ['bb-have-nots'] });
+    const second = simulateBBWeek({ rng: seededRng(12), twists: ['bb-have-nots'] });
+    const act = (second.acts || []).find(a => a.type === 'have-nots');
+    if (!act || !first.hoh) return;
+    expect(act.names, 'the outgoing HOH was punished for a competition they were barred from')
+      .not.toContain(first.hoh);
+  });
+});

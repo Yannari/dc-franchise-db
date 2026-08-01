@@ -4262,7 +4262,12 @@ export function generateBBSummaryText(ep) {
 
       case 'have-nots':
         sec('HAVE-NOTS');
-        ln(`  ${act.hoh} puts ${(act.names || []).join(', ')} on slop for the week.`);
+        ln(`  The bottom of the Head of Household competition goes on slop.`);
+        (act.reasons || []).forEach(r => ln(`    ${r.name} — ${r.why}.`));
+        if (!(act.reasons || []).length) ln(`    ${(act.names || []).join(', ')}.`);
+        if ((act.exempt || []).length) {
+          ln(`  ${act.exempt.join(' and ')} sat the competition out and cannot be last in it.`);
+        }
         ln('  Cold water, the have-not room, and the veto to play on an empty stomach.');
         beats(act);
         break;

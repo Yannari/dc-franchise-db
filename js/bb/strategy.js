@@ -119,6 +119,31 @@ export function chooseReplacement(hoh, house, protectedNames, plan, rng = Math.r
  * backdoor, and it is the only reason to do it. An HOH with no backdoor plan
  * who pulls their own nominee has simply undone their own week.
  */
+/**
+ * Whether the veto gets used, weighed the way a houseguest weighs it.
+ *
+ * Three questions, and they pull against each other:
+ *
+ *   IS THE HEAD OF HOUSEHOLD GOING TO BE ANGRY? Pulling somebody down undoes
+ *   their week in public. How much that costs depends on WHO comes down — the
+ *   target is a declaration of war, a pawn is barely an inconvenience — on the
+ *   HOH's temper, and on how close the two of them were to begin with, because
+ *   a friend crossing you is worse than a stranger doing it.
+ *
+ *   IS MY FRIEND GOING TO BE ANGRY IF I DO NOT? Leaving somebody up who is
+ *   going home, when you were holding the one thing that could have moved them,
+ *   is not forgiven. That cost is real and it is the other half of the vice.
+ *
+ *   DOES THE BLOCK EVEN CHANGE? This is the one the model was missing. At six
+ *   left there is a house to choose a replacement from; at five there is
+ *   essentially one person it can be, everybody knows it, and using the veto
+ *   stops being a betrayal and becomes bookkeeping. Blood scales with how much
+ *   choice the Head of Household actually has.
+ *
+ * Archetype decides which of the two costs a houseguest actually feels. A hero
+ * or a loyal soldier cannot leave a friend up. A mastermind or a villain is
+ * doing arithmetic. A goat wants no part of any of it.
+ */
 export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context = {}) {
   if (nominees.includes(holder)) {
     return { use: true, save: holder, reason: 'self',
@@ -126,97 +151,165 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
   }
 
   const hoh = context.hoh || null;
+  const house = context.house || [];
   const stats = pStats(holder);
-  const scoreOf = name =>
-    getPerceivedBond(holder, name) * 0.9 + bbAllianceStrength(holder, name) * 2
-      + stats.loyalty * 0.18 - bbThreat(name) * 0.18
-      // The one you promised the end to comes down first. A final two that
-      // does not survive contact with a veto was never a final two.
-      + (() => {
-        const deal = dealBetween(holder, name);
-        if (!deal) return 0;
-        return (tierOf(deal) === 'final-two' ? 4.2 : 2.6) * sincerityOf(deal, holder);
-      })()
-      + (housePlan(holder)?.shield === name ? 1.6 : 0)
-      - (housePlan(holder)?.targets?.[0] === name ? 2.4 : 0)
-      // Does this person actually need saving?
-      //
-      // A pawn is up to sit beside somebody, and the house knows it. Spending
-      // the veto on a houseguest who was never going home wastes the only move
-      // you get and crosses the Head of Household for nothing — which is why in
-      // the house a pawn usually stays on the block and usually survives. The
-      // target is the opposite: leave them up and they are gone on Thursday.
-      - (name === plan?.pawn && name !== plan?.target ? 2.8 : 0)
-      + (name === plan?.target ? 1.3 : 0)
-      + noise(rng, 1.2);
+  const arch = archetype(holder);
+  const hohStats = hoh ? pStats(hoh) : null;
 
-  // Blood on your hands.
-  //
-  // Using a veto you did not need costs something: you have crossed the Head of
-  // Household in public and put somebody else on the block who will know it was
-  // you. Without that cost the veto came off the wall 87% of the time, which
-  // makes the ceremony a formality — in the house, leaving nominations exactly
-  // as they are is an ordinary and often correct week.
-  //
-  // Nerve decides how much the cost weighs. A bold, strategic houseguest will
-  // take the heat; a cautious one finds a reason not to be involved.
+  // How many people could actually take the empty chair. The Head of Household
+  // and the veto winner are immune, and so is whoever stays on the block.
+  const replacementPool = house.filter(n =>
+    n !== hoh && n !== holder && !nominees.includes(n));
+  // One or two options and the choice makes itself; nobody blames the HOH for
+  // arithmetic, and nobody blames the veto holder for forcing it.
+  const forced = replacementPool.length <= 1 ? 1 : replacementPool.length === 2 ? 0.55 : 0;
+
+  // ── what it costs with the person in power ──
+  const angerOf = saved => {
+    if (!hoh) return 0;
+    const isTarget = saved === plan?.target;
+    const isPawn = saved === plan?.pawn && !isTarget;
+    let anger = isTarget ? 3.4 : isPawn ? 0.9 : 2.1;
+    // A short temper makes every version of this worse.
+    if (hohStats) anger *= 0.75 + (10 - hohStats.temperament) * 0.05;
+    // Being close to them means they take it personally rather than as a move.
+    if (getPerceivedBond(holder, hoh) >= 3) anger += 0.8;
+    // And it costs nothing anybody can name when there was no choice to make.
+    return anger * (1 - forced);
+  };
+
+  // ── what it costs with the person on the block ──
+  const abandonOf = name => {
+    const deal = dealBetween(holder, name);
+    let cost = Math.max(0, getPerceivedBond(holder, name)) * 0.42
+      + bbAllianceStrength(holder, name) * 1.5
+      + (deal ? (tierOf(deal) === 'final-two' ? 3.4 : 2.1) * sincerityOf(deal, holder) : 0);
+    // Somebody who was only ever a pawn probably survives, so leaving them up
+    // is not abandoning them.
+    if (name === plan?.pawn && name !== plan?.target) cost *= 0.35;
+    return cost;
+  };
+
+  // Which cost a houseguest actually feels.
+  const LOYAL = ['hero', 'loyal-soldier', 'showmancer', 'underdog'];
+  const COLD = ['mastermind', 'villain', 'schemer', 'perceptive-player'];
+  const friendWeight = LOYAL.includes(arch) ? 1.35 : COLD.includes(arch) ? 0.75 : 1;
+  // Nerve is what lets somebody carry the anger. A goat carries none of it.
   const nerve = (stats.boldness * 0.6 + stats.strategic * 0.4) / 10;
-  const blood = (1 - nerve) * 3.1 + (hoh && getPerceivedBond(holder, hoh) >= 3 ? 0.9 : 0);
+  const bloodWeight = arch === 'goat' ? 1.6 : (1.35 - nerve * 0.7);
 
-  const options = nominees.map(name => ({ name, score: scoreOf(name) - blood }))
-    .sort((a, b) => b.score - a.score);
+  const options = nominees.map(name => {
+    const keep = abandonOf(name) * friendWeight;
+    const cost = angerOf(name) * bloodWeight;
+    return { name, keep, cost, net: keep - cost + noise(rng, 0.9) };
+  }).sort((a, b) => b.net - a.net);
   const best = options[0];
 
   // ── the Head of Household holding their own veto ──
   if (holder === hoh) {
     const backdoor = plan?.backdoorTarget;
     if (backdoor && !nominees.includes(backdoor)) {
-      // This was the plan all along: two names up who were never the point.
-      const pull = options.sort((a, b) => b.score - a.score)[0].name;
+      const pull = options[0].name;
       return { use: true, save: pull, reason: 'backdoor', replacement: backdoor,
-        why: `${holder} nominated ${nominees.join(' and ')} to get here. `
-          + `Taking ${pull} down puts ${backdoor} up with no time to work the house — `
-          + `which was the point of the week.` };
+        why: `${holder} nominated ${nominees.join(' and ')} to get here. Taking ${pull} down puts `
+          + `${backdoor} up with no time to work the house, and the veto winner cannot be `
+          + `renominated — which is the whole reason the target was kept out of this competition.` };
     }
-    // A nominee they have since promised the end to is worth undoing a
-    // nomination for. Nothing else is.
     const promised = nominees.find(n => {
       const deal = dealBetween(holder, n);
       return deal && sincerityOf(deal, holder) > 0.6;
     });
     if (promised) {
       return { use: true, save: promised, reason: 'own-deal',
-        why: `${holder} put ${promised} up and has since shaken on the end with them. `
-          + `Leaving them there costs more than the embarrassment of taking them down.` };
+        why: `${holder} put ${promised} up and has since shaken on the end with them. Leaving them `
+          + `there costs more than the embarrassment of taking them down.` };
     }
     return { use: false, save: null, reason: 'own-nominations',
-      why: `${holder} made these nominations four days ago and nothing has changed since. `
-        + `Using their own veto would only mean explaining why they were wrong the first time.` };
+      why: `${holder} made these nominations four days ago and nothing has changed since. Using `
+        + `their own veto would only mean explaining why they were wrong the first time.` };
   }
 
   // ── anybody else ──
-  // The bar for using a veto you did not need.
+  // What keeping them has to be worth, net of the anger it buys.
   //
-  // It was 2.2 against scores that routinely run to 5-8, so almost anything
-  // cleared it and the veto came off the wall in 77% of the weeks where the
-  // holder was not on the block. Leaving nominations alone is an ordinary week
-  // in this house, and it should read as a decision rather than as a failure to
-  // act. Calibrated by playing seasons, not chosen.
-  if (best.score > 5.2) {
+  // The rewrite replaced the old scoring wholesale, so the old threshold meant
+  // nothing against the new numbers and usage went back to 79%. Calibrated by
+  // playing seasons: keeping somebody has to be clearly worth more than the
+  // enemy it makes, not merely worth a little more. 0.6 gave 79% usage and 2.0
+  // gave 40%; this sits where a free veto holder uses it a little over half the
+  // time, which is what the ceremony feels like when it is worth watching.
+  if (best.net > 1.25) {
     const deal = dealBetween(holder, best.name);
     const why = deal
-      ? `${holder} and ${best.name} have a ${tierOf(deal) === 'final-two' ? 'final two' : 'deal about the end'}. `
-        + `A promise that does not survive a veto was never a promise.`
+      ? `${holder} and ${best.name} have a ${tierOf(deal) === 'final-two' ? 'final two' : 'deal about the end'}, `
+        + `and a promise that does not survive a veto was never a promise. `
+        + `${forced >= 1 ? `There is only one person left who can take the chair, so nobody can even call it a move.`
+          : `${hoh || 'The Head of Household'} will take it personally and ${holder} is taking it anyway.`}`
       : bbAllianceStrength(holder, best.name) > 0
-        ? `${best.name} is one of ${holder}'s people, and ${holder} is not spending a week explaining why they left them up.`
-        : `${holder} would rather have ${best.name} in this house than not, and this is the only week that is ${holder}'s to decide.`;
-    return { use: true, save: best.name, reason: 'relationship', why };
+        ? `${best.name} is one of ${holder}'s people. ${forced >= 1
+            ? `With one name left to replace them this costs ${holder} almost nothing.`
+            : `It makes an enemy of ${hoh || 'the Head of Household'}, and ${holder} would rather have that than explain themselves later.`}`
+        : `${holder} would rather have ${best.name} in this house than not${forced >= 0.55
+            ? `, and with the replacement all but chosen there is barely a decision here.` : '.'}`;
+    return { use: true, save: best.name, reason: 'relationship', why,
+      blood: Number((best.cost).toFixed(2)), keep: Number((best.keep).toFixed(2)) };
   }
 
   const closest = best.name;
-  return { use: false, save: null, reason: 'leave-nominations',
-    why: `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
-      + `else on the block who will know exactly who did it. ${holder} decides the block is not their problem.` };
+  const why = forced >= 1
+    ? `${holder} could take ${closest} down, but there is only one houseguest left to put up in their `
+      + `place and everybody in the room can count. It would change the block without changing the week.`
+    : arch === 'goat'
+      ? `${holder} does not want to be part of this. Using it makes an enemy of `
+        + `${hoh || 'the Head of Household'}; not using it makes an enemy of whoever stays up. `
+        + `${holder} picks the enemy who is leaving.`
+      : `Taking ${closest} down makes an enemy of ${hoh || 'the Head of Household'} and puts somebody `
+        + `else up who will know exactly who did it. ${holder} decides the block is not their problem.`;
+  return { use: false, save: null, reason: 'leave-nominations', why,
+    blood: Number((best.cost).toFixed(2)), keep: Number((best.keep).toFixed(2)) };
+}
+
+/**
+ * Why this replacement, in the Head of Household's own words.
+ *
+ * Naming a replacement is the second-hardest thing an HOH does and it was
+ * happening silently. It also happens under a constraint nobody states: the
+ * veto winner and the HOH are immune, and by the late game that can leave
+ * exactly one legal name — at which point the ceremony is not a decision at
+ * all, and pretending otherwise is what makes a house feel fake.
+ */
+export function explainReplacement(hoh, name, pool, plan, nominees = []) {
+  if (!name) return '';
+  const options = (pool || []).filter(n => n !== name);
+  if (!options.length) {
+    return `${hoh} has one legal name left. ${name} is not being chosen so much as counted to.`;
+  }
+  if (plan?.backdoorTarget === name) {
+    return `This is the week ${hoh} has been building. ${name} never sat through a nomination `
+      + `ceremony, never had four days to work the house, and is on the block with the votes `
+      + `already counted.`;
+  }
+  const st = pStats(name);
+  const rec = gs.bb?.stats?.[name] || {};
+  const comps = (rec.hohWins || 0) + (rec.vetoWins || 0) + (rec.blockBusterWins || 0);
+  const plan2 = housePlan(hoh);
+  if ((plan2?.targets || []).includes(name)) {
+    return `${hoh} wanted ${name} up from the start and the veto handed them the chair to do it in.`;
+  }
+  if (comps >= 2) {
+    return `${name} has won ${comps} competitions and just watched somebody else use the veto. `
+      + `${hoh} is not going to get a cleaner chance than an empty seat.`;
+  }
+  if (getPerceivedBond(hoh, name) >= 3) {
+    return `${hoh} has run out of people they are not close to. ${name} goes up, and both of them `
+      + `know it is because there was nobody left who would not have been worse.`;
+  }
+  if (options.length <= 2) {
+    return `${hoh} has two names to choose between and picks the one who will hold it against them `
+      + `least. That is the entire reasoning and everybody can see it.`;
+  }
+  return `${name} has been quiet enough that nobody will call this a move, which is exactly why `
+    + `${hoh} can afford to make it.`;
 }
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {

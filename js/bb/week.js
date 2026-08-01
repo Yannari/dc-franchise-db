@@ -21,7 +21,7 @@ import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
-  chooseNominationPlan, chooseReplacement, initialVotePreference,
+  chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
   shouldUseVeto, houseVoteCommitment, applyAllianceVoteBloc, applyHouseBandwagon,
   buildHouseVotePlans,
 } from './strategy.js';
@@ -796,14 +796,21 @@ export function simulateBBWeek(options = {}) {
     if (!compressed) houseAct('post-veto', { nominees: [...nominees], vetoWinner });
 
     // Veto ceremony and replacement hook (Diamond Veto can intercept it).
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh });
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
     let replacement = null;
+    let replacementWhy = '';
     if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
       const protectedNames = [hoh, vetoWinner, ...nominees.filter(name => name !== vetoDecision.save)];
       replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
       replacement = hook(hooks, 'replacementChoice', replacement, { week, house, hoh, vetoWinner, saved: vetoDecision.save, protectedNames }) || replacement;
       if (!house.includes(replacement) || protectedNames.includes(replacement)) replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
+      // Why that name, given who was actually eligible. The Head of Household
+      // and the veto winner are immune, so late in a season this can be a pool
+      // of one — which the reasoning says out loud rather than pretending to a
+      // decision that was not available.
+      replacementWhy = explainReplacement(hoh, replacement,
+        house.filter(n => !protectedNames.includes(n)), plan, nominees);
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
@@ -815,7 +822,7 @@ export function simulateBBWeek(options = {}) {
     week.vetoDecision = { ...vetoDecision, holder: vetoWinner, replacement };
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
-      reason: vetoDecision.reason, why: vetoDecision.why,
+      reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
       nominees: [...nominees] }, { nominees: [...nominees] }));
     revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
   }

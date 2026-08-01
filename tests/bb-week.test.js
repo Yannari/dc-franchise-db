@@ -141,3 +141,63 @@ describe('have-nots come off the scoreboard', () => {
       .not.toContain(first.hoh);
   });
 });
+
+// The veto, as a decision rather than a dice roll.
+//
+// It used to return 'relationship' or 'leave-nominations' — a category, not a
+// reason — and the ceremony reported an outcome with no thinking behind it. The
+// Head of Household holding their own veto was not modelled at all, which
+// produced cards about somebody making an enemy of themselves.
+describe('the veto weighs both sides', () => {
+  beforeEach(() => seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] }));
+
+  it('always says why, whichever way it goes', () => {
+    for (const seed of [5, 17, 29]) {
+      seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      const week = simulateBBWeek({ rng: seededRng(seed) });
+      const cer = (week.acts || []).find(a => a.type === 'veto-ceremony');
+      if (!cer) continue;
+      expect(cer.reason, 'a veto decision with no reason').toBeTruthy();
+      expect(cer.why, `${cer.reason} decided with nothing said about it`).toBeTruthy();
+      expect(cer.why.length, 'the reasoning is a stub').toBeGreaterThan(40);
+      if (cer.used && cer.replacement) {
+        expect(cer.replacementWhy, 'a replacement was named with no reasoning').toBeTruthy();
+      }
+    }
+  });
+
+  it('will not let a Head of Household undo their own week for nothing', () => {
+    // Using your own veto means taking down somebody you nominated days ago.
+    // That is the backdoor, or a promise made since — never a change of heart.
+    for (const seed of [3, 8, 14, 22, 31, 44]) {
+      seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+      const week = simulateBBWeek({ rng: seededRng(seed) });
+      const cer = (week.acts || []).find(a => a.type === 'veto-ceremony');
+      if (!cer || cer.holder !== week.hoh) continue;
+      if (cer.used) {
+        expect(['backdoor', 'own-deal'],
+          `the Head of Household used their own veto for "${cer.reason}"`).toContain(cer.reason);
+      } else {
+        expect(cer.reason).toBe('own-nominations');
+      }
+    }
+  });
+
+  it('reads the block being all but decided', () => {
+    // The point that makes the late game different: with the HOH and the veto
+    // winner immune, a small house can leave one legal replacement. Using the
+    // veto then is bookkeeping rather than betrayal, and the reasoning should
+    // say so instead of pretending to a choice nobody had.
+    const small = CAST.slice(0, 5);
+    seedGame(small, { episode: 0, eliminated: [], namedAlliances: [] });
+    const week = simulateBBWeek({ rng: seededRng(12) });
+    const cer = (week.acts || []).find(a => a.type === 'veto-ceremony');
+    if (!cer) return;
+    const pool = (week.houseAtStart || small.map(p => p.name))
+      .filter(n => n !== week.hoh && n !== cer.holder && !(week.initialNominees || []).includes(n));
+    if (pool.length > 1) return;
+    expect(`${cer.why} ${cer.replacementWhy || ''}`,
+      'a forced block was described as though it were a decision')
+      .toMatch(/only one|one name left|one legal|counted to|barely a decision|without changing the week/i);
+  });
+});

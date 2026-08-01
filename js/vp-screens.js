@@ -16807,7 +16807,10 @@ export function rpBuildBBCeremony(ep) {
     ? [
       ...reasoning,
       { text: `${holder} uses the Power of Veto on ${act.saved}, who comes off the block.`, players: [act.saved, holder], badgeText: 'VETO USED', badgeClass: 'green' },
-      ...(act.replacement ? [{ text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair — and the veto winner cannot be put there, which is the whole reason a backdoor works.`, players: [act.replacement], badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
+      ...(act.replacement ? [{
+        text: `${ep.hoh} must name a replacement. ${act.replacement} takes the empty chair.`
+          + (act.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''),
+        players: [act.replacement, ep.hoh].filter(Boolean), badgeText: 'REPLACEMENT', badgeClass: 'red' }] : []),
     ]
     : [
       ...reasoning,

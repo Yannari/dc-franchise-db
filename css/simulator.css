@@ -529,6 +529,15 @@
     .bbns-broke span { display:block; font-family:ui-monospace,Consolas,monospace;
                      font-size:8.5px; letter-spacing:2px; color:#f85149; margin-bottom:4px; }
 
+    /* Somebody holding two things at once — HOH who won the veto, nominee who
+       took themselves off — needs both badges, side by side across the top of
+       the frame. */
+    .bbw-mark.is-multi { display:flex; gap:1px; padding:0; }
+    .bbw-mark.is-multi b { flex:1; font-weight:800; padding:2px 0; }
+    .bbw-m-hoh     { background:#f0a500; color:#1a1206; }
+    .bbw-m-nom     { background:#f85149; color:#2a0a08; }
+    .bbw-m-veto    { background:#3fb950; color:#08210d; }
+
     /* ── competition results ───────────────────────────────────────────
        Counted up from last place, so the board fills bottom-up and the last two
        are alone on it. The controls are pinned to the viewport because a

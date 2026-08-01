@@ -15906,9 +15906,21 @@ const _bbfClock = (phase, i) => {
  * cannot show a nominee. Spoiling the week on its own status strip is the
  * easiest mistake this screen could make.
  */
+/**
+ * What each houseguest is holding at this point in the week.
+ *
+ * Accumulates rather than first-wins, because somebody can be Head of Household
+ * AND hold the veto, or be on the block and hold the veto. The staging still
+ * matters: nothing appears before the week has produced it, so a wall drawn at
+ * nominations cannot leak a veto nobody has played yet.
+ */
 function _bbfStatus(ep, phase) {
   const s = {};
-  const set = (n, k) => { if (n && !s[n]) s[n] = k; };
+  const set = (n, k) => {
+    if (!n) return;
+    (s[n] ||= []);
+    if (!s[n].includes(k)) s[n].push(k);
+  };
   if (phase === 'pre-hoh') return s;
   set(ep.hoh, 'hoh');
   if (phase === 'post-hoh') return s;
@@ -17752,10 +17764,17 @@ function _bbMemoryWall(stillIn, { note = '', status = {} } = {}) {
   const label = { hoh: 'HOH', nom: 'NOM', veto: 'VETO' };
   const cells = all.map(name => {
     const out = !live.has(name);
-    const mark = out ? '' : (status[name] || '');
+    // One houseguest can hold two of these at once, and usually does: the Head
+    // of Household plays the veto, and a nominee who wins it takes themselves
+    // off the block. The wall kept whichever label was assigned first and
+    // dropped the rest, so a veto win was invisible whenever the winner was
+    // already the HOH or on the block — which is most of the time.
+    const marks = out ? [] : [].concat(status[name] || []).filter(Boolean);
+    const mark = marks[0] || '';
     return `<div class="bbw-cell ${out ? 'is-out' : ''} ${mark ? `is-${mark}` : ''}">
       <div class="bbw-frame">
-        ${mark ? `<span class="bbw-mark">${label[mark]}</span>` : ''}
+        ${marks.length ? `<span class="bbw-mark ${marks.length > 1 ? 'is-multi' : ''}">${
+          marks.map(m => `<b class="bbw-m-${m}">${label[m]}</b>`).join('')}</span>` : ''}
         <div class="bbw-photo">
           <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -18385,7 +18404,14 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     <div class="rp-title" style="color:#f0a500">HOUSE STATUS</div>
     <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">${
       opening ? 'Before anything happens this week.' : 'After everything that happened this week.'}</div>
-    ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
+    ${_bbMemoryWall(stillIn, {
+      note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}`,
+      // The largest wall in the player was the only one showing nothing at all
+      // — no Head of Household, no block, no veto. By the closing screen the
+      // week is over so every marker is safe; on the opening screen none of it
+      // has happened yet.
+      status: opening ? {} : _bbfStatus(ep, 'eviction'),
+    })}
     ${gazette}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('plan', 'WHAT EVERYBODY IS PLAYING FOR', '#d29922', planBody)}

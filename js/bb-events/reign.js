@@ -75,10 +75,10 @@ const houseMeeting = {
     const honest = _quiet(room).find(n => pStats(n).boldness >= 6) || room[0];
 
     const text = _variant([
-      `${hoh} calls everybody into the living room and opens with "this is not a dictatorship," which is a sentence only ever said by somebody being one. By the end of it the house has stopped listening to ${p.obj} and started looking at each other.`,
-      `The house meeting lasts eleven minutes. ${hoh} spends nine of them explaining why nobody should take any of this personally, and ${_list(room.slice(0, 3))} take all of it personally.`,
+      `${hoh} calls everybody into the living room and opens with, “This is not a dictatorship.” A few people glance at each other before ${p.sub} reaches the end of the sentence.`,
+      `${hoh} spends most of the meeting explaining why nobody should take the nominations personally. ${_list(room.slice(0, 3))} leave together and immediately discuss how personal it sounded.`,
       `${hoh} stands in the middle of the living room and asks, one at a time, who wants ${p.posAdj} target to stay. ${honest} answers honestly. Everybody watches ${hoh} hear it.`,
-      `Nobody asked for a house meeting. ${hoh} calls one anyway, to clear the air, and manages to fill it with something considerably worse.`,
+      `${hoh} calls a house meeting to clear the air, then asks each person to declare where they stand. The answers grow shorter as the room gets more uncomfortable.`,
     ], ctx, hoh, honest);
 
     room.forEach(n => {
@@ -97,8 +97,8 @@ const houseMeeting = {
           { kind: 'call', who: hoh, text: `${hoh} does not shout it. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not have to — the Head of Household asking everybody to come to the living room is not a request, and all ${room.length} of them know it.` },
           { kind: 'assemble', who: null, text: `They arrive in the order people arrive when they have been summoned rather than invited: quickly, and without talking on the way.` },
           { kind: 'case', who: hoh, text: `"This is not a dictatorship." It is the first thing ${hoh} says and it is the only thing anybody will quote afterwards.` },
-          { kind: 'answer', who: honest, text: `${honest} answers the question honestly, because it was asked out loud in front of everybody and there was no version of lying that survived the room.` },
-          { kind: 'verdict', who: null, text: `${hoh} has a week of power left and has just spent the part of it that mattered. Nobody comes upstairs that night.` },
+          { kind: 'answer', who: honest, text: `${honest} admits ${p.posAdj} target has support. Someone behind the couch whispers, “Thank you,” and ${hoh} hears it.` },
+          { kind: 'verdict', who: null, text: `The meeting breaks up with ${hoh} still holding power and far fewer people willing to visit the HOH room alone.` },
         ] } };
   },
 };
@@ -119,9 +119,9 @@ const saysItOutLoud = {
     const audience = _quiet(_others(house, hoh, mark)).slice(0, 2);
     const p = pronouns(hoh);
     const text = _variant([
-      `${hoh} tells ${_list(audience)} exactly who is going up and why. Within the hour ${mark} knows, because that is what happens to information in this house.`,
-      `"I'm not going to pretend." ${hoh} names ${mark} to a room ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not control, and gives ${mark} four days to do something about it.`,
-      `${hoh} enjoys knowing something everybody else wants to know, right up until ${p.sub} ${p.sub === 'they' ? 'give' : 'gives'} it away to make the moment last.`,
+      `${hoh} tells ${_list(audience)} that ${mark} is going up and explains why. One of them leaves, finds ${mark} and repeats the conversation almost word for word.`,
+      `“I'm not going to pretend.” ${hoh} names ${mark} in front of people ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not fully trust. ${mark} hears about it before ${hoh} can arrange a private talk.`,
+      `${hoh} lowers ${p.posAdj} voice before naming ${mark}, as if volume is the same as secrecy. By the time ${hoh} reaches the kitchen, ${mark} is already waiting there.`,
     ], ctx, hoh, mark);
 
     // The target now has time, which is the only thing a target ever needs.
@@ -156,9 +156,9 @@ const testsTheAlliance = {
     const doubter = _quiet(mates).find(n => bond(n, hoh) < 4) || mates[0];
 
     const text = _variant([
-      `${hoh} goes round ${alliance?.name || 'the group'} one by one asking each of them to say, out loud, that they are with ${p.obj}. ${doubter} hesitates for about a second and a half, and everybody hears the second and a half.`,
-      `"I just need to know where everybody is." What ${hoh} learns is that asking the question is what creates the doubt, and by then ${doubter} is already looking at the others differently.`,
-      `${hoh} makes ${_list(mates.slice(0, 3))} confirm their loyalty in front of each other. Two of them mean it. All three of them resent being asked.`,
+      `${hoh} asks each member of ${alliance?.name || 'the group'} to confirm, in front of the others, that they are still loyal. ${doubter} pauses before answering, and ${hoh} immediately asks why.`,
+      `“I just need to know where everybody is,” ${hoh} says. ${doubter} asks whether something happened. Nobody can name anything, but the meeting no longer feels routine.`,
+      `${hoh} makes ${_list(mates.slice(0, 3))} promise they are still together. They all say yes; afterwards, ${doubter} pulls another member aside to ask what prompted the test.`,
     ], ctx, hoh, doubter);
 
     mates.forEach(n => {
@@ -189,9 +189,9 @@ const letsTheHouseDecide = {
     const advisor = closestTo(hoh, _others(house, hoh)) || _others(house, hoh)[0];
     const p = pronouns(hoh);
     const text = _variant([
-      `${hoh} asks ${advisor} who ${p.sub} should nominate, and then asks two other people the same thing, and then nominates whoever came up most often. It is the safest week anybody has ever had with all the power.`,
-      `"I don't want to make enemies." ${hoh} says it to ${advisor} like it is a strategy. ${advisor} does not have the heart to explain that a Head of Household who makes no enemies has also made no friends worth having.`,
-      `${hoh} spends four days trying to find two people nobody likes. There are none, so ${p.sub} ${p.sub === 'they' ? 'settle' : 'settles'} for two nobody minds.`,
+      `${hoh} asks ${advisor} for two nomination names, then takes the same question to other rooms. When the answers overlap, ${hoh} adopts them without ever saying which targets ${p.sub} wanted.`,
+      `“I don't want to make enemies,” ${hoh} tells ${advisor}. ${advisor} supplies a safe name, and ${hoh} looks relieved enough for ${advisor} to realize the suggestion will stick.`,
+      `${hoh} searches for nominees nobody will defend. Every name has somebody attached to it, so ${p.sub} ${p.sub === 'they' ? 'settle' : 'settles'} on the two that produce the fewest objections.`,
     ], ctx, hoh, advisor);
 
     // The cost is invisible this week and enormous next week: nobody owes them
@@ -228,7 +228,7 @@ const apologisesForIt = {
     const nom = _noms(ctx)[0];
     const p = pronouns(hoh);
     const text = _variant([
-      `${hoh} apologises to ${nom} three separate times in one afternoon. By the third ${nom} has worked out that ${hoh} is more upset about this than ${nom} is, and that it can be used.`,
+      `${hoh} apologises to ${nom} every time they cross paths. Eventually ${nom} stops reassuring ${p.obj} and starts asking what would make ${hoh} feel better.`,
       `"You know it's nothing personal, right?" ${nom} says of course. ${nom} does not think it is nothing personal, and now knows ${hoh} needs to believe it is.`,
       `${hoh} cannot stop explaining ${p.posAdj} nominations to the person ${p.sub} nominated. ${nom} lets ${p.obj} talk, and files away every soft spot it reveals.`,
     ], ctx, hoh, nom);
@@ -273,12 +273,12 @@ const theReckoning = {
     const p = pronouns(last);
 
     const text = bad ? _variant([
-      `${last} is not Head of Household any more and the difference is immediate. Nobody comes upstairs, because there is no upstairs, and ${critic} says out loud what several people have been thinking about how that week was run.`,
-      `The keys change hands and so does the mood. ${critic} points out — carefully, to two people, in a bedroom — that ${last} had all the power and used it to make everybody in this house slightly angrier.`,
-      `${last} spent a week being the most important person in the building. It is Friday, ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} nobody again, and the bill for how ${p.sub} spent it is being quietly added up in three separate rooms.`,
+      `${last} is no longer Head of Household, and the traffic to ${p.posAdj} door stops with the power. In the bedroom, ${critic} finally says what people were too careful to say during ${last}'s reign.`,
+      `The power changes hands. ${critic} tells two people that ${last} used the week to irritate nearly everyone, and neither of them rushes to defend ${p.obj}.`,
+      `${last} joins a kitchen conversation that goes quiet on arrival. Across the house, ${critic} is comparing notes with people who spent the previous week nodding along.`,
     ], ctx, last, critic) : _variant([
-      `${last} hands the power over having done exactly what ${p.sub} said ${p.sub} would, which in this house is unusual enough to be worth something.`,
-      `Nobody is frightened of ${last} now that the keys have moved. Several people are, however, still fairly glad to be working with ${p.obj}, which lasts longer.`,
+      `${last} leaves the HOH room after doing exactly what ${p.sub} promised. ${critic} mentions that in the kitchen, and three people agree before the subject changes.`,
+      `${last} no longer controls the nominations, but the people who worked with ${p.obj} last week still make room when ${p.sub} joins them.`,
     ], ctx, last, critic);
 
     if (bad) {

@@ -641,12 +641,12 @@ const falseAccusation = {
     // reproducibility guarantee went with them.
     const seed = { players: [liar, mark], text: `${convinced.length}`, badgeText: 'lie' };
     const text = convinced.length ? _textPick([
-      `${liar} tells ${_listNames(audience)} that ${mark} has promised a final two to half the house. It is not true. ${_listNames(convinced)} ${convinced.length > 1 ? 'believe' : 'believes'} it anyway, because it sounds exactly like something ${mark} would do.`,
+      `${liar} tells ${_listNames(audience)} that ${mark} has been offering the same final-two deal all over the house. ${liar} cannot name two actual deals, but ${_listNames(convinced)} ${convinced.length > 1 ? 'believe' : 'believes'} the warning anyway.`,
       `"Ask ${mark} who ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} going to the end with. Then ask somebody else." ${liar} has invented the whole thing and ${_listNames(convinced)} ${convinced.length > 1 ? 'go' : 'goes'} away to check.`,
-      `${liar} does not accuse ${mark} of anything ${p.sub} can be pinned to — just wonders aloud how many people ${mark} has made promises to. The number ${p.sub} implies is a number ${p.sub} made up.`,
+      `${liar} asks the room how many final-two promises ${mark} has made, then goes quiet and lets everybody supply their own number. There is no evidence behind the question.`,
     ], seed, 'false-accusation') : _textPick([
-      `${liar} tries to sell the room on ${mark} having several final twos. Nobody has seen any evidence of it, largely because there is not any, and the conversation dies.`,
-      `"How many people has ${mark} promised?" It is a good question and ${liar} has no answer to it, having started from the answer ${p.sub} wanted.`,
+      `${liar} claims ${mark} has several final-two deals. Somebody asks for one name, then another. ${liar} cannot provide either, and the room moves on.`,
+      `“How many people has ${mark} promised?” ${liar} asks. “You brought it up,” somebody answers. “You tell us.” ${liar} has nothing ready.`,
     ], seed, 'false-accusation-flat');
 
     convinced.forEach(listener => {
@@ -689,10 +689,10 @@ const accusationCollapses = {
     const p = pronouns(liar);
 
     const text = _textPick([
-      `${checker} finally does the obvious thing and asks ${mark} directly, then asks the people ${mark} was supposed to have promised. Nobody has been promised anything. ${liar} said it, and only ${liar}.`,
-      `It takes one conversation to undo. ${mark} has no secret final twos, the people named have never heard of them, and everybody now knows which houseguest invented the story.`,
+      `${checker} asks ${mark} directly, then checks with the people ${liar} implied were involved. There is no web of final-two deals—only a story that traces back to ${liar}.`,
+      `${checker} puts the supposed deals side by side. The names and promises do not exist the way ${liar} described them, and everyone involved ends up in the same room comparing notes.`,
       `"Who told you that?" ${mark} asks it calmly and waits, and the answer works its way back to ${liar} in front of everybody.`,
-      `The accusation had one problem, which is that it was not true, and ${checker} is the one who bothers to find out. ${p.Sub} spends the rest of the day being asked what else ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} made up.`,
+      `${checker} asks enough questions to prove the accusation was invented. Once ${liar}'s name comes up as the source, people start bringing ${p.obj} other stories they want checked.`,
     ], { players: [checker, liar, mark], text: '', badgeText: 'collapse' }, 'collapse');
 
     // The gamble, collected. A false accuser is worse than a schemer, because

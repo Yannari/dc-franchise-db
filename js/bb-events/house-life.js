@@ -113,12 +113,12 @@ const haveNots = {
     const repeat = _slopWeeks(first);
     const p = pronouns(first);
     const text = _variant([
-      `The have-not room goes to ${picked.join(', ')}, which surprises exactly nobody and is noted by all three of them.`,
-      `Cold showers and slop for ${picked.join(' and ')}. ${first} takes it well in public and considerably worse at two in the morning.`,
-      `${picked.join(', ')} finish where nobody wants to finish, and the cold showers start immediately.`,
+      `${picked.join(', ')} carry their bags into the have-not room. ${first} tests one of the beds, hears it creak and decides standing is better for now.`,
+      `The slop containers come out for ${picked.join(', ')}. ${first} laughs with everybody else, then goes quiet while measuring out dinner.`,
+      `${picked.join(', ')} finish at the bottom and inherit cold showers, bad beds and a week of watching everybody else eat.`,
       repeat >= 2
-        ? `${first} works out that landing here for the ${repeat === 2 ? 'second' : repeat === 3 ? 'third' : `${repeat}th`} time is not bad luck any more; it is a pattern, and patterns in this house are somebody's doing.`
-        : `${first} takes the slop without complaining, which costs more than complaining would have.`,
+        ? `${first} counts it up: this is ${pronouns(first).posAdj} ${repeat === 2 ? 'second' : repeat === 3 ? 'third' : `${repeat}th`} week on slop. ${second} stops joking when ${first} says the number aloud.`
+        : `${first} insists the slop is fine, swallows one spoonful and quietly pushes the bowl away. ${second} slides over a glass of water.`,
     ], ctx, ...picked);
 
     // Being cold and hungry costs you the week. Nobody chose it out of malice —
@@ -445,23 +445,23 @@ const houseMeeting = {
       : composed ? 'fizzles' : 'backfires';
 
     const text = outcome === 'nobody talks' ? _variant([
-      `Somebody shouts "HOUSE MEETING" and everybody comes, which turns out to be the problem. ${about} comes too, sits down, and says nothing, and so does everybody else.`,
-      `${caller} gets the whole house into one room and then discovers what a whole house in one room means: ${about} is in it. Three people who agreed with ${caller} an hour ago study the floor.`,
-      `The meeting cannot happen. Not because nobody agrees with ${caller} — because agreeing out loud, with ${about} four feet away, costs more than any of them want to pay.`,
-      `${caller} asks the room a direct question and the room looks at ${about} before answering it. That is the entire meeting, and everybody understood it.`,
+      `${caller} calls everybody into the living room. ${about} takes a seat with the rest of them, and every person who encouraged ${caller} in private suddenly has nothing to add.`,
+      `${caller} asks who else heard what ${about} said. A few people look down; one starts picking at a cushion. ${about} waits for an answer that never comes.`,
+      `${caller} repeats the question with ${about} sitting a few feet away. Nobody backs ${caller} up, though several people were willing to do it behind a closed door.`,
+      `${caller} asks for a show of hands. The room checks ${about}'s face first, and every hand stays down.`,
     ], ctx, caller, about) : outcome === 'lands' ? _variant([
-      `${caller} asks everybody to sit down, then asks ${about} one question, slowly, in front of the whole house. ${about} answers it twice and the two answers are different.`,
-      `It is not a rant. ${caller} lays out what ${about} said, who ${about} said it to and when, then stops talking and lets the room do the rest.`,
-      `${caller} calls the meeting and spends the first minute making clear this is not about ${p.obj}. By the end nobody is looking at ${caller} at all; they are all looking at ${about}.`,
+      `${caller} asks ${about} the same question twice. ${about} gives two different answers, and somebody at the end of the couch says, “Wait, that's not what you told me.”`,
+      `${caller} names the conversations, the rooms and the people who were there. Before ${about} can answer, two witnesses start filling in the missing parts.`,
+      `${caller} keeps ${p.posAdj} voice level and lets ${about} talk. The longer ${about} explains, the more people in the room begin interrupting with corrections.`,
     ], ctx, caller, about) : outcome === 'fizzles' ? _variant([
-      `${caller} calls a house meeting about respect and the washing up. Everybody agrees. Nothing changes. It is over in four minutes and mentioned for a week.`,
-      `The meeting produces a general commitment to communicate better, which lasts until roughly nine that evening.`,
-      `${caller} says ${p.posAdj} piece, several people say theirs, everybody agrees the house is better than this, and not one person's plan is different afterwards.`,
+      `${caller} calls a house meeting about dirty dishes. Everybody agrees the kitchen is disgusting; nobody admits leaving anything in the sink.`,
+      `${caller} asks everyone to communicate more directly. The room nods, breaks up and immediately separates into smaller groups to discuss what ${caller} really meant.`,
+      `${caller} says ${p.posAdj} piece, several people apologize in general terms, and the meeting ends without either ${caller} or ${about} speaking directly to each other.`,
     ], ctx, caller, about) : _variant([
-      `${caller} calls the house together and loses the room in thirty seconds by starting with the word "everyone". By the end ${about} has said almost nothing and looks like the reasonable one.`,
-      `The meeting is meant to be about ${about}. It becomes about ${caller}, the way these always do, and the house closes around ${about} out of pure discomfort.`,
-      `${caller} has clearly been rehearsing this, which is the problem — it comes out rehearsed, and eleven people watch ${p.obj} perform something ${p.sub} should have said quietly to one person.`,
-      `Halfway through, ${caller} says "I'm not attacking anybody," which is the exact moment everybody in the room decides otherwise.`,
+      `${caller} opens with, “Everybody has a problem with this.” Nobody confirms it. ${about} barely has to defend ${pronouns(about).ref}; the room is already backing away from ${caller}'s version of events.`,
+      `${caller} tries to put ${about} on trial, but keeps interrupting every answer. By the time somebody asks ${caller} to let ${about} finish, the room has chosen a side.`,
+      `${caller} delivers a speech that sounded better alone in the bedroom. In the living room it feels rehearsed, and ${about}'s quiet “Can I answer now?” gets the strongest reaction.`,
+      `${caller} says, “I'm not attacking anybody,” then lists everything ${about} has done wrong. Somebody near the door winces, and the rest of the room follows.`,
     ], ctx, caller, about);
 
     if (outcome === 'lands') {
@@ -534,26 +534,26 @@ function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
   const witness = room.find(n => n !== about) || null;
 
   const called = _variant([
-    `"HOUSE MEETING." ${caller} says it twice, once from the kitchen and once from the doorway, and the house comes because in here nobody can afford not to.`,
-    `${caller} shouts it down the corridor and then stands in the living room waiting, which is the last easy moment ${p.sub} will have today.`,
-    `Somebody calls a house meeting. Within ninety seconds there are ${room.length + 1} people in one room and no way for any of them to leave first.`,
+    `“HOUSE MEETING.” ${caller} calls it from the kitchen, then walks to the living room and waits while bedroom doors begin opening.`,
+    `${caller} shouts for everybody to come to the living room. Conversations stop mid-sentence, and the house starts filing in.`,
+    `${caller} calls a house meeting. Chairs scrape, blankets arrive from the bedrooms, and ${room.length + 1} houseguests gather without knowing who has been named.`,
   ], ctx, caller, 'call');
 
   const assembled = _variant([
-    `They come in the order they always do — the ones with nothing to worry about first, ${about || 'the person it is about'} last, and last is its own kind of answer.`,
-    `Nobody sits down. Fourteen people standing in a living room is not a meeting, it is a standoff with cushions.`,
-    `${about ? `${about} arrives, works out in about four seconds what this is, and takes the seat nearest the door.` : 'The room fills and nobody is quite sure who this is about, which is briefly worse.'}`,
+    `${about || 'The last houseguest'} enters after most of the seats are taken. The space beside ${caller} remains conspicuously empty.`,
+    `Some people sit; others stay behind the couch. Nobody asks what this is about because everybody expects to find out soon enough.`,
+    `${about ? `${about} arrives, sees ${caller} standing in the middle of the room and chooses the seat nearest the door.` : 'The room fills, but nobody seems certain who should speak first.'}`,
   ], ctx, caller, 'assemble');
 
   const theCase = cause === 'lie' ? _variant([
     `${caller} does not raise ${p.posAdj} voice. ${p.Sub} repeats, exactly, what ${about} has been telling people about ${p.obj}, and asks ${about} to say it again now.`,
     `"Somebody in this room has been saying I made deals I never made." ${caller} looks at nobody in particular, which fools nobody in particular.`,
   ], ctx, caller, 'case') : cause === 'nothing-to-lose' ? _variant([
-    `${caller} is on the block and has four days left, so ${p.sub} spends them. Every private conversation ${p.sub} has had this week goes into the room at once.`,
-    `"I'm going home anyway, so let me save you all some time." What follows is accurate, unkind, and about six names longer than anybody expected.`,
+    `${caller} is on the block and done protecting conversations that have not protected ${p.obj}. ${p.Sub} starts naming the promises people made before the ceremony.`,
+    `“If I'm leaving, you should know what people have been saying.” ${caller} starts with one name, then follows the story through every room it reached.`,
   ], ctx, caller, 'case') : _variant([
-    `${caller} has been carrying this since before the last eviction and it comes out in one long sentence that ${p.sub} has clearly said to the mirror.`,
-    `It starts as a point about respect and arrives, within a minute, at ${about}.`,
+    `${caller} has been repeating this argument alone for long enough to know every word. Once ${p.sub} starts, ${p.sub} does not pause until ${about}'s name is out.`,
+    `${caller} begins with a complaint about respect, then turns toward ${about} and finally says what the complaint is really about.`,
   ], ctx, caller, 'case');
 
   const answer = outcome === 'nobody talks' ? _variant([
@@ -563,20 +563,20 @@ function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
     `${about} answers, and then answers again slightly differently, and the second version is the one everybody remembers.`,
     `${about} asks who else has a problem. It is meant as a challenge. Two hands go up and it stops being one.`,
   ], ctx, caller, 'answer') : outcome === 'backfires' ? _variant([
-    `${about} does not defend ${q.ref || q.obj}. ${q.Sub} ${q.sub === 'they' ? 'let' : 'lets'} ${caller} keep going, which is the smartest thing anybody does all afternoon.`,
-    `"Are you finished?" ${about} says it kindly, which is worse than saying it any other way, and the room agrees with the kindness.`,
+    `${about} does not interrupt. ${q.Sub} ${q.sub === 'they' ? 'let' : 'lets'} ${caller} keep talking until somebody else asks when ${about} will get a turn.`,
+    `“Are you finished?” ${about} asks without raising ${q.posAdj} voice. Someone on the couch mutters, “Let ${about} answer,” and the mood turns.`,
   ], ctx, caller, 'answer') : _variant([
-    `Somebody makes a joke about the washing up. It lands. The temperature drops about nine degrees and everybody is relieved.`,
-    `${witness || 'Somebody'} says what everybody is thinking, which is that this could have been a conversation, and the room murmurs agreement.`,
+    `${witness || 'Somebody'} breaks the silence with a joke about the dirty kitchen. Enough people laugh that ${caller} cannot pull the room back.`,
+    `${witness || 'Somebody'} asks why ${caller} did not speak to ${about} privately. Several people nod, and the meeting begins ending around them.`,
   ], ctx, caller, 'answer');
 
   const verdict = outcome === 'lands'
-    ? `It breaks up without anybody saying it is over. ${about} spends the rest of the evening explaining ${q.posAdj} answer to people one at a time, which is exactly the position ${caller} wanted ${q.obj} in.`
+    ? `It breaks up without anybody announcing an end. Before ${about} can leave the room, two people stop ${q.obj} to ask why ${q.posAdj} answers changed.`
     : outcome === 'backfires'
       ? `People drift out in twos, and every pair is talking about ${caller}. Not one of them is talking about ${about}.`
       : outcome === 'nobody talks'
         ? `Nothing was decided and everybody learned the same thing: this house does not say ${about}'s name out loud yet.`
-        : `Everybody agrees the house is better than this. By nine that evening the house is exactly as it was.`;
+        : `Everybody promises to handle things differently. The meeting breaks up, and ${caller} and ${about} leave through separate doors.`;
 
   return [
     { kind: 'call', who: caller, text: called },

@@ -27,7 +27,7 @@ import {
   wroteTheName, votedAgainst, evictionCount,
 } from '../bb/fallout.js';
 import { knowsVote } from '../bb/knowledge.js';
-import { factId, learn } from '../knowledge.js';
+import { believes, factId, learn } from '../knowledge.js';
 
 function _variant(list, ctx, ...salt) {
   const key = `${ctx?.week?.num || 0}|${ctx?.beat || 0}|${ctx?.act || ''}|${salt.join('|')}`;
@@ -140,10 +140,10 @@ const cryingOverAName = {
       .find(n => pStats(n).intuition >= 6) || house.find(n => n !== faker.name);
 
     const text = _variant([
-      `${faker.name} cries about ${gone} for most of the morning. ${witness} watches it happen and remembers writing ${gone}'s name down at the same table as ${faker.name} did.`,
-      `"I can't believe ${gone} is gone." ${witness} does not say the obvious thing out loud, but ${pronouns(witness).sub} ${pronouns(witness).sub === 'they' ? 'do' : 'does'} think it, and ${pronouns(witness).sub} ${pronouns(witness).sub === 'they' ? 'are' : 'is'} not the only one.`,
-      `${faker.name} is genuinely upset and also voted to make it happen, and ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not appear to find those two facts uncomfortable together. ${witness} finds it very uncomfortable indeed.`,
-      `The grief is real. So was the vote. ${witness} decides that a person who can hold both of those at once is a person to be careful around.`,
+      `${faker.name} cries about ${gone} over breakfast. ${witness}, who knows how ${faker.name} voted, watches from the counter and says nothing.`,
+      `“I can't believe ${gone} is gone.” ${witness} looks up at ${faker.name}, then toward the Diary Room where the deciding votes were cast.`,
+      `${faker.name} is genuinely upset and also voted to evict ${gone}. When ${witness} points that out quietly, ${faker.name} says, “That doesn't mean I wanted this,” and starts crying harder.`,
+      `${witness} brings ${faker.name} a tissue, but not reassurance. The vote and the tears are both real, and ${witness} is no longer sure which one to trust.`,
     ], ctx, faker.name, witness);
 
     // The tell is not the crying, it is what it teaches the room about them.
@@ -175,12 +175,12 @@ const goodRiddance = {
     const mourner = reactionsTo(week).find(r => r.grief >= 2);
 
     const text = loud ? _variant([
-      `${who.name} does not pretend. "I slept properly for the first time in two weeks." Somebody points out that ${gone} has been gone for eleven hours.`,
+      `${who.name} does not pretend. “I slept better with ${gone}'s bed empty.” The breakfast table goes quiet, and ${mourner ? `${mourner.name} puts down ${pronouns(mourner.name).posAdj} spoon` : 'somebody changes the subject'}.`,
       `${who.name} is in an extremely good mood and makes no attempt to explain why${mourner ? `, which ${mourner.name} notices from across the room` : ''}.`,
       `"Am I supposed to be sad?" ${who.name} asks it as a genuine question, at breakfast, in front of people who are.`,
     ], ctx, who.name, gone) : _variant([
-      `${who.name} arranges ${p.posAdj} face carefully before coming out of the bedroom, and does a decent job of it for about an hour.`,
-      `${who.name} says all the right things about ${gone} and means none of them. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been waiting three weeks for this.`,
+      `${who.name} arranges ${p.posAdj} face carefully before coming out of the bedroom. The performance holds until somebody mentions that ${gone}'s bed is available.`,
+      `${who.name} says all the right things about ${gone}, then shuts the storage-room door and exhales like the eviction lifted something heavy.`,
       `Nobody would call ${who.name} cheerful. But ${p.sub} ${p.sub === 'they' ? 'eat' : 'eats'} properly for the first time since ${gone} started saying ${p.posAdj} name in strategy conversations.`,
     ], ctx, who.name, gone);
 
@@ -227,9 +227,9 @@ const findingTheCulprit = {
       `"It was ${blamed}." ${mourner.name} says it flatly, to nobody in particular, and does not need anybody to confirm it.`,
     ], ctx, mourner.name, blamed) : _variant([
       `${mourner.name} settles on ${blamed} because ${blamed} ${why}, and because ${p.sub} ${p.sub === 'they' ? 'need' : 'needs'} it to be somebody. It was not ${blamed}.`,
-      `The arithmetic ${mourner.name} does is sound and the answer is wrong. ${blamed} ${why}, which is enough — grief does not require a high standard of proof.`,
-      `${mourner.name} decides it was ${blamed}. Somewhere in this house the person who actually did it watches ${p.obj} decide that and says nothing at all.`,
-      `${blamed} ${why} and is therefore, as far as ${mourner.name} is concerned, the reason ${gone} is not here. The real answer is standing three feet away being sympathetic.`,
+      `${mourner.name} follows the votes as far as ${p.sub} can and lands on ${blamed}. The missing pieces do not support the conclusion, but ${mourner.name} is too angry to keep looking.`,
+      `${mourner.name} decides it was ${blamed} and starts repeating the name with more confidence each time. Nobody in the room has enough information to correct ${p.obj}.`,
+      `${blamed} ${why}, and ${mourner.name} treats that as proof. ${blamed}'s denial only sounds like another reason not to trust ${pronouns(blamed).obj}.`,
     ], ctx, mourner.name, blamed);
 
     // This is the point of the whole file: losing somebody makes a target.
@@ -277,12 +277,12 @@ const itWasNotMe = {
       - pStats(mourner.name).intuition * 0.18 > -0.4;
 
     const text = believed ? _variant([
-      `"It wasn't me. I need you to know that." ${mourner.name} believes ${liar}, and ${liar} wrote ${gone}'s name down four hours ago.`,
+      `“It wasn't me. I need you to know that.” ${mourner.name} believes ${liar}, who cast a vote against ${gone} and is now watching the lie settle.`,
       `${liar} gets to ${mourner.name} before anybody else can and says it plainly: ${p.sub} voted to keep ${gone}. ${mourner.name} takes ${p.obj} at ${p.posAdj} word, and looks somewhere else for somebody to be angry at.`,
       `${liar} is a convincing liar largely because ${p.sub} ${p.sub === 'they' ? 'seem' : 'seems'} so uncomfortable doing it. ${mourner.name} apologises for even wondering.`,
     ], ctx, mourner.name, liar) : _variant([
       `"It wasn't me." ${mourner.name} lets it sit for a second too long before saying "okay", and both of them hear it.`,
-      `${liar} denies it and ${mourner.name} does not believe a word, which is worse than being asked — now ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} to be managed.`,
+      `${liar} denies it. ${mourner.name} asks the same question again without changing ${p.posAdj} tone, and ${liar} realizes the first answer did not land.`,
       `${mourner.name} asks ${liar} straight out. ${liar} says no. ${mourner.name} thanks ${p.obj} for being honest in a tone that makes it clear ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} not.`,
     ], ctx, mourner.name, liar);
 
@@ -333,10 +333,10 @@ const somebodyStayedLoyal = {
       `"You kept ${gone}." "Obviously I kept ${gone}." ${mourner.name} does not have many certainties left in this house. ${loyal} is one of them.`,
       `Everybody else spends the morning explaining themselves to ${mourner.name}. ${loyal} does not have to, and both of them notice that.`,
     ], ctx, mourner.name, loyal) : _variant([
-      `${mourner.name} finds out that ${loyal} was the vote to keep ${gone}. ${p.Sub} had nothing to gain from it and did it anyway, and that is worth more to ${mourner.name} than anything anybody has promised ${p.obj} in three weeks.`,
-      `"You voted to keep ${gone}." ${loyal} does not deny it and does not make a thing of it either, which is exactly why ${mourner.name} believes it.`,
-      `It comes out sideways, in the middle of a conversation about something else: ${loyal} was one vote on the wrong side of a result ${p.sub} could not change. ${mourner.name} has been looking for somebody to trust and has just found one.`,
-      `${mourner.name} had ${loyal} down as a stranger at best. Then the count comes out, and a stranger turns out to be the only person who tried.`,
+      `${mourner.name} learns that ${loyal} voted to keep ${gone}. ${loyal} gained nothing from standing on the losing side, and that matters more to ${mourner.name} than a fresh promise would.`,
+      `“You voted to keep ${gone}.” ${loyal} nods and says, “I told ${pronouns(gone).obj} I would.” ${mourner.name} pulls out the chair beside ${p.obj}.`,
+      `The vote comes up during another conversation: ${loyal} was on the wrong side of a result ${p.sub} could not change. ${mourner.name} asks why, and the answer is simply that ${loyal} had given ${p.posAdj} word.`,
+      `${mourner.name} never considered ${loyal} a close ally. Learning that ${loyal} still voted to keep ${gone} leads to a private conversation neither of them expected.`,
     ], ctx, mourner.name, loyal);
 
     // Room to move, or the receipt is a lie: at the cap this changes nothing and
@@ -372,11 +372,33 @@ const wordGetsAround = {
     const gone = week.evicted;
     const p = pronouns(teller);
 
-    const text = _variant([
-      `${teller} tells ${listener} how ${about} voted, which ${teller} only knows because ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} in the room when ${about} said it out loud. That is how everything in here travels.`,
-      `"${about} wrote ${gone}'s name down." ${listener} did not know that an hour ago and cannot unknow it now, and ${teller} has just spent something to make that true.`,
-      `${teller} trades what ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} about ${about}'s vote for something ${listener} knows. Both of them come out of it better informed and slightly more dangerous.`,
-      `It takes ${teller} one sentence to change how ${listener} sees ${about}, and the sentence is true, which is the rarest version of this conversation.`,
+    // How the teller knows, read rather than asserted.
+    //
+    // The knowledge store records the provenance of every belief — whether it
+    // was observed, told, or picked up second hand, and by whom. The text used
+    // to state one ("they were in the room when it was said out loud"), which
+    // is exactly the class of unsupported claim this house keeps producing: it
+    // is true for one of the three ways somebody can know this and invented for
+    // the other two. Now the sentence matches the record.
+    const belief = (() => {
+      try { return believes(teller, factId('vote', about, gone)); } catch { return null; }
+    })();
+    const ownVote = teller === about;
+    const heardFrom = belief && belief.sourceType !== 'observed' && belief.source
+      && belief.source !== 'observation' ? belief.source : null;
+    const how = ownVote ? 'was there'
+      : heardFrom ? `heard it from ${heardFrom}`
+      : 'worked it out';
+
+    const text = heardFrom ? _variant([
+      `${teller} passes on what ${heardFrom} said about ${about}'s vote. It is second hand and ${listener} takes it anyway, because in here almost everything is.`,
+      `"${heardFrom} told me." ${teller} does not pretend to have seen it. ${listener} weighs the chain — ${about}, then ${heardFrom}, then ${teller} — and decides it holds.`,
+      `${teller} is careful to say where this came from, which is the only reason ${listener} believes any of it: ${heardFrom} first, ${teller} only passing it on.`,
+    ], ctx, teller, listener, about) : _variant([
+      `${teller} tells ${listener} that ${about} voted against ${gone}. When ${listener} asks how ${teller} knows, ${teller} names the conversation where ${about} admitted it.`,
+      `“${about} wrote ${gone}'s name down.” ${listener} asks twice whether ${teller} is sure. ${teller} is, and explains exactly why.`,
+      `${teller} offers what ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} about ${about}'s vote. ${listener} answers with a name ${teller} had not heard yet, and both leave to compare notes elsewhere.`,
+      `${teller} tells ${listener} who voted against ${gone}. ${listener}'s first response is disbelief; the second is to ask who else already knows.`,
     ], ctx, teller, listener, about);
 
     // The information itself is the consequence: the listener now genuinely

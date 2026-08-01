@@ -183,3 +183,55 @@ describe('the house talks, and the jury talks more', () => {
     expect(getBond('Zee', 'Chase')).toBeLessThan(before);
   });
 });
+
+// ── the invariant the whole layer rests on ────────────────────────────
+//
+// Nobody watches anybody else vote. Houseguests go into the Diary Room one at a
+// time, alone, and that is the single fact everything else here is built on: it
+// is why blame is a reconstruction, why being told is worth 74 points of
+// accuracy, and why an eviction can be a blindside at all.
+//
+// It is also easy to break in prose without noticing. One event described a
+// witness "writing the evictee's name down at the same table" as somebody else,
+// which quietly asserts that the vote is public and makes the rest of this
+// meaningless. These are the two checks that would have caught it.
+describe('nobody sees anybody else vote', () => {
+  it('never gives a non-voter first-hand knowledge of a ballot', () => {
+    house();
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 8) {
+      if (!simulateBBEpisode()) break;
+    }
+    const offenders = [];
+    for (const fact of Object.values(gs.knowledge || {})) {
+      if (fact.type !== 'vote') continue;
+      for (const [knower, belief] of Object.entries(fact.beliefs || {})) {
+        // The voter observed their own ballot. Anybody else holding an
+        // 'observed' belief about it saw something they could not have seen.
+        if (knower !== fact.subject && belief.sourceType === 'observed') {
+          offenders.push(`${knower} claims to have watched ${fact.subject} vote`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  }, 120000);
+
+  it('does not let any beat describe watching somebody vote', () => {
+    house();
+    const lines = [];
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 8) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      for (const act of ep.acts || []) {
+        for (const beat of act.socialBeats || []) lines.push(String(beat.text || ''));
+      }
+    }
+    expect(lines.length).toBeGreaterThan(50);
+    // Voting happens alone. Any beat placing two people at it is describing a
+    // different show.
+    const witnessed = lines.filter(line =>
+      /(same table|watched .{0,30} (vote|write)|saw .{0,30} (vote|write) .{0,20}name|next to .{0,20} as .{0,20} voted)/i.test(line));
+    expect(witnessed, `beats describing a public vote: ${witnessed.join(' | ')}`).toEqual([]);
+  }, 120000);
+});

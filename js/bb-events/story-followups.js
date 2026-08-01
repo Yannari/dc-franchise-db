@@ -49,7 +49,7 @@ const isolationCheckIn={
       `${isolated} corners ${avoider} in the kitchen and asks why ${avoider} disappeared after nominations. ${avoider} says everybody needed space. ${isolated} asks why only one person was expected to take it.`,
       `${avoider} tries to explain the distance as “just the week.” ${isolated} asks when the week started requiring unanswered questions.`,
       `${isolated} asks for the truth at the kitchen table. ${avoider} gives a careful game answer, and ${isolated} realizes the avoidance never ended.`,
-      `${avoider} sits down to clear the air, then spends five minutes explaining why none of this was really ${pronouns(avoider).posAdj} choice. ${isolated} gets up first.`,
+      `${avoider} sits down to clear the air, then explains why none of the distance was really ${pronouns(avoider).posAdj} choice. ${isolated} listens until the explanation circles back to the beginning, then gets up.`,
     ],c,isolated,avoider,honest);
     api.addBond(isolated,avoider,honest?1.2:-.8); api.remember(isolated,avoider,'isolation-addressed',1,{repaired:honest});
     if(!honest) api.setTarget(isolated,avoider,'would not own leaving me alone');
@@ -110,7 +110,7 @@ const fightAftershock={
     const ally=quiet(h.filter(n=>n!==hurt&&n!==other)).sort((x,y)=>bond(hurt,y)-bond(hurt,x))[0];
     const text=variant([
       `${hurt} is still replaying the fight in the bedroom when ${ally} comes in. ${ally} does not ask for the whole story—only which part hurt most.`,
-      `${ally} finds ${hurt} putting clothes away much too aggressively. They go through what happened, including the part ${hurt} wishes ${pronouns(hurt).sub} had not said.`,
+      `${ally} finds ${hurt} putting clothes away much too aggressively. ${ally} helps fold the pile while ${hurt} recounts the argument, including the part ${hurt} wishes ${pronouns(hurt).sub} had not said.`,
       `${hurt} says the argument is over. ${ally} asks why ${hurt} is still awake talking about it in the bedroom.`,
       `${ally} tells ${hurt} who defended ${pronouns(hurt).obj} after the fight and who laughed once ${hurt} left. That information changes the rest of the night.`,
     ],c,hurt,other,ally);

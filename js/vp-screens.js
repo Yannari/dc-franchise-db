@@ -17523,25 +17523,33 @@ function _bbCycleScreens(view, screens, suffix = '') {
   // Screens that are built when their act comes up but shown later.
   const deferred = [];
   const id = base => `${base}${suffix}`;
+  // Beats displaced from a competition screen, waiting for the next House Life stretch.
+  let pendingBeats = [];
   for (const act of view.acts || []) {
     switch (act.type) {
-      case 'house':
-        screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life', html: rpBuildBBHouseLife(view, act, houseSlot) });
+      case 'house': {
+        // Anything a competition act displaced (see the 'hoh' case) joins the
+        // House Life stretch that follows it, so the week still has one House
+        // Life screen per stretch rather than a bonus screen per competition.
+        const merged = pendingBeats.length
+          ? { ...act, socialBeats: [...pendingBeats, ...(act.socialBeats || [])] }
+          : act;
+        pendingBeats = [];
+        screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life', html: rpBuildBBHouseLife(view, merged, houseSlot) });
         break;
+      }
       case 'have-nots':
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
         break;
       case 'hoh':
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
         // Whatever else happened around the competition is house life, not the
-        // competition. A grudge hardening over dinner and a rumour landing were
-        // being played on the results screen between the placements, which is
-        // the wrong screen and the wrong moment — the comp screen is now only
-        // the comp.
-        if ((act.socialBeats || []).length) {
-          screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
-            html: rpBuildBBHouseLife(view, act, houseSlot) });
-        }
+        // competition — but it does NOT get a screen of its own. The comp's
+        // cards already reveal the placements, and a second House Life screen
+        // per week was a subscreen nobody asked for: the beats are held here
+        // and folded into the next House Life stretch, so the week reads like a
+        // Total Drama episode — one challenge screen, one camp screen.
+        if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
       case 'nominations':
         screens.push({ id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view) });
@@ -17619,6 +17627,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
       default:
         break;
     }
+  }
+  // A compressed cycle — the second half of a double eviction — has no House
+  // Life stretch to fold displaced competition beats into. Rather than lose
+  // them, they get the one extra screen this path used to create every week.
+  if (pendingBeats.length) {
+    screens.push({ id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+      html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
+    pendingBeats = [];
   }
   // A week with no eviction — a walkout or an expulsion — still played the
   // competition, so it must not vanish with the vote.

@@ -520,6 +520,15 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* A nomination that broke a promise. The handshake happened one screen
+       earlier, so the ceremony has to acknowledge it or the two scenes are
+       telling different stories. */
+    .bbns-broke    { margin-top:9px; padding:8px 10px; border-radius:5px;
+                     background:rgba(248,81,73,.08); border:1px solid rgba(248,81,73,.28);
+                     font-size:11.5px; line-height:1.5; color:#ffb3ae; }
+    .bbns-broke span { display:block; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8.5px; letter-spacing:2px; color:#f85149; margin-bottom:4px; }
+
     /* ── competition results ───────────────────────────────────────────
        Counted up from last place, so the board fills bottom-up and the last two
        are alone on it. The controls are pinned to the viewport because a

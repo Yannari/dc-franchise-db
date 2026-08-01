@@ -7,7 +7,7 @@
 // its phases.
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
-import { getBond, getPerceivedBond } from '../bonds.js';
+import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
@@ -30,11 +30,11 @@ import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
-import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf } from './deals.js';
+import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
-import { recordReign } from './reign.js';
+import { recordReign, reignMadeAnEnemy } from './reign.js';
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -864,7 +864,59 @@ export function simulateBBWeek(options = {}) {
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
   week.initialNominees = [...nominees];
   week.plan = plan;
-  week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget }, { nominees: [...nominees] }));
+
+  // ── the promises this ceremony just broke ──
+  //
+  // Safety deals are made BEFORE nominations, which is the only time they are
+  // worth anything: a houseguest buys a week out of the box from the person
+  // holding the pen. Then the Head of Household nominates them anyway, and
+  // until now that cost precisely nothing. The deal stayed active, the person
+  // who had been promised safety carried no grievance about it, and the house
+  // never found out that the word of the person in power was worthless.
+  //
+  // Breaking it here rather than at the vote matters: the betrayal is the
+  // NOMINATION. By Thursday it is old news and the block has already done the
+  // damage.
+  //
+  // What counts, and what does not. Sitting your final-two partner in a chair
+  // as a pawn is not a broken promise — the promise is about the END, and using
+  // somebody you trust as the safe half of a block is ordinary, survivable
+  // Big Brother. Measured without this distinction, 55% of weeks broke a
+  // promise, which makes a promise worth nothing.
+  //
+  // Two things are betrayals. Breaking a SAFETY deal, which is a specific
+  // promise not to do this exact thing. And nominating a partner as the actual
+  // TARGET, where the chair is not a formality.
+  week.brokenPromises = [];
+  for (const nominee of nominees) {
+    const deal = dealBetween(hoh, nominee);
+    if (!deal || deal.active === false) continue;
+    const isSafety = (deal.type || '') === 'safety';
+    const isTarget = plan.target === nominee && plan.pawn !== nominee;
+    if (!isSafety && !isTarget) continue;
+    const broken = breakDeal(deal, hoh, { week, reason: isSafety
+      ? 'promised safety and nominated them anyway' : 'nominated their own partner as the target' });
+    if (!broken) continue;
+    const sincere = (() => { try { return sincerityOf(deal, hoh); } catch { return 1; } })();
+    week.brokenPromises.push({ hoh, victim: nominee, type: deal.type || 'deal', sincere,
+      kind: isSafety ? 'safety' : 'target' });
+    // Being nominated by somebody who gave you their word is worse than being
+    // nominated. It is the difference between a move and a lie.
+    addBond(nominee, hoh, -2.6);
+    try {
+      setBBTarget(nominee, hoh, isSafety
+        ? 'promised me safety and put me up anyway'
+        : 'shook on the end with me and then came for me', { week });
+      rememberStrategy(nominee, hoh, 'broke-a-promise', week.num, 3,
+        { format: 'big-brother', about: deal.type || 'safety', at: 'the nomination ceremony' });
+      // And it is a public act — the wall says so — which is exactly the kind
+      // of enemy a reign is scored on making.
+      reignMadeAnEnemy(week, nominee);
+    } catch { /* the promise still broke */ }
+  }
+
+  week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    brokenPromises: [...week.brokenPromises] }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
   // Two people are on the block and the rest of the house is not.

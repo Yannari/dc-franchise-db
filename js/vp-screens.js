@@ -16946,9 +16946,25 @@ export function rpBuildBBNominations(ep) {
         <div class="bbns-card-b">${KEY_LINES[(idx + step.name.length) % KEY_LINES.length](step.name, idx)}</div></div>`;
     }
     if (step.kind === 'reason') {
+      // Did this nomination break something the Head of Household had promised?
+      //
+      // A safety deal is bought BEFORE nominations from the person holding the
+      // pen, so putting that person up is not a move, it is a lie — and the
+      // screen said nothing about it while the two of them shook hands one
+      // screen earlier.
+      const act = (ep.acts || []).find(a => a.type === 'nominations');
+      const broke = (act?.brokenPromises || []).find(b => b.victim === step.name);
       return `<div class="bbns-card is-reason">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill gold">WHY ${_bbEsc(step.name).toUpperCase()}</span></div>
-        <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}</div></div>`;
+        <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}</div>
+        ${broke ? `<div class="bbns-broke">
+          <span>PROMISE BROKEN</span>
+          ${broke.kind === 'safety'
+            ? `${_bbEsc(hoh)} shook on a week of safety with ${_bbEsc(step.name)} before this ceremony${
+                broke.sincere < 0.5 ? ' and never meant a word of it' : ''}. ${_bbEsc(step.name)} is on the wall anyway.`
+            : `${_bbEsc(hoh)} and ${_bbEsc(step.name)} shook on the end together. This is not a pawn — ${
+                _bbEsc(step.name)} is the name ${_bbEsc(hoh)} came for.`}
+        </div>` : ''}</div>`;
     }
     if (step.kind === 'complete') {
       return `<div class="bbns-card is-final">

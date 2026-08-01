@@ -1,7 +1,7 @@
 // Big Brother strategy primitives. This module deliberately knows nothing about
 // Total Drama's tribes, merge, immunity, or tribal council.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 import { housePlan } from './plans.js';
@@ -9,6 +9,12 @@ import { dealBetween, sincerityOf, tierOf } from './deals.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
+const strategyText = (lines, ...salt) => {
+  const key = `${gs.episode || 0}|${salt.filter(Boolean).join('|')}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return lines[hash % lines.length];
+};
 
 function archetype(name) {
   return players.find(player => player.name === name)?.archetype || 'floater';
@@ -150,8 +156,13 @@ export function chooseReplacement(hoh, house, protectedNames, plan, rng = Math.r
  */
 export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context = {}) {
   if (nominees.includes(holder)) {
+    const p = pronouns(holder);
     return { use: true, save: holder, reason: 'self',
-      why: `${holder} is on the block and holding the only thing that takes them off it.` };
+      why: strategyText([
+        `${holder} is on the block and holding the one power that makes ${p.obj} safe.`,
+        `${holder} won the veto personally. Staying nominated is not a decision ${p.sub} needs to consider.`,
+        `The veto belongs to ${holder}, and so does the name coming off the block.`,
+      ], holder, 'veto-self') };
   }
 
   const hoh = context.hoh || null;
@@ -231,9 +242,11 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     if (backdoor && !nominees.includes(backdoor)) {
       const pull = options[0].name;
       return { use: true, save: pull, reason: 'backdoor', replacement: backdoor,
-        why: `${holder} nominated ${nominees.join(' and ')} to get here. Taking ${pull} down puts `
-          + `${backdoor} up with no time to work the house, and the veto winner cannot be `
-          + `renominated — which is the whole reason the target was kept out of this competition.` };
+        why: strategyText([
+          `${holder} nominated ${nominees.join(' and ')} to create this opening. Taking ${pull} down finally puts ${backdoor} in the chair the plan was built for.`,
+          `${backdoor} avoided the opening block and the veto competition. ${holder} uses the medallion to remove that protection all at once.`,
+          `The original nominees were the route, not the destination. ${holder} pulls down ${pull} so ${backdoor} can become the real target.`,
+        ], holder, pull, backdoor, 'veto-backdoor') };
     }
     const promised = nominees.find(n => {
       const deal = dealBetween(holder, n);
@@ -241,12 +254,18 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     });
     if (promised) {
       return { use: true, save: promised, reason: 'own-deal',
-        why: `${holder} put ${promised} up and has since shaken on the end with them. Leaving them `
-          + `there costs more than the embarrassment of taking them down.` };
+        why: strategyText([
+          `${holder} put ${promised} up, then made an endgame promise that cannot survive leaving ${pronouns(promised).obj} exposed.`,
+          `${holder}'s deal with ${promised} now matters more than defending the original nominations.`,
+          `Keeping ${promised} on the block would expose ${holder}'s new promise as empty. The veto repairs that before the vote.`,
+        ], holder, promised, 'veto-own-deal') };
     }
     return { use: false, save: null, reason: 'own-nominations',
-      why: `${holder} made these nominations four days ago and nothing has changed since. Using `
-        + `their own veto would only mean explaining why they were wrong the first time.` };
+      why: strategyText([
+        `${holder} made these nominations and still wants the house voting on them. Using ${pronouns(holder).posAdj} own veto would only undo the plan.`,
+        `${holder} won the chance to change ${pronouns(holder).posAdj} own block and finds no reason to do it.`,
+        `Nothing since nominations has persuaded ${holder} that either chair belongs to somebody else.`,
+      ], holder, 'veto-own-noms') };
   }
 
   // ── anybody else ──
@@ -302,34 +321,56 @@ export function explainReplacement(hoh, name, pool, plan, nominees = []) {
   if (!name) return '';
   const options = (pool || []).filter(n => n !== name);
   if (!options.length) {
-    return `${hoh} has one legal name left. ${name} is not being chosen so much as counted to.`;
+    return strategyText([
+      `${hoh} has only one eligible replacement. ${name}'s nomination is forced before the speech begins.`,
+      `Once the immune names and the remaining nominee are removed, only ${name} is left for ${hoh} to name.`,
+      `There is no second option for ${hoh}. The rules put ${name} in the empty chair.`,
+    ], hoh, name, 'replacement-forced');
   }
   if (plan?.backdoorTarget === name) {
-    return `This is the week ${hoh} has been building. ${name} never sat through a nomination `
-      + `ceremony, never had four days to work the house, and is on the block with the votes `
-      + `already counted.`;
+    return strategyText([
+      `${hoh} kept ${name} away from the opening block and the veto draw. The empty chair is the final step of that plan.`,
+      `${name} was never the backup. ${hoh} built the week around naming ${pronouns(name).obj} only after the veto could no longer be won.`,
+      `The original nominations created the opening; ${name} was always meant to fill it. ${hoh} finally says the real target aloud.`,
+    ], hoh, name, 'replacement-backdoor');
   }
   const st = pStats(name);
   const rec = gs.bb?.stats?.[name] || {};
   const comps = (rec.hohWins || 0) + (rec.vetoWins || 0) + (rec.blockBusterWins || 0);
   const plan2 = housePlan(hoh);
   if ((plan2?.targets || []).includes(name)) {
-    return `${hoh} wanted ${name} up from the start and the veto handed them the chair to do it in.`;
+    return strategyText([
+      `${hoh} wanted ${name} on the block from the start. The veto finally supplies an open chair.`,
+      `${name} was already on ${hoh}'s target list. The replacement decision turns that private plan into a public move.`,
+      `${hoh} does not need to invent a new target under pressure. ${name}'s name was waiting in the plan.`,
+    ], hoh, name, 'replacement-target');
   }
   if (comps >= 2) {
-    return `${name} has won ${comps} competitions and just watched somebody else use the veto. `
-      + `${hoh} is not going to get a cleaner chance than an empty seat.`;
+    return strategyText([
+      `${name} has already won ${comps} competitions. ${hoh} uses the rare moment when somebody else holds the veto to put that record on the block.`,
+      `${hoh} sees ${comps} competition wins beside ${name}'s name and decides the empty chair may not come again.`,
+      `${name}'s ${comps} wins make the replacement less about convenience than opportunity. ${hoh} takes the shot while it is available.`,
+    ], hoh, name, comps, 'replacement-comps');
   }
   if (getPerceivedBond(hoh, name) >= 3) {
-    return `${hoh} has run out of people they are not close to. ${name} goes up, and both of them `
-      + `know it is because there was nobody left who would not have been worse.`;
+    return strategyText([
+      `${hoh} has run out of distant names. Putting up ${name} damages a real relationship, but every remaining option costs even more.`,
+      `${name} is close to ${hoh}; that no longer makes ${pronouns(name).obj} safe when the eligible pool is this small.`,
+      `${hoh} chooses ${name} despite their relationship and makes clear the decision came from the shrinking list, not a new target.`,
+    ], hoh, name, 'replacement-close');
   }
   if (options.length <= 2) {
-    return `${hoh} has two names to choose between and picks the one who will hold it against them `
-      + `least. That is the entire reasoning and everybody can see it.`;
+    return strategyText([
+      `${hoh} has almost no room left to choose. Between the available names, ${name} is the relationship ${pronouns(hoh).sub} believes can survive the nomination.`,
+      `The eligible pool is down to ${name} and ${options.join(' and ')}. ${hoh} chooses the person least likely to turn the chair into a permanent war.`,
+      `${hoh} is choosing damage, not safety. ${name} is the option ${pronouns(hoh).sub} expects to cost less after the ceremony.`,
+    ], hoh, name, ...options, 'replacement-small-pool');
   }
-  return `${name} has been quiet enough that nobody will call this a move, which is exactly why `
-    + `${hoh} can afford to make it.`;
+  return strategyText([
+    `${name} has fewer people ready to object than the other eligible names. ${hoh} chooses the replacement the house is least likely to fight over.`,
+    `${hoh} does not need ${name} to be the biggest threat—only the name that creates the smallest counterattack.`,
+    `${name} has stayed outside the center of the week. That makes ${pronouns(name).obj} easier for ${hoh} to nominate without breaking a larger structure.`,
+  ], hoh, name, 'replacement-default');
 }
 
 export function initialVotePreference(voter, nominees, rng = Math.random) {

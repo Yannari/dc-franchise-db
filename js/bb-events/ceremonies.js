@@ -314,7 +314,9 @@ const vetoSavedGratitude = {
       `${saved} does not say thank you in the room. ${p.Sub} waits until the house has scattered, finds ${holder} alone, and says it once, properly. It is worth more that way and they both know it.`,
       `"You didn't have to do that." ${holder} shrugs. "I did, though." ${saved} decides, on the spot and without saying so, that this is a debt ${p.sub} intends to pay.`,
       `${saved} comes off the block and the first thing ${p.sub} does is look for ${holder}. Not for the cameras — for the record. Some deals in this house are made in words and some are made in that.`,
-      `"I'm not going to forget it," ${saved} tells ${holder}, and for once in this house it is not a line. ${p.Sub} has a very long memory and has just decided who it is for.`,
+      `“I'm not going to forget it,” ${saved} tells ${holder}. ${p.Sub} ${p.sub === 'they' ? 'mean' : 'means'} the debt, and ${holder} can hear that.`,
+      `${saved} pulls ${holder} into a hug before the meeting fully breaks up. “Whatever you need next week, ask me first.”`,
+      `${saved} waits until they are alone and asks ${holder} why ${pronouns(holder).sub} did it. The answer matters enough that ${saved} repeats it back.`,
     ], ctx, saved, holder);
 
     api.addBond(saved, holder, 2.2);
@@ -351,7 +353,9 @@ const vetoLeftOnBlock = {
       `The veto stays in ${holder}'s pocket. ${stranded} looks at it for slightly too long — long enough that two people notice, and one of them files it away.`,
       `${holder} announces that the veto will not be used. ${stranded} says, “That's fine,” twice without looking at anyone.`,
       `Nothing happens at the veto ceremony, and that is the loudest thing that happens all week. ${stranded} goes to bed early. ${p.Sub} does not sleep early.`,
-      ...(allied ? [`${holder} and ${stranded} are supposed to be working together. When ${holder} keeps the veto, ${stranded} stares at them through the rest of the ceremony.`] : []),
+      `${stranded} watches ${holder} return the veto to its box. The apology ${holder} mouths across the room only makes ${p.obj} look away faster.`,
+      `${holder} says the nominations should stay the same. ${stranded} had asked for a different answer in private and now knows what that conversation was worth.`,
+      ...(allied ? [`${holder} and ${stranded} are supposed to be working together. When ${holder} keeps the veto, ${stranded} stares at ${pronouns(holder).obj} through the rest of the ceremony.`] : []),
     ], ctx, stranded, holder);
 
     // Abandonment scales with what was owed. A stranger who did not save you is
@@ -390,8 +394,10 @@ const vetoBackdoorLands = {
     const text = _variant([
       `${ctx.hoh} names ${victim} as the replacement and the room understands the whole week at once — the nominations, the pawn, the conversations that went nowhere. ${victim} never played the veto because ${p.sub} was never meant to.`,
       `"As the replacement nominee, I have to name... ${victim}." Somebody exhales. ${victim} does not, for several seconds. The backdoor closes with almost no sound at all.`,
-      `The plan was built before the veto was played and lands in four seconds. ${victim} walks to the chair like the floor has moved, because for ${p.obj} it has.`,
+      `The plan was built before the veto was played. When ${victim}'s name is finally called, ${p.sub} walks to the chair like the floor has shifted.`,
       `${victim} had spent the week being told ${p.sub} was not a target, by people who were counting on ${p.obj} believing it. ${p.Sub} did. That was the plan.`,
+      `${victim} looks first at the veto winner, then at ${ctx.hoh}, and understands why every reassuring conversation this week ended so quickly.`,
+      `${ctx.hoh} names ${victim}. A few people refuse to react, which tells ${victim} exactly how many of them already knew.`,
     ], ctx, victim, ctx.hoh);
 
     api.addBond(victim, ctx.hoh, -2.4);
@@ -422,8 +428,10 @@ const vetoReplacementShock = {
     const text = _variant([
       `${victim} is named as the replacement and takes the chair still holding the mug ${p.sub} brought in with ${p.obj}. Small detail. It is the one everyone remembers.`,
       `"I need a replacement nominee." ${victim} already knows. ${p.Sub} knew from the moment the veto came off — there was only ever one name that made the numbers work.`,
-      `${victim} sits down hard. Not betrayed, exactly. Spent. There is a difference and by Thursday it will not matter.`,
+      `${victim} sits down hard. Not betrayed, exactly—spent. The distinction disappears as soon as the house starts counting votes.`,
       `The replacement is ${victim}, and the strange thing is how ordinary it feels — no gasp, no drama, just the week rearranging itself around ${p.obj} while ${p.sub} watches.`,
+      `${victim}'s name lands without warning. ${p.Sub} asks ${ctx.hoh}, “Was this always the plan?” and gets no answer before taking the chair.`,
+      `${victim} thought the veto would change somebody else's week. Then ${ctx.hoh} says ${p.posAdj} name and every conversation becomes evidence.`,
     ], ctx, victim, ctx.hoh);
 
     api.addBond(victim, ctx.hoh, -1.1);
@@ -474,6 +482,9 @@ const evictionGracious = {
       `${gone} hugs everybody on the way out, and means most of them. "Play hard. I'll be watching every second."`,
       `"I'm not going to stand here and be bitter about a game I asked to be in." ${gone} says it lightly, and the room believes ${p.obj}, and that is worth more than ${p.sub} realises tonight.`,
       `${gone} takes the long way to the door, saying one specific thing to each person. Several of them will remember exactly what ${p.sub} said when they are asked to vote for a winner.`,
+      `${gone} tells the surviving nominee to breathe, thanks the house for the game and refuses every whispered apology on the way to the door.`,
+      `“No hard feelings. Seriously.” ${gone} hugs the people nearest the door and leaves before anybody can turn the goodbye into an explanation.`,
+      `${gone} smiles through the shock and says, “Somebody had to be right and somebody had to leave.” The line releases the room enough for the hugs to begin.`,
       ...(closest ? [`${gone} stops at ${closest} last. Whatever gets said is too quiet for the room, and ${closest} does not sit back down for a while after the door closes.`] : []),
     ], ctx, gone);
 
@@ -508,8 +519,10 @@ const evictionScorched = {
     const text = _variant([
       `${gone} does not hug anybody. "${blamed}. You know what you did, and now so does everyone watching." The door closes on a silent room.`,
       `“I'd say good luck, but I'd be lying.” ${gone} looks directly at ${blamed}, picks up ${p.posAdj} bag and walks out.`,
-      `${gone} uses ${p.posAdj} last thirty seconds to lay out, calmly and in order, exactly what ${blamed} has done to three separate people in this house. Two of them did not know.`,
-      `It is not a speech so much as a receipt. ${gone} reads it out, hands it to the room, and leaves.`,
+      `${gone} uses the goodbye to repeat what ${blamed} promised, what ${blamed} did instead and who should compare notes after the door closes.`,
+      `${gone} turns the exit into a warning. “If ${blamed} told you the same thing, talk to each other before the next vote.”`,
+      `${gone} hugs around ${blamed}, stops at the door and says, “You got me. Now explain to them why they're next.”`,
+      `${gone} names the deal ${blamed} broke and the lie that protected it. Nobody has time to answer before ${gone} leaves.`,
     ], ctx, gone, blamed);
 
     // A scorched exit is a gift and a curse: the house learns something true,
@@ -545,10 +558,13 @@ const evictionBlindsided = {
       .sort((a, b) => bond(gone, b) - bond(gone, a));
     const betrayer = trusted[0] || house.find(n => n !== gone);
     const text = _variant([
-      `${gone} stands up before the vote is finished being read, because ${p.sub} has already worked out that the number is too big to be anyone but ${p.posAdj} own side.`,
+      `${gone} stands up before the vote is finished being read, because ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already worked out that the number is too big to be anyone but ${p.posAdj} own side.`,
       `When the vote is announced, ${gone} looks straight at ${betrayer}. ${betrayer} looks down at the floor and does not look up again.`,
       `${gone} says "wow" once, quietly. ${p.Sub} does not say anything else on the way out, and the silence does more damage than a speech would have.`,
       `${gone} had the votes counted this morning. ${p.Sub} had them counted wrong, and the difference is standing three feet away not making eye contact.`,
+      `${gone} looks from one trusted face to the next and finds the same apology waiting on all of them. “So everybody knew but me.”`,
+      `${gone} starts toward the door, stops beside ${betrayer} and asks, “Was any of it real?” The live-show clock moves before ${betrayer} answers.`,
+      `${betrayer} reaches for a goodbye hug. ${gone} steps around ${pronouns(betrayer).obj} and hugs the person behind ${pronouns(betrayer).obj} instead.`,
     ], ctx, gone, betrayer);
 
     api.popDelta(gone, 2);

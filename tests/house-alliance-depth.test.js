@@ -18,6 +18,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
 
 const NAMES = ['Bowie','Chase','Ripper','Scary','Nichelle','Axel','Zee','Brightly','Hicks',
   'Emmah','Millie','Caleb','Wayne','Raj','Julia','Priya','MK','Damien'];
@@ -100,8 +101,14 @@ describe('alliance depth in the house', () => {
 // with nothing anywhere explaining it.
 describe('every alliance transition is visible', () => {
   it('puts a beat on screen for each one', () => {
+    // Seeded. This plays whole seasons and asks to see five distinct alliance
+    // transitions; unseeded it rolled fresh dice every run, so it passed most
+    // of the time and failed when a season happened not to produce one of them.
+    // A test that samples rather than checks is a test that reports noise.
     const seen = new Set();
-    for (let s = 0; s < 3 && seen.size < 5; s++) {
+    const SEEDS = [7, 41, 88, 219, 355];
+    for (let s = 0; s < SEEDS.length && seen.size < 5; s++) {
+      const seed = SEEDS[s];
       seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
       Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, ordinal, getBond, getPerceivedBond, romanticCompat });
       Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 9, twistSchedule: [],
@@ -109,8 +116,10 @@ describe('every alliance transition is visible', () => {
       gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
       gs.episodeHistory = []; gs.showmances = []; gs.romanticSparks = []; gs.sideDeals = [];
       gs.allianceRepairHistory = [];
-      let g = 0;
-      while (!houseIsAtFinale() && g++ < 30) { if (!simulateBBEpisode()) break; }
+      withSeededRandom(seed, () => {
+        let g = 0;
+        while (!houseIsAtFinale() && g++ < 30) { if (!simulateBBEpisode()) break; }
+      });
       for (const w of gs.bb.weeks || []) {
         for (const act of w.acts || []) {
           for (const b of act.socialBeats || []) {

@@ -441,19 +441,30 @@ const JOIN_AVG = 1.2;       // but genuinely wanted by the group overall
  * alliance dies the moment one of them is evicted, so a house that cannot grow
  * one is a house permanently full of pairs.
  */
+/**
+ * How big an alliance can get before it stops being one.
+ *
+ * Seven. Past that it is not an alliance, it is the house — and the hard part
+ * of the format is that a group large enough to control every vote is also
+ * large enough that somebody in it is already counting who they cut first.
+ */
+const MAX_ALLIANCE_SIZE = 7;
+
 function recruitmentOptions(house) {
   const options = [];
   for (const alliance of allianceStore()) {
     if (alliance.active === false || alliance.dissolved) continue;
     const members = (alliance.members || []).filter(name => house.includes(name));
-    if (members.length < 2 || members.length >= 6) continue;
+    // Seven is the ceiling, not six. Past that an alliance is the house.
+    if (members.length < 2 || members.length >= MAX_ALLIANCE_SIZE) continue;
     for (const candidate of house) {
       if (members.includes(candidate)) continue;
       const scores = members.map(m => pairTrust(candidate, m));
       const avg = scores.reduce((sum, v) => sum + v, 0) / scores.length;
       if (Math.min(...scores) < JOIN_FLOOR || avg < JOIN_AVG) continue;
       // A smaller alliance is hungrier for numbers than one that already has them.
-      options.push({ alliance, members: [...members, candidate], candidate, score: avg + (6 - members.length) * 0.35 });
+      options.push({ alliance, members: [...members, candidate], candidate,
+        score: avg + (MAX_ALLIANCE_SIZE - members.length) * 0.35 });
     }
   }
   return options.sort((a, b) => b.score - a.score || a.candidate.localeCompare(b.candidate));

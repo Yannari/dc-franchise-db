@@ -48,7 +48,12 @@ const at = (phase, ctx, value) => (ctx?.phase === phase ? band(value * 2.6, 34) 
  * ever fire: at that point there is no saved and no replacement to react to.
  */
 const afterCeremony = (ctx, value) =>
-  (ctx?.act === 'campaign' || ctx?.phase === 'campaign' ? band(value * 2.2, 30) : 0);
+  // Scaled at 0.9, not 2.2. These are the loudest scenes of the week and they
+  // all land in the campaign act, which draws one to three beats — at the old
+  // multiplier four of them arrived weighing ~25 against a library whose other
+  // campaign events sit around 3, and they took nearly every slot. Being the
+  // most dramatic thing available is not a reason to be the only thing.
+  (ctx?.act === 'campaign' || ctx?.phase === 'campaign' ? band(value * 0.9, 16) : 0);
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
 const _hoh = ctx => ctx?.hoh || ctx?.week?.hoh || null;
@@ -343,7 +348,7 @@ const blockPressure = {
     const text = mode === 'anger' ? _variant([
       `${nom} slams a cupboard hard enough that the whole kitchen stops. Nobody asks what it was about because everybody knows.`,
       `"Say it to me, then." ${nom} is looking straight at ${hoh || 'the room'}, and the temperature drops about ten degrees.`,
-      `${nom} has been polite for two days and runs out of it between one sentence and the next.`,
+      `${nom} has been polite since the nomination and runs out of it between one sentence and the next.`,
       `It comes out sideways — a joke with too much in it, aimed at nobody, landing on everybody.`,
     ], ctx, nom) : mode === 'despair' ? _variant([
       `${nom} stops campaigning halfway through a sentence, and does not pick it back up.`,
@@ -692,7 +697,7 @@ const vetoPromise = {
 
     const text = means ? _variant([
       `${holder} finds ${saved} in the pantry and says it plainly: the veto is coming off the wall and ${saved} is coming with it.`,
-      `"You're getting off that block." ${saved} has been braced for four days and takes a second to work out ${p.sub} means it.`,
+      `"You're getting off that block." ${saved} has been braced for the opposite answer and takes a second to work out ${p.sub} means it.`,
       `${holder} tells ${saved} first, before the HOH, before anybody. That order is the whole message.`,
     ], ctx, holder, saved) : _variant([
       `${holder} tells ${saved} the veto is coming ${p.posAdj} way. ${holder} has not decided that at all.`,
@@ -960,7 +965,7 @@ const pawnAsk = {
       `${hoh} asks ${pawn} to be the pawn. ${pawn} agrees, on the condition that ${hoh} says it to ${p.posAdj} face if that ever changes.`,
       `"Pawns go home," ${pawn} says. "Not this one," ${hoh} says. ${pawn} agrees anyway, which tells ${hoh} everything about how safe ${pawn} feels.`,
     ], ctx, hoh, pawn) : _variant([
-      `${hoh} asks ${pawn} to sit beside ${mark || 'them'}. ${pawn} says no. Nobody in this house has said no to a Head of Household in weeks and the room does not quite know what to do with it.`,
+      `${hoh} asks ${pawn} to sit beside ${mark || 'them'}. ${pawn} says no. Nobody has refused the Head of Household this directly before, and the room does not quite know what to do with it.`,
       `"Ask somebody else." ${pawn} does not raise ${p.posAdj} voice and does not move. ${hoh} is going to have to nominate ${p.obj} anyway now, and they both know it.`,
       `${pawn} has watched three pawns go home and says so. ${hoh} runs out of reassurance about a minute before ${pawn} runs out of patience.`,
     ], ctx, hoh, pawn);

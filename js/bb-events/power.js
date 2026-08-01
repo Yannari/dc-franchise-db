@@ -1158,7 +1158,14 @@ const vetoHolderFallout = {
     const holder = ctx?.vetoWinner;
     // Somebody else's veto, used on somebody who was not them.
     if (!holder || !saved || holder === saved || holder === _hoh(ctx)) return 0;
-    return afterCeremony(ctx, 11);
+    // Weighted to saturate rather than to compete. Its siblings fire on things
+    // that happen most weeks — a nominee saving themselves, a replacement
+    // reacting — while this one needs somebody who was neither nominated nor
+    // Head of Household to win the veto AND spend it on a third person, which
+    // is three unlikely things at once and turned up three times in forty
+    // seasons. When it does happen an ally has just torched the HOH's week in
+    // public, so on those rare weeks it should be the scene, not a coin toss.
+    return afterCeremony(ctx, 22);
   },
   fire(house, ctx, api) {
     const holder = ctx.vetoWinner;

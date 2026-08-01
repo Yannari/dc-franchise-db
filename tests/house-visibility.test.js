@@ -102,3 +102,37 @@ describe('the debug screen accounts for the week', () => {
     expect(html).toMatch(/all eight ran|FAILED/);
   });
 });
+
+// ── The front page ────────────────────────────────────────────────────
+//
+// House Status answered "where does everybody stand" and never answered "what
+// happened". The week's biggest moment — a blindside, a self-save, a promise
+// broken — sat in a collapsed panel with the same weight as a bond number.
+describe('the week has a front page', () => {
+  it('leads on the biggest thing that happened', () => {
+    const html = rpBuildBBOverview(playWeeks(4));
+    expect(html).toContain('The House Gazette');
+    // A masthead over an empty page would be the same failure in nicer type:
+    // there must be a lead story with a real headline and a kicker naming it.
+    expect(html).toMatch(/class="bbgz-kicker">[A-Z' ]+</);
+    expect(html).toMatch(/class="bbgz-hed">[^<]{6,}</);
+  });
+
+  it('keeps the instrument readings off the news pages', () => {
+    // Plan-change reasons are written for the debug tab and some are raw
+    // telemetry. One of them printed in IN BRIEF as a sentence.
+    const html = rpBuildBBOverview(playWeeks(5));
+    const start = html.indexOf('bbgz-brief');
+    const brief = start < 0 ? '' : html.slice(start, html.indexOf('</ul>', start));
+    expect(brief).not.toMatch(/confidence|jury proxy|\d+%/);
+  });
+
+  it('opens an episode by recapping the week before it', () => {
+    // At the top of an episode there is no news yet, so the front page runs
+    // last week's — which is what somebody arriving there wants anyway.
+    playWeeks(4);
+    const prior = gs.episodeHistory[gs.episodeHistory.length - 1];
+    const html = rpBuildBBOverview(prior, 'opening');
+    if (gs.episodeHistory.length > 1) expect(html).toContain('Last week');
+  });
+});

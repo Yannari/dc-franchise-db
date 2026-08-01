@@ -92,6 +92,17 @@ export function addBBShowmanceSpark(a, b, detail = {}, context = {}) {
   const active = gs.showmances.filter(showmance => showmance.phase !== 'broken-up');
   if (active.length >= 4 || active.some(showmance => showmance.players?.includes(a) || showmance.players?.includes(b))) return false;
   if (gs.romanticSparks.some(spark => spark.players?.includes(a) && spark.players?.includes(b))) return false;
+
+  // A house can only carry so many will-they-won't-theys at once.
+  //
+  // Unbounded, the social library opened about ten sparks a season and roughly
+  // three in five matured, so a fourteen-person house produced six showmances
+  // in eleven weeks — more couples than a real season has had in its history.
+  // The problem was never the conversion rate; it was that nothing rationed the
+  // supply. Two live at a time keeps each one worth watching.
+  const live = gs.romanticSparks.filter(spark => !spark.fake
+    && (spark.players || []).every(name => (gs.activePlayers || []).includes(name))).length;
+  if (live >= 2) return false;
   const strength = Number(detail.intensity) || 0.3;
   gs.romanticSparks.push({
     players: [a, b], sparkEp: currentRound(context.week),

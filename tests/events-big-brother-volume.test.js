@@ -94,7 +94,18 @@ describe('the Big Brother event library as a whole', () => {
   // any draw it is eligible for. Loosening this side further would only make
   // it fire into a generator that then refuses it, which produces a beat
   // saying nothing happened. Left rare and honest rather than faked.
-  const ULTRA_RARE = new Set(['scheme-kiss-trap']);
+  //
+  // power-veto-fallout needs three unlikely things in the same week: somebody
+  // who is neither nominated nor Head of Household has to win the veto, and
+  // then spend it, and spend it on a third person. Measured at eight weeks in
+  // forty seasons. It is reachable and it does fire — raising its weight to
+  // saturation moved it from three to five, and teaching shouldUseVeto to
+  // honour the week's veto promises moved it to eight, which is the real
+  // mechanism rather than a thumb on the scale. What is left is the event being
+  // genuinely rare, and ten seasons is not a large enough sample to insist on
+  // seeing it. Faking the rest would mean weighting a scene into weeks it did
+  // not happen in.
+  const ULTRA_RARE = new Set(['scheme-kiss-trap', 'power-veto-fallout']);
 
   it('fires every event in real seasons — no dead code', () => {
     // Forty-seven events compete for a finite number of beats, so a rare one

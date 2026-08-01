@@ -17619,6 +17619,232 @@ function _bbMemoryWall(stillIn, { note = '', status = {} } = {}) {
 }
 
 /**
+ * THE HOUSE GAZETTE — what actually happened, as a front page.
+ *
+ * House Status answers "where does everybody stand", which is a table of state
+ * and reads like one. It never answered the question a viewer asks first: what
+ * HAPPENED? The week's story was scattered across nine collapsed panels, and
+ * the biggest moment in it — a blindside, a self-save, a couple forming, an
+ * alliance splitting down the middle — had no more prominence than a bond
+ * number.
+ *
+ * So the week gets a front page. Every story below is mined from what the week
+ * recorded rather than written by hand, ranked, and the biggest one runs as the
+ * lead. A quiet week gets a quiet front page, which is itself information.
+ *
+ * @returns {{lead: object|null, stories: object[], briefs: string[]}}
+ */
+function _bbStories(ep, stillIn) {
+  if (!ep) return { lead: null, stories: [], briefs: [] };
+  const stories = [];
+  const briefs = [];
+  const has = name => name && stillIn.includes(name);
+  const pr = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+  const add = (weight, kind, kicker, headline, standfirst, faces) =>
+    stories.push({ weight, kind, kicker, headline, standfirst, faces: (faces || []).filter(Boolean) });
+
+  const beats = (ep.acts || []).flatMap(act => act.socialBeats || []);
+  const initial = ep.initialNominees || [];
+  const finalNoms = ep.finalNominees || [];
+  const vetoUsed = initial.length && finalNoms.length
+    && initial.some(name => !finalNoms.includes(name));
+  const saved = initial.filter(name => !finalNoms.includes(name));
+  const replacement = finalNoms.filter(name => !initial.includes(name));
+
+  // ── the eviction, and whether anybody saw it coming ──
+  if (ep.eliminated) {
+    const ballots = ep.votingLog || [];
+    const against = ballots.filter(b => b.voted === ep.eliminated).length;
+    const total = ballots.length;
+    const unanimous = total > 0 && against === total;
+    const margin = total - against;
+    // A blindside is a vote that moved: people who said one thing and did
+    // another, or a bloc that swung late.
+    const flips = ballots.filter(b => b.changed).length;
+    const blindside = flips >= 2 || (ep.blocMoves || []).length > 0;
+    const p = pr(ep.eliminated);
+    if (blindside) {
+      add(100, 'eviction', 'BLINDSIDE',
+        `${ep.eliminated} never saw it`,
+        `${against} of ${total} votes, and ${flips || 'several'} of them changed hands after the ceremony. ${p.Sub} walked out believing ${p.sub} had the numbers.`,
+        [ep.eliminated]);
+    } else if (unanimous) {
+      add(78, 'eviction', 'EVICTED',
+        `The house votes as one`,
+        `${ep.eliminated} leaves ${against}&ndash;0. Nobody broke ranks, and nobody had to be asked twice.`,
+        [ep.eliminated]);
+    } else {
+      add(82, 'eviction', 'EVICTED',
+        `${ep.eliminated} is out`,
+        `Evicted ${against}&ndash;${margin}${margin ? ', with the room not quite of one mind' : ''}.`,
+        [ep.eliminated]);
+    }
+  }
+
+  // ── somebody took themselves off the block ──
+  if (vetoUsed && saved.length && ep.vetoWinner && saved.includes(ep.vetoWinner)) {
+    const who = ep.vetoWinner, p = pr(who);
+    add(94, 'survival', 'SAVED',
+      `${who} saves ${p.ref || p.obj}`,
+      `Nominated, drawn, and then the only person in the yard who could take ${p.obj} down was ${p.sub}. ` +
+      `${replacement[0] ? `${replacement[0]} goes up in ${p.posAdj} place.` : ''}`,
+      [who, replacement[0]]);
+  } else if (vetoUsed && saved.length) {
+    add(70, 'veto', 'VETO USED',
+      `${ep.vetoWinner} pulls ${saved[0]} down`,
+      `${replacement[0] ? `${replacement[0]} takes the empty chair — a nomination nobody campaigned for.` : 'The block changes shape.'}`,
+      [ep.vetoWinner, saved[0], replacement[0]]);
+  } else if (ep.vetoWinner && finalNoms.length) {
+    add(46, 'veto', 'VETO',
+      `${ep.vetoWinner} leaves the block alone`,
+      `The power of veto goes unused. ${finalNoms.join(' and ')} face the vote exactly as nominated.`,
+      [ep.vetoWinner]);
+  }
+
+  // ── power ──
+  if (ep.hoh) {
+    const prior = (gs.episodeHistory || []).filter(h => h.format === 'big-brother'
+      && h.num < ep.num && h.hoh === ep.hoh).length;
+    add(prior ? 52 : 60, 'power', 'HEAD OF HOUSEHOLD',
+      prior ? `${ep.hoh} takes the room back` : `${ep.hoh} takes the room`,
+      prior
+        ? `A ${typeof ordinal === 'function' ? ordinal(prior + 1) : `${prior + 1}th`} reign. The house has now watched ${ep.hoh} win when it mattered more than once, and that is a number people count.`
+        : `${finalNoms.length ? `${finalNoms.join(' and ')} pay for it.` : 'The first week of real power.'}`,
+      [ep.hoh]);
+  }
+
+  // ── a promise broken ──
+  (ep.dealBreaks || []).slice(0, 2).forEach(b => {
+    add(88, 'betrayal', 'BETRAYAL',
+      `${b.breaker} cuts ${b.victim} loose`,
+      `They shook on ${b.tier === 'final-two' ? 'a final two' : 'a final three'} in week ${b.madeEp}. It survived until it was inconvenient.`,
+      [b.breaker, b.victim]);
+  });
+
+  // ── the house splitting down the middle ──
+  (ep.blocMoves || []).slice(0, 1).forEach(m => {
+    const movers = (m.members || m.voters || []).filter(has);
+    if (movers.length < 2) return;
+    add(74, 'split', 'THE HOUSE SPLITS',
+      `${movers.length} move together`,
+      `${movers.join(', ')} swing as one block${m.reason ? ` — ${String(m.reason).replace(/-/g, ' ')}` : ''}. Whatever the house was, it is two things now.`,
+      movers.slice(0, 4));
+  });
+
+  // ── romance ──
+  const newCouples = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up'
+    && Number(sh.sparkEp) === Number(ep.num) && (sh.players || []).every(has));
+  newCouples.slice(0, 1).forEach(sh => {
+    const [a, b] = sh.players;
+    add(72, 'romance', 'SHOWMANCE',
+      `${a} and ${b} stop pretending`,
+      `Two votes that will never come apart, in a house that counts votes for a living. Somebody will say so out loud within the week.`,
+      [a, b]);
+  });
+  const splitUp = (gs.showmances || []).filter(sh => Number(sh.breakupEp) === Number(ep.num)
+    && sh.breakupType !== 'separated' && (sh.players || []).some(has));
+  splitUp.slice(0, 1).forEach(sh => {
+    const [a, b] = sh.players;
+    add(80, 'romance', 'IT ENDS',
+      `${a} and ${b} are over`,
+      `${sh.breakupVoter ? `${sh.breakupVoter} voted. That is the whole story.` : 'Whatever it was, it does not survive this week.'}`,
+      [a, b]);
+  });
+  if (!newCouples.length && !splitUp.length) {
+    const spark = beats.find(x => x.badgeText === 'A SPARK');
+    if (spark) {
+      add(38, 'romance', 'SOMETHING THERE',
+        `${(spark.players || [])[0]} and ${(spark.players || [])[1]} keep finding each other`,
+        `Not a couple. Not nothing either, and the house has worked out which of the two it is.`,
+        spark.players);
+    }
+  }
+
+  // ── the feud ──
+  const feud = beats.find(x => /CONFRONT|BLOW|FURIOUS|SHOUT|RAGE|GRUDGE|EXPOSED|CAUGHT/.test(x.badgeText || ''));
+  if (feud) {
+    add(64, 'feud', 'FEUD',
+      `${(feud.players || [])[0] || 'The house'} loses patience`,
+      String(feud.text || '').split('. ')[0] + '.',
+      feud.players);
+  }
+
+  // ── slop ──
+  if ((ep.haveNots || []).length) {
+    briefs.push(`On slop this week: ${ep.haveNots.join(', ')}.`);
+  }
+  if (ep.tieBreak) briefs.push(`The vote tied. The Head of Household broke it.`);
+  if ((ep.voteBroken || []).length) {
+    briefs.push(`${ep.voteBroken.map(v => v.voter || v.name).filter(Boolean).join(', ')} went back on what ${ep.voteBroken.length > 1 ? 'they' : 'they'} had promised.`);
+  }
+  // Plan-change reasons are written for the debug screen, and some of them are
+  // pure telemetry — "5.7/10 read at 41% confidence: 75% of the remaining cast
+  // show a solid positive bond (early jury proxy)". A newspaper does not print
+  // the instrument reading, so anything that looks like one stays out.
+  const readable = reason => {
+    const text = String(reason || '').trim();
+    if (!text || text.length > 90) return '';
+    if (/%|\d\/\d|confidence|proxy/i.test(text)) return '';
+    return text;
+  };
+  (ep.planChanges || []).slice(-3).forEach(c => {
+    const why = readable(c.reason);
+    if (has(c.owner) && why) briefs.push(`${c.owner} changed ${pr(c.owner).posAdj} mind — ${why}.`);
+  });
+  if (ep.safetyWinner) briefs.push(`${ep.safetyWinner} won safety and never had to worry.`);
+
+  stories.sort((a, b) => b.weight - a.weight);
+  return { lead: stories[0] || null, stories: stories.slice(1, 7), briefs: briefs.slice(0, 5) };
+}
+
+/** The front page itself. */
+function _bbGazette(ep, stillIn, label) {
+  const { lead, stories, briefs } = _bbStories(ep, stillIn);
+  if (!lead) return '';
+  const faces = (names, big) => (names || []).slice(0, 3)
+    .map(n => `<figure class="bbgz-cut ${big ? 'is-lead' : ''}">${_bbAvatar(n, big ? 92 : 40)}
+      <figcaption>${_bbEsc(n)}</figcaption></figure>`).join('');
+
+  return `<div class="bbgz">
+    <div class="bbgz-masthead">
+      <span class="bbgz-rule"></span>
+      <div class="bbgz-title">The House Gazette</div>
+      <span class="bbgz-rule"></span>
+    </div>
+    <div class="bbgz-dateline">
+      <span>${_bbEsc(label || `Week ${ep.num}`)}</span>
+      <span>&bull;</span>
+      <span>${stillIn.length} still inside</span>
+      <span>&bull;</span>
+      <span>Price: one vote</span>
+    </div>
+
+    <article class="bbgz-lead bbgz-k-${lead.kind}">
+      <div class="bbgz-lead-body">
+        <span class="bbgz-kicker">${_bbEsc(lead.kicker)}</span>
+        <h2 class="bbgz-hed">${_bbEsc(lead.headline)}</h2>
+        <p class="bbgz-standfirst">${lead.standfirst}</p>
+      </div>
+      ${lead.faces.length ? `<div class="bbgz-cuts">${faces(lead.faces, true)}</div>` : ''}
+    </article>
+
+    ${stories.length ? `<div class="bbgz-cols">
+      ${stories.map(s => `<article class="bbgz-story bbgz-k-${s.kind}">
+        <span class="bbgz-kicker">${_bbEsc(s.kicker)}</span>
+        <h3 class="bbgz-hed-sm">${_bbEsc(s.headline)}</h3>
+        <p class="bbgz-body">${s.standfirst}</p>
+        ${s.faces.length ? `<div class="bbgz-cuts">${faces(s.faces)}</div>` : ''}
+      </article>`).join('')}
+    </div>` : ''}
+
+    ${briefs.length ? `<div class="bbgz-brief">
+      <span class="bbgz-brief-h">IN BRIEF</span>
+      <ul>${briefs.map(b => `<li>${_bbEsc(b)}</li>`).join('')}</ul>
+    </div>` : ''}
+  </div>`;
+}
+
+/**
  * House status — the house's version of the camp overview.
  *
  * One screen: the memory wall, then collapsible sections for where everybody
@@ -17899,6 +18125,19 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     </div>`).join('')
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody changed their mind this week.</div>`;
 
+  // The front page. On the closing screen it is this week's; on the opening one
+  // there is nothing to report yet, so it runs last week's — which is exactly
+  // what somebody arriving at the top of an episode wants to be reminded of.
+  const gazetteEp = opening
+    ? (gs.episodeHistory || []).filter(h => h.format === 'big-brother' && h.num === ep.num - 1)[0]
+    : ep;
+  let gazette = '';
+  try {
+    gazette = gazetteEp
+      ? _bbGazette(gazetteEp, stillIn, opening ? `Last week — week ${gazetteEp.num}` : `Week ${ep.num}`)
+      : '';
+  } catch { gazette = ''; }
+
   const gone = ((typeof players !== 'undefined' ? players.length : stillIn.length) - stillIn.length);
   return `<div class="rp-page bb-room bb-open">
     <div class="rp-eyebrow">Week ${ep.num}</div>
@@ -17906,6 +18145,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">${
       opening ? 'Before anything happens this week.' : 'After everything that happened this week.'}</div>
     ${_bbMemoryWall(stillIn, { note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}` })}
+    ${gazette}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}
     ${section('plan', 'WHAT EVERYBODY IS PLAYING FOR', '#d29922', planBody)}
     ${section('deal', `PROMISED THE END (${live.length}${brokenBody ? `, ${(ep.dealBreaks || []).length} broken` : ''})`, '#e3b341', brokenBody + dealBody)}

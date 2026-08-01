@@ -387,7 +387,10 @@ const showmanceSpark = {
     _others(house, a, b).forEach(watcher => {
       if (pStats(watcher).intuition >= 5) api.suspicion(watcher, a, 0.7);
     });
-    return { text, players: [a, b], badgeText: started ? 'SHOWMANCE' : 'SOMETHING THERE', badgeClass: 'gold' };
+    // Not a showmance. This writes a spark, and a spark still has to survive the
+    // week and mature before anybody makes a move — calling it a showmance here
+    // promised a couple the game had not created yet.
+    return { text, players: [a, b], badgeText: started ? 'A SPARK' : 'SOMETHING THERE', badgeClass: 'gold' };
   },
 };
 

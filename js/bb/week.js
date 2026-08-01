@@ -227,7 +227,7 @@ function chooseHaveNots(placements, house, wanted, hoh) {
  * Returns the beats it produced so they join the week rather than being left
  * in a camp-events structure a house never renders.
  */
-function runHouseRomance(week) {
+function runHouseRomance(week, rng) {
   if (seasonConfig.romance === 'disabled') return [];
   const ep = { num: week.num, campEvents: { merge: { pre: [], post: [] } },
                eliminated: week.evicted || null, votingLog: week.ballots || [] };
@@ -236,13 +236,48 @@ function runHouseRomance(week) {
   // than edit a module the other simulator depends on.
   const popOff = seasonConfig.popularityEnabled === false;
   const popBefore = popOff ? { ...(gs.popularity || {}) } : null;
+
+  // Tell the shared pipeline what a house is before asking it to run.
+  //
+  // Every stage of it asks whether two people are on the same tribe, and a
+  // house answers that with `gs.tribes` — which is `{}` rather than an array
+  // until something says otherwise, making `gs.tribes.some(...)` a TypeError on
+  // the first spark of the first week.
+  //
+  // prepareHouse() in bb-run.js already says otherwise, so a played season is
+  // fine. simulateBBSeason() does not, so a headless one dies here every week,
+  // silently, and measures zero showmances across forty seasons while the same
+  // cast played through the UI pairs off constantly. Anything calibrated
+  // against the headless number is calibrated against a crash.
+  //
+  // Hence here, in the week both entry points share: a house is not a tribe
+  // game with the merge pending, it is a merge from the day everybody moves in.
+  if (!Array.isArray(gs.tribes)) gs.tribes = [];
+  gs.isMerged = true;
+  const house = [...(gs.activePlayers || [])];
+  if (!gs.tribes.length) gs.tribes.push({ name: 'merge', tribeName: 'merge', members: house });
+  else gs.tribes[0].members = house;
+
+  // The pipeline rolls Math.random directly — it predates the house having a
+  // seed at all. While it was crashing that cost nothing; now that it runs, an
+  // unseeded stage sits in the middle of a seeded week and the same seed stops
+  // replaying the same season. Lend it the week's generator for the duration.
+  const realRandom = Math.random;
+  if (typeof rng === 'function') Math.random = rng;
   try {
     updateRomanticSparks(ep);
     checkFirstMove(ep);
     checkShowmanceFormation(ep);
     updateShowmancePhases(ep);
     checkShowmanceBreakup(ep);
-  } catch { /* romance is texture — it never takes a week down with it */ }
+  } catch (err) {
+    // Texture never takes a week down — but it does not get to fail invisibly
+    // either. That silence is what hid the bug above for an entire format.
+    gs.bb ||= {};
+    (gs.bb.romanceFailures ||= []).push({ week: week.num, message: String(err?.message || err) });
+  } finally {
+    Math.random = realRandom;
+  }
   if (popOff) gs.popularity = popBefore;
   const bbRomanceText = e => {
     const [a, b, c] = e.players || [];
@@ -459,8 +494,8 @@ function _snapshotHouse() {
   };
 }
 
-function _attachRomance(week) {
-  const beats = [...runHouseRomance(week), ...runHouseMaintenance(week)];
+function _attachRomance(week, rng) {
+  const beats = [...runHouseRomance(week, rng), ...runHouseMaintenance(week)];
   if (!beats.length) return;
   const houseActs = (week.acts || []).filter(a => a.type === 'house');
   const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];
@@ -910,7 +945,7 @@ export function simulateBBWeek(options = {}) {
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
-    _attachRomance(week);
+    _attachRomance(week, rng);
     gs.bb.outgoingHoh = hoh;
     gs.bb.weeks.push(week);
     gs.episode = (gs.episode || 0) + 1;
@@ -1048,7 +1083,7 @@ export function simulateBBWeek(options = {}) {
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
-  _attachRomance(week);
+  _attachRomance(week, rng);
   gs.bb.outgoingHoh = hoh;
   gs.bb.weeks.push(week);
   gs.episode = (gs.episode || 0) + 1;

@@ -474,6 +474,16 @@ export function checkShowmanceFormation(ep) {
       const existingSpark = (gs.romanticSparks || []).find(sp => sp.players.includes(a) && sp.players.includes(b) && !sp.fake);
       const sparkBonus = existingSpark ? 1.5 : 0;
 
+      // A bond of 6 is a different thing in a house than it is on a beach.
+      //
+      // This route exists so two people who never had a scripted spark can still
+      // drift together, and on Total Drama that is rare because a bond that high
+      // is rare. A Big Brother house runs hot — a quarter of all pairs finish
+      // above 6 — so the same rule quietly became the main way couples formed,
+      // producing pairings with no scene behind them. In a house, something has
+      // to have happened first.
+      if (!existingSpark && seasonConfig.format === 'big-brother') continue;
+
       const threshold = ((aIsShowmancer || bIsShowmancer) ? 5 : 6) - sparkBonus;
       if (bond < threshold) continue;
 

@@ -191,6 +191,18 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     // Somebody who was only ever a pawn probably survives, so leaving them up
     // is not abandoning them.
     if (name === plan?.pawn && name !== plan?.target) cost *= 0.35;
+
+    // And what was said out loud this week, in front of witnesses.
+    //
+    // The lobbying events let somebody sell a nominee on picking them — "get me
+    // in the draw and the veto comes down on you" — the draw honours it, and
+    // then this function had never heard of it, so the promise won the seat and
+    // lost the vote. A public obligation is exactly the kind of cost that makes
+    // a non-nominee spend a veto, which is the rarest and best version of this
+    // decision. A promise nobody meant costs a good deal less.
+    const promise = (gs.sideDeals || []).find(deal => deal.active !== false && deal.type === 'veto'
+      && deal.players?.includes(holder) && deal.players?.includes(name));
+    if (promise) cost += promise.genuine === false ? 0.7 : 2.6;
     return cost;
   };
 

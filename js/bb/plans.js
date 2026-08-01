@@ -62,7 +62,8 @@ const planStyleFor = skill => (skill >= 7.5 ? 'endgame-architect' : skill >= 5 ?
 export function houseThreat(name) {
   const s = statsOf(name);
   const rec = recordOf(name);
-  const comps = (rec.hohWins || 0) * 1.15 + (rec.vetoWins || 0) * 0.85;
+  const comps = (rec.hohWins || 0) * 1.15 + (rec.vetoWins || 0) * 0.85
+    + (rec.blockBusterWins || 0) * 0.9;
   const survived = (rec.timesSaved || 0) * 0.5;
   return (s.strategic || 5) * 0.34 + (s.social || 5) * 0.26
     + Math.max(s.physical || 5, s.endurance || 5) * 0.16 + (s.boldness || 5) * 0.08

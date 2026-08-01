@@ -17118,7 +17118,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         });
         break;
       case 'campaign':
-        if (campaignIdx++ === 0) screens.push({ id: id('bb-camp'), label: 'Campaign', html: rpBuildBBCampaign(view) });
+        // No screen of its own. Campaigning is house life — it happens in the
+        // bedrooms and the storage room over three days, next to everything
+        // else that happens there — so it renders as another stretch of the
+        // feed rather than a separate stop with its own furniture.
+        campaignIdx++;
+        screens.push({
+          id: id(`bb-house-${++houseSlot}`), label: 'House Life',
+          html: rpBuildBBHouseLife(view, { ...act, phase: act.phase || 'post-veto' }, houseSlot),
+        });
         break;
       case 'eviction':
         screens.push({ id: id('bb-evict'), label: 'Eviction', html: rpBuildBBEviction(view) });

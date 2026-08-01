@@ -421,4 +421,53 @@ export const band = (value, max = 14) => Math.max(0, Math.min(max, value));
 /** Convert a -10..+10 bond into a 0..1 factor. */
 export const bondFactor = value => Math.max(0, Math.min(1, (value + 10) / 20));
 
+/**
+ * The argument a nominee actually makes.
+ *
+ * The campaign events described somebody campaigning — "makes the only argument
+ * that matters", "lays out the numbers", "runs out of argument" — without ever
+ * saying what the argument WAS. That is the whole of this game. Everybody knows
+ * a nominee is asking to stay; the only interesting part is what they say to
+ * get there, and a card that talks around it is a card about nothing.
+ *
+ * Every line is a real read of the board from the VOTER's point of view,
+ * because that is the only argument that works: not "keep me", but "keeping me
+ * is better for you than keeping them". Whichever is most true gets said.
+ */
+export function campaignArgument(nominee, voter, opponent) {
+  const recOf = n => (gs.bb?.stats?.[n] || {});
+  const compsOf = n => (recOf(n).hohWins || 0) + (recOf(n).vetoWins || 0) + (recOf(n).blockBusterWins || 0);
+  const theirComps = opponent ? compsOf(opponent) : 0;
+  const myComps = compsOf(nominee);
+
+  // Is the person they would keep instead aligned with people this voter is not?
+  const theirAllies = opponent ? (gs.namedAlliances || []).filter(a => a.active !== false
+    && (a.members || []).includes(opponent) && !(a.members || []).includes(voter)) : [];
+  // Is that person already coming for this voter?
+  const huntsVoter = !!opponent && targetsOf(opponent).includes(voter);
+  // Has the nominee ever written this voter's name down?
+  const everVoted = (gs.episodeHistory || []).some(h => (h.votingLog || [])
+    .some(b => b.voter === nominee && b.voted === voter));
+
+  if (huntsVoter) {
+    return `"${opponent} has your name in their mouth every time you leave the room. I am not the one you need to worry about."`;
+  }
+  if (theirAllies.length) {
+    return `"${opponent} is in ${theirAllies[0].name} and you are not. Keep ${opponent} and you are voting for a group that has no seat for you."`;
+  }
+  if (theirComps >= 2 && theirComps > myComps) {
+    return `"${opponent} has won ${theirComps} competitions. I have won ${myComps}. One of us is your problem in four weeks and it is not me."`;
+  }
+  if (opponent && threat(opponent) > threat(nominee) + 1) {
+    return `"Look at who is left. ${opponent} beats you at the end. I do not, and I think we both know it. Take the one you can beat."`;
+  }
+  if (!everVoted) {
+    return `"I have never written your name down. Not once. ${opponent || 'They'} cannot say that to you and I can."`;
+  }
+  if (bond(nominee, voter) >= 2) {
+    return `"You do not owe me anything. But you need a number next week, and I will be a number for you. ${opponent || 'They'} will not."`;
+  }
+  return `"I am not asking you to like me. I am asking you to count. Without me you are one short of everything you want to do."`;
+}
+
 export { pStats };

@@ -137,6 +137,17 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
   // here for free. What was missing was the other direction: the person you
   // promised the end to is somebody you actively keep, not merely somebody you
   // are not gunning for.
+  // A campaign that landed is a reason to keep somebody.
+  //
+  // The campaign events already wrote a genuine 'vote' promise when a nominee
+  // got through to somebody, and the vote read it only as COMMITMENT — how
+  // firmly they held whatever they already wanted. Nothing pointed the ballot
+  // at the person who had just talked them round, so a card badged "A VOTE
+  // MOVES" could be followed by that vote not moving.
+  const promisedTo = nominee => (gs.sideDeals || []).some(d => d.active !== false
+    && d.type === 'vote' && d.genuine !== false
+    && (d.players || []).includes(voter) && d.players.includes(nominee));
+
   const score = nominee => {
     const deal = dealBetween(voter, nominee);
     const keep = deal ? (tierOf(deal) === 'final-two' ? 3.6 : 2.2) * sincerityOf(deal, voter) : 0;
@@ -145,6 +156,7 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
       + bbAllianceStrength(voter, nominee) * 1.4
       - (getBBTarget(voter) === nominee ? 3 : 0)
       + keep
+      + (promisedTo(nominee) ? 2.6 : 0)
       + (plan?.shield === nominee ? 1.4 : 0)
       + (plan?.goat === nominee ? 1.1 : 0)
       - (gs.bb?.house?.suspicion?.[`${voter}→${nominee}`] || 0) * 0.25

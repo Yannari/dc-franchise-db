@@ -20,7 +20,7 @@
 
 import { pronouns } from '../players.js';
 import {
-  pStats, bond, band, perceived, closestTo, furthestFrom, trusts, dislikes,
+  pStats, bond, band, perceived, closestTo, furthestFrom, trusts, dislikes, campaignArgument,
   sharesAlliance, grudge, remembers, suspicionOf, targetOf, threat, willScheme,
   isNice, isVillainous, archetype, resentmentOf, trustOf, beatsInvolving,
   actFacts, alliancesOf, deFactoAllies,
@@ -268,16 +268,21 @@ const nomCampaign = {
     const persuasive = pStats(nom).social * 0.5 + pStats(nom).strategic * 0.3 + bond(nom, mark) * 0.5;
     const works = persuasive + (rng() * 5 - 2.5) > pStats(mark).loyalty * 0.45 + 2;
 
+    // The actual pitch, drawn from the board. These cards used to describe
+    // somebody making "the only argument that matters" without ever saying
+    // what it was.
+    const other = _noms(ctx).find(n => n !== nom) || null;
+    const pitch = campaignArgument(nom, mark, other);
     const text = works ? _variant([
-      `${nom} gets ${mark} alone by the ${_variant(['storage room', 'washroom door', 'back of the kitchen'], ctx, nom)} and makes the only argument that matters: keeping ${p.obj} is better for ${mark} than losing ${p.obj}.`,
-      `${nom} does not beg. ${p.Sub} lays out the numbers, and ${mark} realises ${p.sub} is right about them.`,
-      `"I'm not asking you to like me. I'm asking you to count." ${mark} counts, and does not like the answer.`,
-      `${nom} works ${mark} for twenty minutes and never once mentions being on the block. By the end ${mark} brings it up ${p.ref}.`,
+      `${nom} gets ${mark} alone by the ${_variant(['storage room', 'washroom door', 'back of the kitchen'], ctx, nom)}. ${pitch} ${mark} does not answer straight away, which is an answer.`,
+      `${nom} does not beg. ${pitch} ${mark} works through it and cannot find the hole in it.`,
+      `${pitch} ${mark} counts, and does not like the answer.`,
+      `${nom} works ${mark} for twenty minutes and gets there in the end. ${pitch} By the time ${p.sub} ${p.sub === 'they' ? 'leave' : 'leaves'}, ${mark} has stopped arguing.`,
     ], ctx, nom, mark) : _variant([
-      `${nom} repeats the same pitch to ${mark} later that day. This time, ${mark} cuts them off and says they already heard it.`,
-      `${mark} is kind about it, agrees with all of it, and has already decided. ${nom} can hear that ${p.sub} has.`,
+      `${pitch} ${mark} has heard it, agrees with all of it, and has already decided.`,
+      `${nom} makes the case one more time. ${pitch} "I'll think about it," ${mark} says. In this house that sentence has one meaning.`,
+      `${pitch} It is a good argument. ${mark} nods along and does not move an inch.`,
       `${nom} runs out of argument in front of ${mark} and fills the gap with a promise ${p.sub} cannot keep.`,
-      `"I'll think about it." In this house that sentence has one meaning and ${nom} knows it.`,
     ], ctx, nom, mark);
 
     api.addBond(nom, mark, works ? 1.0 : -0.3);

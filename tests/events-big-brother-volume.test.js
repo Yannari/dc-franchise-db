@@ -172,12 +172,13 @@ describe('the Big Brother event library as a whole', () => {
     // but only once the new ones have run out.
     for (const act of weeks.flatMap(w => w.acts || [])) {
       // Lifecycle beats (alliance formed/betrayed/repaired/collapsed, romance,
-      // upkeep) are attached directly by the week, one per real event, rather
-      // than drawn by the scheduler — three betrayals in a week is three beats
-      // and that is correct.
+      // upkeep, campaign pitches) are attached directly by the week, one per
+      // real event, rather than drawn by the scheduler — three betrayals in a
+      // week is three beats and that is correct, and so is one pitch per
+      // nominee per voter worked.
       const ids = (act.socialBeats || [])
         .map(b => b.eventId)
-        .filter(id => !/^(alliance|romance|upkeep)-/.test(String(id || '')));
+        .filter(id => !/^(alliance|romance|upkeep|campaign)-/.test(String(id || '')));
       const counts = {};
       ids.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
       for (const [id, n] of Object.entries(counts)) {

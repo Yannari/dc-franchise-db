@@ -124,7 +124,11 @@ export function bbThreatProfile(name) {
     ? others.reduce((sum, other) => sum + getBond(name, other), 0) / others.length
     : 0;
   const record = gs.bb?.stats?.[name] || {};
-  const competition = (record.hohWins || 0) * 0.8 + (record.vetoWins || 0) * 0.55;
+  // Every competition the house has watched somebody win. A Block Buster win is
+  // the most public of the three — it happens with the whole house watching
+  // somebody survive on purpose — so it is not discounted below a veto.
+  const competition = (record.hohWins || 0) * 0.8 + (record.vetoWins || 0) * 0.55
+    + (record.blockBusterWins || 0) * 0.6;
   const base = stats.strategic * 0.27 + stats.social * 0.18 + stats.physical * 0.12
     + stats.endurance * 0.12 + stats.mental * 0.13 + stats.intuition * 0.1;
   return { base, socialPosition, competition, total: base + socialPosition * 0.22 + competition };

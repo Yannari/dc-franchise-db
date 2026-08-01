@@ -25,6 +25,7 @@ import {
   shouldUseVeto, houseVoteCommitment, applyAllianceVoteBloc, applyHouseBandwagon,
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
+import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
@@ -43,8 +44,9 @@ function ensureBBState() {
   gs.bb.stats ||= {};
   gs.eliminated ||= [];
   for (const name of gs.activePlayers || []) {
-    gs.bb.stats[name] ||= { hohWins: 0, vetoWins: 0, timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+    gs.bb.stats[name] ||= { hohWins: 0, vetoWins: 0, blockBusterWins: 0, timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
     gs.bb.stats[name].timesOnTheBlock ||= 0;
+    gs.bb.stats[name].blockBusterWins ||= 0;
   }
 }
 
@@ -759,6 +761,11 @@ export function simulateBBWeek(options = {}) {
     week.safetyWinner = saved;
     week.safetyCompetition = arena;
     gs.bb.stats[saved].timesSaved++;
+    // Winning your way off the block is a competition win, and the house
+    // watched you do it. It was only recorded as "times saved", so somebody who
+    // took the Block Buster three weeks running never registered as a
+    // competition threat and nobody ever came for them because of it.
+    gs.bb.stats[saved].blockBusterWins++;
     nominees = nominees.filter(name => name !== saved);
     week.acts.push(addBeats(
       { type: 'safety', mode: safetyMode, participants: [...week.blockBeforeSafety],
@@ -817,12 +824,33 @@ export function simulateBBWeek(options = {}) {
   for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
     const campaign = resolveBBCampaignAct({ nominees, ballots, house, campaignIndex, rng });
     week.campaign.push(campaign);
-    week.acts.push(addBeats({
+    const campaignAct = addBeats({
       type:'campaign', campaignIndex, events:campaign.pitches,
       pitches:campaign.pitches, pitchIntel:campaign.intel,
       counterplay:campaign.counterplay, voteChanges:campaign.changed,
       votesAfterAct:tally(ballots, nominees),
-    }, { nominees:[...nominees], ballots }));
+    }, { nominees:[...nominees], ballots });
+
+    // The pitches were structured data rendered only by a screen of their own.
+    // With that screen gone they become beats like everything else, so
+    // campaigning reads in the feed alongside the rest of the day — and carries
+    // the actual argument rather than the fact that one was made.
+    const pitchBeats = (campaign.pitches || []).map(pitch => {
+      const rival = nominees.find(n => n !== pitch.nominee) || null;
+      let words = '';
+      try { words = campaignArgument(pitch.nominee, pitch.voter, rival); } catch { words = ''; }
+      return {
+        text: `${pitch.nominee} gets ${pitch.voter} alone. ${words}`
+          + ` ${pitch.success ? `${pitch.voter} listens, and something in the count changes.`
+            : `${pitch.voter} hears all of it and does not move.`}`,
+        players: [pitch.nominee, pitch.voter],
+        badgeText: pitch.success ? 'RECEPTIVE' : 'UNMOVED',
+        badgeClass: pitch.success ? 'green' : 'grey',
+        eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
+      };
+    });
+    campaignAct.socialBeats = [...pitchBeats, ...(campaignAct.socialBeats || [])];
+    week.acts.push(campaignAct);
   }
 
   // ── What people said, what their bloc wanted, and where the room went ──

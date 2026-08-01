@@ -88,14 +88,21 @@ describe('the Big Brother visual player', () => {
     // 'bb-overview' used to be, which went unnoticed because the screen was
     // throwing on a bare-global `bKey` and neither of them was being built.
     const appendix = ['bb-interview', 'bb-votes', 'bb-alliances', 'bb-rels', 'bb-debug'];
-    const spine = ids.filter(id => id !== 'bb-camp'
-      && !id.startsWith('bb-overview') && !appendix.includes(id));
-    // House life is its own act with its own phase, so the player walks the
-    // acts the engine produced rather than guessing where a beat belonged.
-    expect(spine).toEqual([
-      'bb-cold', 'bb-house-1', 'bb-hoh', 'bb-house-2', 'bb-noms',
-      'bb-house-3', 'bb-veto', 'bb-house-4', 'bb-cer', 'bb-evict',
-    ]);
+    // Asserted structurally rather than as a fixed list. House life is its own
+    // act, campaigning is house life too, and how many stretches a week has
+    // depends on how many people are still in it — so pinning the exact
+    // sequence made the test a statement about cast size.
+    const spine = ids.filter(id => !id.startsWith('bb-overview') && !appendix.includes(id));
+    expect(spine[0]).toBe('bb-cold');
+    expect(spine.at(-1)).toBe('bb-evict');
+    // The set pieces happen in the order the week runs them...
+    const ceremonies = spine.filter(id => !id.startsWith('bb-house') && id !== 'bb-camp');
+    expect(ceremonies).toEqual(['bb-cold', 'bb-hoh', 'bb-noms', 'bb-veto', 'bb-cer', 'bb-evict']);
+    // ...with stretches of house life between them, and no campaign screen:
+    // campaigning belongs in the feed with everything else that happens in a
+    // bedroom at two in the morning.
+    expect(ids, 'the campaign still has a screen of its own').not.toContain('bb-camp');
+    expect(spine.filter(id => id.startsWith('bb-house')).length).toBeGreaterThanOrEqual(4);
   });
 
   it('introduces the cast one at a time on move-in day', () => {
@@ -268,7 +275,9 @@ describe('the nomination ceremony', () => {
     blank: (html.match(/bbns-q/g) || []).length,
     keys: (html.match(/bbns-kh is-turned/g) || []).length,
     walled: (html.match(/bbns-cell[^"]*is-nom/g) || []).length,
-    reasons: (html.match(/bbns-pill gold/g) || []).length,
+    // The reason cards specifically. Counting gold pills also counted any
+    // ceremony beat that happens to carry a gold badge.
+    reasons: (html.match(/bbns-card is-reason/g) || []).length,
   });
   const at = (ep, idx) => {
     _tvState[`bb_noms_${ep.num}`] = { idx };

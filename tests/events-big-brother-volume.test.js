@@ -55,6 +55,11 @@ function playSeasons(seeds) {
     const { weeks } = simulateBBSeason({
       rng: seededRng(seed), finaleSize: 3,
       houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
+      // Have-nots on, because a normal season has them: the default season mode
+      // runs slop every week. Without the twist there are no have-nots, so the
+      // events about being one correctly cannot fire — and a sweep for dead
+      // code that plays an unrepresentative season reports live events as dead.
+      twists: ['bb-have-nots'],
     });
     for (const act of weeks.flatMap(w => w.acts || [])) {
       for (const b of act.socialBeats || []) fired[b.eventId] = (fired[b.eventId] || 0) + 1;

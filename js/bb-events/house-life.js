@@ -13,6 +13,7 @@
 // houseguest says a true thing, and true things told to a camera have a way of
 // becoming true in the house.
 
+import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
   pStats, bond, band, bondFactor, closestTo, furthestFrom, trusts, dislikes,
@@ -55,15 +56,28 @@ const _w = (value, ctx) => band(value * _actFit(ctx));
 
 // ── casting ───────────────────────────────────────────────────────────
 
-/** Have-nots are picked by the house, so the least-liked tend to end up there. */
+/**
+ * The people who are ACTUALLY on slop.
+ *
+ * This used to rank the house by unpopularity and pick two or three, which is
+ * how it worked before the have-nots were tied to the competition — and it kept
+ * doing it afterwards, in parallel, ignoring the real list entirely. So the
+ * event named people who were not have-nots, and named them before the
+ * competition that decides it had been run. Everything downstream of it was
+ * describing a punishment nobody had received.
+ *
+ * The real answer is set from the Head of Household competition placements and
+ * lives on the week.
+ */
 function _haveNots(house, ctx) {
-  if (house.length < 6) return null;
-  const ranked = [...house].sort((a, b) => {
-    const pop = (n) => _others(house, n).reduce((s, m) => s + bond(m, n), 0);
-    return pop(a) - pop(b);
-  });
-  const picked = ranked.slice(0, Math.min(3, Math.max(2, Math.floor(house.length / 5))));
-  return picked.length >= 2 ? picked : null;
+  const live = (ctx?.haveNots || gs.bb?.haveNots || [])
+    .filter(name => house.includes(name));
+  return live.length >= 2 ? live : null;
+}
+
+/** How many weeks this person has already spent on slop. */
+function _slopWeeks(name) {
+  return (gs.bb?.weeks || []).filter(w => (w.haveNots || []).includes(name)).length;
 }
 
 function _prankPair(house, ctx) {
@@ -95,16 +109,20 @@ const haveNots = {
   fire(house, ctx, api) {
     const picked = _haveNots(house, ctx);
     const [first, second] = picked;
+    // "again" has to have happened before. Counted off the weeks, not asserted.
+    const repeat = _slopWeeks(first);
     const p = pronouns(first);
     const text = _variant([
       `The have-not room goes to ${picked.join(', ')}, which surprises exactly nobody and is noted by all three of them.`,
       `Cold showers and slop for ${picked.join(' and ')}. ${first} takes it well in public and considerably worse at two in the morning.`,
-      `${picked.join(', ')} draw the short straw, and the vote that decided it was not close, and everybody knows the vote was not close.`,
-      `${first} works out that being made a have-not again is not bad luck anymore; it is information.`,
+      `${picked.join(', ')} finish where nobody wants to finish, and the cold showers start immediately.`,
+      repeat >= 2
+        ? `${first} works out that landing here for the ${repeat === 2 ? 'second' : repeat === 3 ? 'third' : `${repeat}th`} time is not bad luck any more; it is a pattern, and patterns in this house are somebody's doing.`
+        : `${first} takes the slop without complaining, which costs more than complaining would have.`,
     ], ctx, ...picked);
 
-    // Being cold and hungry costs you the week — and the house choosing you is
-    // a message you are meant to receive.
+    // Being cold and hungry costs you the week. Nobody chose it out of malice —
+    // they finished last — which is its own kind of humiliation.
     picked.forEach(name => {
       api.popDelta(name, 1);                       // the audience likes suffering
       api.remember(name, first === name ? second : first, 'shared-hardship', 1, {});
@@ -140,7 +158,7 @@ const prank = {
       `Everyone laughs at the prank except ${victim}. When ${joker} tries to explain it was harmless, ${victim} walks away.`,
       `${victim} does not laugh. The room laughs, then notices ${p.sub} is not laughing, then stops.`,
       `${joker} misjudges it badly. What was meant as a joke lands as a message about where ${victim} sits in this house.`,
-      `${victim} says "very funny" in the voice people use when it was not, and goes to bed early.`,
+      `${joker} hides ${victim}'s suitcase and keeps the joke going after ${victim} asks for it back. When it finally reappears, ${victim} says, “Very funny,” without smiling and takes it straight to the bedroom.`,
     ], ctx, joker, victim);
 
     if (funny) {

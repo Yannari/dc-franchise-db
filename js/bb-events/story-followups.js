@@ -1,6 +1,7 @@
 // Reactions that only exist because an earlier scene left unfinished business.
 import { pronouns } from '../players.js';
-import { band, beatsInvolving, bond, memoriesOf, pStats, remembers } from './_read.js';
+import { gs } from '../core.js';
+import { band, beatsInvolving, bond, memoriesOf, memoryWeek, pStats, remembers } from './_read.js';
 
 function variant(lines, ctx, ...salt) {
   const key=`${ctx?.week?.num||0}|${ctx?.beat||0}|${ctx?.act||''}|${salt.join('|')}`;
@@ -8,10 +9,25 @@ function variant(lines, ctx, ...salt) {
   return lines[h%lines.length];
 }
 const quiet=pool=>[...pool].sort((a,b)=>beatsInvolving(a)-beatsInvolving(b));
-const pairFromMemory=(house,types,done)=>{
+/**
+ * Unfinished business, while it is still unfinished.
+ *
+ * There was no recency check here, so the first matching memory won regardless
+ * of when it was made — and "why are you still awake talking about it" could
+ * arrive five weeks after the argument it refers to. These events all describe
+ * the immediate aftermath of something, so they need the something to be
+ * recent. Two weeks: the week it happened and the week after.
+ */
+const RECENT_WEEKS = 2;
+const pairFromMemory=(house,types,done,ctx)=>{
+  const now=ctx?.week?.num??(gs.episode||0)+1;
   for(const a of quiet(house)) for(const m of memoriesOf(a)) {
     const b=m?.subject;
-    if(b&&house.includes(b)&&b!==a&&types.includes(m.type)&&!remembers(a,b,done)) return {a,b,m};
+    if(!b||!house.includes(b)||b===a) continue;
+    if(!types.includes(m.type)||remembers(a,b,done)) continue;
+    const when=memoryWeek(m);
+    if(when&&now-when>RECENT_WEEKS) continue;
+    return {a,b,m};
   }
   return null;
 };
@@ -20,9 +36,9 @@ const fit=(ctx,n)=>band(['nominations','veto-ceremony','eviction'].includes(ctx?
 
 const isolationCheckIn={
   id:'followup-isolation-check-in',category:'social',location:'kitchen',
-  weight(h,c){return pairFromMemory(h,['abandonment','cold-war'],'isolation-addressed')?fit(c,4):0;},
+  weight(h,c){return pairFromMemory(h,['abandonment','cold-war'],'isolation-addressed',c)?fit(c,4):0;},
   fire(h,c,api){
-    const {a:isolated,b:avoider}=pairFromMemory(h,['abandonment','cold-war'],'isolation-addressed');
+    const {a:isolated,b:avoider}=pairFromMemory(h,['abandonment','cold-war'],'isolation-addressed',c);
     const honest=bond(isolated,avoider)>=0&&pStats(avoider).loyalty>=5;
     const text=variant(honest?[
       `${avoider} finds ${isolated} alone at the kitchen table and admits to keeping a distance. ${isolated} asks whether that was personal or strategic. ${avoider} answers without hiding behind the house.`,
@@ -43,9 +59,9 @@ const isolationCheckIn={
 
 const overheardConfrontation={
   id:'followup-overheard-confrontation',category:'social',location:'living-room',
-  weight(h,c){return pairFromMemory(h,['overheard-plot'],'plot-confronted')?fit(c,4.3):0;},
+  weight(h,c){return pairFromMemory(h,['overheard-plot'],'plot-confronted',c)?fit(c,4.3):0;},
   fire(h,c,api){
-    const {a:target,b:speaker}=pairFromMemory(h,['overheard-plot'],'plot-confronted');
+    const {a:target,b:speaker}=pairFromMemory(h,['overheard-plot'],'plot-confronted',c);
     const admits=pStats(speaker).boldness>=6&&pStats(speaker).temperament>=4;
     const text=variant(admits?[
       `${target} waits until the living room is full, then asks ${speaker} what was being planned in the storage room. ${speaker} does not deny saying the name.`,
@@ -66,9 +82,9 @@ const overheardConfrontation={
 
 const lieDamageControl={
   id:'followup-lie-damage-control',category:'deals',location:'pantry',
-  weight(h,c){return pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen')?fit(c,3.8):0;},
+  weight(h,c){return pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen',c)?fit(c,3.8):0;},
   fire(h,c,api){
-    const {a:finder,b:liar}=pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen');
+    const {a:finder,b:liar}=pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen',c);
     const works=pStats(liar).social+pStats(liar).strategic>pStats(finder).intuition+7;
     const text=variant(works?[
       `${liar} catches ${finder} in the storage room and admits the story looked bad because it was bad. The honesty arrives late, but it is the first useful thing ${liar} has said.`,
@@ -88,9 +104,9 @@ const lieDamageControl={
 
 const fightAftershock={
   id:'followup-fight-aftershock',category:'social',location:'bedroom',
-  weight(h,c){return pairFromMemory(h,['humiliation'],'fight-aftershock')?fit(c,3.5):0;},
+  weight(h,c){return pairFromMemory(h,['humiliation'],'fight-aftershock',c)?fit(c,3.5):0;},
   fire(h,c,api){
-    const {a:hurt,b:other}=pairFromMemory(h,['humiliation'],'fight-aftershock');
+    const {a:hurt,b:other}=pairFromMemory(h,['humiliation'],'fight-aftershock',c);
     const ally=quiet(h.filter(n=>n!==hurt&&n!==other)).sort((x,y)=>bond(hurt,y)-bond(hurt,x))[0];
     const text=variant([
       `${hurt} is still replaying the fight in the bedroom when ${ally} comes in. ${ally} does not ask for the whole story—only which part hurt most.`,

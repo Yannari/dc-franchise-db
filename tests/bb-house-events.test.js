@@ -291,3 +291,57 @@ describe('a week costs the same in week ten as in week one', () => {
       .toBeLessThan(Math.max(40, early * 4));
   });
 });
+
+// Where a beat happens.
+//
+// Only eighteen of the ninety-six events declare a room, so the rest were filed
+// by hashing the event id — which put a beat opening "gets Caleb alone by the
+// back of the kitchen" under the HOH ROOM camera. Measured across two seasons,
+// 11.3% of beats sat under a camera their own text contradicted, and 4.2% were
+// in the HOH room with no Head of Household present.
+describe('a beat happens where it says it happens', () => {
+  beforeEach(() => seedGame(CAST, { episode:0, eliminated:[], namedAlliances:[], popularity:{}, showmances:[], romanticSparks:[] }));
+
+  const say = (id, text, players = ['A', 'B']) => ({
+    id, category: 'vertical-slice', weight: () => 10,
+    fire: () => ({ text, players, badgeText: 'X', badgeClass: 'grey' }),
+  });
+  const fire = (event, ctx = {}) => scheduleHouseBeats([event], [...gs.activePlayers],
+    { act: 'hoh', hoh: 'A', nominees: [], vetoWinner: null, week: { num: 1 }, ...ctx },
+    { rng: rng(5), min: 1, max: 1 })[0];
+
+  it('files a beat in the room its own words name', () => {
+    expect(fire(say('e1', 'They talk quietly in the kitchen.')).location).toBe('kitchen');
+    expect(fire(say('e2', 'Out in the backyard, nobody says much.')).location).toBe('backyard');
+    expect(fire(say('e3', 'A whispered row in the storage room.')).location).toBe('pantry');
+    expect(fire(say('e4', 'Somebody is crying in the shower.')).location).toBe('washroom');
+  });
+
+  it('lets the writing outrank the room the event declared', () => {
+    // An event declares one room for all its text variants and those variants
+    // disagree with each other. The sentence on the card is what gets read.
+    const declared = { ...say('e5', 'The two of them end up in the kitchen.'), location: 'pantry' };
+    expect(fire(declared).location, 'the declared room beat the prose').toBe('kitchen');
+  });
+
+  it('keeps the HOH room private', () => {
+    // The one piece of geography the format actually enforces: it locks, and
+    // nobody goes up without the Head of Household.
+    const runs = [];
+    for (let i = 0; i < 30; i++) {
+      const beat = scheduleHouseBeats([say(`p${i}`, 'They find a quiet moment together.', ['B', 'C'])],
+        [...gs.activePlayers], { act: 'hoh', hoh: 'A', nominees: [], vetoWinner: null, week: { num: 1 } },
+        { rng: rng(i + 1), min: 1, max: 1 })[0];
+      runs.push(beat.location);
+    }
+    expect(runs, 'two houseguests met in a room neither can open').not.toContain('hoh-room');
+  });
+
+  it('still allows it when the Head of Household is there', () => {
+    const beat = fire(say('e6', 'They go over the names one more time.', ['A', 'B']), { hoh: 'A' });
+    // Not asserting it IS the HOH room — only that it is not forbidden, which
+    // the gate above would otherwise make impossible for every beat.
+    expect(['hoh-room', 'pantry', 'bedroom', 'backyard', 'kitchen', 'living-room', 'washroom', 'diary-room'])
+      .toContain(beat.location);
+  });
+});

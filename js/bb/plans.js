@@ -266,6 +266,30 @@ function logChange(plan, round, field, from, to, reason) {
 const nameOf = v => (Array.isArray(v) ? v.join(', ') || 'nobody' : v || 'nobody');
 
 /**
+ * Nobody is both the wall you hide behind and the person you are coming for.
+ *
+ * Formation keeps these apart, but revision did not: the trigger that falls in
+ * behind a new Head of Household's target, and the one that turns on a veto
+ * winner, both push a name onto `targets` without checking it is not the
+ * shield. A plan holding somebody as both cancels itself out — the +3.4 for a
+ * top target very nearly wipes the -7 for a shield — and the houseguest ends up
+ * nominating the person their whole game depends on keeping.
+ *
+ * Deciding to come for somebody is the stronger statement, so the target wins
+ * and the shield is dropped.
+ */
+function _resolveShieldTargetClash(plan, changes, round) {
+  if (!plan.shield) return;
+  if (!(plan.targets || []).includes(plan.shield)) return;
+  const was = plan.shield;
+  plan.shield = null;
+  if (changes) {
+    changes.push(logChange(plan, round, 'shield', was, null,
+      `stopped hiding behind ${was} — you cannot shelter behind somebody you are coming for`));
+  }
+}
+
+/**
  * Push everybody's plan through what just happened.
  *
  * The triggers are the four moments in a week that actually change what people
@@ -501,6 +525,8 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         }
       }
     }
+
+    _resolveShieldTargetClash(plan, changes, round);
 
     plan.confidence = clamp01(Math.max(0.2, Math.min(0.95,
       skill / 10 + (plan.targets.length ? 0.05 : -0.1) + (plan.shield ? 0.05 : 0))));

@@ -692,8 +692,193 @@ const vetoPromise = {
   },
 };
 
+// ── the room itself ───────────────────────────────────────────────────
+//
+// The HOH room is the only private space in this house and the only reward
+// that is not food: a lock, a bed nobody else sleeps in, and photographs of
+// people the houseguest has not seen in weeks. It only ever appeared as a place
+// to be pitched at. These are about the room.
+
+const hohRoomReveal = {
+  id: 'power-hoh-room-reveal',
+  location: 'hoh-room',
+  category: 'house-life',
+  weight(house, ctx) {
+    // The night it opens, before the block exists.
+    if (!_hoh(ctx) || _blockKnown(ctx)) return 0;
+    return band(ctx?.phase === 'post-hoh' ? 12 : 3);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const p = pronouns(hoh);
+    const s = pStats(hoh);
+    const guests = _quiet(_others(house, hoh)).slice(0, 3);
+    const holdsIt = s.temperament >= 6;
+    const text = _variant([
+      `The door opens and the house piles in behind ${hoh} — the bed, the shower nobody else gets, the basket of food. Then ${hoh} finds the photographs, and the room goes quiet the way it always does. ${guests[0] || 'Somebody'} looks at the floor rather than at ${p.obj}.`,
+      `${hoh} reads the letter out loud and gets four lines in before ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} to stop. Nobody says anything. ${guests[0] || 'Somebody'} puts a hand on ${p.posAdj} shoulder and everybody pretends to be looking at the photographs.`,
+      `Photographs first, then the letter, then the food. ${hoh} does them in that order because ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been planning the order for six days. ${holdsIt ? `${p.Sub} ${p.sub === 'they' ? 'get' : 'gets'} through it.` : `${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not get through it.`}`,
+      `For twenty minutes the HOH room is the warmest place in the house and everyone in it means what they are saying. ${hoh} will remember that later, when the same people are counting votes on ${p.obj}.`,
+    ], ctx, hoh);
+
+    // A room full of people being kind to you is worth something, and everybody
+    // in it knows it is temporary.
+    guests.forEach(g => { api.addBond(hoh, g, 0.7); api.remember(hoh, g, 'was-there', 1); });
+    api.popDelta(hoh, 2);
+    return { text, players: [hoh, ...guests], badgeText: 'THE ROOM OPENS', badgeClass: 'gold' };
+  },
+};
+
+const hohRoomCourt = {
+  id: 'power-hoh-room-court',
+  location: 'hoh-room',
+  category: 'social',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || house.length < 5) return 0;
+    // A sociable Head of Household fills the room; a private one does not.
+    return band((pStats(hoh).social / 10) * 9);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const inner = _quiet(_others(house, hoh)).slice(0, 3);
+    const outside = _others(house, hoh, ...inner)[0] || null;
+    const text = _variant([
+      `The HOH room fills up after lights-out and stays full. ${inner.join(', ')} are on the bed with ${hoh}; everybody else is downstairs listening to the ceiling.`,
+      `${hoh} holds court upstairs for two hours. Nothing is decided. Being in the room is the point, and ${outside || 'the rest of the house'} is not in the room.`,
+      `Somebody starts a game up there and the laughing carries down the stairs. ${outside ? `${outside} turns over and puts a pillow on ${pronouns(outside).posAdj} head.` : 'The rest of the house pretends not to hear it.'}`,
+      `${inner.slice(0, 2).join(' and ')} have been in the HOH room since dinner. In this house that is not a friendship, it is a public statement about who is safe.`,
+    ], ctx, hoh, ...inner);
+
+    inner.forEach(n => { api.addBond(hoh, n, 0.8); inner.forEach(m => { if (m !== n) api.addBond(n, m, 0.4); }); });
+    // Being visibly outside the room is its own information.
+    if (outside) {
+      api.suspicion(outside, hoh, 0.8);
+      api.remember(outside, hoh, 'left-me-out', 1);
+      api.addBond(outside, hoh, -0.4);
+    }
+    return { text, players: [hoh, ...inner, outside].filter(Boolean), badgeText: 'HOLDING COURT', badgeClass: 'blue' };
+  },
+};
+
+const hohRoomOverstay = {
+  id: 'power-hoh-room-overstay',
+  location: 'hoh-room',
+  category: 'social',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || house.length < 5) return 0;
+    // A private HOH with somebody who will not read the room.
+    return band(((10 - pStats(hoh).social) / 10) * 8);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const clinger = _quiet(_others(house, hoh)).find(n => pStats(n).intuition <= 6) || _others(house, hoh)[0];
+    const p = pronouns(hoh);
+    const text = _variant([
+      `${clinger} does not leave. ${hoh} has said goodnight twice in the politest possible way and ${clinger} is still sitting on the end of the bed, still talking.`,
+      `It is past three and ${clinger} is still up here. ${hoh} has stopped answering in sentences. ${clinger} does not appear to have noticed.`,
+      `${hoh} wanted one night alone in a room with a door. ${clinger} has been in it since eight, and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} too polite to say the thing that would end it.`,
+      `"You can stay as long as you want," ${hoh} says, meaning the opposite. ${clinger} takes it at face value and settles further into the bed.`,
+    ], ctx, hoh, clinger);
+
+    api.addBond(hoh, clinger, -0.8);
+    api.suspicion(hoh, clinger, 0.5);
+    api.remember(hoh, clinger, 'cannot-read-a-room', 1);
+    return { text, players: [hoh, clinger], badgeText: 'WILL NOT LEAVE', badgeClass: 'orange' };
+  },
+};
+
+const hohRoomQueue = {
+  id: 'power-hoh-room-queue',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    // The day before nominations, everybody suddenly needs five minutes.
+    if (!_hoh(ctx) || _blockKnown(ctx) || house.length < 6) return 0;
+    return band(10);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const queue = _quiet(_others(house, hoh)).slice(0, 3);
+    const p = pronouns(hoh);
+    const text = _variant([
+      `There is a queue on the stairs. ${queue.join(', then ')} — each of them wanting five minutes, each of them certain their five minutes is the important one. ${hoh} listens to all three and believes about half of one.`,
+      `${queue[0]} goes up, comes down looking pleased. ${queue[1]} goes up. ${hoh} has heard the same three sentences from everybody and has started counting how many of them name the same person.`,
+      `Nobody says the word "queue" but there is one, and everybody in the kitchen is watching who joins it and in what order.`,
+      `${hoh} does not leave the room all afternoon and does not need to. The house comes to ${p.obj}, one at a time, saying versions of the same thing.`,
+    ], ctx, hoh, ...queue);
+
+    queue.forEach((n, i) => {
+      api.addBond(hoh, n, 0.3 - i * 0.15);
+      api.suspicion(hoh, n, 0.4);
+      api.remember(hoh, n, 'came-to-me', 1);
+    });
+    return { text, players: [hoh, ...queue], badgeText: 'A QUEUE ON THE STAIRS', badgeClass: 'grey' };
+  },
+};
+
+const hohRoomLastNight = {
+  id: 'power-hoh-room-last-night',
+  location: 'hoh-room',
+  category: 'house-life',
+  weight(house, ctx) {
+    // Eviction night: the week is over and so is the room.
+    if (!_hoh(ctx)) return 0;
+    return band(ctx?.act === 'eviction' || ctx?.phase === 'campaign' ? 9 : 0);
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const p = pronouns(hoh);
+    const next = _others(house, hoh)[0] || null;
+    const text = _variant([
+      `${hoh} takes the photographs down before anybody asks ${p.obj} to. Whoever wins tomorrow will want the wall, and ${p.sub} ${p.sub === 'they' ? 'would' : 'would'} rather do it now than be watched doing it.`,
+      `Last night in the room. ${hoh} sleeps badly in the good bed, which ${p.sub} ${p.sub === 'they' ? 'find' : 'finds'} funny in a way ${p.sub} cannot explain to anybody.`,
+      `The room goes back tomorrow and with it the only door in this house that locks. ${hoh} sits in it alone for a while, doing the arithmetic on who ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} annoyed this week.`,
+      `${hoh} packs the basket up. A week of being the person everybody was nice to is ending, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} exactly how much of it was real.`,
+    ], ctx, hoh);
+
+    api.popDelta(hoh, 1);
+    if (next) api.remember(hoh, next, 'watching-who-wants-it', 1);
+    return { text, players: [hoh], badgeText: 'LAST NIGHT IN THE ROOM', badgeClass: 'grey' };
+  },
+};
+
+const hohRoomSpy = {
+  id: 'power-hoh-room-spy',
+  location: 'hoh-room',
+  category: 'social',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || house.length < 5) return 0;
+    // Somebody who notices things, noticing who keeps going up there.
+    const watcher = _quiet(_others(house, hoh)).find(n => pStats(n).intuition >= 6);
+    return watcher ? band((pStats(watcher).intuition / 10) * 8) : 0;
+  },
+  fire(house, ctx, api) {
+    const hoh = _hoh(ctx);
+    const watcher = _quiet(_others(house, hoh)).find(n => pStats(n).intuition >= 6) || _others(house, hoh)[0];
+    const favourite = _others(house, hoh, watcher)
+      .sort((a, b) => bond(hoh, b) - bond(hoh, a))[0];
+    const p = pronouns(watcher);
+    const text = _variant([
+      `${watcher} is not counting on purpose, but ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} that ${favourite} has been up those stairs four times today and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been up none.`,
+      `${watcher} works out that the door has closed behind ${favourite} three times this week. Doors closing is the only reliable information in this house.`,
+      `Nobody tells ${watcher} anything. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not need telling — ${p.sub} can hear ${favourite} laughing through the ceiling.`,
+      `${watcher} starts keeping a tally of who goes up to see ${hoh}. By the end of the day ${favourite} is winning it by a distance.`,
+    ], ctx, watcher, favourite);
+
+    api.suspicion(watcher, hoh, 1.1);
+    api.suspicion(watcher, favourite, 1.3);
+    api.setTarget(watcher, favourite, 'lives in the HOH room');
+    api.remember(watcher, favourite, 'in-with-power', 2);
+    return { text, players: [watcher, favourite, hoh], badgeText: 'COUNTING THE STAIRS', badgeClass: 'purple' };
+  },
+};
+
 export const POWER_EVENTS = [
   hohPitch, hohRoomTraffic, hohWeight, hohPromise,
+  hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
   nomCampaign, blockPressure, pawnResentment,
   ceremonyConfrontation, replacementFallout, savedGuilt,
   hohRefusesEntry, vetoDrawLobby, vetoPromise,

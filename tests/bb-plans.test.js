@@ -216,22 +216,44 @@ describe('a plan changes what actually happens', () => {
     // absorb the shots. An HOH who nominates their own shield has not
     // understood their own strategy — and before the plan was wired in,
     // nominations could not see one.
+    //
+    // Measured as an AGGREGATE rate rather than per houseguest. The first
+    // version counted individual offenders against a threshold, and with only
+    // four shields in the house that made one unlucky draw a failure — a test
+    // that samples rather than checks.
     const house = atHouseOf(10);
-    let checked = 0, violations = 0;
+    let withShield = 0, totalRate = 0;
     for (const hoh of house) {
       const plan = housePlan(hoh);
       if (!plan?.shield || !house.includes(plan.shield)) continue;
-      checked++;
-      // Averaged over draws so a single noisy roll is not the verdict.
+      withShield++;
       let up = 0;
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 60; i++) {
         if (chooseNominationPlan(hoh, house).nominees.includes(plan.shield)) up++;
       }
-      if (up / 40 > 0.35) violations++;
+      totalRate += up / 60;
     }
-    expect(checked, 'nobody in the final ten is hiding behind anybody').toBeGreaterThan(0);
-    expect(violations, 'Heads of Household keep nominating the person they are hiding behind')
-      .toBeLessThanOrEqual(Math.floor(checked * 0.34));
+    expect(withShield, 'nobody in the final ten is hiding behind anybody').toBeGreaterThan(0);
+    // Two of roughly ten go up each week, so blind chance is about 20%.
+    expect(totalRate / withShield, 'Heads of Household keep nominating the person they hide behind')
+      .toBeLessThan(0.12);
+  });
+
+  it('never holds somebody as shield and target at once', () => {
+    // Revision could push a name onto `targets` without checking it was not the
+    // shield, and the two pulls then cancel: a top target is +3.4 against the
+    // shield's -7, which is how one houseguest ended up nominating their own
+    // wall 62% of the time.
+    for (const size of [12, 10, 8, 6]) {
+      let house;
+      try { house = atHouseOf(size); } catch { continue; }
+      for (const name of house) {
+        const plan = housePlan(name);
+        if (!plan?.shield) continue;
+        expect(plan.targets || [], `${name} is hiding behind ${plan.shield} and hunting them`)
+          .not.toContain(plan.shield);
+      }
+    }
   });
 
   it('keeps a final two off the block', () => {

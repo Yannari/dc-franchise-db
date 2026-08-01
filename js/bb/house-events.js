@@ -299,14 +299,62 @@ const _CATEGORY_ROOMS = {
   'house-life': ['kitchen', 'bedroom', 'washroom', 'pantry', 'backyard'],
 };
 
+/**
+ * Rooms the prose names out loud.
+ *
+ * Only eighteen of the ninety-six events declare where they happen, so the rest
+ * were filed by hashing their id — which meant a beat that opens "Julia gets
+ * Caleb alone by the back of the kitchen" could be filed under the HOH room
+ * camera. Measured across two seasons, 11.3% of beats sat under a camera their
+ * own text contradicted.
+ *
+ * The writing is the authority. Ordered most specific first, because "the
+ * storage room off the kitchen" is the pantry, not the kitchen.
+ */
+const _ROOM_WORDS = [
+  ['diary-room', /\bdiary room\b/i],
+  ['hoh-room', /\bHOH(?:'s)? room\b|\bHead of Household(?:'s)? room\b|\bupstairs\b/i],
+  ['pantry', /\bpantry\b|\bstorage room\b/i],
+  ['washroom', /\bwashroom\b|\bbathroom\b|\bshower\b/i],
+  ['backyard', /\bbackyard\b|\bhammock\b|\bby the pool\b|\bpatio\b/i],
+  ['kitchen', /\bkitchen\b|\bcounter\b|\bfridge\b/i],
+  ['bedroom', /\bbedroom\b|\bbunk\b|\bin bed\b/i],
+  ['living-room', /\bliving room\b|\bcouch\b|\blounge\b/i],
+];
+
+/**
+ * Who is allowed to be in a room at all.
+ *
+ * The HOH room is the one private space in the house: it locks, and nobody goes
+ * up there without the Head of Household. Two houseguests shaking on a final
+ * two in a room neither of them has access to is not a small slip — it is the
+ * one piece of geography the format actually enforces, and 4.2% of beats broke
+ * it.
+ */
+function _roomAllows(room, beat, ctx) {
+  if (room !== 'hoh-room') return true;
+  const hoh = ctx?.hoh || ctx?.week?.hoh;
+  return !!hoh && (beat.players || []).includes(hoh);
+}
+
 function _roomFor(event, beat, ctx) {
+  // A location the BEAT set knows which text was chosen, so it is definitive.
   if (beat.location && BB_ROOMS.includes(beat.location)) return beat.location;
+
+  // The writing outranks the event's declared room. An event declares one room
+  // for all of its text variants, and those variants disagree with each other —
+  // spread-lies is filed in the pantry and half its lines happen in a bedroom.
+  // The sentence on the card is what the viewer reads, so it wins.
+  for (const [room, re] of _ROOM_WORDS) if (re.test(beat.text || '')) return room;
+
   if (event.location && BB_ROOMS.includes(event.location)) return event.location;
-  const pool = _CATEGORY_ROOMS[event.category] || BB_ROOMS;
+
+  const allowed = (_CATEGORY_ROOMS[event.category] || BB_ROOMS).filter(r => _roomAllows(r, beat, ctx));
+  const pool = allowed.length ? allowed : BB_ROOMS.filter(r => _roomAllows(r, beat, ctx));
   const key = `${event.id}|${ctx?.beat || 0}|${(beat.players || []).join(',')}`;
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return pool[hash % pool.length];
+  return pool[hash % pool.length] || 'living-room';
 }
 
 function validateBeat(event, beat, ctx) {

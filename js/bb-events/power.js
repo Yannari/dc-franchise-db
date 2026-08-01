@@ -987,7 +987,7 @@ const backdoorPlan = {
     const text = _variant([
       `"Those two were never the point." ${hoh} explains it to ${ally} in one breath: the veto comes down, somebody comes off, and <strong>${real}</strong> goes up with no time to campaign.`,
       `${hoh} draws it out for ${ally} — two names on the block who are not the target, a veto, and <strong>${real}</strong> sitting there on Thursday having never seen it coming.`,
-      `"If I put ${real} up on Monday, ${pronouns(real).sub} ${pronouns(real).sub === 'they' ? 'have' : 'has'} four days to work the house." ${hoh} is not giving <strong>${real}</strong> four days.`,
+      `"I could have put ${real} up at the ceremony and given ${pronouns(real).obj} four days to work the house." ${hoh} did not. <strong>${real}</strong> gets a few hours instead, on veto day, with the votes already counted.`,
       `${ally} asks why ${noms.join(' and ')}. ${hoh} smiles at that. The answer is <strong>${real}</strong>, and it does not happen until the veto.`,
     ], ctx, hoh, real, ally);
 
@@ -995,6 +995,9 @@ const backdoorPlan = {
     api.addBond(hoh, ally, 0.8);
     api.setTarget(hoh, real, 'the whole week is about them');
     api.suspicion(ally, real, 0.6);
+    // The target is listed even though they are not in the room. A card about
+    // somebody is a card they belong on — the portraits say who the scene is
+    // ABOUT, not who is standing there.
     return { text, players: [hoh, ally, real].filter(Boolean), badgeText: 'THE REAL PLAN', badgeClass: 'purple' };
   },
 };

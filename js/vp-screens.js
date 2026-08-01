@@ -17219,27 +17219,42 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBSafety(view),
         });
         break;
-      case 'campaign':
+      case 'campaign': {
         // No screen of its own. Campaigning is house life — it happens in the
         // bedrooms and the storage room over three days, next to everything
         // else that happens there — so it renders as another stretch of the
         // feed rather than a separate stop with its own furniture.
-        campaignIdx++;
+        //
+        // All of it in ONE stretch, though. A twelve-person house runs three
+        // campaign acts and rendering each as its own screen put three House
+        // Life stops back to back in the navigator, which reads as a bug rather
+        // than as three days.
+        if (campaignIdx++ > 0) break;
+        const campaignActs = (view.acts || []).filter(a => a.type === 'campaign');
+        const merged = {
+          ...act,
+          phase: act.phase || 'post-veto',
+          socialBeats: campaignActs.flatMap(a => a.socialBeats || []),
+        };
         screens.push({
           id: id(`bb-house-${++houseSlot}`), label: 'House Life',
-          html: rpBuildBBHouseLife(view, { ...act, phase: act.phase || 'post-veto' }, houseSlot),
+          html: rpBuildBBHouseLife(view, merged, houseSlot),
         });
         break;
+      }
       case 'eviction':
+        // The night runs in the order it happens: the count and the ballots,
+        // then the vote broken down, then the person who lost it talking about
+        // it. The interview was sitting between the vote and its own breakdown.
         screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
-        try {
-          const iv = rpBuildBBEvictionInterview(view);
-          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });
-        } catch { /* no interview, no screen */ }
         try {
           const votes = rpBuildVotes(view);
           if (votes && votes.trim()) screens.push({ id: id('bb-votes'), label: 'The Vote', html: votes });
         } catch { /* the eviction screen already carries the result */ }
+        try {
+          const iv = rpBuildBBEvictionInterview(view);
+          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });
+        } catch { /* no interview, no screen */ }
         break;
       default:
         break;

@@ -15643,6 +15643,74 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
 
 // ── Cold open ─────────────────────────────────────────────────────────
 
+/**
+ * The introduction package the show would cut for a new houseguest.
+ *
+ * Move-in day walked people through the door with one narrated line each,
+ * which answers "who arrived" and not "who IS this" — fourteen strangers were
+ * in the house before the viewer could tell the schemer from the sweetheart.
+ *
+ * Three parts, all derived and all deterministic: a self-introduction in the
+ * houseguest's own voice (people introduce themselves in character — the
+ * villain announces the villainy, the quiet one underpromises), the walk-in
+ * narration that already existed, and FIRST READ chips built from their most
+ * visible stats — what a room full of strangers clocks in the opening hour,
+ * phrased as observation rather than numbers.
+ */
+function _bbIntroQuote(name) {
+  const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
+  const arch = player.archetype || 'floater';
+  const vvar = (list, ...salt) => {
+    const key = `${name}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
+  };
+  if (['villain', 'schemer', 'mastermind'].includes(arch)) return vvar([
+    `"I'm ${name}. I'm going to be very nice to all of you, and you should not believe a second of it."`,
+    `"${name}. I've watched every season of this and taken notes, and the notes are why I'm here."`,
+    `"I'm ${name}, and I promise you two things: I will make this season interesting, and you will not see it coming."`,
+    `"I'm here to win a game, not a popularity contest. If those turn out to be the same thing, even better."`,
+  ], 'v');
+  if (['hothead', 'chaos-agent', 'wildcard', 'challenge-beast'].includes(arch)) return vvar([
+    `"I'M ${String(name).toUpperCase()}, AND I'M HERE!" The rest of the introduction is lost to the hug.`,
+    `"I'm ${name}. Fair warning: I have exactly one volume and this is it."`,
+    `"I'm ${name} — I don't do slow burns. Whatever happens this season, I'll be in the middle of it."`,
+    `"I came here to win competitions and have fun, and I've already forgotten which order I said those in."`,
+  ], 'e');
+  if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(arch)) return vvar([
+    `"I'm ${name}, and I'm a hugger — sorry in advance." Nobody appears to need the apology.`,
+    `"I'm ${name}. My plan is to be exactly who I am the whole way through, which everybody says until week four."`,
+    `"I'm ${name}! I already love it here. Ask me again after the first eviction."`,
+    `"I'm ${name}, and whatever this house throws at us, I'd rather go through it with friends than over them."`,
+  ], 'w');
+  return vvar([
+    `"I'm ${name}." A beat. "That's... most of the speech I prepared."`,
+    `"I'm ${name}. I'll be the one watching from the kitchen while everyone else does this part."`,
+    `"I'm ${name} — you'll barely notice I'm here, which is honestly the plan."`,
+    `"I'm ${name}. Underestimate me, please. It's load-bearing."`,
+  ], 'q');
+}
+
+/** What a room full of strangers clocks in the first hour. */
+function _bbFirstRead(name) {
+  const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
+  const stats = player.stats || {};
+  const READS = {
+    physical: 'built like a comp threat', endurance: 'looks like they never sit down',
+    mental: 'already solving the house', social: 'talks to everyone in the first hour',
+    strategic: 'asks a lot of casual questions', loyalty: 'means it when they say it',
+    boldness: 'not scared of any of this', intuition: 'watches more than they talk',
+  };
+  const chips = Object.entries(stats)
+    .filter(([key, value]) => READS[key] && Number(value) >= 8)
+    .sort((a, b) => b[1] - a[1]).slice(0, 2)
+    .map(([key]) => READS[key]);
+  if (Number(stats.temperament) <= 3) chips.push('short fuse, clearly');
+  if (!chips.length) chips.push('hard to place on day one');
+  return chips.slice(0, 3);
+}
+
 const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
   const player = typeof players !== 'undefined' ? players.find(p => p.name === name) : null;
   const arch = player?.archetype || 'floater';
@@ -15698,8 +15766,12 @@ export function rpBuildBBColdOpen(ep) {
   // Clamp once and use it everywhere: "reveal all" sets the index far past the
   // end, and an unclamped copy of it reached the label as "Houseguest 100".
   const at = Math.min(Math.max(state.idx, -1), house.length - 1);
-  const current = at >= 0 ? house[at] : null;
-  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
+  // Which intro the spotlight shows. Defaults to whoever just arrived, but a
+  // click on any filled frame brings that houseguest's introduction back —
+  // "next" used to be a one-way door and there was no way to re-read anybody.
+  const look = Math.min(state.look ?? at, at);
+  const current = look >= 0 ? house[look] : null;
+  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};_tvState['${stateKey}'].look=${idx};`
     + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
     + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
@@ -15710,7 +15782,12 @@ export function rpBuildBBColdOpen(ep) {
   // moment those frames get faces in them rather than a separate widget.
   const slots = house.map((name, i) => {
     const inHouse = i <= at;
-    return `<div class="bbf-tile ${i === at ? 'is-now' : ''} ${inHouse ? '' : 'is-empty'}">
+    const lookAt = inHouse
+      ? ` onclick="if(_tvState['${stateKey}']){_tvState['${stateKey}'].look=${i};`
+        + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
+        + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}}"`
+      : '';
+    return `<div class="bbf-tile ${i === look ? 'is-now' : ''} ${inHouse ? 'is-in' : 'is-empty'}"${lookAt}>
       <div class="bbf-frame">
         ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" alt=""
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -15774,12 +15851,18 @@ export function rpBuildBBColdOpen(ep) {
     html += `<div style="padding:0 12px 12px">
       <div class="bbf-spot">
         <div>${rpPortrait(current, 'lg')}</div>
-        <div>
+        <div style="min-width:0">
           <div style="font-family:var(--font-display);font-size:20px;color:#f0f6fc;line-height:1.1">${current}</div>
           <div style="font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.6px;color:#f0a500;text-transform:uppercase;margin:4px 0 8px">
-            HOUSEGUEST ${String(at + 1).padStart(2, '0')} · ${_bbfClock('pre-hoh', at)}
+            HOUSEGUEST ${String(look + 1).padStart(2, '0')} · ${_bbfClock('pre-hoh', look)}${
+              look < at ? ' · REWATCHING' : ''}
           </div>
-          <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current, at, `${seasonName}|${house.join('|')}`)}</div>
+          <div class="bbf-introq">${_bbIntroQuote(current)}</div>
+          <div style="font-size:12.5px;line-height:1.6;color:#c9d1d9">${_bbArrivalLine(current, look, `${seasonName}|${house.join('|')}`)}</div>
+          <div class="bbf-reads">
+            <span class="bbf-reads-k">FIRST READ</span>
+            ${_bbFirstRead(current).map(r => `<span class="bbf-read">${r}</span>`).join('')}
+          </div>
         </div>
       </div>
     </div>`;

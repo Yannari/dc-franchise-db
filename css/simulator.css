@@ -520,6 +520,22 @@
     .bbg-rec        { display:inline-block; margin-left:7px; text-decoration:none;
                       font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
                       letter-spacing:.4px; color:#e3b341; }
+    /* Filled frames are tabs: click one to bring that introduction back. */
+    .bbf-tile.is-in { cursor:pointer; transition:transform .15s ease; }
+    .bbf-tile.is-in:hover { transform:translateY(-2px); }
+    .bbf-tile.is-in:hover .bbf-frame { border-color:rgba(240,165,0,.6); }
+
+    /* Move-in introductions: the self-intro reads as speech, the first-read
+       chips as the room's snap judgement. */
+    .bbf-introq    { font-size:13.5px; line-height:1.55; color:#e6edf3; margin-bottom:8px;
+                     padding-left:10px; border-left:3px solid rgba(240,165,0,.55);
+                     font-style:italic; }
+    .bbf-reads     { display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .bbf-reads-k   { font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.8px; color:#6e7681; }
+    .bbf-read      { font-size:10px; color:#c9d1d9; padding:2px 8px; border-radius:9px;
+                     background:rgba(240,165,0,.08); border:1px solid rgba(240,165,0,.25); }
+
     /* ── eviction night ────────────────────────────────────────────────
        The live hour as a studio: nominee chairs with a tally stacking under
        each like torches going out, the majority slot ringed so every vote is

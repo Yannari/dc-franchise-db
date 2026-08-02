@@ -16126,7 +16126,13 @@ function _bbfStatus(ep, phase) {
   if (phase === 'pre-hoh') return s;
   set(ep.hoh, 'hoh');
   if (phase === 'post-hoh') return s;
-  const noms = (phase === 'post-noms' || phase === 'post-veto') ? ep.initialNominees : ep.finalNominees;
+  // On a Block Buster week, three houseguests are on the block through the
+  // whole campaign stretch — the arena that trims it to two airs minutes
+  // before the vote, AFTER this screen. The wall must not know the result.
+  const safetyAct = phase === 'campaign'
+    ? (ep.acts || []).find(a => a.type === 'safety') : null;
+  const noms = (phase === 'post-noms' || phase === 'post-veto') ? ep.initialNominees
+    : (safetyAct?.participants?.length ? safetyAct.participants : ep.finalNominees);
   (noms || []).forEach(n => set(n, 'nom'));
   if (phase === 'post-noms') return s;
   set(ep.vetoWinner, 'veto');

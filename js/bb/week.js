@@ -1331,6 +1331,7 @@ export function simulateBBWeek(options = {}) {
   // themselves rather than been saved, which the house reads very differently
   // from a veto — and the two who lose have now been beaten in front of
   // everybody on the night they most needed not to be.
+  let heldSafetyAct = null;
   if (safetyActive && nominees.length >= 3) {
     const arena = runBBCompetition({
       type: 'arena', participants: [...nominees], excluded: house.filter(n => !nominees.includes(n)),
@@ -1350,10 +1351,18 @@ export function simulateBBWeek(options = {}) {
     // competition threat and nobody ever came for them because of it.
     gs.bb.stats[saved].blockBusterWins++;
     nominees = nominees.filter(name => name !== saved);
-    week.acts.push(addBeats(
+    // The RESULT is computed here because everything downstream — ballots,
+    // plans, campaigns — is modelled over the final two. But the ACT is held
+    // back and pushed after the campaign stretch, because that is when the
+    // house plays it: the Block Buster is the last competition of the week,
+    // minutes before the vote. Pushing it here made the whole back half of
+    // the week behave as if it had already aired — the third nominee lost
+    // their place on the wall, sat out the campaigning, and read as safe
+    // three days before anybody was.
+    heldSafetyAct = addBeats(
       { type: 'safety', mode: safetyMode, participants: [...week.blockBeforeSafety],
         winner: saved, results, competition: arena, nominees: [...nominees] },
-      { nominees: [...nominees], vetoWinner: week.vetoWinner || null }));
+      { nominees: [...nominees], vetoWinner: week.vetoWinner || null });
   }
   week.finalNominees = [...nominees];
   setSpotlight({ nominees: [...new Set([...(gs.bb.spotlight?.nominees || []), ...nominees])] });
@@ -1435,12 +1444,18 @@ export function simulateBBWeek(options = {}) {
   for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
     const campaign = resolveBBCampaignAct({ nominees, ballots, house, campaignIndex, rng });
     week.campaign.push(campaign);
+    // Until the Block Buster airs, THREE people are on the block, and the
+    // campaign days have to look like it: events, badges and the memory wall
+    // read the pre-arena nominees. The ballots underneath stay on the final
+    // two — that is the result the arena has already decided — but nobody in
+    // the house gets to act like they know it.
+    const visibleBlock = week.blockBeforeSafety || nominees;
     const campaignAct = addBeats({
       type:'campaign', campaignIndex, events:campaign.pitches,
       pitches:campaign.pitches, pitchIntel:campaign.intel,
       counterplay:campaign.counterplay, voteChanges:campaign.changed,
       votesAfterAct:tally(ballots, nominees),
-    }, { nominees:[...nominees], ballots });
+    }, { nominees:[...visibleBlock], ballots });
 
     // The pitches were structured data rendered only by a screen of their own.
     // With that screen gone they become beats like everything else, so
@@ -1482,9 +1497,36 @@ export function simulateBBWeek(options = {}) {
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
         };
       }).filter(Boolean));
-    campaignAct.socialBeats = [...pitchBeats, ...(campaignAct.socialBeats || [])];
+    // The arena winner works the room like everybody else — they are on the
+    // block as far as they know. One conversation per voter for the week,
+    // same discipline as the real pitches; a small real consequence so the
+    // scene is not scenery.
+    const thirdBeats = [];
+    if (week.safetyWinner && week.blockBeforeSafety && campaignIndex === 0) {
+      const third = week.safetyWinner;
+      const rival = [...nominees].sort((a, b) =>
+        getPerceivedBond(third, a) - getPerceivedBond(third, b))[0];
+      for (const ballot of ballots.slice()
+        .sort((a, b) => (Number(a.margin) || 0) - (Number(b.margin) || 0)).slice(0, 2)) {
+        let words = '';
+        try { words = campaignArgument(third, ballot.voter, rival); } catch { words = ''; }
+        _cappedBondWindow(() => addBond(ballot.voter, third, 0.3));
+        thirdBeats.push({
+          text: `${third} gets ${ballot.voter} alone — three chairs, and ${third} is not waiting `
+            + `for a competition to decide which ones matter. ${words}`,
+          players: [third, ballot.voter],
+          badgeText: 'STILL ON THE BLOCK', badgeClass: 'red',
+          eventId: 'campaign-pitch-third', category: 'deals', location: 'bedroom',
+          effects: [{ kind: 'bond', text: `${ballot.voter} & ${third} +0.3`, delta: 0.3 }],
+        });
+      }
+    }
+    campaignAct.socialBeats = [...thirdBeats, ...pitchBeats, ...(campaignAct.socialBeats || [])];
     week.acts.push(campaignAct);
   }
+  // The Block Buster airs HERE — after the campaigning it was invisibly
+  // hanging over, immediately before the vote it decides the shape of.
+  if (heldSafetyAct) week.acts.push(heldSafetyAct);
 
   // ── After the campaigns: the last consolidation, then the forecast ──
   // The bandwagon rolls once the count is visible; the forecast is taken LAST,

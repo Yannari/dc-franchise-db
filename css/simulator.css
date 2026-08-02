@@ -671,6 +671,71 @@
       .bbvc-medalbox.is-lit .bbvc-medal, .bbvc-slot.is-repl { animation:none; }
     }
 
+    /* ── the Diamond Power of Veto ─────────────────────────────────────
+       When the medallion is the diamond, the whole ceremony refracts: the
+       broadcast green gives way to ice and violet, the gem carries a moving
+       light streak, and a prismatic sweep crosses the stage — the room is
+       lit by the stone. Everything gated on .bbvc-dmd so an ordinary
+       ceremony never pays for it. */
+    .bbvc-dmd .bbvc-title { color:#7ee7ff !important;
+                     text-shadow:0 0 22px rgba(126,231,255,.35), 0 0 46px rgba(177,140,255,.2) !important; }
+    .bbvc-dmd .bbvc-medalbox { border:1px solid rgba(126,231,255,.35);
+                     background:linear-gradient(160deg, rgba(126,231,255,.07), rgba(177,140,255,.06));
+                     box-shadow:0 0 24px rgba(126,231,255,.12), inset 0 0 30px rgba(94,125,232,.08); }
+    .bbvc-dmd .bbvc-medal { opacity:.85; filter:none; }
+    .bbvc-dmd .bbvc-medalbox.is-lit .bbvc-medal { animation:bbvcDmdGlow 2.6s ease-in-out infinite; }
+    @keyframes bbvcDmdGlow { 0%,100% { transform:scale(1); filter:drop-shadow(0 0 6px rgba(126,231,255,.5)); }
+                     50% { transform:scale(1.07); filter:drop-shadow(0 0 16px rgba(177,140,255,.75)); } }
+    .bbvc-dmd .bbvc-medal-t { color:#7ee7ff; text-shadow:0 0 10px rgba(126,231,255,.45); }
+    .bbvc-dmd-ray  { animation:bbvcDmdRay 3.2s ease-in-out infinite; }
+    @keyframes bbvcDmdRay { 0%,18% { opacity:0; transform:translateX(-8px); }
+                     34% { opacity:.9; } 50%,100% { opacity:0; transform:translateX(10px); } }
+    /* The prismatic sweep: one band of refracted light crossing the stage. */
+    .bbvc-dmd .bbvc-stage { position:relative; overflow:hidden;
+                     border:1px solid rgba(126,231,255,.22); border-radius:10px; }
+    .bbvc-dmd .bbvc-stage::after { content:''; position:absolute; inset:0;
+                     pointer-events:none;
+                     background:linear-gradient(115deg, transparent 30%,
+                       rgba(126,231,255,.09) 42%, rgba(177,140,255,.12) 50%,
+                       rgba(126,231,255,.09) 58%, transparent 70%);
+                     background-size:280% 100%;
+                     animation:bbvcDmdSweep 5.5s linear infinite; }
+    @keyframes bbvcDmdSweep { from { background-position:120% 0; } to { background-position:-160% 0; } }
+    /* The rule card: cut glass. A gradient edge, a cold interior, and a
+       shimmer that runs once per sweep so the rule reads as an artifact. */
+    .bbvc-diamond  { position:relative; overflow:hidden;
+                     border:1px solid transparent !important;
+                     background:linear-gradient(rgba(9,14,26,.96), rgba(9,14,26,.96)) padding-box,
+                       linear-gradient(120deg, #7ee7ff, #5f7de8, #b18cff, #7ee7ff) border-box !important;
+                     box-shadow:0 0 22px rgba(94,125,232,.18); }
+    .bbvc-diamond::after { content:''; position:absolute; inset:0; pointer-events:none;
+                     background:linear-gradient(115deg, transparent 40%,
+                       rgba(223,246,255,.10) 50%, transparent 60%);
+                     background-size:260% 100%;
+                     animation:bbvcDmdSweep 4.2s ease-in-out infinite; }
+    .bbvc-dmd-pill { color:#04121f !important;
+                     background:linear-gradient(120deg, #7ee7ff, #b18cff) !important;
+                     text-shadow:none !important; letter-spacing:1.6px; }
+    /* The seizure: the holder keeps the floor. Violet edge, cold wash — a
+       power move drawn as one. */
+    .bbvc-seize    { border-left:3px solid #b18cff !important;
+                     background:linear-gradient(90deg, rgba(177,140,255,.13), transparent 60%) !important;
+                     animation:bbvcSeize .5s ease-out both; }
+    @keyframes bbvcSeize { from { transform:translateX(-6px); opacity:0; }
+                     60% { transform:translateX(2px); } to { transform:none; opacity:1; } }
+    /* Replacement + saved slots refract too, so the stage agrees with the
+       cards about whose power did this. */
+    .bbvc-dmd .bbns-screen.bbvc-slot.is-repl { border-color:rgba(177,140,255,.7);
+                     box-shadow:0 0 24px rgba(177,140,255,.3), inset 0 0 40px rgba(94,125,232,.12); }
+    .bbvc-dmd .bbns-screen.bbvc-slot.is-repl .bbns-tag { color:#120826; background:#b18cff; }
+    .bbvc-dmd .bbvc-stamp { color:#7ee7ff; border-color:#7ee7ff;
+                     background:rgba(8,24,33,.6); text-shadow:0 0 12px rgba(126,231,255,.6); }
+    @media (prefers-reduced-motion:reduce) {
+      .bbvc-dmd .bbvc-stage::after, .bbvc-diamond::after,
+      .bbvc-dmd .bbvc-medalbox.is-lit .bbvc-medal,
+      .bbvc-dmd-ray, .bbvc-seize { animation:none; }
+    }
+
     /* A nomination that broke a promise. The handshake happened one screen
        earlier, so the ceremony has to acknowledge it or the two scenes are
        telling different stories. */

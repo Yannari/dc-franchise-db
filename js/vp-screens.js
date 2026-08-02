@@ -18289,7 +18289,32 @@ export function rpBuildBBCeremony(ep) {
   const replaced = replacement && state.idx >= at('replacement');
 
   // ── the stage: the block, live, with the medallion between ──
-  const MEDAL = `<svg viewBox="0 0 64 64" aria-hidden="true">
+  const MEDAL = isDiamond
+    // The Diamond Power of Veto gets a real stone: a brilliant-cut gem, crown
+    // facets over a deep pavilion, with a light streak that keeps moving so
+    // the medallion reads as the most dangerous object in the room.
+    ? `<svg viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="bbvc-dg1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#eaffff"/><stop offset="45%" stop-color="#7ee7ff"/>
+            <stop offset="100%" stop-color="#4aa8d8"/></linearGradient>
+          <linearGradient id="bbvc-dg2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#9fd8ff"/><stop offset="60%" stop-color="#5f7de8"/>
+            <stop offset="100%" stop-color="#2c3f8f"/></linearGradient>
+          <linearGradient id="bbvc-dg3" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#c9b3ff"/><stop offset="100%" stop-color="#7ee7ff"/></linearGradient>
+        </defs>
+        <polygon points="14,20 50,20 58,30 32,58 6,30" fill="url(#bbvc-dg2)" stroke="#0d2a4a" stroke-width="1.6" stroke-linejoin="round"/>
+        <polygon points="14,20 24,20 18,30 6,30" fill="url(#bbvc-dg1)" opacity=".95"/>
+        <polygon points="24,20 40,20 46,30 18,30" fill="url(#bbvc-dg3)" opacity=".9"/>
+        <polygon points="40,20 50,20 58,30 46,30" fill="url(#bbvc-dg1)" opacity=".8"/>
+        <polygon points="18,30 32,58 6,30" fill="#3d55c0" opacity=".85"/>
+        <polygon points="18,30 46,30 32,58" fill="url(#bbvc-dg2)"/>
+        <polygon points="46,30 58,30 32,58" fill="#243a86" opacity=".9"/>
+        <polyline points="6,30 58,30" fill="none" stroke="#dff6ff" stroke-width="1" opacity=".7"/>
+        <line class="bbvc-dmd-ray" x1="10" y1="52" x2="34" y2="12" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+      </svg>`
+    : `<svg viewBox="0 0 64 64" aria-hidden="true">
       <defs><radialGradient id="bbvc-g" cx="38%" cy="32%">
         <stop offset="0%" stop-color="#ffe9a8"/><stop offset="55%" stop-color="#e3b341"/>
         <stop offset="100%" stop-color="#8a5c00"/></radialGradient></defs>
@@ -18325,7 +18350,7 @@ export function rpBuildBBCeremony(ep) {
     <div class="bbns-screens" data-n="${startNoms.length + (replaced ? 1 : 0)}">${slots}</div>
     <div class="bbvc-medalbox ${decided ? 'is-lit' : ''}">
       <span class="bbvc-medal">${MEDAL}</span>
-      <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : (isDiamond ? '💎 DIAMOND VETO' : 'POWER OF VETO')}</span>
+      <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : (isDiamond ? 'DIAMOND VETO' : 'POWER OF VETO')}</span>
       <span class="bbvc-medal-s">${decided
         ? (used ? `on ${_bbEsc(saved)}` : 'the nominations stand')
         : `${_bbEsc(holder || '')} holds it`}</span>
@@ -18374,14 +18399,14 @@ export function rpBuildBBCeremony(ep) {
           <div class="bbns-card-b">${decisionWhy()}</div></div>`;
       case 'diamond-rule':
         return `<div class="bbns-card is-reason bbvc-diamond">
-          <div class="bbns-card-h"><span class="bbns-pill gold">💎 DIAMOND POWER OF VETO</span></div>
+          <div class="bbns-card-h"><span class="bbns-pill bbvc-dmd-pill">DIAMOND POWER OF VETO</span></div>
           <div class="bbns-card-b">This week the medallion is the <strong>Diamond Power of Veto</strong>. The rule is simple and it changes everything: if the veto is used, <strong>${_bbEsc(holder)}</strong> — not the Head of Household — names the replacement nominee. ${hoh && holder !== hoh
             ? `${_bbEsc(hoh)} built this block, and for the first time all week, cannot protect it.`
             : `And since ${_bbEsc(holder)} is the Head of Household, the power stays exactly where it already was.`}</div></div>`;
       case 'handover':
         return isDiamond && namer !== hoh
-          ? `<div class="bbns-card is-key">
-              <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">NO HANDOVER</span></div>
+          ? `<div class="bbns-card is-key bbvc-seize">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill bbvc-dmd-pill">NO HANDOVER</span></div>
               <div class="bbns-card-b">Every head turns toward ${_bbEsc(hoh)} out of habit — and ${_bbEsc(holder)} does not sit down. "This is the Diamond Power of Veto. The replacement is mine to name." ${vvar([
                 `${_bbEsc(hoh)} opens ${pv(hoh).posAdj} mouth and closes it again. There is no rule to appeal to; ${pv(hoh).sub} just heard it.`,
                 `The room re-aims itself at ${_bbEsc(holder)}. ${_bbEsc(hoh)} is suddenly a spectator at ${pv(hoh).posAdj} own ceremony.`,
@@ -18424,10 +18449,12 @@ export function rpBuildBBCeremony(ep) {
     : steps[state.idx + 1]?.kind === 'replacement' ? 'Name the replacement'
     : 'Reveal next';
 
-  return `<div class="rp-page bb-room bb-block bbns bbvc">
+  return `<div class="rp-page bb-room bb-block bbns bbvc${isDiamond ? ' bbvc-dmd' : ''}">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">VETO CEREMONY</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${_bbEsc(holder || '')} holds the only power left this week.</div>
+    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">${isDiamond ? 'DIAMOND VETO CEREMONY' : 'VETO CEREMONY'}</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${isDiamond
+      ? `${_bbEsc(holder || '')} holds a veto that keeps the empty chair.`
+      : `${_bbEsc(holder || '')} holds the only power left this week.`}</div>
     ${stage}
     <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
     <div class="bbns-controls">
@@ -20419,7 +20446,7 @@ export function rpBuildBBDebug(ep) {
     }
     if (ep.vetoWinner) {
       const cer = acts.find(a => a.type === 'veto-ceremony');
-      html += dbgPanel(cer?.diamond ? '💎 DIAMOND POWER OF VETO' : 'POWER OF VETO', 'green', dbgPortraitRow(ep.vetoWinner, `
+      html += dbgPanel(cer?.diamond ? 'DIAMOND POWER OF VETO' : 'POWER OF VETO', 'green', dbgPortraitRow(ep.vetoWinner, `
           <div style="color:${cer?.used ? '#3fb950' : '#6e7681'};font-size:11px">${cer?.used ? `used on ${_bbEsc(cer.saved || '?')}` : 'not used'}</div>
           <div style="color:#8b949e;font-size:10px">${recOf(ep.vetoWinner).vetoWins || 1} total</div>`)
         + (cer?.replacement ? dbgNote(`${_bbEsc(cer.replacement)} went up in their place — named by ${_bbEsc(cer.chairAuthority || ep.hoh || '?')}`) : ''));

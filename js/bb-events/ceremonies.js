@@ -240,8 +240,11 @@ const nomBlindside = {
       ...(allied ? [`They built something together and ${victim} finds out it was scaffolding. ${p.Sub} looks down the row at the others who were in that alliance, and every one of them looks somewhere else.`] : []),
     ], ctx, victim, ctx.hoh);
 
-    // The damage scales with what was actually broken, rather than a flat number.
-    api.addBond(victim, ctx.hoh, -(1.2 + bondFactor(depth) * 1.8 + (promised ? 0.6 : 0)));
+    // The damage scales with what was actually broken, rather than a flat
+    // number — and its MAXIMUM sits inside the per-event bond cap (2.5), or
+    // the clamp flattens a promised betrayal and an ordinary one into the
+    // same hit and the scaling silently stops being true.
+    api.addBond(victim, ctx.hoh, -(0.9 + bondFactor(depth) * 1.1 + (promised ? 0.45 : 0)));
     api.setTarget(victim, ctx.hoh, promised ? 'put me up after promising me I was safe' : 'put me up');
     api.remember(victim, ctx.hoh, 'betrayal', promised || allied ? 3 : 2, { act: 'nominations', promised, allied });
     api.popDelta(victim, 1);
@@ -364,7 +367,7 @@ const vetoLeftOnBlock = {
 
     // Abandonment scales with what was owed. A stranger who did not save you is
     // barely a story; an ally who did not is the story of the rest of your game.
-    api.addBond(stranded, holder, -(0.7 + bondFactor(closeness) * 1.6 + (allied ? 0.5 : 0)));
+    api.addBond(stranded, holder, -(0.7 + bondFactor(closeness) * 1.3 + (allied ? 0.4 : 0)));
     api.remember(stranded, holder, 'abandonment', allied ? 3 : 1, { act: 'veto-ceremony', allied });
     // Only worth redirecting your game at someone who owed you something.
     if (allied || closeness >= 3) {

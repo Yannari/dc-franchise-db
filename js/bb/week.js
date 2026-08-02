@@ -53,6 +53,38 @@ function recordCompDominance(competition, house, weekNum) {
   } catch { /* dimensions are texture; a comp must never fail on them */ }
 }
 
+// ── The bond-movement cap, at module scope so EVERY path can be fenced ──
+//
+// The ±2.5-per-stretch cap lived inside simulateBBWeek and was applied only
+// at act boundaries (houseAct / addBeats). Everything that mutates bonds
+// OUTSIDE those boundaries walked around it: the romance and maintenance
+// bridges attach their beats to an act that has already been capped, the pawn
+// negotiation, the broken-promise hit at nominations, the renomination
+// reaction, deal settlement and the alliance-betrayal settle all call addBond
+// in open air. Every one of those paths now runs inside a window.
+const STRETCH_BOND_CAP = 2.5;
+function _capBondDeltas(before) {
+  for (const [key, was] of Object.entries(before)) {
+    const now = Number(gs.bonds[key]);
+    if (!Number.isFinite(now)) continue;
+    const delta = now - was;
+    if (Math.abs(delta) <= STRETCH_BOND_CAP) continue;
+    gs.bonds[key] = was + Math.sign(delta) * STRETCH_BOND_CAP;
+  }
+  // Pairs that had no bond at all before this stretch.
+  for (const [key, now] of Object.entries(gs.bonds)) {
+    if (key in before) continue;
+    const v = Number(now);
+    if (Number.isFinite(v) && Math.abs(v) > STRETCH_BOND_CAP) {
+      gs.bonds[key] = Math.sign(v) * STRETCH_BOND_CAP;
+    }
+  }
+}
+function _cappedBondWindow(fn) {
+  const before = { ...(gs.bonds || {}) };
+  try { return fn(); } finally { _capBondDeltas(before); }
+}
+
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
   return result === undefined ? value : result;
@@ -790,7 +822,10 @@ function _snapshotHouse() {
 }
 
 function _attachRomance(week, rng) {
-  const beats = [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)];
+  // These beats are appended to an act whose cap window has already closed,
+  // so the bridges' addBond calls were the biggest hole in the fence.
+  const beats = _cappedBondWindow(() =>
+    [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)]);
   if (!beats.length) return;
   const houseActs = (week.acts || []).filter(a => a.type === 'house');
   const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];
@@ -867,38 +902,6 @@ export function simulateBBWeek(options = {}) {
   week.allianceChanges = { formed:[], betrayals:[] };
   const eventLibrary = options.houseEvents || [];
   const competitionLibrary = options.competitions || [];
-  /**
-   * How far a relationship can move in one stretch of a day.
-   *
-   * With twenty to thirty beats in a stretch, a pair that keeps coming up can
-   * accumulate the entire scale in a single morning — a measured week one had
-   * two strangers reach +10.0, inseparable, before the first competition. That
-   * is not a pace any relationship moves at, and it made the opening screen
-   * read as nonsense next to the events that supposedly caused it.
-   *
-   * Applied at the act boundary rather than inside the event api on purpose:
-   * the romance pipeline, the scheme bridge and the shared upkeep all call
-   * addBond directly through Total Drama's own modules, so a cap that only
-   * covered the house api would miss most of the movement.
-   */
-  const STRETCH_BOND_CAP = 2.5;
-  const _capBondMovement = before => {
-    for (const [key, was] of Object.entries(before)) {
-      const now = Number(gs.bonds[key]);
-      if (!Number.isFinite(now)) continue;
-      const delta = now - was;
-      if (Math.abs(delta) <= STRETCH_BOND_CAP) continue;
-      gs.bonds[key] = was + Math.sign(delta) * STRETCH_BOND_CAP;
-    }
-    // Pairs that had no bond at all before this stretch.
-    for (const [key, now] of Object.entries(gs.bonds)) {
-      if (key in before) continue;
-      const v = Number(now);
-      if (Number.isFinite(v) && Math.abs(v) > STRETCH_BOND_CAP) {
-        gs.bonds[key] = Math.sign(v) * STRETCH_BOND_CAP;
-      }
-    }
-  };
 
   const addBeats = (act, extra = {}) => {
     // Ceremony acts schedule beats too, and a competition night can move a
@@ -909,7 +912,7 @@ export function simulateBBWeek(options = {}) {
       hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 1 : 0, max: eventLibrary.length ? 3 : 0 });
-    _capBondMovement(bondsBefore);
+    _capBondDeltas(bondsBefore);
     return act;
   };
 
@@ -1012,7 +1015,7 @@ export function simulateBBWeek(options = {}) {
       }
     }
 
-    _capBondMovement(bondsBefore);
+    _capBondDeltas(bondsBefore);
 
     // The state as it stands when this stretch ends.
     //
@@ -1050,7 +1053,7 @@ export function simulateBBWeek(options = {}) {
   for (const name of house) {
     try { ensureHousePlan(name, { house, week }); } catch { /* a thin plan is still a plan */ }
   }
-  try { settleDeals({ house, week }); } catch { /* deals outlive a bad week */ }
+  try { _cappedBondWindow(() => settleDeals({ house, week })); } catch { /* deals outlive a bad week */ }
   revise('week');
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
@@ -1100,7 +1103,7 @@ export function simulateBBWeek(options = {}) {
   // the ceremony meant the scene and the decision could never be the same
   // thing.
   let plan = chooseNominationPlan(hoh, house, rng);
-  week.pawnAsk = negotiatePawn(hoh, house, plan, rng);
+  week.pawnAsk = _cappedBondWindow(() => negotiatePawn(hoh, house, plan, rng));
   // The negotiation may have changed the chair.
   plan.nominees = [plan.nominees[0] === plan.pawn ? plan.target : plan.nominees[0], plan.pawn]
     .filter(Boolean);
@@ -1152,32 +1155,34 @@ export function simulateBBWeek(options = {}) {
   // promise not to do this exact thing. And nominating a partner as the actual
   // TARGET, where the chair is not a formality.
   week.brokenPromises = [];
-  for (const nominee of nominees) {
-    const deal = dealBetween(hoh, nominee);
-    if (!deal || deal.active === false) continue;
-    const isSafety = (deal.type || '') === 'safety';
-    const isTarget = plan.target === nominee && plan.pawn !== nominee;
-    if (!isSafety && !isTarget) continue;
-    const broken = breakDeal(deal, hoh, { week, reason: isSafety
-      ? 'promised safety and nominated them anyway' : 'nominated their own partner as the target' });
-    if (!broken) continue;
-    const sincere = (() => { try { return sincerityOf(deal, hoh); } catch { return 1; } })();
-    week.brokenPromises.push({ hoh, victim: nominee, type: deal.type || 'deal', sincere,
-      kind: isSafety ? 'safety' : 'target' });
-    // Being nominated by somebody who gave you their word is worse than being
-    // nominated. It is the difference between a move and a lie.
-    addBond(nominee, hoh, -2.6);
-    try {
-      setBBTarget(nominee, hoh, isSafety
-        ? 'promised me safety and put me up anyway'
-        : 'shook on the end with me and then came for me', { week });
-      rememberStrategy(nominee, hoh, 'broke-a-promise', week.num, 3,
-        { format: 'big-brother', about: deal.type || 'safety', at: 'the nomination ceremony' });
-      // And it is a public act — the wall says so — which is exactly the kind
-      // of enemy a reign is scored on making.
-      reignMadeAnEnemy(week, nominee);
-    } catch { /* the promise still broke */ }
-  }
+  _cappedBondWindow(() => {
+    for (const nominee of nominees) {
+      const deal = dealBetween(hoh, nominee);
+      if (!deal || deal.active === false) continue;
+      const isSafety = (deal.type || '') === 'safety';
+      const isTarget = plan.target === nominee && plan.pawn !== nominee;
+      if (!isSafety && !isTarget) continue;
+      const broken = breakDeal(deal, hoh, { week, reason: isSafety
+        ? 'promised safety and nominated them anyway' : 'nominated their own partner as the target' });
+      if (!broken) continue;
+      const sincere = (() => { try { return sincerityOf(deal, hoh); } catch { return 1; } })();
+      week.brokenPromises.push({ hoh, victim: nominee, type: deal.type || 'deal', sincere,
+        kind: isSafety ? 'safety' : 'target' });
+      // Being nominated by somebody who gave you their word is worse than being
+      // nominated. It is the difference between a move and a lie.
+      addBond(nominee, hoh, -2.6);
+      try {
+        setBBTarget(nominee, hoh, isSafety
+          ? 'promised me safety and put me up anyway'
+          : 'shook on the end with me and then came for me', { week });
+        rememberStrategy(nominee, hoh, 'broke-a-promise', week.num, 3,
+          { format: 'big-brother', about: deal.type || 'safety', at: 'the nomination ceremony' });
+        // And it is a public act — the wall says so — which is exactly the kind
+        // of enemy a reign is scored on making.
+        reignMadeAnEnemy(week, nominee);
+      } catch { /* the promise still broke */ }
+    }
+  });
 
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
@@ -1282,7 +1287,7 @@ export function simulateBBWeek(options = {}) {
       if (!mentioned) {
         const temper = pStats(replacement).temperament;
         const bondHit = -(0.8 + (10 - temper) * 0.08);
-        addBond(replacement, hoh, bondHit);
+        _cappedBondWindow(() => addBond(replacement, hoh, bondHit));
         try { rememberStrategy(replacement, hoh, 'renomination', week.num, 2, { act: 'veto-ceremony' }); } catch { /* memory is texture */ }
         const effects = [{ kind: 'bond', text: `${replacement} & ${hoh} ${bondHit.toFixed(1)}`, delta: bondHit }];
         // The hotter the head, the more likely the week now has a mission.
@@ -1367,7 +1372,7 @@ export function simulateBBWeek(options = {}) {
 
     gs.activePlayers = house.filter(name => name !== departure.name);
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
-    week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
+    week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));
   _attachAllianceFallout(week, house);
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
@@ -1568,9 +1573,9 @@ export function simulateBBWeek(options = {}) {
   // person hiding behind them is suddenly the biggest thing in the room, and a
   // promise made to somebody who is now in the jury is not a promise any more.
   try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ }
-  try { settleDeals({ house: gs.activePlayers, week }); } catch { /* deals too */ }
+  try { _cappedBondWindow(() => settleDeals({ house: gs.activePlayers, week })); } catch { /* deals too */ }
   revise('eviction', { evicted });
-  week.allianceChanges.betrayals = settleBBAllianceWeek(week, rng);
+  week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));
   _attachAllianceFallout(week, house);
   week.endgameDeals = endgameDealSummary(gs.activePlayers || []);
   week.housePlans = Object.fromEntries((gs.activePlayers || [])

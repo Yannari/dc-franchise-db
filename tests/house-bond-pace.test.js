@@ -29,6 +29,31 @@ function reset() {
 }
 
 describe('relationships move at a plausible pace', () => {
+  it('no single beat claims more bond movement than the cap allows', () => {
+    // The cap ran only at act boundaries, so paths that attach beats AFTER the
+    // boundary — the romance and maintenance bridges, the pawn ask, the
+    // broken-promise hit, deal settlement — walked around it, and a bridged
+    // comfort event once printed +3.8 on one card. Every path is fenced now,
+    // and the per-event clamp keeps the printed chip and the world in
+    // agreement: no chip may exceed the stretch cap.
+    reset();
+    let guard = 0;
+    while (!houseIsAtFinale() && guard++ < 12) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      for (const act of ep.acts || []) {
+        for (const beat of act.socialBeats || []) {
+          for (const fx of beat.effects || []) {
+            if (fx.kind !== 'bond') continue;
+            expect(Math.abs(Number(fx.delta) || 0),
+              `"${fx.text}" on a ${act.type} act claims more than the cap`)
+              .toBeLessThanOrEqual(2.55);
+          }
+        }
+      }
+    }
+  });
+
   it('nobody becomes inseparable in a single stretch of week one', () => {
     reset();
     const ep = simulateBBEpisode();
@@ -68,8 +93,12 @@ describe('the transcript carries the week', () => {
     let ep = null;
     for (let i = 0; i < 2; i++) ep = simulateBBEpisode();
     const text = generateBBSummaryText(ep);
-    expect(text).toMatch(/The numbers: \d+ of \d+ decides it\./);
+    // The count opens the VOTING PLANS section now — the transcript carries
+    // the vote operation, not a membership tally.
+    expect(text).toMatch(/\d+ of \d+ decides it\./);
+    expect(text).toContain('VOTING PLANS');
     expect(text).toContain('EVICTION NIGHT');
+    expect(text).toContain('final plea');
     // The screen and the transcript should not be two different accounts.
     expect(text).toMatch(/How the plans changed:|promised .* and cast it|went with .* onto/);
   });

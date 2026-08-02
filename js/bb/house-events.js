@@ -200,9 +200,22 @@ function _worldBefore() {
 function _worldMoved(before) {
   const moved = [];
 
+  // No single event moves a pair more than the whole-stretch cap. The house
+  // caps bond movement at ±2.5 per stretch, but the clamp ran at the act
+  // boundary — AFTER the effect chip was written — so a bridged Total Drama
+  // generator could apply +3.8 in one beat (the comfort event books its boost
+  // in both directions of a symmetric bond, doubling it), the chip printed
+  // +3.8, and the boundary quietly took 1.3 of it back. Clamping HERE, where
+  // the diff is measured, keeps the chip and the world telling one story.
+  const EVENT_BOND_CAP = 2.5;
   for (const [key, now] of Object.entries(gs.bonds || {})) {
-    const delta = (Number(now) || 0) - (Number(before.bonds[key]) || 0);
-    if (!Number.isFinite(delta) || Math.abs(delta) < 0.25) continue;
+    let delta = (Number(now) || 0) - (Number(before.bonds[key]) || 0);
+    if (!Number.isFinite(delta)) continue;
+    if (Math.abs(delta) > EVENT_BOND_CAP) {
+      delta = Math.sign(delta) * EVENT_BOND_CAP;
+      gs.bonds[key] = (Number(before.bonds[key]) || 0) + delta;
+    }
+    if (Math.abs(delta) < 0.25) continue;
     const [a, b] = key.split('||');
     if (!a || !b) continue;
     moved.push({ kind: 'bond', text: `${a} & ${b} ${delta > 0 ? '+' : ''}${delta.toFixed(1)}`,

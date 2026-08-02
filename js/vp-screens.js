@@ -17886,22 +17886,18 @@ export function rpBuildBBVotingPlans(ep) {
  * kept their word, who flipped) lands here, after the door, because a
  * blindside is only a blindside once the person is through it.
  */
-export function rpBuildBBEviction(ep) {
+/**
+ * One nominee's final plea, as spoken.
+ *
+ * Module-level and exported because the transcript must carry the SAME speech
+ * the live show renders — the backlog is a retranscription, not a summary —
+ * and because the plea is resolved mechanically now, both surfaces read the
+ * same `ep.finalPleas` record and can never disagree about what was said.
+ */
+export function _bbFinalPleaSpeech(ep, name) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
-  const noms = (act?.nominees || []).filter(Boolean);
   const ballots = act?.ballots || [];
-  const evicted = act?.evicted || ep.eliminated;
-  const hoh = ep.hoh;
-  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
-
-  const stateKey = `bb_evict_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
-  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
-  const state = _tvState[stateKey];
-  // Don, unless the season says otherwise. NOT seasonConfig.host — that is
-  // Total Drama's knob and its default is the wrong show.
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.bbHost) || 'Don';
-
-  const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+  const pv = n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', Sub: 'They' }; } };
   const vvar = (list, ...salt) => {
     const key = `${ep.num}|${salt.join('|')}`;
     let hash = 0;
@@ -17909,8 +17905,6 @@ export function rpBuildBBEviction(ep) {
     return list[hash % list.length];
   };
 
-  // ── final pleas, each in the nominee's own register ──
-  const plea = name => {
     const p = pv(name);
     let stats = {};
     try { stats = pStats(name); } catch { stats = {}; }
@@ -18102,7 +18096,34 @@ export function rpBuildBBEviction(ep) {
       ],
     };
     return speech(personalCases[voice], 'personal');
+  
+}
+
+export function rpBuildBBEviction(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'eviction');
+  const noms = (act?.nominees || []).filter(Boolean);
+  const ballots = act?.ballots || [];
+  const evicted = act?.evicted || ep.eliminated;
+  const hoh = ep.hoh;
+  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+
+  const stateKey = `bb_evict_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  // Don, unless the season says otherwise. NOT seasonConfig.host — that is
+  // Total Drama's knob and its default is the wrong show.
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.bbHost) || 'Don';
+
+  const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+  const vvar = (list, ...salt) => {
+    const key = `${ep.num}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
   };
+
+  // ── final pleas, each in the nominee's own register ──
+  const plea = name => _bbFinalPleaSpeech(ep, name);
 
   const ballotReason = (b, c, broke) => {
     const voter = _bbEsc(b.voter);

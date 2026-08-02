@@ -6,7 +6,7 @@ import { standingFromSnapshot, standingMovement, roleLabel } from './social-stat
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { EDIT_LABELS } from './edit-layer.js';
-import { buildCrashout, vpGenerateQuote, _riLastWords } from './vp-screens.js';
+import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -4349,34 +4349,82 @@ export function generateBBSummaryText(ep) {
 
       case 'campaign':
         sec('CAMPAIGNING');
-        (act.events || []).forEach(e =>
-          ln(`  ${e.nominee} works ${e.voter} — ${e.success ? 'and it lands.' : 'and it does not take.'}`));
+        // The pitch beats ARE the campaign — one card per conversation, the
+        // argument included. The old summary line here read fields the pitch
+        // no longer has and printed "undefined works undefined" for a week.
         beats(act);
         break;
 
       case 'eviction': {
-        sec('EVICTION NIGHT');
-
-        // THE NUMBERS. The transcript is the other way somebody can find out
-        // how a week went, so it carries the same fact the screen opens with:
-        // who could decide this before anybody voted.
+        // ── VOTING PLANS — the operation, the way the screen tells it ──
+        // The transcript used to count alliance MEMBERSHIP as control, which
+        // is the exact fiction the vote-operation rebuild removed from the
+        // screen. It carries the operation now: the meetings, every member's
+        // answer, the asks by name, and the count from STATED positions.
+        const op = ep.voteOperation || null;
         const voters = (act.ballots || []).map(b => b.voter);
-        if (voters.length) {
-          const majority = Math.floor(voters.length / 2) + 1;
-          ln(`  The numbers: ${majority} of ${voters.length} decides it.`);
-          const blocs = (ep.gsSnapshot?.namedAlliances || [])
-            .filter(a => a.active !== false)
-            .map(a => ({ name: a.name, inside: (a.members || []).filter(m => voters.includes(m)) }))
-            .filter(a => a.inside.length >= 2)
-            .sort((a, b) => b.inside.length - a.inside.length);
-          blocs.forEach(b => ln(`    ${b.name}: ${b.inside.length} of ${voters.length}`
-            + `${b.inside.length >= majority ? '  — holds the house' : ''}  (${b.inside.join(', ')})`));
-          if (!blocs.length) ln('    Nobody has the numbers.');
+        const majority = Math.floor(voters.length / 2) + 1;
+        sec('VOTING PLANS');
+        ln(`  ${majority} of ${voters.length} decides it.`);
+        const STANCE = { dependable: 'locked', leaning: 'leaning', pulled: 'pulled in',
+          conflicted: 'torn', refusing: 'REFUSES', elsewhere: 'answers to another room' };
+        if (op?.plans?.length) {
+          for (const plan of op.plans) {
+            const tag = plan.locked >= plan.majority ? 'HOLDS THE HOUSE'
+              : plan.expected >= plan.majority ? 'THINKS IT HOLDS THE HOUSE' : `${plan.needed} SHORT`;
+            ln('');
+            ln(`  ${plan.alliance} wants out ${plan.target} — ${tag}`);
+            ln(`    ${plan.organizer} gathers the room: "${plan.reason}"`);
+            plan.stances.forEach(st => ln(`      ${st.voter}: ${STANCE[st.stance] || st.stance}`
+              + `${st.with ? ` (${st.with})` : ''}`));
+            if (plan.outsideSupport.length) ln(`    Already with them without being asked: ${plan.outsideSupport.join(', ')}.`);
+            plan.approaches.forEach(a => {
+              const OUT = { agrees: 'signs on', refuses: 'turns them down',
+                undecided: "won't commit", lies: 'says yes — and means no' };
+              ln(`    ${a.recruiter} works ${a.voter} — ${OUT[a.outcome] || a.outcome}.`);
+              ln(`      ${a.argument}`);
+            });
+          }
+        } else {
+          ln('  No room in the house can field two votes. Every ballot belongs to a person.');
+        }
+        if (op?.independents?.length) {
+          ln('');
+          ln('  The ballots no room owns:');
+          op.independents.forEach(v => ln(`    ${v.voter} is voting out ${v.evict}`
+            + `${v.promised ? ' — shook on it' : ''}${v.refused ? ' — turned an alliance down' : ''}`
+            + `${v.conflicted ? ' — claimed by two rooms' : ''}`));
+        }
+        const statedSides = {};
+        (act.ballots || []).forEach(b => { const k = b.stated || b.evict; statedSides[k] = (statedSides[k] || 0) + 1; });
+        ln('');
+        ln(`  The house read, from what people have SAID: ${Object.entries(statedSides)
+          .sort((a, b) => b[1] - a[1]).map(([n, c]) => `${n} ${c}`).join(' — ')}. Some of them are lying.`);
+
+        // ── THE FINAL PLEAS — the same speeches the live show renders ──
+        sec('EVICTION NIGHT');
+        const pleaNames = (act.nominees || []).filter(Boolean);
+        for (const nom of pleaNames) {
+          ln(`  ${nom}'s final plea:`);
+          try { ln(`    ${_bbFinalPleaSpeech(ep, nom)}`); } catch { ln('    (no plea recorded)'); }
+          const record = (ep.finalPleas || []).find(r => r.speaker === nom);
+          (record?.responses || []).filter(r => r.moved)
+            .forEach(r => ln(`    The plea lands: ${r.voter}'s vote moves, live.`));
+          const caught = (record?.responses || []).filter(r => r.caught).map(r => r.voter);
+          if (caught.length) ln(`    ${caught.join(' and ')} ${caught.length === 1 ? 'does' : 'do'} not buy a word of it.`);
+          ln('');
         }
 
-        ln('');
-        (act.ballots || []).forEach(b =>
-          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${b.changed ? ' (moved this week)' : ''}`));
+        // ── The ballots, each with its four-stage chain ──
+        (act.ballots || []).forEach(b => {
+          const chain = [];
+          if (b.preference && b.preference !== b.evict) chain.push(`wanted ${b.preference}`);
+          if (b.assignment) chain.push(`${b.assignment.kind === 'recruited'
+            ? `asked by ${b.assignment.recruiter || b.assignment.by}` : `${b.assignment.by} asked`} for ${b.assignment.target}`);
+          if (b.stated && b.stated !== b.evict) chain.push(`told the house ${b.stated}`);
+          if (b.pleaMove) chain.push(`moved by ${b.movedBy}'s plea`);
+          ln(`  ${b.voter}: "I vote to evict ${b.evict}."${chain.length ? `  (${chain.join(' · ')})` : ''}`);
+        });
 
         // HOW THE PLANS CHANGED — the same reasons the screen gives, so the
         // transcript is not a thinner account of the same night.
@@ -4384,8 +4432,11 @@ export function generateBBSummaryText(ep) {
         const reasons = (act.ballots || []).map(b => {
           const c = commitments.get(b.voter);
           const moved = b.stated && b.stated !== b.evict;
+          if (b.pleaMove) return `  ${b.voter} was moved by ${b.movedBy}'s final plea, standing in the living room.`;
+          if (b.lied && moved) return `  ${b.voter} said one name to the room and wrote another in the Diary Room.`;
           if (moved && c?.promised) return `  ${b.voter} shook on ${b.stated} and voted ${b.evict} anyway.`;
           if (b.blocMove) return `  ${b.voter} went with ${b.blocMove} onto ${b.evict}.`;
+          if (b.recruitedBy) return `  ${b.voter} signed on when ${b.recruitedBy} came recruiting, and delivered.`;
           if (b.bandwagon) return `  ${b.voter} left ${b.stated} once it was losing and joined ${b.evict}.`;
           if (moved) return `  ${b.voter} was talked off ${b.stated} during the week.`;
           if (c?.promised) return `  ${b.voter} promised ${b.evict} and cast it.`;
@@ -4397,18 +4448,19 @@ export function generateBBSummaryText(ep) {
         // A quiet vote is still an account of the vote. Saying nothing at all
         // leaves the transcript unable to explain the one night it exists for.
         else ln('    Nobody promised anything and nobody moved. The house agreed and that was that.');
-        for (const [name, bloc] of Object.entries((ep.blocMoves || []).reduce((acc, m) => {
-          (acc[m.alliance] ||= { target: m.target, asked: [] }).asked.push(m.voter);
-          return acc;
-        }, {}))) {
-          const held = bloc.asked.filter(v => (act.ballots || []).find(b => b.voter === v)?.evict === bloc.target);
-          ln(`    ${name} asked ${bloc.asked.length} for ${bloc.target} and got ${held.length}.`);
-        }
 
         ln('');
         Object.entries(act.votes || {}).forEach(([name, count]) =>
           ln(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
         if (act.tieBreak) ln(`  Tied — ${act.tieBreak.voter} breaks it against ${act.tieBreak.evict}.`);
+        // WHO HAD IT WRONG — the verdict the screen holds back until the
+        // votes are read belongs at the same point of the transcript.
+        const wrong = (ep.votePlans || []).filter(pl => pl.wrong);
+        if (wrong.length) {
+          ln('');
+          ln('  Who had it wrong:');
+          wrong.forEach(pl => ln(`    ${pl.voter} counted ${pl.believed} for evicting ${pl.target}; there were ${pl.truth}.`));
+        }
         beats(act);
         ln(`  ${act.evicted} is evicted from the Big Brother house.`);
         break;

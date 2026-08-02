@@ -17744,9 +17744,10 @@ export function rpBuildBBSafety(ep) {
     ${stage}
     <div class="bbns-cards">${steps.map((st, i) => card(st, i)).join('')}</div>
     <div class="bbns-controls" id="bbar-controls-${ep.num}">
-      <button class="rp-btn" onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=Math.min(${total - 1},(_tvState['${stateKey}'].idx??-1)+1);(function(){const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);const i=vpScreens.findIndex(s=>s.id&&String(s.id).startsWith('bb-safety'));if(i>=0)vpCurrentScreen=i;renderVPScreen();}})()">${done ? 'Complete' : state.idx < 0 ? 'Go to the arena' : 'Reveal next'}</button>
-      <button class="rp-btn rp-btn-ghost" onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${total - 1};(function(){const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);const i=vpScreens.findIndex(s=>s.id&&String(s.id).startsWith('bb-safety'));if(i>=0)vpCurrentScreen=i;renderVPScreen();}})()">Reveal all</button>
-      <span class="bbns-counter">${revealed} / ${total}</span>
+      ${done ? '<span class="bbns-done">The block is settled.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${state.idx < 0 ? 'Go to the arena' : 'Reveal next'}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="bbns-counter">${Math.min(total, revealed)} / ${total}</span>
     </div>
   </div>`;
 }

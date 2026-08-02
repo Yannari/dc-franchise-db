@@ -17479,7 +17479,7 @@ function _bbArenaLastShotStage(ctx) {
         <span class="bls-count">${row.decided ? `${down}/10` : '—/10'}</span>
         <span class="bls-score">${row.score}</span></div>
       <div class="bls-rail">${rail}</div>
-      <div class="bls-ammo"><i class="bls-lbl"></i>${ammo}<span>RACK</span></div>
+      <div class="bls-ammo">${ammo}<span>RACK</span></div>
     </div>`;
   }).join('');
   return `<div class="bls-stage ${ctx.savedShown ? 'is-decided' : ''}">

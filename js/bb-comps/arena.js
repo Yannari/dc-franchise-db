@@ -79,7 +79,7 @@ const flashWall = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'A wall of tiles flashes a symbol sequence once. Nominees punch it back from memory; every correct run extends the sequence by one. First to fumble twice is out.',
+  desc: 'A wall flashes a sequence of symbols once. Each nominee must enter that sequence from memory; after every correct round, one more symbol is added. A second mistake eliminates a player. The last nominee remaining wins safety.',
   stats: { mental: 0.4, intuition: 0.28, temperament: 0.2, boldness: 0.12 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.8, context, rng });
@@ -106,7 +106,7 @@ const houseOfCards = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'Each nominee stacks oversized card pieces into a tower on a table that tilts every time the arena horn blares. Tallest standing tower when the clock dies wins.',
+  desc: 'Each nominee stacks oversized card pieces into a tower. Every time the horn sounds, all three tables tilt and unstable towers may collapse. When time expires, the tallest tower still standing wins safety.',
   stats: { temperament: 0.36, physical: 0.24, endurance: 0.22, intuition: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.4, context, rng });
@@ -132,7 +132,7 @@ const vertigo = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'A ball, a tilting maze the size of a bed, and one hole that saves you. Nominees steer by shifting their whole body weight. Drop the ball anywhere else and you restart.',
+  desc: 'Each nominee steers a ball through a tilting maze by shifting their body weight. Landing the ball in any wrong hole forces a complete restart. The first nominee to guide the ball into the finish hole wins safety.',
   stats: { physical: 0.3, intuition: 0.28, boldness: 0.24, temperament: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.6, context, rng });
@@ -159,7 +159,7 @@ const lockout = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'A locked door, a four-digit code, and the clues scattered around the arena in plain sight — dates, counts, and numbers from the season itself. First nominee through the door stays.',
+  desc: 'Each nominee must solve four clues about events and vote counts from the season, then enter the answers as a four-digit door code. Wrong codes do not open the door. The first nominee through their door wins safety.',
   stats: { mental: 0.34, strategic: 0.28, intuition: 0.24, endurance: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3, context, rng });
@@ -185,7 +185,7 @@ const lastShot = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'Ten targets, a slingshot, and a rack of exactly twelve balls each. Nobody gets more ammunition, and the arena does not restock nerve either. Most targets down when the rack is empty wins.',
+  desc: 'Each nominee receives a slingshot, ten standing targets and exactly twelve balls. Every ball may be fired only once and there are no refills. After all shots are used, the nominee who knocked down the most targets wins safety.',
   stats: { physical: 0.32, boldness: 0.26, temperament: 0.24, intuition: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.2, context, rng });
@@ -212,7 +212,7 @@ const unravel = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'Fifty feet of rope knotted through a climbing frame, with a key woven into the far end. Untangle, unthread, unlock. The rope does not fight fair and neither does the clock.',
+  desc: 'Each nominee must untangle fifty feet of rope, thread it completely out of a climbing frame and retrieve the key tied to its far end. The first nominee to use that key to open their lock wins safety.',
   stats: { endurance: 0.32, temperament: 0.28, intuition: 0.22, physical: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3, context, rng });
@@ -238,7 +238,7 @@ const blackout = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'Nominees study the arena floor for thirty seconds — then the lights go out and they cross it blind, by memory, buzzer to buzzer. Every obstacle touched adds five seconds.',
+  desc: 'Nominees have thirty seconds to memorize an obstacle course. They then cross it in darkness and hit the finish buzzer. Every obstacle touched adds five seconds to their time; the fastest adjusted time wins safety.',
   stats: { intuition: 0.34, mental: 0.28, endurance: 0.2, boldness: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.4, context, rng });

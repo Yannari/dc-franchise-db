@@ -4239,7 +4239,13 @@ export function generateBBSummaryText(ep) {
         sec('HEAD OF HOUSEHOLD');
         if (act.competition) {
           ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
-          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+          ln(`  Rules: ${act.competition.desc || 'All three nominees compete. The winner comes off the block; the other two face the eviction vote.'}`);
+          // The result is stated immediately below. Competition definitions
+          // also carry terminal beats for headless use; suppress those here so
+          // the transcript does not evict both losers and save the winner twice.
+          (act.competition.beats || [])
+            .filter(b => !['STAYS NOMINATED', 'OFF THE BLOCK'].includes(b?.badgeText))
+            .forEach(b => ln(`    · ${b.text}`));
         }
         (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
         ln(`  ${act.winner} wins Head of Household.`);

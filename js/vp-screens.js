@@ -17647,10 +17647,18 @@ export function rpBuildBBSafety(ep) {
   };
 
   // ── the steps: lockdown → the game → its beats → scores worst-first → the save → aftermath ──
+  // The competition definitions also carry terminal narration for headless
+  // summaries: two STAYS NOMINATED beats and an OFF THE BLOCK beat. The VP
+  // reveals those outcomes itself, with one ranked card per loser and one save
+  // card for the winner. Including both copies made the same person lose or
+  // win twice on screen, so only in-game action and close-finish beats belong
+  // in the interactive sequence.
+  const terminalCompBadges = new Set(['STAYS NOMINATED', 'OFF THE BLOCK']);
+  const inGameBeats = (comp?.beats || []).filter(b => !terminalCompBadges.has(b?.badgeText));
   const steps = [
     { kind: 'lockdown' },
     { kind: 'game' },
-    ...((comp?.beats || []).map(b => ({ kind: 'compbeat', beat: b }))),
+    ...(inGameBeats.map(b => ({ kind: 'compbeat', beat: b }))),
     ...worstFirst.slice(0, -1).map((r, i) => ({ kind: 'rank', r, place: field.length - i })),
     { kind: 'save' },
     ...(act.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
@@ -17697,7 +17705,7 @@ export function rpBuildBBSafety(ep) {
       case 'game':
         return `<div class="bbns-card is-key">
           <div class="bbns-card-h"><span class="bbns-pill gold">THE GAME</span></div>
-          <div class="bbns-card-b">${comp ? `Tonight it is <strong>${_bbEsc(comp.name)}</strong>${comp.category ? ` — ${_bbEsc(comp.category)}` : ''}. ` : ''}${vvar([
+          <div class="bbns-card-b">${comp ? `Tonight it is <strong>${_bbEsc(comp.name)}</strong>${comp.category ? ` — ${_bbEsc(comp.category)}` : ''}. <strong>Rules:</strong> ${_bbEsc(comp.desc || '')} ` : ''}${vvar([
             'Last chance rules: no throwing this one, no sitting it out, no help from a friend. The only person who can take a nominee off the block tonight is that nominee.',
             'The whole week narrows to this. Whoever wants it most had better also be whoever plays it best, because those are rarely the same person.',
             'The house watches from the glass. Every voter in the room is about to have one fewer option, and none of them knows which.',
@@ -17712,24 +17720,26 @@ export function rpBuildBBSafety(ep) {
       }
       case 'rank': {
         const name = step.r.name;
+        const firstOut = step.place === field.length;
+        const resultLine = firstOut
+          ? `<strong>${_bbEsc(name)}</strong> posts the lowest result. ${pv(name).Sub} is the first nominee out of contention and will remain on the block tonight.`
+          : `<strong>${_bbEsc(name)}</strong> cannot catch the final player. ${pv(name).Sub} will remain on the block and face the vote tonight.`;
         return `<div class="bbns-card bbar-fall">
           <div class="bbns-card-h">${_bbAvatar(name, 30)}<span class="bbns-pill red">${_bbEsc(name).toUpperCase()} STAYS NOMINATED</span></div>
-          <div class="bbns-card-b">${vvar([
-            `The horn sounds for <strong>${_bbEsc(name)}</strong> first. ${pv(name).Sub} looks at the score, then at the two still playing, and understands exactly what the rest of the night is now.`,
-            `<strong>${_bbEsc(name)}</strong> is out of it. The podium light goes cold, and the vote — hours away — just got ${pv(name).obj} squarely in its arithmetic.`,
-            `<strong>${_bbEsc(name)}</strong> falls out of the arena at ${Number(step.r.score).toFixed(1)}. Nobody says anything from the glass, which says everything.`,
-            `The board settles and <strong>${_bbEsc(name)}</strong> is done. ${pv(name).Sub} steps back from the podium slowly, like leaving it faster would make it truer.`,
-          ], name, 'fall')}</div></div>`;
+          <div class="bbns-card-b">${resultLine}</div></div>`;
       }
       case 'save':
         return `<div class="bbns-card is-final bbar-savecard">
           <div class="bbns-card-h">${_bbAvatar(act.winner, 30)}<span class="bbns-pill green">SAVES THEMSELVES</span></div>
-          <div class="bbns-card-b"><strong>${_bbEsc(act.winner)}</strong> wins the Block Buster and takes ${pv(act.winner).pos} own name off the block. Nobody saved ${pv(act.winner).obj} — ${pv(act.winner).sub} did it, in front of everybody, with the vote already on the schedule. <strong>${losers.map(_bbEsc).join(' and ')}</strong> face the house tonight.</div></div>`;
+          <div class="bbns-card-b"><strong>${_bbEsc(act.winner)}</strong> wins the Block Buster and takes ${pv(act.winner).posAdj} own name off the block. Nobody saved ${pv(act.winner).obj} — ${pv(act.winner).sub} did it, in front of everybody, with the vote already on the schedule. <strong>${losers.map(_bbEsc).join(' and ')}</strong> face the house tonight.</div></div>`;
       case 'beat': {
         const b = step.beat;
+        const aftermathBadge = b.eventId === 'arena-save' ? 'WINNER REACTS'
+          : b.eventId === 'arena-defeat' ? 'AFTER THE LOSS'
+            : (b.badgeText || 'HOUSE');
         return `<div class="bbns-card">
           <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
-            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${aftermathBadge}</span></div>
           <div class="bbns-card-b">${b.text}${_bbfEffects(b)}</div></div>`;
       }
       default:
@@ -17741,6 +17751,10 @@ export function rpBuildBBSafety(ep) {
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px #f0a50033;margin-bottom:4px">THE BLOCK BUSTER</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Three on the block. One walks off it. The vote is tonight.</div>
+    <div class="bbns-card is-key" style="margin-bottom:14px">
+      <div class="bbns-card-h"><span class="bbns-pill gold">HOW TO PLAY</span><strong>${_bbEsc(comp?.name || 'Block Buster')}</strong></div>
+      <div class="bbns-card-b">${_bbEsc(comp?.desc || 'All three nominees compete. The winner removes themselves from the block, and the other two nominees face the eviction vote.')}</div>
+    </div>
     ${stage}
     <div class="bbns-cards">${steps.map((st, i) => card(st, i)).join('')}</div>
     <div class="bbns-controls" id="bbar-controls-${ep.num}">

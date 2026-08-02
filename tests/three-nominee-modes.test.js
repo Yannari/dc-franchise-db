@@ -84,6 +84,10 @@ describe('the Block Buster', () => {
     expect(arena, 'no Block Buster screen').toBeTruthy();
     expect(arena.label).toBe(screenLabel);
     expect(arena.html).toContain(ep.safetyWinner);
+    expect(arena.html).toContain('HOW TO PLAY');
+    expect(arena.html).toContain(ep.acts.find(a => a.type === 'safety').competition.desc);
+    expect(arena.html).not.toContain('takes hers own name');
+    expect(arena.html).not.toContain('takes his own own name');
     // All three nominees appear on it, not just the winner.
     for (const n of ep.blockBeforeSafety) expect(arena.html).toContain(n);
 

@@ -10,7 +10,7 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, threatScore } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { ordinal } from '../js/finale.js';
-import { buildVPScreens, buildBBWeekScreens, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, rpBuildBBEviction, rpBuildBBVotingPlans, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, buildBBWeekScreens, rpBuildBBColdOpen, bbfCamera, rpBuildBBDebug, rpBuildBBNominations, rpBuildBBEviction, rpBuildBBVotingPlans, _tvState } from '../js/vp-screens.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -424,4 +424,42 @@ describe('vote planning before the eviction', () => {
     expect(seen).toBeGreaterThan(0);
     expect(misread, 'nobody in an entire season ever misread the room').toBeGreaterThan(0);
   }, 240000);
+});
+
+// Move-in introductions: a cast full of repeated archetypes must not repeat a
+// line, and every voice must stay in character. Both actually shipped broken —
+// the same hothead line landed three times in one cast, and the register
+// grouping had a mastermind announcing "do not believe a second of it", which
+// is the villain's move and the exact opposite of a strategist's opening.
+describe('move-in introductions', () => {
+  it('never gives two castmates the same line, and keeps voices in character', () => {
+    reset();
+    // Stack the archetypes to force pool pressure.
+    const stacked = ['hothead', 'hothead', 'hothead', 'hothead', 'mastermind', 'mastermind',
+      'villain', 'villain', 'schemer', 'floater', 'floater', 'goat', 'hero', 'underdog'];
+    (gs.activePlayers || []).forEach((name, i) => {
+      const player = players.find(p => p.name === name);
+      if (player) player.archetype = stacked[i % stacked.length];
+    });
+    const ep = simulateBBEpisode();
+    gs.episodeHistory = [ep];
+    const names = ep.houseAtStart || [];
+    const shapes = [];
+    const masterminds = [];
+    for (let i = 0; i < names.length; i++) {
+      _tvState[`bb_co_${ep.num}`] = { idx: names.length - 1, look: i };
+      const html = rpBuildBBColdOpen(ep);
+      const match = html.match(/class="bbf-introq">([\s\S]*?)<\/div>/);
+      const quote = match ? match[1].trim() : '';
+      expect(quote, `${names[i]} arrived with no introduction`).toBeTruthy();
+      shapes.push(quote.split(names[i]).join('#'));
+      if (players.find(p => p.name === names[i])?.archetype === 'mastermind') masterminds.push(quote);
+    }
+    const dupes = shapes.filter((sh, i) => shapes.indexOf(sh) !== i);
+    expect(dupes, `castmates sharing an intro line: ${dupes.length}`).toEqual([]);
+    // A strategist presents harmless; announcing distrust is the villain's line.
+    for (const quote of masterminds) {
+      expect(quote).not.toMatch(/not believe|shouldn't trust|do not trust/i);
+    }
+  });
 });

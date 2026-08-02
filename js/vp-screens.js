@@ -9398,6 +9398,12 @@ export function rpBuildVotingPlans(ep) {
       `The relationship was already broken before tonight. This vote didn't damage anything. It just made something official that's been true for a while.`,
       `There's no version of this game where ${targetName} and I end up on the same side at the end. Might as well be honest about that while the numbers back it up.`,
       `You can smile at someone every morning and still know they're a problem. I've known it. Tonight the vote says it out loud.`,
+      n => `"I'm ${n}, and before anyone asks: yes, on purpose." Nobody had asked. Everybody understands later.`,
+      n => `"I'm ${n}." Then, to the nearest camera, conspiratorially: "We'll talk." The house exchanges its first collective look.`,
+      n => `"I'm ${n}. I've been training for this since the casting call — ask me what my resting heart rate is. Someone. Please."`,
+      n => `"I'm ${n}, and I respect all of you as people." A beat. "Competitors is a different conversation."`,
+      n => `"I'm ${n}, and by tonight I'll have a nickname for everyone. Resistance has never once worked."`,
+      n => `"I'm ${n}! Group hug? Group hug." It is somehow not optional and not unwelcome.`,
     ], voterName, targetName) : _hp([
       `Never fully trusted ${targetName} — the friction has been there since the start. This isn't a strategic vote. It's an honest one.`,
       `Something about ${targetName} has always felt off. Hard to name exactly, but it's been there. This is the moment to act on it.`,
@@ -15660,36 +15666,140 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
 function _bbIntroQuote(name) {
   const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
   const arch = player.archetype || 'floater';
-  const vvar = (list, ...salt) => {
-    const key = `${name}|${salt.join('|')}`;
-    let hash = 0;
-    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-    return list[hash % list.length];
+
+  // One pool PER ARCHETYPE, in that archetype's actual voice. The first cut
+  // grouped fifteen archetypes into four registers, which produced two failures
+  // at once: with four or five castmates sharing a register and only a
+  // name-hash choosing, the same line landed three times in one cast — and the
+  // register logic put a mastermind in the villain pool, announcing "do not
+  // believe a second of it" on arrival. A strategist does the opposite of
+  // that: the whole opening move is presenting harmless. The villain gets to
+  // announce the villainy, because announcing it is the villain's idea of fun.
+  const POOLS = {
+    mastermind: [
+      n => `"I'm ${n}. Honestly, I'm just here for the experience." Said while, very quietly, learning where everybody sleeps.`,
+      n => `"I'm ${n} — I'll probably be useless at the competitions, so be nice to me." Nothing about the handshake agrees.`,
+      n => `"I'm ${n}. Big fan of the show, terrible at strategy, ask anyone." Nobody can check whether that is true, which is the point.`,
+      n => `"I'm ${n}. My whole plan is to make it to jury and enjoy the hot tub." Two people believe it, which is two more than deserved.`,
+      n => `"I'm ${n} — please, somebody else win the first HOH, I couldn't handle the stress." The stress in question is already being managed.`,
+    ],
+    schemer: [
+      n => `"I'm ${n}, and oh my gosh, I already love every single one of you." Every single one of them is being evaluated.`,
+      n => `"I'm ${n}! We are going to be SUCH good friends." The plural is doing a lot of quiet work.`,
+      n => `"I'm ${n}. If you ever need anything — anything — you come to me." Three people make a mental note; one makes a different kind.`,
+      n => `"I'm ${n}! Ugh, everyone seems SO genuine." One word in that sentence is carrying a knife.`,
+      n => `"I'm ${n}, and I've already picked out my favourites." The list is real. Its purpose is not what the smile suggests.`,
+    ],
+    villain: [
+      n => `"I'm ${n}. I'm going to be very nice to all of you, and you should not believe a second of it."`,
+      n => `"I'm ${n}, and I came to play the villain properly. Somebody has to, and I've seen the ones who did it badly."`,
+      n => `"I'm ${n}. I'd say trust me, but we'd both know." The grin does most of the introduction.`,
+      n => `"I'm ${n}. Someone in this room is going to cry because of me, and I want to apologise to them in advance. It won't help."`,
+      n => `"I'm ${n}, and I checked the contract — there's no rule about being nice." There is also no doubt left about the season's villain.`,
+    ],
+    hothead: [
+      n => `"I'm ${n}. Fair warning: I have exactly one volume and this is it."`,
+      n => `"I'm ${n}. I'm easy to get along with — just don't lie to me, don't touch my food, and we're golden." The list continues for some time.`,
+      n => `"I'm ${n}, and I say what I think. Some of you are going to love that." A pause. "Some of you."`,
+      n => `"I'm ${n}. Zero to a hundred? There's no zero." Delivered as a warning, received as a promise.`,
+      n => `"I'm ${n}. If we have a problem, you'll know within the minute — I don't do simmering." Somebody laughs. ${n} does not.`,
+    ],
+    'chaos-agent': [
+      n => `"I'm ${n}!" followed by a fact about eels that nobody asked for and nobody will forget.`,
+      n => `"I'm ${n}. My strategy is that there is no strategy, and I am UNBEATABLE at it."`,
+      n => `"I'm ${n} — quick question, has anyone checked if the pool is real? Nobody? Okay, that's my afternoon sorted."`,
+    ],
+    wildcard: [
+      n => `"I'm ${n}. What you see is what you get, and I genuinely could not tell you what that is."`,
+      n => `"I'm ${n}. Some days I'm the nicest person you've ever met." The room waits for the second half. It does not come.`,
+      n => `"I'm ${n}, and I've been told I'm a lot. I've decided to take it as a compliment."`,
+      n => `"I'm ${n}. My friends bet on what I'll do in here. All of them will lose."`,
+      n => `"I'm ${n}, and I make every decision in the moment it happens. It's served me... variably."`,
+    ],
+    'challenge-beast': [
+      n => `"I'm ${n}. I'm here to win competitions — the social stuff, we'll figure out as we go."`,
+      n => `"I'm ${n}." Asked for a fun fact, ${n} names a personal best. Asked for a second, names another.`,
+      n => `"I'm ${n}, and I'll shake everyone's hand now, because come Thursday I'm not sure you'll want to."`,
+    ],
+    hero: [
+      n => `"I'm ${n}, and I'd rather lose being myself than win being somebody else." Half the room finds it lovely. The other half finds it useful.`,
+      n => `"I'm ${n}. Whatever happens in here, I've got you — that's not strategy, that's just how I was raised."`,
+      n => `"I'm ${n}. My word means something outside this house and it'll mean something inside it."`,
+      n => `"I'm ${n}. If somebody needs defending in here, that's where I'll be standing — probably to my own detriment, knowing this game."`,
+      n => `"I'm ${n}, and I'm not here to blindside anybody. If I'm coming for you, you'll hear it from me first." The room quietly prices that promise.`,
+    ],
+    'loyal-soldier': [
+      n => `"I'm ${n}. I'm not the flashiest player you'll ever meet, but pick me and I stay picked."`,
+      n => `"I'm ${n}. One promise: whoever I ride with, I ride the whole way." Somebody is already deciding to be that person.`,
+      n => `"I'm ${n}. I don't say much, and I don't forget much either."`,
+      n => `"I'm ${n}. I've had the same best friend since I was six. Draw your own conclusions about how I play."`,
+      n => `"I'm ${n}, and I'm nobody's first pick — but I'm the pick that's still there in week eight."`,
+    ],
+    'social-butterfly': [
+      n => `"I'm ${n}, and I'm a hugger — sorry in advance." Nobody appears to need the apology.`,
+      n => `"I'm ${n}!" — and within ten minutes ${n} has everybody's name, hometown and one fact each, retrievable on demand.`,
+      n => `"I'm ${n}. I talk a lot. You'll get used to it, and honestly? You'll miss it when I'm gone."`,
+    ],
+    showmancer: [
+      n => `"I'm ${n}, I'm single, and yes, that was information." The room laughs. Two people laugh differently.`,
+      n => `"I'm ${n}. I came for the game." A beat, scanning the room. "Mostly the game."`,
+      n => `"I'm ${n} — no showmances, I promise. I've made this promise before." The track record goes unmentioned.`,
+      n => `"I'm ${n}, and my mother told me not to fall for anyone in here." A respectful pause for the late instruction.`,
+      n => `"I'm ${n}. My type? Funny you should ask in a room I was just scanning."`,
+    ],
+    underdog: [
+      n => `"I'm ${n}, and I'm still half-convinced the casting call was a mistake. Please don't tell them."`,
+      n => `"I'm ${n}. People like me don't usually win this. I've thought about that a lot, and I'm here anyway."`,
+      n => `"I'm ${n}. Write me off — everyone does. It's gone well for me before."`,
+      n => `"I'm ${n}. My whole life is people being surprised. I've learned to arrive early for it."`,
+      n => `"I'm ${n}, and statistically someone like me doesn't last long here. I brought a big suitcase anyway."`,
+    ],
+    goat: [
+      n => `"I'm ${n}." What follows is a full minute nobody can summarise afterwards, and everybody enjoys.`,
+      n => `"I'm ${n}, and my strategy is vibes." Pressed for detail: "Good ones."`,
+      n => `"I'm ${n}. I brought a lucky spoon. No, you can't hold it."`,
+      n => `"I'm ${n}, and I have one rule: never explain the bit." The bit is never explained. It runs all season.`,
+      n => `"I'm ${n}. Fun fact: I can whistle two notes at once." The demonstration decides several first impressions instantly.`,
+    ],
+    floater: [
+      n => `"I'm ${n}." A beat. "That's... most of the speech I prepared."`,
+      n => `"I'm ${n}. I get along with everybody." It is the least memorable sentence of the day, exactly as designed.`,
+      n => `"I'm ${n} — you'll barely notice I'm here, which is honestly the plan."`,
+      n => `"I'm ${n}, and I'm just happy to be here." It is word-for-word what the person before said, and somehow twice as forgettable.`,
+      n => `"I'm ${n}. No enemies, no drama, no target — that's the whole pitch." It is, historically, an excellent pitch right up until it isn't.`,
+    ],
+    'perceptive-player': [
+      n => `"I'm ${n}." Short, pleasant, done — and while everyone else introduces themselves, ${n} is the only one really listening.`,
+      n => `"I'm ${n}. I'd rather learn your names than perform mine."`,
+      n => `"I'm ${n}. I notice things. That's not a threat — it's just going to keep being true."`,
+      n => `"I'm ${n}." While the applause settles, ${n} has already matched three pairs of people who arrived pretending not to know each other's type.`,
+      n => `"I'm ${n}, and I'll be honest — I'll remember everything everyone says today. It's a blessing. Mostly."`,
+    ],
   };
-  if (['villain', 'schemer', 'mastermind'].includes(arch)) return vvar([
-    `"I'm ${name}. I'm going to be very nice to all of you, and you should not believe a second of it."`,
-    `"${name}. I've watched every season of this and taken notes, and the notes are why I'm here."`,
-    `"I'm ${name}, and I promise you two things: I will make this season interesting, and you will not see it coming."`,
-    `"I'm here to win a game, not a popularity contest. If those turn out to be the same thing, even better."`,
-  ], 'v');
-  if (['hothead', 'chaos-agent', 'wildcard', 'challenge-beast'].includes(arch)) return vvar([
-    `"I'M ${String(name).toUpperCase()}, AND I'M HERE!" The rest of the introduction is lost to the hug.`,
-    `"I'm ${name}. Fair warning: I have exactly one volume and this is it."`,
-    `"I'm ${name} — I don't do slow burns. Whatever happens this season, I'll be in the middle of it."`,
-    `"I came here to win competitions and have fun, and I've already forgotten which order I said those in."`,
-  ], 'e');
-  if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(arch)) return vvar([
-    `"I'm ${name}, and I'm a hugger — sorry in advance." Nobody appears to need the apology.`,
-    `"I'm ${name}. My plan is to be exactly who I am the whole way through, which everybody says until week four."`,
-    `"I'm ${name}! I already love it here. Ask me again after the first eviction."`,
-    `"I'm ${name}, and whatever this house throws at us, I'd rather go through it with friends than over them."`,
-  ], 'w');
-  return vvar([
-    `"I'm ${name}." A beat. "That's... most of the speech I prepared."`,
-    `"I'm ${name}. I'll be the one watching from the kitchen while everyone else does this part."`,
-    `"I'm ${name} — you'll barely notice I'm here, which is honestly the plan."`,
-    `"I'm ${name}. Underestimate me, please. It's load-bearing."`,
-  ], 'q');
+  const pool = POOLS[arch] || POOLS.floater;
+
+  // Season-wide dedup, the same discipline bbArrivalLine already uses: hash
+  // picks a starting index, then walk forward past anything a castmate has
+  // already used. Memoised per name so re-renders (and the wall tabs) always
+  // show the same line.
+  const seasonKey = (typeof gs !== 'undefined' && (gs.activePlayers || []).join('|')) || 'bb';
+  if (!_bbIntroQuote._cache || _bbIntroQuote._cache.key !== seasonKey) {
+    _bbIntroQuote._cache = { key: seasonKey, byName: new Map(), used: new Set() };
+  }
+  const cache = _bbIntroQuote._cache;
+  if (cache.byName.has(name)) return cache.byName.get(name);
+  let hash = 0;
+  const salt = `${seasonKey}|${arch}|${name}`;
+  for (let i = 0; i < salt.length; i++) hash = (hash * 31 + salt.charCodeAt(i)) >>> 0;
+  let index = hash % pool.length;
+  for (let i = 0; i < pool.length; i++) {
+    const candidate = (index + i) % pool.length;
+    if (!cache.used.has(`${arch}:${candidate}`)) { index = candidate; break; }
+  }
+  const text = pool[index](name);
+  cache.byName.set(name, text);
+  cache.used.add(`${arch}:${index}`);
+  return text;
 }
 
 /** What a room full of strangers clocks in the first hour. */

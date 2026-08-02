@@ -126,16 +126,24 @@ export function updatePerceivedBonds(ep) {
       delete gs.perceivedBonds[key]; return;
     }
     const real = getBond(from, to);
-    let rate = entry.correctionRate;
+    // Doubt creeps; it does not solve. The ambient rate closed most misreads
+    // in one to three episodes with no evidence at all — the same "house
+    // knows what it never saw" clairvoyance the threat model had. Measured:
+    // 294 of 389 corrections were evidence-free drift, and the format's
+    // signature multi-week delusion could not exist. A quarter of the old
+    // creep, and the EVIDENCE terms below carry the correction instead.
+    let rate = entry.correctionRate * 0.25;
 
-    // Situational modifiers
+    // Situational modifiers — the evidence. These are the moments a real
+    // misread actually dies: the count that does not add up, watching your
+    // person do it to somebody else, the fear that finally asks the question.
     const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
     // Received votes at tribal last episode
-    if (_prevEp?.votes?.[from]) rate += 0.30;
+    if (_prevEp?.votes?.[from]) rate += 0.45;
     // Witnessed deceiver betray someone else
-    if (_prevEp?.votingLog?.some(v => v.voter === to && v.voted !== from && getBond(from, v.voted) >= 2)) rate += 0.20;
+    if (_prevEp?.votingLog?.some(v => v.voter === to && v.voted !== from && getBond(from, v.voted) >= 2)) rate += 0.40;
     // Paranoid emotional state
-    if (gs.playerStates?.[from]?.emotional === 'paranoid') rate += 0.10;
+    if (gs.playerStates?.[from]?.emotional === 'paranoid') rate += 0.15;
     // Trigger E: loyalty slows correction
     if (entry.reason === 'post-betrayal-denial') {
       const _loy = pStats(from).loyalty || 5;
@@ -282,7 +290,15 @@ export function checkPerceivedBondTriggers(ep) {
     if (!candidates.length) return;
     const target = candidates.sort((a, b) => pStats(a).intuition - pStats(b).intuition)[0];
     const realBond = getBond(target, name);
-    const inflation = 1.0 + Math.random() * 0.5; // meaningful gap: +1.0 to +1.5
+    // Scaled by the villain's craft and the mark's blindness. The old +1.0
+    // to +1.5 opened gaps too small to change a single decision — measured,
+    // 85% of all misreads sat under three points and the walk-to-the-door
+    // blindside could not happen through this channel. A strategic-10
+    // villain working an intuition-2 mark now opens the four-to-six point
+    // delusion the format is famous for.
+    const craft = (vS.strategic - 6) * 0.6;                    // 0.6 – 2.4
+    const blindness = (5 - pStats(target).intuition) * 0.45;   // 0 – 2.25
+    const inflation = 1.2 + craft + blindness + Math.random() * 0.8;
     addPerceivedBond(target, name, realBond + inflation, 'villain-manipulation');
     _tlog(`  B CREATED: ${target}→${name} real=${realBond.toFixed(1)} perceived=${(realBond + inflation).toFixed(1)}`);
     // Camp event (~40% chance)

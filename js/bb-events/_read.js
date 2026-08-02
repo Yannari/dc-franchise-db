@@ -401,8 +401,28 @@ export const beatsInvolving = name => beatCounts()[name] || 0;
  * houseguest still gets scenes, they just stop being the first name reached for
  * every time the library wants somebody who has been quiet.
  */
+// Recomputed once per BEAT, not once per comparison. spotlightOrder runs this
+// inside a sort for every casting pool of every event weight() the scheduler
+// consults, and storyPull underneath it loops the house calling grudge() — a
+// walk of the memory store. Profiled, the stack was ~40% of a whole season:
+// grudge 13.6%, the weight itself 8.9%, the comparator 6.3%, the feud loop
+// 6.1%. Nothing this reads moves WITHIN a beat, so the beat count is the
+// right cache stamp — the same one beatsInvolving already keys on.
+let _spotAt = -1;
+let _spotMap = new Map();
+
 export function spotlightWeight(name) {
   if (!name) return 0;
+  const stamp = (houseEventState().eventHistory || []).length;
+  if (_spotAt !== stamp) { _spotAt = stamp; _spotMap = new Map(); }
+  const hit = _spotMap.get(name);
+  if (hit !== undefined) return hit;
+  const value = _spotlightWeightRaw(name);
+  _spotMap.set(name, value);
+  return value;
+}
+
+function _spotlightWeightRaw(name) {
   const s = gs.bb?.spotlight;
   let weight = 0;
   if (s) {
@@ -471,12 +491,12 @@ export function storyPull(name) {
 
   // A couple is a storyline the moment it exists.
   if ((gs.showmances || []).some(sh => sh.phase !== 'broken-up'
-    && (sh.players || []).includes(name))) pull += 0.18;
+    && (sh.players || []).includes(name))) pull += 0.12;
 
   // Somebody the house has turned on. Being hunted is a story even when the
   // week's power has not got to you yet.
   const hunters = house.filter(other => other !== name && targetOf(other) === name).length;
-  if (hunters >= 2) pull += 0.14;
+  if (hunters >= 2) pull += 0.1;
   else if (hunters === 1) pull += 0.06;
 
   // And an open feud: a grudge that runs both ways is two people who cannot be
@@ -503,8 +523,13 @@ export function storyPull(name) {
  * totals are large.
  */
 export function spotlightOrder(pool) {
-  return [...pool].sort((a, b) =>
-    beatsInvolving(a) * (1 - spotlightWeight(a)) - beatsInvolving(b) * (1 - spotlightWeight(b)));
+  // Decorate once, then sort on lookups — the comparator itself must not be
+  // the place the weights get computed.
+  const keyed = new Map();
+  for (const n of pool) {
+    if (!keyed.has(n)) keyed.set(n, beatsInvolving(n) * (1 - spotlightWeight(n)));
+  }
+  return [...pool].sort((a, b) => keyed.get(a) - keyed.get(b));
 }
 
 // ── archetype behaviour, mirroring the franchise rules ────────────────

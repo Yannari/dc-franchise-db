@@ -122,6 +122,18 @@ export function makeEndgameDeal(a, b, tier = 'final-two', { week = null, about =
     plan.finalThree = [member, ...new Set([...partners, ...plan.finalThree.filter(n => n !== member)])].slice(0, 3);
     plan.origins.finalThree ||= {};
     partners.forEach(n => { plan.origins.finalThree[n] = `shook on ${tier === 'final-two' ? 'a final two' : 'a final three'} in week ${round}`; });
+    // And the same handshake takes them OFF the other side of the plan. A
+    // houseguest could end up holding somebody as final-two partner and top
+    // target at once — the deal wrote one field and never read the others —
+    // and the two pulls then fought over every nomination. You do not shake
+    // on the end with somebody you are still planning to gun for; if the
+    // deal is a lie, sincerity carries that, not a stale hit list.
+    if (Array.isArray(plan.targets)) plan.targets = plan.targets.filter(n => !partners.includes(n));
+    if (Array.isArray(plan.revenge)) plan.revenge = plan.revenge.filter(n => !partners.includes(n));
+    // The live intention target is a separate store from the plan, and it is
+    // the one bbHeat actually reads (+4 for "this is my target").
+    const intent = gs.intentions?.[member];
+    if (Array.isArray(intent?.targets)) intent.targets = intent.targets.filter(n => !partners.includes(n));
   }
   return deal;
 }

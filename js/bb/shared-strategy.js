@@ -4,7 +4,7 @@ import { gs, players, seasonConfig } from '../core.js';
 import { resolveAllianceRepair, nameNewAlliance } from '../alliances.js';
 import { addBond, addPerceivedBond, getBond, getPerceivedBond } from '../bonds.js';
 import { pStats, romanticCompat } from '../players.js';
-import { getRelationshipDimensions } from '../relationships.js';
+import { getRelationshipDimensions, relationshipDecisionProfile } from '../relationships.js';
 import { pitchTrust, tacticalCooperation, targetProtection } from '../relationships.js';
 import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
@@ -277,10 +277,22 @@ export function bbHeat(observer, candidate) {
   let reign = 0;
   try { reign = reignHeat(candidate, (gs.episode || 0) + 1); } catch { reign = 0; }
 
+  // The dimensions the generic bond cannot see. Fear is the interesting one
+  // because it points both ways: a bold houseguest converts fear of somebody
+  // into a reason to take the shot now, while a timid one converts the same
+  // fear into avoidance — the "too scared" nomination week is exactly this
+  // number going negative. Respect is the observer's personal read of danger
+  // (bbThreat is the resume; respect is what THIS person makes of it), and a
+  // debt owed is a name that stays off the block a little longer.
+  const dims = relationshipDecisionProfile(observer, candidate);
+  const nerve = (pStats(observer).boldness - 5) * 0.09;
   const components = {
     threat: bbThreat(candidate), relationship: -relationship * 0.85,
     alliance: -alliance * 2.2, target, suspicion: suspicion * 0.45,
     memory: clamp(memory, -4, 6) * 0.65, familiar, reign,
+    fear: dims.fear * nerve,
+    respect: Math.max(0, dims.strategicRespect) * 0.3,
+    debt: -Math.max(0, dims.obligation) * 0.4,
   };
   return { components, total: Object.values(components).reduce((sum, value) => sum + value, 0) };
 }

@@ -16,7 +16,7 @@ import {
 import { checkPerceivedBondTriggers, recoverBonds } from '../bonds.js';
 import { decayAllianceTrust } from '../alliances.js';
 import { tickIntentions } from '../intentions.js';
-import { applySocialStatusEffects } from '../relationship-events.js';
+import { applySocialStatusEffects, recordChallengeDominance, recordStrategicRespect } from '../relationship-events.js';
 import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
@@ -36,6 +36,22 @@ import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
+
+/**
+ * A competition win, seen by the whole house, becomes strategic respect and a
+ * little comp fear — scaled by how badly the field was beaten. This is the
+ * event-driven source those dimensions were designed around; without it a
+ * season ended with every strategicRespect value still at zero.
+ */
+function recordCompDominance(competition, house, weekNum) {
+  try {
+    const margin = Number(competition?.debug?.winnerMargin);
+    const scaled = Number.isFinite(margin) ? Math.min(2, 0.6 + Math.abs(margin) * 0.25) : 0.8;
+    recordChallengeDominance(competition.winner,
+      house.filter(name => name !== competition.winner),
+      { margin: scaled, ep: weekNum });
+  } catch { /* dimensions are texture; a comp must never fail on them */ }
+}
 
 function hook(hooks, name, value, context) {
   const result = hooks?.[name]?.(value, context);
@@ -1043,6 +1059,11 @@ export function simulateBBWeek(options = {}) {
   setSpotlight({ hoh });
   gs.bb.stats[hoh].hohWins++;
   week.hohCompetition = hohCompetition;
+  // Winning in front of everybody is where strategic respect and comp fear
+  // actually come from. The dimension writers existed and the house never
+  // called them, so nobody in a season ever became "a comp threat" in
+  // anyone's head no matter how many competitions they won.
+  recordCompDominance(hohCompetition, house, week.num);
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.
@@ -1189,6 +1210,7 @@ export function simulateBBWeek(options = {}) {
     week.vetoWinner = vetoWinner;
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
     week.vetoCompetition = vetoCompetition;
+    recordCompDominance(vetoCompetition, house, week.num);
     week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner,
       results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
       automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
@@ -1410,6 +1432,20 @@ export function simulateBBWeek(options = {}) {
   week.evicted = evicted;
   week.votes = votes;
   week.ballots = ballots;
+  // An organizer who named the vote and then delivered it earns strategic
+  // respect from the people who watched it happen — the other event-driven
+  // source of the dimension, and the one that makes "big move" mean something
+  // in the next week's reads.
+  for (const plan of week.voteOperation?.plans || []) {
+    if (plan.target !== evicted || plan.expected < plan.majority) continue;
+    for (const s of plan.stances) {
+      if (s.voter === plan.organizer || s.stance === 'elsewhere') continue;
+      try {
+        recordStrategicRespect(s.voter, plan.organizer, 0.45,
+          `${plan.organizer} called the vote and delivered it`, week.num);
+      } catch { /* texture only */ }
+    }
+  }
   week.tieBreak = tieBreak;
   week.voteChanges = ballots.filter(ballot => ballot.changed).length;
   // Eviction night gets its beats like every other act. It was the one act

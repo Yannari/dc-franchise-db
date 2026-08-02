@@ -25,6 +25,7 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
+import { tacticalCooperation } from '../relationships.js';
 import { bbAllianceStrength } from './shared-strategy.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 
@@ -218,8 +219,14 @@ export function runVoteOperation({ ballots = [], nominees = [], hoh = null, comm
       const rStats = pStats(recruiter);
       const vStats = pStats(voter);
       const strength = commitments.get(voter)?.strength ?? 0.4;
+      // Whether the ask lands is tacticalCooperation, not friendship: a voter
+      // can distrust the recruiter personally and still respect the plan
+      // enough to be one vote of it — and can like them fine while resenting
+      // them too much to cooperate. The bond stays as a smaller term because
+      // people do also just say yes to their friends.
       const persuade = rStats.social * 0.35 + rStats.strategic * 0.2
-        + Math.max(0, getPerceivedBond(voter, recruiter)) * 0.6 + noise(rng, 3);
+        + tacticalCooperation(voter, recruiter) * 0.45
+        + Math.max(0, getPerceivedBond(voter, recruiter)) * 0.25 + noise(rng, 3);
       const resist = strength * 6 + vStats.loyalty * 0.15 + vStats.intuition * 0.1;
       const argument = approachArgument(recruiter, voter, plan.target, plan.keeping);
       let outcome;

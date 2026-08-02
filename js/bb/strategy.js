@@ -3,6 +3,7 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
+import { getRelationshipDimension, relationshipDecisionProfile, targetProtection } from '../relationships.js';
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 import { housePlan } from './plans.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
@@ -27,8 +28,21 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
   const heat = bbHeat(hoh, candidate);
   const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
-  return heat.total + threatAdjustment + revenge * 0.75
+  const score = heat.total + threatAdjustment + revenge * 0.75
     + nominationPlanPull(hoh, candidate) + noise(rng, 1.6);
+  // A promise about the end discounts EVERYTHING above, proportionally. This
+  // used to be a flat additive pull inside the plan weight, which lost twice:
+  // a reactive houseguest's sincere final-two shrank to a third of its size,
+  // and against a partner who happened to carry big heat — an enemy-turned-
+  // ally, a comp beast accruing fear and respect — a constant could never
+  // keep up with the pile it was fighting. A fraction of the score tracks the
+  // scale automatically: whatever the reasons to nominate them add up to, a
+  // kept promise cancels about half of it. Insincere deals barely register.
+  const deal = dealBetween(hoh, candidate);
+  if (deal && score > 0) {
+    return score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
+  }
+  return score;
 }
 
 /**
@@ -68,9 +82,6 @@ export function nominationPlanPull(hoh, candidate) {
   if (plan.goat === candidate) pull -= 2.2;
   if (plan.preferredCore?.includes(candidate)) pull -= 2.4;
   if (plan.backupAllies?.includes(candidate)) pull -= 1.1;
-  // A promise about the end is the strongest reason there is not to do this.
-  const deal = dealBetween(hoh, candidate);
-  if (deal) pull -= (tierOf(deal) === 'final-two' ? 4.5 : 3) * sincerityOf(deal, hoh);
   return pull * weight;
 }
 
@@ -192,6 +203,10 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     if (hohStats) anger *= 0.75 + (10 - hohStats.temperament) * 0.05;
     // Being close to them means they take it personally rather than as a move.
     if (getPerceivedBond(holder, hoh) >= 3) anger += 0.8;
+    // Being AFRAID of them is different from being close to them, and it is
+    // the more common reason a veto stays in a pocket: the anger costs more
+    // when the person holding the grudge is somebody you already flinch from.
+    anger *= 1 + getRelationshipDimension(holder, hoh, 'fear') * 0.06;
     // And it costs nothing anybody can name when there was no choice to make.
     return anger * (1 - forced);
   };
@@ -199,9 +214,15 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
   // ── what it costs with the person on the block ──
   const abandonOf = name => {
     const deal = dealBetween(holder, name);
+    // A debt is not a bond. Somebody who pulled you off the block last month,
+    // or lent you their vote, is owed this even if you do not much like them —
+    // and resentment discounts every other reason to spend it on them.
+    const dims = relationshipDecisionProfile(holder, name);
     let cost = Math.max(0, getPerceivedBond(holder, name)) * 0.42
       + bbAllianceStrength(holder, name) * 1.5
-      + (deal ? (tierOf(deal) === 'final-two' ? 3.4 : 2.1) * sincerityOf(deal, holder) : 0);
+      + (deal ? (tierOf(deal) === 'final-two' ? 3.4 : 2.1) * sincerityOf(deal, holder) : 0)
+      + Math.max(0, dims.obligation) * 0.35
+      - dims.resentment * 0.3;
     // Somebody who was only ever a pawn probably survives, so leaving them up
     // is not abandoning them.
     if (name === plan?.pawn && name !== plan?.target) cost *= 0.35;
@@ -396,7 +417,15 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
     const deal = dealBetween(voter, nominee);
     const keep = deal ? (tierOf(deal) === 'final-two' ? 3.6 : 2.2) * sincerityOf(deal, voter) : 0;
     const plan = housePlan(voter);
-    return getPerceivedBond(voter, nominee) * 0.9 - bbThreat(nominee) * 0.3
+    // targetProtection is the question this vote actually asks — affection,
+    // obligation and resentment pointed at one name — so it carries weight the
+    // generic bond used to carry alone. Strategic danger is the voter's OWN
+    // read of the nominee (fear plus earned respect), which is not the same
+    // number as the resume-driven bbThreat beside it.
+    const dims = relationshipDecisionProfile(voter, nominee);
+    return getPerceivedBond(voter, nominee) * 0.5 - bbThreat(nominee) * 0.3
+      + targetProtection(voter, nominee) * 0.55
+      - dims.strategicDanger * 0.25
       + bbAllianceStrength(voter, nominee) * 1.4
       - (getBBTarget(voter) === nominee ? 3 : 0)
       + keep
@@ -655,10 +684,15 @@ export function houseVoteCommitment(ballot, nominees) {
   // vote gets. They are not immovable — but moving them costs something.
   const cutting = againstDeal ? sincerityOf(againstDeal, voter) : 0;
 
+  // A debt to the person being kept firms the vote the way a promise does,
+  // only quieter: nobody shook on it, but it is still owed.
+  const debt = keeping
+    ? Math.max(0, relationshipDecisionProfile(voter, keeping).socialDebt) * 0.03 : 0;
   const strength = clarity * 0.45
     + (promised ? 0.3 : 0)
     + (allied ? 0.22 : 0)
     + endgameHold
+    + debt
     + (s.loyalty / 10) * 0.25;
   return {
     voter, keeping, strength: Math.max(0, Math.min(1, strength)), promised, allied,

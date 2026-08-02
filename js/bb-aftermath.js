@@ -149,6 +149,13 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   const [top, second] = read.margin;
   const blindsided = (second ?? 0) === 0 || (top - (second ?? 0)) >= Math.max(2, house.length / 3);
 
+  // One episode is one week. The first boot has been in the house seven
+  // days, not the hardcoded thirty a later draft assumed — an exit interview
+  // that misremembers how long its own guest was inside breaks the whole
+  // illusion in one sentence.
+  const weeksIn = Math.max(1, week.num || 1);
+  const timeIn = weeksIn === 1 ? 'seven days' : weeksIn === 2 ? 'two weeks' : `${weeksIn} weeks`;
+
   const questions = [];
 
   questions.push({
@@ -159,7 +166,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
       ? _pick(rng, [
         `"No. And I counted. I counted this morning and I counted an hour before the vote and I had it."`,
         `"I knew something was wrong when nobody would look at me. I just didn't know how wrong."`,
-        `"I've been in that house thirty days and I have never felt more stupid than in the last thirty seconds of it."`,
+        `"I've been in that house ${timeIn} and I have never felt more stupid than in the last thirty seconds of it."`,
       ])
       : _pick(rng, [
         `"I thought I had one more. I've thought that before and been right, so — that's the game."`,
@@ -217,7 +224,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
       ])
       : _pick(rng, [
         `${evictee} comes through the doors already waving, because whatever else this is, it is over, and over has its own relief.`,
-        `The audience gives ${evictee} the send-off of somebody they enjoyed watching. ${p.Sub} takes it in like the first fresh air in weeks.`,
+        `The audience gives ${evictee} the send-off of somebody they enjoyed watching. ${p.Sub} takes it in like the first fresh air since the doors closed.`,
         `${evictee} hugs the doorframe of the house on the way out, which gets a laugh, which was the point.`,
       ]),
   };

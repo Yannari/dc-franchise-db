@@ -1302,7 +1302,7 @@
 
     /* ══════════════════════════════════════════════════════════════════
        BLOCK BUSTER ARENA GAMES — one stage per game
-       Seven arena-exclusive games, seven instruments. Each prefix owns its
+       Thirteen arena-exclusive games, thirteen instruments. Each prefix owns its
        palette and its primitive; nothing is shared but the pressure strip
        (LIVE / room / THE VOTE IN mm:ss) and the three-word footer.
        ══════════════════════════════════════════════════════════════════ */
@@ -1687,6 +1687,398 @@
                      color:#4e6b59; }
     @media (prefers-reduced-motion: reduce) {
       .bbo-live i { animation:none; } .bbo-dot { transition:none; }
+    }
+
+    /* ── bdt- DOWN THE TUBE: glass and pool-water cyan. A standing tube per
+       nominee filling ball by ball toward a printed line, with the narrow
+       beam and its carrier underneath. ── */
+    .bdt-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(78,190,214,.34);
+                     background:radial-gradient(ellipse at 50% 115%, rgba(46,140,170,.28), transparent 62%),
+                       linear-gradient(180deg,#0a1418,#070f12 80%); }
+    .bdt-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bdt-strip     { display:flex; align-items:center; gap:12px; margin-bottom:10px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bdt-live      { display:inline-flex; align-items:center; gap:5px; color:#7fd9ec;
+                     border:1px solid rgba(78,190,214,.5); border-radius:4px; padding:2px 8px; }
+    .bdt-live i    { width:6px; height:6px; border-radius:50%; background:#4ebed6;
+                     animation:bdtDrip 1.5s ease-in infinite; }
+    .bdt-stage.is-decided .bdt-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bdt-stage.is-decided .bdt-live i { background:#3fb950; animation:none; }
+    @keyframes bdtDrip { 0%,100% { transform:none; } 55% { transform:translateY(3px); opacity:.35; } }
+    .bdt-title     { color:#a8e3f0; }
+    .bdt-clock     { margin-left:auto; color:#728b93; }
+    .bdt-clock b   { color:#7fd9ec; font-size:12px; letter-spacing:2px; }
+    .bdt-bay       { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .bdt-col       { flex:1 1 150px; max-width:200px; text-align:center; padding:8px 6px 6px;
+                     border-radius:10px; border:1px solid rgba(78,190,214,.18);
+                     background:rgba(78,190,214,.04); transition:opacity .3s, border-color .3s; }
+    .bdt-col.is-out   { opacity:.55; border-color:rgba(248,81,73,.34); }
+    .bdt-col.is-saved { border-color:rgba(126,226,168,.55); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 24px rgba(63,185,80,.16); }
+    .bdt-tube      { position:relative; max-width:78px; margin:0 auto; }
+    .bdt-tube svg  { width:100%; height:auto; display:block; }
+    .bdt-glass     { fill:rgba(255,255,255,.035); stroke:rgba(160,225,240,.45); stroke-width:2; }
+    .bdt-sheen     { fill:none; stroke:rgba(255,255,255,.12); stroke-width:1;
+                     /* the highlight down the near face of the glass */ }
+    .bdt-line      { stroke:#f0c674; stroke-width:2; stroke-dasharray:5 4; }
+    .bdt-ball      { fill:#e6edf3; stroke:rgba(20,50,60,.6); stroke-width:1; }
+    .bdt-col.is-saved .bdt-ball { fill:#8ef0b4; }
+    .bdt-col.is-out .bdt-ball   { fill:#9fb3ba; }
+    .bdt-mark      { display:block; margin-top:2px; font-family:ui-monospace,Consolas,monospace;
+                     font-size:7px; letter-spacing:1.5px; color:#c2a35c; }
+    .bdt-beam      { max-width:170px; margin:2px auto 0; }
+    .bdt-beam svg  { width:100%; height:auto; display:block; }
+    .bdt-plank     { stroke:#8a6a44; stroke-width:5; stroke-linecap:round; }
+    .bdt-legs      { stroke:rgba(138,106,68,.7); stroke-width:3; stroke-linecap:round; fill:none; }
+    .bdt-walker    { transition:transform .55s ease; }
+    .bdt-carry     { fill:#f0c674; }
+    .bdt-body      { stroke:#dcecf1; stroke-width:2.2; stroke-linecap:round; fill:none; }
+    .bdt-col.is-saved .bdt-body { stroke:#7ee2a8; }
+    .bdt-spill     { fill:rgba(248,81,73,.55); }
+    .bdt-who       { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:6px; }
+    .bdt-who b     { font-size:12px; color:#dceff4; }
+    .bdt-read      { margin-top:3px; font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     color:#dceff4; }
+    .bdt-read i    { display:block; font-style:normal; font-size:7.5px; letter-spacing:1.5px;
+                     color:#6f8990; margin-bottom:2px; }
+    .bdt-read em   { font-style:normal; color:#a8e3f0; margin-left:5px; }
+    .bdt-col.is-saved .bdt-read i { color:#7ee2a8; }
+    .bdt-col.is-out .bdt-read i   { color:#ffb3ae; }
+    .bdt-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#5c757c; }
+    @media (prefers-reduced-motion: reduce) {
+      .bdt-live i { animation:none; } .bdt-walker { transition:none; }
+    }
+
+    /* ── bhc- HEAD COUNT: control-room blue-white. A monitor each replaying the
+       same chaotic minute behind static, a row of answer lamps, and a lockout
+       ring that fills for every wrong guess. ── */
+    .bhc-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(96,150,220,.34);
+                     background:radial-gradient(ellipse at 50% -20%, rgba(96,150,220,.16), transparent 60%),
+                       linear-gradient(180deg,#0b1018,#080b11 80%); }
+    .bhc-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bhc-strip     { display:flex; align-items:center; gap:12px; margin-bottom:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bhc-live      { display:inline-flex; align-items:center; gap:5px; color:#9dc2f5;
+                     border:1px solid rgba(96,150,220,.5); border-radius:4px; padding:2px 8px; }
+    .bhc-live i    { width:6px; height:6px; border-radius:1px; background:#6096dc;
+                     animation:bhcFlick .7s steps(3) infinite; }
+    .bhc-stage.is-decided .bhc-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bhc-stage.is-decided .bhc-live i { background:#3fb950; animation:none; }
+    @keyframes bhcFlick { 33% { opacity:.25; } 66% { opacity:.85; } }
+    .bhc-title     { color:#c2d8f5; }
+    .bhc-clock     { margin-left:auto; color:#79849a; }
+    .bhc-clock b   { color:#9dc2f5; font-size:12px; letter-spacing:2px; }
+    .bhc-rows      { display:flex; flex-direction:column; gap:9px; }
+    .bhc-row       { display:flex; align-items:center; gap:11px; flex-wrap:wrap; padding:8px 10px;
+                     border-radius:10px; max-width:100%;
+                     border:1px solid rgba(96,150,220,.18); background:rgba(96,150,220,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bhc-row.is-out   { opacity:.5; border-color:rgba(248,81,73,.32); background:rgba(24,12,14,.5); }
+    .bhc-row.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 24px rgba(63,185,80,.15); }
+    .bhc-mon       { position:relative; width:118px; flex-shrink:0; border-radius:4px; overflow:hidden;
+                     border:1px solid rgba(160,190,230,.22); }
+    .bhc-mon svg   { width:100%; height:auto; display:block; }
+    .bhc-screen    { fill:#0c1420; }
+    .bhc-door      { fill:none; stroke:rgba(157,194,245,.4); stroke-width:1.4; }
+    .bhc-fig       { fill:#9dc2f5; }
+    .bhc-streak    { stroke:rgba(240,198,116,.5); stroke-width:2; stroke-linecap:round; fill:none; }
+    /* the recording layer: scanlines plus a slow roll bar */
+    .bhc-static    { position:absolute; inset:0; pointer-events:none;
+                     background:repeating-linear-gradient(0deg, rgba(0,0,0,.4) 0 1px, transparent 1px 3px),
+                       linear-gradient(180deg, rgba(255,255,255,.07), transparent 22%);
+                     animation:bhcRoll 4.5s linear infinite; }
+    @keyframes bhcRoll { from { background-position:0 0, 0 -100%; } to { background-position:0 0, 0 200%; } }
+    .bhc-body      { flex:1 1 190px; min-width:170px; }
+    .bhc-who       { display:flex; align-items:center; gap:7px; }
+    .bhc-who b     { font-size:12px; color:#dbe7f7; }
+    .bhc-score     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:12px;
+                     color:#dbe7f7; }
+    .bhc-qs        { display:flex; gap:4px; flex-wrap:wrap; margin:7px 0 5px; }
+    .bhc-q         { width:15px; height:15px; border-radius:3px; background:rgba(255,255,255,.04);
+                     border:1px solid rgba(157,194,245,.16); }
+    .bhc-q.is-right { background:rgba(63,185,80,.25); border-color:rgba(63,185,80,.55);
+                     box-shadow:0 0 7px rgba(63,185,80,.35); }
+    .bhc-q.is-wrong { background:rgba(248,81,73,.22); border-color:rgba(248,81,73,.5); }
+    .bhc-tag       { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.6px;
+                     color:#6c7b91; }
+    .bhc-row.is-out .bhc-tag   { color:#ffb3ae; }
+    .bhc-row.is-saved .bhc-tag { color:#7ee2a8; }
+    .bhc-lock      { position:relative; width:52px; flex-shrink:0; text-align:center; }
+    .bhc-lock svg  { width:44px; height:44px; display:block; margin:0 auto; }
+    .bhc-ring      { fill:none; stroke:rgba(255,255,255,.08); stroke-width:3.4; }
+    .bhc-ring-on   { fill:none; stroke:#f85149; stroke-width:3.4; stroke-linecap:round;
+                     transition:stroke-dashoffset .55s ease; }
+    .bhc-row.is-saved .bhc-ring-on { stroke:#3fb950; }
+    .bhc-lock span { position:absolute; top:13px; left:0; right:0;
+                     font-family:ui-monospace,Consolas,monospace; font-size:14px; color:#dbe7f7; }
+    .bhc-lock i    { display:block; font-style:normal; font-size:6.5px; letter-spacing:1.3px;
+                     color:#6c7b91; margin-top:1px; }
+    .bhc-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#5d6a80; }
+    @media (prefers-reduced-motion: reduce) {
+      .bhc-live i, .bhc-static { animation:none; } .bhc-ring-on { transition:none; }
+    }
+
+    /* ── bln- THE LONG NUMBER: slate and phosphor amber. A jigsaw strip that
+       fills piece by piece, a stack of near-identical decoys, and ten keypad
+       slots that either hold a digit or hold nothing. ── */
+    .bln-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(212,160,58,.32);
+                     background:repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 14px, transparent 14px 28px),
+                       linear-gradient(180deg,#15130d,#0c0b09 80%); }
+    .bln-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bln-strip     { display:flex; align-items:center; gap:12px; margin-bottom:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bln-live      { display:inline-flex; align-items:center; gap:5px; color:#e8bf6a;
+                     border:1px solid rgba(212,160,58,.5); border-radius:4px; padding:2px 8px; }
+    .bln-live i    { width:6px; height:6px; border-radius:50%; background:#d4a03a;
+                     animation:blnCount 1.3s ease-in-out infinite; }
+    .bln-stage.is-decided .bln-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bln-stage.is-decided .bln-live i { background:#3fb950; animation:none; }
+    @keyframes blnCount { 50% { transform:scale(.55); opacity:.4; } }
+    .bln-title     { color:#e3cf9d; }
+    .bln-clock     { margin-left:auto; color:#8a8271; }
+    .bln-clock b   { color:#e8bf6a; font-size:12px; letter-spacing:2px; }
+    .bln-rows      { display:flex; flex-direction:column; gap:9px; }
+    .bln-row       { padding:9px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(212,160,58,.2); background:rgba(212,160,58,.045);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bln-row.is-out   { opacity:.55; border-color:rgba(248,81,73,.32); }
+    .bln-row.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.07); }
+    .bln-who       { display:flex; align-items:center; gap:7px; }
+    .bln-who b     { font-size:12px; color:#f0e6cd; }
+    .bln-score     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:12px;
+                     color:#f0e6cd; }
+    .bln-puzzle    { display:flex; align-items:center; gap:9px; margin:7px 0 5px; }
+    .bln-puzzle svg{ flex:1; min-width:150px; height:26px; display:block; }
+    .bln-pc        { fill:rgba(255,255,255,.045); stroke:rgba(212,160,58,.22); stroke-width:1.1; }
+    .bln-pc.is-on  { fill:rgba(212,160,58,.35); stroke:rgba(232,191,106,.75); }
+    .bln-row.is-saved .bln-pc.is-on { fill:rgba(63,185,80,.32); stroke:rgba(126,226,168,.8); }
+    .bln-cap       { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.4px;
+                     color:#8a8271; white-space:nowrap; }
+    .bln-board     { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; }
+    .bln-decoy     { font-family:ui-monospace,Consolas,monospace; font-size:10px; letter-spacing:1px;
+                     padding:2px 6px; border-radius:4px; color:#7f7867;
+                     background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.06); }
+    .bln-decoy.is-true { color:#e8bf6a; border-color:rgba(212,160,58,.55);
+                     background:rgba(212,160,58,.1); }
+    .bln-row.is-saved .bln-decoy.is-true { color:#7ee2a8; border-color:rgba(63,185,80,.55);
+                     background:rgba(63,185,80,.1); }
+    .bln-pad       { display:flex; gap:4px; flex-wrap:wrap; padding:6px; border-radius:6px;
+                     background:#07070a; border:1px solid rgba(255,255,255,.07); }
+    .bln-key       { flex:1 1 22px; max-width:34px; text-align:center; border-radius:3px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:15px; font-weight:700;
+                     color:#2c2718; background:rgba(255,255,255,.03); padding:2px 0; }
+    .bln-key.is-in { color:#ffc857; text-shadow:0 0 9px rgba(212,160,58,.75);
+                     background:rgba(212,160,58,.12); animation:blnKey .3s ease-out both; }
+    .bln-row.is-saved .bln-key.is-in { color:#7ee2a8; text-shadow:0 0 9px rgba(63,185,80,.75);
+                     background:rgba(63,185,80,.12); }
+    @keyframes blnKey { from { transform:translateY(3px); opacity:.25; } to { transform:none; opacity:1; } }
+    .bln-tag       { margin-top:5px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#8a8271; }
+    .bln-row.is-out .bln-tag   { color:#ffb3ae; }
+    .bln-row.is-saved .bln-tag { color:#7ee2a8; }
+    .bln-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#77705f; }
+    @media (prefers-reduced-motion: reduce) {
+      .bln-live i, .bln-key.is-in { animation:none; }
+    }
+
+    /* ── bwk- WHITE KNUCKLE: bone white on gunmetal, heat coming up through it.
+       Two paddles squeezing together, a half-dial that climbs with the
+       resistance, and eight horn marks for eight ramp-ups survived. ── */
+    .bwk-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(226,226,232,.24);
+                     background:radial-gradient(ellipse at 50% 120%, rgba(200,60,50,.22), transparent 58%),
+                       linear-gradient(180deg,#15161a,#0b0c0e 80%); }
+    .bwk-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bwk-strip     { display:flex; align-items:center; gap:12px; margin-bottom:10px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bwk-live      { display:inline-flex; align-items:center; gap:5px; color:#e8e8ee;
+                     border:1px solid rgba(226,226,232,.35); border-radius:4px; padding:2px 8px; }
+    .bwk-live i    { width:6px; height:6px; border-radius:50%; background:#e2e2e8;
+                     animation:bwkTremor .35s ease-in-out infinite; }
+    .bwk-stage.is-decided .bwk-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bwk-stage.is-decided .bwk-live i { background:#3fb950; animation:none; }
+    @keyframes bwkTremor { 50% { transform:translate(1px,-1px); } }
+    .bwk-title     { color:#c8c8d2; }
+    .bwk-clock     { margin-left:auto; color:#82838c; }
+    .bwk-clock b   { color:#e8e8ee; font-size:12px; letter-spacing:2px; }
+    .bwk-rigs      { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .bwk-col       { flex:1 1 150px; max-width:200px; text-align:center; padding:8px 6px 6px;
+                     border-radius:10px; border:1px solid rgba(226,226,232,.13);
+                     background:rgba(255,255,255,.025); transition:opacity .3s, border-color .3s; }
+    .bwk-col.is-out   { opacity:.5; border-color:rgba(248,81,73,.35); }
+    .bwk-col.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.07);
+                     box-shadow:0 0 24px rgba(63,185,80,.15); }
+    .bwk-rig       { max-width:150px; margin:0 auto; }
+    .bwk-rig svg   { width:100%; height:auto; display:block; }
+    .bwk-arm       { fill:rgba(255,255,255,.05); }
+    .bwk-paddle    { fill:#dcdce4; transition:transform .5s ease; }
+    .bwk-col.is-out .bwk-paddle   { fill:#8a8a93; }
+    .bwk-col.is-saved .bwk-paddle { fill:#9ff0c0; }
+    .bwk-rod       { stroke:rgba(140,140,150,.85); stroke-width:3; fill:none; }
+    .bwk-grip      { fill:#c0392f; }
+    .bwk-col.is-saved .bwk-grip { fill:#3fb950; }
+    .bwk-dial      { max-width:120px; margin:2px auto 0; }
+    .bwk-dial svg  { width:100%; height:auto; display:block; }
+    .bwk-arc       { fill:none; stroke:rgba(255,255,255,.1); stroke-width:6; stroke-linecap:round; }
+    .bwk-arc-hot   { fill:none; stroke:#e0503f; stroke-width:6; stroke-linecap:round;
+                     transition:stroke-dashoffset .6s ease; }
+    .bwk-col.is-saved .bwk-arc-hot { stroke:#3fb950; }
+    .bwk-needle    { stroke:#f0f0f6; stroke-width:2.6; stroke-linecap:round;
+                     transition:d .6s ease; }
+    .bwk-hub       { fill:#3a3b42; stroke:rgba(255,255,255,.3); stroke-width:1; }
+    .bwk-lbl       { display:block; font-family:ui-monospace,Consolas,monospace; font-size:7px;
+                     letter-spacing:1.6px; color:#82838c; }
+    .bwk-horns     { display:flex; gap:3px; justify-content:center; margin:6px 0 2px; }
+    .bwk-horns i   { width:11px; height:4px; border-radius:1.5px; background:rgba(255,255,255,.08); }
+    .bwk-horns i.is-past { background:#e0503f; box-shadow:0 0 6px rgba(224,80,63,.6); }
+    .bwk-col.is-saved .bwk-horns i.is-past { background:#3fb950; box-shadow:0 0 6px rgba(63,185,80,.6); }
+    .bwk-who       { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:5px; }
+    .bwk-who b     { font-size:12px; color:#eef0f4; }
+    .bwk-read      { margin-top:3px; font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     color:#eef0f4; }
+    .bwk-read i    { display:block; font-style:normal; font-size:7.5px; letter-spacing:1.5px;
+                     color:#82838c; margin-bottom:2px; }
+    .bwk-read em   { font-style:normal; color:#c8c8d2; margin-left:5px; }
+    .bwk-col.is-saved .bwk-read i { color:#7ee2a8; }
+    .bwk-col.is-out .bwk-read i   { color:#ffb3ae; }
+    .bwk-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#71727b; }
+    @media (prefers-reduced-motion: reduce) {
+      .bwk-live i { animation:none; }
+      .bwk-paddle, .bwk-arc-hot, .bwk-needle { transition:none; }
+    }
+
+    /* ── bsc- SPIN CYCLE: padded-floor magenta and gym lacquer. Bat, beam and
+       plinth drawn end to end in one lane, with a runner who leans as hard as
+       the spins left them leaning. ── */
+    .bsc-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(226,90,166,.32);
+                     background:radial-gradient(ellipse at 50% 118%, rgba(226,90,166,.2), transparent 60%),
+                       linear-gradient(180deg,#180d16,#0d080c 80%); }
+    .bsc-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bsc-strip     { display:flex; align-items:center; gap:12px; margin-bottom:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bsc-live      { display:inline-flex; align-items:center; gap:5px; color:#f3a0cf;
+                     border:1px solid rgba(226,90,166,.5); border-radius:9px; padding:2px 9px; }
+    .bsc-live i    { width:6px; height:6px; border-radius:50%; background:#e25aa6;
+                     animation:bscSpin 1.1s linear infinite; transform-origin:50% 50%; }
+    .bsc-stage.is-decided .bsc-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bsc-stage.is-decided .bsc-live i { background:#3fb950; animation:none; }
+    @keyframes bscSpin { 50% { transform:scale(.5); } }
+    .bsc-title     { color:#f0bcda; }
+    .bsc-clock     { margin-left:auto; color:#8e7684; }
+    .bsc-clock b   { color:#f3a0cf; font-size:12px; letter-spacing:2px; }
+    .bsc-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .bsc-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(226,90,166,.2); background:rgba(226,90,166,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bsc-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.32); background:rgba(34,12,20,.5); }
+    .bsc-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.15); }
+    .bsc-who       { display:flex; align-items:center; gap:7px; margin-bottom:4px; }
+    .bsc-who b     { font-size:12px; color:#f8e2f0; }
+    .bsc-blocks    { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#f0bcda; }
+    .bsc-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#f8e2f0;
+                     min-width:38px; text-align:right; }
+    .bsc-run svg   { width:100%; height:84px; display:block; }
+    .bsc-floor     { stroke:rgba(226,90,166,.22); stroke-width:3; stroke-linecap:round; fill:none; }
+    .bsc-bat       { stroke:#c9a97a; stroke-width:5; stroke-linecap:round; fill:#c9a97a; }
+    .bsc-spinarc   { stroke:rgba(243,160,207,.7); stroke-width:2; fill:none; stroke-dasharray:4 4; }
+    .bsc-spinhead  { fill:#f3a0cf; stroke:none; }
+    .bsc-beam      { stroke:#8e6b46; stroke-width:6; stroke-linecap:round; fill:none; }
+    .bsc-props     { stroke:rgba(142,107,70,.7); stroke-width:3; stroke-linecap:round; fill:none; }
+    .bsc-runner    { fill:#f8e2f0; transition:transform .55s ease; }
+    .bsc-lane.is-out .bsc-runner   { fill:#f85149; }
+    .bsc-lane.is-saved .bsc-runner { fill:#7ee2a8; }
+    .bsc-limbs     { stroke:currentColor; stroke-width:2.2; stroke-linecap:round; fill:none;
+                     color:#f8e2f0; }
+    .bsc-lane.is-saved .bsc-limbs { color:#7ee2a8; }
+    .bsc-lane.is-out .bsc-limbs   { color:#f85149; }
+    .bsc-block     { fill:rgba(243,160,207,.35); stroke:#f3a0cf; stroke-width:1.6; }
+    .bsc-lane.is-saved .bsc-block { fill:rgba(63,185,80,.35); stroke:#7ee2a8; }
+    .bsc-lane.is-out .bsc-block   { fill:rgba(255,255,255,.06); stroke:rgba(255,255,255,.2); }
+    .bsc-plinth    { stroke:rgba(226,90,166,.5); stroke-width:4; stroke-linecap:round; fill:none; }
+    .bsc-tag       { margin-top:3px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#8e7684; }
+    .bsc-lane.is-out .bsc-tag   { color:#ffb3ae; }
+    .bsc-lane.is-saved .bsc-tag { color:#7ee2a8; }
+    .bsc-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#7c6875; }
+    @media (prefers-reduced-motion: reduce) {
+      .bsc-live i { animation:none; } .bsc-runner { transition:none; }
+    }
+
+    /* ── bcr- CHAIN REACTION: workshop pine and cold steel. A zig-zag of ramps
+       that only exist once they are built; the unbuilt ones sag and dash, and
+       the ball sits wherever the last good test left it. ── */
+    .bcr-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(150,178,196,.3);
+                     background:repeating-linear-gradient(180deg, rgba(255,255,255,.014) 0 6px, transparent 6px 12px),
+                       linear-gradient(180deg,#101519,#0a0d10 80%); }
+    .bcr-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bcr-strip     { display:flex; align-items:center; gap:12px; margin-bottom:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bcr-live      { display:inline-flex; align-items:center; gap:5px; color:#b9d3e2;
+                     border:1px solid rgba(150,178,196,.45); border-radius:4px; padding:2px 8px; }
+    .bcr-live i    { width:6px; height:6px; border-radius:50%; background:#96b2c4;
+                     animation:bcrRoll 1.4s ease-in-out infinite; }
+    .bcr-stage.is-decided .bcr-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bcr-stage.is-decided .bcr-live i { background:#3fb950; animation:none; }
+    @keyframes bcrRoll { 0%,100% { transform:translateX(-2px); } 50% { transform:translateX(3px); } }
+    .bcr-title     { color:#cfe0ea; }
+    .bcr-clock     { margin-left:auto; color:#7c8892; }
+    .bcr-clock b   { color:#b9d3e2; font-size:12px; letter-spacing:2px; }
+    .bcr-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .bcr-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(150,178,196,.17); background:rgba(150,178,196,.04);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bcr-lane.is-out   { opacity:.55; border-color:rgba(248,81,73,.3); }
+    .bcr-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.07);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .bcr-who       { display:flex; align-items:center; gap:7px; margin-bottom:3px; }
+    .bcr-who b     { font-size:12px; color:#e3edf3; }
+    .bcr-feet      { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#b9d3e2; }
+    .bcr-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#e3edf3;
+                     min-width:38px; text-align:right; }
+    .bcr-bench svg { width:100%; height:96px; display:block; }
+    .bcr-post      { stroke:#96b2c4; stroke-width:3; stroke-linecap:round; fill:#96b2c4; }
+    .bcr-ramp      { stroke:rgba(255,255,255,.1); stroke-width:3.4; stroke-linecap:round;
+                     stroke-dasharray:6 6; fill:none; }
+    .bcr-ramp.is-set { stroke:#c49a63; stroke-dasharray:none; }
+    .bcr-lane.is-saved .bcr-ramp.is-set { stroke:#7ee2a8; }
+    .bcr-joint     { fill:rgba(255,255,255,.08); }
+    .bcr-joint.is-set { fill:#96b2c4; }
+    .bcr-buzz      { stroke:#96b2c4; stroke-width:2.4; stroke-linecap:round; fill:none; }
+    .bcr-dome      { fill:rgba(248,81,73,.35); stroke:#e0685e; stroke-width:2; }
+    .bcr-lane.is-saved .bcr-dome { fill:rgba(63,185,80,.45); stroke:#7ee2a8;
+                     filter:drop-shadow(0 0 9px rgba(63,185,80,.7)); }
+    .bcr-ball      { fill:#e6edf3; stroke:rgba(0,0,0,.5); stroke-width:1;
+                     transition:cx .6s ease, cy .6s ease; }
+    .bcr-lane.is-out .bcr-ball   { fill:#f85149; }
+    .bcr-lane.is-saved .bcr-ball { fill:#3fb950; }
+    .bcr-tag       { margin-top:3px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#7c8892; }
+    .bcr-lane.is-out .bcr-tag   { color:#ffb3ae; }
+    .bcr-lane.is-saved .bcr-tag { color:#7ee2a8; }
+    .bcr-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#6d7883; }
+    @media (prefers-reduced-motion: reduce) {
+      .bcr-live i { animation:none; } .bcr-ball { transition:none; }
     }
 
     /* Eviction night: the four-stage chain under a ballot — wanted, asked,

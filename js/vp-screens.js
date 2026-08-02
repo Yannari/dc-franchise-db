@@ -17270,7 +17270,7 @@ export function rpBuildBBNominations(ep) {
 // position is derived from the score.
 // ══════════════════════════════════════════════════════════════════════
 
-/** Per-nominee display state, shared by all seven stages. */
+/** Per-nominee display state, shared by every stage. */
 function _bbArenaRows(ctx) {
   const best = Number(ctx.results[0]?.score) || 1;
   return (ctx.field || []).map((name, i) => {
@@ -17578,6 +17578,298 @@ function _bbArenaBlackoutStage(ctx) {
   </div>`;
 }
 
+// ── 8. DOWN THE TUBE — a narrow beam, a bucket, and a tube filling to a line ──
+function _bbArenaDownTheTubeStage(ctx) {
+  const CAP = 10;                                   // balls that reach the fill line
+  const cols = _bbArenaRows(ctx).map(row => {
+    const inTube = row.decided ? Math.max(1, Math.round((row.pct / 100) * CAP)) : 0;
+    const seed = _bbArenaHash(row.name, 6);
+    // Balls settle two per layer from the bottom of the tube, each one nudged a
+    // hair off centre so a full tube reads as packed rather than printed.
+    const balls = Array.from({ length: inTube }, (_, b) => {
+      const cy = 138 - Math.floor(b / 2) * 15;
+      const cx = 30 + ((b % 2) ? 8 : -8) + (((seed + b) % 3) - 1) * 1.4;
+      return `<circle class="bdt-ball" cx="${cx.toFixed(1)}" cy="${cy}" r="7"/>`;
+    }).join('');
+    // The carrier's position on the beam: a lost run walks it back to the bucket.
+    const p = row.decided ? (row.out ? row.pct / 100 * 0.5 : row.pct / 100) : 0;
+    const wx = (24 + p * 150).toFixed(1);
+    return `<div class="bdt-col ${row.cls}">
+      <div class="bdt-tube">
+        <svg viewBox="0 0 60 152" aria-hidden="true">
+          <rect x="8" y="14" width="44" height="134" rx="7" class="bdt-glass"/>
+          <path d="M12 66 H48" class="bdt-line"/>
+          <g class="bdt-fill">${balls}</g>
+          <rect x="8" y="14" width="44" height="134" rx="7" class="bdt-sheen"/>
+        </svg>
+        <span class="bdt-mark">FILL LINE</span>
+      </div>
+      <div class="bdt-beam">
+        <svg viewBox="0 0 200 40" aria-hidden="true">
+          <path d="M6 26 L194 26" class="bdt-plank"/>
+          <path d="M22 26 L14 38 M178 26 L186 38" class="bdt-legs"/>
+          <g class="bdt-walker" transform="translate(${wx} 0)">
+            <circle cx="0" cy="9" r="4.6" class="bdt-carry"/>
+            <path d="M0 14 L0 24 M-5 30 L0 24 L5 30" class="bdt-body"/>
+          </g>
+          ${row.out ? `<g class="bdt-spill">
+            <circle cx="118" cy="37" r="4"/><circle cx="132" cy="38" r="4"/><circle cx="148" cy="36" r="4"/>
+          </g>` : ''}
+        </svg>
+      </div>
+      <div class="bdt-who">${_bbAvatar(row.name, 34)}<b>${_bbEsc(row.name)}</b></div>
+      <div class="bdt-read"><i>${row.saved ? 'TO THE LINE' : row.out ? 'BALLS GONE' : 'ON THE BEAM'}</i>${
+        row.decided ? `${inTube}/${CAP}` : '--'} <em>${row.score}</em></div>
+    </div>`;
+  }).join('');
+  return `<div class="bdt-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bdt-', ctx, 'THE TUBES')}
+    <div class="bdt-bay">${cols}</div>
+    ${_bbArenaFoot('bdt-', 'ONE BALL AT A TIME', 'A DROPPED BALL IS GONE', 'FILL TO THE LINE')}
+  </div>`;
+}
+
+// ── 9. HEAD COUNT — one minute of house footage, then the questions ──
+function _bbArenaHeadCountStage(ctx) {
+  // The freeze-frame every podium is answering about: bodies, doors, motion.
+  const frame = seed => {
+    const figs = Array.from({ length: 5 }, (_, f) => {
+      const x = 16 + f * 21 + ((seed + f * 3) % 4) * 2;
+      const y = 30 + ((seed + f) % 3) * 6;
+      return `<g class="bhc-fig" opacity="${(0.5 + ((seed + f) % 3) * 0.16).toFixed(2)}">
+        <circle cx="${x}" cy="${y}" r="4.6"/>
+        <path d="M${x - 6} ${y + 20}q0-11 6-11t6 11z"/></g>`;
+    }).join('');
+    return `<svg viewBox="0 0 120 74" aria-hidden="true">
+      <rect x="0" y="0" width="120" height="74" class="bhc-screen"/>
+      <rect x="6" y="16" width="15" height="44" rx="1.5" class="bhc-door"/>
+      <rect x="99" y="16" width="15" height="44" rx="1.5" class="bhc-door"/>
+      ${figs}
+      <path d="M28 14 L52 10 M70 12 L94 8" class="bhc-streak"/>
+    </svg>`;
+  };
+  const rows = _bbArenaRows(ctx).map(row => {
+    const Q = 12;
+    const right = row.decided ? Math.max(1, Math.round((row.pct / 100) * Q)) : 0;
+    const seed = _bbArenaHash(row.name, 9);
+    const chips = Array.from({ length: Q }, (_, q) =>
+      `<span class="bhc-q ${q < right ? 'is-right' : row.decided && q === right ? 'is-wrong' : ''}"></span>`).join('');
+    // The lockout ring: how much of the ten-second freeze this podium ate.
+    const lockPct = row.decided ? Math.max(0, Math.min(1, 1 - row.pct / 100)) : 0;
+    const CIRC = 2 * Math.PI * 15;
+    return `<div class="bhc-row ${row.cls}">
+      <div class="bhc-mon">${frame(seed)}<span class="bhc-static"></span></div>
+      <div class="bhc-body">
+        <div class="bhc-who">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+          <span class="bhc-score">${row.score}</span></div>
+        <div class="bhc-qs">${chips}</div>
+        <div class="bhc-tag">${row.saved ? 'COUNTED IT ALL' : row.out ? 'GUESSED TOO FAST' : 'ON THE BUZZER'}</div>
+      </div>
+      <div class="bhc-lock">
+        <svg viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="15" class="bhc-ring"/>
+          <circle cx="18" cy="18" r="15" class="bhc-ring-on" pathLength="100"
+            stroke-dasharray="100" stroke-dashoffset="${(100 - lockPct * 100).toFixed(1)}"
+            transform="rotate(-90 18 18)"/>
+        </svg>
+        <span>${row.decided ? `${Q - right}` : '-'}</span>
+        <i>LOCKOUTS</i>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="bhc-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bhc-', ctx, 'THE SCREEN')}
+    <div class="bhc-rows">${rows}</div>
+    ${_bbArenaFoot('bhc-', 'ONE MINUTE OF CHAOS', 'COUNT WHAT YOU SAW', 'WRONG LOCKS YOU OUT')}
+  </div>`;
+}
+
+// ── 10. THE LONG NUMBER — ten pieces, a board of decoys, one keypad ──
+function _bbArenaLongNumberStage(ctx) {
+  const piece = (i, on) => `<path class="bln-pc ${on ? 'is-on' : ''}"
+    d="M${4 + i * 16} 4 h16 v5 a5 5 0 0 1 0 10 v5 h-16 v-5 a5 5 0 0 0 0-10 z"/>`;
+  const rows = _bbArenaRows(ctx).map(row => {
+    const solved = row.decided ? Math.max(1, Math.round((row.pct / 100) * 10)) : 0;
+    const seed = _bbArenaHash(row.name, 1000000);
+    // The true number and its decoys — one digit apart, exactly as the arena built them.
+    const digits = Array.from({ length: 10 }, (_, d) => String((seed * (d + 3) + d * 7) % 10));
+    const entered = row.decided ? Math.max(1, Math.round((row.pct / 100) * 10)) : 0;
+    const keys = digits.map((v, d) =>
+      `<span class="bln-key ${d < entered ? 'is-in' : ''}">${d < entered ? v : '·'}</span>`).join('');
+    const board = Array.from({ length: 6 }, (_, b) => {
+      const isTrue = b === seed % 6;
+      const shown = digits.map((v, d) => isTrue ? v
+        : String((Number(v) + (d === (seed + b) % 10 ? 1 : 0)) % 10)).join('');
+      return `<span class="bln-decoy ${isTrue && row.decided ? 'is-true' : ''}">${shown}</span>`;
+    }).join('');
+    return `<div class="bln-row ${row.cls}">
+      <div class="bln-who">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+        <span class="bln-score">${row.score}</span></div>
+      <div class="bln-puzzle">
+        <svg viewBox="0 0 168 28" aria-hidden="true" preserveAspectRatio="none">
+          ${Array.from({ length: 10 }, (_, i) => piece(i, i < solved)).join('')}
+        </svg>
+        <span class="bln-cap">${row.decided ? `${solved}/10 PIECES` : '--/10 PIECES'}</span>
+      </div>
+      <div class="bln-board">${board}</div>
+      <div class="bln-pad">${keys}</div>
+      <div class="bln-tag">${row.saved ? 'NUMBER ACCEPTED' : row.out ? 'KEYPAD WIPED' : 'STILL ENTERING'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bln-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bln-', ctx, 'THE BOARD')}
+    <div class="bln-rows">${rows}</div>
+    ${_bbArenaFoot('bln-', 'TEN PIECES', 'ONE TRUE NUMBER', 'A WRONG ENTRY WIPES IT')}
+  </div>`;
+}
+
+// ── 11. WHITE KNUCKLE — two paddles, a horn every thirty seconds ──
+function _bbArenaWhiteKnuckleStage(ctx) {
+  const HORNS = 8;
+  const cols = _bbArenaRows(ctx).map(row => {
+    const held = row.decided ? Math.max(1, Math.round((row.pct / 100) * HORNS)) : 0;
+    const p = row.decided ? row.pct / 100 : 0;
+    // The needle sweeps a half-dial: nothing at rest, hard over at the last horn.
+    const ang = -180 + p * 180;
+    const nx = (50 + Math.cos(ang * Math.PI / 180) * 33).toFixed(1);
+    const ny = (50 + Math.sin(ang * Math.PI / 180) * 33).toFixed(1);
+    // Paddles squeeze together as the resistance climbs, and fly apart on a slip.
+    const gap = row.out ? 15 : (7 - p * 4).toFixed(1);
+    const horns = Array.from({ length: HORNS }, (_, h) =>
+      `<i class="${h < held ? 'is-past' : ''}"></i>`).join('');
+    return `<div class="bwk-col ${row.cls}">
+      <div class="bwk-rig">
+        <svg viewBox="0 0 100 96" aria-hidden="true">
+          <rect x="6" y="44" width="88" height="6" rx="3" class="bwk-arm"/>
+          <g class="bwk-paddle" transform="translate(${-gap} 0)">
+            <rect x="32" y="18" width="9" height="58" rx="4"/>
+            <path d="M20 47 H32" class="bwk-rod"/>
+          </g>
+          <g class="bwk-paddle" transform="translate(${gap} 0)">
+            <rect x="59" y="18" width="9" height="58" rx="4"/>
+            <path d="M68 47 H80" class="bwk-rod"/>
+          </g>
+          <g class="bwk-grip">
+            <circle cx="26" cy="47" r="6.5"/><circle cx="74" cy="47" r="6.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="bwk-dial">
+        <svg viewBox="0 0 100 58" aria-hidden="true">
+          <path d="M17 50 A33 33 0 0 1 83 50" class="bwk-arc"/>
+          <path d="M17 50 A33 33 0 0 1 83 50" class="bwk-arc-hot" pathLength="100"
+            stroke-dasharray="100" stroke-dashoffset="${(100 - p * 100).toFixed(1)}"/>
+          <path d="M50 50 L${nx} ${ny}" class="bwk-needle"/>
+          <circle cx="50" cy="50" r="4" class="bwk-hub"/>
+        </svg>
+        <span class="bwk-lbl">RESISTANCE</span>
+      </div>
+      <div class="bwk-horns">${horns}</div>
+      <div class="bwk-who">${_bbAvatar(row.name, 34)}<b>${_bbEsc(row.name)}</b></div>
+      <div class="bwk-read"><i>${row.saved ? 'NEVER SLIPPED' : row.out ? 'LET GO' : 'STILL HOLDING'}</i>${
+        row.decided ? `${held} HORNS` : '--'} <em>${row.score}</em></div>
+    </div>`;
+  }).join('');
+  return `<div class="bwk-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bwk-', ctx, 'THE HOLD')}
+    <div class="bwk-rigs">${cols}</div>
+    ${_bbArenaFoot('bwk-', 'TWO PADDLES', 'HARDER EVERY THIRTY SECONDS', 'LAST HOLDING WINS')}
+  </div>`;
+}
+
+// ── 12. SPIN CYCLE — ten spins, one beam, five blocks ──
+function _bbArenaSpinCycleStage(ctx) {
+  const rows = _bbArenaRows(ctx).map(row => {
+    const stacked = row.decided ? Math.max(1, Math.round((row.pct / 100) * 5)) : 0;
+    const p = row.decided ? row.pct / 100 : 0;
+    const seed = _bbArenaHash(row.name, 5);
+    // The runner is somewhere between the bat and the blocks; a fall puts them
+    // back at the bat, where every run in this game starts.
+    const rx = row.out ? 62 : (62 + p * 190).toFixed(1);
+    const tilt = row.out ? 26 : (((seed % 5) - 2) * 3 + (1 - p) * 9).toFixed(1);
+    const blocks = Array.from({ length: stacked }, (_, b) =>
+      `<rect x="${294 + (((seed + b) % 3) - 1) * 2}" y="${64 - b * 13}" width="34" height="12" rx="2"
+        class="bsc-block"/>`).join('');
+    return `<div class="bsc-lane ${row.cls}">
+      <div class="bsc-who">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+        <span class="bsc-blocks">${row.decided ? `${stacked}/5 BLOCKS` : '--/5 BLOCKS'}</span>
+        <span class="bsc-score">${row.score}</span></div>
+      <div class="bsc-run">
+        <svg viewBox="0 0 340 88" aria-hidden="true" preserveAspectRatio="none">
+          <path d="M8 76 H332" class="bsc-floor"/>
+          <g class="bsc-bat">
+            <path d="M30 34 L30 74" />
+            <circle cx="30" cy="30" r="6"/>
+            <path d="M14 30 A16 16 0 0 1 46 30" class="bsc-spinarc"/>
+            <path d="M44 24 L47 31 L40 31 Z" class="bsc-spinhead"/>
+          </g>
+          <path d="M62 66 H276" class="bsc-beam"/>
+          <path d="M72 66 L66 76 M266 66 L272 76" class="bsc-props"/>
+          <g class="bsc-runner" transform="translate(${rx} 0) rotate(${tilt} 0 56)">
+            <circle cx="0" cy="44" r="5"/>
+            <path d="M0 49 L0 60 M-5 66 L0 60 L5 66 M-7 53 L7 53" class="bsc-limbs"/>
+          </g>
+          ${blocks}
+          <path d="M290 78 H336" class="bsc-plinth"/>
+        </svg>
+      </div>
+      <div class="bsc-tag">${row.saved ? 'FIVE STACKED' : row.out ? 'BACK TO THE BAT' : 'WALKING IT'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bsc-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bsc-', ctx, 'THE BEAM')}
+    <div class="bsc-lanes">${rows}</div>
+    ${_bbArenaFoot('bsc-', 'TEN SPINS', 'A FALL SENDS YOU BACK', 'FIVE BLOCKS WINS')}
+  </div>`;
+}
+
+// ── 13. CHAIN REACTION — a crate of mismatched ramps and one buzzer ──
+function _bbArenaChainReactionStage(ctx) {
+  // Five ramps, zig-zagging down from the start post to the buzzer. Same
+  // geometry every night; only how much of it exists changes.
+  const RAMPS = Array.from({ length: 5 }, (_, i) => {
+    const y0 = 14 + i * 15;
+    const left = i % 2 === 0;
+    return { x0: left ? 26 : 306, y0, x1: left ? 306 : 26, y1: y0 + 13 };
+  });
+  const rows = _bbArenaRows(ctx).map(row => {
+    const built = row.decided ? Math.max(1, Math.round((row.pct / 100) * RAMPS.length)) : 0;
+    const seed = _bbArenaHash(row.name, 4);
+    const track = RAMPS.map((r, i) => {
+      const on = i < built;
+      const sag = on ? 0 : 3 + ((seed + i) % 3);
+      return `<path class="bcr-ramp ${on ? 'is-set' : ''}"
+        d="M${r.x0} ${r.y0 + sag} L${r.x1} ${r.y1 + sag}"/>
+        <circle class="bcr-joint ${on ? 'is-set' : ''}" cx="${r.x1}" cy="${(r.y1 + sag).toFixed(1)}" r="3"/>`;
+    }).join('');
+    const last = RAMPS[Math.max(0, built - 1)];
+    const bx = built ? last.x1 : 26;
+    const by = built ? last.y1 : 12;
+    return `<div class="bcr-lane ${row.cls}">
+      <div class="bcr-who">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+        <span class="bcr-feet">${row.decided ? `${(built * 2.2).toFixed(1)} FT` : '-- FT'}</span>
+        <span class="bcr-score">${row.score}</span></div>
+      <div class="bcr-bench">
+        <svg viewBox="0 0 340 104" aria-hidden="true" preserveAspectRatio="none">
+          <g class="bcr-post"><path d="M20 6 L20 20"/><circle cx="26" cy="9" r="3.4"/></g>
+          ${track}
+          <g class="bcr-buzz" transform="translate(300 84)">
+            <path d="M-14 14 H14" />
+            <path d="M-11 14 a11 11 0 0 1 22 0 z" class="bcr-dome"/>
+          </g>
+          <circle class="bcr-ball" cx="${bx}" cy="${by}" r="4.6"/>
+        </svg>
+      </div>
+      <div class="bcr-tag">${row.saved ? 'THE BUZZER GOES' : row.out ? 'OFF THE TRACK' : 'TESTING AGAIN'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bcr-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bcr-', ctx, 'THE WORKBENCH')}
+    <div class="bcr-lanes">${rows}</div>
+    ${_bbArenaFoot('bcr-', 'MISMATCHED RAMPS', 'ELEVEN FEET', 'THE BALL GOES ALONE')}
+  </div>`;
+}
+
 // ── the fallback: the original podium stage, for borrowed comps ──
 function _bbArenaGenericStage(ctx) {
   const podiums = _bbArenaRows(ctx).map(row => `<div class="bbar-podium ${row.cls}">
@@ -17606,6 +17898,12 @@ const _BB_ARENA_STAGES = {
   'bb-arena-last-shot': _bbArenaLastShotStage,
   'bb-arena-unravel': _bbArenaUnravelStage,
   'bb-arena-blackout': _bbArenaBlackoutStage,
+  'bb-arena-down-the-tube': _bbArenaDownTheTubeStage,
+  'bb-arena-head-count': _bbArenaHeadCountStage,
+  'bb-arena-long-number': _bbArenaLongNumberStage,
+  'bb-arena-white-knuckle': _bbArenaWhiteKnuckleStage,
+  'bb-arena-spin-cycle': _bbArenaSpinCycleStage,
+  'bb-arena-chain-reaction': _bbArenaChainReactionStage,
 };
 
 /**

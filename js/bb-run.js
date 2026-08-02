@@ -168,6 +168,22 @@ export function weekToEpisode(week) {
     })),
     voteCommitments: (week.voteCommitments || []).map(c => ({ ...c })),
     votePlans: (week.votePlans || []).map(v => ({ ...v })),
+    // The whole operation — meetings, stances, approaches, refusals, lies —
+    // travels with the episode, because the Voting Plans screen is a rendering
+    // of it and a replay with only the ballots would have nothing to say.
+    voteOperation: week.voteOperation
+      ? {
+        majority: week.voteOperation.majority,
+        plans: (week.voteOperation.plans || []).map(p => ({
+          ...p, members: [...p.members],
+          stances: p.stances.map(s => ({ ...s })),
+          approaches: p.approaches.map(a => ({ ...a })),
+          outsideSupport: [...p.outsideSupport],
+        })),
+        independents: (week.voteOperation.independents || []).map(v => ({ ...v })),
+        moves: (week.voteOperation.moves || []).map(m => ({ ...m })),
+      }
+      : null,
     // Why anybody's plan moved this week, and what is currently promised. Both
     // are shown, not merely stored — a game that behaves on reasons the user
     // cannot see is the failure mode this format keeps rediscovering.

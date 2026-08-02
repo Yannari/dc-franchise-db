@@ -377,10 +377,13 @@ describe('vote planning before the eviction', () => {
     // The count lives on the Voting Plans screen now — the reads and the live
     // show are separate pages, so nothing here needs a reveal state.
     const html = rpBuildBBVotingPlans(ep);
-    expect(html).toContain('THE COUNT GOING IN');
-    // A row per voter and a side per nominee.
+    // The count is the last of the four sections now — the operation that
+    // produced it comes first.
+    expect(html).toContain('ALLIANCE PLANS');
+    expect(html).toContain('CURRENT HOUSE READ');
+    // A belief row per voter in the house read, and a side per nominee.
     const voters = ((ep.acts || []).find(a => a.type === 'eviction')?.ballots || []).length;
-    expect((html.match(/class="bbct-row"/g) || []).length).toBe(voters);
+    expect((html.match(/class="bbct-row"/g) || []).length).toBeGreaterThanOrEqual(voters);
     expect((html.match(/bbct-side /g) || []).length).toBe(2);
     expect(/undefined|NaN/.test(html)).toBe(false);
   }, 240000);

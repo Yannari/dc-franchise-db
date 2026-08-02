@@ -22,12 +22,13 @@ import { updateEditLayer } from '../edit-layer.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
-  shouldUseVeto, houseVoteCommitment, applyAllianceVoteBloc, applyHouseBandwagon,
+  shouldUseVeto, houseVoteCommitment, applyHouseBandwagon,
   buildHouseVotePlans,
 } from './strategy.js';
 import { scheduleHouseBeats } from './house-events.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
+import { runVoteOperation } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
@@ -1309,8 +1310,29 @@ export function simulateBBWeek(options = {}) {
   let voters = house.filter(name => name !== hoh && !nominees.includes(name));
   voters = hook(hooks, 'voteEligibility', voters, { week, house, hoh, nominees: [...nominees] }) || voters;
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
-  const ballots = voters.map(voter => ({ voter, ...initialVotePreference(voter, nominees, rng), changed: false }));
+  // Step 1 of the operation: everybody's own starting position, kept on the
+  // ballot as `preference` so eviction night can replay the whole chain —
+  // what they wanted, what a room asked of them, what they claimed, what
+  // they cast.
+  const ballots = voters.map(voter => {
+    const pref = initialVotePreference(voter, nominees, rng);
+    return { voter, ...pref, preference: pref.evict, changed: false };
+  });
   week.preCampaignVotes = tally(ballots, nominees);
+  // Commitments read off the STARTING positions — how firmly each voter holds
+  // what they walked in wanting — because that firmness is what the rooms are
+  // about to push against.
+  const commitments = new Map(ballots.map(b => [b.voter, houseVoteCommitment(b, nominees)]));
+  week.voteCommitments = [...commitments.values()];
+  // Steps 2–6: the alliances meet, settle names, count what they hold, and go
+  // recruiting. This runs BEFORE the nominees campaign, so the campaign is
+  // fought against real plans — and it is the pass that used to be the silent
+  // applyAllianceVoteBloc mutation, now recorded in full: every member's
+  // answer, every approach, every refusal, every yes that was a lie. It also
+  // writes `stated` — the public position — HERE, so anything that moves a
+  // ballot after this point is visible as a move.
+  week.voteOperation = runVoteOperation({ ballots, nominees, hoh, commitments, rng });
+  week.blocMoves = week.voteOperation.moves;
   week.campaign = [];
   // A compressed cycle has no time in it: one round of campaigning, live, with
   // the house voting on the spot. That compression IS the twist.
@@ -1357,19 +1379,17 @@ export function simulateBBWeek(options = {}) {
     week.acts.push(campaignAct);
   }
 
-  // ── What people said, what their bloc wanted, and where the room went ──
-  // Recorded before anything moves so the week can tell a changed vote from a
-  // vote that was never honest — and so a promise can be checked against it.
-  ballots.forEach(ballot => { ballot.stated = ballot.evict; });
-  const commitments = new Map(ballots.map(b => [b.voter, houseVoteCommitment(b, nominees)]));
-  week.voteCommitments = [...commitments.values()];
-  // What everybody THINKS is about to happen, taken before the blocs whip and
-  // the bandwagon rolls. Somebody walking into Thursday certain they have the
-  // numbers, and not having them, is the whole of a blindside — and it can only
-  // be shown if the belief was written down before the vote moved.
-  week.votePlans = buildHouseVotePlans({ ballots, nominees, hoh });
-  week.blocMoves = applyAllianceVoteBloc({ ballots, nominees, commitments });
+  // ── After the campaigns: the last consolidation, then the forecast ──
+  // The bandwagon rolls once the count is visible; the forecast is taken LAST,
+  // after every room, pitch and jump has moved whatever it is going to move.
+  // That ordering is the fix: the blindside verdict used to be judged against
+  // a count recorded before the blocs whipped, so the "truth" it compared
+  // beliefs to was a count that no longer existed by Thursday.
   week.bandwagon = applyHouseBandwagon({ ballots, nominees, commitments, rng });
+  // Step 8: what everybody THINKS is about to happen — believed counts stay
+  // private reads (allies assumed with you, strangers guessed from bonds),
+  // while `truth` is now the ballots as they will actually be cast.
+  week.votePlans = buildHouseVotePlans({ ballots, nominees, hoh });
   week.voteBroken = ballots
     .filter(b => b.stated !== b.evict && commitments.get(b.voter)?.promised)
     .map(b => ({ voter: b.voter, promised: b.stated, cast: b.evict }));

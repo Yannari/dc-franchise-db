@@ -678,30 +678,6 @@ export function houseVoteCommitment(ballot, nominees) {
  *
  * Returns the moves it made so the week can narrate them.
  */
-export function applyAllianceVoteBloc({ ballots = [], nominees = [], commitments = new Map() } = {}) {
-  const moves = [];
-  const alliances = (gs.namedAlliances || []).filter(a => a.active !== false && Array.isArray(a.members));
-  for (const alliance of alliances) {
-    const inside = alliance.members.filter(m => ballots.some(b => b.voter === m));
-    if (inside.length < 2) continue;
-    // The bloc protects its own: it targets a nominee who is not a member.
-    const outsider = nominees.find(n => !alliance.members.includes(n));
-    if (!outsider) continue;
-    for (const voter of inside) {
-      const ballot = ballots.find(b => b.voter === voter);
-      if (!ballot || ballot.evict === outsider) continue;
-      const c = commitments.get(voter);
-      // A firm commitment elsewhere beats the bloc — that is a real crack.
-      if (c && c.strength >= 0.6) continue;
-      ballot.evict = outsider;
-      ballot.changed = true;
-      ballot.blocMove = alliance.name || 'an alliance';
-      moves.push({ voter, target: outsider, alliance: alliance.name || 'an alliance' });
-    }
-  }
-  return moves;
-}
-
 /**
  * The bandwagon.
  *

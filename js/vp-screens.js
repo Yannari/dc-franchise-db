@@ -17670,162 +17670,156 @@ export function rpBuildBBCampaign(ep) {
  *
  * Counted against the people who can actually vote tonight, not the house.
  */
-function _bbTheNumbers(ep, voters) {
-  if (!voters.length) return null;
-  const snap = ep.gsSnapshot || {};
-  const alliances = (snap.namedAlliances || (typeof gs !== 'undefined' && gs.namedAlliances) || [])
-    .filter(a => a.active !== false)
-    .map(a => ({ name: a.name, inside: (a.members || []).filter(m => voters.includes(m)) }))
-    .filter(a => a.inside.length >= 2)
-    .sort((a, b) => b.inside.length - a.inside.length);
-  const majority = Math.floor(voters.length / 2) + 1;
-  const biggest = alliances[0] || null;
-  return { majority, voters: voters.length, alliances: alliances.slice(0, 4), biggest,
-    controls: !!biggest && biggest.inside.length >= majority };
-}
-
 /**
- * How the plans changed.
+ * The vote as an operation — four sections, straight off the week's record.
  *
- * Modelled on Total Drama's panel of the same name, which explains a vote by
- * naming the thing that moved each ballot rather than leaving the reader to
- * infer it. The house has its own set of reasons, so the triggers are its
- * own: a bloc agreeing a name, somebody stepping onto the winning side, a
- * promise kept, a promise broken, a campaign that worked.
- *
- * A bloc that fails is worth as much as one that holds, so the alliance line
- * reports what the room ASKED for against what it got.
+ * The old screen was ballot analysis: a board of individual reads, a numbers
+ * panel that counted alliance MEMBERSHIP as control, and a "what changed"
+ * list built from the mutations. Nobody on it ever asked anybody for
+ * anything. These four sections render `ep.voteOperation` instead — the
+ * meetings, every member's answer, the named approaches to the unaffiliated,
+ * and only then the count — so the screen shows people building a vote,
+ * which is the thing a blindside is made of.
  */
-function _bbPlansChanged(ep, act) {
-  const ballots = act?.ballots || [];
-  if (!ballots.length) return '';
-  const commitment = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
+const _BBOP_STANCE = {
+  dependable: { label: 'LOCKED', cls: 'green' },
+  leaning:    { label: 'LEANING', cls: 'blue' },
+  pulled:     { label: 'PULLED IN', cls: 'blue' },
+  conflicted: { label: 'TORN', cls: 'gold' },
+  refusing:   { label: 'REFUSES', cls: 'red' },
+  elsewhere:  { label: 'WITH ANOTHER ROOM', cls: 'grey' },
+};
 
-  // What each bloc wanted, and how much of it survived.
-  const blocs = {};
-  for (const move of ep.blocMoves || []) {
-    (blocs[move.alliance] ||= { target: move.target, asked: [], held: [] }).asked.push(move.voter);
-  }
-  for (const [, bloc] of Object.entries(blocs)) {
-    bloc.held = bloc.asked.filter(v => ballots.find(b => b.voter === v)?.evict === bloc.target);
-  }
-  const blocRows = Object.entries(blocs).map(([name, bloc]) => {
-    const lost = bloc.asked.filter(v => !bloc.held.includes(v));
-    return `<div class="bbp-bloc">
-      <strong>${name}</strong> asked ${bloc.asked.length} ${bloc.asked.length === 1 ? 'member' : 'members'}
-      for <strong>${bloc.target}</strong> and got ${bloc.held.length}.
-      ${lost.length ? `${lost.join(', ')} did not go with the room.` : 'Every one of them held.'}
+function _bbopAlliancePlans(op) {
+  if (!op?.plans?.length) return `<div class="bbop-sec">
+    <div class="bbct-h"><span class="bbct-t">ALLIANCE PLANS</span></div>
+    <div class="bbn-none">No room in the house can field two votes. Every ballot this week belongs to a person, not a plan.</div>
+  </div>`;
+  const rows = op.plans.map(plan => {
+    const tag = plan.locked >= plan.majority
+      ? '<span class="bbop-tag is-holds">HOLDS THE HOUSE</span>'
+      : plan.expected >= plan.majority
+        ? '<span class="bbop-tag is-thinks">THINKS IT HOLDS THE HOUSE</span>'
+        : `<span class="bbop-tag is-short">${plan.needed} SHORT</span>`;
+    const stanceRows = plan.stances.map(s => {
+      const meta = _BBOP_STANCE[s.stance] || _BBOP_STANCE.leaning;
+      const note = s.stance === 'elsewhere' && s.with ? ` <i>— answers to ${_bbEsc(s.with)}</i>` : '';
+      return `<div class="bbop-member">
+        ${_bbAvatar(s.voter, 24)}<span class="bbop-mname">${_bbEsc(s.voter)}</span>
+        <span class="bbns-pill ${meta.cls}">${meta.label}</span>${note}
+      </div>`;
+    }).join('');
+    return `<div class="bbop-plan">
+      <div class="bbop-plan-h">
+        <span class="bbop-aname">${_bbEsc(plan.alliance)}</span>
+        <span class="bbop-wants">wants out</span>
+        ${_bbAvatar(plan.target, 28)}<span class="bbop-tname">${_bbEsc(plan.target)}</span>
+        ${tag}
+      </div>
+      <div class="bbop-organizer">${_bbAvatar(plan.organizer, 22)} <strong>${_bbEsc(plan.organizer)}</strong> gathers the room: “${plan.reason}”</div>
+      <div class="bbop-members">${stanceRows}</div>
     </div>`;
-  });
-
-  // Why each ballot ended up where it did. Only the ones with a story.
-  const rows = ballots.map(b => {
-    const c = commitment.get(b.voter);
-    const moved = b.stated && b.stated !== b.evict;
-    const broke = moved && c?.promised;
-    let why = null, tone = 'grey';
-    if (broke) { why = `shook on <strong>${b.stated}</strong> and voted <strong>${b.evict}</strong> anyway`; tone = 'bad'; }
-    else if (b.blocMove) { why = `went with <strong>${b.blocMove}</strong> onto <strong>${b.evict}</strong>`; tone = 'bloc'; }
-    else if (b.bandwagon) { why = `left <strong>${b.stated}</strong> once it was clearly losing and joined <strong>${b.evict}</strong>`; tone = 'wagon'; }
-    else if (moved) { why = `was talked off <strong>${b.stated}</strong> during the week and voted <strong>${b.evict}</strong>`; tone = 'grey'; }
-    else if (c?.promised) { why = `promised <strong>${b.evict}</strong> and cast it`; tone = 'good'; }
-    else if (c && c.strength >= 0.7) { why = `was never going to be moved off <strong>${b.evict}</strong>`; tone = 'good'; }
-    if (!why) return '';
-    return `<div class="bbp-row is-${tone}">
-      <span class="bbp-face">${_bbAvatar(b.voter, 24)}</span>
-      <span class="bbp-txt"><strong>${b.voter}</strong> ${why}.</span>
-    </div>`;
-  }).filter(Boolean);
-
-  if (!rows.length && !blocRows.length) return '';
-  return `<div class="bbp">
-    <div class="bbp-h">HOW THE PLANS CHANGED</div>
-    ${blocRows.join('')}
-    ${rows.join('')}
+  }).join('');
+  return `<div class="bbop-sec">
+    <div class="bbct-h"><span class="bbct-t">ALLIANCE PLANS</span><span class="bbct-m">who met, what they settled on, and who actually answered</span></div>
+    ${rows}
   </div>`;
 }
 
-/**
- * Live eviction night.
- *
- * The vote is the one moment where everything the week built either holds or
- * does not, and this screen used to be a list of sentences that all read the
- * same. It shows its working now: who holds the numbers going in, and for each
- * ballot whether the voter had promised it, whether their alliance moved them,
- * whether they jumped to the winning side, and whether they broke their word.
- */
-/**
- * The count, as the house has it going in.
- *
- * Total Drama shows a vote as a set of plans before it shows it as a result:
- * who each person is voting for, how firmly, and — the part that matters — how
- * many votes they THINK they have. A house had none of that; the eviction
- * screen went straight to reading ballots, so a blindside arrived with no
- * setup and read as an accident.
- *
- * Nothing here spoils the vote. It is what everybody believes on the way in,
- * which is the only reason the ballots that follow mean anything.
- */
-function _bbVotePlanBoard(ep, nominees) {
-  const plans = ep.votePlans || [];
-  if (!plans.length || nominees.length < 2) return '';
-  const commitments = new Map((ep.voteCommitments || []).map(c => [c.voter, c]));
-  const majority = plans[0].majority;
+function _bbopRecruitment(op) {
+  const plans = (op?.plans || []).filter(p => p.needed > 0 || p.approaches.length || p.outsideSupport.length);
+  if (!plans.length) return '';
+  const OUTCOME = {
+    agrees:    { label: 'SIGNS ON', cls: 'green' },
+    refuses:   { label: 'TURNS THEM DOWN', cls: 'red' },
+    undecided: { label: "WON'T COMMIT", cls: 'grey' },
+    lies:      { label: 'SAYS YES, MEANS NO', cls: 'red' },
+  };
+  const rows = plans.map(plan => {
+    const count = `<div class="bbop-count">
+      <strong>${_bbEsc(plan.alliance)}</strong> holds <strong>${plan.committed}</strong> of the <strong>${plan.majority}</strong> it needs${
+        plan.needed ? ` — <strong>${plan.needed}</strong> short` : ''}.
+      ${plan.outsideSupport.length ? `Already with them without being asked: ${plan.outsideSupport.map(v => _bbAvatar(v, 20)).join('')}` : ''}
+    </div>`;
+    const approaches = plan.approaches.map(a => {
+      const meta = OUTCOME[a.outcome] || OUTCOME.undecided;
+      const secret = a.outcome === 'lies'
+        ? `<div class="bbop-secret">Only the audience knows: ${_bbEsc(a.voter)} has no intention of casting it.</div>` : '';
+      return `<div class="bbop-approach">
+        <div class="bbop-approach-h">${_bbAvatar(a.recruiter, 22)}<span class="bbop-arrow">→</span>${_bbAvatar(a.voter, 22)}
+          <span class="bbop-mname">${_bbEsc(a.recruiter)} works ${_bbEsc(a.voter)}</span>
+          <span class="bbns-pill ${meta.cls}">${meta.label}</span></div>
+        <div class="bbop-arg">${a.argument}</div>
+        ${secret}
+      </div>`;
+    }).join('');
+    return count + approaches;
+  }).join('');
+  return `<div class="bbop-sec">
+    <div class="bbct-h"><span class="bbct-t">VOTES THEY STILL NEED</span><span class="bbct-m">the asks, by name — and how each one went</span></div>
+    ${rows}
+  </div>`;
+}
 
-  // Each side of the room, as the house has it.
+function _bbopIndependents(op) {
+  const list = op?.independents || [];
+  if (!list.length) return '';
+  const rows = list.map(v => {
+    const firm = v.strength > 0.6 ? 'firm' : v.strength > 0.35 ? 'soft' : 'loose';
+    const notes = [];
+    if (v.promised) notes.push('shook on it');
+    if (v.endgame) notes.push(`protecting a ${v.endgame === 'final-two' ? 'final two' : 'final three'}`);
+    if (v.refused) notes.push('turned an alliance down this week');
+    if (v.conflicted) notes.push('claimed by two rooms');
+    if (!notes.length) notes.push('their own read, nobody else’s');
+    return `<div class="bbct-row">
+      ${_bbAvatar(v.voter, 26)}
+      <span class="bbct-v">${_bbEsc(v.voter)}</span>
+      <span class="bbct-arrow">is voting out</span>
+      <span class="bbct-tgt">${_bbEsc(v.evict)}</span>
+      <span class="bbct-why">${notes.join(' · ')}</span>
+      <span class="bbct-firm is-${firm}">${firm}</span>
+    </div>`;
+  }).join('');
+  return `<div class="bbop-sec">
+    <div class="bbct-h"><span class="bbct-t">INDEPENDENT AND CONFLICTED VOTERS</span><span class="bbct-m">the ballots no room owns</span></div>
+    <div class="bbct-rows">${rows}</div>
+  </div>`;
+}
+
+function _bbopHouseRead(ep, act, nominees) {
+  const plans = ep.votePlans || [];
+  const ballots = act?.ballots || [];
+  if (!plans.length || nominees.length < 2) return '';
+  const majority = plans[0].majority;
+  // The room's read is built from STATED positions — what people have said,
+  // including the ones lying about it — because that is the count anybody in
+  // the house could actually take. The truth waits for the Diary Room.
   const sides = nominees.map(name => ({
     name,
-    voters: plans.filter(p => p.target === name),
-  })).sort((a, b) => b.voters.length - a.voters.length);
-
-  const why = plan => {
-    const c = commitments.get(plan.voter);
-    if (c?.cuttingPartner) return 'cutting somebody they promised the end';
-    if (c?.endgameDeal) return `keeping their ${c.endgameDeal.tier}`;
-    if (c?.promised) return 'shook on it';
-    if (c?.allied) return 'voting with their people';
-    if ((c?.strength ?? 0) < 0.35) return 'could still be moved';
-    return 'their own read';
-  };
-
-  const rows = plans.slice().sort((a, b) => (b.believed - b.majority) - (a.believed - a.majority));
-
-  return `<div class="bbvp">
-    <div class="bbct-h">
-      <span class="bbct-t">THE COUNT GOING IN</span>
-      <span class="bbct-m">${majority} of ${plans.length} decides it</span>
-    </div>
-
+    faces: ballots.filter(b => (b.stated || b.evict) === name).map(b => b.voter),
+  })).sort((a, b) => b.faces.length - a.faces.length);
+  const beliefRows = plans.slice()
+    .sort((a, b) => (b.believed - b.majority) - (a.believed - a.majority))
+    .map(plan => `<div class="bbct-row">
+      ${_bbAvatar(plan.voter, 26)}
+      <span class="bbct-v">${_bbEsc(plan.voter)}</span>
+      <span class="bbct-why">counts <b>${plan.believed}</b>${plan.unsure ? ` <i>+${plan.unsure}?</i>` : ''} for evicting ${_bbEsc(plan.target)}</span>
+      <span class="bbct-belief ${plan.confident ? 'is-sure' : ''}">${plan.confident ? 'walks in confident' : 'walks in unsure'}</span>
+    </div>`).join('');
+  return `<div class="bbop-sec">
+    <div class="bbct-h"><span class="bbct-t">CURRENT HOUSE READ</span><span class="bbct-m">${majority} of ${plans.length} decides it</span></div>
     <div class="bbct-sides">
-      ${sides.map(side => `<div class="bbct-side ${side.voters.length >= majority ? 'is-ahead' : ''}">
+      ${sides.map(side => `<div class="bbct-side ${side.faces.length >= majority ? 'is-ahead' : ''}">
         <div class="bbct-side-h">${_bbAvatar(side.name, 34)}
           <span class="bbct-side-n">${_bbEsc(side.name)}</span>
-          <span class="bbct-side-c">${side.voters.length}</span>
+          <span class="bbct-side-c">${side.faces.length}</span>
         </div>
-        <div class="bbct-side-f">${side.voters.map(p => _bbAvatar(p.voter, 24)).join('') || '<i>nobody</i>'}</div>
+        <div class="bbct-side-f">${side.faces.map(v => _bbAvatar(v, 24)).join('') || '<i>nobody</i>'}</div>
       </div>`).join('')}
     </div>
-
-    <div class="bbct-rows">
-      ${rows.map(plan => {
-        const c = commitments.get(plan.voter);
-        const firm = c ? c.strength : 0.5;
-        const band = firm > 0.6 ? 'firm' : firm > 0.35 ? 'soft' : 'loose';
-        return `<div class="bbct-row">
-          ${_bbAvatar(plan.voter, 26)}
-          <span class="bbct-v">${_bbEsc(plan.voter)}</span>
-          <span class="bbct-arrow">is voting out</span>
-          <span class="bbct-tgt">${_bbEsc(plan.target)}</span>
-          <span class="bbct-why">${why(plan)}</span>
-          <span class="bbct-firm is-${band}">${band}</span>
-          <span class="bbct-belief ${plan.confident ? 'is-sure' : ''}">
-            thinks <b>${plan.believed}</b>${plan.unsure ? ` <i>+${plan.unsure}?</i>` : ''}
-          </span>
-        </div>`;
-      }).join('')}
-    </div>
-
-    <div class="bbct-foot">Every number above is what that houseguest believes, not what is true.</div>
+    <div class="bbct-rows">${beliefRows}</div>
+    <div class="bbct-foot">Built from what people have SAID. Some of them are lying, and only the Diary Room finds out which.</div>
   </div>`;
 }
 
@@ -17861,36 +17855,16 @@ function _bbVotePlanVerdict(ep) {
  */
 export function rpBuildBBVotingPlans(ep) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
-  const ballots = act?.ballots || [];
-  const voters = ballots.map(b => b.voter);
-  const numbers = _bbTheNumbers(ep, voters);
-
-  const numbersHtml = numbers ? `<div class="bbn">
-      <div class="bbn-h">
-        <span>THE NUMBERS</span>
-        <span class="bbn-maj">${numbers.majority} of ${numbers.voters} decides it</span>
-      </div>
-      ${numbers.alliances.length ? numbers.alliances.map(a => {
-        const holds = a.inside.length >= numbers.majority;
-        return `<div class="bbn-row ${holds ? 'is-control' : ''}">
-          <span class="bbn-name">${a.name}</span>
-          <span class="bbn-faces">${a.inside.map(m => _bbAvatar(m, 22)).join('')}</span>
-          <span class="bbn-count">${a.inside.length}<i>/${numbers.voters}</i></span>
-          ${holds ? '<span class="bbn-tag">HOLDS THE HOUSE</span>' : ''}
-        </div>`;
-      }).join('')
-        : '<div class="bbn-none">Nobody has the numbers. Every vote tonight is its own decision.</div>'}
-      ${numbers.alliances.length && !numbers.controls
-        ? '<div class="bbn-none">No alliance can carry it alone — this one is decided by whoever is not in the room.</div>' : ''}
-    </div>` : '';
-
+  const op = ep.voteOperation || null;
+  const nominees = (act?.nominees || []).filter(Boolean);
   return `<div class="rp-page bb-room bb-block">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#58a6ff;text-shadow:0 0 20px #58a6ff33;margin-bottom:4px">VOTING PLANS</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">What everybody intends, before the Diary Room asks.</div>
-    ${_bbVotePlanBoard(ep, (act?.nominees || []).filter(Boolean))}
-    ${numbersHtml}
-    ${_bbPlansChanged(ep, act)}
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">The week's vote, built room by room — before the Diary Room asks.</div>
+    ${_bbopAlliancePlans(op)}
+    ${_bbopRecruitment(op)}
+    ${_bbopIndependents(op)}
+    ${_bbopHouseRead(ep, act, nominees)}
   </div>`;
 }
 
@@ -18091,6 +18065,18 @@ export function rpBuildBBEviction(ep) {
       `${voter} keeps the vote promised during the campaign, even with nobody present to enforce it.`,
       `${voter}'s ballot matches the commitment ${pv(b.voter).sub} made before tonight.`,
     ], b.voter, b.evict, 'promise');
+    if (b.recruitedBy) return vvar([
+      `${voter} was not born on this side of the vote — <strong>${_bbEsc(b.recruitedBy)}</strong> asked for it this week, and ${voter} delivers exactly what was agreed.`,
+      `${voter} casts the vote ${_bbEsc(b.recruitedBy)} came recruiting for. Whatever was said in that conversation, it held all the way to the Diary Room.`,
+      `A week ago this ballot belonged to nobody. ${_bbEsc(b.recruitedBy)} claimed it, and ${voter} makes the claim good.`,
+      `${voter} signed on when ${_bbEsc(b.recruitedBy)} asked, and signing on turns out to have meant it.`,
+    ], b.voter, b.evict, 'recruited');
+    if (b.assignment?.by && b.assignment.target === b.evict) return vvar([
+      `${voter} votes where <strong>${_bbEsc(b.assignment.by)}</strong> settled. The room agreed on ${target}, and ${voter} was part of the agreeing.`,
+      `${voter}'s ballot was counted in a meeting before it was cast in this room. <strong>${_bbEsc(b.assignment.by)}</strong> asked for ${target}; here it is.`,
+      `No drama in this one: ${voter} answered for ${target} when <strong>${_bbEsc(b.assignment.by)}</strong> took the count, and the answer has not moved.`,
+      `${voter} delivers the vote ${pv(b.voter).sub} promised the room. <strong>${_bbEsc(b.assignment.by)}</strong> is one vote closer because of it.`,
+    ], b.voter, b.evict, 'assigned');
     if (Number(b.margin) >= 3) return vvar([
       `${voter} came into the Diary Room certain. Nothing in the final pleas changed the choice.`,
       `${voter} never considered keeping ${target}; the campaign only confirmed the original read.`,
@@ -18197,12 +18183,29 @@ export function rpBuildBBEviction(ep) {
         const b = step.b;
         const c = commitment.get(b.voter);
         const broke = b.stated && b.stated !== b.evict && c?.promised;
-        return `<div class="bbns-card bbev-ballot ${broke ? 'is-broke' : ''}">
+        const lied = !!b.lied && b.stated !== b.evict;
+        // The four-stage chain of this one ballot, replayed: what they walked
+        // in wanting, what a room asked of them, what they told the house,
+        // and what they actually cast. Every mismatch is a story the audience
+        // has already seen a section of; here it lands.
+        const chainSteps = [
+          { k: 'wanted', v: b.preference },
+          ...(b.assignment ? [{ k: b.assignment.kind === 'recruited' ? `asked by ${b.assignment.recruiter || b.assignment.by}` : `${b.assignment.by} asked`, v: b.assignment.target }] : []),
+          ...(b.stated ? [{ k: 'told the house', v: b.stated }] : []),
+          { k: 'casts', v: b.evict, final: true },
+        ].filter(st => st.v);
+        const chain = chainSteps.length > 1 ? `<div class="bbev-chain">${
+          chainSteps.map((st, ci) => `<span class="bbev-chain-step ${st.final ? 'is-final' : ''} ${
+            ci > 0 && st.v !== chainSteps[ci - 1].v ? 'is-flip' : ''}"><i>${_bbEsc(st.k)}</i> ${_bbEsc(st.v)}</span>`)
+            .join('<span class="bbev-chain-arrow">→</span>')}</div>` : '';
+        return `<div class="bbns-card bbev-ballot ${broke || lied ? 'is-broke' : ''}">
           <div class="bbns-card-h">${_bbAvatar(b.voter, 30)}<span class="bbns-pill ${
-            broke ? 'red' : b.blocMove ? 'blue' : b.bandwagon ? 'gold' : c?.promised ? 'green' : 'grey'}">${
-            broke ? 'BREAKS THEIR WORD' : b.blocMove ? 'VOTES WITH THE BLOC'
-            : b.bandwagon ? 'JOINS THE WINNING SIDE' : c?.promised ? 'KEEPS A PROMISE' : 'THE DIARY ROOM'}</span></div>
-          <div class="bbns-card-b">${ballotScene(b, c, broke)}</div></div>`;
+            broke || lied ? 'red' : b.blocMove ? 'blue' : b.recruitedBy ? 'green' : b.bandwagon ? 'gold'
+            : c?.promised ? 'green' : b.assignment ? 'blue' : 'grey'}">${
+            broke ? 'BREAKS THEIR WORD' : lied ? 'SAID ONE NAME, WRITES ANOTHER' : b.blocMove ? 'VOTES WITH THE BLOC'
+            : b.recruitedBy ? 'SIGNED ON THIS WEEK' : b.bandwagon ? 'JOINS THE WINNING SIDE'
+            : c?.promised ? 'KEEPS A PROMISE' : b.assignment ? 'VOTES WITH THE ROOM' : 'THE DIARY ROOM'}</span></div>
+          <div class="bbns-card-b">${ballotScene(b, c, broke || lied)}${chain}</div></div>`;
       }
       case 'tie':
         return `<div class="bbns-card is-final bbev-tie">

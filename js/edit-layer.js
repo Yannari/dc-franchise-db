@@ -83,6 +83,28 @@ function _deriveScreenTime(ep, active) {
     });
   });
 
+  // A Big Brother week records acts with social beats instead of camp
+  // events — same shape where it counts (players, badge text), so the tone
+  // rules read them unchanged. The ceremonies then bill their principals:
+  // the block is the emotional spine of a week, the veto is screen time by
+  // definition, and an arena save or a detonated secret power is the whole
+  // episode's thumbnail.
+  (ep.acts || []).forEach(act => {
+    (act.socialBeats || []).forEach(ev => {
+      const tone = _tone(ev);
+      (ev?.players || []).forEach((p, i) => add(p, 2, tone === 'villainous' && i > 0 ? 'emotional' : tone));
+    });
+  });
+  if (ep.format === 'big-brother') {
+    add(ep.vetoWinner, 2, 'strategic');
+    (ep.finalNominees || []).forEach(n => add(n, 3, 'emotional'));
+    add(ep.safetyWinner, 2, 'strategic');
+    const det = (ep.acts || []).find(a => a.type === 'diamond-detonation');
+    if (det) { add(det.holder, 4, 'strategic'); add(det.replacement, 2, 'emotional'); }
+    const box = (ep.acts || []).find(a => a.type === 'pandoras-box');
+    if (box?.opened) add(box.hoh, 2, 'strategic');
+  }
+
   if (typeof ep.immunityWinner === 'string') add(ep.immunityWinner, 3, 'strategic');
   (ep.chalPlacements || []).slice(0, 3).forEach(p => { if (typeof p === 'string') add(p, 2); });
   Object.keys(ep.chalMemberScores || {}).forEach(p => add(p, 1));

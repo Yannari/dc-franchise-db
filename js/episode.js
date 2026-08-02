@@ -7507,6 +7507,38 @@ export function updatePopularity(ep) {
     if (!wasTargeted) add(ep.immunityWinner, 'under', -1, 'immunityUnthreatened');
   }
 
+  // ── Big Brother's show moments ──
+  // A house week has no camp events, so almost none of the axes above ever
+  // fired for it — the audience's read of a BB season was flat-lining on
+  // whatever the competitions happened to write. These are the moments the
+  // format's own edit is cut around.
+  if (ep.format === 'big-brother') {
+    // Saving yourself on the night you needed it is the underdog beat.
+    if (ep.safetyWinner) {
+      add(ep.safetyWinner, 'under', 2, 'arenaSave');
+      add(ep.safetyWinner, 'drama', 1, 'arenaSave');
+    }
+    // A secret power detonated live is the biggest thumbnail a week can have.
+    const _det = (ep.acts || []).find(a => a.type === 'diamond-detonation');
+    if (_det) {
+      add(_det.holder, 'drama', 4, 'diamondDetonation');
+      add(_det.holder, 'like', -1, 'diamondDetonation');
+      add(_det.saved, 'under', 2, 'diamondSaved');
+      if (ep.hoh && ep.hoh !== _det.holder) add(ep.hoh, 'under', 1, 'weekHijacked');
+    }
+    // Opening the mystery box and lying about it is a gamble the audience
+    // enjoys more than the house does.
+    const _box = (ep.acts || []).find(a => a.type === 'pandoras-box');
+    if (_box?.opened) add(_box.hoh, 'drama', 2, 'pandorasGamble');
+    // Saying one name and writing another: television, at a cost.
+    for (const l of ep.votingLog || []) {
+      if (l.stated && l.voted && l.stated !== l.voted) {
+        add(l.voter, 'drama', 1, 'voteLie');
+        add(l.voter, 'like', -1, 'voteLie');
+      }
+    }
+  }
+
   // ── Apply all deltas to gs.popularity ──
   Object.entries(epDeltas).forEach(([name, deltas]) => {
     if (!gs.popularity[name]) gs.popularity[name] = 0;

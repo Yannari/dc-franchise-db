@@ -20,6 +20,7 @@ import { HOUSE_EVENTS } from './bb-events/index.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale } from './bb-finale.js';
+import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -335,6 +336,10 @@ export function simulateBBEpisode() {
   delete week.openingState;
   delete week.closingState;
 
+  // The edit: what the audience saw of this week. Total Drama runs this at
+  // every episode-complete site in episode.js; this is the house's.
+  try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
+
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({
     ...ep,
@@ -468,6 +473,7 @@ export function runBBFinale() {
   if (!ep) return null;
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep) : '';
+  try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({
     ...ep,

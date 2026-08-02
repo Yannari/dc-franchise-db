@@ -702,6 +702,28 @@
     .bbvc-dmd .bbta-sting { color:#7ee7ff; }
     @media (prefers-reduced-motion:reduce) { .bbta-wall.is-lit .bbta-scan { animation:none; } }
 
+    /* ── Pandora's Box + the detonation ────────────────────────────────
+       The box is temptation drawn in gold on black; the detonation borrows
+       the whole diamond palette (bbvc-dmd on the page root) and adds only
+       the floating gem above the cards. */
+    .bbpb-hall     { display:flex; align-items:flex-end; justify-content:center; gap:18px;
+                     padding:18px 12px 12px; margin-bottom:14px; border-radius:10px;
+                     background:linear-gradient(180deg, rgba(227,179,65,.05), rgba(0,0,0,.3));
+                     border:1px solid rgba(227,179,65,.25); }
+    .bbpb-door     { width:96px; transition:filter .5s ease; filter:drop-shadow(0 0 10px rgba(227,179,65,.25)); }
+    .bbpb-door svg { width:100%; height:auto; display:block; }
+    .bbpb-hall.is-open .bbpb-door { filter:drop-shadow(0 0 22px rgba(227,179,65,.6)); animation:bbpbPulse 2.8s ease-in-out infinite; }
+    @keyframes bbpbPulse { 0%,100% { transform:none; } 50% { transform:scale(1.03); } }
+    .bbpb-open     { border-left:3px solid #e3b341 !important;
+                     background:linear-gradient(90deg, rgba(227,179,65,.12), transparent 60%) !important; }
+    .bbdd-gem      { display:flex; justify-content:center; margin:2px 0 12px; }
+    .bbdd-gem svg  { width:74px; height:74px; opacity:.35; filter:grayscale(.8); transition:all .6s ease; }
+    .bbdd-gem.is-lit svg { opacity:1; filter:drop-shadow(0 0 18px rgba(126,231,255,.6));
+                     animation:bbvcDmdGlow 2.6s ease-in-out infinite; }
+    @media (prefers-reduced-motion:reduce) {
+      .bbpb-hall.is-open .bbpb-door, .bbdd-gem.is-lit svg { animation:none; }
+    }
+
     /* ── the Diamond Power of Veto ─────────────────────────────────────
        When the medallion is the diamond, the whole ceremony refracts: the
        broadcast green gives way to ice and violet, the gem carries a moving

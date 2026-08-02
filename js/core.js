@@ -331,6 +331,10 @@ export const TWIST_CATALOG = [
     category:'advantage', phase:'any',
     desc:'This week\'s veto is the Diamond Power of Veto: if it is used, the veto holder — not the Head of Household — names the replacement nominee. Winning it means controlling both chairs, and an HOH can watch their whole week get rewritten in one ceremony.',
     engineType:'bb-diamond-veto', incompatible:['bb-instant-eviction'] },
+  { id:'bb-pandoras-box', emoji:'❓', name:'Pandora\'s Box', format:'big-brother',
+    category:'advantage', phase:'any',
+    desc:'A door with a question mark appears in the HOH room. Open it and something good happens to you while something bad happens to the house — and what was inside stays secret. The canonical cargo is a hidden Diamond Power of Veto with a two-eviction fuse, detonated live at an eviction: the holder saves a nominee and personally names the replacement while the house watches a week of plans evaporate.',
+    engineType:'bb-pandoras-box', incompatible:['bb-instant-eviction', 'bb-diamond-veto'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

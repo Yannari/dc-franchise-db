@@ -100,6 +100,16 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Whoever wins it controls both chairs.',
     },
   },
+  'bb-pandoras-box': {
+    id: 'bb-pandoras-box', layer: 'scheduled', category: 'distribution',
+    timing: 'post-hoh', duration: { weeks: 1 },
+    rules: {}, // the box changes nothing structural; what it HANDS OUT does
+    // A distributor, not a power: the prize is drawn from the power
+    // inventory (default cargo diamond-veto) and granted SECRET — so there
+    // is deliberately no announcement. The house sees the consequence and
+    // the lie; the truth lives in gs.bb.powers and the Debug panel.
+    acquisition: { channel: 'pandoras-box', secrecy: 'secret' },
+  },
 };
 
 /**

@@ -18180,6 +18180,163 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
   </div>`;
 }
 
+/**
+ * Pandora's Box.
+ *
+ * The door, the choice, and the public version of what happened. The prize
+ * NEVER appears here — the house sees a lockdown and hears about a dollar,
+ * and so does the viewer. The Debug panel owns the truth; the reveal belongs
+ * to the night the power fires.
+ */
+export function rpBuildBBPandorasBox(ep, act) {
+  const hoh = act?.hoh;
+  const opened = !!act?.opened;
+  const beats = act?.socialBeats || [];
+  const stateKey = `bb_pbx_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const steps = [{ kind: 'door' }, { kind: 'choice' }, ...beats.map(b => ({ kind: 'beat', b }))];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const chosen = state.idx >= 1;
+
+  const DOOR = `<svg viewBox="0 0 90 120" aria-hidden="true">
+      <defs><linearGradient id="bbpb-w" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3a2d16"/><stop offset="100%" stop-color="#1b1408"/></linearGradient>
+      <radialGradient id="bbpb-q" cx="50%" cy="45%">
+        <stop offset="0%" stop-color="#ffe9a8"/><stop offset="100%" stop-color="#b8860b"/></radialGradient></defs>
+      <rect x="8" y="6" width="74" height="108" rx="5" fill="url(#bbpb-w)" stroke="#e3b341" stroke-width="2.5"/>
+      <rect x="16" y="14" width="58" height="92" rx="3" fill="none" stroke="#8a6a1f" stroke-width="1.4" opacity=".6"/>
+      <circle cx="70" cy="62" r="3.4" fill="#e3b341"/>
+      <text x="45" y="74" text-anchor="middle" font-family="Georgia,serif" font-size="46"
+        font-weight="700" fill="url(#bbpb-q)" stroke="#5c3d00" stroke-width="1">?</text>
+    </svg>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'door') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill gold">A DOOR THAT WAS NOT THERE</span></div>
+        <div class="bbns-card-b">${_bbEsc(hoh)} comes up to the HOH room and stops. There is a second door now, gold-edged, with a question mark where a handle should be — and a card that says only: <em>something good for you, something bad for them. Or nothing at all.</em></div></div>`;
+    }
+    if (step.kind === 'choice') {
+      return opened
+        ? `<div class="bbns-card is-final bbpb-open">
+            <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">OPENED</span></div>
+            <div class="bbns-card-b">${_bbEsc(hoh)} opens it. The door swallows ${pronouns(hoh).obj} for four minutes, and what happens inside stays inside — all the house will ever get is the bill, and a story about ${_bbEsc(act.publicClaim || 'nothing much')}.</div></div>`
+        : `<div class="bbns-card is-final">
+            <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill grey">LEFT CLOSED</span></div>
+            <div class="bbns-card-b">${_bbEsc(hoh)} reads the card twice and walks away. Some doors are only offered once, and this one closes behind the refusal without a sound.</div></div>`;
+    }
+    const b = step.b || {};
+    return `<div class="bbns-card">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE HOUSE'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbpb">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#e3b341;text-shadow:0 0 20px rgba(227,179,65,.3);margin-bottom:4px">PANDORA'S BOX</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Something good for you. Something bad for them.</div>
+    <div class="bbpb-hall ${chosen && opened ? 'is-open' : ''}">
+      <div class="bbpb-door">${DOOR}</div>
+      ${hoh ? `<div class="bbpb-visitor">${rpPortrait(hoh, 'sm')}</div>` : ''}
+    </div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The door' : state.idx === 0 ? 'The choice' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
+ * The detonation.
+ *
+ * Eviction night, and the vote never happens the way anybody planned it.
+ * The holder stands, the secret comes out of a pocket, a nominee comes off
+ * the block and the holder personally seats the replacement. Ice and violet
+ * crash into eviction red — the diamond palette arriving where it was never
+ * supposed to be.
+ */
+export function rpBuildBBDiamondDetonation(ep, act) {
+  const { holder, saved, replacement, selfSave } = act || {};
+  const beats = act?.socialBeats || [];
+  const stateKey = `bb_dpv_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const steps = [{ kind: 'pause' }, { kind: 'reveal' }, { kind: 'save' }, { kind: 'seat' },
+    ...beats.map(b => ({ kind: 'beat', b }))];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const lit = state.idx >= 1;
+
+  const GEM = `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="bbdd-g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#eaffff"/><stop offset="45%" stop-color="#7ee7ff"/>
+          <stop offset="100%" stop-color="#4aa8d8"/></linearGradient>
+        <linearGradient id="bbdd-g2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9fd8ff"/><stop offset="60%" stop-color="#5f7de8"/>
+          <stop offset="100%" stop-color="#2c3f8f"/></linearGradient>
+      </defs>
+      <polygon points="14,20 50,20 58,30 32,58 6,30" fill="url(#bbdd-g2)" stroke="#0d2a4a" stroke-width="1.6" stroke-linejoin="round"/>
+      <polygon points="14,20 24,20 18,30 6,30" fill="url(#bbdd-g1)" opacity=".95"/>
+      <polygon points="24,20 40,20 46,30 18,30" fill="#c9b3ff" opacity=".85"/>
+      <polygon points="40,20 50,20 58,30 46,30" fill="url(#bbdd-g1)" opacity=".8"/>
+      <polygon points="18,30 46,30 32,58" fill="url(#bbdd-g2)"/>
+      <polyline points="6,30 58,30" fill="none" stroke="#dff6ff" stroke-width="1" opacity=".7"/>
+    </svg>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'pause':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill red">EVICTION NIGHT</span></div>
+          <div class="bbns-card-b">The house is on the sofas in eviction clothes. The pleas are done, the votes are counted in fourteen heads at once — and before the first ballot can be read, somebody stands up who is not supposed to be standing.</div></div>`;
+      case 'reveal':
+        return `<div class="bbns-card is-final bbvc-diamond">
+          <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill bbvc-dmd-pill">THE DIAMOND POWER OF VETO</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(holder)}</strong> holds it up. "This is the Diamond Power of Veto. It lets me save a nominee — and name the replacement myself." Nobody in this room has ever heard of it, which is precisely the point of the last ${_bbEsc(String((act?.source === 'bb-pandoras-box') ? 'week and its locked backyard' : 'week'))}.</div></div>`;
+      case 'save':
+        return `<div class="bbns-card is-final bbvc-used">
+          <div class="bbns-card-h">${_bbAvatar(holder, 30)}${saved && saved !== holder ? _bbAvatar(saved, 30) : ''}<span class="bbns-pill green">OFF THE BLOCK</span></div>
+          <div class="bbns-card-b">${selfSave
+            ? `"I use it on myself." <strong>${_bbEsc(holder)}</strong> steps off the block with the vote minutes away — the only version of safe that nobody can take back.`
+            : `"I use it on <strong>${_bbEsc(saved)}</strong>." ${_bbEsc(saved)} does not move for a full second, then crosses the room on legs that had already accepted a different evening.`}</div></div>`;
+      case 'seat':
+        return `<div class="bbns-card is-final bbvc-seize">
+          <div class="bbns-card-h">${_bbAvatar(holder, 30)}${replacement ? _bbAvatar(replacement, 30) : ''}<span class="bbns-pill bbvc-dmd-pill">THE REPLACEMENT</span></div>
+          <div class="bbns-card-b">"And the replacement is <strong>${_bbEsc(replacement)}</strong>." No campaign. No plea. No time. ${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}<span class="bbta-sting">The house votes on a pair it did not know existed two minutes ago.</span></div></div>`;
+      default: {
+        const b = step.b || {};
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE ROOM'}</span></div>
+          <div class="bbns-card-b">${b.text}</div></div>`;
+      }
+    }
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbvc bbvc-dmd bbdd">
+    <div class="rp-eyebrow">Week ${ep.num} — live</div>
+    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#7ee7ff;text-shadow:0 0 22px rgba(126,231,255,.35);margin-bottom:4px">THE DETONATION</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">A power nobody knew existed, fired at the only moment it cannot be answered.</div>
+    <div class="bbdd-gem ${lit ? 'is-lit' : ''}">${GEM}</div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The live show' : steps[state.idx + 1]?.kind === 'reveal' ? 'Somebody stands' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
 export function rpBuildBBCeremony(ep) {
   const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
   const holder = act?.holder || ep.vetoWinner;
@@ -19470,6 +19627,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'twist-announcement':
         screens.push({ id: id('bb-twist'), label: 'The Announcement', html: rpBuildBBTwistAnnouncement(view, act) });
         break;
+      case 'pandoras-box':
+        screens.push({ id: id('bb-pandora'), label: "Pandora's Box", html: rpBuildBBPandorasBox(view, act) });
+        break;
+      case 'diamond-detonation':
+        screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
       case 'hoh':
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
         // Whatever else happened around the competition is house life, not the
@@ -20544,6 +20707,15 @@ export function rpBuildBBDebug(ep) {
     if ((ep.twistState?.applied || []).length) {
       html += dbgPanel('TWIST CONTRACT', 'gold', ep.twistState.applied.map(a =>
         dbgNote(`${_bbEsc(a.twist)}: ${_bbEsc(a.rule)} ${a.from !== undefined ? `${_bbEsc(String(a.from))} → ` : ''}${_bbEsc(String(a.to))}`)).join(''));
+    }
+    // The power inventory's truth. The public screens show only what the
+    // house knows — a locked backyard, a story about a dollar — so this is
+    // the one place a secret power exists before it fires.
+    const powers = snap.bb?.powers || (typeof gs !== 'undefined' && gs.bb?.powers) || [];
+    if (powers.length) {
+      html += dbgPanel('POWERS (THE TRUTH)', 'gold', powers.map(p =>
+        dbgNote(`${_bbEsc(p.powerId)} — ${_bbEsc(p.holder)} (${_bbEsc(p.visibility)}, via ${_bbEsc(p.source)}), `
+          + `wk ${p.acquiredWeek}–${p.expiresAfterWeek}: ${p.used ? `used wk ${p.usedWeek}` : p.disposed ? `disposed (${_bbEsc(p.disposedReason || '?')})` : 'LIVE'}`)).join(''));
     }
     if ((ep.haveNots || []).length) {
       const hn = acts.find(a => a.type === 'have-nots');

@@ -4342,6 +4342,28 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'pandoras-box':
+        sec('PANDORA\'S BOX');
+        ln(`  A door with a question mark appears in ${act.hoh}'s HOH room.`);
+        if (act.opened) {
+          // The transcript is a public record: it carries the claim, never
+          // the prize. The Debug panel owns the truth.
+          ln(`  ${act.hoh} opens it. The house pays the price, and ${act.hoh} claims the box held ${act.publicClaim}.`);
+        } else {
+          ln(`  ${act.hoh} leaves it closed.`);
+        }
+        beats(act);
+        break;
+
+      case 'diamond-detonation':
+        sec('THE DIAMOND POWER OF VETO — DETONATED');
+        ln(`  At the live show, ${act.holder} reveals the secret Diamond Power of Veto.`);
+        ln(`  ${act.saved} is ${act.selfSave ? 'the holder — off the block by right' : 'saved'}; ${act.holder} names ${act.replacement} as the replacement.`);
+        if (act.replacementWhy) ln(`  ${act.replacementWhy}`);
+        ln('  The house votes between a pair it did not know existed two minutes ago.');
+        beats(act);
+        break;
+
       case 'twist-announcement':
         sec('TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');

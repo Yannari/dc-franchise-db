@@ -37,6 +37,7 @@ import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } fro
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
+import { grantPower, activePowerAt, usePower, expirePowers, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
  * A competition win, seen by the whole house, becomes strategic respect and a
@@ -1217,6 +1218,61 @@ export function simulateBBWeek(options = {}) {
   }
   week.plan = plan;
 
+  // ── Pandora's Box ──
+  // A door with a question mark on it appears in the brand-new HOH room. The
+  // choice is private, the prize is SECRET — the house sees only that the box
+  // was opened and that something happened to them because of it. This is the
+  // first real distributor: what goes in the box is configuration, and the
+  // canonical cargo (BB12) is the Diamond Power of Veto with a two-eviction
+  // fuse.
+  if (!compressed && twists.has('bb-pandoras-box')) {
+    const prizeId = options.pandorasPrize || 'diamond-veto';
+    const st = pStats(hoh);
+    // Curiosity is boldness; caution is intuition. Nobody is immune to a
+    // mystery box at fifty-fifty odds of a very good day.
+    const openChance = Math.min(0.9, Math.max(0.2,
+      0.32 + st.boldness * 0.045 - st.intuition * 0.015));
+    const opened = rng() < openChance;
+    const boxAct = { type: 'pandoras-box', hoh, opened, socialBeats: [] };
+    if (opened) {
+      grantPower(prizeId, hoh, { week: week.num, visibility: 'secret', source: 'bb-pandoras-box' });
+      // The public half of the bargain: the house pays for the HOH's
+      // curiosity, and the HOH pays in credibility. The claim is the lie
+      // Matt told — the prize itself never appears in a public field.
+      const claims = ['a dollar', 'a protein bar', 'a photo from home', 'twenty-four hours of elevator music'];
+      boxAct.publicClaim = claims[Math.floor(rng() * claims.length)];
+      boxAct.consequence = 'backyard-lockdown';
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[hoh] = (gs.popularity[hoh] || 0) - 1;
+      // Whoever reads people best in this house smells the lie first.
+      const readers = house.filter(n => n !== hoh)
+        .sort((a, b) => pStats(b).intuition - pStats(a).intuition).slice(0, 2);
+      for (const reader of readers) {
+        _cappedBondWindow(() => addBond(reader, hoh, -0.3));
+        boxAct.socialBeats.push({
+          text: `${reader} listens to ${hoh} explain that the box held ${boxAct.publicClaim}, nods along, and believes approximately none of it. Nobody locks down a backyard over ${boxAct.publicClaim}.`,
+          players: [reader, hoh], badgeText: 'SMELLS A LIE', badgeClass: 'grey',
+          eventId: 'pandoras-box-doubt', category: 'ceremonies', location: 'backyard',
+          effects: [{ kind: 'bond', text: `${reader} & ${hoh} -0.3`, delta: -0.3 }],
+        });
+      }
+      boxAct.socialBeats.unshift({
+        text: `The backyard doors lock with everybody's laundry still on the line, and a voice announces that the house can thank ${hoh} for it. ${hoh} emerges from the HOH room holding, apparently, ${boxAct.publicClaim}.`,
+        players: [hoh], badgeText: 'THE PRICE', badgeClass: 'red',
+        eventId: 'pandoras-box-consequence', category: 'ceremonies', location: 'backyard',
+        effects: [{ kind: 'pop', text: `${hoh} -1`, delta: -1 }],
+      });
+    } else {
+      boxAct.socialBeats.push({
+        text: `${hoh} looks at the question mark on the door for a long time, and leaves it closed. The house never finds out what was inside, which is exactly how ${hoh} wants to sleep tonight.`,
+        players: [hoh], badgeText: 'LEFT CLOSED', badgeClass: 'grey',
+        eventId: 'pandoras-box-declined', category: 'ceremonies', location: 'hoh-room',
+      });
+    }
+    week.pandorasBox = { hoh, opened, publicClaim: boxAct.publicClaim || null };
+    week.acts.push(boxAct);
+  }
+
   // The house now knows who holds power, and reacts to it.
   if (!compressed) houseAct('post-hoh');
 
@@ -1343,7 +1399,19 @@ export function simulateBBWeek(options = {}) {
     // by default the HOH names the replacement; under the Diamond Power of
     // Veto that authority belongs to the veto holder, which is the entire
     // twist — winning it means controlling both chairs.
-    const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder';
+    //
+    // The diamond week is the power inventory's first preset: the week's own
+    // veto competition is the distributor, so winning the comp IS the grant.
+    // The instance is the record — holder, window, visibility — and any
+    // OTHER distributor that hands somebody a public diamond lands on the
+    // same ceremony path through activePowerAt.
+    if (week.twistState?.rules?.replacementAuthority === 'veto-holder') {
+      grantPower('diamond-veto', vetoWinner,
+        { week: week.num, visibility: 'public', source: 'bb-diamond-veto' });
+    }
+    const grantedDiamond = activePowerAt('veto-ceremony', week.num);
+    const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder'
+      || (grantedDiamond?.holder === vetoWinner && grantedDiamond?.powerId === 'diamond-veto');
     const chairAuthority = diamond ? vetoWinner : hoh;
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
@@ -1395,7 +1463,14 @@ export function simulateBBWeek(options = {}) {
     // report what happened and never why, which is the whole complaint.
     week.vetoDecision = { ...vetoDecision, holder: vetoWinner, replacement,
       diamond, chairAuthority };
-    if (diamond) week.diamondVeto = { holder: vetoWinner, used: !!vetoDecision.use, replacement };
+    if (diamond) {
+      week.diamondVeto = { holder: vetoWinner, used: !!vetoDecision.use, replacement };
+      // The ceremony spends the instance either way: a public diamond IS this
+      // week's veto, so an unused one leaves the ceremony as a record, not a
+      // live power somebody could sit on.
+      const inst = activePowerAt('veto-ceremony', week.num);
+      if (inst?.holder === vetoWinner) usePower(inst, week.num);
+    }
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority,
@@ -1609,6 +1684,7 @@ export function simulateBBWeek(options = {}) {
       { nominees: [...nominees], evicted: departure.name }));
 
     gs.activePlayers = house.filter(name => name !== departure.name);
+    expirePowers(week.num, gs.activePlayers);
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));
   _attachAllianceFallout(week, house);
@@ -1777,6 +1853,103 @@ export function simulateBBWeek(options = {}) {
     .filter(b => b.stated !== b.evict && commitments.get(b.voter)?.promised)
     .map(b => ({ voter: b.voter, promised: b.stated, cast: b.evict }));
 
+  // ── The detonation ──
+  // A secret Diamond Power of Veto fires HERE — at the live show, after every
+  // plea and forecast, exactly where Matt Hoffman detonated the canonical one:
+  // the holder stands up, takes a nominee off the block, names the
+  // replacement personally, and the house votes on a pair it did not know
+  // existed two minutes ago. Every plan, plea and forecast this week was
+  // built on a block that was never real.
+  if (!compressed) {
+    const inst = activePowerAt('eviction-night', week.num);
+    const holder = inst?.holder;
+    if (inst && inst.powerId === 'diamond-veto' && house.includes(holder)) {
+      const hst = pStats(holder);
+      const myTarget = getBBTarget(holder);
+      const lastWindowWeek = week.num >= inst.expiresAfterWeek;
+      let save = null;
+      if (nominees.includes(holder)) {
+        save = holder; // sitting on the block holding this is not a dilemma
+      } else {
+        const ally = [...nominees].sort((a, b) =>
+          getPerceivedBond(holder, b) - getPerceivedBond(holder, a))[0];
+        const allyWorth = Math.max(0, getPerceivedBond(holder, ally)) * 0.09;
+        // Saving an ally, or spending expiry pressure on a move: both scale
+        // with how strategically the holder thinks, never a hard gate.
+        const targetSeatable = myTarget && myTarget !== hoh && myTarget !== holder
+          && !nominees.includes(myTarget);
+        const pull = allyWorth
+          + (lastWindowWeek ? 0.18 : 0)
+          + (targetSeatable ? hst.strategic * 0.035 : 0);
+        if (rng() < Math.min(0.85, pull)) save = ally;
+      }
+      if (save) {
+        const other = nominees.find(n => n !== save);
+        const protectedNames = [hoh, holder, save, other].filter(Boolean);
+        const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
+        let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);
+        if (replacement && house.includes(replacement) && !protectedNames.includes(replacement)) {
+          usePower(inst, week.num);
+          inst.revealed = true;
+          nominees = nominees.map(n => (n === save ? replacement : n));
+          week.finalNominees = [...nominees];
+          gs.bb.stats[save].timesSaved++;
+          gs.bb.stats[replacement].timesNominated++;
+          gs.bb.stats[replacement].timesOnTheBlock++;
+          // Ballot surgery, in the open: the replacement stops voting, the
+          // saved houseguest starts, and everybody who had written the saved
+          // name recasts between the pair that actually exists.
+          const dropped = ballots.findIndex(b => b.voter === replacement);
+          if (dropped >= 0) ballots.splice(dropped, 1);
+          for (const b of ballots) {
+            if (b.evict === save) {
+              const pref = initialVotePreference(b.voter, nominees, rng);
+              b.evict = pref.evict; b.changed = true; b.dpovMove = true;
+            }
+          }
+          if (!ballots.some(b => b.voter === save) && save !== hoh) {
+            const pref = initialVotePreference(save, nominees, rng);
+            ballots.push({ voter: save, ...pref, preference: pref.evict, changed: false, dpovAdded: true });
+          }
+          const replacementWhy = explainReplacement(holder, replacement,
+            house.filter(n => !protectedNames.includes(n)), chooserPlan, nominees);
+          week.diamondDetonation = { holder, saved: save, replacement,
+            source: inst.source, selfSave: save === holder, replacementWhy };
+          // The fallout is immediate and public. The replacement's grievance
+          // and the HOH's are both aimed at the one person whose voice did
+          // this — and the whole house just learned what the box really held.
+          const beats = [];
+          _cappedBondWindow(() => addBond(replacement, holder, -(1.0 + (10 - pStats(replacement).temperament) * 0.08)));
+          try { rememberStrategy(replacement, holder, 'renomination', week.num, 3, { act: 'diamond-detonation' }); } catch { /* texture */ }
+          beats.push({
+            text: `${replacement} was on the sofa in eviction-night clothes with a speech ${pronouns(replacement).sub} never expected to give. There is no campaign, no plea, no time. ${replacement} takes the nomination chair while the room is still processing the rule.`,
+            players: [replacement, holder], badgeText: 'AMBUSHED', badgeClass: 'red',
+            eventId: 'dpov-ambush', category: 'ceremonies', location: 'living-room',
+            effects: [{ kind: 'bond', text: `${replacement} & ${holder}`, delta: -1 }],
+          });
+          if (hoh && hoh !== holder) {
+            _cappedBondWindow(() => addBond(hoh, holder, -0.7));
+            try { rememberStrategy(hoh, holder, 'diamond-hijack', week.num, 3, { act: 'diamond-detonation', replacement }); } catch { /* texture */ }
+            beats.push({
+              text: `${hoh} finds out with the rest of the house that the week ${pronouns(hoh).sub} ran was never the real one. ${holder} had the actual power the whole time, and chose eviction night to say so.`,
+              players: [hoh, holder], badgeText: 'HIJACKED', badgeClass: 'red',
+              eventId: 'diamond-veto-hijack', category: 'ceremonies', location: 'living-room',
+              effects: [{ kind: 'bond', text: `${hoh} & ${holder} -0.7`, delta: -0.7 }],
+            });
+          }
+          if (week.pandorasBox?.opened && week.pandorasBox.hoh === holder) {
+            beats.push({
+              text: `Somebody says it out loud: "${week.pandorasBox.publicClaim}. You told us it was ${week.pandorasBox.publicClaim}." ${holder} does not apologize, because a lie that works this well is not something you apologize for.`,
+              players: [holder], badgeText: 'THE LIE, COLLECTED', badgeClass: 'gold',
+              eventId: 'dpov-lie-collected', category: 'ceremonies', location: 'living-room',
+            });
+          }
+          week.acts.push({ type: 'diamond-detonation', ...week.diamondDetonation, socialBeats: beats });
+        }
+      }
+    }
+  }
+
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
   let evicted;
@@ -1839,6 +2012,8 @@ export function simulateBBWeek(options = {}) {
     week.dealBreaks.push({ breaker: ballot.voter, victim: evicted, tier: tierOf(deal), madeEp: deal.madeEp });
   }
   gs.activePlayers = house.filter(name => name !== evicted);
+  // Powers whose holder just left, or whose window just closed, end here.
+  expirePowers(week.num, gs.activePlayers);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   // Somebody leaving rearranges everybody's plan: a shield walks out and the
   // person hiding behind them is suddenly the biggest thing in the room, and a

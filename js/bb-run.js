@@ -224,7 +224,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -389,6 +389,18 @@ export function summariseWeek(week) {
         line(`  Played by: ${(act.participants || []).join(', ')}.`);
         _competition(line, act.competition);
         line(`  ${act.winner} wins the Power of Veto.`);
+        break;
+      case 'pandoras-box':
+        line('');
+        line("PANDORA'S BOX");
+        line(act.opened
+          ? `  ${act.hoh} opens the box. The house pays; ${act.hoh} claims it held ${act.publicClaim}.`
+          : `  ${act.hoh} leaves the box closed.`);
+        break;
+      case 'diamond-detonation':
+        line('');
+        line('DIAMOND POWER OF VETO — DETONATED');
+        line(`  ${act.holder} reveals the secret power live: ${act.saved} comes off the block, and ${act.replacement} takes the empty chair.`);
         break;
       case 'twist-announcement':
         line('');

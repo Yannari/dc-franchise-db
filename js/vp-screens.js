@@ -17915,14 +17915,30 @@ export function rpBuildBBEviction(ep) {
     let stats = {};
     try { stats = pStats(name); } catch { stats = {}; }
     const profile = _bbSpeechProfile(ep, name, null);
-    const partnerCanVote = profile.partner && ballots.some(b => b.voter === profile.partner);
-    const alliesCanVote = profile.allies.filter(ally => ballots.some(b => b.voter === ally));
+    // The plea the MECHANICS resolved, when the week recorded one. The screen
+    // renders from it — same argument, same voice, same variant — so the words
+    // on screen and the plea that moved (or failed to move) the room can never
+    // be two different speeches. Old saves without a record fall back to the
+    // original derivation, which the resolver was built to mirror.
+    const record = (ep.finalPleas || []).find(r => r.speaker === name) || null;
+    const partnerName = record ? record.partner : profile.partner;
+    const partnerCanVote = partnerName && ballots.some(b => b.voter === partnerName);
+    const alliesCanVote = (record ? record.allies : profile.allies).filter(ally => ballots.some(b => b.voter === ally));
     const forceful = (stats.boldness || 5) >= 7
       || ['challenge-beast', 'hothead', 'chaos-agent', 'wildcard', 'villain'].includes(profile.arch);
     const reserved = (stats.social || 5) <= 4 || ['goat', 'underdog'].includes(profile.arch);
     const loyal = (stats.loyalty || 5) >= 7
       || ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(profile.arch);
-    const voice = forceful ? 'forceful' : reserved ? 'reserved' : loyal ? 'loyal' : 'strategic';
+    const voice = record?.voice
+      || (forceful ? 'forceful' : reserved ? 'reserved' : loyal ? 'loyal' : 'strategic');
+    const argType = record?.argumentType || (partnerCanVote ? 'showmance'
+      : profile.role === 'pawn' ? 'pawn-promise'
+      : profile.role === 'target' ? 'target-warning'
+      : profile.role === 'backdoor' ? 'backdoor-warning'
+      : (profile.threat >= 7 || profile.comps >= 2) ? 'competition-shield'
+      : profile.blockCount >= 3 ? 'repeat-nominee'
+      : alliesCanVote.length ? 'alliance-loyalty' : 'personal');
+    const vkey = record?.variantKey || '';
     const openings = {
       forceful: [
         `I am not going to beg anybody in this room.`, `Let us stop pretending this is an easy vote.`,
@@ -17973,17 +17989,17 @@ export function rpBuildBBEviction(ep) {
     };
     const speech = (argumentsPool, ...salt) => `“${vvar(openings[voice], name, voice, ...salt, 'open')} ${vvar(argumentsPool, name, voice, ...salt, 'case')} ${vvar(closings[voice], name, voice, ...salt, 'close')}”`;
 
-    if (partnerCanVote) return speech([
-      `${profile.partner}, everybody already sees us as a pair. Splitting us up does not erase that target; it leaves you carrying it alone.`,
-      `Keeping me gives ${profile.partner} one person whose vote is never a mystery and gives the rest of you two visible targets to put in front of yourselves.`,
-      `People have used my relationship with ${profile.partner} as a reason to fear me all week. Decide whether breaking us up helps you or only helps the people who already have numbers.`,
-      `${profile.partner}, you know which promises between us were personal and which were game. I meant both.`,
-      `If you evict me to weaken ${profile.partner}, be honest about who gets stronger when our two votes become one.`,
-      `I will not pretend ${profile.partner} and I are not close. I am telling you that a pair everybody sees is easier to plan around than a group nobody will name.`,
+    if (argType === 'showmance' && partnerName) return speech([
+      `${partnerName}, everybody already sees us as a pair. Splitting us up does not erase that target; it leaves you carrying it alone.`,
+      `Keeping me gives ${partnerName} one person whose vote is never a mystery and gives the rest of you two visible targets to put in front of yourselves.`,
+      `People have used my relationship with ${partnerName} as a reason to fear me all week. Decide whether breaking us up helps you or only helps the people who already have numbers.`,
+      `${partnerName}, you know which promises between us were personal and which were game. I meant both.`,
+      `If you evict me to weaken ${partnerName}, be honest about who gets stronger when our two votes become one.`,
+      `I will not pretend ${partnerName} and I are not close. I am telling you that a pair everybody sees is easier to plan around than a group nobody will name.`,
       `Keeping us together may look dangerous, but it keeps the danger in front of you where you can see it.`,
-      `${profile.partner} is going to remain a target whether I stay or leave. With me here, that target comes with another vote you can work with.`,
-    ], profile.partner, 'showmance');
-    if (profile.role === 'pawn') return speech([
+      `${partnerName} is going to remain a target whether I stay or leave. With me here, that target comes with another vote you can work with.`,
+    ], partnerName, vkey, 'showmance');
+    if (argType === 'pawn-promise') return speech([
       `I was told I was the pawn and that the votes were already there. I did my part by sitting in this chair; the people who made that promise can do theirs now.`,
       `This week was supposed to be about the person sitting beside me. Do not turn me into the move because the original move became uncomfortable.`,
       `I accepted the block because people I trusted said I would be safe. If that agreement means anything, tonight is when it has to mean something.`,
@@ -17992,8 +18008,8 @@ export function rpBuildBBEviction(ep) {
       `I was never presented as the target until the votes became convenient. Think about who changed that story and why.`,
       `If I leave from the pawn seat, the lesson is that nobody's word around a nomination means anything.`,
       `The plan did not fail because of me. Do not make me pay because the people running it lost their nerve.`,
-    ], 'pawn');
-    if (profile.role === 'target' || profile.role === 'backdoor') return speech([
+    ], vkey, 'pawn');
+    if (argType === 'target-warning' || argType === 'backdoor-warning') return speech([
       `I know I am the target. That does not mean I am your target, and the person who planned this week cannot cast a vote tonight.`,
       `This entire week was built to remove me. Before you finish that plan, ask whether it improves your position or only the Head of Household's.`,
       `The people most eager to see me leave are the people who become harder to challenge once I am gone.`,
@@ -18004,8 +18020,8 @@ export function rpBuildBBEviction(ep) {
       `Keeping me leaves a target in front of you and puts a vote beside you. Evicting me gives both advantages to somebody else.`,
       `Do not hand somebody a completed move simply because they spent the week calling it the house's decision.`,
       `The easiest explanation is that I am dangerous. The more important question is who becomes safest when I walk out.`,
-    ], profile.role);
-    if (profile.threat >= 7 || profile.comps >= 2) return speech([
+    ], vkey, argType);
+    if (argType === 'competition-shield') return speech([
       `Yes, I can win competitions. If you keep me, those wins can protect people in this room instead of the people already controlling the vote.`,
       `Everybody sees me as a threat, which means everybody knows I can be nominated again. A quieter threat will not give you that same warning.`,
       `If I am the biggest target here, keeping me gives every one of you another week without being the biggest target yourself.`,
@@ -18014,8 +18030,8 @@ export function rpBuildBBEviction(ep) {
       `You already know I will touch the block again. That makes me predictable, and predictable danger can be useful.`,
       `I cannot make myself look harmless, so I will offer something better: a target in front of you and a competitor beside you.`,
       `If you keep me, tell me where the power needs to land next. I have every reason to listen.`,
-    ], profile.comps, 'threat');
-    if (profile.blockCount >= 3) return speech([
+    ], profile.comps, vkey, 'threat');
+    if (argType === 'repeat-nominee') return speech([
       `I have been on the block ${profile.blockCount} times. Bigger groups have used every one of those weeks to settle in while I fought just to stay.`,
       `You know exactly what happens when I survive because you have seen it before. I stay, I keep playing and I remain a target in front of you.`,
       `Stop confusing the person you are used to nominating with the person most dangerous to your game.`,
@@ -18024,8 +18040,8 @@ export function rpBuildBBEviction(ep) {
       `I have survived these chairs before without punishing everyone who kept me. That should count for more than another promise that I am safe.`,
       `Keeping me leaves the house an obvious nominee and gives somebody an available number. Evicting me only clears space for a quieter game.`,
       `I am still here because I keep finding a way through weeks like this. Give me one more chance to find it.`,
-    ], profile.blockCount, 'repeat');
-    if (alliesCanVote.length) return speech([
+    ], profile.blockCount, vkey, 'repeat');
+    if (argType === 'alliance-loyalty' && alliesCanVote.length) return speech([
       `I am not going to name private meetings on live television. The people who sat in them know what we agreed to do for one another.`,
       `Some of us have made decisions together already. If those numbers only matter when I am providing one, then we never had numbers.`,
       `I shared information, took risks and protected people in this room. I am asking whether any of that comes back when I need it.`,
@@ -18034,7 +18050,7 @@ export function rpBuildBBEviction(ep) {
       `If our agreements disappear the first time one of us touches the block, everybody outside them deserves to know how little they were worth.`,
       `I will not list names or expose deals. If we had something real, you already know what to do.`,
       `I have voted beside people in this room when it was not the easiest choice. Tonight I am asking those people to stand beside me.`,
-    ], ...alliesCanVote, 'alliance');
+    ], ...alliesCanVote, vkey, 'alliance');
     const personalCases = {
       forceful: [
         `Keeping me means keeping somebody willing to win power and make a decision instead of waiting for permission.`,
@@ -18092,6 +18108,15 @@ export function rpBuildBBEviction(ep) {
     const voter = _bbEsc(b.voter);
     const target = _bbEsc(b.evict);
     const other = noms.find(n => n !== b.evict);
+    // A vote the final plea moved says so, before any other explanation —
+    // it is the rarest thing on this stage and the whole reason the pleas
+    // have mechanics.
+    if (b.pleaMove && b.movedBy) return vvar([
+      `${voter} walked into this room planning to write <strong>${_bbEsc(b.movedBy)}</strong>. The speech ten minutes ago is why ${pv(b.voter).sub} does not.`,
+      `Whatever ${voter} decided this week, ${_bbEsc(b.movedBy)}'s final plea just undecided it. The ballot lands on ${target}.`,
+      `${voter} heard something in ${_bbEsc(b.movedBy)}'s plea that three days of campaigning never said. One vote moves, live.`,
+      `The count everybody took this afternoon did not include this: ${voter}, moved off ${_bbEsc(b.movedBy)} by the last words ${pv(b.movedBy).sub} said standing up.`,
+    ], b.voter, b.evict, 'plea-moved');
     if (broke) return vvar([
       `${voter}'s stated plan pointed at <strong>${_bbEsc(b.stated)}</strong>; the private ballot lands on <strong>${target}</strong>. The audience sees the betrayal before the house can even suspect it.`,
       `${voter} promised a different vote. Behind the Diary Room door, nobody can challenge the switch or ask who changed ${pv(b.voter).posAdj} mind.`,
@@ -18257,6 +18282,7 @@ export function rpBuildBBEviction(ep) {
           { k: 'wanted', v: b.preference },
           ...(b.assignment ? [{ k: b.assignment.kind === 'recruited' ? `asked by ${b.assignment.recruiter || b.assignment.by}` : `${b.assignment.by} asked`, v: b.assignment.target }] : []),
           ...(b.stated ? [{ k: 'told the house', v: b.stated }] : []),
+          ...(b.pleaMove && b.prePleaEvict ? [{ k: `${b.movedBy}'s plea`, v: b.evict }] : []),
           { k: 'casts', v: b.evict, final: true },
         ].filter(st => st.v);
         const chain = chainSteps.length > 1 ? `<div class="bbev-chain">${
@@ -18265,9 +18291,9 @@ export function rpBuildBBEviction(ep) {
             .join('<span class="bbev-chain-arrow">→</span>')}</div>` : '';
         return `<div class="bbns-card bbev-ballot ${broke || lied ? 'is-broke' : ''}">
           <div class="bbns-card-h">${_bbAvatar(b.voter, 30)}<span class="bbns-pill ${
-            broke || lied ? 'red' : b.blocMove ? 'blue' : b.recruitedBy ? 'green' : b.bandwagon ? 'gold'
+            b.pleaMove ? 'gold' : broke || lied ? 'red' : b.blocMove ? 'blue' : b.recruitedBy ? 'green' : b.bandwagon ? 'gold'
             : c?.promised ? 'green' : b.assignment ? 'blue' : 'grey'}">${
-            broke ? 'BREAKS THEIR WORD' : lied ? 'SAID ONE NAME, WRITES ANOTHER' : b.blocMove ? 'VOTES WITH THE BLOC'
+            b.pleaMove ? 'MOVED BY THE PLEA' : broke ? 'BREAKS THEIR WORD' : lied ? 'SAID ONE NAME, WRITES ANOTHER' : b.blocMove ? 'VOTES WITH THE BLOC'
             : b.recruitedBy ? 'SIGNED ON THIS WEEK' : b.bandwagon ? 'JOINS THE WINNING SIDE'
             : c?.promised ? 'KEEPS A PROMISE' : b.assignment ? 'VOTES WITH THE ROOM' : 'THE DIARY ROOM'}</span></div>
           <div class="bbns-card-b">${ballotScene(b, c, broke || lied)}${chain}</div></div>`;

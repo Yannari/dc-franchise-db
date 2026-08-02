@@ -28,7 +28,7 @@ import {
 import { scheduleHouseBeats } from './house-events.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
-import { runVoteOperation } from './vote-operation.js';
+import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
@@ -1283,7 +1283,7 @@ export function simulateBBWeek(options = {}) {
         const temper = pStats(replacement).temperament;
         const bondHit = -(0.8 + (10 - temper) * 0.08);
         addBond(replacement, hoh, bondHit);
-        try { rememberStrategy(replacement, hoh, 'renomination', 2, { act: 'veto-ceremony' }, { act: 'veto-ceremony' }); } catch { /* memory is texture */ }
+        try { rememberStrategy(replacement, hoh, 'renomination', week.num, 2, { act: 'veto-ceremony' }); } catch { /* memory is texture */ }
         const effects = [{ kind: 'bond', text: `${replacement} & ${hoh} ${bondHit.toFixed(1)}`, delta: bondHit }];
         // The hotter the head, the more likely the week now has a mission.
         if (rng() < ((10 - temper) / 10) * 0.5) {
@@ -1484,6 +1484,19 @@ export function simulateBBWeek(options = {}) {
   // private reads (allies assumed with you, strangers guessed from bonds),
   // while `truth` is now the ballots as they will actually be cast.
   week.votePlans = buildHouseVotePlans({ ballots, nominees, hoh });
+  // The final pleas, with mechanics — AFTER the forecast, because the Voting
+  // Plans screen is the house's read walking into the live show, and a plea
+  // that lands is exactly the thing a forecast cannot see. The verdict is
+  // then re-trued against the post-plea ballots so a plea-moved vote does not
+  // read as everybody having counted wrong.
+  week.finalPleas = resolveFinalPleas({ nominees, ballots, hoh, week, commitments, rng });
+  if ((ballots || []).some(b => b.pleaMove)) {
+    for (const p of week.votePlans) {
+      p.truth = ballots.filter(b => b.evict === p.target).length;
+      p.error = p.believed - p.truth;
+      p.wrong = (p.believed >= p.majority) !== (p.truth >= p.majority);
+    }
+  }
   week.voteBroken = ballots
     .filter(b => b.stated !== b.evict && commitments.get(b.voter)?.promised)
     .map(b => ({ voter: b.voter, promised: b.stated, cast: b.evict }));

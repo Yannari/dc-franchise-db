@@ -171,6 +171,11 @@ export function weekToEpisode(week) {
     // The whole operation — meetings, stances, approaches, refusals, lies —
     // travels with the episode, because the Voting Plans screen is a rendering
     // of it and a replay with only the ballots would have nothing to say.
+    finalPleas: (week.finalPleas || []).map(r => ({
+      ...r, factsUsed: r.factsUsed.map(f => ({ ...f })),
+      eligibleListeners: [...r.eligibleListeners], responses: r.responses.map(x => ({ ...x })),
+      allies: [...(r.allies || [])],
+    })),
     voteOperation: week.voteOperation
       ? {
         majority: week.voteOperation.majority,

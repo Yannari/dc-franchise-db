@@ -25,8 +25,10 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { tacticalCooperation } from '../relationships.js';
-import { bbAllianceStrength } from './shared-strategy.js';
+import { tacticalCooperation, getRelationshipDimensions, addRelationshipDimension, targetProtection } from '../relationships.js';
+import { rememberStrategy } from '../strategy-memory.js';
+import { listBlocs, learnAbout } from './blocs.js';
+import { bbAllianceStrength, bbThreat, getBBTarget } from './shared-strategy.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -285,4 +287,229 @@ export function runVoteOperation({ ballots = [], nominees = [], hoh = null, comm
     });
 
   return { plans, independents, moves, majority };
+}
+
+/**
+ * Step 9's opening act: the final pleas, with mechanics.
+ *
+ * The pleas rendered after the ballots were already decided, which made them
+ * scenery — a speech that cannot move a vote is not a plea, it is a eulogy.
+ * This resolves them where the show does: after the campaigns, the rooms and
+ * the bandwagon have settled, and immediately before the tally.
+ *
+ * Restraint is the design constraint. Real pleas move zero votes most weeks
+ * and one vote sometimes; a house-wide flip from a speech is fiction. Firm
+ * commitments and endgame deals barely hear the speech; the loose, the
+ * conflicted and the unowned are who a plea is actually for.
+ *
+ * Each nominee gets a STRUCTURED record — argument type, voice, the facts the
+ * argument leans on and whether the state actually supports them, and one
+ * response per eligible voter. The eviction screen renders its speech FROM
+ * this record, so the words on screen and the mechanics that moved (or did
+ * not move) the room can never be two different pleas.
+ */
+export function resolveFinalPleas({ nominees = [], ballots = [], hoh = null, week = null, commitments = new Map(), rng = Math.random } = {}) {
+  if (nominees.length !== 2 || !ballots.length) return [];
+  ballots.forEach(b => { b.prePleaEvict = b.evict; });
+  const weekNum = week?.num || (gs.episode || 0) + 1;
+  const plan = week?.plan || {};
+  const stats = name => { try { return pStats(name); } catch { return {}; } };
+  const suspicionOf = (a, b) => gs.bb?.house?.suspicion?.[`${a}→${b}`] || 0;
+  const bumpSuspicion = (a, b, d) => {
+    gs.bb ||= {};
+    gs.bb.house ||= { suspicion: {}, targets: {}, memories: {}, eventHistory: [] };
+    gs.bb.house.suspicion ||= {};
+    const key = `${a}→${b}`;
+    gs.bb.house.suspicion[key] = clamp((gs.bb.house.suspicion[key] || 0) + d, 0, 10);
+  };
+
+  const records = nominees.map(speaker => {
+    const other = nominees.find(n => n !== speaker);
+    const s = stats(speaker);
+    const arch = archetype(speaker);
+    const rec = gs.bb?.stats?.[speaker] || {};
+    const comps = (rec.hohWins || 0) + (rec.vetoWins || 0) + (rec.blockBusterWins || 0);
+    const blockCount = rec.timesOnTheBlock || 0;
+
+    // ── The argument, in the same priority order the speech pools use ──
+    const showmance = (gs.showmances || [])
+      .find(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).includes(speaker)) || null;
+    const partner = showmance?.players?.find(n => n !== speaker) || null;
+    const partnerVotes = !!partner && ballots.some(b => b.voter === partner);
+    const allies = [...new Set((gs.namedAlliances || [])
+      .filter(a => a.active !== false && (a.members || []).includes(speaker))
+      .flatMap(a => a.members.filter(m => m !== speaker)))]
+      .filter(ally => ballots.some(b => b.voter === ally));
+    let threat = 0;
+    try { threat = bbThreat(speaker); } catch { threat = 0; }
+    const argumentType = partnerVotes ? 'showmance'
+      : plan.pawn === speaker ? 'pawn-promise'
+      : plan.backdoorTarget === speaker ? 'backdoor-warning'
+      : plan.target === speaker ? 'target-warning'
+      : (threat >= 7 || comps >= 2) ? 'competition-shield'
+      : blockCount >= 3 ? 'repeat-nominee'
+      : allies.length ? 'alliance-loyalty'
+      : 'personal';
+
+    // ── The voice, mirrored from the speech selector ──
+    const forceful = (s.boldness || 5) >= 7
+      || ['challenge-beast', 'hothead', 'chaos-agent', 'wildcard', 'villain'].includes(arch);
+    const reserved = (s.social || 5) <= 4 || ['goat', 'underdog'].includes(arch);
+    const loyal = (s.loyalty || 5) >= 7
+      || ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(arch);
+    const voice = forceful ? 'forceful' : reserved ? 'reserved' : loyal ? 'loyal' : 'strategic';
+
+    // ── The facts the argument leans on, each checked against the state ──
+    const factsUsed = [];
+    if (argumentType === 'pawn-promise') factsUsed.push({
+      claim: 'was promised safety as the pawn',
+      supported: week?.pawnAsk?.pawn === speaker || (gs.sideDeals || []).some(d => d.active !== false
+        && d.type === 'safety' && (d.players || []).includes(speaker)),
+    });
+    if (argumentType === 'backdoor-warning') factsUsed.push({
+      claim: 'this week was built as a backdoor',
+      supported: plan.backdoorTarget === speaker || week?.vetoDecision?.replacement === speaker,
+    });
+    if (argumentType === 'target-warning') factsUsed.push({
+      claim: 'a group is finishing a plan tonight',
+      supported: (week?.voteOperation?.plans || []).some(p => p.target === speaker),
+    });
+    if (argumentType === 'competition-shield') factsUsed.push({
+      claim: `has won ${comps} competitions`, supported: comps >= 1 || threat >= 7,
+    });
+    // A liar embellishes. Proportional to how the person plays — never a
+    // threshold, and never free: an unsupported claim persuades until an
+    // intuitive voter catches it, and then it costs more than it bought.
+    const lieChance = clamp((s.strategic || 5) * 0.04 + (10 - (s.loyalty || 5)) * 0.04
+      + ({ villain: 0.15, schemer: 0.12, mastermind: 0.12, 'chaos-agent': 0.08 }[arch] || 0), 0, 0.55);
+    if (rng() < lieChance) {
+      factsUsed.push({ claim: `the votes to keep ${speaker} are already there`, supported: false });
+    }
+    // A strategic speaker may expose a REAL deal the other nominee holds —
+    // true, damaging, and the exposed voter does not thank them for it.
+    let exposedVoter = null;
+    if ((argumentType === 'target-warning' || argumentType === 'backdoor-warning')
+      && rng() < (s.strategic || 5) * 0.05) {
+      const held = ballots.map(b => b.voter).find(v => {
+        const deal = dealBetween(other, v);
+        return deal && sincerityOf(deal, other) > 0.4;
+      });
+      if (held) {
+        exposedVoter = held;
+        factsUsed.push({ claim: `${other} is protected by a deal with ${held}`, supported: true, exposes: held });
+      }
+    }
+
+    return {
+      speaker, argumentType, voice, factsUsed,
+      eligibleListeners: ballots.map(b => b.voter),
+      responses: [], variantKey: `${weekNum}|${speaker}|${argumentType}|${voice}`,
+      other, exposedVoter, threat, comps, blockCount,
+      partner: partnerVotes ? partner : null, allies,
+    };
+  });
+
+  // ── Every voter answers every plea, independently ──
+  for (const record of records) {
+    const { speaker, other } = record;
+    const s = stats(speaker);
+    const unsupported = record.factsUsed.filter(f => !f.supported);
+    for (const ballot of ballots) {
+      const voter = ballot.voter;
+      const v = stats(voter);
+      const dims = getRelationshipDimensions(voter, speaker);
+      const c = commitments.get(voter);
+      const strength = c?.strength ?? 0.4;
+
+      // An intuitive voter catches an unsupported claim, and the plea dies
+      // with it — for THIS voter. Catching is private; the room does not gasp.
+      const caught = unsupported.length > 0
+        && rng() < clamp((v.intuition || 5) * 0.075 + (v.strategic || 5) * 0.035, 0, 0.8);
+
+      // Does keeping the speaker actually serve this voter's game?
+      const benefit = Math.max(0, -getPerceivedBond(voter, other)) * 0.3
+        + (getBBTarget(voter) === other ? 2 : 0);
+
+      const persuade = (s.social || 5) * 0.28 + (s.strategic || 5) * 0.14
+        + (record.voice === 'forceful' ? (s.boldness || 5) * 0.08 : 0)
+        + dims.trust * 0.35 + dims.obligation * 0.3 + dims.affection * 0.15
+        - dims.resentment * 0.35 - suspicionOf(voter, speaker) * 0.3
+        + benefit
+        + (caught ? -3 : unsupported.length * 0.7);
+
+      const keepDeal = dealBetween(voter, other);
+      const resist = strength * 5.5
+        + (ballot.assignment ? 2.2 : 0)
+        + (keepDeal ? sincerityOf(keepDeal, voter) * (tierOf(keepDeal) === 'final-two' ? 3.2 : 2.2) : 0)
+        + Math.max(0, targetProtection(voter, other)) * 0.35
+        + (v.loyalty || 5) * 0.1;
+
+      const margin = persuade - resist + noise(rng, 2);
+      record.responses.push({
+        voter, margin: Number(margin.toFixed(2)), caught,
+        receptive: !caught && margin > 0,
+        evictingSpeaker: ballot.evict === speaker,
+      });
+
+      // ── Restrained social consequences, all directional ──
+      if (caught) {
+        addRelationshipDimension(voter, speaker, 'trust', -0.8);
+        bumpSuspicion(voter, speaker, 0.6);
+      } else if (margin > 0 && (record.voice === 'loyal' || record.argumentType === 'personal')) {
+        addRelationshipDimension(voter, speaker, 'trust', 0.5);
+        addRelationshipDimension(voter, speaker, 'obligation', 0.4);
+      }
+      if (record.voice === 'forceful' && margin < 0) {
+        addRelationshipDimension(voter, speaker, 'resentment', 0.5);
+        bumpSuspicion(voter, speaker, 0.3);
+        try { rememberStrategy(voter, speaker, 'threatened-me-live', weekNum, 1, { plea: record.argumentType }); } catch { /* texture */ }
+      }
+      // A callout about the structure lands only with the voters who BELIEVE
+      // it — awareness is not broadcast, it is accepted or it is not.
+      if (record.argumentType === 'target-warning' && !caught && margin > 0) {
+        try {
+          for (const bloc of listBlocs()) {
+            if ((week?.voteOperation?.plans || []).some(p => p.alliance === bloc.label && p.target === speaker)) {
+              learnAbout(voter, bloc, 0.15, `${speaker} named the structure in a final plea`);
+            }
+          }
+        } catch { /* knowledge store optional in harnesses */ }
+      }
+    }
+    // The exposed voter's answer to being named on live television.
+    if (record.exposedVoter) {
+      addRelationshipDimension(record.exposedVoter, speaker, 'resentment', 0.8);
+      try { rememberStrategy(record.exposedVoter, speaker, 'exposed-on-live', weekNum, 2, { deal: true }); } catch { /* texture */ }
+    }
+  }
+
+  // ── Movement: normally zero or one; two is rare and earned ──
+  for (const record of records) {
+    const candidates = record.responses
+      .filter(r => r.evictingSpeaker && !r.caught && r.margin > 1.3)
+      .sort((a, b) => b.margin - a.margin);
+    let moved = 0;
+    for (const response of candidates) {
+      const ballot = ballots.find(b => b.voter === response.voter);
+      if (!ballot || ballot.evict !== record.speaker) continue;
+      if (moved >= 2) break;
+      // The second vote has a much higher bar: a big margin AND a genuinely
+      // loose ballot. A speech does not reorganise a house.
+      if (moved === 1) {
+        const strength = commitments.get(response.voter)?.strength ?? 0.4;
+        if (response.margin <= 3.2 || strength >= 0.35) break;
+      }
+      ballot.evict = record.other;
+      ballot.changed = true;
+      ballot.pleaMove = true;
+      ballot.movedBy = record.speaker;
+      ballot.pleaArgument = record.argumentType;
+      ballot.pleaMargin = response.margin;
+      response.moved = true;
+      moved++;
+      try { rememberStrategy(record.speaker, response.voter, 'final-plea-saved-me', weekNum, 2, { argument: record.argumentType }); } catch { /* texture */ }
+    }
+  }
+
+  return records;
 }

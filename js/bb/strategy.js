@@ -153,7 +153,12 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     structures.push({
       kind: 'target-pawn', nominees: [primary.name, pawn], target: primary.name, pawn,
       why: `${pawn} sits beside ${primary.name} so the vote has nowhere else to go`,
-      score: 6 + clamp(margin, -3, 3) * 0.9
+      // Trimmed from a universal 6: the wiki frames the pawn chiefly as
+      // backdoor infrastructure and a vote-focusing tool, not the weekly
+      // default — and the smaller the house, the more one focused vote is
+      // worth, which is the term that grows here.
+      score: 4.6 + clamp(margin, -3, 3) * 0.9
+        + clamp((9 - eligible.length) * 0.22, 0, 1.4)
         + hohStats.social * 0.08
         + ({ mastermind: 1, schemer: 0.8, 'perceptive-player': 0.6, 'loyal-soldier': 0.4 }[arch] || 0),
     });
@@ -210,9 +215,16 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
       const [e1, e2] = outsiders.sort((a, b) => heat(b) - heat(a));
       structures.push({
         kind: 'expendables', nominees: [e1, e2], target: e1, pawn: null,
-        why: `two names nobody starts a war over — a quiet week bought on purpose`,
-        score: 3.4 + hohStats.temperament * 0.12 + (10 - hohStats.boldness) * 0.1 - enemies * 0.3
-          + ({ floater: 1.2, goat: 1.2, 'social-butterfly': 0.9, hero: 0.6, underdog: 0.5 }[arch] || 0),
+        why: `the house's easy names — nobody starts a war over these two, and the week stays quiet`,
+        // Not merely the conflict-averse personality's play: season coverage
+        // shows risk-averse, house-consensus nominations of the weak and the
+        // quiet as the DEFAULT early-game move — Heads of Household would
+        // rather seat somebody who cannot win next week and dethrone them.
+        // The big-house term carries that; at seven people nobody is
+        // expendable and the term is gone.
+        score: 3.4 + clamp((eligible.length - 6) * 0.55, 0, 3.4)
+          + hohStats.temperament * 0.1 + (10 - hohStats.boldness) * 0.08 - enemies * 0.3
+          + ({ floater: 1.1, goat: 1.1, 'social-butterfly': 0.8, hero: 0.6, underdog: 0.5 }[arch] || 0),
       });
     }
   }

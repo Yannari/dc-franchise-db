@@ -164,8 +164,9 @@ describe('the Big Brother visual player', () => {
 
   it('hides what has not been revealed yet', () => {
     const html = buildBBWeekScreens(week()).map(s => s.html).join('');
-    // Unrevealed scenes render as dimmed placeholders, as in Total Drama.
-    expect(html).toContain('opacity:0.12');
+    // Unrevealed scenes render as dimmed placeholders — the older screens use
+    // the inline opacity style, the ceremony-family screens the is-hidden card.
+    expect(/opacity:0\.12|bbns-card is-hidden/.test(html)).toBe(true);
     // The set pieces name their buttons after the moment ("Go live", "Next
     // vote", "The decision"), so the stable marker of an ungated reveal is the
     // Reveal-all escape hatch every one of them offers.

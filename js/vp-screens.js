@@ -20442,79 +20442,129 @@ export function rpBuildBBDebug(ep) {
   });
 }
 
+/**
+ * THE EXIT INTERVIEW — a studio, not a list.
+ *
+ * The real segment has a shape the old screen ignored: the walk-out (the
+ * audience's verdict lands before a word is said), the sit-down where the
+ * host catches the raw reaction and then confronts the evictee with what
+ * they never saw, the goodbye messages — prerecorded farewells played on a
+ * monitor, where the orchestrator traditionally reveals themselves — and
+ * the car to the jury house or home. Each goodbye is a TV frame now, and
+ * the camera stays on the person watching it.
+ */
 export function rpBuildBBEvictionInterview(ep) {
   const iv = ep.evictionInterview;
   if (!iv) return '';
   const stateKey = `bb_iv_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
+  const p = (n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } })(iv.evictee);
 
-  // Questions first, then every goodbye message, then the parting line.
   const steps = [
+    { kind: 'walkout' },
     ...iv.questions.map(q => ({ kind: 'q', ...q })),
-    ...iv.goodbyes.map(g => ({ kind: 'bye', ...g })),
+    ...(iv.truth ? [{ kind: 'truth' }] : []),
+    ...(iv.goodbyes?.length ? [{ kind: 'byes-intro' }] : []),
+    ...(iv.goodbyes || []).map(g => ({ kind: 'bye', ...g })),
     { kind: 'parting' },
+    { kind: 'car' },
   ];
-  const done = state.idx >= steps.length - 1;
-  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
-    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
-    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+  const total = steps.length;
+  const revealed = Math.max(0, state.idx + 1);
+  const done = state.idx >= total - 1;
 
-  let html = `<div class="rp-page bb-room bb-live">
-    <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.3);margin-bottom:6px">THE EVICTEE INTERVIEW</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${iv.evictee} has left the Big Brother house.</div>
-    <div style="display:flex;justify-content:center;margin-bottom:18px">${rpPortrait(iv.evictee, 'evicted')}</div>`;
-
-  steps.forEach((step, i) => {
-    if (i > state.idx) {
-      html += `<div style="padding:10px;margin-bottom:5px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
-      return;
-    }
-    if (step.kind === 'q') {
-      html += `<div class="rp-brant-entry" style="border-left:3px solid #8b949e;flex-direction:column;align-items:flex-start;gap:6px">
-        <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#8b949e;font-style:italic">${_bbAvatar(iv.host, 22)}<span><strong style="font-style:normal;color:#c9d1d9">${_bbEsc(iv.host)}</strong> — ${step.q}</span></div>
-        <div class="rp-brant-text" style="width:100%">${step.a}</div>
-        ${step.wrong ? `<span class="rp-brant-badge red">WRONG</span>` : step.loaded ? `<span class="rp-brant-badge gold">LOADED</span>` : ''}
-      </div>`;
-    } else if (step.kind === 'bye') {
-      const color = step.tone === 'confession' ? '#d29922' : step.tone === 'unapologetic' ? '#f85149' : step.tone === 'warm' ? '#3fb950' : '#8b949e';
-      html += `<div class="rp-brant-entry" style="border-left:3px solid ${color};background:${color}0a">
-        <div class="rp-brant-portraits">${rpPortrait(step.name)}</div>
-        <div class="rp-brant-text">${step.text}</div>
-        <span class="rp-brant-badge ${step.tone === 'unapologetic' || step.tone === 'confession' ? 'red' : step.tone === 'warm' ? 'green' : ''}">${step.tone === 'confession' ? 'CONFESSION' : step.against ? 'VOTED AGAINST' : 'KEPT YOU'}</span>
-      </div>`;
-    } else {
-      html += `<div class="rp-brant-entry" style="border-left:3px solid #c9343c;flex-direction:column;align-items:center;text-align:center;padding:18px">
-        <div class="rp-brant-text" style="font-size:14px;font-style:italic">${iv.parting}</div>
-        <span class="rp-brant-badge red">${iv.evictee.toUpperCase()}</span>
-      </div>`;
-    }
-  });
-
-  if (done) {
-    // The wall after the eviction: whoever just walked out has gone grey.
-    const left = (ep.houseAtStart || []).filter(n => n !== iv.evictee);
-    html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-      <div style="text-align:center;font-size:10px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px">The memory wall</div>
-      ${_bbMemoryWall(left, { note: `${left.length} houseguests remain` })}
-    </div>`;
-  }
-
-  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-    ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, steps.length - 1))}">Next</button>`}
-    ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(steps.length - 1)}">Play the whole interview</button>`}
-    <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(steps.length, Math.max(0, state.idx + 1))} / ${steps.length}</span>
+  // ── the studio ──
+  const crowd = iv.walkout?.crowd || 'warm';
+  const crowdLabel = crowd === 'stunned' ? 'A STUNNED HOUSE CROWD' : crowd === 'split' ? 'CHEERS AND BOOS, ABOUT EVENLY' : 'ON ITS FEET';
+  const stage = `<div class="biv-stage ${done ? 'is-done' : ''}">
+    <div class="biv-strip"><span class="biv-onair"><i></i>${done ? 'WRAPPED' : 'ON AIR'}</span>
+      <span class="biv-show">THE EXIT INTERVIEW</span>
+      <span class="biv-wk">WEEK ${ep.num}</span></div>
+    <div class="biv-desk">
+      <div class="biv-seat"><div class="biv-frame">${_bbAvatar(iv.host, 74)}</div><div class="biv-name">${_bbEsc(iv.host)}</div><div class="biv-role">HOST</div></div>
+      <div class="biv-monitor ${state.idx >= 0 ? 'is-live' : ''}">
+        <div class="biv-mon-screen">${steps[Math.min(state.idx, total - 1)]?.kind === 'bye' ? _bbAvatar(steps[Math.min(state.idx, total - 1)].name, 56) : `<span class="biv-mon-idle">BB</span>`}</div>
+        <div class="biv-mon-tag">${steps[Math.min(state.idx, total - 1)]?.kind === 'bye' ? 'RECORDED EARLIER' : 'STUDIO FEED'}</div>
+      </div>
+      <div class="biv-seat"><div class="biv-frame is-evicted">${_bbAvatar(iv.evictee, 74)}</div><div class="biv-name">${_bbEsc(iv.evictee)}</div><div class="biv-role">EVICTED ${Object.values(iv.votes || {}).sort((a, b) => b - a).join('–') || ''}</div></div>
+    </div>
+    <div class="biv-crowd"><span class="biv-lights">${Array.from({ length: 24 }, (_, i) => `<i style="animation-delay:${(i % 6) * 0.35}s"></i>`).join('')}</span>
+      <span class="biv-crowd-t">${crowdLabel}</span></div>
   </div>`;
 
-  if (done && iv.blamed) {
-    html += `<div style="text-align:center;margin-top:16px;padding:14px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;letter-spacing:1.5px;color:#8b949e;text-transform:uppercase">Leaves believing it was</div>
-      <div style="font-family:var(--font-display);font-size:18px;color:${iv.blameCorrect ? '#3fb950' : '#f85149'};margin-top:4px">${iv.blamed}${iv.blameCorrect ? '' : ' — and is wrong'}</div>
-      ${iv.blameCorrect ? '' : `<div style="font-size:11px;color:#8b949e;margin-top:4px">That is what goes to the jury with ${pronouns(iv.evictee).obj}.</div>`}
-    </div>`;
-  }
-  return html + `</div>`;
+  // ── the cards ──
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'walkout':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill red">THE WALK</span></div>
+          <div class="bbns-card-b">${iv.walkout?.line || `${_bbEsc(iv.evictee)} walks out to the studio.`}</div></div>`;
+      case 'q':
+        return `<div class="bbns-card biv-qa">
+          <div class="biv-q">${_bbAvatar(iv.host, 26)}<div class="biv-bubble is-host">${step.q}</div></div>
+          <div class="biv-a"><div class="biv-bubble is-guest">${step.a}</div>${_bbAvatar(iv.evictee, 26)}</div>
+          ${step.wrong ? `<span class="bbns-pill red biv-flag">NAMES THE WRONG PERSON</span>` : ''}</div>`;
+      case 'truth': {
+        const t = iv.truth;
+        const rows = [];
+        if (t.organizer) rows.push(`<div class="biv-truth-row">${_bbAvatar(t.organizer, 24)}<span><strong>${_bbEsc(t.organizer)}</strong> organised it${t.alliance ? ` — ${_bbEsc(t.alliance)} counted the votes in a bedroom days ago` : ''}${t.expected != null ? `, and walked into the night counting ${t.expected} votes with ${t.majority} needed` : ''}.</span></div>`);
+        for (const liar of t.liars || []) rows.push(`<div class="biv-truth-row">${_bbAvatar(liar, 24)}<span><strong>${_bbEsc(liar)}</strong> said one name to the house and wrote another in the Diary Room.</span></div>`);
+        return `<div class="bbns-card is-key biv-truth">
+          <div class="bbns-card-h">${_bbAvatar(iv.host, 30)}<span class="bbns-pill gold">WHAT ${_bbEsc(iv.evictee).toUpperCase()} NEVER SAW</span></div>
+          <div class="bbns-card-b">"Before the goodbyes — there are a couple of things you should know." ${rows.join('')}
+          <div class="biv-truth-react">${t.reaction || ''}</div></div></div>`;
+      }
+      case 'byes-intro':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${_bbAvatar(iv.host, 30)}<span class="bbns-pill grey">THE GOODBYES</span></div>
+          <div class="bbns-card-b">"Your housemates recorded some messages, in case tonight went the way it went." The monitor comes on, and ${_bbEsc(iv.evictee)} turns to face it.</div></div>`;
+      case 'bye': {
+        if (step.tone === 'montage') {
+          return `<div class="bbns-card biv-bye is-flat">
+            <div class="biv-tv"><div class="biv-tv-top"><span class="biv-rec"><i></i>REC</span><span>THE REST OF THE HOUSE</span><span class="bbns-pill grey">MONTAGE</span></div>
+            <div class="biv-tv-screen"><div class="biv-montage-faces">${(step.montage || []).slice(0, 7).map(n => _bbAvatar(n, 30)).join('')}</div><div class="biv-tv-text">${step.text}</div></div></div></div>`;
+        }
+        const toneCls = step.tone === 'confession' ? 'is-confess' : step.tone === 'unapologetic' ? 'is-cold' : step.tone === 'warm' ? 'is-warm' : 'is-flat';
+        const pill = step.tone === 'confession' ? 'CONFESSION' : step.tone === 'unapologetic' ? 'NO APOLOGY' : step.tone === 'warm' ? 'FROM THE HEART' : 'POLITE';
+        const pillCls = step.tone === 'confession' ? 'gold' : step.tone === 'unapologetic' ? 'red' : step.tone === 'warm' ? 'green' : 'grey';
+        return `<div class="bbns-card biv-bye ${toneCls}">
+          <div class="biv-tv">
+            <div class="biv-tv-top"><span class="biv-rec"><i></i>REC</span><span>${_bbEsc(step.name).toUpperCase()} · GOODBYE MESSAGE</span><span class="bbns-pill ${pillCls}">${pill}</span></div>
+            <div class="biv-tv-screen">${_bbAvatar(step.name, 48)}<div class="biv-tv-text">${step.text}</div></div>
+            <div class="biv-tv-bar">${step.against ? 'VOTED TO EVICT YOU' : 'VOTED TO KEEP YOU'}</div>
+          </div>
+          ${step.react ? `<div class="biv-react">${_bbAvatar(iv.evictee, 22)}<span>${step.react}</span></div>` : ''}</div>`;
+      }
+      case 'parting':
+        return `<div class="bbns-card is-final">
+          <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill gold">THE LAST WORD</span></div>
+          <div class="bbns-card-b">${iv.parting}</div></div>`;
+      case 'car':
+        return `<div class="bbns-card is-final biv-car">
+          <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill ${iv.joinsJury ? 'gold' : 'grey'}">${iv.joinsJury ? 'TO THE JURY HOUSE' : 'GOING HOME'}</span></div>
+          <div class="bbns-card-b">${iv.joinsJury
+            ? `The car outside is not going home — it is going to the jury house, where ${_bbEsc(iv.evictee)} will spend the rest of the season deciding who deserves to win a game ${p.sub} just lost. Everybody still inside should think about that.`
+            : `The car takes ${_bbEsc(iv.evictee)} home. The season goes on without ${p.obj} — but the tapes are forever, and ${p.sub} has a lot of television to catch up on.`}</div></div>`;
+      default:
+        return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    }
+  };
+
+  return `<div class="rp-page bb-room bb-live biv">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.3);margin-bottom:4px">THE EXIT INTERVIEW</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${_bbEsc(iv.evictee)} has left the Big Brother house.</div>
+    ${stage}
+    <div class="bbns-cards">${steps.map((st, i) => card(st, i)).join('')}</div>
+    <div class="bbns-controls">
+      ${done ? '<span class="bbns-done">And that is the interview.</span>' : `
+        <button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${state.idx < 0 ? 'Open the doors' : 'Reveal next'}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="bbns-counter">${Math.min(total, revealed)} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /** The three-part Head of Household, on one screen. */

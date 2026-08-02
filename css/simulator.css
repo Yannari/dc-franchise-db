@@ -1168,6 +1168,89 @@
     .bbop-secret   { margin-top:6px; padding:5px 9px; border-radius:6px; font-size:10.5px;
                      background:rgba(248,81,73,.08); border-left:3px solid rgba(248,81,73,.5); color:#ffb3ae; }
 
+    /* ── THE EXIT INTERVIEW: a studio, a desk, a monitor ──
+       The walk-out, the sit-down, the goodbye messages as TV frames with the
+       camera held on the person watching them. */
+    .biv-stage     { margin:0 0 16px; padding:12px 14px 10px; border-radius:12px;
+                     border:1px solid rgba(201,52,60,.4); background:
+                     radial-gradient(ellipse at 50% -30%, rgba(201,52,60,.16), transparent 60%),
+                     linear-gradient(180deg, #160b0d, #0d1117 75%); }
+    .biv-stage.is-done { border-color:rgba(255,255,255,.14); }
+    .biv-strip     { display:flex; align-items:center; gap:12px; margin-bottom:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .biv-onair     { display:inline-flex; align-items:center; gap:5px; color:#f85149;
+                     border:1px solid rgba(248,81,73,.5); border-radius:4px; padding:2px 8px; }
+    .biv-onair i   { width:6px; height:6px; border-radius:50%; background:#f85149;
+                     animation:bbarBlink 1.2s steps(2) infinite; }
+    .is-done .biv-onair { color:#8b949e; border-color:rgba(255,255,255,.18); }
+    .is-done .biv-onair i { background:#6e7681; animation:none; }
+    .biv-show      { color:#e8b4b8; }
+    .biv-wk        { margin-left:auto; color:#6e7681; }
+    .biv-desk      { display:flex; align-items:stretch; justify-content:center; gap:14px; }
+    .biv-seat      { text-align:center; }
+    .biv-frame     { display:flex; justify-content:center; }
+    .biv-frame img { border-radius:10px; border:2px solid rgba(255,255,255,.14); }
+    .biv-frame.is-evicted img { border-color:rgba(248,81,73,.55); }
+    .biv-name      { font-family:var(--font-display); font-size:13px; color:#e6edf3; margin-top:4px; }
+    .biv-role      { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.6px;
+                     color:#8b949e; margin-top:2px; }
+    .biv-monitor   { flex:0 1 220px; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;
+                     border:1px solid rgba(255,255,255,.16); background:#05070a; }
+    .biv-mon-screen{ flex:1; display:flex; align-items:center; justify-content:center; min-height:74px;
+                     background:repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px), #05070a; }
+    .biv-mon-idle  { font-family:var(--font-display); font-size:20px; color:#22303e; letter-spacing:4px; }
+    .biv-monitor.is-live .biv-mon-screen { box-shadow:inset 0 0 26px rgba(201,52,60,.14); }
+    .biv-mon-tag   { padding:3px 0; text-align:center; font-family:ui-monospace,Consolas,monospace;
+                     font-size:7px; letter-spacing:1.8px; color:#6e7681; border-top:1px solid rgba(255,255,255,.09); }
+    .biv-crowd     { display:flex; align-items:center; gap:12px; margin-top:11px; }
+    .biv-lights    { display:flex; gap:4px; flex:1; }
+    .biv-lights i  { flex:1; height:4px; border-radius:2px; background:rgba(201,52,60,.5);
+                     animation:bivPulse 2.2s ease-in-out infinite; }
+    @keyframes bivPulse { 50% { opacity:.25; } }
+    .biv-crowd-t   { font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px; color:#8b949e; }
+    /* Q&A as a conversation, not a list */
+    .biv-qa        { display:flex; flex-direction:column; gap:7px; }
+    .biv-q, .biv-a { display:flex; align-items:flex-end; gap:7px; }
+    .biv-a         { justify-content:flex-end; }
+    .biv-bubble    { max-width:82%; padding:8px 11px; border-radius:12px; font-size:12.5px; line-height:1.6; }
+    .biv-bubble.is-host  { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+                     border-bottom-left-radius:3px; color:#c9d1d9; }
+    .biv-bubble.is-guest { background:rgba(201,52,60,.1); border:1px solid rgba(201,52,60,.3);
+                     border-bottom-right-radius:3px; color:#e6edf3; }
+    .biv-flag      { align-self:flex-start; margin-top:2px; }
+    /* the truth panel */
+    .biv-truth .bbns-card-b { display:flex; flex-direction:column; gap:7px; }
+    .biv-truth-row { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.55;
+                     padding:6px 9px; border-radius:7px; background:rgba(240,165,0,.06);
+                     border-left:3px solid rgba(240,165,0,.5); }
+    .biv-truth-react { font-style:italic; color:#e8b4b8; padding-top:4px; }
+    /* the goodbye messages: TV frames */
+    .biv-bye       { padding:0; overflow:hidden; }
+    .biv-tv        { border-radius:8px 8px 0 0; overflow:hidden; background:#05070a; }
+    .biv-tv-top    { display:flex; align-items:center; gap:10px; padding:5px 10px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.6px;
+                     color:#8b949e; border-bottom:1px solid rgba(255,255,255,.08); }
+    .biv-rec       { display:inline-flex; align-items:center; gap:4px; color:#f85149; }
+    .biv-rec i     { width:5px; height:5px; border-radius:50%; background:#f85149;
+                     animation:bbarBlink 1.4s steps(2) infinite; }
+    .biv-tv-top .bbns-pill { margin-left:auto; }
+    .biv-tv-screen { display:flex; align-items:flex-start; gap:11px; padding:12px;
+                     background:repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px), #070a0f; }
+    .biv-tv-screen img { border-radius:8px; flex-shrink:0; }
+    .biv-tv-text   { font-size:12.5px; line-height:1.65; color:#dbe3ea; }
+    .biv-tv-bar    { padding:4px 12px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.8px; color:#6e7681; border-top:1px solid rgba(255,255,255,.08); }
+    .biv-bye.is-confess .biv-tv-bar { color:#f0c674; }
+    .biv-bye.is-cold .biv-tv-bar    { color:#ffb3ae; }
+    .biv-bye.is-warm .biv-tv-bar    { color:#7ee2a8; }
+    .biv-montage-faces { display:flex; gap:4px; flex-wrap:wrap; flex-shrink:0; max-width:120px; }
+    .biv-react     { display:flex; align-items:center; gap:8px; padding:8px 12px; font-size:11.5px;
+                     font-style:italic; color:#a9b4bf; background:rgba(255,255,255,.02); }
+    @media (max-width: 640px) { .biv-desk { flex-wrap:wrap; } .biv-monitor { order:3; flex-basis:100%; } }
+    @media (prefers-reduced-motion: reduce) {
+      .biv-onair i, .biv-rec i, .biv-lights i { animation:none; }
+    }
+
     /* ── THE BLOCK BUSTER: the arena under pressure ──
        Three podiums, a vote clock that counts DOWN as the reveals climb, and
        a stage that goes from alert-amber to decided-green the moment the

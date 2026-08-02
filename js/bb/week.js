@@ -232,18 +232,38 @@ export function negotiatePawn(hoh, house, plan, rng) {
         { format: 'big-brother' });
       rememberStrategy(candidate, hoh, 'asked-me-to-risk-it', gs.bb.weeks.length + 1, 1,
         { format: 'big-brother' });
-      // A short-tempered Head of Household does not hear "no" as strategy.
-      if (hohStats.temperament <= 4) {
+      // A short-tempered Head of Household does not hear "no" as strategy —
+      // proportional, like every stat in this project: the hotter the temper,
+      // the likelier the refusal goes straight onto the list.
+      if (rng() < (10 - hohStats.temperament) * 0.09) {
         setBBTarget(hoh, candidate, 'refused to go up for me', {});
       }
     } catch { /* the no still stands */ }
 
-    // And the genuinely spiteful one does not move on to the next name at all.
-    // Refusing a calm Head of Household diverts the ask; refusing a hothead is
-    // how you end up in the chair anyway, immediately, with the whole house
-    // knowing why — which is what makes saying no a real gamble rather than a
-    // free veto over your own nomination.
-    if (hohStats.temperament <= 3 && rng() < 0.55) {
+    // And sometimes the ask does not move on to the next name at all.
+    //
+    // Spite is not one stat. Temper supplies the fuse, but WHO the Head of
+    // Household is decides whether it lights: a villain or a hothead punishes a
+    // refusal in public because the punishment is the point; a mastermind or a
+    // schemer with the same temper swallows it and collects it, because
+    // seating a refuser wastes a nomination on an impulse; the warm archetypes
+    // barely have the move at all. A standing grudge against the refuser feeds
+    // it, discipline and any real warmth between them starve it. Refusing a
+    // calm strategist is safe-ish; refusing a hothead who already resents you
+    // is how you end up in the chair mid-sentence.
+    const arch = players.find(pl => pl.name === hoh)?.archetype || '';
+    const spiteArch = { villain: 0.25, hothead: 0.25, 'chaos-agent': 0.15, wildcard: 0.08 }[arch]
+      ?? ({ mastermind: -0.18, schemer: -0.15, 'perceptive-player': -0.12,
+            hero: -0.3, 'loyal-soldier': -0.3, goat: -0.25, 'social-butterfly': -0.2 }[arch] ?? 0);
+    let spiteGrudge = 0;
+    try { spiteGrudge = Math.min(3, Math.max(0, -strategicMemoryScore(candidate === hoh ? '' : hoh, candidate, gs.bb.weeks.length + 1))) * 0.05; } catch { spiteGrudge = 0; }
+    const spite = Math.max(0, Math.min(0.85,
+      (10 - hohStats.temperament) * 0.055
+      + spiteArch
+      + spiteGrudge
+      - hohStats.strategic * 0.02
+      - Math.max(0, getBond(hoh, candidate)) * 0.03));
+    if (rng() < spite) {
       plan.pawn = candidate;
       addBond(candidate, hoh, -2);
       try {

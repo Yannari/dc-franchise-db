@@ -15850,27 +15850,9 @@ const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
  */
 export function rpBuildBBColdOpen(ep) {
   const house = ep.houseAtStart || [];
-  const first = (ep.num || 1) === 1;
   const stateKey = `bb_co_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-
-  if (!first) {
-    return _bbSceneScreen(ep, {
-      eyebrow: `${(typeof seasonConfig !== 'undefined' && seasonConfig?.name) || 'Big Brother'} — Week ${ep.num}`,
-      title: `WEEK ${ep.num}`,
-      subtitle: `${house.length} houseguests remain.`,
-      accent: '#f0a500', stateKey, room: 'bb-open',
-      header: `<div class="rp-portrait-row" style="justify-content:center;flex-wrap:wrap;margin-bottom:18px">${house.map(n => rpPortrait(n, 'sm')).join('')}</div>`,
-      scenes: [
-        { text: ep.outgoingHoh
-            ? `${ep.outgoingHoh} comes off the wall with no power at all, which in this house is the most dangerous place to stand.`
-            : 'The house wakes up with nobody in charge, and everybody counting.',
-          players: [ep.outgoingHoh].filter(Boolean), badgeText: 'POWER LAPSES', badgeClass: 'grey' },
-        { text: 'Somebody in this room is about to be handed the only thing that matters this week.', players: [], badgeText: 'BIG BROTHER', badgeClass: 'red' },
-      ],
-    });
-  }
 
   const arrived = Math.max(0, Math.min(state.idx + 1, house.length));
   const done = arrived >= house.length;
@@ -19490,9 +19472,12 @@ function _bbSecondCycleView(ep) {
 }
 
 export function buildBBWeekScreens(ep) {
-  const screens = [
-    { id: 'bb-cold', label: (ep.num || 1) === 1 ? 'Move-In' : 'Cold Open', html: rpBuildBBColdOpen(ep) },
-  ];
+  // Only week one opens cold — that's the move-in, and it earns the screen.
+  // Later weeks got a two-line "the house wakes up" filler that said nothing
+  // House Status · Before wasn't about to say better, so they start there.
+  const screens = (ep.num || 1) === 1
+    ? [{ id: 'bb-cold', label: 'Move-In', html: rpBuildBBColdOpen(ep) }]
+    : [];
   // Where everybody stands. Total Drama's camp hierarchy reads a social-status
   // store a house never fills in, so this is the same idea built from what a
   // house does record: competition wins, time on the block, and who is aligned.

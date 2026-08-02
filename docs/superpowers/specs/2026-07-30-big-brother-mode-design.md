@@ -232,14 +232,14 @@ Genuinely blocked until a season can finish.
 
 Both are places where existing depth simply does not run. Split by the same rule:
 
-* **Alliances form, but almost never.** ~~Nothing writes `gs.namedAlliances`~~ —
-  the lifecycle adapter has landed. Measured across thirty seasons afterwards,
-  however, it produced **3 named alliances in total, in 2 of 30 seasons**, so
-  `allianceStrength()` is still zero in nearly every decision it feeds. Worth a
-  look at whether formation is gated too tightly or is only reachable from a
-  path that rarely runs. *Claude's* events are unaffected either way: they prefer
-  a real alliance and fall back to people aligned in practice, which is doing all
-  of the work at present.
+* **Alliances form, but almost never — CLOSED (2026-08-02).** The lifecycle
+  rework (formation attempted in every stretch of house life, recruitment
+  before founding, inner-circle final-twos) closed it: re-measured at **277
+  named alliances across thirty headless seasons (9.2/season, 30/30 seasons
+  with at least one)** and **9.5/season on the played path**, with a healthy
+  size spread (duos through seven-person blocs) and six distinct formation
+  evidences all firing. `allianceStrength()` now has something to read in
+  every season.
 * **Perceived bonds — CLOSED.** The house-context adapter has landed and works:
   measured over thirty seasons, the house's read of a relationship now differs
   from the truth for **32.2% of surviving pairs**. Houseguests can finally

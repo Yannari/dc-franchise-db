@@ -642,6 +642,25 @@ function runHouseMaintenance(week, rng = Math.random) {
     knowledgeEvents: [],
   };
   const steps = [
+    // Suspicion is attention, and attention fades. Without this, suspicion
+    // was a pure ratchet — 3,063 upward moves against 18 downward across
+    // eight measured seasons, average climbing monotonically to a flat 10.0
+    // by week eleven — and every system that reads it (nomination heat,
+    // friction, vote preference, plea resistance) went blind exactly when
+    // the endgame needed the resolution. Same law the relationship
+    // dimensions already obey: an incident spikes it, quiet weeks melt it,
+    // and somebody who KEEPS doing suspicious things stays hot because the
+    // events keep reinforcing. A six earned once fades to about two across
+    // four quiet weeks; below 0.3 the entry is noise and goes.
+    ['suspicion fades', () => {
+      const sus = gs.bb?.house?.suspicion;
+      if (!sus) return;
+      for (const key of Object.keys(sus)) {
+        const next = (Number(sus[key]) || 0) * 0.78;
+        if (next < 0.3) delete sus[key];
+        else sus[key] = next;
+      }
+    }],
     ['perceived bonds', () => checkPerceivedBondTriggers(ep)],
     ['bond recovery', () => recoverBonds(ep)],
     ['alliance trust', () => decayAllianceTrust(week.num)],

@@ -23,8 +23,17 @@ describe('strategic memory', () => {
   it('decays old incidents instead of forgetting them immediately', () => {
     rememberStrategy('Alice', 'Bob', 'voted-for-me', 2, 2);
 
-    expect(strategicMemoryScore('Alice', 'Bob', 3)).toBeCloseTo(1.64, 5);
-    expect(strategicMemoryScore('Alice', 'Bob', 7)).toBeLessThan(1);
+    // Decay scales with severity now: texture fades fast, scars stay. A
+    // severity-2 vote decays at 0.89 per episode instead of the old flat
+    // 0.82 — still fading, just at the pace a real grudge fades.
+    expect(strategicMemoryScore('Alice', 'Bob', 3)).toBeCloseTo(2 * 0.89, 5);
+    expect(strategicMemoryScore('Alice', 'Bob', 12)).toBeLessThan(1);
+    // And the law itself: a light note dies faster than a deep wound.
+    rememberStrategy('Alice', 'Cara', 'was-there', 2, 1);
+    rememberStrategy('Alice', 'Dan', 'alliance-betrayal', 2, 3);
+    const noteKeeps = strategicMemoryScore('Alice', 'Cara', 8) / 1;
+    const scarKeeps = strategicMemoryScore('Alice', 'Dan', 8) / 3;
+    expect(scarKeeps).toBeGreaterThan(noteKeeps);
   });
 
   it('turns remembered events into episode-aware vote explanations', () => {

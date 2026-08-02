@@ -87,7 +87,8 @@ describe('the Big Brother visual player', () => {
     // before the week and one after it, so both are filtered out here. Only
     // 'bb-overview' used to be, which went unnoticed because the screen was
     // throwing on a bare-global `bKey` and neither of them was being built.
-    const appendix = ['bb-interview', 'bb-votes', 'bb-alliances', 'bb-rels', 'bb-debug'];
+    // bb-votes is gone: Eviction Night reads every ballot itself.
+    const appendix = ['bb-interview', 'bb-alliances', 'bb-rels', 'bb-debug'];
     // Asserted structurally rather than as a fixed list. House life is its own
     // act, campaigning is house life too, and how many stretches a week has
     // depends on how many people are still in it — so pinning the exact

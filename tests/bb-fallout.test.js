@@ -182,3 +182,68 @@ describe('the fallout reaches the feed', () => {
     expect(Object.keys(counts).length, 'no fallout event fired all season').toBeGreaterThan(2);
   }, 120000);
 });
+
+// ── the hunt for the rogue votes ──────────────────────────────────────
+//
+// The consequence of being outside the majority. The vote is secret, so nobody
+// knows who the two votes were — but everybody knows there WERE two, and the
+// morning after a lopsided result the majority starts asking. The hunter works
+// from what a houseguest actually has: cleared names they have been told about,
+// closeness to the person who left, standing suspicion. Which means the wrong
+// person gets accused sometimes, and that misfire is half the point.
+import { minorityVoters } from '../js/bb/fallout.js';
+import { FALLOUT_EVENTS } from '../js/bb-events/fallout.js';
+
+describe('the rogue vote hunt', () => {
+  const hunt = FALLOUT_EVENTS.find(e => e.id === 'fallout-rogue-hunt');
+
+  function staged({ against, kept }) {
+    house();
+    gs.bb.weeks.push({
+      num: 1, evicted: 'Zee', hoh: 'Bowie', vetoWinner: null,
+      finalNominees: ['Zee', 'Caleb'],
+      ballots: [
+        ...against.map(voter => ({ voter, evict: 'Zee' })),
+        ...kept.map(voter => ({ voter, evict: 'Caleb' })),
+      ],
+    });
+    return { week: { num: 2 }, act: 'house', phase: 'pre-hoh', beat: 0 };
+  }
+
+  it('identifies who lost the vote', () => {
+    staged({ against: ['Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel'], kept: ['Millie'] });
+    expect(minorityVoters()).toEqual(['Millie']);
+  });
+
+  it('only hunts a lopsided result', () => {
+    // A 5-4 is a divided house, not a plan with defectors.
+    const ctx = staged({ against: ['Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel'],
+      kept: ['Millie', 'Caleb', 'Emmah', 'Hicks'] });
+    expect(hunt.weight(NAMES.filter(n => n !== 'Zee'), ctx)).toBe(0);
+  });
+
+  it('accuses somebody, right or wrong, and it costs them', () => {
+    const ctx = staged({ against: ['Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Emmah'],
+      kept: ['Millie'] });
+    const active = NAMES.filter(n => n !== 'Zee');
+    expect(hunt.weight(active, ctx)).toBeGreaterThan(0);
+    // Millie was close to the evictee, so the honest deduction finds them.
+    addBond('Millie', 'Zee', 6);
+    const api = {
+      log: [],
+      suspicion(a, b, d) { this.log.push(['sus', a, b, d]); },
+      remember(a, b, t) { this.log.push(['mem', a, b, t]); },
+      addBond(a, b, d) { this.log.push(['bond', a, b, d]); },
+      setTarget(a, b) { this.log.push(['target', a, b]); },
+      popDelta(a, d) { this.log.push(['pop', a, d]); },
+    };
+    const beat = hunt.fire(active, ctx, api);
+    expect(beat.badgeText === 'THE STRAYS ARE FOUND' || beat.badgeText === 'WRONG VOTERS ACCUSED').toBe(true);
+    // Whoever was accused, the majority got warier of them.
+    expect(api.log.some(([kind]) => kind === 'sus')).toBe(true);
+    // And if the accusation missed, the innocent carries a real grudge.
+    if (beat.badgeText === 'WRONG VOTERS ACCUSED') {
+      expect(api.log.some(([kind]) => kind === 'target')).toBe(true);
+    }
+  });
+});

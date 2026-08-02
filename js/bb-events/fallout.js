@@ -20,11 +20,11 @@
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import {
-  pStats, bond, perceived, band, closestTo, beatsInvolving, spotlightOrder, archetype, isNice,
+  pStats, bond, perceived, band, closestTo, beatsInvolving, spotlightOrder, archetype, isNice, suspicionOf,
 } from './_read.js';
 import {
   lastCompletedWeek, reactionsTo, chiefMourner, assignBlame, keptThem,
-  wroteTheName, votedAgainst, evictionCount,
+  wroteTheName, votedAgainst, evictionCount, minorityVoters,
 } from '../bb/fallout.js';
 import { knowsVote } from '../bb/knowledge.js';
 import { believes, factId, learn } from '../knowledge.js';
@@ -350,6 +350,85 @@ const somebodyStayedLoyal = {
   },
 };
 
+// ── the hunt for the rogue votes ──────────────────────────────────────
+
+const rogueHunt = {
+  id: 'fallout-rogue-hunt',
+  category: 'deals',
+  location: 'kitchen',
+  weight(house, ctx) {
+    const week = _fresh(ctx);
+    if (!week) return 0;
+    if (_spent('fallout-rogue-hunt', ctx)) return 0;
+    const strays = minorityVoters(week).filter(n => house.includes(n));
+    const majority = wroteTheName(week).filter(n => house.includes(n));
+    // One or two stray votes in a lopsided result. A 5-4 is a divided house
+    // and nobody hunts it; a 7-2 is a plan with two defectors, and the first
+    // conversation of the morning is "who were the two."
+    if (!strays.length || strays.length > 2 || majority.length < strays.length + 3) return 0;
+    return _morning(ctx, 11);
+  },
+  fire(house, ctx, api) {
+    const week = _fresh(ctx);
+    _spend(this.id, ctx);
+    const gone = week.evicted;
+    const strays = minorityVoters(week).filter(n => house.includes(n));
+    const majority = wroteTheName(week).filter(n => house.includes(n));
+    // Whoever ran the majority does the asking: the sharpest of the people who
+    // voted with the plan.
+    const hunter = _quiet(majority).sort((a, b) =>
+      pStats(b).strategic - pStats(a).strategic)[0] || majority[0];
+    const n = strays.length;
+
+    // The hunter's read, built from what a houseguest actually has — never the
+    // ballots. Somebody the hunter KNOWS voted with the plan is cleared;
+    // otherwise suspicion falls on whoever was close to the person who just
+    // left, plus whoever the hunter already distrusted. Which is exactly how
+    // the wrong person gets accused of a rogue vote in the real show.
+    const suspectPool = house.filter(name => name !== hunter
+      && (week.ballots || []).some(b => b.voter === name));
+    const scored = suspectPool.map(name => {
+      let score = 0;
+      try { if (knowsVote(hunter, name, gone)) score -= 5; } catch { /* unknown */ }
+      try { score += Math.max(0, bond(name, gone)) * 1.1; } catch { /* unknown */ }
+      score += suspicionOf(hunter, name) * 0.5;
+      return { name, score };
+    }).sort((a, b) => b.score - a.score);
+    const accused = scored.slice(0, n).map(entry => entry.name);
+    const rightCount = accused.filter(name => strays.includes(name)).length;
+    const correct = rightCount === n;
+    const wrongAccused = accused.filter(name => !strays.includes(name));
+
+    const text = correct ? _variant([
+      `"${n === 1 ? 'Somebody' : `${n} people`} voted to keep ${gone}, and I want to know who." ${hunter} says it to the kitchen at large, then answers ${pronouns(hunter).posAdj} own question with ${_list(accused)} — and is right, which everybody can see from ${_list(accused)}'s face${accused.length > 1 ? 's' : ''}.`,
+      `${hunter} does the arithmetic over breakfast, out loud, and lands on ${_list(accused)}. Nobody confirms it. Nobody has to.`,
+      `The count was ${majority.length + n <= 9 ? 'public' : 'read out'} and the strays were not. ${hunter} works through who was where all week and arrives, correctly, at ${_list(accused)}.`,
+    ], ctx, hunter, ...accused) : _variant([
+      `"${_list(accused)}. It was ${accused.length > 1 ? 'them' : _list(accused)}." ${hunter} is certain, loud, and wrong — and ${_list(strays)}, who actually cast the vote${n > 1 ? 's' : ''}, ${n > 1 ? 'agree' : 'agrees'} enthusiastically with the theory.`,
+      `${hunter} spends the morning building the case against ${_list(accused)} out of seating charts and eye contact. The actual stray vote${n > 1 ? 's' : ''} ${n > 1 ? 'were' : 'was'} ${_list(strays)}, who could not have asked for a better morning.`,
+      `The hunt lands on ${_list(accused)}, because ${accused[0]} was close to ${gone} and close is all a secret ballot leaves you. ${_list(strays)} nod${n > 1 ? '' : 's'} along gravely.`,
+    ], ctx, hunter, ...accused);
+
+    // The consequence of being outside the majority: somebody wears it. The
+    // accused take real heat whether or not they did it — and a wrong
+    // accusation is a gift to the actual strays and a grudge for the innocent.
+    accused.forEach(name => {
+      majority.filter(m => m !== name).forEach(m => api.suspicion(m, name, 1));
+      api.remember(hunter, name, 'rogue-vote', 2, { about: gone, proven: false });
+      api.addBond(name, hunter, -0.8);
+    });
+    wrongAccused.forEach(name => {
+      api.remember(name, hunter, 'wrongly-accused', 2, { about: `the vote for ${gone}` });
+      api.setTarget(name, hunter, `accused me of a rogue vote I never cast`);
+    });
+    if (!correct) strays.forEach(name => api.popDelta(name, 1));
+    api.popDelta(hunter, correct ? 1 : -1);
+    return { text, players: [hunter, ...accused].slice(0, 4),
+      badgeText: correct ? 'THE STRAYS ARE FOUND' : 'WRONG VOTERS ACCUSED',
+      badgeClass: correct ? 'orange' : 'red' };
+  },
+};
+
 // ── the house talking ─────────────────────────────────────────────────
 
 const wordGetsAround = {
@@ -443,5 +522,5 @@ function _teller(house, week) {
 
 export const FALLOUT_EVENTS = [
   mourning, cryingOverAName, goodRiddance, findingTheCulprit, itWasNotMe, somebodyStayedLoyal,
-  wordGetsAround,
+  wordGetsAround, rogueHunt,
 ];

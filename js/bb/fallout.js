@@ -188,6 +188,20 @@ export function keptThem(week = lastCompletedWeek()) {
     .map(b => b.voter);
 }
 
+/**
+ * The strays: everybody who voted AGAINST the eviction and is still here.
+ *
+ * Being outside the majority is the classic morning-after problem of this
+ * format. The vote is secret, so nobody knows who the two votes were — but
+ * everybody knows there WERE two votes, and the majority starts asking.
+ */
+export function minorityVoters(week = lastCompletedWeek()) {
+  if (!week?.evicted) return [];
+  return (week.ballots || [])
+    .filter(b => b.evict !== week.evicted && live().includes(b.voter))
+    .map(b => b.voter);
+}
+
 /** Everybody who wrote the name down and is still here. */
 export function wroteTheName(week = lastCompletedWeek()) {
   if (!week?.evicted) return [];

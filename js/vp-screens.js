@@ -18304,10 +18304,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // live hour, so the intentions and the result stop sharing a page.
         screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
         screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
-        try {
-          const votes = rpBuildVotes(view);
-          if (votes && votes.trim()) screens.push({ id: id('bb-votes'), label: 'The Vote', html: votes });
-        } catch { /* the eviction screen already carries the result */ }
+        // No separate Vote screen: Eviction Night reads every ballot from the
+        // Diary Room itself, so a second page repeating the same nine votes was
+        // the night told twice.
         try {
           const iv = rpBuildBBEvictionInterview(view);
           if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });

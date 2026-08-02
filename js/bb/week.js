@@ -911,7 +911,15 @@ export function simulateBBWeek(options = {}) {
       act: act.type, phase: act.phase || act.type,
       hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
-    }, { rng, min: eventLibrary.length ? 1 : 0, max: eventLibrary.length ? 3 : 0 });
+    }, { rng,
+      // Campaign acts are where the vote operation's stories live — the
+      // meetings noticed, the recruit reporting the pitch, the liar pressed —
+      // and at one-to-three beats they starved: eleven eligible events took
+      // turns going silent across whole ten-season runs. One extra pair of
+      // beats in ONLY this act type is two or three scenes a week, spent
+      // exactly where the format's drama is.
+      min: eventLibrary.length ? (act.type === 'campaign' ? 2 : 1) : 0,
+      max: eventLibrary.length ? (act.type === 'campaign' ? 4 : 3) : 0 });
     _capBondDeltas(bondsBefore);
     return act;
   };

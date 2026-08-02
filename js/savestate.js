@@ -520,7 +520,22 @@ export function snapshotGameState() {
     // named here is simply missing from every episode record — which for a
     // house means the week count, the competition record and the standing
     // house state all vanish on replay.
-    bb:           gs.bb ? JSON.parse(JSON.stringify(gs.bb)) : null,
+    //
+    // The weeks ledger goes in LEAN: each week's acts (and their per-stretch
+    // states) stay on that week's own episode record and on the live ledger —
+    // copying them here put all N weeks inside episode N's snapshot, so the
+    // history grew quadratically and "load an episode" meant cloning and
+    // serializing every week the season had ever played, again.
+    // The house-life engine's memories and event history are season-long logs
+    // with no snapshot reader (only .stats is ever read back off a snapshot's
+    // bb); they stay on the live state and out of every episode record.
+    bb:           gs.bb ? JSON.parse(JSON.stringify({
+      ...gs.bb,
+      weeks: (gs.bb.weeks || []).map(({ acts, openingState, closingState, ...lean }) => lean),
+      house: gs.bb.house
+        ? { ...gs.bb.house, memories: undefined, eventHistory: undefined }
+        : gs.bb.house,
+    })) : null,
     isMerged:     gs.isMerged,
     activePlayers: [...gs.activePlayers],
     tribes:       gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),

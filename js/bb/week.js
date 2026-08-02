@@ -813,9 +813,20 @@ function _attachAllianceFallout(week, house) {
   if (host) (host.socialBeats ||= []).push(...beats);
 }
 
-/** What the house looks like right now: enough for the panels, nothing more. */
-function _snapshotHouse() {
-  return {
+/**
+ * What the house looks like right now: enough for the panels, nothing more.
+ *
+ * Two sizes, because this ran at full size once per house STRETCH and the
+ * heavy stores — intentions, the directional dimensions and their cause
+ * trails — are only ever read from the episode-level opening and closing
+ * snapshots. Seven full copies a week put a nine-week season at nineteen
+ * megabytes of gs, and every checkpoint, save and replay paid to clone and
+ * serialize all of it: that is the "loading an episode takes a while".
+ * The per-stretch panels read bonds, alliances and showmances, so that is
+ * what a per-stretch snapshot carries.
+ */
+function _snapshotHouse(full = true) {
+  const light = {
     bonds: { ...(gs.bonds || {}) },
     alliances: (gs.namedAlliances || [])
       .filter(a => a.active !== false && !a.dissolved)
@@ -824,6 +835,10 @@ function _snapshotHouse() {
     showmances: (gs.showmances || [])
       .filter(sh => sh.phase !== 'broken-up')
       .map(sh => ({ players: [...(sh.players || [])], phase: sh.phase })),
+  };
+  if (!full) return light;
+  return {
+    ...light,
     // The status screen also reads who is hunting whom and who is misreading
     // whom, and both of those move during a week — so they belong in the
     // snapshot rather than being pulled live and spoiling the opening screen.
@@ -1053,8 +1068,9 @@ export function simulateBBWeek(options = {}) {
     // The panels used to read the episode's single end-of-week snapshot, so
     // the FIRST screen of the week already showed the numbers the week
     // finished on — bonds that had not happened yet and alliances nobody had
-    // formed on screen. Each stretch carries its own picture now.
-    act.state = _snapshotHouse();
+    // formed on screen. Each stretch carries its own picture now — the light
+    // one; only the episode's bookend snapshots carry the heavy stores.
+    act.state = _snapshotHouse(false);
     week.acts.push(act);
     return act;
   };

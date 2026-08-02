@@ -311,6 +311,10 @@ export function simulateBBEpisode() {
       ...(ep.votingLog || []),
       ...(second.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 2 })),
     ];
+    // Same as the main week below: the second cycle's bookend snapshots are
+    // never read back off the ledger.
+    delete second.openingState;
+    delete second.closingState;
   }
   // The aftermath of a Big Brother week is one person, interviewed on the way
   // out, finding out what was actually happening around them.
@@ -320,6 +324,13 @@ export function simulateBBEpisode() {
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep)
     : summariseWeek(week);
+
+  // The episode record now owns the bookend snapshots; the weeks ledger only
+  // ever gets read back for its scalars, ballots and alliance changes, so a
+  // quarter-megabyte of frozen feelings per week was being serialized again
+  // by every save, checkpoint and replay that carries gs.bb.
+  delete week.openingState;
+  delete week.closingState;
 
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({

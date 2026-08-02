@@ -31,7 +31,7 @@ import { runBBCompetition } from './comps.js';
 import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
-import { rememberStrategy } from '../strategy-memory.js';
+import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
@@ -159,6 +159,113 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
     playing.push(rest.splice(Math.floor(rng() * rest.length), 1)[0]);
   }
   return { players: playing, draws, automatic: [hoh, ...nominees].filter(Boolean) };
+}
+
+/**
+ * The pawn ask — a real decision, made before the ceremony.
+ *
+ * The plan used to seat its pawn unilaterally: chooseNominationPlan picked the
+ * best-fitting chair and the ceremony executed it, while a scheduler event ran
+ * a PARALLEL ask against closestTo(hoh) — a person the plan often never
+ * nominated — and recorded agreements the week ignored and refusals the week
+ * never punished. Two disconnected worlds, and the report that flagged it was
+ * right on every count: no request, no refusal, no alternative, no forced-pawn
+ * resentment.
+ *
+ * Now the Head of Household works down their pawn ranking asking for real.
+ * Whether somebody says yes runs on what a yes actually costs: trust in this
+ * particular HOH (a person they remember breaking promises does not get a
+ * volunteer), nerve, loyalty, and above all how dangerous a pawn seat IS right
+ * now — in a full house a pawn is furniture, at seven people pawns go home.
+ * A willing yes creates a real safety deal and a debt. A grudging yes is
+ * remembered as one. A refusal costs the refuser standing with the HOH — and
+ * a spiteful HOH puts them straight onto the list — and if everybody refuses,
+ * somebody sits anyway, forced, which is the resentment that lasts longest.
+ */
+export function negotiatePawn(hoh, house, plan, rng) {
+  const ranking = (plan.pawnRanking && plan.pawnRanking.length ? plan.pawnRanking : [plan.pawn])
+    .filter(name => name && name !== hoh && name !== plan.target && house.includes(name));
+  if (!ranking.length) return { pawn: plan.pawn, asked: [], forced: false, willing: false };
+  const hohStats = pStats(hoh);
+  const asked = [];
+
+  for (const candidate of ranking.slice(0, 3)) {
+    const stats = pStats(candidate);
+    // How deadly the seat is: at fourteen a pawn is a formality, at seven it is
+    // a coin toss, and everybody in the house can do that arithmetic.
+    const danger = house.length <= 6 ? 3 : house.length <= 8 ? 1.8 : house.length <= 10 ? 0.8 : 0.2;
+    // Trust in THIS Head of Household, not trust in general.
+    const trust = getPerceivedBond(candidate, hoh);
+    const burned = strategicMemoryScore(candidate, hoh, gs.bb.weeks.length + 1) < -1 ? 1.6 : 0;
+    const score = stats.loyalty * 0.5 + stats.boldness * 0.3 + trust * 0.7
+      - danger - burned + (rng() - 0.5) * 2;
+    const accepted = score > 4.6;
+    const willing = score > 6.4;
+    asked.push({ name: candidate, accepted, willing });
+
+    if (accepted) {
+      // A pawn seat taken on a promise IS a promise. Recording it as a real
+      // safety deal means nominating them as the target later, or voting them
+      // out, breaks something on the record — the whole betrayal machinery
+      // downstream already knows what to do with that.
+      gs.sideDeals ||= [];
+      gs.sideDeals.push({
+        players: [hoh, candidate], type: 'safety', tier: 'working', active: true,
+        genuine: true, about: 'you are the pawn, not the target',
+        madeEp: gs.bb.weeks.length + 1, format: 'big-brother',
+      });
+      addBond(hoh, candidate, willing ? 1.1 : 0.4);
+      try {
+        rememberStrategy(candidate, hoh, willing ? 'went-up-for-them' : 'made-me-the-pawn',
+          gs.bb.weeks.length + 1, willing ? 2 : 2, { format: 'big-brother' });
+        rememberStrategy(hoh, candidate, 'sat-when-asked', gs.bb.weeks.length + 1, 2,
+          { format: 'big-brother' });
+      } catch { /* the seat is still taken */ }
+      plan.pawn = candidate;
+      return { pawn: candidate, asked, forced: false, willing };
+    }
+
+    // A refusal is the boldest thing a non-HOH does all week, and it costs.
+    addBond(hoh, candidate, -1.2);
+    try {
+      rememberStrategy(hoh, candidate, 'refused-to-sit', gs.bb.weeks.length + 1, 2,
+        { format: 'big-brother' });
+      rememberStrategy(candidate, hoh, 'asked-me-to-risk-it', gs.bb.weeks.length + 1, 1,
+        { format: 'big-brother' });
+      // A short-tempered Head of Household does not hear "no" as strategy.
+      if (hohStats.temperament <= 4) {
+        setBBTarget(hoh, candidate, 'refused to go up for me', {});
+      }
+    } catch { /* the no still stands */ }
+
+    // And the genuinely spiteful one does not move on to the next name at all.
+    // Refusing a calm Head of Household diverts the ask; refusing a hothead is
+    // how you end up in the chair anyway, immediately, with the whole house
+    // knowing why — which is what makes saying no a real gamble rather than a
+    // free veto over your own nomination.
+    if (hohStats.temperament <= 3 && rng() < 0.55) {
+      plan.pawn = candidate;
+      addBond(candidate, hoh, -2);
+      try {
+        rememberStrategy(candidate, hoh, 'forced-me-up', gs.bb.weeks.length + 1, 3,
+          { format: 'big-brother', about: 'I said no and sat anyway' });
+        setBBTarget(candidate, hoh, 'put me on the block after I refused', {});
+      } catch { /* seated all the same */ }
+      return { pawn: candidate, asked, forced: true, willing: false };
+    }
+  }
+
+  // Everybody said no. Somebody sits anyway — the best fit among the refusers —
+  // and being seated against a spoken no is the grudge that outlasts the week.
+  const forced = asked[0].name;
+  plan.pawn = forced;
+  addBond(forced, hoh, -2);
+  try {
+    rememberStrategy(forced, hoh, 'forced-me-up', gs.bb.weeks.length + 1, 3,
+      { format: 'big-brother', about: 'I said no and sat anyway' });
+    setBBTarget(forced, hoh, 'put me on the block after I refused', {});
+  } catch { /* forced is forced */ }
+  return { pawn: forced, asked, forced: true, willing: false };
 }
 
 function tally(ballots, nominees) {
@@ -938,11 +1045,22 @@ export function simulateBBWeek(options = {}) {
     gs.bb.haveNots = [];
   }
 
+  // The nomination plan is decided HERE, before the post-hoh stretch — because
+  // the pawn ask is part of it, the ask is a conversation, and the house-life
+  // events of this stretch are where that conversation is seen. Deciding it at
+  // the ceremony meant the scene and the decision could never be the same
+  // thing.
+  let plan = chooseNominationPlan(hoh, house, rng);
+  week.pawnAsk = negotiatePawn(hoh, house, plan, rng);
+  // The negotiation may have changed the chair.
+  plan.nominees = [plan.nominees[0] === plan.pawn ? plan.target : plan.nominees[0], plan.pawn]
+    .filter(Boolean);
+  week.plan = plan;
+
   // The house now knows who holds power, and reacts to it.
   if (!compressed) houseAct('post-hoh');
 
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
-  let plan = chooseNominationPlan(hoh, house, rng);
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
   let nominees = [...new Set(plan.nominees)].filter(name => house.includes(name) && name !== hoh).slice(0, 2);
   if (nominees.length < 2) nominees = chooseNominationPlan(hoh, house, rng).nominees;
@@ -1013,7 +1131,7 @@ export function simulateBBWeek(options = {}) {
   }
 
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
-    brokenPromises: [...week.brokenPromises] }, { nominees: [...nominees] }));
+    brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
   // Two people are on the block and the rest of the house is not.

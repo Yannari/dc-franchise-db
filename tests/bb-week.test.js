@@ -201,3 +201,57 @@ describe('the veto weighs both sides', () => {
       .toMatch(/only one|one name left|one legal|counted to|barely a decision|without changing the week/i);
   });
 });
+
+// ── the pawn ask ──────────────────────────────────────────────────────
+//
+// The chair used to be filled unilaterally while a scheduler event ran a
+// parallel ask against somebody the plan often never nominated — agreements
+// the week ignored, refusals it never punished. The ask is the engine's now:
+// the seated pawn IS the asked pawn, a yes writes a real safety deal, and a
+// house of refusers still produces a pawn — forced, and furious about it.
+import { negotiatePawn } from '../js/bb/week.js';
+import { addBond as addBondDirect } from '../js/bonds.js';
+
+describe('the pawn ask', () => {
+  beforeEach(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+  });
+
+  it('asks every standard week, and seats exactly who it settled on', () => {
+    const { weeks } = simulateBBSeason({ rng: seededRng(41), finaleSize: 3 });
+    for (const w of weeks) {
+      expect(w.pawnAsk, `week ${w.num} never asked`).toBeTruthy();
+      expect(w.pawnAsk.asked.length).toBeGreaterThan(0);
+      expect(w.plan.pawn).toBe(w.pawnAsk.pawn);
+      expect(w.initialNominees, 'the asked pawn is not on the block').toContain(w.pawnAsk.pawn);
+    }
+  });
+
+  it('a willing yes writes a real safety deal; a full refusal forces the seat', () => {
+    const house = [...gs.activePlayers];
+    const hoh = house[0];
+    // Warm, loyal candidate in a full house: a willing yes.
+    const friend = house[1];
+    addBondDirect(hoh, friend, 6);
+    const plan1 = { target: house[2], pawn: friend, pawnRanking: [friend], nominees: [house[2], friend] };
+    const yes = negotiatePawn(hoh, house, plan1, () => 0.9);
+    expect(yes.forced).toBe(false);
+    expect(yes.pawn).toBe(friend);
+    // dealBetween() is the endgame lookup; a pawn promise is a working safety
+    // deal, so it is asserted on the store it actually lives in.
+    const promise = (gs.sideDeals || []).find(d => d.active !== false && d.type === 'safety'
+      && d.players?.includes(hoh) && d.players?.includes(friend));
+    expect(promise, 'the yes never became a promise').toBeTruthy();
+
+    // Cold candidates in a tiny house: everybody refuses, somebody sits anyway.
+    const small = house.slice(0, 6);
+    const strangers = [small[3], small[4]];
+    strangers.forEach(n => addBondDirect(hoh, n, -4));
+    const plan2 = { target: small[2], pawn: strangers[0], pawnRanking: [...strangers], nominees: [small[2], strangers[0]] };
+    const no = negotiatePawn(hoh, small, plan2, () => 0.1);
+    expect(no.forced, 'nobody refused in a six-person house of enemies').toBe(true);
+    expect(no.asked.every(a => !a.accepted)).toBe(true);
+    expect(strangers).toContain(no.pawn);
+  });
+});

@@ -61,6 +61,7 @@ const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
 /** Least-seen first, so the same three names do not carry every week. */
 /** Least-seen first, weighted toward whoever this week is about. */
 const _quiet = pool => spotlightOrder(pool);
+const _first = list => list[0];
 
 /** Is the block known yet? Everything on this list depends on that. */
 const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
@@ -393,7 +394,14 @@ const pawnResentment = {
   category: 'social',
   weight(house, ctx) {
     const f = actFacts(ctx);
-    return _blockKnown(ctx) && f.pawn && _noms(ctx).includes(f.pawn) ? band(7) : 0;
+    if (!(_blockKnown(ctx) && f.pawn && _noms(ctx).includes(f.pawn))) return 0;
+    // Grounded on the ask: a pawn who volunteered gladly has little to resent,
+    // a grudging yes simmers, and a forced seat is the loudest grievance in
+    // the house.
+    const ask = ctx?.week?.pawnAsk;
+    if (ask?.forced) return band(13);
+    if (ask && !ask.willing) return band(10);
+    return band(4);
   },
   fire(house, ctx, api) {
     const { pawn, target } = actFacts(ctx);
@@ -948,46 +956,53 @@ const pawnAsk = {
   location: 'hoh-room',
   category: 'deals',
   weight(house, ctx) {
-    const hoh = _hoh(ctx);
-    if (!hoh || _blockKnown(ctx) || house.length < 6) return 0;
-    return band(9);
+    // The scene of a decision the ENGINE made. This event used to run its own
+    // parallel ask against closestTo(hoh) — agreements the plan ignored,
+    // refusals the week never punished. It renders the real record now, and
+    // only when there is one worth a scene.
+    const ask = ctx?.week?.pawnAsk;
+    if (!ask || !ask.asked?.length || _blockKnown(ctx) || house.length < 6) return 0;
+    if (!house.includes(ask.pawn)) return 0;
+    return band(11);
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
-    const mark = targetOf(hoh);
-    // You ask somebody who likes you. That is what makes it a cruel favour.
-    const pawn = closestTo(hoh, _others(house, hoh, mark)) || _others(house, hoh, mark)[0];
-    const s = pStats(pawn);
+    const ask = ctx.week.pawnAsk;
+    const pawn = ask.pawn;
     const p = pronouns(pawn);
-    // Whether they say yes is about nerve and trust, not niceness.
-    const agrees = (s.loyalty * 0.5 + s.boldness * 0.35 + bond(pawn, hoh) * 0.6) > 5.4;
-    const text = agrees ? _variant([
-      `"I need you to go up beside ${mark ? `<strong>${mark}</strong>` : 'them'}. You are not the one going home." ${pawn} says yes before ${hoh} has finished the sentence, and spends the rest of the night wondering why ${p.sub} did that.`,
-      `${hoh} asks ${pawn} to be the pawn. ${pawn} agrees, on the condition that ${hoh} says it to ${p.posAdj} face if that ever changes.`,
-      `"Pawns go home," ${pawn} says. "Not this one," ${hoh} says. ${pawn} agrees anyway, which tells ${hoh} everything about how safe ${pawn} feels.`,
-    ], ctx, hoh, pawn) : _variant([
-      `${hoh} asks ${pawn} to sit beside ${mark || 'them'}. ${pawn} says no. Nobody has refused the Head of Household this directly before, and the room does not quite know what to do with it.`,
-      `"Ask somebody else." ${pawn} does not raise ${p.posAdj} voice and does not move. ${hoh} is going to have to nominate ${p.obj} anyway now, and they both know it.`,
-      `${pawn} has watched three pawns go home and says so. ${hoh} runs out of reassurance about a minute before ${pawn} runs out of patience.`,
-    ], ctx, hoh, pawn);
+    const refusers = ask.asked.filter(a => !a.accepted).map(a => a.name);
 
-    if (agrees) {
-      api.sideDeal(hoh, pawn, 'safety', { genuine: true, about: 'you are not the one going home' });
-      api.addBond(hoh, pawn, 1.1);
-      api.remember(pawn, hoh, 'asked-me-to-sit', 2);
+    let text;
+    if (ask.forced) {
+      text = _variant([
+        `${hoh} asks ${refusers.length > 1 ? `${refusers.length} people` : pawn} to take the chair and hears no every time. So ${pawn} is going up anyway — told, not asked, and the difference is going to matter for weeks.`,
+        `"I already said no." "I know," ${hoh} says, and does not take it back. ${pawn} learns what the asking was actually for.`,
+        `Nobody would volunteer for the chair, so ${hoh} stops offering it. ${pawn} finds out ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} the pawn in the same sentence as finding out the no did not count.`,
+      ], ctx, hoh, pawn);
+    } else if (ask.willing) {
+      text = _variant([
+        `"I need you beside the target. You are not the one going home." ${pawn} says yes before ${hoh} finishes the sentence — and both of them understand a debt has just been written.`,
+        `${hoh} asks ${pawn} to be the pawn. ${pawn} agrees, on one condition: ${hoh} says it to ${p.posAdj} face if that ever changes.`,
+        `${pawn} takes the chair like a favour done between friends, which is exactly what ${hoh} now owes ${p.obj}.`,
+      ], ctx, hoh, pawn);
     } else {
-      api.addBond(hoh, pawn, -1.2);
-      api.suspicion(hoh, pawn, 1.1);
-      api.setTarget(hoh, pawn, 'refused to go up for me');
-      api.remember(hoh, pawn, 'told-me-no', 2);
+      text = _variant([
+        `${refusers.length ? `${_first(refusers)} says no first. Then ` : ''}${hoh} asks ${pawn}, and ${pawn} says yes the way people say yes to a dentist. "Pawns go home," ${p.sub} ${p.sub === 'they' ? 'add' : 'adds'}, mostly to the room.`,
+        `${pawn} agrees to sit, does the arithmetic out loud — "${house.length} of us left" — and makes ${hoh} listen to all of it before saying yes.`,
+        `${pawn} takes the chair and takes note. It is a yes; it is not a favour; and ${hoh} would do well to remember which.`,
+      ], ctx, hoh, pawn);
     }
+
+    // The consequences live in the engine, where they cannot depend on a
+    // scheduler draw — this scene only adds the room's read of it.
+    if (ask.forced) api.popDelta(pawn, 1);
     return {
       text, players: [hoh, pawn],
-      badgeText: agrees ? 'AGREES TO SIT' : 'REFUSES THE CHAIR',
-      badgeClass: agrees ? 'green' : 'red',
+      badgeText: ask.forced ? 'SEATED AGAINST A NO' : ask.willing ? 'AGREES TO SIT' : 'A GRUDGING YES',
+      badgeClass: ask.forced ? 'red' : ask.willing ? 'blue' : 'grey',
     };
   },
-};
+};;
 
 const backdoorPlan = {
   id: 'power-backdoor-plan',

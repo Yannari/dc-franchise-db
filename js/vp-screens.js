@@ -15666,6 +15666,7 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
 function _bbIntroQuote(name) {
   const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
   const arch = player.archetype || 'floater';
+  const p = pronouns(name);
 
   // One pool PER ARCHETYPE, in that archetype's actual voice. The first cut
   // grouped fifteen archetypes into four registers, which produced two failures
@@ -15686,8 +15687,8 @@ function _bbIntroQuote(name) {
     schemer: [
       n => `"I'm ${n}, and oh my gosh, I already love every single one of you." Every single one of them is being evaluated.`,
       n => `"I'm ${n}! We are going to be SUCH good friends." The plural is doing a lot of quiet work.`,
-      n => `"I'm ${n}. If you ever need anything — anything — you come to me." Three people make a mental note; one makes a different kind.`,
-      n => `"I'm ${n}! Ugh, everyone seems SO genuine." One word in that sentence is carrying a knife.`,
+      n => `“I’m ${n}. If you need anything, come find me.” ${n} repeats the offer in the kitchen, the bedroom and beside the memory wall, changing the conversation each time.`,
+      n => `“I’m ${n}! Oh my God, everyone seems so nice.” ${n} smiles as ${p.sub} says it, but ${p.posAdj} eyes keep moving around the room.`,
       n => `"I'm ${n}, and I've already picked out my favourites." The list is real. Its purpose is not what the smile suggests.`,
     ],
     villain: [
@@ -17167,9 +17168,16 @@ export function rpBuildBBNominations(ep) {
       // screen earlier.
       const act = (ep.acts || []).find(a => a.type === 'nominations');
       const broke = (act?.brokenPromises || []).find(b => b.victim === step.name);
+      // How the pawn chair was actually filled — asked and agreed, agreed
+      // through gritted teeth, or seated against a spoken no.
+      const ask = step.role === 'pawn' && act?.pawnAsk?.pawn === step.name ? act.pawnAsk : null;
+      const askLine = !ask ? ''
+        : ask.forced ? `<span class="bbh-why">${_bbEsc(step.name)} was asked, said no, and is sitting there anyway — everybody in the room knows all three parts.</span>`
+        : ask.willing ? `<span class="bbh-why">${_bbEsc(step.name)} agreed to this upstairs, and ${_bbEsc(hoh)} now owes a debt the whole house can price.</span>`
+        : `<span class="bbh-why">${_bbEsc(step.name)} said yes upstairs — the kind of yes that keeps receipts.</span>`;
       return `<div class="bbns-card is-reason">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill gold">WHY ${_bbEsc(step.name).toUpperCase()}</span></div>
-        <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}</div>
+        <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}${askLine}</div>
         ${broke ? `<div class="bbns-broke">
           <span>PROMISE BROKEN</span>
           ${broke.kind === 'safety'

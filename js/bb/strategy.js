@@ -104,6 +104,9 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     nominees: [initialTarget, pawn],
     target: primary.name,
     pawn,
+    // The order the Head of Household would ask in, because the ask is a real
+    // conversation now and the first choice can say no.
+    pawnRanking: pawnPool.map(entry => entry.name),
     backdoorTarget: useBackdoor ? primary.name : null,
     rankings: ranked,
   };

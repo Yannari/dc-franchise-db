@@ -20010,14 +20010,19 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       : '';
   } catch { gazette = ''; }
 
-  const gone = ((typeof players !== 'undefined' ? players.length : stillIn.length) - stillIn.length);
+  // The closing wall is AFTER the vote: the freshly evicted houseguest goes
+  // grey with the rest of the pre-jury wall, not standing there wearing the
+  // NOM badge of a block that already decided. The opening wall keeps them —
+  // the week it shows them nominated in has not happened yet.
+  const wallIn = opening ? stillIn : stillIn.filter(n => n !== ep.eliminated);
+  const gone = ((typeof players !== 'undefined' ? players.length : wallIn.length) - wallIn.length);
   return `<div class="rp-page bb-room bb-open">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div class="rp-title" style="color:#f0a500">HOUSE STATUS</div>
     <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">${
       opening ? 'Before anything happens this week.' : 'After everything that happened this week.'}</div>
-    ${_bbMemoryWall(stillIn, {
-      note: `${stillIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}`,
+    ${_bbMemoryWall(wallIn, {
+      note: `${wallIn.length} still in the house${gone > 0 ? ` · ${gone} evicted` : ''}`,
       // The largest wall in the player was the only one showing nothing at all
       // — no Head of Household, no block, no veto. By the closing screen the
       // week is over so every marker is safe; on the opening screen none of it

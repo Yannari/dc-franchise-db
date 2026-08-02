@@ -20,7 +20,7 @@ const A = {
     (n,p)=>`${n} unpacks slowly, listening as first impressions harden into facts around ${p.obj}.`,
   ],
   schemer: [
-    n=>`${n} is generous with compliments and careful with facts. By dinner, both habits have been noticed.`,
+    n=>`${n} compliments somebody's jacket. Five minutes later, the conversation has moved from shopping to who made a bad first impression.`,
     n=>`${n} joins three first-night conversations and tells each group a slightly different version of the same story.`,
     n=>`${n} gives up a desirable bed, then makes sure the new occupant remembers where the favor came from.`,
     n=>`${n} starts asking who everybody clicked with before anybody is ready to admit they clicked.`,
@@ -277,7 +277,7 @@ const STAT_ANGLES = {
   physical:n=>`The gym gets one quick glance—quick enough to be noticed.`,
   endurance:n=>`${n} is still carrying bags after everybody else has decided move-in is over.`,
   mental:n=>`${n} reads every label and house rule before opening the suitcase.`,
-  strategic:n=>`Every friendly answer seems to produce one more useful question.`,
+  strategic:(n,p)=>`${n} asks where everybody wants to sleep. Before long, people are also telling ${p.obj} who they hope ends up in the other room.`,
   social:n=>`By the first toast, three people are already saving ${n} a seat.`,
   intuition:n=>`${n} changes rooms after one look at who has settled beside whom.`,
   boldness:n=>`${n} volunteers an opinion before the room has agreed it is safe to have one.`,
@@ -296,7 +296,7 @@ export function bbArrivalLine(name,{ archetype='floater',season='',slot=0,stats=
   for(let i=0;i<pool.length;i++) { const candidate=(index+i)%pool.length; if(!state.used.has(`${archetype}:${candidate}`)){ index=candidate; break; } }
   let text=pool[index](name,pronouns(name));
   const ranked=Object.entries(stats||{}).filter(([,v])=>Number.isFinite(Number(v))).sort((a,b)=>Number(b[1])-Number(a[1]));
-  if(ranked[0]&&Number(ranked[0][1])>=8&&STAT_ANGLES[ranked[0][0]]) text+=` ${STAT_ANGLES[ranked[0][0]](name)}`;
+  if(ranked[0]&&Number(ranked[0][1])>=8&&STAT_ANGLES[ranked[0][0]]) text+=` ${STAT_ANGLES[ranked[0][0]](name,pronouns(name))}`;
   state.byName.set(name,text); state.used.add(`${archetype}:${index}`); return text;
 }
 

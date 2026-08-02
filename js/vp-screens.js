@@ -17917,110 +17917,175 @@ export function rpBuildBBEviction(ep) {
     const profile = _bbSpeechProfile(ep, name, null);
     const partnerCanVote = profile.partner && ballots.some(b => b.voter === profile.partner);
     const alliesCanVote = profile.allies.filter(ally => ballots.some(b => b.voter === ally));
-    if (partnerCanVote) return vvar([
-      `${name} looks at ${profile.partner} before addressing anybody else. “We knew people would eventually make us choose between this and the game. I am asking you not to make that choice for us tonight.”`,
-      `“Keeping me may put a bigger target on us,” ${name} tells ${profile.partner}. “Losing me leaves you here with that target by yourself.”`,
-      `${name} does not pretend the showmance is invisible. “You can split us up tonight, but ask yourself who benefits once one of us is gone.”`,
-      `${name} asks the house to stop treating affection like strategy only when it is convenient. Then ${p.sub} turns to ${profile.partner}: “You know what I have promised you, and you know I meant it.”`,
-      `“Everybody has used us as a reason to worry.” ${name} glances toward ${profile.partner}. “For one night, use us as two people who will keep our word.”`,
-      `${name}'s pitch is practical even when ${p.posAdj} voice is not: keep the pair intact, keep two visible targets in front of everybody else, and keep one vote that will never be uncertain.`,
-    ], name, profile.partner, 'showmance-plea');
-    if (profile.role === 'pawn') return vvar([
-      `“I agreed to be the pawn because I was told the votes were there.” ${name} looks around the couches. “If that promise meant anything, this should be easy.”`,
-      `${name} reminds the house that the week was sold as a plan with somebody else at the center of it. “Do not turn me into the move because the real move became uncomfortable.”`,
-      `“I did not volunteer to go home. I accepted a risk for people who said they would protect me.” ${name} asks those people to show themselves in the vote.`,
-      `${name} keeps the plea pointed at the agreement that put ${p.obj} in the chair: ${p.sub} did ${p.posAdj} part, and tonight the people behind the plan owe ${p.obj} theirs.`,
-      `“If pawns can leave whenever the house gets nervous, nobody should ever agree to be one again.” ${name} lets that warning travel beyond tonight's vote.`,
-      `${name} does not argue that ${p.sub} is harmless. ${p.Sub} argues that evicting the person used to make the plan possible rewards everybody who hid behind it.`,
-    ], name, 'pawn-plea');
-    if (profile.role === 'target' || profile.role === 'backdoor') return vvar([
-      `${name} says the quiet part plainly: this week was built to remove ${p.obj}. “Before you finish somebody else's plan, make sure it actually improves yours.”`,
-      `“I know I am the target. That does not mean I am your target.” ${name} asks each voter to separate the Head of Household's week from ${p.posAdj} own game.`,
-      `${name} names the structure that benefits from ${p.obj} leaving, then asks everybody outside it why they are helping that structure get stronger.`,
-      `“The person who planned this cannot vote tonight.” ${name} looks down the couches. “The rest of you still get to decide whether the plan works.”`,
-      `${name} owns every reason the house finds ${p.obj} dangerous, then offers the same danger as a weapon: keep ${p.obj}, point ${p.obj} somewhere useful, and let the obvious target stay obvious.`,
-      `${name} does not waste time denying the backdoor. ${p.Sub} asks who becomes expendable next once the house proves this kind of plan can work.`,
-    ], name, profile.role, 'target-plea');
-    if (profile.threat >= 7 || profile.comps >= 2) return vvar([
-      `${name} does not argue against ${p.posAdj} threat level. “Yes, I can win. Tonight you can keep somebody who can win for you, or remove me for the people you still cannot beat.”`,
-      `“If I am the biggest target in the house, why would you take me out for somebody else?” ${name} offers ${p.obj} as a shield with a competition record attached.`,
-      `${name} turns ${profile.comps ? `${profile.comps} competition ${profile.comps === 1 ? 'win' : 'wins'}` : 'the threat everybody sees'} into a campaign promise: safety for the voters who keep ${p.obj}, pressure on the people already coming for them.`,
-      `“You know I am going back on the block.” ${name} asks why the house would discard a predictable target while quieter threats build paths to the end.`,
-      `${name} tells the voters that a threat everybody sees is easier to use than one nobody will name. The room understands who ${p.sub} means without hearing a name.`,
-      `${name} offers the only currency a visible threat has left: results. “Give me one week and tell me where the power needs to land.”`,
-    ], name, profile.comps, 'threat-plea');
-    if (profile.blockCount >= 3) return vvar([
-      `“This is not my first time in these chairs, which means you already know exactly how I play when I survive.” ${name} asks for one more chance to prove it.`,
-      `${name} is tired of being the house's disposable nominee. “If you keep using me as the easy option, eventually I am going to win power and remember who made it easy.”`,
-      `“You have watched me survive this vote before.” ${name} tells the undecided voters that resilience is not the same thing as disloyalty.`,
-      `${name} counts ${profile.blockCount} trips to the block and none of the speeches that promised it was temporary. This time, ${p.sub} asks for votes instead of reassurance.`,
-      `“Every week I sit here, bigger groups get another week to settle in.” ${name} asks the house to stop confusing familiar danger with the most important danger.`,
-      `${name} makes surviving sound useful: ${p.sub} can remain the name people nominate, the shield people hide behind and the vote somebody can finally claim.`,
-    ], name, profile.blockCount, 'repeat-nominee-plea');
-    if (alliesCanVote.length) return vvar([
-      `${name} does not expose the alliance by name. ${p.Sub} looks toward the people who know the meetings, the promises and the plan, and asks whether any of it survives this vote.`,
-      `“Some of us have already made decisions together.” ${name} asks the people involved to decide whether tonight is where that stops.`,
-      `${name} reminds the allies who can vote of the decisions ${p.sub} helped make without turning the plea into a public roll call. The reminder is gentle; the receipt is not.`,
-      `“If our numbers only matter when I am one of them, then we never had numbers.” ${name} leaves the alliance to answer that privately in the Diary Room.`,
-      `${name} asks the voters who shared information with ${p.obj} to imagine next week without that information coming back. It is loyalty framed as logistics.`,
-      `${name} offers the alliance a reason stronger than sentiment: keeping ${p.obj} preserves a vote, a target and somebody willing to take blame for the group.`,
-    ], name, ...alliesCanVote, 'alliance-plea');
-    if ((stats.boldness || 5) >= 7 || ['challenge-beast', 'hothead', 'chaos-agent', 'wildcard', 'villain'].includes(profile.arch)) return vvar([
-      `${name} stands up and does not soften it. "Vote how you want tonight. Just remember that I remember." ${p.Sub} ${p.sub === 'they' ? 'sit' : 'sits'} back down into a very loud silence.`,
-      `"Keep me and I'll keep fighting. Send me out and you've made this house more boring and more dangerous in one vote." ${name} means both halves.`,
-      `${name} uses the plea to name, cheerfully, two people ${p.sub} ${p.sub === 'they' ? 'believe' : 'believes'} already decided against ${p.obj}. Nobody laughs and nobody denies it.`,
-      `“If you want me gone, own it. If you want me here, prove it.” ${name} sits down before anybody can mistake the plea for permission.`,
-      `${name} points at the empty space beside the nomination chairs. “Somebody will fill that seat next week. Decide whether you want me helping you or coming after you.”`,
-      `${name} thanks the people keeping ${p.obj}, then looks directly at the people who are not. “I hope your numbers are as good as you think they are.”`,
-      `${name} stands and says, “If I stay, I am winning the next HOH and I will remember tonight.” Nobody needs clarification about whether that is a promise.`,
-      `“Some of you are making a move. Some of you are only helping somebody else make one.” ${name} challenges the second group to reconsider.`,
-      `${name} tells the house exactly why ${p.sub} became the target and names the player most relieved to see ${p.obj} leave. That player does not look up.`,
-      `“You can evict me, but do not call it unanimous after you spent all week telling me I was safe.” ${name} looks down both sides of the couch.`,
-      `${name} promises no forgiveness tour. “Keep me because I am useful, or vote me out because you are afraid. At least be honest about which.”`,
-      `“The easy vote is sitting beside me.” ${name} turns toward the other nominee. “If you want easy, take it. If you want me gone, admit this is a shot.”`,
-    ], name, 'bold');
-    if ((stats.social || 5) <= 4 || ['goat', 'underdog'].includes(profile.arch)) return vvar([
-      `${name} thanks the house, says ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} been ${p.ref || 'themselves'} the whole way through, and sits down before the silence becomes uncomfortable.`,
-      `"Whatever happens, no hard feelings from me." From ${name}, everybody knows that is actually true, which makes it harder to vote for than any argument.`,
-      `${name} is not built for this part and does not pretend to be. The speech is small and honest and lands on exactly the two people it needed to.`,
-      `${name} unfolds a prepared speech, loses ${p.posAdj} place and finally says, “I want to stay. I hope you want me here.” The paper stays shaking after ${p.sub} sits.`,
-      `“I don't know what else to say that I haven't already said to you privately.” ${name} looks around the couches and leaves it there.`,
-      `${name} thanks everybody for listening, asks for another week and sits down too quickly. A friend reaches across the couch and squeezes ${p.posAdj} hand.`,
-      `${name} says the names of the people ${p.sub} loves outside the house, loses the next sentence and quietly asks for the chance to keep playing.`,
-      `“I do not have a clever reason.” ${name} swallows. “I am asking the people who know me to decide whether they want me here.”`,
-      `${name} looks at the other nominee and says, “I am sorry one of us has to leave.” Then ${p.sub} asks the house not to make it ${p.obj}.`,
-      `“Thank you for making this feel like home, even when it did not.” ${name}'s voice breaks on the final word, and one voter starts crying too.`,
-      `${name} forgets the speech ${p.sub} prepared and talks instead about the first night in the house. By the end, the plea is simply for one more memory.`,
-      `“I am nervous, so I am going to keep this short.” ${name} asks for the votes, thanks the house and sits with visible relief that the speaking part is over.`,
-    ], name, 'quiet');
-    if ((stats.loyalty || 5) >= 7 || ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(profile.arch)) return vvar([
-      `${name} does not campaign. ${p.Sub} ${p.sub === 'they' ? 'thank' : 'thanks'} the people who were good to ${p.obj}, by name, and tells the rest they know who they are. Both lists are accurate.`,
-      `"I never wrote a name I promised not to write. If that costs me tonight, it was worth what it bought me." ${name} sits down without looking at anybody in particular, which is its own message.`,
-      `${name} spends the whole plea on other people — who deserves to go far, who has been carrying whom. It is either the classiest exit speech of the season or the smartest, and possibly both.`,
-      `${name} reminds the house that ${p.sub} kept every agreement ${p.sub} made. “You may not need loyalty tonight. You will when you're sitting here.”`,
-      `“I know some of you already promised your votes. Keep your word—even if it is not to me.” ${name} refuses to ask anyone to become the player ${p.sub} would not be.`,
-      `${name} names the people who stood beside ${p.obj} and thanks them without asking for anything else. One undecided voter looks suddenly miserable.`,
-      `${name} tells the house, “I protected people when it was bad for my game. I am asking those people whether that meant anything.”`,
-      `“My word is the one thing I can still offer from this chair.” ${name} promises safety to anyone who keeps ${p.obj}, and several voters know ${p.sub} means it.`,
-      `${name} refuses to expose private deals in a final plea. “If we had something real, you already know what to do.”`,
-      `${name} asks nobody to betray an ally. Instead, ${p.sub} asks the people who called ${p.obj} an ally to behave like one.`,
-      `“I have taken risks for this group without asking for receipts.” ${name} looks toward the people involved. “Tonight I am asking.”`,
-      `${name} says ${p.sub} can forgive a game decision but not a dishonest one. The voters who promised safety hear the distinction.`,
-    ], name, 'loyal');
-    return vvar([
-      `${name} keeps it brief and aims it precisely: one reason to keep ${p.obj}, one reason the alternative is worse for the people voting, and a thank you. Rehearsed, and none the worse for it.`,
-      `"I'm not going to beg, and I'm not going to threaten. I'm going to be here tomorrow or I'm not — but you should think about which version of next week you'd rather live in."`,
-      `${name} makes the case like a closing argument: calm, organized and finished without repeating a point.`,
-      `${name} tells the voters to picture the next HOH competition with each nominee still in the house. “Keep the outcome that gives you more options.”`,
-      `${name} offers no grand promise—only a smaller target, a usable vote and a reason not to strengthen the other side.`,
-      `“This vote is not about which of us you like more. It is about which of us leaving helps the people you cannot beat.” ${name} lets the room supply the names.`,
-      `${name} identifies the likely next nominees under both outcomes and asks every voter which version keeps ${pronouns(name).obj} off the block.`,
-      `“Keeping me leaves a target in front of you and a vote beside you.” ${name} makes self-preservation sound like a service to the room.`,
-      `${name} argues that the other nominee has fewer enemies and more paths to the end. The compliment sounds generous until the strategy becomes clear.`,
-      `“Do not vote for tonight. Vote for the next time somebody wins power.” ${name} walks the house through who benefits from each eviction.`,
-      `${name} offers a voting bloc, not a friendship: keep ${p.obj} and three people can control the next decision together.`,
-      `${name} closes with one question: “Who becomes the biggest target if I walk through that door?” More than one voter looks at the same person.`,
-    ], name, 'measured');
+    const forceful = (stats.boldness || 5) >= 7
+      || ['challenge-beast', 'hothead', 'chaos-agent', 'wildcard', 'villain'].includes(profile.arch);
+    const reserved = (stats.social || 5) <= 4 || ['goat', 'underdog'].includes(profile.arch);
+    const loyal = (stats.loyalty || 5) >= 7
+      || ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer'].includes(profile.arch);
+    const voice = forceful ? 'forceful' : reserved ? 'reserved' : loyal ? 'loyal' : 'strategic';
+    const openings = {
+      forceful: [
+        `I am not going to beg anybody in this room.`, `Let us stop pretending this is an easy vote.`,
+        `If you want me out, at least make it your move.`, `I have heard enough careful answers this week.`,
+        `I am going to say this once and say it plainly.`, `Nobody needs to feel comfortable during my speech.`,
+        `I did not come here to disappear quietly.`, `You all know I would take the shot if our seats were reversed.`,
+      ],
+      reserved: [
+        `I am nervous, so bear with me.`, `I had a better speech in my head than the one I am about to give.`,
+        `I am not the loudest person in this house, but I need you to hear me tonight.`, `I do not have a dramatic speech prepared.`,
+        `I am going to keep this honest and keep it short.`, `Standing here is a lot harder than I thought it would be.`,
+        `I have talked to most of you privately, and that is where I am most comfortable.`, `I know I have not always made myself easy to read.`,
+      ],
+      loyal: [
+        `I have tried to be someone whose word means something in this house.`, `I am not going to expose private conversations to save myself.`,
+        `The people I have protected know who they are.`, `I have played this game by standing beside people, not hiding behind them.`,
+        `I told myself I would not become dishonest just because I was scared.`, `I have taken risks for people in this room without keeping score.`,
+        `Whatever happens tonight, I am proud of the relationships I built here.`, `I am asking the people who called me an ally to remember what that word meant.`,
+      ],
+      strategic: [
+        `Before you vote, separate what the house wants from what your game needs.`, `This decision lasts longer than tonight.`,
+        `There are two nominees, but there are a lot more than two games being decided tonight.`, `I am not asking you to like me more; I am asking you to look one move ahead.`,
+        `The Head of Household made the nominations, but the rest of you decide whether the plan works.`, `Think about who gains power the moment one of these chairs is empty.`,
+        `Everybody should picture next week before walking into the Diary Room.`, `This vote is information, and the person benefiting most already knows what they want you to do.`,
+      ],
+    };
+    const closings = {
+      forceful: [
+        `Keep me and you know exactly what you are getting.`, `Vote me out if you are afraid of me, but do not pretend it was somebody else's decision.`,
+        `If I stay, I will fight. If I leave, I will know who chose it.`, `Make the move you can defend next week.`,
+        `I want to stay, and I am not apologizing for saying it.`, `Whatever name you say in there, own it when you come back out.`,
+      ],
+      reserved: [
+        `I would really like one more week with all of you.`, `I hope the relationships I made here are enough to keep me.`,
+        `Please give me the chance to keep playing.`, `That is all I have. Thank you for listening.`,
+        `I am asking for your vote, even if I am not very good at asking.`, `I hope I am still sitting here when this is over.`,
+      ],
+      loyal: [
+        `If what we built was real, I trust you to show me tonight.`, `Keep me, and the promises I made to you still stand.`,
+        `I will not ask you for anything I would not do for you.`, `I am asking for the same loyalty I have tried to give.`,
+        `Whatever you decide, be honest with me when you do it.`, `My word is still yours if I am here tomorrow.`,
+      ],
+      strategic: [
+        `Vote for the outcome that gives you more options next week.`, `Keep the player you can use, not the player somebody else can control.`,
+        `Do not remove a shield just to make the strongest structure safer.`, `Ask yourself whose path gets easier if I leave.`,
+        `You do not owe the Head of Household a successful week.`, `Make this ballot serve your game, not somebody else's résumé.`,
+      ],
+    };
+    const speech = (argumentsPool, ...salt) => `“${vvar(openings[voice], name, voice, ...salt, 'open')} ${vvar(argumentsPool, name, voice, ...salt, 'case')} ${vvar(closings[voice], name, voice, ...salt, 'close')}”`;
+
+    if (partnerCanVote) return speech([
+      `${profile.partner}, everybody already sees us as a pair. Splitting us up does not erase that target; it leaves you carrying it alone.`,
+      `Keeping me gives ${profile.partner} one person whose vote is never a mystery and gives the rest of you two visible targets to put in front of yourselves.`,
+      `People have used my relationship with ${profile.partner} as a reason to fear me all week. Decide whether breaking us up helps you or only helps the people who already have numbers.`,
+      `${profile.partner}, you know which promises between us were personal and which were game. I meant both.`,
+      `If you evict me to weaken ${profile.partner}, be honest about who gets stronger when our two votes become one.`,
+      `I will not pretend ${profile.partner} and I are not close. I am telling you that a pair everybody sees is easier to plan around than a group nobody will name.`,
+      `Keeping us together may look dangerous, but it keeps the danger in front of you where you can see it.`,
+      `${profile.partner} is going to remain a target whether I stay or leave. With me here, that target comes with another vote you can work with.`,
+    ], profile.partner, 'showmance');
+    if (profile.role === 'pawn') return speech([
+      `I was told I was the pawn and that the votes were already there. I did my part by sitting in this chair; the people who made that promise can do theirs now.`,
+      `This week was supposed to be about the person sitting beside me. Do not turn me into the move because the original move became uncomfortable.`,
+      `I accepted the block because people I trusted said I would be safe. If that agreement means anything, tonight is when it has to mean something.`,
+      `Using me as a pawn only works if the people behind the plan protect me. Otherwise none of you should ever agree to be one again.`,
+      `I took the risk that made this plan possible. Evicting me rewards everybody who asked for the risk and refused to share it.`,
+      `I was never presented as the target until the votes became convenient. Think about who changed that story and why.`,
+      `If I leave from the pawn seat, the lesson is that nobody's word around a nomination means anything.`,
+      `The plan did not fail because of me. Do not make me pay because the people running it lost their nerve.`,
+    ], 'pawn');
+    if (profile.role === 'target' || profile.role === 'backdoor') return speech([
+      `I know I am the target. That does not mean I am your target, and the person who planned this week cannot cast a vote tonight.`,
+      `This entire week was built to remove me. Before you finish that plan, ask whether it improves your position or only the Head of Household's.`,
+      `The people most eager to see me leave are the people who become harder to challenge once I am gone.`,
+      `You can take out a visible threat tonight, but tomorrow the structure behind this vote will still be here and one step stronger.`,
+      `I was kept away from the veto because somebody was afraid I could save myself. You should be just as interested in why they needed me unable to fight back.`,
+      `If this backdoor works without resistance, every person outside the group controlling it becomes easier to remove the same way.`,
+      `I am the name being said publicly. Pay attention to the names nobody feels safe enough to say.`,
+      `Keeping me leaves a target in front of you and puts a vote beside you. Evicting me gives both advantages to somebody else.`,
+      `Do not hand somebody a completed move simply because they spent the week calling it the house's decision.`,
+      `The easiest explanation is that I am dangerous. The more important question is who becomes safest when I walk out.`,
+    ], profile.role);
+    if (profile.threat >= 7 || profile.comps >= 2) return speech([
+      `Yes, I can win competitions. If you keep me, those wins can protect people in this room instead of the people already controlling the vote.`,
+      `Everybody sees me as a threat, which means everybody knows I can be nominated again. A quieter threat will not give you that same warning.`,
+      `If I am the biggest target here, keeping me gives every one of you another week without being the biggest target yourself.`,
+      `${profile.comps ? `I have won ${profile.comps} ${profile.comps === 1 ? 'competition' : 'competitions'}.` : `The house sees me as somebody who can win power.`} I am offering that ability to the people willing to keep me.`,
+      `Taking me out removes somebody you might not beat, but it also removes somebody who can take a shot you may never get to take yourself.`,
+      `You already know I will touch the block again. That makes me predictable, and predictable danger can be useful.`,
+      `I cannot make myself look harmless, so I will offer something better: a target in front of you and a competitor beside you.`,
+      `If you keep me, tell me where the power needs to land next. I have every reason to listen.`,
+    ], profile.comps, 'threat');
+    if (profile.blockCount >= 3) return speech([
+      `I have been on the block ${profile.blockCount} times. Bigger groups have used every one of those weeks to settle in while I fought just to stay.`,
+      `You know exactly what happens when I survive because you have seen it before. I stay, I keep playing and I remain a target in front of you.`,
+      `Stop confusing the person you are used to nominating with the person most dangerous to your game.`,
+      `Every time I sit here, somebody tells me it is temporary. I am not asking for reassurance tonight; I am asking for votes.`,
+      `If the easiest nominee leaves every time, the people who are never nominated will reach the end without having to show their hands.`,
+      `I have survived these chairs before without punishing everyone who kept me. That should count for more than another promise that I am safe.`,
+      `Keeping me leaves the house an obvious nominee and gives somebody an available number. Evicting me only clears space for a quieter game.`,
+      `I am still here because I keep finding a way through weeks like this. Give me one more chance to find it.`,
+    ], profile.blockCount, 'repeat');
+    if (alliesCanVote.length) return speech([
+      `I am not going to name private meetings on live television. The people who sat in them know what we agreed to do for one another.`,
+      `Some of us have made decisions together already. If those numbers only matter when I am providing one, then we never had numbers.`,
+      `I shared information, took risks and protected people in this room. I am asking whether any of that comes back when I need it.`,
+      `The people who called me an ally do not need another pitch from me. They need to decide whether that word survives one difficult vote.`,
+      `Keeping me preserves a vote, a target and somebody who has taken blame for this group before.`,
+      `If our agreements disappear the first time one of us touches the block, everybody outside them deserves to know how little they were worth.`,
+      `I will not list names or expose deals. If we had something real, you already know what to do.`,
+      `I have voted beside people in this room when it was not the easiest choice. Tonight I am asking those people to stand beside me.`,
+    ], ...alliesCanVote, 'alliance');
+    const personalCases = {
+      forceful: [
+        `Keeping me means keeping somebody willing to win power and make a decision instead of waiting for permission.`,
+        `The easy vote is sitting in one of these chairs. Easy for whom is the part nobody wants to answer.`,
+        `Some of you are making a move tonight. The rest of you are only helping somebody else make one.`,
+        `If you spent the week telling me I was safe, do not hide inside a unanimous vote now.`,
+        `I am useful to people who want something changed and dangerous to people who like the house exactly as it is.`,
+        `You know I will say a name and take the heat for it. Decide whether you need that person here next week.`,
+        `The person beside me may be easier to live with. I am the one more likely to change the game in your favor.`,
+        `There are people in this room hoping you vote emotionally so they can keep playing strategically.`,
+        `If I leave, somebody gets exactly the quiet, obedient house they wanted. Decide whether that somebody is you.`,
+        `I would rather be evicted for being dangerous than kept because nobody noticed me, but I would still rather stay.`,
+      ],
+      reserved: [
+        `I may not have spoken to every person as much as I should have, but every relationship I made here has been real to me.`,
+        `I am not promising to control the house next week. I am promising to listen, work with you and remember who gave me another chance.`,
+        `The person sitting beside me has a path in this game too. Please do not assume mine is more dangerous just because it is easier to see.`,
+        `I have felt out of place in this house more than once, and I still kept showing up and trying with all of you.`,
+        `I cannot give you a perfect argument. I can give you my word that your vote tonight will matter to me tomorrow.`,
+        `If you are undecided, think about the conversations we had when nobody was campaigning. Those are the ones I trust.`,
+        `I know being quiet can look like I have no game. It also means I have not spent the week promising the same thing to everybody.`,
+        `I want to stay because I am not finished with this experience or with the people in this room.`,
+        `I do not expect anyone to risk everything for me. I am asking whether keeping me is actually a risk at all.`,
+        `The vote may already be decided. If it is not, I hope somebody in this room is willing to make their own decision.`,
+      ],
+      loyal: [
+        `I have kept information private, honored the votes I agreed to and protected people when it would have been easier not to.`,
+        `Anybody can promise loyalty while they are safe. I am asking whether the loyalty promised to me still exists while I am in danger.`,
+        `I am not offering five different deals tonight. I am offering the same word I have given all season.`,
+        `The people who worked with me know I did not disappear when their names were in danger.`,
+        `If you keep me, I will not treat tonight as a debt I can never stop collecting. I will treat it as trust worth returning.`,
+        `I do not want anybody to betray a real ally for me. I am asking the people who called me an ally not to betray me.`,
+        `I have made mistakes in this game, but making somebody feel safe and then abandoning them has not been one of them.`,
+        `Relationships are the only reason any of us survives a vote. I am trusting mine enough to sit down without exposing them.`,
+        `You know whether I have been there for you. I cannot prove that in one speech better than I proved it in the house.`,
+        `If honesty and loyalty only matter when the vote is easy, then none of us should build a game around them.`,
+      ],
+      strategic: [
+        `Keeping me preserves a visible target, a usable vote and another person capable of challenging the strongest group.`,
+        `Compare both versions of next week: who gets nominated, who controls the vote and who no longer has somebody in front of them.`,
+        `The other nominee has relationships that remain in the house if I leave. Mine are the votes some of you can still use.`,
+        `If I go, the people pushing this vote lose an obstacle. If I stay, they have to spend another week dealing with me.`,
+        `A unanimous vote gives the people in control information and gives everybody else nothing.`,
+        `The biggest beneficiary of my eviction is not sitting in either nomination chair.`,
+        `You can remove me tonight, but you cannot remove the structure that wanted me here without keeping people willing to challenge it.`,
+        `Do not compare which nominee feels safer tonight. Compare which nominee gives you more paths after the next competition.`,
+        `Keeping me does not require trust forever. It requires recognizing that our interests overlap for one more week.`,
+        `The vote has been presented as settled because settled votes protect the people who settled them. You are still allowed to disagree.`,
+      ],
+    };
+    return speech(personalCases[voice], 'personal');
   };
 
   const ballotReason = (b, c, broke) => {
@@ -19083,15 +19148,82 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     }
   }
   pairs.sort((x, y) => Math.abs(y.v) - Math.abs(x.v));
-  const relBody = pairs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:5px">
-    ${pairs.slice(0, 14).map(p => {
+
+  // The directional layer, qualitatively. The bond pairs above say who is
+  // close and who is feuding; these say the things a single number cannot —
+  // she fears him, he owes her, they like each other and do not trust each
+  // other — with the cause when the record has one. These dimensions decide
+  // nominations, vetoes and votes now, so they have to be visible somewhere
+  // a viewer actually looks.
+  const dimStore = snap.relationshipDimensions
+    || (state ? {} : (typeof gs !== 'undefined' && gs.relationshipDimensions) || {});
+  const causeStore = snap.relationshipCauses
+    || (state ? {} : (typeof gs !== 'undefined' && gs.relationshipCauses) || {});
+  const causeOf = (a, b, dim) => {
+    const trail = causeStore[`${a}→${b}`] || [];
+    for (let k = trail.length - 1; k >= 0; k--) if (trail[k]?.dim === dim) return trail[k].reason || '';
+    return '';
+  };
+  const reads = [];
+  for (const a of stillIn) {
+    for (const b of stillIn) {
+      if (a === b) continue;
+      const r = dimStore[`${a}→${b}`];
+      if (!r) continue;
+      const back = dimStore[`${b}→${a}`] || {};
+      // Only genuinely one-sided reads make the list — the header promises
+      // "what one of them feels that the other may not", and a mutual feud is
+      // already the "vs" row above told twice. If both directions carry the
+      // same strong dimension, it is not a secret, it is the relationship.
+      const oneSided = dim => (r[dim] || 0) - (back[dim] || 0) >= 2;
+      const add = (score, icon, color, text, dim) =>
+        reads.push({ a, b, score, icon, color, text, dim, cause: causeOf(a, b, dim) });
+      // Thresholds sit against the dimensions' MEASURED ranges, not the
+      // theoretical 0–10: fear and obligation decay hard every week, so a
+      // lived-in season tops out around 2–3 and a threshold of 4 showed
+      // nothing all season. Resentment runs the full scale and keeps its
+      // higher bar.
+      if ((r.fear || 0) >= 2 && oneSided('fear')) add(r.fear, '⚠', '#f0883e', `is wary of`, 'fear');
+      if ((r.obligation || 0) >= 2 && oneSided('obligation')) add(r.obligation, '🤝', '#d29922', `owes`, 'obligation');
+      if ((r.resentment || 0) >= 5 && oneSided('resentment')) add(r.resentment, '🔥', '#f85149', `resents`, 'resentment');
+      if ((r.strategicRespect || 0) >= 2.5 && oneSided('strategicRespect')) add(r.strategicRespect, '♟', '#a371f7', `respects the game of`, 'strategicRespect');
+      // Half-weighted: a friendly house produces a lot of these, and at full
+      // strength they buried every fear and debt under one repeated sentence.
+      if ((r.affection || 0) >= 4 && (r.trust || 0) <= 0) add((r.affection - (r.trust || 0)) * 0.5, '🎭', '#58a6ff', `likes — but does not trust —`, 'likeNoTrust');
+    }
+  }
+  reads.sort((x, y) => y.score - x.score);
+  // One story per pair per flavour (a mutual like-don't-trust is one story,
+  // not two mirrored rows), and no single flavour owning the list.
+  const takenReads = new Set();
+  const perDim = {};
+  const picked = [];
+  for (const p of reads) {
+    if (takenReads.has(`${p.b}|${p.a}|${p.dim}`)) continue;
+    if ((perDim[p.dim] || 0) >= 3) continue;
+    takenReads.add(`${p.a}|${p.b}|${p.dim}`);
+    perDim[p.dim] = (perDim[p.dim] || 0) + 1;
+    picked.push(p);
+    if (picked.length >= 10) break;
+  }
+  const readRows = picked.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${p.color};background:${p.color}0a;border-radius:4px">
+      <span style="flex-shrink:0">${_bbAvatar(p.a, 22)}</span>
+      <span style="font-size:11px;flex:1;min-width:0">${p.a} <span style="color:${p.color}">${p.icon} ${p.text}</span> <strong>${p.b}</strong>${
+        p.cause ? `<span style="display:block;font-size:9.5px;color:#6e7681;font-style:italic">${_bbEsc(p.cause)}</span>` : ''}</span>
+      <span style="flex-shrink:0">${_bbAvatar(p.b, 22)}</span>
+    </div>`).join('');
+
+  const relBody = (pairs.length || readRows) ? `${pairs.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:5px">
+    ${pairs.slice(0, 10).map(p => {
       const good = p.v > 0, color = good ? '#3fb950' : '#f85149';
       return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-left:2px solid ${color};background:${color}0a;border-radius:4px">
         <span style="display:flex;gap:2px;flex-shrink:0">${_bbAvatar(p.a, 22)}${_bbAvatar(p.b, 22)}</span>
         <span style="font-size:11px;flex:1">${p.a} <span style="color:#6e7681">${good ? '&' : 'vs'}</span> ${p.b}</span>
         <span style="font-size:10px;color:${color};font-family:var(--font-mono)">${good ? '+' : ''}${p.v.toFixed(1)}</span>
       </div>`;
-    }).join('')}</div>`
+    }).join('')}</div>` : ''}
+    ${readRows ? `<div style="font-size:9px;letter-spacing:1.4px;color:#6e7681;text-transform:uppercase;margin:${pairs.length ? '10px' : '0'} 0 5px">What one of them feels that the other may not</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:5px">${readRows}</div>` : ''}`
     : `<div style="font-size:11px;color:#484f58;text-align:center;padding:8px 0">Nobody feels strongly about anybody yet.</div>`;
 
   // Only weeks that have already aired — this one is still being watched.
@@ -19274,6 +19406,13 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       : seen >= 0.5 ? { label: 'AN OPEN SECRET', color: '#d29922' }
       : seen >= 0.25 ? { label: 'SUSPECTED', color: '#58a6ff' }
       : { label: 'STILL SECRET', color: '#3fb950' };
+    const awarenessText = seen >= 0.8
+      ? 'Nearly every non-member is convinced this group exists.'
+      : seen >= 0.5
+        ? 'Most non-members recognize the group, even if nobody says it publicly.'
+        : seen >= 0.25
+          ? 'Some non-members suspect the group, but most are not certain yet.'
+          : 'Most non-members have not noticed the group.';
     // Who is hunting somebody because of THIS group.
     // Matched on the group NAMED in the reason, not merely on the target being
     // a member — somebody in three alliances would otherwise show up as a hunt
@@ -19292,9 +19431,9 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
         <span class="bbb-state" style="color:${state.color}">${state.label}</span>
       </div>
       <div class="bbb-faces">${b.members.map(m => _bbAvatar(m, 22)).join('')}
-        <span class="bbb-votes">${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
+        <span class="bbb-votes">${b.members.length} members &middot; up to ${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
       <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
-        <span>${pct}% of the house outside it has worked it out</span></div>
+        <span>Average suspicion among non-members: ${pct}%<br>${awarenessText}</span></div>
       ${hunters.length ? `<div class="bbb-hunt">${hunters.map(h =>
         `${_bbEsc(h.who)} is coming for ${_bbEsc(h.target)} to break it up`).join(' &middot; ')}</div>` : ''}
     </div>`;
@@ -19630,6 +19769,66 @@ export function rpBuildBBDebug(ep) {
       dbgPerceivedGaps(entries.slice(0, 40), (a, b) => (typeof getBond === 'function' ? getBond(a, b) : 0)));
   }
 
+  // ── The Web: the directional dimensions, numerically ──────────────
+  // The house's version of Total Drama's Debug → The Web. These numbers
+  // decide nominations (fear/respect/debt), the veto (obligation, fear of
+  // the HOH), votes (targetProtection) and recruitment (tacticalCooperation),
+  // and until this tab they were invisible in a house. Read from the week's
+  // CLOSING snapshot so a replayed episode shows the feelings of that week,
+  // not of today.
+  if (tab === 'web') {
+    const relStore = ep.closingState?.relationshipDimensions
+      || snap.relationshipDimensions || (typeof gs !== 'undefined' && gs.relationshipDimensions) || {};
+    const causeTrail = ep.closingState?.relationshipCauses
+      || snap.relationshipCauses || (typeof gs !== 'undefined' && gs.relationshipCauses) || {};
+    const dims = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
+    const short = { affection: 'LIKING', trust: 'TRUST', strategicRespect: 'GAME RESPECT', fear: 'FEAR', obligation: 'OWES', resentment: 'RESENTMENT', attraction: 'ATTRACTION' };
+    const colOf = v => v >= 5 ? '#3fb950' : v >= 2 ? '#d29922' : v <= -2 ? '#f47067' : '#6e7681';
+    const dget = (a, b) => { const r = relStore[`${a}→${b}`] || {}; const o = {}; dims.forEach(d => { o[d] = Number(r[d]) || 0; }); return o; };
+    const readOf = r => {
+      const n = [];
+      if (r.affection >= 4 && r.trust <= 1) n.push('likes them, distrusts them');
+      else if (r.affection >= 4) n.push('personally close');
+      else if (r.affection <= -3) n.push('dislikes them');
+      if (r.trust >= 5) n.push('trusts them'); else if (r.trust <= -3 && r.affection > -3) n.push('distrusts them');
+      if (r.strategicRespect >= 5) n.push('respects their game');
+      if (r.fear >= 3) n.push('wary/afraid');
+      if (r.resentment >= 4) n.push('resents them');
+      if (r.obligation >= 3) n.push('feels indebted');
+      if (r.attraction >= 3) n.push('drawn to them');
+      return n.length ? n.join(' · ') : 'neutral / never really connected';
+    };
+    const lastCause = (a, b) => {
+      const trail = causeTrail[`${a}→${b}`] || [];
+      const last = trail[trail.length - 1];
+      return last?.reason || '';
+    };
+    let focus = (typeof localStorage !== 'undefined' && localStorage.getItem('vp_bbweb_player')) || null;
+    if (!focus || !house.includes(focus)) focus = house[0];
+    const picker = house.map(n => {
+      const on = n === focus;
+      return `<button onclick="localStorage.setItem('vp_bbweb_player','${String(n).replace(/'/g, "\\'")}');const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);renderVPScreen();}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 5px;border:1px solid ${on ? '#d9a6ff' : 'rgba(255,255,255,0.1)'};border-radius:8px;background:${on ? 'rgba(200,120,255,0.16)' : 'transparent'};cursor:pointer;flex:0 0 auto">
+        ${_bbAvatar(n, 34)}<span style="font-size:9px;font-weight:${on ? '700' : '400'};color:${on ? '#d9a6ff' : '#8b949e'};max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_bbEsc(n)}</span></button>`;
+    }).join('');
+    const rows = house.filter(n => n !== focus).map(other => {
+      const out = dget(focus, other);
+      const back = dget(other, focus);
+      const backSig = dims.filter(d => Math.abs(back[d]) >= 2).map(d => `${short[d]} ${back[d].toFixed(0)}`).join(' · ');
+      const cause = lastCause(focus, other);
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+        <td style="padding:5px;white-space:nowrap">${_bbAvatar(other, 22)} <strong style="font-size:11px">${_bbEsc(other)}</strong></td>
+        ${dims.map(d => { const v = out[d]; return `<td style="padding:5px;text-align:center;color:${colOf(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}">${v.toFixed(1)}</td>`; }).join('')}
+        <td style="padding:5px;font-size:10px;color:#c9d1d9">${readOf(out)}${cause ? `<div style="font-size:9px;color:#6e7681;font-style:italic">${_bbEsc(cause)}</div>` : ''}</td>
+        <td style="padding:5px;font-size:9.5px;color:#8b949e">${backSig || '<span style="color:#484f58">nothing strong</span>'}</td>
+      </tr>`;
+    }).join('');
+    html += dbgPanel('THE WEB — HOW ONE HOUSEGUEST FEELS ABOUT EVERYBODY', 'purple',
+      `<div style="display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px">${picker}</div>`
+      + dbgNote('liking / trust / game respect run −10 to 10; fear / owes / resentment / attraction run 0 to 10. These are the numbers nominations, vetoes, votes and recruitment actually read. A person can like somebody they distrust — history and safety are separate columns.')
+      + `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:ui-monospace,Consolas,monospace;font-size:10px">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.12)"><th style="text-align:left;padding:5px">${_bbEsc(focus)} feels →</th>${dims.map(d => `<th style="padding:5px;white-space:nowrap">${short[d]}</th>`).join('')}<th style="text-align:left;padding:5px">Plain read</th><th style="text-align:left;padding:5px">Back at them</th></tr>${rows}</table></div>`);
+  }
+
   // ── Player stats ──────────────────────────────────────────────────
   if (tab === 'stats') {
     html += dbgPanel('STATS AND COMPETITION RECORD', 'grey', dbgStatTable(house, [
@@ -19694,7 +19893,7 @@ export function rpBuildBBDebug(ep) {
     tabs: [
       ['week', 'This Week'], ['threats', 'Threats &amp; Heat'], ['comps', 'Competitions'],
       ['plans', 'Game Plans'], ['deals', 'Deals &amp; Alliances'], ['votes', 'Vote Commitments'],
-      ['bonds', 'Perceived Bonds'], ['stats', 'Player Stats'], ['beats', 'Beats &amp; Effects'],
+      ['bonds', 'Perceived Bonds'], ['web', 'The Web'], ['stats', 'Player Stats'], ['beats', 'Beats &amp; Effects'],
     ],
     body: html,
   });

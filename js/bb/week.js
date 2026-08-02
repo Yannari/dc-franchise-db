@@ -16,7 +16,7 @@ import {
 import { checkPerceivedBondTriggers, recoverBonds } from '../bonds.js';
 import { decayAllianceTrust } from '../alliances.js';
 import { tickIntentions } from '../intentions.js';
-import { applySocialStatusEffects, recordChallengeDominance, recordStrategicRespect } from '../relationship-events.js';
+import { applySocialStatusEffects, recordChallengeDominance, recordStrategicRespect, recordProtection } from '../relationship-events.js';
 import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
@@ -779,6 +779,13 @@ function _snapshotHouse() {
     intentions: JSON.parse(JSON.stringify(gs.intentions || {})),
     perceivedBonds: JSON.parse(JSON.stringify(gs.perceivedBonds || {})),
     stats: JSON.parse(JSON.stringify(gs.bb?.stats || {})),
+    // The directional dimensions and their cause trails, frozen at this
+    // moment. These now drive nominations, the veto, votes and recruitment,
+    // and Total Drama's episodes snapshot them per episode for exactly the
+    // reason a house must: a replayed week shown with TODAY'S feelings would
+    // quietly rewrite why everything happened.
+    relationshipDimensions: JSON.parse(JSON.stringify(gs.relationshipDimensions || {})),
+    relationshipCauses: JSON.parse(JSON.stringify(gs.relationshipCauses || {})),
   };
 }
 
@@ -1237,6 +1244,13 @@ export function simulateBBWeek(options = {}) {
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
+      // Being pulled off the block is the clearest debt the game can create,
+      // and the writer for it existed unused — obligation was empty across
+      // entire seasons while the veto decision was busy READING it. Saving
+      // yourself creates no debt to anybody.
+      if (vetoDecision.save !== vetoWinner) {
+        try { recordProtection(vetoWinner, vetoDecision.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
+      }
     }
     week.finalNominees = [...nominees];
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);

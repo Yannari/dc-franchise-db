@@ -17095,6 +17095,14 @@ export function rpBuildBBNominations(ep) {
     steps.push({ kind: 'reason', name, role: roleOf(name) });
   });
   speeches.forEach(b => steps.push({ kind: 'beat', beat: b }));
+  // A nomination structure that is not the classic pawn play gets said out
+  // loud in the Diary Room — two real targets, a split pair, two quiet
+  // outsiders, the target beside their own ally. The mechanics choose between
+  // five structures now, and a plan the viewer cannot see is a plan that
+  // reads as random.
+  if (act?.structure && act.structure !== 'target-pawn' && act.structureWhy) {
+    steps.push({ kind: 'shape' });
+  }
   steps.push({ kind: 'complete' });
   reactions.forEach(b => steps.push({ kind: 'beat', beat: b }));
 
@@ -17551,6 +17559,10 @@ export function rpBuildBBCeremony(ep) {
   const card = (step, i) => {
     if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     switch (step.kind) {
+      case 'shape':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(hoh, 30)}<span class="bbns-pill gold">THE SHAPE OF THE BLOCK</span></div>
+          <div class="bbns-card-b">In the Diary Room, <strong>${_bbEsc(hoh)}</strong> lays the week out plainly: ${_bbEsc(act.structureWhy)}.</div></div>`;
       case 'open':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill grey">THE VETO MEETING</span></div>

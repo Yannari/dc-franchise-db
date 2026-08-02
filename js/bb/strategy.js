@@ -85,6 +85,24 @@ export function nominationPlanPull(hoh, candidate) {
   return pull * weight;
 }
 
+/**
+ * The nomination plan — a choice between STRUCTURES, not a template.
+ *
+ * This function used to hardcode one strategy: pick the biggest target, find
+ * the friendliest chair, return [target, pawn]. Every Head of Household in
+ * every season ran the same play, a pawn was mandatory by construction, and
+ * the interesting nomination weeks the format actually produces — two real
+ * targets, a pair split up, a couple of quiet outsiders, the target seated
+ * next to their own best ally — were unreachable.
+ *
+ * Five structures now compete, scored on who this Head of Household IS
+ * (archetype, boldness, temperament, social and strategic ability), what the
+ * week needs (how far the danger ranking separates, who is paired with whom)
+ * and — for the classic pawn play — whether a quick noise-free vote forecast
+ * says the pawn actually survives. "Likely to survive" was previously assumed
+ * from threat and relationships; a pawn the count says goes home makes the
+ * whole structure a bad idea, and now it reads that way.
+ */
 export function chooseNominationPlan(hoh, house, rng = Math.random) {
   const eligible = house.filter(name => name !== hoh);
   if (eligible.length < 2) throw new Error('A Big Brother nomination requires at least two eligible houseguests.');
@@ -92,14 +110,26 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     .map(name => ({ name, score: nominationScore(hoh, name, rng) }))
     .sort((a, b) => b.score - a.score);
   const hohStats = pStats(hoh);
-  const primary = ranked[0];
-  const backdoorChance = clamp((hohStats.strategic * 0.07 + hohStats.boldness * 0.04)
-    * clamp((primary.score - ranked[Math.min(2, ranked.length - 1)].score + 3) / 6, 0.25, 1), 0.08, 0.72);
-  const useBackdoor = eligible.length >= 5 && rng() < backdoorChance;
-  // A pawn is somebody you are reasonably confident survives the week and does
-  // not hold it against you. Somebody you have already read as beatable at the
-  // end is the obvious chair, and somebody you shook hands with is not.
+  const arch = archetype(hoh);
   const plan = housePlan(hoh);
+  const primary = ranked[0];
+  const heat = name => ranked.find(r => r.name === name)?.score ?? 0;
+
+  // A cheap forecast: who leaves if these two face the vote. Noise-free on
+  // purpose — this is the Head of Household counting on their fingers, and
+  // counting twice should give the same number.
+  const forecast = (a, b) => {
+    let evictA = 0, evictB = 0;
+    for (const voter of house) {
+      if (voter === hoh || voter === a || voter === b) continue;
+      try {
+        if (initialVotePreference(voter, [a, b], () => 0.5).evict === a) evictA++;
+        else evictB++;
+      } catch { /* the count is advisory */ }
+    }
+    return { evictA, evictB };
+  };
+
   const pawnFit = name => {
     let fit = getPerceivedBond(hoh, name) - bbThreat(name) * 0.35;
     if (plan?.goat === name) fit += 1.6;
@@ -109,16 +139,132 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     return fit;
   };
   const pawnPool = ranked.slice(1).sort((a, b) => pawnFit(b.name) - pawnFit(a.name));
+
+  const structures = [];
+
+  // ── The classic: the target and a chair. Still the most common play on
+  // the real show, so it carries the highest base — but it is validated
+  // against the count now, and a pawn the forecast says goes home drags the
+  // whole structure down instead of being seated anyway.
   const pawn = pawnPool[0]?.name || ranked[1].name;
-  const initialTarget = useBackdoor ? (ranked.find(entry => entry.name !== primary.name && entry.name !== pawn)?.name || ranked[1].name) : primary.name;
+  {
+    const f = forecast(primary.name, pawn);
+    const margin = f.evictA - f.evictB;   // > 0 → the target leaves
+    structures.push({
+      kind: 'target-pawn', nominees: [primary.name, pawn], target: primary.name, pawn,
+      why: `${pawn} sits beside ${primary.name} so the vote has nowhere else to go`,
+      score: 6 + clamp(margin, -3, 3) * 0.9
+        + hohStats.social * 0.08
+        + ({ mastermind: 1, schemer: 0.8, 'perceptive-player': 0.6, 'loyal-soldier': 0.4 }[arch] || 0),
+    });
+  }
+
+  // ── Two real targets: either eviction is a win, and nobody was lied to
+  // about being safe. The play of the bold and the short-tempered — and of
+  // any week where the danger ranking has two clear names at the top.
+  if (ranked[1]) {
+    const second = ranked[1];
+    structures.push({
+      kind: 'double-target', nominees: [primary.name, second.name], target: primary.name, pawn: null,
+      why: `two real targets — whichever of them leaves, the week worked`,
+      score: 3.8 + clamp(second.score - (ranked[2]?.score ?? 0), 0, 4) * 0.5
+        + hohStats.boldness * 0.14 + (10 - hohStats.temperament) * 0.06
+        + ({ villain: 1.1, hothead: 1, 'challenge-beast': 0.7, 'chaos-agent': 0.6, wildcard: 0.4 }[arch] || 0),
+    });
+  }
+
+  // ── Splitting a pair: the target beside the person they are joined to —
+  // an alliance-mate if the house can name one, the visible best friend if
+  // not. They cannot both be saved, they cannot campaign for each other, and
+  // one of them goes home whatever the veto does.
+  const partner = (() => {
+    const mates = (gs.namedAlliances || [])
+      .filter(a => a.active !== false && (a.members || []).includes(primary.name))
+      .flatMap(a => a.members)
+      .filter(m => m !== primary.name && eligible.includes(m));
+    const pool = mates.length ? mates
+      : eligible.filter(n => n !== primary.name && getPerceivedBond(primary.name, n) >= 4);
+    return pool.sort((a, b) => heat(b) - heat(a))[0] || null;
+  })();
+  if (partner) {
+    structures.push({
+      kind: 'pair-split', nominees: [primary.name, partner], target: primary.name, pawn: null,
+      why: `${primary.name} and ${partner} go up together — the pair cannot pull each other off`,
+      score: 2.8 + Math.max(0, getPerceivedBond(primary.name, partner)) * 0.18 + heat(partner) * 0.08
+        + hohStats.strategic * 0.1
+        + ({ mastermind: 0.9, schemer: 0.9, 'perceptive-player': 0.7, villain: 0.4 }[arch] || 0),
+    });
+  }
+
+  // ── Two expendable outsiders: the quiet week. Nobody powerful is touched,
+  // nobody is asked to volunteer for anything, and the Head of Household
+  // spends no capital. The conflict-averse play — and a WASTED week for
+  // somebody with enemies stacking up, which the score says.
+  {
+    const blowback = name => bbThreat(name) * 0.3
+      + eligible.filter(o => o !== name && bbAllianceStrength(name, o) > 0).length
+      + Math.max(0, getPerceivedBond(hoh, name)) * 0.5;
+    const outsiders = eligible.slice().sort((a, b) => blowback(a) - blowback(b)).slice(0, 2);
+    if (outsiders.length === 2) {
+      const enemies = eligible.filter(n => getPerceivedBond(hoh, n) <= -3).length;
+      const [e1, e2] = outsiders.sort((a, b) => heat(b) - heat(a));
+      structures.push({
+        kind: 'expendables', nominees: [e1, e2], target: e1, pawn: null,
+        why: `two names nobody starts a war over — a quiet week bought on purpose`,
+        score: 3.4 + hohStats.temperament * 0.12 + (10 - hohStats.boldness) * 0.1 - enemies * 0.3
+          + ({ floater: 1.2, goat: 1.2, 'social-butterfly': 0.9, hero: 0.6, underdog: 0.5 }[arch] || 0),
+      });
+    }
+  }
+
+  // ── The target beside their own closest ally: the ally is not a pawn and
+  // was promised nothing — they are there so the target's votes split and
+  // their loudest advocate spends the week saving themselves instead.
+  const closeAlly = eligible
+    .filter(n => n !== primary.name && n !== partner && getPerceivedBond(primary.name, n) >= 3)
+    .sort((a, b) => getPerceivedBond(primary.name, b) - getPerceivedBond(primary.name, a))[0] || null;
+  if (closeAlly) {
+    structures.push({
+      kind: 'target-ally', nominees: [primary.name, closeAlly], target: primary.name, pawn: null,
+      why: `${closeAlly} goes up beside ${primary.name} so the one voice that would fight for the target is fighting for itself`,
+      score: 3.5 + getPerceivedBond(primary.name, closeAlly) * 0.22 + hohStats.strategic * 0.1
+        + ({ schemer: 0.7, villain: 0.6, mastermind: 0.5 }[arch] || 0),
+    });
+  }
+
+  // The best structure, with enough noise that identical weeks do not force
+  // identical Heads of Household into identical plays.
+  const chosen = structures
+    .map(st => ({ ...st, roll: st.score + noise(rng, 1.1) }))
+    .sort((a, b) => b.roll - a.roll)[0];
+
+  // A backdoor only makes sense over the pawn structure: it NEEDS a mild
+  // initial block that nobody fights to change, which is what a pawn pair is.
+  let backdoorTarget = null;
+  let nominees = [...chosen.nominees];
+  if (chosen.kind === 'target-pawn' && eligible.length >= 5) {
+    const backdoorChance = clamp((hohStats.strategic * 0.07 + hohStats.boldness * 0.04)
+      * clamp((primary.score - (ranked[Math.min(2, ranked.length - 1)]?.score ?? 0) + 3) / 6, 0.25, 1), 0.08, 0.72);
+    if (rng() < backdoorChance) {
+      backdoorTarget = primary.name;
+      const decoy = ranked.find(entry => entry.name !== primary.name && entry.name !== chosen.pawn)?.name
+        || ranked[1].name;
+      nominees = [decoy, chosen.pawn];
+    }
+  }
+
   return {
-    nominees: [initialTarget, pawn],
-    target: primary.name,
-    pawn,
+    nominees,
+    target: chosen.target,
+    pawn: chosen.pawn || null,
+    structure: chosen.kind,
+    structureWhy: chosen.why,
     // The order the Head of Household would ask in, because the ask is a real
-    // conversation now and the first choice can say no.
-    pawnRanking: pawnPool.map(entry => entry.name),
-    backdoorTarget: useBackdoor ? primary.name : null,
+    // conversation and the first choice can say no. Empty when the structure
+    // seats no pawn — nobody gets asked to volunteer for a chair that is not
+    // being offered as safe.
+    pawnRanking: chosen.pawn ? pawnPool.map(entry => entry.name) : [],
+    backdoorTarget,
     rankings: ranked,
   };
 }

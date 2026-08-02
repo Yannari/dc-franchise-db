@@ -4314,6 +4314,9 @@ export function generateBBSummaryText(ep) {
         // The reasoning is a written event where the house produced one.
         const spoken = (act.socialBeats || []).filter(b => String(b.eventId || '').startsWith('nom-speech'));
         spoken.forEach(b => ln(`  [${b.badgeText || 'THE REASONING'}] ${b.text}`));
+        if (act.structure && act.structure !== 'target-pawn' && act.structureWhy) {
+          ln(`  In the Diary Room, ${nomHoh} lays the week out plainly: ${act.structureWhy}.`);
+        }
         ln(`  ${nomHoh}: "${nomNames.join(', ')} — I have nominated you for eviction. This is the`);
         ln('  nomination ceremony. Nominations are complete."');
         // Everything else that happened in the room.

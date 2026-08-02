@@ -63,7 +63,9 @@ describe('Big Brother headless week engine', () => {
     expect(plan.target).toBe('G');
     expect(plan.rankings.find(entry => entry.name === 'G').score)
       .toBeGreaterThan(plan.rankings.find(entry => entry.name === 'B').score);
-    if (plan.nominees.includes('B')) expect(plan.pawn).toBe('B');
+    // B beside G is either the pawn play or an explicitly named pawnless
+    // structure — never an unexamined default.
+    if (plan.nominees.includes('B') && plan.structure === 'target-pawn') expect(plan.pawn).toBe('B');
   });
 
   it('can run a full season to a final three without invoking Total Drama rules', () => {
@@ -218,13 +220,22 @@ describe('the pawn ask', () => {
     gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
   });
 
-  it('asks every standard week, and seats exactly who it settled on', () => {
+  it('asks exactly when the structure seats a pawn, and seats who it settled on', () => {
+    // A pawn used to be mandatory by construction — every Head of Household
+    // ran the same play and a test REQUIRED it. Five structures compete now;
+    // the ask happens on pawn weeks and only on pawn weeks.
     const { weeks } = simulateBBSeason({ rng: seededRng(41), finaleSize: 3 });
     for (const w of weeks) {
-      expect(w.pawnAsk, `week ${w.num} never asked`).toBeTruthy();
-      expect(w.pawnAsk.asked.length).toBeGreaterThan(0);
-      expect(w.plan.pawn).toBe(w.pawnAsk.pawn);
-      expect(w.initialNominees, 'the asked pawn is not on the block').toContain(w.pawnAsk.pawn);
+      if (w.plan.pawn) {
+        expect(w.pawnAsk, `week ${w.num} seated a pawn without asking`).toBeTruthy();
+        expect(w.pawnAsk.asked.length).toBeGreaterThan(0);
+        expect(w.plan.pawn).toBe(w.pawnAsk.pawn);
+        expect(w.initialNominees, 'the asked pawn is not on the block').toContain(w.pawnAsk.pawn);
+      } else {
+        expect(w.pawnAsk, `week ${w.num} asked for a pawn the structure never seats`).toBeFalsy();
+        expect(w.plan.structure, 'a pawnless week must name its structure').toBeTruthy();
+        expect(w.plan.structure).not.toBe('target-pawn');
+      }
     }
   });
 

@@ -1111,10 +1111,18 @@ export function simulateBBWeek(options = {}) {
   // the ceremony meant the scene and the decision could never be the same
   // thing.
   let plan = chooseNominationPlan(hoh, house, rng);
-  week.pawnAsk = _cappedBondWindow(() => negotiatePawn(hoh, house, plan, rng));
+  // The pawn ask only happens when the chosen structure actually seats a
+  // pawn. Two real targets, a split pair, a couple of expendables — none of
+  // those weeks involve asking anybody to volunteer, and a season where every
+  // single Head of Household ran the pawn play was the bug being fixed.
+  week.pawnAsk = plan.pawn
+    ? _cappedBondWindow(() => negotiatePawn(hoh, house, plan, rng))
+    : null;
   // The negotiation may have changed the chair.
-  plan.nominees = [plan.nominees[0] === plan.pawn ? plan.target : plan.nominees[0], plan.pawn]
-    .filter(Boolean);
+  if (plan.pawn) {
+    plan.nominees = [plan.nominees[0] === plan.pawn ? plan.target : plan.nominees[0], plan.pawn]
+      .filter(Boolean);
+  }
   week.plan = plan;
 
   // The house now knows who holds power, and reacts to it.
@@ -1193,6 +1201,7 @@ export function simulateBBWeek(options = {}) {
   });
 
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 

@@ -15892,10 +15892,18 @@ export function rpBuildBBColdOpen(ep) {
   // moment those frames get faces in them rather than a separate widget.
   const slots = house.map((name, i) => {
     const inHouse = i <= at;
+    // Create-then-write, never guard-on-exists: renderVPScreen wipes the whole
+    // _tvState store after every paint (vp-ui.js), so by the time a tile is
+    // clicked the key is ALWAYS gone. The reveal buttons survive that because
+    // they bake their target index into the html and recreate the key on every
+    // click — a guard of the form if(state){...} silently no-ops forever. That
+    // is exactly why these tabs clicked dead in the live app while passing in
+    // any harness without vp-ui's renderer.
     const lookAt = inHouse
-      ? ` onclick="if(_tvState['${stateKey}']){_tvState['${stateKey}'].look=${i};`
+      ? ` onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};`
+        + `_tvState['${stateKey}'].idx=${at};_tvState['${stateKey}'].look=${i};`
         + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
-        + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}}"`
+        + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}"`
       : '';
     return `<div class="bbf-tile ${i === look ? 'is-now' : ''} ${inHouse ? 'is-in' : 'is-empty'}"${lookAt}>
       <div class="bbf-frame">

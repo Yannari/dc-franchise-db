@@ -4342,6 +4342,16 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'twist-announcement':
+        sec('TWIST ANNOUNCEMENT');
+        ln('  "Houseguests, please gather in the living room."');
+        for (const a of act.announced || []) {
+          ln(`  ${a.name.toUpperCase()}: ${a.rule}`);
+          if (a.sting) ln(`  ${a.sting}`);
+        }
+        beats(act);
+        break;
+
       case 'veto-ceremony':
         sec('VETO CEREMONY');
         if (act.diamond) ln(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);

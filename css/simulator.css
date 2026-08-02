@@ -671,6 +671,37 @@
       .bbvc-medalbox.is-lit .bbvc-medal, .bbvc-slot.is-repl { animation:none; }
     }
 
+    /* ── the announcement ──────────────────────────────────────────────
+       The wall screen wakes up and the sofas fill. Dark glass until the
+       reveal step, then the eye burns in the twist's own palette and the
+       scanline starts moving — broadcast, not decoration. */
+    .bbta-wall     { display:flex; flex-direction:column; align-items:center; gap:12px;
+                     padding:18px 14px 14px; margin-bottom:14px; border-radius:10px;
+                     background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.25));
+                     border:1px solid rgba(139,148,158,.2); }
+    .bbta-screenframe { position:relative; width:min(340px, 80%); padding:14px 20px;
+                     border-radius:8px; background:#05070d; overflow:hidden;
+                     border:2px solid rgba(139,148,158,.35);
+                     box-shadow:inset 0 0 30px rgba(0,0,0,.8); transition:all .6s ease; }
+    .bbta-screenframe svg { width:100%; height:auto; display:block; opacity:.25;
+                     filter:grayscale(1); transition:all .6s ease; }
+    .bbta-wall.is-lit .bbta-screenframe { border-color:rgba(240,165,0,.55);
+                     box-shadow:0 0 34px rgba(240,165,0,.22), inset 0 0 30px rgba(0,0,0,.6); }
+    .bbvc-dmd .bbta-wall.is-lit .bbta-screenframe { border-color:rgba(126,231,255,.6);
+                     box-shadow:0 0 34px rgba(126,231,255,.25), inset 0 0 30px rgba(0,0,0,.6); }
+    .bbta-wall.is-lit .bbta-screenframe svg { opacity:1; filter:none; }
+    .bbta-scan     { position:absolute; inset:0; pointer-events:none; opacity:0;
+                     background:repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.035) 3px 4px); }
+    .bbta-wall.is-lit .bbta-scan { opacity:1; animation:bbtaScan 6s linear infinite; }
+    @keyframes bbtaScan { from { transform:translateY(0); } to { transform:translateY(4px); } }
+    .bbta-sofas    { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+    .bbta-voice    { border-left:3px solid #8b949e; font-style:italic; }
+    .bbta-reveal .bbns-card-b { font-size:14.5px; line-height:1.65; }
+    .bbta-sting    { display:block; margin-top:8px; font-family:ui-monospace,Consolas,monospace;
+                     font-size:11px; letter-spacing:1.6px; color:#f0a500; }
+    .bbvc-dmd .bbta-sting { color:#7ee7ff; }
+    @media (prefers-reduced-motion:reduce) { .bbta-wall.is-lit .bbta-scan { animation:none; } }
+
     /* ── the Diamond Power of Veto ─────────────────────────────────────
        When the medallion is the diamond, the whole ceremony refracts: the
        broadcast green gives way to ice and violet, the gem carries a moving

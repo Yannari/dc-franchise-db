@@ -390,6 +390,14 @@ export function summariseWeek(week) {
         _competition(line, act.competition);
         line(`  ${act.winner} wins the Power of Veto.`);
         break;
+      case 'twist-announcement':
+        line('');
+        line('TWIST ANNOUNCEMENT');
+        for (const a of act.announced || []) {
+          line(`  ${a.name.toUpperCase()}: ${a.rule}`);
+          if (a.sting) line(`  ${a.sting}`);
+        }
+        break;
       case 'veto-ceremony':
         line('');
         line('VETO CEREMONY');

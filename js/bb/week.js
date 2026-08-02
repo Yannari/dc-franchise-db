@@ -1110,6 +1110,52 @@ export function simulateBBWeek(options = {}) {
   try { _cappedBondWindow(() => settleDeals({ house, week })); } catch { /* deals outlive a bad week */ }
   revise('week');
 
+  // ── The announcement ──
+  // A public twist is a rule the whole house plays under, so the house is
+  // told the rule before the week starts moving — the wall screen lights up,
+  // the sofas fill, the voice reads it out. A house that finds out a rule
+  // mid-ceremony is a house that was never told the rules; the announcement
+  // is also information, and information moves people.
+  if (!compressed && (week.twistState?.announcements || []).length) {
+    const announced = week.twistState.announcements;
+    const beats = [];
+    const byStat = (stat, pool = house) => [...pool].sort((a, b) => pStats(b)[stat] - pStats(a)[stat]);
+    // The sharpest player in the room starts recalculating before the voice
+    // finishes. Confidence in front of the room plays well outside it.
+    const schemer = byStat('strategic')[0];
+    const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
+    if (bold) {
+      beats.push({
+        text: `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
+        players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
+        eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
+        effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
+      });
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[bold] = (gs.popularity[bold] || 0) + 1;
+    }
+    if (schemer && schemer !== bold) {
+      beats.push({
+        text: `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
+        players: [schemer], badgeText: 'RECALCULATING', badgeClass: 'grey',
+        eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
+      });
+    }
+    // The two people with the least power in the room hear the same rule and
+    // reach for each other — shared dread is how outsiders become a pair.
+    const outsiders = byStat('strategic').slice(-2);
+    if (outsiders.length === 2 && getBond(outsiders[0], outsiders[1]) > -1) {
+      _cappedBondWindow(() => addBond(outsiders[0], outsiders[1], 0.3));
+      beats.push({
+        text: `${outsiders[0]} and ${outsiders[1]} trade one look across the sofas that says the same thing: whatever this rule is for, it is not for people like us. They spend the rest of the evening within arm's reach of each other.`,
+        players: [...outsiders], badgeText: 'SHARED DREAD', badgeClass: 'blue',
+        eventId: 'twist-announcement-dread', category: 'ceremonies', location: 'living-room',
+        effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
+      });
+    }
+    week.acts.push({ type: 'twist-announcement', announced, socialBeats: beats });
+  }
+
   // Before anybody has power. No HOH, no nominees, nothing decided.
   if (!compressed) houseAct('pre-hoh');
 

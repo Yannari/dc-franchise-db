@@ -18096,6 +18096,90 @@ function _bbSpeechProfile(ep, name, counterpart = null) {
   return { arch, alliance, allies, partner, threat, warmth, comps, blockCount, role };
 }
 
+/**
+ * The announcement.
+ *
+ * "Houseguests, please gather in the living room." A public twist is a rule
+ * the whole house plays under, so the house hears it from the wall screen
+ * before the week starts moving — and the viewer hears it with them, instead
+ * of finding out mid-ceremony. One summons, one reveal card per twist, then
+ * the room reacting.
+ */
+export function rpBuildBBTwistAnnouncement(ep, act) {
+  const announced = act?.announced || [];
+  const beats = act?.socialBeats || [];
+  const house = ep.houseAtStart || [];
+  const stateKey = `bb_twa_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const dmd = announced.some(a => a.twist === 'bb-diamond-veto');
+
+  const steps = [
+    { kind: 'summons' },
+    ...announced.map(a => ({ kind: 'reveal', a })),
+    ...beats.map(b => ({ kind: 'beat', b })),
+  ];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const litFrom = steps.findIndex(s => s.kind === 'reveal');
+  const lit = state.idx >= litFrom;
+
+  // The wall screen: the show's eye, drawn, with scanlines — dark until the
+  // voice speaks, then burning with the twist's own light.
+  const EYE = `<svg viewBox="0 0 120 64" aria-hidden="true">
+      <defs>
+        <radialGradient id="bbta-iris" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="${dmd ? '#dff6ff' : '#ffe9a8'}"/>
+          <stop offset="45%" stop-color="${dmd ? '#7ee7ff' : '#f0a500'}"/>
+          <stop offset="100%" stop-color="${dmd ? '#2c3f8f' : '#7a3b00'}"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="60" cy="32" rx="52" ry="26" fill="none" stroke="${dmd ? '#7ee7ff' : '#f0a500'}" stroke-width="2.4" opacity=".85"/>
+      <ellipse cx="60" cy="32" rx="38" ry="18" fill="none" stroke="${dmd ? '#b18cff' : '#e3b341'}" stroke-width="1.6" opacity=".6"/>
+      <circle cx="60" cy="32" r="12" fill="url(#bbta-iris)"/>
+      <circle cx="60" cy="32" r="4.6" fill="#05070d"/>
+      <circle cx="64" cy="28" r="1.8" fill="#ffffff" opacity=".9"/>
+    </svg>`;
+
+  const sofaRow = house.map(n => rpPortrait(n, 'sm')).join('');
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'summons') {
+      return `<div class="bbns-card is-open bbta-voice">
+        <div class="bbns-card-h"><span class="bbns-pill grey">THE VOICE OF BIG BROTHER</span></div>
+        <div class="bbns-card-b">"Houseguests. Please gather in the living room." The music cuts out mid-song. ${house.length} people arrive at the sofas at speeds exactly proportional to how safe they feel, and the wall screen is already awake.</div></div>`;
+    }
+    if (step.kind === 'reveal') {
+      const a = step.a;
+      return `<div class="bbns-card is-final bbta-reveal${a.twist === 'bb-diamond-veto' ? ' bbvc-diamond' : ''}">
+        <div class="bbns-card-h"><span class="bbns-pill ${a.twist === 'bb-diamond-veto' ? 'bbvc-dmd-pill' : 'gold'}">${_bbEsc(a.name).toUpperCase()}</span></div>
+        <div class="bbns-card-b">"${_bbEsc(a.rule)}"${a.sting ? `<span class="bbta-sting">${_bbEsc(a.sting)}</span>` : ''}</div></div>`;
+    }
+    const b = step.b || {};
+    return `<div class="bbns-card">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE ROOM'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbta${dmd ? ' bbvc-dmd' : ''}">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${dmd ? '#7ee7ff' : '#f0a500'};text-shadow:0 0 20px ${dmd ? 'rgba(126,231,255,.3)' : 'rgba(240,165,0,.25)'};margin-bottom:4px">THE ANNOUNCEMENT</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">The wall screen has something to say before this week begins.</div>
+    <div class="bbta-wall ${lit ? 'is-lit' : ''}">
+      <div class="bbta-screenframe">${EYE}<div class="bbta-scan"></div></div>
+      <div class="bbta-sofas">${sofaRow}</div>
+    </div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The voice speaks' : steps[state.idx + 1]?.kind === 'reveal' ? 'The twist' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
 export function rpBuildBBCeremony(ep) {
   const act = (ep.acts || []).find(a => a.type === 'veto-ceremony');
   const holder = act?.holder || ep.vetoWinner;
@@ -19382,6 +19466,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
       }
       case 'have-nots':
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
+        break;
+      case 'twist-announcement':
+        screens.push({ id: id('bb-twist'), label: 'The Announcement', html: rpBuildBBTwistAnnouncement(view, act) });
         break;
       case 'hoh':
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });

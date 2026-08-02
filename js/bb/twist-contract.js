@@ -30,8 +30,44 @@ export const BASE_WEEK_RULES = Object.freeze({
 });
 
 /**
+ * How a power reaches a holder. The show has used every one of these, and
+ * they are different mechanics, not different flavor text — who can get the
+ * power, who knows it exists, and when the house finds out all follow from
+ * the channel. Organized from the wiki's actual instances:
+ *
+ *   veto-competition       The week's own veto comp awards the special veto
+ *                          (America's Care Package/OTT chose the veto type
+ *                          in play; announced to the house beforehand).
+ *   dedicated-competition  A separate comp exists just for the power
+ *                          (Whacktivity BB21, Safety Suite BB22, Roadkill).
+ *   pandoras-box           The HOH's private gamble; the canonical Diamond
+ *                          Veto (BB12 Matt Hoffman) arrived this way, secret.
+ *   hidden-search          Hidden in the house, found by looking (BB17's
+ *                          hidden veto scavenger hunt, secret rooms).
+ *   audience               Granted by viewer vote, delivered publicly
+ *                          (America's Care Package BB18, App Store BB20).
+ *   temptation             Offered privately with a consequence attached
+ *                          (Den of Temptation BB19).
+ *   purchase               Bought with an earned currency (High Roller's
+ *                          Room BBCAN9).
+ *   random-draw            Pure luck of the draw (Round Trip Ticket BB18).
+ *
+ * Secrecy is its own axis: 'public' (house knows the power and the holder),
+ * 'holder-secret' (house knows the power exists, not who holds it — BB20's
+ * Hacker), 'secret' (nobody knows it exists until it is used — Matt's DPOV).
+ * Public acquisitions get ANNOUNCED: the engine opens the week with a
+ * twist-announcement act, because a house that finds out a rule mid-ceremony
+ * is a house that was never told the rules.
+ */
+export const POWER_ACQUISITION_CHANNELS = Object.freeze([
+  'veto-competition', 'dedicated-competition', 'pandoras-box',
+  'hidden-search', 'audience', 'temptation', 'purchase', 'random-draw',
+]);
+
+/**
  * The registry. One descriptor per twist id, shaped as the design doc's
- * contract: layer, category, timing, duration, and the rules delta.
+ * contract: layer, category, timing, duration, and the rules delta — plus,
+ * for powers, how they are acquired and who knows.
  */
 export const BB_TWIST_CONTRACTS = {
   'bb-double-eviction': {
@@ -53,6 +89,16 @@ export const BB_TWIST_CONTRACTS = {
     id: 'bb-diamond-veto', layer: 'scheduled', category: 'veto-power',
     timing: 'veto-ceremony', duration: { weeks: 1 },
     rules: { replacementAuthority: 'veto-holder' },
+    // This build runs the OTT Care-Package shape: the week's own veto comp
+    // awards the diamond, announced to the house up front. The canonical
+    // secret version (Pandora's Box, BB12) becomes a config variant once
+    // Pandora's Box exists.
+    acquisition: { channel: 'veto-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Diamond Power of Veto',
+      rule: 'This week’s veto competition is for the DIAMOND Power of Veto. If it is used, the winner — not the Head of Household — names the replacement nominee.',
+      sting: 'Whoever wins it controls both chairs.',
+    },
   },
 };
 
@@ -67,10 +113,17 @@ export function resolveWeekTwistState(twistIds = []) {
   const rules = { ...BASE_WEEK_RULES, addSlots: [] };
   const active = [];
   const applied = [];
+  const announcements = [];
   for (const id of twistIds) {
     const contract = BB_TWIST_CONTRACTS[id];
     if (!contract) continue;
     active.push(id);
+    // A public power is a rule the whole house plays under, so the house is
+    // told the rule. Secret and holder-secret powers stay off this list —
+    // their reveal is the knowledge system's job, not the announcer's.
+    if (contract.announcement && (contract.acquisition?.secrecy ?? 'public') === 'public') {
+      announcements.push({ twist: id, ...contract.announcement });
+    }
     for (const [key, value] of Object.entries(contract.rules || {})) {
       if (key === 'addSlots') {
         for (const slot of value) { rules.addSlots.push(slot); applied.push({ twist: id, rule: 'addSlots', to: slot }); }
@@ -82,5 +135,5 @@ export function resolveWeekTwistState(twistIds = []) {
       }
     }
   }
-  return { rules, active, applied };
+  return { rules, active, applied, announcements };
 }

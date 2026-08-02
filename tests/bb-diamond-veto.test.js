@@ -68,6 +68,15 @@ describe('the twist contract', () => {
     expect(active).toEqual([]);
     expect(rules.replacementAuthority).toBe('hoh');
   });
+
+  it('announces public powers and only public powers', () => {
+    const { announcements } = resolveWeekTwistState(['bb-diamond-veto', 'bb-have-nots']);
+    expect(announcements).toHaveLength(1);
+    expect(announcements[0].twist).toBe('bb-diamond-veto');
+    expect(announcements[0].rule).toContain('names the replacement');
+    // The built-in structural twists have no announcement card of their own.
+    expect(resolveWeekTwistState(['bb-double-eviction']).announcements).toEqual([]);
+  });
 });
 
 describe('the Diamond Power of Veto', () => {
@@ -146,6 +155,15 @@ describe('the Diamond Power of Veto', () => {
     expect(ep.twistState.rules.replacementAuthority).toBe('veto-holder');
     const cer = ep.acts.find(a => a.type === 'veto-ceremony');
     expect(cer.diamond).toBe(true);
+    // The house is TOLD the rule before the week starts moving: the
+    // announcement act opens the week, ahead of every house stretch and the
+    // HOH competition, and the room reacts on screen.
+    const ann = ep.acts.find(a => a.type === 'twist-announcement');
+    expect(ann, 'no announcement act').toBeTruthy();
+    expect(ep.acts.indexOf(ann)).toBeLessThan(ep.acts.findIndex(a => a.type === 'hoh'));
+    expect(ann.announced[0].twist).toBe('bb-diamond-veto');
+    expect(ann.socialBeats.length).toBeGreaterThanOrEqual(2);
+    expect(ep.summaryText).toContain('TWIST ANNOUNCEMENT');
     // The transcript says the rule in plain language.
     expect(ep.summaryText).toContain('DIAMOND POWER OF VETO');
     // The ceremony screen explains the rule. The cards are click-to-reveal,
@@ -156,6 +174,10 @@ describe('the Diamond Power of Veto', () => {
     const cerScreen = screens.find(s => s.id.includes('bb-cer'));
     expect(cerScreen, 'no ceremony screen').toBeTruthy();
     expect(cerScreen.html).toContain('DIAMOND POWER OF VETO');
+    const annScreen = screens.find(s => s.id.includes('bb-twist'));
+    expect(annScreen, 'no announcement screen').toBeTruthy();
+    expect(annScreen.html).toContain('gather in the living room');
+    expect(annScreen.html).toContain('THE DIAMOND POWER OF VETO');
     // And the closed medal says which veto this is before a single reveal.
     Object.keys(_tvState).filter(k => k.startsWith('bb_')).forEach(k => { _tvState[k].idx = -1; });
     const fresh = buildVPScreens(gs.episodeHistory[0]).find(s => s.id.includes('bb-cer'));

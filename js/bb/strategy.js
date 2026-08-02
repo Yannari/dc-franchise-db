@@ -435,10 +435,24 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
   const nerve = (stats.boldness * 0.6 + stats.strategic * 0.4) / 10;
   const bloodWeight = arch === 'goat' ? 1.6 : (1.35 - nerve * 0.7);
 
+  // The Diamond Power of Veto changes what using it BUYS. An ordinary veto
+  // trades a friend's safety for the HOH's anger and hands the empty chair
+  // back to the HOH; the diamond keeps the chair. A holder whose own target
+  // is eligible to fill it is not weighing a favor any more — they are
+  // weighing a whole move, and the pull scales with how strategically they
+  // think rather than gating on a threshold.
+  const diamondPull = context.diamond
+    ? (() => {
+        const myTarget = getBBTarget(holder);
+        const eligible = myTarget && myTarget !== hoh && myTarget !== holder && !nominees.includes(myTarget);
+        return (eligible ? 1.7 : 0.5) * (stats.strategic / 10);
+      })()
+    : 0;
+
   const options = nominees.map(name => {
     const keep = abandonOf(name) * friendWeight;
     const cost = angerOf(name) * bloodWeight;
-    return { name, keep, cost, net: keep - cost + noise(rng, 0.9) };
+    return { name, keep, cost, net: keep - cost + diamondPull + noise(rng, 0.9) };
   }).sort((a, b) => b.net - a.net);
   const best = options[0];
 

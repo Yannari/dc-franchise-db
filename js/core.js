@@ -322,11 +322,15 @@ export const TWIST_CATALOG = [
   { id:'bb-instant-eviction', emoji:'⚡', name:'Instant Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'No veto this week. The Head of Household nominates and the nominations stand — the house votes the same night, with no competition to save anybody and no ceremony to change the pair.',
-    engineType:'bb-instant-eviction', incompatible:['bb-double-eviction'] },
+    engineType:'bb-instant-eviction', incompatible:['bb-double-eviction', 'bb-diamond-veto'] },
   { id:'bb-have-nots', emoji:'🥣', name:'Have-Nots', format:'big-brother',
     category:'social', phase:'any',
     desc:'The new Head of Household puts part of the house on slop, cold showers and the have-not room for the week. Have-nots compete at a real disadvantage in the veto, and nobody forgets who chose them.',
     engineType:'bb-have-nots' },
+  { id:'bb-diamond-veto', emoji:'💎', name:'Diamond Power of Veto', format:'big-brother',
+    category:'advantage', phase:'any',
+    desc:'This week\'s veto is the Diamond Power of Veto: if it is used, the veto holder — not the Head of Household — names the replacement nominee. Winning it means controlling both chairs, and an HOH can watch their whole week get rewritten in one ceremony.',
+    engineType:'bb-diamond-veto', incompatible:['bb-instant-eviction'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

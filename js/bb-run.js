@@ -153,6 +153,9 @@ export function weekToEpisode(week) {
     immunityWinner: week.hoh || null,
     hoh: week.hoh || null,
     vetoWinner: week.vetoWinner || null,
+    // The resolved twist contract — which twist changed which rule — so the
+    // Debug panel can show hook mutations on replay, not just live.
+    twistState: week.twistState || null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
     votes: { ...(week.votes || {}) },
@@ -221,7 +224,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -390,9 +393,10 @@ export function summariseWeek(week) {
       case 'veto-ceremony':
         line('');
         line('VETO CEREMONY');
+        if (act.diamond) line(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);
         if (act.used) {
           line(`  The veto is used on ${act.saved}.`);
-          if (act.replacement) line(`  ${act.replacement} is named as the replacement nominee.`);
+          if (act.replacement) line(`  ${act.replacement} is named as the replacement nominee${act.diamond ? ` — by ${act.chairAuthority}, under the Diamond Veto` : ''}.`);
         } else {
           line('  The veto is not used. Nominations stay the same.');
         }

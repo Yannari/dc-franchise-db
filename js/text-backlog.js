@@ -4344,9 +4344,10 @@ export function generateBBSummaryText(ep) {
 
       case 'veto-ceremony':
         sec('VETO CEREMONY');
+        if (act.diamond) ln(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);
         if (act.used) {
           ln(`  The veto is used on ${act.saved}.`);
-          if (act.replacement) ln(`  ${act.replacement} is named as the replacement nominee.`);
+          if (act.replacement) ln(`  ${act.replacement} is named as the replacement nominee${act.diamond ? ` — by ${act.chairAuthority}, under the Diamond Veto` : ''}.`);
         } else {
           ln('  The veto is not used. Nominations stand.');
         }

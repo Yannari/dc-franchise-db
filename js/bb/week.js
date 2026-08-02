@@ -29,13 +29,14 @@ import { scheduleHouseBeats } from './house-events.js';
 import { campaignArgument } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
 import { runVoteOperation, resolveFinalPleas } from './vote-operation.js';
-import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget } from './shared-strategy.js';
+import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, updateBBPerceptions, setBBTarget, getBBTarget } from './shared-strategy.js';
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
+import { resolveWeekTwistState } from './twist-contract.js';
 
 /**
  * A competition win, seen by the whole house, becomes strategic respect and a
@@ -905,6 +906,12 @@ export function simulateBBWeek(options = {}) {
   week.twists = [...twists];
   week.compressed = compressed;
   if (compressed) week.segment = options.segment || 2;
+  // The resolved twist contract: every rule a twist may change, merged with
+  // an applied log saying which twist changed what. The engine consults the
+  // RULES at its interception points rather than asking for twists by name;
+  // the pre-contract twists (instant/double eviction, have-nots) keep their
+  // existing paths and are merely recorded here.
+  week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
 
   /**
    * Season modes that put a third houseguest on the block.
@@ -1286,22 +1293,45 @@ export function simulateBBWeek(options = {}) {
     // Somebody holds the veto and has not yet said what they will do with it.
     if (!compressed) houseAct('post-veto', { nominees: [...nominees], vetoWinner });
 
-    // Veto ceremony and replacement hook (Diamond Veto can intercept it).
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house });
+    // Veto ceremony. The twist contract decides who owns the empty chair:
+    // by default the HOH names the replacement; under the Diamond Power of
+    // Veto that authority belongs to the veto holder, which is the entire
+    // twist — winning it means controlling both chairs.
+    const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder';
+    const chairAuthority = diamond ? vetoWinner : hoh;
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
     let replacement = null;
     let replacementWhy = '';
+    // The vetoed houseguest cannot be renominated the same week — the
+    // show's actual rule, and previously only an accident of the HOH's
+    // scoring. A diamond holder reasoning from their own target list made
+    // the gap reachable: save your target, name your target. And when that
+    // rule leaves NOBODY eligible for the chair — a small house where the
+    // HOH, the holder and the other nominee are everyone — the veto cannot
+    // change the block, so it stays in the box and the ceremony says why.
+    if (vetoDecision.use && nominees.includes(vetoDecision.save)
+      && !house.some(n => n !== hoh && n !== vetoWinner && !nominees.includes(n))) {
+      vetoDecision = { use: false, save: null, reason: 'no-replacement',
+        why: `${vetoWinner} could take ${vetoDecision.save} down, but there is no eligible houseguest left to put up in the empty chair. The rules make the decision: the medallion stays in the box.` };
+    }
     if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
-      const protectedNames = [hoh, vetoWinner, ...nominees.filter(name => name !== vetoDecision.save)];
-      replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...nominees.filter(name => name !== vetoDecision.save)];
+      // The chooser reasons from their OWN plan. An HOH follows the week's
+      // nomination plan; a diamond holder follows their own read of the house,
+      // which is what makes the twist a hijacking rather than a formality.
+      const chooserPlan = diamond && vetoWinner !== hoh
+        ? { target: getBBTarget(vetoWinner) || null, pawn: null, backdoorTarget: getBBTarget(vetoWinner) || null }
+        : plan;
+      replacement = chooseReplacement(chairAuthority, house, protectedNames, chooserPlan, rng);
       replacement = hook(hooks, 'replacementChoice', replacement, { week, house, hoh, vetoWinner, saved: vetoDecision.save, protectedNames }) || replacement;
-      if (!house.includes(replacement) || protectedNames.includes(replacement)) replacement = chooseReplacement(hoh, house, protectedNames, plan, rng);
-      // Why that name, given who was actually eligible. The Head of Household
+      if (!house.includes(replacement) || protectedNames.includes(replacement)) replacement = chooseReplacement(chairAuthority, house, protectedNames, chooserPlan, rng);
+      // Why that name, given who was actually eligible. The chair's owner
       // and the veto winner are immune, so late in a season this can be a pool
       // of one — which the reasoning says out loud rather than pretending to a
       // decision that was not available.
-      replacementWhy = explainReplacement(hoh, replacement,
-        house.filter(n => !protectedNames.includes(n)), plan, nominees);
+      replacementWhy = explainReplacement(chairAuthority, replacement,
+        house.filter(n => !protectedNames.includes(n)), chooserPlan, nominees);
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
@@ -1317,9 +1347,12 @@ export function simulateBBWeek(options = {}) {
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
     // The reasoning travels with the decision. Without it the ceremony could
     // report what happened and never why, which is the whole complaint.
-    week.vetoDecision = { ...vetoDecision, holder: vetoWinner, replacement };
+    week.vetoDecision = { ...vetoDecision, holder: vetoWinner, replacement,
+      diamond, chairAuthority };
+    if (diamond) week.diamondVeto = { holder: vetoWinner, used: !!vetoDecision.use, replacement };
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
+      diamond, chairAuthority,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
       nominees: [...nominees] },
       // Handed over explicitly rather than left to be inferred. actFacts works
@@ -1337,38 +1370,61 @@ export function simulateBBWeek(options = {}) {
     // somebody could be backdoored at noon and spend the evening on the feed
     // laughing at a card game. If the scheduler did not produce their scene,
     // this writes it, with the consequences a renomination actually has.
-    if (vetoDecision.use && replacement && replacement !== hoh) {
+    if (vetoDecision.use && replacement && replacement !== chairAuthority) {
+      // The anger lands on whoever actually named them. Under the Diamond
+      // Veto that is the holder — the HOH spent the week planning a block the
+      // holder just rewrote, and the replacement knows exactly whose voice
+      // said their name.
+      const namer = chairAuthority;
       const ceremonyAct = week.acts[week.acts.length - 1];
       const mentioned = (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
       if (!mentioned) {
         const temper = pStats(replacement).temperament;
         const bondHit = -(0.8 + (10 - temper) * 0.08);
-        _cappedBondWindow(() => addBond(replacement, hoh, bondHit));
-        try { rememberStrategy(replacement, hoh, 'renomination', week.num, 2, { act: 'veto-ceremony' }); } catch { /* memory is texture */ }
-        const effects = [{ kind: 'bond', text: `${replacement} & ${hoh} ${bondHit.toFixed(1)}`, delta: bondHit }];
+        _cappedBondWindow(() => addBond(replacement, namer, bondHit));
+        try { rememberStrategy(replacement, namer, 'renomination', week.num, 2, { act: 'veto-ceremony', diamond }); } catch { /* memory is texture */ }
+        const effects = [{ kind: 'bond', text: `${replacement} & ${namer} ${bondHit.toFixed(1)}`, delta: bondHit }];
         // The hotter the head, the more likely the week now has a mission.
         if (rng() < ((10 - temper) / 10) * 0.5) {
           try {
-            setBBTarget(replacement, hoh, `${hoh} put me up as the veto came down`, { week });
-            effects.push({ kind: 'target', text: `${replacement} is coming for ${hoh}` });
+            setBBTarget(replacement, namer, diamond
+              ? `${namer} used the Diamond Veto to put me up`
+              : `${namer} put me up as the veto came down`, { week });
+            effects.push({ kind: 'target', text: `${replacement} is coming for ${namer}` });
           } catch { /* target store missing in odd harnesses */ }
         }
         const lines = [
-          `${replacement} does not sit down when the meeting ends. The chair is not the problem; the week ${replacement} spent believing ${hoh} was fine with ${pronouns(replacement).obj} is.`,
-          `${replacement} walks straight past ${hoh} into the bedroom and starts packing a bag nobody asked ${pronouns(replacement).obj} to pack. Everybody understands the message.`,
-          `"So that was the plan the whole time." ${replacement} says it to the room, but it is aimed at ${hoh}, and it lands.`,
+          `${replacement} does not sit down when the meeting ends. The chair is not the problem; the week ${replacement} spent believing ${namer} was fine with ${pronouns(replacement).obj} is.`,
+          `${replacement} walks straight past ${namer} into the bedroom and starts packing a bag nobody asked ${pronouns(replacement).obj} to pack. Everybody understands the message.`,
+          `"So that was the plan the whole time." ${replacement} says it to the room, but it is aimed at ${namer}, and it lands.`,
           `${replacement} laughs once, too loudly, and asks who else knew. The silence answers more precisely than anybody wanted it to.`,
-          `${replacement} finds ${hoh} within the hour and asks for the real reason. What ${pronouns(replacement).sub} gets is the speech version, and both of them know it.`,
+          `${replacement} finds ${namer} within the hour and asks for the real reason. What ${pronouns(replacement).sub} gets is the speech version, and both of them know it.`,
         ];
         let hash = 0;
-        const salt = `${week.num}|${replacement}|${hoh}`;
+        const salt = `${week.num}|${replacement}|${namer}`;
         for (let i = 0; i < salt.length; i++) hash = (hash * 31 + salt.charCodeAt(i)) >>> 0;
         ceremonyAct.socialBeats.push({
           text: lines[hash % lines.length],
-          players: [replacement, hoh],
+          players: [replacement, namer],
           badgeText: 'RENOMINATED', badgeClass: 'red',
           eventId: 'veto-renomination-reaction', category: 'ceremonies', location: 'living-room',
           effects,
+        });
+      }
+      // And the dethroned half of it: an HOH whose replacement was chosen FOR
+      // them has a grievance of their own, aimed at the holder who rewrote
+      // the week in public.
+      if (diamond && vetoWinner !== hoh) {
+        const hohTemper = pStats(hoh).temperament;
+        const hohHit = -(0.5 + (10 - hohTemper) * 0.06);
+        _cappedBondWindow(() => addBond(hoh, vetoWinner, hohHit));
+        try { rememberStrategy(hoh, vetoWinner, 'diamond-hijack', week.num, 2, { act: 'veto-ceremony', replacement }); } catch { /* memory is texture */ }
+        ceremonyAct.socialBeats.push({
+          text: `${hoh} keeps the Head of Household key and loses the week it was supposed to buy. ${vetoWinner} named ${replacement} from ${hoh}'s own ceremony chair, and everybody watched ${hoh} find out with the rest of the room.`,
+          players: [hoh, vetoWinner],
+          badgeText: 'HIJACKED', badgeClass: 'red',
+          eventId: 'diamond-veto-hijack', category: 'ceremonies', location: 'living-room',
+          effects: [{ kind: 'bond', text: `${hoh} & ${vetoWinner} ${hohHit.toFixed(1)}`, delta: hohHit }],
         });
       }
     }

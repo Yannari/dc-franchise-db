@@ -18262,9 +18262,16 @@ export function rpBuildBBCeremony(ep) {
     'own-deal': 'A PROMISE OUTRANKS A NOMINATION', relationship: 'WORTH THE BLOOD',
     'own-nominations': 'STANDING BY THEIR OWN BLOCK', 'leave-nominations': 'NOT THEIR PROBLEM',
   };
+  // The Diamond Power of Veto: the holder, not the Head of Household, names
+  // the replacement. The screen has to say the rule out loud — a viewer
+  // should never need prior Big Brother knowledge to understand why the HOH
+  // is watching somebody else fill their block.
+  const isDiamond = !!act?.diamond;
+  const namer = (isDiamond ? act?.chairAuthority : hoh) || hoh;
   const pleaders = startNoms.filter(n => n !== holder);
   const steps = [
     { kind: 'open' },
+    ...(isDiamond ? [{ kind: 'diamond-rule' }] : []),
     ...pleaders.map(name => ({ kind: 'plea', name })),
     { kind: 'stand' },
     { kind: 'decision' },
@@ -18318,7 +18325,7 @@ export function rpBuildBBCeremony(ep) {
     <div class="bbns-screens" data-n="${startNoms.length + (replaced ? 1 : 0)}">${slots}</div>
     <div class="bbvc-medalbox ${decided ? 'is-lit' : ''}">
       <span class="bbvc-medal">${MEDAL}</span>
-      <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : 'POWER OF VETO'}</span>
+      <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : (isDiamond ? '💎 DIAMOND VETO' : 'POWER OF VETO')}</span>
       <span class="bbvc-medal-s">${decided
         ? (used ? `on ${_bbEsc(saved)}` : 'the nominations stand')
         : `${_bbEsc(holder || '')} holds it`}</span>
@@ -18365,24 +18372,39 @@ export function rpBuildBBCeremony(ep) {
         return `<div class="bbns-card is-reason">
           <div class="bbns-card-h">${_bbAvatar(holder, 30)}<span class="bbns-pill gold">${REASON_LABEL[act?.reason] || 'THE REASONING'}</span></div>
           <div class="bbns-card-b">${decisionWhy()}</div></div>`;
+      case 'diamond-rule':
+        return `<div class="bbns-card is-reason bbvc-diamond">
+          <div class="bbns-card-h"><span class="bbns-pill gold">💎 DIAMOND POWER OF VETO</span></div>
+          <div class="bbns-card-b">This week the medallion is the <strong>Diamond Power of Veto</strong>. The rule is simple and it changes everything: if the veto is used, <strong>${_bbEsc(holder)}</strong> — not the Head of Household — names the replacement nominee. ${hoh && holder !== hoh
+            ? `${_bbEsc(hoh)} built this block, and for the first time all week, cannot protect it.`
+            : `And since ${_bbEsc(holder)} is the Head of Household, the power stays exactly where it already was.`}</div></div>`;
       case 'handover':
-        return `<div class="bbns-card is-key">
-          <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">THE HANDOVER</span></div>
-          <div class="bbns-card-b">"${_bbEsc(hoh)}, since I have just vetoed one of your nominations, you must name a replacement nominee." ${vvar([
-            `Every head turns toward ${_bbEsc(hoh)}.`,
-            `${_bbEsc(hoh)} nods as if the name has not been waiting there all week.`,
-            `The relief around ${_bbEsc(saved)} becomes panic everywhere else.`,
-            `${_bbEsc(hoh)} stands while the eligible houseguests avoid eye contact.`,
-          ], hoh, replacement, 'handover')}</div></div>`;
+        return isDiamond && namer !== hoh
+          ? `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">NO HANDOVER</span></div>
+              <div class="bbns-card-b">Every head turns toward ${_bbEsc(hoh)} out of habit — and ${_bbEsc(holder)} does not sit down. "This is the Diamond Power of Veto. The replacement is mine to name." ${vvar([
+                `${_bbEsc(hoh)} opens ${pv(hoh).posAdj} mouth and closes it again. There is no rule to appeal to; ${pv(hoh).sub} just heard it.`,
+                `The room re-aims itself at ${_bbEsc(holder)}. ${_bbEsc(hoh)} is suddenly a spectator at ${pv(hoh).posAdj} own ceremony.`,
+                `${_bbEsc(hoh)} sits very still, doing the arithmetic of a week that no longer belongs to ${pv(hoh).obj}.`,
+                `Somebody whispers the rule to somebody else, and the panic relocates to everyone ${_bbEsc(holder)} has ever frowned at.`,
+              ], hoh, replacement, 'diamond-handover')}</div></div>`
+          : `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">THE HANDOVER</span></div>
+              <div class="bbns-card-b">"${_bbEsc(hoh)}, since I have just vetoed one of your nominations, you must name a replacement nominee." ${vvar([
+                `Every head turns toward ${_bbEsc(hoh)}.`,
+                `${_bbEsc(hoh)} nods as if the name has not been waiting there all week.`,
+                `The relief around ${_bbEsc(saved)} becomes panic everywhere else.`,
+                `${_bbEsc(hoh)} stands while the eligible houseguests avoid eye contact.`,
+              ], hoh, replacement, 'handover')}</div></div>`;
       case 'replacement':
         return `<div class="bbns-card is-final">
-          <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
-          <div class="bbns-card-b">${_bbEsc(hoh)} stands. "<strong>${_bbEsc(replacement)}</strong>, take a seat." ${vvar([
+          <div class="bbns-card-h">${namer ? _bbAvatar(namer, 30) : ''}${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
+          <div class="bbns-card-b">${_bbEsc(namer)} stands. "<strong>${_bbEsc(replacement)}</strong>, take a seat." ${vvar([
             `${pv(replacement).Sub} ${pv(replacement).sub === 'they' ? 'cross' : 'crosses'} the room without looking at the chair until ${pv(replacement).sub} reaches it.`,
             `${_bbEsc(replacement)} freezes, then forces ${pv(replacement).ref} to stand as the room opens a path.`,
-            `${_bbEsc(replacement)} nods at ${_bbEsc(hoh)} and takes the empty seat with every camera following.`,
+            `${_bbEsc(replacement)} nods at ${_bbEsc(namer)} and takes the empty seat with every camera following.`,
             `${pv(replacement).Sub} ${pv(replacement).sub === 'they' ? 'say' : 'says'}, “Got it,” though nothing about ${pv(replacement).posAdj} face looks settled.`,
-          ], replacement, hoh, 'replacement')}${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}</div></div>`;
+          ], replacement, namer, 'replacement')}${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}</div></div>`;
       case 'adjourn':
         return `<div class="bbns-card is-final bbvc-adjourn">
           <div class="bbns-card-h">${_bbAvatar(holder, 30)}${finalNoms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">ADJOURNED</span></div>
@@ -20397,10 +20419,17 @@ export function rpBuildBBDebug(ep) {
     }
     if (ep.vetoWinner) {
       const cer = acts.find(a => a.type === 'veto-ceremony');
-      html += dbgPanel('POWER OF VETO', 'green', dbgPortraitRow(ep.vetoWinner, `
+      html += dbgPanel(cer?.diamond ? '💎 DIAMOND POWER OF VETO' : 'POWER OF VETO', 'green', dbgPortraitRow(ep.vetoWinner, `
           <div style="color:${cer?.used ? '#3fb950' : '#6e7681'};font-size:11px">${cer?.used ? `used on ${_bbEsc(cer.saved || '?')}` : 'not used'}</div>
           <div style="color:#8b949e;font-size:10px">${recOf(ep.vetoWinner).vetoWins || 1} total</div>`)
-        + (cer?.replacement ? dbgNote(`${_bbEsc(cer.replacement)} went up in their place`) : ''));
+        + (cer?.replacement ? dbgNote(`${_bbEsc(cer.replacement)} went up in their place — named by ${_bbEsc(cer.chairAuthority || ep.hoh || '?')}`) : ''));
+    }
+    // The twist contract: which twist changed which rule this week. This is
+    // the debug requirement from the catalog design — every hook mutation
+    // says who did it.
+    if ((ep.twistState?.applied || []).length) {
+      html += dbgPanel('TWIST CONTRACT', 'gold', ep.twistState.applied.map(a =>
+        dbgNote(`${_bbEsc(a.twist)}: ${_bbEsc(a.rule)} ${a.from !== undefined ? `${_bbEsc(String(a.from))} → ` : ''}${_bbEsc(String(a.to))}`)).join(''));
     }
     if ((ep.haveNots || []).length) {
       const hn = acts.find(a => a.type === 'have-nots');

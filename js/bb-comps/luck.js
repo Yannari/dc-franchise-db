@@ -22,7 +22,7 @@ export const theDraw = {
   name: 'Pure Chance',
   category: 'luck',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'A competition with no skill in it whatsoever, which everybody understands and nobody can do anything about.',
+  desc: 'Each houseguest releases an identical ball into a concealed obstacle board. The ball chooses the path, the landing slots decide the score, and the highest score wins.',
   // Present so the dispatcher can render a formula; deliberately almost inert.
   stats: { intuition: 0.4, boldness: 0.35, temperament: 0.25 },
   weight(ctx) {
@@ -37,7 +37,7 @@ export const theDraw = {
     });
     const beats = [];
     beats.push(beat(
-      `There is no skill in this one and everybody works that out inside thirty seconds. After that it is just watching.`,
+      `Every player releases the same ball from the same mark. Once it disappears behind the board, nobody can steer it; they can only wait for it to land in a scoring slot.`,
       participants.slice(0, 3), 'PURE CHANCE'));
 
     const winner = entries[0];

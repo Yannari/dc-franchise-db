@@ -24,7 +24,7 @@ export const slideKnockout = {
   name: 'Slip Shift',
   category: 'physical',
   types: ['veto', 'arena', 'hoh'],
-  desc: 'Rounds down a soaped slope to find one answer. Slowest each round goes out.',
+  desc: 'Houseguests race down a soaped slope, search the pit for the correct answer tile and bring it back to their station. The slowest player in each round is eliminated.',
   stats: { physical: 0.34, endurance: 0.24, mental: 0.20, boldness: 0.12, intuition: 0.10 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.2, context, rng });
@@ -74,20 +74,23 @@ export const precisionRoll = {
   name: 'Long Roll',
   category: 'precision',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'Roll for the far pocket. Nerve counts more than strength, and everybody watches every attempt.',
+  desc: 'Each houseguest rolls balls down a long, narrow lane toward a row of scoring pockets. The farther pockets are worth more points, and the highest total wins.',
   stats: { temperament: 0.34, intuition: 0.24, physical: 0.18, mental: 0.14, boldness: 0.10 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 4, context, rng });
     const beats = [];
     beats.push(beat(
-      `One roll at a time, everyone watching, nowhere to hide. The competition is mostly nerve and everybody knows it.`,
+      `Each player gets the same number of rolls. A safe pocket puts points on the board; chasing the narrow pockets at the far end can win the competition or waste the attempt.`,
       participants.slice(0, 2), 'LONG ROLL'));
 
-    const choker = entries.find(e => e.base > entries[0].base && e.name !== entries[0].name);
+    // A collapse story belongs to somebody who was actually in contention.
+    // Hidden aptitude alone used to brand even a low finisher as "the best in
+    // the house," inventing a performance the result did not contain.
+    const choker = entries.slice(1, Math.min(3, entries.length))
+      .find(e => e.base > entries[0].base);
     if (choker) {
-      const p = pronouns(choker.name);
       beats.push(beat(
-        `${choker.name} has the best touch in the house and proves it twice, then has to do it once more with the whole yard silent, and does not.`,
+        `${choker.name} stays within reach of the lead, then sends the roll ${choker.name} needs past the scoring pockets. One bad release ends a real chance to win.`,
         [choker.name], 'CHOKED', 'red'));
       api.popDelta(choker.name, -1);
       api.record(choker.name, 'choked', {});

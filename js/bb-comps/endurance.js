@@ -35,7 +35,7 @@ export const pressureWall = {
   name: 'Hold the Line',
   category: 'endurance',
   types: ['hoh', 'veto'],
-  desc: 'Houseguests hang from a wall that tilts, sprays and does not stop until one is left.',
+  desc: 'Houseguests hold onto narrow grips on a wall that repeatedly tilts and sprays them. Falling or stepping down eliminates them; the last person still holding on wins.',
   stats: { endurance: 0.44, temperament: 0.24, physical: 0.18, boldness: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
@@ -105,7 +105,7 @@ export const coldSoak = {
   name: 'Cold Comfort',
   category: 'endurance',
   types: ['hoh', 'veto', 'arena'],
-  desc: 'Houseguests stand in the cold and the wet and wait for everyone else to want it less.',
+  desc: 'Houseguests remain on small platforms while cold water and wind hit them in timed waves. Stepping off eliminates them, and the last player remaining wins.',
   stats: { endurance: 0.38, temperament: 0.30, boldness: 0.18, physical: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
@@ -128,7 +128,8 @@ export const coldSoak = {
     });
 
     const winner = entries[0];
-    beats.push(beat(`${winner.name} is still standing in it when they finally call it.`,
+    const wp = pronouns(winner.name);
+    beats.push(beat(`${winner.name} is still on ${wp.posAdj} platform when the last opponent steps off.`,
       [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(winner.name, 2);
     api.record(winner.name, 'endurance-win', {});

@@ -19,7 +19,7 @@ export const puzzleRace = {
   name: 'Cut and Cover',
   category: 'puzzle',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'A puzzle that looks simple until the last four pieces, which are the only four that matter.',
+  desc: 'Houseguests race to fit a set of irregular pieces into one complete image. The first player to place every piece correctly and hit the buzzer wins.',
   stats: { mental: 0.46, intuition: 0.22, temperament: 0.18, strategic: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.4, context, rng });
@@ -72,7 +72,7 @@ export const seasonQuiz = {
   name: 'House Record',
   category: 'quiz',
   types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Questions about this season, answerable only by houseguests who were actually watching.',
+  desc: 'Houseguests answer questions about competitions, ceremonies and events from the current season. Wrong answers cost ground, and the player with the strongest score wins.',
   stats: { mental: 0.40, intuition: 0.30, strategic: 0.20, social: 0.10 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3, context, rng });
@@ -118,7 +118,7 @@ export const memoryWall = {
   name: 'The Wall of Faces',
   category: 'memory',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'Every houseguest who has left, in order, with one detail changed.',
+  desc: 'A display recreates the evicted houseguests and the order they left, but one detail is wrong. Players study the wall and race to identify the change.',
   stats: { mental: 0.44, intuition: 0.28, temperament: 0.16, strategic: 0.12 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.8, context, rng });

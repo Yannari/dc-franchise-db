@@ -131,7 +131,7 @@ const slopArgument = {
       `${first} portions the slop into ${slop.length} bowls with a precision nobody asked for. ${second} points out that one bowl is bigger and neither of them is prepared to let it go.`,
       `It is about a jar of pickles. Genuinely, literally, a jar of pickles — ${first} was saving it and ${second} did not know that, and by the end of it ${_list(slop)} are not speaking.`,
       `${second} eats standing at the counter to avoid the conversation. ${first} follows ${q.obj} to the counter to have it anyway.`,
-      `${weeks >= 2 ? `${first} is on ${p.posAdj} ${_ordinal(weeks)} week of this and has stopped being able to be funny about it.` : `${first} has not eaten properly since Friday and has stopped being able to be funny about it.`} ${second} makes a joke about the slop and gets a look that ends the meal.`,
+      `${weeks >= 2 ? `${first} is on ${p.posAdj} ${_ordinal(weeks)} week of this and has stopped being able to be funny about it.` : `${first} has been on slop since the competition and has stopped being able to be funny about it.`} ${second} makes a joke about the food and gets a look that ends the meal.`,
     ], ctx, this.id, first, second);
 
     api.addBond(first, second, -0.9);
@@ -174,7 +174,7 @@ const sleepDeprivedSnap = {
     const text = _variant([
       `${target} asks ${snapper} a completely ordinary question about the laundry and gets an answer with about four days of no sleep behind it. The kitchen goes quiet.`,
       `${target} is cooking something that smells extremely good and has committed no other crime. ${snapper} tells ${q.obj} exactly what ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} of the timing.`,
-      `“Could you not do that in here?” ${snapper} does not raise ${p.posAdj} voice, which somehow makes it worse. ${target} takes the plate to the backyard and tells two people about it before ${p.sub === 'they' ? 'they get' : 'getting'} there.`,
+      `“Could you not do that in here?” ${snapper} does not raise ${p.posAdj} voice, which somehow makes it worse. ${target} takes the plate to the backyard and has told two people what happened before sitting down.`,
       `${snapper} has been awake since half past four on a bed with a metal frame. ${target} says good morning. It goes badly out of all proportion to the greeting.`,
       `It is not really about the sandwich. ${target} knows it is not really about the sandwich, and still spends the afternoon deciding ${snapper} is somebody who cracks under pressure.`,
       `${snapper} apologises within ten minutes and means it. ${target} accepts it, and adds the original ten minutes to a list that has ${snapper}'s name at the top of it.`,
@@ -312,7 +312,7 @@ const midnightKitchen = {
       `${kind} finishes eating, then makes a cup of tea ${q.sub} ${q.sub === 'they' ? 'do' : 'does'} not want so that ${watcher} has somebody to sit with while everybody else clears up.`,
       `${watcher} says ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} fine and ${p.sub} ${p.sub === 'they' ? 'do' : 'does'} not mind watching. ${kind} takes ${q.posAdj} plate into the other room and eats it out of sight instead.`,
       `Nobody hands ${watcher} anything — there are cameras in every corner and both of them know exactly what that would cost. ${kind} just stays up until ${watcher} goes to bed, which takes until nearly two.`,
-      `${kind} describes what ${q.sub} ${q.sub === 'they' ? 'are' : 'is'} eating, in detail, as a joke. Then ${q.sub} ${q.sub === 'they' ? 'stop' : 'stops'}, because ${watcher}'s face has gone, and ${q.sub} ${q.sub === 'they' ? 'spend' : 'spends'} the next twenty minutes talking about anything else.`,
+      `${kind} describes what ${q.sub} ${q.sub === 'they' ? 'are' : 'is'} eating, in detail, as a joke. Then ${q.sub} ${q.sub === 'they' ? 'stop' : 'stops'} when ${watcher}'s smile disappears, and ${q.sub} ${q.sub === 'they' ? 'spend' : 'spends'} the next twenty minutes talking about anything else.`,
       `${watcher} will remember two things about this week: the cold, and ${kind} sitting on the counter at midnight keeping ${p.obj} company for no strategic reason whatsoever.`,
     ], ctx, this.id, watcher, kind);
 

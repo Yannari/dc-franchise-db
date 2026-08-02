@@ -185,7 +185,7 @@ const innerCircle = {
       `There is an alliance, and then there is the two people inside it who never have to explain themselves to each other. ${periph} has worked out which one ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} in.`,
       `${periph} asks when the group agreed on this. ${b} says “last night,” and does not offer a location, and ${periph} does not ask for one.`,
       `${a} and ${b} come down the stairs looking finished. Whatever ${_list(members.filter(n => n !== a && n !== b))} contribute after that is a comment on a decision, not a vote in one.`,
-      `${periph} is not being cut out of <strong>${al.name}</strong>. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} simply the third, fourth and fifth person told, in that order, every single time.`,
+      `${periph} is not being cut out of <strong>${al.name}</strong>. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} simply never one of the first two people told.`,
       `“We just talked it through so it'd be quicker.” ${a} means it kindly. ${periph} hears an alliance with a smaller alliance living inside it.`,
     ], ctx, this.id, periph, a);
 
@@ -236,7 +236,7 @@ const comparesNotes = {
       `${name} is in <strong>${first.al.name}</strong> and <strong>${second.al.name}</strong> and has just discovered that ${target ? `${target} going` : 'this vote'} means two entirely different things depending on which room ${p.sub} ${p.sub === 'they' ? 'hear' : 'hears'} it in.`,
       `Both stories are true. That is the problem. ${orgA} tells ${name} the plan protects the group; ${orgB} tells ${name} the plan protects the group; neither of them uses the same list of people.`,
       `${name} nods along with ${orgB}, waits until ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} alone, and starts putting the two conversations side by side. One of them has ${p.obj} at the bottom of it.`,
-      `“Same page?” ${orgA} asks. ${name} says yes. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on two pages since week one and this is the first time they have contradicted each other out loud.`,
+      `“Same page?” ${orgA} asks. ${name} says yes. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on two pages since both groups formed, and this is the first time those pages have contradicted each other out loud.`,
       `${name} makes the mistake of repeating a detail from <strong>${second.al.name}</strong> to ${orgA}, catches it half a sentence in, and covers it with a question about slop.`,
     ], ctx, this.id, name, orgA);
 
@@ -283,7 +283,7 @@ const unauthorizedVote = {
 
     const text = _variant([
       `${organiser} goes round the room asking everybody to say the name out loud. ${holdout} says, “I'll vote with the house,” which is not a name, and the room notices that it is not a name.`,
-      `“I'm not locking anything in until Thursday.” ${holdout} says it pleasantly, in front of ${_list(rest)}, and the temperature in the room drops about four degrees.`,
+      `“I'm not locking anything in before the vote.” ${holdout} says it pleasantly, in front of ${_list(rest)}, and the temperature in the room drops about four degrees.`,
       `${organiser} wants ${members.length} votes counted before the campaigning starts. ${holdout} gives ${p.posAdj} word on everything except the ballot, and repeats it twice when asked.`,
       `${holdout} points out, correctly, that nobody in <strong>${al.name}</strong> has ever had to promise a vote in writing. ${organiser} points out that nobody has ever refused to give one either.`,
       `Somebody asks ${holdout} directly whether ${noms[0] || 'the target'} is the vote. ${p.Sub} ${p.sub === 'they' ? 'say' : 'says'}, “Probably,” and there is no version of that word the rest of them like.`,
@@ -412,7 +412,7 @@ const wrongBlame = {
       `Nobody has any evidence. ${accuser} has something better than evidence — a feeling ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} had about ${blamed} since ${evicted} was nominated, and a room willing to agree with it.`,
       `“It wasn't me.” ${blamed} says it once, calmly, which ${accuser} treats as suspicious, and then a second time, less calmly, which ${accuser} treats as confirmation.`,
       `The group runs the vote back. ${count} unaccounted for, ${members.length} people in the room, and the arithmetic quietly settles on the one of them nobody has ever quite been able to read.`,
-      `${accuser} does not accuse ${blamed}. ${accuser} simply stops finishing sentences when ${blamed} walks in, and by Sunday everybody in <strong>${al.name}</strong> is doing the same thing.`,
+      `${accuser} does not accuse ${blamed}. ${accuser} simply stops finishing sentences when ${blamed} walks in, and before the next competition everybody in <strong>${al.name}</strong> is doing the same thing.`,
       `${blamed} did not do it. ${p.Sub} ${p.sub === 'they' ? 'spend' : 'spends'} the evening being told, kindly, that nobody is angry — which is how ${p.sub} ${p.sub === 'they' ? 'find' : 'finds'} out ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already been convicted.`,
     ], ctx, this.id, blamed, accuser);
 

@@ -123,8 +123,8 @@ const defined = {
       `${asks} asks the question at two in the morning, badly, with three false starts. ${answers} says, “Yes, obviously,” and goes back to sleep, and ${asks} lies awake being pleased about it for an hour.`,
       `“I need to know if this is a game thing.” ${asks} has been building up to that sentence for four days. ${answers} looks genuinely insulted, which turns out to be the answer.`,
       `They agree on the word out loud, which neither of them has done before. It changes nothing about the game and everything about the next ten conversations either of them has.`,
-      `${answers} says it first, in the middle of something else, without stopping. ${asks} makes ${p.obj} say it again properly.`,
-      `${asks} and ${answers} decide, in a bedroom with four other beds in it, that whatever happens on Thursday this is a real thing. ${q.Sub} ${q.sub === 'they' ? 'shake' : 'shakes'} on it, which they both find funny and neither of them mentions again.`,
+      `${answers} says it first, in the middle of something else, without stopping. ${asks} makes ${q.obj} say it again properly.`,
+      `${asks} and ${answers} decide, in a bedroom with four other beds in it, that whatever happens at the next eviction this is a real thing. ${q.Sub} ${q.sub === 'they' ? 'shake' : 'shakes'} on it, which they both find funny and neither of them mentions again.`,
       `“I'm not doing the thing where we pretend.” ${asks} draws the line and ${answers} steps over it in the right direction. From here on they are a fact rather than a rumour.`,
     ], ctx, this.id, a, b);
 
@@ -210,7 +210,7 @@ const separateCampaigns = {
       `“If we walk in together we're one conversation.” ${a} campaigns before dinner and ${b} campaigns after it, and ${first || 'somebody'} comes away having been asked the same question twice by two different people.`,
       `${a} and ${b} rehearse being separate players and then go and be separate players, which is more work than either of them expected and visibly better for both of them.`,
       `The couple that spent a fortnight being one unit spends this week being two. ${second || 'The house'} notices, and rates them both higher for it, which was the point.`,
-      `${b} stops finishing ${p.posAdj} sentences in front of other people. ${a} stops answering questions aimed at ${b}. By Thursday there are two campaigns running and only one of them has a name attached to the other.`,
+      `${b} stops finishing ${p.posAdj} sentences in front of other people. ${a} stops answering questions aimed at ${b}. By eviction night there are two campaigns running, and neither looks like an extension of the other.`,
     ], ctx, this.id, a, b);
 
     api.popDelta(a, 1);
@@ -261,7 +261,7 @@ const leakChannel = {
       `${source} works out the shape of it late: everything ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} ever said to ${told} has been heard by two people, and one of them was never in the room.`,
       `${partner} answers a question ${source} never asked ${q.obj}. It takes about a second and a half for ${source} to understand where the answer came from.`,
       `${told} would swear the conversation stayed private, and it did — inside a relationship. ${source} has stopped counting that as private.`,
-      `${source} tests it deliberately: one detail, slightly wrong, given only to ${told}. It comes back out of ${partner}'s mouth on Wednesday, wrong in exactly the same way.`,
+      `${source} tests it deliberately: one detail, slightly wrong, given only to ${told}. Before the next ceremony, it comes back out of ${partner}'s mouth wrong in exactly the same way.`,
     ], ctx, this.id, source, told);
 
     _spend(this.id, ctx);

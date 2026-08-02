@@ -261,7 +261,7 @@ const fightSplitsTheRoom = {
     const forOther = closestTo(other, rest.filter(n => n !== forHurt)) || rest.find(n => n !== forHurt) || rest[1];
 
     const text = variant([
-      `Nobody calls it taking sides. ${forHurt} starts sitting where ${hurt} sits and ${forOther} stops coming into that room, and by the afternoon the living room has a shape it did not have on Monday.`,
+      `Nobody calls it taking sides. ${forHurt} starts sitting where ${hurt} sits and ${forOther} stops coming into that room, and by the next afternoon the living room has split into two obvious halves.`,
       `${forHurt} says the argument was one-sided and ${forOther} says it certainly was, and the two of them realise about a beat too late that they are describing different sides. ${hurt} and ${other} are not even in the room.`,
       `The house does the arithmetic it always does after a fight: who was louder, who was right, and who is more useful. ${forHurt} lands on ${hurt}. ${forOther} lands on ${other}. Neither of them says so out loud and everybody can see it anyway.`,
       `${forOther} defends ${other}'s version of the fight in the living room and finds ${forHurt} looking at ${pronouns(forOther).obj} the way you look at somebody who has just picked. Which is what has happened.`,
@@ -346,14 +346,14 @@ const promiseExposedByCount = {
 
     const text = ready ? variant([
       `${promisee} works the vote backwards over breakfast and there is exactly one arrangement of it that works, and it has ${voter} writing ${cast} down after saying ${promised} all week. ${voter} has an explanation ready and delivers it well. ${promisee} lets ${pronouns(voter).obj} finish.`,
-      `"The numbers were ${promised === cast ? 'fine' : 'nine to one on paper'}." ${promisee} does not need ${voter} to confess. The count did that on Thursday${gone ? ` when ${gone} left` : ''}; this conversation is only about whether ${voter} will say it.`,
+      `"The numbers were ${promised === cast ? 'fine' : 'nine to one on paper'}." ${promisee} does not need ${voter} to confess. The eviction count already did that${gone ? ` when ${gone} left` : ''}; this conversation is only about whether ${voter} will say it.`,
       `${voter} explains that the room moved late and there was no time to come and find ${promisee}. It is a good explanation. It is also the third good explanation ${voter} has produced this month, and ${promisee} has started keeping them in order.`,
       `${promisee} asks ${voter} one question in the kitchen — not accusing, just counting out loud — and ${voter} answers it smoothly enough that ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} the answer was prepared before the question existed.`,
     ], ctx, promisee, voter, cast) : variant([
       `${promisee} says the count out loud and watches ${voter}'s face do the arithmetic a half second too slowly. That half second is the whole conversation.`,
       `"You told me ${promised}." ${voter} starts a sentence three separate times in the kitchen. ${promisee} waits through all three and then leaves before the fourth.`,
       `The vote came back and one number was wrong, and only one person had promised ${promisee} anything. ${voter} does not deny it so much as stop talking, which in this house is the same thing.`,
-      `${promisee} does not shout. ${p.Sub} simply repeats what ${voter} said on Wednesday, then what the count said on Thursday, and lets the kitchen hold the gap between them.`,
+      `${promisee} does not shout. ${p.Sub} simply repeats what ${voter} promised before the vote, then what the eviction count revealed, and lets the kitchen hold the gap between them.`,
     ], ctx, promisee, voter, cast);
 
     api.remember(promisee, voter, 'broke-word-found-out', 3, { promised, cast });
@@ -447,7 +447,7 @@ const blindsideRewatch = {
     if (!found) {
       const a = house[0], b = house[1];
       api.popDelta(a, -1);
-      return result(`Nobody wants to talk about Thursday.`, [a, b], 'LET IT LIE', 'grey');
+      return result(`Nobody wants to talk about the last eviction.`, [a, b], 'LET IT LIE', 'grey');
     }
     const { worst, wrong, week } = found;
     const name = worst.voter;
@@ -457,7 +457,7 @@ const blindsideRewatch = {
     const off = Math.abs(worst.error || 0);
 
     const text = variant([
-      `The house retells Thursday for the fourth time and it is still ${name}'s face that carries it. ${p.Sub} had the count at ${worst.believed} and the count was ${worst.truth}${gone ? `, and ${gone} was gone before ${p.sub} finished turning around` : ''}. ${amused[0]} does the face. Everybody laughs, including ${name}, slightly late.`,
+      `The house retells the eviction for the fourth time and it is still ${name}'s face that carries it. ${p.Sub} had the count at ${worst.believed} and the count was ${worst.truth}${gone ? `, and ${gone} was gone before ${p.sub} finished turning around` : ''}. ${amused[0]} does the face. Everybody laughs, including ${name}, slightly late.`,
       `"Say it again. Say how many you thought you had." ${amused[0]} has made this a bit, and ${name} has decided the only way through it is to be a good sport, which is working less well each time.`,
       `${amused[0]} and ${amused[1] || 'the kitchen'} reconstruct the vote out loud, beat by beat, purely to arrive at the moment ${name} was ${off} votes wrong about ${p.posAdj} own side of the house.`,
       `Somebody starts it as a genuine question — how did nobody see it — and it becomes, within about a minute, a very specific question about ${name}. ${p.Sub} answers it honestly, which makes it funnier and worse.`,
@@ -472,7 +472,7 @@ const blindsideRewatch = {
       if (amused[1]) api.addBond(amused[0], amused[1], 0.6);
       else api.addBond(amused[0], name, -0.3);
     }
-    return result(text, [name, ...amused], 'STILL TALKING ABOUT THURSDAY', 'grey');
+    return result(text, [name, ...amused], 'STILL TALKING ABOUT THE VOTE', 'grey');
   },
 };
 
@@ -617,7 +617,7 @@ const threatenedRemembers = {
       `${speaker} tries to restart the friendship as though the plea were a thing that happened to both of them. ${voter} agrees pleasantly with every sentence and gives ${pronouns(speaker).obj} nothing at all.`,
     ], ctx, voter, speaker) : variant([
       `${speaker} promised, on the floor, in front of everybody, to come for whoever kept ${pronouns(speaker).obj} here. ${voter} has been counting the days since and has decided ${p.sub} would rather not find out whether ${speaker} meant it.`,
-      `${voter} stops telling ${speaker} things. Not dramatically — ${p.sub} just answers questions with the answer and nothing after it, and ${speaker} works out by Saturday that the speech cost ${pronouns(speaker).obj} a person.`,
+      `${voter} stops telling ${speaker} things. Not dramatically — ${p.sub} just answers questions with the answer and nothing after it, and before the next competition ${speaker} realizes the speech cost ${pronouns(speaker).obj} a person.`,
       `"You said it to the room." ${voter} does not raise ${p.posAdj} voice in the bathroom. "I was in the room." That is the entire conversation and ${speaker} thinks about it all week.`,
       `${speaker} looks for ${voter} to explain that the plea was a plea and not a plan. ${voter} listens, says ${p.sub} understands, and continues doing precisely what ${p.sub} was doing before, which is nothing.`,
     ], ctx, voter, speaker);
@@ -675,7 +675,7 @@ const endgameSoleVoterCourt = {
     const p = pronouns(voter);
 
     const text = variant([
-      `Both of them get ${voter} alone before dinner and both of them make the same argument, which is that the other one wins at the end. ${better} makes it about what ${voter} needs on Thursday. ${worse} makes it about what ${worse} deserves, and that is the whole difference.`,
+      `Both of them get ${voter} alone before dinner and both make the same argument: the other person wins at the end. ${better} makes it about what ${voter} needs when the decision arrives. ${worse} makes it about what ${worse} deserves, and that is the whole difference.`,
       `There is one vote left in this house and it belongs to ${voter}, who spends the afternoon being courted in two separate rooms by two people who keep passing each other in the corridor. ${better}'s pitch is the one ${p.sub} is still thinking about at midnight.`,
       `${worse} goes first and talks for a long time. ${better} goes second and asks ${voter} a question instead, which is the first time all week anybody has asked ${p.obj} anything.`,
       `${voter} has never had this much power and does not enjoy it. ${better} makes it easy — lays out the final three, where ${voter} sits in it, and stops talking. ${worse} does not stop talking.`,
@@ -737,7 +737,7 @@ const endgameCutCalculus = {
       `${actor} does the sum in the Diary Room and does not like the answer: the ${tier} with ${partner} was made when there were eleven people to hide behind, and there are ${house.length}. ${p.Sub} does not say the word out loud. ${p.Sub} does not have to.`,
       `"${partner} beats me." ${actor} tries three different ways of arranging the last chairs and ${partner} wins all three. The deal was real when ${p.sub} made it, which is the part that is going to be hard to explain later.`,
       `${actor} has kept every promise ${p.sub} has made in here and is now looking directly at the one ${p.sub} cannot afford to. ${partner} would take ${p.obj} to the end. That is exactly the problem.`,
-      `The ${tier} was the best thing ${actor} did all season and it has quietly become the worst thing ${p.sub} is carrying. ${p.Sub} starts, carefully, working out what a version of Thursday without ${partner} would look like.`,
+      `The ${tier} was the best thing ${actor} did all season and it has quietly become the worst thing ${p.sub} is carrying. ${p.Sub} starts, carefully, working out what the next eviction would look like without ${partner}.`,
     ], ctx, actor, partner) : variant([
       `${actor} runs the numbers on cutting ${partner} and finds them fine, and does not care. The ${tier} was made on a night that mattered, and ${p.sub} would rather lose to ${partner} than get to the end without ${pronouns(partner).obj}.`,
       `"I know what everybody would do here." ${actor} says it to the Diary Room and then says the other thing too: that ${p.sub} shook on the ${tier} with ${partner} and intends to be somebody who meant it.`,

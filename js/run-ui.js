@@ -772,6 +772,23 @@ export function viewEpisode(num) {
   if (epRecord) { renderEpisodeView(epRecord); renderEpisodeHistory(); renderGameState(); renderSeasonHub(); }
 }
 
+/**
+ * A checkpoint before a Big Brother week runs, exactly like a Total Drama
+ * episode takes one before it runs. episode.js saves TD's inside the
+ * simulator; the house engine stays headless, so its checkpoint is taken at
+ * the UI boundary — which is what makes Re-run This Episode exist for a house
+ * at all. Called from BOTH the normal run and the replay re-run, because a
+ * replayed week must itself be replayable, the way a TD episode is.
+ */
+function _saveBBCheckpoint() {
+  const cpNum = (gs.bb?.weeks?.length || 0) + 1;
+  try {
+    gsCheckpoints[cpNum] = JSON.parse(JSON.stringify(gs));
+    repairGsSets(gsCheckpoints[cpNum]);
+    _idbPut('cp_' + cpNum, JSON.parse(JSON.stringify(gsCheckpoints[cpNum])));
+  } catch { /* a week must never fail on its own undo button */ }
+}
+
 export function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
   // Fire-making / Koh-Lanta override: force F4 finale
@@ -791,6 +808,12 @@ export function simulateNext() {
   // Brother season, that meant running simulateEpisode — tribes, a challenge,
   // Tribal Council — on three houseguests.
   if (isBigBrotherSeason()) {
+    // A checkpoint before the week runs, exactly like a Total Drama episode
+    // takes one before it runs. episode.js saves TD's inside the simulator;
+    // the house's engine stays headless, so its checkpoint is taken here at
+    // the same moment — which is what makes Re-run This Episode exist for a
+    // house at all. Keyed by the number the coming episode will carry.
+    _saveBBCheckpoint();
     // At the final few the week engine has nothing left to run, so the last
     // night takes over: the three-part Head of Household, the cut, and the jury.
     const bbEp = simulateBBEpisode() || runBBFinale();
@@ -866,9 +889,13 @@ export function replayEpisode(epNum) {
       _idbDelete('cp_' + k);
     }
   });
-  // Re-run this episode — check if we're replaying the finale
-  const _isFinaleReplay = gs.phase === 'finale';
-  const ep = _isFinaleReplay ? simulateFinale() : simulateEpisode();
+  // Re-run this episode — the format decides the engine, exactly as
+  // simulateNext does. The replay path only knew Total Drama's two engines,
+  // so a house had checkpoints it could never spend.
+  if (isBigBrotherSeason()) _saveBBCheckpoint();
+  const ep = isBigBrotherSeason()
+    ? (simulateBBEpisode() || runBBFinale())
+    : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
   if (!ep) return;
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
   _autoRevealSpoiler(ep.num);

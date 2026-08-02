@@ -17251,6 +17251,363 @@ export function rpBuildBBNominations(ep) {
   </div>`;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// THE BLOCK BUSTER — one themed stage per arena game
+//
+// The arena games each carry a distinct mechanic, and a single generic
+// podium row rendered all seven of them identically: three meters, three
+// numbers, no fiction. These stages give every game its own instrument —
+// the memory wall's tiles, the card towers, the tilting mazes, the keypads,
+// the target rails, the ropes, the blacked-out corridors — driven by exactly
+// the state the generic stage used, so nothing spoils a step early.
+//
+// Contract: every builder takes ONE object,
+//   { field, results, act, fallen, savedShown, clock, revealed, total }
+// and returns the stage markup. `fallen` is a Set of nominees whose rank
+// step has been revealed; `savedShown` is whether the save card has landed.
+// Scores are only ever shown for a nominee who is fallen or once the save
+// has landed — identical to the generic stage. No randomness anywhere: every
+// position is derived from the score.
+// ══════════════════════════════════════════════════════════════════════
+
+/** Per-nominee display state, shared by all seven stages. */
+function _bbArenaRows(ctx) {
+  const best = Number(ctx.results[0]?.score) || 1;
+  return (ctx.field || []).map((name, i) => {
+    const r = (ctx.results || []).find(x => x.name === name) || null;
+    const out = ctx.fallen.has(name);
+    const saved = ctx.savedShown && name === ctx.act.winner;
+    const decided = out || ctx.savedShown;
+    const pct = (r && decided)
+      ? Math.max(6, Math.min(100, Math.round((Number(r.score) / Math.max(0.001, best)) * 100)))
+      : 0;
+    return {
+      name, i, out, saved, decided, pct,
+      score: (decided && r) ? Number(r.score).toFixed(1) : '—',
+      cls: `${out ? 'is-out' : ''} ${saved ? 'is-saved' : ''}`,
+    };
+  });
+}
+
+/** The pressure line every theme keeps: LIVE / the room / THE VOTE IN mm:ss. */
+function _bbArenaStrip(pfx, ctx, title) {
+  return `<div class="${pfx}strip">
+    <span class="${pfx}live"><i></i>${ctx.savedShown ? 'DECIDED' : 'LIVE'}</span>
+    <span class="${pfx}title">${_bbEsc(title)}</span>
+    <span class="${pfx}clock">THE VOTE IN <b>${ctx.clock}</b></span>
+  </div>`;
+}
+
+function _bbArenaFoot(pfx, a, b, c) {
+  return `<div class="${pfx}foot"><span>${a}</span><span>${b}</span><span>${c}</span></div>`;
+}
+
+/** A stable 0..n-1 from a name — used for glyphs and digits, never for outcome. */
+function _bbArenaHash(str, n) {
+  let h = 0;
+  for (let i = 0; i < String(str).length; i++) h = (h * 31 + String(str).charCodeAt(i)) >>> 0;
+  return n ? h % n : h;
+}
+
+// ── 1. FLASH WALL — the memory wall, one row of symbol tiles per nominee ──
+const _BFW_GLYPHS = [
+  '<circle cx="12" cy="12" r="6.4"/>',
+  '<path d="M12 5.2 L19 18.6 H5 Z"/>',
+  '<path d="M4 14.2q4-6.4 8 0t8 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  '<path d="M13.6 3 L6 13.2h4.6L9.4 21 L18.2 10h-5Z"/>',
+  '<rect x="6" y="6" width="12" height="12" rx="2.4"/>',
+  '<path d="M12 3.6 L19.4 12 L12 20.4 L4.6 12Z"/>',
+  '<path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" fill="none"/>',
+  '<path d="M12 4.4l2.3 5.1 5.5.6-4.1 3.7 1.1 5.4L12 16.4 7.2 19.2l1.1-5.4-4.1-3.7 5.5-.6Z"/>',
+];
+const _bfwTile = i => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">${_BFW_GLYPHS[i % _BFW_GLYPHS.length]}</svg>`;
+
+function _bbArenaFlashWallStage(ctx) {
+  const TILES = 9;
+  const rows = _bbArenaRows(ctx).map(row => {
+    const lit = row.decided ? Math.max(1, Math.round((row.pct / 100) * TILES)) : 0;
+    const seed = _bbArenaHash(row.name, _BFW_GLYPHS.length);
+    const tiles = Array.from({ length: TILES }, (_, t) =>
+      `<span class="bfw-tile ${t < lit ? 'is-lit' : ''}">${_bfwTile(seed + t * 3)}</span>`).join('');
+    return `<div class="bfw-row ${row.cls}">
+      <div class="bfw-who">${_bbAvatar(row.name, 34)}<b>${_bbEsc(row.name)}</b></div>
+      <div class="bfw-tiles">${tiles}</div>
+      <div class="bfw-len"><i>SEQ</i>${row.decided ? String(lit).padStart(2, '0') : '--'}</div>
+      <div class="bfw-score">${row.score}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bfw-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bfw-', ctx, 'THE WALL')}
+    <div class="bfw-grid">${rows}</div>
+    ${_bbArenaFoot('bfw-', 'ONE LOOK', 'PUNCH IT BACK', 'TWO FUMBLES AND OUT')}
+  </div>`;
+}
+
+// ── 2. HOUSE OF CARDS — three towers on tilting felt ──
+function _bbArenaHouseOfCardsStage(ctx) {
+  const LEVELS = 7;
+  const card = (w, h) => `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true" preserveAspectRatio="none">
+      <rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="2"
+        fill="rgba(250,245,225,.92)" stroke="rgba(120,80,20,.7)" stroke-width="1.2"/></svg>`;
+  const tent = `<svg viewBox="0 0 54 30" aria-hidden="true">
+      <g stroke="rgba(120,80,20,.75)" stroke-width="1.2" fill="rgba(250,245,225,.9)">
+        <rect x="8" y="2" width="13" height="26" rx="2" transform="rotate(-16 14.5 15)"/>
+        <rect x="33" y="2" width="13" height="26" rx="2" transform="rotate(16 39.5 15)"/>
+      </g></svg>`;
+  const rubble = `<svg viewBox="0 0 90 22" aria-hidden="true">
+      <g fill="rgba(230,220,195,.55)" stroke="rgba(120,80,20,.5)" stroke-width="1">
+        <rect x="2" y="12" width="20" height="7" rx="1.6" transform="rotate(-9 12 15)"/>
+        <rect x="26" y="13" width="22" height="7" rx="1.6" transform="rotate(6 37 16)"/>
+        <rect x="52" y="11" width="19" height="7" rx="1.6" transform="rotate(-14 61 14)"/>
+        <rect x="66" y="14" width="21" height="7" rx="1.6" transform="rotate(11 76 17)"/>
+      </g></svg>`;
+  const towers = _bbArenaRows(ctx).map(row => {
+    const built = row.decided ? Math.max(1, Math.round((row.pct / 100) * LEVELS)) : 0;
+    const stack = row.out
+      ? `<div class="bsh-rubble">${rubble}</div>`
+      : Array.from({ length: built }, (_, l) => `<div class="bsh-level">
+          <div class="bsh-tent">${tent}</div>
+          ${l < built - 1 ? `<div class="bsh-deck">${card(60, 8)}</div>` : ''}
+        </div>`).reverse().join('');
+    return `<div class="bsh-col ${row.cls}">
+      <div class="bsh-build">${stack}</div>
+      <div class="bsh-table"></div>
+      <div class="bsh-who">${_bbAvatar(row.name, 34)}<b>${_bbEsc(row.name)}</b></div>
+      <div class="bsh-h"><i>LEVELS</i>${row.decided ? built : '—'} <em>${row.score}</em></div>
+    </div>`;
+  }).join('');
+  const horn = Array.from({ length: 12 }, (_, i) =>
+    `<i class="${ctx.revealed > i ? 'is-blown' : ''}"></i>`).join('');
+  return `<div class="bsh-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bsh-', ctx, 'STEADY HANDS')}
+    <div class="bsh-felt">${towers}</div>
+    <div class="bsh-horn"><span>TILT HORN</span><div class="bsh-horn-bar">${horn}</div></div>
+    ${_bbArenaFoot('bsh-', 'STACK IT', 'THE TABLE MOVES', 'TALLEST STANDING WINS')}
+  </div>`;
+}
+
+// ── 3. VERTIGO — three circular mazes, one ball each ──
+function _bbArenaVertigoStage(ctx) {
+  const ring = (r, gapDeg, rotDeg) => {
+    const c = 2 * Math.PI * r;
+    const gap = c * (gapDeg / 360);
+    return `<circle cx="60" cy="60" r="${r}" fill="none" stroke="currentColor" stroke-width="3.4"
+      stroke-dasharray="${(c - gap).toFixed(2)} ${gap.toFixed(2)}"
+      transform="rotate(${rotDeg} 60 60)" opacity=".55"/>`;
+  };
+  const cols = _bbArenaRows(ctx).map(row => {
+    const p = row.decided ? row.pct / 100 : 0;
+    // The ball spirals inward as the run goes well: angle from progress,
+    // radius from how much maze is left.
+    const ang = (-90 + p * 540) * Math.PI / 180;
+    const rad = row.saved ? 0 : (row.out ? 54 : 48 - p * 40);
+    const bx = (60 + Math.cos(ang) * rad).toFixed(1);
+    const by = (60 + Math.sin(ang) * rad).toFixed(1);
+    const seed = _bbArenaHash(row.name, 4);
+    return `<div class="bvg-col ${row.cls}">
+      <div class="bvg-maze">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="56" fill="rgba(8,18,22,.9)" stroke="rgba(120,190,200,.35)" stroke-width="2"/>
+          <g class="bvg-rings">
+            ${ring(48, 46, 10 + seed * 25)}${ring(38, 54, 120 + seed * 35)}
+            ${ring(28, 62, 220 + seed * 15)}${ring(18, 70, 300 + seed * 45)}
+          </g>
+          <circle cx="60" cy="60" r="7" fill="none" stroke="rgba(126,226,168,.85)" stroke-width="2.4"/>
+          <circle cx="60" cy="60" r="3.4" fill="rgba(8,18,22,.95)"/>
+          <circle class="bvg-ball" cx="${bx}" cy="${by}" r="5.2"/>
+        </svg>
+      </div>
+      <div class="bvg-who">${_bbAvatar(row.name, 34)}<b>${_bbEsc(row.name)}</b></div>
+      <div class="bvg-read"><i>${row.saved ? 'IN THE HOLE' : row.out ? 'OFF THE RAIL' : 'STRAPPED IN'}</i>${row.score}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bvg-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bvg-', ctx, 'THE TILT DECK')}
+    <div class="bvg-decks">${cols}</div>
+    ${_bbArenaFoot('bvg-', 'STEER WITH YOUR WEIGHT', 'ONE HOLE SAVES YOU', 'DROP IT AND RESTART')}
+  </div>`;
+}
+
+// ── 4. LOCKOUT — three keypads and one door ──
+function _bbArenaLockoutStage(ctx) {
+  const cols = _bbArenaRows(ctx).map(row => {
+    const got = row.decided ? Math.max(1, Math.round((row.pct / 100) * 4)) : 0;
+    const seed = _bbArenaHash(row.name, 10000);
+    const digits = Array.from({ length: 4 }, (_, d) => {
+      const on = d < got;
+      const val = String(Math.floor(seed / Math.pow(10, d)) % 10);
+      return `<span class="blk-dig ${on ? 'is-on' : ''}">${on ? val : '-'}</span>`;
+    }).join('');
+    const keys = Array.from({ length: 12 }, (_, k) =>
+      `<i class="${row.decided && ((seed + k) % 3 === 0) ? 'is-hit' : ''}"></i>`).join('');
+    const status = row.saved ? 'OPEN' : row.out ? 'LOCKED' : 'ARMED';
+    return `<div class="blk-panel ${row.cls}">
+      <div class="blk-head">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+        <span class="blk-led"></span></div>
+      <div class="blk-display">${digits}</div>
+      <div class="blk-pad">${keys}</div>
+      <div class="blk-door">
+        ${row.out ? `<svg viewBox="0 0 24 24" aria-hidden="true" class="blk-x">
+            <path d="M5 5 L19 19 M19 5 L5 19" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg>` : ''}
+        <span>${status}</span></div>
+      <div class="blk-score">${row.score}</div>
+    </div>`;
+  }).join('');
+  return `<div class="blk-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('blk-', ctx, 'LOCKOUT')}
+    <div class="blk-panels">${cols}</div>
+    ${_bbArenaFoot('blk-', 'THE CODE IS THE SEASON', 'FOUR DIGITS', 'FIRST THROUGH THE DOOR STAYS')}
+  </div>`;
+}
+
+// ── 5. LAST SHOT — ten targets, twelve balls, no restock ──
+function _bbArenaLastShotStage(ctx) {
+  const target = `<svg viewBox="0 0 26 34" aria-hidden="true">
+      <rect x="11.6" y="18" width="2.8" height="15" rx="1.2" fill="rgba(120,90,60,.85)"/>
+      <circle cx="13" cy="12" r="10" fill="rgba(250,244,232,.94)" stroke="rgba(90,20,25,.8)" stroke-width="1.4"/>
+      <circle cx="13" cy="12" r="6.2" fill="rgba(190,40,45,.9)"/>
+      <circle cx="13" cy="12" r="2.4" fill="rgba(250,244,232,.95)"/></svg>`;
+  const rows = _bbArenaRows(ctx).map(row => {
+    const down = row.decided ? Math.max(1, Math.round((row.pct / 100) * 10)) : 0;
+    const rail = Array.from({ length: 10 }, (_, t) =>
+      `<span class="bls-t ${t < down ? 'is-down' : ''}">${target}</span>`).join('');
+    const spent = row.decided ? Math.min(12, down + 2) : 0;
+    const ammo = Array.from({ length: 12 }, (_, a) =>
+      `<i class="${a < spent ? 'is-spent' : ''}"></i>`).join('');
+    return `<div class="bls-lane ${row.cls}">
+      <div class="bls-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="bls-count">${row.decided ? `${down}/10` : '—/10'}</span>
+        <span class="bls-score">${row.score}</span></div>
+      <div class="bls-rail">${rail}</div>
+      <div class="bls-ammo"><i class="bls-lbl"></i>${ammo}<span>RACK</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="bls-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bls-', ctx, 'THE MIDWAY')}
+    <div class="bls-lanes">${rows}</div>
+    ${_bbArenaFoot('bls-', 'TWELVE BALLS', 'TEN TARGETS', 'NO RESTOCK')}
+  </div>`;
+}
+
+// ── 6. UNRAVEL — fifty feet of rope and a key at the far end ──
+function _bbArenaUnravelStage(ctx) {
+  // A fixed sine-run of points: the rope's shape is the same every night,
+  // only the marker moves.
+  const PTS = Array.from({ length: 13 }, (_, i) => {
+    const x = 14 + i * 27;
+    const y = 40 + Math.sin(i * 0.9) * 22 + Math.sin(i * 2.1) * 5;
+    return [x, Number(y.toFixed(2))];
+  });
+  const d = PTS.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y.toFixed(1)}`).join(' ');
+  const at = p => {
+    const f = Math.max(0, Math.min(1, p)) * (PTS.length - 1);
+    const i = Math.min(PTS.length - 2, Math.floor(f));
+    const t = f - i;
+    return [PTS[i][0] + (PTS[i + 1][0] - PTS[i][0]) * t, PTS[i][1] + (PTS[i + 1][1] - PTS[i][1]) * t];
+  };
+  const rows = _bbArenaRows(ctx).map(row => {
+    // A fallen nominee's rope re-knots: the marker slides back down the line.
+    const raw = row.decided ? row.pct / 100 : 0;
+    const p = row.out ? raw * 0.55 : raw;
+    const [mx, my] = at(p);
+    return `<div class="bur-lane ${row.cls}">
+      <div class="bur-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="bur-score">${row.score}</span></div>
+      <div class="bur-rope">
+        <svg viewBox="0 0 350 84" aria-hidden="true" preserveAspectRatio="none">
+          <path d="${d}" class="bur-slack"/>
+          <path d="${d}" class="bur-run" pathLength="100"
+            stroke-dasharray="100" stroke-dashoffset="${(100 - p * 100).toFixed(1)}"/>
+          <g class="bur-tangle" transform="translate(6 30)">
+            <path d="M2 12c6-12 14 10 20-2S36 0 40 12" fill="none" stroke="currentColor" stroke-width="2.6"/>
+            <path d="M4 4c8 6 6 16 16 16" fill="none" stroke="currentColor" stroke-width="2.2" opacity=".7"/>
+          </g>
+          <g class="bur-key" transform="translate(316 24)">
+            <circle cx="9" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M9 16v14M9 24h7M9 28h5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </g>
+          <circle class="bur-mark" cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="6"/>
+        </svg>
+      </div>
+      <div class="bur-tag">${row.saved ? 'THE KEY TURNS' : row.out ? 'RE-KNOTTED' : 'STILL PULLING'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bur-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bur-', ctx, 'FIFTY FEET')}
+    <div class="bur-lanes">${rows}</div>
+    ${_bbArenaFoot('bur-', 'UNTANGLE', 'UNTHREAD', 'UNLOCK')}
+  </div>`;
+}
+
+// ── 7. BLACKOUT — three corridors, crossed from memory ──
+function _bbArenaBlackoutStage(ctx) {
+  const rows = _bbArenaRows(ctx).map(row => {
+    const p = row.decided ? row.pct / 100 : 0;
+    const seed = _bbArenaHash(row.name, 7);
+    const obstacles = Array.from({ length: 5 }, (_, o) => {
+      const x = 44 + o * 56 + ((seed + o * 3) % 5) * 4;
+      const y = 8 + ((seed + o * 5) % 4) * 12;
+      const h = 16 + ((seed + o) % 3) * 9;
+      return `<rect x="${x}" y="${y}" width="${12 + ((seed + o) % 3) * 5}" height="${h}" rx="2"
+        class="bbo-obs" opacity="${(0.13 + ((seed + o) % 3) * 0.05).toFixed(2)}"/>`;
+    }).join('');
+    const dx = (18 + p * 300).toFixed(1);
+    return `<div class="bbo-lane ${row.cls}">
+      <div class="bbo-who">${_bbAvatar(row.name, 30)}<b>${_bbEsc(row.name)}</b>
+        <span class="bbo-score">${row.score}</span></div>
+      <div class="bbo-corridor">
+        <svg viewBox="0 0 350 62" aria-hidden="true" preserveAspectRatio="none">
+          <rect x="0" y="0" width="350" height="62" fill="rgba(3,10,5,.9)"/>
+          <path d="M14 4 L14 58 M336 4 L336 58" class="bbo-wall"/>
+          ${obstacles}
+          <g class="bbo-buzz" transform="translate(326 20)">
+            <rect x="0" y="0" width="12" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="2.4"/>
+            <circle cx="6" cy="11" r="3.4" fill="currentColor"/>
+          </g>
+          <circle class="bbo-dot" cx="${dx}" cy="31" r="5.4"/>
+        </svg>
+        <span class="bbo-nv"></span>
+      </div>
+      <div class="bbo-tag">${row.saved ? 'BUZZER FOUND' : row.out ? 'OFF THE LINE' : 'HANDS OUT'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="bbo-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('bbo-', ctx, 'NIGHT VISION')}
+    <div class="bbo-lanes">${rows}</div>
+    ${_bbArenaFoot('bbo-', 'THIRTY SECONDS OF LIGHT', 'THEN NONE', 'EVERY TOUCH IS FIVE SECONDS')}
+  </div>`;
+}
+
+// ── the fallback: the original podium stage, for borrowed comps ──
+function _bbArenaGenericStage(ctx) {
+  const podiums = _bbArenaRows(ctx).map(row => `<div class="bbar-podium ${row.cls}">
+      <div class="bbar-frame">${_bbAvatar(row.name, 84)}</div>
+      <div class="bbar-name">${_bbEsc(row.name)}</div>
+      <div class="bbar-meter"><i style="width:${row.pct}%"></i></div>
+      <div class="bbar-score">${row.score}</div>
+      <div class="bbar-tag">${row.saved ? 'OFF THE BLOCK' : row.out ? 'STAYS NOMINATED' : 'ON THE BLOCK'}</div>
+    </div>`).join('');
+  return `<div class="bbar-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    <div class="bbar-strip">
+      <span class="bbar-live"><i></i>${ctx.savedShown ? 'DECIDED' : 'LIVE'}</span>
+      <span class="bbar-title-sm">THE ARENA</span>
+      <span class="bbar-clock">THE VOTE IN <b>${ctx.clock}</b></span>
+    </div>
+    <div class="bbar-podiums">${podiums}</div>
+    <div class="bbar-meta"><span>THREE PLAY</span><span>ONE COMES DOWN</span><span>TWO FACE THE HOUSE</span></div>
+  </div>`;
+}
+
+const _BB_ARENA_STAGES = {
+  'bb-arena-flash-wall': _bbArenaFlashWallStage,
+  'bb-arena-house-of-cards': _bbArenaHouseOfCardsStage,
+  'bb-arena-vertigo': _bbArenaVertigoStage,
+  'bb-arena-lockout': _bbArenaLockoutStage,
+  'bb-arena-last-shot': _bbArenaLastShotStage,
+  'bb-arena-unravel': _bbArenaUnravelStage,
+  'bb-arena-blackout': _bbArenaBlackoutStage,
+};
+
 /**
  * The Block Buster.
  *
@@ -17259,33 +17616,139 @@ export function rpBuildBBNominations(ep) {
  * completely differently from being saved by somebody else's veto — and the
  * two who lose have been beaten in public on the night it mattered most.
  */
+/**
+ * THE BLOCK BUSTER — the arena, under pressure.
+ *
+ * The old screen was a scene list: field, competition, winner, done. It read
+ * like any other comp and felt like none of the stakes. This one is built
+ * around the pressure: three podiums, a vote clock counting DOWN as the
+ * reveals climb, and the scores landing worst-first — the floor drops from
+ * under one nominee at a time, and the save is the last thing that happens,
+ * the way it is on the live show.
+ */
 export function rpBuildBBSafety(ep) {
   const act = (ep.acts || []).find(a => a.type === 'safety');
   if (!act) return '';
-  const title = 'THE BLOCK BUSTER';
   const field = act.participants || [];
   const losers = field.filter(n => n !== act.winner);
   const comp = act.competition;
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title, accent: '#3fb950', room: 'bb-live',
-    subtitle: 'Three on the block. One walks off it.',
-    stateKey: `bb_safety_${ep.num}`,
-    header: `<div class="rp-portrait-row" style="justify-content:center;gap:18px;margin-bottom:14px">${field.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
-    scenes: [
-      { text: `All three nominees play, and nobody else can. <strong>${field.join(', ')}</strong> — one of you is coming off the block, and the other two are facing the house.`,
-        players: field, badgeText: 'THE FIELD', badgeClass: 'red' },
-      ...(comp ? [{ text: `Tonight it is <strong>${comp.name}</strong>${comp.category ? ` — a ${comp.category} competition.` : '.'}`,
-        players: [], badgeText: 'THE COMPETITION', badgeClass: 'challenge' }] : []),
-      ...((comp?.beats || []).map(b => ({
-        text: b.text, players: b.players || [], badgeText: b.badgeText || 'ARENA', badgeClass: b.badgeClass || 'challenge',
-      }))),
-      { text: `<strong>${act.winner}</strong> wins, and takes ${pronouns(act.winner).pos} own name off the block. Nobody saved ${pronouns(act.winner).obj} — ${pronouns(act.winner).sub} did it.`,
-        players: [act.winner], badgeText: 'SAVES THEMSELVES', badgeClass: 'green' },
-      { text: `${losers.join(' and ')} stay where they are, beaten in front of everybody, with the vote hours away.`,
-        players: losers, badgeText: 'STILL ON THE BLOCK', badgeClass: 'red' },
-      ..._bbBeats(act),
-    ],
-  });
+  const results = (act.results || []).slice();          // best → worst
+  const worstFirst = results.slice().reverse();
+
+  const stateKey = `bb_safety_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const pv = n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', Sub: 'They' }; } };
+  const vvar = (list, ...salt) => {
+    const key = `${ep.num}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
+  };
+
+  // ── the steps: lockdown → the game → its beats → scores worst-first → the save → aftermath ──
+  const steps = [
+    { kind: 'lockdown' },
+    { kind: 'game' },
+    ...((comp?.beats || []).map(b => ({ kind: 'compbeat', beat: b }))),
+    ...worstFirst.slice(0, -1).map((r, i) => ({ kind: 'rank', r, place: field.length - i })),
+    { kind: 'save' },
+    ...(act.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
+  ];
+  const total = steps.length;
+  const revealed = Math.max(0, state.idx + 1);
+  const done = state.idx >= total - 1;
+
+  // Which podiums have fallen, and whether the save has landed.
+  const rankSteps = steps.map((st, i) => st.kind === 'rank' ? i : -1).filter(i => i >= 0);
+  const fallen = new Set(rankSteps.filter(i => state.idx >= i).map(i => steps[i].r.name));
+  const saveAt = steps.findIndex(st => st.kind === 'save');
+  const savedShown = state.idx >= saveAt;
+
+  // ── the vote clock: counts DOWN as the night climbs toward the save ──
+  const clockFor = idx => {
+    const span = Math.max(1, saveAt);
+    const left = Math.max(0, span - Math.min(idx + 1, span));
+    const mins = 8 + left * 7;
+    return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+  };
+
+  // ── the stage: this game's own instrument, or the podiums for a borrowed comp ──
+  const stageCtx = {
+    field, results, act, fallen, savedShown,
+    clock: clockFor(state.idx), revealed, total,
+  };
+  const stageFn = _BB_ARENA_STAGES[comp?.id] || _bbArenaGenericStage;
+  const stage = stageFn(stageCtx);
+
+  // ── the cards ──
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'lockdown':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${field.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">LOCKDOWN</span></div>
+          <div class="bbns-card-b">The backyard is closed, the house is on the couches, and <strong>${field.map(_bbEsc).join(', ')}</strong> are standing where everybody can see them. ${vvar([
+            'Nobody talks much. There is nothing left to campaign about that a buzzer will not settle first.',
+            'The house has spent three days doing arithmetic. In about ninety seconds, a third of it becomes obsolete.',
+            'Three nominees, one arena, and a vote already scheduled. The next few minutes decide who it is even about.',
+            'Somebody wishes all three of them luck, and all three of them hear how impossible that is.',
+          ], 'open')}</div></div>`;
+      case 'game':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h"><span class="bbns-pill gold">THE GAME</span></div>
+          <div class="bbns-card-b">${comp ? `Tonight it is <strong>${_bbEsc(comp.name)}</strong>${comp.category ? ` — ${_bbEsc(comp.category)}` : ''}. ` : ''}${vvar([
+            'Last chance rules: no throwing this one, no sitting it out, no help from a friend. The only person who can take a nominee off the block tonight is that nominee.',
+            'The whole week narrows to this. Whoever wants it most had better also be whoever plays it best, because those are rarely the same person.',
+            'The house watches from the glass. Every voter in the room is about to have one fewer option, and none of them knows which.',
+            'It is the only competition of the week where losing has a schedule: the vote is tonight.',
+          ], 'game')}</div></div>`;
+      case 'compbeat': {
+        const b = step.beat;
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'ARENA'}</span></div>
+          <div class="bbns-card-b">${b.text}</div></div>`;
+      }
+      case 'rank': {
+        const name = step.r.name;
+        return `<div class="bbns-card bbar-fall">
+          <div class="bbns-card-h">${_bbAvatar(name, 30)}<span class="bbns-pill red">${_bbEsc(name).toUpperCase()} STAYS NOMINATED</span></div>
+          <div class="bbns-card-b">${vvar([
+            `The horn sounds for <strong>${_bbEsc(name)}</strong> first. ${pv(name).Sub} looks at the score, then at the two still playing, and understands exactly what the rest of the night is now.`,
+            `<strong>${_bbEsc(name)}</strong> is out of it. The podium light goes cold, and the vote — hours away — just got ${pv(name).obj} squarely in its arithmetic.`,
+            `<strong>${_bbEsc(name)}</strong> falls out of the arena at ${Number(step.r.score).toFixed(1)}. Nobody says anything from the glass, which says everything.`,
+            `The board settles and <strong>${_bbEsc(name)}</strong> is done. ${pv(name).Sub} steps back from the podium slowly, like leaving it faster would make it truer.`,
+          ], name, 'fall')}</div></div>`;
+      }
+      case 'save':
+        return `<div class="bbns-card is-final bbar-savecard">
+          <div class="bbns-card-h">${_bbAvatar(act.winner, 30)}<span class="bbns-pill green">SAVES THEMSELVES</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(act.winner)}</strong> wins the Block Buster and takes ${pv(act.winner).pos} own name off the block. Nobody saved ${pv(act.winner).obj} — ${pv(act.winner).sub} did it, in front of everybody, with the vote already on the schedule. <strong>${losers.map(_bbEsc).join(' and ')}</strong> face the house tonight.</div></div>`;
+      case 'beat': {
+        const b = step.beat;
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+            <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
+          <div class="bbns-card-b">${b.text}${_bbfEffects(b)}</div></div>`;
+      }
+      default:
+        return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    }
+  };
+
+  return `<div class="rp-page bb-room bb-live bbar">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px #f0a50033;margin-bottom:4px">THE BLOCK BUSTER</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Three on the block. One walks off it. The vote is tonight.</div>
+    ${stage}
+    <div class="bbns-cards">${steps.map((st, i) => card(st, i)).join('')}</div>
+    <div class="bbns-controls" id="bbar-controls-${ep.num}">
+      <button class="rp-btn" onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=Math.min(${total - 1},(_tvState['${stateKey}'].idx??-1)+1);(function(){const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);const i=vpScreens.findIndex(s=>s.id&&String(s.id).startsWith('bb-safety'));if(i>=0)vpCurrentScreen=i;renderVPScreen();}})()">${done ? 'Complete' : state.idx < 0 ? 'Go to the arena' : 'Reveal next'}</button>
+      <button class="rp-btn rp-btn-ghost" onclick="if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${total - 1};(function(){const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);const i=vpScreens.findIndex(s=>s.id&&String(s.id).startsWith('bb-safety'));if(i>=0)vpCurrentScreen=i;renderVPScreen();}})()">Reveal all</button>
+      <span class="bbns-counter">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /**

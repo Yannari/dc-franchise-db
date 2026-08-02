@@ -18,6 +18,7 @@ import { ENDURANCE_COMPS } from './endurance.js';
 import { MENTAL_COMPS } from './mental.js';
 import { PHYSICAL_COMPS } from './physical.js';
 import { LUCK_COMPS } from './luck.js';
+import { ARENA_COMPETITIONS } from './arena.js';
 
 /**
  * How strongly a written competition outranks a fallback.
@@ -48,6 +49,7 @@ export const BB_COMPETITIONS = [
   ...MENTAL_COMPS,
   ...PHYSICAL_COMPS,
   ...LUCK_COMPS,
+  ...ARENA_COMPETITIONS,
 ].map(production);
 
 export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) => {
@@ -58,5 +60,5 @@ export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) =>
 /** Which competitions can serve a given slot — the dispatcher's own filter. */
 export const competitionsFor = type => BB_COMPETITIONS.filter(c => c.types.includes(type));
 
-export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS };
+export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS };
 export default BB_COMPETITIONS;

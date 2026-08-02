@@ -1168,6 +1168,445 @@
     .bbop-secret   { margin-top:6px; padding:5px 9px; border-radius:6px; font-size:10.5px;
                      background:rgba(248,81,73,.08); border-left:3px solid rgba(248,81,73,.5); color:#ffb3ae; }
 
+    /* ── THE BLOCK BUSTER: the arena under pressure ──
+       Three podiums, a vote clock that counts DOWN as the reveals climb, and
+       a stage that goes from alert-amber to decided-green the moment the
+       buzzer lands. The pressure is the identity. */
+    .bbar-stage    { position:relative; margin:0 0 16px; padding:14px 14px 12px; border-radius:12px;
+                     border:1px solid rgba(240,165,0,.35); background:
+                     radial-gradient(ellipse at 50% -20%, rgba(240,165,0,.14), transparent 60%),
+                     linear-gradient(180deg, #14100a, #0d1117 78%); overflow:hidden; }
+    .bbar-stage.is-decided { border-color:rgba(63,185,80,.4); }
+    .bbar-strip    { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bbar-live     { display:inline-flex; align-items:center; gap:5px; color:#f85149;
+                     border:1px solid rgba(248,81,73,.5); border-radius:4px; padding:2px 8px; }
+    .bbar-live i   { width:6px; height:6px; border-radius:50%; background:#f85149;
+                     animation:bbarBlink 1.1s steps(2) infinite; }
+    .is-decided .bbar-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .is-decided .bbar-live i { background:#3fb950; animation:none; }
+    @keyframes bbarBlink { 50% { opacity:.15; } }
+    .bbar-title-sm { color:#f0c674; }
+    .bbar-clock    { margin-left:auto; color:#8b949e; }
+    .bbar-clock b  { color:#f0a500; font-size:12px; letter-spacing:2px; }
+    .bbar-podiums  { display:flex; gap:10px; justify-content:center; }
+    .bbar-podium   { flex:1; max-width:170px; text-align:center; padding:10px 8px 8px; border-radius:10px;
+                     border:1px solid rgba(240,165,0,.25); background:rgba(240,165,0,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bbar-podium.is-out   { opacity:.55; border-color:rgba(248,81,73,.4); background:rgba(248,81,73,.05); }
+    .bbar-podium.is-saved { border-color:rgba(63,185,80,.6); background:rgba(63,185,80,.09);
+                     box-shadow:0 0 24px rgba(63,185,80,.18); }
+    .bbar-frame    { display:flex; justify-content:center; margin-bottom:6px; }
+    .bbar-frame img{ border-radius:10px; }
+    .bbar-name     { font-family:var(--font-display); font-size:14px; color:#e6edf3; letter-spacing:.5px; }
+    .bbar-meter    { height:5px; margin:7px 10px 4px; border-radius:3px; background:rgba(255,255,255,.07);
+                     overflow:hidden; }
+    .bbar-meter i  { display:block; height:100%; border-radius:3px; background:#f0a500;
+                     transition:width .5s ease; }
+    .is-saved .bbar-meter i { background:#3fb950; }
+    .is-out .bbar-meter i   { background:#f85149; }
+    .bbar-score    { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#c9d1d9; }
+    .bbar-tag      { margin-top:5px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#8b949e; }
+    .is-saved .bbar-tag { color:#7ee2a8; }
+    .is-out .bbar-tag   { color:#ffb3ae; }
+    .bbar-meta     { display:flex; justify-content:center; gap:18px; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#6e7681; }
+    .bbar-fall .bbns-card-h .bbns-pill { animation:none; }
+    .bbar-savecard { border-color:rgba(63,185,80,.5); }
+    @media (prefers-reduced-motion: reduce) { .bbar-live i { animation:none; } }
+
+    /* ══════════════════════════════════════════════════════════════════
+       BLOCK BUSTER ARENA GAMES — one stage per game
+       Seven arena-exclusive games, seven instruments. Each prefix owns its
+       palette and its primitive; nothing is shared but the pressure strip
+       (LIVE / room / THE VOTE IN mm:ss) and the three-word footer.
+       ══════════════════════════════════════════════════════════════════ */
+
+    /* ── bfw- FLASH WALL: the memory wall. Deep violet, symbol tiles that
+       light one per remembered symbol. A dead row goes dark; the saved row
+       burns. ── */
+    .bfw-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(148,110,255,.35);
+                     background:radial-gradient(ellipse at 50% -25%, rgba(148,110,255,.2), transparent 62%),
+                       linear-gradient(180deg,#150f28,#0b0a14 80%); }
+    .bfw-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .bfw-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bfw-live      { display:inline-flex; align-items:center; gap:5px; color:#c4a2ff;
+                     border:1px solid rgba(148,110,255,.5); border-radius:4px; padding:2px 8px; }
+    .bfw-live i    { width:6px; height:6px; border-radius:50%; background:#a97bff;
+                     animation:bfwPulse 1.2s ease-in-out infinite; }
+    .bfw-stage.is-decided .bfw-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bfw-stage.is-decided .bfw-live i { background:#3fb950; animation:none; }
+    @keyframes bfwPulse { 50% { opacity:.2; } }
+    .bfw-title     { color:#d9c6ff; }
+    .bfw-clock     { margin-left:auto; color:#8b83a8; }
+    .bfw-clock b   { color:#c4a2ff; font-size:12px; letter-spacing:2px; }
+    .bfw-grid      { display:flex; flex-direction:column; gap:8px; }
+    .bfw-row       { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+                     padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(148,110,255,.2); background:rgba(148,110,255,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bfw-row.is-out   { opacity:.45; border-color:rgba(248,81,73,.3); background:rgba(20,10,24,.6); }
+    .bfw-row.is-saved { border-color:rgba(126,226,168,.55); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 26px rgba(126,226,168,.18); }
+    .bfw-who       { display:flex; align-items:center; gap:7px; min-width:130px; }
+    .bfw-who b     { font-size:12px; color:#efe9ff; }
+    .bfw-tiles     { display:flex; gap:5px; flex-wrap:wrap; flex:1; min-width:150px; }
+    .bfw-tile      { width:24px; height:24px; border-radius:5px; display:flex;
+                     align-items:center; justify-content:center; color:#3a3055;
+                     background:rgba(255,255,255,.03); border:1px solid rgba(148,110,255,.14);
+                     transition:color .3s, box-shadow .3s, background .3s; }
+    .bfw-tile svg  { width:14px; height:14px; }
+    .bfw-tile.is-lit { color:#c4a2ff; background:rgba(148,110,255,.16);
+                     border-color:rgba(148,110,255,.5); box-shadow:0 0 10px rgba(148,110,255,.4);
+                     animation:bfwLit .5s ease-out both; }
+    .is-saved .bfw-tile.is-lit { color:#9df5c0; border-color:rgba(63,185,80,.55);
+                     background:rgba(63,185,80,.14); box-shadow:0 0 12px rgba(63,185,80,.4); }
+    .is-out .bfw-tile.is-lit { color:#6a4f5a; box-shadow:none; background:rgba(255,255,255,.03); }
+    @keyframes bfwLit { from { transform:scale(.7); opacity:0; } to { transform:none; opacity:1; } }
+    .bfw-len       { font-family:ui-monospace,Consolas,monospace; font-size:11px; color:#d9c6ff; }
+    .bfw-len i     { font-style:normal; font-size:7.5px; letter-spacing:1.4px; color:#6f6490;
+                     margin-right:5px; }
+    .bfw-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#efe9ff;
+                     min-width:38px; text-align:right; }
+    .bfw-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#645b85; }
+    @media (prefers-reduced-motion: reduce) {
+      .bfw-live i, .bfw-tile.is-lit { animation:none; }
+    }
+
+    /* ── bsh- HOUSE OF CARDS: felt table green and amber. Towers of stacked
+       card tents; a fallen tower is scattered on the felt. ── */
+    .bsh-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(227,179,65,.32);
+                     background:radial-gradient(ellipse at 50% 120%, rgba(30,90,55,.55), transparent 60%),
+                       linear-gradient(180deg,#0d1613,#0b1210 80%); }
+    .bsh-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bsh-strip     { display:flex; align-items:center; gap:12px; margin-bottom:10px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bsh-live      { display:inline-flex; align-items:center; gap:5px; color:#e3b341;
+                     border:1px solid rgba(227,179,65,.5); border-radius:4px; padding:2px 8px; }
+    .bsh-live i    { width:6px; height:6px; border-radius:50%; background:#e3b341;
+                     animation:bshBlink 1.1s steps(2) infinite; }
+    .bsh-stage.is-decided .bsh-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bsh-stage.is-decided .bsh-live i { background:#3fb950; animation:none; }
+    @keyframes bshBlink { 50% { opacity:.15; } }
+    .bsh-title     { color:#d8c58a; }
+    .bsh-clock     { margin-left:auto; color:#7f8f83; }
+    .bsh-clock b   { color:#e3b341; font-size:12px; letter-spacing:2px; }
+    .bsh-felt      { display:flex; gap:10px; justify-content:center; align-items:flex-end;
+                     flex-wrap:wrap; padding:8px 4px 0; }
+    .bsh-col       { flex:1 1 150px; max-width:200px; text-align:center; }
+    .bsh-build     { display:flex; flex-direction:column; justify-content:flex-end; align-items:center;
+                     min-height:132px; }
+    .bsh-level     { width:58px; }
+    .bsh-tent      { width:58px; height:26px; }
+    .bsh-tent svg,
+    .bsh-deck svg  { width:100%; height:100%; display:block; }
+    .bsh-deck      { width:58px; height:7px; margin:1px 0 0; }
+    .bsh-rubble    { width:88px; height:22px; opacity:.75; }
+    .bsh-rubble svg{ width:100%; height:100%; display:block; }
+    .bsh-table     { height:5px; border-radius:3px; margin:3px 8px 8px;
+                     background:linear-gradient(180deg,#2b6a45,#17402a);
+                     box-shadow:0 3px 10px rgba(0,0,0,.5); transition:transform .4s ease; }
+    .bsh-col.is-out .bsh-table   { transform:rotate(-2.4deg); background:linear-gradient(180deg,#6a3030,#3d1c1c); }
+    .bsh-col.is-saved .bsh-table { background:linear-gradient(180deg,#3fb950,#1d6b31);
+                     box-shadow:0 0 20px rgba(63,185,80,.35); }
+    .bsh-col.is-out .bsh-build   { opacity:.6; }
+    .bsh-col.is-saved .bsh-build { filter:drop-shadow(0 0 12px rgba(227,179,65,.45)); }
+    .bsh-who       { display:flex; align-items:center; justify-content:center; gap:6px; }
+    .bsh-who b     { font-size:12px; color:#eae4d2; }
+    .bsh-h         { margin-top:4px; font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     color:#d8c58a; }
+    .bsh-h i       { font-style:normal; font-size:7.5px; letter-spacing:1.4px; color:#6d7d72;
+                     margin-right:5px; }
+    .bsh-h em      { font-style:normal; color:#eae4d2; margin-left:6px; }
+    .bsh-horn      { display:flex; align-items:center; gap:9px; justify-content:center; margin-top:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.6px;
+                     color:#6d7d72; }
+    .bsh-horn-bar  { display:flex; gap:3px; }
+    .bsh-horn-bar i{ width:9px; height:5px; border-radius:1.5px; background:rgba(255,255,255,.07); }
+    .bsh-horn-bar i.is-blown { background:#e3b341; box-shadow:0 0 7px rgba(227,179,65,.55); }
+    .bsh-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:10px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#5f6f65; }
+    @media (prefers-reduced-motion: reduce) {
+      .bsh-live i { animation:none; } .bsh-table { transition:none; }
+    }
+
+    /* ── bvg- VERTIGO: steel and teal. Circular mazes drawn as broken rings,
+       one ball each; a lost maze tilts and the ball leaves the board. ── */
+    .bvg-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(86,168,180,.35);
+                     background:radial-gradient(ellipse at 50% -20%, rgba(86,168,180,.18), transparent 60%),
+                       linear-gradient(180deg,#0d1719,#0a1013 80%); }
+    .bvg-stage.is-decided { border-color:rgba(126,226,168,.45); }
+    .bvg-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bvg-live      { display:inline-flex; align-items:center; gap:5px; color:#7fd4dd;
+                     border:1px solid rgba(86,168,180,.5); border-radius:4px; padding:2px 8px; }
+    .bvg-live i    { width:6px; height:6px; border-radius:50%; background:#56a8b4;
+                     animation:bvgSweep 1.6s linear infinite; }
+    .bvg-stage.is-decided .bvg-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bvg-stage.is-decided .bvg-live i { background:#3fb950; animation:none; }
+    @keyframes bvgSweep { 50% { transform:scale(1.5); opacity:.35; } }
+    .bvg-title     { color:#a9d8de; }
+    .bvg-clock     { margin-left:auto; color:#7d8f93; }
+    .bvg-clock b   { color:#7fd4dd; font-size:12px; letter-spacing:2px; }
+    .bvg-decks     { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .bvg-col       { flex:1 1 150px; max-width:200px; text-align:center; }
+    .bvg-maze      { max-width:150px; margin:0 auto; transition:transform .45s ease; }
+    .bvg-maze svg  { width:100%; height:auto; display:block; color:#7fd4dd; }
+    .bvg-col.is-out .bvg-maze   { transform:rotate(7deg); opacity:.5; }
+    .bvg-col.is-saved .bvg-maze { filter:drop-shadow(0 0 14px rgba(63,185,80,.45)); }
+    .bvg-ball      { fill:#e6edf3; stroke:rgba(0,0,0,.55); stroke-width:1;
+                     filter:drop-shadow(0 0 6px rgba(230,237,243,.55)); transition:cx .5s ease, cy .5s ease; }
+    .bvg-col.is-out .bvg-ball   { fill:#f85149; filter:none; }
+    .bvg-col.is-saved .bvg-ball { fill:#3fb950; filter:drop-shadow(0 0 10px rgba(63,185,80,.8)); }
+    .bvg-who       { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:6px; }
+    .bvg-who b     { font-size:12px; color:#dceff2; }
+    .bvg-read      { margin-top:3px; font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     color:#dceff2; }
+    .bvg-read i    { display:block; font-style:normal; font-size:7.5px; letter-spacing:1.5px;
+                     color:#6d8388; margin-bottom:2px; }
+    .bvg-col.is-saved .bvg-read i { color:#7ee2a8; }
+    .bvg-col.is-out .bvg-read i   { color:#ffb3ae; }
+    .bvg-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#5d6f73; }
+    @media (prefers-reduced-motion: reduce) {
+      .bvg-live i { animation:none; } .bvg-maze, .bvg-ball { transition:none; }
+    }
+
+    /* ── blk- LOCKOUT: industrial black and red LED. A keypad each, a
+       four-digit display, and one door status that flips green. ── */
+    .blk-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(248,81,73,.32);
+                     background:repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0 8px, transparent 8px 16px),
+                       linear-gradient(180deg,#141011,#0a0a0b 80%); }
+    .blk-stage.is-decided { border-color:rgba(63,185,80,.45); }
+    .blk-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .blk-live      { display:inline-flex; align-items:center; gap:5px; color:#ff6b63;
+                     border:1px solid rgba(248,81,73,.5); border-radius:3px; padding:2px 8px; }
+    .blk-live i    { width:6px; height:6px; border-radius:1px; background:#f85149;
+                     animation:blkTick 1s steps(2) infinite; }
+    .blk-stage.is-decided .blk-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .blk-stage.is-decided .blk-live i { background:#3fb950; animation:none; }
+    @keyframes blkTick { 50% { opacity:.12; } }
+    .blk-title     { color:#c9a09d; }
+    .blk-clock     { margin-left:auto; color:#847c7c; }
+    .blk-clock b   { color:#ff6b63; font-size:12px; letter-spacing:2px; }
+    .blk-panels    { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .blk-panel     { flex:1 1 160px; max-width:210px; padding:10px; border-radius:8px;
+                     border:1px solid rgba(255,255,255,.09);
+                     background:linear-gradient(180deg,#171719,#0e0e10);
+                     box-shadow:inset 0 1px 0 rgba(255,255,255,.05); transition:border-color .3s, opacity .3s; }
+    .blk-panel.is-out   { opacity:.55; border-color:rgba(248,81,73,.45); }
+    .blk-panel.is-saved { border-color:rgba(63,185,80,.6); box-shadow:0 0 22px rgba(63,185,80,.2); }
+    .blk-head      { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+    .blk-head b    { font-size:12px; color:#e6edf3; overflow:hidden; text-overflow:ellipsis;
+                     white-space:nowrap; }
+    .blk-led       { margin-left:auto; width:8px; height:8px; border-radius:50%;
+                     background:#3a2020; box-shadow:inset 0 0 3px rgba(0,0,0,.8); }
+    .blk-panel.is-out .blk-led   { background:#f85149; box-shadow:0 0 8px rgba(248,81,73,.7); }
+    .blk-panel.is-saved .blk-led { background:#3fb950; box-shadow:0 0 9px rgba(63,185,80,.8); }
+    .blk-display   { display:flex; gap:5px; justify-content:center; padding:7px 6px; border-radius:5px;
+                     background:#08090a; border:1px solid rgba(255,255,255,.07); }
+    .blk-dig       { font-family:ui-monospace,Consolas,monospace; font-size:20px; font-weight:700;
+                     letter-spacing:2px; color:#2a1414; width:18px; text-align:center; }
+    .blk-dig.is-on { color:#ff4a41; text-shadow:0 0 10px rgba(248,81,73,.8);
+                     animation:blkPunch .35s ease-out both; }
+    .blk-panel.is-saved .blk-dig.is-on { color:#3fb950; text-shadow:0 0 10px rgba(63,185,80,.8); }
+    @keyframes blkPunch { from { transform:translateY(-3px); opacity:.2; } to { transform:none; opacity:1; } }
+    .blk-pad       { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin:9px 0; }
+    .blk-pad i     { height:12px; border-radius:2px; background:rgba(255,255,255,.05);
+                     border:1px solid rgba(255,255,255,.06); }
+    .blk-pad i.is-hit { background:rgba(248,81,73,.22); border-color:rgba(248,81,73,.4); }
+    .blk-panel.is-saved .blk-pad i.is-hit { background:rgba(63,185,80,.2); border-color:rgba(63,185,80,.4); }
+    .blk-door      { display:flex; align-items:center; justify-content:center; gap:6px; padding:5px;
+                     border-radius:4px; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:2px; color:#7d7373; background:rgba(255,255,255,.03);
+                     border:1px dashed rgba(255,255,255,.1); }
+    .blk-x         { width:13px; height:13px; color:#f85149; }
+    .blk-panel.is-out .blk-door   { color:#ffb3ae; border-color:rgba(248,81,73,.4); }
+    .blk-panel.is-saved .blk-door { color:#7ee2a8; border-style:solid;
+                     border-color:rgba(63,185,80,.5); background:rgba(63,185,80,.1); }
+    .blk-score     { margin-top:6px; text-align:center; font-family:ui-monospace,Consolas,monospace;
+                     font-size:11px; color:#c9d1d9; }
+    .blk-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#6b6363; }
+    @media (prefers-reduced-motion: reduce) {
+      .blk-live i, .blk-dig.is-on { animation:none; }
+    }
+
+    /* ── bls- LAST SHOT: midway crimson and gold. A rail of ten targets per
+       nominee and a rack of twelve balls that never restocks. ── */
+    .bls-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(214,80,70,.35);
+                     background:radial-gradient(ellipse at 50% -20%, rgba(240,180,60,.16), transparent 62%),
+                       linear-gradient(180deg,#1b0f0e,#120b0b 80%); }
+    .bls-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .bls-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bls-live      { display:inline-flex; align-items:center; gap:5px; color:#ffb45c;
+                     border:1px solid rgba(240,180,60,.5); border-radius:12px; padding:2px 9px; }
+    .bls-live i    { width:6px; height:6px; border-radius:50%; background:#f0b43c;
+                     animation:blsBulb 1.4s ease-in-out infinite; }
+    .bls-stage.is-decided .bls-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bls-stage.is-decided .bls-live i { background:#3fb950; animation:none; }
+    @keyframes blsBulb { 50% { opacity:.3; } }
+    .bls-title     { color:#f0c98a; }
+    .bls-clock     { margin-left:auto; color:#997f79; }
+    .bls-clock b   { color:#ffb45c; font-size:12px; letter-spacing:2px; }
+    .bls-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .bls-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(240,180,60,.2); background:rgba(240,180,60,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .bls-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.35); background:rgba(60,20,20,.35); }
+    .bls-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.15); }
+    .bls-who       { display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+    .bls-who b     { font-size:12px; color:#f7ece0; }
+    .bls-count     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#f0c98a; }
+    .bls-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#f7ece0;
+                     min-width:38px; text-align:right; }
+    .bls-rail      { display:flex; align-items:flex-end; gap:4px; flex-wrap:wrap;
+                     padding:4px 4px 0; border-bottom:2px solid rgba(240,180,60,.3); }
+    .bls-t         { width:22px; height:29px; display:block; transform-origin:50% 100%;
+                     transition:transform .45s ease, opacity .45s ease; }
+    .bls-t svg     { width:100%; height:100%; display:block; }
+    .bls-t.is-down { transform:rotate(74deg) translateY(3px); opacity:.35; }
+    .bls-lane.is-saved .bls-t.is-down { opacity:.5;
+                     filter:drop-shadow(0 0 6px rgba(63,185,80,.5)); }
+    .bls-ammo      { display:flex; align-items:center; gap:4px; margin-top:7px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.5px;
+                     color:#8b746c; flex-wrap:wrap; }
+    .bls-ammo i    { width:8px; height:8px; border-radius:50%; background:#e8dcc4;
+                     box-shadow:inset -1px -1px 2px rgba(0,0,0,.35); }
+    .bls-ammo i.bls-lbl { display:none; }
+    .bls-ammo i.is-spent { background:rgba(255,255,255,.06); box-shadow:none; }
+    .bls-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#7a6660; }
+    @media (prefers-reduced-motion: reduce) {
+      .bls-live i { animation:none; } .bls-t { transition:none; }
+    }
+
+    /* ── bur- UNRAVEL: hemp and rust. Fifty feet of rope drawn as one line
+       per nominee; a marker runs it, and a lost rope re-knots backwards. ── */
+    .bur-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(186,140,90,.35);
+                     background:radial-gradient(ellipse at 50% -25%, rgba(186,140,90,.16), transparent 60%),
+                       linear-gradient(180deg,#171208,#100d09 80%); }
+    .bur-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .bur-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bur-live      { display:inline-flex; align-items:center; gap:5px; color:#d8a86c;
+                     border:1px solid rgba(186,140,90,.5); border-radius:4px; padding:2px 8px; }
+    .bur-live i    { width:6px; height:6px; border-radius:50%; background:#c07c3a;
+                     animation:burTug 1.5s ease-in-out infinite; }
+    .bur-stage.is-decided .bur-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .bur-stage.is-decided .bur-live i { background:#3fb950; animation:none; }
+    @keyframes burTug { 50% { transform:translateX(2px); opacity:.4; } }
+    .bur-title     { color:#e0c49a; }
+    .bur-clock     { margin-left:auto; color:#8c7c6a; }
+    .bur-clock b   { color:#d8a86c; font-size:12px; letter-spacing:2px; }
+    .bur-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .bur-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(186,140,90,.2); background:rgba(186,140,90,.05);
+                     transition:opacity .3s, border-color .3s; }
+    .bur-lane.is-out   { opacity:.55; border-color:rgba(248,81,73,.32); }
+    .bur-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.07); }
+    .bur-who       { display:flex; align-items:center; gap:7px; }
+    .bur-who b     { font-size:12px; color:#f2e6d3; }
+    .bur-score     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:12px;
+                     color:#f2e6d3; }
+    .bur-rope      { margin:4px 0 2px; }
+    .bur-rope svg  { width:100%; height:64px; display:block; color:#a97a45; }
+    .bur-slack     { fill:none; stroke:rgba(186,140,90,.22); stroke-width:5;
+                     stroke-linecap:round; stroke-linejoin:round; }
+    .bur-run       { fill:none; stroke:#c9903f; stroke-width:5; stroke-linecap:round;
+                     stroke-linejoin:round; transition:stroke-dashoffset .6s ease; }
+    .bur-lane.is-out .bur-run   { stroke:#a33d33; }
+    .bur-lane.is-saved .bur-run { stroke:#3fb950; }
+    .bur-tangle    { color:rgba(186,140,90,.55); }
+    .bur-key       { color:#8d7c63; }
+    .bur-lane.is-saved .bur-key { color:#e3b341; filter:drop-shadow(0 0 8px rgba(227,179,65,.7)); }
+    .bur-mark      { fill:#f2e6d3; stroke:rgba(0,0,0,.5); stroke-width:1;
+                     transition:cx .6s ease, cy .6s ease; }
+    .bur-lane.is-out .bur-mark   { fill:#f85149; }
+    .bur-lane.is-saved .bur-mark { fill:#3fb950; }
+    .bur-tag       { font-family:ui-monospace,Consolas,monospace; font-size:7.5px; letter-spacing:1.6px;
+                     color:#8c7c6a; }
+    .bur-lane.is-out .bur-tag   { color:#ffb3ae; }
+    .bur-lane.is-saved .bur-tag { color:#7ee2a8; }
+    .bur-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#7b6c5c; }
+    @media (prefers-reduced-motion: reduce) {
+      .bur-live i { animation:none; } .bur-run, .bur-mark { transition:none; }
+    }
+
+    /* ── bbo- BLACKOUT: night vision green on near-black. A corridor each,
+       obstacles barely visible, and one dot crossing from memory. ── */
+    .bbo-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(60,220,120,.3);
+                     background:radial-gradient(ellipse at 50% -20%, rgba(60,220,120,.12), transparent 60%),
+                       linear-gradient(180deg,#050b07,#030604 80%); }
+    .bbo-stage.is-decided { border-color:rgba(63,185,80,.55); }
+    .bbo-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .bbo-live      { display:inline-flex; align-items:center; gap:5px; color:#6cf5a0;
+                     border:1px solid rgba(60,220,120,.45); border-radius:2px; padding:2px 8px; }
+    .bbo-live i    { width:6px; height:6px; border-radius:50%; background:#3cdc78;
+                     animation:bboScan 1.8s linear infinite; }
+    .bbo-stage.is-decided .bbo-live i { animation:none; }
+    @keyframes bboScan { 0%,100% { opacity:1; } 45% { opacity:.15; } }
+    .bbo-title     { color:#8ce0ae; }
+    .bbo-clock     { margin-left:auto; color:#5c7d69; }
+    .bbo-clock b   { color:#6cf5a0; font-size:12px; letter-spacing:2px; }
+    .bbo-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .bbo-lane      { padding:8px 10px; border-radius:8px; max-width:100%;
+                     border:1px solid rgba(60,220,120,.16); background:rgba(10,24,15,.6);
+                     transition:opacity .3s, border-color .3s; }
+    .bbo-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.3); }
+    .bbo-lane.is-saved { border-color:rgba(63,185,80,.55); box-shadow:0 0 24px rgba(63,185,80,.16); }
+    .bbo-who       { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+    .bbo-who b     { font-size:12px; color:#c9f2d8; }
+    .bbo-score     { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:12px;
+                     color:#c9f2d8; }
+    .bbo-corridor  { position:relative; border-radius:5px; overflow:hidden; }
+    .bbo-corridor svg { width:100%; height:58px; display:block; color:#3cdc78; }
+    /* the night-vision layer: scanlines and a faint vertical grain */
+    .bbo-nv        { position:absolute; inset:0; pointer-events:none;
+                     background:repeating-linear-gradient(0deg, rgba(0,0,0,.42) 0 1px, transparent 1px 3px),
+                       repeating-linear-gradient(90deg, rgba(60,220,120,.05) 0 2px, transparent 2px 5px),
+                       radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,.6) 100%); }
+    .bbo-wall      { stroke:rgba(60,220,120,.35); stroke-width:2; fill:none; }
+    .bbo-obs       { fill:#3cdc78; }
+    .bbo-buzz      { color:rgba(60,220,120,.35); }
+    .bbo-lane.is-saved .bbo-buzz { color:#7ee2a8; filter:drop-shadow(0 0 9px rgba(63,185,80,.8)); }
+    .bbo-dot       { fill:#8cffbc; filter:drop-shadow(0 0 7px rgba(60,220,120,.8));
+                     transition:cx .6s ease; }
+    .bbo-lane.is-out .bbo-dot   { fill:#f85149; filter:none; }
+    .bbo-tag       { margin-top:4px; font-family:ui-monospace,Consolas,monospace; font-size:7.5px;
+                     letter-spacing:1.6px; color:#5c7d69; }
+    .bbo-lane.is-out .bbo-tag   { color:#ffb3ae; }
+    .bbo-lane.is-saved .bbo-tag { color:#7ee2a8; }
+    .bbo-foot      { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; letter-spacing:1.8px;
+                     color:#4e6b59; }
+    @media (prefers-reduced-motion: reduce) {
+      .bbo-live i { animation:none; } .bbo-dot { transition:none; }
+    }
+
     /* Eviction night: the four-stage chain under a ballot — wanted, asked,
        said, cast. A flip glows; the final stage is the one that counts. */
     .bbev-chain    { margin-top:9px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.08);

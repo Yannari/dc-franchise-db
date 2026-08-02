@@ -1372,10 +1372,81 @@ export function simulateBBWeek(options = {}) {
     // the week behave as if it had already aired — the third nominee lost
     // their place on the wall, sat out the campaigning, and read as safe
     // three days before anybody was.
-    heldSafetyAct = addBeats(
-      { type: 'safety', mode: safetyMode, participants: [...week.blockBeforeSafety],
-        winner: saved, results, competition: arena, nominees: [...nominees] },
-      { nominees: [...nominees], vetoWinner: week.vetoWinner || null });
+    // The arena is a competition the whole house watched — it writes respect
+    // and comp fear like any other win, and doubly so: this one was won with
+    // the winner's life on the line.
+    recordCompDominance(arena, house, week.num);
+    // The Block Buster act does NOT draw from the general event pool. The
+    // scheduler kept decorating the most pressurised ninety seconds of the
+    // week with kitchen texture — somebody starting a card game in the middle
+    // of a last-chance competition — because almost no event gates the
+    // 'safety' act. The moment has exactly four stories and they are always
+    // the same four: the save, each defeat, and the room doing arithmetic.
+    // They are written here, with their consequences.
+    heldSafetyAct = { type: 'safety', mode: safetyMode, participants: [...week.blockBeforeSafety],
+      winner: saved, results, competition: arena, nominees: [...nominees], socialBeats: [] };
+    {
+      const pick = (lines, ...salt) => {
+        const key = `${week.num}|${salt.join('|')}`;
+        let h = 0;
+        for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+        return lines[h % lines.length];
+      };
+      const stillUp = week.blockBeforeSafety.filter(n => n !== saved);
+      const winnerStats = pStats(saved);
+      if (seasonConfig.popularityEnabled !== false) {
+        gs.popularity ||= {};
+        gs.popularity[saved] = (gs.popularity[saved] || 0) + 1;
+      }
+      heldSafetyAct.socialBeats.push({
+        text: pick([
+          `${saved} hits the buzzer and does not let go of it. Whatever composure ${pronouns(saved).sub} carried into the arena is gone — this was not a competition win, it was a stay of execution, and everybody in the room can tell the difference.`,
+          `${saved} does not celebrate so much as exhale for the first time in four days. The block is a place, and ${pronouns(saved).sub} just walked out of it in front of everybody.`,
+          `${saved} looks at the two podiums beside ${pronouns(saved).obj} before looking at anything else. Winning this meant somebody else did not, and the somebody is standing right there.`,
+          `The horn goes and ${saved} sits down on the arena floor, right there, in front of the house. Nobody laughs.`,
+        ], saved, 'save'),
+        players: [saved], badgeText: 'OFF THE BLOCK', badgeClass: 'green',
+        eventId: 'arena-save', category: 'ceremonies', location: 'backyard',
+        effects: [{ kind: 'pop', text: `${saved} plays well on camera`, delta: 1 }],
+      });
+      for (const loser of stillUp) {
+        const temper = pStats(loser).temperament;
+        try { rememberStrategy(loser, saved, 'beat-me-in-the-arena', week.num, 1, { act: 'safety' }); } catch { /* texture */ }
+        heldSafetyAct.socialBeats.push({
+          text: pick(temper <= 4 ? [
+            `${loser} kicks the podium hard enough that a producer somewhere flinches. Beaten, in public, with the vote hours away — there is no version of this ${pronouns(loser).sub} can stand.`,
+            `${loser} says nothing, which for ${loser} is the loudest possible reaction. The jaw does the talking.`,
+            `${loser} walks off the arena floor before the horn finishes sounding. Somebody starts to say something kind and thinks better of it.`,
+            `${loser} looks at the scoreboard like it owes ${pronouns(loser).obj} money. Hours from the vote, and the last chance just went to somebody else.`,
+          ] : [
+            `${loser} claps for ${saved}, because that is who ${loser} is — and then holds the clap a half-second too long, because the vote is tonight and the last door just closed.`,
+            `${loser} stands very still on the podium while the house files out. Losing the arena is not losing the vote. ${pronouns(loser).Sub} repeats that a few times.`,
+            `${loser} congratulates ${saved} and means it, mostly. There is a version of this night where that buzzer was ${pronouns(loser).pos}, and it is going to play all evening.`,
+            `${loser} manages a smile that everybody recognises as work. Two chairs left, and ${pronouns(loser).sub} is still in one of them.`,
+          ], loser, 'defeat'),
+          players: [loser], badgeText: 'STILL ON THE BLOCK', badgeClass: 'red',
+          eventId: 'arena-defeat', category: 'ceremonies', location: 'backyard',
+          effects: [{ kind: 'memory', text: `${loser} remembers this`, players: [loser] }],
+        });
+      }
+      // The two who remain share the worst seat in the house, and shared
+      // dread is a real bond — the format's least likely friendships start
+      // exactly here.
+      if (stillUp.length === 2) {
+        _cappedBondWindow(() => addBond(stillUp[0], stillUp[1], 0.7));
+        heldSafetyAct.socialBeats.push({
+          text: pick([
+            `${stillUp[0]} and ${stillUp[1]} end up next to each other on the walk back inside, because nobody else knows what to say to either of them. One of them is leaving tonight, and for about thirty seconds they are the only two people in the house who understand each other completely.`,
+            `The house gives ${stillUp[0]} and ${stillUp[1]} a wide, kind berth. The two of them split the last of something from the fridge without discussing it.`,
+            `${stillUp[0]} catches ${stillUp[1]}'s eye across the arena floor. Rivals until the horn, and now the only two people in the same boat, hours from the shore.`,
+            `${stillUp[0]} and ${stillUp[1]} sit on opposite ends of the same couch, which in this house counts as solidarity.`,
+          ], 'pair'),
+          players: [...stillUp], badgeText: 'THE LAST TWO', badgeClass: 'grey',
+          eventId: 'arena-shared-fate', category: 'ceremonies', location: 'living-room',
+          effects: [{ kind: 'bond', text: `${stillUp[0]} & ${stillUp[1]} +0.7`, delta: 0.7 }],
+        });
+      }
+    }
   }
   week.finalNominees = [...nominees];
   setSpotlight({ nominees: [...new Set([...(gs.bb.spotlight?.nominees || []), ...nominees])] });

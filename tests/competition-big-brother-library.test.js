@@ -141,9 +141,15 @@ describe('Big Brother competition library', () => {
     let custom = 0, generic = 0;
     for (const seed of [11, 23, 37, 44, 58, 63, 71, 88]) {
       reset();
+      // Two of the eight seasons run the Block Buster, because the arena has
+      // games of its own now and a sweep that never opens the arena reports
+      // seven live competitions as dead code. The HEADLESS engine takes the
+      // mode as an option — seasonConfig is the played path's knob.
+      const arenaSeason = seed === 44 || seed === 88;
       const { weeks } = simulateBBSeason({
         rng: seededRng(seed), finaleSize: 3,
         houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
+        ...(arenaSeason ? { safetyMode: 'triple', safetyStopsAt: 5 } : {}),
       });
       for (const act of weeks.flatMap(w => w.acts || [])) {
         const comp = act.competition;

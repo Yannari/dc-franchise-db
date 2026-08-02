@@ -63,7 +63,9 @@ function arenaGrudge(entries, api, beats) {
     beats.push(beat(
       `${a.name} and ${b.name} spend the whole game one station apart, not looking at each other with tremendous effort. One of them is about to be much easier to evict, and both of them are thinking it.`,
       [a.name, b.name], 'OLD BUSINESS', 'red'));
-    api.suspicion(b.name, a.name, 0.4);
+    // The comps api has no suspicion channel — a grudge sharpened in public
+    // lands as bond damage, which it owns.
+    api.addBond(a.name, b.name, -0.4);
   }
 }
 

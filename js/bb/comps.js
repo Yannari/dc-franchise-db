@@ -72,8 +72,14 @@ function selectionWeight(comp, type, ctx) {
   const lastIndex = recent.lastIndexOf(comp.category);
   const age = lastIndex < 0 ? 99 : recent.length - 1 - lastIndex;
   const cooldown = age === 0 ? .12 : age === 1 ? .45 : age === 2 ? .72 : 1;
+  // A season should not replay a competition while its siblings sit unaired —
+  // the category cooldown never noticed IDs, so the same arena game could run
+  // three times in one season while four others never appeared. Used comps
+  // stay available (a long season outlasts any library) but heavily deferred.
+  const used = (gs.bb?.competitionHistory || []).some(h => h.id === comp.id);
+  const freshness = used ? 0.15 : 1;
   const custom = typeof comp.weight === 'function' ? Math.max(0, Number(comp.weight(ctx)) || 0) : 1;
-  return cooldown * custom;
+  return cooldown * freshness * custom;
 }
 
 function chooseCompetition(library, type, ctx, rng, forcedId) {

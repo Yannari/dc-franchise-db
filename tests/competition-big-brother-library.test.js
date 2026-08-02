@@ -145,7 +145,7 @@ describe('Big Brother competition library', () => {
       // games of its own now and a sweep that never opens the arena reports
       // seven live competitions as dead code. The HEADLESS engine takes the
       // mode as an option — seasonConfig is the played path's knob.
-      const arenaSeason = seed === 44 || seed === 88;
+      const arenaSeason = seed === 44 || seed === 63 || seed === 88;
       const { weeks } = simulateBBSeason({
         rng: seededRng(seed), finaleSize: 3,
         houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,

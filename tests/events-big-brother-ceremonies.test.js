@@ -199,6 +199,9 @@ describe('Big Brother ceremony events', () => {
     const pawnDeal = CEREMONY_EVENTS.find(e => e.id === 'nom-pawn-reassured');
     const gained = burned => {
       reset();
+      // A mature season, or the early depth ceiling pins both branches to
+      // the same value and the comparison measures the ceiling, not the event.
+      gs.episode = 8;
       addBond('A', 'C', 5);
       if (burned) rememberStrategy('C', 'A', 'betrayal', 0, 3, {});
       const before = getBond('A', 'C');

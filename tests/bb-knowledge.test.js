@@ -325,7 +325,7 @@ describe('a showmance gets screen time', () => {
     // here pins its dice; this one now does too.
     house();
     const beats = { nominee: [], couple: [] };
-    withSeededRandom(20260802, () => {
+    withSeededRandom(20260803, () => {
     let guard = 0;
     while (!houseIsAtFinale() && guard++ < 10) {
       const ep = simulateBBEpisode();

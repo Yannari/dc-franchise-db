@@ -51,7 +51,38 @@ export function addBond(a, b, d) {
     if (d > 0) d *= 1.15; // heroes build bonds faster (genuine warmth)
   }
   const before = getBond(a, b);
-  const next = Math.max(-10, Math.min(10, before + d));
+
+  // ── Saturation: the deep end of the scale resists ──
+  //
+  // Movement was linear to the rails, so 7→8 cost the same as 2→3 and a
+  // friendly pair compounded its way to +10 by mid-season — a measured eight
+  // seasons had one in ten relationships PINNED to an extreme, which
+  // devalues the extremes for every system that reads them. Real
+  // relationships saturate: each point past the comfortable middle is
+  // harder-won than the last. Falling back toward zero stays full speed —
+  // heights are hard to build and easy to fall from, which is also true.
+  const outward = before + d !== 0 && Math.abs(before + d) > Math.abs(before);
+  if (outward && Math.abs(before) > 5) {
+    d *= Math.max(0.25, 1 - ((Math.abs(before) - 5) / 5) * 0.8);
+  }
+
+  // ── Depth ceiling: shallow roots early ──
+  //
+  // Nobody is at lifelong-bond depth with somebody they met on Tuesday. A
+  // measured season had strangers reach 0 → −8.5 in WEEK ONE and ten pairs
+  // go from near-zero to scale-pinned inside a single episode. Attainable
+  // depth grows with shared history; hostility gets a looser ceiling than
+  // warmth because a screaming match genuinely runs ahead of a friendship's
+  // pace. Bonds that START beyond the ceiling — preloaded relationships,
+  // returnees with real history — are respected: they will not grow further
+  // outward this early, but nothing claws them back.
+  const rounds = Math.max(gs.bb?.weeks?.length || 0, gs.episode || 0);
+  const posCeil = Math.min(10, 4.5 + rounds * 1.4);
+  const negCeil = Math.min(10, 6 + rounds * 1.4);
+  let next = Math.max(-10, Math.min(10, before + d));
+  if (next > posCeil) next = before > posCeil ? Math.min(next, before) : posCeil;
+  if (next < -negCeil) next = before < -negCeil ? Math.max(next, before) : -negCeil;
+
   // Apply the dimension delta BEFORE writing the legacy bond: the dimension
   // defaults derive from the current legacy bond, so updating the bond first
   // would double-count the delta on a pair's first interaction.

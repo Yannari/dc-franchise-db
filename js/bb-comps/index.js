@@ -33,7 +33,11 @@ import { ARENA_COMPETITIONS } from './arena.js';
  * eligible for a slot — a type nothing here serves, or a category on cooldown —
  * the fallback still runs and the week still happens.
  */
-const PRODUCTION_WEIGHT = 7;
+// 8, up from 7: season-level freshness (a used comp defers hard) means the
+// written library exhausts before the season does, and at 7 the generic
+// safety net was winning enough late-season slots to sit exactly at the 80%
+// line the suite draws. One notch keeps the library carrying the season.
+const PRODUCTION_WEIGHT = 8;
 
 /** Preserve a competition's own weighting; scale it above the fallbacks. */
 const production = comp => ({

@@ -65,10 +65,26 @@ describe('bonds.js', () => {
       expect(heroBond).toBeGreaterThan(villainBond);
     });
 
-    it('respects clamp after addition', () => {
+    it('respects clamp after addition, once the season is old enough to allow it', () => {
+      // Depth is earned now: attainable bond grows with shared history, so a
+      // week-one pair cannot be pushed to the rail. Late-season, the old law
+      // holds — the scale still ends at ten.
+      gs.episode = 10;
       setBond('Alice', 'Bob', 9);
       addBond('Alice', 'Bob', 5);
       expect(getBond('Alice', 'Bob')).toBe(10);
+    });
+
+    it('holds early bonds to a shallow ceiling, without clawing back history', () => {
+      gs.episode = 0;
+      setBond('Alice', 'Bob', 0);
+      addBond('Alice', 'Bob', 9);
+      expect(getBond('Alice', 'Bob')).toBeLessThanOrEqual(4.5);
+      // A preloaded deep bond — a returnee's history — is respected: no
+      // growth this early, but nothing takes it away either.
+      setBond('Cara', 'Dan', 8);
+      addBond('Cara', 'Dan', 2);
+      expect(getBond('Cara', 'Dan')).toBe(8);
     });
   });
 

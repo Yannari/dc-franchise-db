@@ -18560,7 +18560,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const campaignActs = (view.acts || []).filter(a => a.type === 'campaign');
         const merged = {
           ...act,
-          phase: act.phase || 'post-veto',
+          // 'campaign', NOT 'post-veto'. The fallback phase decided which
+          // nominee list the wall drew — post-veto reads the INITIAL block
+          // (correct for the stretch before the ceremony) — so on the days
+          // after the ceremony the replacement wore no NOM marker and the
+          // saved houseguest kept theirs. The campaign is after the ceremony
+          // by definition; it shows the final block.
+          phase: 'campaign',
           socialBeats: campaignActs.flatMap(a => a.socialBeats || []),
         };
         screens.push({

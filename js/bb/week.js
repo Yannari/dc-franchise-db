@@ -1269,6 +1269,48 @@ export function simulateBBWeek(options = {}) {
       { nominees: [...nominees], vetoWinner,
         saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
     revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
+
+    // The person who just went up ALWAYS reacts. The ceremony act schedules
+    // one to three beats from the general pool, and in about half of all
+    // measured weeks none of them so much as mentioned the replacement — so
+    // somebody could be backdoored at noon and spend the evening on the feed
+    // laughing at a card game. If the scheduler did not produce their scene,
+    // this writes it, with the consequences a renomination actually has.
+    if (vetoDecision.use && replacement && replacement !== hoh) {
+      const ceremonyAct = week.acts[week.acts.length - 1];
+      const mentioned = (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
+      if (!mentioned) {
+        const temper = pStats(replacement).temperament;
+        const bondHit = -(0.8 + (10 - temper) * 0.08);
+        addBond(replacement, hoh, bondHit);
+        try { rememberStrategy(replacement, hoh, 'renomination', 2, { act: 'veto-ceremony' }, { act: 'veto-ceremony' }); } catch { /* memory is texture */ }
+        const effects = [{ kind: 'bond', text: `${replacement} & ${hoh} ${bondHit.toFixed(1)}`, delta: bondHit }];
+        // The hotter the head, the more likely the week now has a mission.
+        if (rng() < ((10 - temper) / 10) * 0.5) {
+          try {
+            setBBTarget(replacement, hoh, `${hoh} put me up as the veto came down`, { week });
+            effects.push({ kind: 'target', text: `${replacement} is coming for ${hoh}` });
+          } catch { /* target store missing in odd harnesses */ }
+        }
+        const lines = [
+          `${replacement} does not sit down when the meeting ends. The chair is not the problem; the week ${replacement} spent believing ${hoh} was fine with ${pronouns(replacement).obj} is.`,
+          `${replacement} walks straight past ${hoh} into the bedroom and starts packing a bag nobody asked ${pronouns(replacement).obj} to pack. Everybody understands the message.`,
+          `"So that was the plan the whole time." ${replacement} says it to the room, but it is aimed at ${hoh}, and it lands.`,
+          `${replacement} laughs once, too loudly, and asks who else knew. The silence answers more precisely than anybody wanted it to.`,
+          `${replacement} finds ${hoh} within the hour and asks for the real reason. What ${pronouns(replacement).sub} gets is the speech version, and both of them know it.`,
+        ];
+        let hash = 0;
+        const salt = `${week.num}|${replacement}|${hoh}`;
+        for (let i = 0; i < salt.length; i++) hash = (hash * 31 + salt.charCodeAt(i)) >>> 0;
+        ceremonyAct.socialBeats.push({
+          text: lines[hash % lines.length],
+          players: [replacement, hoh],
+          badgeText: 'RENOMINATED', badgeClass: 'red',
+          eventId: 'veto-renomination-reaction', category: 'ceremonies', location: 'living-room',
+          effects,
+        });
+      }
+    }
   }
 
   // ── The last competition of the week, played by the people on the block ──
@@ -1374,6 +1416,9 @@ export function simulateBBWeek(options = {}) {
   // the house voting on the spot. That compression IS the twist.
   const campaignActCount = compressed ? 1
     : (options.campaignActCount || (house.length >= 12 ? 3 : house.length >= 7 ? 2 : 1));
+  // Which pitcher has already worked which voter this week, and how it went —
+  // so the feed shows each conversation once, plus the follow-up if it lands.
+  const pitchPairSeen = new Map();
   for (let campaignIndex = 0; campaignIndex < campaignActCount; campaignIndex++) {
     const campaign = resolveBBCampaignAct({ nominees, ballots, house, campaignIndex, rng });
     week.campaign.push(campaign);
@@ -1396,21 +1441,34 @@ export function simulateBBWeek(options = {}) {
     // "undefined gets undefined alone" and printed the same argument three
     // times, because the argument is a read of the VOTER and there was no voter
     // to read.
+    // One conversation per pair per WEEK, not per act. The engine re-runs the
+    // pitches every campaign act — that is fine for the ballots — but showing
+    // each run put the identical argument on the feed three times, and a voter
+    // who moved in act one could be shown "not moving" in act three, which
+    // reads as a contradiction rather than persistence. A repeat is only worth
+    // a card when something CHANGED: the holdout finally moves.
     const pitchBeats = (campaign.pitches || []).flatMap(pitch =>
       (pitch.responses || []).map(response => {
+        const pairKey = `${pitch.pitcher}→${response.voter}`;
+        const before = pitchPairSeen.get(pairKey);
+        pitchPairSeen.set(pairKey, before || response.accepted);
+        if (before !== undefined && !(response.accepted && before !== true)) return null;
+        const worn = before !== undefined;   // this is the follow-up that landed
         let words = '';
         try { words = campaignArgument(pitch.pitcher, response.voter, pitch.pitchTarget); } catch { words = ''; }
         return {
-          text: `${pitch.pitcher} gets ${response.voter} alone. ${words}`
-            + ` ${response.accepted
-              ? `${response.voter} listens, and something in the count changes.`
-              : `${response.voter} hears all of it and does not move.`}`,
+          text: worn
+            ? `${pitch.pitcher} goes back to ${response.voter} — same argument, new day. This time ${response.voter} listens, and something in the count changes.`
+            : `${pitch.pitcher} gets ${response.voter} alone. ${words}`
+              + ` ${response.accepted
+                ? `${response.voter} listens, and something in the count changes.`
+                : `${response.voter} hears all of it and does not move.`}`,
           players: [pitch.pitcher, response.voter],
-          badgeText: response.accepted ? 'RECEPTIVE' : 'UNMOVED',
+          badgeText: response.accepted ? (worn ? 'WORN DOWN' : 'RECEPTIVE') : 'UNMOVED',
           badgeClass: response.accepted ? 'green' : 'grey',
           eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
         };
-      }));
+      }).filter(Boolean));
     campaignAct.socialBeats = [...pitchBeats, ...(campaignAct.socialBeats || [])];
     week.acts.push(campaignAct);
   }

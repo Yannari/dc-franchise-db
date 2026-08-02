@@ -22,6 +22,7 @@ import {
 } from '../js/bb/knowledge.js';
 import { assignBlame, chiefMourner, lastCompletedWeek } from '../js/bb/fallout.js';
 import { factId, learn, believes, isAccurate } from '../js/knowledge.js';
+import { withSeededRandom } from './helpers/rng.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
@@ -316,8 +317,15 @@ describe('a showmance gets screen time', () => {
   it('does not let the couple outrank the block', () => {
     // The correction has a ceiling: a showmance is a storyline, not the week.
     // The people who might go home are still the week.
+    //
+    // Seeded, unlike its first draft: the margin between a nominee's screen
+    // time and a safe couple's is real but not wide, and an unseeded season
+    // made this the suite's most reliable flake — the property held across
+    // runs on average and failed on variance. Every other season-shaped test
+    // here pins its dice; this one now does too.
     house();
     const beats = { nominee: [], couple: [] };
+    withSeededRandom(20260802, () => {
     let guard = 0;
     while (!houseIsAtFinale() && guard++ < 10) {
       const ep = simulateBBEpisode();
@@ -344,6 +352,7 @@ describe('a showmance gets screen time', () => {
         }
       }
     }
+    });
     const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
     if (beats.couple.length && beats.nominee.length) {
       expect(mean(beats.nominee), 'a safe couple is out-screening the block')

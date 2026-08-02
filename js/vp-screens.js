@@ -15770,7 +15770,7 @@ function _bbIntroQuote(name) {
     ],
     'perceptive-player': [
       n => `"I'm ${n}." Short, pleasant, done — and while everyone else introduces themselves, ${n} is the only one really listening.`,
-      n => `"I'm ${n}. I'd rather learn your names than perform mine."`,
+      n => `“I’m ${n}.” ${n} keeps the introduction short, then listens closely enough to remember everyone else’s.`,
       n => `"I'm ${n}. I notice things. That's not a threat — it's just going to keep being true."`,
       n => `"I'm ${n}." While the applause settles, ${n} has already matched three pairs of people who arrived pretending not to know each other's type.`,
       n => `"I'm ${n}, and I'll be honest — I'll remember everything everyone says today. It's a blessing. Mostly."`,

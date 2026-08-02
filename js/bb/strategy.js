@@ -134,7 +134,19 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     let fit = getPerceivedBond(hoh, name) - bbThreat(name) * 0.35;
     if (plan?.goat === name) fit += 1.6;
     if (plan?.shield === name) fit -= 3;
-    if (dealBetween(hoh, name)) fit -= 2.5;
+    // A flat penalty was not enough. A sincere final-two partner is exactly
+    // what a pawn LOOKS like — close, trusted, low heat (the nomination
+    // discount keeps their danger read down, which is the point of it) — so
+    // the bond term (+8 for a real partnership) drowned a constant −2.5 and
+    // the person the HOH means to sit beside at the end was chosen for the
+    // chair every draw. The penalty scales with what the promise actually
+    // is: a sincere final two makes somebody nearly unpawnable, a working
+    // deal barely registers, an insincere one protects nobody.
+    const pawnDeal = dealBetween(hoh, name);
+    if (pawnDeal) {
+      fit -= 2.5 + sincerityOf(pawnDeal, hoh)
+        * (tierOf(pawnDeal) === 'final-two' ? 6.5 : tierOf(pawnDeal) === 'final-three' ? 4 : 0.5);
+    }
     if (plan?.preferredCore?.includes(name)) fit -= 1.2;
     return fit;
   };
@@ -182,13 +194,23 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   // an alliance-mate if the house can name one, the visible best friend if
   // not. They cannot both be saved, they cannot campaign for each other, and
   // one of them goes home whatever the veto does.
+  // Nobody the Head of Household has sincerely promised the end sits in a
+  // structure's second chair. nominationScore already discounts a deal
+  // partner's heat, and double-target inherits that through the ranking —
+  // but pair-split and target-ally pick their second seat by PAIRING, not by
+  // heat, and walked straight past the promise: a sincere final two was
+  // going up beside the target every single draw.
+  const promisedEnd = name => {
+    const deal = dealBetween(hoh, name);
+    return deal ? sincerityOf(deal, hoh) > 0.5 : false;
+  };
   const partner = (() => {
     const mates = (gs.namedAlliances || [])
       .filter(a => a.active !== false && (a.members || []).includes(primary.name))
       .flatMap(a => a.members)
-      .filter(m => m !== primary.name && eligible.includes(m));
+      .filter(m => m !== primary.name && eligible.includes(m) && !promisedEnd(m));
     const pool = mates.length ? mates
-      : eligible.filter(n => n !== primary.name && getPerceivedBond(primary.name, n) >= 4);
+      : eligible.filter(n => n !== primary.name && !promisedEnd(n) && getPerceivedBond(primary.name, n) >= 4);
     return pool.sort((a, b) => heat(b) - heat(a))[0] || null;
   })();
   if (partner) {
@@ -209,7 +231,8 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     const blowback = name => bbThreat(name) * 0.3
       + eligible.filter(o => o !== name && bbAllianceStrength(name, o) > 0).length
       + Math.max(0, getPerceivedBond(hoh, name)) * 0.5;
-    const outsiders = eligible.slice().sort((a, b) => blowback(a) - blowback(b)).slice(0, 2);
+    const outsiders = eligible.filter(n => !promisedEnd(n))
+      .sort((a, b) => blowback(a) - blowback(b)).slice(0, 2);
     if (outsiders.length === 2) {
       const enemies = eligible.filter(n => getPerceivedBond(hoh, n) <= -3).length;
       const [e1, e2] = outsiders.sort((a, b) => heat(b) - heat(a));
@@ -233,7 +256,8 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   // was promised nothing — they are there so the target's votes split and
   // their loudest advocate spends the week saving themselves instead.
   const closeAlly = eligible
-    .filter(n => n !== primary.name && n !== partner && getPerceivedBond(primary.name, n) >= 3)
+    .filter(n => n !== primary.name && n !== partner && !promisedEnd(n)
+      && getPerceivedBond(primary.name, n) >= 3)
     .sort((a, b) => getPerceivedBond(primary.name, b) - getPerceivedBond(primary.name, a))[0] || null;
   if (closeAlly) {
     structures.push({

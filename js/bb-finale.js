@@ -80,8 +80,16 @@ function recordBigMoves(finalists) {
       && w.evicted === w.plan.backdoorTarget).length;
     const flips = weeks.reduce((n, w) =>
       n + (w.ballots || []).filter(b => b.changed && b.changedBy === name).length, 0);
+    // Organizing the vote that sent somebody home is the modern resume's
+    // spine — juries in the big-move era credit the person who RAN the week,
+    // not only the person who won the comp. Without this line a strategist
+    // who orchestrated five evictions sat in the final chairs reading as a
+    // passenger.
+    const delivered = weeks.filter(w => (w.voteOperation?.plans || []).some(p =>
+      p.organizer === name && p.target === w.evicted && p.expected >= p.majority)).length;
     gs.playerStates[name] ||= {};
-    gs.playerStates[name].bigMoves = (st.hohWins || 0) + (st.vetoWins || 0) * 0.5 + backdoors * 2 + flips;
+    gs.playerStates[name].bigMoves = (st.hohWins || 0) + (st.vetoWins || 0) * 0.5
+      + backdoors * 2 + flips + delivered * 1.5;
   }
 }
 

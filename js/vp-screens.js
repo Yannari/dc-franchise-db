@@ -17201,6 +17201,17 @@ export function rpBuildBBNominations(ep) {
                 _bbEsc(step.name)} is the name ${_bbEsc(hoh)} came for.`}
         </div>` : ''}</div>`;
     }
+    if (step.kind === 'shape') {
+      // A non-classic structure said out loud — two real targets, a split
+      // pair, the quiet week — because a plan the viewer cannot see reads as
+      // randomness. This renderer lives HERE, in the nomination ceremony's
+      // if-chain: its first draft was pasted into the veto ceremony's switch
+      // two functions down, where it could never fire, while this chain's
+      // beat fallthrough crashed on the step's missing beat.
+      return `<div class="bbns-card is-key">
+        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill gold">THE SHAPE OF THE BLOCK</span></div>
+        <div class="bbns-card-b">In the Diary Room, <strong>${_bbEsc(hoh)}</strong> lays the week out plainly: ${_bbEsc(act?.structureWhy || '')}.</div></div>`;
+    }
     if (step.kind === 'complete') {
       return `<div class="bbns-card is-final">
         <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
@@ -17208,6 +17219,7 @@ export function rpBuildBBNominations(ep) {
           responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."</div></div>`;
     }
     const b = step.beat;
+    if (!b) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     return `<div class="bbns-card">
       <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
         <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'HOUSE'}</span></div>
@@ -17559,10 +17571,6 @@ export function rpBuildBBCeremony(ep) {
   const card = (step, i) => {
     if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     switch (step.kind) {
-      case 'shape':
-        return `<div class="bbns-card is-key">
-          <div class="bbns-card-h">${_bbAvatar(hoh, 30)}<span class="bbns-pill gold">THE SHAPE OF THE BLOCK</span></div>
-          <div class="bbns-card-b">In the Diary Room, <strong>${_bbEsc(hoh)}</strong> lays the week out plainly: ${_bbEsc(act.structureWhy)}.</div></div>`;
       case 'open':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill grey">THE VETO MEETING</span></div>

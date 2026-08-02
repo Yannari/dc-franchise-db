@@ -219,7 +219,13 @@ export function bbThreatProfile(name) {
 
   // How much of themselves this houseguest has shown. Time passing counts for
   // something — you cannot hide for eight weeks — but doing things counts more.
-  const evidence = (week - 1) * 0.5 + competition * 1.4
+  // Time barely counts. It used to supply half a point a week all by
+  // itself, which meant a houseguest who had done NOTHING was fully legible
+  // by mid-season — and the cast's high-strategic players were being
+  // nominated off ability the house had never once seen demonstrated. The
+  // show's best strategic winners stayed illegible for exactly as long as
+  // they stayed quiet; being watched is not the same as being seen.
+  const evidence = (week - 1) * 0.15 + competition * 1.4
     + (record.timesNominated || 0) * 0.45 + alliances.length * 0.55
     + Math.min(3, ballots.length) * 0.3;
   // Measured and retuned. A floor of 0.3 over a ramp of 6.5 still had raw
@@ -235,8 +241,20 @@ export function bbThreatProfile(name) {
   // likes. Late it is the résumé that beats them at the end.
   const social = socialPosition * (visibility - 0.5) * 0.44;
 
+  // How this particular season happens to read this particular person —
+  // seeded per season, stable within it. With fixed stats and deterministic
+  // week-one events, the danger leaderboard was byte-identical across
+  // seasons and the same faces went up first every time. Real casts read
+  // the same person differently season to season; this is that, at a size
+  // (about ±0.4) that reshuffles neighbours without overturning ability.
+  const salt = gs.bb?.seasonSalt || 0;
+  let quirkHash = 0;
+  const quirkKey = `${salt}|${name}`;
+  for (let i = 0; i < quirkKey.length; i++) quirkHash = (quirkHash * 31 + quirkKey.charCodeAt(i)) >>> 0;
+  const quirk = salt ? ((quirkHash % 1000) / 1000 - 0.5) * 0.8 : 0;
+
   return {
-    base, socialPosition, competition,
+    base, socialPosition, competition, quirk,
     observed, visibility, isolation, friction, centrality, control,
     // Earned standing: the part of somebody's threat that comes from being
     // GOOD rather than from being disliked. Isolation and friction make a
@@ -244,7 +262,18 @@ export function bbThreatProfile(name) {
     // choosing a shield needs the difference, because hiding behind the person
     // the house already wants gone is not hiding at all.
     standing: competition + centrality + control + base * visibility + Math.max(0, social),
-    total: observed + base * visibility + social,
+    // The quirk is perception, not ability — it belongs in how nominatable
+    // somebody reads (total), never in the earned standing a shield is
+    // chosen by.
+    //
+    // Concealment is the other half of the same idea, and it is what makes
+    // playing a strategist WORTH something instead of a tax: the skill
+    // includes managing how you read. The hidden-ability leak is discounted
+    // by the player's own strategic — presenting harmless is the opening
+    // move of every good strategic game, and the intro speeches have said
+    // so all along. Only the leak: everything the house actually WATCHED
+    // (comps, friction, centrality) cannot be concealed by anybody.
+    total: observed + base * visibility * (1 - stats.strategic * 0.04) + social + quirk,
   };
 }
 

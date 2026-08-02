@@ -838,6 +838,10 @@ export function simulateBBWeek(options = {}) {
   const house = [...(options.house || gs.activePlayers || [])];
   if (house.length < 4) throw new Error('The standard Big Brother week engine requires at least four houseguests.');
   ensureBBState();
+  // The season's perception salt, drawn once from the season's own dice so a
+  // replayed seed reads everybody identically and two different seasons do
+  // not. See bbThreatProfile's quirk term.
+  if (!gs.bb.seasonSalt) gs.bb.seasonSalt = Math.floor(rng() * 2147483647) || 1;
   const week = { num: gs.bb.weeks.length + 1, format: 'big-brother', acts: [], houseAtStart: house };
 
   // A week of living in the same building, before anybody does anything.

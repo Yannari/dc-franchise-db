@@ -365,7 +365,19 @@ function _run(ctx, generate, badgeText, badgeClass, quiet, rng) {
 const _schemer = house => _quiet(house).filter(n => willScheme(n))[0] || null;
 
 /** Schemes are a house's real currency, but not every second beat. */
-const _w = (base, ctx) => band(ctx?.act === 'eviction' ? base * 0.4 : base);
+// Nobody runs a play in the first hours of a season. The scheme archetypes'
+// eligibility is deterministic — a villain is ALWAYS willing — and at a flat
+// rate from day one that made week one identical across seasons: the same
+// three schemers generated the same suspicion before the first nomination
+// and topped the target ranking every single time. The ramp is the feeling-
+// out period the real show has: quarter speed in week one, full speed by
+// week four. Proportional, never a gate — a villain can still open the
+// season with a forged note, it is just no longer guaranteed.
+const _ramp = ctx => {
+  const week = ctx?.week?.num || gs.episode || 1;
+  return Math.min(1, 0.25 + (week - 1) * 0.25);
+};
+const _w = (base, ctx) => band((ctx?.act === 'eviction' ? base * 0.4 : base) * _ramp(ctx));
 
 // ── the schemes ───────────────────────────────────────────────────────
 

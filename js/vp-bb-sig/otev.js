@@ -202,7 +202,10 @@ export function rpBuildSigOtev(ep, actType, u) {
   const isHoh = actType === 'hoh';
   const prize = isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO';
   const creature = creatureName(beats);
-  const breakdown = comp.breakdown || {};
+  // Normalised results file per-player numbers under debug.scoreBreakdown; a
+  // raw engine result carries them at the top level. Read both or every stat
+  // on this screen renders as zero.
+  const breakdown = comp.breakdown || comp.debug?.scoreBreakdown || {};
   const winner = act.winner || rows[0]?.name || '';
 
   // ── beats → steps ──

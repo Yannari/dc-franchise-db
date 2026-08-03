@@ -166,7 +166,10 @@ export function rpBuildSigHideAndGoVeto(ep, actType, u = {}) {
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
 
-  const breakdown = comp.breakdown || {};
+  // Normalised results file per-player numbers under debug.scoreBreakdown; a
+  // raw engine result carries them at the top level. Read both — the hiding
+  // places live in here, and without them the whole screen loses its point.
+  const breakdown = comp.breakdown || comp.debug?.scoreBreakdown || {};
   const results = act.results || [];
   const roster = ((act.participants && act.participants.length)
     ? act.participants

@@ -93,6 +93,10 @@ describe('signature competition screens', () => {
         expect(html, `${comp.id} fell through to the generic board`).toContain(screen.css);
         expect(html).not.toContain('bbc-board');
         for (const r of act.results) expect(html, `${comp.id} dropped ${r.name}`).toContain(r.name);
+        // A greedy [\d.]+ pulled the sentence's full stop into "1.9." and
+        // printed NaN as 0.0 on every card of the Pressure Cooker. Numbers
+        // that fail to parse must never reach the screen.
+        expect(html, `${comp.id} rendered NaN`).not.toMatch(/NaN/);
       });
 
       it('names who sat out, and the outgoing HOH who cannot defend', () => {
@@ -109,6 +113,29 @@ describe('signature competition screens', () => {
         }
       });
 
+      // The bug this catches, found in a browser: every screen read
+      // `comp.breakdown`, but the dispatcher files per-player numbers under
+      // `comp.debug.scoreBreakdown`. The screens still rendered — themed, and
+      // with every stat silently zero. Name assertions could not see it,
+      // because names come from `results`. A screen that actually reads the
+      // breakdown must render DIFFERENTLY when it is taken away.
+      if (comp.id !== 'bb-sig-the-wall') {   // the Wall deliberately reads none
+        it('actually reads the per-player numbers the dispatcher hands it', () => {
+          const { ep, act, type } = makeEp(comp);
+          expect(Object.keys(act.competition.debug?.scoreBreakdown || {}).length,
+            'the engine recorded no per-player numbers at all').toBeGreaterThan(0);
+          const key = `${SCREENS[act.competition.variant].key}_${ep.num}_${type}`;
+
+          _tvState[key] = { idx: 999 };
+          const withData = rpBuildBBComp(ep, type);
+          // Strip the numbers the dispatcher filed and rebuild.
+          act.competition.debug.scoreBreakdown = {};
+          _tvState[key] = { idx: 999 };
+          const without = rpBuildBBComp(ep, type);
+          expect(without, `${comp.id} ignores debug.scoreBreakdown entirely`).not.toBe(withData);
+        });
+      }
+
       it('renders byte-identically on rebuild at the same idx', () => {
         const { ep, act, type } = makeEp(comp);
         const key = `${SCREENS[act.competition.variant].key}_${ep.num}_${type}`;
@@ -119,6 +146,20 @@ describe('signature competition screens', () => {
           expect(a, `${comp.id} nondeterministic at idx ${idx}`).toBe(b);
         }
       });
+
+      if (comp.id === 'bb-sig-pressure-cooker') {
+        it('reads real hours off the narration, not zeroes', () => {
+          const { ep, act, type } = makeEp(comp);
+          const key = `${SCREENS[act.competition.variant].key}_${ep.num}_${type}`;
+          _tvState[key] = { idx: 999 };
+          const html = rpBuildBBComp(ep, type);
+          const stamps = [...html.matchAll(/HOUR\s*<b>([\d.]+)<\/b>|HOUR ([\d.]+)/g)]
+            .map(m => Number(m[1] ?? m[2])).filter(Number.isFinite);
+          expect(stamps.length, 'no hour stamps rendered at all').toBeGreaterThan(2);
+          // Hour zero is legitimate exactly once — the door sealing.
+          expect(stamps.filter(v => v > 0).length, 'every hour stamp read zero').toBeGreaterThan(1);
+        });
+      }
 
       if (comp.types.includes('hoh')) {
         it('declines a sealed Invisible HOH and leaves it to the generic board', () => {

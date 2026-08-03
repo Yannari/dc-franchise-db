@@ -122,7 +122,10 @@ export function rpBuildSigBeforeOrAfter(ep, actType, u = {}) {
   const state = tvState[stateKey];
 
   const isHoh = actType === 'hoh';
-  const breakdown = comp.breakdown || {};
+  // Normalised results file per-player numbers under debug.scoreBreakdown; a
+  // raw engine result carries them at the top level. Read both or every
+  // correct-answer count on the podium renders as nothing.
+  const breakdown = comp.breakdown || comp.debug?.scoreBreakdown || {};
   const results = (act.results || []).filter(r => r && r.name);
   const winner = act.winner || results[0]?.name || null;
   const roster = (act.participants && act.participants.length ? act.participants : results.map(r => r.name))

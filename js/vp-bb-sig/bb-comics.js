@@ -161,7 +161,10 @@ export function rpBuildSigBBComics(ep, actType, u) {
   if (!tvState[stateKey]) tvState[stateKey] = { idx: -1 };
   const state = tvState[stateKey];
 
-  const breakdown = comp.breakdown || {};
+  // Normalised results file per-player numbers under debug.scoreBreakdown; a
+  // raw engine result carries them at the top level. Read both or every time
+  // and re-zip count on this screen renders empty.
+  const breakdown = comp.breakdown || comp.debug?.scoreBreakdown || {};
   const winner = act.winner || (act.results || [])[0]?.name || '';
   const seedBase = _hash(`${ep.num}|${actType}`);
 

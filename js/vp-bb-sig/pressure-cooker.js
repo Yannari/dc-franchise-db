@@ -64,10 +64,16 @@ const GAUGE_HOLD = [
 // where a viewer reads them. Pulling them back out is the only way the clock on
 // this screen can agree with the clock in the narration.
 const _hourFrom = t => {
-  const m = /^Hour\s+([\d.]+)/.exec(t || '');
-  if (m) return Number(m[1]);
-  const f = /^([\d.]+)\s+hours after the door sealed/.exec(t || '');
-  return f ? Number(f[1]) : null;
+  // The digits are followed by the sentence's full stop — "Hour 1.9. Dee
+  // slides down the glass" — so a greedy [\d.]+ swallows it and yields "1.9.",
+  // which is NaN, which renders as HOUR 0.0 on every card. Match the number
+  // shape explicitly and refuse anything that is not finite.
+  const m = /^Hour\s+(\d+(?:\.\d+)?)/.exec(t || '');
+  if (m) { const v = Number(m[1]); return Number.isFinite(v) ? v : null; }
+  const f = /^(\d+(?:\.\d+)?)\s+hours after the door sealed/.exec(t || '');
+  if (!f) return null;
+  const v = Number(f[1]);
+  return Number.isFinite(v) ? v : null;
 };
 const _boxFrom = t => {
   const m = /^Box\s+(\d+)\s+opens/.exec(t || '');
@@ -189,7 +195,11 @@ export function rpBuildSigPressureCooker(ep, actType, u) {
 
   const rows = (act.results || []).map((r, i) => ({ ...r, place: i + 1 }));
   const winner = act.winner || rows[0]?.name;
-  const breakdown = comp.breakdown || {};
+  // The dispatcher normalises a competition result and files the per-player
+  // numbers under debug.scoreBreakdown; only a RAW engine result (unit tests,
+  // direct simulate calls) carries them at the top level. Reading just one of
+  // the two renders every stat on this screen as zero.
+  const breakdown = comp.breakdown || comp.debug?.scoreBreakdown || {};
   const satOut = (comp.excluded || []).filter(Boolean);
   const field = (act.participants || []).filter(Boolean).length
     ? act.participants.filter(Boolean) : rows.map(r => r.name);

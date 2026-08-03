@@ -1696,7 +1696,12 @@ export function simulateBBWeek(options = {}) {
         gs.popularity ||= {};
         gs.popularity[saved] = (gs.popularity[saved] || 0) + 1;
       }
-      heldSafetyAct.socialBeats.push({
+      // Written first, PUSHED last — the broadcast closes on the winner. The
+      // original order aired the exhale before the defeats it was an answer
+      // to, which read backwards on screen: losers absorb it, the last two
+      // find each other, and only then does the camera give the winner the
+      // final word.
+      const saveBeat = {
         text: pick([
           `${saved} hits the buzzer and does not let go of it. Whatever composure ${pronouns(saved).sub} carried into the arena is gone — this was not a competition win, it was a stay of execution, and everybody in the room can tell the difference.`,
           `${saved} does not celebrate so much as exhale for the first time in four days. The block is a place, and ${pronouns(saved).sub} just walked out of it in front of everybody.`,
@@ -1706,7 +1711,7 @@ export function simulateBBWeek(options = {}) {
         players: [saved], badgeText: 'OFF THE BLOCK', badgeClass: 'green',
         eventId: 'arena-save', category: 'ceremonies', location: 'backyard',
         effects: [{ kind: 'pop', text: `${saved} plays well on camera`, delta: 1 }],
-      });
+      };
       for (const loser of stillUp) {
         const temper = pStats(loser).temperament;
         try { rememberStrategy(loser, saved, 'beat-me-in-the-arena', week.num, 1, { act: 'safety' }); } catch { /* texture */ }
@@ -1744,6 +1749,8 @@ export function simulateBBWeek(options = {}) {
           effects: [{ kind: 'bond', text: `${stillUp[0]} & ${stillUp[1]} +0.7`, delta: 0.7 }],
         });
       }
+      // The closing card: the winner gets the last word.
+      heldSafetyAct.socialBeats.push(saveBeat);
     }
   }
   week.finalNominees = [...nominees];

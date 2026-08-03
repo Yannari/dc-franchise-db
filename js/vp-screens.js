@@ -20832,45 +20832,94 @@ export function rpBuildBBDebug(ep) {
   // screen is diagnostic: even an empty romance pipeline must be visible.
   if (tab === 'romance') {
     const romanceOff = (typeof seasonConfig !== 'undefined' && seasonConfig?.romance === 'disabled');
-    const allShows = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || []);
-    const allSparks = ((typeof gs !== 'undefined' && gs.romanticSparks) || []);
-    const shows = allShows.filter(sh => (sh.players || []).some(n => house.includes(n)));
-    const sparks = allSparks.filter(s =>
-      (s.players || [s.a, s.b]).every(n => n && house.includes(n)));
+    // Historical accuracy: the episode's own closing snapshot carries the
+    // romance stores at full fidelity. Only episodes recorded before that
+    // upgrade fall back to the live state — and say so, because a tab quietly
+    // showing next month's heartbreak on last month's episode is worse than
+    // no tab at all.
+    const fromSnap = Array.isArray(snap.romanticSparks);
+    const allShows = (fromSnap ? snap.showmances : (typeof gs !== 'undefined' && gs.showmances)) || [];
+    const allSparks = (fromSnap ? snap.romanticSparks : (typeof gs !== 'undefined' && gs.romanticSparks)) || [];
+    const allAffairs = (fromSnap ? snap.affairs : (typeof gs !== 'undefined' && gs.affairs)) || [];
+    const bondOf = (a, b) => Number((snap.bonds || {})[[a, b].sort().join('||')] ?? 0);
+    const bondChip = (a, b) => {
+      const v = bondOf(a, b);
+      const color = v >= 4 ? '#3fb950' : v >= 0 ? '#8b949e' : '#f47067';
+      return `<span style="color:${color}">bond ${v >= 0 ? '+' : ''}${v.toFixed(1)}</span>`;
+    };
+    const meter = (value, max, color) => {
+      const pct = Math.round(Math.max(0, Math.min(1, (Number(value) || 0) / max)) * 100);
+      return `<span style="display:inline-block;width:70px;height:5px;border-radius:3px;background:rgba(139,148,158,.2);vertical-align:middle;margin:0 4px"><i style="display:block;width:${pct}%;height:100%;border-radius:3px;background:${color}"></i></span>`;
+    };
+    const inHouseOrGone = n => n && (house.includes(n) || (ep.eliminated === n) || (ep.alsoEliminated === n));
+    const shows = allShows.filter(sh => (sh.players || []).some(inHouseOrGone));
+    const sparks = allSparks.filter(sp => (sp.players || [sp.a, sp.b]).every(n => n && house.includes(n)));
     const activeShows = shows.filter(sh => sh.phase !== 'broken-up' && !sh.broken);
+    const triangles = activeShows.filter(sh => sh.jealousPlayer);
+    const affairs = allAffairs.filter(af => !af.resolved
+      && [af.cheater, af.partner, af.secretPartner].some(n => house.includes(n)));
 
     html += dbgPanel('ROMANCE STATUS', romanceOff ? 'grey' : 'gold',
       dbgRow('season setting', romanceOff
         ? '<span style="color:#f47067">DISABLED</span>'
         : '<span style="color:#3fb950">ENABLED</span>')
+      + dbgRow('snapshot', fromSnap
+        ? `this episode's own closing state (week ${ep.num})`
+        : '<span style="color:#f0a500">LIVE state — episode predates romance snapshots</span>')
       + dbgRow('active sparks', sparks.length)
       + dbgRow('active showmances', activeShows.length)
       + dbgRow('ended showmances', shows.length - activeShows.length)
+      + (triangles.length ? dbgRow('love triangles brewing', triangles.length) : '')
+      + (affairs.length ? dbgRow('affairs', affairs.length) : '')
       + (romanceOff
         ? dbgNote('Romance is disabled in this season config. The engine will not create sparks or showmances.')
         : !sparks.length && !shows.length
           ? dbgNote('The romance system is enabled, but no spark has formed in the current house yet.')
-          : dbgNote('Sparks are early attraction. A showmance appears here once a spark matures into a relationship.')));
+          : ''));
 
     html += dbgPanel(`SPARKS (${sparks.length})`, sparks.length ? 'purple' : 'grey',
-      sparks.length ? sparks.map(s => {
-        const pair = (s.players || [s.a, s.b]).filter(Boolean);
-        const intensity = Number(s.intensity);
+      sparks.length ? sparks.map(sp => {
+        const pair = (sp.players || [sp.a, sp.b]).filter(Boolean);
+        const intensity = Number(sp.intensity);
         return dbgPortraitRow(pair[0], `
-          <div style="color:#d2a8ff;font-size:11px">with ${_bbEsc(pair[1] || '?')}</div>
-          <div style="color:#8b949e;font-size:10px">started week ${s.sparkEp || '?'} · intensity ${Number.isFinite(intensity) ? intensity.toFixed(2) : 'not recorded'}</div>
-          <div style="color:#6e7681;font-size:10px">${_bbEsc(s.context || s.sparkContext || 'house interaction')}${s.fake ? ' · FAKE' : ''}</div>`);
+          <div style="color:#d2a8ff;font-size:11px">with ${_bbEsc(pair[1] || '?')}${sp.fake ? ' · <b style="color:#f47067">FAKE</b>' : ''}</div>
+          <div style="color:#8b949e;font-size:10px">intensity ${meter(intensity, 1, '#d2a8ff')}${Number.isFinite(intensity) ? intensity.toFixed(2) : '?'} · ${bondChip(pair[0], pair[1])}</div>
+          <div style="color:#6e7681;font-size:10px">week ${sp.sparkEp || '?'} · ${_bbEsc(sp.context || sp.sparkContext || 'house interaction')}${sp.saboteur ? ` · planted by ${_bbEsc(sp.saboteur)}` : ''}</div>`);
       }).join('') : dbgNote('No active sparks among the houseguests in this episode.'));
 
+    const PHASES = ['spark', 'honeymoon', 'target', 'resolved'];
+    const phaseChain = current => PHASES.map(ph => {
+      const here = current === ph || (ph === 'resolved' && ['ride-or-die', 'broken-up'].includes(current));
+      return `<span style="color:${here ? '#f0a500' : '#3d444d'}">${ph}</span>`;
+    }).join('<span style="color:#3d444d"> → </span>');
+    const breakupLine = sh => {
+      if (!(sh.phase === 'broken-up' || sh.broken)) return '';
+      const how = sh.breakupType === 'betrayal' || sh.breakupVoter
+        ? `betrayal — ${_bbEsc(sh.breakupVoter || '?')} voted their partner out`
+        : sh.breakupType === 'separated' ? 'separated — one of them was evicted'
+        : sh.breakupType === 'sabotaged' ? 'sabotaged from outside'
+        : sh.breakupType === 'faded' ? 'faded — it simply stopped'
+        : _bbEsc(sh.breakupType || 'ended');
+      return `<div style="color:#f47067;font-size:10px">ended week ${sh.breakupEp || '?'}: ${how}</div>`;
+    };
     html += dbgPanel(`SHOWMANCES (${shows.length})`, shows.length ? 'gold' : 'grey',
       shows.length ? shows.map(sh => {
         const pair = sh.players || [];
         const ended = sh.phase === 'broken-up' || sh.broken;
         return dbgPortraitRow(pair[0], `
-          <div style="color:${ended ? '#f47067' : '#f0a500'};font-size:11px">with ${_bbEsc(pair[1] || '?')} · ${_bbEsc(sh.phase || 'active')}</div>
-          <div style="color:#8b949e;font-size:10px">sparked week ${sh.sparkEp || '?'}${sh.episodesActive != null ? ` · ${sh.episodesActive} active week${sh.episodesActive === 1 ? '' : 's'}` : ''}</div>
-          <div style="color:#6e7681;font-size:10px">${ended ? 'relationship ended' : 'mature relationship — counts as a visible pair'}</div>`);
+          <div style="color:${ended ? '#f47067' : '#f0a500'};font-size:11px">with ${_bbEsc(pair[1] || '?')} · ${_bbEsc(sh.phase || 'active')}${sh.phase === 'ride-or-die' ? ' ♦' : ''} · ${bondChip(pair[0], pair[1])}</div>
+          <div style="font-size:10px">${phaseChain(sh.phase)}</div>
+          <div style="color:#8b949e;font-size:10px">sparked week ${sh.sparkEp || '?'}${sh.episodesActive != null ? ` · ${sh.episodesActive} week${sh.episodesActive === 1 ? '' : 's'} together` : ''}${sh.firstMoveBy ? ` · first move: ${_bbEsc(sh.firstMoveBy)} (week ${sh.firstMoveEp || '?'})` : ''}${sh.tested ? ' · survived the test' : ''}</div>
+          ${sh.jealousPlayer && !ended ? `<div style="color:#d2a8ff;font-size:10px">third wheel: ${_bbEsc(sh.jealousPlayer)} is jealous — love-triangle risk</div>` : ''}
+          ${breakupLine(sh)}`);
       }).join('') : dbgNote('No spark has matured into a showmance yet.'));
+
+    if (affairs.length) {
+      html += dbgPanel(`AFFAIRS (${affairs.length})`, 'red',
+        affairs.map(af => dbgPortraitRow(af.cheater, `
+          <div style="color:#f47067;font-size:11px">${_bbEsc(af.cheater)} is seeing ${_bbEsc(af.secretPartner || '?')} behind ${_bbEsc(af.partner || '?')}'s back</div>
+          <div style="color:#8b949e;font-size:10px">since week ${af.startEp || af.ep || '?'}${af.exposed ? ' · EXPOSED' : ' · still secret'}</div>`)).join(''));
+    }
   }
 
   // ── Threats & heat ────────────────────────────────────────────────

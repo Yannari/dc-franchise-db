@@ -25,4 +25,20 @@ it('has an always-visible romance tab with pipeline status', () => {
   expect(html).toContain('SHOWMANCES (');
   seasonConfig.romance = 'disabled';
   expect(rpBuildBBDebug(gs.episodeHistory.at(-1))).toContain('DISABLED');
+  seasonConfig.romance = 'enabled';
+
+  // Historical accuracy: an old episode reads its OWN closing snapshot, not
+  // the live stores — planting a fresh live spark must not appear on week 1.
+  const ep1 = gs.episodeHistory[0];
+  expect(ep1.closingState.romanticSparks, 'week 1 has no romance snapshot').toBeTruthy();
+  gs.romanticSparks.push({ players: ['P0', 'P1'], sparkEp: 99, context: 'time travel', intensity: 0.9, fake: false, saboteur: null });
+  const w1html = rpBuildBBDebug(ep1);
+  expect(w1html).toContain(`closing state (week ${ep1.num})`);
+  expect(w1html).not.toContain('time travel');
+  gs.romanticSparks.pop();
+
+  // An episode recorded before the snapshot upgrade falls back to live state
+  // and SAYS so, instead of quietly lying about the past.
+  const legacy = { ...ep1, closingState: { ...ep1.closingState, romanticSparks: undefined } };
+  expect(rpBuildBBDebug(legacy)).toContain('LIVE state');
 });

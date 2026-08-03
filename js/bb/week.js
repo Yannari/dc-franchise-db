@@ -841,6 +841,14 @@ function _snapshotHouse(full = true) {
   if (!full) return light;
   return {
     ...light,
+    // The bookends carry romance at FULL fidelity — phases, first moves,
+    // breakup forensics, saboteurs, affairs — because the Debug romance tab
+    // reviews old weeks, and a tab that reads the LIVE stores shows next
+    // month's heartbreak on last month's episode. The per-stretch snapshot
+    // keeps its slim pair list; only the bookends pay for the history.
+    showmances: (gs.showmances || []).map(sh => ({ ...sh })),
+    romanticSparks: (gs.romanticSparks || []).map(sp => ({ ...sp })),
+    affairs: (gs.affairs || []).map(af => ({ ...af })),
     // The status screen also reads who is hunting whom and who is misreading
     // whom, and both of those move during a week — so they belong in the
     // snapshot rather than being pulled live and spoiling the opening screen.

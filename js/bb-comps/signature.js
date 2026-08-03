@@ -34,7 +34,7 @@
 
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { aptitude, beat, choose, clamp, makePicker, throwRead, toResult, THROW_LINES } from './_shared.js';
+import { aptitude, beat, choose, clamp, makePicker, throwRead, toResult, THROW_LINES, vb } from './_shared.js';
 import { bond } from '../bb-events/_read.js';
 
 // ── shared plumbing ───────────────────────────────────────────────────
@@ -144,7 +144,7 @@ const OTEV_FALLBACK_QUESTIONS = [
 ];
 
 const OTEV_WRONG = [
-  (n, p) => `${n} comes back up the ramp holding the wrong answer entirely, and knows it before ${p.sub} reaches the top.`,
+  (n, p) => `${n} comes back up the ramp holding the wrong answer entirely, and knows it before ${p.sub} ${vb(p, 'reaches', 'reach')} the top.`,
   (n, p) => `${n} grabs a name off the pile without reading it, which turns out to be exactly as bad an idea as it sounds.`,
   (n, p) => `${n} has the right answer in ${p.posAdj} head and the wrong one in ${p.posAdj} hand.`,
   (n, p) => `${n} second-guesses ${p.ref} at the bottom of the ramp, switches, and switches to the wrong one.`,
@@ -153,7 +153,7 @@ const OTEV_WRONG = [
 const OTEV_SLOW = [
   (n, p) => `${n} has the answer and cannot get up the ramp with it — three runs, three slides back down, and the round is gone.`,
   (n, p) => `${n} loses a shoe in the foam and spends the round competing barefoot on a surface designed by somebody who hates feet.`,
-  (n, p) => `${n} is a full body length from the top when the horn goes. ${p.Sub} finishes the climb anyway, for pride.`,
+  (n, p) => `${n} is a full body length from the top when the horn goes. ${p.Sub} ${vb(p, 'finishes', 'finish')} the climb anyway, for pride.`,
   (n, p) => `${n} is quick to the pile and slow off it, and slow off it is the half that counts.`,
 ];
 
@@ -262,18 +262,18 @@ const WALL_HAZARDS = [
 ];
 
 const WALL_GO = [
-  (n, p) => `${n} goes on the wave — hands open before ${p.sub} has decided anything, which is how it always happens.`,
+  (n, p) => `${n} goes on the wave — hands open before ${p.sub} ${vb(p, 'has', 'have')} decided anything, which is how it always happens.`,
   (n, p) => `${n} skids a foot, corrects, skids the other, and is in the padding before the correction finishes.`,
   (n, p) => `${n} holds through the whole wave and then lets go in the calm afterwards, which everybody watching finds harder to look at.`,
-  (n, p) => `${n} announces ${p.sub} is fine roughly four seconds before ${p.sub} is not fine.`,
+  (n, p) => `${n} announces ${p.sub} ${vb(p, 'is', 'are')} fine roughly four seconds before ${p.sub} ${vb(p, 'is', 'are')} not fine.`,
   (n, p) => `${n} loses the wall slowly, in three separate instalments, each one worse to watch than the last.`,
 ];
 
 const WALL_GRIND = [
-  (n, p) => `${n} has stopped talking. ${p.Sub} has been in the same position for forty minutes and the position is not a good one.`,
+  (n, p) => `${n} has stopped talking. ${p.Sub} ${vb(p, 'has', 'have')} been in the same position for forty minutes and the position is not a good one.`,
   (n, p) => `${n} works ${p.posAdj} feet back onto the ledge an inch at a time and buys another hour with it.`,
   (n, p) => `Somebody offers ${n} a deal from the ground. ${n} does not look down.`,
-  (n, p) => `${n} is shaking in a way that has nothing to do with the cold and everything to do with how long ${p.sub} has been up there.`,
+  (n, p) => `${n} is shaking in a way that has nothing to do with the cold and everything to do with how long ${p.sub} ${vb(p, 'has', 'have')} been up there.`,
 ];
 
 export const theWall = {
@@ -397,7 +397,7 @@ export const theWall = {
 
     const cp = pronouns(champ.name);
     beats.push(beat(
-      `${champ.name} is the last one on the wall, ${wave} waves and most of a night after it started, and ${cp.sub} has to be helped down.`,
+      `${champ.name} is the last one on the wall, ${wave} waves and most of a night after it started, and ${cp.sub} ${vb(cp, 'has', 'have')} to be helped down.`,
       [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'endurance-win', { waves: wave, competition: 'the-wall' });
@@ -434,7 +434,7 @@ const COOKER_HOLD = [
   (n, p) => `${n} has ${p.posAdj} forehead against the glass and ${p.posAdj} thumb still on the button, and has not said a word in an hour.`,
   (n, p) => `${n} is counting out loud to stay awake. The count has been wrong for a while and nobody in the box has the energy to say so.`,
   (n, p) => `${n} switches hands, which is allowed, and nearly loses the button doing it, which is not survivable twice.`,
-  (n, p) => `${n} keeps looking at the boxes instead of the button. That is how they get you and ${p.sub} knows it.`,
+  (n, p) => `${n} keeps looking at the boxes instead of the button. That is how they get you and ${p.sub} ${vb(p, 'knows', 'know')} it.`,
 ];
 
 const COOKER_CRACK = [
@@ -523,7 +523,7 @@ export const pressureCooker = {
         const takes = rng() < clamp(greed, 0.04, 0.62) && inside.length > 2;
         if (takes) {
           beats.push(beat(
-            `Box ${box} opens on ${prize.label}, and it is offered to ${mark.name} alone. ${p.Sub} looks at it for eleven seconds and then takes ${p.posAdj} thumb off the button to go and get it.`,
+            `Box ${box} opens on ${prize.label}, and it is offered to ${mark.name} alone. ${p.Sub} ${vb(p, 'looks', 'look')} at it for eleven seconds and then takes ${p.posAdj} thumb off the button to go and get it.`,
             [mark.name], 'TOOK THE PRIZE', 'gold'));
           tiebreaks[mark.name] = clamp(box * 0.5 + 1, 0, 9.9);
           threwMap[mark.name] = mark.threw;
@@ -538,7 +538,7 @@ export const pressureCooker = {
           api.record(mark.name, 'took-the-prize', { prize: prize.label, hours });
         } else {
           beats.push(beat(
-            `Box ${box} opens on ${prize.label}, and it is offered to ${mark.name} alone. ${p.Sub} says no out loud, twice, mostly to ${p.ref}.`,
+            `Box ${box} opens on ${prize.label}, and it is offered to ${mark.name} alone. ${p.Sub} ${vb(p, 'says', 'say')} no out loud, twice, mostly to ${p.ref}.`,
             [mark.name], 'REFUSED THE PRIZE', 'green'));
           mark.tempted += 1;
           mark.drag += 0.25;
@@ -728,7 +728,7 @@ export const hideAndGoVeto = {
     const winning = cards.find(c => c.owner === winner);
     const wp = pronouns(winner);
     beats.push(beat(
-      `Time. One card never made it to the board — ${winner} hid it ${winning ? winning.where : 'somewhere the house never thought to look'}, and ${wp.sub} walks past the wreckage to collect the veto.`,
+      `Time. One card never made it to the board — ${winner} hid it ${winning ? winning.where : 'somewhere the house never thought to look'}, and ${wp.sub} ${vb(wp, 'walks', 'walk')} past the wreckage to collect the veto.`,
       [winner], 'VETO', 'gold'));
     api.popDelta(winner, 2);
     api.record(winner, 'hide-and-go-veto-win', { where: winning ? winning.where : null });
@@ -761,15 +761,15 @@ const COMICS_CLEAN = [
 const COMICS_MISTAKE = [
   (n, p, t) => `${n} puts ${t} one slot too early, hears the buzzer, and has to zip all the way back to the platform to start the run again.`,
   (n, p, t) => `${n} confuses ${t} with the cover next to it — same colour scheme, entirely different position — and eats the re-zip.`,
-  (n, p, t) => `${n} is three covers from done when ${p.sub} realises ${t} is in the wrong place, and there is no fixing it from down here.`,
+  (n, p, t) => `${n} is three covers from done when ${p.sub} ${vb(p, 'realises', 'realise')} ${t} is in the wrong place, and there is no fixing it from down here.`,
   (n, p, t) => `${n} loses the whole sequence at ${t} and stands there for a second doing the arithmetic on how much that just cost ${p.obj}.`,
 ];
 
 const COMICS_MELT = [
   (n, p) => `${n} zips back for the fourth time and does not bother pretending any more.`,
   (n, p) => `${n} has now spent longer on the wire than on the wall, which is not the intended ratio.`,
-  (n, p) => `The clock passes four minutes on ${n} and ${p.sub} is still rearranging the middle of the wall.`,
-  (n, p) => `${n} finishes eventually. The time is read out. ${p.Sub} laughs at it, once, without any humour in it.`,
+  (n, p) => `The clock passes four minutes on ${n} and ${p.sub} ${vb(p, 'is', 'are')} still rearranging the middle of the wall.`,
+  (n, p) => `${n} finishes eventually. The time is read out. ${p.Sub} ${vb(p, 'laughs', 'laugh')} at it, once, without any humour in it.`,
 ];
 
 export const bbComics = {
@@ -907,15 +907,15 @@ const BOA_FALLBACK = [
 ];
 
 const BOA_WRONG = [
-  (n, p) => `${n} locks in BEFORE with real confidence. It was after. ${p.Sub} does not look at the board again.`,
+  (n, p) => `${n} locks in BEFORE with real confidence. It was after. ${p.Sub} ${vb(p, 'does', 'do')} not look at the board again.`,
   (n, p) => `${n} changes ${p.posAdj} answer with two seconds left, from the right one.`,
-  (n, p) => `${n} is still counting weeks on ${p.posAdj} fingers when the lock-in horn goes, and the finger ${p.sub} lands on is wrong.`,
+  (n, p) => `${n} is still counting weeks on ${p.posAdj} fingers when the lock-in horn goes, and the finger ${p.sub} ${vb(p, 'lands', 'land')} on is wrong.`,
   (n, p) => `${n} gets it wrong and immediately explains, at length, the reasoning that got ${p.obj} there. The reasoning is also wrong.`,
 ];
 
 const BOA_RIGHT = [
   (n, p) => `${n} answers before the question finishes and is right, which two people find genuinely alarming.`,
-  (n, p) => `${n} gets it, holds up the board, and does not celebrate — ${p.sub} is counting who else got it.`,
+  (n, p) => `${n} gets it, holds up the board, and does not celebrate — ${p.sub} ${vb(p, 'is', 'are')} counting who else got it.`,
   (n, p) => `${n} takes the whole clock and lands on the right side of it.`,
   (n, p) => `${n} is right again. Somebody down the line says the word "photographic" and does not mean it kindly.`,
 ];
@@ -1027,7 +1027,7 @@ export const beforeOrAfter = {
 
     const cp = pronouns(champ.name);
     beats.push(beat(
-      `${champ.name} is the last board still up, ${champ.correct || 0} correct across ${q} questions, and ${cp.sub} spends the walk to the key thinking about which two names ${cp.sub} just became responsible for.`,
+      `${champ.name} is the last board still up, ${champ.correct || 0} correct across ${q} questions, and ${cp.sub} ${vb(cp, 'spends', 'spend')} the walk to the key thinking about which two names ${cp.sub} just became responsible for.`,
       [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'quiz-win', { correct: champ.correct || 0, questions: q, competition: 'before-or-after' });

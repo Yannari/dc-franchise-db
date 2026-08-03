@@ -14,11 +14,14 @@
 // the old comp — same variant tag — falls through to the generic board.
 // ══════════════════════════════════════════════════════════════════════
 
+import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
+
 /** @returns {string} html, or '' to fall back to the generic screen */
 export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   const act = (ep?.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
-  if (!act || !comp || act.secret) return '';
+  if (!act || !comp) return '';
+  const sealed = isSealedHoh(act, actType);
 
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
@@ -64,7 +67,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   ];
 
   // ── steps ────────────────────────────────────────────────────────────
-  const steps = [];
+  let steps = [];
   beats.forEach((b, i) => {
     const tag = String(b.badgeText || '').toUpperCase().trim();
     if (tag === 'TOOK THE PRIZE') { steps.push({ kind: 'prize', beat: b, name: (b.players || [])[0] }); return; }
@@ -76,19 +79,31 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   });
   if (!steps.length) return '';
 
-  const total = steps.length;
-  const revealed = Math.min(total, Math.max(0, state.idx + 1));
-  const done = state.idx >= total - 1;
   const winner = act.winner || (act.results || [])[0]?.name || '';
   const roster = (act.participants && act.participants.length
     ? act.participants
     : (act.results || []).map(r => r.name)).filter(Boolean);
 
+  // Sealed: the fill level IS the result, so the tubes read as unknown and the
+  // feed cuts partway through the lanes.
+  if (sealed) {
+    const keep = planSeal(steps, {
+      countKind: 'run', cap: Math.max(2, Math.ceil(roster.length / 2)),
+      isResult: st => st.kind === 'levels' || st.kind === 'win',
+    });
+    steps = steps.slice(0, keep);
+    steps.push({ kind: 'cut' }, { kind: 'irony' });
+  }
+
+  const total = steps.length;
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+  const done = state.idx >= total - 1;
+
   // A lane only fills once its houseguest's card has been turned over — the
   // tubes are the scoreboard, so they must not run ahead of the reveal.
   const shownNames = new Set(steps.slice(0, revealed)
     .filter(s => (s.kind === 'run' || s.kind === 'prize') && s.name).map(s => s.name));
-  if (done) roster.forEach(n => shownNames.add(n));
+  if (done && !sealed) roster.forEach(n => shownNames.add(n));
 
   const lanes = `<div class="slp-lanes">
     ${roster.map((n, i) => {
@@ -96,16 +111,16 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
       const shown = shownNames.has(n);
       const fill = shown ? Math.max(0, Math.min(100, Number(bd.fill) || 0)) : 0;
       const quit = shown && bd.tookPrize;
-      const won = done && n === winner;
+      const won = !sealed && done && n === winner;
       return `<div class="slp-lane ${quit ? 'is-quit' : ''} ${won ? 'is-won' : ''}" style="animation-delay:${(i % 8) * 50}ms">
         <span class="slp-tube" title="${E(n)} — ${shown ? `${fill}%` : 'still running'}">
-          <span class="slp-liq" style="height:${fill}%"></span>
-          <span class="slp-ball" style="bottom:calc(${fill}% - 5px)"></span>
+          <span class="slp-liq" style="height:${sealed ? 0 : fill}%"></span>
+          <span class="slp-ball" style="bottom:calc(${sealed ? 0 : fill}% - 5px)"></span>
           ${quit ? '<span class="slp-x">✕</span>' : ''}
         </span>
         <span class="slp-lane-av">${AV(n, 28)}</span>
         <span class="slp-lane-n">${E(String(n).split(' ')[0])}</span>
-        <span class="slp-lane-v">${shown ? `${fill}%` : '—'}</span>
+        <span class="slp-lane-v">${sealed ? '?' : (shown ? `${fill}%` : '—')}</span>
       </div>`;
     }).join('')}
   </div>`;
@@ -117,10 +132,12 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   const strip = `<div class="slp-strip">
     <div><span class="slp-k">LANES READ</span><span class="slp-v"><b>${shownNames.size}</b><i>/ ${roster.length}</i></span></div>
     <div><span class="slp-k">WALKED OFF</span><span class="slp-v"><b>${quitters}</b></span></div>
-    <div class="slp-strip-r"><span class="slp-k">${done ? 'RESULT' : 'FULLEST'}</span>
-      <span class="slp-v slp-v-txt">${done && winner
-        ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-        : lead && lead.f ? `${E(lead.n)} · ${lead.f}%` : 'BARRELS FULL'}</span></div>
+    <div class="slp-strip-r"><span class="slp-k">${sealed || done ? 'RESULT' : 'FULLEST'}</span>
+      <span class="slp-v slp-v-txt">${sealed
+        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        : done && winner
+          ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
+          : lead && lead.f ? `${E(lead.n)} · ${lead.f}%` : 'BARRELS FULL'}</span></div>
   </div>`;
 
   const cards = steps.map((s, i) => {
@@ -133,6 +150,12 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
         <p class="slp-body">${E(s.beat.text)}</p>
       </article>`;
     }
+    if (s.kind === 'cut') {
+      return sealCutCard('slp', { standing: Math.max(0, roster.length - shownNames.size),
+        unit: 'lanes still running', salt: Number(ep.num) || 0 });
+    }
+    if (s.kind === 'irony') return sealIronyCard('slp', { winner, avatar: AV, esc: E, isHoh });
+
     if (s.kind === 'win') {
       return `<article class="slp-card slp-win">
         <header class="slp-hd"><span class="slp-tag slp-tag-gold">${E(s.beat.badgeText || (isHoh ? 'HOH' : 'VETO'))}</span>
@@ -176,7 +199,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
     return `<article class="slp-card slp-run ${bd.threw ? 'is-threw' : ''}">
       <header class="slp-hd">
         <span class="slp-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
-        <span class="slp-tag ${bd.threw ? 'slp-tag-quiet' : ''}">${E(s.beat.badgeText || '')}</span>
+        <span class="slp-tag ${bd.threw ? 'slp-tag-quiet' : ''}">${sealed ? MASK : E(s.beat.badgeText || '')}</span>
       </header>
       <p class="slp-body">${E(s.beat.text)}</p>
 
@@ -188,10 +211,10 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
       </div>
 
       <div class="slp-nums">
-        <span><i>CONTAINER</i><b>${E(bd.fill ?? 0)}%</b></span>
+        <span><i>CONTAINER</i><b>${sealed ? MASK : `${E(bd.fill ?? 0)}%`}</b></span>
         <span><i>TRIPS</i><b>${E(bd.trips ?? log.length)}</b></span>
         <span><i>FALLS</i><b>${E(bd.spills ?? 0)}</b></span>
-        <span><i>BEST TRIP</i><b>${bestTrip ? E(bestTrip.got) : '—'}</b></span>
+        <span><i>BEST TRIP</i><b>${sealed ? MASK : (bestTrip ? E(bestTrip.got) : '—')}</b></span>
         ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
       </div>
       <p class="slp-flav">${E(flav(RUN_FLAV, i))}</p>
@@ -310,6 +333,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   .slp-count,.slp-done{font-size:10px;letter-spacing:2.2px;color:var(--sl-dim)}
   .slp-done{color:${accent}}
 
+  ${sealCss('slp', accent)}
   @media(max-width:700px){
     .slp-strip{grid-template-columns:1fr 1fr}
     .slp-strip-r{grid-column:1/-1;border-left:0;border-top:1px solid var(--sl-line);padding:6px 0 0}
@@ -340,7 +364,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   <div>${cards}</div>
 
   <div class="slp-ctrl">
-    ${done ? '<span class="slp-done">THE LANES ARE EMPTY.</span>' : `
+    ${done ? `<span class="slp-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE LANES ARE EMPTY.'}</span>` : `
       <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
         state.idx < 0 ? 'Sound the horn' : 'Next lane'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}

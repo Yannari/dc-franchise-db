@@ -25,7 +25,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { pStats, pronouns } from '../players.js';
-import { beat, toResult, makePicker, throwRead, clamp, THROW_LINES } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -57,7 +57,7 @@ const GUTTER_LINES = [
 
 const DIZZY_LINES = [
   (n, p) => `${n} comes off the bars and goes straight down onto one knee. It takes ${p.obj} most of the frame to get back up.`,
-  (n, p) => `${n} has to be pointed at the lane. ${p.Sub} is pointed at the lane and rolls anyway.`,
+  (n, p) => `${n} has to be pointed at the lane. ${p.Sub} ${vb(p, 'is', 'are')} pointed at the lane and rolls anyway.`,
   (n, p) => `${n} spins hard, which is the mistake — the extra rotations buy nothing and cost ${p.obj} the next two frames.`,
 ];
 
@@ -91,7 +91,7 @@ export const bowlerina = {
         + s.mental * 0.14 + s.endurance * 0.10) / 10;
       const haveNot = (context.haveNots || []).includes(name);
 
-      let dizzy = 0, total = 0, gutters = 0, collapsed = false, best = null, hnCost = 0;
+      let dizzy = 0, total = 0, gutters = 0, collapsed = false, best = null, hnCost = 0, luck = 0;
       const card = [];
       for (let f = 0; f < frames; f++) {
         // Dizziness ratchets. Temperament sheds most of it between frames but
@@ -110,7 +110,9 @@ export const bowlerina = {
         }
 
         // The roll: aim is steadiness minus however much the room is moving.
-        const aim = clamp(0.18 + steady * 1.15 - dizzy * 0.17 + (rng() - 0.5) * 0.5
+        const aimNoise = (rng() - 0.5) * 0.5;
+        luck += aimNoise;
+        const aim = clamp(0.18 + steady * 1.15 - dizzy * 0.17 + aimNoise
           - (t.threw ? 0.5 : 0) - (fell ? 0.3 : 0), 0, 1);
         const idx = Math.min(PIN_VALUES.length - 1, Math.floor(aim * PIN_VALUES.length + rng() * 0.85));
         const value = PIN_VALUES[Math.max(0, idx)];
@@ -123,6 +125,8 @@ export const bowlerina = {
       }
 
       return { name, total, gutters, card, best, collapsed,
+        base: Math.round(aptitude(name, bowlerina.stats) * 100) / 100,
+        luck: Math.round(luck * 100) / 100,
         threw: t.threw, threwChance: t.chance, haveNot,
         haveNotPenalty: Math.round(hnCost * 100) / 100, steady };
     });
@@ -144,7 +148,12 @@ export const bowlerina = {
           `${r.name} keeps every roll on the boards and takes the safe targets. ${r.total} points, no drama, no disasters.`,
           [r.name], `${r.total} POINTS`));
       }
+    // The Debug tab reports the levers behind every score — aptitude and the
+    // luck that moved it. This competition spreads its randomness across many
+    // small rolls rather than one, so `roll` is the accumulated deviation,
+    // signed so that positive always means luck helped.
       breakdown[r.name] = {
+        base: r.base, roll: r.luck,
         total: r.total, gutters: r.gutters, frames: r.card.length, card: r.card,
         best: r.best?.value ?? 0, collapsed: r.collapsed, steady: Math.round(r.steady * 100) / 100,
         threw: r.threw, threwChance: r.threwChance,
@@ -168,7 +177,7 @@ export const bowlerina = {
 
     const wp = pron(winner.name);
     beats.push(beat(
-      `${winner.name} rolled straightest with the least idea which way was straight. ${wp.Sub} takes it on ${winner.total}.`,
+      `${winner.name} rolled straightest with the least idea which way was straight. ${wp.Sub} ${vb(wp, 'takes', 'take')} it on ${winner.total}.`,
       [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(winner.name, 2);
     api.record(winner.name, 'bowlerina-win', { total: winner.total, gutters: winner.gutters });

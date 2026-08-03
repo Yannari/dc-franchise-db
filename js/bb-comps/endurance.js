@@ -12,13 +12,13 @@
 // reads.
 
 import { pronouns } from '../players.js';
-import { scoreField, toResult, beat, margin, makePicker, THROW_LINES } from './_shared.js';
+import { scoreField, toResult, beat, margin, makePicker, THROW_LINES, vb } from './_shared.js';
 import { bond } from '../bb-events/_read.js';
 
 const WALL_DROP = [
-  (n, p) => `${n} goes at the first serious tilt — no drama, just gone, and ${p.sub} is honest enough to admit ${p.sub} was never winning this one.`,
+  (n, p) => `${n} goes at the first serious tilt — no drama, just gone, and ${p.sub} ${vb(p, 'is', 'are')} honest enough to admit ${p.sub} ${vb(p, 'was', 'were')} never winning this one.`,
   (n, p) => `${n} holds until ${p.posAdj} hands stop being ${p.posAdj} hands, and then holds a little past that, and then does not.`,
-  (n, p) => `A gust, a slip, and ${n} is in the safety padding before ${p.sub} has decided to let go.`,
+  (n, p) => `A gust, a slip, and ${n} is in the safety padding before ${p.sub} ${vb(p, 'has', 'have')} decided to let go.`,
   (n, p) => `${n} drops without a word. No excuse, no speech. Just down, and straight inside.`,
   (n, p) => `${n} lasts long enough to be surprised at ${p.ref}, which is its own kind of win, and then goes.`,
 ];

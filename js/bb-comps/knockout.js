@@ -32,7 +32,7 @@
 import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
 import { bbHeat } from '../bb/shared-strategy.js';
-import { beat, toResult, makePicker, throwRead, clamp } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, throwRead, clamp, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -81,15 +81,15 @@ const NOBUZZ_LINES = [
 ];
 
 const PICK_LINES = [
-  (c, a, b, p) => `${c} does not hesitate: ${a} and ${b} to the podiums. ${p.Sub} has just guaranteed that one of them is finished, and both of them know who arranged it.`,
-  (c, a, b, p) => `${c} looks around the room longer than ${p.sub} needs to, then sends ${a} and ${b} up. Nobody in this house is going to forget being chosen.`,
+  (c, a, b, p) => `${c} does not hesitate: ${a} and ${b} to the podiums. ${p.Sub} ${vb(p, 'has', 'have')} just guaranteed that one of them is finished, and both of them know who arranged it.`,
+  (c, a, b, p) => `${c} looks around the room longer than ${p.sub} ${vb(p, 'needs', 'need')} to, then sends ${a} and ${b} up. Nobody in this house is going to forget being chosen.`,
   (c, a, b, p) => `${c} picks ${a} and ${b}, which is the safest thing ${p.sub} could have done and the most expensive.`,
   (c, a, b, p) => `${a} and ${b}, says ${c}, and does not explain it. The explanation is obvious to everybody standing there.`,
 ];
 
 const SELF_PICK_LINES = [
   (c, o, p) => `${c} puts ${p.ref} back up, against ${o}. Nobody asked ${p.obj} to and it is not clear ${p.sub} could explain why.`,
-  (c, o, p) => `${c} chooses ${p.ref} and ${o}. It is either confidence or impatience and ${p.sub} does not say which.`,
+  (c, o, p) => `${c} chooses ${p.ref} and ${o}. It is either confidence or impatience and ${p.sub} ${vb(p, 'does', 'do')} not say which.`,
 ];
 
 export const knockout = {
@@ -121,12 +121,18 @@ export const knockout = {
         recall: (s.mental * 0.46 + s.intuition * 0.26 + s.temperament * 0.28) / 10,
         threw: t.threw, threwChance: t.chance,
         haveNot: (context.haveNots || []).includes(name),
-        duels: 0, wins: 0, picks: 0, outDuel: null, chosenBy: null,
+        duels: 0, wins: 0, picks: 0, outDuel: null, chosenBy: null, luck: 0,
+        base: Math.round(aptitude(name, knockout.stats) * 100) / 100,
       };
     });
     const by = name => field.find(f => f.name === name);
     field.forEach(f => {
+    // The Debug tab reports the levers behind every score — aptitude and the
+    // luck that moved it. This competition spreads its randomness across many
+    // small rolls rather than one, so `roll` is the accumulated deviation,
+    // signed so that positive always means luck helped.
       breakdown[f.name] = {
+        base: f.base, roll: 0,
         duels: 0, wins: 0, picks: 0, outDuel: null, chosenBy: null, eliminatedBy: null,
         threw: f.threw, threwChance: f.threwChance,
         haveNot: f.haveNot, haveNotPenalty: f.haveNot ? round2(0.08) : 0,
@@ -221,7 +227,10 @@ export const knockout = {
       // produced the format's signature both-players-lose outcome in sixty
       // competitions. Two cautious houseguests now genuinely can both sit there.
       const buzzTime = f => {
-        let t = 4.2 - f.speed * 3.1 + (rng() - 0.5) * 3.0;
+        const noise = (rng() - 0.5) * 3.0;
+        f.luck -= noise;                     // a faster buzz is better luck
+        breakdown[f.name].roll = Math.round(f.luck * 100) / 100;
+        let t = 4.2 - f.speed * 3.1 + noise;
         if (f.threw) t += 2.6 + rng() * 2.4;
         if (f.haveNot) t += 0.35;
         return t;

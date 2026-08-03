@@ -18,6 +18,8 @@
 // handler rebuilds everything, so the same idx must produce the same html.
 // ══════════════════════════════════════════════════════════════════════
 
+import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
+
 /**
  * @param {object} ep       week record (.num, .acts, optional ._seg)
  * @param {'hoh'|'veto'|string} actType
@@ -27,7 +29,8 @@
 export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   const act = (ep?.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
-  if (!act || !comp || act.secret) return '';
+  if (!act || !comp) return '';
+  const sealed = isSealedHoh(act, actType);
 
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
@@ -74,7 +77,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   const board = template.map(m => (m.pair || []).filter(Boolean));
 
   // ── steps ────────────────────────────────────────────────────────────
-  const steps = [];
+  let steps = [];
   beats.forEach((b, i) => {
     const tag = String(b.badgeText || '').toUpperCase().trim();
     if (tag === 'THE MARGIN') { steps.push({ kind: 'margin', beat: b }); return; }
@@ -86,10 +89,25 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   });
   if (!steps.length) return '';
 
+  const winner = act.winner || (act.results || [])[0]?.name || '';
+
+  // Sealed: this is a timed format, so the clock IS the result. Numbers are
+  // masked below AND the feed cuts partway through the field, so the runs
+  // nobody saw are the ones that keep it unknowable.
+  const fieldCount = (act.participants || (act.results || []).map(r => r.name) || []).filter(Boolean).length
+    || withMorphs.length;
+  if (sealed) {
+    const keep = planSeal(steps, {
+      countKind: 'run', cap: Math.max(2, Math.ceil(fieldCount / 2)),
+      isResult: st => st.kind === 'margin' || st.kind === 'win',
+    });
+    steps = steps.slice(0, keep);
+    steps.push({ kind: 'cut' }, { kind: 'irony' });
+  }
+
   const total = steps.length;
   const revealed = Math.min(total, Math.max(0, state.idx + 1));
   const done = state.idx >= total - 1;
-  const winner = act.winner || (act.results || [])[0]?.name || '';
 
   // The rack: completed runs only, fastest first — so it fills as you reveal.
   const rack = steps.slice(0, revealed).filter(s => s.kind === 'run' && breakdown[s.name])
@@ -119,15 +137,17 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   </div>`;
 
   const strip = `<div class="mom-strip">
-    <div><span class="mom-k">RUNS COMPLETE</span><span class="mom-v"><b>${rack.length}</b><i>/ ${fieldSize}</i></span></div>
-    <div><span class="mom-k">FASTEST BOARD</span><span class="mom-v"><b>${rack.length ? `${rack[0].time}s` : '—'}</b></span></div>
-    <div class="mom-strip-r"><span class="mom-k">${done ? 'RESULT' : 'LEADER'}</span>
-      <span class="mom-v mom-v-txt">${done && winner
-        ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-        : rack.length ? E(rack[0].name) : 'MACHINE WARM'}</span></div>
+    <div><span class="mom-k">RUNS SHOWN</span><span class="mom-v"><b>${rack.length}</b><i>/ ${fieldSize}</i></span></div>
+    <div><span class="mom-k">FASTEST BOARD</span><span class="mom-v"><b>${sealed ? MASK : (rack.length ? `${rack[0].time}s` : '—')}</b></span></div>
+    <div class="mom-strip-r"><span class="mom-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
+      <span class="mom-v mom-v-txt">${sealed
+        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        : done && winner
+          ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
+          : rack.length ? E(rack[0].name) : 'MACHINE WARM'}</span></div>
   </div>`;
 
-  const rackHtml = `<aside class="mom-rack">
+  const rackHtml = sealed ? '' : `<aside class="mom-rack">
     <div class="mom-rack-h"><span class="mom-k">THE CLOCK</span></div>
     ${rack.length ? rack.map((r, i) => `<div class="mom-rack-row ${i === 0 ? 'is-lead' : ''}">
       <span class="mom-rack-p">${ORD(i + 1)}</span>
@@ -149,6 +169,12 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
         <p class="mom-body">${E(s.beat.text)}</p>
       </article>`;
     }
+
+    if (s.kind === 'cut') {
+      return sealCutCard('mom', { standing: fieldSize - rack.length, unit: 'still to run the board',
+        salt: Number(ep.num) || 0 });
+    }
+    if (s.kind === 'irony') return sealIronyCard('mom', { winner, avatar: AV, esc: E, isHoh });
 
     if (s.kind === 'win') {
       return `<article class="mom-card mom-win">
@@ -185,7 +211,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
     return `<article class="mom-card mom-run ${threw ? 'is-threw' : ''} ${haunted ? 'is-haunted' : ''}">
       <header class="mom-hd">
         <span class="mom-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
-        <span class="mom-tag ${threw ? 'mom-tag-quiet' : ''}">${E(s.beat.badgeText || '')}</span>
+        <span class="mom-tag ${threw ? 'mom-tag-quiet' : ''}">${sealed ? MASK : E(s.beat.badgeText || '')}</span>
       </header>
       <p class="mom-body">${E(s.beat.text)}</p>
 
@@ -198,9 +224,9 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
       </div>
 
       <div class="mom-nums">
-        <span><i>TOTAL</i><b>${E(bd.time)}s</b></span>
+        <span><i>TOTAL</i><b>${sealed ? MASK : `${E(bd.time)}s`}</b></span>
         <span><i>WRONG</i><b>${E(bd.wrong ?? 0)}</b></span>
-        <span><i>SLOWEST FACE</i><b>${slowest ? `${E(slowest.secs)}s` : '—'}</b></span>
+        <span><i>SLOWEST FACE</i><b>${sealed ? MASK : (slowest ? `${E(slowest.secs)}s` : '—')}</b></span>
         ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
       </div>
 
@@ -339,6 +365,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   .mom-count{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2.2px;color:var(--mo-dim)}
   .mom-done{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2.2px;color:${accent}}
 
+  ${sealCss('mom', accent)}
   @media(max-width:860px){
     .mom-grid{grid-template-columns:1fr}
     .mom-rack{position:static;order:-1}
@@ -356,7 +383,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
 
   <div class="mom-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
   <div class="mom-title">${E((comp.name || "MORPH 'O' MATIC").toUpperCase())}</div>
-  <div class="mom-tagline">two people &middot; one face &middot; no partial credit</div>
+  <div class="mom-tagline">${sealed ? 'two people &middot; one face &middot; and a clock nobody gets to read' : 'two people &middot; one face &middot; no partial credit'}</div>
 
   <div class="mom-what">
     <div class="mom-what-h"><span class="mom-what-c">${E(cat.label)}</span><b>${E(comp.name || "Morph 'O' Matic")}</b></div>
@@ -370,13 +397,13 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
 
   ${boardStrip}
   ${strip}
-  <div class="mom-grid">
+  <div class="${sealed ? 'mom-grid-sealed' : 'mom-grid'}">
     <div>${cards}</div>
     ${rackHtml}
   </div>
 
   <div class="mom-ctrl">
-    ${done ? '<span class="mom-done">THE MACHINE IS OFF.</span>' : `
+    ${done ? `<span class="mom-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE MACHINE IS OFF.'}</span>` : `
       <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
         state.idx < 0 ? 'Start the board' : 'Next run'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}

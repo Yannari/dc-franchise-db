@@ -15,13 +15,16 @@
 // generic board.
 // ══════════════════════════════════════════════════════════════════════
 
+import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
+
 const PIN_MAX = 8;
 
 /** @returns {string} html, or '' to fall back to the generic screen */
 export function rpBuildSigBowlerina(ep, actType, u = {}) {
   const act = (ep?.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
-  if (!act || !comp || act.secret) return '';
+  if (!act || !comp) return '';
+  const sealed = isSealedHoh(act, actType);
 
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
@@ -62,7 +65,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
   ];
 
   // ── steps ────────────────────────────────────────────────────────────
-  const steps = [];
+  let steps = [];
   beats.forEach((b, i) => {
     const tag = String(b.badgeText || '').toUpperCase().trim();
     if (tag === 'THE MARGIN' || tag === 'COUNTBACK') { steps.push({ kind: 'margin', beat: b, countback: tag === 'COUNTBACK' }); return; }
@@ -73,12 +76,25 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
   });
   if (!steps.length) return '';
 
-  const total = steps.length;
-  const revealed = Math.min(total, Math.max(0, state.idx + 1));
-  const done = state.idx >= total - 1;
   const winner = act.winner || (act.results || [])[0]?.name || '';
   const fieldSize = (act.participants || (act.results || []).map(r => r.name) || []).filter(Boolean).length
     || withCards.length;
+
+  // Sealed: the card total IS the result, so totals are masked below and the
+  // feed cuts partway through the field — the cards nobody saw are what keeps
+  // the top score unknowable.
+  if (sealed) {
+    const keep = planSeal(steps, {
+      countKind: 'run', cap: Math.max(2, Math.ceil(fieldSize / 2)),
+      isResult: st => st.kind === 'margin' || st.kind === 'win',
+    });
+    steps = steps.slice(0, keep);
+    steps.push({ kind: 'cut' }, { kind: 'irony' });
+  }
+
+  const total = steps.length;
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+  const done = state.idx >= total - 1;
 
   const shown = steps.slice(0, revealed).filter(s => s.kind === 'run' && breakdown[s.name])
     .map(s => ({ name: s.name, ...breakdown[s.name] }))
@@ -86,28 +102,31 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
 
   /** A frame drawn as its pin cluster: lit pins = what the roll was worth. */
   const frameCell = f => {
-    const lit = Math.round((f.value / PIN_MAX) * 6);
+    // Sealed: the pins and the frame number are the score, frame by frame.
+    const lit = sealed ? 0 : Math.round((f.value / PIN_MAX) * 6);
     const tilt = Math.min(9, Math.round((f.dizzy || 0) * 3));
     return `<div class="bwl-frame ${f.value === 0 ? 'is-gutter' : ''} ${f.value >= 5 ? 'is-big' : ''} ${f.fell ? 'is-fell' : ''}"
          style="transform:rotate(${tilt}deg)" title="Frame ${f.frame}: ${f.value} — dizziness ${f.dizzy}">
       <span class="bwl-pins">
         ${Array.from({ length: 6 }, (_, k) => `<i class="${k < lit ? 'is-lit' : ''}"></i>`).join('')}
       </span>
-      <span class="bwl-frame-v">${f.value}</span>
+      <span class="bwl-frame-v">${sealed ? '?' : f.value}</span>
       <span class="bwl-frame-n">${f.frame}</span>
     </div>`;
   };
 
   const strip = `<div class="bwl-strip">
     <div><span class="bwl-k">CARDS IN</span><span class="bwl-v"><b>${shown.length}</b><i>/ ${fieldSize}</i></span></div>
-    <div><span class="bwl-k">TOP SCORE</span><span class="bwl-v"><b>${shown.length ? shown[0].total : '—'}</b></span></div>
-    <div class="bwl-strip-r"><span class="bwl-k">${done ? 'RESULT' : 'LEADER'}</span>
-      <span class="bwl-v bwl-v-txt">${done && winner
-        ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-        : shown.length ? E(shown[0].name) : 'BARS UP'}</span></div>
+    <div><span class="bwl-k">TOP SCORE</span><span class="bwl-v"><b>${sealed ? MASK : (shown.length ? shown[0].total : '—')}</b></span></div>
+    <div class="bwl-strip-r"><span class="bwl-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
+      <span class="bwl-v bwl-v-txt">${sealed
+        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        : done && winner
+          ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
+          : shown.length ? E(shown[0].name) : 'BARS UP'}</span></div>
   </div>`;
 
-  const boardHtml = `<aside class="bwl-board">
+  const boardHtml = sealed ? '' : `<aside class="bwl-board">
     <div class="bwl-board-h"><span class="bwl-k">THE CARD</span></div>
     ${shown.length ? shown.map((r, i) => `<div class="bwl-board-row ${i === 0 ? 'is-lead' : ''}">
       <span class="bwl-board-p">${ORD(i + 1)}</span>
@@ -127,6 +146,12 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
         <p class="bwl-body">${E(s.beat.text)}</p>
       </article>`;
     }
+    if (s.kind === 'cut') {
+      return sealCutCard('bwl', { standing: Math.max(0, fieldSize - shown.length),
+        unit: 'still to take the bars', salt: Number(ep.num) || 0 });
+    }
+    if (s.kind === 'irony') return sealIronyCard('bwl', { winner, avatar: AV, esc: E, isHoh });
+
     if (s.kind === 'win') {
       return `<article class="bwl-card bwl-win">
         <header class="bwl-hd"><span class="bwl-tag bwl-tag-gold">${E(s.beat.badgeText || (isHoh ? 'HOH' : 'VETO'))}</span>
@@ -151,7 +176,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
     return `<article class="bwl-card bwl-run ${bd.collapsed ? 'is-down' : ''} ${bd.threw ? 'is-threw' : ''}">
       <header class="bwl-hd">
         <span class="bwl-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
-        <span class="bwl-tag ${bd.threw ? 'bwl-tag-quiet' : ''}">${E(s.beat.badgeText || '')}</span>
+        <span class="bwl-tag ${bd.threw ? 'bwl-tag-quiet' : ''}">${sealed ? MASK : E(s.beat.badgeText || '')}</span>
       </header>
       <p class="bwl-body">${E(s.beat.text)}</p>
 
@@ -165,8 +190,8 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
       </div>
 
       <div class="bwl-nums">
-        <span><i>TOTAL</i><b>${E(bd.total ?? 0)}</b></span>
-        <span><i>BEST FRAME</i><b>${E(bd.best ?? 0)}</b></span>
+        <span><i>TOTAL</i><b>${sealed ? MASK : E(bd.total ?? 0)}</b></span>
+        <span><i>BEST FRAME</i><b>${sealed ? MASK : E(bd.best ?? 0)}</b></span>
         <span><i>GUTTERS</i><b>${E(bd.gutters ?? 0)}</b></span>
         ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
       </div>
@@ -282,6 +307,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
   .bwl-count,.bwl-done{font-size:10px;letter-spacing:2.2px;color:var(--bw-dim)}
   .bwl-done{color:${accent}}
 
+  ${sealCss('bwl', accent)}
   @media(max-width:860px){.bwl-grid{grid-template-columns:1fr}.bwl-board{position:static;order:-1}}
   @media(max-width:700px){
     .bwl-strip{grid-template-columns:1fr 1fr}
@@ -309,13 +335,13 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
   </div>
 
   ${strip}
-  <div class="bwl-grid">
+  <div class="${sealed ? 'bwl-grid-sealed' : 'bwl-grid'}">
     <div>${cards}</div>
     ${boardHtml}
   </div>
 
   <div class="bwl-ctrl">
-    ${done ? '<span class="bwl-done">THE BARS ARE EMPTY.</span>' : `
+    ${done ? `<span class="bwl-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE BARS ARE EMPTY.'}</span>` : `
       <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
         state.idx < 0 ? 'Drop the barrier' : 'Next card'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}

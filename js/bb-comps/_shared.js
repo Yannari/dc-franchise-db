@@ -64,6 +64,19 @@ export const THROW_LINES = [
   n => `${n} steps out with the timing of a person who worked out days ago that winning this would be the worst thing that could happen to ${n}.`,
 ];
 
+/**
+ * Verb agreement for singular they.
+ *
+ * `pronouns()` returns they/them for anybody non-binary and carries no notion
+ * of conjugation, so every writer has to phrase around it by hand — and the
+ * first competition that forgot printed "they knows it before the count even
+ * finishes" at a real houseguest. This makes the agreement explicit instead of
+ * relying on remembering.
+ *
+ *   `${n} ${vb(p, 'knows', 'know')} it` -> "she knows it" / "they know it"
+ */
+export const vb = (pr, singular, plural) => (pr?.sub === 'they' ? plural : singular);
+
 /** A player's raw aptitude for this competition, before luck and nerve. */
 export function aptitude(name, mix) {
   const s = pStats(name);

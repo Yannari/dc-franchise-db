@@ -17,11 +17,14 @@
 // u.reveal() only, gated on _tvState[stateKey].idx, no Math.random.
 // ══════════════════════════════════════════════════════════════════════
 
+import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard } from './_sealed.js';
+
 /** @returns {string} html, or '' to fall back to the generic screen */
 export function rpBuildSigKnockout(ep, actType, u = {}) {
   const act = (ep?.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
-  if (!act || !comp || act.secret) return '';
+  if (!act || !comp) return '';
+  const sealed = isSealedHoh(act, actType);
 
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
@@ -68,7 +71,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
   // ── steps: a pick, then the duel it set up ───────────────────────────
   const OUTCOME = new Set(['ELIMINATED', 'WRONG ANSWER', 'BOTH OUT', 'ON THE BUZZER']);
   const DRE = /^Duel (\d+)\./;
-  const steps = [];
+  let steps = [];
   let cur = null;
   beats.forEach((b, i) => {
     const tag = String(b.badgeText || '').toUpperCase().trim();
@@ -102,6 +105,20 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
     : (act.results || []).map(r => r.name)).filter(Boolean);
   const winner = act.winner || (act.results || [])[0]?.name || '';
 
+  // Sealed: duels eliminate one houseguest at a time, so the survivor is
+  // derivable as soon as the podiums are nearly empty. Stop while four are
+  // still standing.
+  if (sealed) {
+    let left = roster.length;
+    const keep = planSeal(steps, {
+      floor: 4,
+      survivorsAfter: st => st.kind === 'duel' ? (left -= (st.out || []).length) : null,
+      isResult: st => st.kind === 'win',
+    });
+    steps = steps.slice(0, keep);
+    steps.push({ kind: 'cut' }, { kind: 'irony' });
+  }
+
   const total = steps.length;
   const revealed = Math.min(total, Math.max(0, state.idx + 1));
   const done = state.idx >= total - 1;
@@ -116,7 +133,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
     ${roster.map((n, i) => {
       const out = goneNow.has(n);
       const at = breakdown[n]?.outDuel;
-      const won = done && n === winner;
+      const won = !sealed && done && n === winner;
       return `<div class="kno-hg ${out ? 'is-out' : ''} ${won ? 'is-win' : ''}" style="animation-delay:${(i % 8) * 45}ms"
            title="${E(n)}${out && at ? ` — out in duel ${at}` : ''}">
         <span class="kno-hg-av">${AV(n, 32)}</span>
@@ -130,9 +147,11 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
     <div><span class="kno-k">STILL STANDING</span><span class="kno-v"><b>${standing}</b><i>/ ${roster.length}</i></span></div>
     <div><span class="kno-k">DUELS</span><span class="kno-v"><b>${shownDuels.length}</b><i>/ ${totalDuels}</i></span></div>
     <div class="kno-strip-r"><span class="kno-k">${done ? 'RESULT' : 'AT THE PODIUMS'}</span>
-      <span class="kno-v kno-v-txt">${done && winner
-        ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-        : shownDuels.length ? `DUEL ${shownDuels[shownDuels.length - 1].n} DONE` : 'BUZZERS LIVE'}</span></div>
+      <span class="kno-v kno-v-txt">${sealed
+        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        : done && winner
+          ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
+          : shownDuels.length ? `DUEL ${shownDuels[shownDuels.length - 1].n} DONE` : 'BUZZERS LIVE'}</span></div>
   </div>`;
 
   const cards = steps.map((s, i) => {
@@ -145,6 +164,12 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
         <p class="kno-body">${E(s.beat.text)}</p>
       </article>`;
     }
+
+    if (s.kind === 'cut') {
+      return sealCutCard('kno', { standing: Math.max(1, roster.length - goneNow.size),
+        unit: 'still holding a buzzer', salt: Number(ep.num) || 0 });
+    }
+    if (s.kind === 'irony') return sealIronyCard('kno', { winner, avatar: AV, esc: E, isHoh });
 
     if (s.kind === 'win') {
       const bd = breakdown[winner] || {};
@@ -347,6 +372,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
   .kno-count,.kno-done{font-family:Oswald,sans-serif;font-size:10px;letter-spacing:2.2px;color:var(--kn-dim)}
   .kno-done{color:${accent}}
 
+  ${sealCss('kno', accent)}
   @media(max-width:700px){
     .kno-strip{grid-template-columns:1fr 1fr}
     .kno-strip-r{grid-column:1/-1;border-left:0;border-top:1px solid var(--kn-line);padding:6px 0 0}
@@ -361,7 +387,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
 
   <div class="kno-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
   <div class="kno-title">${E((comp.name || 'KNOCKOUT').toUpperCase())}</div>
-  <div class="kno-tagline">win the duel &middot; choose the next two &middot; live with it</div>
+  <div class="kno-tagline">${sealed ? 'win the duel &middot; choose the next two &middot; and nobody sees who is left' : 'win the duel &middot; choose the next two &middot; live with it'}</div>
 
   <div class="kno-what">
     <div class="kno-what-h"><span class="kno-what-c">${E(cat.label)}</span><b>${E(comp.name || 'Knockout')}</b></div>
@@ -378,7 +404,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
   <div>${cards}</div>
 
   <div class="kno-ctrl">
-    ${done ? '<span class="kno-done">THE PODIUMS ARE EMPTY.</span>' : `
+    ${done ? `<span class="kno-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE PODIUMS ARE EMPTY.'}</span>` : `
       <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
         state.idx < 0 ? 'Send up the first two' : 'Next'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}

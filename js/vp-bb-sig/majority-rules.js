@@ -20,6 +20,8 @@
 // rebuilds the whole screen, so identical idx must produce identical html.
 // ══════════════════════════════════════════════════════════════════════
 
+import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard } from './_sealed.js';
+
 /**
  * @param {object} ep       week record (.num, .acts, optional ._seg)
  * @param {'hoh'|'veto'|string} actType
@@ -29,7 +31,10 @@
 export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   const act = (ep?.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
-  if (!act || !comp || act.secret) return '';
+  if (!act || !comp) return '';
+  // A sealed Head of Household still gets its screen — it just stops before the
+  // result. See _sealed.js for the three rules that keeps honest.
+  const sealed = isSealedHoh(act, actType);
 
   const beats = (comp.beats || []).filter(b => b && b.text);
   if (!beats.length) return '';
@@ -80,7 +85,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
 
   // ── parse the beats into rounds ──────────────────────────────────────
   const QRE = /^Round (\d+)\.\s*(.*)$/;
-  const steps = [];
+  let steps = [];
   let cur = null;
   beats.forEach((b, i) => {
     const tag = String(b.badgeText || '').toUpperCase().trim();
@@ -132,6 +137,25 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
     }).length;
   });
 
+  // ── sealing ──
+  //
+  // This is an elimination format, so the survivor is derivable the moment the
+  // field is small enough. The broadcast stops while four are still holding a
+  // board, which is one more than the twist needs and reads as a cut rather
+  // than a censor.
+  let live = steps;
+  if (sealed) {
+    const keep = planSeal(steps, {
+      floor: 4,
+      survivorsAfter: s => (s.kind === 'round' && s.picks && s.picks.length)
+        ? s.standing - s.outs.length : null,
+      isResult: s => s.kind === 'win' || s.kind === 'tie',
+    });
+    live = steps.slice(0, keep);
+    live.push({ kind: 'cut' }, { kind: 'irony' });
+  }
+  steps = live;
+
   const total = steps.length;
   const revealed = Math.min(total, Math.max(0, state.idx + 1));
   const done = state.idx >= total - 1;
@@ -148,7 +172,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   const field = `<div class="mjr-field">
     ${roster.map((n, i) => {
       const isOut = outSoFar.has(n);
-      const isWin = done && n === winner;
+      const isWin = !sealed && done && n === winner;
       return `<div class="mjr-hg ${isOut ? 'is-out' : ''} ${isWin ? 'is-win' : ''}" style="animation-delay:${(i % 8) * 45}ms" title="${E(n)}">
         <span class="mjr-hg-av">${AV(n, 34)}</span>
         <span class="mjr-hg-n">${E(String(n).split(' ')[0])}</span>
@@ -159,10 +183,12 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   const strip = `<div class="mjr-strip">
     <div><span class="mjr-k">STILL HOLDING A BOARD</span><span class="mjr-v"><b>${standingNow}</b><i>/ ${fieldSize}</i></span></div>
     <div><span class="mjr-k">QUESTION</span><span class="mjr-v"><b>${shownRounds.length}</b><i>/ ${totalRounds}</i></span></div>
-    <div class="mjr-strip-r"><span class="mjr-k">${done ? 'RESULT' : 'STATUS'}</span>
-      <span class="mjr-v mjr-v-txt">${done && winner
-        ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-        : lastRound ? `ROUND ${lastRound.q} LOCKED` : 'BOARDS DOWN'}</span></div>
+    <div class="mjr-strip-r"><span class="mjr-k">${sealed ? 'RESULT' : done ? 'RESULT' : 'STATUS'}</span>
+      <span class="mjr-v mjr-v-txt">${sealed
+        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        : done && winner
+          ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
+          : lastRound ? `ROUND ${lastRound.q} LOCKED` : 'BOARDS DOWN'}</span></div>
   </div>`;
 
   // ── cards ────────────────────────────────────────────────────────────
@@ -175,6 +201,17 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
           <span class="mjr-sub">${fieldSize} playing</span></header>
         <p class="mjr-body">${E(s.beat.text)}</p>
       </article>`;
+    }
+
+    if (s.kind === 'cut') {
+      const stillIn = shownRounds.length
+        ? shownRounds[shownRounds.length - 1].standing - shownRounds[shownRounds.length - 1].outs.length
+        : fieldSize;
+      return sealCutCard('mjr', { standing: stillIn, unit: 'still holding a board', salt: Number(ep.num) || 0 });
+    }
+
+    if (s.kind === 'irony') {
+      return sealIronyCard('mjr', { winner, avatar: AV, esc: E, isHoh });
     }
 
     if (s.kind === 'win') {
@@ -407,6 +444,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   .mjr-count{font-family:Antonio,sans-serif;font-size:10px;letter-spacing:2.4px;color:var(--mj-dim)}
   .mjr-done{font-family:Antonio,sans-serif;font-size:10px;letter-spacing:2.4px;color:${accent}}
 
+  ${sealCss('mjr', accent)}
   @media(max-width:700px){
     .mjr-strip{grid-template-columns:1fr 1fr}
     .mjr-strip-r{grid-column:1/-1;border-left:0;border-top:1px solid var(--mj-line);padding:6px 0 0}
@@ -421,7 +459,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
 
   <div class="mjr-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
   <div class="mjr-title">${E((comp.name || 'MAJORITY RULES').toUpperCase())}</div>
-  <div class="mjr-tagline">not what you think &middot; what the house thinks</div>
+  <div class="mjr-tagline">${sealed ? 'not what you think &middot; and nobody sees who wins' : 'not what you think &middot; what the house thinks'}</div>
 
   <div class="mjr-what">
     <div class="mjr-what-h"><span class="mjr-what-c">${E(cat.label)}</span><b>${E(comp.name || 'Majority Rules')}</b></div>
@@ -438,7 +476,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   <div>${cards}</div>
 
   <div class="mjr-ctrl">
-    ${done ? '<span class="mjr-done">EVERY BOARD IS DOWN.</span>' : `
+    ${done ? `<span class="mjr-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'EVERY BOARD IS DOWN.'}</span>` : `
       <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
         state.idx < 0 ? 'Read the first question' : 'Next question'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}

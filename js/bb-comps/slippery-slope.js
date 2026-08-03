@@ -35,7 +35,7 @@
 
 import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
-import { beat, toResult, makePicker, throwRead, clamp, THROW_LINES } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -63,7 +63,7 @@ const SPILL_LINES = [
   (n, p) => `${n} slides the last two metres on ${p.posAdj} front, arms up, saving maybe a third of the scoop.`,
   // Carried over from the competition this one replaces — the lines were good
   // and the lane they describe is the same lane.
-  (n, p) => `${n} goes down the slope face first, which is fast and, as ${p.sub} discovers, unsteerable.`,
+  (n, p) => `${n} goes down the slope face first, which is fast and, as ${p.sub} ${vb(p, 'discovers', 'discover')}, unsteerable.`,
   (n) => `${n} hits the bottom, comes up unrecognisable, and gets the yard's only cheer of the night.`,
   (n, p) => `${n} loses a shoe somewhere on the slope and finishes the competition without it.`,
 ];
@@ -76,9 +76,9 @@ const GRIND_LINES = [
 ];
 
 const TAKE_LINES = [
-  (n, p, prize, pct) => `${n} looks at ${p.posAdj} own container, sitting at ${pct}%, then at the small one. ${p.Sub} takes ${prize} and walks off the lane while the competition is still running.`,
+  (n, p, prize, pct) => `${n} looks at ${p.posAdj} own container, sitting at ${pct}%, then at the small one. ${p.Sub} ${vb(p, 'takes', 'take')} ${prize} and walks off the lane while the competition is still running.`,
   (n, p, prize, pct) => `At ${pct}% full and a long way back, ${n} makes the call nobody wants to be seen making, and fills the small container for ${prize}.`,
-  (n, p, prize, pct) => `${n} stops. Everybody sees ${p.obj} stop. ${p.Sub} pours into the small box, takes ${prize}, and is out of the competition by ${p.posAdj} own hand.`,
+  (n, p, prize, pct) => `${n} stops. Everybody sees ${p.obj} stop. ${p.Sub} ${vb(p, 'pours', 'pour')} into the small box, takes ${prize}, and is out of the competition by ${p.posAdj} own hand.`,
 ];
 
 export const slipperySlope = {
@@ -109,7 +109,8 @@ export const slipperySlope = {
       const carry = (s.physical * 0.30 + s.endurance * 0.26 + s.temperament * 0.18
         + s.boldness * 0.14 + s.intuition * 0.12) / 10;
       return {
-        name, carry, fill: 0, trips: 0, spills: 0, fatigue: 0, log: [], hnCost: 0,
+        name, carry, fill: 0, trips: 0, spills: 0, fatigue: 0, log: [], hnCost: 0, luck: 0,
+        base: Math.round(aptitude(name, slipperySlope.stats) * 100) / 100,
         threw: t.threw, threwChance: t.chance,
         haveNot: (context.haveNots || []).includes(name),
         // Somebody on the block has a reason to keep running and a reason to
@@ -139,7 +140,9 @@ export const slipperySlope = {
         // ball: at the old rate nobody filled a container inside fourteen trips
         // and every single competition ended on levels, which meant the small
         // container never came up and the best mechanic never fired.
-        let got = clamp(p.carry * 24 + (rng() - 0.5) * 7 - p.fatigue * 1.6, 0.8, 30);
+        const noise = (rng() - 0.5) * 7;
+        p.luck += noise;
+        let got = clamp(p.carry * 24 + noise - p.fatigue * 1.6, 0.8, 30);
         if (slipped) { got *= 0.28 + rng() * 0.3; p.spills++; }
         if (p.haveNot) { const before = got; got *= 0.86; p.hnCost += before - got; }
         if (p.threw) got *= 0.45;
@@ -206,7 +209,12 @@ export const slipperySlope = {
       } else if (p !== champ) {
         beats.push(beat(grind(GRIND_LINES)(p.name, pr), [p.name], `${Math.round(p.fill)}% FULL`));
       }
+    // The Debug tab reports the levers behind every score — aptitude and the
+    // luck that moved it. This competition spreads its randomness across many
+    // small rolls rather than one, so `roll` is the accumulated deviation,
+    // signed so that positive always means luck helped.
       breakdown[p.name] = {
+        base: p.base, roll: Math.round(p.luck * 100) / 100,
         fill: Math.round(p.fill), trips: p.trips, spills: p.spills, log: p.log,
         tookPrize: p.tookPrize, prize: p.tookPrize ? prize.key : null, prizeTrip: p.prizeTrip || null,
         threw: p.threw, threwChance: p.threwChance,
@@ -226,7 +234,7 @@ export const slipperySlope = {
     const cp = pron(champ.name);
     beats.push(beat(
       champ.fill >= FULL
-        ? `${champ.name} gets a hand into the container, closes it around the ball, and holds it up. ${cp.Sub} is soaked through and has stopped caring.`
+        ? `${champ.name} gets a hand into the container, closes it around the ball, and holds it up. ${cp.Sub} ${vb(cp, 'is', 'are')} soaked through and has stopped caring.`
         : `${champ.name} finishes with the fullest container in the yard.`,
       [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(champ.name, 2);

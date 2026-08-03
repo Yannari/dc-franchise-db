@@ -15,16 +15,16 @@
 // moment when the field's relationships supply one. Nothing here runs
 // phases, maps or sidebars — the pressure IS the identity.
 import { pronouns } from '../players.js';
-import { scoreField, toResult, beat, margin } from './_shared.js';
+import { scoreField, toResult, beat, margin, vb } from './_shared.js';
 import { dislikes, bond } from '../bb-events/_read.js';
 
 const say = (rng, lines) => lines[Math.floor(rng() * lines.length)];
 
 /** The last-place fall, told with the clock in the room. */
 const FALL_LINES = [
-  (n, p) => `The horn goes for ${n} first. ${p.Sub} stares at the board a half-second longer than dignity strictly allows.`,
+  (n, p) => `The horn goes for ${n} first. ${p.Sub} ${vb(p, 'stares', 'stare')} at the board a half-second longer than dignity strictly allows.`,
   (n, p) => `${n} is out of it. From the glass the house is perfectly silent, which everybody understands is not neutrality.`,
-  (n, p) => `${n} runs out of arena before ${p.sub} runs out of fight, which is somehow worse.`,
+  (n, p) => `${n} runs out of arena before ${p.sub} ${vb(p, 'runs', 'run')} out of fight, which is somehow worse.`,
   (n, p) => `${n} steps back from the station slowly. The vote just got simpler for everybody except ${p.obj}.`,
 ];
 
@@ -188,7 +188,7 @@ const houseOfCards = {
 const PLAY_vertigo = {
     leader: [
       (n, p) => `${n} steers with tiny, patient shifts — the ball rolls past the third wrong hole close enough to touch and keeps going. The centre is two rings away and ${n} is not hurrying.`,
-      (n, p) => `${n} has the maze doing what ${p.sub} wants, which nobody else's maze is doing. Ring by ring, the ball spirals inward.`,
+      (n, p) => `${n} has the maze doing what ${p.sub} ${vb(p, 'wants', 'want')}, which nobody else's maze is doing. Ring by ring, the ball spirals inward.`,
       (n, p) => `${n} leans, holds, and lets the ball do the work. It is the least dramatic run in the arena, which is exactly what winning this one looks like.`,
     ],
     mid: [
@@ -338,7 +338,7 @@ const unravel = {
       participants.slice(0, 3), 'THE KNOTS'));
     const tangled = [...entries].reverse()[0];
     beats.push(beat(
-      `${tangled.name} pulls the wrong strand and watches thirty seconds of work re-knot itself. The sound ${pronouns(tangled.name).sub} makes is not a word, quite.`,
+      `${tangled.name} pulls the wrong strand and watches thirty seconds of work re-knot itself. The sound ${pronouns(tangled.name).sub} ${vb(pronouns(tangled.name), 'makes', 'make')} is not a word, quite.`,
       [tangled.name], 'RE-KNOTTED', 'red'));
     arenaPlayByPlay(entries, rng, beats, PLAY_unravel);
     arenaFalls([...entries].reverse(), rng, beats);

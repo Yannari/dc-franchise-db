@@ -14,7 +14,7 @@ import { pronouns } from '../players.js';
 import { majorityRules } from './majority-rules.js';
 import { morphOMatic } from './morph-o-matic.js';
 import { knockout } from './knockout.js';
-import { scoreField, toResult, beat, margin, makePicker, THROW_LINES } from './_shared.js';
+import { scoreField, toResult, beat, margin, makePicker, THROW_LINES, vb } from './_shared.js';
 import { bond, memoriesOf } from '../bb-events/_read.js';
 
 export const puzzleRace = {
@@ -37,7 +37,7 @@ export const puzzleRace = {
       // Someone leads and loses it — the most Big Brother thing a puzzle can do.
       const p = pronouns(leader.name);
       beats.push(beat(
-        `${leader.name} is ahead for most of it and knows ${p.sub} is ahead, which is the mistake. ${p.Sub} rushes the last corner and has to take it apart again.`,
+        `${leader.name} is ahead for most of it and knows ${p.sub} ${vb(p, 'is', 'are')} ahead, which is the mistake. ${p.Sub} ${vb(p, 'rushes', 'rush')} the last corner and has to take it apart again.`,
         [leader.name], 'LED AND LOST'));
       api.popDelta(leader.name, -1);
     }

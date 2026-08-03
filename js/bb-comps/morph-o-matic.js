@@ -25,7 +25,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond } from '../bonds.js';
-import { beat, toResult, makePicker, throwRead, clamp, THROW_LINES } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -50,15 +50,15 @@ const CLEAN_LINES = [
 ];
 
 const FLUB_LINES = [
-  (n, p, pair, wrong) => `${n} registers ${wrong}, hits the button, and gets the noise nobody wants. Twice more before ${p.sub} lands on ${pair[1]}.`,
-  (n, p, pair, wrong) => `${n} is certain it is ${wrong}. It is not ${wrong}. ${p.Sub} stands there arguing with a photograph.`,
-  (n, p, pair, wrong) => `${n} keeps putting ${wrong} in because ${wrong} is who ${p.sub} has been thinking about all week, which is exactly how this competition gets you.`,
+  (n, p, pair, wrong) => `${n} registers ${wrong}, hits the button, and gets the noise nobody wants. Twice more before ${p.sub} ${vb(p, 'lands', 'land')} on ${pair[1]}.`,
+  (n, p, pair, wrong) => `${n} is certain it is ${wrong}. It is not ${wrong}. ${p.Sub} ${vb(p, 'stands', 'stand')} there arguing with a photograph.`,
+  (n, p, pair, wrong) => `${n} keeps putting ${wrong} in because ${wrong} is who ${p.sub} ${vb(p, 'has', 'have')} been thinking about all week, which is exactly how this competition gets you.`,
   (n, p) => `${n} cycles the whole board twice and comes back to the two ${p.sub} started with.`,
 ];
 
 const GHOST_LINES = [
-  (n, p, who) => `${who}'s face comes up half-merged into somebody else's and ${n} stops moving entirely. ${p.Sub} loses real time to it and does not pretend otherwise afterwards.`,
-  (n, p, who) => `${n} gets to the picture with ${who} in it and just looks at it. The clock keeps going. ${p.Sub} lets it.`,
+  (n, p, who) => `${who}'s face comes up half-merged into somebody else's and ${n} stops moving entirely. ${p.Sub} ${vb(p, 'loses', 'lose')} real time to it and does not pretend otherwise afterwards.`,
+  (n, p, who) => `${n} gets to the picture with ${who} in it and just looks at it. The clock keeps going. ${p.Sub} ${vb(p, 'lets', 'let')} it.`,
   (n, p, who) => `Nobody expects ${who} to turn up on the board tonight. ${n} least of all, and it costs ${p.obj} the better part of a minute.`,
 ];
 
@@ -113,12 +113,14 @@ export const morphOMatic = {
       const skill = (s.mental * 0.38 + s.intuition * 0.26 + s.temperament * 0.20 + s.social * 0.16) / 10;
       const haveNot = (context.haveNots || []).includes(name);
 
-      let time = 0, wrongTotal = 0, ghostOn = null, worst = null, hnCost = 0;
+      let time = 0, wrongTotal = 0, ghostOn = null, worst = null, hnCost = 0, luck = 0;
       const morphs = board.map(pair => {
         // Base read: skill shortens it hard, nerves and slop lengthen it. The
         // skill term has to dominate the noise or six faces of luck cancel out
         // into a dead heat.
-        let secs = clamp(4.5 + (1 - skill) * 24 + (rng() - 0.5) * 7, 2, 42);
+        const noise = (rng() - 0.5) * 7;
+        luck -= noise;                       // less time is better luck
+        let secs = clamp(4.5 + (1 - skill) * 24 + noise, 2, 42);
         if (haveNot) { const hn = 1.4 + rng() * 1.8; secs += hn; hnCost += hn; }
         if (t.threw) secs += 6 + rng() * 9;
 
@@ -143,7 +145,8 @@ export const morphOMatic = {
         return entry;
       });
 
-      return { name, time: round1(time), wrongTotal, morphs, ghostOn, worst,
+      return { name, time: round1(time), wrongTotal, morphs, ghostOn, worst, luck: round1(luck),
+        base: round1(aptitude(name, morphOMatic.stats)),
         threw: t.threw, threwChance: t.chance, haveNot, haveNotPenalty: round1(hnCost) };
     });
 
@@ -168,7 +171,12 @@ export const morphOMatic = {
         const best = r.morphs.reduce((a, b) => (b.secs < a.secs ? b : a), r.morphs[0]);
         beats.push(beat(clean(CLEAN_LINES)(r.name, p, best.pair), [r.name], `${r.time}s`));
       }
+    // The Debug tab reports the levers behind every score — aptitude and the
+    // luck that moved it. This competition spreads its randomness across many
+    // small rolls rather than one, so `roll` is the accumulated deviation,
+    // signed so that positive always means luck helped.
       breakdown[r.name] = {
+        base: r.base, roll: r.luck,
         time: r.time, wrong: r.wrongTotal, faces: r.morphs.length, hauntedBy: r.ghostOn,
         morphs: r.morphs, threw: r.threw, threwChance: r.threwChance,
         // Reported, not merely applied: the have-not twist is verified by
@@ -187,7 +195,7 @@ export const morphOMatic = {
     }
     const wp = pron(winner.name);
     beats.push(beat(
-      `Every face on that board was somebody ${wp.sub} has lived with, and ${winner.name} named all of them faster than anybody else could.`,
+      `Every face on that board was somebody ${wp.sub} ${vb(wp, 'has', 'have')} lived with, and ${winner.name} named all of them faster than anybody else could.`,
       [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(winner.name, 2);
     api.record(winner.name, 'morph-win', { time: winner.time, wrong: winner.wrongTotal });

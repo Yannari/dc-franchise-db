@@ -33,7 +33,7 @@ import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
 import { bbThreat } from '../bb/shared-strategy.js';
-import { beat, toResult, makePicker, throwRead, clamp } from './_shared.js';
+import { aptitude, beat, toResult, makePicker, throwRead, clamp, vb } from './_shared.js';
 
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
@@ -134,10 +134,10 @@ const OPEN_LINES = [
 
 const OUT_LINES = [
   (n, p) => `${n} answers what ${p.sub} actually believes instead of what the house believes, which is the exact mistake this competition exists to punish.`,
-  (n, p) => `${n} is on the wrong side of it by one, and ${p.sub} knows it before the count even finishes.`,
+  (n, p) => `${n} is on the wrong side of it by one, and ${p.sub} ${vb(p, 'knows', 'know')} it before the count even finishes.`,
   (n) => `${n} reads the room badly. It is a small thing to be wrong about and it ends ${n}'s competition.`,
   (n, p) => `${n} changes ${p.posAdj} answer at the last second, away from the one the house gave.`,
-  (n, p) => `The minority is ${n}, alone, holding up a board ${p.sub} was completely sure about.`,
+  (n, p) => `The minority is ${n}, alone, holding up a board ${p.sub} ${vb(p, 'was', 'were')} completely sure about.`,
   (n, p) => `${n} goes with ${p.posAdj} gut. ${p.PosAdj} gut has not been in the same conversations as everybody else's.`,
 ];
 
@@ -183,8 +183,10 @@ export const majorityRules = {
       breakdown[name] = {
         picks: [], correct: 0, outRound: null, threw: t.threw, threwChance: t.chance,
         haveNot, haveNotPenalty: haveNot ? HAVE_NOT_DRAG : 0, score: 0,
+        // See the note by `luck` below.
+        base: Math.round(aptitude(name, majorityRules.stats) * 100) / 100, roll: 0,
       };
-      return { name, threw: t.threw, haveNot, correct: 0, picks: [], outRound: null };
+      return { name, threw: t.threw, haveNot, correct: 0, picks: [], outRound: null, luck: 0 };
     });
 
     beats.push(beat(
@@ -218,8 +220,10 @@ export const majorityRules = {
       field.forEach(f => {
         // Throwing here is elegant: answer what you believe rather than what
         // the room believes, and nobody can ever prove you did it on purpose.
-        const onPrior = f.threw ? rng() < 0.18
-          : rng() < readAccuracy(f.name, obviousness, f.haveNot ? HAVE_NOT_DRAG : 0);
+        const acc = f.threw ? 0.18 : readAccuracy(f.name, obviousness, f.haveNot ? HAVE_NOT_DRAG : 0);
+        const onPrior = rng() < acc;
+        // How far the round ran ahead of or behind expectation, accumulated.
+        f.luck += (onPrior ? 1 : 0) - acc;
         const aim = tally.majority || (rng() < 0.5 ? a : b);
         f.pick = onPrior ? aim : (aim === a ? b : a);
       });
@@ -261,7 +265,7 @@ export const majorityRules = {
           const p = pron(f.name);
           beats.push(beat(
             f.threw
-              ? `${f.name} answers what ${p.sub} thinks rather than what the house thinks, and goes out on a round ${p.sub} could have read with ${p.posAdj} eyes shut.`
+              ? `${f.name} answers what ${p.sub} ${vb(p, 'thinks', 'think')} rather than what the house thinks, and goes out on a round ${p.sub} could have read with ${p.posAdj} eyes shut.`
               : out(OUT_LINES)(f.name, p),
             [f.name], 'MINORITY', 'grey'));
         });
@@ -313,7 +317,7 @@ export const majorityRules = {
     const champ = field[0];
     const p = pron(champ.name);
     beats.push(beat(
-      `${champ.name} read the room better than the room read itself. ${p.Sub} takes it.`,
+      `${champ.name} read the room better than the room read itself. ${p.Sub} ${vb(p, 'takes', 'take')} it.`,
       [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'majority-rules-win', { correct: champ.correct, rounds: round });
@@ -331,7 +335,11 @@ export const majorityRules = {
 
     const entries = placements.map((name, i) => {
       const score = (placements.length - i) + (breakdown[name]?.correct || 0) * 0.1;
-      if (breakdown[name]) breakdown[name].score = score;
+      if (breakdown[name]) {
+        breakdown[name].score = score;
+        const f = field.find(x => x.name === name);
+        breakdown[name].roll = Math.round(((f?.luck) || 0) * 100) / 100;
+      }
       return { name, score, threw: !!breakdown[name]?.threw };
     });
 

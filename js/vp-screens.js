@@ -23,6 +23,10 @@ import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
 import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';
 import { rpBuildSigBBComics } from './vp-bb-sig/bb-comics.js';
 import { rpBuildSigBeforeOrAfter } from './vp-bb-sig/before-or-after.js';
+import { rpBuildSigMajorityRules } from './vp-bb-sig/majority-rules.js';
+import { rpBuildSigMorphOMatic } from './vp-bb-sig/morph-o-matic.js';
+import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
+import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -16805,6 +16809,14 @@ const _BB_SIG_BUILDERS = {
   'hide-and-go-veto': rpBuildSigHideAndGoVeto,
   'bb-comics': rpBuildSigBBComics,
   'before-or-after': rpBuildSigBeforeOrAfter,
+  // The deepened recurring competitions keep their original variant tags, so a
+  // season saved before they were rewritten still resolves here — and each
+  // builder declines when the new per-round data is absent, dropping that old
+  // week back to the generic board rather than drawing an empty set.
+  'quiz': rpBuildSigMajorityRules,
+  'memory': rpBuildSigMorphOMatic,
+  'precision': rpBuildSigBowlerina,
+  'knockout': rpBuildSigSlipperySlope,
 };
 
 export function rpBuildBBComp(ep, actType) {

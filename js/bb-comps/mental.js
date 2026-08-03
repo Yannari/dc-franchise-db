@@ -11,6 +11,8 @@
 // have paid attention is its own kind of exposure.
 
 import { pronouns } from '../players.js';
+import { majorityRules } from './majority-rules.js';
+import { morphOMatic } from './morph-o-matic.js';
 import { scoreField, toResult, beat, margin, makePicker, THROW_LINES } from './_shared.js';
 import { bond, memoriesOf } from '../bb-events/_read.js';
 
@@ -67,90 +69,17 @@ export const puzzleRace = {
   },
 };
 
-export const seasonQuiz = {
-  id: 'bb-mental-quiz',
-  name: 'House Record',
-  category: 'quiz',
-  types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Houseguests answer questions about competitions, ceremonies and events from the current season. Wrong answers cost ground, and the player with the strongest score wins.',
-  stats: { mental: 0.40, intuition: 0.30, strategic: 0.20, social: 0.10 },
-  simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3, context, rng });
-    const beats = [];
-    beats.push(beat(
-      `The questions are all about the last few weeks, which means the competition is really about who has been paying attention and who has been comfortable.`,
-      participants.slice(0, 3), 'HOUSE RECORD'));
+// House Record used to live here as a one-roll quiz. It is now Majority Rules —
+// a real recurring competition with rounds, eliminations and a tiebreaker — and
+// lives in its own file because it is far too big to sit in a shared one. The
+// id (`bb-mental-quiz`) is unchanged, so the picker, the season schedule and any
+// pinned week still resolve to it.
+export { majorityRules } from './majority-rules.js';
 
-    // Somebody's answer reveals how closely they have been tracking the house.
-    const sharp = entries[0];
-    const watcher = entries.find(e => e.name !== sharp.name && memoriesOf(e.name).length > 2);
-    if (watcher) {
-      beats.push(beat(
-        `${watcher.name} answers a question about a vote nobody thought ${pronouns(watcher.name).sub} had noticed. Two people turn around.`,
-        [watcher.name], 'BEEN WATCHING'));
-      // Being visibly observant is dangerous in this house.
-      api.popDelta(watcher.name, 1);
-      api.record(watcher.name, 'revealed-attention', {});
-    }
+// The Wall of Faces used to live here as a one-roll "spot the changed detail".
+// It is now Morph 'O' Matic — a real recurring competition with a board of
+// morphed faces, wrong registrations and a running clock — in its own file. The
+// id (`bb-mental-memory`) is unchanged.
+export { morphOMatic } from './morph-o-matic.js';
 
-    const wrong = entries.at(-1);
-    if (wrong && !wrong.threw) {
-      beats.push(beat(
-        `${wrong.name} gets an early one badly wrong and spends the rest of the competition guessing against the buzzer.`,
-        [wrong.name], 'OFF THE PACE', 'grey'));
-    }
-
-    const winner = entries[0];
-    beats.push(beat(`${winner.name} takes it on the last question.`,
-      [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
-    api.popDelta(winner.name, 2);
-    api.record(winner.name, 'quiz-win', {});
-
-    return toResult(entries, {
-      beats, breakdown, variant: 'quiz',
-      text: `${winner.name} wins House Record.`,
-    });
-  },
-};
-
-export const memoryWall = {
-  id: 'bb-mental-memory',
-  name: 'The Wall of Faces',
-  category: 'memory',
-  types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'A display recreates the evicted houseguests and the order they left, but one detail is wrong. Players study the wall and race to identify the change.',
-  stats: { mental: 0.44, intuition: 0.28, temperament: 0.16, strategic: 0.12 },
-  simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.8, context, rng });
-    const beats = [];
-    const gone = (context.week?.houseAtStart || []).filter(n => !participants.includes(n));
-
-    beats.push(beat(
-      gone.length
-        ? `The wall goes up with every evicted houseguest on it. Nobody enjoys looking at it, which is rather the idea.`
-        : `The wall goes up. It is mostly empty, this early, and somehow that is worse.`,
-      participants.slice(0, 2), 'THE WALL'));
-
-    const rattled = entries.at(-1);
-    if (rattled && gone.length) {
-      beats.push(beat(
-        `${rattled.name} keeps looking at one photograph instead of the puzzle, and loses about a minute to it.`,
-        [rattled.name], 'DISTRACTED', 'grey'));
-    }
-
-    const winner = entries[0];
-    const m = margin(entries);
-    beats.push(beat(
-      `${winner.name} spots the change ${m.word === 'runaway' ? 'almost immediately' : 'first'} and calls it.`,
-      [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
-    api.popDelta(winner.name, 2);
-    api.record(winner.name, 'memory-win', {});
-
-    return toResult(entries, {
-      beats, breakdown, variant: 'memory',
-      text: `${winner.name} wins The Wall of Faces.`,
-    });
-  },
-};
-
-export const MENTAL_COMPS = [puzzleRace, seasonQuiz, memoryWall];
+export const MENTAL_COMPS = [puzzleRace, majorityRules, morphOMatic];

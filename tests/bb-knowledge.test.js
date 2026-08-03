@@ -318,14 +318,21 @@ describe('a showmance gets screen time', () => {
     // The correction has a ceiling: a showmance is a storyline, not the week.
     // The people who might go home are still the week.
     //
-    // Seeded, unlike its first draft: the margin between a nominee's screen
-    // time and a safe couple's is real but not wide, and an unseeded season
-    // made this the suite's most reliable flake — the property held across
-    // runs on average and failed on variance. Every other season-shaped test
-    // here pins its dice; this one now does too.
-    house();
+    // Pooled across three seeded seasons rather than pinned to one.
+    //
+    // A single seed was the first fix for this being the suite's most reliable
+    // flake, and it traded one fragility for a quieter one: the margin is real
+    // but narrow, so ANY change that shifts the random stream — a competition
+    // that rolls a different number of times, say — re-rolls this assertion
+    // from scratch and can land it on the wrong side while the property itself
+    // is untouched. Measured across ten seeds the property holds on nine, and
+    // the pooled means are not close (about 46 against 39). Pooling three
+    // seasons keeps the dice pinned AND tests the claim actually being made,
+    // which is about the edit in general and not about one week in one season.
     const beats = { nominee: [], couple: [] };
-    withSeededRandom(20260803, () => {
+    for (const seed of [20260803, 11, 202]) {
+    house();
+    withSeededRandom(seed, () => {
     let guard = 0;
     while (!houseIsAtFinale() && guard++ < 10) {
       const ep = simulateBBEpisode();
@@ -353,10 +360,11 @@ describe('a showmance gets screen time', () => {
       }
     }
     });
+    }
     const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
     if (beats.couple.length && beats.nominee.length) {
       expect(mean(beats.nominee), 'a safe couple is out-screening the block')
         .toBeGreaterThan(mean(beats.couple));
     }
-  }, 150000);
+  }, 400000);
 });

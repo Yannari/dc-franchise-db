@@ -1,0 +1,185 @@
+// ══════════════════════════════════════════════════════════════════════
+// bb-comps/bowlerina.js — Bowlerina
+// ══════════════════════════════════════════════════════════════════════
+//
+// A recurring Power of Veto, Head of Household and Temptation competition since
+// Big Brother 15 — five seasons across the US and Argentina. The rules:
+//
+//   Hold the metal bars above your head and spin. After a set time a barrier
+//   drops, and you get to roll a ball at the pin targets on the far side. Then
+//   the barrier comes back up and you spin again.
+//
+// The competition is not bowling. It is bowling AFTER being spun, which is why
+// `temperament` carries it and physical strength barely matters: the whole
+// thing is about whether the room has stopped moving yet. Dizziness is the
+// mechanic — it accumulates across frames, it is resisted rather than avoided,
+// and the last frames are worth the same as the first ones to somebody who can
+// still stand up straight.
+//
+// It replaces a one-roll "roll balls at scoring pockets" comp with no frames in
+// it. Each houseguest now has a real card: every roll scored, the dizziness it
+// was thrown under, gutters, and a best frame.
+//
+// NOTE ON `breakdown`: one key per player only — the Debug tab renders keys as
+// houseguests. Per-frame structure lives inside each player's record.
+// ══════════════════════════════════════════════════════════════════════
+
+import { pStats, pronouns } from '../players.js';
+import { beat, toResult, makePicker, throwRead, clamp, THROW_LINES } from './_shared.js';
+
+const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
+const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
+
+// What a roll can be worth. The far targets pay, and they are the ones you
+// cannot see properly.
+const PIN_VALUES = [0, 1, 2, 3, 5, 8];
+
+const OPEN_LINES = [
+  () => 'The bars go up, the barrier goes down, and the yard fills with the sound of a lot of people trying not to be sick.',
+  n => `${n} frames each. Spin, wait for the barrier, roll at something you can only partly see, and then do it again.`,
+  () => 'Nobody has ever made this look dignified and nobody is about to start.',
+  () => 'The pins are not far away. The problem has never been the distance.',
+];
+
+const BIG_LINES = [
+  (n, p, v) => `${n} rolls it clean into the far target for ${v}. ${p.Sub} could not tell you how.`,
+  (n, p, v) => `${n} lets go early, before the room has finished turning, and it drops for ${v}.`,
+  (n, p, v) => `The ${v} is the best roll of the night so far and ${n} immediately sits down on the mat.`,
+  (n, p, v) => `${n} takes an extra second on the bars, waits out the worst of it, and buys ${p.ref} ${v}.`,
+];
+
+const GUTTER_LINES = [
+  (n, p) => `${n} releases while still turning and watches the ball go somewhere the pins are not.`,
+  (n, p) => `${n} is aiming at a target that is, from ${p.posAdj} point of view, currently orbiting.`,
+  (n) => `Nothing. ${n} does not even see where it went.`,
+  (n, p) => `${n} lets go of the bars, takes two steps sideways that ${p.sub} did not plan, and rolls it into the wall.`,
+];
+
+const DIZZY_LINES = [
+  (n, p) => `${n} comes off the bars and goes straight down onto one knee. It takes ${p.obj} most of the frame to get back up.`,
+  (n, p) => `${n} has to be pointed at the lane. ${p.Sub} is pointed at the lane and rolls anyway.`,
+  (n, p) => `${n} spins hard, which is the mistake — the extra rotations buy nothing and cost ${p.obj} the next two frames.`,
+];
+
+export const bowlerina = {
+  id: 'bb-physical-precision',
+  name: 'Bowlerina',
+  category: 'precision',
+  types: ['hoh', 'veto', 'arena', 'tiebreaker'],
+  desc: 'Houseguests hang from metal bars and spin. When the barrier drops they roll a ball at the pin targets across the yard, and when it rises they spin again. The far targets are worth the most and are the hardest to see. Highest total across every frame wins.',
+  stats: { temperament: 0.34, intuition: 0.24, physical: 0.18, mental: 0.14, endurance: 0.10 },
+  weight: () => 1.15,
+  simulate(participants, context, api, rng) {
+    const beats = [];
+    const breakdown = {};
+    const big = makePicker(rng);
+    const gut = makePicker(rng);
+    const diz = makePicker(rng);
+    const threwSay = makePicker(rng);
+
+    const frames = 5;
+    beats.push(beat(
+      OPEN_LINES[Math.floor(rng() * OPEN_LINES.length)](frames),
+      participants.slice(0, 3), `${frames} FRAMES`));
+
+    const runs = participants.map(name => {
+      const s = pStats(name);
+      const t = throwRead(name, context, rng);
+      // Holding your head together is the competition. Strength is a rounding
+      // error next to it.
+      const steady = (s.temperament * 0.34 + s.intuition * 0.24 + s.physical * 0.18
+        + s.mental * 0.14 + s.endurance * 0.10) / 10;
+      const haveNot = (context.haveNots || []).includes(name);
+
+      let dizzy = 0, total = 0, gutters = 0, collapsed = false, best = null, hnCost = 0;
+      const card = [];
+      for (let f = 0; f < frames; f++) {
+        // Dizziness ratchets. Temperament sheds most of it between frames but
+        // never all, so the back half of the card is the harder half — while
+        // still leaving a steady houseguest upright at the end of it. Tuned
+        // down from a version that buried the whole field by frame three and
+        // put four of eight players on the mat.
+        dizzy = clamp(dizzy + 0.75 + rng() * 0.55 - steady * 0.95, 0, 2.8);
+        if (haveNot) { const before = dizzy; dizzy = clamp(dizzy + 0.3, 0, 3); hnCost += dizzy - before; }
+
+        // Going down is an event, not the weather. At a 30% roll above a low
+        // threshold half the yard collapsed every single time.
+        let fell = false;
+        if (!collapsed && dizzy > 2.1 && rng() < 0.13) {
+          fell = true; collapsed = true; dizzy = clamp(dizzy + 0.5, 0, 3.2);
+        }
+
+        // The roll: aim is steadiness minus however much the room is moving.
+        const aim = clamp(0.18 + steady * 1.15 - dizzy * 0.17 + (rng() - 0.5) * 0.5
+          - (t.threw ? 0.5 : 0) - (fell ? 0.3 : 0), 0, 1);
+        const idx = Math.min(PIN_VALUES.length - 1, Math.floor(aim * PIN_VALUES.length + rng() * 0.85));
+        const value = PIN_VALUES[Math.max(0, idx)];
+
+        if (!value) gutters++;
+        total += value;
+        const entry = { frame: f + 1, value, dizzy: Math.round(dizzy * 10) / 10, fell };
+        if (!best || value > best.value) best = entry;
+        card.push(entry);
+      }
+
+      return { name, total, gutters, card, best, collapsed,
+        threw: t.threw, threwChance: t.chance, haveNot,
+        haveNotPenalty: Math.round(hnCost * 100) / 100, steady };
+    });
+
+    runs.sort((x, y) => y.total - x.total || x.gutters - y.gutters);
+
+    runs.forEach(r => {
+      const p = pron(r.name);
+      if (r.threw) {
+        beats.push(beat(threwSay(THROW_LINES)(r.name), [r.name], 'THREW IT', 'grey'));
+      } else if (r.collapsed) {
+        beats.push(beat(diz(DIZZY_LINES)(r.name, p), [r.name], 'WENT DOWN', 'grey'));
+      } else if (r.best && r.best.value >= 5) {
+        beats.push(beat(big(BIG_LINES)(r.name, p, r.best.value), [r.name], `${r.total} POINTS`));
+      } else if (r.gutters >= 2) {
+        beats.push(beat(gut(GUTTER_LINES)(r.name, p), [r.name], `${r.gutters} GUTTERS`, 'grey'));
+      } else {
+        beats.push(beat(
+          `${r.name} keeps every roll on the boards and takes the safe targets. ${r.total} points, no drama, no disasters.`,
+          [r.name], `${r.total} POINTS`));
+      }
+      breakdown[r.name] = {
+        total: r.total, gutters: r.gutters, frames: r.card.length, card: r.card,
+        best: r.best?.value ?? 0, collapsed: r.collapsed, steady: Math.round(r.steady * 100) / 100,
+        threw: r.threw, threwChance: r.threwChance,
+        // Reported, not merely applied — the have-not twist is verified by
+        // reading this field back off the competition.
+        haveNot: r.haveNot, haveNotPenalty: r.haveNotPenalty, score: r.total,
+      };
+    });
+
+    const winner = runs[0];
+    const second = runs[1];
+    if (second && winner.total === second.total) {
+      beats.push(beat(
+        `${winner.name} and ${second.name} finish level on ${winner.total}. It goes to gutters, and ${winner.name} kept ${winner.gutters === 0 ? 'every ball on the boards' : `one fewer ball off them`}.`,
+        [winner.name, second.name], 'COUNTBACK', 'gold'));
+    } else if (second) {
+      beats.push(beat(
+        `${winner.name} finishes on ${winner.total}. ${second.name} is closest on ${second.total}.`,
+        [winner.name, second.name], 'THE MARGIN', 'gold'));
+    }
+
+    const wp = pron(winner.name);
+    beats.push(beat(
+      `${winner.name} rolled straightest with the least idea which way was straight. ${wp.Sub} takes it on ${winner.total}.`,
+      [winner.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
+    api.popDelta(winner.name, 2);
+    api.record(winner.name, 'bowlerina-win', { total: winner.total, gutters: winner.gutters });
+    // Going down in front of the whole yard is a thing the house remembers.
+    runs.filter(r => r.collapsed && r !== winner).forEach(r => api.popDelta(r.name, -1));
+
+    const entries = runs.map(r => ({ name: r.name, score: r.total, threw: r.threw }));
+
+    return toResult(entries, {
+      beats, breakdown, variant: 'precision',
+      text: `${winner.name} wins Bowlerina on ${winner.total} points.`,
+    });
+  },
+};

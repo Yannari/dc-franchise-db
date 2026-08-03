@@ -9,6 +9,8 @@ import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns, ordinal } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, bbCompetitionsForSlot, bbForcedCompsForWeek } from '../js/bb-run.js';
+import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
+import { GENERIC_BB_COMPS } from '../js/bb/comps.js';
 import { seedGame } from './helpers/setup.js';
 
 const CAST = ['A','B','C','D','E','F','G','H','I','J','K','L']
@@ -45,6 +47,42 @@ describe('the competition picker', () => {
       expect(list.some(c => !c.generic), 'no written comps offered').toBe(true);
       expect(list.some(c => c.generic), 'no generic comps offered').toBe(true);
       for (const c of list) expect(c.name, `${c.id} has no label`).toBeTruthy();
+    }
+  });
+
+  // The picker must be DERIVED from the library, never a hand-kept list. If it
+  // is ever enumerated, a comp added next month is written, registered, and
+  // silently unpickable — this project's recurring bug class.
+  it('offers every competition in the library, with no hand-maintained subset', () => {
+    for (const slot of ['hoh', 'veto']) {
+      const offered = new Set(bbCompetitionsForSlot(slot).map(c => c.id));
+      const expected = [...BB_COMPETITIONS, ...GENERIC_BB_COMPS]
+        .filter(c => (c.types || []).includes(slot));
+      expect(expected.length, `nothing serves ${slot}`).toBeGreaterThan(0);
+      for (const c of expected) {
+        expect(offered.has(c.id), `${c.id} serves ${slot} but the picker never offers it`).toBe(true);
+      }
+      expect(offered.size, `the ${slot} picker offers something the library does not have`).toBe(expected.length);
+    }
+  });
+
+  it('picks up a brand-new competition with no UI change at all', () => {
+    // A comp invented at runtime stands in for one added next month. It is
+    // never registered anywhere near the picker, and must still appear.
+    const invented = {
+      id: 'bb-test-brand-new', name: 'Something Invented Today',
+      category: 'physical', types: ['veto'],
+      stats: { physical: 0.6, mental: 0.4 },
+    };
+    BB_COMPETITIONS.push(invented);
+    try {
+      expect(bbCompetitionsForSlot('veto').map(c => c.id)).toContain('bb-test-brand-new');
+      expect(bbCompetitionsForSlot('hoh').map(c => c.id)).not.toContain('bb-test-brand-new');
+      // And the wider Battle Back pool inherits it too.
+      expect(bbCompetitionsForSlot('battle-back').map(c => c.id)).toContain('bb-test-brand-new');
+    } finally {
+      const i = BB_COMPETITIONS.indexOf(invented);
+      if (i >= 0) BB_COMPETITIONS.splice(i, 1);
     }
   });
 

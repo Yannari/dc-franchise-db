@@ -390,6 +390,11 @@ const vetoBackdoorLands = {
   category: 'ceremonies',
   weight(house, ctx) {
     if (ctx.act !== 'veto-ceremony') return 0;
+    // This event narrates the HOH's week-long plan closing — which is false
+    // twice over on special weeks: under the Diamond Veto the HOLDER named
+    // the replacement, and on an invisible week nobody's name was attached
+    // at all. The engine's own beats (HIJACKED, the guess cards) own those.
+    if (ctx.week?.vetoDecision?.diamond || ctx.week?.hohSecret) return 0;
     const { used, replacement, backdoorTarget } = actFacts(ctx);
     if (!used || !replacement) return 0;
     // Only a backdoor if the replacement was the plan all along.
@@ -422,29 +427,38 @@ const vetoReplacementShock = {
   category: 'ceremonies',
   weight(house, ctx) {
     if (ctx.act !== 'veto-ceremony') return 0;
+    // An invisible week has no named namer — the engine's guess cards carry
+    // the reaction, aimed at whoever the replacement DECIDED it was.
+    if (ctx.week?.hohSecret && !ctx.week?.vetoDecision?.diamond) return 0;
     const { used, replacement, backdoorTarget } = actFacts(ctx);
     if (!used || !replacement) return 0;
     // The non-backdoor case: an unplanned replacement, which stings differently.
     if (backdoorTarget && backdoorTarget === replacement) return 0;
-    // Worse when the HOH putting you up was someone you trusted.
-    return band((pStats(replacement).loyalty / 10) * (0.6 + bondFactor(bond(replacement, ctx.hoh))) * 10);
+    // Whoever actually said the name: the HOH normally, the veto holder
+    // under the Diamond Veto. The grievance follows the voice, not the key.
+    const namer = ctx.week?.vetoDecision?.diamond
+      ? (ctx.week.vetoDecision.chairAuthority || ctx.hoh) : ctx.hoh;
+    // Worse when the person putting you up was someone you trusted.
+    return band((pStats(replacement).loyalty / 10) * (0.6 + bondFactor(bond(replacement, namer))) * 10);
   },
   fire(house, ctx, api) {
     const { replacement: victim } = actFacts(ctx);
+    const namer = ctx.week?.vetoDecision?.diamond
+      ? (ctx.week.vetoDecision.chairAuthority || ctx.hoh) : ctx.hoh;
     const p = pronouns(victim);
     const text = _variant([
       `${victim} is named as the replacement and takes the chair still holding the mug ${p.sub} brought in with ${p.obj}. Small detail. It is the one everyone remembers.`,
       `"I need a replacement nominee." ${victim} already knows. ${p.Sub} knew from the moment the veto came off — there was only ever one name that made the numbers work.`,
       `${victim} sits down hard. Not betrayed, exactly—spent. The distinction disappears as soon as the house starts counting votes.`,
       `The replacement is ${victim}, and the strange thing is how ordinary it feels — no gasp, no drama, just the week rearranging itself around ${p.obj} while ${p.sub} watches.`,
-      `${victim}'s name lands without warning. ${p.Sub} asks ${ctx.hoh}, “Was this always the plan?” and gets no answer before taking the chair.`,
-      `${victim} thought the veto would change somebody else's week. Then ${ctx.hoh} says ${p.posAdj} name and every conversation becomes evidence.`,
-    ], ctx, victim, ctx.hoh);
+      `${victim}'s name lands without warning. ${p.Sub} asks ${namer}, “Was this always the plan?” and gets no answer before taking the chair.`,
+      `${victim} thought the veto would change somebody else's week. Then ${namer} says ${p.posAdj} name and every conversation becomes evidence.`,
+    ], ctx, victim, namer);
 
-    api.addBond(victim, ctx.hoh, -1.1);
-    api.remember(victim, ctx.hoh, 'grudge', 1, { act: 'veto-ceremony' });
+    api.addBond(victim, namer, -1.1);
+    api.remember(victim, namer, 'grudge', 1, { act: 'veto-ceremony' });
     api.popDelta(victim, 1);
-    return { text, players: [victim, ctx.hoh], badgeText: 'REPLACEMENT', badgeClass: 'red' };
+    return { text, players: [victim, namer], badgeText: 'REPLACEMENT', badgeClass: 'red' };
   },
 };
 

@@ -6,7 +6,7 @@
 // satisfies the scheduler contract no matter which act it lands in.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
-import { simulateBBSeason } from '../js/bb/week.js';
+import { simulateBBSeason, simulateBBWeek } from '../js/bb/week.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
 import {
   HOUSE_EVENTS, HOUSE_EVENTS_BY_CATEGORY, houseEventsFor, assertUniqueEventIds,
@@ -50,17 +50,28 @@ const ctxFor = (act, extra = {}) => ({
 
 function playSeasons(seeds) {
   const fired = {};
+  // Two seeds run their SECOND week as an Invisible HOH, the way a real
+  // season schedules one — the invisible-* family exists only on sealed
+  // weeks, and a sweep that never seals one reports six live events as dead.
+  const invisibleSeasons = new Set([44, 88]);
   for (const seed of seeds) {
     reset();
-    const { weeks } = simulateBBSeason({
-      rng: seededRng(seed), finaleSize: 3,
-      houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
-      // Have-nots on, because a normal season has them: the default season mode
-      // runs slop every week. Without the twist there are no have-nots, so the
-      // events about being one correctly cannot fire — and a sweep for dead
-      // code that plays an unrepresentative season reports live events as dead.
-      twists: ['bb-have-nots'],
-    });
+    const rng = seededRng(seed);
+    const weeks = [];
+    let n = 0;
+    while ((gs.activePlayers || []).length > 3) {
+      weeks.push(simulateBBWeek({
+        rng, houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
+        // Have-nots on, because a normal season has them: the default season
+        // mode runs slop every week. Without the twist there are no have-nots,
+        // so the events about being one correctly cannot fire — and a sweep
+        // for dead code that plays an unrepresentative season reports live
+        // events as dead.
+        twists: (invisibleSeasons.has(seed) && ++n === 2)
+          ? ['bb-have-nots', 'bb-invisible-hoh'] : ['bb-have-nots'],
+      }));
+      if (!invisibleSeasons.has(seed)) n++;
+    }
     for (const act of weeks.flatMap(w => w.acts || [])) {
       for (const b of act.socialBeats || []) fired[b.eventId] = (fired[b.eventId] || 0) + 1;
     }
@@ -128,8 +139,18 @@ describe('the Big Brother event library as a whole', () => {
     // reshuffled the scheduler's draws and a different alive-but-marginal
     // event fell out of the window each time. More samples, not more weight.
     const fired = playSeasons([11, 23, 37, 44, 58, 63, 71, 88, 95, 102, 117, 129, 140, 151, 163, 178]);
-    const never = HOUSE_EVENTS.map(e => e.id).filter(id => !fired[id] && !ULTRA_RARE.has(id));
+    // The invisible family only exists on the sweep's two sealed weeks, so
+    // demanding every one of its six events appear there is a coin flip that
+    // re-rolls with any rng change — the arena games taught this lesson.
+    // The family is asserted collectively; per-event reachability lives in
+    // the Invisible HOH suite's dedicated sealed-week runs.
+    const invisibleFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('invisible-')));
+    const never = HOUSE_EVENTS.map(e => e.id)
+      .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
+    const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
+    expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')
+      .toBeGreaterThanOrEqual(Math.min(invisibleFamily.size, 4));
   }, 240000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30

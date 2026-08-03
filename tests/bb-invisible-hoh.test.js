@@ -131,6 +131,27 @@ describe('the Invisible HOH', () => {
     }
   });
 
+  it('fills the sealed week with paranoia instead of silence', () => {
+    // The power-hoh family goes dark on a sealed week, which without a
+    // replacement left LESS texture than a normal week. The invisible family
+    // is that replacement: speculation, accusation, false credit, performed
+    // innocence — and it exists only on sealed weeks.
+    let weeksWith = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      const week = invisibleWeek(seed * 29 + 3);
+      const inv = week.acts.flatMap(a => a.socialBeats || [])
+        .filter(b => String(b.eventId || '').startsWith('invisible-'));
+      if (inv.length) weeksWith++;
+    }
+    expect(weeksWith).toBeGreaterThanOrEqual(8);
+    // And a normal week never hears from it.
+    reset();
+    const normal = simulateBBWeek({ rng: seededRng(97), houseEvents: HOUSE_EVENTS,
+      competitions: BB_COMPETITIONS });
+    expect(normal.acts.flatMap(a => a.socialBeats || [])
+      .filter(b => String(b.eventId || '').startsWith('invisible-'))).toEqual([]);
+  });
+
   it('replays identically for the same seed', () => {
     const run = () => {
       const w = invisibleWeek(733);

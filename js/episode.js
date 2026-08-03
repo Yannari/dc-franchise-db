@@ -15,7 +15,7 @@ import { applyObservedStrategicRespect, applySocialStatusEffects } from './relat
 import { knowledgeCampCards, recordAdvantageFinds, recordChallengeThrowKnowledge, attachInfoFlowLocations, recordVoteArchitect, juryArchitectCredit, reconcileJuryPerception } from './knowledge-integration.js';
 import { getRelationshipDimensions } from './relationships.js';
 import { updateSocialStatus, captureSocialStatusBeforeVote } from './social-status.js';
-import { updateEditLayer } from './edit-layer.js';
+import { updateEditLayer, classifyEventTone } from './edit-layer.js';
 import { tickIntentions, prepareIntentionsForVote } from './intentions.js';
 import {
   generateCampEvents, checkAllianceRecruitment, executeEmissarySelection,
@@ -7536,6 +7536,51 @@ export function updatePopularity(ep) {
         add(l.voter, 'drama', 1, 'voteLie');
         add(l.voter, 'like', -1, 'voteLie');
       }
+    }
+
+    // ── Every aired event moves the audience ──
+    // Weighted from what actually wins America's Favorite, which is NOT a
+    // niceness contest: Jeff won it twice on charm, Donny on being
+    // authentically odd, Cody on fighting a losing game, Janelle on
+    // competitive fire — and the funniest person in the house beats the
+    // kindest almost every year. So: humor is the strongest likability
+    // signal, kindness is a mild one, scheming is excellent television whose
+    // likability price SHRINKS with charisma (a magnetic villain is a
+    // character, a charmless one is just mean), the game itself is respected
+    // rather than liked, and the victims of a scheme collect sympathy. The
+    // per-episode axis caps above keep a busy week from running away.
+    const _charisma = name => {
+      const st = pStats(name);
+      return (st.social + st.boldness) / 2;
+    };
+    for (const act of ep.acts || []) {
+      for (const beat of act.socialBeats || []) {
+        const cast = (beat.players || []).filter(Boolean);
+        if (!cast.length) continue;
+        const actor = cast[0];
+        const tone = classifyEventTone(beat);
+        if (tone === 'villainous') {
+          add(actor, 'drama', 1.5, 'schemeAired');
+          add(actor, 'like', -Math.max(0.2, 1.1 - _charisma(actor) * 0.08), 'schemeAired');
+          cast.slice(1).forEach(v => add(v, 'under', 0.5, 'schemeVictim'));
+        } else if (tone === 'heroic') {
+          add(actor, 'like', 0.9, 'kindnessAired');
+          add(actor, 'drama', /expos|confront|stand|call.?out/i.test(`${beat.eventId} ${beat.badgeText}`) ? 1.2 : 0.3, 'kindnessAired');
+        } else if (tone === 'comic') {
+          add(actor, 'drama', 1.1, 'comedyAired');
+          add(actor, 'like', 0.9, 'comedyAired');
+        } else if (tone === 'emotional') {
+          add(actor, 'like', 0.5, 'authenticityAired');
+          add(actor, 'under', 0.3, 'authenticityAired');
+        } else if (tone === 'strategic') {
+          add(actor, 'drama', 0.5, 'gameAired');
+        }
+      }
+    }
+    // Cody's award: fighting a losing game reads as heart. Surviving the
+    // block is the format's cleanest underdog beat.
+    for (const n of ep.finalNominees || []) {
+      if (n !== ep.eliminated) add(n, 'under', 1, 'survivedTheBlock');
     }
   }
 

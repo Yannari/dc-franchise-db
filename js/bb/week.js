@@ -1132,8 +1132,10 @@ export function simulateBBWeek(options = {}) {
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
       });
-      if (!gs.popularity) gs.popularity = {};
-      gs.popularity[bold] = (gs.popularity[bold] || 0) + 1;
+      if (seasonConfig.popularityEnabled !== false) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[bold] = (gs.popularity[bold] || 0) + 1;
+      }
     }
     if (schemer && schemer !== bold) {
       beats.push({
@@ -1242,8 +1244,10 @@ export function simulateBBWeek(options = {}) {
       const claims = ['a dollar', 'a protein bar', 'a photo from home', 'twenty-four hours of elevator music'];
       boxAct.publicClaim = claims[Math.floor(rng() * claims.length)];
       boxAct.consequence = 'backyard-lockdown';
-      if (!gs.popularity) gs.popularity = {};
-      gs.popularity[hoh] = (gs.popularity[hoh] || 0) - 1;
+      if (seasonConfig.popularityEnabled !== false) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[hoh] = (gs.popularity[hoh] || 0) - 1;
+      }
       // Whoever reads people best in this house smells the lie first.
       const readers = house.filter(n => n !== hoh)
         .sort((a, b) => pStats(b).intuition - pStats(a).intuition).slice(0, 2);

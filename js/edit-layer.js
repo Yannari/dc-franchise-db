@@ -57,10 +57,13 @@ const TONE_RULES = [
   ['strategic',  /alliance|vote|plan|strategy|strateg|intel|whisper|pitch|deal|target|numbers|swing|idol|advantage|confessional/i],
 ];
 function _tone(ev) {
-  const hay = `${ev?.type || ''} ${ev?.badgeText || ''} ${ev?.badgeClass || ''}`;
+  const hay = `${ev?.type || ''} ${ev?.eventId || ''} ${ev?.badgeText || ''} ${ev?.badgeClass || ''}`;
   for (const [tone, re] of TONE_RULES) if (re.test(hay)) return tone;
   return 'neutral';
 }
+// The popularity engine classifies aired events with the same rules the edit
+// does — one taxonomy, two consumers.
+export const classifyEventTone = _tone;
 
 function _blank() { return { units: 0, tones: Object.fromEntries(TONES.map(t => [t, 0])) }; }
 
@@ -471,12 +474,16 @@ export function updateEditLayer(ep) {
     return { name, tone, text: _quoteFor(name, tone) };
   });
 
-  // Fan-perception drift — the ONLY consequence. Audience only; never the island.
-  if (!gs.popularity) gs.popularity = {};
-  active.forEach(name => {
-    const drift = FAN_DRIFT[edit.reads[name]?.key || 'steady'] || 0;
-    if (drift) gs.popularity[name] = (gs.popularity[name] || 0) + drift;
-  });
+  // Fan-perception drift — the ONLY consequence. Audience only; never the
+  // island. And it honors the popularity switch: a season that turned the
+  // audience off has no audience to drift.
+  if (seasonConfig?.popularityEnabled !== false) {
+    if (!gs.popularity) gs.popularity = {};
+    active.forEach(name => {
+      const drift = FAN_DRIFT[edit.reads[name]?.key || 'steady'] || 0;
+      if (drift) gs.popularity[name] = (gs.popularity[name] || 0) + drift;
+    });
+  }
 
   watched.forEach(name => {
     if (!edit.totals[name]) edit.totals[name] = { units: 0, conf: 0, tones: Object.fromEntries(TONES.map(t => [t, 0])) };

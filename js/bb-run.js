@@ -21,6 +21,9 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale } from './bb-finale.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
+// Re-exported so the Format Designer (bare-globals world) can list what a
+// distributor is allowed to hand out.
+export { BB_POWER_DEFINITIONS } from './bb/powers.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -261,12 +264,19 @@ export function simulateBBEpisode() {
   const weekNum = (gs.bb.weeks?.length || 0) + 1;
   const twists = bbTwistsForWeek(weekNum);
 
+  // A distributor's cargo is configured on its SCHEDULED INSTANCE — that is
+  // what makes Pandora's Box replayable across seasons with different prizes
+  // and no new code. The entry's `prize` field is set in the Format Designer.
+  const boxEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === weekNum && t.type === 'bb-pandoras-box');
+
   const week = simulateBBWeek({
     // Both libraries default to empty inside the engine, so a season that does
     // not hand them over runs silent and falls back to one-line competitions.
     houseEvents: HOUSE_EVENTS,
     competitions: BB_COMPETITIONS,
     twists,
+    pandorasPrize: boxEntry?.prize || undefined,
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))

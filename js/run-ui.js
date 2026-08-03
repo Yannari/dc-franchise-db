@@ -1253,6 +1253,17 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-pandoras-box') {
+        // What goes IN the box — drawn from the power inventory, so every
+        // power added there becomes cargo here with no new UI.
+        const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS)
+          || { 'diamond-veto': { id: 'diamond-veto', name: 'The Diamond Power of Veto' } };
+        const chosen = t.prize || 'diamond-veto';
+        let prizeHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','prize',this.value)" onclick="event.stopPropagation()" title="What the box holds" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        Object.values(defs).forEach(d => { prizeHtml += `<option value="${d.id}" ${d.id===chosen?'selected':''}>${d.name}</option>`; });
+        prizeHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'reward-twist-challenge') {
         const _rtcChallenges = TWIST_CATALOG.filter(c => c.category === 'challenge');
         const _rtcSelected = t.rewardEngine || '';
@@ -1518,6 +1529,7 @@ export function assignTwist(twistId) {
     }
     const entry = { id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId };
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
+    if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     seasonConfig.twistSchedule.push(entry);
   });
 

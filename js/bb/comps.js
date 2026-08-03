@@ -7,7 +7,11 @@ import { pStats } from '../players.js';
 import { addBond } from '../bonds.js';
 import { shouldThrowHoh, shouldThrowVeto, gunningFor } from './strategy.js';
 
-export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker']);
+// 'return' is the Battle Back slot: no scheduler opens it yet, but the
+// signature library already declares which competitions can serve a
+// re-entry night (The Wall canonically is one), so the twist arrives to a
+// stocked shelf instead of a contract change.
+export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker', 'return']);
 const VALID_TYPES = new Set(BB_COMP_TYPES);
 const VALID_STATS = new Set(['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament']);
 

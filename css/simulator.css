@@ -636,7 +636,7 @@
     .bbvc-medal svg{ width:100%; height:100%; }
     .bbvc-medalbox.is-lit .bbvc-medal { opacity:1; filter:none;
                      animation:bbvcGlow 2.4s ease-in-out infinite; }
-    @keyframes bbvcGlow { 0%,100% { transform:scale(1); } 50% { transform:scale(1.06); } }
+    @keyframes bbvcGlow { 0%,100% { filter:drop-shadow(0 0 4px rgba(227,179,65,.35)); } 50% { filter:drop-shadow(0 0 14px rgba(227,179,65,.75)); } }
     .bbvc-stage.is-kept .bbvc-medalbox.is-lit .bbvc-medal { filter:grayscale(.8);
                      animation:none; opacity:.6; }
     .bbvc-medal-t  { font-family:ui-monospace,Consolas,monospace; font-size:9px;
@@ -693,7 +693,7 @@
     .bbta-scan     { position:absolute; inset:0; pointer-events:none; opacity:0;
                      background:repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.035) 3px 4px); }
     .bbta-wall.is-lit .bbta-scan { opacity:1; animation:bbtaScan 6s linear infinite; }
-    @keyframes bbtaScan { from { transform:translateY(0); } to { transform:translateY(4px); } }
+    @keyframes bbtaScan { 0%,100% { opacity:.55; } 50% { opacity:1; } }
     .bbta-sofas    { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
     .bbta-voice    { border-left:3px solid #8b949e; font-style:italic; }
     .bbta-reveal .bbns-card-b { font-size:14.5px; line-height:1.65; }
@@ -713,7 +713,7 @@
     .bbpb-door     { width:96px; transition:filter .5s ease; filter:drop-shadow(0 0 10px rgba(227,179,65,.25)); }
     .bbpb-door svg { width:100%; height:auto; display:block; }
     .bbpb-hall.is-open .bbpb-door { filter:drop-shadow(0 0 22px rgba(227,179,65,.6)); animation:bbpbPulse 2.8s ease-in-out infinite; }
-    @keyframes bbpbPulse { 0%,100% { transform:none; } 50% { transform:scale(1.03); } }
+    @keyframes bbpbPulse { 0%,100% { filter:drop-shadow(0 0 10px rgba(227,179,65,.3)); } 50% { filter:drop-shadow(0 0 24px rgba(227,179,65,.65)); } }
     .bbpb-open     { border-left:3px solid #e3b341 !important;
                      background:linear-gradient(90deg, rgba(227,179,65,.12), transparent 60%) !important; }
     .bbdd-gem      { display:flex; justify-content:center; margin:2px 0 12px; }
@@ -737,12 +737,12 @@
                      box-shadow:0 0 24px rgba(126,231,255,.12), inset 0 0 30px rgba(94,125,232,.08); }
     .bbvc-dmd .bbvc-medal { opacity:.85; filter:none; }
     .bbvc-dmd .bbvc-medalbox.is-lit .bbvc-medal { animation:bbvcDmdGlow 2.6s ease-in-out infinite; }
-    @keyframes bbvcDmdGlow { 0%,100% { transform:scale(1); filter:drop-shadow(0 0 6px rgba(126,231,255,.5)); }
-                     50% { transform:scale(1.07); filter:drop-shadow(0 0 16px rgba(177,140,255,.75)); } }
+    @keyframes bbvcDmdGlow { 0%,100% { filter:drop-shadow(0 0 6px rgba(126,231,255,.5)); }
+                     50% { filter:drop-shadow(0 0 18px rgba(177,140,255,.8)); } }
     .bbvc-dmd .bbvc-medal-t { color:#7ee7ff; text-shadow:0 0 10px rgba(126,231,255,.45); }
     .bbvc-dmd-ray  { animation:bbvcDmdRay 3.2s ease-in-out infinite; }
-    @keyframes bbvcDmdRay { 0%,18% { opacity:0; transform:translateX(-8px); }
-                     34% { opacity:.9; } 50%,100% { opacity:0; transform:translateX(10px); } }
+    @keyframes bbvcDmdRay { 0%,18% { opacity:0; }
+                     34% { opacity:.9; } 50%,100% { opacity:0; } }
     /* The prismatic sweep: one band of refracted light crossing the stage. */
     .bbvc-dmd .bbvc-stage { position:relative; overflow:hidden;
                      border:1px solid rgba(126,231,255,.22); border-radius:10px; }
@@ -1714,7 +1714,7 @@
                      animation:burTug 1.5s ease-in-out infinite; }
     .bur-stage.is-decided .bur-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
     .bur-stage.is-decided .bur-live i { background:#3fb950; animation:none; }
-    @keyframes burTug { 50% { transform:translateX(2px); opacity:.4; } }
+    @keyframes burTug { 50% { opacity:.4; } }
     .bur-title     { color:#e0c49a; }
     .bur-clock     { margin-left:auto; color:#8c7c6a; }
     .bur-clock b   { color:#d8a86c; font-size:12px; letter-spacing:2px; }
@@ -1823,7 +1823,7 @@
                      animation:bdtDrip 1.5s ease-in infinite; }
     .bdt-stage.is-decided .bdt-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
     .bdt-stage.is-decided .bdt-live i { background:#3fb950; animation:none; }
-    @keyframes bdtDrip { 0%,100% { transform:none; } 55% { transform:translateY(3px); opacity:.35; } }
+    @keyframes bdtDrip { 0%,100% { opacity:.9; } 55% { opacity:.3; } }
     .bdt-title     { color:#a8e3f0; }
     .bdt-clock     { margin-left:auto; color:#728b93; }
     .bdt-clock b   { color:#7fd9ec; font-size:12px; letter-spacing:2px; }
@@ -1959,7 +1959,7 @@
                      animation:blnCount 1.3s ease-in-out infinite; }
     .bln-stage.is-decided .bln-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
     .bln-stage.is-decided .bln-live i { background:#3fb950; animation:none; }
-    @keyframes blnCount { 50% { transform:scale(.55); opacity:.4; } }
+    @keyframes blnCount { 50% { opacity:.35; } }
     .bln-title     { color:#e3cf9d; }
     .bln-clock     { margin-left:auto; color:#8a8271; }
     .bln-clock b   { color:#e8bf6a; font-size:12px; letter-spacing:2px; }
@@ -2093,7 +2093,7 @@
                      animation:bscSpin 1.1s linear infinite; transform-origin:50% 50%; }
     .bsc-stage.is-decided .bsc-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
     .bsc-stage.is-decided .bsc-live i { background:#3fb950; animation:none; }
-    @keyframes bscSpin { 50% { transform:scale(.5); } }
+    @keyframes bscSpin { 50% { opacity:.4; } }
     .bsc-title     { color:#f0bcda; }
     .bsc-clock     { margin-left:auto; color:#8e7684; }
     .bsc-clock b   { color:#f3a0cf; font-size:12px; letter-spacing:2px; }
@@ -2155,7 +2155,7 @@
                      animation:bcrRoll 1.4s ease-in-out infinite; }
     .bcr-stage.is-decided .bcr-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
     .bcr-stage.is-decided .bcr-live i { background:#3fb950; animation:none; }
-    @keyframes bcrRoll { 0%,100% { transform:translateX(-2px); } 50% { transform:translateX(3px); } }
+    @keyframes bcrRoll { 0%,100% { opacity:.75; } 50% { opacity:1; } }
     .bcr-title     { color:#cfe0ea; }
     .bcr-clock     { margin-left:auto; color:#7c8892; }
     .bcr-clock b   { color:#b9d3e2; font-size:12px; letter-spacing:2px; }

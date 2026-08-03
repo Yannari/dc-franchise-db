@@ -9,6 +9,7 @@ import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
+import { runBattleBack } from './battle-back.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
@@ -2214,6 +2215,31 @@ export function simulateBBWeek(options = {}) {
   // promise made to somebody who is now in the jury is not a promise any more.
   try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ }
   if (secondEvicted) { try { dropFromHousePlans(secondEvicted); } catch { /* both walks count */ } }
+
+  // ── The door opens backwards ──
+  //
+  // Run AFTER the eviction is on the books, because both aired versions put
+  // that night's evictee in the field — the person who just lost the vote gets
+  // to fight it immediately. A returnee is added back to the house here, so
+  // everything downstream (plans, deals, perceptions, the closing snapshot)
+  // already sees them standing in the room.
+  if (!compressed && (week.twistState?.rules?.addSlots || []).includes('return')) {
+    try {
+      week.battleBack = runBattleBack({
+        week, rng,
+        style: options.battleBackStyle || 'gauntlet',
+        competition: options.battleBackCompetition || null,
+      });
+      if (week.battleBack) {
+        week.acts.push(week.battleBack);
+        if (week.battleBack.returned) week.returnedHouseguest = week.battleBack.returned;
+      }
+    } catch (e) {
+      // A twist that throws must not cost the season the week that already
+      // happened — the eviction above is real whether the door opens or not.
+      week.battleBack = null;
+    }
+  }
   try { _cappedBondWindow(() => settleDeals({ house: gs.activePlayers, week })); } catch { /* deals too */ }
   revise('eviction', { evicted });
   week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));

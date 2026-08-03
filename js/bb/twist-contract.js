@@ -116,6 +116,19 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody in this room is about to run the week without wearing the key.',
     },
   },
+  'bb-battle-back': {
+    id: 'bb-battle-back', layer: 'scheduled', category: 'return',
+    timing: 'week-close', duration: { weeks: 1 },
+    // The first twist to consume addSlots: the week grows an extra competition
+    // after the eviction, and its prize is a person rather than a power.
+    rules: { addSlots: ['return'] },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Battle Back',
+      rule: 'The houseguests evicted so far are not gone. At the end of this week they will compete against each other for the right to walk back through that door, and whoever wins re-enters this game with no immunity and no penalty.',
+      sting: 'Somebody you already voted out is coming back to remember it.',
+    },
+  },
   'bb-pandoras-box': {
     id: 'bb-pandoras-box', layer: 'scheduled', category: 'distribution',
     timing: 'post-hoh', duration: { weeks: 1 },

@@ -1219,11 +1219,79 @@ export function buildEpisodeMap() {
   return eps;
 }
 
+// ── Big Brother: pinning a competition to a week ──────────────────────
+//
+// The library picks weighted-at-random, which is the right default for a
+// season you want to be surprised by and the wrong one for a season you are
+// booking. These two dropdowns sit on every Big Brother week in the timeline
+// and write `seasonConfig.bbCompSchedule`, which bb-run hands to the engine as
+// `forcedCompetitions`.
+//
+// HOH and veto are separate pickers on purpose. They are not interchangeable
+// slots — OTEV and Hide and Go Veto are veto-only, the Wall and the Pressure
+// Cooker cannot run as a veto — so each list is filtered to what can legally
+// serve that slot and an illegal week is simply not authorable.
+
+/** The pinned entry for a week, or undefined. */
+function _bbCompEntry(ep) {
+  return (seasonConfig.bbCompSchedule || []).find(c => c && Number(c.episode) === Number(ep));
+}
+
+export function _setBBComp(ep, slot, compId) {
+  if (!seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = [];
+  let entry = _bbCompEntry(ep);
+  if (!entry) {
+    entry = { episode: Number(ep) };
+    seasonConfig.bbCompSchedule.push(entry);
+  }
+  if (compId) entry[slot] = compId;
+  else delete entry[slot];
+  // A week with nothing pinned carries no entry, so a cleared picker leaves no
+  // residue in the saved config.
+  if (!entry.hoh && !entry.veto) {
+    seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(c => c !== entry);
+  }
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+/** One slot's dropdown, listing only what can serve it. */
+function _bbCompPicker(ep, slot, label) {
+  const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
+  if (!list.length) return '';
+  const chosen = _bbCompEntry(ep)?.[slot] || '';
+  const pinned = !!chosen;
+  let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
+    pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
+    pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}`;
+  h += `<select onchange="event.stopPropagation();_setBBComp(${ep},'${slot}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
+    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:150px">`;
+  h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
+  const written = list.filter(c => !c.generic);
+  const generic = list.filter(c => c.generic);
+  if (written.length) {
+    h += `<optgroup label="Written">`;
+    written.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name}</option>`; });
+    h += `</optgroup>`;
+  }
+  if (generic.length) {
+    // Suffixed, not just grouped. One generic fallback shares a name with a
+    // written comp ("Before or After"), and an optgroup only disambiguates
+    // while the list is OPEN — closed, both read identically and you cannot
+    // tell which one the week is pinned to.
+    h += `<optgroup label="Generic">`;
+    generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)</option>`; });
+    h += `</optgroup>`;
+  }
+  return h + `</select></label>`;
+}
+
 export function renderTimeline() {
   const container = document.getElementById('fd-timeline');
   if (!container) return;
   const epMap   = buildEpisodeMap();
   const schedule = (seasonConfig.twistSchedule || []).filter(Boolean);
+  const isHouse = (typeof seasonFormat !== 'undefined' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
 
   if (!epMap.length) {
     container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">Add players in Cast Builder to generate timeline.</div>';
@@ -1264,6 +1332,38 @@ export function renderTimeline() {
         Object.entries(styles).forEach(([k, label]) => { styleHtml += `<option value="${k}" ${k===cur?'selected':''}>${label}</option>`; });
         styleHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
+      if (t.type === 'bb-battle-back') {
+        // Two aired shapes plus the competition it is fought on. The comp list
+        // is deliberately wider than an HOH or veto picker — see
+        // bbCompetitionsForSlot('battle-back').
+        const styles = {
+          gauntlet: 'Gauntlet (first out fights everyone)',
+          showdown: 'Showdown (house elects a champion)',
+        };
+        const curStyle = t.bbStyle || 'gauntlet';
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbStyle',this.value)" onclick="event.stopPropagation()" title="How the battle back is fought" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        Object.entries(styles).forEach(([k, label]) => { h += `<option value="${k}" ${k === curStyle ? 'selected' : ''}>${label}</option>`; });
+        h += `</select>`;
+        const comps = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot('battle-back') : []) || [];
+        if (comps.length) {
+          const chosen = t.bbComp || '';
+          h += `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbComp',this.value)" onclick="event.stopPropagation()" title="Which competition they fight on" style="font-size:10px;background:#1e1e2e;color:${chosen ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${chosen ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;margin-left:3px;max-width:150px">`;
+          h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
+          const written = comps.filter(c => !c.generic), generic = comps.filter(c => c.generic);
+          if (written.length) {
+            h += `<optgroup label="Written">`;
+            written.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name}</option>`; });
+            h += `</optgroup>`;
+          }
+          if (generic.length) {
+            h += `<optgroup label="Generic">`;
+            generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)</option>`; });
+            h += `</optgroup>`;
+          }
+          h += `</select>`;
+        }
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-pandoras-box') {
         // What goes IN the box — drawn from the power inventory, so every
@@ -1325,12 +1425,22 @@ export function renderTimeline() {
     const markerText  = isFinale ? 'FINALE' : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
     const phaseLabel  = phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
+    // Competition pinning: every Big Brother week has an HOH and a veto, so
+    // the pickers are always there rather than something you add. The finale
+    // runs its own staged competition and is not pinnable.
+    const compRow = (isHouse && !isFinale)
+      ? `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
+          ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
+        </div>`
+      : '';
+
     html += `<div class="fd-episode ${isSelected ? 'selected' : ''} ${isFinale ? 'finale' : ''} ${phase === 'ri-duel' ? 'ri-ep' : ''}" onclick="${isFinale ? '' : `toggleEpisode(${ep})`}" ${isFinale ? 'style="opacity:.6;cursor:default"' : ''}>
       <div class="fd-ep-header">
         <span class="fd-ep-num">Ep. ${ep} <span class="fd-ep-phase-label">${phaseLabel}</span></span>
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
+      ${compRow}
     </div>`;
   });
 
@@ -1543,6 +1653,7 @@ export function assignTwist(twistId) {
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
+    if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);
   });
 

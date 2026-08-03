@@ -339,6 +339,10 @@ export const TWIST_CATALOG = [
     category:'advantage', phase:'any',
     desc:'A door with a question mark appears in the HOH room. Open it and something good happens to you while something bad happens to the house — and what was inside stays secret. The canonical cargo is a hidden Diamond Power of Veto with a two-eviction fuse, detonated live at an eviction: the holder saves a nominee and personally names the replacement while the house watches a week of plans evaporate.',
     engineType:'bb-pandoras-box', incompatible:['bb-instant-eviction', 'bb-diamond-veto'] },
+  { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
+    category:'advantage', phase:'any',
+    desc:'The evicted houseguests are not gone. After this week\'s eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.',
+    engineType:'bb-battle-back', incompatible:['bb-instant-eviction'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──
@@ -1006,6 +1010,9 @@ export function defaultConfig() {
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
+    // Big Brother only: competitions pinned to a week from the Season Timeline.
+    // [{ episode, hoh?, veto? }] — a slot left off means the library picks.
+    bbCompSchedule: [],
     tribes: [],  // [{ name, color }]
     popularityEnabled: true,
     franchiseMeta: true,
@@ -1133,7 +1140,7 @@ export function normalizeAccentedNames() {
 export async function loadAll() {
   // These small items stay in localStorage
   try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
-  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); } } catch(e) {}
+  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); if (seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(Boolean); } } catch(e) {}
   try { const r = localStorage.getItem('simulator_rels'); if (r) relationships = JSON.parse(r); } catch(e) { relationships = []; }
 
   // ── gs: load from IndexedDB, fall back to localStorage for migration ──

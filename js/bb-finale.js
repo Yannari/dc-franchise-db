@@ -36,14 +36,19 @@ const houseNow = () => [...(gs.activePlayers || [])];
  */
 export function seatBBJury(extra = []) {
   const weeks = gs.bb?.weeks || [];
-  const evicted = weeks.map(w => w.evicted).filter(Boolean);
+  // An eviction that a Battle Back undid is not a jury seat. The week keeps
+  // its record — the vote happened and the transcript still says so — but it
+  // stops counting as a departure, or the returnee ends up on the jury they
+  // are still playing against. A second eviction later has its own week entry
+  // and seats them properly.
+  const evicted = weeks.filter(w => !w.evictionReversed).map(w => w.evicted).filter(Boolean);
   const size = Math.max(0, Number(seasonConfig.jurySize) || 9);
   const all = [...evicted, ...extra].filter(Boolean);
   const jury = size ? all.slice(-size) : all;
 
   gs.jurorHistory ||= {};
   for (const w of weeks) {
-    if (!w.evicted || !jury.includes(w.evicted)) continue;
+    if (!w.evicted || w.evictionReversed || !jury.includes(w.evicted)) continue;
     gs.jurorHistory[w.evicted] = {
       ep: w.num,
       voters: (w.ballots || []).filter(b => b.evict === w.evicted).map(b => b.voter),

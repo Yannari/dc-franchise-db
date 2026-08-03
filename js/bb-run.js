@@ -18,6 +18,9 @@ import { gs, seasonConfig, seasonFormat } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
+// The dispatcher's own fallbacks — listed in the pinning dropdowns so "an
+// ordinary one this week" is an authorable choice, not just what you get.
+import { GENERIC_BB_COMPS } from './bb/comps.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale } from './bb-finale.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
@@ -231,7 +234,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -241,6 +244,66 @@ export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-i
  * dropped rather than passed through to an engine that would ignore it
  * silently.
  */
+/**
+ * Which competitions the designer pinned to this week, if any.
+ *
+ * The library picks weighted-at-random by default, which is right for a season
+ * you want to be surprised by and wrong for one you are booking. A pinned comp
+ * is authored per episode in the Season Timeline and handed to the engine as
+ * `forcedCompetitions`, which the dispatcher has always accepted and nothing
+ * has ever set.
+ *
+ * Slot eligibility is NOT re-checked here — `chooseCompetition` throws a clear
+ * error if a comp cannot serve the slot it was pinned to, and swallowing that
+ * here would turn an authoring mistake into a silently random week.
+ */
+export function bbForcedCompsForWeek(epNum) {
+  const entry = (seasonConfig.bbCompSchedule || [])
+    .find(c => c && Number(c.episode) === Number(epNum));
+  if (!entry) return undefined;
+  const forced = {};
+  if (entry.hoh) forced.hoh = entry.hoh;
+  if (entry.veto) forced.veto = entry.veto;
+  return Object.keys(forced).length ? forced : undefined;
+}
+
+/**
+ * Everything that can legally fill one slot, for the Season Timeline's pinning
+ * dropdowns.
+ *
+ * Slots are not interchangeable and the picker must not pretend they are: OTEV
+ * and Hide and Go Veto are veto-only, the Wall and the Pressure Cooker are not
+ * veto comps at all. Filtering on `types` here is what stops the designer from
+ * authoring a week the dispatcher would refuse to run.
+ *
+ * The generic fallbacks are included and flagged, because "give me an ordinary
+ * one this week" is a real authoring choice and the pool accepts their ids the
+ * same way it accepts a written comp's.
+ */
+export function bbCompetitionsForSlot(type) {
+  const shape = (c, generic) => ({ id: c.id, name: c.name, category: c.category, generic });
+  // The Battle Back is not an HOH or a veto and does not inherit either list's
+  // restrictions: it is a competition held outside the house for a prize that
+  // is neither power nor safety, so anything the library can stage is fair.
+  // Its own 'return' declarations are only three comps deep, which would make
+  // the picker useless.
+  const serves = c => (type === 'battle-back'
+    ? ['hoh', 'veto', 'return'].some(t => (c.types || []).includes(t))
+    : (c.types || []).includes(type));
+  const written = BB_COMPETITIONS.filter(serves).map(c => shape(c, false));
+  const generic = (GENERIC_BB_COMPS || []).filter(serves).map(c => shape(c, true));
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  return [...written.sort(byName), ...generic.sort(byName)];
+}
+
+/** A pinned Battle Back competition, resolved to the real definition. */
+export function bbFindCompetition(id) {
+  if (!id) return null;
+  return BB_COMPETITIONS.find(c => c.id === id)
+    || (GENERIC_BB_COMPS || []).find(c => c.id === id)
+    || null;
+}
+
 export function bbTwistsForWeek(weekNum) {
   const scheduled = (seasonConfig.twistSchedule || [])
     .filter(t => t && Number(t.episode) === Number(weekNum))
@@ -283,6 +346,11 @@ export function simulateBBEpisode() {
   const deEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-double-eviction');
   const deStyle = deEntry?.deStyle || 'fast-forward';
+  // The Battle Back's shape and its competition are both authored on the
+  // scheduled instance, the same way Pandora's cargo and the double's style
+  // are — so one season can run the BB18 gauntlet and the next the Showdown.
+  const bbEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-battle-back');
 
   const week = simulateBBWeek({
     // Both libraries default to empty inside the engine, so a season that does
@@ -290,6 +358,9 @@ export function simulateBBEpisode() {
     houseEvents: HOUSE_EVENTS,
     competitions: BB_COMPETITIONS,
     twists,
+    forcedCompetitions: bbForcedCompsForWeek(epNum),
+    battleBackStyle: bbEntry?.bbStyle || 'gauntlet',
+    battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
     // Season modes that put a third houseguest on the block every week.
@@ -451,6 +522,28 @@ export function summariseWeek(week) {
         line('DIAMOND POWER OF VETO — DETONATED');
         line(`  ${act.holder} reveals the secret power live: ${act.saved} comes off the block, and ${act.replacement} takes the empty chair.`);
         break;
+      case 'battle-back': {
+        line('');
+        line(`BATTLE BACK — ${act.style === 'showdown' ? 'THE SHOWDOWN' : 'THE GAUNTLET'}`);
+        line(`  ${act.contenders.join(', ')} compete for the right to re-enter${
+          act.competition?.name ? ` on ${act.competition.name}` : ''}.`);
+        for (const r of act.rounds || []) {
+          if (r.kind === 'heat') {
+            line(`  ${r.label}: ${(r.results || []).map((x, i) => `${i + 1}. ${x.name}`).join('  ')}`);
+          } else {
+            line(`  ${r.label}: ${r.a} vs ${r.b} — ${r.winner} advances.`);
+          }
+        }
+        if (act.champion) line(`  The house elects ${act.champion.name} to defend the door (${act.champion.votes} votes).`);
+        if (act.returned) {
+          line(`  ${act.returned} WINS AND RE-ENTERS THE HOUSE — with no immunity.`);
+          if ((act.grudges || []).length) line(`  Still in the house and on the record voting ${act.returned} out: ${act.grudges.join(', ')}.`);
+        } else {
+          line(`  Nobody re-enters. ${act.champion ? `${act.champion.name} held the door.` : 'The door stays shut.'}`);
+        }
+        if ((act.eliminatedForGood || []).length) line(`  Eliminated for good: ${act.eliminatedForGood.join(', ')}.`);
+        break;
+      }
       case 'twist-announcement':
         line('');
         line('TWIST ANNOUNCEMENT');

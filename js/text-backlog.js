@@ -4385,6 +4385,37 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'battle-back':
+        sec(`BATTLE BACK — ${act.style === 'showdown' ? 'THE SHOWDOWN' : 'THE GAUNTLET'}`);
+        ln(`  ${act.contenders.length} evicted houseguests come back to the lot to fight for the door${
+          act.competition?.name ? `, on ${act.competition.name}` : ''}: ${act.contenders.join(', ')}.`);
+        if (act.style === 'gauntlet') {
+          ln(`  ${act.contenders[0]} was out first and has to beat every person who followed ${pronouns(act.contenders[0]).obj} out.`);
+        }
+        for (const r of act.rounds || []) {
+          if (r.kind === 'heat') {
+            ln(`  ${r.label}: ${(r.results || []).map((x, i) => `${i + 1}. ${x.name}`).join('   ')}`);
+          } else {
+            ln(`  ${r.label}: ${r.a} vs ${r.b} — ${r.winner} takes it.`);
+          }
+        }
+        if (act.champion) {
+          ln(`  The house elects ${act.champion.name} to defend the door, ${act.champion.votes} vote${act.champion.votes === 1 ? '' : 's'}.`);
+        }
+        if (act.returned) {
+          ln(`  ${act.returned} wins and walks back into the house — no immunity, no head start.`);
+          if ((act.grudges || []).length) {
+            ln(`  ${act.grudges.join(', ')} voted ${pronouns(act.returned).obj} out and ${act.grudges.length === 1 ? 'is' : 'are'} still in that room.`);
+          }
+        } else {
+          ln(`  Nobody re-enters.${act.champion ? ` ${act.champion.name} held the door shut.` : ''}`);
+        }
+        if ((act.eliminatedForGood || []).length) {
+          ln(`  Eliminated for good: ${act.eliminatedForGood.join(', ')}.`);
+        }
+        beats(act);
+        break;
+
       case 'twist-announcement':
         sec('TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');

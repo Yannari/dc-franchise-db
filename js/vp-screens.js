@@ -23,6 +23,7 @@ import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
 import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';
 import { rpBuildSigBBComics } from './vp-bb-sig/bb-comics.js';
 import { rpBuildSigBeforeOrAfter } from './vp-bb-sig/before-or-after.js';
+import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
@@ -19720,6 +19721,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
         break;
+      case 'battle-back': {
+        const bbHtml = rpBuildBBBattleBack(view, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (bbHtml) screens.push({ id: id('bb-battleback'), label: 'Battle Back', html: bbHtml });
+        break;
+      }
       case 'hoh':
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
         // Whatever else happened around the competition is house life, not the

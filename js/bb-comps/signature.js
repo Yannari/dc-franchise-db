@@ -776,7 +776,9 @@ export const bbComics = {
   id: 'bb-sig-bb-comics',
   name: 'BB Comics',
   category: 'mental',
-  types: ['veto'],
+  // The wiki has this as a recurring Power of Veto AND Head of Household
+  // competition — it has run as both, so it is eligible for both slots.
+  types: ['veto', 'hoh'],
   weight: () => 1.3,
   desc: 'One at a time and against the clock, each houseguest zips across the yard to a wall of comic book covers — one for every player in the house — and rebuilds the order they were shown. Every misplaced cover means zipping back to the platform and running it again, and the fastest completed time wins the Power of Veto.',
   stats: { mental: 0.40, intuition: 0.26, temperament: 0.20, physical: 0.14 },
@@ -784,6 +786,7 @@ export const bbComics = {
     const clean = makePicker(rng);
     const flub = makePicker(rng);
     const melt = makePicker(rng);
+    const bail = makePicker(rng);
     const beats = [];
     const breakdown = {};
     const hn = haveNotDrag(participants, context, rng);
@@ -808,6 +811,12 @@ export const bbComics = {
       // duller recall on every cover check below.
       let time = 62 - speed * 2.2 + hn[name] * 2.5 + noiseRoll(rng, 5);
       let mistakes = 0;
+      // BB Comics runs as a Head of Household competition as often as it runs
+      // as a veto, and an HOH nobody wants has to be losable on purpose. A
+      // thrown run is the easiest throw in the house to hide: put one cover in
+      // the wrong slot, take the re-zip, and look furious about it.
+      const t = throwRead(name, context, rng);
+      if (t.threw) { time += 26 + rng() * 14; mistakes += 1; }
       // The cover that broke the run is the FIRST one missed, and never the
       // player's own — "H realises The Incredible H is in the wrong place" is
       // not a sentence about a competition.
@@ -830,13 +839,16 @@ export const bbComics = {
           if (worstCover === null && otherCovers.length) worstCover = titleFor[otherCovers[i % otherCovers.length]];
         }
       }
-      return { name, p, time: round2(time), mistakes, worstCover, covers };
+      return { name, p, time: round2(time), mistakes, worstCover, covers, threw: t.threw, threwChance: t.chance };
     }).sort((a, b) => a.time - b.time);
 
     // Every houseguest is seen running. Nobody teleports to a leaderboard.
     [...runs].sort((a, b) => participants.indexOf(a.name) - participants.indexOf(b.name)).forEach(r => {
       const cover = r.worstCover || titleFor[r.name];
-      if (r.mistakes === 0) {
+      if (r.threw) {
+        beats.push(beat(`${bail(THROW_LINES)(r.name)} ${r.time} seconds, ${r.mistakes} re-zip${r.mistakes === 1 ? '' : 's'}, and a cover in the wrong slot that ${r.name} looked at twice.`,
+          [r.name], 'THREW IT', 'grey'));
+      } else if (r.mistakes === 0) {
         beats.push(beat(`${clean(COMICS_CLEAN)(r.name, r.p, titleFor[r.name])} ${r.time} seconds.`,
           [r.name], 'CLEAN RUN', 'green'));
       } else if (r.mistakes >= 3) {
@@ -848,7 +860,7 @@ export const bbComics = {
       }
       breakdown[r.name] = {
         hero: titleFor[r.name], covers: r.covers, mistakes: r.mistakes,
-        time: r.time, score: round2(200 - r.time), threw: false,
+        time: r.time, score: round2(200 - r.time), threw: r.threw, threwChance: r.threwChance,
         ...hnFields(hn[r.name]),
       };
     });
@@ -868,7 +880,8 @@ export const bbComics = {
 
     const placements = runs.map(r => r.name);
     const tiebreaks = Object.fromEntries(runs.map(r => [r.name, clamp(9.9 - r.mistakes, 0, 9.9)]));
-    const entries = rankEntries(placements, tiebreaks);
+    const threwMap = Object.fromEntries(runs.map(r => [r.name, !!r.threw]));
+    const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
       beats, breakdown, variant: 'bb-comics',
       text: `${winner.name} runs BB Comics in ${winner.time} seconds and wins the Power of Veto.`,
@@ -906,7 +919,9 @@ export const beforeOrAfter = {
   id: 'bb-sig-before-or-after',
   name: 'Before or After',
   category: 'mental',
-  types: ['hoh', 'tiebreaker', 'return'],
+  // Head of Household since Big Brother 5's final four, and a Power of Veto
+  // competition since Big Brother 11 — it has always served both slots.
+  types: ['hoh', 'veto', 'tiebreaker', 'return'],
   weight: () => 1.3,
   desc: 'Houseguests are asked whether one thing that happened in this house came before or after another. In a full field a wrong answer is a strike and two strikes eliminate; once the field is small a single wrong answer eliminates outright. The last houseguest still in wins Head of Household.',
   stats: { mental: 0.44, intuition: 0.26, strategic: 0.18, temperament: 0.12 },

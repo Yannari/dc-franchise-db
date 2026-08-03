@@ -125,7 +125,14 @@ describe('the Big Brother event library as a whole', () => {
   // and the target kept out of the draw — about 60% of planned backdoors
   // complete, and a ten-seed window can legitimately catch none. The
   // correctness suites (green-light, changes-something) still cover it.
-  const ULTRA_RARE = new Set(['scheme-kiss-trap', 'power-veto-fallout', 'veto-backdoor-lands']);
+  // showmance-separate-campaigns needs a showmance whose two halves end up
+  // campaigning on opposite sides, which is a conjunction of a pairing, a
+  // nomination and a split. Measured directly over 60 seasons: it fires in 8
+  // of them, about 13%. At that rate a 16-seed window misses it by luck alone
+  // roughly one run in ten, so it failed the first time an unrelated rng shift
+  // (a competition's slot eligibility) reshuffled the draws. Rare, not dead.
+  const ULTRA_RARE = new Set(['scheme-kiss-trap', 'power-veto-fallout', 'veto-backdoor-lands',
+    'showmance-separate-campaigns']);
 
   it('fires every event in real seasons — no dead code', () => {
     // Forty-seven events compete for a finite number of beats, so a rare one

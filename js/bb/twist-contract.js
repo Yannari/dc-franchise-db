@@ -22,6 +22,7 @@ export const BASE_WEEK_RULES = Object.freeze({
   nomineeCount: 2,          // how many the HOH names at the ceremony
   vetoCount: 1,             // how many vetoes exist this week (0 = no veto act)
   vetoSecret: false,        // whether the veto's use is anonymous
+  hohSecret: false,         // the HOH's identity is hidden from the house
   replacementAuthority: 'hoh', // 'hoh' | 'veto-holder' — who fills the empty chair
   cancelVotes: 0,           // ballots removed before the count
   cancelEviction: false,    // nobody leaves this week
@@ -100,6 +101,21 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Whoever wins it controls both chairs.',
     },
   },
+  'bb-invisible-hoh': {
+    id: 'bb-invisible-hoh', layer: 'scheduled', category: 'power-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { hohSecret: true },
+    // BBCAN9's shape: the house KNOWS the week is invisible — they play the
+    // competition and watch the result get sealed — so the twist announces
+    // itself while the winner stays hidden. That is exactly what
+    // holder-secret means.
+    acquisition: { channel: 'dedicated-competition', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The Invisible HOH',
+      rule: 'This week’s Head of Household is INVISIBLE. The competition result will not be revealed: only the winner knows who holds power. Nominations will be read by Big Brother, and the Invisible HOH may compete in next week’s HOH competition.',
+      sting: 'Somebody in this room is about to run the week without wearing the key.',
+    },
+  },
   'bb-pandoras-box': {
     id: 'bb-pandoras-box', layer: 'scheduled', category: 'distribution',
     timing: 'post-hoh', duration: { weeks: 1 },
@@ -128,10 +144,12 @@ export function resolveWeekTwistState(twistIds = []) {
     const contract = BB_TWIST_CONTRACTS[id];
     if (!contract) continue;
     active.push(id);
-    // A public power is a rule the whole house plays under, so the house is
-    // told the rule. Secret and holder-secret powers stay off this list —
-    // their reveal is the knowledge system's job, not the announcer's.
-    if (contract.announcement && (contract.acquisition?.secrecy ?? 'public') === 'public') {
+    // A public rule is announced, and so is a holder-secret one — the house
+    // knows the Hacker or the Invisible HOH EXISTS, just not who it is.
+    // Fully secret powers stay off this list; their reveal is the knowledge
+    // system's job, not the announcer's.
+    const secrecy = contract.acquisition?.secrecy ?? 'public';
+    if (contract.announcement && secrecy !== 'secret') {
       announcements.push({ twist: id, ...contract.announcement });
     }
     for (const [key, value] of Object.entries(contract.rules || {})) {

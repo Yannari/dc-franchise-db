@@ -913,6 +913,13 @@ export function simulateBBWeek(options = {}) {
   // the pre-contract twists (instant/double eviction, have-nots) keep their
   // existing paths and are merely recorded here.
   week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
+  // The Invisible HOH (BBCAN9): the competition runs, the result is sealed,
+  // and only the winner knows. Everything the engine writes on the house's
+  // behalf this week has to pass one test — could the house actually know
+  // this? — because a hidden winner is not useful if every strategy function
+  // silently knows the identity.
+  const hohSecret = week.twistState?.rules?.hohSecret === true;
+  week.hohSecret = hohSecret;
 
   /**
    * Season modes that put a third houseguest on the block.
@@ -955,7 +962,10 @@ export function simulateBBWeek(options = {}) {
     const bondsBefore = { ...(gs.bonds || {}) };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: act.type, phase: act.phase || act.type,
-      hoh: week.hoh, nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
+      // On an invisible week the event pool does not get to know either —
+      // a scene about "the HOH's room" would out the winner in narration.
+      hoh: week.hohSecret ? null : week.hoh,
+      nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng,
       // Campaign acts are where the vote operation's stories live — the
@@ -1050,7 +1060,7 @@ export function simulateBBWeek(options = {}) {
     const bondsBefore = { ...(gs.bonds || {}) };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: 'house', phase,
-      hoh: week.hoh || null,
+      hoh: week.hohSecret ? null : (week.hoh || null),
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
@@ -1169,15 +1179,17 @@ export function simulateBBWeek(options = {}) {
   let hoh = hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
   week.hoh = hoh;
-  setSpotlight({ hoh });
+  if (!hohSecret) setSpotlight({ hoh });
   gs.bb.stats[hoh].hohWins++;
   week.hohCompetition = hohCompetition;
   // Winning in front of everybody is where strategic respect and comp fear
   // actually come from. The dimension writers existed and the house never
   // called them, so nobody in a season ever became "a comp threat" in
   // anyone's head no matter how many competitions they won.
-  recordCompDominance(hohCompetition, house, week.num);
-  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh }));
+  // Comp fear and strategic respect come from WATCHING somebody win. A
+  // sealed result is watched by nobody, so the dimension writers stay quiet.
+  if (!hohSecret) recordCompDominance(hohCompetition, house, week.num);
+  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret }));
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.
   revise('hoh', { hoh });
@@ -1210,6 +1222,14 @@ export function simulateBBWeek(options = {}) {
   // pawn. Two real targets, a split pair, a couple of expendables — none of
   // those weeks involve asking anybody to volunteer, and a season where every
   // single Head of Household ran the pawn play was the bug being fixed.
+  // Asking somebody to sit as a pawn is a conversation, and an invisible
+  // HOH cannot have it without handing over the only thing the twist gives
+  // them. The plan runs both chairs as real targets instead.
+  if (hohSecret && plan.pawn) {
+    plan.pawn = null;
+    plan.structure = 'two-targets';
+    plan.structureWhy = 'An invisible HOH cannot negotiate a pawn without revealing themselves, so both nominations are meant.';
+  }
   week.pawnAsk = plan.pawn
     ? _cappedBondWindow(() => negotiatePawn(hoh, house, plan, rng))
     : null;
@@ -1354,8 +1374,61 @@ export function simulateBBWeek(options = {}) {
 
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
+    anonymous: hohSecret,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
+
+  /**
+   * Who a houseguest DECIDES did this to them, when nobody signed the work.
+   *
+   * The guess is intuition-proportional and it is allowed to be wrong —
+   * that is the entire realism of the twist. A wrong guess is not cosmetic:
+   * the grievance, the bond damage and the strategic memory all land on the
+   * innocent name, exactly like the vote-detection misattribution layer.
+   * One guess per person per week, stored, so every later reaction stays
+   * consistent with the first one.
+   */
+  const _invisibleGuess = who => {
+    week.hohGuesses ||= [];
+    const prior = week.hohGuesses.find(g => g.who === who);
+    if (prior) return prior.guess;
+    const blockNow = week.initialNominees || nominees;
+    const candidates = house.filter(n => n !== who && !blockNow.includes(n));
+    const st = pStats(who);
+    const correct = rng() < Math.min(0.75, 0.22 + st.intuition * 0.05);
+    let guess = hoh;
+    if (!correct) {
+      guess = candidates.filter(n => n !== hoh)
+        .sort((a, b) => getPerceivedBond(who, a) - getPerceivedBond(who, b))[0] || hoh;
+    }
+    week.hohGuesses.push({ who, guess, correct: guess === hoh });
+    return guess;
+  };
+
+  if (hohSecret) {
+    const nomAct = week.acts[week.acts.length - 1];
+    for (const nom of nominees) {
+      const guess = _invisibleGuess(nom);
+      const entry = week.hohGuesses.find(g => g.who === nom);
+      const temper = pStats(nom).temperament;
+      const hit = -(0.5 + (10 - temper) * 0.06);
+      _cappedBondWindow(() => addBond(nom, guess, hit));
+      try {
+        rememberStrategy(nom, guess, 'renomination', week.num, entry.correct ? 2 : 1.5,
+          { act: 'nominations', invisible: true, certain: false });
+      } catch { /* memory is texture */ }
+      (nomAct.socialBeats ||= []).push({
+        text: entry.correct
+          ? `${nom} does the arithmetic — who benefits, who has been too calm, who would not meet ${pronouns(nom).posAdj} eye this morning — and lands on ${guess}. ${nom} is right, and has no way to know it.`
+          : `${nom} runs the week back and decides it was ${guess}. The logic is airtight, the certainty grows by the hour, and it is aimed at entirely the wrong person.`,
+        players: [nom, guess],
+        badgeText: entry.correct ? 'DEAD RIGHT' : 'THE WRONG NAME',
+        badgeClass: entry.correct ? 'gold' : 'red',
+        eventId: 'invisible-hoh-guess', category: 'ceremonies', location: 'bedroom',
+        effects: [{ kind: 'bond', text: `${nom} & ${guess} ${hit.toFixed(1)}`, delta: hit }],
+      });
+    }
+  }
 
   // Two people are on the block and the rest of the house is not.
   if (!compressed) houseAct('post-noms', { nominees: [...nominees] });
@@ -1417,7 +1490,7 @@ export function simulateBBWeek(options = {}) {
     const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder'
       || (grantedDiamond?.holder === vetoWinner && grantedDiamond?.powerId === 'diamond-veto');
     const chairAuthority = diamond ? vetoWinner : hoh;
-    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond });
+    let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
     let replacement = null;
     let replacementWhy = '';
@@ -1477,7 +1550,7 @@ export function simulateBBWeek(options = {}) {
     }
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
-      diamond, chairAuthority,
+      diamond, chairAuthority, anonymous: hohSecret && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
       nominees: [...nominees] },
       // Handed over explicitly rather than left to be inferred. actFacts works
@@ -1499,8 +1572,9 @@ export function simulateBBWeek(options = {}) {
       // The anger lands on whoever actually named them. Under the Diamond
       // Veto that is the holder — the HOH spent the week planning a block the
       // holder just rewrote, and the replacement knows exactly whose voice
-      // said their name.
-      const namer = chairAuthority;
+      // said their name. On an invisible week nobody's voice said it, so the
+      // grievance lands on the replacement's own guess — right or wrong.
+      const namer = (hohSecret && !diamond) ? _invisibleGuess(replacement) : chairAuthority;
       const ceremonyAct = week.acts[week.acts.length - 1];
       const mentioned = (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
       if (!mentioned) {
@@ -1700,8 +1774,8 @@ export function simulateBBWeek(options = {}) {
     _attachRomance(week, rng);
     // How they wore it, judged on what the week actually achieved rather than on
   // what they meant. The house holds this against them next week.
-  try { week.reign = recordReign(week); } catch { week.reign = null; }
-  gs.bb.outgoingHoh = hoh;
+  try { week.reign = week.hohSecret ? null : recordReign(week); } catch { week.reign = null; }
+  gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
     gs.bb.weeks.push(week);
     gs.episode = (gs.episode || 0) + 1;
     return week;
@@ -1961,7 +2035,9 @@ export function simulateBBWeek(options = {}) {
   if (votes[nominees[0]] === votes[nominees[1]]) {
     const preference = initialVotePreference(hoh, nominees, rng);
     evicted = preference.evict;
-    tieBreak = { voter: hoh, evict: evicted };
+    // An invisible HOH still breaks the tie — through the wall screen, with
+    // the room watching nobody stand up.
+    tieBreak = { voter: hoh, evict: evicted, anonymous: hohSecret };
   } else {
     evicted = votes[nominees[0]] > votes[nominees[1]] ? nominees[0] : nominees[1];
   }
@@ -1970,6 +2046,12 @@ export function simulateBBWeek(options = {}) {
   week.evicted = evicted;
   week.votes = votes;
   week.ballots = ballots;
+  // The canonical reveal: the Invisible HOH tells the EVICTEE in a goodbye
+  // message — the house keeps its guesses, the person on the jury knows.
+  if (hohSecret && evicted) {
+    week.invisibleReveal = { to: evicted, hoh };
+    try { rememberStrategy(evicted, hoh, 'invisible-hoh-was', week.num, 2, { format: 'big-brother' }); } catch { /* jury texture */ }
+  }
   // An organizer who named the vote and then delivered it earns strategic
   // respect from the people who watched it happen — the other event-driven
   // source of the dimension, and the one that makes "big move" mean something
@@ -2035,8 +2117,10 @@ export function simulateBBWeek(options = {}) {
   _attachRomance(week, rng);
   // How they wore it, judged on what the week actually achieved rather than on
   // what they meant. The house holds this against them next week.
-  try { week.reign = recordReign(week); } catch { week.reign = null; }
-  gs.bb.outgoingHoh = hoh;
+  try { week.reign = week.hohSecret ? null : recordReign(week); } catch { week.reign = null; }
+  // An invisible winner was never publicly HOH, so nothing locks them out
+  // of next week's competition — the twist's stated perk.
+  gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
   gs.bb.weeks.push(week);
   gs.episode = (gs.episode || 0) + 1;
   return week;

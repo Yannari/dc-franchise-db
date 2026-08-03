@@ -4248,7 +4248,12 @@ export function generateBBSummaryText(ep) {
             .forEach(b => ln(`    · ${b.text}`));
         }
         (act.results || []).filter(r => r.threw).forEach(r => ln(`  ${r.name} threw the competition.`));
-        ln(`  ${act.winner} wins Head of Household.`);
+        if (act.secret) {
+          ln('  The result is SEALED. Only the winner knows who holds power this week.');
+          ln(`  (Viewer only: ${act.winner} is the Invisible HOH.)`);
+        } else {
+          ln(`  ${act.winner} wins Head of Household.`);
+        }
         beats(act);
         break;
 
@@ -4306,6 +4311,22 @@ export function generateBBSummaryText(ep) {
         // retranscription rather than a summary of one.
         const nomNames = (act.nominees || []).filter(Boolean);
         const nomWord = ['two', 'three', 'four', 'five'][Math.max(0, nomNames.length - 2)] || `${nomNames.length}`;
+        if (act.anonymous) {
+          // The invisible week: the voice does the ceremony, and no line of
+          // this transcript may put the real name next to it.
+          ln('  The chair at the head of the table stays empty. The wall screen speaks:');
+          ln(`  "This week's Head of Household is invisible. Big Brother will now turn ${nomWord} keys on their behalf."`);
+          ln('');
+          nomNames.forEach((name, i) => {
+            const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
+            ln(`    The ${which} key turns with nobody's hand on it. ${name}'s photograph turns on the memory wall.`);
+          });
+          ln('');
+          ln(`  "${nomNames.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete."`);
+          ln('  No speech. No reasons. A room full of people performing innocence.');
+          (act.socialBeats || []).forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+          break;
+        }
         const nomHoh = ep.hoh || act.hoh || 'The Head of Household';
         ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
         ln(`  Household to nominate ${nomWord} people for eviction. In my nomination box are the keys`);
@@ -4379,7 +4400,9 @@ export function generateBBSummaryText(ep) {
         if (act.diamond) ln(`  DIAMOND POWER OF VETO — if used, the veto holder (${act.holder}), not the Head of Household, names the replacement.`);
         if (act.used) {
           ln(`  The veto is used on ${act.saved}.`);
-          if (act.replacement) ln(`  ${act.replacement} is named as the replacement nominee${act.diamond ? ` — by ${act.chairAuthority}, under the Diamond Veto` : ''}.`);
+          if (act.replacement) ln(act.anonymous && !act.diamond
+            ? `  The wall screen names the replacement: ${act.replacement}. The hand behind it stays hidden.`
+            : `  ${act.replacement} is named as the replacement nominee${act.diamond ? ` — by ${act.chairAuthority}, under the Diamond Veto` : ''}.`);
         } else {
           ln('  The veto is not used. Nominations stand.');
         }
@@ -4398,6 +4421,11 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'eviction': {
+        if (ep.invisibleReveal && ep.invisibleReveal.to) {
+          sec('THE GOODBYE MESSAGES');
+          ln(`  In the goodbye messages, the Invisible HOH finally signs the week:`);
+          ln(`  ${ep.invisibleReveal.hoh} tells ${ep.invisibleReveal.to} it was them all along. The house still does not know.`);
+        }
         // ── VOTING PLANS — the operation, the way the screen tells it ──
         // The transcript used to count alliance MEMBERSHIP as control, which
         // is the exact fiction the vote-operation rebuild removed from the

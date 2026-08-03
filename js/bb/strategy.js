@@ -378,6 +378,10 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
   // ── what it costs with the person in power ──
   const angerOf = saved => {
     if (!hoh) return 0;
+    // On an invisible week the holder cannot name the person they would be
+    // crossing. Fear of SOMEBODY is real but diffuse — measured against a
+    // named, watching Head of Household it is less than half the weight.
+    const secrecy = context.hohSecret ? 0.45 : 1;
     const isTarget = saved === plan?.target;
     const isPawn = saved === plan?.pawn && !isTarget;
     let anger = isTarget ? 3.4 : isPawn ? 0.9 : 2.1;
@@ -390,7 +394,7 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     // when the person holding the grudge is somebody you already flinch from.
     anger *= 1 + getRelationshipDimension(holder, hoh, 'fear') * 0.06;
     // And it costs nothing anybody can name when there was no choice to make.
-    return anger * (1 - forced);
+    return anger * (1 - forced) * secrecy;
   };
 
   // ── what it costs with the person on the block ──

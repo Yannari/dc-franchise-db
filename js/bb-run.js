@@ -157,6 +157,9 @@ export function weekToEpisode(week) {
     // The resolved twist contract — which twist changed which rule — so the
     // Debug panel can show hook mutations on replay, not just live.
     twistState: week.twistState || null,
+    hohSecret: !!week.hohSecret,
+    hohGuesses: (week.hohGuesses || []).map(g => ({ ...g })),
+    invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
     votes: { ...(week.votes || {}) },
@@ -225,7 +228,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -378,15 +381,21 @@ export function summariseWeek(week) {
     switch (act.type) {
       case 'hoh':
         line('');
-        line('HEAD OF HOUSEHOLD');
+        line(act.secret ? 'HEAD OF HOUSEHOLD — RESULT SEALED' : 'HEAD OF HOUSEHOLD');
         _competition(line, act.competition);
-        line(`  ${act.winner} wins Head of Household.`);
+        if (act.secret) {
+          line('  The result is not revealed. Only the winner knows who holds power.');
+          line(`  (Viewer only: ${act.winner} is the Invisible HOH.)`);
+        } else {
+          line(`  ${act.winner} wins Head of Household.`);
+        }
         (act.results || []).filter(r => r.threw).forEach(r => line(`  ${r.name} threw the competition.`));
         break;
       case 'nominations':
         line('');
-        line('NOMINATION CEREMONY');
+        line(act.anonymous ? 'NOMINATION CEREMONY — READ BY BIG BROTHER' : 'NOMINATION CEREMONY');
         line(`  Nominated: ${(act.nominees || []).join(' and ')}.`);
+        if (act.anonymous) line('  No speech, no reasons: the keys turned on their own.');
         break;
       case 'veto':
         line('');
@@ -440,8 +449,13 @@ export function summariseWeek(week) {
         line('');
         line('EVICTION NIGHT');
         Object.entries(act.votes || {}).forEach(([name, count]) => line(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
-        if (act.tieBreak) line(`  Tied — ${act.tieBreak.voter} breaks it.`);
+        if (act.tieBreak) line(act.tieBreak.anonymous
+          ? '  Tied — the Invisible HOH breaks it through the wall screen, and nobody stands up.'
+          : `  Tied — ${act.tieBreak.voter} breaks it.`);
         line(`  ${act.evicted} is evicted from the Big Brother house.`);
+        if (week.invisibleReveal?.to === act.evicted) {
+          line(`  In the goodbye messages, the Invisible HOH finally signs the week: ${week.invisibleReveal.hoh} tells ${act.evicted} it was them all along. The house still does not know.`);
+        }
         break;
       }
       default:

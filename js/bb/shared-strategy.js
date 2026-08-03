@@ -802,7 +802,7 @@ export function updateBBPerceptions({ house = gs.activePlayers || [], week = nul
     // their ballot with your name on it, is how a delusion actually dies —
     // and those moments hit harder now than the old drift ever did.
     let rate = (Number(entry.correctionRate) || ((pStats(observer).intuition || 5) * 0.07 + (pStats(observer).mental || 5) * 0.025)) * 0.25;
-    if (week?.hoh === subject && week.initialNominees?.includes(observer)) rate += 0.55;
+    if (!week?.hohSecret && week?.hoh === subject && week.initialNominees?.includes(observer)) rate += 0.55;
     if (week?.ballots?.some(ballot => ballot.voter === subject && ballot.evict === observer)) rate += 0.5;
     if (entry.reason === 'post-betrayal-denial') rate = Math.max(0.05, rate - (pStats(observer).loyalty || 5) * 0.025);
     rate = clamp(rate, 0.03, 0.9);

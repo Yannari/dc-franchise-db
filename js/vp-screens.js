@@ -16793,6 +16793,10 @@ export function rpBuildBBComp(ep, actType) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
 
+  // The Invisible HOH: the competition airs, the result does not. The board
+  // seals the top line, the winner's card says nothing, and the viewer gets
+  // the truth in a final dramatic-irony step the house never sees.
+  const secret = isHoh && !!act?.secret;
   const rows = (act?.results || []).map((r, i) => ({ ...r, place: i + 1 }));
   const satOut = (comp?.excluded || []).filter(Boolean);
   const winner = act?.winner || rows[0]?.name;
@@ -16851,6 +16855,8 @@ export function rpBuildBBComp(ep, actType) {
     if (seen.has(s.beat)) { s.beat = null; return; }
     seen.add(s.beat);
   });
+  // The viewer-only reveal, after the sealed podium.
+  if (secret) steps.push({ irony: true });
 
   const total = steps.length;
   const revealed = Math.max(0, state.idx + 1);
@@ -16872,8 +16878,8 @@ export function rpBuildBBComp(ep, actType) {
       return `<div class="bbc-row ${lit ? 'is-lit' : 'is-hidden'} ${gold && lit ? 'is-win' : ''}"
                    id="bbc-row-${stateKey}-${r.place}">
         <span class="bbc-pos">${lit ? r.place : '&middot;'}</span>
-        <span class="bbc-face">${lit ? _bbAvatar(r.name, 26) : '<span class="bbc-blank"></span>'}</span>
-        <span class="bbc-name">${lit ? _bbEsc(r.name) : ''}</span>
+        <span class="bbc-face">${lit && !(secret && gold) ? _bbAvatar(r.name, 26) : '<span class="bbc-blank"></span>'}</span>
+        <span class="bbc-name">${lit ? (secret && gold ? 'THE INVISIBLE HOH' : _bbEsc(r.name)) : ''}</span>
         <span class="bbc-bar"><i style="width:${lit ? Math.max(4, pct) : 0}%;background:${gold ? '#f0a500' : cat.accent}"></i></span>
         ${lit && r.threw ? '<span class="bbc-threw">THREW</span>' : '<span class="bbc-threw"></span>'}
       </div>`;
@@ -16883,10 +16889,19 @@ export function rpBuildBBComp(ep, actType) {
   // One card per placement, in reveal order.
   const cards = steps.map((s, i) => {
     if (i > state.idx) return `<div class="bbc-card is-hidden"><span>?</span></div>`;
+    if (s.irony) {
+      return `<article class="bbc-card is-win bbc-irony">
+        <header><span class="bbc-card-pos">?</span><span class="bbc-card-tag">ONLY YOU KNOW</span></header>
+        <div class="bbc-card-b">${_bbAvatar(winner, 40)}
+          <p><strong>${_bbEsc(winner)}</strong> walks back inside with everybody else, complaining about the comp like everybody else. The house will spend the week guessing. You will spend it watching them guess wrong.</p>
+        </div></article>`;
+    }
     const r = s.row;
     const isWin = r.place === 1;
     const tone = isWin ? 'is-win' : r.place === 2 ? 'is-second' : r.threw ? 'is-threw' : '';
-    const line = s.beat?.text
+    const line = (isWin && secret)
+      ? `The horn sounds, the arena goes dark, and no name is read. "The results of this competition will not be revealed." Somebody in this room just became the most powerful person in the house, and is now working very hard on their disappointed face.`
+      : s.beat?.text
       || (isWin
         ? `${r.name} ${isHoh ? 'is the new Head of Household, and decides who sits on the block.'
             : 'takes the Power of Veto, and can change the whole week with it.'}`
@@ -16896,27 +16911,30 @@ export function rpBuildBBComp(ep, actType) {
             ? `${r.name} finishes second${margin < 0.08 ? ', by almost nothing, and will be replaying it all week'
                 : margin < 0.2 ? ', close enough to feel it' : ''}.`
             : `${r.name} is out.`);
+    const sealCard = isWin && secret;
     return `<article class="bbc-card ${tone}" id="bbc-card-${stateKey}-${i}">
       <header>
-        <span class="bbc-card-pos">${r.place}</span>
-        <span class="bbc-card-tag">${placeWord(r.place, rows.length)}</span>
-        ${r.threw ? '<span class="bbc-card-threw">THREW IT</span>' : ''}
+        <span class="bbc-card-pos">${sealCard ? '?' : r.place}</span>
+        <span class="bbc-card-tag">${sealCard ? 'RESULT SEALED' : placeWord(r.place, rows.length)}</span>
+        ${r.threw && !sealCard ? '<span class="bbc-card-threw">THREW IT</span>' : ''}
       </header>
       <div class="bbc-card-b">
-        ${_bbAvatar(r.name, 40)}
+        ${sealCard ? '' : _bbAvatar(r.name, 40)}
         <p>${line}</p>
       </div>
     </article>`;
   }).join('');
 
   const verdict = done && runnerUp
-    ? `<div class="bbc-verdict">${_bbEsc(winner)} over ${_bbEsc(runnerUp.name)} — ${closeness}.</div>` : '';
+    ? (secret
+      ? `<div class="bbc-verdict">The board goes dark with the top line still blank. The week has an owner; the room has a mystery.</div>`
+      : `<div class="bbc-verdict">${_bbEsc(winner)} over ${_bbEsc(runnerUp.name)} — ${closeness}.</div>`) : '';
 
   return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} bbc">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${cat.accent};text-shadow:0 0 20px ${cat.accent}33;margin-bottom:6px">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
-      isHoh ? 'Power changes hands.' : 'One houseguest can change the whole week.'}</div>
+      isHoh ? (secret ? 'Power changes hands. Nobody sees whose.' : 'Power changes hands.') : 'One houseguest can change the whole week.'}</div>
     ${explainer}
     ${board}
     ${verdict}
@@ -17055,6 +17073,10 @@ export function rpBuildBBNominations(ep) {
   const noms = (act?.nominees || []).filter(Boolean);
   if (!noms.length) return '';
   const hoh = ep.hoh || act?.hoh;
+  // An anonymous ceremony: the keys turn, the voice reads, and no chair at
+  // the head of the table has anybody in it. Every surface that would name
+  // the HOH goes through hohShow, which on an invisible week is nobody.
+  const anon = !!act?.anonymous;
   const house = (ep.houseAtStart || []).filter(Boolean);
   const wall = typeof players !== 'undefined' ? players.map(p => p.name) : house;
   const plan = ep.plan || {};
@@ -17082,7 +17104,7 @@ export function rpBuildBBNominations(ep) {
   // outsiders, the target beside their own ally. The mechanics choose between
   // five structures now, and a plan the viewer cannot see is a plan that
   // reads as random.
-  if (act?.structure && act.structure !== 'target-pawn' && act.structureWhy) {
+  if (act?.structure && act.structure !== 'target-pawn' && act.structureWhy && !anon) {
     steps.push({ kind: 'shape' });
   }
   steps.push({ kind: 'complete' });
@@ -17129,12 +17151,18 @@ export function rpBuildBBNominations(ep) {
   </div>`;
 
   // ── the words ──
-  const openLine = `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
+  const openLine = anon
+    ? `The house is called to the sofas and the chair at the head of the table stays empty. The wall screen lights up: "This is the nomination ceremony. This week's Head of Household is invisible. Big Brother will now turn ${WORD} keys on their behalf."`
+    : `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
     + ` It is my responsibility as Head of Household to nominate ${WORD} people for eviction.`
     + ` In my nomination box are the keys of the houseguests I am nominating.`
     + ` I will turn ${WORD} keys to lock in my nominations, and their faces will appear on the memory wall."`;
 
-  const KEY_LINES = [
+  const KEY_LINES = anon ? [
+    (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key turns with nobody's hand on it. The screen goes from a question mark to <strong>${n}</strong>, and the whole room checks the whole room's face at once.`,
+    n => `A lock clicks by itself and <strong>${n}</strong> lights up in red. ${pronouns(n).Sub} ${pronouns(n).sub === 'they' ? 'look' : 'looks'} around for somebody to be angry at and ${pronouns(n).sub === 'they' ? 'find' : 'finds'} only sofas.`,
+    n => `<strong>${n}</strong> appears on the wall. Nobody stood up. Nobody sat down. Somebody in this room did this, and every single person is performing innocence at broadcast quality.`,
+  ] : [
     (n, i) => `${hoh} turns the ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key. The screen goes from a question mark to <strong>${n}</strong>.`,
     (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key goes round and <strong>${n}</strong> lights up on the wall. ${pronouns(n).Sub} ${pronouns(n).sub === 'they' ? 'do' : 'does'} not look away from it.`,
     n => `A turn of the wrist and <strong>${n}</strong> is up there in red. Somebody behind ${pronouns(n).obj} breathes out.`,
@@ -17146,7 +17174,7 @@ export function rpBuildBBNominations(ep) {
     }
     if (step.kind === 'open') {
       return `<div class="bbns-card is-open">
-        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill grey">THE CEREMONY BEGINS</span></div>
+        <div class="bbns-card-h">${anon || !hoh ? '' : _bbAvatar(hoh, 30)}<span class="bbns-pill grey">${anon ? 'THE VOICE OF BIG BROTHER' : 'THE CEREMONY BEGINS'}</span></div>
         <div class="bbns-card-b">${openLine}</div></div>`;
     }
     if (step.kind === 'key') {
@@ -17171,6 +17199,11 @@ export function rpBuildBBNominations(ep) {
         : ask.forced ? `<span class="bbh-why">${_bbEsc(step.name)} was asked, said no, and is sitting there anyway — everybody in the room knows all three parts.</span>`
         : ask.willing ? `<span class="bbh-why">${_bbEsc(step.name)} agreed to this upstairs, and ${_bbEsc(hoh)} now owes a debt the whole house can price.</span>`
         : `<span class="bbh-why">${_bbEsc(step.name)} said yes upstairs — the kind of yes that keeps receipts.</span>`;
+      if (anon) {
+        return `<div class="bbns-card is-reason">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill grey">NO REASON GIVEN</span></div>
+          <div class="bbns-card-b">No speech. No reasons. ${_bbEsc(step.name)} gets a chair and a silence to interpret, which is somehow worse — a reason can be argued with.</div></div>`;
+      }
       return `<div class="bbns-card is-reason">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill gold">WHY ${_bbEsc(step.name).toUpperCase()}</span></div>
         <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}${askLine}</div>
@@ -17196,9 +17229,11 @@ export function rpBuildBBNominations(ep) {
     }
     if (step.kind === 'complete') {
       return `<div class="bbns-card is-final">
-        <div class="bbns-card-h">${hoh ? _bbAvatar(hoh, 30) : ''}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
-        <div class="bbns-card-b">"${noms.join(', ')} — I have nominated you for eviction because that is my
-          responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."</div></div>`;
+        <div class="bbns-card-h">${anon || !hoh ? '' : _bbAvatar(hoh, 30)}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
+        <div class="bbns-card-b">${anon
+          ? `"${noms.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete." The wall screen goes dark, and the room stays exactly as quiet as a room where everybody suspects everybody.`
+          : `"${noms.join(', ')} — I have nominated you for eviction because that is my
+          responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`}</div></div>`;
     }
     const b = step.beat;
     if (!b) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
@@ -17215,7 +17250,7 @@ export function rpBuildBBNominations(ep) {
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">NOMINATION CEREMONY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${
-      hoh ? `${hoh} turns ${WORD} keys.` : ''}</div>
+      anon ? `Big Brother turns ${WORD} keys. The hand behind them stays hidden.` : hoh ? `${hoh} turns ${WORD} keys.` : ''}</div>
 
     <div class="bbns-stage ${locked ? 'is-locked' : ''}">
       ${screensHtml}
@@ -18645,7 +18680,11 @@ export function rpBuildBBCeremony(ep) {
             ? `${_bbEsc(hoh)} built this block, and for the first time all week, cannot protect it.`
             : `And since ${_bbEsc(holder)} is the Head of Household, the power stays exactly where it already was.`}</div></div>`;
       case 'handover':
-        return isDiamond && namer !== hoh
+        return (act?.anonymous && !isDiamond)
+          ? `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(holder, 30)}<span class="bbns-pill red">THE EMPTY CHAIR SPEAKS</span></div>
+              <div class="bbns-card-b">"Since the veto has been used, a replacement nominee must be named." The wall screen does it — no hand, no voice anybody can place. Every head in the room turns toward everybody else at once.</div></div>`
+          : isDiamond && namer !== hoh
           ? `<div class="bbns-card is-key bbvc-seize">
               <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill bbvc-dmd-pill">NO HANDOVER</span></div>
               <div class="bbns-card-b">Every head turns toward ${_bbEsc(hoh)} out of habit — and ${_bbEsc(holder)} does not sit down. "This is the Diamond Power of Veto. The replacement is mine to name." ${vvar([
@@ -18663,6 +18702,11 @@ export function rpBuildBBCeremony(ep) {
                 `${_bbEsc(hoh)} stands while the eligible houseguests avoid eye contact.`,
               ], hoh, replacement, 'handover')}</div></div>`;
       case 'replacement':
+        if (act?.anonymous && !isDiamond) {
+          return `<div class="bbns-card is-final">
+            <div class="bbns-card-h">${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
+            <div class="bbns-card-b">The wall screen reads it flat: "<strong>${_bbEsc(replacement)}</strong>, take a seat." ${_bbEsc(replacement)} crosses the room scanning faces on the way — one of these people did this, and ${pv(replacement).sub} intends to work out which.${act?.replacementWhy && false ? '' : ''}</div></div>`;
+        }
         return `<div class="bbns-card is-final">
           <div class="bbns-card-h">${namer ? _bbAvatar(namer, 30) : ''}${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
           <div class="bbns-card-b">${_bbEsc(namer)} stands. "<strong>${_bbEsc(replacement)}</strong>, take a seat." ${vvar([
@@ -20207,7 +20251,9 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   const stats = {};
   const bump = (name, key) => { if (!name) return; (stats[name] ||= { hoh: 0, veto: 0, block: 0 })[key]++; };
   priorWeeks.forEach(h => {
-    bump(h.hoh, 'hoh');
+    // A sealed week's win is real but the HOUSE cannot see it — crediting it
+    // on a status screen would out the Invisible HOH by arithmetic.
+    if (!h.hohSecret) bump(h.hoh, 'hoh');
     bump(h.vetoWinner, 'veto');
     (h.finalNominees || []).forEach(n => bump(n, 'block'));
   });
@@ -20707,6 +20753,14 @@ export function rpBuildBBDebug(ep) {
     if ((ep.twistState?.applied || []).length) {
       html += dbgPanel('TWIST CONTRACT', 'gold', ep.twistState.applied.map(a =>
         dbgNote(`${_bbEsc(a.twist)}: ${_bbEsc(a.rule)} ${a.from !== undefined ? `${_bbEsc(String(a.from))} → ` : ''}${_bbEsc(String(a.to))}`)).join(''));
+    }
+    // The invisible week's truth: who it really was, and who guessed right.
+    if (ep.hohSecret) {
+      html += dbgPanel('INVISIBLE HOH (THE TRUTH)', 'gold',
+        dbgPortraitRow(ep.hoh, `<div style="color:#7ee7ff;font-size:11px">the Invisible HOH</div>`)
+        + (ep.hohGuesses || []).map(g =>
+          dbgNote(`${_bbEsc(g.who)} guessed ${_bbEsc(g.guess)} — ${g.correct ? 'RIGHT' : 'wrong'}`)).join('')
+        + (ep.invisibleReveal ? dbgNote(`revealed to ${_bbEsc(ep.invisibleReveal.to)} in the goodbye message`) : ''));
     }
     // The power inventory's truth. The public screens show only what the
     // house knows — a locked backyard, a story about a dollar — so this is

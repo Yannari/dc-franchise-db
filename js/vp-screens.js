@@ -20771,32 +20771,6 @@ export function rpBuildBBDebug(ep) {
           dbgNote(`${_bbEsc(g.who)} guessed ${_bbEsc(g.guess)} — ${g.correct ? 'RIGHT' : 'wrong'}`)).join('')
         + (ep.invisibleReveal ? dbgNote(`revealed to ${_bbEsc(ep.invisibleReveal.to)} in the goodbye message`) : ''));
     }
-    // Romance, which the house debug never showed at all: three played
-    // seasons of showmances were invisible here, which reads exactly like
-    // zero showmances. The panel also says out loud when the SEASON has
-    // romance switched off — the one cause a player cannot see otherwise,
-    // because the setting rides along from whatever config was saved last.
-    {
-      const romanceOff = (typeof seasonConfig !== 'undefined' && seasonConfig?.romance === 'disabled');
-      const shows = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || []);
-      const sparks = ((typeof gs !== 'undefined' && gs.romanticSparks) || [])
-        .filter(s => (s.players || [s.a, s.b]).every(n => n && house.includes(n)));
-      if (romanceOff) {
-        html += dbgPanel('ROMANCE', 'grey', dbgNote('romance is DISABLED in this season\'s config — no sparks, no showmances, by choice'));
-      } else if (shows.length || sparks.length) {
-        html += dbgPanel('ROMANCE', 'gold',
-          shows.map(sh => {
-            const pair = (sh.players || []).join(' & ');
-            return dbgNote(`${_bbEsc(pair)} — ${_bbEsc(sh.phase || 'showmance')}${sh.phase === 'broken-up' ? ' (over)' : ''}`);
-          }).join('')
-          + sparks.map(s => {
-            const pair = (s.players || [s.a, s.b]).filter(Boolean).join(' → ');
-            return dbgNote(`spark: ${_bbEsc(pair)}${s.intensity != null ? ` (intensity ${Number(s.intensity).toFixed(1)})` : ''}`);
-          }).join(''));
-      } else {
-        html += dbgPanel('ROMANCE', 'grey', dbgNote('romance is on — no sparks or showmances in the house right now'));
-      }
-    }
     // The power inventory's truth. The public screens show only what the
     // house knows — a locked backyard, a story about a dollar — so this is
     // the one place a secret power exists before it fires.
@@ -20851,6 +20825,52 @@ export function rpBuildBBDebug(ep) {
         groups.map(g => dbgRow(`${g.field}${g.who.length > 1 ? ` <span style="color:#6e7681">×${g.who.length}</span>` : ''}`,
           `${_bbEsc(g.reason)}<div style="color:#6e7681;font-size:10px;margin-top:1px">${g.who.join(', ')}</div>`)).join(''));
     }
+  }
+
+  // ── Romance ──────────────────────────────────────────────────────
+  // A dedicated tab, not a panel buried in This Week. The purpose of this
+  // screen is diagnostic: even an empty romance pipeline must be visible.
+  if (tab === 'romance') {
+    const romanceOff = (typeof seasonConfig !== 'undefined' && seasonConfig?.romance === 'disabled');
+    const allShows = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || []);
+    const allSparks = ((typeof gs !== 'undefined' && gs.romanticSparks) || []);
+    const shows = allShows.filter(sh => (sh.players || []).some(n => house.includes(n)));
+    const sparks = allSparks.filter(s =>
+      (s.players || [s.a, s.b]).every(n => n && house.includes(n)));
+    const activeShows = shows.filter(sh => sh.phase !== 'broken-up' && !sh.broken);
+
+    html += dbgPanel('ROMANCE STATUS', romanceOff ? 'grey' : 'gold',
+      dbgRow('season setting', romanceOff
+        ? '<span style="color:#f47067">DISABLED</span>'
+        : '<span style="color:#3fb950">ENABLED</span>')
+      + dbgRow('active sparks', sparks.length)
+      + dbgRow('active showmances', activeShows.length)
+      + dbgRow('ended showmances', shows.length - activeShows.length)
+      + (romanceOff
+        ? dbgNote('Romance is disabled in this season config. The engine will not create sparks or showmances.')
+        : !sparks.length && !shows.length
+          ? dbgNote('The romance system is enabled, but no spark has formed in the current house yet.')
+          : dbgNote('Sparks are early attraction. A showmance appears here once a spark matures into a relationship.')));
+
+    html += dbgPanel(`SPARKS (${sparks.length})`, sparks.length ? 'purple' : 'grey',
+      sparks.length ? sparks.map(s => {
+        const pair = (s.players || [s.a, s.b]).filter(Boolean);
+        const intensity = Number(s.intensity);
+        return dbgPortraitRow(pair[0], `
+          <div style="color:#d2a8ff;font-size:11px">with ${_bbEsc(pair[1] || '?')}</div>
+          <div style="color:#8b949e;font-size:10px">started week ${s.sparkEp || '?'} · intensity ${Number.isFinite(intensity) ? intensity.toFixed(2) : 'not recorded'}</div>
+          <div style="color:#6e7681;font-size:10px">${_bbEsc(s.context || s.sparkContext || 'house interaction')}${s.fake ? ' · FAKE' : ''}</div>`);
+      }).join('') : dbgNote('No active sparks among the houseguests in this episode.'));
+
+    html += dbgPanel(`SHOWMANCES (${shows.length})`, shows.length ? 'gold' : 'grey',
+      shows.length ? shows.map(sh => {
+        const pair = sh.players || [];
+        const ended = sh.phase === 'broken-up' || sh.broken;
+        return dbgPortraitRow(pair[0], `
+          <div style="color:${ended ? '#f47067' : '#f0a500'};font-size:11px">with ${_bbEsc(pair[1] || '?')} · ${_bbEsc(sh.phase || 'active')}</div>
+          <div style="color:#8b949e;font-size:10px">sparked week ${sh.sparkEp || '?'}${sh.episodesActive != null ? ` · ${sh.episodesActive} active week${sh.episodesActive === 1 ? '' : 's'}` : ''}</div>
+          <div style="color:#6e7681;font-size:10px">${ended ? 'relationship ended' : 'mature relationship — counts as a visible pair'}</div>`);
+      }).join('') : dbgNote('No spark has matured into a showmance yet.'));
   }
 
   // ── Threats & heat ────────────────────────────────────────────────
@@ -21142,7 +21162,8 @@ export function rpBuildBBDebug(ep) {
     tabs: [
       ['week', 'This Week'], ['threats', 'Threats &amp; Heat'], ['comps', 'Competitions'],
       ['plans', 'Game Plans'], ['deals', 'Deals &amp; Alliances'], ['votes', 'Vote Commitments'],
-      ['bonds', 'Perceived Bonds'], ['web', 'The Web'], ['stats', 'Player Stats'], ['beats', 'Beats &amp; Effects'],
+      ['romance', 'Romance'], ['bonds', 'Perceived Bonds'], ['web', 'The Web'],
+      ['stats', 'Player Stats'], ['beats', 'Beats &amp; Effects'],
     ],
     body: html,
   });

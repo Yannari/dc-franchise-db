@@ -1253,6 +1253,18 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-double-eviction') {
+        const styles = {
+          'fast-forward': 'Fast-Forward (live hour)',
+          'double-vote': 'Double Vote (one vote, two leave)',
+          'week-in-one': 'Two Weeks in One',
+        };
+        const cur = t.deStyle || 'fast-forward';
+        let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        Object.entries(styles).forEach(([k, label]) => { styleHtml += `<option value="${k}" ${k===cur?'selected':''}>${label}</option>`; });
+        styleHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-pandoras-box') {
         // What goes IN the box — drawn from the power inventory, so every
         // power added there becomes cargo here with no new UI.
@@ -1530,6 +1542,7 @@ export function assignTwist(twistId) {
     const entry = { id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId };
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
+    if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     seasonConfig.twistSchedule.push(entry);
   });
 

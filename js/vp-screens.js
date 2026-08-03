@@ -19447,7 +19447,11 @@ export function rpBuildBBEviction(ep) {
             `The count comes back even. <strong>${_bbEsc(act.tieBreak.voter)}</strong> looks at both nominees before saying, “I vote to evict <strong>${_bbEsc(act.tieBreak.evict)}</strong>.”`,
           ], act.tieBreak.voter, act.tieBreak.evict, 'tie')}</div></div>`;
       case 'verdict':
-        return `<div class="bbns-card is-final bbev-verdict">
+        return act?.doubleVote && act?.secondEvicted
+          ? `<div class="bbns-card is-final bbev-verdict">
+              <div class="bbns-card-h">${_bbAvatar(host, 30)}${_bbAvatar(evicted, 30)}${_bbAvatar(act.secondEvicted, 30)}<span class="bbns-pill red">DOUBLE EVICTION</span></div>
+              <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen: "This is a DOUBLE eviction. The two nominees with the most votes will both leave tonight. By a vote of <strong>${voteCount() || '—'}</strong>... <strong>${_bbEsc(evicted)}</strong> and <strong>${_bbEsc(act.secondEvicted)}</strong>, you are BOTH evicted from the Big Brother house." One survivor stays in a nomination chair that suddenly feels like a throne.</div></div>`
+          : `<div class="bbns-card is-final bbev-verdict">
           <div class="bbns-card-h">${_bbAvatar(host, 30)}${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE RESULT</span></div>
           <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen, with the envelope voice he saves for exactly this: "By a vote of <strong>${voteCount() || '0 to 0'}</strong>... <strong>${_bbEsc(evicted)}</strong>, you are evicted from the Big Brother house."</div></div>`;
       case 'goodbyes':
@@ -19462,6 +19466,11 @@ export function rpBuildBBEviction(ep) {
             `${_bbEsc(evicted)} keeps the goodbye quick until one person holds on. For a moment the vote disappears and the relationship does not.`,
           ], 'bye')}</div></div>`;
       case 'door':
+        if (act?.doubleVote && act?.secondEvicted) {
+          return `<div class="bbns-card is-final bbev-door-card">
+            <div class="bbns-card-h">${_bbAvatar(evicted, 30)}${_bbAvatar(act.secondEvicted, 30)}<span class="bbns-pill red">THE FRONT DOOR, TWICE</span></div>
+            <div class="bbns-card-b"><strong>${_bbEsc(evicted)}</strong> goes first, into the noise. Before the door can settle, <strong>${_bbEsc(act.secondEvicted)}</strong> follows with the second bag — two chairs empty in one night, and the house behind the glass suddenly very small.</div></div>`;
+        }
         return `<div class="bbns-card is-final bbev-door-card">
           <div class="bbns-card-h">${_bbAvatar(evicted, 30)}<span class="bbns-pill red">THE FRONT DOOR</span></div>
           <div class="bbns-card-b">${vvar([

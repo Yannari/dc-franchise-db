@@ -842,14 +842,23 @@ export function updateBBPerceptions({ house = gs.activePlayers || [], week = nul
 }
 
 export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.activePlayers || [], campaignIndex = 0, rng = Math.random } = {}) {
-  if (nominees.length !== 2) throw new Error('A standard Big Brother campaign requires exactly two nominees.');
+  if (nominees.length < 2) throw new Error('A Big Brother campaign requires at least two nominees.');
   gs.playerStates ||= {};
   gs._pitchExposureResponses = {};
   gs._pitchCounterplay = {};
   const eligibleVoters = ballots.length;
   const majority = Math.floor(eligibleVoters / 2) + 1;
   const pitches = nominees.map(nominee => {
-    const pitchTarget = nominees.find(name => name !== nominee);
+    // Two chairs: campaign against the only other person there. Three chairs
+    // (the international double vote): campaign against the rival you most
+    // need the room aiming at — the other nominee currently drawing the most
+    // evict votes, worst-bond as the tiebreak, because redirecting a vote to
+    // somebody nobody is writing down saves no one.
+    const rivals = nominees.filter(name => name !== nominee);
+    const pitchTarget = rivals.length === 1 ? rivals[0]
+      : [...rivals].sort((a, b) =>
+          (ballots.filter(x => x.evict === b).length - ballots.filter(x => x.evict === a).length)
+          || (getPerceivedBond(nominee, a) - getPerceivedBond(nominee, b)))[0];
     const existingSupporters = ballots.filter(ballot => ballot.evict === pitchTarget).map(ballot => ballot.voter);
     const competingSupport = ballots.filter(ballot => ballot.evict === nominee).length;
     const approachBudget = clamp(1 + Math.floor((pStats(nominee).social || 5) / 3), 1, Math.max(1, ballots.length));

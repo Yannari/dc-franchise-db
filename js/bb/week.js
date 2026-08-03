@@ -906,7 +906,8 @@ export function simulateBBWeek(options = {}) {
   const skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
   week.twists = [...twists];
   week.compressed = compressed;
-  if (compressed) week.segment = options.segment || 2;
+  if (options.segment) week.segment = options.segment;
+  else if (compressed) week.segment = 2;
   // The resolved twist contract: every rule a twist may change, merged with
   // an applied log saying which twist changed what. The engine consults the
   // RULES at its interception points rather than asking for twists by name;
@@ -940,7 +941,14 @@ export function simulateBBWeek(options = {}) {
   // the house that is nobody, so the mode has to stop before it breaks a vote.
   const safetyActive = !!safetyMode && house.length > Math.max(stopsAt, 5);
   week.safetyMode = safetyActive ? safetyMode : null;
-  const nomineeCount = safetyActive ? 3 : 2;
+  // The international double eviction: three nominees, ONE vote, and the two
+  // highest evict-getters both walk the same night. No second cycle, no
+  // arena — the block itself is the twist. Incompatible with a safety mode
+  // (that machinery owns the third chair) and needs enough house left for
+  // three nominees, an HOH and at least two voters.
+  const doubleVote = !!options.doubleVote && !compressed && !safetyActive && house.length >= 6;
+  week.doubleVote = doubleVote;
+  const nomineeCount = (safetyActive || doubleVote) ? 3 : 2;
   // The house as it stands before a single thing happens this week. The status
   // screen shown at the top of an episode reads this, so it cannot show an
   // alliance nobody has formed yet or a target nobody has set.
@@ -1310,7 +1318,7 @@ export function simulateBBWeek(options = {}) {
   //
   // The third is named by the same read that names a replacement, so it is
   // another target rather than a name out of a hat.
-  while (safetyActive && nominees.length < nomineeCount) {
+  while ((safetyActive || doubleVote) && nominees.length < nomineeCount) {
     const third = chooseReplacement(hoh, house, [hoh, ...nominees], plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
@@ -2031,8 +2039,22 @@ export function simulateBBWeek(options = {}) {
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
   let evicted;
+  let secondEvicted = null;
   let tieBreak = null;
-  if (votes[nominees[0]] === votes[nominees[1]]) {
+  if (doubleVote && nominees.length >= 3) {
+    // One vote, three chairs, two walks. The two highest evict-getters both
+    // leave; the only tie that matters is the BOUNDARY — second place versus
+    // the survivor — and the HOH's preference settles it, exactly like an
+    // ordinary tied vote.
+    const ranked = [...nominees].sort((a, b) => (votes[b] || 0) - (votes[a] || 0));
+    evicted = ranked[0];
+    secondEvicted = ranked[1];
+    if ((votes[ranked[1]] || 0) === (votes[ranked[2]] || 0)) {
+      const preference = initialVotePreference(hoh, [ranked[1], ranked[2]], rng);
+      secondEvicted = preference.evict;
+      tieBreak = { voter: hoh, evict: secondEvicted, slot: 2, anonymous: hohSecret };
+    }
+  } else if (votes[nominees[0]] === votes[nominees[1]]) {
     const preference = initialVotePreference(hoh, nominees, rng);
     evicted = preference.evict;
     // An invisible HOH still breaks the tie — through the wall screen, with
@@ -2041,9 +2063,12 @@ export function simulateBBWeek(options = {}) {
   } else {
     evicted = votes[nominees[0]] > votes[nominees[1]] ? nominees[0] : nominees[1];
   }
-  evicted = hook(hooks, 'evictionResult', evicted, { week, house, hoh, nominees: [...nominees], ballots, votes, tieBreak }) || evicted;
-  if (!nominees.includes(evicted)) evicted = votes[nominees[0]] >= votes[nominees[1]] ? nominees[0] : nominees[1];
+  if (!doubleVote) {
+    evicted = hook(hooks, 'evictionResult', evicted, { week, house, hoh, nominees: [...nominees], ballots, votes, tieBreak }) || evicted;
+    if (!nominees.includes(evicted)) evicted = votes[nominees[0]] >= votes[nominees[1]] ? nominees[0] : nominees[1];
+  }
   week.evicted = evicted;
+  week.secondEvicted = secondEvicted;
   week.votes = votes;
   week.ballots = ballots;
   // The canonical reveal: the Invisible HOH tells the EVICTEE in a goodbye
@@ -2073,7 +2098,8 @@ export function simulateBBWeek(options = {}) {
   // signature moments - impossible to write. The evicted houseguest is passed
   // through so events can be about the person actually leaving.
   week.acts.push(addBeats(
-    { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted },
+    { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
+      secondEvicted, doubleVote },
     { nominees: [...nominees], evicted, votes, ballots }));
 
   // Voting out the person you promised the end to IS breaking the deal, and it
@@ -2082,29 +2108,33 @@ export function simulateBBWeek(options = {}) {
   // final cut could break one. The vote is where most betrayals actually
   // happen — somebody walks to the jury knowing exactly who did it.
   week.dealBreaks = [];
-  for (const ballot of ballots) {
-    if (ballot.evict !== evicted) continue;
-    const deal = dealBetween(ballot.voter, evicted);
-    if (!deal) continue;
-    const broken = breakDeal(deal, ballot.voter, { week, reason: 'voted them out' });
-    if (!broken) continue;
-    // The person leaving knows. So does anybody who was in the room when the
-    // votes were read, which in this house is everybody.
-    exposeDeal(deal, [evicted, ...gs.activePlayers]);
-    try {
-      rememberStrategy(evicted, ballot.voter, 'broken-final-two', week.num, 3,
-        { format: 'big-brother', tier: tierOf(deal) });
-    } catch { /* the break still stands */ }
-    week.dealBreaks.push({ breaker: ballot.voter, victim: evicted, tier: tierOf(deal), madeEp: deal.madeEp });
+  for (const gone of [evicted, secondEvicted].filter(Boolean)) {
+    for (const ballot of ballots) {
+      if (ballot.evict !== gone) continue;
+      const deal = dealBetween(ballot.voter, gone);
+      if (!deal) continue;
+      const broken = breakDeal(deal, ballot.voter, { week, reason: 'voted them out' });
+      if (!broken) continue;
+      // The person leaving knows. So does anybody who was in the room when
+      // the votes were read, which in this house is everybody.
+      exposeDeal(deal, [gone, ...gs.activePlayers]);
+      try {
+        rememberStrategy(gone, ballot.voter, 'broken-final-two', week.num, 3,
+          { format: 'big-brother', tier: tierOf(deal) });
+      } catch { /* the break still stands */ }
+      week.dealBreaks.push({ breaker: ballot.voter, victim: gone, tier: tierOf(deal), madeEp: deal.madeEp });
+    }
   }
-  gs.activePlayers = house.filter(name => name !== evicted);
+  gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
   // Powers whose holder just left, or whose window just closed, end here.
   expirePowers(week.num, gs.activePlayers);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
+  if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
   // Somebody leaving rearranges everybody's plan: a shield walks out and the
   // person hiding behind them is suddenly the biggest thing in the room, and a
   // promise made to somebody who is now in the jury is not a promise any more.
   try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ }
+  if (secondEvicted) { try { dropFromHousePlans(secondEvicted); } catch { /* both walks count */ } }
   try { _cappedBondWindow(() => settleDeals({ house: gs.activePlayers, week })); } catch { /* deals too */ }
   revise('eviction', { evicted });
   week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));

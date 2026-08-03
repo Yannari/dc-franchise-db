@@ -269,6 +269,14 @@ export function simulateBBEpisode() {
   // and no new code. The entry's `prize` field is set in the Format Designer.
   const boxEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === weekNum && t.type === 'bb-pandoras-box');
+  // The double eviction has three shapes, chosen on the scheduled entry:
+  // 'fast-forward' (the US live hour — a compressed second cycle),
+  // 'week-in-one' (BB5/6 — a second FULL cycle inside the same episode),
+  // and 'double-vote' (the international night — one vote over three
+  // nominees, the two highest evict-getters both walk).
+  const deEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === weekNum && t.type === 'bb-double-eviction');
+  const deStyle = deEntry?.deStyle || 'fast-forward';
 
   const week = simulateBBWeek({
     // Both libraries default to empty inside the engine, so a season that does
@@ -277,6 +285,7 @@ export function simulateBBEpisode() {
     competitions: BB_COMPETITIONS,
     twists,
     pandorasPrize: boxEntry?.prize || undefined,
+    doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',
     safetyStopsAt: Number.isFinite(Number(seasonConfig.bbSafetyStopsAt))
@@ -302,11 +311,19 @@ export function simulateBBEpisode() {
   // A separate week record, because it genuinely is one — the stats, the jury
   // and the competition history all have to see two HOHs and two evictions —
   // but a single episode, because that is how it is watched.
-  if (twists.includes('bb-double-eviction') && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
+  if (deStyle === 'double-vote' && week.secondEvicted) {
+    ep.alsoEliminated = week.secondEvicted;
+    ep.doubleEvictionStyle = 'double-vote';
+  }
+  if (twists.includes('bb-double-eviction') && deStyle !== 'double-vote'
+    && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
     const second = simulateBBWeek({
       houseEvents: HOUSE_EVENTS,
       competitions: BB_COMPETITIONS,
-      compressed: true,
+      // The week-in-one runs the second cycle at FULL length — house life,
+      // real campaigning — inside the same episode; the fast-forward keeps
+      // the live-hour compression.
+      compressed: deStyle !== 'week-in-one',
       segment: 2,
       // A three-nominee season is a three-nominee season, including the half
       // of the night that runs live.
@@ -323,6 +340,7 @@ export function simulateBBEpisode() {
       houseAtStart: [...(second.houseAtStart || [])],
     };
     ep.alsoEliminated = second.evicted;
+    ep.doubleEvictionStyle = deStyle;
     ep.acts = [...(ep.acts || []), ...(second.acts || []).map(a => ({ ...a, segment: 2 }))];
     ep.votingLog = [
       ...(ep.votingLog || []),
@@ -462,7 +480,9 @@ export function summariseWeek(week) {
         if (act.tieBreak) line(act.tieBreak.anonymous
           ? '  Tied — the Invisible HOH breaks it through the wall screen, and nobody stands up.'
           : `  Tied — ${act.tieBreak.voter} breaks it.`);
-        line(`  ${act.evicted} is evicted from the Big Brother house.`);
+        line(act.doubleVote && act.secondEvicted
+          ? `  DOUBLE EVICTION — one vote, two walks: ${act.evicted} and ${act.secondEvicted} are both evicted from the Big Brother house.`
+          : `  ${act.evicted} is evicted from the Big Brother house.`);
         if (week.invisibleReveal?.to === act.evicted) {
           line(`  In the goodbye messages, the Invisible HOH finally signs the week: ${week.invisibleReveal.hoh} tells ${act.evicted} it was them all along. The house still does not know.`);
         }

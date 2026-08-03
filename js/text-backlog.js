@@ -4532,7 +4532,12 @@ export function generateBBSummaryText(ep) {
           wrong.forEach(pl => ln(`    ${pl.voter} counted ${pl.believed} for evicting ${pl.target}; there were ${pl.truth}.`));
         }
         beats(act);
-        ln(`  ${act.evicted} is evicted from the Big Brother house.`);
+        if (act.doubleVote && act.secondEvicted) {
+          ln('  DOUBLE EVICTION — one vote, two walks.');
+          ln(`  ${act.evicted} and ${act.secondEvicted} are both evicted from the Big Brother house.`);
+        } else {
+          ln(`  ${act.evicted} is evicted from the Big Brother house.`);
+        }
         break;
       }
 

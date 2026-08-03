@@ -538,37 +538,53 @@ function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
     `“HOUSE MEETING.” ${caller} calls it from the kitchen, then walks to the living room and waits while bedroom doors begin opening.`,
     `${caller} shouts for everybody to come to the living room. Conversations stop mid-sentence, and the house starts filing in.`,
     `${caller} calls a house meeting. Chairs scrape, blankets arrive from the bedrooms, and ${room.length + 1} houseguests gather without knowing who has been named.`,
+    `${caller} walks from room to room telling everyone to meet in the living room. By the time the last person arrives, half the house already thinks the meeting is about them.`,
   ], ctx, caller, 'call');
 
   const assembled = _variant([
     `${about || 'The last houseguest'} enters after most of the seats are taken. The space beside ${caller} remains conspicuously empty.`,
     `Some people sit; others stay behind the couch. Nobody asks what this is about because everybody expects to find out soon enough.`,
     `${about ? `${about} arrives, sees ${caller} standing in the middle of the room and chooses the seat nearest the door.` : 'The room fills, but nobody seems certain who should speak first.'}`,
+    `${caller} waits until every bedroom is empty and the kitchen is quiet. ${about ? `${about} takes the final seat and looks directly at ${caller}.` : 'Nobody volunteers to begin.'}`,
   ], ctx, caller, 'assemble');
 
   const theCase = cause === 'lie' ? _variant([
     `${caller} does not raise ${p.posAdj} voice. ${p.Sub} repeats, exactly, what ${about} has been telling people about ${p.obj}, and asks ${about} to say it again now.`,
     `"Somebody in this room has been saying I made deals I never made." ${caller} looks at nobody in particular, which fools nobody in particular.`,
+    `${caller} names the false story, who first repeated it and where it was supposedly said. Then ${p.sub} turns to ${about}: “Tell them where you got it.”`,
+    `${caller} asks three people to repeat what ${about} told them privately. The details differ, but every version puts ${caller} at the centre of the lie.`,
   ], ctx, caller, 'case') : cause === 'nothing-to-lose' ? _variant([
     `${caller} is on the block and done protecting conversations that have not protected ${p.obj}. ${p.Sub} starts naming the promises people made before the ceremony.`,
     `“If I'm leaving, you should know what people have been saying.” ${caller} starts with one name, then follows the story through every room it reached.`,
+    `${caller} tells the room exactly who promised a vote and who has avoided ${p.obj} since. “If the plan is decided, at least own it in front of me.”`,
+    `${caller} has nothing left to protect and reads the house its own private promises: one deal, then another, with the people who made them sitting feet away.`,
   ], ctx, caller, 'case') : _variant([
     `${caller} has been repeating this argument alone for long enough to know every word. Once ${p.sub} starts, ${p.sub} does not pause until ${about}'s name is out.`,
     `${caller} begins with a complaint about respect, then turns toward ${about} and finally says what the complaint is really about.`,
+    `${caller} explains the incident from the beginning, including the part ${about} keeps leaving out when telling other people. ${about} interrupts before ${caller} reaches the end.`,
+    `${caller} says this could have stayed private until ${about} started discussing it around the house. Now ${caller} wants the same conversation with witnesses.`,
   ], ctx, caller, 'case');
 
   const answer = outcome === 'nobody talks' ? _variant([
     `${about} says nothing. ${q.Sub} ${q.sub === 'they' ? 'do' : 'does'} not need to — ${q.sub} ${q.sub === 'they' ? 'look' : 'looks'} around the room once, slowly, and three people who were nodding stop nodding.`,
     `The silence goes on long enough to stop being a pause. ${witness || 'Somebody'} studies the carpet. ${about} waits, entirely comfortable, for somebody braver.`,
+    `${caller} asks ${about} for an answer twice. ${about} looks around the room and asks whether anyone else wants to speak first. Nobody does.`,
+    `${about} refuses to defend ${q.ref} in a room where nobody will admit what they said privately. The meeting stalls because every witness suddenly remembers less.`,
   ], ctx, caller, 'answer') : outcome === 'lands' ? _variant([
     `${about} answers, and then answers again slightly differently, and the second version is the one everybody remembers.`,
     `${about} asks who else has a problem. It is meant as a challenge. Two hands go up and it stops being one.`,
+    `${about} denies the accusation, but ${witness || 'somebody on the couch'} supplies a detail only the original speaker could know. The room turns back toward ${about}.`,
+    `${about} tries to dismiss the story as game talk. Two people immediately describe separate promises that support ${caller}'s version.`,
   ], ctx, caller, 'answer') : outcome === 'backfires' ? _variant([
     `${about} does not interrupt. ${q.Sub} ${q.sub === 'they' ? 'let' : 'lets'} ${caller} keep talking until somebody else asks when ${about} will get a turn.`,
     `“Are you finished?” ${about} asks without raising ${q.posAdj} voice. Someone on the couch mutters, “Let ${about} answer,” and the mood turns.`,
+    `${about} answers each accusation with a specific time, place and witness. By the third answer, people are checking ${caller}'s story instead.`,
+    `${caller} keeps adding complaints after ${about} answers the original one. The room notices the target moving and begins defending ${about}.`,
   ], ctx, caller, 'answer') : _variant([
     `${witness || 'Somebody'} breaks the silence with a joke about the dirty kitchen. Enough people laugh that ${caller} cannot pull the room back.`,
     `${witness || 'Somebody'} asks why ${caller} did not speak to ${about} privately. Several people nod, and the meeting begins ending around them.`,
+    `${about} gives a short answer and leaves. Without a confrontation to watch, the rest of the house follows before ${caller} can restart the argument.`,
+    `Two side arguments begin before ${caller} finishes making the point. Within minutes the room is debating everything except what the meeting was called to address.`,
   ], ctx, caller, 'answer');
 
   const verdict = outcome === 'lands'

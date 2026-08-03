@@ -134,7 +134,7 @@ function _bbResultText(result, salt = '') {
       if (result.badgeText === 'CONFRONTATION') {
         return _textPick([
           `${first} confronts ${second} in the kitchen about what they were told. ${second} denies it, asks who started the story and gets no answer.`,
-          `${first} waits until everyone is in the living room, then asks ${second} to repeat the comment to their face. ${second} says the comment never happened.`,
+          `${first} waits until everyone is in the living room, then asks ${second} to repeat the comment directly to ${first}. ${second} says the comment never happened.`,
           `${first} corners ${second} near the storage room. Both start talking over each other, and several houseguests come inside to hear what started it.`,
           `${first} asks ${second} one calm question. ${second}'s confused answer makes it clear they have heard two completely different versions of the same conversation.`,
           `${first} accuses ${second} of spreading their name. ${second} demands names and times; ${first} only has the story they were given.`,

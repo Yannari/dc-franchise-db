@@ -737,7 +737,7 @@ const endgameCutCalculus = {
       `${actor} does the sum in the Diary Room and does not like the answer: the ${tier} with ${partner} was made when there were eleven people to hide behind, and there are ${house.length}. ${p.Sub} does not say the word out loud. ${p.Sub} does not have to.`,
       `"${partner} beats me." ${actor} tries three different ways of arranging the last chairs and ${partner} wins all three. The deal was real when ${p.sub} made it, which is the part that is going to be hard to explain later.`,
       `${actor} has kept every promise ${p.sub} has made in here and is now looking directly at the one ${p.sub} cannot afford to. ${partner} would take ${p.obj} to the end. That is exactly the problem.`,
-      `The ${tier} was the best thing ${actor} did all season and it has quietly become the worst thing ${p.sub} is carrying. ${p.Sub} starts, carefully, working out what the next eviction would look like without ${partner}.`,
+      `The ${tier} has been ${actor}'s most useful relationship so far, but keeping ${partner} is becoming dangerous. ${p.Sub} starts asking what the next eviction would look like without ${partner}.`,
     ], ctx, actor, partner) : variant([
       `${actor} runs the numbers on cutting ${partner} and finds them fine, and does not care. The ${tier} was made on a night that mattered, and ${p.sub} would rather lose to ${partner} than get to the end without ${pronouns(partner).obj}.`,
       `"I know what everybody would do here." ${actor} says it to the Diary Room and then says the other thing too: that ${p.sub} shook on the ${tier} with ${partner} and intends to be somebody who meant it.`,

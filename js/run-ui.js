@@ -1849,6 +1849,12 @@ export function _runRandomizer() {
 
 export function buildSeasonOverviewModel(state = gs, cast = players) {
   const history = state?.episodeHistory || [];
+  // A house season measures power in different units: wins are HOH, veto and
+  // Block Buster records rather than challenge wins, and agenda control is a
+  // vote operation delivered rather than an alliance spearhead. Same screen,
+  // same pulse — the inputs speak the format's own language.
+  const isBB = history.some(e => e?.format === 'big-brother')
+    || (typeof isBigBrotherSeason === 'function' && isBigBrotherSeason());
   const active = [...(state?.activePlayers || [])];
   const eliminated = [...(state?.eliminated || [])];
   const names = [...new Set([...(cast || []).map(player => player.name), ...active, ...eliminated])];
@@ -1865,23 +1871,35 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
       ballots += ownVotes.length;
       correctBallots += ownVotes.filter(vote => boots.includes(vote.voted)).length;
       votesReceived += episodeLogs.filter(vote => vote.voted === name && !vote.sitdSacrificed).length;
-      const steered = [...(ep.alliances || []), ...(ep.alliances2 || [])].some(alliance => boots.includes(alliance.target)
-        && (alliance.spearhead === name || alliance.members?.[0] === name));
+      const steered = isBB
+        ? (ep.voteOperation?.plans || []).some(plan => boots.includes(plan.target)
+          && plan.organizer === name && plan.expected >= plan.majority)
+        : [...(ep.alliances || []), ...(ep.alliances2 || [])].some(alliance => boots.includes(alliance.target)
+          && (alliance.spearhead === name || alliance.members?.[0] === name));
       if (steered) influence++;
     });
-    const challengeWins = Number(state?.chalRecord?.[name]?.wins || 0);
+    const rec = isBB ? (state?.bb?.stats?.[name] || {}) : null;
+    const hohWins = Number(rec?.hohWins || 0);
+    const vetoWins = Number(rec?.vetoWins || 0);
+    const arenaWins = Number(rec?.blockBusterWins || 0);
+    const challengeWins = isBB
+      ? hohWins + vetoWins + arenaWins
+      : Number(state?.chalRecord?.[name]?.wins || 0);
     const voteAccuracy = ballots ? correctBallots / ballots : 0;
     const alliances = (state?.namedAlliances || []).filter(alliance => alliance.active !== false && alliance.members?.includes(name)).map(alliance => alliance.name);
     const reputation = state?.strategicReputations?.[name]?.labels || [];
     const popularity = Number(lastPop[name] || 0);
     const momentum = popularity - Number(prevPop[name] || 0);
     const pulse = challengeWins * 2 + voteAccuracy * 3 + influence * 1.5 + alliances.length * .6 + momentum * .08 - votesReceived * .08;
-    return { name, active: active.includes(name), challengeWins, ballots, correctBallots, voteAccuracy, votesReceived, influence, alliances, reputation, popularity, momentum, pulse };
+    return { name, active: active.includes(name), challengeWins, hohWins, vetoWins, arenaWins, ballots, correctBallots, voteAccuracy, votesReceived, influence, alliances, reputation, popularity, momentum, pulse };
   });
   const activeMetrics = metrics.filter(metric => metric.active);
   const by = (key, min = 0) => [...activeMetrics].filter(metric => metric[key] >= min).sort((a, b) => b[key] - a[key]);
   const leaders = [
-    { label: 'Challenge leader', metric: 'wins', player: by('challengeWins', 1)[0], value: leader => `${leader.challengeWins} win${leader.challengeWins === 1 ? '' : 's'}` },
+    { label: isBB ? 'Competition leader' : 'Challenge leader', metric: 'wins', player: by('challengeWins', 1)[0],
+      value: leader => isBB
+        ? [leader.hohWins ? `${leader.hohWins} HOH` : '', leader.vetoWins ? `${leader.vetoWins} veto` : '', leader.arenaWins ? `${leader.arenaWins} arena` : ''].filter(Boolean).join(' · ') || `${leader.challengeWins} wins`
+        : `${leader.challengeWins} win${leader.challengeWins === 1 ? '' : 's'}` },
     { label: 'Vote accuracy', metric: 'ballots', player: [...activeMetrics].filter(metric => metric.ballots >= 2).sort((a, b) => b.voteAccuracy - a.voteAccuracy || b.ballots - a.ballots)[0], value: leader => `${Math.round(leader.voteAccuracy * 100)}% · ${leader.ballots} ballots` },
     { label: 'Agenda control', metric: 'votes', player: by('influence', 1)[0], value: leader => `${leader.influence} vote${leader.influence === 1 ? '' : 's'} steered` },
     { label: 'Under pressure', metric: 'votes', player: by('votesReceived', 1)[0], value: leader => `${leader.votesReceived} votes received` },
@@ -1915,7 +1933,8 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     .filter(change => Math.abs(Number(change.delta || 0)) >= 1)
     .sort((a, b) => Number(b.episode) - Number(a.episode) || Math.abs(Number(b.delta)) - Math.abs(Number(a.delta))).slice(0, 6);
   const publicRoleLabels = {
-    'social-center':'Social hub', provider:'Camp provider', 'challenge-leader':'Challenge threat',
+    'social-center':'Social hub', provider: isBB ? 'Kitchen provider' : 'Camp provider',
+    'challenge-leader': isBB ? 'Comp threat' : 'Challenge threat',
     outsider:'On the outs', 'irritating-but-useful':'Abrasive but useful', 'power-couple':'Power pair',
   };
   const socialRoles = active.flatMap(name => Object.entries(state?.socialStatus?.[name] || {})
@@ -1973,6 +1992,7 @@ export function buildSeasonOverviewModel(state = gs, cast = players) {
     socialRoles,
     storyThreads,
     powerRanking,
+    isBB,
     audiencePulse,
     jury: [...(state?.jury || [])],
   };
@@ -2007,7 +2027,7 @@ function renderMidseasonOverview() {
     <section class="overview-section"><header><div><span>Recorded</span><h2>Players still writing the season</h2></div><small>${model.active.length} active</small></header><div class="overview-active-cast">${model.active.map(name => `<div>${_overviewPortrait(name)}<span>${_hubEsc(name)}</span></div>`).join('')}</div></section>
     <section class="overview-leaders">${model.leaders.map(leader => `<article><label>${_hubEsc(leader.label)}</label>${_overviewPortrait(leader.player)}<div><strong>${_hubEsc(leader.player)}</strong><span>${_hubEsc(leader.value)}</span></div></article>`).join('') || '<div class="overview-none">Leaders need more episodes to emerge.</div>'}</section>
     <div class="overview-columns">
-      <section class="overview-section overview-ranking"><header><div><span>Game read</span><h2>Season pulse</h2></div><small>Interpretive ranking</small></header><p class="overview-disclaimer">Combines visible challenge wins, voting accuracy, agenda control, alliance reach, pressure, and audience movement. It is not a winner prediction.</p><ol>${model.powerRanking.map((metric, index) => `<li><b>${index + 1}</b>${_overviewPortrait(metric.name)}<div><strong>${_hubEsc(metric.name)}</strong><span>${metric.challengeWins} wins · ${Math.round(metric.voteAccuracy * 100)}% vote accuracy · ${metric.alliances.length} alliances</span></div><em class="${metric.momentum > 0 ? 'up' : metric.momentum < 0 ? 'down' : ''}">${metric.momentum > 0 ? '▲' : metric.momentum < 0 ? '▼' : '—'} ${Math.abs(metric.momentum)}</em></li>`).join('')}</ol></section>
+      <section class="overview-section overview-ranking"><header><div><span>Game read</span><h2>Season pulse</h2></div><small>Interpretive ranking</small></header><p class="overview-disclaimer">Combines ${model.isBB ? 'competition wins (HOH, veto, arena)' : 'visible challenge wins'}, voting accuracy, agenda control, alliance reach, pressure, and audience movement. It is not a winner prediction.</p><ol>${model.powerRanking.map((metric, index) => `<li><b>${index + 1}</b>${_overviewPortrait(metric.name)}<div><strong>${_hubEsc(metric.name)}</strong><span>${model.isBB ? `${metric.hohWins} HOH · ${metric.vetoWins} veto${metric.arenaWins ? ` · ${metric.arenaWins} arena` : ''}` : `${metric.challengeWins} wins`} · ${Math.round(metric.voteAccuracy * 100)}% vote accuracy · ${metric.alliances.length} alliance${metric.alliances.length === 1 ? '' : 's'}</span></div><em class="${metric.momentum > 0 ? 'up' : metric.momentum < 0 ? 'down' : ''}">${metric.momentum > 0 ? '▲' : metric.momentum < 0 ? '▼' : '—'} ${Math.abs(metric.momentum).toFixed(1)}</em></li>`).join('')}</ol></section>
       <section class="overview-section"><header><div><span>Recorded</span><h2>Alliance timeline</h2></div><small>${model.alliances.filter(alliance => alliance.active).length} active</small></header><div class="overview-alliance-list">${allianceHtml}</div></section>
     </div>
     <div class="overview-columns overview-history-grid">

@@ -480,7 +480,7 @@ const finalThreePact = {
   fire(house, ctx, api) {
     const { a, b, c } = _pactTrio(house);
     const text = _variant([
-      `${a}, ${b} and ${c} end up in the same room without planning to, and somebody finally says the thing all three have been circling: the last three chairs, and they are sitting in them. Nobody mentions that one of those chairs does not come with a cheque.`,
+      `${a}, ${b} and ${c} end up alone together and finally discuss a final-three deal. Each promises to protect the other two until only three chairs remain; nobody asks what happens when one of them must finish third.`,
       `"Three," ${a} says, holding up fingers. "Us three, all the way." ${b} and ${c} agree immediately. All three are already quietly working out which of the other two they would rather beat.`,
       `${b} floats it carefully and ${a} finishes the sentence. ${c} is in before either of them asks. It is the easiest deal any of them have made and the one most likely to end badly.`,
       `The three of them shake on a final three. It costs nothing today, which is exactly why all three of them mean it.`,

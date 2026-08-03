@@ -386,7 +386,7 @@ const nomineeReckons = {
     const text = _variant([
       `${nominee} counts the votes on ${p.posAdj} fingers, twice, and gets a number ${p.sub} does not like either time. ${needed[0]} is the difference.`,
       `Somewhere around two in the morning ${nominee} stops being upset and starts being useful, and writes a list of who ${p.sub} actually needs: ${needed.filter(Boolean).join(', ')}.`,
-      `${nominee} works out that being on the block is a maths problem before it is a feeling, and that the maths currently says ${p.sub} loses.`,
+      `${nominee} counts the committed votes, the undecided votes and the people avoiding ${p.obj}. The current count sends ${p.obj} home, so ${p.sub} starts deciding whom to approach first.`,
       `${nominee} has until the eviction and three people to persuade, and the first of them will not look ${p.obj} in the eye.`,
     ], ctx, nominee, ...needed);
     needed.filter(Boolean).forEach(n => api.remember(nominee, n, 'needs', 1, { about: 'the vote' }));

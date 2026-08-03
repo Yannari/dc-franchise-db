@@ -401,7 +401,7 @@ const rogueHunt = {
 
     const text = correct ? _variant([
       `"${n === 1 ? 'Somebody' : `${n} people`} voted to keep ${gone}, and I want to know who." ${hunter} says it to the kitchen at large, then answers ${pronouns(hunter).posAdj} own question with ${_list(accused)} — and is right, which everybody can see from ${_list(accused)}'s face${accused.length > 1 ? 's' : ''}.`,
-      `${hunter} does the arithmetic over breakfast, out loud, and lands on ${_list(accused)}. Nobody confirms it. Nobody has to.`,
+      `${hunter} compares the public promises with the final vote and names ${_list(accused)} as the likely defectors. Nobody confirms the accusation, but nobody offers another count either.`,
       `The count was ${majority.length + n <= 9 ? 'public' : 'read out'} and the strays were not. ${hunter} works through who was where all week and arrives, correctly, at ${_list(accused)}.`,
     ], ctx, hunter, ...accused) : _variant([
       `"${_list(accused)}. It was ${accused.length > 1 ? 'them' : _list(accused)}." ${hunter} is certain, loud, and wrong — and ${_list(strays)}, who actually cast the vote${n > 1 ? 's' : ''}, ${n > 1 ? 'agree' : 'agrees'} enthusiastically with the theory.`,

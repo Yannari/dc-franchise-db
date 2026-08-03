@@ -169,6 +169,8 @@ const hohRoomTraffic = {
     ], ctx, hoh, absent) : _variant([
       `The whole house files through the HOH room in ones and twos, each of them casual about it.`,
       `${hoh} holds court on the good bed and learns more from the order people arrive in than from anything they say.`,
+      `By dinner, everybody has found an excuse to visit ${hoh}. The conversations differ, but every guest eventually asks the same question: “What are you thinking?”`,
+      `The HOH door barely closes all afternoon. ${hoh} hears congratulations, cautious advice and several promises that were not offered before the competition.`,
     ], ctx, hoh);
 
     visitors.forEach(v => api.addBond(hoh, v, 0.25));
@@ -212,7 +214,8 @@ const hohWeight = {
     ], ctx, hoh) : _variant([
       `${hoh} has known the two names since about an hour after winning, and spends the rest of the time deciding how to sell them.`,
       `${hoh} writes nothing down — there is nowhere in this house to hide a list — and keeps the whole plan behind ${p.posAdj} teeth.`,
-      `The room is quiet, and ${hoh} uses the quiet. By morning the week has a shape.`,
+      `${hoh} spends the quiet night comparing targets, replacement options and possible veto outcomes. By morning, ${p.sub} has chosen the initial nominees and the backup plan.`,
+      `${hoh} compares every possible pair of nominees, then returns to the first two names. The decision is made; the remaining work is making the house accept it.`,
     ], ctx, hoh);
 
     if (rattled) api.popDelta(hoh, 1);
@@ -247,10 +250,12 @@ const hohPromise = {
       `"You're not going up. Not this week, not while I've got it." ${hoh} means it, and ${ally} can tell.`,
       `${hoh} tells ${ally} the plan before anyone else. ${ally} asks if this means their deal is still real. ${hoh} says it does.`,
       `It is not a grand alliance. It is one sentence — you are safe with me — and ${ally} takes it as one.`,
+      `${ally} asks for a direct answer. ${hoh} gives one: “Your key is not coming out of that box.” For once, the reassurance matches the plan.`,
     ], ctx, hoh, ally) : _variant([
       `${hoh} promises ${ally} safety in a tone that costs nothing and buys a week of quiet.`,
       `"You're fine." ${hoh} has said that to two people today, and only one of them is going to stay fine.`,
       `${ally} leaves the room certain of something ${hoh} has not actually decided.`,
+      `${ally} asks whether ${pronouns(ally).posAdj} name is being considered. ${hoh} says no immediately, choosing a peaceful afternoon over an honest answer.`,
     ], ctx, hoh, ally);
 
     api.sideDeal(hoh, ally, 'safety', { genuine: honest, about: 'a week of protection' });
@@ -365,6 +370,7 @@ const blockPressure = {
       `${nom} goes very quiet and very organised, and the house finds that more alarming than shouting.`,
       `${nom} works out exactly how many votes ${p.sub} needs and exactly whose they are, and starts at the top of the list.`,
       `Being on the block has clarified things for ${nom}. That is not good news for whoever put ${p.obj} there.`,
+      `${nom} writes down the voters, the promises and the order to approach them. By the time ${p.sub} leaves the bedroom, fear has become a campaign plan.`,
     ], ctx, nom);
 
     if (mode === 'anger') {
@@ -414,7 +420,7 @@ const pawnResentment = {
     const takesIt = pStats(pawn).loyalty >= 6 && perceived(pawn, hoh) >= 1;
 
     const text = takesIt ? _variant([
-      `${pawn} accepts being the pawn with better grace than most, and files it somewhere ${p.sub} can reach later.`,
+      `${pawn} accepts the pawn role without arguing, but remembers exactly who asked and how quickly the reassurance followed. The agreement does not erase the risk.`,
       `"I get it. I'm the safe one." ${pawn} says it lightly. ${p.Sub} does not feel it lightly.`,
       `${pawn} sits beside ${target || 'the target'} and does the maths on what happens if one vote wanders.`,
     ], ctx, pawn) : _variant([
@@ -565,7 +571,7 @@ const savedGuilt = {
     const decent = isNice(saved) || pStats(saved).loyalty >= 6;
 
     const text = decent ? _variant([
-      `${saved} finds ${replacement} within the hour and says the thing nobody says: this is not how ${p.sub} wanted it.`,
+      `${saved} finds ${replacement} within the hour and admits that being saved put ${replacement} on the block. ${saved} says ${p.sub} is relieved to be safe and sorry about the cost at the same time.`,
       `${saved} is off the block and cannot make ${p.ref} enjoy it while ${replacement} is sitting in ${p.posAdj} chair.`,
       `"I didn't ask for that." ${replacement} says ${p.sub} knows. Neither of them quite believes the conversation helped.`,
     ], ctx, saved, replacement) : _variant([

@@ -411,7 +411,7 @@ const wrongBlame = {
       `<strong>${al.name}</strong> was supposed to be ${members.length} votes in the same direction and ${count} went the other way. By the time the bedroom lights go off, ${_list(rest)} have decided it was ${blamed}.`,
       `Nobody has any evidence. ${accuser} has something better than evidence — a feeling ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} had about ${blamed} since ${evicted} was nominated, and a room willing to agree with it.`,
       `“It wasn't me.” ${blamed} says it once, calmly, which ${accuser} treats as suspicious, and then a second time, less calmly, which ${accuser} treats as confirmation.`,
-      `The group runs the vote back. ${count} unaccounted for, ${members.length} people in the room, and the arithmetic quietly settles on the one of them nobody has ever quite been able to read.`,
+      `The alliance compares every promised vote with the result and finds ${count} vote${count === 1 ? '' : 's'} that cannot be explained. Suspicion settles on the member whose commitment was never firm.`,
       `${accuser} does not accuse ${blamed}. ${accuser} simply stops finishing sentences when ${blamed} walks in, and before the next competition everybody in <strong>${al.name}</strong> is doing the same thing.`,
       `${blamed} did not do it. ${p.Sub} ${p.sub === 'they' ? 'spend' : 'spends'} the evening being told, kindly, that nobody is angry — which is how ${p.sub} ${p.sub === 'they' ? 'find' : 'finds'} out ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already been convicted.`,
     ], ctx, this.id, blamed, accuser);

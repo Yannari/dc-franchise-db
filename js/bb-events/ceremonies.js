@@ -234,7 +234,7 @@ const nomBlindside = {
     const text = _variant([
       `${victim} does not move when ${p.posAdj} name is called. Not shock exactly — recalculation. Somewhere behind ${p.posAdj} eyes a week of conversations is being reread with the ending known.`,
       `"Okay," ${victim} says, to nobody. Just that. ${ctx.hoh} keeps talking and ${victim} keeps not hearing it, already three moves into a game ${p.sub} did not know ${p.sub} was losing.`,
-      `The key turns and ${victim}'s face does something complicated. ${p.Sub} had defended ${ctx.hoh} twice this week — out loud, to people who are now watching ${p.obj} find out what that bought.`,
+      `When ${victim}'s key turns, ${p.sub} looks first at ${ctx.hoh} and then at the people who heard ${p.obj} defend the HOH twice this week. The embarrassment arrives before the anger.`,
       `${victim} forces a smile through the rest of the ceremony. That night, ${p.sub} lies awake trying to work out which conversation was the lie.`,
       ...(promised ? [`${ctx.hoh} had said the words out loud — "you are not going up" — and ${victim} had been stupid enough to find that comforting. ${p.Sub} hears ${p.posAdj} own name and thinks, first, not of the block but of that sentence.`] : []),
       ...(allied ? [`They built something together and ${victim} finds out it was scaffolding. ${p.Sub} looks down the row at the others who were in that alliance, and every one of them looks somewhere else.`] : []),
@@ -357,7 +357,7 @@ const vetoLeftOnBlock = {
     const publicly = perceived(stranded, holder) >= 2.5;
     const text = _variant([
       `"I have decided not to use the Power of Veto." ${stranded} nods along with the sentence like ${p.sub} had known it was coming. ${p.Sub} had not known it was coming.`,
-      `The veto stays in ${holder}'s pocket. ${stranded} looks at it for slightly too long — long enough that two people notice, and one of them files it away.`,
+      `The veto stays in ${holder}'s pocket. ${stranded} keeps looking at ${holder} after everyone else turns toward the nominees, making the broken expectation visible to the room.`,
       `${holder} announces that the veto will not be used. ${stranded} says, “That's fine,” twice without looking at anyone.`,
       `Nothing happens at the veto ceremony, and that is the loudest thing that happens all week. ${stranded} goes to bed early. ${p.Sub} does not sleep early.`,
       `${stranded} watches ${holder} return the veto to its box. The apology ${holder} mouths across the room only makes ${p.obj} look away faster.`,

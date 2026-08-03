@@ -202,7 +202,7 @@ const blowUp = {
     const text = _variant(volatile ? [
       `${a} finds another one of ${b}'s dirty pans in the sink and carries it into the bedroom. ${b} tells ${a} to put it down. ${a} drops it on the floor instead.`,
       `${b} interrupts ${a} during a group conversation. ${a} snaps, “You do that every time I talk,” and begins listing every example ${a} can remember.`,
-      `${a} hears that ${b} called them difficult. ${a} storms into the kitchen and asks ${b} to say it to their face. ${b} does.`,
+      `${a} hears that ${b} called ${pronouns(a).obj} difficult. ${a} storms into the kitchen and asks ${b} to repeat it in front of ${pronouns(a).obj}. ${b} does.`,
       `${b} eats food ${a} had been saving. ${a} opens the empty container in front of the house and demands to know why ${b} never thinks about anyone else.`,
       `${a} wakes up after another bad night and tells ${b} to stop whispering in the bedroom. ${b} laughs, and ${a} is out of bed before anyone can calm them down.`,
       `${b} makes a joke about ${a}'s game in front of everyone. ${a} does not laugh. The second joke turns the backyard into a shouting match.`,

@@ -277,9 +277,12 @@ const theReckoning = {
       `${last} is no longer Head of Household, and the traffic to ${p.posAdj} door stops with the power. In the bedroom, ${critic} finally says what people were too careful to say during ${last}'s reign.`,
       `The power changes hands. ${critic} tells two people that ${last} used the week to irritate nearly everyone, and neither of them rushes to defend ${p.obj}.`,
       `${last} joins a kitchen conversation that goes quiet on arrival. Across the house, ${critic} is comparing notes with people who spent the previous week nodding along.`,
+      `${critic} waits until ${last} can no longer nominate anyone, then asks the room who was promised safety last week. Too many people answer.`,
     ], ctx, last, critic) : _variant([
       `${last} leaves the HOH room after doing exactly what ${p.sub} promised. ${critic} mentions that in the kitchen, and three people agree before the subject changes.`,
       `${last} no longer controls the nominations, but the people who worked with ${p.obj} last week still make room when ${p.sub} joins them.`,
+      `${critic} admits that ${last}'s nominations made sense and the vote went as planned. Nobody offers ${last} another week of power, but several people now trust ${p.obj} more.`,
+      `The HOH key changes hands without erasing what ${last} accomplished. Three houseguests independently describe the reign as clean, which becomes its own kind of protection.`,
     ], ctx, last, critic);
 
     if (bad) {

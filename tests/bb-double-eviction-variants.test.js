@@ -109,6 +109,15 @@ describe('the week-in-one (BB5/6)', () => {
     return simulateBBEpisode();   // week 2, the double
   };
 
+  it('numbers episodes continuously across a double — no skipped week', () => {
+    // The ledger gains two records on a double-eviction night, but the SHOW
+    // airs one episode: numbering off the ledger produced episode 3, then 5.
+    playSeason('fast-forward', 11);
+    simulateBBEpisode();
+    const nums = gs.episodeHistory.map(e => e.num);
+    expect(nums).toEqual(nums.map((_, i) => i + 1));
+  });
+
   it('runs the second cycle at full length inside the same episode', () => {
     const ep = playSeason('week-in-one');
     expect(ep.doubleEviction).toBeTruthy();

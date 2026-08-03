@@ -262,20 +262,26 @@ export function simulateBBEpisode() {
   if (house.length <= houseFinaleSize()) return null;
 
   const weekNum = (gs.bb.weeks?.length || 0) + 1;
-  const twists = bbTwistsForWeek(weekNum);
+  // The EPISODE number is the show's count, and it is continuous. A double
+  // eviction pushes two records into the weeks ledger but airs as one
+  // episode, so numbering episodes off the ledger skipped a number after
+  // every double (episode 3, then 5). The schedule is authored in episodes,
+  // so the twist lookup uses the episode count too.
+  const epNum = (gs.episodeHistory?.length || 0) + 1;
+  const twists = bbTwistsForWeek(epNum);
 
   // A distributor's cargo is configured on its SCHEDULED INSTANCE — that is
   // what makes Pandora's Box replayable across seasons with different prizes
   // and no new code. The entry's `prize` field is set in the Format Designer.
   const boxEntry = (seasonConfig.twistSchedule || [])
-    .find(t => t && Number(t.episode) === weekNum && t.type === 'bb-pandoras-box');
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-pandoras-box');
   // The double eviction has three shapes, chosen on the scheduled entry:
   // 'fast-forward' (the US live hour — a compressed second cycle),
   // 'week-in-one' (BB5/6 — a second FULL cycle inside the same episode),
   // and 'double-vote' (the international night — one vote over three
   // nominees, the two highest evict-getters both walk).
   const deEntry = (seasonConfig.twistSchedule || [])
-    .find(t => t && Number(t.episode) === weekNum && t.type === 'bb-double-eviction');
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-double-eviction');
   const deStyle = deEntry?.deStyle || 'fast-forward';
 
   const week = simulateBBWeek({
@@ -295,6 +301,7 @@ export function simulateBBEpisode() {
   });
 
   const ep = weekToEpisode(week);
+  ep.num = epNum;
   ep.twists = [...twists];
   ep.haveNots = week.haveNots ? [...week.haveNots] : [];
   ep.instantEviction = twists.includes('bb-instant-eviction');
@@ -515,6 +522,7 @@ export function runBBFinale() {
   if (gs.phase === 'complete' || (gs.activePlayers || []).length < 2) return null;
   const ep = simulateBBFinale();
   if (!ep) return null;
+  ep.num = (gs.episodeHistory?.length || 0) + 1;
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep) : '';
   try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }

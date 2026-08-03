@@ -12,6 +12,8 @@ import { rollDeparture } from '../departures.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
+  checkShowmanceSabotage, checkLoveTriangleFormation, updateLoveTrianglePhases,
+  checkLoveTriangleBreakup, updateAffairExposure,
 } from '../romance.js';
 import { checkPerceivedBondTriggers, recoverBonds } from '../bonds.js';
 import { decayAllianceTrust } from '../alliances.js';
@@ -428,8 +430,14 @@ function chooseHaveNots(placements, house, wanted, hoh) {
  */
 function runHouseRomance(week, rng) {
   if (seasonConfig.romance === 'disabled') return [];
-  const ep = { num: week.num, campEvents: { merge: { pre: [], post: [] } },
+  const mergeBlock = { pre: [], post: [] };
+  const ep = { num: week.num, campEvents: { merge: mergeBlock },
                eliminated: week.evicted || null, votingLog: week.ballots || [] };
+  // The pipeline keys some pushes on the literal 'merge' and some on
+  // gs.mergeName — which a house sets to 'the house'. Both names point at the
+  // SAME block, or half the romance (triangles especially) lands in a bucket
+  // the harvest never reads.
+  if (gs.mergeName && gs.mergeName !== 'merge') ep.campEvents[gs.mergeName] = mergeBlock;
   // The pipeline is Total Drama code and writes gs.popularity directly, which
   // walks straight past the house's own switch. Snapshot and restore rather
   // than edit a module the other simulator depends on.
@@ -466,8 +474,16 @@ function runHouseRomance(week, rng) {
   try {
     updateRomanticSparks(ep);
     checkFirstMove(ep);
+    checkShowmanceSabotage(ep);
     checkShowmanceFormation(ep);
     updateShowmancePhases(ep);
+    // The stages a house never ran: three-way tension, its phases, the
+    // breakup check for evicted corners, and secret affairs — the exact
+    // systems the jealousy tracker was feeding into a void.
+    checkLoveTriangleFormation(ep);
+    updateLoveTrianglePhases(ep);
+    checkLoveTriangleBreakup(ep);
+    updateAffairExposure(ep);
     checkShowmanceBreakup(ep);
   } catch (err) {
     // Texture never takes a week down — but it does not get to fail invisibly
@@ -601,7 +617,7 @@ function runHouseRomance(week, rng) {
   }
   week.coupleTargets = consequences;
 
-  return ep.campEvents.merge.pre.map(e => {
+  return [...ep.campEvents.merge.pre, ...ep.campEvents.merge.post].map(e => {
     const hit = e.type === 'showmanceTarget'
       && consequences.find(c => c.plotter === (e.players || [])[0]);
     return {

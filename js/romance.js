@@ -153,6 +153,11 @@ export function checkFirstMove(ep) {
     if (spark.fake) return true; // fake sparks don't get first moves
     const [a, b] = spark.players;
     if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) return false;
+    // A pair that already HAS a showmance does not need a first move. The
+    // organic formation path could beat the spark to it, and the surviving
+    // spark then matured into a SECOND showmance for the same couple — two
+    // cards, two phases, one relationship. The leftover spark is consumed.
+    if (gs.showmances?.some(sh => sh.players.includes(a) && sh.players.includes(b))) return false;
 
     // Get slower archetype threshold
     const aArch = players.find(p => p.name === a)?.archetype || '_default';
@@ -506,6 +511,10 @@ export function checkShowmanceFormation(ep) {
         origin: 'camp-organic', sparkContext: 'camp events',
       };
       gs.showmances.push(showmance);
+      // The relationship has arrived; the spark that predicted it is spent.
+      // Leaving it alive is how the first-move path founded duplicates.
+      gs.romanticSparks = (gs.romanticSparks || []).filter(sp =>
+        !(sp.players.includes(a) && sp.players.includes(b)));
       recordAttractionSpark(a, b, { ep: ep.num || (gs.episode || 0) + 1 }); // showmance forming → mutual attraction
       ep.newShowmances = ep.newShowmances || [];
       ep.newShowmances.push({ a, b });

@@ -47,4 +47,9 @@ it('has an always-visible romance tab with pipeline status', () => {
   if (gs.showmances.length) {
     expect(gs.showmances.every(sh => sh.trigger && sh.trigger.week)).toBe(true);
   }
+
+  // One relationship, one record: the organic path and the first-move path
+  // once both founded a showmance for the same couple.
+  const pairKeys = gs.showmances.map(sh => [...(sh.players || [])].sort().join('|'));
+  expect(new Set(pairKeys).size).toBe(pairKeys.length);
 });

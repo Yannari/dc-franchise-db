@@ -20851,6 +20851,11 @@ export function rpBuildBBDebug(ep) {
       const pct = Math.round(Math.max(0, Math.min(1, (Number(value) || 0) / max)) * 100);
       return `<span style="display:inline-block;width:70px;height:5px;border-radius:3px;background:rgba(139,148,158,.2);vertical-align:middle;margin:0 4px"><i style="display:block;width:${pct}%;height:100%;border-radius:3px;background:${color}"></i></span>`;
     };
+    const pairRow = (a, b, cells) => `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <span style="display:inline-flex">${rpPortrait(a, 'sm')}<span style="margin-left:-8px">${rpPortrait(b, 'sm')}</span></span>
+      <div style="flex:1;color:#e6edf3;font-weight:600">${_bbEsc(a)} <span style="color:#d2a8ff">&amp;</span> ${_bbEsc(b)}</div>
+      <div style="flex:2">${cells}</div>
+    </div>`;
     const inHouseOrGone = n => n && (house.includes(n) || (ep.eliminated === n) || (ep.alsoEliminated === n));
     const shows = allShows.filter(sh => (sh.players || []).some(inHouseOrGone));
     const sparks = allSparks.filter(sp => (sp.players || [sp.a, sp.b]).every(n => n && house.includes(n)));
@@ -20881,8 +20886,8 @@ export function rpBuildBBDebug(ep) {
       sparks.length ? sparks.map(sp => {
         const pair = (sp.players || [sp.a, sp.b]).filter(Boolean);
         const intensity = Number(sp.intensity);
-        return dbgPortraitRow(pair[0], `
-          <div style="color:#d2a8ff;font-size:11px">with ${_bbEsc(pair[1] || '?')}${sp.fake ? ' · <b style="color:#f47067">FAKE</b>' : ''}</div>
+        return pairRow(pair[0], pair[1] || '?', `
+          <div style="color:#d2a8ff;font-size:11px">spark${sp.fake ? ' · <b style="color:#f47067">FAKE</b>' : ''}</div>
           <div style="color:#8b949e;font-size:10px">intensity ${meter(intensity, 1, '#d2a8ff')}${Number.isFinite(intensity) ? intensity.toFixed(2) : '?'} · ${bondChip(pair[0], pair[1])}</div>
           <div style="color:#6e7681;font-size:10px">week ${sp.sparkEp || '?'} · ${_bbEsc(sp.context || sp.sparkContext || 'house interaction')}${sp.saboteur ? ` · planted by ${_bbEsc(sp.saboteur)}` : ''}</div>`);
       }).join('') : dbgNote('No active sparks among the houseguests in this episode.'));
@@ -20906,10 +20911,21 @@ export function rpBuildBBDebug(ep) {
       shows.length ? shows.map(sh => {
         const pair = sh.players || [];
         const ended = sh.phase === 'broken-up' || sh.broken;
-        return dbgPortraitRow(pair[0], `
-          <div style="color:${ended ? '#f47067' : '#f0a500'};font-size:11px">with ${_bbEsc(pair[1] || '?')} · ${_bbEsc(sh.phase || 'active')}${sh.phase === 'ride-or-die' ? ' ♦' : ''} · ${bondChip(pair[0], pair[1])}</div>
+        // What actually made this a showmance: the first-move path names the
+        // mover, the week and the spark it matured from; the organic path
+        // names the week it grew out of house life. "Origin: instant-
+        // chemistry" is a label; this is the event.
+        const trig = sh.trigger || null;
+        const trigger = sh.firstMoveBy
+          ? `became a showmance week ${sh.firstMoveEp || '?'} — ${_bbEsc(sh.firstMoveBy)} made the first move${sh.sparkContext ? `, on a spark from ${_bbEsc(sh.sparkContext)} (week ${sh.sparkEp || '?'})` : ''}${sh.origin ? ` · ${_bbEsc(sh.origin)}` : ''}`
+          : trig && trig.excerpt
+            ? `formed week ${trig.week} — triggered by ${trig.badge ? `<b style="color:#f0a500">${_bbEsc(trig.badge)}</b>: ` : ''}“${_bbEsc(trig.excerpt)}…”`
+            : `formed week ${sh.sparkEp || '?'} — grew out of ${_bbEsc(sh.sparkContext === 'camp events' ? 'a week of living in the same house' : (sh.sparkContext || 'living in the same house'))}${sh.origin && sh.origin !== 'camp-organic' ? ` · ${_bbEsc(sh.origin)}` : ''}`;
+        return pairRow(pair[0], pair[1] || '?', `
+          <div style="color:${ended ? '#f47067' : '#f0a500'};font-size:11px">${_bbEsc(sh.phase || 'active')}${sh.phase === 'ride-or-die' ? ' ♦' : ''} · ${bondChip(pair[0], pair[1])}</div>
           <div style="font-size:10px">${phaseChain(sh.phase)}</div>
-          <div style="color:#8b949e;font-size:10px">sparked week ${sh.sparkEp || '?'}${sh.episodesActive != null ? ` · ${sh.episodesActive} week${sh.episodesActive === 1 ? '' : 's'} together` : ''}${sh.firstMoveBy ? ` · first move: ${_bbEsc(sh.firstMoveBy)} (week ${sh.firstMoveEp || '?'})` : ''}${sh.tested ? ' · survived the test' : ''}</div>
+          <div style="color:#8b949e;font-size:10px">${trigger}</div>
+          <div style="color:#8b949e;font-size:10px">${sh.episodesActive != null ? `${sh.episodesActive} week${sh.episodesActive === 1 ? '' : 's'} together` : ''}${sh.tested ? ' · survived the test' : ''}</div>
           ${sh.jealousPlayer && !ended ? `<div style="color:#d2a8ff;font-size:10px">third wheel: ${_bbEsc(sh.jealousPlayer)} is jealous — love-triangle risk</div>` : ''}
           ${breakupLine(sh)}`);
       }).join('') : dbgNote('No spark has matured into a showmance yet.'));

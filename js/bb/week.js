@@ -870,6 +870,27 @@ function _attachRomance(week, rng) {
   // so the bridges' addBond calls were the biggest hole in the fence.
   const beats = _cappedBondWindow(() =>
     [...runHouseRomance(week, rng), ...runHouseMaintenance(week, rng)]);
+  // A house showmance forms ORGANICALLY — the shared pipeline stamps it
+  // "camp events", which answers nothing. The week knows better: it just
+  // aired the scenes. A newly formed showmance gets the last beat this week
+  // that featured both partners as its trigger, so the debug tab can say
+  // "week 6, the slop-duty argument" instead of a shrug.
+  for (const sh of gs.showmances || []) {
+    // Formed THIS week: organically (sparkEp is the formation week) or via a
+    // first move (firstMoveEp is; sparkEp then points at the older spark).
+    const formedThisWeek = (sh.firstMoveEp || sh.sparkEp || 0) === week.num;
+    if (sh.trigger || !formedThisWeek) continue;
+    const [a, b] = sh.players || [];
+    if (!a || !b) continue;
+    const shared = (week.acts || []).flatMap(act => act.socialBeats || [])
+      .filter(beat => (beat.players || []).includes(a) && (beat.players || []).includes(b)
+        && beat.eventId !== 'showmance-formed');
+    const last = shared[shared.length - 1];
+    sh.trigger = last
+      ? { week: week.num, eventId: last.eventId || null, badge: last.badgeText || null,
+          excerpt: String(last.text || '').slice(0, 140) }
+      : { week: week.num, eventId: null, badge: null, excerpt: null };
+  }
   if (!beats.length) return;
   const houseActs = (week.acts || []).filter(a => a.type === 'house');
   const host = houseActs[houseActs.length - 1] || (week.acts || [])[week.acts.length - 1];

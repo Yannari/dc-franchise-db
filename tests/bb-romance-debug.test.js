@@ -41,4 +41,10 @@ it('has an always-visible romance tab with pipeline status', () => {
   // and SAYS so, instead of quietly lying about the past.
   const legacy = { ...ep1, closingState: { ...ep1.closingState, romanticSparks: undefined } };
   expect(rpBuildBBDebug(legacy)).toContain('LIVE state');
+
+  // Every showmance knows the precise aired scene that formed it — the
+  // trigger is stamped from the week's own beats, not a generic label.
+  if (gs.showmances.length) {
+    expect(gs.showmances.every(sh => sh.trigger && sh.trigger.week)).toBe(true);
+  }
 });

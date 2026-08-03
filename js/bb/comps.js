@@ -31,11 +31,13 @@ export const GENERIC_BB_COMPS = Object.freeze([
     desc:'A timed obstacle course tests speed, stamina, nerve and enough focus to avoid costly mistakes.',
     stats:{ physical:.36, endurance:.29, mental:.14, boldness:.13, intuition:.08 },
   },
-  {
-    id:'generic-before-after', name:'Before or After', category:'quiz', types:['hoh','veto','tiebreaker'],
-    desc:'Houseguests reconstruct the season timeline one decision at a time.',
-    stats:{ mental:.50, intuition:.28, strategic:.14, temperament:.08 },
-  },
+  // NOTE: there is deliberately no generic "Before or After" here. The
+  // signature library writes that competition in full (bb-sig-before-or-after,
+  // eligible for hoh/veto/tiebreaker/return) and the VP dispatches its themed
+  // screen off the `variant` tag. A fallback sharing the name meant the same
+  // competition could air twice in a season looking like two different things —
+  // themed for the veto, a bare one-line board for the HOH. Any new fallback
+  // must not reuse a written competition's name.
   {
     id:'generic-balance-stack', name:'Balance Stack', category:'precision', types:['hoh','veto','arena','tiebreaker'],
     desc:'Houseguests build an unstable stack while balancing on a narrow platform.',

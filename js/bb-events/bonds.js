@@ -114,7 +114,7 @@ const firstKiss = {
       `It happens in the dark, badly, with both of them laughing at how long it took. The only kiss anybody in this house has had that was not a strategy.`,
       `${a} kisses ${b} in the kitchen at four in the morning because there is nobody there, and then they both look at the camera in the corner and start laughing.`,
       `They have been circling this for a week and a half. ${a} stops circling. Neither of them says anything clever about it afterwards, which is how ${witness || 'the house'} will know it was real.`,
-      `${b} says something completely unremarkable and ${a} kisses ${p.obj} mid-sentence. It is the least strategic thing that will happen all season.`,
+      `${b} says something completely unremarkable and ${a} kisses ${b} mid-sentence. It is the least strategic thing either of them has done in the house.`,
     ], ctx, a, b);
 
     api.addBond(a, b, 2.4);
@@ -321,10 +321,13 @@ const apologyRefused = {
     const text = accepted ? _variant([
       `${asker} apologises properly — no explanation attached, no version where ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} secretly right. ${refuser} is so surprised by that that ${refuser} accepts it.`,
       `It does not fix anything and both of them know it. They agree to stop making everybody else carry it, which in this house counts as a resolution.`,
+      `${asker} names what ${p.sub} did, apologises for it and waits without asking ${refuser} to make the moment easier. ${refuser} accepts, cautiously, because the apology asks for nothing in return.`,
+      `${refuser} expects another argument when ${asker} asks to talk. Instead, ${asker} gives a short apology and admits ${refuser} had a reason to be hurt. They agree to try again.`,
     ], ctx, asker, refuser) : _variant([
       `${asker} apologises. ${refuser} says "okay" in a way that means nothing of the sort, and the conversation is somehow worse afterwards than it was before.`,
       `"I'd rather you just didn't talk to me." ${refuser} says it calmly. ${asker} had a whole speech ready and does not get to use any of it.`,
       `${asker} tries to clear the air and discovers that ${refuser} does not want it cleared — that the feud is doing something for ${refuser} that peace would not.`,
+      `${asker} apologises for the argument but not for the comment that started it. ${refuser} notices the distinction and ends the conversation before it becomes another fight.`,
     ], ctx, asker, refuser);
 
     if (accepted) {

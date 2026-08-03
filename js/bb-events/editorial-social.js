@@ -103,9 +103,13 @@ const apologyTour = {
     const text=pick(lands ? [
       `${a} tells ${b}, “I was wrong about what happened. I shouldn't have snapped at you.” The apology is awkward, but ${b} can tell it is real.`,
       `${a} brings ${b} a cup of coffee and names exactly what went wrong without making an excuse. ${b} does not forgive everything at once, but the conversation ends better than it began.`,
+      `${a} asks ${b} for five uninterrupted minutes, then uses all five to apologize without defending what happened. ${b} is still hurt, but agrees they can start over.`,
+      `${a} admits to ${b} that the argument became personal and that ${pronouns(a).sub} took it too far. ${b} accepts the apology, then explains what will have to change.`,
     ] : [
       `${a} pulls ${b} aside and apologizes, but keeps explaining why the fight was not really ${pronouns(a).posAdj} fault. ${b} listens without saying much.`,
       `${a} tells ${b} the argument was only game. “It didn't feel like game,” ${b} says. ${a} goes quiet and lets ${pronouns(b).obj} finish.`,
+      `${a} begins with “I'm sorry you took it that way.” ${b} stops the apology there and asks ${a} to come back when ${pronouns(a).sub} can name what ${pronouns(a).sub} actually did.`,
+      `${a} apologizes to ${b}, then immediately asks whether they are good for the vote. ${b} realizes the conversation was damage control and ends it.`,
     ],()=>textRoll);
     api.addBond(a,b,lands?1.2:-.4); api.remember(b,a,lands?'made-amends':'bad-apology',lands?1:2,{});
     return result(text,[a,b],lands?'APOLOGY LANDS':'NOT BUYING IT',lands?'green':'red');
@@ -138,7 +142,7 @@ const voteFlipRoom = {
       `${a} insists the votes are there to evict ${target}. ${b} asks for names. When ${a} names ${d}, ${d} cuts in: “I never said that.”`,
       `${a}, ${b} and ${d} count the votes again. Each of them thinks a different person is the swing, and nobody wants to be the first one to commit.`,
       `${b} shuts the bedroom door. “If we're flipping this, I need both of you with me.” ${d} asks who else knows before giving an answer.`,
-      `${a} tells ${b} and ${d} that evicting ${target} is better for all three of them. ${b} agrees. ${d} asks ${b} why they answered so quickly.`,
+      `${a} tells ${b} and ${d} that evicting ${target} is better for all three of them. ${b} agrees. ${d} asks ${b} why ${pronouns(b).sub} answered so quickly.`,
     ],rng);
     api.addBond(a,b,.5); api.suspicion(d,a,1.2); api.setTarget(a,target,'late vote flip'); api.remember(b,a,'vote-flip-pitch',2,{ target });
     return result(text,[a,b,d,target],'VOTES IN MOTION','purple');
@@ -153,9 +157,13 @@ const houseRoast = {
     const text=pick(lands ? [
       `${a} does an impression of the way ${b} walks into a strategy talk. ${d} nearly falls off the couch laughing, and even ${b} has to admit it is accurate.`,
       `${a} reenacts ${b}'s veto speech with a dish towel over ${pronouns(a).posAdj} shoulders. Everyone laughs, including ${b}, who jumps in to correct the parts ${a} gets wrong.`,
+      `${a} gives everyone at dinner a harmless superlative and saves the funniest one for ${b}. ${b} laughs hardest and demands a second award.`,
+      `${a} imitates the face ${b} makes whenever somebody proposes a bad plan. ${b} tries to deny it, makes the exact face again and loses the room.`,
     ] : [
       `${a} starts handing out fake awards at dinner. ${b} wins “Most Likely to Turn Any Conversation Into a Meeting” and forces a smile.`,
       `${a} makes a joke about ${b} that gets a huge reaction from the room. ${b} goes quiet, and ${d} is the first person to realize the joke went too far.`,
+      `${a} keeps adding details to a story about ${b} after ${b} asks ${pronouns(a).obj} to stop. The room's laughter fades before ${a} notices.`,
+      `${a} turns one of ${b}'s insecurities into the punchline of a house joke. ${d} changes the subject, but ${b} has already left the table.`,
     ],rng);
     api.addBond(a,b,lands?.5:-1.1); api.addBond(a,d,.4); api.remember(b,a,lands?'shared-joke':'humiliated',lands?1:2,{});
     return result(text,[a,b,d],lands?'HOUSE IN TEARS':'JOKE CUTS DEEP',lands?'green':'red');

@@ -60,8 +60,8 @@ const whodunitCircle = {
     const right = accused === _realHoh(ctx);
     const text = _variant([
       `The sofas hold a symposium on the only subject in the house. Motives are listed, alibis are compared, and by the second lap the name that keeps surfacing is ${accused} — who ${right ? 'keeps their face very, very still' : 'is not even in the room to defend themselves'}.`,
-      `${talkers[0]} starts it with "okay, but WHO benefits" and the room does the arithmetic out loud. The arithmetic keeps arriving at ${accused}.`,
-      `Everyone agrees to stop talking about it, and then talks about it for two more hours. ${accused}'s name gets said quietly, then less quietly.`,
+      `${talkers[0]} asks everyone who had the clearest reason to nominate the two people on the block. Motives and alibis get picked apart until the group settles on ${accused}.`,
+      `The group retraces nomination morning, looking for anyone who disappeared or seemed to know the result early. Several weak clues get combined into one confident accusation against ${accused}.`,
       `${talkers[1] || talkers[0]} draws the week on the back of a cereal box: who was where, who said what, who smiled wrong. The diagram points at ${accused}, mostly because diagrams have to point somewhere.`,
     ], ctx, accused);
     // The room's suspicion is a real force, aimed by consensus — at whoever
@@ -95,7 +95,7 @@ const wrongAccusation = {
       `${accuser} stops pretending to wonder and says it to ${accused}'s face: "It was you." ${accused} ${correct ? `denies it with exactly the right amount of outrage, which takes practice` : `denies it with the specific exhaustion of somebody telling the truth to a person who has decided not to hear it`}.`,
       `${accuser} corners ${accused} by the fridge with a list of evidence that is really a list of feelings. ${p.Sub} ${p.sub === 'they' ? 'deny' : 'denies'} all of it.`,
       `"Just admit it and I'll respect you more." ${accuser} says it like an offer. ${accused} declines the offer, because ${correct ? 'accepting it would be a confession' : 'there is nothing to confess'}.`,
-      `${accuser} announces to the kitchen that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} "always known" it was ${accused}. The kitchen keeps chopping vegetables at a diplomatic volume.`,
+      `${accuser} tells the kitchen that ${accused} is the Invisible HOH and claims the nominations prove it. ${accused} denies making them, but ${accuser} repeats the accusation in front of everyone until the room is forced to take sides.`,
     ], ctx, accuser, accused);
     api.addBond(accuser, accused, -0.7);
     api.suspicion(accuser, accused, 1.2);
@@ -125,7 +125,7 @@ const falseCredit = {
     if (!audience) return null;
     const p = pronouns(liar);
     const text = _variant([
-      `${liar} does not say "it was me". ${p.Sub} says "some moves you make quietly" while looking directly at the memory wall, which is the same sentence wearing a coat.`,
+      `${liar} hints to ${audience} that ${p.sub} secretly won HOH. "Some moves are better made quietly," ${p.sub} says while looking at the nominees on the memory wall. ${audience} leaves believing ${liar} made the nominations.`,
       `"All I'll say is: the block looks exactly how I wanted it to look." ${liar} lets ${audience} carry that to the rest of the house, which was the entire point of saying it.`,
       `${liar} shrugs at ${audience}: "People keep asking who did it. Nobody's asked who BENEFITS." ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} claiming a nomination ${p.sub} never made, one raised eyebrow at a time.`,
       `${liar} tells ${audience}, in confidence, to "watch what happens at the veto". Nothing ${liar} predicted will happen, but by then the legend will have lapped the facts.`,
@@ -162,7 +162,7 @@ const performedInnocence = {
       `${hoh} speculates about the nominations a little too fluently — theories with suspects, motives, a timeline. ${watcher} listens and thinks: nobody innocent has done this much homework.`,
       `${hoh} is the loudest voice in the whodunit conversation, which ${watcher} notices is also the cheapest place to hide. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} not hiding it well.`,
       `${hoh} asks "but who do YOU think it was?" for the fourth time today. ${watcher} starts counting how many times ${p.sub} ${p.sub === 'they' ? 'ask' : 'asks'}, and the count itself becomes the answer.`,
-      `${watcher} floats a fake detail about the nominations to the room and watches who doesn't blink. ${hoh} doesn't blink.`,
+      `${watcher} invents a false detail about how the secret HOH submitted the nominations. Everyone looks confused except ${hoh}, who is careful not to react. That restraint makes ${watcher} suspicious.`,
     ], ctx, hoh, watcher) : _variant([
       `${hoh} complains about the mystery exactly as much as everybody else — no more, no less — and joins the wrong theory with real enthusiasm. It is a flawless performance, and nobody claps.`,
       `${hoh} loudly endorses the room's favourite suspect, adds one supporting detail, and changes the subject at the correct speed. The week stays sealed.`,
@@ -196,10 +196,10 @@ const alibiPact = {
     const b = pool.filter(n => n !== a).sort((x, y) => (perceived(a, y) ?? 0) - (perceived(a, x) ?? 0))[0];
     if (!b) return null;
     const text = _variant([
-      `${a} and ${b} formally establish that they were together when the keys turned, which neither of them can actually remember, and both now firmly do.`,
+      `${a} and ${b} compare where they were before the anonymous nominations appeared. Neither remembers the entire morning, so they agree to say they were together if either is accused of being the Invisible HOH.`,
       `"You vouch for me, I vouch for you." ${a} and ${b} shake on a shared alibi, which is a small conspiracy in defence of two innocent people — probably.`,
-      `${a} and ${b} rehearse their whereabouts until the story has furniture in it. Nobody asked. That is the part that will look bad later.`,
-      `${a} tells the room ${b} "was with me the whole time", and ${b} confirms it a beat too fast. The room believes them, and files the beat.`,
+      `${a} and ${b} rehearse the same account of nomination morning: the kitchen first, then the backyard, always together. The extra details make the alibi sound overly coordinated.`,
+      `${a} tells the room that ${b} could not be the Invisible HOH because they spent nomination morning together. ${b} immediately returns the favour, drawing new suspicion to both of them.`,
     ], ctx, a, b);
     api.addBond(a, b, 0.5);
     return { text, players: [a, b], badgeText: 'THE ALIBI PACT', badgeClass: 'blue' };
@@ -224,7 +224,7 @@ const nomineeDetective = {
     const text = _variant([
       `${who} has stopped asking "who did this" and started asking "how do I prove it was ${guess}". ${confidant ? `${confidant} gets the whole theory, with exhibits.` : `The theory now has exhibits.`}`,
       `${who} watches ${guess} across the kitchen the way you watch a word you cannot quite remember. ${correct ? 'The word is right there.' : 'The word is not, in fact, there.'}`,
-      `${who} tests ${guess} with a small lie about the nomination morning, and reads the reaction like tea leaves. The tea leaves say what ${p.sub} already decided they would say.`,
+      `${who} falsely claims to know when the secret HOH submitted the nominations, hoping ${guess} will correct the detail or reveal something only the winner would know. The reaction is ambiguous, but ${who} takes it as confirmation.`,
       `${who} recruits ${confidant || 'half the kitchen'} into the case against ${guess}. Certainty, it turns out, is contagious — and ${correct ? 'this time it happens to be true' : 'accuracy is not what it spreads'}.`,
     ], ctx, who, guess);
     api.suspicion(who, guess, 0.8);

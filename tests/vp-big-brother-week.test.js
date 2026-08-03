@@ -410,11 +410,19 @@ describe('vote planning before the eviction', () => {
     for (let i = 0; i < 3; i++) ep = simulateBBEpisode();
     const plans = ep.votePlans || [];
     expect(plans.length).toBeGreaterThan(0);
+    // When a final plea moves a ballot, week.js deliberately re-trues p.truth
+    // against the post-plea BALLOTS rather than the plans — a plea-moved vote
+    // must not read as everybody having counted wrong. The test mirrors that
+    // rule exactly, or it fails on precisely the weeks the feature exists for.
+    const pleaMoved = (ep.ballots || []).some(b => b.pleaMove);
     for (const p of plans) {
       // A belief is a count of real voters, and the truth is recorded beside it.
       expect(p.believed).toBeGreaterThanOrEqual(0);
       expect(p.believed).toBeLessThanOrEqual(plans.length);
-      expect(p.truth).toBe(plans.filter(q => q.target === p.target).length);
+      const expectedTruth = pleaMoved
+        ? ep.ballots.filter(b => b.evict === p.target).length
+        : plans.filter(q => q.target === p.target).length;
+      expect(p.truth).toBe(expectedTruth);
       expect(p.wrong).toBe((p.believed >= p.majority) !== (p.truth >= p.majority));
     }
     // If everybody always read the room correctly there would be no blindside

@@ -47,6 +47,24 @@ const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 
 /**
+ * Slop and no sleep, the same contract scoreField enforces for the generic
+ * library: a have-not competes at a deficit in EVERY competition, structured
+ * or not. Rolled once per player — the whole night is played tired, not one
+ * round of it — and recorded on the breakdown row, because a penalty the
+ * debug screen cannot see is indistinguishable from a label.
+ */
+function haveNotDrag(participants, context, rng) {
+  const drags = {};
+  participants.forEach(name => {
+    drags[name] = (context?.haveNots || []).includes(name) ? 1.4 + rng() * 1.6 : 0;
+  });
+  return drags;
+}
+
+/** The two breakdown fields the Have-Nots twist reads, from one drag value. */
+const hnFields = drag => ({ haveNot: drag > 0, haveNotPenalty: round2(drag) });
+
+/**
  * Scores derived from finishing ORDER rather than from a running total.
  *
  * Structured competitions do not produce a single comparable number — surviving
@@ -154,6 +172,7 @@ export const otev = {
     const facts = seasonFacts();
     const beats = [];
     const breakdown = {};
+    const hn = haveNotDrag(participants, context, rng);
 
     beats.push(beat(`${creature.name} ${creature.bit}`, participants.slice(0, 3), 'OTEV', 'challenge'));
 
@@ -175,7 +194,7 @@ export const otev = {
         const recall = (stat(f.name, 'mental') * 0.55 + stat(f.name, 'intuition') * 0.45) + noiseRoll(rng, 3.2);
         const scramble = (stat(f.name, 'physical') * 0.6 + stat(f.name, 'endurance') * 0.4) + noiseRoll(rng, 2.8);
         const wrong = recall < 3.4;
-        const total = recall * 0.5 + scramble * 0.5 - (wrong ? 4.5 : 0);
+        const total = recall * 0.5 + scramble * 0.5 - (wrong ? 4.5 : 0) - hn[f.name];
         return { ...f, recall, scramble, wrong, total };
       });
       rolls.sort((a, b) => a.total - b.total);
@@ -192,6 +211,7 @@ export const otev = {
       breakdown[loser.name] = {
         roundsSurvived: round - 1, eliminatedRound: round, wrongAnswer: loser.wrong,
         recall: round2(loser.recall), scramble: round2(loser.scramble), score: round2(loser.total), threw: false,
+        ...hnFields(hn[loser.name]),
       };
       out.push(loser.name);
       field = rolls.slice(1).map(({ name }) => ({ name }));
@@ -208,7 +228,7 @@ export const otev = {
     const survivors = field.map(f => f.name);
     survivors.forEach((name, i) => {
       tiebreaks[name] = 6 - i;
-      breakdown[name] ||= { roundsSurvived: round, eliminatedRound: null, wrongAnswer: false, score: round2(6 - i), threw: false };
+      breakdown[name] ||= { roundsSurvived: round, eliminatedRound: null, wrongAnswer: false, score: round2(6 - i), threw: false, ...hnFields(hn[name]) };
     });
 
     const placements = [...survivors, ...out.reverse()];
@@ -269,6 +289,7 @@ export const theWall = {
     const grind = makePicker(rng);
     const beats = [];
     const breakdown = {};
+    const hn = haveNotDrag(participants, context, rng);
 
     const holders = participants.map(name => {
       const t = throwRead(name, context, rng);
@@ -297,7 +318,7 @@ export const theWall = {
 
       const rolls = standing.map(h => {
         const throwDrag = h.threw && wave >= 2 ? 5 + rng() * 3 : 0;
-        const hold = h.apt - fatigue - throwDrag + noiseRoll(rng, 2.9);
+        const hold = h.apt - fatigue - throwDrag - hn[h.name] + noiseRoll(rng, 2.9);
         return { ...h, hold };
       }).sort((a, b) => a.hold - b.hold);
 
@@ -330,6 +351,7 @@ export const theWall = {
         breakdown[f.name] = {
           wavesSurvived: wave - 1, fellOnWave: wave, hazard: hazard.label,
           aptitude: round2(f.apt), hold: round2(f.hold), threwChance: f.threwChance, threw: f.threw, score: round2(f.hold),
+          ...hnFields(hn[f.name]),
         };
         out.push(f.name);
         if (wave >= 4) api.popDelta(f.name, 1);
@@ -344,7 +366,7 @@ export const theWall = {
     }
 
     // The last two. Sorted by one more independent hold, and then negotiated.
-    const finalTwo = standing.map(h => ({ ...h, hold: h.apt - wave * 0.42 + noiseRoll(rng, 2.6) - (h.threw ? 6 : 0) }))
+    const finalTwo = standing.map(h => ({ ...h, hold: h.apt - wave * 0.42 - hn[h.name] + noiseRoll(rng, 2.6) - (h.threw ? 6 : 0) }))
       .sort((a, b) => b.hold - a.hold);
     let [champ, second] = finalTwo;
 
@@ -366,12 +388,12 @@ export const theWall = {
       }
       tiebreaks[second.name] = clamp(9 + second.hold / 100, 0, 9.9);
       threwMap[second.name] = second.threw;
-      breakdown[second.name] = { wavesSurvived: wave, fellOnWave: null, aptitude: round2(second.apt), hold: round2(second.hold), threwChance: second.threwChance, threw: second.threw, score: round2(second.hold) };
+      breakdown[second.name] = { wavesSurvived: wave, fellOnWave: null, aptitude: round2(second.apt), hold: round2(second.hold), threwChance: second.threwChance, threw: second.threw, score: round2(second.hold), ...hnFields(hn[second.name]) };
     }
 
     tiebreaks[champ.name] = 9.9;
     threwMap[champ.name] = false;
-    breakdown[champ.name] = { wavesSurvived: wave, fellOnWave: null, aptitude: round2(champ.apt), hold: round2(champ.hold), threwChance: champ.threwChance, threw: false, score: round2(champ.hold) };
+    breakdown[champ.name] = { wavesSurvived: wave, fellOnWave: null, aptitude: round2(champ.apt), hold: round2(champ.hold), threwChance: champ.threwChance, threw: false, score: round2(champ.hold), ...hnFields(hn[champ.name]) };
 
     const cp = pronouns(champ.name);
     beats.push(beat(
@@ -435,10 +457,13 @@ export const pressureCooker = {
     const hold = makePicker(rng);
     const beats = [];
     const breakdown = {};
+    const hn = haveNotDrag(participants, context, rng);
 
     let inside = participants.map(name => {
       const t = throwRead(name, context, rng);
-      return { name, apt: aptitude(name, this.stats), threw: t.threw, threwChance: t.chance, drag: 0, tempted: 0 };
+      // A have-not walks into the box already dragging — slop is a head start
+      // for everyone else, applied through the same fatigue the boxes add.
+      return { name, apt: aptitude(name, this.stats), threw: t.threw, threwChance: t.chance, drag: hn[name], tempted: 0 };
     });
 
     beats.push(beat(
@@ -477,6 +502,7 @@ export const pressureCooker = {
         breakdown[d.name] = {
           hoursHeld: hours, boxesOpened: box, aptitude: round2(d.apt), fatigueDrag: round2(d.drag),
           grip: round2(d.grip), tempted: d.tempted, threwChance: d.threwChance, threw: d.threw, score: round2(d.grip),
+          ...hnFields(hn[d.name]),
         };
         out.push(d.name);
         if (box >= 3) api.popDelta(d.name, 1);
@@ -504,6 +530,7 @@ export const pressureCooker = {
           breakdown[mark.name] = {
             hoursHeld: hours, boxesOpened: box, aptitude: round2(mark.apt), tookPrize: prize.label,
             tempted: mark.tempted + 1, threwChance: mark.threwChance, threw: mark.threw, score: round2(mark.apt),
+            ...hnFields(hn[mark.name]),
           };
           out.push(mark.name);
           inside = inside.filter(h => h.name !== mark.name);
@@ -539,6 +566,7 @@ export const pressureCooker = {
     breakdown[champ.name] = {
       hoursHeld: hours, boxesOpened: box, aptitude: round2(champ.apt || 0), fatigueDrag: round2(champ.drag || 0),
       tempted: champ.tempted || 0, threwChance: champ.threwChance || 0, threw: false, score: round2(champ.apt || 0),
+      ...hnFields(hn[champ.name] || 0),
     };
 
     const cp = pronouns(champ.name);
@@ -604,6 +632,7 @@ export const hideAndGoVeto = {
     const places = makePicker(rng);
     const beats = [];
     const breakdown = {};
+    const hn = haveNotDrag(participants, context, rng);
 
     beats.push(beat(
       `Ten minutes each, alone in the house, one card to hide. The other ${participants.length - 1} wait in the backyard and try to work out from the sound of it which room ${participants.length > 2 ? 'everybody' : 'the other one'} is in.`,
@@ -613,7 +642,9 @@ export const hideAndGoVeto = {
     // asymmetry: a bad searcher who hid brilliantly beats a good searcher who
     // did not, and the competition never tells anyone which they were.
     const cards = participants.map(name => {
-      const quality = (stat(name, 'intuition') * 0.45 + stat(name, 'strategic') * 0.35 + stat(name, 'mental') * 0.20) + noiseRoll(rng, 3.0);
+      // Half the drag lands on the hide, half on the search below — a week of
+      // slop dulls both halves of this competition, not one.
+      const quality = (stat(name, 'intuition') * 0.45 + stat(name, 'strategic') * 0.35 + stat(name, 'mental') * 0.20) + noiseRoll(rng, 3.0) - hn[name] * 0.5;
       return { owner: name, quality, found: false, where: places(HIDING_PLACES) };
     });
     cards.slice(0, Math.min(4, cards.length)).forEach(c => {
@@ -637,7 +668,7 @@ export const hideAndGoVeto = {
 
         // Cards get easier to find as the clock and the wreckage grow.
         const power = (stat(searcher, 'mental') * 0.40 + stat(searcher, 'intuition') * 0.40 + stat(searcher, 'physical') * 0.20)
-          + noiseRoll(rng, 2.6) + turn * 0.9;
+          + noiseRoll(rng, 2.6) + turn * 0.9 - hn[searcher] * 0.5;
         mess[searcher] += 1 + rng();
 
         const target = targets.reduce((a, b) => (a.quality <= b.quality ? a : b));
@@ -650,6 +681,7 @@ export const hideAndGoVeto = {
           breakdown[target.owner] = {
             hideQuality: round2(target.quality), hidingPlace: target.where, foundBy: searcher,
             foundOnTurn: turn, threw: false, score: round2(target.quality),
+            ...hnFields(hn[target.owner]),
           };
           out.push(target.owner);
         } else if (rng() < 0.5) {
@@ -666,7 +698,7 @@ export const hideAndGoVeto = {
             `With the clock nearly gone, ${weakest.owner}'s card turns up ${weakest.where} — the one place four people had already searched.`,
             [weakest.owner], 'CARD ON THE BOARD', 'red'));
           tiebreaks[weakest.owner] = clamp(turn + weakest.quality / 5, 0, 9.9);
-          breakdown[weakest.owner] = { hideQuality: round2(weakest.quality), hidingPlace: weakest.where, foundBy: null, foundOnTurn: turn, threw: false, score: round2(weakest.quality) };
+          breakdown[weakest.owner] = { hideQuality: round2(weakest.quality), hidingPlace: weakest.where, foundBy: null, foundOnTurn: turn, threw: false, score: round2(weakest.quality), ...hnFields(hn[weakest.owner]) };
           out.push(weakest.owner);
         }
       }
@@ -688,7 +720,7 @@ export const hideAndGoVeto = {
     const survivors = cards.filter(c => !c.found);
     survivors.forEach((c, i) => {
       tiebreaks[c.owner] = clamp(9.9 - i * 0.3, 0, 9.9);
-      breakdown[c.owner] = { hideQuality: round2(c.quality), hidingPlace: c.where, foundBy: null, foundOnTurn: null, threw: false, score: round2(c.quality) };
+      breakdown[c.owner] = { hideQuality: round2(c.quality), hidingPlace: c.where, foundBy: null, foundOnTurn: null, threw: false, score: round2(c.quality), ...hnFields(hn[c.owner]) };
     });
 
     const placements = [...survivors.map(c => c.owner), ...out.reverse()];
@@ -754,6 +786,7 @@ export const bbComics = {
     const melt = makePicker(rng);
     const beats = [];
     const breakdown = {};
+    const hn = haveNotDrag(participants, context, rng);
 
     const titleFor = {};
     const pool = [...HERO_TITLES];
@@ -771,7 +804,9 @@ export const bbComics = {
       const p = pronouns(name);
       const covers = Math.max(4, Math.min(9, participants.length));
       const speed = (stat(name, 'physical') * 0.6 + stat(name, 'endurance') * 0.4);
-      let time = 62 - speed * 2.2 + noiseRoll(rng, 5);
+      // Slop drag lands where this comp lives: seconds on the wire, and a
+      // duller recall on every cover check below.
+      let time = 62 - speed * 2.2 + hn[name] * 2.5 + noiseRoll(rng, 5);
       let mistakes = 0;
       // The cover that broke the run is the FIRST one missed, and never the
       // player's own — "H realises The Incredible H is in the wrong place" is
@@ -788,7 +823,7 @@ export const bbComics = {
         // over seven. At a 3.1 bar the same houseguest ran clean in 24 of 40
         // seeded runs, which is a sort with a zipline attached to it.
         const recall = (stat(name, 'mental') * 0.55 + stat(name, 'intuition') * 0.30 + stat(name, 'temperament') * 0.15)
-          + noiseRoll(rng, 3.4) - i * 0.30 - mistakes * 0.6;
+          + noiseRoll(rng, 3.4) - i * 0.30 - mistakes * 0.6 - hn[name] * 0.3;
         if (recall < 3.9) {
           mistakes++;
           time += 21 + rng() * 9;
@@ -814,6 +849,7 @@ export const bbComics = {
       breakdown[r.name] = {
         hero: titleFor[r.name], covers: r.covers, mistakes: r.mistakes,
         time: r.time, score: round2(200 - r.time), threw: false,
+        ...hnFields(hn[r.name]),
       };
     });
 
@@ -881,6 +917,7 @@ export const beforeOrAfter = {
     const beats = [];
     const breakdown = {};
     const facts = seasonFacts();
+    const hn = haveNotDrag(participants, context, rng);
 
     const strikesAllowed = participants.length > 6 ? 2 : 1;
     let field = participants.map(name => {
@@ -917,7 +954,7 @@ export const beforeOrAfter = {
         // A thrower gets one wrong on purpose, early, and lets the strikes do
         // the rest — the same shape as bailing off a wall, in a quiz.
         const deliberate = f.threw && q <= 2;
-        const answer = f.apt + noiseRoll(rng, 3.2) - (deliberate ? 9 : 0);
+        const answer = f.apt - hn[f.name] + noiseRoll(rng, 3.2) - (deliberate ? 9 : 0);
         if (answer < difficulty) {
           f.strikes++;
           f.lastWrong = q;
@@ -947,6 +984,7 @@ export const beforeOrAfter = {
           breakdown[f.name] = {
             questionsCorrect: f.correct, strikes: f.strikes, eliminatedOn: q,
             aptitude: round2(f.apt), threwChance: f.threwChance, threw: f.threw, score: f.correct,
+            ...hnFields(hn[f.name]),
           };
           out.push(f.name);
         });
@@ -964,6 +1002,7 @@ export const beforeOrAfter = {
     breakdown[champ.name] = {
       questionsCorrect: champ.correct || 0, strikes: champ.strikes || 0, eliminatedOn: null,
       aptitude: round2(champ.apt || 0), threwChance: champ.threwChance || 0, threw: false, score: champ.correct || 0,
+      ...hnFields(hn[champ.name] || 0),
     };
 
     const cp = pronouns(champ.name);

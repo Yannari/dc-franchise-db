@@ -82,6 +82,31 @@ describe('signature Big Brother competitions', () => {
     }
   });
 
+  // The have-not contract: slop costs you in EVERY competition, structured or
+  // not. scoreField enforces it for the generic library; each signature comp
+  // applies its own drag and must record it on the breakdown row, because
+  // that row is what the Have-Nots twist (and its test) reads.
+  it('makes have-nots compete at a recorded deficit', () => {
+    for (const comp of SIGNATURE_COMPS) {
+      reset();
+      const haveNots = [HOUSE[0], HOUSE[2]];
+      const result = runBBCompetition({
+        type: primaryType(comp), participants: HOUSE.slice(0, 8), house: HOUSE,
+        library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(9),
+        week: { num: 4, houseAtStart: HOUSE }, haveNots,
+      });
+      const breakdown = result.debug.scoreBreakdown;
+      expect(Object.keys(breakdown).length, comp.id).toBeGreaterThan(0);
+      for (const [name, row] of Object.entries(breakdown)) {
+        if (haveNots.includes(name)) {
+          expect(row.haveNotPenalty, `${comp.id} did not penalise have-not ${name}`).toBeGreaterThan(0);
+        } else {
+          expect(row.haveNotPenalty || 0, `${comp.id} penalised non-have-not ${name}`).toBe(0);
+        }
+      }
+    }
+  });
+
   it('replays identically for the same seed', () => {
     for (const comp of SIGNATURE_COMPS) {
       const once = run(comp, { seed: 21 });

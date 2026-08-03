@@ -36,9 +36,19 @@ function playWeeks(n) {
 
 const litRows = html => (html.match(/class="bbc-row (?!is-hidden)/g) || []).length;
 
+// These two tests guard the GENERIC board's reveal machinery (bbc-row classes,
+// the bar chart, the explainer). Signature competitions dispatch to their own
+// themed screens with their own DOM, so the variant tag is stripped here to
+// force the generic path — the themed screens are covered by
+// bb-sig-screens.test.js.
+const forceGeneric = ep => {
+  for (const a of ep.acts || []) if (a.competition) a.competition = { ...a.competition, variant: null };
+  return ep;
+};
+
 describe.each([['hoh'], ['veto']])('the %s board', (type) => {
   it('hides every placement until the reveal reaches it', () => {
-    const ep = playWeeks(2);
+    const ep = forceGeneric(playWeeks(2));
     const act = ep.acts.find(a => a.type === type);
     const field = act.results.length;
     const key = `bb_comp_${ep.num}_${type}`;
@@ -69,7 +79,7 @@ describe.each([['hoh'], ['veto']])('the %s board', (type) => {
   });
 
   it('draws the whole field, with scores as bars', () => {
-    const ep = playWeeks(2);
+    const ep = forceGeneric(playWeeks(2));
     const act = ep.acts.find(a => a.type === type);
     _tvState[`bb_comp_${ep.num}_${type}`] = { idx: 99 };
     const html = rpBuildBBComp(ep, type);

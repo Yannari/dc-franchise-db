@@ -12,6 +12,17 @@ import { bKey } from './bonds.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
 import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
+// The six signature competitions each carry a `variant` tag on their result,
+// and each variant has its own themed screen — the house's equivalent of a
+// Total Drama twist-challenge VP. rpBuildBBComp dispatches on the tag and
+// falls back to the generic board when a builder declines (secret HOH,
+// missing data) or throws.
+import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
+import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
+import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
+import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';
+import { rpBuildSigBBComics } from './vp-bb-sig/bb-comics.js';
+import { rpBuildSigBeforeOrAfter } from './vp-bb-sig/before-or-after.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
@@ -16784,9 +16795,32 @@ export function rpBuildBBVetoDraw(ep) {
  * The controls are pinned to the bottom of the viewport and the newly revealed
  * row scrolls itself into view.
  */
+// variant tag → themed builder. Every builder returns '' to decline (Invisible
+// HOH, missing data), which drops through to the generic board below.
+const _BB_SIG_BUILDERS = {
+  'otev': rpBuildSigOtev,
+  'the-wall': rpBuildSigTheWall,
+  'pressure-cooker': rpBuildSigPressureCooker,
+  'hide-and-go-veto': rpBuildSigHideAndGoVeto,
+  'bb-comics': rpBuildSigBBComics,
+  'before-or-after': rpBuildSigBeforeOrAfter,
+};
+
 export function rpBuildBBComp(ep, actType) {
   const act = (ep.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
+  const themed = _BB_SIG_BUILDERS[comp?.variant];
+  if (themed) {
+    try {
+      const html = themed(ep, actType, {
+        tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar,
+        esc: _bbEsc, cat: _bbcCat, ordinal: _bbOrdinal,
+      });
+      if (html) return html;
+    } catch (e) {
+      console.warn(`Signature comp screen '${comp.variant}' failed; using the generic board.`, e);
+    }
+  }
   const isHoh = actType === 'hoh';
   const cat = _bbcCat(comp?.category);
   const stateKey = `bb_comp_${ep.num}_${actType}${ep?._seg ? `_s${ep._seg}` : ''}`;

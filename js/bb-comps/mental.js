@@ -13,6 +13,7 @@
 import { pronouns } from '../players.js';
 import { majorityRules } from './majority-rules.js';
 import { morphOMatic } from './morph-o-matic.js';
+import { knockout } from './knockout.js';
 import { scoreField, toResult, beat, margin, makePicker, THROW_LINES } from './_shared.js';
 import { bond, memoriesOf } from '../bb-events/_read.js';
 
@@ -82,4 +83,9 @@ export { majorityRules } from './majority-rules.js';
 // id (`bb-mental-memory`) is unchanged.
 export { morphOMatic } from './morph-o-matic.js';
 
-export const MENTAL_COMPS = [puzzleRace, majorityRules, morphOMatic];
+// Knockout: the most-run competition in the format's history and the only one
+// where winning hands you a decision about somebody else rather than a score.
+// New to the library rather than a replacement, so it carries its own id.
+export { knockout } from './knockout.js';
+
+export const MENTAL_COMPS = [puzzleRace, majorityRules, morphOMatic, knockout];

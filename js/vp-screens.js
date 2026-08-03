@@ -27,6 +27,7 @@ import { rpBuildSigMajorityRules } from './vp-bb-sig/majority-rules.js';
 import { rpBuildSigMorphOMatic } from './vp-bb-sig/morph-o-matic.js';
 import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
+import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -16626,6 +16627,7 @@ const _BBC_CATEGORY = {
   precision: { label: 'PRECISION', accent: '#d29922', blurb: 'Steadiest hands.' },
   luck:      { label: 'LUCK',      accent: '#ff7b72', blurb: 'Nobody can train for this one.' },
   social:    { label: 'SOCIAL',    accent: '#f0a500', blurb: 'Won on people, not on hands.' },
+  memory:    { label: 'MEMORY',    accent: '#8b5cf6', blurb: 'Who was watching, and who remembers.' },
 };
 const _bbcCat = c => _BBC_CATEGORY[c] || { label: String(c || 'COMPETITION').toUpperCase(), accent: '#f0a500', blurb: '' };
 
@@ -16817,6 +16819,7 @@ const _BB_SIG_BUILDERS = {
   'memory': rpBuildSigMorphOMatic,
   'precision': rpBuildSigBowlerina,
   'knockout': rpBuildSigSlipperySlope,
+  'duel': rpBuildSigKnockout,
 };
 
 export function rpBuildBBComp(ep, actType) {

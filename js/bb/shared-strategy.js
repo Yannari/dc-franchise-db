@@ -560,6 +560,7 @@ function recruitmentOptions(house) {
 function formationTriggers(house, week, rng) {
   const triggers = [];
   const free = house.filter(n => !isOvercommitted(n));
+  const weekNum = currentRound(week);
 
   // 1. A pitch. Anyone can make one, and the chance scales with how persuasive
   //    or calculating they are — the Total Drama formula, unchanged.
@@ -571,12 +572,23 @@ function formationTriggers(house, week, rng) {
     const hub = pitchers.sort((a, b) =>
       (pStats(b).social + pStats(b).strategic + bbAllianceAppeal(b, week))
       - (pStats(a).social + pStats(a).strategic + bbAllianceAppeal(a, week)))[0];
+    // Day-one alliances are ROOMS, not whispers: the show's opening-week blocs
+    // (Sovereign Six, The Committee, The Cookout) gather four to six people
+    // before anybody has a read on anybody. The hub's reach scales with who
+    // they are — a magnetic strategist fills a bedroom, a quiet one takes two
+    // names — and from week three the old duo-and-trio behavior returns,
+    // because by then a big open pitch is how you get caught.
+    const hubStats = pStats(hub);
+    const founding = weekNum <= 2;
+    const reach = founding
+      ? Math.min(5, 2 + Math.floor((hubStats.social + hubStats.strategic) / 7) + (rng() < 0.45 ? 1 : 0))
+      : (rng() < 0.45 ? 2 : 1);
     const partners = free.filter(n => n !== hub)
       .map(n => ({ n, score: getBond(hub, n) + bbAllianceAppeal(n, week) + rng() * 0.5 }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, rng() < 0.45 ? 2 : 1)
+      .slice(0, reach)
       .map(x => x.n);
-    if (partners.length) triggers.push({ weight: 10, members: [hub, ...partners], evidence: 'strategic-pitch' });
+    if (partners.length) triggers.push({ weight: founding ? 14 : 10, members: [hub, ...partners], evidence: 'strategic-pitch' });
   }
 
   // 2. A close pair who are not already allied; likelihood scales with the bond.
@@ -654,7 +666,11 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   // is evicted.
   for (const option of recruitmentOptions(house).slice(0, 4)) {
     if (isOvercommitted(option.candidate)) continue;
-    const chance = clamp(0.22 + option.score * 0.11, 0.25, 0.7);
+    // The first fortnight favors growing the alliance you have over founding
+    // another duo — a small thumb on the scale, not a guarantee, per the
+    // audit: creation volume is healthy, founding-shape is what was thin.
+    const earlyBias = weekNum <= 2 ? 0.15 : 0;
+    const chance = clamp(0.22 + option.score * 0.11 + earlyBias, 0.25, 0.78);
     if (rng() >= chance) continue;
     option.alliance.members = [...option.members];
     option.alliance.trust = option.score;

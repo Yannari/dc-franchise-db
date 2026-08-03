@@ -16,7 +16,12 @@ describe('Big Brother alliance lifecycle adapter', () => {
   it('forms an alliance around a mutually trusted core', () => {
     setBond('A','B',6); setBond('A','C',6); setBond('B','C',6);
     const result = updateBBAllianceLifecycle({ phase:'opening', house:gs.activePlayers, week:{num:1}, rng:() => 0 });
-    expect(result.formed).toMatchObject({ members:['A','B','C'], active:true });
+    // Week one founds a BLOC, not a whisper: the trusted core must be inside
+    // it, and the hub's opening-week reach may pull in more of the room —
+    // that is the founding-shape fix, with the size cap still holding.
+    expect(result.formed).toMatchObject({ active:true });
+    for (const name of ['A', 'B', 'C']) expect(result.formed.members).toContain(name);
+    expect(result.formed.members.length).toBeLessThanOrEqual(6);
     expect(result.formed.formationEvidence).toBeTruthy();
     expect(gs.namedAlliances).toContain(result.formed);
   });

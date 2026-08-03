@@ -1442,6 +1442,33 @@ export function simulateBBWeek(options = {}) {
     return guess;
   };
 
+  // ── The bloc's fingerprints on the block ──
+  // Alliances were shaping nominations invisibly: the plan protects the
+  // preferred core, every member dodges the block, and the screen never said
+  // so — which reads as alliances not mattering. When the HOH's alliance
+  // walked away clean, the ceremony names it, with the small real
+  // consequence that being protected in public is: the members notice.
+  if (!hohSecret) {
+    const hohBloc = (gs.namedAlliances || [])
+      .filter(a => a.active !== false && !a.dissolved && (a.members || []).includes(hoh))
+      .map(a => ({ ...a, inHouse: (a.members || []).filter(m => house.includes(m)) }))
+      .filter(a => a.inHouse.length >= 3)
+      .sort((a, b) => b.inHouse.length - a.inHouse.length)[0];
+    if (hohBloc && !nominees.some(n => hohBloc.inHouse.includes(n))) {
+      const nomAct = week.acts[week.acts.length - 1];
+      const shielded = hohBloc.inHouse.filter(m => m !== hoh);
+      shielded.forEach(m => _cappedBondWindow(() => addBond(hoh, m, 0.15)));
+      (nomAct.socialBeats ||= []).push({
+        text: `Nobody says the name out loud, but the block has a shape: every member of ${hohBloc.name} is off it. ${shielded.slice(0, 3).join(', ')}${shielded.length > 3 ? ' and the rest' : ''} clock what ${hoh} just did for them — and so does everybody who is NOT in that room.`,
+        players: [hoh, ...shielded.slice(0, 3)],
+        badgeText: 'THE BLOC HOLDS', badgeClass: 'blue',
+        eventId: 'alliance-shaped-block', category: 'ceremonies', location: 'living-room',
+        effects: shielded.slice(0, 3).map(m => ({ kind: 'bond', text: `${hoh} & ${m} +0.15`, delta: 0.15 })),
+      });
+      nomAct.allianceShield = { alliance: hohBloc.name, protected: shielded };
+    }
+  }
+
   if (hohSecret) {
     const nomAct = week.acts[week.acts.length - 1];
     for (const nom of nominees) {

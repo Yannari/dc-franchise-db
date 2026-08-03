@@ -20771,6 +20771,32 @@ export function rpBuildBBDebug(ep) {
           dbgNote(`${_bbEsc(g.who)} guessed ${_bbEsc(g.guess)} — ${g.correct ? 'RIGHT' : 'wrong'}`)).join('')
         + (ep.invisibleReveal ? dbgNote(`revealed to ${_bbEsc(ep.invisibleReveal.to)} in the goodbye message`) : ''));
     }
+    // Romance, which the house debug never showed at all: three played
+    // seasons of showmances were invisible here, which reads exactly like
+    // zero showmances. The panel also says out loud when the SEASON has
+    // romance switched off — the one cause a player cannot see otherwise,
+    // because the setting rides along from whatever config was saved last.
+    {
+      const romanceOff = (typeof seasonConfig !== 'undefined' && seasonConfig?.romance === 'disabled');
+      const shows = (snap.showmances || (typeof gs !== 'undefined' && gs.showmances) || []);
+      const sparks = ((typeof gs !== 'undefined' && gs.romanticSparks) || [])
+        .filter(s => (s.players || [s.a, s.b]).every(n => n && house.includes(n)));
+      if (romanceOff) {
+        html += dbgPanel('ROMANCE', 'grey', dbgNote('romance is DISABLED in this season\'s config — no sparks, no showmances, by choice'));
+      } else if (shows.length || sparks.length) {
+        html += dbgPanel('ROMANCE', 'gold',
+          shows.map(sh => {
+            const pair = (sh.players || []).join(' & ');
+            return dbgNote(`${_bbEsc(pair)} — ${_bbEsc(sh.phase || 'showmance')}${sh.phase === 'broken-up' ? ' (over)' : ''}`);
+          }).join('')
+          + sparks.map(s => {
+            const pair = (s.players || [s.a, s.b]).filter(Boolean).join(' → ');
+            return dbgNote(`spark: ${_bbEsc(pair)}${s.intensity != null ? ` (intensity ${Number(s.intensity).toFixed(1)})` : ''}`);
+          }).join(''));
+      } else {
+        html += dbgPanel('ROMANCE', 'grey', dbgNote('romance is on — no sparks or showmances in the house right now'));
+      }
+    }
     // The power inventory's truth. The public screens show only what the
     // house knows — a locked backyard, a story about a dollar — so this is
     // the one place a secret power exists before it fires.

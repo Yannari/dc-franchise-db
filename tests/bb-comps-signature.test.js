@@ -61,7 +61,17 @@ describe('signature Big Brother competitions', () => {
     for (const id of ids) expect(BB_COMPETITIONS.some(c => c.id === id), `${id} unregistered`).toBe(true);
     for (const comp of SIGNATURE_COMPS) {
       expect(comp.desc.length).toBeGreaterThan(80);
-      expect(comp.desc).toMatch(/wins (the Power of Veto|Head of Household)\.$/);
+      // A competition that serves one slot says what it is played for. One that
+      // serves both must NOT — the desc is static and gets drawn on the screen,
+      // so a hardcoded prize told an HOH night it was playing for the veto.
+      const slots = comp.types.filter(t => t === 'hoh' || t === 'veto');
+      if (slots.length === 1) {
+        expect(comp.desc, `${comp.id} desc must name its prize`)
+          .toMatch(/wins (the Power of Veto|Head of Household)\.$/);
+      } else {
+        expect(comp.desc, `${comp.id} serves both slots and must not name a prize`)
+          .not.toMatch(/the Power of Veto|Head of Household/);
+      }
       expect(typeof comp.simulate).toBe('function');
     }
   });

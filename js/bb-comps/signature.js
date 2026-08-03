@@ -780,7 +780,7 @@ export const bbComics = {
   // competition — it has run as both, so it is eligible for both slots.
   types: ['veto', 'hoh'],
   weight: () => 1.3,
-  desc: 'One at a time and against the clock, each houseguest zips across the yard to a wall of comic book covers — one for every player in the house — and rebuilds the order they were shown. Every misplaced cover means zipping back to the platform and running it again, and the fastest completed time wins the Power of Veto.',
+  desc: 'One at a time and against the clock, each houseguest zips across the yard to a wall of comic book covers — one for every player in the house — and rebuilds the order they were shown. Every misplaced cover means zipping back to the platform and running it again, and the fastest completed time wins.',
   stats: { mental: 0.40, intuition: 0.26, temperament: 0.20, physical: 0.14 },
   simulate(participants, context, api, rng) {
     const clean = makePicker(rng);
@@ -867,14 +867,19 @@ export const bbComics = {
 
     const winner = runs[0];
     const second = runs[1];
+    // This one serves both slots, so it must not narrate itself as a veto on an
+    // HOH night — the sibling signature comps already read context.type for
+    // exactly this and BB Comics was the one that hardcoded the prize.
+    const isVeto = context.type === 'veto';
+    const prize = isVeto ? 'the veto' : 'the room';
     if (second) {
       beats.push(beat(
-        `${winner.name} posts ${winner.time} and ${second.name} posts ${second.time}, and the gap between the veto and nothing is ${round2(second.time - winner.time)} seconds.`,
+        `${winner.name} posts ${winner.time} and ${second.name} posts ${second.time}, and the gap between ${prize} and nothing is ${round2(second.time - winner.time)} seconds.`,
         [winner.name, second.name], 'THE MARGIN', 'gold'));
     }
     beats.push(beat(
-      `${titleFor[winner.name]} takes it. ${winner.name} gets handed the cover with ${winner.p.posAdj} own face on it as well as the veto, and keeps both.`,
-      [winner.name], 'VETO', 'gold'));
+      `${titleFor[winner.name]} takes it. ${winner.name} gets handed the cover with ${winner.p.posAdj} own face on it as well as ${prize}, and keeps both.`,
+      [winner.name], isVeto ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(winner.name, 2);
     api.record(winner.name, 'bb-comics-win', { time: winner.time, mistakes: winner.mistakes });
 
@@ -884,7 +889,7 @@ export const bbComics = {
     const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
       beats, breakdown, variant: 'bb-comics',
-      text: `${winner.name} runs BB Comics in ${winner.time} seconds and wins the Power of Veto.`,
+      text: `${winner.name} runs BB Comics in ${winner.time} seconds and wins ${isVeto ? 'the Power of Veto' : 'Head of Household'}.`,
     });
   },
 };
@@ -923,7 +928,7 @@ export const beforeOrAfter = {
   // competition since Big Brother 11 — it has always served both slots.
   types: ['hoh', 'veto', 'tiebreaker', 'return'],
   weight: () => 1.3,
-  desc: 'Houseguests are asked whether one thing that happened in this house came before or after another. In a full field a wrong answer is a strike and two strikes eliminate; once the field is small a single wrong answer eliminates outright. The last houseguest still in wins Head of Household.',
+  desc: 'Houseguests are asked whether one thing that happened in this house came before or after another. In a full field a wrong answer is a strike and two strikes eliminate; once the field is small a single wrong answer eliminates outright. The last houseguest still in wins.',
   stats: { mental: 0.44, intuition: 0.26, strategic: 0.18, temperament: 0.12 },
   simulate(participants, context, api, rng) {
     const wrongSay = makePicker(rng);

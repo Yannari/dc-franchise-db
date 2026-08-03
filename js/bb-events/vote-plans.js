@@ -753,7 +753,7 @@ const backdoorPlayedVeto = {
 
 function _backdoorMiss(ctx, house) {
   const target = ctx?.week?.plan?.backdoorTarget;
-  const hoh = ctx?.hoh || ctx?.week?.hoh || null;
+  const hoh = ctx?.hoh || (ctx?.week?.hohSecret ? null : ctx?.week?.hoh) || null;
   if (!target || !hoh || target === hoh) return null;
   if (!house.includes(target) || !house.includes(hoh)) return null;
   const drew = (ctx?.week?.vetoDraw?.players || []).includes(target);
@@ -816,7 +816,7 @@ function _pawnTrouble(ctx, house) {
   if (!pawn || !house.includes(pawn) || !noms.includes(pawn)) return null;
   const other = noms.find(n => n !== pawn);
   if (!other) return null;
-  const asker = ctx?.hoh || ctx?.week?.hoh || null;
+  const asker = ctx?.hoh || (ctx?.week?.hohSecret ? null : ctx?.week?.hoh) || null;
   if (!asker || asker === pawn || !house.includes(asker)) return null;
   // Nobody is holding a clean majority for the other chair: the promise is
   // being kept by hope.

@@ -117,6 +117,20 @@ describe('the Invisible HOH', () => {
     }
   });
 
+  it('keeps the HOH-room events dark — no holding court in a room nobody owns', () => {
+    // The regression the first played week exposed: the power events' hoh
+    // helper fell back to ctx.week.hoh, reaching around the nulled context —
+    // so a sealed week still showed Bowie holding court in the HOH room,
+    // taking pitches and promising safety. On an invisible week every event
+    // in the hoh-room/hoh-power family must stay silent.
+    for (let seed = 1; seed <= 15; seed++) {
+      const week = invisibleWeek(seed * 23 + 11);
+      const beats = week.acts.flatMap(a => a.socialBeats || []);
+      const leaks = beats.filter(b => /^power-hoh/.test(String(b.eventId || '')));
+      expect(leaks.map(b => b.eventId), `week ${seed} narrated the hidden HOH as HOH`).toEqual([]);
+    }
+  });
+
   it('replays identically for the same seed', () => {
     const run = () => {
       const w = invisibleWeek(733);

@@ -56,7 +56,11 @@ const afterCeremony = (ctx, value) =>
   (ctx?.act === 'campaign' || ctx?.phase === 'campaign' ? band(value * 0.9, 16) : 0);
 
 const _others = (house, ...exclude) => house.filter(n => n && !exclude.includes(n));
-const _hoh = ctx => ctx?.hoh || ctx?.week?.hoh || null;
+// On an invisible week the engine hands events a null hoh on purpose — and
+// this fallback was quietly reaching around it into the week object, so the
+// house spent a sealed week holding court in an HOH room whose owner nobody
+// is supposed to know. The week's own secrecy flag gates the reach-around.
+const _hoh = ctx => ctx?.hoh || (ctx?.week?.hohSecret ? null : ctx?.week?.hoh) || null;
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
 /** Least-seen first, so the same three names do not carry every week. */
 /** Least-seen first, weighted toward whoever this week is about. */

@@ -28,6 +28,7 @@ import { rpBuildSigMorphOMatic } from './vp-bb-sig/morph-o-matic.js';
 import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
+import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -19754,8 +19755,21 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
       case 'nominations':
+        // A Battle of the Block week holds TWO ceremonies. The second one is
+        // the co-Head of Household's, and it does not get a screen of its own:
+        // rpBuildBBNominations reads the first ceremony off the episode, so a
+        // second screen would draw the first ceremony twice under a duplicate
+        // id. The Battle screen below shows both blocks and who filled them.
+        if (act.byCoHoh) break;
         screens.push({ id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view) });
         break;
+      case 'battle-of-the-block': {
+        const botb = rpBuildBBBattleOfTheBlock(view, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (botb) screens.push({ id: id('bb-botb'), label: 'Battle of the Block', html: botb });
+        break;
+      }
       case 'instant-eviction':
         screens.push({ id: id('bb-instant'), label: 'Instant Eviction', html: rpBuildBBInstantEviction(view) });
         break;

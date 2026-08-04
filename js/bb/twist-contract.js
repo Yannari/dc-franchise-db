@@ -19,6 +19,7 @@
  * A resolved week with no twists is exactly this.
  */
 export const BASE_WEEK_RULES = Object.freeze({
+  hohCount: 1,              // how many Heads of Household hold power at once
   nomineeCount: 2,          // how many the HOH names at the ceremony
   vetoCount: 1,             // how many vetoes exist this week (0 = no veto act)
   vetoSecret: false,        // whether the veto's use is anonymous
@@ -114,6 +115,22 @@ export const BB_TWIST_CONTRACTS = {
       name: 'The Invisible HOH',
       rule: 'This week’s Head of Household is INVISIBLE. The competition result will not be revealed: only the winner knows who holds power. Nominations will be read by Big Brother, and the Invisible HOH may compete in next week’s HOH competition.',
       sting: 'Somebody in this room is about to run the week without wearing the key.',
+    },
+  },
+  'bb-battle-of-the-block': {
+    id: 'bb-battle-of-the-block', layer: 'scheduled', category: 'power-structure',
+    timing: 'week', duration: { weeks: 1 },
+    // Two Heads of Household, four nominees, and one of the two thrones is
+    // gone by the end of the night. The rules delta is small because the twist
+    // resolves BEFORE the veto: once a pair has won and their Head of
+    // Household has been dethroned, what is left is an ordinary week with one
+    // HOH and two nominees, and every downstream act runs unchanged.
+    rules: { hohCount: 2, nomineeCount: 4, addSlots: ['battle-of-the-block'] },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Battle of the Block',
+      rule: 'This week there are TWO Heads of Household, and each of them will nominate two houseguests. The four nominees then compete as pairs. The pair that WINS comes off the block — and dethrones the Head of Household who nominated them, who becomes an ordinary houseguest for the rest of the week. The remaining Head of Household keeps their power and their nominations.',
+      sting: 'Two people are about to win this house, and one of them is about to lose it again before Thursday.',
     },
   },
   'bb-battle-back': {

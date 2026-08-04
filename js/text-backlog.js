@@ -4299,8 +4299,28 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'battle-of-the-block': {
+        sec('THE BATTLE OF THE BLOCK');
+        ln('  Two Heads of Household, two blocks, and only one of them survives the night.');
+        for (const owner of act.hohs || []) {
+          ln(`  ${owner} nominated ${(act.pairs?.[owner] || []).join(' and ')}.`);
+        }
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          ln(`  Rules: ${act.competition.desc || ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln('');
+        ln(`  ${(act.saved || []).join(' and ')} win the Battle of the Block and come off the block.`);
+        ln(`  ${act.dethroned} is dethroned. The key comes off, and with it the safety —`);
+        ln(`  ${act.dethroned} spends the rest of the week as an ordinary houseguest, vote and all.`);
+        ln(`  ${act.reigning} remains Head of Household. ${(act.stuck || []).join(' and ')} are still nominated.`);
+        beats(act);
+        break;
+      }
+
       case 'nominations': {
-        sec('NOMINATION CEREMONY');
+        sec(act.byCoHoh ? `NOMINATION CEREMONY — ${act.hoh}` : 'NOMINATION CEREMONY');
         // No "HOH's intent — target / pawn / backdoor" line any more. It was
         // removed from the screen for spoiling the ceremony and printing the
         // one thing nobody in the house announces, and it had been left sitting

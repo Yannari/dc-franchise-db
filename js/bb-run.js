@@ -234,7 +234,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -499,10 +499,23 @@ export function summariseWeek(week) {
         break;
       case 'nominations':
         line('');
-        line(act.anonymous ? 'NOMINATION CEREMONY — READ BY BIG BROTHER' : 'NOMINATION CEREMONY');
+        line(act.anonymous ? 'NOMINATION CEREMONY — READ BY BIG BROTHER'
+          : act.byCoHoh ? `NOMINATION CEREMONY — ${act.hoh}` : 'NOMINATION CEREMONY');
         line(`  Nominated: ${(act.nominees || []).join(' and ')}.`);
         if (act.anonymous) line('  No speech, no reasons: the keys turned on their own.');
         break;
+      case 'battle-of-the-block': {
+        line('');
+        line('THE BATTLE OF THE BLOCK');
+        for (const owner of act.hohs || []) {
+          line(`  ${owner}'s block: ${(act.pairs?.[owner] || []).join(' and ')}.`);
+        }
+        _competition(line, act.competition);
+        line(`  ${(act.saved || []).join(' and ')} win, and come off the block.`);
+        line(`  ${act.dethroned} is DETHRONED — no longer Head of Household, and no longer safe.`);
+        line(`  ${act.reigning} keeps the power, and ${(act.stuck || []).join(' and ')} stay nominated.`);
+        break;
+      }
       case 'veto':
         line('');
         line('POWER OF VETO');

@@ -1232,9 +1232,35 @@ export function simulateBBWeek(options = {}) {
   const hohResults = hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }));
   let hoh = hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
+
+  // ── two thrones ──
+  //
+  // The Battle of the Block seats a SECOND Head of Household: the runner-up in
+  // the same competition. Both nominate, all four nominees play, and the
+  // winning pair dethrones whoever put them up. The co-HOH is decided here so
+  // the nomination stretch below can run twice; the battle itself and the
+  // dethroning happen after both ceremonies, further down.
+  const botbActive = !compressed
+    && week.twistState?.rules?.hohCount === 2
+    // Two HOHs and four nominees leaves house.length - 6 people who are
+    // neither, and the week needs somebody left to vote.
+    && house.length >= 8
+    && !safetyActive && !doubleVote && !hohSecret;
+  const coHoh = botbActive
+    ? (hohCompetition.placements.find(n => n !== hoh && hohPlayers.includes(n)) || null)
+    : null;
+  week.botbActive = botbActive && !!coHoh;
+
   week.hoh = hoh;
   if (!hohSecret) setSpotlight({ hoh });
   gs.bb.stats[hoh].hohWins++;
+  if (week.botbActive) {
+    // A dethroned reign does not count as a reign — the wiki is explicit that
+    // Frankie Grande's two dethroned weeks are not in his HOH record. The
+    // co-HOH's win is credited only if they survive the battle, below.
+    week.coHoh = coHoh;
+    if (!hohSecret) setSpotlight({ hoh: coHoh });
+  }
   week.hohCompetition = hohCompetition;
   // Winning in front of everybody is where strategic respect and comp fear
   // actually come from. The dimension writers existed and the house never
@@ -1243,7 +1269,9 @@ export function simulateBBWeek(options = {}) {
   // Comp fear and strategic respect come from WATCHING somebody win. A
   // sealed result is watched by nobody, so the dimension writers stay quiet.
   if (!hohSecret) recordCompDominance(hohCompetition, house, week.num);
-  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition, outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret }));
+  week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition,
+    outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret,
+    coHoh: week.botbActive ? coHoh : null }));
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.
   revise('hoh', { hoh });
@@ -1431,6 +1459,130 @@ export function simulateBBWeek(options = {}) {
     anonymous: hohSecret,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
+
+  // ══════════════════════════════════════════════════════════════════
+  // The Battle of the Block
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // The co-Head of Household names two of their own, all four nominees play as
+  // pairs, and the winning pair comes off the block AND takes their Head of
+  // Household's power with them. What is left is one HOH and two nominees —
+  // an ordinary week — which is why nothing downstream of here needs to know
+  // this twist exists.
+  if (week.botbActive && coHoh) {
+    const ineligible = new Set([hoh, coHoh, ...nominees]);
+    let coPlan = chooseNominationPlan(coHoh, house, rng);
+    let coNominees = [...new Set(coPlan.nominees)]
+      .filter(name => house.includes(name) && !ineligible.has(name)).slice(0, 2);
+    // Nobody can sit on both blocks, and the pool can run thin, so the second
+    // pair is topped up the same way a replacement is chosen.
+    while (coNominees.length < 2) {
+      const extra = chooseReplacement(coHoh, house, [...ineligible, ...coNominees], coPlan, rng);
+      if (!extra || coNominees.includes(extra) || ineligible.has(extra)) break;
+      coNominees.push(extra);
+    }
+    if (coNominees.length === 2) {
+      coNominees.forEach(name => gs.bb.stats[name].timesNominated++);
+      week.coNominees = [...coNominees];
+      week.acts.push(addBeats({ type: 'nominations', nominees: [...coNominees],
+        target: coPlan.target, pawn: coPlan.pawn, backdoorTarget: coPlan.backdoorTarget,
+        structure: coPlan.structure || 'target-pawn', structureWhy: coPlan.structureWhy || '',
+        byCoHoh: true, hoh: coHoh, brokenPromises: [], pawnAsk: null },
+        { nominees: [...coNominees] }));
+
+      // ── the competition ──
+      //
+      // Four nominees, two pairs, and the pair is the unit that wins. The
+      // dispatcher scores individuals, so the pair's result is its members'
+      // average — a partner who cannot play is a partner who costs you the
+      // week, which is the whole social cruelty of the format.
+      const four = [...nominees, ...coNominees];
+      const botbComp = runBBCompetition({
+        type: 'arena', participants: four, excluded: house.filter(n => !four.includes(n)),
+        house, week, rng, library: competitionLibrary,
+        forcedId: options.forcedCompetitions?.botb, seed: options.seed,
+        haveNots: week.haveNots || [],
+      });
+      // The arena library is written for the Block Buster, where ONE nominee
+      // comes off the block alone, so its closing beats announce each player's
+      // fate individually — "Axel stays nominated" on a night Axel was saved by
+      // a partner. The pair result supersedes them, so they come off here
+      // rather than contradicting the screen and the transcript.
+      const TERMINAL = new Set(['STAYS NOMINATED', 'OFF THE BLOCK']);
+      botbComp.beats = (botbComp.beats || []).filter(b => !TERMINAL.has(b?.badgeText));
+
+      const avg = pair => pair.reduce((sum, n) => sum + (botbComp.scores[n] || 0), 0) / Math.max(1, pair.length);
+      const hohPairScore = avg(nominees);
+      const coPairScore = avg(coNominees);
+      const hohPairWins = hohPairScore >= coPairScore;
+
+      const savedPair = hohPairWins ? [...nominees] : [...coNominees];
+      const stuckPair = hohPairWins ? [...coNominees] : [...nominees];
+      const dethroned = hohPairWins ? hoh : coHoh;
+      const reigning = hohPairWins ? coHoh : hoh;
+
+      week.battleOfTheBlock = {
+        hohs: [hoh, coHoh], pairs: { [hoh]: [...nominees], [coHoh]: [...coNominees] },
+        scores: { [hoh]: Math.round(hohPairScore * 100) / 100, [coHoh]: Math.round(coPairScore * 100) / 100 },
+        saved: savedPair, stuck: stuckPair, dethroned, reigning,
+        competition: botbComp,
+      };
+      week.acts.push(addBeats({ type: 'battle-of-the-block',
+        hohs: [hoh, coHoh], pairs: { [hoh]: [...nominees], [coHoh]: [...coNominees] },
+        saved: savedPair, stuck: stuckPair, dethroned, reigning,
+        // What it cost, recorded rather than only applied — a bond delta is
+        // invisible against a pre-existing friendship, so the act carries the
+        // penalty itself for the transcript and the debug panel.
+        fallout: { savedToDethroned: -1.2, stuckToReigning: -0.8, dethronedPopularity: -2, savedPopularity: 2 },
+        winner: savedPair[0], competition: botbComp,
+        results: botbComp.placements.map(n => ({ name: n, score: botbComp.scores[n] })),
+      }, { nominees: [...stuckPair] }));
+
+      // ── what it costs ──
+      //
+      // Being dethroned is a public humiliation: the house watched somebody's
+      // own nominees take their power off them, and the pair who did it walk
+      // away safe. None of that is cosmetic.
+      for (const name of savedPair) {
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[name] = (gs.popularity[name] || 0) + 2;
+        gs.bb.competitionMemories ||= {};
+        (gs.bb.competitionMemories[name] ||= []).push({
+          type: 'botb-saved', competitionId: botbComp.id, week: week.num,
+          detail: { dethroned, partner: savedPair.find(x => x !== name) || null },
+        });
+        // You do not forgive the person who put you up just because you got
+        // yourself down again.
+        try { addBond(name, dethroned, -1.2); } catch { /* no bond, no fallout */ }
+      }
+      gs.popularity[dethroned] = (gs.popularity[dethroned] || 0) - 2;
+      (gs.bb.competitionMemories[dethroned] ||= []).push({
+        type: 'botb-dethroned', competitionId: botbComp.id, week: week.num,
+        detail: { by: [...savedPair], reigning },
+      });
+      // The pair still on the block know exactly who left them there.
+      for (const name of stuckPair) {
+        try { addBond(name, reigning, -0.8); } catch { /* no bond, no fallout */ }
+      }
+
+      // The week collapses back to one HOH and two nominees.
+      hoh = reigning;
+      week.hoh = reigning;
+      week.dethronedHoh = dethroned;
+      nominees = [...stuckPair];
+      week.initialNominees = [...stuckPair];
+      plan = hohPairWins ? coPlan : plan;
+      week.plan = plan;
+      gs.bb.stats[reigning].hohWins++;      // credited to the reign that survived
+      gs.bb.stats[dethroned].hohWins--;     // and taken back off the one that did not
+      setSpotlight({ hoh: reigning, nominees: [...stuckPair] });
+      revise('noms', { hoh: reigning, nominees: [...stuckPair] });
+    } else {
+      // Not enough of a house left to seat a second pair; the week runs normally.
+      week.botbActive = false;
+      week.coHoh = null;
+    }
+  }
 
   /**
    * Who a houseguest DECIDES did this to them, when nobody signed the work.

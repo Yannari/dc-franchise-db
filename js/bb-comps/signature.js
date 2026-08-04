@@ -469,7 +469,13 @@ export const pressureCooker = {
   types: ['hoh', 'tiebreaker', 'return'],
   weight: () => 1.3,
   desc: 'Houseguests are sealed in a glass box, each holding a button down with one hand. Lifting a thumb eliminates that player, and every elimination opens a mystery box — some hold prizes offered to the players still holding on, some hold punishments applied to everyone left inside. The last houseguest still on the button wins Head of Household.',
-  stats: { endurance: 0.38, temperament: 0.30, boldness: 0.16, physical: 0.16 },
+  // Two abilities live in this competition and they were being mixed into one
+  // number. The MAIN score is only ever "can this houseguest keep holding" —
+  // endurance, the mental discipline to keep holding, and enough physical to
+  // stand there with a thumb down. Boldness belongs to the other question, and
+  // it now lives entirely in the prize offer below, where it is actually
+  // deciding something.
+  stats: { endurance: 0.50, temperament: 0.35, physical: 0.15 },
   simulate(participants, context, api, rng) {
     const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
@@ -538,7 +544,17 @@ export const pressureCooker = {
         const prize = choose(rng, COOKER_PRIZES);
         const mark = inside[Math.floor(rng() * inside.length)];
         const p = pronouns(mark.name);
-        const greed = (stat(mark.name, 'boldness') * 0.5 + (10 - stat(mark.name, 'strategic')) * 0.35 + mark.drag * 0.8 + prize.pull) / 14;
+        // Taking the offer is a different question from holding on, and it is
+        // the one boldness answers. Low temperament belongs here too: coming
+        // off the button for a prize is an impulse, and the houseguest who
+        // cannot sit with a want is the one who takes it. Strategic pulls the
+        // other way — the cost of the room is obvious to anybody counting.
+        const temptation =
+          (stat(mark.name, 'boldness') * 0.25
+            + (10 - stat(mark.name, 'temperament')) * 0.35
+            + (10 - stat(mark.name, 'strategic')) * 0.25
+            + mark.drag * 0.15) + prize.pull;
+        const greed = temptation / 14;
         const takes = rng() < clamp(greed, 0.04, 0.62) && inside.length > 2;
         if (takes) {
           beats.push(beat(

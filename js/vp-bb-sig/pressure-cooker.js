@@ -435,7 +435,11 @@ function _css() {
   return `<style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Barlow+Condensed:wght@400;600;700&display=swap');
   .sigcooker .sgc-shell{--yolk:#f0c53a;--grease:#c9a23a;--steam:#b9b3a0;--scald:#ff7a2f;--go:#7fd97f;--stop:#ff4d4d;--ink:#efe6cb;
-    --wall:#151409;position:relative;max-width:1100px;margin:0 auto;padding:18px 20px 0;overflow:hidden;
+    /* clip, not hidden: overflow hidden makes this a scroll container, which
+       silently kills position sticky on the reveal controls inside it, and the
+       button scrolled away with the page instead of staying at the bottom.
+       (No backticks in here — this whole stylesheet is a template literal.) */
+    --wall:#151409;position:relative;max-width:1100px;margin:0 auto;padding:18px 20px 0;overflow:clip;
     font-family:'Barlow Condensed',sans-serif;color:var(--ink);
     background:linear-gradient(180deg,#1d1b0d 0%,#171509 42%,#100f07 100%);
     border:3px solid #3a3316;box-shadow:inset 0 0 90px rgba(0,0,0,0.75),0 14px 40px rgba(0,0,0,0.6)}

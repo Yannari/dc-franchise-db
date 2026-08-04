@@ -34,6 +34,44 @@ export const BB_POWER_DEFINITIONS = {
     useTiming: { public: 'veto-ceremony', secret: 'eviction-night' },
     windowWeeks: 2,
   },
+
+  // BB11. The holder stands up at the veto ceremony and takes the week off the
+  // Head of Household: up to two nominees come down and the holder names the
+  // replacements. Timed to the veto ceremony rather than the nomination one
+  // because the rule excludes the veto holder from being replaced INTO the
+  // block, which only means anything once there is a veto holder.
+  'coup-d-etat': {
+    id: 'coup-d-etat',
+    name: "The Coup d'État",
+    rules: { ceremonyAuthority: 'power-holder', mayReplace: 2 },
+    useTiming: 'veto-ceremony',
+    // Sat on for a fortnight, which is the whole tension: the house spends two
+    // weeks knowing it exists and not knowing who has it.
+    windowWeeks: 2,
+  },
+
+  // BB20. Preventative and narrow: it is spent BEFORE a ceremony is read out
+  // and it covers that ceremony only. Using it on nomination day does not stop
+  // the holder being named as a replacement at the veto ceremony, which is the
+  // detail that makes it a decision rather than a week of immunity.
+  'the-cloud': {
+    id: 'the-cloud',
+    name: 'The Cloud',
+    rules: { unnominatable: 'one-ceremony' },
+    useTiming: 'nominations',
+    windowWeeks: 8,
+  },
+
+  // BB20. Not immunity — a CHANCE. The holder, or somebody they name, gets a
+  // competition to come back with if they are evicted; losing it sends them
+  // out for good. Good through the first four evictions.
+  'bonus-life': {
+    id: 'bonus-life',
+    name: 'Bonus Life',
+    rules: { returnChance: true },
+    useTiming: 'eviction-night',
+    windowWeeks: 4,
+  },
 };
 
 function store() {

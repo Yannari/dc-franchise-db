@@ -1394,6 +1394,43 @@ export function simulateBBWeek(options = {}) {
   // first real distributor: what goes in the box is configuration, and the
   // canonical cargo (BB12) is the Diamond Power of Veto with a two-eviction
   // fuse.
+  // ── THE APP STORE: the audience hands out the powers ──
+  //
+  // The first distributor that is neither a competition nor a box. Nobody in
+  // the house can earn one of these, so the only currency is screen time —
+  // the audience votes for who it has been watching, which is popularity, and
+  // popularity in this game is built by being loud rather than by playing
+  // well. That is the twist: the powers land on the most WATCHED houseguests,
+  // not the best ones, and the house cannot work out who got them.
+  if (!compressed && twists.has('bb-app-store')) {
+    const shelf = ['the-cloud', 'bonus-life', 'coup-d-etat']
+      .filter(id => BB_POWER_DEFINITIONS[id]);
+    // Weighted by how much of the show a houseguest has been, with a floor so
+    // an invisible houseguest is a long shot rather than an impossibility.
+    const pool = house.map(name => ({
+      name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)),
+    }));
+    const winners = [];
+    for (const powerId of shelf) {
+      const live = pool.filter(c => !winners.some(w => w.name === c.name));
+      if (!live.length) break;
+      const total = live.reduce((sum, c) => sum + c.weight, 0);
+      let roll = rng() * total;
+      let picked = live[live.length - 1];
+      for (const c of live) { roll -= c.weight; if (roll <= 0) { picked = c; break; } }
+      grantPower(powerId, picked.name,
+        { week: week.num, visibility: 'holder-secret', source: 'bb-app-store' });
+      winners.push({ name: picked.name, powerId, power: BB_POWER_DEFINITIONS[powerId].name });
+    }
+    if (winners.length) {
+      week.appStore = { winners: winners.map(w => ({ ...w })) };
+      week.acts.push(addBeats({
+        type: 'app-store', secret: true, winners: winners.map(w => ({ ...w })),
+        shelf: shelf.map(id => BB_POWER_DEFINITIONS[id].name),
+      }, { players: winners.map(w => w.name) }));
+    }
+  }
+
   if (!compressed && twists.has('bb-pandoras-box')) {
     const prizeId = options.pandorasPrize || 'diamond-veto';
     const st = pStats(hoh);
@@ -1455,7 +1492,27 @@ export function simulateBBWeek(options = {}) {
   // other one on the block — which is not a nomination the format allows, and
   // which the draw had simply never produced until the competition library
   // grew and reshuffled it.
-  const untouchable = [hoh, week.botbActive ? coHoh : null].filter(Boolean);
+  // ── THE CLOUD ──
+  //
+  // Preventative and narrow. It is spent BEFORE the ceremony is read out and
+  // it covers that ceremony only, so the holder walks out of nominations safe
+  // and is still a legal replacement at the veto ceremony three days later.
+  // That is the whole decision in the power: spend it on the ceremony you can
+  // see, and hope the one you cannot see does not come for you.
+  const cloud = activePowerAt('nominations', week.num);
+  if (cloud && house.includes(cloud.holder) && cloud.holder !== hoh) {
+    usePower(cloud, week.num);
+    week.cloud = { holder: cloud.holder, visibility: cloud.visibility };
+    week.acts.push(addBeats({
+      type: 'power-played', powerId: 'the-cloud', holder: cloud.holder,
+      name: BB_POWER_DEFINITIONS['the-cloud'].name, timing: 'nominations',
+      secret: cloud.visibility === 'secret',
+      detail: `${cloud.holder} cannot be nominated at this ceremony. It does not cover the veto ceremony, `
+        + 'and everybody who can count knows that.',
+    }, { players: [cloud.holder] }));
+  }
+
+  const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder].filter(Boolean);
   let nominees = [...new Set(plan.nominees)]
     .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   while (nominees.length < 2) {
@@ -2009,6 +2066,64 @@ export function simulateBBWeek(options = {}) {
       const inst = activePowerAt('veto-ceremony', week.num);
       if (inst?.holder === vetoWinner) usePower(inst, week.num);
     }
+    // ── THE COUP D'ETAT ──
+    //
+    // The holder stands up when the ceremony is over and takes the week off
+    // the Head of Household: up to two nominees come down and the holder names
+    // who goes up instead. The two names it may not name are the Head of
+    // Household and the veto holder — the only two people in the room whose
+    // safety was earned rather than granted.
+    //
+    // It fires after the veto ceremony has settled the block because it
+    // OVERRULES that ceremony rather than taking part in it: the house has
+    // just watched the week resolve, and then it does not resolve.
+    const coup = (gs.bb?.powers || []).find(pw => pw.powerId === 'coup-d-etat'
+      && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
+      && house.includes(pw.holder));
+    if (coup) {
+      const protectedNow = [hoh, vetoWinner, coup.holder].filter(Boolean);
+      const eligible = house.filter(n => !protectedNow.includes(n));
+      if (eligible.length >= 2) {
+        usePower(coup, week.num);
+        const coupPlan = chooseNominationPlan(coup.holder, eligible, rng);
+        const named = [...new Set(coupPlan.nominees)]
+          .filter(n => eligible.includes(n)).slice(0, 2);
+        while (named.length < 2) {
+          const extra = chooseReplacement(coup.holder, house, [...protectedNow, ...named], coupPlan, rng);
+          if (!extra || named.includes(extra) || protectedNow.includes(extra)) break;
+          named.push(extra);
+        }
+        if (named.length === 2) {
+          const taken = nominees.filter(n => !named.includes(n));
+          nominees = [...named];
+          week.finalNominees = [...nominees];
+          week.coup = { holder: coup.holder, removed: taken, named: [...named],
+            visibility: coup.visibility };
+          nominees.forEach(name => gs.bb.stats[name].timesNominated++);
+          setSpotlight({ nominees: [...nominees] });
+          week.acts.push(addBeats({
+            type: 'power-played', powerId: 'coup-d-etat', holder: coup.holder,
+            name: BB_POWER_DEFINITIONS['coup-d-etat'].name, timing: 'veto-ceremony',
+            secret: false, removed: [...taken], nominees: [...named],
+            detail: `${coup.holder} takes ${taken.join(' and ')} off the block and puts up `
+              + `${named.join(' and ')}. ${hoh} watches a week of work come apart from a chair `
+              + 'nobody can put them in.',
+          }, { nominees: [...named], players: [coup.holder] }));
+          // Overruling somebody in public is not free, and the two people just
+          // put up did not have a week that ended this way an hour ago.
+          try { addBond(hoh, coup.holder, -2.4); } catch { /* no bond, no fallout */ }
+          for (const name of named) {
+            try { addBond(name, coup.holder, -1.8); } catch { /* no bond */ }
+          }
+          for (const name of taken) {
+            try { addBond(name, coup.holder, 2.2); } catch { /* no bond */ }
+          }
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[coup.holder] = (gs.popularity[coup.holder] || 0) + 4;
+        }
+      }
+    }
+
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority, anonymous: hohSecret && !diamond,

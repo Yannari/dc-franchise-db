@@ -117,6 +117,25 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody in this room is about to run the week without wearing the key.',
     },
   },
+  'bb-app-store': {
+    id: 'bb-app-store', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB20's shape, and the route those powers actually took: the house does
+    // not compete for these and cannot earn them. The audience decides, and
+    // the only thing that moves an audience is who they have been watching.
+    //
+    // No rules delta — a distributor changes who is holding what, not how the
+    // week is played. What the powers DO lives in powers.js, which is the
+    // whole point of keeping the two apart: the Cloud is the same Cloud
+    // whether a box, a competition or a country handed it over.
+    rules: {},
+    acquisition: { channel: 'audience', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The App Store',
+      rule: 'Three powers are on the shelf this week and nobody in this house can win one. The audience votes, the winners are told in private, and the house is told only that somebody out there now has something.',
+      sting: 'Every houseguest in this room is about to start being nice to the cameras.',
+    },
+  },
   'bb-roadkill': {
     id: 'bb-roadkill', layer: 'scheduled', category: 'nomination-power',
     timing: 'nominations', duration: { weeks: 1 },

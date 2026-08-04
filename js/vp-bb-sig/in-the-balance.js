@@ -1,19 +1,24 @@
 // ══════════════════════════════════════════════════════════════════════
-// vp-bb-sig/in-the-balance.js — "The Pivot"
+// vp-bb-sig/in-the-balance.js — "The Rig"
 //
 // The themed screen for js/bb-comps/classics.js → In The Balance
 // (`variant: 'balance'`).
 //
-// One board on one pivot with a ball in a channel, and a pivot that is loosened
-// at intervals whether anybody is ready or not. So the instrument is the BOARD
-// ITSELF, drawn per houseguest and tilted by how far into the loosenings they
-// got — the later stages lean harder, and the ball sits where their run ended:
-// in the scoring zone if they were still holding it, off the end if they were
-// not.
+// A scaffold in the yard: a long board on a steel fulcrum, a heavy ball in a
+// channel running its length, and a crew loosening the pivot on a schedule
+// whether anybody is ready or not.
 //
-// The stage ladder runs down the side as six notches that light one at a time,
-// which is the only clock this competition has. Declines when the stage data
-// is missing.
+// Every run is a BAY of that scaffold, drawn as a side elevation — upright
+// posts, a bolted cross-brace, the board tipped by however far into the
+// loosenings they got, and the ball sitting where their run ended: in the
+// scoring zone if they still had it, run off the low end if they did not. The
+// loosening schedule is a column of collars down the upright, stamped off one
+// at a time, so a run's height on the post IS its time.
+//
+// Steel grey and hazard yellow, with a scaffold-tape header. Nothing soft, no
+// cards, no serif — the whole screen is site equipment.
+//
+// Declines when the stage data is missing.
 // ══════════════════════════════════════════════════════════════════════
 
 import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
@@ -36,9 +41,8 @@ export function rpBuildSigInTheBalance(ep, actType, u = {}) {
 
   const E = v => (typeof u.esc === 'function' ? u.esc(v) : String(v ?? ''));
   const AV = (n, px) => (typeof u.avatar === 'function' ? u.avatar(n, px) : '');
-  const ORD = n => (typeof u.ordinal === 'function' ? u.ordinal(n) : String(n));
-  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PRECISION', accent: '#7aa7ff' };
-  const accent = '#8ab4ff';                        // cold rig light on a steel pivot
+  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PRECISION', accent: '#ffc531' };
+  const HAZARD = '#ffc531';
   const isHoh = actType === 'hoh';
 
   const stateKey = `bb_sig_bal_${ep.num}_${actType}${ep?._seg ? `_s${ep._seg}` : ''}`;
@@ -50,17 +54,17 @@ export function rpBuildSigInTheBalance(ep, actType, u = {}) {
     pool[Math.abs((Number(ep?.num) || 0) * 31 + salt * 17 + pool.length) % pool.length];
 
   const RUN_FLAV = [
-    'The pivot does not care whether anybody is ready for the next loosening.',
+    'The crew loosens the pivot whether anybody is ready for it or not.',
     'Standing still is work. It only looks like the absence of work.',
     'The zone is four inches wide and the channel is the length of the board.',
     'Nobody has ever lost this quickly. Everybody loses it eventually.',
-    'Correcting is the thing that ends most runs. Not correcting ends the rest.',
+    'Correcting ends most runs. Not correcting ends the rest.',
   ];
   const WIN_FLAV = [
-    'The boards get locked off. Several people are still shaking out their calves.',
-    'A competition won by not doing anything, extremely well, for a long time.',
-    'The ball gets lifted out of the channel by hand. It is the only easy thing all night.',
-    'Nobody out-balanced anybody by much. One person just twitched last.',
+    'The boards get bolted off. Several people are still shaking out their calves.',
+    'Won by not doing anything, extremely well, for a long time.',
+    'The ball gets lifted out of the channel by hand — the only easy thing all night.',
+    'Nobody out-balanced anybody by much. One person twitched last.',
   ];
 
   // ── steps ────────────────────────────────────────────────────────────
@@ -96,59 +100,36 @@ export function rpBuildSigInTheBalance(ep, actType, u = {}) {
     .map(s => ({ name: s.name, ...breakdown[s.name] }))
     .sort((a, b) => (b.seconds ?? -1) - (a.seconds ?? -1));
 
-  /** The board itself, tilted by how far the pivot got loosened under them. */
-  const boardFor = bd => {
+  /** A bay of the scaffold: posts, brace, tipped board, ball where it ended. */
+  const bay = bd => {
     const stage = Math.max(0, Math.min(STAGES, bd.stage || 0));
-    const tilt = sealed ? 0 : (stage >= STAGES ? 0 : 2 + stage * 2.2);
-    // Where the ball finished: centred if they were still holding the zone,
-    // run off the low end if the board got away from them.
     const held = stage >= 5;
-    const pos = sealed ? 50 : held ? 50 : Math.min(94, 50 + stage * 7 + 12);
-    return `<div class="bal-rig">
-      <div class="bal-board" style="transform:rotate(${tilt}deg)">
-        <span class="bal-zone"></span>
-        <span class="bal-ball ${held ? 'is-held' : 'is-gone'}" style="left:${pos}%"></span>
-      </div>
-      <span class="bal-fulcrum" aria-hidden="true"></span>
+    const tilt = sealed ? 0 : (held ? 0 : 2.4 + stage * 2.3);
+    const pos = sealed ? 50 : held ? 50 : Math.min(95, 52 + stage * 7 + 10);
+    return `<div class="bal-bay">
+      <span class="bal-post" aria-hidden="true">
+        ${Array.from({ length: STAGES }, (_, k) =>
+    `<i class="${!sealed && k < stage ? 'is-off' : ''}"></i>`).join('')}
+      </span>
+      <span class="bal-deck" aria-hidden="true">
+        <span class="bal-beam" style="transform:rotate(${tilt}deg)">
+          <em class="bal-zone"></em>
+          <em class="bal-ball ${held ? 'is-held' : 'is-lost'}" style="left:${pos}%"></em>
+        </span>
+        <span class="bal-fulcrum"></span>
+        <span class="bal-brace"></span>
+      </span>
     </div>`;
   };
 
-  /** Six notches — the only clock this competition has. */
-  const ladder = bd => `<span class="bal-ladder" aria-hidden="true">
-    ${Array.from({ length: STAGES }, (_, k) =>
-    `<i class="${!sealed && k < (bd.stage || 0) ? 'is-past' : ''} ${!sealed && k === (bd.stage || 0) ? 'is-here' : ''}"></i>`).join('')}
-  </span>`;
-
-  const strip = `<div class="bal-strip">
-    <div><span class="bal-k">BOARDS DOWN</span><span class="bal-v"><b>${shown.length}</b><i>/ ${fieldSize}</i></span></div>
-    <div><span class="bal-k">LONGEST HOLD</span><span class="bal-v"><b>${
-  sealed ? MASK : (shown.length ? `${Math.round(shown[0].seconds)}s` : '—')}</b></span></div>
-    <div class="bal-strip-r"><span class="bal-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
-      <span class="bal-v bal-v-txt">${sealed
-    ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
-    : done && winner
-      ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-      : shown.length ? E(shown[0].name) : 'PIVOTS LOCKED'}</span></div>
-  </div>`;
-
-  const boardHtml = sealed ? '' : `<aside class="bal-side">
-    <div class="bal-side-h"><span class="bal-k">TIME IN THE ZONE</span></div>
-    ${shown.length ? shown.map((r, i) => `<div class="bal-side-row ${i === 0 ? 'is-lead' : ''}">
-      <span class="bal-side-p">${ORD(i + 1)}</span>
-      <span>${AV(r.name, 24)}</span>
-      <span class="bal-side-n">${E(r.name)}</span>
-      <span class="bal-side-t">${Math.round(r.seconds)}s</span>
-    </div>`).join('') : '<p class="bal-side-e">Nobody has stepped on yet.</p>'}
-  </aside>`;
-
   const cards = steps.map((s, i) => {
-    if (i > state.idx) return '<div class="bal-card is-locked"><span class="bal-lock">&#9679; &#9679; &#9679;</span></div>';
+    if (i > state.idx) return '<div class="bal-slot is-shut"><span class="bal-shut">BAY CLOSED</span></div>';
 
     if (s.kind === 'open') {
-      return `<article class="bal-card bal-open">
-        <header class="bal-hd"><span class="bal-tag">${E(s.beat.badgeText || 'THE BOARD')}</span>
-          <span class="bal-sub">${fieldSize} on the pivots</span></header>
+      return `<article class="bal-slot bal-notice">
+        <span class="bal-noticek">${E(s.beat.badgeText || 'THE BOARD')}</span>
         <p class="bal-body">${E(s.beat.text)}</p>
+        <span class="bal-crew">${fieldSize} ON THE PIVOTS</span>
       </article>`;
     }
     if (s.kind === 'cut') {
@@ -159,193 +140,168 @@ export function rpBuildSigInTheBalance(ep, actType, u = {}) {
 
     if (s.kind === 'win') {
       const w = breakdown[winner] || {};
-      return `<article class="bal-card bal-win">
-        <header class="bal-hd"><span class="bal-tag bal-tag-gold">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</span>
-          <span class="bal-sub">last to lose the ball</span></header>
-        <div class="bal-win-b">
-          <figure class="bal-win-av">${AV(winner, 72)}</figure>
-          <div><div class="bal-win-n">${E(winner)}</div>
-            <p class="bal-body">${E(winner)} held the zone for ${sealed ? MASK : `${Math.round(w.seconds || 0)} seconds`}, through ${
-  sealed ? MASK : (w.stage || 0)} of the ${STAGES} loosenings.</p></div>
-        </div>
+      return `<article class="bal-slot bal-won">
+        <div class="bal-id">${AV(winner, 50)}<span><b>${E(winner)}</b>
+          <em>${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</em></span></div>
+        <p class="bal-body">${E(winner)} held the zone for ${sealed ? MASK : `${Math.round(w.seconds || 0)} seconds`},
+          through ${sealed ? MASK : (w.stage || 0)} of the ${STAGES} loosenings.</p>
         <p class="bal-flav">${E(flav(WIN_FLAV, i))}</p>
       </article>`;
     }
     if (s.kind === 'margin' || s.kind === 'note') {
-      return `<article class="bal-card bal-note">
-        <header class="bal-hd"><span class="bal-tag bal-tag-quiet">${E(s.beat.badgeText || '')}</span></header>
+      return `<article class="bal-slot bal-notice">
+        <span class="bal-noticek">${E(s.beat.badgeText || '')}</span>
         <p class="bal-body">${E(s.beat.text)}</p>
       </article>`;
     }
 
     const bd = breakdown[s.name] || {};
-    return `<article class="bal-card bal-run ${bd.threw ? 'is-threw' : ''}">
-      <header class="bal-hd">
-        <span class="bal-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
-        <span class="bal-tag ${bd.threw ? 'bal-tag-quiet' : ''}">${sealed ? MASK : E(s.beat.badgeText || '')}</span>
-      </header>
+    return `<article class="bal-slot bal-run ${bd.threw ? 'is-threw' : ''}">
+      <div class="bal-id">${AV(s.name, 38)}<span><b>${E(s.name)}</b>
+        <em>${sealed ? MASK : E(s.beat.badgeText || '')}</em></span></div>
+      ${bay(bd)}
+      <div class="bal-read">
+        <span class="bal-clock">${sealed ? MASK : `${Math.round(bd.seconds || 0)}s`}</span>
+        <span class="bal-stage">${sealed ? MASK : `${bd.stage || 0}/${STAGES}`} LOOSENINGS</span>
+        ${bd.haveNot ? '<span class="bal-hn">HAVE-NOT</span>' : ''}
+      </div>
       <p class="bal-body">${E(s.beat.text)}</p>
-
-      <div class="bal-instrument">
-        ${ladder(bd)}
-        ${boardFor(bd)}
-      </div>
-
-      <div class="bal-nums">
-        <span><i>IN THE ZONE</i><b>${sealed ? MASK : `${Math.round(bd.seconds || 0)}s`}</b></span>
-        <span><i>LOOSENINGS</i><b>${sealed ? MASK : `${bd.stage || 0}/${STAGES}`}</b></span>
-        ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
-      </div>
       <p class="bal-flav">${E(flav(RUN_FLAV, i))}</p>
     </article>`;
   }).join('');
 
   const weights = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
 
-  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigbal">
+  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigrig">
   <style>
-  .sigbal{--bl-ink:#e9eef8;--bl-dim:#7d879b;--bl-line:rgba(138,180,255,.22);
-    max-width:1100px;margin:0 auto;color:var(--bl-ink);
-    font-family:Inter,system-ui,-apple-system,sans-serif;
-    background:linear-gradient(180deg,#101520,#080a10 82%);
-    border-radius:12px;padding:16px 14px 0;position:relative;overflow:clip}
-  .bal-eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3.4px;
-    color:var(--bl-dim);text-align:center}
-  .bal-title{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:28px;letter-spacing:6px;
-    text-align:center;color:#d7e4ff;text-shadow:0 0 20px rgba(138,180,255,.4);margin:3px 0 2px}
-  .bal-tagline{text-align:center;font-size:11px;letter-spacing:2px;color:var(--bl-dim);margin-bottom:13px}
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500&display=swap');
+  .sigrig{--rg2-steel:#8f9aa4;--rg2-dark:#4a545c;--rg2-haz:${HAZARD};--rg2-dim:#6d7880;
+    max-width:1100px;margin:0 auto;color:#dfe6ec;font-family:Inter,system-ui,sans-serif;
+    background:linear-gradient(180deg,#20262b,#12171a 84%);
+    padding:0;position:relative;overflow:clip}
 
-  .bal-what{border:1px solid var(--bl-line);border-radius:10px;padding:10px 12px;margin-bottom:12px;
-    background:rgba(138,180,255,.05)}
-  .bal-what-h{display:flex;align-items:center;gap:9px;margin-bottom:5px}
-  .bal-what-c{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:2px;
-    color:${accent};border:1px solid var(--bl-line);border-radius:3px;padding:2px 7px}
-  .bal-what-h b{font-size:14px;letter-spacing:1px}
-  .bal-what-d{font-size:12.5px;line-height:1.6;color:#c2cbdd;margin:0}
-  .bal-w{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
-  .bal-w span{display:flex;align-items:center;gap:5px;font-family:ui-monospace,Consolas,monospace;
-    font-size:8px;letter-spacing:1.2px;color:var(--bl-dim)}
-  .bal-w s{display:block;width:44px;height:3px;border-radius:2px;background:rgba(138,180,255,.16);
-    text-decoration:none}
-  .bal-w s b{display:block;height:100%;border-radius:2px;background:${accent}}
+  /* scaffold tape across the top */
+  .rig-tape{height:14px;background:repeating-linear-gradient(45deg,
+    var(--rg2-haz) 0 14px,#20262b 14px 28px)}
+  .rig-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:13px 16px 11px;border-bottom:2px solid var(--rg2-dark)}
+  .rig-week{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2.8px;color:var(--rg2-dim)}
+  .rig-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:37px;line-height:1;
+    letter-spacing:1.4px;text-transform:uppercase;color:#eef4f8;margin:1px 0 0}
+  .rig-plate{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;
+    color:#1b2024;background:var(--rg2-haz);padding:4px 10px;text-align:right}
+  .rig-sealed{margin-top:8px;display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:11px;
+    letter-spacing:2.4px;color:#1b2024;background:var(--rg2-haz);padding:2px 11px}
 
-  .bal-strip{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:10px;padding:9px 11px;margin-bottom:12px;
-    border:1px solid var(--bl-line);border-radius:10px;background:rgba(8,10,16,.62)}
-  .bal-k{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;
-    color:var(--bl-dim)}
-  .bal-v{display:block;margin-top:3px}
-  .bal-v b{font-family:ui-monospace,Consolas,monospace;font-size:17px;color:#d7e4ff}
-  .bal-v i{font-style:normal;font-size:10px;color:var(--bl-dim);margin-left:4px}
-  .bal-v-txt{font-size:12px;color:${accent};letter-spacing:1.2px}
-  .bal-strip-r{border-left:1px solid var(--bl-line);padding-left:11px}
+  .rig-body{padding:12px 16px 0}
+  .bal-spec{border:1px solid var(--rg2-dark);border-left:4px solid var(--rg2-haz);padding:9px 12px;
+    margin-bottom:12px;background:rgba(143,154,164,.07)}
+  .bal-spec b{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;
+    text-transform:uppercase;color:#eef4f8}
+  .bal-spec-c{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;
+    color:var(--rg2-haz);margin-right:8px}
+  .bal-spec-d{font-size:12.5px;line-height:1.6;color:#b9c4cc;margin:5px 0 0}
+  .bal-w{display:flex;flex-wrap:wrap;gap:11px;margin-top:8px}
+  .bal-w span{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1px;
+    color:var(--rg2-dim);display:flex;align-items:center;gap:5px}
+  .bal-w s{display:block;width:38px;height:6px;background:rgba(143,154,164,.18);text-decoration:none}
+  .bal-w s b{display:block;height:100%;background:var(--rg2-haz)}
 
-  .bal-grid{display:grid;grid-template-columns:1fr 236px;gap:12px;align-items:start}
-  .bal-grid-sealed{display:block}
-  .bal-side{position:sticky;top:56px;border:1px solid var(--bl-line);border-radius:10px;padding:9px;
-    background:rgba(8,10,16,.72)}
-  .bal-side-h{margin-bottom:7px}
-  .bal-side-row{display:grid;grid-template-columns:22px 24px 1fr auto;align-items:center;gap:7px;
-    padding:4px 5px;border-radius:6px;font-size:11.5px}
-  .bal-side-row.is-lead{background:rgba(138,180,255,.12)}
-  .bal-side-p{font-family:ui-monospace,Consolas,monospace;font-size:9px;color:var(--bl-dim)}
-  .bal-side-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .bal-side-t{font-family:ui-monospace,Consolas,monospace;color:#d7e4ff}
-  .bal-side-e{font-size:11px;color:var(--bl-dim);margin:0}
+  /* each run is a bay of the scaffold */
+  .bal-slot{position:relative;padding:11px 13px;margin-bottom:10px;
+    border:1px solid var(--rg2-dark);background:rgba(143,154,164,.05);
+    animation:rigSet .28s ease both}
+  @keyframes rigSet{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .bal-slot.is-shut{border-style:dashed;opacity:.2;text-align:center;animation:none}
+  .bal-shut{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:3px;color:var(--rg2-dim)}
+  .bal-slot.is-threw{opacity:.68}
+  .bal-id{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .bal-id .bb-av{border-radius:0;border:2px solid var(--rg2-steel)}
+  .bal-id b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;
+    letter-spacing:.6px;color:#eef4f8}
+  .bal-id em{font-style:normal;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1.8px;
+    color:var(--rg2-haz)}
+  .bal-body{font-size:13.5px;line-height:1.62;margin:0;color:#dbe4ea}
+  .bal-flav{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.5px;
+    color:var(--rg2-dim);margin:7px 0 0}
+  .bal-notice{border-left:4px solid var(--rg2-steel)}
+  .bal-noticek{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:10px;
+    letter-spacing:2.2px;color:var(--rg2-haz);margin-bottom:5px}
+  .bal-crew{display:block;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:10px;
+    letter-spacing:2px;color:var(--rg2-dim)}
 
-  .bal-card{border:1px solid var(--bl-line);border-radius:10px;padding:11px 12px;margin-bottom:9px;
-    background:linear-gradient(180deg,rgba(22,30,46,.72),rgba(7,9,14,.82));animation:balIn .3s ease both}
-  @keyframes balIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-  .bal-card.is-locked{opacity:.12;text-align:center;padding:7px;animation:none;background:none}
-  .bal-lock{font-family:ui-monospace,Consolas,monospace;letter-spacing:5px;color:var(--bl-dim)}
-  .bal-card.is-threw{opacity:.72;border-style:dashed}
-  .bal-hd{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:7px}
-  .bal-runner{display:flex;align-items:center;gap:8px}
-  .bal-runner b{font-size:13px;letter-spacing:.6px}
-  .bal-tag{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;color:${accent};
-    border:1px solid var(--bl-line);background:rgba(138,180,255,.1);padding:2px 8px;border-radius:3px}
-  .bal-tag-gold{color:#ffd970;border-color:rgba(255,217,112,.45);background:rgba(255,217,112,.1)}
-  .bal-tag-quiet{color:var(--bl-dim);background:none}
-  .bal-sub{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.4px;color:var(--bl-dim)}
-  .bal-body{font-size:13.5px;line-height:1.65;margin:0}
-  .bal-flav{font-size:10.5px;color:var(--bl-dim);font-style:italic;margin:7px 0 0}
-
-  /* the rig: notch ladder, then the board on its pivot */
-  .bal-instrument{display:flex;align-items:center;gap:14px;margin:12px 0 8px;padding:10px 12px 14px;
-    border-radius:9px;background:rgba(6,8,13,.6);border:1px solid rgba(138,180,255,.13)}
-  .bal-ladder{display:flex;flex-direction:column;gap:4px;flex:none}
-  .bal-ladder i{width:14px;height:3px;border-radius:2px;background:rgba(138,180,255,.16);
-    transition:background .3s,box-shadow .3s}
-  .bal-ladder i.is-past{background:rgba(138,180,255,.6)}
-  .bal-ladder i.is-here{background:#ffd970;box-shadow:0 0 9px rgba(255,217,112,.6)}
-  .bal-rig{position:relative;flex:1;min-width:0;height:34px}
-  .bal-board{position:absolute;left:0;right:0;top:11px;height:9px;border-radius:5px;
-    background:linear-gradient(180deg,rgba(190,206,235,.8),rgba(120,138,170,.6));
+  /* the bay: loosening post beside a tipped board on a fulcrum */
+  .bal-bay{display:flex;align-items:stretch;gap:12px;margin:4px 0 9px;padding:10px 12px 16px;
+    background:repeating-linear-gradient(90deg,rgba(143,154,164,.05) 0 3px,transparent 3px 9px),
+      rgba(18,23,26,.6);border:1px solid rgba(143,154,164,.18)}
+  .bal-post{flex:none;width:16px;display:flex;flex-direction:column-reverse;justify-content:flex-start;
+    gap:4px;padding:2px;background:linear-gradient(90deg,var(--rg2-dark),#39424a)}
+  .bal-post i{height:6px;background:var(--rg2-steel);transition:background .35s}
+  .bal-post i.is-off{background:var(--rg2-haz);box-shadow:0 0 8px rgba(255,197,49,.55)}
+  .bal-deck{position:relative;flex:1;min-height:52px}
+  .bal-beam{position:absolute;left:0;right:0;top:16px;height:10px;
+    background:linear-gradient(180deg,var(--rg2-steel),var(--rg2-dark));
     transform-origin:50% 50%;transition:transform .45s ease}
-  .bal-zone{position:absolute;left:44%;width:12%;top:-3px;bottom:-3px;border-radius:4px;
-    border:1px solid rgba(138,180,255,.6);background:rgba(138,180,255,.16)}
-  .bal-ball{position:absolute;top:-4px;width:15px;height:15px;border-radius:50%;
+  .bal-zone{position:absolute;left:45%;width:10%;top:-3px;bottom:-3px;
+    border:1px solid var(--rg2-haz);background:rgba(255,197,49,.18)}
+  .bal-ball{position:absolute;top:-5px;width:16px;height:16px;border-radius:50%;
     transform:translateX(-50%);transition:left .5s ease}
-  .bal-ball.is-held{background:#ffd970;box-shadow:0 0 12px rgba(255,217,112,.7)}
-  .bal-ball.is-gone{background:#8f9bb3}
-  .bal-fulcrum{position:absolute;left:50%;top:20px;width:0;height:0;transform:translateX(-50%);
-    border-left:9px solid transparent;border-right:9px solid transparent;
-    border-bottom:14px solid rgba(138,180,255,.45)}
+  .bal-ball.is-held{background:var(--rg2-haz);box-shadow:0 0 13px rgba(255,197,49,.7)}
+  .bal-ball.is-lost{background:#5d666e;box-shadow:none}
+  .bal-fulcrum{position:absolute;left:50%;top:26px;width:0;height:0;transform:translateX(-50%);
+    border-left:11px solid transparent;border-right:11px solid transparent;
+    border-bottom:17px solid var(--rg2-steel)}
+  .bal-brace{position:absolute;left:6%;right:6%;bottom:0;height:3px;background:var(--rg2-dark)}
 
-  .bal-nums{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
-  .bal-nums span{display:flex;flex-direction:column;gap:2px}
-  .bal-nums i{font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
-    letter-spacing:1.4px;color:var(--bl-dim)}
-  .bal-nums b{font-family:ui-monospace,Consolas,monospace;font-size:14px;color:#d7e4ff}
+  .bal-read{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .bal-clock{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;color:var(--rg2-haz)}
+  .bal-stage,.bal-hn{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1.8px;
+    color:var(--rg2-dim)}
+  .bal-hn{color:#1b2024;background:var(--rg2-steel);padding:1px 7px}
+  .bal-won{border-left:4px solid var(--rg2-haz);background:rgba(255,197,49,.09)}
 
-  .bal-win{border-color:rgba(255,217,112,.45);background:linear-gradient(180deg,rgba(52,46,18,.45),rgba(7,9,14,.86))}
-  .bal-win-b{display:flex;gap:13px;align-items:flex-start}
-  .bal-win-av .bb-av{border-radius:9px;border:2px solid rgba(255,217,112,.6)}
-  .bal-win-n{font-family:ui-monospace,Consolas,monospace;font-size:16px;letter-spacing:2px;color:#ffd970;
-    margin-bottom:4px}
+  .bal-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:9px;justify-content:center;align-items:center;
+    padding:11px;background:linear-gradient(180deg,rgba(18,23,26,0),rgba(18,23,26,.97) 45%);
+    border-top:2px solid var(--rg2-dark)}
+  .bal-count,.bal-done{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+    color:var(--rg2-dim)}
+  .bal-done{color:var(--rg2-haz)}
 
-  .bal-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:8px;justify-content:center;align-items:center;
-    padding:10px;margin:6px -14px 0;background:linear-gradient(180deg,rgba(8,10,16,0),rgba(8,10,16,.96) 40%)}
-  .bal-count,.bal-done{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:2px;
-    color:var(--bl-dim)}
-  .bal-done{color:${accent}}
-
-  ${sealCss('bal', accent)}
-  @media(max-width:860px){.bal-grid{grid-template-columns:1fr}.bal-side{position:static;order:-1}}
-  @media(max-width:700px){
-    .bal-strip{grid-template-columns:1fr 1fr}
-    .bal-strip-r{grid-column:1/-1;border-left:0;border-top:1px solid var(--bl-line);padding:6px 0 0}
-    .bal-title{font-size:21px;letter-spacing:4px}
-  }
+  ${sealCss('bal', HAZARD)}
+  @media(max-width:700px){.rig-name{font-size:26px}}
   @media(prefers-reduced-motion:reduce){
-    .sigbal *,.sigbal *::before,.sigbal *::after{animation:none!important;transition:none!important}
-    .bal-board{transform:none!important}
+    .sigrig *,.sigrig *::before,.sigrig *::after{animation:none!important;transition:none!important}
+    .bal-beam{transform:none!important}
   }
   </style>
 
-  <div class="bal-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
-  <div class="bal-title">${E((comp.name || 'IN THE BALANCE').toUpperCase())}</div>
-  <div class="bal-tagline">one board &middot; one ball &middot; a pivot that keeps loosening</div>
-
-  <div class="bal-what">
-    <div class="bal-what-h"><span class="bal-what-c">${E(cat.label)}</span><b>${E(comp.name || 'In The Balance')}</b></div>
-    ${comp.desc ? `<p class="bal-what-d">${E(comp.desc)}</p>` : ''}
-    ${weights.length ? `<div class="bal-w">${weights.map(([k, w]) =>
-    `<span>${E(k)}<s><b style="width:${Math.round(w * 100)}%"></b></s>${Math.round(w * 100)}%</span>`).join('')}</div>` : ''}
-    ${(comp.excluded || []).filter(Boolean).length ? `<p class="bal-what-d">Sat out: ${
-  (comp.excluded || []).filter(Boolean).map(E).join(', ')}${
-  isHoh && act.outgoingHoh ? ` &middot; ${E(act.outgoingHoh)} cannot defend the room` : ''}</p>` : ''}
+  <div class="rig-tape" aria-hidden="true"></div>
+  <div class="rig-head">
+    <div>
+      <div class="rig-week">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
+      <div class="rig-name">${E((comp.name || 'IN THE BALANCE').toUpperCase())}</div>
+      ${sealed ? `<div class="rig-sealed">RESULT SEALED${done ? ' — THE HOUSE NEVER FINDS OUT' : ''}</div>` : ''}
+    </div>
+    <div class="rig-plate">ONE BOARD &middot; ONE BALL<br>PIVOT LOOSENED &times;${STAGES}</div>
   </div>
 
-  ${strip}
-  <div class="${sealed ? 'bal-grid-sealed' : 'bal-grid'}">
-    <div>${cards}</div>
-    ${boardHtml}
+  <div class="rig-body">
+    <div class="bal-spec">
+      <span class="bal-spec-c">${E(cat.label)}</span><b>${E(comp.name || 'In The Balance')}</b>
+      ${comp.desc ? `<p class="bal-spec-d">${E(comp.desc)}</p>` : ''}
+      ${weights.length ? `<div class="bal-w">${weights.map(([k, w]) =>
+    `<span>${E(k)}<s><b style="width:${Math.round(w * 100)}%"></b></s>${Math.round(w * 100)}%</span>`).join('')}</div>` : ''}
+      ${(comp.excluded || []).filter(Boolean).length ? `<p class="bal-spec-d">Sat out: ${
+  (comp.excluded || []).filter(Boolean).map(E).join(', ')}${
+  isHoh && act.outgoingHoh ? ` &middot; ${E(act.outgoingHoh)} cannot defend the room` : ''}</p>` : ''}
+    </div>
+    ${cards}
   </div>
 
   <div class="bal-ctrl">
-    ${done ? `<span class="bal-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE BOARDS ARE LOCKED OFF.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.bal-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
-  state.idx < 0 ? 'Loosen the pivot' : 'Next board'}</button>
+    ${done ? `<span class="bal-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE BOARDS ARE BOLTED OFF.'}</span>` : `
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.bal-slot:not(.is-shut)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
+  state.idx < 0 ? 'Loosen the pivot' : 'Open the next bay'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="bal-count">${Math.min(total, revealed)} / ${total}</span>
   </div>

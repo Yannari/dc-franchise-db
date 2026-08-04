@@ -534,6 +534,11 @@ export function simulateBBEpisode() {
     battleBackStyle: bbEntry?.bbStyle || 'gauntlet',
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
+    // What the audience is voting over. 'all' stocks the whole inventory; a
+    // power id stocks just that one, which is how a season books a specific
+    // power onto a specific week.
+    appStoreShelf: ((seasonConfig.twistSchedule || [])
+      .find(t => t && Number(t.episode) === epNum && t.type === 'bb-app-store')?.shelf) || undefined,
     doubleVote: twists.includes('bb-double-eviction') && deStyle === 'double-vote',
     // Season modes that put a third houseguest on the block every week.
     safetyMode: seasonConfig.bbSafetyMode || 'off',

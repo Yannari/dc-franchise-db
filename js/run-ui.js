@@ -1376,6 +1376,20 @@ export function renderTimeline() {
         prizeHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-app-store') {
+        // What goes ON the shelf. Same source as the box's cargo, so a power
+        // added to the inventory appears in both with no new UI — and the
+        // default stocks everything, which is the BB20 shape.
+        const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
+        const chosen = t.shelf || 'all';
+        let shelfHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','shelf',this.value)" onclick="event.stopPropagation()" title="What is on the shelf this week" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        shelfHtml += `<option value="all" ${chosen === 'all' ? 'selected' : ''}>Everything on the shelf</option>`;
+        Object.values(defs).forEach(d => {
+          shelfHtml += `<option value="${d.id}" ${d.id === chosen ? 'selected' : ''}>${d.name} only</option>`;
+        });
+        shelfHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${shelfHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'reward-twist-challenge') {
         const _rtcChallenges = TWIST_CATALOG.filter(c => c.category === 'challenge');
         const _rtcSelected = t.rewardEngine || '';
@@ -1676,6 +1690,7 @@ export function assignTwist(twistId) {
     const entry = { id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId };
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
+    if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);

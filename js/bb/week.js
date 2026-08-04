@@ -1403,8 +1403,13 @@ export function simulateBBWeek(options = {}) {
   // well. That is the twist: the powers land on the most WATCHED houseguests,
   // not the best ones, and the house cannot work out who got them.
   if (!compressed && twists.has('bb-app-store')) {
-    const shelf = ['the-cloud', 'bonus-life', 'coup-d-etat']
-      .filter(id => BB_POWER_DEFINITIONS[id]);
+    // What is on the shelf, from the Format Designer. The default stocks the
+    // whole inventory minus the Diamond Veto, which has its own distributors
+    // and would otherwise be handed out twice in a week that ran both.
+    const wanted = options.appStoreShelf || 'all';
+    const shelf = (wanted === 'all'
+      ? Object.keys(BB_POWER_DEFINITIONS).filter(id => id !== 'diamond-veto')
+      : [wanted]).filter(id => BB_POWER_DEFINITIONS[id]);
     // Weighted by how much of the show a houseguest has been, with a floor so
     // an invisible houseguest is a long shot rather than an impossibility.
     const pool = house.map(name => ({

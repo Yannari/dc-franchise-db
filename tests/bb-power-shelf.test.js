@@ -200,4 +200,31 @@ describe('The App Store', () => {
     expect(favouredWins / runs, 'screen time did not move the vote at all')
       .toBeGreaterThan(0.5);
   });
+
+  it('stocks the shelf the Format Designer asked for', () => {
+    // Booking a specific power onto a specific week is the reason the control
+    // exists: without it the audience votes over whatever happened to be in
+    // the registry, and adding a power silently changed every scheduled week.
+    house(['bb-app-store']);
+    seasonConfig.twistSchedule = [{ episode: 1, type: 'bb-app-store', shelf: 'the-cloud' }];
+    const ep = play(4242);
+    const act = actOf(ep, 'app-store');
+    expect(act, 'the app store never opened').toBeTruthy();
+    expect(act.shelf, 'the shelf was not the one that was booked')
+      .toEqual([BB_POWER_DEFINITIONS['the-cloud'].name]);
+    for (const w of act.winners) expect(w.powerId).toBe('the-cloud');
+  });
+
+  it('does not hand out a power that already has its own distributor', () => {
+    // The Diamond Veto arrives through the veto competition and through the
+    // box. If the default shelf carried it too, a week running both would give
+    // it away twice, and the second grant would sit unused behind the first.
+    house(['bb-app-store']);
+    const ep = play(77);
+    const act = actOf(ep, 'app-store');
+    expect(act, 'the app store never opened').toBeTruthy();
+    for (const w of act.winners) {
+      expect(w.powerId, 'the app store handed out the Diamond Veto').not.toBe('diamond-veto');
+    }
+  });
 });

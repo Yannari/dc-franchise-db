@@ -19,7 +19,7 @@ function weekFor(evictee = 'Vera') {
 describe('Big Brother eviction interview personalities', () => {
   beforeEach(() => {
     Object.assign(seasonConfig, defaultConfig(), {
-      format: 'big-brother', bbEvictionInterview: 'enabled', bbHost: 'Mara',
+      format: 'big-brother', bbEvictionInterview: 'enabled', host: 'Mara',
       bbHostStyle: 'balanced', jurySize: 7,
     });
     seedGame([

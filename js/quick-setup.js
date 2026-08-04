@@ -845,10 +845,56 @@ export function qsOnFormatChange() {
   window.updateFormatNote?.();
   // Switching show changes what can be designed, not just the note under the
   // dropdown: the twist catalogue and the venue list both belong to a format.
+  renderHostOptions();
   renderSettingOptions();
   applyFormatScope();
   window.renderTwistCatalog?.();
   window.renderFormatToggle?.();
+}
+
+// The Season Basics host is the single host control. Its choices belong to the
+// selected show, just like venues do: Big Brother should not silently inherit
+// Chris, and Total Drama should not silently inherit Don after switching back.
+export const HOSTS_BY_FORMAT = {
+  'total-drama': [
+    { value: 'Chris', label: 'Chris McLean' },
+    { value: 'Chef', label: 'Chef Hatchet' },
+    { value: 'Jeff', label: 'Jeff Probst' },
+  ],
+  'big-brother': [
+    { value: 'Don McGurrin', label: 'Don McGurrin' },
+    { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
+    { value: 'Arisa Cox', label: 'Arisa Cox' },
+  ],
+};
+
+export function hostOptionsForFormat(fmt) {
+  return HOSTS_BY_FORMAT[seasonFormat(fmt)] || HOSTS_BY_FORMAT['total-drama'];
+}
+
+export function renderHostOptions() {
+  const el = _g('cfg-host');
+  if (!el) return;
+  const fmt = seasonFormat(_g('cfg-format')?.value || seasonConfig);
+  const options = hostOptionsForFormat(fmt);
+  const previousRaw = seasonConfig?.host || el.value;
+  const previous = previousRaw === 'Don' ? 'Don McGurrin' : previousRaw;
+  const values = options.map(h => h.value);
+  const next = values.includes(previous) ? previous : options[0].value;
+  el.innerHTML = options.map(h => `<option value="${h.value}">${h.label}</option>`).join('');
+  el.value = next;
+
+  // Quick Setup mirrors this select, so update its choices immediately too.
+  const quick = _g('qs-host');
+  if (quick) {
+    quick.innerHTML = el.innerHTML;
+    quick.value = next;
+  }
+
+  if (seasonConfig && seasonConfig.host !== next) {
+    seasonConfig.host = next;
+    window.saveConfig?.();
+  }
 }
 
 /**
@@ -913,7 +959,6 @@ const CONFIG_SCOPE = {
     'cfg-finale-format':     ['total-drama'],  // the house finale is the three-part HOH
     'cfg-finale-assistants': ['total-drama'],
     'cfg-bb-interview':      ['big-brother'],
-    'cfg-bb-host':           ['big-brother'],
     'cfg-bb-host-style':     ['big-brother'],
     'cfg-bb-havenots':       ['big-brother'],
     'cfg-bb-safety':         ['big-brother'],

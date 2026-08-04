@@ -871,7 +871,6 @@ export function saveConfig() {
     // House options. Read only by the Big Brother engine; harmless defaults on
     // a Total Drama season, which never looks at them.
     bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
-    bbHost:      g('cfg-bb-host')?.value?.trim() || 'Don',
     bbHostStyle: g('cfg-bb-host-style')?.value || 'balanced',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
@@ -1002,13 +1001,13 @@ export function renderConfig() {
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-format', seasonFormat(seasonConfig));
   updateFormatNote();
-  set('cfg-host', seasonConfig.host || 'Chris');
+  window.renderHostOptions?.();
+  set('cfg-host', seasonConfig.host || (seasonFormat(seasonConfig) === 'big-brother' ? 'Don McGurrin' : 'Chris'));
   // The venue list belongs to the show, so it is rebuilt before the value is
   // written back — otherwise a house season is handed a camp.
   window.renderSettingOptions?.();
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
   set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
-  set('cfg-bb-host', seasonConfig.bbHost || 'Don');
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');

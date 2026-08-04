@@ -9,7 +9,7 @@
 // format's engine reads the value.
 import { describe, expect, it } from 'vitest';
 import { seasonConfig } from '../js/core.js';
-import { configScopeFor, validateQuickSetup, blueprintFor } from '../js/quick-setup.js';
+import { configScopeFor, validateQuickSetup, blueprintFor, hostOptionsForFormat } from '../js/quick-setup.js';
 import { castWarnings } from '../js/cast-room.js';
 import {
   SEASON_SETTINGS, SETTINGS_BY_FORMAT, settingsForFormat, houseSetting, houseProfile,
@@ -18,6 +18,15 @@ import { HOUSE_EVENTS, HOUSE_EVENTS_BY_CATEGORY } from '../js/bb-events/index.js
 import { VENUE_EVENTS } from '../js/bb-events/venue.js';
 
 describe('format-scoped setup screen', () => {
+  it('gives each show the right default host in Season Basics', () => {
+    const td = hostOptionsForFormat('total-drama');
+    const bb = hostOptionsForFormat('big-brother');
+    expect(td[0]).toEqual({ value: 'Chris', label: 'Chris McLean' });
+    expect(bb[0]).toEqual({ value: 'Don McGurrin', label: 'Don McGurrin' });
+    expect(td.map(h => h.value)).not.toContain('Don McGurrin');
+    expect(bb.map(h => h.value)).not.toContain('Chris');
+  });
+
   it('hides every Total Drama mechanic from a house', () => {
     const bb = configScopeFor('big-brother');
     // Popularity is NOT in this list: a house has an audience too, and it is
@@ -85,7 +94,7 @@ describe('format-scoped setup screen', () => {
   it('gives the house its own options and keeps them out of Total Drama', () => {
     const bb = configScopeFor('big-brother');
     const td = configScopeFor('total-drama');
-    for (const own of ['cfg-bb-interview', 'cfg-bb-host', 'cfg-bb-host-style', 'cfg-bb-havenots']) {
+    for (const own of ['cfg-bb-interview', 'cfg-bb-host-style', 'cfg-bb-havenots']) {
       expect(bb.fields).toContain(own);
       expect(td.fields).not.toContain(own);
     }

@@ -240,7 +240,18 @@
                 <option value="Chris">Chris McLean</option>
                 <option value="Chef">Chef Hatchet</option>
                 <option value="Jeff">Jeff Probst</option>
+                <option value="Don McGurrin">Don McGurrin</option>
               </select>
+            </div>
+            <div class="form-group" id="grp-bb-host-style">
+              <label class="form-label">Eviction Host Personality</label>
+              <select id="cfg-bb-host-style" onchange="saveConfig()" class="form-input">
+                <option value="balanced">Balanced &mdash; composed and adaptable</option>
+                <option value="warm">Warm &mdash; empathetic and reassuring</option>
+                <option value="incisive">Incisive &mdash; direct and probing</option>
+                <option value="playful">Playful &mdash; witty and lightly teasing</option>
+              </select>
+              <div class="hint hint-tight">Changes questions and studio tone. Hosts use a focused style profile, not contestant stats.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Setting</label>
@@ -560,22 +571,6 @@
               </select>
               <div class="hint hint-tight">The evicted houseguest is interviewed on the way out.</div>
             </div>
-            <div class="form-group" id="grp-bb-host">
-              <label class="form-label">Interview Host</label>
-              <input type="text" id="cfg-bb-host" class="form-input" value="Don" maxlength="40" oninput="saveConfig()" placeholder="Don">
-              <div class="hint hint-tight">The presenter for Big Brother eviction interviews.</div>
-            </div>
-            <div class="form-group" id="grp-bb-host-style">
-              <label class="form-label">Host Personality</label>
-              <select id="cfg-bb-host-style" onchange="saveConfig()" class="form-input">
-                <option value="balanced">Balanced &mdash; composed and adaptable</option>
-                <option value="warm">Warm &mdash; empathetic and reassuring</option>
-                <option value="incisive">Incisive &mdash; direct and probing</option>
-                <option value="playful">Playful &mdash; witty and lightly teasing</option>
-              </select>
-              <div class="hint hint-tight">Changes questions and studio tone. Hosts use a focused style profile, not contestant stats.</div>
-            </div>
-
             </div>
 
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>

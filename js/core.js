@@ -1092,7 +1092,6 @@ export function defaultConfig() {
     fanVoteFrequency: 'disabled',
     aftermayhemReturn: 'disabled',
     host: 'Chris',
-    bbHost: 'Don',
     bbHostStyle: 'balanced',
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour

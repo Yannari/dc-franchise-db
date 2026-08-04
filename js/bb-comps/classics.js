@@ -690,9 +690,13 @@ const readySetWoah = {
   name: 'Ready, Set, Woah', category: 'physical',
   types: ['hoh', 'veto', 'tiebreaker'],
   desc: 'A straight sprint course with a start line, a finish line and a voice calling the field forward. The call is the competition: "ready, set, GO" sends the field, but "ready, set, WOAH" is called just as often and anybody who moves on it is sent all the way back to the start line. The two calls are identical until the last syllable, so the fastest houseguest in the yard is not the one who wins — the one who can stand still is. First across the finish wins, and everybody else is placed on ground gained.',
-  // Temperament first, deliberately. This is the physical competition a
-  // challenge beast can lose to somebody who simply does not flinch.
-  stats: { temperament: 0.34, physical: 0.28, intuition: 0.22, endurance: 0.16 },
+  // Physical and temperament carry equal weight, which is the whole shape of
+  // this competition: it is a sprint, and it is a sprint you lose by starting
+  // it. Neither half wins alone — the fastest houseguest in the yard gives the
+  // ground back every time a WOAH catches them, and somebody who never
+  // flinches still has to cover the course. Intuition reads the caller,
+  // mental holds the discipline together, endurance pays for the resets.
+  stats: { physical: 0.35, temperament: 0.35, mental: 0.10, intuition: 0.10, endurance: 0.10 },
   weight: () => 1.1,
   simulate(participants, context, api, rng) {
     const beats = [];
@@ -704,8 +708,29 @@ const readySetWoah = {
     const runs = prepare(participants, context, this, rng);
     for (const r of runs) { r.ground = 0; r.falseStarts = 0; r.calls = []; }
 
+    // The calls are DEALT, not flipped.
+    //
+    // Each call used to be an independent coin flip, which can produce a night
+    // with two GOs in it — and a played week did: GO on calls two and three
+    // and nothing after, so every false start from call four on was
+    // unrecoverable and five of seven houseguests finished on exactly zero
+    // metres. A competition that cannot separate five people is not measuring
+    // anything, and the narration was left claiming they had spent the rest of
+    // it making ground back up when there was no ground left to make.
+    //
+    // So the sheet is fixed at four GO and three WOAH, shuffled, with the last
+    // call always a GO. That last constraint is what makes the format work:
+    // every WOAH has at least one run to the line after it, so being sent back
+    // is a cost rather than an ending.
+    const sheet = ['GO', 'GO', 'GO', 'WOAH', 'WOAH', 'WOAH'];
+    for (let i = sheet.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [sheet[i], sheet[j]] = [sheet[j], sheet[i]];
+    }
+    sheet.push('GO');
+
     for (let c = 0; c < CALLS; c++) {
-      const isGo = rng() < 0.5;
+      const isGo = sheet[c] === 'GO';
       for (const r of runs) {
         const noise = (rng() - 0.5) * 0.55;
         r.luck += noise;
@@ -721,6 +746,7 @@ const readySetWoah = {
           if (held2) { r.calls.push({ call: c + 1, word: 'WOAH', held: true }); continue; }
           r.falseStarts++;
           r.ground = 0;
+          r.lastWipe = c;                 // for narration: did they get any back?
           r.calls.push({ call: c + 1, word: 'WOAH', falseStart: true });
         }
       }
@@ -733,8 +759,13 @@ const readySetWoah = {
       } else if (r.falseStarts === 0) {
         beats.push(beat(held(HELD_STILL)(r.name, r.p), [r.name], 'NEVER FLINCHED', 'gold'));
       } else {
-        beats.push(beat(`${r.name} loses one to a WOAH early and spends the rest of it making the ground back up. ${Math.round(r.ground)} down the course at the horn.`,
-          [r.name], `${Math.round(r.ground)}M`));
+        // Whether the false start was survivable is the story, and it is a
+        // fact about the sheet rather than about them.
+        const recovered = Math.round(r.ground);
+        beats.push(beat(recovered > 0
+          ? `${r.name} loses one to a WOAH and spends what is left of the sheet making the ground back up. ${recovered} down the course at the horn.`
+          : `${r.name} is sent back with almost nothing left to run, and the horn goes before any of it can be made up again. Nothing on the board.`,
+        [r.name], `${recovered}M`));
       }
     });
 
@@ -744,8 +775,10 @@ const readySetWoah = {
 
     return finish(runs, {
       beats, self: this,
-      sortBy: (a, b) => b.ground - a.ground,
-      scoreOf: r => r.ground,
+      // Two houseguests on the same ground are separated by who kept their
+      // feet, not by whichever way the array happened to be ordered.
+      sortBy: (a, b) => b.ground - a.ground || a.falseStarts - b.falseStarts,
+      scoreOf: r => round2(r.ground - r.falseStarts * 0.01),
       breakdownOf: r => ({ base: r.base, roll: round2(r.luck), ground: round2(r.ground),
         falseStarts: r.falseStarts, calls: r.calls, threw: r.threw, threwChance: r.threwChance }),
     });

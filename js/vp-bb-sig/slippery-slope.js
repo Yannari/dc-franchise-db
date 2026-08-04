@@ -72,6 +72,9 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
     const tag = String(b.badgeText || '').toUpperCase().trim();
     if (tag === 'TOOK THE PRIZE') { steps.push({ kind: 'prize', beat: b, name: (b.players || [])[0] }); return; }
     if (tag === 'ON THE LEVELS') { steps.push({ kind: 'levels', beat: b }); return; }
+    // A lost ball is its own moment, not another run at the lane — without this
+    // it matched the run branch below and redrew the whole trip tape.
+    if (tag === 'LOST THE BALL') { steps.push({ kind: 'fumble', beat: b, name: (b.players || [])[0] }); return; }
     if (b.badgeClass === 'gold' || tag === 'HOH' || tag === 'VETO') { steps.push({ kind: 'win', beat: b }); return; }
     if (i === 0) { steps.push({ kind: 'open', beat: b }); return; }
     const who = (b.players || [])[0];
@@ -186,6 +189,17 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
         <p class="slp-flav">${E(flav(PRIZE_FLAV, i))}</p>
       </article>`;
     }
+    if (s.kind === 'fumble') {
+      return `<article class="slp-card slp-fumble">
+        <header class="slp-hd"><span class="slp-tag slp-tag-prize">${E(s.beat.badgeText || 'LOST THE BALL')}</span>
+          <span class="slp-sub">so close it counted for nothing</span></header>
+        <div class="slp-fumble-b">
+          <figure class="slp-fumble-av">${AV(s.name, 42)}</figure>
+          <p class="slp-body">${E(s.beat.text)}</p>
+        </div>
+      </article>`;
+    }
+
     if (s.kind === 'levels' || s.kind === 'note') {
       return `<article class="slp-card slp-note">
         <header class="slp-hd"><span class="slp-tag slp-tag-quiet">${E(s.beat.badgeText || '')}</span></header>
@@ -214,6 +228,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
         <span><i>CONTAINER</i><b>${sealed ? MASK : `${E(bd.fill ?? 0)}%`}</b></span>
         <span><i>TRIPS</i><b>${E(bd.trips ?? log.length)}</b></span>
         <span><i>FALLS</i><b>${E(bd.spills ?? 0)}</b></span>
+        ${bd.fumbles ? `<span><i>LOST THE BALL</i><b>${E(bd.fumbles)}</b></span>` : ''}
         <span><i>BEST TRIP</i><b>${sealed ? MASK : (bestTrip ? E(bestTrip.got) : '—')}</b></span>
         ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
       </div>
@@ -314,6 +329,9 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   .slp-nums i{font-style:normal;font-size:8.5px;letter-spacing:1.8px;color:var(--sl-dim)}
   .slp-nums b{font-family:'Archivo Black',sans-serif;font-size:14px;color:#e9fbef}
 
+  .slp-fumble{border-color:rgba(255,176,87,.4);background:linear-gradient(180deg,rgba(58,40,16,.5),rgba(5,16,11,.8))}
+  .slp-fumble-b{display:flex;gap:12px;align-items:center}
+  .slp-fumble-av .bb-av{border-radius:9px;border:2px solid rgba(255,176,87,.7)}
   .slp-prize{border-color:rgba(255,176,87,.45);background:linear-gradient(180deg,rgba(62,44,16,.6),rgba(5,16,11,.8))}
   .slp-prize-b{display:flex;gap:12px;align-items:flex-start}
   .slp-prize-av .bb-av{border-radius:9px;border:2px solid #ffb057}

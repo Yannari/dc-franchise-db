@@ -68,6 +68,13 @@ const SPILL_LINES = [
   (n, p) => `${n} loses a shoe somewhere on the slope and finishes the competition without it.`,
 ];
 
+const FUMBLE_LINES = [
+  (n, p) => `${n} gets a hand into the container, closes it around the ball, and loses it. The whole thing sloshes back down and ${p.sub} ${vb(p, 'has', 'have')} to start pouring again.`,
+  (n, p) => `${n} is there. ${p.Sub} ${vb(p, 'reaches', 'reach')} in with an arm that has been carrying a scoop for ten minutes, and the ball squirts out of ${p.posAdj} fingers.`,
+  (n, p) => `The ball is right at the top and ${n} cannot hold it. Half the container goes over the side in the attempt.`,
+  (n) => `${n} touches it, loses it, and says something the edit will have to cover with a horn.`,
+];
+
 const GRIND_LINES = [
   (n, p) => `${n} has worked out that slow and boring beats fast and horizontal, and is quietly filling.`,
   (n) => `${n} stops trying to look good doing it, which is when ${n} starts gaining.`,
@@ -93,6 +100,7 @@ export const slipperySlope = {
     const beats = [];
     const breakdown = {};
     const spill = makePicker(rng);
+    const fumbleSay = makePicker(rng);
     const grind = makePicker(rng);
     const take = makePicker(rng);
     const threwSay = makePicker(rng);
@@ -104,10 +112,10 @@ export const slipperySlope = {
 
     const nominees = new Set(context.nominees || []);
     const state = participants.map(name => {
-      const s = pStats(name);
       const t = throwRead(name, context, rng);
-      const carry = (s.physical * 0.30 + s.endurance * 0.26 + s.temperament * 0.18
-        + s.boldness * 0.14 + s.intuition * 0.12) / 10;
+      // Read off the declared profile rather than restating it — written out
+      // twice, the two copies drift the moment either is retuned.
+      const carry = aptitude(name, slipperySlope.stats) / 10;
       return {
         name, carry, fill: 0, trips: 0, spills: 0, fatigue: 0, log: [], hnCost: 0, luck: 0,
         base: Math.round(aptitude(name, slipperySlope.stats) * 100) / 100,
@@ -140,7 +148,7 @@ export const slipperySlope = {
         // ball: at the old rate nobody filled a container inside fourteen trips
         // and every single competition ended on levels, which meant the small
         // container never came up and the best mechanic never fired.
-        const noise = (rng() - 0.5) * 7;
+        const noise = (rng() - 0.5) * 9;
         p.luck += noise;
         let got = clamp(p.carry * 24 + noise - p.fatigue * 1.6, 0.8, 30);
         if (slipped) { got *= 0.28 + rng() * 0.3; p.spills++; }
@@ -150,7 +158,30 @@ export const slipperySlope = {
         p.fill = clamp(p.fill + got, 0, FULL);
         p.log.push({ trip, got: round1(got), slipped, fill: Math.round(p.fill) });
 
-        if (p.fill >= FULL) { champ = p; break; }
+        // ── the grab ──
+        //
+        // The ball still has to come out, and reaching into a full container
+        // while soaked and shaking is its own event: in the real competition
+        // people get a hand to it and lose it more than once.
+        //
+        // It is also what stops this being a foregone conclusion. A race whose
+        // progress is purely additive is decided by the stat profile and
+        // nothing else — the per-trip luck averages out over eight trips while
+        // the carry advantage compounds on every one of them, and measured
+        // across sixty competitions the same three houseguests won all of them.
+        // Widening the noise and flattening the slip did nothing, because the
+        // problem was the shape and not the numbers. Putting a real failure
+        // right at the decisive moment gives the field a way back in.
+        if (p.fill >= FULL) {
+          p.grabs = (p.grabs || 0) + 1;
+          const sure = clamp(0.30 + p.carry * 0.10 - p.fatigue * 0.06 + p.grabs * 0.12, 0.15, 0.9);
+          if (rng() < sure) { champ = p; break; }
+          p.fumbles = (p.fumbles || 0) + 1;
+          p.fill = clamp(p.fill - (5 + rng() * 9), 0, FULL);
+          p.log.push({ trip, got: 0, slipped: false, fumbled: true, fill: Math.round(p.fill) });
+          beats.push(beat(fumbleSay(FUMBLE_LINES)(p.name, pron(p.name)),
+            [p.name], 'LOST THE BALL', 'grey'));
+        }
       }
       if (champ) break;
 
@@ -221,6 +252,7 @@ export const slipperySlope = {
         // Reported, not merely applied — the have-not twist is verified by
         // reading this field back off the competition.
         haveNot: p.haveNot, haveNotPenalty: round1(p.hnCost),
+        fumbles: p.fumbles || 0,
         score: Math.round(p.fill) + (p.tookPrize ? -25 : 0),
       };
     });

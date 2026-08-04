@@ -457,7 +457,13 @@ export function rpBuildSigBeforeOrAfter(ep, actType, u = {}) {
     box-shadow:0 0 30px rgba(224,161,39,.18)}
   .sgb-win-b{display:flex;gap:14px;align-items:center}
   .sgb-win-b p{margin:0;font-size:13px;line-height:1.65}
+  /* Round wrapper, square avatar: the portrait's corners sat outside the glow.
+     The avatar span is overflow:hidden globally, so rounding IT is what
+     actually clips; rounding only this wrapper leaves the image square inside
+     it. (No backticks in here — this stylesheet is a template literal, and a
+     pair of them silently ended the string and broke the whole screen.) */
   .sgb-win-face{flex:0 0 auto;border-radius:50%;box-shadow:0 0 22px rgba(224,161,39,.5)}
+  .sgb-win-face .bb-av{border-radius:50%}
   .sgb-win-wash{margin-top:8px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;
     color:var(--amber);text-align:right}
 

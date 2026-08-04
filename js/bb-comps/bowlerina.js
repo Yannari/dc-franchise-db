@@ -9,12 +9,13 @@
 //   drops, and you get to roll a ball at the pin targets on the far side. Then
 //   the barrier comes back up and you spin again.
 //
-// The competition is not bowling. It is bowling AFTER being spun, which is why
-// `temperament` carries it and physical strength barely matters: the whole
-// thing is about whether the room has stopped moving yet. Dizziness is the
-// mechanic — it accumulates across frames, it is resisted rather than avoided,
-// and the last frames are worth the same as the first ones to somebody who can
-// still stand up straight.
+// The competition is not bowling. It is bowling AFTER being spun, and it is
+// physical the whole way down: balance and coordination to stay upright and put
+// the ball where you meant to, endurance to keep hauling yourself around the
+// overhead bars frame after frame, and enough left over mentally to correct an
+// aim while the room is still moving. Dizziness is the mechanic — it
+// accumulates across frames, it is resisted rather than avoided, and the last
+// frames are the hardest ones on the card.
 //
 // It replaces a one-roll "roll balls at scoring pockets" comp with no frames in
 // it. Each houseguest now has a real card: every roll scored, the dizziness it
@@ -67,7 +68,11 @@ export const bowlerina = {
   category: 'precision',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
   desc: 'Houseguests hang from metal bars and spin. When the barrier drops they roll a ball at the pin targets across the yard, and when it rises they spin again. The far targets are worth the most and are the hardest to see. Highest total across every frame wins.',
-  stats: { temperament: 0.34, intuition: 0.24, physical: 0.18, mental: 0.14, endurance: 0.10 },
+  // Physical carries it: balance, coordination and the accuracy of the roll
+  // itself. Endurance is the spinning and the overhead bars, over and over.
+  // Mental is holding a correction together while the room is still moving, and
+  // intuition is the last of it — spatial judgement at the release.
+  stats: { physical: 0.50, endurance: 0.30, mental: 0.15, intuition: 0.05 },
   weight: () => 1.15,
   simulate(participants, context, api, rng) {
     const beats = [];
@@ -83,19 +88,22 @@ export const bowlerina = {
       participants.slice(0, 3), `${frames} FRAMES`));
 
     const runs = participants.map(name => {
-      const s = pStats(name);
       const t = throwRead(name, context, rng);
-      // Holding your head together is the competition. Strength is a rounding
-      // error next to it.
-      const steady = (s.temperament * 0.34 + s.intuition * 0.24 + s.physical * 0.18
-        + s.mental * 0.14 + s.endurance * 0.10) / 10;
+      // Read straight off the declared profile rather than restating it.
+      //
+      // These weights used to be written out twice — once in `stats` for the
+      // screen and the Debug tab, once here for the simulation — so retuning
+      // the competition in one place silently left the other describing a
+      // different competition. `aptitude` already sums stat × weight; dividing
+      // by ten puts it back on the 0–1 scale the rest of this file expects.
+      const steady = aptitude(name, this.stats) / 10;
       const haveNot = (context.haveNots || []).includes(name);
 
       let dizzy = 0, total = 0, gutters = 0, collapsed = false, best = null, hnCost = 0, luck = 0;
       const card = [];
       for (let f = 0; f < frames; f++) {
-        // Dizziness ratchets. Temperament sheds most of it between frames but
-        // never all, so the back half of the card is the harder half — while
+        // Dizziness ratchets. A steady houseguest sheds most of it between
+        // frames but never all, so the back half of the card is harder — while
         // still leaving a steady houseguest upright at the end of it. Tuned
         // down from a version that buried the whole field by frame three and
         // put four of eight players on the mat.
@@ -110,7 +118,12 @@ export const bowlerina = {
         }
 
         // The roll: aim is steadiness minus however much the room is moving.
-        const aimNoise = (rng() - 0.5) * 0.5;
+        // Widened from 0.5 when the profile moved to physical .50. Concentrating
+        // half the weight on one stat widened the aptitude gaps and dropped the
+        // competition to four distinct winners in sixty runs; this puts the
+        // upset rate back where the old five-stat spread had it, without
+        // touching the weights themselves.
+        const aimNoise = (rng() - 0.5) * 0.7;
         luck += aimNoise;
         const aim = clamp(0.18 + steady * 1.15 - dizzy * 0.17 + aimNoise
           - (t.threw ? 0.5 : 0) - (fell ? 0.3 : 0), 0, 1);
@@ -125,7 +138,7 @@ export const bowlerina = {
       }
 
       return { name, total, gutters, card, best, collapsed,
-        base: Math.round(aptitude(name, bowlerina.stats) * 100) / 100,
+        base: Math.round(aptitude(name, this.stats) * 100) / 100,
         luck: Math.round(luck * 100) / 100,
         threw: t.threw, threwChance: t.chance, haveNot,
         haveNotPenalty: Math.round(hnCost * 100) / 100, steady };

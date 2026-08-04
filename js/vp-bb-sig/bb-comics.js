@@ -491,7 +491,12 @@ const _CSS = `<style>
   border:5px solid var(--sgx-ink);border-radius:50%;background:var(--sgx-news);padding:3px;
   box-shadow:0 0 0 6px rgba(255,204,0,0.85), 6px 6px 0 rgba(20,16,24,0.5);
   filter:contrast(1.2) saturate(1.05);animation:sgxGlow 4.5s ease-in-out infinite}
-.sigcomics .sgx-portrait .bb-av{display:block}
+/* The frame is a circle; the avatar inside it is a square image, so without
+   clipping the portrait's corners poked out past the yellow ring. Both the
+   wrapper and the image are rounded — rounding only the wrapper leaves the
+   <img> square on top of it. */
+.sigcomics .sgx-portrait .bb-av{display:block;border-radius:50%;overflow:hidden}
+.sigcomics .sgx-portrait .bb-av img{border-radius:50%;display:block;width:100%;height:100%;object-fit:cover}
 .sigcomics .sgx-flash{position:absolute;right:8px;top:8px;font-family:var(--sgx-disp);font-size:11px;letter-spacing:1.5px;
   padding:5px 8px;border:3px solid var(--sgx-ink);background:var(--sgx-rd);color:#fff;transform:rotate(6deg)}
 .sigcomics .sgx-arc{font-family:var(--sgx-disp);font-size:12px;letter-spacing:3px;text-align:center;padding:6px 4px 2px;color:rgba(20,16,24,0.8)}

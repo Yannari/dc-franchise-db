@@ -58,6 +58,14 @@ function playSeasons(seeds) {
   // events exist only on a week with two Heads of Household, and a sweep that
   // never seats a second one reports live events as dead.
   const botbSeasons = new Set([23, 37, 71, 129, 151, 178]);
+  // And the two anonymous-authority twists, for exactly the same reason: the
+  // hacker-* and roadkill-* families only exist on a week where somebody is
+  // secretly rewriting the block, and a sweep that never schedules one reports
+  // thirteen live events as dead. Two weeks each, because the hacker's
+  // aftermath events (a cancelled vote being noticed, the silenced houseguest
+  // deciding whether to say so) fire the week AFTER the hack.
+  const hackerSeasons = new Set([44, 88, 23, 129]);
+  const roadkillSeasons = new Set([37, 71, 151, 178]);
   for (const seed of seeds) {
     reset();
     const rng = seededRng(seed);
@@ -66,7 +74,9 @@ function playSeasons(seeds) {
     while ((gs.activePlayers || []).length > 3) {
       const week = ++n;
       const extra = invisibleSeasons.has(seed) && week === 2 ? ['bb-invisible-hoh']
-        : botbSeasons.has(seed) && week === 2 ? ['bb-battle-of-the-block'] : [];
+        : botbSeasons.has(seed) && week === 2 ? ['bb-battle-of-the-block']
+          : hackerSeasons.has(seed) && (week === 3 || week === 4) ? ['bb-hacker']
+            : roadkillSeasons.has(seed) && week === 3 ? ['bb-roadkill'] : [];
       weeks.push(simulateBBWeek({
         rng, houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
         // Have-nots on, because a normal season has them: the default season
@@ -157,12 +167,25 @@ describe('the Big Brother event library as a whole', () => {
     // The family is asserted collectively; per-event reachability lives in
     // the Invisible HOH suite's dedicated sealed-week runs.
     const invisibleFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('invisible-')));
+    // Same treatment, same reason: the hacker's and Roadkill's families are
+    // gated on a twist week AND on what the holder chose to do with it — an
+    // unused authority produces no crime scene to react to. Asserted
+    // collectively; per-event reachability lives in their own suites.
+    const hackerFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('hacker-')));
+    const roadkillFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('roadkill-')));
     const never = HOUSE_EVENTS.map(e => e.id)
-      .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id));
+      .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
+        && !hackerFamily.has(id) && !roadkillFamily.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
     const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
     expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')
       .toBeGreaterThanOrEqual(Math.min(invisibleFamily.size, 4));
+    const hackerSeen = [...hackerFamily].filter(id => fired[id]).length;
+    expect(hackerSeen, 'the hacked weeks stayed silent — check the hacker family gating')
+      .toBeGreaterThanOrEqual(Math.min(hackerFamily.size, 4));
+    const roadkillSeen = [...roadkillFamily].filter(id => fired[id]).length;
+    expect(roadkillSeen, 'the roadkill weeks stayed silent — check the roadkill family gating')
+      .toBeGreaterThanOrEqual(Math.min(roadkillFamily.size, 2));
   }, 240000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30

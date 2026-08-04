@@ -807,7 +807,23 @@ const solveForX = {
   name: 'Solve For X', category: 'quiz',
   types: ['hoh', 'veto', 'tiebreaker'],
   desc: 'The houseguests stand at lit answer podiums while the house is described back to them as arithmetic — take the number of votes cast against one houseguest, subtract the days another has been a have-not, multiply by the number of vetoes used, and write the answer. Every quantity in the question is something that happened in front of them and nothing may be looked up. Answers are locked in on a timer and only the exact number scores, so being close is worth the same as being nowhere. The highest score after ten questions wins.',
-  stats: { mental: 0.40, intuition: 0.24, strategic: 0.20, temperament: 0.16 },
+  // Retuned away from intuition, which was the second-heaviest weight on the
+  // one stat this competition explicitly removes: nothing here is concealed —
+  // every quantity in every question happened in front of the whole house.
+  // There is nothing to READ, only whether you were counting.
+  //
+  // Which is what strategic is doing at nearly a third. The questions are made
+  // of votes cast, vetoes used and days on slop: the ledger a strategist keeps
+  // by habit all season and a floater has never once thought about. It is also
+  // what separates this from the other two quizzes — Before or After tests
+  // chronology and Knockout tests nerve at a buzzer, and all three were
+  // leaning on mental+intuition hard enough that the same houseguest won them
+  // all.
+  //
+  // Temperament survives small and real: the answer locks on a timer and only
+  // the exact number scores, so the cost is second-guessing yourself into an
+  // empty box. That is ten seconds of composure, not a night on a wall.
+  stats: { mental: 0.46, strategic: 0.30, intuition: 0.12, temperament: 0.12 },
   weight: () => 1.05,
   simulate(participants, context, api, rng) {
     const beats = [];

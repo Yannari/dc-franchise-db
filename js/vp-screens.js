@@ -21402,6 +21402,44 @@ export function rpBuildBBDebug(ep) {
         dbgNote(`${_bbEsc(p.powerId)} — ${_bbEsc(p.holder)} (${_bbEsc(p.visibility)}, via ${_bbEsc(p.source)}), `
           + `wk ${p.acquiredWeek}–${p.expiresAfterWeek}: ${p.used ? `used wk ${p.usedWeek}` : p.disposed ? `disposed (${_bbEsc(p.disposedReason || '?')})` : 'LIVE'}`)).join(''));
     }
+    // ── FAN PULSE ──
+    //
+    // Popularity stopped being cosmetic the moment two distributors started
+    // reading it: the App Store and the Den of Temptation both weight their
+    // audience vote by max(0.6, 3 + popularity), so this IS the odds board for
+    // who gets handed a power and who gets called into the Den. It was
+    // unreachable in this format — the Fan Pulse tab lives in the Survivor
+    // Camp Overview hub, which the Big Brother branch never builds.
+    //
+    // The weight column is the point. A ranking alone does not tell you that
+    // an INVISIBLE houseguest is a long shot rather than an impossibility,
+    // which is exactly what the 0.6 floor buys.
+    const popMap = ep.popularitySnapshot || snap.popularity
+      || (typeof gs !== 'undefined' ? gs.popularity : null) || {};
+    const popHouse = snap.activePlayers || (typeof gs !== 'undefined' ? gs.activePlayers : []) || [];
+    if (popHouse.length && Object.keys(popMap).length
+        && seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
+      const rows = popHouse
+        .map(n => ({ n, v: Number(popMap[n] || 0), w: Math.max(0.6, 3 + Number(popMap[n] || 0)) }))
+        .sort((a, b) => b.v - a.v);
+      const totalW = rows.reduce((sum, r) => sum + r.w, 0) || 1;
+      const tier = s => s >= 12 ? ['LOVED', '#3fb950'] : s >= 7 ? ['FAN FAV', '#3fb950']
+        : s >= 3 ? ['RISING', '#57a6e8'] : s === 0 ? ['INVISIBLE', '#6e7681']
+        : s <= -10 ? ['HATED', '#f47067'] : s <= -5 ? ['UNPOPULAR', '#f47067']
+        : s < 0 ? ['FADING', '#d29922'] : ['STEADY', '#8b949e'];
+      html += dbgPanel('FAN PULSE (AUDIENCE VOTE ODDS)', 'gold', rows.map((r, i) => {
+        const [label, colour] = tier(r.v);
+        const odds = (r.w / totalW) * 100;
+        return dbgPortraitRow(r.n,
+          `<div style="font-size:10px;font-weight:700;letter-spacing:.8px;color:${colour};width:74px">${label}</div>
+           <div style="font-size:11px;color:#8b949e;width:40px;text-align:right">${r.v.toFixed(1)}</div>
+           <div style="flex:0 0 90px;height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden">
+             <div style="height:100%;width:${Math.round(odds / (rows[0] ? (rows[0].w / totalW) * 100 : 1) * 100)}%;background:${colour};opacity:.75"></div></div>
+           <div style="font-size:10px;color:#e3b341;width:44px;text-align:right">${odds.toFixed(1)}%</div>`,
+          { tag: `<span style="font-size:9px;color:#6e7681;margin-left:6px">#${i + 1}</span>` });
+      }).join('') + dbgNote('score · vote weight share — what an audience-channel distributor (App Store, Den of Temptation) actually rolls against'));
+    }
+
     if ((ep.haveNots || []).length) {
       const hn = acts.find(a => a.type === 'have-nots');
       html += dbgPanel('HAVE-NOTS', 'blue', ep.haveNots.map(n => {

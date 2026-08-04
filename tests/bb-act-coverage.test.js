@@ -18,7 +18,7 @@ import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/c
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
-import { rpBuildBBAppStore } from '../js/vp-screens.js';
+import { rpBuildBBAppStore, rpBuildBBDebug } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -162,5 +162,45 @@ describe('every act the engine emits reaches both transcripts', () => {
       expect(section, `${w.name} was named in the transcript`).not.toContain(w.name);
       expect(html, `${w.name} was named on the screen`).not.toContain(w.name);
     }
+  });
+});
+
+describe('the audience standings are reachable in this format', () => {
+  it('shows a Fan Pulse panel on the BB debug screen', () => {
+    // The ranking existed but only in the Survivor Camp Overview hub, which
+    // the Big Brother branch of buildVPScreens never builds — written and
+    // unreachable. It matters here because two distributors read popularity:
+    // this is the odds board for who gets handed a power.
+    house(['bb-app-store']);
+    const ep = withSeededRandom(21, () => simulateBBEpisode());
+    const html = rpBuildBBDebug(ep);
+    expect(html).toMatch(/FAN PULSE/);
+
+    // Everybody still in the house is on it, ranked.
+    const pop = ep.popularitySnapshot || ep.gsSnapshot?.popularity || gs.popularity || {};
+    const standing = (ep.gsSnapshot?.activePlayers || gs.activePlayers || []);
+    expect(standing.length).toBeGreaterThan(0);
+    for (const name of standing) {
+      expect(html, `${name} is missing from the standings`).toContain(name);
+    }
+
+    // Highest popularity is listed first — the panel is a RANKING, not the
+    // roster order it was handed.
+    const top = [...standing].sort((a, b) => Number(pop[b] || 0) - Number(pop[a] || 0))[0];
+    const bottom = [...standing].sort((a, b) => Number(pop[a] || 0) - Number(pop[b] || 0))[0];
+    if (Number(pop[top] || 0) !== Number(pop[bottom] || 0)) {
+      const panel = html.slice(html.indexOf('FAN PULSE'));
+      expect(panel.indexOf(top), 'the standings are not sorted by popularity')
+        .toBeLessThan(panel.indexOf(bottom));
+    }
+  });
+
+  it('respects the season switch that turns fan sentiment off', () => {
+    house();
+    const ep = withSeededRandom(21, () => simulateBBEpisode());
+    seasonConfig.popularityEnabled = false;
+    const html = rpBuildBBDebug(ep);
+    seasonConfig.popularityEnabled = true;
+    expect(html).not.toMatch(/FAN PULSE/);
   });
 });

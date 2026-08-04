@@ -1573,6 +1573,11 @@ export function renderTwistCatalog() {
     const phaseBlocked = canAssign && t.phase !== 'any' &&
       [...selPhases].every(ph => ph !== t.phase);
     const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic) && !_sdChalPair(t.id, ic));
+    // A twist can also clash with a season MODE rather than another card —
+    // see SEASON_MODES. Generic on purpose: declaring incompatibleModes on the
+    // catalog entry is the whole of the work for any future one.
+    const modeClashes = canAssign ? twistModeClashes(t, seasonConfig) : [];
+    const modeBlocked = modeClashes.length > 0;
     const tribeBlocked = canAssign && t.minTribes && (seasonConfig.teams || 2) < t.minTribes;
     const riBlocked = canAssign && (t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
@@ -1601,8 +1606,9 @@ export function renderTwistCatalog() {
     });
     // Rescue Island Life interlude requires Rescue Island to be enabled
     const _rilBlocked = canAssign && t.id === 'rescue-island-life' && !seasonConfig.ri;
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked || _womEvenBlocked || _rilBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _rilBlocked ? ' ⚠️ requires Rescue Island enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : _womEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
+    const blocked = phaseBlocked || incompBlocked || modeBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked || _taOddBlocked || _ccEvenBlocked || _bbEvenBlocked || _womEvenBlocked || _rilBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist'
+      : modeBlocked ? ` ⚠️ cannot run alongside ${modeClashes.join(' and ')}` : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _rilBlocked ? ' ⚠️ requires Rescue Island enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : _womEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
@@ -1625,6 +1631,13 @@ export function assignTwist(twistId) {
     return;
   }
   const twist    = TWIST_CATALOG.find(t => t.id === twistId);
+  // Refuse outright: this clash is with the season itself, so no episode is a
+  // legal home for it and blocking per-episode below would say nothing useful.
+  const seasonClashes = twistModeClashes(twist, seasonConfig);
+  if (seasonClashes.length) {
+    alert(`${twist.name} cannot run in a season with ${seasonClashes.join(' and ')} — the two need the same block.`);
+    return;
+  }
   const epMap    = buildEpisodeMap();
   const epLookup = Object.fromEntries(epMap.map(e => [e.ep, e.phase]));
 

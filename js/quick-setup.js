@@ -18,7 +18,7 @@
 // jsdom smoke tests never depend on the full app being wired up.
 // ══════════════════════════════════════════════════════════════════════
 
-import { TWIST_CATALOG, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
+import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
@@ -219,6 +219,15 @@ export function validateQuickSetup(config = {}, playerList = []) {
         }
       }
     }
+    // A twist can clash with a season MODE as well as with another twist, and
+    // that clash is not per-episode: no week of the season is a legal home.
+    sched.forEach(t => {
+      const c = _catById(t.type); if (!c) return;
+      const modeClash = twistModeClashes(c, _cfg());
+      if (modeClash.length) {
+        problems.push(`${c.name} cannot run in a season with ${modeClash.join(' and ')} — they need the same block.`);
+      }
+    });
     sched.forEach(t => {
       const c = _catById(t.type); if (!c) return;
       const ep = Number(t.episode);

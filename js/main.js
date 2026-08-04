@@ -194,6 +194,9 @@ const functions = [
   // Which show this season is. run-ui.js reads these as bare globals, so the
   // twist catalogue can scope itself to the format being designed.
   'seasonFormat', 'twistFormat', 'twistsForFormat', 'formatIsRunnable', 'formatName',
+  // Season modes are a second axis of twist compatibility; run-ui reads this
+  // as a bare global the same way it reads the catalogue itself.
+  'activeSeasonModes', 'twistModeClashes',
 ];
 
 for (const name of functions) {

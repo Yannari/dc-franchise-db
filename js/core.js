@@ -74,6 +74,47 @@ export const ADVANTAGES = [
 ];
 export const ADV_SOURCE_LABELS = { camp: '🏕️ Camp', journey: '🗺️ Journey', auction: '💰 Auction', exile: '🏝️ Exile' };
 
+/**
+ * Season MODES, as things a twist can declare a clash with.
+ *
+ * `incompatible` on a catalog entry only ever understood other twist CARDS,
+ * so a card that cannot share a week with a standing season rule had nowhere
+ * to say so. The Battle of the Block is the case that exposed it: the Block
+ * Buster owns a third chair and its own way off the block, the Battle owns
+ * four chairs across two blocks, and scheduling both gave no warning at all —
+ * the engine quietly stood the Battle down days later.
+ *
+ * A mode is any season-long setting that changes the shape of a week. Add the
+ * mode here and list it in a card's `incompatibleModes` and both the Format
+ * Designer and the quick-setup validator pick it up with no further wiring.
+ */
+export const SEASON_MODES = {
+  'block-buster': {
+    label: 'the Block Buster',
+    active: cfg => !!cfg?.bbSafetyMode && cfg.bbSafetyMode !== 'off',
+  },
+  'have-nots-every-week': {
+    label: 'weekly Have-Nots',
+    active: cfg => cfg?.bbHaveNots === 'every-week',
+  },
+};
+
+/** Which season modes are switched on right now. */
+export function activeSeasonModes(cfg) {
+  const config = cfg || seasonConfig;
+  return new Set(Object.entries(SEASON_MODES)
+    .filter(([, mode]) => { try { return mode.active(config); } catch { return false; } })
+    .map(([id]) => id));
+}
+
+/** The modes a twist cannot run alongside, given the season as configured. */
+export function twistModeClashes(twist, cfg) {
+  const on = activeSeasonModes(cfg);
+  return (twist?.incompatibleModes || [])
+    .filter(id => on.has(id))
+    .map(id => SEASON_MODES[id]?.label || id);
+}
+
 export const TWIST_CATALOG = [
   // Team Dynamics
   { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
@@ -342,7 +383,7 @@ export const TWIST_CATALOG = [
   { id:'bb-battle-of-the-block', emoji:'⚔️', name:'Battle of the Block', format:'big-brother',
     category:'twist', phase:'any',
     desc:'Two Heads of Household, each nominating two houseguests. The four nominees compete as pairs; the winning pair comes off the block and DETHRONES the Head of Household who nominated them. The survivor keeps the power and their two nominations stand.',
-    incompatible:['bb-invisible-hoh'] },
+    incompatible:['bb-invisible-hoh'], incompatibleModes:['block-buster'] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
     category:'advantage', phase:'any',
     desc:'The evicted houseguests are not gone. After this week\'s eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.',

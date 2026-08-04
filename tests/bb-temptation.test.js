@@ -17,7 +17,7 @@ import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { heldPowers, BB_POWER_DEFINITIONS } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
 import { runDenOfTemptation, TEMPTATION_CURSES } from '../js/bb/temptation.js';
-import { rpBuildBBTemptation, _tvState } from '../js/vp-screens.js';
+import { rpBuildBBTemptation, rpBuildBBNominations, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -193,6 +193,56 @@ describe('in a played week', () => {
     // The Head of Household's own two are untouched — the cursed nominated
     // themselves, they were not chosen by anybody.
     expect(act.cursed).not.toBe(week.hoh);
+  });
+
+  it('does not let the HOH claim a chair they did not fill', () => {
+    // The ceremony script says "it is my responsibility to nominate N people"
+    // and turns N keys. With the curse seating a third chair that counted
+    // three, so the Head of Household was reading out a nomination they never
+    // made — and the whole point of the curse is that nobody chose it.
+    let ep = null;
+    for (let seed = 1; seed <= 40; seed++) {
+      house(['bb-den-of-temptation']);
+      const played = withSeededRandom(seed, () => simulateBBEpisode());
+      if ((played.acts || []).some(a => a.type === 'temptation-curse')) { ep = played; break; }
+    }
+    expect(ep, 'no week in 40 seeds seated the curse').toBeTruthy();
+    const noms = ep.acts.find(a => a.type === 'nominations');
+    const cursed = ep.acts.find(a => a.type === 'temptation-curse').cursed;
+
+    expect(noms.nominees, 'the cursed houseguest is not on the block').toContain(cursed);
+    expect(noms.curseChair).toBe(cursed);
+    expect(noms.hohNominees, 'the HOH is still being credited with the curse chair')
+      .not.toContain(cursed);
+    expect(noms.hohNominees).toHaveLength(noms.nominees.length - 1);
+
+    const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
+    expect(text).toMatch(new RegExp(`${cursed} nominated THEMSELVES`));
+
+    // ...and the ceremony screen must not have the HOH turning that key.
+    rpBuildBBNominations(ep, noms);
+    const key = Object.keys(_tvState).find(k => k.startsWith('bb_noms_') || k.includes('noms'));
+    if (key) _tvState[key].idx = 99;
+    const html = rpBuildBBNominations(ep, noms);
+    expect(html).toMatch(/A KEY NOBODY OWNS/);
+    expect(html, 'the HOH is still claiming the whole block')
+      .not.toMatch(new RegExp(`${ep.hoh} turns the third key`));
+  });
+
+  it('leaves an ordinary two-nominee ceremony exactly as it was', () => {
+    // The fix must be invisible on a normal week: no curse, no third chair,
+    // and the HOH still nominates two people and turns two keys.
+    house();
+    const ep = withSeededRandom(9, () => simulateBBEpisode());
+    const noms = ep.acts.find(a => a.type === 'nominations');
+    expect(noms.nominees).toHaveLength(2);
+    expect(noms.curseChair).toBeNull();
+    expect(noms.roadkillChair).toBeNull();
+    // Both chairs are the HOH's, so the script counts two and says two.
+    expect(noms.hohNominees).toEqual(noms.nominees);
+    const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
+    expect(text).not.toMatch(/nominated THEMSELVES/);
+    expect(text).not.toMatch(/Roadkill winner, not the Head/);
   });
 
   it('reaches both the transcript and the visual player', () => {

@@ -17295,7 +17295,13 @@ export function rpBuildBBNominations(ep, only = null) {
   const stateKey = `bb_noms_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  const WORD = ['two', 'three', 'four', 'five'][Math.max(0, noms.length - 2)] || `${noms.length}`;
+  // The chairs the Head of Household actually filled. A curse chair or a
+  // Roadkill chair is on the block but was never theirs, so the spoken count
+  // ("nominate THREE people... turn THREE keys") must not include it. Falls
+  // back to every nominee for episodes saved before the field existed.
+  const ownNoms = (act?.hohNominees || []).filter(Boolean);
+  const spokenNoms = ownNoms.length ? ownNoms : noms;
+  const WORD = ['two', 'three', 'four', 'five'][Math.max(0, spokenNoms.length - 2)] || `${spokenNoms.length}`;
 
   // Each nominee gets a key, then a reason. That pairing is the ceremony.
   const roleOf = name => (name === plan.pawn ? 'pawn' : name === plan.target ? 'target' : 'other');
@@ -17390,6 +17396,20 @@ export function rpBuildBBNominations(ep, only = null) {
     }
     if (step.kind === 'key') {
       const idx = step.n - 1;
+      // A chair the Head of Household did not fill gets its own card. Running
+      // it through the ordinary key lines would have the HOH turning a key for
+      // somebody they never nominated, which is the one thing the curse and
+      // the Roadkill winner exist to make impossible.
+      if (step.name === act?.curseChair) {
+        return `<div class="bbns-card is-key bbns-curse-key">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill">A KEY NOBODY OWNS</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(step.name)}</strong> stands up without being asked. There is one key left on the table with ${pronouns(step.name).posAdj} own name on it, and ${pronouns(step.name).sub} ${pronouns(step.name).sub === 'they' ? 'turn' : 'turns'} it ${pronouns(step.name).ref}. Nobody in this room nominated ${pronouns(step.name).obj}. A curse did, and a curse has no face to look at.</div></div>`;
+      }
+      if (step.name === act?.roadkillChair) {
+        return `<div class="bbns-card is-key bbns-curse-key">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill">A KEY NOBODY OWNS</span></div>
+          <div class="bbns-card-b">A key turns that was never in ${anon ? 'that box' : `${_bbEsc(hoh)}'s box`}. <strong>${_bbEsc(step.name)}</strong> lights up on the wall with nobody's name attached to it${anon ? '' : `, and ${_bbEsc(hoh)} looks at it with the same surprise as everybody else`}.</div></div>`;
+      }
       return `<div class="bbns-card is-key">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill red">KEY ${step.n} TURNED</span></div>
         <div class="bbns-card-b">${KEY_LINES[(idx + step.name.length) % KEY_LINES.length](step.name, idx)}</div></div>`;
@@ -17443,8 +17463,11 @@ export function rpBuildBBNominations(ep, only = null) {
         <div class="bbns-card-h">${anon || !hoh ? '' : _bbAvatar(hoh, 30)}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
         <div class="bbns-card-b">${anon
           ? `"${noms.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete." The wall screen goes dark, and the room stays exactly as quiet as a room where everybody suspects everybody.`
-          : `"${noms.join(', ')} — I have nominated you for eviction because that is my
-          responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`}</div></div>`;
+          : `"${spokenNoms.join(', ')} — I have nominated you for eviction because that is my
+          responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`}${
+          spokenNoms.length !== noms.length
+            ? ` <em>The block is ${_bbEsc(noms.join(', '))}. Only ${spokenNoms.length} of those names belong to ${anon ? 'whoever turned those keys' : _bbEsc(hoh)}, and everybody in the room can count.</em>`
+            : ''}</div></div>`;
     }
     const b = step.beat;
     if (!b) return `<div class="bbns-card is-hidden"><span>?</span></div>`;

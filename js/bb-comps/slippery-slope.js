@@ -69,24 +69,28 @@ const SIDE_PRIZES = [
   {
     key: 'cash', label: 'FIVE THOUSAND DOLLARS',
     line: 'five thousand dollars',
-    sting: n => `Nobody in this house is rich enough to sneer at it. Two of them do anyway, once ${n} is out of the room.`,
+    gives: n => `${n} gets five thousand dollars. In this house it buys nothing at all — no food, no safety, not one vote — and every person still on a lane knows exactly what it was worth to ${n} to stop.`,
+    sting: n => `Nobody out there is rich enough to sneer at it. Two of them do anyway, once ${n} is out of the room.`,
     shared: false, pop: -2.5, allies: -0.9, house: 0,
   },
   {
     key: 'letter', label: 'A LETTER FROM HOME',
     line: 'a letter from home',
+    gives: n => `${n} gets twenty minutes alone with a letter from home. It changes nothing about the game and it is the only thing in that container anybody would have swapped a competition for.`,
     sting: n => `${n} reads it twice on the lane and once more in the lounge, out loud, and the house is very quiet for it.`,
     shared: false, pop: 3, allies: 0.3, house: 0.5,
   },
   {
     key: 'feast', label: 'A NIGHT OFF SLOP',
     line: 'a proper meal and a night off slop',
+    gives: n => `${n} gets a proper meal and a night out of the slop room, eaten alone while eleven people who are still on it listen to that happen.`,
     sting: n => `${n} eats it in front of everybody, which is the part the house actually minds.`,
     shared: false, pop: -1, allies: -0.5, house: -0.2,
   },
   {
     key: 'shopping', label: 'A LUXURY BUDGET FOR THE HOUSE',
     line: 'a luxury budget for the whole house',
+    gives: n => `The whole house gets the luxury budget, on ${n}'s money. Everybody eats for a week off the back of one person's decision to stop, and everybody knows whose decision it was.`,
     sting: n => `It is everybody's, and everybody knows who bought it. ${n} does not have to explain the stopping to a single person.`,
     shared: true, pop: 2, allies: 0.4, house: 0.9,
   },
@@ -271,6 +275,10 @@ export const slipperySlope = {
             // What the prize actually buys. A visible surrender is a visible
             // surrender either way, but the house does not react the same to
             // somebody who took money and somebody who fed them.
+            // What they actually walked away with, said plainly. The screen used
+            // to name the prize and never once say what it did for them.
+            beats.push(beat(prize.gives(p.name), [p.name], `TAKES: ${prize.label}`,
+              prize.shared ? 'green' : 'gold'));
             beats.push(beat(prize.sting(p.name), [p.name], prize.label, prize.shared ? 'green' : 'grey'));
             api.popDelta(p.name, prize.pop);
             api.record(p.name, 'slippery-side-prize',

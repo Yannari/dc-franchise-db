@@ -136,3 +136,35 @@ describe('the prize only tempts somebody who can afford to take it', () => {
     expect(refusals, 'nobody ever refused a prize out loud').toBeGreaterThan(0);
   });
 });
+
+// ── what the prize is actually worth ──────────────────────────────────
+
+describe('the prize gives the taker something the week can feel', () => {
+  beforeEach(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {};
+    seasonConfig.romance = 'off';
+    NAMES.forEach(n => {
+      gs.bb.stats[n] = { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
+        timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+    });
+  });
+
+  it('says what the taker walked away with, not just what it was called', () => {
+    for (let s = 0; s < 40; s++) {
+      const r = runBBCompetition({
+        type: 'hoh', participants: NAMES, house: NAMES, library: BB_COMPETITIONS,
+        forcedId: 'bb-physical-slide', rng: seededRng(s * 613 + 5),
+        week: { num: 4, houseAtStart: NAMES },
+      });
+      const takes = (r.beats || []).filter(b => String(b.badgeText).startsWith('TAKES:'));
+      if (!takes.length) continue;
+      // The benefit is stated in words, on its own beat.
+      expect(takes[0].text.length, 'the prize beat says nothing').toBeGreaterThan(40);
+      return;
+    }
+    throw new Error('no seeded run produced a prize to check');
+  });
+
+});

@@ -383,7 +383,11 @@ const spellingSearch = {
     for (const r of runs) {
       const noise = (rng() - 0.5) * 2.2;
       r.luck += noise;
-      const run = clamp(r.skill + noise / 15 - (r.threw ? 0.35 : 0), 0.02, 1);
+      // The noise is rolled on a ±1.1 scale and applied to a 0–1 one, and the
+      // divisor that reconciled them was 15 — which left the actual swing at
+      // seven percent and made this one of the three most deterministic
+      // competitions in the library. Six is the honest conversion.
+      const run = clamp(r.skill + noise / 6 - (r.threw ? 0.35 : 0), 0.02, 1);
       r.tiles = Math.max(3, Math.round(5 + run * 9 + (rng() - 0.5) * 2));
       // Having the letters is not having the word. The gap between the two is
       // where this competition is won.
@@ -734,7 +738,14 @@ const readySetWoah = {
     for (let c = 0; c < CALLS; c++) {
       const isGo = sheet[c] === 'GO';
       for (const r of runs) {
-        const noise = (rng() - 0.5) * 0.55;
+        // Widened from 0.55, and the hold check flattened below, because
+        // measured over forty runs this competition produced four different
+        // winners and the best of them took half of them — the tightest in the
+        // library alongside two others. The cause was not the ground: it was
+        // that a disciplined houseguest held on 96% of WOAH calls, so the one
+        // mechanism that could take the lead away from the favourite almost
+        // never fired on the favourite.
+        const noise = (rng() - 0.5) * 0.9;
         r.luck += noise;
         const discipline = clamp(r.skill * 1.1 + noise - (r.threw ? 0.4 : 0), 0, 1);
         if (isGo) {
@@ -744,7 +755,11 @@ const readySetWoah = {
         } else {
           // Holding still is the check. Everything about the yard is telling
           // them to go.
-          const held2 = rng() < clamp(0.25 + discipline * 0.72, 0, 0.97);
+          // Nobody is safe on a WOAH. The best in the yard still flinches
+          // about one call in eight, which over three WOAHs is a real chance
+          // of losing the night — and anybody who has watched somebody twitch
+          // off the line knows composure is not a stat you own outright.
+          const held2 = rng() < clamp(0.30 + discipline * 0.58, 0, 0.88);
           if (held2) { r.calls.push({ call: c + 1, word: 'WOAH', held: true }); continue; }
           r.falseStarts++;
           r.ground = 0;

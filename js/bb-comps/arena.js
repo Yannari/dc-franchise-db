@@ -207,9 +207,11 @@ const vertigo = {
   // comps are the safety net, not the show.
   weight: () => 4,
   desc: 'Each nominee steers a ball through a tilting maze by shifting their body weight. Landing the ball in any wrong hole forces a complete restart. The first nominee to guide the ball into the finish hole wins safety.',
+  // Widened with Last Shot for the same reason — measured at five winners in
+  // forty with the best taking 57%, the second tightest game in the library.
   stats: { physical: 0.3, intuition: 0.28, boldness: 0.24, temperament: 0.18 },
   simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.6, context, rng });
+    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 4.2, context, rng });
     const beats = [];
     beats.push(beat(
       `The mazes tilt with the nominees strapped to them, which means steering is done with your own bodyweight and your own nerve. The house lines the glass like it is watching surgery.`,
@@ -290,7 +292,11 @@ const lastShot = {
   desc: 'Each nominee receives a slingshot, ten standing targets and exactly twelve balls. Every ball may be fired only once and there are no refills. After all shots are used, the nominee who knocked down the most targets wins safety.',
   stats: { physical: 0.32, boldness: 0.26, temperament: 0.24, intuition: 0.18 },
   simulate(participants, context, api, rng) {
-    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3.2, context, rng });
+    // Widened from 3.2: measured over forty runs this was the tightest game in
+    // the whole library — four different winners, the best of them taking 60%
+    // — and it is twelve slingshot shots at ten targets, which is exactly the
+    // kind of night where the best shot in the house has a bad one.
+    const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 4.1, context, rng });
     const beats = [];
     beats.push(beat(
       `Twelve balls, ten targets, no restock. The arena has done the arithmetic out loud so nobody has to: you are allowed two mistakes tonight, and one of them is being here.`,

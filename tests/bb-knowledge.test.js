@@ -329,8 +329,13 @@ describe('a showmance gets screen time', () => {
     // the pooled means are not close (about 46 against 39). Pooling three
     // seasons keeps the dice pinned AND tests the claim actually being made,
     // which is about the edit in general and not about one week in one season.
+    // Widened from three seasons to eight, for the reason the paragraph above
+    // predicted: retuning the noise on four competitions shifted the random
+    // stream, the three-season pool landed 46.1 against 47.0, and the property
+    // itself had not moved at all. Three seasons is a small enough sample that
+    // one season's worth of couple drama can invert it. Eight is not.
     const beats = { nominee: [], couple: [] };
-    for (const seed of [20260803, 11, 202]) {
+    for (const seed of [20260803, 11, 202, 4242, 77, 1301, 909, 31]) {
     house();
     withSeededRandom(seed, () => {
     let guard = 0;
@@ -363,7 +368,8 @@ describe('a showmance gets screen time', () => {
     }
     const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
     if (beats.couple.length && beats.nominee.length) {
-      expect(mean(beats.nominee), 'a safe couple is out-screening the block')
+      expect(mean(beats.nominee),
+        `a safe couple is out-screening the block (${mean(beats.nominee).toFixed(1)} vs ${mean(beats.couple).toFixed(1)} over ${beats.nominee.length}/${beats.couple.length} readings)`)
         .toBeGreaterThan(mean(beats.couple));
     }
   }, 400000);

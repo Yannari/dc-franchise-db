@@ -55,23 +55,42 @@ describe('competitions stay winnable by more than one person', () => {
     });
   });
 
-  it('every HOH competition spreads its wins', () => {
-    const failures = [];
-    for (const comp of BB_COMPETITIONS.filter(c => c.types.includes('hoh'))) {
-      const wins = new Map();
-      for (let i = 0; i < RUNS; i++) {
-        const result = runBBCompetition({
-          type: 'hoh', participants: NAMES.slice(0, FIELD), house: NAMES,
-          library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(i * 401 + 9),
-          week: { num: 5, houseAtStart: NAMES },
-        });
-        wins.set(result.winner, (wins.get(result.winner) || 0) + 1);
+  // Every slot, not just the HOH one.
+  //
+  // This measured `types.includes('hoh')` and nothing else, which left the
+  // veto-only competitions and the entire arena library — a third of the
+  // catalogue — never checked. Measured when the gap was found: the two
+  // tightest competitions in the whole game are both arena games, and one of
+  // them was sitting two points under a threshold it was not being held to.
+  const SLOTS = ['hoh', 'veto', 'arena'];
+
+  for (const slot of SLOTS) {
+    it(`every ${slot.toUpperCase()} competition spreads its wins`, () => {
+      const failures = [];
+      const pool = BB_COMPETITIONS.filter(c => c.types.includes(slot)
+        // A competition playable in several slots is measured once, in the
+        // first slot it declares, rather than three times over.
+        && SLOTS.find(s => c.types.includes(s)) === slot);
+      expect(pool.length, `no competitions declare the ${slot} slot`).toBeGreaterThan(0);
+      for (const comp of pool) {
+        const wins = new Map();
+        for (let i = 0; i < RUNS; i++) {
+          const result = runBBCompetition({
+            type: slot, participants: NAMES.slice(0, FIELD), house: NAMES,
+            library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(i * 401 + 9),
+            week: { num: 5, houseAtStart: NAMES },
+            // The arena and veto games read a block; without one they either
+            // refuse to run or run a different shape than they do in a season.
+            nominees: ['G', 'H'], hoh: 'A',
+          });
+          wins.set(result.winner, (wins.get(result.winner) || 0) + 1);
+        }
+        const share = Math.max(...wins.values()) / RUNS;
+        if (wins.size < MIN_DISTINCT_WINNERS || share > MAX_SHARE_FOR_ONE) {
+          failures.push(`${comp.id}: ${wins.size} winners, top takes ${Math.round(share * 100)}%`);
+        }
       }
-      const share = Math.max(...wins.values()) / RUNS;
-      if (wins.size < MIN_DISTINCT_WINNERS || share > MAX_SHARE_FOR_ONE) {
-        failures.push(`${comp.id}: ${wins.size} winners, top takes ${Math.round(share * 100)}%`);
-      }
-    }
-    expect(failures, failures.join(' | ')).toEqual([]);
-  });
+      expect(failures, failures.join(' | ')).toEqual([]);
+    });
+  }
 });

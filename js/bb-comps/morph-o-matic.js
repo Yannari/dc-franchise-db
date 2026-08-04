@@ -131,9 +131,15 @@ export const morphOMatic = {
         // Base read: skill shortens it hard, nerves and slop lengthen it. The
         // skill term has to dominate the noise or six faces of luck cancel out
         // into a dead heat.
-        const noise = (rng() - 0.5) * 7;
+        // Measured over forty runs, "the skill term has to dominate the noise"
+        // had gone too far the other way: four different houseguests ever won
+        // it and the best took half. Six faces of a ±3.5s wobble cannot touch a
+        // 24-second skill spread, so the wobble is wider and the spread is
+        // narrower. Recognising a blended face is still a skill; it is not a
+        // guarantee.
+        const noise = (rng() - 0.5) * 10;
         luck -= noise;                       // less time is better luck
-        let secs = clamp(4.5 + (1 - skill) * 24 + noise, 2, 42);
+        let secs = clamp(4.5 + (1 - skill) * 18 + noise, 2, 42);
         if (haveNot) { const hn = 1.4 + rng() * 1.8; secs += hn; hnCost += hn; }
         if (t.threw) secs += 6 + rng() * 9;
 

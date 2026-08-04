@@ -42,6 +42,7 @@ import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
 import { rpBuildBBHacker, rpBuildBBHackerVote } from './vp-bb-hacker.js';
+import { rpBuildBBPowerPlayed } from './vp-bb-power.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -16355,6 +16356,93 @@ export function bbfCamera(key, room) {
   bank.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
 }
 
+/**
+ * "Still out there" — what is in somebody's pocket, and what it actually does.
+ *
+ * The gap this fills: the player showed a power being GRANTED and showed it
+ * FIRING, and between those two nights — which can be a fortnight — the only
+ * record that a Diamond existed was the Debug panel. Nobody watches the Debug
+ * panel.
+ *
+ * It carries the rules with it on purpose. Four powers with similar names have
+ * four different limitations, and every one of them is a rule people get wrong
+ * from memory: the Cloud covers a ceremony rather than a week, a Bonus Life is
+ * a chance rather than immunity, the Diamond controls both chairs. Printing
+ * the catch next to the holder is the difference between a HUD and something
+ * that explains the week.
+ *
+ * Secrecy is stamped, not hidden. The viewer already watched the box open —
+ * what they cannot otherwise tell is who in that house is walking around
+ * knowing about it, and that is the whole texture of a secret power.
+ */
+function _bbPowerBand(ep) {
+  const ledger = (ep.powerLedger || []).filter(p => p && p.powerId);
+  if (!ledger.length) return '';
+  const KNOWN = {
+    public: { label: 'THE HOUSE KNOWS', note: 'power and holder, out in the open', cls: 'is-open' },
+    'holder-secret': { label: 'HOLDER UNKNOWN', note: 'the house knows it exists and not who has it', cls: 'is-half' },
+    secret: { label: 'NOBODY KNOWS', note: 'nobody in that house knows this exists', cls: 'is-dark' },
+  };
+  const cards = ledger.map(p => {
+    const know = KNOWN[p.visibility] || KNOWN.public;
+    const state = p.firedThisWeek ? { txt: 'SPENT THIS WEEK', cls: 'is-spent' }
+      : p.disposed ? { txt: p.disposedReason === 'expired' ? 'EXPIRED UNUSED' : 'LOST WITH ITS HOLDER', cls: 'is-gone' }
+        : p.weeksLeft <= 0 ? { txt: 'LAST WEEK IT EXISTS', cls: 'is-urgent' }
+          : { txt: `${p.weeksLeft} WEEK${p.weeksLeft === 1 ? '' : 'S'} LEFT`, cls: 'is-live' };
+    return `<article class="bbpw-card ${know.cls} ${state.cls}">
+      <header class="bbpw-h">
+        <span class="bbpw-name">${_bbEsc(p.name)}</span>
+        <span class="bbpw-fuse">${state.txt}</span>
+      </header>
+      <div class="bbpw-who">
+        ${_bbAvatar(p.holder, 34)}
+        <div>
+          <b>${_bbEsc(p.holder)}</b>
+          <span class="bbpw-know">${know.label} &middot; ${know.note}</span>
+        </div>
+      </div>
+      ${p.blurb ? `<p class="bbpw-does">${_bbEsc(p.blurb)}</p>` : ''}
+      ${p.catch ? `<p class="bbpw-catch"><span>THE CATCH</span>${_bbEsc(p.catch)}</p>` : ''}
+      ${p.moment ? `<p class="bbpw-when">${_bbEsc(p.moment)}</p>` : ''}
+    </article>`;
+  }).join('');
+
+  return `<style>
+  .bbpw{margin:14px 0 6px;border:1px solid rgba(255,199,88,.22);border-radius:9px;
+    background:linear-gradient(180deg,rgba(58,44,12,.30),rgba(10,12,16,.55));padding:11px 12px}
+  .bbpw-t{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .bbpw-t b{font-size:10px;letter-spacing:2.6px;color:#ffc758}
+  .bbpw-t i{font-style:normal;font-size:10px;color:#7d8898;letter-spacing:.4px}
+  .bbpw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:9px}
+  .bbpw-card{border:1px solid rgba(255,255,255,.09);border-left:3px solid #ffc758;border-radius:7px;
+    padding:9px 11px;background:rgba(9,11,15,.72)}
+  .bbpw-card.is-half{border-left-color:#7ee7ff}
+  .bbpw-card.is-dark{border-left-color:#c9737f}
+  .bbpw-card.is-spent{opacity:.72;border-left-style:double}
+  .bbpw-card.is-gone{opacity:.45}
+  .bbpw-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px}
+  .bbpw-name{font-size:13px;font-weight:700;color:#f0e6d2;letter-spacing:.3px}
+  .bbpw-fuse{font-size:8.5px;letter-spacing:1.6px;color:#8b93a2;white-space:nowrap}
+  .bbpw-card.is-urgent .bbpw-fuse{color:#ff9d6b}
+  .bbpw-card.is-spent .bbpw-fuse{color:#ffc758}
+  .bbpw-who{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+  .bbpw-who .bb-av{border-radius:4px;flex:none}
+  .bbpw-who b{display:block;font-size:12px;color:#e6edf3}
+  .bbpw-know{display:block;font-size:9px;letter-spacing:.6px;color:#7d8898;margin-top:2px}
+  .bbpw-card.is-dark .bbpw-know{color:#c9737f}
+  .bbpw-card.is-half .bbpw-know{color:#7ee7ff}
+  .bbpw-does{font-size:12px;line-height:1.55;color:#c8d2de;margin:0 0 5px}
+  .bbpw-catch{font-size:11.5px;line-height:1.5;color:#9fb0c2;margin:0 0 5px}
+  .bbpw-catch span{display:block;font-size:8px;letter-spacing:1.8px;color:#ff9d6b;margin-bottom:2px}
+  .bbpw-when{font-size:10.5px;color:#6f7b8b;margin:0;font-style:italic}
+  </style>
+  <section class="bbpw">
+    <div class="bbpw-t"><b>STILL OUT THERE</b>
+      <i>${ledger.length} power${ledger.length === 1 ? '' : 's'} in play this week — the house cannot see all of this</i></div>
+    <div class="bbpw-grid">${cards}</div>
+  </section>`;
+}
+
 export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
@@ -16386,7 +16474,8 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span>WEEK ${ep.num}</span>
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
-      ${_bbMemoryWall(house, { status })}`;
+      ${_bbMemoryWall(house, { status })}
+      ${_bbPowerBand(ep)}`;
 
   if (beats.length) {
     // A camera bank, so the stretch can be taken in before it is read: which
@@ -20246,6 +20335,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Total Drama episode — one challenge screen, one camp screen.
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
+      case 'power-played': {
+        // The Coup d'État and the Cloud used to fire into nothing at all: the
+        // act was emitted and no surface read it, so a week could be rewritten
+        // by a power the player never mentioned.
+        const pw = rpBuildBBPowerPlayed(view, act, { avatar: _bbAvatar, esc: _bbEsc });
+        if (pw) {
+          screens.push({ id: id(`bb-power-${act.powerId}`),
+            label: act.name || 'A Power Is Played', html: pw });
+        }
+        break;
+      }
       case 'hacker': {
         const hk = rpBuildBBHacker(view, act, {
           tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,

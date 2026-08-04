@@ -4348,6 +4348,19 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'power-played': {
+        sec(`${(act.name || 'A POWER').toUpperCase()} IS PLAYED`);
+        ln(`  ${act.holder} has been carrying it${act.secret ? ', and not one person in that house knew' : ''}.`);
+        if (act.detail) ln(`  ${act.detail}`);
+        if ((act.removed || []).length) {
+          ln(`  ${act.removed.join(' and ')} come${act.removed.length === 1 ? 's' : ''} off the block.`);
+          ln(`  ${(act.nominees || []).join(' and ') || 'Nobody'} goes up instead, named by ${act.holder}.`);
+          ln('  Every plan made this week was made about a block that no longer exists.');
+        }
+        beats(act);
+        break;
+      }
+
       case 'hacker': {
         sec('THE HACKER');
         ln('  Every houseguest plays it alone, and only the winner is told they won.');
@@ -4419,13 +4432,21 @@ export function generateBBSummaryText(ep) {
         if (act.anonymous) {
           // The invisible week: the voice does the ceremony, and no line of
           // this transcript may put the real name next to it.
+          const anonOwn = (act.hohNominees && act.hohNominees.length)
+            ? act.hohNominees.filter(Boolean) : nomNames;
+          const anonWord = ['two', 'three', 'four', 'five'][Math.max(0, anonOwn.length - 2)] || `${anonOwn.length}`;
           ln('  The chair at the head of the table stays empty. The wall screen speaks:');
-          ln(`  "This week's Head of Household is invisible. Big Brother will now turn ${nomWord} keys on their behalf."`);
+          ln(`  "This week's Head of Household is invisible. Big Brother will now turn ${anonWord} keys on their behalf."`);
           ln('');
-          nomNames.forEach((name, i) => {
+          anonOwn.forEach((name, i) => {
             const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
             ln(`    The ${which} key turns with nobody's hand on it. ${name}'s photograph turns on the memory wall.`);
           });
+          if (act.curseChair) {
+            ln(`    ${act.curseChair} then turns a key on ${pronouns(act.curseChair).posAdj} own photograph. Two of the`);
+            ln('    three names on that wall were put there by somebody nobody can see, and the third');
+            ln('    was put there by a curse. Not one person in the room chose any of it.');
+          }
           ln('');
           ln(`  "${nomNames.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete."`);
           ln('  No speech. No reasons. A room full of people performing innocence.');
@@ -4433,15 +4454,36 @@ export function generateBBSummaryText(ep) {
           break;
         }
         const nomHoh = ep.hoh || act.hoh || 'The Head of Household';
+        // The chairs the HOH actually filled. A cursed self-nomination or a
+        // Roadkill winner's pick is on the block but was never theirs to claim,
+        // and the ceremony must not count it among the keys in their box.
+        const ownNames = (act.hohNominees && act.hohNominees.length)
+          ? act.hohNominees.filter(Boolean) : nomNames;
+        const ownWord = ['two', 'three', 'four', 'five'][Math.max(0, ownNames.length - 2)] || `${ownNames.length}`;
         ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
-        ln(`  Household to nominate ${nomWord} people for eviction. In my nomination box are the keys`);
-        ln(`  of the houseguests I am nominating. I will turn ${nomWord} keys to lock in my`);
+        ln(`  Household to nominate ${ownWord} people for eviction. In my nomination box are the keys`);
+        ln(`  of the houseguests I am nominating. I will turn ${ownWord} keys to lock in my`);
         ln('  nominations, and their faces will appear on the memory wall."');
         ln('');
-        nomNames.forEach((name, i) => {
+        ownNames.forEach((name, i) => {
           const which = ['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`;
           ln(`    ${nomHoh} turns the ${which} key. ${name}'s photograph turns on the memory wall.`);
         });
+        // The chair nobody in this room filled. It goes up AFTER the HOH is
+        // finished, because that is the order it happens in and because the
+        // whole point is that the ceremony stops being the HOH's for a moment.
+        if (act.curseChair) {
+          ln('');
+          ln(`    ${act.curseChair} stands up without being asked. There is one key left on the`);
+          ln(`    table and it has ${act.curseChair}'s own name on it. ${act.curseChair} turns it, and`);
+          ln(`    ${act.curseChair}'s photograph goes up beside the two ${nomHoh} chose.`);
+          ln(`    Nobody nominated ${act.curseChair}. A curse did, and the curse has no face.`);
+        } else if (act.roadkillChair) {
+          ln('');
+          ln(`    A third key turns that was never in ${nomHoh}'s box. ${act.roadkillChair}'s photograph`);
+          ln(`    goes up on the wall with nobody's name attached to it, and ${nomHoh} looks at it`);
+          ln('    with the same surprise as everybody else in the room.');
+        }
         ln('');
         // The reasoning is a written event where the house produced one.
         const spoken = (act.socialBeats || []).filter(b => String(b.eventId || '').startsWith('nom-speech'));
@@ -4449,8 +4491,12 @@ export function generateBBSummaryText(ep) {
         if (act.structure && act.structure !== 'target-pawn' && act.structureWhy) {
           ln(`  In the Diary Room, ${nomHoh} lays the week out plainly: ${act.structureWhy}.`);
         }
-        ln(`  ${nomHoh}: "${nomNames.join(', ')} — I have nominated you for eviction. This is the`);
+        ln(`  ${nomHoh}: "${ownNames.join(', ')} — I have nominated you for eviction. This is the`);
         ln('  nomination ceremony. Nominations are complete."');
+        if (act.curseChair || act.roadkillChair) {
+          ln(`  The block is ${nomNames.join(', ')}. Only ${ownNames.length} of those names belong to`);
+          ln(`  ${nomHoh}, and everybody in the room can count.`);
+        }
         // Everything else that happened in the room.
         (act.socialBeats || []).filter(b => !spoken.includes(b))
           .forEach(b => ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));

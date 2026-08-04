@@ -47,7 +47,7 @@ import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } fro
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
-import { grantPower, activePowerAt, usePower, expirePowers, BB_POWER_DEFINITIONS } from './powers.js';
+import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
  * A competition win, seen by the whole house, becomes strategic respect and a
@@ -1533,7 +1533,7 @@ export function simulateBBWeek(options = {}) {
     week.acts.push(addBeats({
       type: 'power-played', powerId: 'the-cloud', holder: cloud.holder,
       name: BB_POWER_DEFINITIONS['the-cloud'].name, timing: 'nominations',
-      secret: cloud.visibility === 'secret',
+      secret: cloud.visibility === 'secret', visibility: cloud.visibility,
       detail: `${cloud.holder} cannot be nominated at this ceremony. It does not cover the veto ceremony, `
         + 'and everybody who can count knows that.',
     }, { players: [cloud.holder] }));
@@ -1702,6 +1702,14 @@ export function simulateBBWeek(options = {}) {
     // screen was crediting this ceremony to whichever HOH survived the battle,
     // which on half of them is the wrong person entirely.
     hoh,
+    // Which chairs the Head of Household did NOT fill. A third nominee who
+    // arrived by curse or by a secret winner's pen is still on the block, but
+    // the ceremony is not the HOH's to claim: without this the script says "it
+    // is my responsibility to nominate THREE people" and turns three keys for
+    // somebody the HOH never chose.
+    hohNominees: nominees.filter(n => n !== week.temptationChair && n !== week.roadkill?.nominee),
+    curseChair: week.temptationChair || null,
+    roadkillChair: week.roadkill?.nominee || null,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
@@ -2284,7 +2292,8 @@ export function simulateBBWeek(options = {}) {
           week.acts.push(addBeats({
             type: 'power-played', powerId: 'coup-d-etat', holder: coup.holder,
             name: BB_POWER_DEFINITIONS['coup-d-etat'].name, timing: 'veto-ceremony',
-            secret: false, removed: [...taken], nominees: [...named],
+            secret: false, visibility: coup.visibility,
+            removed: [...taken], nominees: [...named],
             detail: `${coup.holder} takes ${taken.join(' and ')} off the block and puts up `
               + `${named.join(' and ')}. ${hoh} watches a week of work come apart from a chair `
               + 'nobody can put them in.',
@@ -2965,6 +2974,12 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // What was in somebody's pocket this week, snapshotted BEFORE the sweep —
+  // a power that expires tonight was live for the whole week and belongs on
+  // the week's screen saying so. Without this the only record of a power
+  // between the night it was granted and the night it fires is the Debug
+  // panel, which is not a thing anybody watches.
+  week.powerLedger = powerLedgerFor(week.num);
   // Powers whose holder just left, or whose window just closed, end here.
   expirePowers(week.num, gs.activePlayers);
   // Somebody leaving rearranges everybody's plan: a shield walks out and the

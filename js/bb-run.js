@@ -193,6 +193,11 @@ export function weekToEpisode(week) {
       : null,
     hackerGuesses: (week.hackerGuesses || []).map(g => ({ ...g })),
     hackerVote: week.hackerVote ? { ...week.hackerVote } : null,
+    // Everything that was in somebody's pocket this week, with the rules
+    // attached — the screen's "what is still out there" band reads this, and a
+    // replayed week has to show the state as it was then rather than the
+    // season-long ledger as it is now.
+    powerLedger: (week.powerLedger || []).map(p => ({ ...p })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
@@ -703,6 +708,17 @@ export function summariseWeek(week) {
         }
         (act.results || []).filter(r => r.threw).forEach(r => line(`  ${r.name} threw the competition.`));
         break;
+      case 'power-played': {
+        line('');
+        line(`${(act.name || 'A POWER').toUpperCase()} IS PLAYED`);
+        line(`  ${act.holder} has been holding it${act.secret ? ', and nobody knew' : ''}.`);
+        if (act.detail) line(`  ${act.detail}`);
+        if ((act.removed || []).length) {
+          line(`  Off the block: ${act.removed.join(' and ')}.`);
+          line(`  Named instead: ${(act.nominees || []).join(' and ') || '—'}.`);
+        }
+        break;
+      }
       case 'hacker': {
         line('');
         line('THE HACKER — PLAYED ALONE, RESULT SEALED');
@@ -740,6 +756,10 @@ export function summariseWeek(week) {
         line(act.anonymous ? 'NOMINATION CEREMONY — READ BY BIG BROTHER'
           : act.byCoHoh ? `NOMINATION CEREMONY — ${act.hoh}` : 'NOMINATION CEREMONY');
         line(`  Nominated: ${(act.nominees || []).join(' and ')}.`);
+        // A chair the Head of Household did not fill is still on the block, but
+        // saying "nominated by" without this reads as if they chose all three.
+        if (act.curseChair) line(`  ${act.curseChair} nominated THEMSELVES — the curse, not the Head of Household.`);
+        if (act.roadkillChair) line(`  ${act.roadkillChair} was named by the Roadkill winner, not the Head of Household.`);
         if (act.anonymous) line('  No speech, no reasons: the keys turned on their own.');
         break;
       case 'battle-of-the-block': {

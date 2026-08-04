@@ -56,7 +56,6 @@ function casesIn(text, startMarker) {
 const FOLDED = new Set([
   'house',        // ambient house events — rendered inside the act they sit in
   'power',        // the private power ledger; the Debug panel owns it
-  'power-played', // narrated by the ceremony the power fired at
   'target',       // a private read, never public
   'safety',       // folded into the nomination/veto prose
   'generic-result', // a competition with no signature screen

@@ -24,6 +24,12 @@ import { gs } from '../core.js';
  *   rules       the same shape the twist contract speaks
  *   survivesEviction  the holder walking out does NOT dispose it (see below)
  *   autoFiresAtExpiry the window closing SPENDS it rather than binning it
+ *   blurb       what it does, in one sentence, for a viewer who has not
+ *               memorised four powers with similar names
+ *   catch       the limitation that makes it a decision rather than a gift.
+ *               Every one of these is a rule somebody gets wrong from memory,
+ *               which is exactly why it belongs on the screen.
+ *   moment      when the viewer should expect to see it fire
  */
 export const BB_POWER_DEFINITIONS = {
   'diamond-veto': {
@@ -35,6 +41,9 @@ export const BB_POWER_DEFINITIONS = {
     // reason to keep it secret. The instance's visibility decides which.
     useTiming: { public: 'veto-ceremony', secret: 'eviction-night' },
     windowWeeks: 2,
+    blurb: 'Takes a nominee off the block — and the holder, not the Head of Household, names who goes up in their place.',
+    catch: 'It controls BOTH chairs, which an ordinary veto never does: the HOH can lose their whole week in one ceremony.',
+    moment: 'The veto ceremony — or, if it is secret, the live show, with no warning at all.',
   },
 
   // BB11. The holder stands up at the veto ceremony and takes the week off the
@@ -50,6 +59,9 @@ export const BB_POWER_DEFINITIONS = {
     // Sat on for a fortnight, which is the whole tension: the house spends two
     // weeks knowing it exists and not knowing who has it.
     windowWeeks: 2,
+    blurb: 'Overrules the Head of Household outright: up to TWO nominees come off the block and the holder names the replacements.',
+    catch: 'The Head of Household and the veto holder cannot be seated, so it rewrites the week without touching the two people already safe.',
+    moment: 'The veto ceremony, standing up in front of everybody.',
   },
 
   // BB20. Preventative and narrow: it is spent BEFORE a ceremony is read out
@@ -62,6 +74,9 @@ export const BB_POWER_DEFINITIONS = {
     rules: { unnominatable: 'one-ceremony' },
     useTiming: 'nominations',
     windowWeeks: 8,
+    blurb: 'Declared privately before a nomination ceremony: the holder cannot be named at that ceremony.',
+    catch: 'It covers ONE ceremony, not the week — the holder is still a legal replacement at the veto ceremony three days later.',
+    moment: 'Nomination day, before the keys turn.',
   },
 
   // BB20. Not immunity — a CHANCE. The holder, or somebody they name, gets a
@@ -86,6 +101,9 @@ export const BB_POWER_DEFINITIONS = {
     windowWeeks: 4,
     survivesEviction: true,
     autoFiresAtExpiry: true,
+    blurb: 'Gives an evicted houseguest a CHANCE to come back: the holder names who gets it, and that person plays to return.',
+    catch: 'It is not immunity. Lose the competition and you are gone for good — and if the window runs out unused it fires anyway, on whoever the next evictee happens to be.',
+    moment: 'Eviction night, after the vote.',
   },
 };
 
@@ -154,6 +172,36 @@ export function activePowersAt(timing, week, powerId = null) {
  */
 export function activePowerAt(timing, week, powerId = null) {
   return activePowersAt(timing, week, powerId)[0] || null;
+}
+
+/**
+ * What was in somebody's pocket this week, for the screen.
+ *
+ * The store is a running ledger across the whole season, and a replayed week
+ * needs the state as it was THEN — so this is snapshotted per week rather than
+ * read live. An instance belongs to the week if its window covers it or if it
+ * fired in it, and it carries the definition's plain-language rules along with
+ * it: four powers with similar names and different limitations are not
+ * something a viewer should be expected to hold in their head.
+ */
+export function powerLedgerFor(week) {
+  return store()
+    .filter(p => p.usedWeek === week
+      || (!p.disposed && p.acquiredWeek <= week && week <= p.expiresAfterWeek)
+      || (p.disposed && p.acquiredWeek <= week && week <= p.expiresAfterWeek))
+    .map(p => {
+      const def = BB_POWER_DEFINITIONS[p.powerId] || {};
+      return {
+        powerId: p.powerId, name: def.name || p.powerId,
+        holder: p.holder, visibility: p.visibility, source: p.source,
+        acquiredWeek: p.acquiredWeek, expiresAfterWeek: p.expiresAfterWeek,
+        weeksLeft: Math.max(0, p.expiresAfterWeek - week),
+        used: !!p.used, usedWeek: p.usedWeek,
+        firedThisWeek: p.usedWeek === week,
+        disposed: !!p.disposed, disposedReason: p.disposedReason || null,
+        blurb: def.blurb || '', catch: def.catch || '', moment: def.moment || '',
+      };
+    });
 }
 
 /** Fire it. The instance stays in the store as the record of what happened. */

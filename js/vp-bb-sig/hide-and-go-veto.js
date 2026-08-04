@@ -579,7 +579,7 @@ export function rpBuildSigHideAndGoVeto(ep, actType, u = {}) {
       .sgh-card.is-gold:before{content:'';position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent,#f0a5001f,transparent 40%);animation:sghSpin 12s linear infinite}
       .sgh-card.is-gold>*{position:relative;z-index:1}
 
-      .sgh-ev{border-radius:10px;padding:12px 14px;margin-bottom:9px;border:1px solid #6b4b2e55;border-left:3px solid #6b4b2e;background:#22170f99;position:relative;overflow:hidden}
+      .sgh-ev{border-radius:10px;padding:12px 14px;margin-bottom:9px;border:1px solid #6b4b2e55;border-left:3px solid #6b4b2e;background:#22170f99;position:relative;overflow:clip}
       .sgh-ev.is-void{display:flex;align-items:center;justify-content:center;opacity:.12;min-height:34px;padding:8px;border-style:dashed;color:var(--sgh-dim)}
       .sgh-ev header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
       .sgh-evtag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.6px;padding:2px 6px;border-radius:3px;background:#ffffff10;color:var(--sgh-dim)}

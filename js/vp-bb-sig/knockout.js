@@ -261,7 +261,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
   .sigknock{--kn-ink:#f3eaea;--kn-dim:#a89094;--kn-line:rgba(229,72,77,.26);
     max-width:1100px;margin:0 auto;font-family:Karla,system-ui,sans-serif;color:var(--kn-ink);
     background:radial-gradient(115% 80% at 50% -12%,#2e1417 0%,#1a0d10 52%,#0a0507 100%);
-    border-radius:12px;padding:18px 16px 0;position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;position:relative;overflow:clip}
   .sigknock::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:radial-gradient(38% 55% at 26% 0%,rgba(255,170,170,.11),transparent 70%),
                radial-gradient(38% 55% at 74% 0%,rgba(255,170,170,.11),transparent 70%);
@@ -405,7 +405,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
 
   <div class="kno-ctrl">
     ${done ? `<span class="kno-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE PODIUMS ARE EMPTY.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.kno-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
         state.idx < 0 ? 'Send up the first two' : 'Next'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="kno-count">${Math.min(total, revealed)} / ${total}</span>

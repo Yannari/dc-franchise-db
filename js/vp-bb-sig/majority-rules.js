@@ -329,7 +329,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   .sigmajor{--mj-ink:#f2ece0;--mj-dim:#a39683;--mj-line:rgba(201,162,39,.26);--mj-acc:${accent};
     max-width:1100px;margin:0 auto;font-family:Inter,system-ui,sans-serif;color:var(--mj-ink);
     background:radial-gradient(120% 90% at 50% -20%,#2b2418 0%,#171208 55%,#0b0905 100%);
-    border-radius:12px;padding:18px 16px 0;position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;position:relative;overflow:clip}
   .sigmajor::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:repeating-linear-gradient(90deg,rgba(255,214,120,.05) 0 2px,transparent 2px 46px);
     animation:mjr-glow 7s ease-in-out infinite alternate}
@@ -487,7 +487,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
 
   <div class="mjr-ctrl">
     ${done ? `<span class="mjr-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'EVERY BOARD IS DOWN.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.mjr-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
         state.idx < 0 ? 'Read the first question' : 'Next question'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="mjr-count">${Math.min(total, revealed)} / ${total}</span>

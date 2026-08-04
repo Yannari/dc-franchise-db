@@ -244,7 +244,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
   .sigslope{--sl-ink:#e9fbef;--sl-dim:#84a894;--sl-line:rgba(74,222,128,.24);
     max-width:1100px;margin:0 auto;font-family:Archivo,system-ui,sans-serif;color:var(--sl-ink);
     background:radial-gradient(120% 85% at 50% -12%,#123d29 0%,#0a2118 52%,#040e0a 100%);
-    border-radius:12px;padding:18px 16px 0;position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;position:relative;overflow:clip}
   .sigslope::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:repeating-linear-gradient(114deg,rgba(150,255,200,.05) 0 3px,transparent 3px 22px);
     animation:slp-sheen 6s ease-in-out infinite alternate}
@@ -383,7 +383,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
 
   <div class="slp-ctrl">
     ${done ? `<span class="slp-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE LANES ARE EMPTY.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.slp-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
         state.idx < 0 ? 'Sound the horn' : 'Next lane'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="slp-count">${Math.min(total, revealed)} / ${total}</span>

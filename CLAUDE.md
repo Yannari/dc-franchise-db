@@ -83,6 +83,21 @@ Every challenge event that's heroic, villainous, cowardly, or selfless must affe
 
 ## Challenge Rules
 
+### Every Challenge Must Explain How It Works
+`desc` is not flavour text — it is drawn on the challenge/competition screen and is the ONLY place the viewer is told what the players are physically doing. The narration says what happened, not what the rules were, so a one-line desc leaves a result nobody can follow.
+
+Every `desc` states four things, in order:
+1. **The set-up** — what is in the yard, what each player has.
+2. **The mechanic** — what they actually do, step by step, including anything that repeats.
+3. **What goes wrong** — the failure that costs you (a restart, a penalty, a re-zip, a lost ball).
+4. **The win condition** — said outright ("the highest total after five frames wins").
+
+The worked example is Bowlerina:
+
+> Each houseguest gets a lane with a spinning station at one end and a row of pin targets at the other. Holding an overhead metal bar, they spin in circles until the barrier blocking the lane drops — then they let go, stagger to their ball and try to roll it into a target while the room is still turning. The barrier soon rises again and sends them back to the bar before their next roll. The harder targets are worth the most and sit exactly where the room is blurriest, and the highest total after five frames wins.
+
+Rules of thumb: two sentences minimum, ~200 characters minimum, and a comp that serves BOTH the HOH and veto slots must never name a prize (the same static text runs on both nights). `tests/bb-comp-descriptions.test.js` enforces all of this.
+
 ### Required Per Challenge
 - `updateChalRecord(ep)` with `ep.chalMemberScores`
 - Debug challenge tab + VP screen + text backlog + cold open + timeline tag

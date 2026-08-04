@@ -22,7 +22,7 @@ export const theDraw = {
   name: 'Pure Chance',
   category: 'luck',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'Each houseguest releases an identical ball into a concealed obstacle board. The ball chooses the path, the landing slots decide the score, and the highest score wins.',
+  desc: 'Every houseguest releases an identical ball from the same mark into a concealed board of pegs and baffles. The moment it disappears there is nothing left to do — nobody can steer it, nobody can be better at it, and the board throws it wherever it throws it. The slot it drops into is the score, the highest score takes the power, and the house has to live with whoever that turns out to be.',
   // Present so the dispatcher can render a formula; deliberately almost inert.
   stats: { intuition: 0.4, boldness: 0.35, temperament: 0.25 },
   weight(ctx) {

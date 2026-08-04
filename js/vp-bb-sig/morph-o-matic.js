@@ -249,7 +249,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
   .sigmorph{--mo-ink:#e6e1f5;--mo-dim:#8f88ab;--mo-line:rgba(139,92,246,.26);
     max-width:1100px;margin:0 auto;font-family:'Space Grotesk',system-ui,sans-serif;color:var(--mo-ink);
     background:radial-gradient(115% 85% at 50% -10%,#241a3d 0%,#140f24 50%,#08060f 100%);
-    border-radius:12px;padding:18px 16px 0;position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;position:relative;overflow:clip}
   .sigmorph::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:repeating-linear-gradient(0deg,rgba(190,160,255,.06) 0 1px,transparent 1px 4px);
     animation:mom-crt 5s ease-in-out infinite alternate}
@@ -404,7 +404,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
 
   <div class="mom-ctrl">
     ${done ? `<span class="mom-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE MACHINE IS OFF.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.mom-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
         state.idx < 0 ? 'Start the board' : 'Next run'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="mom-count">${Math.min(total, revealed)} / ${total}</span>

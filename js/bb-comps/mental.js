@@ -22,7 +22,7 @@ export const puzzleRace = {
   name: 'Cut and Cover',
   category: 'puzzle',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'Houseguests race to fit a set of irregular pieces into one complete image. The first player to place every piece correctly and hit the buzzer wins.',
+  desc: 'Houseguests race to build one complete image out of a crate of irregular pieces, working on identical boards set close enough together that everybody can see how far everybody else has got. The pieces only look interchangeable — a frame that went together easily early on often has to come apart again at the end. The first houseguest to place every piece and hit their buzzer wins.',
   stats: { mental: 0.46, intuition: 0.22, temperament: 0.18, strategic: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 2.4, context, rng });

@@ -356,7 +356,7 @@ export function rpBuildSigBeforeOrAfter(ep, actType, u = {}) {
   .sigboa{--amber:#e0a127;--sepia:#f3e3c3;--ink:#241c12;--teal:#2f9e9b;--deep:#12100d;--rust:#d9534f;
     max-width:1100px;margin:0 auto;font-family:'DM Sans',system-ui,sans-serif;color:var(--sepia);
     background:radial-gradient(120% 80% at 50% 0%,#241d14 0%,#15120d 55%,#0d0b08 100%);
-    padding:18px 16px 96px;border-radius:10px;position:relative;overflow:hidden}
+    padding:18px 16px 96px;border-radius:10px;position:relative;overflow:clip}
   .sigboa:before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:repeating-linear-gradient(0deg,rgba(255,255,255,0.018) 0 2px,transparent 2px 4px);opacity:.7}
   .sigboa .sgb-hd{text-align:center;position:relative;z-index:2}

@@ -328,7 +328,7 @@ const unravel = {
   // Arena-exclusive games headline the arena; the borrowed multi-type
   // comps are the safety net, not the show.
   weight: () => 4,
-  desc: 'Each nominee must untangle fifty feet of rope, thread it completely out of a climbing frame and retrieve the key tied to its far end. The first nominee to use that key to open their lock wins safety.',
+  desc: 'Each nominee must untangle fifty feet of rope, thread the whole length of it back out of a climbing frame and retrieve the key tied to its far end. Pulling the wrong strand is the danger — it re-knots what has already been cleared, and thirty seconds of work goes backwards in one movement. The first nominee to free their key and open their lock wins safety.',
   stats: { endurance: 0.32, temperament: 0.28, intuition: 0.22, physical: 0.18 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, { mix: this.stats, luck: 3, context, rng });

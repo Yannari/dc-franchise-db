@@ -355,7 +355,7 @@ export function rpBuildSigOtev(ep, actType, u) {
 @import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Karla:ital,wght@0,400;0,600;0,800;1,400&display=swap');
 .sigotev{--sgo-ink:#0b1206;--sgo-moss:#16220e;--sgo-moss2:#1e2f13;--sgo-slime:#5aa832;--sgo-bile:#c3e64f;
   --sgo-rot:#3c5c1f;--sgo-gold:#f0c23a;--sgo-red:#e2603c;--sgo-mud:#8ea277;
-  font-family:'Karla',system-ui,sans-serif;color:#e8f4d6;position:relative;overflow:hidden}
+  font-family:'Karla',system-ui,sans-serif;color:#e8f4d6;position:relative;overflow:clip}
 .sigotev .sgo-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
 .sigotev .sgo-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:radial-gradient(circle at 50% 0%,rgba(90,168,50,0.22),transparent 62%),

@@ -207,7 +207,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
   .sigbowl{--bw-ink:#eaf7f9;--bw-dim:#84a3aa;--bw-line:rgba(38,198,218,.26);
     max-width:1100px;margin:0 auto;font-family:Rubik,system-ui,sans-serif;color:var(--bw-ink);
     background:radial-gradient(120% 85% at 50% -12%,#123a42 0%,#0a2029 52%,#040d12 100%);
-    border-radius:12px;padding:18px 16px 0;position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;position:relative;overflow:clip}
   .sigbowl::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:conic-gradient(from 0deg at 50% 40%,transparent 0deg,rgba(38,198,218,.07) 40deg,transparent 80deg,
       rgba(38,198,218,.07) 120deg,transparent 160deg);animation:bwl-spin 22s linear infinite}
@@ -342,7 +342,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
 
   <div class="bwl-ctrl">
     ${done ? `<span class="bwl-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE BARS ARE EMPTY.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.bwl-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
         state.idx < 0 ? 'Drop the barrier' : 'Next card'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="bwl-count">${Math.min(total, revealed)} / ${total}</span>

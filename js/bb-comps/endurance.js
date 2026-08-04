@@ -35,7 +35,7 @@ export const pressureWall = {
   name: 'Hold the Line',
   category: 'endurance',
   types: ['hoh', 'veto'],
-  desc: 'Houseguests hold onto narrow grips on a wall that repeatedly tilts and sprays them. Falling or stepping down eliminates them; the last person still holding on wins.',
+  desc: 'The whole house hangs off narrow grips on a wall face that tilts, shakes and sprays them in waves, and the waves get worse the longer it runs. There is no score and no clock — losing your grip or stepping down simply ends your night, in front of everybody. The last houseguest still on the wall wins, and once it is down to two the competition is usually settled by a conversation rather than a fall.',
   stats: { endurance: 0.44, temperament: 0.24, physical: 0.18, boldness: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
@@ -105,7 +105,7 @@ export const coldSoak = {
   name: 'Cold Comfort',
   category: 'endurance',
   types: ['hoh', 'veto', 'arena'],
-  desc: 'Houseguests remain on small platforms while cold water and wind hit them in timed waves. Stepping off eliminates them, and the last player remaining wins.',
+  desc: 'Houseguests stand on platforms barely wider than their own feet while cold water and wind hit them in timed waves, hour after hour, usually through the night. Nothing about it is difficult. It is only cold, and it does not stop, and that turns out to be worse. Stepping off the platform ends a run, and the last houseguest still standing on theirs wins.',
   stats: { endurance: 0.38, temperament: 0.30, boldness: 0.18, physical: 0.14 },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {

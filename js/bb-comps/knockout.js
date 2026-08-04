@@ -200,7 +200,12 @@ export const knockout = {
           if (target === picker) continue;
           target.chosenBy = picker.name;
           breakdown[target.name].chosenBy = picker.name;
-          api.addBond(picker.name, target.name, -0.5);
+          // Small on purpose. This fires for both people picked in every duel
+          // — about twenty-five bond writes in one competition — and at -0.5 it
+          // quietly drained the whole house every time Knockout ran, which
+          // starved the bond-driven house events that give nominees their
+          // screen time and let safe showmances out-screen the block.
+          api.addBond(picker.name, target.name, -0.15);
         }
         api.record(picker.name, 'knockout-pick', { sent: [a.name, b.name].filter(n => n !== picker.name), duel: duelNo });
       }
@@ -294,9 +299,9 @@ export const knockout = {
       // Knocking somebody out yourself is not free, and it costs more when you
       // had something with them.
       if (bondTo(victor.name, loser.name) >= 3) {
-        api.addBond(victor.name, loser.name, -0.6);
+        api.addBond(victor.name, loser.name, -0.3);
       } else {
-        api.addBond(victor.name, loser.name, -0.25);
+        api.addBond(victor.name, loser.name, -0.1);
       }
       api.popDelta(victor.name, 0.4);
 

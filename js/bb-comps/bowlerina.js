@@ -31,9 +31,10 @@ import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb
 const NEUTRAL = { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' };
 const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return NEUTRAL; } };
 
-// What a roll can be worth. The far targets pay, and they are the ones you
-// cannot see properly.
-const PIN_VALUES = [0, 1, 2, 3, 5, 8];
+// What a roll can be worth: 0, 1, 2, 3, 5 or 8. The far targets pay, and they
+// are the ones you cannot see properly. The bands that award them live in
+// simulate() — as a list this was mapped onto by index, which is what let a
+// steady houseguest clear the top of it five frames out of five.
 
 const OPEN_LINES = [
   () => 'The bars go up, the barrier goes down, and the yard fills with the sound of a lot of people trying not to be sick.',
@@ -67,7 +68,7 @@ export const bowlerina = {
   name: 'Bowlerina',
   category: 'precision',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
-  desc: 'Houseguests hang from metal bars and spin. When the barrier drops they roll a ball at the pin targets across the yard, and when it rises they spin again. The far targets are worth the most and are the hardest to see. Highest total across every frame wins.',
+  desc: 'Each houseguest gets a lane with a spinning station at one end and a row of pin targets at the other. Holding an overhead metal bar, they spin in circles until the barrier blocking the lane drops — then they let go, stagger to their ball and try to roll it into a target while the room is still turning. The barrier soon rises again and sends them back to the bar before their next roll. The harder targets are worth the most and sit exactly where the room is blurriest, and the highest total after five frames wins.',
   // Physical carries it: balance, coordination and the accuracy of the roll
   // itself. Endurance is the spinning and the overhead bars, over and over.
   // Mental is holding a correction together while the room is still moving, and
@@ -127,8 +128,20 @@ export const bowlerina = {
         luck += aimNoise;
         const aim = clamp(0.18 + steady * 1.15 - dizzy * 0.17 + aimNoise
           - (t.threw ? 0.5 : 0) - (fell ? 0.3 : 0), 0, 1);
-        const idx = Math.min(PIN_VALUES.length - 1, Math.floor(aim * PIN_VALUES.length + rng() * 0.85));
-        const value = PIN_VALUES[Math.max(0, idx)];
+        // What the roll is worth.
+        //
+        // Scaling `aim` straight onto the value ladder saturated it: a decent
+        // houseguest cleared the top index nearly every frame, so cards read
+        // 8/8/8/8/8, every player's best frame was 8, and there was no suspense
+        // in watching one. The far target is supposed to be the hard one, so it
+        // now has to be earned — thresholds, with the top band narrow enough
+        // that a perfect card is a genuine event rather than the default.
+        const value = aim >= 0.94 ? 8
+          : aim >= 0.80 ? 5
+            : aim >= 0.62 ? 3
+              : aim >= 0.40 ? 2
+                : aim >= 0.18 ? 1
+                  : 0;
 
         if (!value) gutters++;
         total += value;

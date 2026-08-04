@@ -18,17 +18,17 @@ const VALID_STATS = new Set(['physical', 'endurance', 'mental', 'social', 'strat
 export const GENERIC_BB_COMPS = Object.freeze([
   {
     id:'generic-memory-booth', name:'Memory Booth', category:'puzzle', types:['hoh','veto','arena','tiebreaker'],
-    desc:'Houseguests study a sequence of images, sounds and details before answering under pressure.',
+    desc:'Houseguests are called into the booth one at a time and shown a fast run of images, sounds and details from the last few weeks in the house, then answered on it against a clock with nothing to check and nobody to ask. Most of it was in front of them at the time. The highest score wins.',
     stats:{ mental:.48, intuition:.27, strategic:.15, temperament:.10 },
   },
   {
     id:'generic-endurance-wall', name:'Pressure Wall', category:'endurance', types:['hoh','veto'],
-    desc:'Houseguests hold position as the wall tilts, shakes and punishes every lapse in focus.',
+    desc:'Houseguests take a position against a wall that tilts, shakes and steadily stops being somewhere a person can hold on to. Every lapse in concentration costs grip, and grip is the only thing being measured. Whoever holds their position longest wins.',
     stats:{ endurance:.46, physical:.19, temperament:.22, boldness:.13 },
   },
   {
     id:'generic-obstacle-course', name:'Backyard Gauntlet', category:'physical', types:['hoh','veto','arena','tiebreaker'],
-    desc:'A timed obstacle course tests speed, stamina, nerve and enough focus to avoid costly mistakes.',
+    desc:'A timed run through the backyard course — over, under and through — with a penalty added for every obstacle taken badly. Going flat out is the fastest way round and also the fastest way to collect penalties, so the winning run is rarely the quickest one. Best adjusted time wins.',
     stats:{ physical:.36, endurance:.29, mental:.14, boldness:.13, intuition:.08 },
   },
   // NOTE: there is deliberately no generic "Before or After" here. The
@@ -40,7 +40,7 @@ export const GENERIC_BB_COMPS = Object.freeze([
   // must not reuse a written competition's name.
   {
     id:'generic-balance-stack', name:'Balance Stack', category:'precision', types:['hoh','veto','arena','tiebreaker'],
-    desc:'Houseguests build an unstable stack while balancing on a narrow platform.',
+    desc:'Each houseguest builds a stack of blocks while standing on a platform narrow enough that leaning to place one is its own risk. The stack gets taller, the reach gets longer, and a collapse means starting the tower again from the mat. The tallest stack still standing at the horn wins.',
     stats:{ endurance:.27, physical:.18, mental:.24, temperament:.23, intuition:.08 },
   },
 ]);

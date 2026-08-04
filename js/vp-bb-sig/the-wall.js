@@ -379,7 +379,7 @@ export function rpBuildSigTheWall(ep, actType, u) {
   .sigwall{--sgw-ink:#dbe7f7;--sgw-dim:#8fa3c2;--sgw-line:rgba(120,160,220,.24);--sgw-acc:${accent};
     max-width:1100px;margin:0 auto;font-family:'Barlow Condensed',system-ui,sans-serif;
     background:radial-gradient(120% 80% at 50% -10%,#16264a 0%,#0a1226 45%,#050a16 100%);
-    border-radius:12px;padding:18px 16px 0;color:var(--sgw-ink);position:relative;overflow:hidden}
+    border-radius:12px;padding:18px 16px 0;color:var(--sgw-ink);position:relative;overflow:clip}
   .sigwall::before{content:'';position:absolute;inset:46px 0 0;pointer-events:none;
     background:radial-gradient(60% 40% at 20% 0%,rgba(190,220,255,.10),transparent 70%),
                radial-gradient(60% 40% at 80% 0%,rgba(190,220,255,.08),transparent 70%);

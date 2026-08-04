@@ -11,6 +11,7 @@ import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
+import { runDenOfTemptation } from './temptation.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
@@ -1437,6 +1438,22 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // The only distributor whose price is paid by somebody who was not in the
+  // room. Runs before nominations because the curse has to be able to seat a
+  // third chair before the ceremony reads any names out.
+  if (!compressed && twists.has('bb-den-of-temptation')) {
+    try {
+      week.temptation = runDenOfTemptation({
+        week, house, rng, offered: options.temptationOffer || 'random',
+      });
+      if (week.temptation) {
+        week.acts.push(addBeats(week.temptation, { players: [week.temptation.entrant] }));
+      }
+    } catch (e) {
+      week.temptation = null;
+    }
+  }
+
   if (!compressed && twists.has('bb-pandoras-box')) {
     const prizeId = options.pandorasPrize || 'diamond-veto';
     const st = pStats(hoh);
@@ -1592,6 +1609,28 @@ export function simulateBBWeek(options = {}) {
         detail: { nominated: third },
       });
     }
+  }
+
+  // ── the curse takes its chair ──
+  //
+  // Nobody chose this name and nobody can be blamed for it, which is what
+  // separates it from Roadkill's third nominee: there is no chooser to hunt,
+  // only a beneficiary. The cursed houseguest nominates THEMSELVES, so the
+  // Head of Household's two are untouched and the ceremony gains a third
+  // chair that the room cannot attribute to anybody in it.
+  const cursedName = week.temptation?.accepted ? week.temptation.cursed : null;
+  if (cursedName && house.includes(cursedName) && !nominees.includes(cursedName)
+      && cursedName !== hoh && !untouchable.includes(cursedName)) {
+    nominees.push(cursedName);
+    week.temptationChair = cursedName;
+    week.acts.push(addBeats({
+      type: 'temptation-curse', cursed: cursedName,
+      curse: week.temptation.curse,
+    }, { nominees: [cursedName] }));
+  } else if (cursedName) {
+    // Safe by veto, already up, or wearing the key — the curse cannot seat a
+    // chair and the house never learns how close it came.
+    week.temptationChairBlocked = cursedName;
   }
 
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);

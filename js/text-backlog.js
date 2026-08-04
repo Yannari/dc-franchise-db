@@ -4450,6 +4450,31 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'temptation':
+        sec('THE DEN OF TEMPTATION');
+        ln(`  The audience chooses ${act.entrant}, and the Den offers ${pronouns(act.entrant).obj} ${act.power} outright — no competition, no vote.`);
+        ln('  The catch is not a catch for them: accepting puts a curse in the house, and the curse cannot land on the person who accepted.');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        if (!act.accepted) {
+          ln(`  ${act.entrant} refuses. Nothing happens to anybody, and nobody will ever know ${pronouns(act.entrant).sub} was even asked.`);
+          break;
+        }
+        ln(`  ${act.entrant} accepts, in secret. ${act.power} changes hands and the house is told only that a curse has landed.`);
+        if (act.cursed) ln(`  ${act.curse.name} — ${act.cursed} must nominate ${pronouns(act.cursed).ref} this week.`);
+        if ((act.guesses || []).length) {
+          const right = act.guesses.filter(g => g.correct).map(g => g.who);
+          ln(`  The house starts hunting: ${act.guesses.map(g => `${g.who} → ${g.guess}`).join(', ')}.`);
+          ln(right.length
+            ? `  ${right.join(' and ')} ${right.length === 1 ? 'has' : 'have'} the right name and no way at all to prove it.`
+            : '  Every accusation in the room lands on somebody who had nothing to do with it.');
+        }
+        break;
+
+      case 'temptation-curse':
+        sec(`THE CURSE — ${act.cursed} NOMINATES THEMSELVES`);
+        ln(`  ${act.cursed} walks to the third chair and sits down in it. ${pronouns(act.cursed).Sub} was not nominated by the Head of Household and was not named by a secret winner — a name came out of a hat because somebody in that room said yes to something.`);
+        break;
+
       case 'bonus-life':
         if (!act.fired) {
           sec('THE BONUS LIFE — NOT PLAYED');

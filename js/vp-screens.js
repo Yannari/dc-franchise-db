@@ -18562,6 +18562,94 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
+ * The Den of Temptation.
+ *
+ * A booth rather than a door: one chair, one screen, one person, and a set of
+ * scales that tip the moment the offer is taken. What the screen has to sell
+ * is the asymmetry — the power on one pan, a stranger's week on the other —
+ * so the scales are the only thing on it that moves.
+ *
+ * The taker's identity is on this screen because the VIEWER is owed it. The
+ * HOUSE never gets it, which is what the hunt at the bottom is for.
+ */
+export function rpBuildBBTemptation(ep, act) {
+  if (!act) return '';
+  const { entrant, power, accepted, cursed, curse } = act;
+  const stateKey = `bb_dt_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const beats = act.beats || [];
+  const steps = [{ kind: 'booth' }, ...beats.map(b => ({ kind: 'beat', b }))];
+  if (accepted && (act.guesses || []).length) steps.push({ kind: 'hunt' });
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const decided = state.idx >= 1;
+
+  const SCALES = `<svg viewBox="0 0 120 74" aria-hidden="true">
+      <path d="M60 8 v46" stroke="#8a6a1f" stroke-width="3" stroke-linecap="round"/>
+      <path d="M44 62 h32" stroke="#8a6a1f" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="60" cy="8" r="3.6" fill="#e3b341"/>
+      <g class="bbdt-beam">
+        <path d="M14 22 h92" stroke="#e3b341" stroke-width="3" stroke-linecap="round"/>
+        <path d="M18 22 v13 M102 22 v13" stroke="#8a6a1f" stroke-width="1.6"/>
+        <path d="M6 35 h24 l-4 9 h-16z" fill="rgba(201,52,60,.75)" stroke="#c9343c" stroke-width="1.2"/>
+        <path d="M90 35 h24 l-4 9 h-16z" fill="rgba(240,165,0,.45)" stroke="#f0a500" stroke-width="1.2"/>
+      </g>
+    </svg>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'booth') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h">${entrant ? _bbAvatar(entrant, 30) : ''}<span class="bbns-pill gold">THE OFFER</span></div>
+        <div class="bbns-card-b">The audience picked ${_bbEsc(entrant)} — not for playing well, but for being watched — and the Den offers ${_bbEsc(power)} for nothing. No competition. No vote. The only condition is that accepting puts a curse into the house, and the curse cannot land on the person accepting it.</div></div>`;
+    }
+    if (step.kind === 'hunt') {
+      const right = (act.guesses || []).filter(g => g.correct).length;
+      return `<div class="bbns-card is-final bbdt-curse">
+        <div class="bbns-card-h"><span class="bbns-pill ${right ? 'gold' : 'grey'}">THE HUNT</span></div>
+        <div class="bbns-card-b">
+          The house knows a curse landed. It will never be told whose greed caused it.
+          <div class="bbdt-hunt">${(act.guesses || []).map(g => `
+            <span class="bbdt-arrow ${g.correct ? 'is-right' : ''}">${_bbEsc(g.who)} <i>→</i> ${_bbEsc(g.guess)}</span>`).join('')}</div>
+          <div style="margin-top:8px">${right
+            ? `${right === 1 ? 'One of them has' : `${right} of them have`} the right name and not one shred of proof.`
+            : 'Every accusation in that room has landed on somebody who had nothing to do with it.'}</div>
+        </div></div>`;
+    }
+    const b = step.b || {};
+    const tone = b.badgeText === 'ACCEPTED' ? 'bbdt-take'
+      : b.badgeText === 'DECLINED' ? 'bbdt-refuse'
+      : b.badgeText === 'CURSED' ? 'bbdt-curse' : '';
+    return `<div class="bbns-card ${tone}">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE DEN'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbdt">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 20px rgba(201,52,60,.35);margin-bottom:4px">THE DEN OF TEMPTATION</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Every temptation has a consequence. It is never yours.</div>
+    <div class="bbdt-booth ${decided ? (accepted ? 'is-taken' : 'is-refused') : ''}">
+      <div class="bbdt-scales">${SCALES}</div>
+      ${entrant ? `<div style="text-align:center">${rpPortrait(entrant, 'sm')}
+        <div class="bbdt-tag" style="margin-top:6px">${decided ? (accepted ? 'accepted' : 'refused') : 'in the den'}</div></div>` : ''}
+      ${decided && accepted && cursed ? `<div style="text-align:center">${rpPortrait(cursed, 'sm')}
+        <div class="bbdt-tag" style="margin-top:6px;color:#f0a500">cursed</div></div>` : ''}
+    </div>
+    ${decided && accepted && curse ? `<div style="text-align:center;font-size:11px;color:#f0a500;margin:-6px 0 12px;font-family:ui-monospace,Consolas,monospace;letter-spacing:.6px">${_bbEsc(curse.rule)}</div>` : ''}
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The offer' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
  * The Bonus Life.
  *
  * Drawn as the arcade extra life BB20's app icon actually was, which makes it
@@ -20052,6 +20140,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
+      case 'temptation':
+        screens.push({ id: id('bb-temptation'), label: 'The Den', html: rpBuildBBTemptation(view, act) });
         break;
       case 'bonus-life':
         screens.push({ id: id('bb-bonuslife'), label: 'Bonus Life', html: rpBuildBBBonusLife(view, act) });

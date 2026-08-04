@@ -1376,6 +1376,19 @@ export function renderTimeline() {
         prizeHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-den-of-temptation') {
+        // What is on the table in the Den. Same source as the box and the
+        // shelf; 'random' lets the season surprise itself.
+        const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
+        const chosen = t.offer || 'random';
+        let offerHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','offer',this.value)" onclick="event.stopPropagation()" title="What the Den offers" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        offerHtml += `<option value="random" ${chosen === 'random' ? 'selected' : ''}>A random temptation</option>`;
+        Object.values(defs).forEach(d => {
+          offerHtml += `<option value="${d.id}" ${d.id === chosen ? 'selected' : ''}>${d.name}</option>`;
+        });
+        offerHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${offerHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-app-store') {
         // What goes ON the shelf. Same source as the box's cargo, so a power
         // added to the inventory appears in both with no new UI — and the
@@ -1691,6 +1704,7 @@ export function assignTwist(twistId) {
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-app-store') entry.shelf = 'all';
+    if (twistId === 'bb-den-of-temptation') entry.offer = 'random';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);

@@ -251,7 +251,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -499,6 +499,10 @@ export function simulateBBEpisode() {
   // are — so one season can run the BB18 gauntlet and the next the Showdown.
   const bbEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-battle-back');
+  // Which temptation is on the table. Same per-entry pattern, and it reads the
+  // power registry, so a power added to the shelf is offerable here for free.
+  const denEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-den-of-temptation');
 
   // ══════════════════════════════════════════════════════════════════
   // The Split House
@@ -534,6 +538,7 @@ export function simulateBBEpisode() {
     battleBackStyle: bbEntry?.bbStyle || 'gauntlet',
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
+    temptationOffer: denEntry?.offer || 'random',
     // What the audience is voting over. 'all' stocks the whole inventory; a
     // power id stocks just that one, which is how a season books a specific
     // power onto a specific week.
@@ -732,6 +737,26 @@ export function summariseWeek(week) {
         line('');
         line('DIAMOND POWER OF VETO — DETONATED');
         line(`  ${act.holder} reveals the secret power live: ${act.saved} comes off the block, and ${act.replacement} takes the empty chair.`);
+        break;
+      case 'temptation': {
+        line('');
+        line('THE DEN OF TEMPTATION');
+        line(`  The audience sends ${act.entrant} into the Den and offers ${act.power} for nothing.`);
+        if (!act.accepted) {
+          line('  REFUSED. No power changes hands and no curse enters the house.');
+          break;
+        }
+        line(`  ACCEPTED — in secret. ${act.entrant} holds ${act.power} and the house is never told.`);
+        if (act.cursed) line(`  ${act.curse.name}: ${act.cursed} must nominate themselves this week.`);
+        for (const g of act.guesses || []) {
+          line(`  ${g.who} suspects ${g.guess}${g.correct ? ' — and is right.' : ' — and is wrong.'}`);
+        }
+        break;
+      }
+      case 'temptation-curse':
+        line('');
+        line(`THE CURSE — ${act.cursed} NOMINATES THEMSELVES`);
+        line(`  ${act.cursed} takes the third chair. Nobody put them there and nobody can be blamed for it.`);
         break;
       case 'bonus-life': {
         line('');

@@ -136,6 +136,28 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every houseguest in this room is about to start being nice to the cameras.',
     },
   },
+  'bb-den-of-temptation': {
+    id: 'bb-den-of-temptation', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB19's shape, and the rule everybody misremembers: the consequence does
+    // NOT land on the person who accepted. Paul took the Pendant of Protection
+    // and Ramses was cursed for it. The taker walks away clean and hidden.
+    //
+    // The rules delta is the third chair, because that is the curse — the
+    // POWER that was taken changes nothing about the week's shape, and lives
+    // in powers.js like every other one. This is the only distributor whose
+    // cost is written into the week's rules rather than paid by its recipient.
+    rules: { nomineeCount: 3, selfNominationCurse: true },
+    acquisition: { channel: 'temptation', secrecy: 'secret' },
+    // The DEN announces itself; the taker never does. The house is told there
+    // is an offer on the table and is later told a curse has landed, and it is
+    // never told those two facts are about the same person.
+    announcement: {
+      name: 'The Den of Temptation',
+      rule: 'One houseguest has been chosen by the audience and is being offered real power in the Den — for nothing. If they accept, a curse enters this house: a houseguest chosen at random will have to nominate THEMSELVES this week. If they refuse, nothing happens at all. You will not be told which of you was offered it, and you will not be told what they chose.',
+      sting: 'One of you is about to decide what somebody else’s week is worth.',
+    },
+  },
   'bb-roadkill': {
     id: 'bb-roadkill', layer: 'scheduled', category: 'nomination-power',
     timing: 'nominations', duration: { weeks: 1 },

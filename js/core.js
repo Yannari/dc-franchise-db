@@ -427,7 +427,14 @@ export const TWIST_CATALOG = [
     // chair, Battle of the Block runs two blocks of two, and a Split House has
     // two blocks in two houses — none of them can also carry a secret third
     // nominee without the ceremony meaning something different in each half.
-    incompatible:['bb-battle-of-the-block', 'bb-split-house'],
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation'],
+    incompatibleModes:['block-buster'] },
+  { id:'bb-den-of-temptation', emoji:'😈', name:'Den of Temptation', format:'big-brother',
+    category:'advantages', phase:'any',
+    desc:'The audience sends one houseguest into the Den alone and offers them a real power for nothing. There is no competition and no catch they can see — except that accepting puts a curse into the house, and the curse never lands on them. Take it and a houseguest chosen at random must nominate themselves alongside the Head of Household’s two. Refuse and nothing happens to anybody. The house is told a curse has landed and is never told who caused it, so it spends the week hunting a culprit and is perfectly capable of settling on the wrong one.',
+    // The curse seats a third chair, so it collides with everything else that
+    // reshapes the block for exactly the reasons Roadkill does.
+    incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
     category:'returns', phase:'any',

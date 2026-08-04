@@ -59,6 +59,13 @@ const round1 = v => Math.round(v * 10) / 10;
  *   · A letter from home is neither. Nobody in that house will hold it against
  *     anybody, and watching somebody read one changes how they are seen.
  *
+ * `worth` is the net value of taking it, in the currency that actually decides
+ * anything: bonds, which is what nominations are chosen on. Popularity is
+ * almost inert in this format, so a prize priced off popularity is priced off
+ * nothing. Two of these are worth LESS than nothing — you quit a competition
+ * and end up likelier to be nominated — and that is deliberate. They are not
+ * traps the engine springs on people at random; see the appeal term below.
+ *
  * `line` is a bare noun phrase because it is dropped mid-sentence into the
  * take lines; anything editorial goes in `sting`, which gets its own beat.
  * The previous copy carried a trailing clause and produced "takes a luxury
@@ -71,28 +78,28 @@ const SIDE_PRIZES = [
     line: 'five thousand dollars',
     gives: n => `${n} gets five thousand dollars. In this house it buys nothing at all — no food, no safety, not one vote — and every person still on a lane knows exactly what it was worth to ${n} to stop.`,
     sting: n => `Nobody out there is rich enough to sneer at it. Two of them do anyway, once ${n} is out of the room.`,
-    shared: false, pop: -2.5, allies: -0.9, house: 0,
+    shared: false, pop: -2.5, allies: -0.9, house: 0, worth: -0.5,
   },
   {
     key: 'letter', label: 'A LETTER FROM HOME',
     line: 'a letter from home',
     gives: n => `${n} gets twenty minutes alone with a letter from home. It changes nothing about the game and it is the only thing in that container anybody would have swapped a competition for.`,
     sting: n => `${n} reads it twice on the lane and once more in the lounge, out loud, and the house is very quiet for it.`,
-    shared: false, pop: 3, allies: 0.3, house: 0.5,
+    shared: false, pop: 3, allies: 0.3, house: 0.5, worth: 0.6,
   },
   {
     key: 'feast', label: 'A NIGHT OFF SLOP',
     line: 'a proper meal and a night off slop',
     gives: n => `${n} gets a proper meal and a night out of the slop room, eaten alone while eleven people who are still on it listen to that happen.`,
     sting: n => `${n} eats it in front of everybody, which is the part the house actually minds.`,
-    shared: false, pop: -1, allies: -0.5, house: -0.2,
+    shared: false, pop: -1, allies: -0.5, house: -0.2, worth: -0.2,
   },
   {
     key: 'shopping', label: 'A LUXURY BUDGET FOR THE HOUSE',
     line: 'a luxury budget for the whole house',
     gives: n => `The whole house gets the luxury budget, on ${n}'s money. Everybody eats for a week off the back of one person's decision to stop, and everybody knows whose decision it was.`,
     sting: n => `It is everybody's, and everybody knows who bought it. ${n} does not have to explain the stopping to a single person.`,
-    shared: true, pop: 2, allies: 0.4, house: 0.9,
+    shared: true, pop: 2, allies: 0.4, house: 0.9, worth: 1,
   },
 ];
 
@@ -263,9 +270,32 @@ export const slipperySlope = {
           // stroll off the lane for a letter.
           const danger = dangerLevel(p.name, context);
           const nerve = (10 - s.boldness) / 10;          // low nerve stops sooner
+
+          // How good this prize looks TO THIS PERSON.
+          //
+          // Two of the four are worth less than nothing: you quit a
+          // competition and finish likelier to be nominated. Before this,
+          // every houseguest was equally liable to take one, so a quarter of
+          // the field was being made to play badly by a coin flip — which is
+          // not a temptation, it is the engine choosing wrong for them.
+          //
+          // Strategic sense is what reads the trade. A houseguest who has it
+          // sees the prize at its real worth and will not stop for a bad one.
+          // A houseguest who does not sees a prize, full stop — so the cash
+          // still gets taken, by exactly the person whose game that is. The
+          // bad prizes become characterisation instead of a design hole.
+          const sense = clamp(s.strategic / 10, 0, 1);
+          const appeal = prize.worth * sense + (1 - sense) * 0.55;
+
           const temptation = (behind * 0.55 + nerve * 0.22 + (p.threw ? 0.25 : 0) + 0.06)
-            * (1 - danger) * (1 - danger);
-          if (behind > 0.28 && danger < TOO_DESPERATE_TO_STOP && rng() < temptation * 0.35) {
+            * (1 - danger) * (1 - danger) * appeal;
+          if (appeal > 0 && behind > 0.28 && danger < TOO_DESPERATE_TO_STOP
+            // Tuned to how often this should be a story rather than a habit:
+            // roughly one or two people in a field of twelve, not a quarter of
+            // it. Raising this to compensate for the appeal term pushed it the
+            // wrong way — appeal is meant to make takes rarer and better
+            // motivated, not to be bought back out.
+            && rng() < temptation * 0.15) {
             p.tookPrize = true; p.out = true;
             p.prizeTrip = trip;
             const pr = pron(p.name);

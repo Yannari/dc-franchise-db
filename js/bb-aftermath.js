@@ -210,7 +210,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   // Big Brother's host is Don, not Chris. seasonConfig.host is the Total
   // Drama setting and defaults to Chris, so inheriting it put the wrong man in
   // the interview chair; the house gets its own knob and its own default.
-  const host = seasonConfig.host || 'Don McGurrin';
+  const host = seasonConfig.host || 'Don';
   const style = hostStyle();
   const voice = evicteeVoice(evictee);
   const stats = pStats(evictee);

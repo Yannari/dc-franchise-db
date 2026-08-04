@@ -19503,7 +19503,7 @@ export function rpBuildBBEviction(ep) {
   const state = _tvState[stateKey];
   // Don, unless the season says otherwise. NOT seasonConfig.host — that is
   // Total Drama's knob and its default is the wrong show.
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Don McGurrin';
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Don';
 
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
   const vvar = (list, ...salt) => {

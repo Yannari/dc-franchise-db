@@ -22,8 +22,8 @@ describe('format-scoped setup screen', () => {
     const td = hostOptionsForFormat('total-drama');
     const bb = hostOptionsForFormat('big-brother');
     expect(td[0]).toEqual({ value: 'Chris', label: 'Chris McLean' });
-    expect(bb[0]).toEqual({ value: 'Don McGurrin', label: 'Don McGurrin' });
-    expect(td.map(h => h.value)).not.toContain('Don McGurrin');
+    expect(bb[0]).toEqual({ value: 'Don', label: 'Don McGurrin' });
+    expect(td.map(h => h.value)).not.toContain('Don');
     expect(bb.map(h => h.value)).not.toContain('Chris');
   });
 

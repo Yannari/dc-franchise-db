@@ -862,7 +862,7 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Jeff', label: 'Jeff Probst' },
   ],
   'big-brother': [
-    { value: 'Don McGurrin', label: 'Don McGurrin' },
+    { value: 'Don', label: 'Don McGurrin' },
     { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
@@ -878,7 +878,7 @@ export function renderHostOptions() {
   const fmt = seasonFormat(_g('cfg-format')?.value || seasonConfig);
   const options = hostOptionsForFormat(fmt);
   const previousRaw = seasonConfig?.host || el.value;
-  const previous = previousRaw === 'Don' ? 'Don McGurrin' : previousRaw;
+  const previous = previousRaw === 'Don McGurrin' ? 'Don' : previousRaw;
   const values = options.map(h => h.value);
   const next = values.includes(previous) ? previous : options[0].value;
   el.innerHTML = options.map(h => `<option value="${h.value}">${h.label}</option>`).join('');

@@ -96,11 +96,22 @@ describe('Battle of the Block', () => {
     // and they can be seated in the empty chair like anybody else.
     expect(ep.hoh).not.toBe(battle.dethroned);
     const voters = (ep.votingLog || []).map(v => v.voter);
+    const noms = ep.finalNominees || [];
     if (voters.length) {
-      expect(voters, 'the dethroned HOH did not get their vote back').toContain(battle.dethroned);
+      // They vote — unless they were put on the block, which is the same loss
+      // of protection seen from the other side and is exactly what happened
+      // the first time this ran: the veto came off, and the dethroned Head of
+      // Household went up as the replacement and left that night.
+      if (noms.includes(battle.dethroned)) {
+        expect(voters, 'a nominee voted').not.toContain(battle.dethroned);
+      } else {
+        expect(voters, 'the dethroned HOH did not get their vote back').toContain(battle.dethroned);
+      }
     }
     // The reigning HOH does not vote; that is the ordinary rule reasserting.
     expect(voters).not.toContain(battle.reigning);
+    // And nothing shields them from the chair either.
+    expect(ep.hoh).not.toBe(battle.dethroned);
   });
 
   it('a dethroned reign does not count as a reign', () => {
@@ -521,5 +532,25 @@ describe('the Battle is played in pairs, not four solos', () => {
     Object.keys(_tvState).forEach(k => { _tvState[k].idx = 999; });
     const html = buildVPScreens(ep).find(s => s.id === 'bb-botb').html;
     expect(html, 'an ampersand was escaped twice').not.toMatch(/&amp;amp;/);
+  });
+
+  it('neither Head of Household can be put on the block by the other', () => {
+    // The second ceremony excluded both crowns; the first excluded only its
+    // own, so the first Head of Household could nominate the other one — a
+    // nomination the format does not allow. Nothing caught it because the draw
+    // had never produced it, and it appeared the moment the competition
+    // library grew and reshuffled the rng.
+    for (const seed of [4242, 77, 909, 31, 1301, 58]) {
+      house();
+      const ep = playWeek(seed);
+      const battle = actOf(ep, 'battle-of-the-block');
+      if (!battle) continue;
+      const onTheBlock = [...battle.pairs[battle.hohs[0]], ...battle.pairs[battle.hohs[1]]];
+      for (const crown of battle.hohs) {
+        expect(onTheBlock, `seed ${seed}: ${crown} held a room and was nominated anyway`)
+          .not.toContain(crown);
+      }
+      expect(new Set(onTheBlock).size, `seed ${seed}: somebody sat on both blocks`).toBe(4);
+    }
   });
 });

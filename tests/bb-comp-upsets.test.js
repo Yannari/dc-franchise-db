@@ -72,6 +72,6 @@ describe('competitions stay winnable by more than one person', () => {
         failures.push(`${comp.id}: ${wins.size} winners, top takes ${Math.round(share * 100)}%`);
       }
     }
-    expect(failures).toEqual([]);
+    expect(failures, failures.join(' | ')).toEqual([]);
   });
 });

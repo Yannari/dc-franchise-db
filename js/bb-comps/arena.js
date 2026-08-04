@@ -18,7 +18,7 @@ import { pronouns } from '../players.js';
 import { scoreField, toResult, beat, margin, vb } from './_shared.js';
 import { dislikes, bond } from '../bb-events/_read.js';
 
-const say = (rng, lines) => lines[Math.floor(rng() * lines.length)];
+export const say = (rng, lines) => lines[Math.floor(rng() * lines.length)];
 
 /** The last-place fall, told with the clock in the room. */
 const FALL_LINES = [
@@ -35,7 +35,7 @@ const NEAR_MISS = [
   (a, b) => `${b} looks away before the last score posts. ${a} does not, and that is the whole difference in how the next minute goes.`,
 ];
 
-function arenaFinish(entries, api, rng, beats) {
+export function arenaFinish(entries, api, rng, beats) {
   const winner = entries[0];
   const runnerUp = entries[1];
   const m = margin(entries);
@@ -50,7 +50,7 @@ function arenaFinish(entries, api, rng, beats) {
   api.record(winner.name, 'arena-save', { margin: m.word });
 }
 
-function arenaFalls(order, rng, beats) {
+export function arenaFalls(order, rng, beats) {
   order.slice(0, Math.max(1, order.length - 1)).forEach(e => {
     beats.push(beat(say(rng, FALL_LINES)(e.name, pronouns(e.name)), [e.name], 'STAYS NOMINATED', 'red'));
   });
@@ -68,7 +68,7 @@ function arenaFalls(order, rng, beats) {
  * sometimes takes the leader), so no nominee goes unseen and nobody plays
  * the same moment twice.
  */
-function arenaPlayByPlay(entries, rng, beats, lines) {
+export function arenaPlayByPlay(entries, rng, beats, lines) {
   const covered = new Set();
   for (const b of beats) {
     const featured = b?.players || [];
@@ -90,7 +90,7 @@ function arenaPlayByPlay(entries, rng, beats, lines) {
 }
 
 /** A grudge in the arena is a grudge with an audience. */
-function arenaGrudge(entries, api, beats) {
+export function arenaGrudge(entries, api, beats) {
   const [a, b] = entries;
   if (b && dislikes(a.name, b.name)) {
     beats.push(beat(

@@ -381,7 +381,11 @@ const worksBothRooms = {
   weight(house, ctx) {
     const hohs = _twoCrowns(ctx);
     if (!hohs || house.length < 7 || _spent('reign-works-both-rooms', ctx)) return 0;
-    return band(6);
+    // Weighted alongside its sibling rather than below it. Both two-crown
+    // events live in the same single act — the stretch before the two
+    // ceremonies — so at band(6) against the other one's band(13) this simply
+    // lost that draw and read as dead code across a sixteen-season sweep.
+    return band(11);
   },
   fire(house, ctx, api, rng) {
     const [a, b] = _twoCrowns(ctx);

@@ -1448,8 +1448,24 @@ export function simulateBBWeek(options = {}) {
 
   // Nomination act — directed power: target, pawn, and an optional backdoor plan.
   plan = hook(hooks, 'nominationResult', plan, { week, house, hoh }) || plan;
-  let nominees = [...new Set(plan.nominees)].filter(name => house.includes(name) && name !== hoh).slice(0, 2);
-  if (nominees.length < 2) nominees = chooseNominationPlan(hoh, house, rng).nominees;
+  // A Head of Household cannot be nominated, and on a Battle of the Block week
+  // there are two of them. The second ceremony already excluded both; the
+  // first excluded only its own, so the first Head of Household could put the
+  // other one on the block — which is not a nomination the format allows, and
+  // which the draw had simply never produced until the competition library
+  // grew and reshuffled it.
+  const untouchable = [hoh, week.botbActive ? coHoh : null].filter(Boolean);
+  let nominees = [...new Set(plan.nominees)]
+    .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+  while (nominees.length < 2) {
+    const extra = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
+    if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
+    nominees.push(extra);
+  }
+  if (nominees.length < 2) {
+    nominees = chooseNominationPlan(hoh, house, rng).nominees
+      .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+  }
   // A Block Buster week is always three on the block — the third chair is the
   // mode, not a choice the Head of Household gets to make. Three go up, the
   // three compete, and two face the vote.
@@ -1457,7 +1473,7 @@ export function simulateBBWeek(options = {}) {
   // The third is named by the same read that names a replacement, so it is
   // another target rather than a name out of a hat.
   while ((safetyActive || doubleVote) && nominees.length < nomineeCount) {
-    const third = chooseReplacement(hoh, house, [hoh, ...nominees], plan, rng);
+    const third = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
   }

@@ -16827,6 +16827,21 @@ const _BB_SIG_BUILDERS = {
 export function rpBuildBBComp(ep, actType) {
   const act = (ep.acts || []).find(a => a.type === actType);
   const comp = act?.competition;
+  // A week with two Heads of Household says so on whatever board it draws.
+  //
+  // The named panel lives on the generic board, which a themed competition
+  // never reaches — so a Battle of the Block week drawn by a themed screen
+  // announced one crown for a night that has two. This banner rides above
+  // every board, themed or not, and names nobody: the second crown is the
+  // competition's runner-up, so printing it here would hand over the top two
+  // placements before a single card is turned.
+  const twoCrowns = actType === 'hoh' && act?.coHoh
+    ? `<div style="max-width:1100px;margin:0 auto 10px;padding:9px 12px;border:1px solid rgba(214,178,102,.34);border-radius:9px;background:rgba(214,178,102,.09);text-align:center">
+        <span style="font-family:var(--font-display);font-size:10px;letter-spacing:2.6px;color:#d6b266">TWO HEADS OF HOUSEHOLD</span>
+        <div style="font-size:12.5px;color:#c9d3e6;margin-top:5px">Tonight this competition crowns two. Both of them will nominate, and by the end of the week only one of them still holds the room.</div>
+      </div>`
+    : '';
+
   const themed = _BB_SIG_BUILDERS[comp?.variant];
   if (themed) {
     try {
@@ -16834,7 +16849,7 @@ export function rpBuildBBComp(ep, actType) {
         tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar,
         esc: _bbEsc, cat: _bbcCat, ordinal: _bbOrdinal,
       });
-      if (html) return html;
+      if (html) return twoCrowns + html;
     } catch (e) {
       console.warn(`Signature comp screen '${comp.variant}' failed; using the generic board.`, e);
     }
@@ -16982,11 +16997,24 @@ export function rpBuildBBComp(ep, actType) {
       ? `<div class="bbc-verdict">The board goes dark with the top line still blank. The week has an owner; the room has a mystery.</div>`
       : `<div class="bbc-verdict">${_bbEsc(winner)} over ${_bbEsc(runnerUp.name)} — ${closeness}.</div>`) : '';
 
-  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} bbc">
+  return twoCrowns + `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} bbc">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${cat.accent};text-shadow:0 0 20px ${cat.accent}33;margin-bottom:6px">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${
-      isHoh ? (secret ? 'Power changes hands. Nobody sees whose.' : 'Power changes hands.') : 'One houseguest can change the whole week.'}</div>
+      isHoh
+        ? (secret ? 'Power changes hands. Nobody sees whose.'
+          : act?.coHoh ? (done
+            ? `Power changes hands TWICE — ${_bbEsc(winner)} and ${_bbEsc(act.coHoh)} both take a room.`
+            // Naming them before the board has been read hands over the top two
+            // placements, which is the whole reveal.
+            : 'Power changes hands TWICE tonight. Two houseguests take a room.')
+            : 'Power changes hands.')
+        : 'One houseguest can change the whole week.'}</div>
+    ${isHoh && act?.coHoh && done ? `<div style="margin:0 auto 14px;max-width:620px;padding:10px 12px;border:1px solid rgba(214,178,102,.32);border-radius:9px;background:rgba(214,178,102,.08);text-align:center">
+      <div style="font-size:10px;letter-spacing:2.4px;color:#d6b266;margin-bottom:6px">TWO HEADS OF HOUSEHOLD</div>
+      <div class="rp-portrait-row" style="justify-content:center;gap:14px">${rpPortrait(winner, 'hoh')}${rpPortrait(act.coHoh, 'hoh')}</div>
+      <div style="font-size:12px;color:#c9d3e6;margin-top:8px">Both of them nominate. Only one of them is still Head of Household by the end of the night.</div>
+    </div>` : ''}
     ${explainer}
     ${board}
     ${verdict}
@@ -17120,11 +17148,14 @@ function _bbNomReason(hoh, name, role, ep) {
  * to the bottom, so the whole ceremony is played without the page moving under
  * you.
  */
-export function rpBuildBBNominations(ep) {
-  const act = (ep.acts || []).find(a => a.type === 'nominations');
+export function rpBuildBBNominations(ep, only = null) {
+  const act = only || (ep.acts || []).find(a => a.type === 'nominations');
   const noms = (act?.nominees || []).filter(Boolean);
   if (!noms.length) return '';
-  const hoh = ep.hoh || act?.hoh;
+  // The ceremony's OWN Head of Household first. Reading ep.hoh credited a
+  // Battle of the Block week's first ceremony to whoever survived the battle,
+  // which is the other person's nominations under this person's name.
+  const hoh = act?.hoh || ep.hoh;
   // An anonymous ceremony: the keys turn, the voice reads, and no chair at
   // the head of the table has anybody in it. Every surface that would name
   // the HOH goes through hohShow, which on an invisible week is nobody.
@@ -19767,13 +19798,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
       case 'nominations':
-        // A Battle of the Block week holds TWO ceremonies. The second one is
-        // the co-Head of Household's, and it does not get a screen of its own:
-        // rpBuildBBNominations reads the first ceremony off the episode, so a
-        // second screen would draw the first ceremony twice under a duplicate
-        // id. The Battle screen below shows both blocks and who filled them.
-        if (act.byCoHoh) break;
-        screens.push({ id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view) });
+        // A Battle of the Block week holds TWO ceremonies, and both are worth
+        // watching — they are two different people filling two different
+        // blocks. The builder is handed the act itself so the second one draws
+        // the second ceremony rather than redrawing the first.
+        screens.push(act.byCoHoh
+          ? { id: id('bb-noms-2'), label: `Nominations · ${act.hoh || 'Second HOH'}`,
+            html: rpBuildBBNominations(view, act) }
+          : { id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view, act) });
         break;
       case 'battle-of-the-block': {
         const botb = rpBuildBBBattleOfTheBlock(view, {

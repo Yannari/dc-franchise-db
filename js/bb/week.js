@@ -1117,6 +1117,11 @@ export function simulateBBWeek(options = {}) {
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: 'house', phase,
       hoh: week.hohSecret ? null : (week.hoh || null),
+      // A Battle of the Block week has TWO of them until the battle resolves,
+      // and house life was only ever told about one — so half the power in the
+      // room was invisible to every event that reacts to holding it.
+      coHoh: week.hohSecret ? null : (week.coHoh || null),
+      hohs: week.hohSecret ? [] : [week.hoh, week.coHoh].filter(Boolean),
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
@@ -1508,6 +1513,11 @@ export function simulateBBWeek(options = {}) {
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,
+    // Whose ceremony this was. On an ordinary week it is the week's only Head
+    // of Household and nothing reads it; on a Battle of the Block week the
+    // screen was crediting this ceremony to whichever HOH survived the battle,
+    // which on half of them is the wrong person entirely.
+    hoh,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 

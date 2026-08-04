@@ -246,3 +246,66 @@ describe('Battle of the Block and the Block Buster cannot share a week', () => {
     expect(ep.botbStoodDown).toBeFalsy();
   });
 });
+
+describe('a week with two Heads of Household says so', () => {
+  beforeEach(house);
+
+  it('each ceremony is credited to the person who actually held it', () => {
+    // The screen read ep.hoh, which after the battle is whoever SURVIVED it —
+    // so on every week where the first HOH was dethroned, their nominations
+    // were drawn under the other Head of Household's name.
+    const ep = playWeek();
+    const battle = actOf(ep, 'battle-of-the-block');
+    const ceremonies = (ep.acts || []).filter(a => a.type === 'nominations');
+    expect(ceremonies.length, 'a two-HOH week held one ceremony').toBe(2);
+
+    for (const ceremony of ceremonies) {
+      expect(ceremony.hoh, 'a ceremony with no owner').toBeTruthy();
+      expect(battle.hohs).toContain(ceremony.hoh);
+      // The people this HOH put up are the people on their own block.
+      expect([...ceremony.nominees].sort())
+        .toEqual([...battle.pairs[ceremony.hoh]].sort());
+    }
+    // And the two ceremonies belong to different people.
+    expect(ceremonies[0].hoh).not.toBe(ceremonies[1].hoh);
+
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+    const screens = buildVPScreens(ep);
+    // Both ceremonies are watchable, and the first is not drawn under the
+    // surviving HOH's name when it was the dethroned one's ceremony.
+    const nomScreens = screens.filter(s => s.id.startsWith('bb-noms'));
+    expect(nomScreens.length, 'only one ceremony got a screen').toBe(2);
+    const first = nomScreens[0].html;
+    const dethronedsNominees = battle.pairs[battle.dethroned];
+    if (first.includes(dethronedsNominees[0]) && first.includes(dethronedsNominees[1])) {
+      expect(first, "the dethroned HOH's ceremony was credited to the survivor")
+        .toContain(battle.dethroned);
+    }
+  });
+
+  it('the competition board shows both crowns, not one', () => {
+    const ep = playWeek();
+    const battle = actOf(ep, 'battle-of-the-block');
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+    buildVPScreens(ep);
+    // Naming both crowns before the board is read would hand over the top two
+    // placements, so the panel waits for the reveal to finish.
+    Object.keys(_tvState).forEach(k => { _tvState[k].idx = 999; });
+    const screens = buildVPScreens(ep);
+    const hohScreen = screens.find(s => s.id === 'bb-hoh');
+    expect(hohScreen, 'no HOH screen').toBeTruthy();
+    for (const name of battle.hohs) {
+      expect(hohScreen.html, `${name} was crowned and is not on the board`).toContain(name);
+    }
+    expect(hohScreen.html).toMatch(/TWO HEADS OF HOUSEHOLD/);
+  });
+
+  it('house life is told about both of them', () => {
+    // Half the power in the room was invisible to every event that reacts to
+    // somebody holding it.
+    const ep = playWeek();
+    const battle = actOf(ep, 'battle-of-the-block');
+    expect(ep.coHoh, 'the episode never recorded a second HOH').toBeTruthy();
+    expect(battle.hohs).toContain(ep.coHoh);
+  });
+});

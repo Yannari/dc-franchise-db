@@ -30,6 +30,12 @@ import { rpBuildSigSlingshot } from './vp-bb-sig/slingshot.js';
 import { rpBuildSigRollerball } from './vp-bb-sig/rollerball.js';
 import { rpBuildSigInTheBalance } from './vp-bb-sig/in-the-balance.js';
 import { rpBuildSigHanoi } from './vp-bb-sig/hanoi.js';
+import { rpBuildSigSpellingSearch } from './vp-bb-sig/spelling-search.js';
+import { rpBuildSigStayOrFold } from './vp-bb-sig/stay-or-fold.js';
+import { rpBuildSigTumblinDice } from './vp-bb-sig/tumblin-dice.js';
+import { rpBuildSigDough } from './vp-bb-sig/dough.js';
+import { rpBuildSigReadySetWoah } from './vp-bb-sig/ready-set-woah.js';
+import { rpBuildSigSolveForX } from './vp-bb-sig/solve-for-x.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
@@ -16847,6 +16853,12 @@ const _BB_SIG_BUILDERS = {
   'rollerball': rpBuildSigRollerball,
   'balance': rpBuildSigInTheBalance,
   'hanoi': rpBuildSigHanoi,
+  'spelling': rpBuildSigSpellingSearch,
+  'stayfold': rpBuildSigStayOrFold,
+  'dice': rpBuildSigTumblinDice,
+  'dough': rpBuildSigDough,
+  'readyset': rpBuildSigReadySetWoah,
+  'solveforx': rpBuildSigSolveForX,
 };
 
 export function rpBuildBBComp(ep, actType) {

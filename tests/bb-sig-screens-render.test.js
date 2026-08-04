@@ -33,6 +33,9 @@ const THEMED = [
   'bb-mental-quiz', 'bb-mental-memory', 'bb-physical-precision',
   'bb-physical-slide', 'bb-mental-knockout',
   'bb-classic-slingshot', 'bb-classic-rollerball', 'bb-classic-in-the-balance', 'bb-classic-hanoi',
+  'bb-classic-spelling', 'bb-classic-stay-or-fold',
+  'bb-classic-tumblin-dice', 'bb-classic-dough',
+  'bb-classic-ready-set-woah', 'bb-classic-solve-for-x',
 ];
 
 describe('themed competition screens render', () => {
@@ -154,4 +157,97 @@ describe('every new Block Buster game draws its own instrument', () => {
       }
     });
   }
+});
+
+// ── the variant contract ──────────────────────────────────────────────
+//
+// A competition opts into a themed screen by tagging its result with a
+// `variant`, and rpBuildBBComp looks that tag up in _BB_SIG_BUILDERS. A tag
+// with no builder behind it is invisible: the lookup misses, the generic board
+// draws, and nothing anywhere says the screen is missing. This closes that —
+// every variant a competition can emit must resolve to a screen, and every
+// screen must be exercised by the list above.
+// Four competitions predate the themed screens and tag a variant that has no
+// builder: 'wall', 'soak', 'puzzle' and 'crapshoot'. They are not broken — the
+// lookup misses and the generic board draws, which is the designed fallback —
+// but the tag is a promise the library does not keep, and until this list was
+// written nothing anywhere said so. Delete an entry when its screen is built;
+// the first test below will fail if anybody adds a fifth.
+const VARIANT_WITHOUT_SCREEN = new Set([
+  'bb-endurance-wall', 'bb-endurance-soak', 'bb-mental-puzzle', 'bb-luck-draw',
+]);
+
+describe('every variant a competition emits has a screen behind it', () => {
+  beforeEach(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {};
+    NAMES.forEach(n => {
+      gs.bb.stats[n] = { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
+        timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+    });
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+  });
+
+  it('no HOH or veto competition emits a variant nothing can draw', () => {
+    const orphans = [];
+    for (const comp of BB_COMPETITIONS) {
+      const slots = comp.types.filter(t => t === 'hoh' || t === 'veto');
+      if (!slots.length) continue;
+      const result = runBBCompetition({
+        type: slots[0], participants: NAMES.slice(0, 8), house: NAMES,
+        library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(23),
+        week: { num: 4, houseAtStart: NAMES },
+      });
+      if (!result.variant) continue;                    // no claim, no contract
+      const act = { type: slots[0], winner: result.winner, participants: result.participants,
+        results: result.placements.map(n => ({ name: n, score: result.scores[n] })),
+        competition: result };
+      const html = rpBuildBBComp({ num: 4, acts: [act] }, slots[0]) || '';
+      // The generic board's own marker. If it is there, the variant missed.
+      if (html.includes('bbc-what') && !VARIANT_WITHOUT_SCREEN.has(comp.id)) {
+        orphans.push(`${comp.id} → variant "${result.variant}"`);
+      }
+    }
+    expect(orphans, `variants with no screen: ${orphans.join(', ')}`).toEqual([]);
+  });
+
+  it('the exemption list only names competitions that really have no screen', () => {
+    // Stops the list rotting into a permanent excuse: once one of these gets a
+    // screen, this fails until it is removed from the exemption.
+    const stillPlain = [];
+    for (const id of VARIANT_WITHOUT_SCREEN) {
+      const comp = BB_COMPETITIONS.find(c => c.id === id);
+      expect(comp, `${id} is exempted but no longer exists`).toBeTruthy();
+      const slot = comp.types.includes('hoh') ? 'hoh' : 'veto';
+      const result = runBBCompetition({
+        type: slot, participants: NAMES.slice(0, 8), house: NAMES,
+        library: BB_COMPETITIONS, forcedId: id, rng: seededRng(23),
+        week: { num: 4, houseAtStart: NAMES },
+      });
+      const act = { type: slot, winner: result.winner, participants: result.participants,
+        results: result.placements.map(n => ({ name: n, score: result.scores[n] })),
+        competition: result };
+      const html = rpBuildBBComp({ num: 4, acts: [act] }, slot) || '';
+      if (html.includes('bbc-what')) stillPlain.push(id);
+    }
+    expect([...VARIANT_WITHOUT_SCREEN].sort(), 'a screen was built — remove it from the exemption')
+      .toEqual(stillPlain.sort());
+  });
+
+  it('the themed list names every competition that claims a variant', () => {
+    const claiming = [];
+    for (const comp of BB_COMPETITIONS) {
+      const slots = comp.types.filter(t => t === 'hoh' || t === 'veto');
+      if (!slots.length) continue;
+      const result = runBBCompetition({
+        type: slots[0], participants: NAMES.slice(0, 8), house: NAMES,
+        library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(23),
+        week: { num: 4, houseAtStart: NAMES },
+      });
+      if (result.variant) claiming.push(comp.id);
+    }
+    const missing = claiming.filter(id => !THEMED.includes(id) && !VARIANT_WITHOUT_SCREEN.has(id));
+    expect(missing, `themed but untested: ${missing.join(', ')}`).toEqual([]);
+  });
 });

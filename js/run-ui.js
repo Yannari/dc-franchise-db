@@ -1499,7 +1499,6 @@ export function renderTwistCatalog() {
   const container = document.getElementById('fd-catalog');
   if (!container) return;
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
-  const cats   = ['team','immunity','elim','returns','advantages','social','challenge'];
 
   // Only ever show twists belonging to the show being designed. A Tribe Swap
   // means nothing in a house and an HOH means nothing on a beach, so the
@@ -1507,13 +1506,25 @@ export function renderTwistCatalog() {
   const catalog = (typeof twistsForFormat === 'function' && typeof seasonConfig !== 'undefined')
     ? twistsForFormat(seasonConfig) : TWIST_CATALOG;
 
-  // Update category counts
-  cats.forEach(cat => {
-    const el = document.getElementById('fd-count-' + cat);
-    if (el) el.textContent = catalog.filter(t => t.category === cat).length;
-  });
-  const allEl = document.getElementById('fd-count-all');
-  if (allEl) allEl.textContent = catalog.length;
+  // ── the filter bar, built from what this format actually has ──
+  //
+  // The buttons used to be hard-coded in the page, which meant a house was
+  // offered Team Dynamics and Immunity — filters that could only ever return
+  // nothing — while its own twists sat under headings that did not exist. Only
+  // categories with something in them get a button.
+  const bar = document.getElementById('fd-filters');
+  if (bar) {
+    const present = TWIST_CATEGORIES.filter(c => catalog.some(t => t.category === c.id));
+    // A filter the format no longer offers must not stay selected.
+    if (currentTwistFilter !== 'all' && !present.some(c => c.id === currentTwistFilter)) {
+      currentTwistFilter = 'all';
+    }
+    bar.innerHTML = [{ id: 'all', label: 'All' }, ...present].map(c => {
+      const n = c.id === 'all' ? catalog.length : catalog.filter(t => t.category === c.id).length;
+      return `<button class="fd-filter-btn ${currentTwistFilter === c.id ? 'active' : ''}"
+        data-filter="${c.id}" onclick="setTwistFilter('${c.id}')">${c.label} <span>${n}</span></button>`;
+    }).join('');
+  }
 
   let filtered = catalog.slice();
   if (currentTwistFilter !== 'all') filtered = filtered.filter(t => t.category === currentTwistFilter);

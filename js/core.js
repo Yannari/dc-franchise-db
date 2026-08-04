@@ -115,6 +115,33 @@ export function twistModeClashes(twist, cfg) {
     .map(id => SEASON_MODES[id]?.label || id);
 }
 
+/**
+ * The subcategories the Format Designer groups twists under.
+ *
+ * One vocabulary, shared by every show, with the labels in the order the
+ * filter bar reads them. The bar builds itself from whichever of these a
+ * format actually uses, so a house never offers "Team Dynamics" and a beach
+ * never offers "Power & Nominations" — an empty filter button is a promise the
+ * catalogue cannot keep.
+ *
+ * NOTE the plural on `advantages`: the filter compared `t.category` against
+ * the button id, and the Big Brother twists were tagged `advantage`, so the
+ * Diamond Veto and Pandora's Box could not be found under Advantages at all.
+ */
+export const TWIST_CATEGORIES = [
+  { id: 'team', label: 'Team Dynamics' },
+  { id: 'immunity', label: 'Immunity' },
+  { id: 'power', label: 'Power & Nominations' },
+  { id: 'elim', label: 'Elimination' },
+  { id: 'returns', label: 'Returns' },
+  { id: 'advantages', label: 'Advantages' },
+  { id: 'social', label: 'Social' },
+  { id: 'challenge', label: 'Challenge' },
+];
+
+export const TWIST_CATEGORY_LABEL = Object.fromEntries(
+  TWIST_CATEGORIES.map(c => [c.id, c.label]));
+
 export const TWIST_CATALOG = [
   // Team Dynamics
   { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
@@ -369,28 +396,28 @@ export const TWIST_CATALOG = [
     desc:'The new Head of Household puts part of the house on slop, cold showers and the have-not room for the week. Have-nots compete at a real disadvantage in the veto, and nobody forgets who chose them.',
     engineType:'bb-have-nots' },
   { id:'bb-diamond-veto', emoji:'💎', name:'Diamond Power of Veto', format:'big-brother',
-    category:'advantage', phase:'any',
+    category:'advantages', phase:'any',
     desc:'This week\'s veto is the Diamond Power of Veto: if it is used, the veto holder — not the Head of Household — names the replacement nominee. Winning it means controlling both chairs, and an HOH can watch their whole week get rewritten in one ceremony.',
     engineType:'bb-diamond-veto', incompatible:['bb-instant-eviction'] },
   { id:'bb-invisible-hoh', emoji:'👤', name:'Invisible HOH', format:'big-brother',
-    category:'advantage', phase:'any',
+    category:'power', phase:'any',
     desc:'The Head of Household competition runs — and the result is sealed. Only the winner knows who holds power: nominations are read by Big Brother, the replacement is named anonymously, and the Invisible HOH casts no vote but may compete in next week\'s HOH competition. The house spends the week guessing, and the guesses are not always right.',
     engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction'] },
   { id:'bb-pandoras-box', emoji:'❓', name:'Pandora\'s Box', format:'big-brother',
-    category:'advantage', phase:'any',
+    category:'advantages', phase:'any',
     desc:'A door with a question mark appears in the HOH room. Open it and something good happens to you while something bad happens to the house — and what was inside stays secret. The canonical cargo is a hidden Diamond Power of Veto with a two-eviction fuse, detonated live at an eviction: the holder saves a nominee and personally names the replacement while the house watches a week of plans evaporate.',
     engineType:'bb-pandoras-box', incompatible:['bb-instant-eviction', 'bb-diamond-veto'] },
   { id:'bb-split-house', emoji:'🪟', name:'Split House', format:'big-brother',
-    category:'twist', phase:'any',
+    category:'power', phase:'any',
     desc:'Two Heads of Household are crowned, then pick sides schoolyard-style. The two halves are sealed off from each other for the whole week — separate nominations, separate veto, separate vote — and one houseguest from each side is evicted on the same night.',
     incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-instant-eviction'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-of-the-block', emoji:'⚔️', name:'Battle of the Block', format:'big-brother',
-    category:'twist', phase:'any',
+    category:'power', phase:'any',
     desc:'Two Heads of Household, each nominating two houseguests. The four nominees compete as pairs; the winning pair comes off the block and DETHRONES the Head of Household who nominated them. The survivor keeps the power and their two nominations stand.',
     incompatible:['bb-invisible-hoh'], incompatibleModes:['block-buster'] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
-    category:'advantage', phase:'any',
+    category:'returns', phase:'any',
     desc:'The evicted houseguests are not gone. After this week\'s eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.',
     engineType:'bb-battle-back', incompatible:['bb-instant-eviction'] },
 ];

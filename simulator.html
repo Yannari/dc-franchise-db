@@ -781,16 +781,7 @@
               <span class="fd-header-title">Available Twists</span>
               <input type="text" id="fd-search" class="fd-search" placeholder="Search twists..." oninput="renderTwistCatalog()">
             </div>
-            <div class="fd-filters">
-              <button class="fd-filter-btn active" data-filter="all" onclick="setTwistFilter('all')">All <span id="fd-count-all"></span></button>
-              <button class="fd-filter-btn" data-filter="team" onclick="setTwistFilter('team')">Team Dynamics <span id="fd-count-team"></span></button>
-              <button class="fd-filter-btn" data-filter="immunity" onclick="setTwistFilter('immunity')">Immunity <span id="fd-count-immunity"></span></button>
-              <button class="fd-filter-btn" data-filter="elim" onclick="setTwistFilter('elim')">Elimination <span id="fd-count-elim"></span></button>
-              <button class="fd-filter-btn" data-filter="returns" onclick="setTwistFilter('returns')">Returns <span id="fd-count-returns"></span></button>
-              <button class="fd-filter-btn" data-filter="advantages" onclick="setTwistFilter('advantages')">Advantages <span id="fd-count-advantages"></span></button>
-              <button class="fd-filter-btn" data-filter="social" onclick="setTwistFilter('social')">Social <span id="fd-count-social"></span></button>
-              <button class="fd-filter-btn" data-filter="challenge" onclick="setTwistFilter('challenge')">Challenge <span id="fd-count-challenge"></span></button>
-            </div>
+            <div class="fd-filters" id="fd-filters"></div>
             <div id="fd-chal-series-row" class="fd-filter-row" style="display:none;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
             <div class="fd-twist-instructions" id="fd-instructions">Click episodes to select them, then choose twists to apply.</div>
             <div id="fd-catalog" class="fd-catalog"></div>

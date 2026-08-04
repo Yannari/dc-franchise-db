@@ -176,6 +176,8 @@ const constants = [
   'S10_TRIBES', 'S10_BONDS_PRESET',
   'S9_TRIBES', 'S9_BONDS_PRESET',
   'DEFAULT_STATS', 'CHALLENGE_DB', 'REWARD_POOL',
+  // run-ui builds the Format Designer's filter bar from these.
+  'TWIST_CATEGORIES', 'TWIST_CATEGORY_LABEL',
 ];
 
 for (const name of constants) {

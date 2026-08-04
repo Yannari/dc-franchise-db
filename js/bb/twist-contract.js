@@ -117,6 +117,27 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody in this room is about to run the week without wearing the key.',
     },
   },
+  'bb-roadkill': {
+    id: 'bb-roadkill', layer: 'scheduled', category: 'nomination-power',
+    timing: 'nominations', duration: { weeks: 1 },
+    // BB18's shape. Everybody plays, one at a time and out of sight of the
+    // rest, and the winner is told in private. They then name a THIRD nominee
+    // who goes up alongside the Head of Household's two with no explanation
+    // attached — and if the veto comes off that third nominee, it is the
+    // Roadkill winner, not the Head of Household, who names the replacement.
+    //
+    // The rules delta is the third chair and the secrecy of whoever filled it.
+    // Everything that makes the twist worth playing — a house that has to
+    // GUESS who did this, and is allowed to guess wrong — falls out of that
+    // secrecy rather than being a rule of its own.
+    rules: { nomineeCount: 3, secretThirdNominator: true },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'BB Roadkill',
+      rule: 'Every houseguest will play BB Roadkill alone, and only the winner will be told they won. That winner secretly names a THIRD nominee, who goes on the block beside the Head of Household\u2019s two. If the veto saves the third nominee, the Roadkill winner names the replacement.',
+      sting: 'Somebody in this room is about to put a third key on the wall, and nobody will be able to prove it was them.',
+    },
+  },
   'bb-split-house': {
     id: 'bb-split-house', layer: 'scheduled', category: 'power-structure',
     timing: 'week', duration: { weeks: 1 },

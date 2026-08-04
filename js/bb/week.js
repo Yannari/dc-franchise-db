@@ -22,6 +22,7 @@ import { tickIntentions } from '../intentions.js';
 import { applySocialStatusEffects, recordChallengeDominance, recordStrategicRespect, recordProtection } from '../relationship-events.js';
 import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
+import { rememberBBStrategy } from './shared-strategy.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
@@ -1477,6 +1478,59 @@ export function simulateBBWeek(options = {}) {
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
   }
+  // ── BB ROADKILL: the third key nobody's hand is on ──
+  //
+  // Everybody plays, one at a time and out of sight of the rest, and only the
+  // winner is told they won. They name a third nominee who goes up with the
+  // Head of Household's two and no explanation attached.
+  //
+  // It runs HERE, after the Head of Household has settled on two and before
+  // the ceremony reads them out, because that is the order the twist needs:
+  // the winner is choosing a third name knowing the other two, and the house
+  // hears all three at once with only two of them accounted for.
+  const roadkillActive = week.twistState?.rules?.secretThirdNominator === true
+    && !compressed && house.length >= 6;
+  if (roadkillActive) {
+    const rkComp = runBBCompetition({
+      // A one-at-a-time side competition with a single winner is exactly the
+      // tiebreaker slot's shape, and it keeps Roadkill out of the HOH and veto
+      // pools so a week never plays the same competition twice.
+      type: 'tiebreaker', participants: [...house], house, week, rng,
+      library: competitionLibrary, seed: options.seed,
+      forcedId: options.forcedCompetitions?.roadkill,
+      haveNots: week.haveNots || [],
+      // Nobody throws a competition they cannot be seen losing.
+      allowThrowing: false,
+    });
+    const rkWinner = rkComp.winner;
+    // Anybody except the Head of Household and whoever is already up — which
+    // explicitly includes the winner's own allies, and is most of the reason
+    // this twist hurts.
+    const offLimits = [hoh, ...untouchable, ...nominees];
+    let third = chooseReplacement(rkWinner, house, offLimits, plan, rng);
+    if (!third || offLimits.includes(third) || !house.includes(third)) {
+      third = house.find(n => !offLimits.includes(n) && n !== rkWinner)
+        || house.find(n => !offLimits.includes(n));
+    }
+    if (third) {
+      nominees.push(third);
+      week.roadkill = { winner: rkWinner, nominee: third, competition: rkComp };
+      week.acts.push(addBeats({
+        type: 'roadkill', secret: true, winner: rkWinner, nominee: third,
+        competition: rkComp,
+        results: rkComp.placements.map(n => ({ name: n, score: rkComp.scores[n] })),
+        // Why they picked this name, in their own read rather than the HOH's.
+        why: explainReplacement(rkWinner, third, house.filter(n => !offLimits.includes(n)), plan, nominees),
+      }, { nominees: [third] }));
+      // Being put up by nobody is still being put up.
+      gs.bb.competitionMemories ||= {};
+      (gs.bb.competitionMemories[rkWinner] ||= []).push({
+        type: 'roadkill-win', competitionId: rkComp.id, week: week.num,
+        detail: { nominated: third },
+      });
+    }
+  }
+
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);
   setSpotlight({ nominees: [...nominees] });
   week.initialNominees = [...nominees];
@@ -1706,6 +1760,34 @@ export function simulateBBWeek(options = {}) {
    * One guess per person per week, stored, so every later reaction stays
    * consistent with the first one.
    */
+  /**
+   * Who a houseguest decides turned the THIRD key.
+   *
+   * Same shape as the invisible-HOH guess and the same point: it is
+   * intuition-proportional and allowed to be wrong, and a wrong guess costs
+   * the innocent name exactly what a right one would cost the guilty. The
+   * Head of Household is the obvious suspect and is the one person it cannot
+   * have been, which is what makes this twist worth playing.
+   */
+  const _roadkillGuess = who => {
+    if (!week.roadkill) return null;
+    week.roadkillGuesses ||= [];
+    const prior = week.roadkillGuesses.find(g => g.who === who);
+    if (prior) return prior.guess;
+    const truth = week.roadkill.winner;
+    const st = pStats(who);
+    const candidates = house.filter(n => n !== who && n !== hoh);
+    const correct = rng() < Math.min(0.7, 0.18 + st.intuition * 0.05);
+    let guess = truth;
+    if (!correct) {
+      // Wrong guesses land on whoever they already trust least.
+      guess = candidates.filter(n => n !== truth)
+        .sort((a, b) => getPerceivedBond(who, a) - getPerceivedBond(who, b))[0] || truth;
+    }
+    week.roadkillGuesses.push({ who, guess, correct: guess === truth });
+    return guess;
+  };
+
   const _invisibleGuess = who => {
     week.hohGuesses ||= [];
     const prior = week.hohGuesses.find(g => g.who === who);
@@ -1722,6 +1804,33 @@ export function simulateBBWeek(options = {}) {
     week.hohGuesses.push({ who, guess, correct: guess === hoh });
     return guess;
   };
+
+  // ── the third nominee looks for a hand to blame ──
+  //
+  // Somebody put them up and did not sign it. They pick a name, they are
+  // frequently wrong, and either way they spend the week playing against
+  // whoever they picked.
+  if (week.roadkill) {
+    const victim = week.roadkill.nominee;
+    const guess = _roadkillGuess(victim);
+    if (guess && guess !== victim) {
+      try { addBond(victim, guess, -1.6); } catch { /* no bond, no grievance */ }
+      // The grievance is recorded against whoever they NAMED, right or wrong.
+      // That is the whole point: a misattributed block is a real enemy made.
+      rememberBBStrategy(victim, guess, 'put-me-up-anonymously', 2,
+        { twist: 'bb-roadkill', correct: guess === week.roadkill.winner }, { week, act: 'nominations' });
+      week.acts.push(addBeats({
+        type: 'house', phase: 'post-noms', roadkillBlame: true,
+        socialBeats: [{
+          eventId: 'roadkill-blame',
+          text: `${victim} has been put on the block by somebody who did not have to say so, and settles on ${guess}. `
+            + `${guess === week.roadkill.winner ? 'It is the right name, and nobody can prove it either.' : `It is the wrong name. ${guess} spends the week defending something ${guess} did not do.`}`,
+          players: [victim, guess],
+          badgeText: 'WHO DID THIS', badgeClass: 'red',
+        }],
+      }, {}));
+    }
+  }
 
   // ── The bloc's fingerprints on the block ──
   // Alliances were shaping nominations invisibly: the plan protects the
@@ -1832,11 +1941,18 @@ export function simulateBBWeek(options = {}) {
         { week: week.num, visibility: 'public', source: 'bb-diamond-veto' });
     }
     const grantedDiamond = activePowerAt('veto-ceremony', week.num);
+    // Assigned immediately below; the chair predicate closes over it so the
+    // authority can be decided in one place with the diamond.
     const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder'
       || (grantedDiamond?.holder === vetoWinner && grantedDiamond?.powerId === 'diamond-veto');
-    const chairAuthority = diamond ? vetoWinner : hoh;
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
+    // Saving the Roadkill nominee hands the pen to whoever put them there, not
+    // to the Head of Household — the third chair was never the HOH's to fill,
+    // and it is not theirs to refill either.
+    const roadkillChair = !!week.roadkill && vetoDecision?.save === week.roadkill.nominee;
+    const chairAuthority = diamond ? vetoWinner : (roadkillChair ? week.roadkill.winner : hoh);
+    if (roadkillChair) week.roadkillRefilled = true;
     let replacement = null;
     let replacementWhy = '';
     // The vetoed houseguest cannot be renominated the same week — the

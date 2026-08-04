@@ -4348,6 +4348,22 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'roadkill': {
+        sec('BB ROADKILL');
+        ln('  Every houseguest plays it alone, and only the winner is told they won.');
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          ln(`  Rules: ${act.competition.desc || ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln('');
+        ln(`  A third key turns on the wall. ${act.nominee} is nominated.`);
+        ln('  Nobody signs it. The house will spend the week deciding who did,');
+        ln('  and the house is wrong about as often as it is right.');
+        beats(act);
+        break;
+      }
+
       case 'nominations': {
         sec(act.byCoHoh ? `NOMINATION CEREMONY — ${act.hoh}` : 'NOMINATION CEREMONY');
         // No "HOH's intent — target / pawn / backdoor" line any more. It was

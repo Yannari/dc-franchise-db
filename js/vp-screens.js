@@ -40,6 +40,7 @@ import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
+import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -19986,6 +19987,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Total Drama episode — one challenge screen, one camp screen.
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
+      case 'roadkill': {
+        const rk = rpBuildBBRoadkill(view, act, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (rk) screens.push({ id: id('bb-roadkill'), label: 'BB Roadkill', html: rk });
+        break;
+      }
       case 'nominations':
         // A Battle of the Block week holds TWO ceremonies, and both are worth
         // watching — they are two different people filling two different

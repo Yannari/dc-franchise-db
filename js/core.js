@@ -416,6 +416,15 @@ export const TWIST_CATALOG = [
     category:'power', phase:'any',
     desc:'Two Heads of Household, each nominating two houseguests. The four nominees compete as pairs; the winning pair comes off the block and DETHRONES the Head of Household who nominated them. The survivor keeps the power and their two nominations stand.',
     incompatible:['bb-invisible-hoh'], incompatibleModes:['block-buster'] },
+  { id:'bb-roadkill', emoji:'🎯', name:'BB Roadkill', format:'big-brother',
+    category:'power', phase:'any',
+    desc:'Every houseguest plays a competition alone, and only the winner is told they won. That winner secretly names a THIRD nominee, who goes on the block beside the Head of Household’s two with nobody’s name attached to the key. If the veto saves the third nominee, the Roadkill winner — not the Head of Household — names the replacement. The house spends the week working out who did it, and it gets it wrong about as often as it gets it right.',
+    // The block's shape is the conflict. Block Buster already seats a third
+    // chair, Battle of the Block runs two blocks of two, and a Split House has
+    // two blocks in two houses — none of them can also carry a secret third
+    // nominee without the ceremony meaning something different in each half.
+    incompatible:['bb-battle-of-the-block', 'bb-split-house'],
+    incompatibleModes:['block-buster'] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
     category:'returns', phase:'any',
     desc:'The evicted houseguests are not gone. After this week\'s eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.',

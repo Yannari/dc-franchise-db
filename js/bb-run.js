@@ -174,6 +174,14 @@ export function weekToEpisode(week) {
     dethronedHoh: week.dethronedHoh || null,
     hohSecret: !!week.hohSecret,
     hohGuesses: (week.hohGuesses || []).map(g => ({ ...g })),
+    // Who the house decided turned the third key, right or wrong. Carried
+    // because the guesses ARE the twist — without them a Roadkill week is a
+    // third nomination with extra steps.
+    roadkill: week.roadkill
+      ? { winner: week.roadkill.winner, nominee: week.roadkill.nominee,
+        refilled: !!week.roadkillRefilled }
+      : null,
+    roadkillGuesses: (week.roadkillGuesses || []).map(g => ({ ...g })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
@@ -243,7 +251,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -674,6 +682,14 @@ export function summariseWeek(week) {
         }
         (act.results || []).filter(r => r.threw).forEach(r => line(`  ${r.name} threw the competition.`));
         break;
+      case 'roadkill': {
+        line('');
+        line('BB ROADKILL — PLAYED ALONE, RESULT SEALED');
+        _competition(line, act.competition);
+        line('  The winner is told in private. Nobody else is told anything.');
+        line(`  A third key turns: ${act.nominee} is nominated, with no name attached to it.`);
+        break;
+      }
       case 'nominations':
         line('');
         line(act.anonymous ? 'NOMINATION CEREMONY — READ BY BIG BROTHER'

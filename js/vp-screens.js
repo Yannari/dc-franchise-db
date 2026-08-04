@@ -26,6 +26,8 @@ import { rpBuildSigBeforeOrAfter } from './vp-bb-sig/before-or-after.js';
 import { rpBuildSigMajorityRules } from './vp-bb-sig/majority-rules.js';
 import { rpBuildSigMorphOMatic } from './vp-bb-sig/morph-o-matic.js';
 import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
+import { rpBuildSigSlingshot } from './vp-bb-sig/slingshot.js';
+import { rpBuildSigRollerball } from './vp-bb-sig/rollerball.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
@@ -16839,6 +16841,8 @@ const _BB_SIG_BUILDERS = {
   'precision': rpBuildSigBowlerina,
   'knockout': rpBuildSigSlipperySlope,
   'duel': rpBuildSigKnockout,
+  'slingshot': rpBuildSigSlingshot,
+  'rollerball': rpBuildSigRollerball,
 };
 
 export function rpBuildBBComp(ep, actType) {

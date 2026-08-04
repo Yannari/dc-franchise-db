@@ -32,6 +32,7 @@ const THEMED = [
   'bb-sig-hide-and-go-veto', 'bb-sig-bb-comics', 'bb-sig-before-or-after',
   'bb-mental-quiz', 'bb-mental-memory', 'bb-physical-precision',
   'bb-physical-slide', 'bb-mental-knockout',
+  'bb-classic-slingshot', 'bb-classic-rollerball',
 ];
 
 describe('themed competition screens render', () => {
@@ -82,7 +83,8 @@ describe('themed competition screens render', () => {
             expect(closed.includes('bbc-what'), `${where}: generic before reveal`).toBe(false);
             expect(open.includes('bbc-what'), `${where}: generic after reveal`).toBe(false);
             expect(open.length, `${where}: suspiciously short`).toBeGreaterThan(2000);
-            expect(open, `${where}: rendered undefined/NaN`).not.toMatch(/undefined|NaN|\[object Object\]/);
+            const _bad = open.search(/undefined|NaN|\[object Object\]/);
+            expect(open, `${where}: rendered undefined/NaN near >>>${_bad >= 0 ? open.slice(Math.max(0, _bad - 200), _bad + 60) : ''}<<<`).not.toMatch(/undefined|NaN|\[object Object\]/);
           } finally {
             warn.mockRestore();
           }

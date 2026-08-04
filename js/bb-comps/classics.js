@@ -108,6 +108,10 @@ const threwBeat = (r, say) => beat(say(THROW_LINES)(r.name), [r.name], 'THREW IT
 // PRECISION
 // ══════════════════════════════════════════════════════════════════════
 
+// Narration pools. EVERY line takes (name, pronouns, value) in that order,
+// whether or not it uses all three — the pools are called uniformly, and a
+// line written as (n, v) receives the pronoun object as its value and prints
+// "[object Object]" into the middle of a sentence.
 const SLING_HIT = [
   (n, p, v) => `${n} pulls back to the shoulder, holds it a beat longer than anybody else has, and puts it through for ${v}.`,
   (n, p, v) => `${n} does not aim so much as decide. ${v}.`,
@@ -190,18 +194,18 @@ const slingshotAim = {
 };
 
 const ROLL_BANK = [
-  (n, v) => `${n} takes the ${v} and steps off the ramp. No drama, no extra roll, no story — just a number the rest of them now have to beat.`,
+  (n, p, v) => `${n} takes the ${v} and steps off the ramp. No drama, no extra roll, no story — just a number the rest of them now have to beat.`,
   (n, p, v) => `${n} banks on ${v}, which is either discipline or nerves and ${p.sub} ${vb(p, 'is', 'are')} not saying which.`,
-  (n, v) => `${n} looks at the deep pocket for a long moment and then takes the ${v} instead.`,
+  (n, p, v) => `${n} looks at the deep pocket for a long moment and then takes the ${v} instead.`,
 ];
 const ROLL_BUST = [
   (n, p, v) => `${n} goes again on ${v} and the ball comes straight back down the ramp. Everything ${p.sub} had is gone.`,
-  (n, v) => `One more roll, ${n} says. The ball stops an inch short of the lip and rolls all the way back. ${v} points, into nothing.`,
+  (n, p, v) => `One more roll, ${n} says. The ball stops an inch short of the lip and rolls all the way back. ${v} points, into nothing.`,
   (n, p) => `${n} does not stop, and the yard makes the noise a yard makes when somebody does not stop.`,
-  (n, v) => `${n} has ${v} banked in ${pron(n).posAdj} head and none of it on the board, and now none of it anywhere.`,
+  (n, p, v) => `${n} has ${v} banked in ${p.posAdj} head and none of it on the board, and now none of it anywhere.`,
 ];
 const ROLL_PUSH = [
-  (n, v) => `${n} pushes past ${v} into the deep pocket and lands it. The yard has to reconsider ${n}.`,
+  (n, p, v) => `${n} pushes past ${v} into the deep pocket and lands it. The yard has to reconsider ${n}.`,
   (n, p, v) => `${n} should have stopped at ${v}. ${p.Sub} ${vb(p, 'does', 'do')} not, and it works, which is the worst lesson anybody here could learn.`,
 ];
 
@@ -348,9 +352,9 @@ const towerOfHanoi = {
 };
 
 const SPELL_LONG = [
-  (n, w) => `${n} lays out ${w} letters and steps back from the board like somebody who has been sitting on that word since the third trip.`,
+  (n, p, w) => `${n} lays out ${w} letters and steps back from the board like somebody who has been sitting on that word since the third trip.`,
   (n, p, w) => `${w} letters from ${n}, and ${p.sub} ${vb(p, 'spends', 'spend')} the last minute of the clock refusing to shorten it for safety.`,
-  (n, w) => `${n} goes long — ${w} — and gets it down with the horn going.`,
+  (n, p, w) => `${n} goes long — ${w} — and gets it down with the horn going.`,
 ];
 const SPELL_SHORT = [
   (n, p) => `${n} runs the yard well and comes back with letters that do not want to be a word. ${p.Sub} ${vb(p, 'settles', 'settle')} for something small.`,
@@ -603,7 +607,7 @@ const tumblinDice = {
 
 const DOUGH_HAUL = [
   (n, p, c) => `${n} loads up until ${p.sub} can barely see over it — ${c} coins in one trip — and somehow gets all of it to the vault.`,
-  (n, c) => `${n} works out early that the wall is the slow part, not the wading, and starts taking ${c} at a time.`,
+  (n, p, c) => `${n} works out early that the wall is the slow part, not the wading, and starts taking ${c} at a time.`,
   (n, p) => `${n} goes in up to the waist and comes out looking like something the yard grew. ${p.Sub} ${vb(p, 'does', 'do')} not slow down.`,
 ];
 const DOUGH_SPILL = [
@@ -753,9 +757,9 @@ const readySetWoah = {
 // ══════════════════════════════════════════════════════════════════════
 
 const X_RIGHT = [
-  (n, q) => `${n} answers ${q} without writing anything down first, which is either certainty or a very good impression of it.`,
+  (n, p, q) => `${n} answers ${q} without writing anything down first, which is either certainty or a very good impression of it.`,
   (n, p, q) => `${q}, says ${n}, and ${p.sub} ${vb(p, 'is', 'are')} the only one on the board with it.`,
-  (n, q) => `${n} works it back from the number of votes rather than the number of days, gets ${q}, and gets it alone.`,
+  (n, p, q) => `${n} works it back from the number of votes rather than the number of days, gets ${q}, and gets it alone.`,
 ];
 const X_WRONG = [
   (n, p) => `${n} answers fast and confidently and wrongly, and the confidence is the part the house notices.`,

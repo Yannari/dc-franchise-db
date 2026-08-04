@@ -4450,6 +4450,14 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'app-store':
+        sec('THE APP STORE');
+        ln(`  On the shelf this week: ${(act.shelf || []).join(', ')}.`);
+        ln('  Nobody in the house can compete for one of these. The audience votes, and the audience votes for whoever it has been watching — so they land on the most WATCHED houseguests rather than the best ones.');
+        ln(`  ${(act.winners || []).length} power${(act.winners || []).length === 1 ? '' : 's'} leave the shelf. The winners are told in private and the house is told only that somebody out there now has something.`);
+        ln('  Who took what stays off this page for the same reason it stays off the feeds.');
+        break;
+
       case 'temptation':
         sec('THE DEN OF TEMPTATION');
         ln(`  The audience chooses ${act.entrant}, and the Den offers ${pronouns(act.entrant).obj} ${act.power} outright — no competition, no vote.`);

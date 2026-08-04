@@ -18562,6 +18562,73 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
+ * The App Store.
+ *
+ * The only distributor with no room and no door — it happens on a phone, in a
+ * country the houseguests cannot see — so the screen is a handset rather than
+ * a set. Apps light up as they leave the shelf.
+ *
+ * The recipients stay REDACTED, for the same reason Pandora's prize does: the
+ * grants are holder-secret, and the reveal belongs to the night the power
+ * fires rather than the night it was won. The Debug panel owns the truth.
+ */
+export function rpBuildBBAppStore(ep, act) {
+  if (!act) return '';
+  const shelf = act.shelf || [];
+  const winners = act.winners || [];
+  const stateKey = `bb_as_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // One step per power leaving the shelf, then the redacted recipient card.
+  const steps = [{ kind: 'shelf' }, ...winners.map((w, i) => ({ kind: 'download', w, i })), { kind: 'sealed' }];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const downloaded = Math.max(0, Math.min(winners.length, state.idx));
+
+  const tile = (name, i) => `<div class="bbas-app ${i < downloaded ? 'is-on' : ''}">
+      <div class="bbas-tile">${i < downloaded ? '&#x2713;' : '&#x25CE;'}</div>
+      <div class="bbas-name">${_bbEsc(name)}</div>
+      <div class="bbas-bar"><i></i></div>
+    </div>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'shelf') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h"><span class="bbns-pill gold">ON THE SHELF</span></div>
+        <div class="bbns-card-b">${shelf.length} power${shelf.length === 1 ? '' : 's'} go up for the audience to vote over: ${
+          shelf.map(s => _bbEsc(s)).join(', ')}. Nobody in this house can compete for one, which means the only currency left is screen time — and screen time in this game is built by being loud rather than by playing well.</div></div>`;
+    }
+    if (step.kind === 'download') {
+      return `<div class="bbns-card">
+        <div class="bbns-card-h"><span class="bbns-pill">DOWNLOADED</span></div>
+        <div class="bbns-card-b">${_bbEsc(step.w.power)} leaves the shelf. Somebody in that house is being told in private, right now, that they are holding it.</div></div>`;
+    }
+    return `<div class="bbns-card is-final">
+      <div class="bbns-card-h"><span class="bbns-pill grey">RECIPIENT SEALED</span></div>
+      <div class="bbns-card-b">The house is told only that the vote happened and that somebody out there now has something. No name is read out — not to them, and not to you. You will find out the night it goes off.</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbas">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#a5b4fc;text-shadow:0 0 20px rgba(99,102,241,.35);margin-bottom:4px">THE APP STORE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Nobody in this house can win one of these.</div>
+    <div class="bbas-phone">
+      <div class="bbas-notch"></div>
+      <div class="bbas-grid">${shelf.map(tile).join('')}</div>
+      <div class="bbas-to">TO: <b>&nbsp;</b></div>
+    </div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The shelf' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
  * The Den of Temptation.
  *
  * A booth rather than a door: one chair, one screen, one person, and a set of
@@ -20140,6 +20207,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
+      case 'app-store':
+        screens.push({ id: id('bb-appstore'), label: 'The App Store', html: rpBuildBBAppStore(view, act) });
         break;
       case 'temptation':
         screens.push({ id: id('bb-temptation'), label: 'The Den', html: rpBuildBBTemptation(view, act) });

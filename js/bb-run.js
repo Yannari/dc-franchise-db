@@ -738,6 +738,14 @@ export function summariseWeek(week) {
         line('DIAMOND POWER OF VETO — DETONATED');
         line(`  ${act.holder} reveals the secret power live: ${act.saved} comes off the block, and ${act.replacement} takes the empty chair.`);
         break;
+      case 'app-store':
+        line('');
+        line('THE APP STORE');
+        line(`  On the shelf: ${(act.shelf || []).join(', ')}.`);
+        line(`  The audience votes. ${(act.winners || []).length} power${
+          (act.winners || []).length === 1 ? '' : 's'} leave the shelf and the house is told only that somebody out there is now holding something.`);
+        line('  Who won what is not public. The Debug panel owns the truth.');
+        break;
       case 'temptation': {
         line('');
         line('THE DEN OF TEMPTATION');

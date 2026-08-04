@@ -168,3 +168,82 @@ describe('the prize gives the taker something the week can feel', () => {
   });
 
 });
+
+// ── a bad prize is a character moment, not a coin flip ────────────────
+//
+// Two of the four prizes are worth less than nothing: you quit a competition
+// and finish likelier to be nominated, because nominations are chosen on bonds
+// and both of those prizes cost you bonds. Before this, every houseguest was
+// equally liable to take one — a quarter of the field being made to play badly
+// by a coin flip, which is the engine choosing wrong for them rather than a
+// temptation.
+//
+// Strategic sense is what reads the trade. Somebody who has it will not stop
+// for a bad prize; somebody who does not sees a prize, full stop. So the cash
+// still gets taken, by exactly the player whose game that is.
+import { pStats } from '../js/players.js';
+
+describe('who takes which prize, and why', () => {
+  beforeEach(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {};
+    seasonConfig.romance = 'off';
+    NAMES.forEach(n => {
+      gs.bb.stats[n] = { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
+        timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+    });
+  });
+
+  const sweep = () => {
+    const byPrize = {};
+    let took = 0, comps = 0;
+    for (let s = 0; s < 120; s++) {
+      const r = runBBCompetition({
+        type: 'hoh', participants: NAMES, house: NAMES, library: BB_COMPETITIONS,
+        forcedId: 'bb-physical-slide', rng: seededRng(s * 613 + 5),
+        week: { num: 4, houseAtStart: NAMES },
+      });
+      comps++;
+      for (const [name, row] of Object.entries(r.debug.scoreBreakdown)) {
+        if (!row.tookPrize) continue;
+        took++;
+        (byPrize[row.prize] ||= []).push(pStats(name).strategic);
+      }
+    }
+    return { byPrize, took, comps };
+  };
+
+  it('the bad prizes go to the houseguests who cannot read the trade', () => {
+    const { byPrize } = sweep();
+    const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const bad = [...(byPrize.cash || []), ...(byPrize.feast || [])];
+    const good = [...(byPrize.letter || []), ...(byPrize.shopping || [])];
+    expect(bad.length, 'nobody ever took a bad prize — the check is vacuous').toBeGreaterThan(0);
+    expect(good.length, 'nobody ever took a good one either').toBeGreaterThan(0);
+    // A clear separation, not a rounding difference.
+    expect(mean(good) - mean(bad),
+      `bad-prize takers averaged ${mean(bad).toFixed(1)} strategic, good-prize ${mean(good).toFixed(1)}`)
+      .toBeGreaterThan(1.5);
+  });
+
+  it('a houseguest who can read it never makes a losing trade', () => {
+    // Falls out of the appeal term rather than being special-cased: cash is
+    // worth -0.5, so appeal goes non-positive above roughly 5 strategic and
+    // the branch cannot be entered at all.
+    const { byPrize } = sweep();
+    for (const taker of byPrize.cash || []) {
+      expect(taker, 'somebody strategic quit a competition for cash').toBeLessThan(6);
+    }
+    for (const taker of byPrize.feast || []) {
+      expect(taker, 'somebody strategic quit a competition for a meal').toBeLessThan(8);
+    }
+  });
+
+  it('stopping is an event, not a habit', () => {
+    // A quarter of the field walking off was not a temptation, it was noise.
+    const { took, comps } = sweep();
+    expect(took / comps, 'too many people quit for it to mean anything').toBeLessThan(2.5);
+    expect(took / comps, 'nobody ever stops — the prize may as well not exist').toBeGreaterThan(0.4);
+  });
+});

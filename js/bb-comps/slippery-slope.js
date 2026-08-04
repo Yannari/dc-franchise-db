@@ -189,6 +189,14 @@ export const slipperySlope = {
         // Somebody on the block has a reason to keep running and a reason to
         // grab something certain. Both pull, in opposite directions.
         inDanger: nominees.has(name),
+        // How much trouble they are in, resolved ONCE.
+        //
+        // It does not change while the competition runs, and dangerLevel is
+        // not cheap — it walks the house twice per call doing perceived-bond
+        // and alliance lookups. Calling it from the per-trip, per-player
+        // temptation check meant roughly a hundred and fifty of those per
+        // competition, which is what made a week noticeably slower to play.
+        danger: dangerLevel(name, context),
         tookPrize: false, out: false,
       };
     });
@@ -268,7 +276,7 @@ export const slipperySlope = {
           // competition that could save them, and no prize is worth enough to
           // change that. A flat `inDanger ? -0.1 : 0.06` was letting nominees
           // stroll off the lane for a letter.
-          const danger = dangerLevel(p.name, context);
+          const danger = p.danger;
           const nerve = (10 - s.boldness) / 10;          // low nerve stops sooner
 
           // How good this prize looks TO THIS PERSON.

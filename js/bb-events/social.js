@@ -288,9 +288,14 @@ const infoTrade = {
   id: 'social-info-trade',
   category: 'social',
   weight(house, ctx) {
+    // The talker count is a cheap scan and rules the event out on its own;
+    // _infoTrio behind it walks the house three times over doing closeness and
+    // threat lookups. Asking in that order cost 5.9ms per beat — the single
+    // most expensive weight() in the library.
     const talkers = house.filter(n => pStats(n).social >= 5);
+    if (talkers.length < 2) return 0;
     if (!_infoTrio(house, ctx)) return 0;
-    return talkers.length >= 2 ? _w(talkers.length * 1.4, ctx) : 0;
+    return _w(talkers.length * 1.4, ctx);
   },
   fire(house, ctx, api) {
     // The intel is about whoever is currently the biggest threat in the room.

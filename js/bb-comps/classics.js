@@ -849,7 +849,18 @@ const inTheBalance = {
   name: 'In The Balance', category: 'precision',
   types: ['hoh', 'veto', 'tiebreaker'],
   desc: 'Each houseguest stands on a long board pivoted at its centre with a heavy ball resting in a channel that runs the length of it. Shifting weight tips the board and sends the ball rolling, and the object is to keep it inside a narrow scoring zone at the middle of the channel for as long as possible while the pivot is loosened at intervals to make the board twitchier. The moment the ball leaves either end of the channel that houseguest is finished and their clock stops where it stopped. Longest time in the zone wins.',
-  stats: { temperament: 0.34, physical: 0.22, endurance: 0.22, intuition: 0.22 },
+  // Standing on a board and keeping a ball still is a body doing the work:
+  // balance, weight shifted in inches, and a correction made with the
+  // shoulders rather than the feet. The old profile led with temperament and
+  // gave intuition a full quarter, which described a nerve test rather than a
+  // balance beam — and left the houseguests actually built for this with no
+  // edge in it.
+  //
+  // physical    — balance and precise weight shifting
+  // mental      — concentration, and reading where the ball is going
+  // endurance   — holding that together as the pivot keeps loosening
+  // temperament — not making the sudden correction that sends it off the end
+  stats: { physical: 0.45, mental: 0.25, endurance: 0.20, temperament: 0.10 },
   weight: () => 1.1,
   simulate(participants, context, api, rng) {
     const beats = [];

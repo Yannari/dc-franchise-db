@@ -68,7 +68,16 @@ export const morphOMatic = {
   category: 'memory',
   types: ['hoh', 'veto', 'arena', 'tiebreaker'],
   desc: 'Each picture on the screen is two houseguests morphed into a single face. A player must work out both names and register them before the next face appears — and a wrong answer means staying on that picture until it is right. The fastest total time through the whole board wins.',
-  stats: { mental: 0.38, intuition: 0.26, temperament: 0.20, social: 0.16 },
+  // A timed visual puzzle, and nothing else. Temperament was carrying a fifth
+  // of it on the theory that a wrong answer is frustrating — but being stuck
+  // on a picture is a recognition problem, not an emotional-control one, and
+  // the weight was better spent on the two things the screen actually asks
+  // for plus the one advantage a social player genuinely has here.
+  //
+  // mental    — identifying and holding the facial features
+  // intuition — the fast read of who a blended face resembles
+  // social    — knowing these people's faces well enough to see them in it
+  stats: { mental: 0.50, intuition: 0.30, social: 0.20 },
   weight: () => 1.15,
   simulate(participants, context, api, rng) {
     const beats = [];
@@ -110,7 +119,11 @@ export const morphOMatic = {
     const runs = participants.map(name => {
       const s = pStats(name);
       const t = throwRead(name, context, rng);
-      const skill = (s.mental * 0.38 + s.intuition * 0.26 + s.temperament * 0.20 + s.social * 0.16) / 10;
+      // Read off the declared profile rather than restating it. These weights
+      // were written out twice — once in `stats` for the screen and the Debug
+      // tab, once here for the simulation — so they had already drifted apart
+      // and the board described a competition the engine was not running.
+      const skill = aptitude(name, morphOMatic.stats) / 10;
       const haveNot = (context.haveNots || []).includes(name);
 
       let time = 0, wrongTotal = 0, ghostOn = null, worst = null, hnCost = 0, luck = 0;

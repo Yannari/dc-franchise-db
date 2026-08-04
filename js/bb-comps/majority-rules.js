@@ -113,9 +113,13 @@ function tallyHouse(sup, a, b, house, rng) {
  * accuracy scales with how obvious the answer was — which is what makes an
  * upset round an actual upset rather than a dice roll.
  */
+/** Guessing a headcount is estimation: how well you read the room, in numbers. */
+const TIEBREAK_MIX = { intuition: 0.6, social: 0.4 };
+
 function readAccuracy(name, obviousness, haveNotDrag = 0) {
-  const s = pStats(name);
-  const skill = (s.intuition * 0.40 + s.social * 0.30 + s.strategic * 0.18 + s.mental * 0.12) / 10;
+  // The declared profile, not a second copy of it. This had drifted to
+  // 40/30/18/12 against a declared 36/28/20/16.
+  const skill = aptitude(name, majorityRules.stats) / 10;
   return clamp(0.30 + skill * 0.45 + obviousness * 0.26 - haveNotDrag, 0.16, 0.94);
 }
 
@@ -329,8 +333,11 @@ export const majorityRules = {
         field.map(f => f.name), 'TIEBREAKER'));
 
       field.forEach(f => {
-        const s = pStats(f.name);
-        const err = Math.abs((rng() - 0.5) * 2) * (11 - (s.intuition * 0.6 + s.social * 0.4)) * 0.55
+        // The tiebreaker is a different question from the rounds. Those ask
+        // which way the house went; this asks HOW MANY went that way, which
+        // is estimation rather than reading — so it gets its own declared mix
+        // rather than the headline profile or a hand-written copy of one.
+        const err = Math.abs((rng() - 0.5) * 2) * (11 - aptitude(f.name, TIEBREAK_MIX)) * 0.55
           + (f.threw ? 2.2 : 0);
         f.guess = Math.round(clamp(truth + (rng() < 0.5 ? -err : err), 0, Math.max(0, tally.voters.length)));
         f.err = Math.abs(f.guess - truth);

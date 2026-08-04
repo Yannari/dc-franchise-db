@@ -11,7 +11,12 @@ import { shouldThrowHoh, shouldThrowVeto, gunningFor } from './strategy.js';
 // signature library already declares which competitions can serve a
 // re-entry night (The Wall canonically is one), so the twist arrives to a
 // stocked shelf instead of a contract change.
-export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker', 'return']);
+// 'pair' is the Battle of the Block slot: four nominees who are two units, not
+// four players. It is a type of its own rather than a flag on 'arena' because
+// nothing written for one nominee coming off the block alone can serve a night
+// where the block comes off in twos — the arena's own closing beats announced
+// each player's fate individually, and the week had to strip them back out.
+export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker', 'return', 'pair']);
 const VALID_TYPES = new Set(BB_COMP_TYPES);
 const VALID_STATS = new Set(['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament']);
 
@@ -205,6 +210,10 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
     variant:raw.variant || null, participants:[...participants], excluded:[...(context.excluded || [])],
     winner, placements, scores:Object.fromEntries(participants.map(name => [name, Number(scores[name])])),
     beats, events, text:raw.text || beats.map(beat => beat.text).join(' '),
+    // A pair competition's real result, kept intact. The week used to recover
+    // it by averaging the four individual scores, which cannot represent a pair
+    // that lost because of one of its halves — the whole point of the format.
+    pairScores:raw.pairScores || null, pairWinner:raw.pairWinner || null,
     debug:{
       competitionId:comp.id, source, type:context.type, variant:raw.variant || null,
       participants:[...participants], excluded:[...(context.excluded || [])],
@@ -231,6 +240,10 @@ export function runBBCompetition(options = {}) {
     // Who is on slop this week. Custom competitions can read it; the generic
     // scorer applies it directly.
     haveNots:[...(options.haveNots || [])],
+    // Who is playing WITH whom. Only the pair slot fills this, and a pair
+    // competition handed no pairing declines to run rather than inventing
+    // partners for people the week never put together.
+    pairs:(options.pairs || []).map(pair => ({ owner:pair.owner, members:[...(pair.members || [])] })),
   };
   const selection = chooseCompetition(options.library || [], type, context, rng, options.forcedId);
   const comp = selection.comp;

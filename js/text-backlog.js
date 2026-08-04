@@ -4332,6 +4332,13 @@ export function generateBBSummaryText(ep) {
           ln(`  Rules: ${act.competition.desc || ''}`);
           (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
         }
+        if (act.competition?.pairScores) {
+          ln('');
+          for (const owner of act.hohs || []) {
+            ln(`  ${(act.pairs?.[owner] || []).join(' and ')}: ${act.competition.pairScores[owner]}`);
+          }
+          ln('  One track each — neither half of a pair scored a point of their own.');
+        }
         ln('');
         ln(`  ${(act.saved || []).join(' and ')} win the Battle of the Block and come off the block.`);
         ln(`  ${act.dethroned} is dethroned. The key comes off, and with it the safety —`);

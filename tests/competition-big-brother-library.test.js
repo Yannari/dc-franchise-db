@@ -41,9 +41,24 @@ function reset() {
   seasonConfig.finaleSize = 3;
 }
 
+// A Battle of the Block game is played by two PAIRS, and it declines to run
+// without them rather than inventing partners for people the week never put
+// together. So the harness has to seat a block the way the week does: exactly
+// four nominees, two to a side.
+const isPair = comp => comp.types.length === 1 && comp.types[0] === 'pair';
+const pairSeating = () => ({
+  participants: HOUSE.slice(0, 4),
+  pairs: [{ owner: 'HOH-1', members: HOUSE.slice(0, 2) },
+    { owner: 'HOH-2', members: HOUSE.slice(2, 4) }],
+});
+
+/** The slot a competition should be smoke-run in. */
+const slotFor = comp => (comp.types.includes('hoh') ? 'hoh' : comp.types[0]);
+
 const run = (comp, type = 'hoh', extra = {}) => runBBCompetition({
   type, participants: HOUSE.slice(0, 8), house: HOUSE, library: BB_COMPETITIONS,
-  forcedId: comp.id, rng: seededRng(), week: { num: 2, houseAtStart: HOUSE }, ...extra,
+  forcedId: comp.id, rng: seededRng(), week: { num: 2, houseAtStart: HOUSE },
+  ...(isPair(comp) ? pairSeating() : {}), ...extra,
 });
 
 describe('Big Brother competition library', () => {
@@ -60,11 +75,11 @@ describe('Big Brother competition library', () => {
 
   it('returns a valid, renderable result for every competition', () => {
     for (const comp of BB_COMPETITIONS) {
-      const type = comp.types.includes('hoh') ? 'hoh' : comp.types[0];
+      const type = slotFor(comp);
       const result = run(comp, type);
       expect(result.winner).toBe(result.placements[0]);
       expect(new Set(result.placements).size).toBe(result.placements.length);
-      expect(result.placements).toHaveLength(8);
+      expect(result.placements).toHaveLength(isPair(comp) ? 4 : 8);
       for (const name of result.placements) expect(Number.isFinite(result.scores[name])).toBe(true);
       expect(result.beats.length, `${comp.id} narrated nothing`).toBeGreaterThan(1);
       for (const b of result.beats) {
@@ -78,7 +93,7 @@ describe('Big Brother competition library', () => {
   });
 
   it('narrates more than a single line, which is the point of the library', () => {
-    const perComp = BB_COMPETITIONS.map(c => run(c, c.types.includes('hoh') ? 'hoh' : c.types[0]).beats.length);
+  const perComp = BB_COMPETITIONS.map(c => run(c, slotFor(c)).beats.length);
     const average = perComp.reduce((a, b) => a + b, 0) / perComp.length;
     expect(average).toBeGreaterThan(3);
   });
@@ -90,9 +105,10 @@ describe('Big Brother competition library', () => {
     for (const comp of BB_COMPETITIONS) {
       for (const seed of [2, 6, 14]) {
         const result = runBBCompetition({
-          type: comp.types.includes('hoh') ? 'hoh' : comp.types[0],
+          type: slotFor(comp),
           participants: HOUSE, house: HOUSE, library: BB_COMPETITIONS,
           forcedId: comp.id, rng: seededRng(seed), week: { num: 4, houseAtStart: HOUSE },
+          ...(isPair(comp) ? pairSeating() : {}),
         });
         const texts = result.beats.map(b => b.text);
         expect(new Set(texts).size, `${comp.id} repeated a line`).toBe(texts.length);
@@ -166,8 +182,12 @@ describe('Big Brother competition library', () => {
     // test above ('returns a valid, renderable result for every competition');
     // here the arena only has to show it collectively carries its slots, which
     // still trips if a weight bug zeroes the arena pool.
+    // Slot-gated pools. The arena only opens on a Block Buster week and the
+    // pair pool only on a Battle of the Block week, so neither can be reached
+    // by an ordinary season and neither belongs in the reachability count.
+    // Per-game reachability is proven by the forced-run test above.
     const arenaOnly = new Set(BB_COMPETITIONS
-      .filter(c => c.types.length === 1 && c.types[0] === 'arena').map(c => c.id));
+      .filter(c => c.types.length === 1 && ['arena', 'pair'].includes(c.types[0])).map(c => c.id));
     const never = BB_COMPETITIONS.map(c => c.id)
       .filter(id => !used.has(id) && !arenaOnly.has(id));
     expect(never, `never picked in a real season: ${never.join(', ')}`).toEqual([]);

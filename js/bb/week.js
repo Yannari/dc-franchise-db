@@ -1558,24 +1558,46 @@ export function simulateBBWeek(options = {}) {
       // average — a partner who cannot play is a partner who costs you the
       // week, which is the whole social cruelty of the format.
       const four = [...nominees, ...coNominees];
-      const botbComp = runBBCompetition({
-        type: 'arena', participants: four, excluded: house.filter(n => !four.includes(n)),
+      const pairing = [
+        { owner: hoh, members: [...nominees] },
+        { owner: coHoh, members: [...coNominees] },
+      ];
+      const runBotb = (type, extra = {}) => runBBCompetition({
+        type, participants: four, excluded: house.filter(n => !four.includes(n)),
         house, week, rng, library: competitionLibrary,
         forcedId: options.forcedCompetitions?.botb, seed: options.seed,
-        haveNots: week.haveNots || [],
+        haveNots: week.haveNots || [], ...extra,
       });
-      // The arena library is written for the Block Buster, where ONE nominee
-      // comes off the block alone, so its closing beats announce each player's
-      // fate individually — "Axel stays nominated" on a night Axel was saved by
-      // a partner. The pair result supersedes them, so they come off here
-      // rather than contradicting the screen and the transcript.
-      const TERMINAL = new Set(['STAYS NOMINATED', 'OFF THE BLOCK']);
-      botbComp.beats = (botbComp.beats || []).filter(b => !TERMINAL.has(b?.badgeText));
 
+      // The pair slot first. These games are written for two nominees who are
+      // one unit — the pair has a single progress track, the slower half weighs
+      // more than the faster one, and a nominee can throw it to keep an ally
+      // in power. None of that can be recovered from four solo scores.
+      let botbComp = null;
+      try {
+        botbComp = runBotb('pair', { pairs: pairing });
+      } catch {
+        // Nothing eligible — every pair game on cooldown, or a forced id that
+        // only the arena serves. The week still happens.
+        botbComp = null;
+      }
+
+      if (!botbComp) {
+        botbComp = runBotb('arena');
+        // The arena library is written for the Block Buster, where ONE nominee
+        // comes off the block alone, so its closing beats announce each
+        // player's fate individually — "Axel stays nominated" on a night Axel
+        // was saved by a partner. The pair result supersedes them, so they come
+        // off here rather than contradicting the screen and the transcript.
+        const TERMINAL = new Set(['STAYS NOMINATED', 'OFF THE BLOCK']);
+        botbComp.beats = (botbComp.beats || []).filter(b => !TERMINAL.has(b?.badgeText));
+      }
+
+      // A pair game reports the pairs; the arena fallback can only be averaged.
       const avg = pair => pair.reduce((sum, n) => sum + (botbComp.scores[n] || 0), 0) / Math.max(1, pair.length);
-      const hohPairScore = avg(nominees);
-      const coPairScore = avg(coNominees);
-      const hohPairWins = hohPairScore >= coPairScore;
+      const hohPairScore = botbComp.pairScores?.[hoh] ?? avg(nominees);
+      const coPairScore = botbComp.pairScores?.[coHoh] ?? avg(coNominees);
+      const hohPairWins = botbComp.pairWinner ? botbComp.pairWinner === hoh : hohPairScore >= coPairScore;
 
       const savedPair = hohPairWins ? [...nominees] : [...coNominees];
       const stuckPair = hohPairWins ? [...coNominees] : [...nominees];
@@ -1632,6 +1654,11 @@ export function simulateBBWeek(options = {}) {
       week.dethronedHoh = dethroned;
       nominees = [...stuckPair];
       week.initialNominees = [...stuckPair];
+      // Winning the Battle is not "off the block until somebody thinks of you
+      // again" — it is safety for the week. Nothing recorded that, so the veto
+      // ceremony's replacement chooser could take a saved nominee straight back
+      // up, and only the draw was stopping it.
+      week.botbSafe = [...savedPair];
       plan = hohPairWins ? coPlan : plan;
       week.plan = plan;
       gs.bb.stats[reigning].hohWins++;      // credited to the reign that survived
@@ -1801,7 +1828,7 @@ export function simulateBBWeek(options = {}) {
         why: `${vetoWinner} could take ${vetoDecision.save} down, but there is no eligible houseguest left to put up in the empty chair. The rules make the decision: the medallion stays in the box.` };
     }
     if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...nominees.filter(name => name !== vetoDecision.save)];
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...nominees.filter(name => name !== vetoDecision.save)];
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -2264,7 +2291,7 @@ export function simulateBBWeek(options = {}) {
       }
       if (save) {
         const other = nominees.find(n => n !== save);
-        const protectedNames = [hoh, holder, save, other].filter(Boolean);
+        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || [])].filter(Boolean);
         const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
         let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);
         if (replacement && house.includes(replacement) && !protectedNames.includes(replacement)) {

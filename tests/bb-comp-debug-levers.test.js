@@ -9,6 +9,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
 import { runBBCompetition } from '../js/bb/comps.js';
+import { seatFor, slotFor } from './helpers/pairs.js';
 import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -45,11 +46,12 @@ describe('the debug panel can explain every competition', () => {
     const missing = new Set();
     for (const comp of BB_COMPETITIONS) {
       if (NO_LEVERS_YET.has(comp.id)) continue;
-      const type = comp.types.includes('hoh') ? 'hoh' : comp.types[0];
+      const type = slotFor(comp);
       for (const seed of [31, 88]) {
         const result = runBBCompetition({
           type, participants: HOUSE.slice(0, 8), house: HOUSE, library: BB_COMPETITIONS,
           forcedId: comp.id, rng: seededRng(seed), week: { num: 4, houseAtStart: HOUSE },
+          ...seatFor(comp, HOUSE),
         });
         for (const [name, row] of Object.entries(result.debug.scoreBreakdown)) {
           const aptitude = row.statTotal ?? row.base;
@@ -69,10 +71,11 @@ describe('the debug panel can explain every competition', () => {
     for (const id of NO_LEVERS_YET) {
       const comp = BB_COMPETITIONS.find(c => c.id === id);
       expect(comp, `${id} is exempted but no longer exists`).toBeTruthy();
-      const type = comp.types.includes('hoh') ? 'hoh' : comp.types[0];
+      const type = slotFor(comp);
       const result = runBBCompetition({
         type, participants: HOUSE.slice(0, 8), house: HOUSE, library: BB_COMPETITIONS,
         forcedId: id, rng: seededRng(12), week: { num: 4, houseAtStart: HOUSE },
+        ...seatFor(comp, HOUSE),
       });
       const rows = Object.values(result.debug.scoreBreakdown);
       const reports = rows.length > 0

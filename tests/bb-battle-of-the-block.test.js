@@ -309,3 +309,125 @@ describe('a week with two Heads of Household says so', () => {
     expect(battle.hohs).toContain(ep.coHoh);
   });
 });
+
+// ── the battle is played in pairs ─────────────────────────────────────
+//
+// The competition used to be an arena game — written for three nominees who
+// fight alone and exactly one of whom comes off the block — with the four solo
+// scores averaged afterwards into two pair results. That reports a winner, but
+// it cannot express the only thing that makes the format cruel: you do not lose
+// the Battle of the Block, your partner does, and you go to the block anyway.
+import { PAIR_COMPS } from '../js/bb-comps/pairs.js';
+import { aptitude } from '../js/bb-comps/_shared.js';
+
+describe('the Battle is played in pairs, not four solos', () => {
+  beforeEach(() => house());
+
+  const battleOf = seed => {
+    const ep = playWeek(seed);
+    return { ep, battle: actOf(ep, 'battle-of-the-block') };
+  };
+
+  it('draws a competition written for two, and reports the result as pairs', () => {
+    const { battle } = battleOf();
+    const comp = battle.competition;
+    expect(PAIR_COMPS.map(c => c.id), `the battle drew ${comp.id}, which is not a pair game`)
+      .toContain(comp.id);
+    expect(comp.type).toBe('pair');
+    // The pair's own progress, not four scores averaged back into two.
+    expect(comp.pairScores, 'the competition reported no pair result').toBeTruthy();
+    expect(Object.keys(comp.pairScores).sort()).toEqual([...battle.hohs].sort());
+    expect(comp.pairWinner).toBe(battle.dethroned);  // whoever's pair won is dethroned
+  });
+
+  it('a pair shares its fate: both saved sit above both stuck', () => {
+    for (const seed of [4242, 77, 909]) {
+      house();
+      const { battle } = battleOf(seed);
+      const s = battle.competition.scores;
+      const worstSaved = Math.min(...battle.saved.map(n => s[n]));
+      const bestStuck = Math.max(...battle.stuck.map(n => s[n]));
+      expect(worstSaved, `seed ${seed}: a stuck nominee outscored a saved one`)
+        .toBeGreaterThan(bestStuck);
+      // And the board is ordered by it.
+      expect(battle.competition.placements.slice(0, 2).sort()).toEqual([...battle.saved].sort());
+    }
+  });
+
+  it('every beat names the pair, and none of them announces a solo fate', () => {
+    const { battle } = battleOf();
+    const beats = battle.competition.beats || [];
+    expect(beats.length, 'a pair game with nothing to watch').toBeGreaterThanOrEqual(6);
+    // The arena's closing badges belong to a night when one person comes off
+    // the block alone. On this night nobody does.
+    for (const b of beats) {
+      expect(['STAYS NOMINATED', 'OFF THE BLOCK'], `a solo fate was announced: ${b.text}`)
+        .not.toContain(b.badgeText);
+    }
+    // Somebody's partner is named alongside them.
+    const paired = beats.filter(b => b.players.length >= 2);
+    expect(paired.length, 'no beat ever showed two nominees playing as one')
+      .toBeGreaterThanOrEqual(3);
+  });
+
+  it('the debug row explains the result as a pair, not as an individual', () => {
+    const { battle } = battleOf();
+    const rows = battle.competition.debug.scoreBreakdown;
+    for (const name of [...battle.saved, ...battle.stuck]) {
+      const row = rows[name];
+      expect(row, `${name} has no debug row`).toBeTruthy();
+      expect(row.pair, `${name}'s row does not say who they played with`).toContain(name);
+      expect(Number.isFinite(row.pairProgress), `${name}: no pair progress`).toBe(true);
+      expect(Number.isFinite(row.chemistry), `${name}: no chemistry reading`).toBe(true);
+    }
+    // Partners share the pair's progress; that is what makes them a pair.
+    expect(rows[battle.saved[0]].pairProgress).toBe(rows[battle.saved[1]].pairProgress);
+  });
+
+  it('the weak half of a pair is the half that matters', () => {
+    // A pair moves at a rate weighted toward its SLOWER member, so the pair
+    // with the better average can still be the pair that loses. That is the
+    // whole reason the choice of a pawn is a real decision: an average model
+    // lets one monster carry anybody, and then nothing a Head of Household
+    // does at the ceremony matters.
+    const game = PAIR_COMPS.find(c => c.id === 'pair-tethered');
+    const ranked = [...NAMES].sort((a, b) => aptitude(b, game.stats) - aptitude(a, game.stats));
+    const apt = n => aptitude(n, game.stats);
+
+    // The best player, carrying the worst. Against two from the middle.
+    const lopsided = [ranked[0], ranked.at(-1)];
+    const even = [ranked[Math.floor(ranked.length / 2) - 1], ranked[Math.floor(ranked.length / 2)]];
+    const avg = pair => (apt(pair[0]) + apt(pair[1])) / 2;
+    // The premise of the test: the lopsided pair is the better pair on average
+    // and the worse pair at its weakest point. If the cast stops satisfying
+    // that, the test is not testing anything and should say so out loud.
+    expect(avg(lopsided), 'the lopsided pair is not the stronger average')
+      .toBeGreaterThan(avg(even));
+    expect(Math.min(...lopsided.map(apt)), 'the lopsided pair is not the weaker floor')
+      .toBeLessThan(Math.min(...even.map(apt)));
+
+    const api = { addBond: () => true, popDelta: () => true, record: () => true };
+    const out = game.simulate([...lopsided, ...even],
+      { type: 'pair', house: NAMES,
+        pairs: [{ owner: 'CARRY', members: lopsided }, { owner: 'EVEN', members: even }] },
+      api, () => 0.5);  // 0.5 removes the roll: the model alone decides
+    expect(out.pairWinner, 'a monster carried a passenger past a matched pair')
+      .toBe('EVEN');
+  });
+
+  it('both surfaces report the result as a pair score', () => {
+    const { ep, battle } = battleOf();
+    const pairScores = battle.competition.pairScores;
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+    buildVPScreens(ep);
+    Object.keys(_tvState).forEach(k => { _tvState[k].idx = 999; });
+    const screen = buildVPScreens(ep).find(s => s.id === 'bb-botb');
+    const text = generateSummaryText(ep);
+    for (const owner of battle.hohs) {
+      expect(screen.html, `the screen never shows ${owner}'s pair total`)
+        .toContain(String(pairScores[owner]));
+      expect(text, `the transcript never shows ${owner}'s pair total`)
+        .toContain(String(pairScores[owner]));
+    }
+  });
+});

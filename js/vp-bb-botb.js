@@ -75,7 +75,15 @@ export function rpBuildBBBattleOfTheBlock(ep, u = {}) {
     ${idx >= 1 ? `<header class="botb-hd"><span class="botb-tag">${E(comp.name || 'THE BATTLE')}</span>
         <span class="botb-sub">${(act.saved || []).length + (act.stuck || []).length} playing, in pairs</span></header>
       ${comp.desc ? `<p class="botb-rules">${E(comp.desc)}</p>` : ''}
-      <div class="botb-beats">${beats.map(x => `<p><span>${E(x.badgeText || '')}</span>${E(x.text)}</p>`).join('')}</div>`
+      <div class="botb-beats">${beats.map(x => `<p><span>${E(x.badgeText || '')}</span>${E(x.text)}</p>`).join('')}</div>
+      ${comp.pairScores ? `<div class="botb-tally">${(act.hohs || []).map(owner => {
+        // The winning pair is the DETHRONED Head of Household's — winning the
+        // Battle is how you take the crown off the person who nominated you.
+        const won = owner === act.dethroned;
+        return `<div class="botb-tally-row ${won ? 'is-won' : ''}">
+          <span class="botb-tally-pair">${E((act.pairs?.[owner] || []).join(' &amp; '))}</span>
+          <span class="botb-tally-n">${E(comp.pairScores[owner])}</span></div>`;
+      }).join('')}<div class="botb-tally-cap">One track each. Neither half of a pair scored a point of their own.</div></div>` : ''}`
       : '<span class="botb-lock">— —</span>'}
   </article>`);
 
@@ -141,6 +149,12 @@ export function rpBuildBBBattleOfTheBlock(ep, u = {}) {
   .botb-body{font-size:14px;line-height:1.65;margin:0 0 8px}
   .botb-rules{font-size:12.5px;line-height:1.6;color:var(--bo-dim);margin:0 0 9px;
     padding-left:10px;border-left:2px solid var(--bo-line)}
+  .botb-tally{margin-top:10px;border-top:1px solid var(--bo-line);padding-top:9px}
+  .botb-tally-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 8px;border-radius:6px}
+  .botb-tally-row.is-won{background:rgba(214,178,102,.13);border:1px solid rgba(214,178,102,.34)}
+  .botb-tally-pair{font-size:12.5px}
+  .botb-tally-n{font-family:Cinzel,serif;font-size:17px;color:#d6b266}
+  .botb-tally-cap{font-size:10.5px;color:var(--bo-dim);margin-top:6px;text-align:center}
   .botb-beats p{margin:0 0 7px;font-size:13.5px;line-height:1.6}
   .botb-beats span{display:block;font-family:Cinzel,serif;font-size:8.5px;letter-spacing:2px;color:var(--bo-dim);margin-bottom:2px}
   .botb-final{border-color:rgba(255,231,168,.45)}

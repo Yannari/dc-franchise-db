@@ -12,6 +12,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
 import { runBBCompetition } from '../js/bb/comps.js';
+import { seatFor, slotFor } from './helpers/pairs.js';
 import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -44,12 +45,13 @@ describe('competition narration and singular they', () => {
   it('never conjugates a singular they as singular', () => {
     const bad = new Set();
     for (const comp of BB_COMPETITIONS) {
-      const type = comp.types.includes('hoh') ? 'hoh' : comp.types[0];
+      const type = slotFor(comp);
       for (let seed = 0; seed < 25; seed++) {
         const result = runBBCompetition({
           type, participants: HOUSE.slice(0, 8), house: HOUSE.slice(0, 10),
           library: BB_COMPETITIONS, forcedId: comp.id, rng: seededRng(seed * 37 + 5),
           week: { num: 5, houseAtStart: HOUSE }, nominees: ['G', 'H'],
+          ...seatFor(comp, HOUSE),
         });
         for (const b of [...(result.beats || []), ...(result.events || [])]) {
           const m = SINGULAR_AFTER_THEY.exec(b.text || '');

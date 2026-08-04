@@ -4558,7 +4558,7 @@ export function generateBBSummaryText(ep) {
           break;
         }
         ln(`  ${act.entrant} accepts, in secret. ${act.power} changes hands and the house is told only that a curse has landed.`);
-        if (act.cursed) ln(`  ${act.curse.name} — ${act.cursed} must nominate ${pronouns(act.cursed).ref} this week.`);
+        ln(`  ${act.curse.name} is now in this house. Which houseguest it takes is not drawn until the nomination ceremony — so the room spends the days between knowing a curse is coming for one of them and not knowing which.`);
         if ((act.guesses || []).length) {
           const right = act.guesses.filter(g => g.correct).map(g => g.who);
           ln(`  The house starts hunting: ${act.guesses.map(g => `${g.who} → ${g.guess}`).join(', ')}.`);
@@ -4569,8 +4569,17 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'temptation-curse':
+        if (act.missed) {
+          sec('THE CURSE FINDS NOBODY');
+          ln('  Big Brother calls the house in to name the cursed houseguest and then does not name one.');
+          ln('  Everybody still eligible is protected by something, so the curse has nowhere to land — and');
+          ln('  somebody in that room is quietly realising they took a temptation and paid nothing at all.');
+          (act.beats || []).forEach(b => ln(`  ${b.text}`));
+          break;
+        }
         sec(`THE CURSE — ${act.cursed} NOMINATES THEMSELVES`);
         ln(`  ${act.cursed} walks to the third chair and sits down in it. ${pronouns(act.cursed).Sub} was not nominated by the Head of Household and was not named by a secret winner — a name came out of a hat because somebody in that room said yes to something.`);
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
         break;
 
       case 'bonus-life':

@@ -16,7 +16,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { heldPowers, BB_POWER_DEFINITIONS } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
-import { runDenOfTemptation, TEMPTATION_CURSES } from '../js/bb/temptation.js';
+import { runDenOfTemptation, resolveCurse, TEMPTATION_CURSES } from '../js/bb/temptation.js';
 import { rpBuildBBTemptation, rpBuildBBNominations, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -100,17 +100,61 @@ describe('who pays', () => {
 
   it('never lands the curse on the person who accepted', () => {
     // The single most important rule in the slice, and the one I had backwards
-    // from memory. Checked across many offers rather than once.
+    // from memory. The victim is drawn at the ceremony now, so this exercises
+    // resolveCurse over a house rather than the Den's own return value.
     let checked = 0;
     for (let seed = 1; seed <= 80; seed++) {
       house();
       const act = den(seed);
       if (!act?.accepted) continue;
       checked++;
-      expect(act.cursed, `seed ${seed}: the taker cursed themselves`).not.toBe(act.entrant);
-      expect(act.cursed).toBeTruthy();
+      const week = { num: 1, temptation: act };
+      const curseAct = withSeededRandom(seed, () =>
+        resolveCurse({ week, house: [...gs.activePlayers], rng: Math.random }));
+      expect(curseAct.cursed, `seed ${seed}: the taker cursed themselves`).not.toBe(act.entrant);
+      expect(curseAct.cursed).toBeTruthy();
     }
     expect(checked, 'no accepted offers to check').toBeGreaterThan(5);
+  });
+
+  it('never draws somebody who cannot take the chair', () => {
+    // THE BUG. The victim used to be drawn at week opening over the whole
+    // house — including the Head of Household and anyone about to be safe —
+    // so a curse that landed on one of them was announced to the viewer and
+    // then never seated. The houseguest was simply absent from the ceremony.
+    for (let seed = 1; seed <= 60; seed++) {
+      house();
+      const act = den(seed);
+      if (!act?.accepted) continue;
+      const room = [...gs.activePlayers];
+      // Everybody safe except three: the draw has to find one of those three.
+      const protectedNames = room.slice(0, room.length - 3).filter(n => n !== act.entrant);
+      const week = { num: 1, temptation: act };
+      const curseAct = withSeededRandom(seed, () =>
+        resolveCurse({ week, house: room, rng: Math.random, protectedNames }));
+      if (!curseAct?.cursed) continue;
+      expect(protectedNames, `seed ${seed}: cursed a protected houseguest`)
+        .not.toContain(curseAct.cursed);
+      expect(curseAct.cursed).not.toBe(act.entrant);
+    }
+  });
+
+  it('says so out loud when the curse can find nobody at all', () => {
+    // The house was promised a curse. If every eligible houseguest is safe it
+    // has to be told the curse missed — silence is what produced the bug.
+    house();
+    let act = null;
+    for (let seed = 1; seed <= 60 && !act?.accepted; seed++) { house(); act = den(seed); }
+    const room = [...gs.activePlayers];
+    const week = { num: 1, temptation: act };
+    const curseAct = resolveCurse({
+      week, house: room, rng: () => 0.5,
+      protectedNames: room.filter(n => n !== act.entrant),
+    });
+    expect(curseAct, 'the curse vanished silently').toBeTruthy();
+    expect(curseAct.missed).toBe(true);
+    expect(curseAct.cursed).toBeNull();
+    expect(curseAct.beats.length).toBeGreaterThan(0);
   });
 
   it('hands the taker a real power, in secret', () => {
@@ -243,6 +287,32 @@ describe('in a played week', () => {
     const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
     expect(text).not.toMatch(/nominated THEMSELVES/);
     expect(text).not.toMatch(/Roadkill winner, not the Head/);
+  });
+
+  it('an accepted temptation never silently produces nothing', () => {
+    // The user-facing invariant, over played weeks rather than units: if the
+    // Den announced a curse, the ceremony either seats somebody or says out
+    // loud that it could not. The reported bug was the third possibility —
+    // a cursed name announced and then absent from the ceremony entirely.
+    let accepted = 0, seated = 0, missed = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      house(['bb-den-of-temptation']);
+      const ep = withSeededRandom(seed * 7, () => simulateBBEpisode());
+      const den = (ep.acts || []).find(a => a.type === 'temptation');
+      if (!den?.accepted) continue;
+      accepted++;
+      const curseAct = (ep.acts || []).find(a => a.type === 'temptation-curse');
+      expect(curseAct, `seed ${seed}: a curse was announced and never resolved`).toBeTruthy();
+      if (curseAct.missed) { missed++; continue; }
+      seated++;
+      const noms = (ep.acts || []).find(a => a.type === 'nominations');
+      expect(noms.nominees, `seed ${seed}: ${curseAct.cursed} was cursed but is not on the block`)
+        .toContain(curseAct.cursed);
+      // And never somebody who could not have taken the chair.
+      expect(curseAct.cursed, 'the curse seated the Head of Household').not.toBe(ep.hoh);
+    }
+    expect(accepted, 'no accepted offers across 30 played weeks').toBeGreaterThan(3);
+    expect(seated, 'the curse never once seated anybody').toBeGreaterThan(0);
   });
 
   it('reaches both the transcript and the visual player', () => {

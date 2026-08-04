@@ -160,15 +160,22 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
   grantPower(powerId, entrant, { week: weekNum, visibility: 'secret', source: 'bb-den-of-temptation' });
   beats.push(beat(say(ACCEPT)(entrant, pr), [entrant], 'ACCEPTED', 'red'));
 
-  // ── the house pays ──
+  // ── the house pays, but not yet ──
+  //
+  // The victim is NOT drawn here. It is drawn at the nomination ceremony by
+  // resolveCurse below, from houseguests who can actually be seated.
+  //
+  // Drawing it here was a real bug: the Den runs at week opening, the draw
+  // included the Head of Household and anybody about to be safe, and when it
+  // landed on one of them the chair could not be filled — so the act
+  // announced "the curse lands on X, X must nominate themselves" and X was
+  // then simply absent from the ceremony. A curse the viewer was promised and
+  // never saw is worse than no curse.
+  //
+  // It is also how the show ran it: the temptation is taken on one night and
+  // the cursed houseguest is revealed at the ceremony, which is a better beat
+  // anyway — the house spends the gap knowing a curse is coming for somebody.
   const curse = TEMPTATION_CURSES['third-chair'];
-  const eligible = room.filter(n => n !== entrant);
-  const cursed = eligible[Math.floor(rng() * eligible.length)] || null;
-  if (cursed) {
-    beats.push(beat(say(CURSED)(cursed, pronouns(cursed)), [cursed], 'CURSED', 'red'));
-    gs.popularity ||= {};
-    gs.popularity[cursed] = (gs.popularity[cursed] || 0) + 2;
-  }
 
   // ── and starts hunting ──
   //
@@ -191,13 +198,63 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
     beats.push(beat(say(SUSPECT)(who, guess), [who, guess], guess === entrant ? 'CLOSE' : 'WRONG NAME',
       guess === entrant ? 'gold' : 'grey'));
     addBond(who, guess, -1.1);
-    if (cursed && cursed !== who) addBond(cursed, guess, -0.6);
   }
 
   return {
     type: 'temptation', week: weekNum, entrant, offered: powerId,
     power: def.name, accepted: true,
     curse: { id: curse.id, name: curse.name, rule: curse.rule },
-    cursed, guesses, beats,
+    cursed: null, cursePending: true, guesses, beats,
+  };
+}
+
+/**
+ * Draw the cursed houseguest and put them in the third chair.
+ *
+ * Called AT the nomination ceremony, and the eligibility list is the whole
+ * point: the curse belongs to the HOUSE, not to one pre-selected person, so
+ * if the first name drawn is wearing the key or is already safe the draw
+ * simply goes to somebody who can actually sit down. That is the difference
+ * between a curse that misses and a curse that lands somewhere else.
+ *
+ * Returns null only when literally nobody in the house can be seated — and
+ * the caller must still say so out loud, because the Den already promised the
+ * house a curse.
+ */
+export function resolveCurse({ week, house, protectedNames = [], rng = Math.random } = {}) {
+  const t = week?.temptation;
+  if (!t?.accepted || t.cursed) return null;
+  const off = new Set([t.entrant, ...protectedNames].filter(Boolean));
+  const eligible = (house || []).filter(n => n && !off.has(n));
+  const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
+  const say = makePicker(rng);
+
+  if (!eligible.length) {
+    // Everybody left is safe. The curse has nowhere to go, and the house is
+    // owed an explanation because it was told one was coming.
+    t.curseMissed = true;
+    return {
+      type: 'temptation-curse', week: weekNum, cursed: null, missed: true,
+      curse: t.curse,
+      beats: [beat(
+        'Big Brother calls the house in to name the cursed houseguest and then does not name one. Everybody still standing is protected by something, so the curse has nowhere to land — and somebody in that room is realising they took a temptation for free.',
+        [], 'CURSE MISSES', 'grey')],
+    };
+  }
+
+  const cursed = eligible[Math.floor(rng() * eligible.length)];
+  t.cursed = cursed;
+
+  gs.popularity ||= {};
+  gs.popularity[cursed] = (gs.popularity[cursed] || 0) + 2;
+  // The suspicion the Den generated now has a second victim: the person who
+  // is actually paying resents whoever the room decided was responsible.
+  for (const g of t.guesses || []) {
+    if (g.guess && g.guess !== cursed) addBond(cursed, g.guess, -0.6);
+  }
+
+  return {
+    type: 'temptation-curse', week: weekNum, cursed, missed: false, curse: t.curse,
+    beats: [beat(say(CURSED)(cursed, pronouns(cursed)), [cursed], 'CURSED', 'red')],
   };
 }

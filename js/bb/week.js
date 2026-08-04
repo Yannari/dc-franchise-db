@@ -11,7 +11,7 @@ import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
-import { runDenOfTemptation } from './temptation.js';
+import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
   makeHackerGuesser, recordHackerWin,
@@ -1622,19 +1622,26 @@ export function simulateBBWeek(options = {}) {
   // only a beneficiary. The cursed houseguest nominates THEMSELVES, so the
   // Head of Household's two are untouched and the ceremony gains a third
   // chair that the room cannot attribute to anybody in it.
-  const cursedName = week.temptation?.accepted ? week.temptation.cursed : null;
-  if (cursedName && house.includes(cursedName) && !nominees.includes(cursedName)
-      && cursedName !== hoh && !untouchable.includes(cursedName)) {
-    nominees.push(cursedName);
-    week.temptationChair = cursedName;
-    week.acts.push(addBeats({
-      type: 'temptation-curse', cursed: cursedName,
-      curse: week.temptation.curse,
-    }, { nominees: [cursedName] }));
-  } else if (cursedName) {
-    // Safe by veto, already up, or wearing the key — the curse cannot seat a
-    // chair and the house never learns how close it came.
-    week.temptationChairBlocked = cursedName;
+  // The victim is drawn HERE rather than back in the Den, from houseguests who
+  // can actually take the chair — everybody safe is off the list, so the draw
+  // cannot land somewhere it is unable to sit. It used to be drawn at week
+  // opening over the whole house, and a curse that hit the Head of Household
+  // was announced to the viewer and then silently never seated.
+  if (week.temptation?.accepted) {
+    const curseAct = resolveCurse({
+      week, house, rng,
+      protectedNames: [...untouchable, ...nominees],
+    });
+    if (curseAct) {
+      if (curseAct.cursed) {
+        nominees.push(curseAct.cursed);
+        week.temptationChair = curseAct.cursed;
+      } else {
+        week.temptationCurseMissed = true;
+      }
+      week.acts.push(addBeats(curseAct,
+        curseAct.cursed ? { nominees: [curseAct.cursed] } : {}));
+    }
   }
 
   nominees.forEach(name => gs.bb.stats[name].timesNominated++);

@@ -813,7 +813,7 @@ export function summariseWeek(week) {
           break;
         }
         line(`  ACCEPTED — in secret. ${act.entrant} holds ${act.power} and the house is never told.`);
-        if (act.cursed) line(`  ${act.curse.name}: ${act.cursed} must nominate themselves this week.`);
+        line(`  ${act.curse.name} enters the house. Who it lands on is drawn at the nomination ceremony.`);
         for (const g of act.guesses || []) {
           line(`  ${g.who} suspects ${g.guess}${g.correct ? ' — and is right.' : ' — and is wrong.'}`);
         }
@@ -821,6 +821,11 @@ export function summariseWeek(week) {
       }
       case 'temptation-curse':
         line('');
+        if (act.missed) {
+          line('THE CURSE FINDS NOBODY');
+          line('  Everybody still eligible is protected. The curse has nowhere to land, and whoever took the temptation got it for free.');
+          break;
+        }
         line(`THE CURSE — ${act.cursed} NOMINATES THEMSELVES`);
         line(`  ${act.cursed} takes the third chair. Nobody put them there and nobody can be blamed for it.`);
         break;

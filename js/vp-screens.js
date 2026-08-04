@@ -18816,8 +18816,16 @@ export function rpBuildBBTemptation(ep, act) {
       <div class="bbdt-scales">${SCALES}</div>
       ${entrant ? `<div style="text-align:center">${rpPortrait(entrant, 'sm')}
         <div class="bbdt-tag" style="margin-top:6px">${decided ? (accepted ? 'accepted' : 'refused') : 'in the den'}</div></div>` : ''}
-      ${decided && accepted && cursed ? `<div style="text-align:center">${rpPortrait(cursed, 'sm')}
-        <div class="bbdt-tag" style="margin-top:6px;color:#f0a500">cursed</div></div>` : ''}
+      ${decided && accepted ? (cursed
+        ? `<div style="text-align:center">${rpPortrait(cursed, 'sm')}
+            <div class="bbdt-tag" style="margin-top:6px;color:#f0a500">cursed</div></div>`
+        // The victim is drawn at the ceremony, not here. An empty frame is the
+        // honest picture of what the house knows at this moment: a curse is
+        // coming and nobody has a name for it yet.
+        : `<div style="text-align:center"><div style="width:56px;height:56px;margin:0 auto;border-radius:8px;
+             border:1px dashed rgba(240,165,0,.5);display:flex;align-items:center;justify-content:center;
+             font-size:22px;color:#f0a500;opacity:.7">?</div>
+            <div class="bbdt-tag" style="margin-top:6px;color:#f0a500">drawn at noms</div></div>`) : ''}
     </div>
     ${decided && accepted && curse ? `<div style="text-align:center;font-size:11px;color:#f0a500;margin:-6px 0 12px;font-family:ui-monospace,Consolas,monospace;letter-spacing:.6px">${_bbEsc(curse.rule)}</div>` : ''}
     <div class="bbns-cards">${steps.map(card).join('')}</div>

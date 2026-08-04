@@ -88,6 +88,85 @@ function evicteeVoice(name) {
   return 'guarded';
 }
 
+// Archetype controls cadence; stats control what the evictee talks about.
+// Each stat becomes a concrete decision or relationship, never an on-screen
+// label such as "my Social stat was low."
+function statFlavoredLines(name, topic, ctx = {}) {
+  const s = pStats(name);
+  const lines = [];
+  const blamed = ctx.blamed;
+  const traitor = ctx.traitor;
+  const bp = blamed ? pronouns(blamed) : null;
+  const tp = traitor ? pronouns(traitor) : null;
+
+  if (topic === 'reaction') {
+    if (s.temperament <= 3) lines.push(`"I'm angry. I know everybody wants an explanation, but I'm still trying not to say something I'll regret."`);
+    if (s.temperament >= 8) lines.push(`"It hurts, but losing my composure won't put me back in the house. I want to understand what happened."`);
+    if (s.intuition >= 8) lines.push(`"I felt the house change after the veto meeting. I noticed it and still convinced myself it wasn't about me."`);
+    if (s.intuition <= 3) lines.push(`"I had no idea. People were talking to me normally right up until the vote."`);
+    if (s.social >= 8) lines.push(`"I thought the relationships would matter when people voted. Most of them did—just not enough of them."`);
+    if (s.social <= 3) lines.push(`"I knew I hadn't built enough relationships. Tonight is what that looks like when it finally catches up with you."`);
+  }
+
+  if (topic === 'blame' && blamed) {
+    if (ctx.correct && s.intuition >= 7) lines.push(`"${blamed}. Our conversations stopped being specific. Every answer became 'we'll see,' and that was the answer."`);
+    if (!ctx.correct && s.intuition <= 4) lines.push(`"My first answer is ${blamed}, but clearly my read hasn't been very good tonight. I could be wrong."`);
+    if (s.boldness >= 8) lines.push(`"${blamed}. I took a shot at ${bp.obj}, ${bp.sub} got there first, and I'm not going to pretend it was anything else."`);
+    if (s.temperament <= 3) lines.push(`"${blamed}. That's the name in my head, and I need some time before I can talk about ${bp.obj} calmly."`);
+  }
+
+  if (topic === 'betrayal' && traitor) {
+    if (s.loyalty >= 8) lines.push(`"I would've kept ${traitor}. I wasn't asking ${tp.obj} for something I wouldn't have done myself. That's why it hurts."`);
+    if (s.loyalty <= 3) lines.push(`"I can't act offended that ${traitor} chose ${tp.posAdj} game. I would've voted ${tp.obj} out if I thought I needed to."`);
+    if (s.temperament <= 3) lines.push(`"Then I'm glad you're telling me while there's a locked door between us."`);
+    if (s.temperament >= 8) lines.push(`"Then I want to hear ${tp.posAdj} reason before I decide what happens to that relationship."`);
+    if (s.strategic >= 8) lines.push(`"Then ${traitor} saw that keeping me no longer helped ${tp.obj}. I understand the move. That doesn't make it feel better."`);
+  }
+
+  if (topic === 'regret') {
+    if (s.strategic >= 8) lines.push(`"After the veto meeting, I stopped checking because the plan still made sense on paper. I should've checked whether the people were still with it."`);
+    if (s.strategic <= 3) lines.push(`"I didn't have a backup plan. Once the vote moved, all I could do was ask the same people to change their minds."`);
+    if (s.social >= 8) lines.push(`"I confused people liking me with people being willing to risk their games for me. Those aren't the same thing."`);
+    if (s.social <= 3) lines.push(`"I stayed with the same few people every day. When I needed other votes, I hadn't given anyone a reason to help me."`);
+    if (s.intuition >= 8) lines.push(`"I noticed people pulling away and talked myself out of trusting that feeling. Next time, I act on it."`);
+    if (s.intuition <= 3) lines.push(`"I missed every warning sign. I needed to ask direct questions instead of assuming silence meant I was safe."`);
+    if (s.loyalty >= 8) lines.push(`"I protected people because I gave them my word, even after keeping them stopped helping me."`);
+    if (s.loyalty <= 3) lines.push(`"I changed sides too often. Eventually everybody had a reason to think I'd do it to them next."`);
+    if (s.boldness >= 8) lines.push(`"I pushed my target too openly. Once people knew exactly what I wanted, it was easy to organise against me."`);
+    if (s.boldness <= 3) lines.push(`"I waited for somebody else to start the move I needed. Nobody did, and I ran out of time."`);
+    if (s.temperament <= 3) lines.push(`"I let one argument become the story of my whole week. After that, people voted based on how I made them feel."`);
+  }
+
+  if (topic === 'identity') {
+    if (s.strategic >= 8) lines.push(`"I was thinking several votes ahead, but I didn't always explain enough to make people comfortable following me."`);
+    if (s.social >= 8) lines.push(`"The conversations people thought were just personal were how I stayed informed. My social game was my strategy."`);
+    if (s.loyalty >= 8) lines.push(`"They treated my loyalty like I had no options. I had options. I kept choosing the people I promised to protect."`);
+    if (s.loyalty <= 3) lines.push(`"They thought every deal I made was supposed to last forever. I made the deal I needed that week, then adjusted."`);
+    if (s.boldness >= 8) lines.push(`"People thought I acted without thinking because I acted quickly. I knew the risk; I just preferred it to waiting."`);
+    if (s.boldness <= 3) lines.push(`"I was more involved than people realised. I just didn't need credit for every conversation."`);
+    if (s.intuition >= 8) lines.push(`"I usually knew when something was changing before anyone said it. This week I knew too, and I didn't trust myself."`);
+    if (s.temperament <= 3) lines.push(`"They saw the arguments and decided that was my whole personality. They didn't see how much I held back first."`);
+    if (s.temperament >= 8) lines.push(`"Because I stayed calm, people assumed I wasn't worried or wasn't playing. I just don't process things out loud."`);
+  }
+  if (topic === 'parting') {
+    if (s.loyalty >= 8) lines.push(`"I kept my word in there. I can leave disappointed without being embarrassed about how I played."`);
+    if (s.loyalty <= 3) lines.push(`"I made the deals I needed to make. Some worked, some didn't, and now I get to own all of them."`);
+    if (s.boldness >= 8) lines.push(`"I played hard and made myself visible. Sitting back might've lasted longer, but it wouldn't have been my game."`);
+    if (s.boldness <= 3) lines.push(`"I waited too long to put my name on a move. That's the part I don't want to repeat."`);
+    if (s.temperament <= 3) lines.push(`"I'm leaving angry. Maybe tomorrow I'll have a better answer, but tonight that's the honest one."`);
+    if (s.temperament >= 8) lines.push(`"I lost tonight. I don't need to turn that into something uglier than it is."`);
+    if (s.strategic >= 8 && ctx.joinsJury) lines.push(`"Now I get to watch what they do without me and decide whose game actually holds together."`);
+  }
+  return lines;
+}
+
+function pickLayeredAnswer(rng, statLines, archetypeLines) {
+  // Stats should be audible most of the time, while archetype still supplies
+  // broader voice and keeps two similarly rated people from sounding cloned.
+  if (statLines.length && rng() < 0.72) return _pick(rng, statLines);
+  return _pick(rng, archetypeLines);
+}
+
 /** Who the evictee walks out believing did it — right or wrong. */
 function readOfTheRoom(evictee, week, house) {
   const flippers = (week.ballots || []).filter(b => b.changed && b.evict === evictee).map(b => b.voter);
@@ -276,21 +355,26 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
     q: hostQuestion(style, blindsided ? 'blindside' : 'close', {
       name: evictee, vote: `${top}${second != null ? `–${second}` : ''}`,
     }, rng),
-    a: _pick(rng, firstAnswers[voice] || firstAnswers.guarded)
+    a: pickLayeredAnswer(rng,
+      statFlavoredLines(evictee, 'reaction', { blindsided }),
+      firstAnswers[voice] || firstAnswers.guarded)
       .replace('{time}', timeIn),
   });
 
+  const blameBase = read.correct
+    ? [
+      `"${read.blamed}. I know it was ${pronouns(read.blamed).obj}, and I knew before I stood up."`,
+      `"${read.blamed}. ${pronouns(read.blamed).Sub} was too comfortable this week. Nobody is that comfortable by accident."`,
+    ]
+    : [
+      `"${read.blamed}. It has to be ${pronouns(read.blamed).obj}. There isn't anybody else it could be."`,
+      `"${read.blamed}, and I'd put money on it. ${pronouns(read.blamed).Sub} has been running that house for a week and nobody has noticed."`,
+    ];
   questions.push({
     q: hostQuestion(style, 'blame', { name: evictee }, rng),
-    a: read.correct
-      ? _pick(rng, [
-        `"${read.blamed}. I know it was ${pronouns(read.blamed).obj}, and I knew before I stood up."`,
-        `"${read.blamed}. ${pronouns(read.blamed).Sub} was too comfortable this week. Nobody is that comfortable by accident."`,
-      ])
-      : _pick(rng, [
-        `"${read.blamed}. It has to be ${pronouns(read.blamed).obj}. There isn't anybody else it could be."`,
-        `"${read.blamed}, and I'd put money on it. ${pronouns(read.blamed).Sub} has been running that house for a week and nobody has noticed."`,
-      ]),
+    a: pickLayeredAnswer(rng,
+      statFlavoredLines(evictee, 'blame', { blamed: read.blamed, correct: read.correct }),
+      blameBase),
     wrong: !read.correct,
   });
 
@@ -304,29 +388,36 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
           : style === 'playful'
             ? `"You keep leaving ${traitor} off the suspect board. Should I lend you my notes?"`
             : `"You and ${traitor} were close. Would it change anything if ${pronouns(traitor).sub} voted against you?"`,
-      a: voice === 'sincere'
-        ? `"I would want to hear why before I decided what it means. That relationship was bigger than one vote to me."`
-        : voice === 'analytical'
-          ? `"Then ${pronouns(traitor).sub} identified the moment our interests separated before I did. I can respect the move before I forgive it."`
-          : voice === 'volatile'
-            ? `"Then it is lucky there is a wall between us right now."`
-            : isNice(evictee)
-              ? `"${pronouns(traitor).Sub} wouldn't. I would need to see it before I believed it."`
-              : `"Then ${pronouns(traitor).sub} had better hope ${pronouns(traitor).sub} wins, because I may get a vote at the end of this."`,
+      a: pickLayeredAnswer(rng,
+        statFlavoredLines(evictee, 'betrayal', { traitor }),
+        voice === 'sincere'
+          ? [`"I would want to hear why before I decided what it means. That relationship was bigger than one vote to me."`]
+          : voice === 'analytical'
+            ? [`"Then ${pronouns(traitor).sub} identified the moment our interests separated before I did. I can respect the move before I forgive it."`]
+            : voice === 'volatile'
+              ? [`"Then it is lucky there is a wall between us right now."`]
+              : isNice(evictee)
+                ? [`"${pronouns(traitor).Sub} wouldn't. I would need to see it before I believed it."`]
+                : [`"Then ${pronouns(traitor).sub} had better hope ${pronouns(traitor).sub} wins, because I may get a vote at the end of this."`]),
       loaded: true,
     });
   }
 
   questions.push({
     q: hostQuestion(style, 'regret', { name: evictee }, rng),
-    a: stats.strategic >= 6
-      ? _pick(rng, [
-        `"I'd have made a move a week earlier. I sat still because sitting still was working, and sitting still is how you end up here."`,
-        `"I trusted a number instead of a person. The number was fine. The person wasn't."`,
-      ])
-      : _pick(rng, [
+    a: pickLayeredAnswer(rng,
+      statFlavoredLines(evictee, 'regret', { blamed: read.blamed }),
+      stats.strategic >= 6
+      ? [
+        `"I should've made my move a week earlier. I thought I was safe enough to wait, and I wasn't."`,
+        `"I spent too much time counting votes and not enough time asking why people were avoiding me. I should've known something had changed."`,
+        `"After the veto meeting, I let people tell me I was safe and stopped checking. I needed to keep having those conversations right up to the vote."`,
+        `"I kept talking to the same people because they were giving me the answers I wanted. I should've gone to the people I wasn't comfortable with."`,
+      ]
+      : [
         `"I'd have talked to more people. I got comfortable with the ones who were easy to talk to."`,
-        `"Honestly? I'd do most of it the same. I just wouldn't do it with ${read.blamed}."`,
+        `"Honestly, I'd do most of it the same. I just wouldn't have trusted ${read.blamed} as much as I did."`,
+        `"I would've asked more direct questions. I kept hoping people would volunteer the truth, and nobody does that in there."`,
       ]),
   });
 
@@ -341,7 +432,9 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   };
   questions.push({
     q: hostQuestion(style, 'identity', { name: evictee }, rng),
-    a: _pick(rng, identityAnswers[voice] || identityAnswers.guarded),
+    a: pickLayeredAnswer(rng,
+      statFlavoredLines(evictee, 'identity'),
+      identityAnswers[voice] || identityAnswers.guarded),
     personality: voice,
   });
 
@@ -479,6 +572,8 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
     goodbyes,
     joinsJury,
     // The evictee's parting shot, which the jury will hear about.
-    parting: _pick(rng, partingPools[voice] || partingPools.guarded),
+    parting: pickLayeredAnswer(rng,
+      statFlavoredLines(evictee, 'parting', { joinsJury }),
+      partingPools[voice] || partingPools.guarded),
   };
 }

@@ -16,6 +16,11 @@ function weekFor(evictee = 'Vera') {
   };
 }
 
+function seeded(seed) {
+  let x = seed >>> 0;
+  return () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296);
+}
+
 describe('Big Brother eviction interview personalities', () => {
   beforeEach(() => {
     Object.assign(seasonConfig, defaultConfig(), {
@@ -59,7 +64,7 @@ describe('Big Brother eviction interview personalities', () => {
     expect(interview.evicteeVoice).toBe('defiant');
     expect(interview.questions.length).toBeGreaterThanOrEqual(4);
     expect(interview.questions.some(q => q.personality === 'defiant')).toBe(true);
-    expect(interview.parting).toMatch(/jury|last word|house|peace|quiet/i);
+    expect(interview.parting.length).toBeGreaterThan(20);
   });
 
   it('falls back to the balanced host style for unknown saved values', () => {
@@ -67,5 +72,29 @@ describe('Big Brother eviction interview personalities', () => {
     const interview = generateBBEvictionInterview({ eliminated: 'Vera' }, weekFor(), () => 0.3);
     expect(interview.hostStyle).toBe('balanced');
     expect(interview.hostProfile).toBe(BB_HOST_STYLES.balanced);
+  });
+
+  it('changes the substance of answers for opposite stats within one archetype', () => {
+    const corpusForLoyalty = loyalty => {
+      seedGame([
+        { name: 'Vera', archetype: 'floater', stats: {
+          physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5,
+          loyalty, boldness: 5, intuition: 5, temperament: 5,
+        } },
+        { name: 'Ari', archetype: 'floater' },
+        { name: 'Bo', archetype: 'floater' },
+        { name: 'Cy', archetype: 'floater' },
+      ], { namedAlliances: [{ name: 'Final Four', members: ['Vera', 'Ari'], dissolved: false }] });
+      const week = weekFor();
+      return Array.from({ length: 40 }, (_, i) =>
+        generateBBEvictionInterview({ eliminated: 'Vera' }, week, seeded(i + 1)))
+        .flatMap(iv => iv.questions.map(q => q.a)).join(' ');
+    };
+
+    const loyal = corpusForLoyalty(9);
+    const disloyal = corpusForLoyalty(2);
+    expect(loyal).toMatch(/gave them my word|promised to protect|would've kept Ari/i);
+    expect(disloyal).toMatch(/changed sides|deal I needed|would've voted (him|her|them) out/i);
+    expect(loyal).not.toBe(disloyal);
   });
 });

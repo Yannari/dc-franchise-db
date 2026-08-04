@@ -18,7 +18,7 @@ import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/c
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
-import { rpBuildBBAppStore, rpBuildBBDebug } from '../js/vp-screens.js';
+import { rpBuildBBAppStore, rpBuildBBDebug, buildVPScreens } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -191,6 +191,39 @@ describe('the audience standings are reachable in this format', () => {
       const panel = html.slice(html.indexOf('FAN PULSE'));
       expect(panel.indexOf(top), 'the standings are not sorted by popularity')
         .toBeLessThan(panel.indexOf(bottom));
+    }
+  });
+
+  it('a twist reacting to itself does not spawn its own House Life screen', () => {
+    // The Hacker and Roadkill emit their blame reaction as a separate post-noms
+    // `house` act, which built a second, nearly empty House Life screen right
+    // beside the real one — the week looked like it had lost its usual stretch
+    // and gained a stub. Twist fallout belongs INSIDE the stretch the house was
+    // already having.
+    let plain = null, hacked = null;
+    for (let seed = 1; seed <= 30 && !hacked; seed++) {
+      house(['bb-hacker']);
+      const ep = withSeededRandom(seed * 11, () => simulateBBEpisode());
+      const blame = (ep.acts || []).filter(a => a.type === 'house' && a.hackerBlame);
+      if (blame.length) hacked = { ep, blame };
+    }
+    expect(hacked, 'no hacked week in 30 seeds').toBeTruthy();
+
+    house();
+    const plainEp = withSeededRandom(11, () => simulateBBEpisode());
+    plain = (buildVPScreens(plainEp) || []).filter(s => s.label === 'House Life').length;
+
+    const hackedScreens = buildVPScreens(hacked.ep) || [];
+    const hackedCount = hackedScreens.filter(s => s.label === 'House Life').length;
+    expect(hackedCount, 'the hacker added a House Life screen of its own').toBe(plain);
+
+    // ...and the blame beat is still on screen, folded into the real stretch.
+    const beatText = hacked.blame.flatMap(a => a.socialBeats || [])
+      .map(b => b.text).find(Boolean);
+    if (beatText) {
+      const all = hackedScreens.map(s => s.html || '').join('');
+      expect(all, 'folding the blame act dropped its narration')
+        .toContain(beatText.slice(0, 40));
     }
   });
 

@@ -20307,6 +20307,21 @@ function _bbCycleScreens(view, screens, suffix = '') {
   for (const act of view.acts || []) {
     switch (act.type) {
       case 'house': {
+        // A twist's fallout is HOUSE LIFE, not a screen of its own.
+        //
+        // The Hacker and Roadkill each emit their blame reaction as a separate
+        // post-noms house act, which built a second, nearly empty House Life
+        // screen sitting immediately beside the real one — so the week looked
+        // like it had lost its usual stretch and gained a stub. A twist that
+        // makes the house react belongs INSIDE the stretch the house was
+        // already having. Fold it forward instead, using the same mechanism
+        // that carries displaced competition beats.
+        //
+        // Any future twist can opt in with foldIntoNextHouse: true.
+        if (act.hackerBlame || act.roadkillBlame || act.foldIntoNextHouse) {
+          pendingBeats = [...pendingBeats, ...(act.socialBeats || [])];
+          break;
+        }
         // Anything a competition act displaced (see the 'hoh' case) joins the
         // House Life stretch that follows it, so the week still has one House
         // Life screen per stretch rather than a bonus screen per competition.

@@ -110,7 +110,10 @@ describe('the Diamond Power of Veto', () => {
     // The pull is real: a diamond holder uses the veto MORE than the ~55%
     // baseline, not less. Sixty seeded weeks put usage far from both cliffs.
     expect(used).toBeGreaterThan(24);
-  });
+  // Sixty seeded weeks: this legitimately runs about a minute, which sat close
+  // enough to the 90s default that a busy machine tipped it over. The work is
+  // the point of the test, so it gets the headroom rather than fewer seeds.
+  }, 240000);
 
   it('replays identically for the same seed', () => {
     const a = diamondWeek(431), b = diamondWeek(431);

@@ -29,6 +29,7 @@ import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
+import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -19744,7 +19745,18 @@ function _bbCycleScreens(view, screens, suffix = '') {
         if (bbHtml) screens.push({ id: id('bb-battleback'), label: 'Battle Back', html: bbHtml });
         break;
       }
+      case 'split-house': {
+        const sh = rpBuildBBSplitHouse(view, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (sh) screens.push({ id: id('bb-split'), label: 'The House Splits', html: sh });
+        break;
+      }
       case 'hoh':
+        // A Head of Household crowned before the house was divided has no
+        // competition of their own — the crowning is on the split screen, and
+        // drawing a competition board here would draw an empty one.
+        if (act.preCrowned) break;
         screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
         // Whatever else happened around the competition is house life, not the
         // competition — but it does NOT get a screen of its own. The comp's
@@ -19935,7 +19947,25 @@ export function buildBBWeekScreens(ep) {
   }
 
   if (hasSecond) {
-    screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
+    // A Split House reuses the second-cycle machinery to draw the other half of
+    // the week, but it is not a double eviction and must not be announced as
+    // one — the wall is the story, not a live hour.
+    if (ep.splitHouse) {
+      const [a, b] = ep.splitHouse.hohs || [];
+      screens.push({ id: 'bb-otherside', label: 'The Other Side', html: `
+        <div class="rp-page bb-room bb-power" style="max-width:1100px;margin:0 auto;padding:26px 18px;text-align:center">
+          <div style="font-family:var(--font-display);font-size:11px;letter-spacing:4px;color:#8d97ac">MEANWHILE</div>
+          <div style="font-family:var(--font-display);font-size:30px;letter-spacing:4px;color:#f2f6ff;margin:8px 0 10px">
+            THE OTHER SIDE OF THE WALL</div>
+          <p style="font-size:14px;line-height:1.7;color:#c9d3e6;max-width:640px;margin:0 auto">
+            Everything you have just watched happened on ${_bbEsc(a || '')}'s side. None of it was
+            seen or heard by ${_bbEsc(b || '')}'s, who spent the same days playing a week of their
+            own — their own nominations, their own veto, their own vote.
+          </p>
+        </div>` });
+    } else {
+      screens.push({ id: 'bb-double', label: 'Double Eviction', html: _bbDoubleBreak(ep) });
+    }
     _bbCycleScreens(_bbSecondCycleView(ep), screens, '-2');
   }
 

@@ -775,7 +775,9 @@ function runHouseMaintenance(week, rng = Math.random) {
  */
 function _attachAllianceFallout(week, house) {
   const beats = [];
-  const inHouse = n => house.includes(n) || (gs.activePlayers || []).includes(n);
+  // The cycle's own house. ORing in the global roster let alliance fallout
+  // name somebody sealed off on the other side of a Split House wall.
+  const inHouse = n => house.includes(n);
 
   for (const incident of week.allianceChanges?.betrayals || []) {
     const { player, victim, alliance, repair } = incident;
@@ -1159,7 +1161,16 @@ export function simulateBBWeek(options = {}) {
     let changes = [];
     try {
       changes = reviseHousePlans({
-        house: (gs.activePlayers || house).filter(Boolean), week, trigger, ...extra });
+        // The cycle's OWN house, never the global roster.
+        //
+        // Preferring gs.activePlayers was harmless while every week was played
+        // by the whole house. Split House runs the engine over half of one, and
+        // this line reached straight through the wall: plans revised on one
+        // side named houseguests the side had not seen in days. Intersecting
+        // still tracks anybody removed mid-week (a walkout, an expulsion)
+        // without ever adding somebody who was never here.
+        house: house.filter(n => !gs.activePlayers || gs.activePlayers.includes(n)),
+        week, trigger, ...extra });
     } catch { changes = []; }
     week.planChanges.push(...changes.map(c => ({ ...c, trigger })));
     const act = week.acts[week.acts.length - 1];
@@ -1251,12 +1262,26 @@ export function simulateBBWeek(options = {}) {
   // Before anybody has power. No HOH, no nominees, nothing decided.
   if (!compressed) houseAct('pre-hoh');
 
+  // ── a Head of Household who was crowned before this cycle began ──
+  //
+  // Split House crowns both Heads of Household in ONE competition over the
+  // whole house and only then divides it, so each half arrives with its power
+  // already decided. Running a second competition inside the half would invent
+  // a contest that never happened, so the cycle takes the name it was handed
+  // and says where it came from.
+  const preCrowned = options.preCrownedHoh && house.includes(options.preCrownedHoh)
+    ? options.preCrownedHoh : null;
+
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
-  const hohCompetition = runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed });
-  const hohResults = hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }));
-  let hoh = hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
-  if (!hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
+  const hohCompetition = preCrowned ? null
+    : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed });
+  const hohResults = hohCompetition
+    ? hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }))
+    : [];
+  let hoh = preCrowned
+    || hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
+  if (!preCrowned && !hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
 
   // ── two thrones ──
   //
@@ -1273,7 +1298,9 @@ export function simulateBBWeek(options = {}) {
 
   week.hoh = hoh;
   if (!hohSecret) setSpotlight({ hoh });
-  gs.bb.stats[hoh].hohWins++;
+  // A pre-crowned Head of Household was already credited when they won the
+  // competition that crowned them; counting it again here would double it.
+  if (!preCrowned) gs.bb.stats[hoh].hohWins++;
   if (week.botbActive) {
     // A dethroned reign does not count as a reign — the wiki is explicit that
     // Frankie Grande's two dethroned weeks are not in his HOH record. The
@@ -1288,9 +1315,13 @@ export function simulateBBWeek(options = {}) {
   // anyone's head no matter how many competitions they won.
   // Comp fear and strategic respect come from WATCHING somebody win. A
   // sealed result is watched by nobody, so the dimension writers stay quiet.
-  if (!hohSecret) recordCompDominance(hohCompetition, house, week.num);
+  if (!hohSecret && hohCompetition) recordCompDominance(hohCompetition, house, week.num);
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition,
     outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret,
+    // Crowned before this cycle began, in a competition the other half of the
+    // house also played. Flagged so the screen and the transcript can say so
+    // instead of presenting a competition that is not there.
+    preCrowned: !!preCrowned,
     coHoh: week.botbActive ? coHoh : null }));
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.

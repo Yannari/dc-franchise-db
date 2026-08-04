@@ -4235,8 +4235,30 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'split-house': {
+        sec('THE HOUSE IS SPLIT');
+        ln('  One competition, played by everybody, and it crowns two.');
+        if (act.crowning) {
+          ln(`  ${act.crowning.name}${act.crowning.category ? ` (${act.crowning.category})` : ''}`);
+          ln(`  Rules: ${act.crowning.desc || ''}`);
+          (act.crowning.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln('');
+        ln(`  ${(act.hohs || []).join(' and ')} take the two rooms — and then they take sides.`);
+        for (const pick of act.picks || []) ln(`    ${pick.by} picks ${pick.picked}.`);
+        ln('');
+        for (const owner of act.hohs || []) {
+          ln(`  ${owner}'s side: ${(act.sides?.[owner] || []).join(', ')}.`);
+        }
+        ln('  From here the two halves cannot see or speak to each other. Each side holds its');
+        ln('  own nominations, its own veto and its own vote, and on the same night one');
+        ln('  houseguest leaves from each — without a goodbye to anybody on the other side.');
+        beats(act);
+        break;
+      }
+
       case 'hoh':
-        sec('HEAD OF HOUSEHOLD');
+        sec(act.preCrowned ? 'HEAD OF HOUSEHOLD — CROWNED BEFORE THE SPLIT' : 'HEAD OF HOUSEHOLD');
         if (act.competition) {
           ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
           ln(`  Rules: ${act.competition.desc || 'All three nominees compete. The winner comes off the block; the other two face the eviction vote.'}`);

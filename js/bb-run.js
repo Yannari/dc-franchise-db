@@ -17,10 +17,11 @@
 import { gs, seasonConfig, seasonFormat } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
+import { getPerceivedBond } from './bonds.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 // The dispatcher's own fallbacks — listed in the pinning dropdowns so "an
 // ordinary one this week" is an authorable choice, not just what you get.
-import { GENERIC_BB_COMPS } from './bb/comps.js';
+import { GENERIC_BB_COMPS, runBBCompetition } from './bb/comps.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale } from './bb-finale.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
@@ -241,7 +242,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -326,6 +327,137 @@ export function bbTwistsForWeek(weekNum) {
   return [...out];
 }
 
+
+/**
+ * A week where the house never meets.
+ *
+ * Crowns two Heads of Household over the whole house, divides it by schoolyard
+ * pick, then runs a COMPLETE week for each half against a house that contains
+ * only that half. The two records are separate weeks in the ledger — the
+ * stats, the jury and the competition history all have to see two HOHs and two
+ * evictions — and one episode, because that is how it is watched.
+ */
+function simulateSplitHouseEpisode({ house, epNum, twists }) {
+  // ── the crowning, before anybody is divided ──
+  const eligible = house.filter(name => name !== gs.bb.outgoingHoh);
+  const crowning = runBBCompetition({
+    type: 'hoh', participants: eligible,
+    excluded: house.filter(n => !eligible.includes(n)),
+    house, week: { num: (gs.bb.weeks?.length || 0) + 1, houseAtStart: house },
+    rng: Math.random, library: BB_COMPETITIONS,
+    forcedId: bbForcedCompsForWeek(epNum)?.hoh,
+  });
+  const [hohA, hohB] = crowning.placements;
+
+  // ── the schoolyard pick ──
+  //
+  // They alternate, and they pick the people they want to be locked in with:
+  // an ally is a vote on your side of the wall and a body on the other side is
+  // one you cannot reach. Highest perceived bond first, which is exactly how a
+  // schoolyard pick goes.
+  const sideA = [hohA];
+  const sideB = [hohB];
+  const pool = house.filter(n => n !== hohA && n !== hohB);
+  let picking = hohA;
+  const picks = [];
+  while (pool.length) {
+    const side = picking === hohA ? sideA : sideB;
+    let best = pool[0], bestScore = -Infinity;
+    for (const name of pool) {
+      let score = 0;
+      try { score = getPerceivedBond(picking, name); } catch { score = 0; }
+      score += (Math.random() - 0.5) * 1.4;      // nobody picks perfectly
+      if (score > bestScore) { bestScore = score; best = name; }
+    }
+    side.push(best);
+    picks.push({ by: picking, picked: best });
+    pool.splice(pool.indexOf(best), 1);
+    picking = picking === hohA ? hohB : hohA;
+  }
+
+  // ── two weeks, each blind to the other ──
+  const common = {
+    houseEvents: HOUSE_EVENTS,
+    competitions: BB_COMPETITIONS,
+    twists: twists.filter(t => t !== 'bb-split-house'),
+    haveNotCount: seasonConfig.bbHaveNotCount === 'auto' ? 0 : Number(seasonConfig.bbHaveNotCount) || 0,
+    departures: seasonConfig.bbDepartures || 'off',
+  };
+  // ── the wall ──
+  //
+  // Isolation is not a flag the week engine reads, and it cannot be one: the
+  // knowledge store, the plan revisions, the alliance lifecycle, the bloc
+  // reader, the deal ledger and the event pool all ask `gs.activePlayers` who
+  // is in this house. Passing a half-house down to the week did not stop any
+  // of them reaching the other side, and the isolation test caught house
+  // events on one side naming four people from the other.
+  //
+  // So the roster IS the side while that side is playing. Every one of those
+  // readers then sees exactly the people the twist says exist, and no module
+  // needs to learn what a split house is. It is also what the twist means: for
+  // this week, the other half genuinely is not in the building.
+  const playSide = (side, preCrownedHoh, segment) => {
+    const before = [...(gs.activePlayers || [])];
+    gs.activePlayers = [...side];
+    try {
+      return simulateBBWeek({ ...common, house: side, preCrownedHoh, segment });
+    } finally {
+      gs.activePlayers = before;
+    }
+  };
+  const weekA = playSide(sideA, hohA, 1);
+  const weekB = playSide(sideB, hohB, 2);
+  // Both halves are back in one building, minus the two who left it.
+  const gone = new Set([weekA.evicted, weekB.evicted].filter(Boolean));
+  gs.activePlayers = house.filter(n => !gone.has(n));
+
+  // ── one episode ──
+  const ep = weekToEpisode(weekA);
+  ep.num = epNum;
+  ep.twists = [...twists];
+  ep.splitHouse = {
+    crowning, hohs: [hohA, hohB],
+    sides: { [hohA]: [...sideA], [hohB]: [...sideB] },
+    picks,
+    evicted: { [hohA]: weekA.evicted, [hohB]: weekB.evicted },
+  };
+  // The crowning is the one thing both halves shared, so it opens the episode
+  // ahead of either side's week.
+  ep.acts = [
+    { type: 'split-house', crowning, hohs: [hohA, hohB],
+      sides: { [hohA]: [...sideA], [hohB]: [...sideB] }, picks,
+      results: crowning.placements.map(n => ({ name: n, score: crowning.scores[n] })),
+      socialBeats: [] },
+    ...(weekA.acts || []).map(a => ({ ...a, segment: 1, side: hohA })),
+    ...(weekB.acts || []).map(a => ({ ...a, segment: 2, side: hohB })),
+  ];
+  ep.votingLog = [
+    ...(weekA.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 1 })),
+    ...(weekB.ballots || []).map(b => ({ voter: b.voter, voted: b.evict, changed: !!b.changed, segment: 2 })),
+  ];
+  ep.houseAtStart = [...house];
+  ep.alsoEliminated = weekB.evicted;
+  ep.doubleEviction = {
+    hoh: weekB.hoh, nominees: [...(weekB.finalNominees || [])],
+    vetoWinner: weekB.vetoWinner || null, evicted: weekB.evicted,
+    votes: { ...(weekB.votes || {}) }, houseAtStart: [...sideB],
+  };
+  // Neither half's frozen bookend state is ever read back off the ledger.
+  for (const w of [weekA, weekB]) { delete w.openingState; delete w.closingState; }
+
+  ep.evictionInterview = generateBBEvictionInterview(ep, weekA);
+  ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
+    ? window.generateSummaryText(ep) : '';
+  try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
+  gs.episodeHistory ||= [];
+  gs.episodeHistory.push({
+    ...ep,
+    gsSnapshot: typeof window !== 'undefined' && window.snapshotGameState
+      ? window.snapshotGameState() : null,
+  });
+  return ep;
+}
+
 export function simulateBBEpisode() {
   prepareHouse();
   const house = (gs.activePlayers || []).filter(Boolean);
@@ -358,6 +490,30 @@ export function simulateBBEpisode() {
   // are — so one season can run the BB18 gauntlet and the next the Showdown.
   const bbEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-battle-back');
+
+  // ══════════════════════════════════════════════════════════════════
+  // The Split House
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // Two Heads of Household are crowned in ONE competition over the whole
+  // house, they pick their own sides schoolyard-style, and then the two halves
+  // play complete, separate weeks — nominations, veto, campaign, vote — with
+  // no contact until eviction night, when one houseguest leaves from each.
+  //
+  // The isolation is not a rule the week engine reads. It falls out of running
+  // that engine twice over two DISJOINT houses: every event, every bond, every
+  // piece of knowledge in a cycle is drawn from the house it was handed, so a
+  // houseguest on the other side is not somebody the engine can reach. That is
+  // the whole design, and the reason this is the slice that stress-tests it.
+  const splitScheduled = twists.includes('bb-split-house');
+  // Ten is the floor: two sides of five, each needing an HOH, two nominees and
+  // somebody left to vote.
+  const splitPossible = splitScheduled && house.length >= 10
+    && !twists.includes('bb-double-eviction') && !twists.includes('bb-instant-eviction')
+    && !(seasonConfig.bbSafetyMode && seasonConfig.bbSafetyMode !== 'off');
+  if (splitScheduled && splitPossible) {
+    return simulateSplitHouseEpisode({ house, epNum, twists });
+  }
 
   const week = simulateBBWeek({
     // Both libraries default to empty inside the engine, so a season that does
@@ -492,9 +648,22 @@ export function summariseWeek(week) {
 
   for (const act of week.acts || []) {
     switch (act.type) {
+      case 'split-house': {
+        line('');
+        line('THE HOUSE IS SPLIT');
+        _competition(line, act.crowning);
+        line(`  ${(act.hohs || []).join(' and ')} are the two Heads of Household.`);
+        for (const owner of act.hohs || []) {
+          line(`  ${owner}'s side: ${(act.sides?.[owner] || []).join(', ')}.`);
+        }
+        line('  The two sides will not see or speak to each other again until eviction night.');
+        break;
+      }
       case 'hoh':
         line('');
-        line(act.secret ? 'HEAD OF HOUSEHOLD — RESULT SEALED' : 'HEAD OF HOUSEHOLD');
+        line(act.secret ? 'HEAD OF HOUSEHOLD — RESULT SEALED'
+          : act.preCrowned ? 'HEAD OF HOUSEHOLD — CROWNED BEFORE THE SPLIT'
+            : 'HEAD OF HOUSEHOLD');
         _competition(line, act.competition);
         if (act.secret) {
           line('  The result is not revealed. Only the winner knows who holds power.');

@@ -117,6 +117,26 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody in this room is about to run the week without wearing the key.',
     },
   },
+  'bb-split-house': {
+    id: 'bb-split-house', layer: 'scheduled', category: 'power-structure',
+    timing: 'week', duration: { weeks: 1 },
+    // BB24's shape: two Heads of Household are crowned in one competition over
+    // the whole house, the house is then divided by schoolyard pick, and each
+    // half plays a complete week — nominations, veto, campaign, vote — without
+    // ever seeing the other. Two houseguests leave the same night.
+    //
+    // The rules delta says two HOHs and a second cycle. The isolation is not a
+    // rule the week engine reads: it falls out of running that engine twice
+    // over two disjoint houses, which is the whole reason this is the slice
+    // that stress-tests it.
+    rules: { hohCount: 2, secondCycle: true },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Split House',
+      rule: 'This house is being divided in two. Two Heads of Household will be crowned, and they will choose their own sides — after that the two groups will not see or speak to each other for the rest of the week. Each side holds its own nominations, its own veto and its own vote, and on eviction night ONE houseguest from each side will leave.',
+      sting: 'Half of you are about to stop existing to the other half.',
+    },
+  },
   'bb-battle-of-the-block': {
     id: 'bb-battle-of-the-block', layer: 'scheduled', category: 'power-structure',
     timing: 'week', duration: { weeks: 1 },

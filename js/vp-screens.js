@@ -18562,6 +18562,100 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
+ * The Bonus Life.
+ *
+ * Drawn as the arcade extra life BB20's app icon actually was, which makes it
+ * the only screen in the format that is deliberately the wrong medium for the
+ * show it sits in: pixel hearts, a fuse burning down the window, and a run
+ * that either clears the line or does not.
+ *
+ * Three shapes, and the quiet one matters most: a power that was NOT played is
+ * still an act, because a holder watching somebody walk out while sitting on
+ * their second chance is the whole reason the power is interesting.
+ */
+export function rpBuildBBBonusLife(ep, act) {
+  if (!act) return '';
+  const { holder, beneficiary, evicted, auto, fired, hoarded, competition } = act;
+  const stateKey = `bb_bl_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const beats = act.beats || [];
+  const steps = [{ kind: 'held' }, ...beats.map(b => ({ kind: 'beat', b }))];
+  if (fired) steps.push({ kind: 'verdict' });
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+
+  const HEART = (lit, spent) => `<svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges">
+      <path d="M3 2h4v1h2V2h4v1h1v4h-1v2h-1v1h-1v1h-1v1h-1v1H8v1H7v-1H6v-1H5v-1H4V9H3V8H2V7H1V3h1V2h1z"
+        fill="${spent ? 'var(--bbbl-dead)' : lit ? 'var(--bbbl-lit)' : '#2f3b33'}"
+        stroke="#0b0f0c" stroke-width=".4"/></svg>`;
+
+  // The fuse: how much of the window was left when this resolved.
+  const pct = auto ? 100 : fired ? 62 : 34;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'held') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h">${holder ? _bbAvatar(holder, 30) : ''}<span class="bbns-pill ${auto ? 'red' : 'gold'}">${
+          auto ? 'THE FUSE RUNS OUT' : 'ONE SPARE LIFE'}</span></div>
+        <div class="bbns-card-b">${auto
+          ? `${_bbEsc(holder)} never played it. The window closes tonight and the rule does not care whether anybody wanted this — an unspent Bonus Life does not expire, it <em>fires</em>, and the only name still standing at the door is ${_bbEsc(beneficiary)}'s.`
+          : `${_bbEsc(holder)} has been carrying a second chance for somebody. Nobody in the house knows it exists, and tonight ${_bbEsc(evicted)} is the one walking towards the door.`}</div></div>`;
+    }
+    if (step.kind === 'verdict') {
+      const won = !!competition?.won;
+      const score = Number(competition?.score) || 0;
+      const std = Number(competition?.standard) || 1;
+      // Scale both to a common ceiling so the line sits where it truly sits.
+      const ceiling = Math.max(score, std) * 1.25 || 1;
+      return `<div class="bbns-card is-final ${won ? 'bbbl-back' : ''}">
+        <div class="bbns-card-h">${beneficiary ? _bbAvatar(beneficiary, 30) : ''}<span class="bbns-pill ${won ? 'gold' : 'red'}">${
+          won ? 'RE-ENTRY WON' : 'RE-ENTRY LOST'}</span></div>
+        <div class="bbns-card-b">
+          <div class="bbbl-gauge ${won ? '' : 'is-fail'}">
+            <i style="width:${Math.max(4, Math.min(100, (score / ceiling) * 100))}%"></i>
+            <span class="bbbl-line" style="left:${Math.min(97, (std / ceiling) * 100)}%"><b>STANDARD ${std}</b></span>
+          </div>
+          <div class="bbbl-label" style="text-align:right">${_bbEsc(beneficiary)} — ${score}</div>
+          <div style="margin-top:8px">${won
+            ? `The eviction is reversed on live television. ${_bbEsc(beneficiary)} comes back in with no immunity, no head start, and a complete list of who voted which way.`
+            : `${_bbEsc(beneficiary)} falls short. The second chance is spent, the door shuts anyway, and the whole thing changed nothing at all.`}</div>
+        </div></div>`;
+    }
+    const b = step.b || {};
+    return `<div class="bbns-card ${hoarded ? 'bbbl-hoard' : ''}">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE HOUSE'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbbl">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.3);margin-bottom:4px">BONUS LIFE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${
+      fired ? 'One competition. Alone. Against a number.' : 'Somebody in this house could have stopped this.'}</div>
+    <div class="bbbl-meter">
+      <div class="bbbl-hearts">
+        <div class="bbbl-heart ${fired ? 'is-spent' : ''}">${HEART(false, fired)}</div>
+        <div class="bbbl-heart ${state.idx >= 0 ? 'is-lit' : ''}">${HEART(state.idx >= 0, false)}</div>
+      </div>
+      <div>
+        <div class="bbbl-label">${auto ? 'window closed' : fired ? 'played' : 'still held'}</div>
+        <div class="bbbl-fuse ${auto ? 'is-out' : ''}"><i style="width:${state.idx >= 0 ? pct : 0}%"></i></div>
+      </div>
+    </div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'Who was holding it' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
  * The detonation.
  *
  * Eviction night, and the vote never happens the way anybody planned it.
@@ -19958,6 +20052,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
+      case 'bonus-life':
+        screens.push({ id: id('bb-bonuslife'), label: 'Bonus Life', html: rpBuildBBBonusLife(view, act) });
         break;
       case 'battle-back': {
         const bbHtml = rpBuildBBBattleBack(view, {

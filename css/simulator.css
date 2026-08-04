@@ -724,6 +724,54 @@
       .bbpb-hall.is-open .bbpb-door, .bbdd-gem.is-lit svg { animation:none; }
     }
 
+    /* ── the Bonus Life ────────────────────────────────────────────────
+       An arcade extra life, because that is exactly what BB20 called it and
+       what the app icon drew. Nothing else in the format is pixel art, so the
+       whole screen is deliberately the wrong medium for the show it is in:
+       CRT green on black, a heart meter, and a fuse burning down the window.
+       The competition is one gauge against one line — you clear it or you do
+       not, which is the only honest way to draw a pass/fail run. */
+    .bbbl          { --bbbl-lit:#4ade80; --bbbl-dead:#7f1d1d; }
+    .bbbl-meter    { display:flex; align-items:center; justify-content:center; gap:14px;
+                     padding:16px 12px; margin-bottom:14px; border-radius:10px;
+                     background:linear-gradient(180deg, rgba(74,222,128,.06), rgba(0,0,0,.34));
+                     border:1px solid rgba(74,222,128,.25); }
+    .bbbl-hearts   { display:flex; gap:7px; }
+    .bbbl-heart    { width:26px; height:26px; }
+    .bbbl-heart svg { width:100%; height:100%; display:block; }
+    .bbbl-heart.is-spent svg { opacity:.28; filter:grayscale(1); }
+    .bbbl-heart.is-lit svg   { filter:drop-shadow(0 0 9px rgba(74,222,128,.75));
+                     animation:bbblBeat 1.4s ease-in-out infinite; }
+    @keyframes bbblBeat { 0%,100% { transform:scale(1); } 45% { transform:scale(1.16); } }
+    .bbbl-fuse     { flex:1; max-width:220px; height:8px; border-radius:4px; overflow:hidden;
+                     background:rgba(255,255,255,.08); position:relative; }
+    .bbbl-fuse i   { position:absolute; inset:0 auto 0 0; display:block; border-radius:4px;
+                     background:linear-gradient(90deg,#4ade80,#f0a500); transition:width .6s ease; }
+    .bbbl-fuse.is-out i { background:linear-gradient(90deg,#f0a500,#c9343c); }
+    .bbbl-label    { font-family:ui-monospace,Consolas,monospace; font-size:10px;
+                     letter-spacing:1.6px; color:#4ade80; text-transform:uppercase; }
+    /* the run: a bar, and the line it has to clear */
+    .bbbl-gauge    { position:relative; height:34px; margin:6px 0 2px; border-radius:6px;
+                     background:rgba(255,255,255,.06); overflow:hidden;
+                     border:1px solid rgba(255,255,255,.1); }
+    .bbbl-gauge i  { position:absolute; left:0; top:0; bottom:0; display:block;
+                     background:linear-gradient(90deg, rgba(74,222,128,.5), #4ade80);
+                     transition:width 1s cubic-bezier(.22,1,.36,1); }
+    .bbbl-gauge.is-fail i { background:linear-gradient(90deg, rgba(201,52,60,.5), #c9343c); }
+    .bbbl-line     { position:absolute; top:-3px; bottom:-3px; width:2px; background:#e3b341;
+                     box-shadow:0 0 8px rgba(227,179,65,.8); }
+    .bbbl-line b   { position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1px; color:#e3b341; white-space:nowrap; }
+    .bbbl-hoard    { border-left:3px solid #6b7280 !important; opacity:.9;
+                     background:linear-gradient(90deg, rgba(107,114,128,.14), transparent 60%) !important; }
+    .bbbl-back     { border-left:3px solid #4ade80 !important;
+                     background:linear-gradient(90deg, rgba(74,222,128,.16), transparent 62%) !important; }
+    @media (prefers-reduced-motion:reduce) {
+      .bbbl-heart.is-lit svg { animation:none; }
+      .bbbl-gauge i, .bbbl-fuse i { transition:none; }
+    }
+
     /* ── the Diamond Power of Veto ─────────────────────────────────────
        When the medallion is the diamond, the whole ceremony refracts: the
        broadcast green gives way to ice and violet, the gem carries a moving

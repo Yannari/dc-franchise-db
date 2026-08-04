@@ -10,6 +10,7 @@ import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
+import { resolveBonusLife } from './bonus-life.js';
 import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
@@ -2527,9 +2528,9 @@ export function simulateBBWeek(options = {}) {
   // existed two minutes ago. Every plan, plea and forecast this week was
   // built on a block that was never real.
   if (!compressed) {
-    const inst = activePowerAt('eviction-night', week.num);
+    const inst = activePowerAt('eviction-night', week.num, 'diamond-veto');
     const holder = inst?.holder;
-    if (inst && inst.powerId === 'diamond-veto' && house.includes(holder)) {
+    if (inst && house.includes(holder)) {
       const hst = pStats(holder);
       const myTarget = getBBTarget(holder);
       const lastWindowWeek = week.num >= inst.expiresAfterWeek;
@@ -2706,15 +2707,39 @@ export function simulateBBWeek(options = {}) {
     }
   }
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
-  // Powers whose holder just left, or whose window just closed, end here.
-  expirePowers(week.num, gs.activePlayers);
   if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
+
+  // ── The Bonus Life ──
+  //
+  // BEFORE expirePowers, and the ordering is the whole trick: every other
+  // power is disposed the moment its holder walks, and this one is SPENT by
+  // its holder walking. Sweeping first would bin the fuse on the one night it
+  // exists to go off. It also runs before the battle back so that a house
+  // running both does not send the same evictee through two doors.
+  if (!compressed && evicted) {
+    try {
+      week.bonusLife = resolveBonusLife({ week, evicted, rng });
+      if (week.bonusLife) {
+        week.acts.push(week.bonusLife);
+        if (week.bonusLife.returned) week.returnedHouseguest = week.bonusLife.returned;
+      }
+    } catch (e) {
+      // The eviction above is real whether the second chance resolves or not.
+      week.bonusLife = null;
+    }
+  }
+
+  // Powers whose holder just left, or whose window just closed, end here.
+  expirePowers(week.num, gs.activePlayers);
   // Somebody leaving rearranges everybody's plan: a shield walks out and the
   // person hiding behind them is suddenly the biggest thing in the room, and a
   // promise made to somebody who is now in the jury is not a promise any more.
-  try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ }
-  if (secondEvicted) { try { dropFromHousePlans(secondEvicted); } catch { /* both walks count */ } }
+  // ...unless the Bonus Life just put them back in it. Dropping the plans of
+  // somebody standing in the room erases every read the house has on them.
+  const _stillGone = name => name && !(gs.activePlayers || []).includes(name);
+  if (_stillGone(evicted)) { try { dropFromHousePlans(evicted); } catch { /* plans survive a bad eviction */ } }
+  if (_stillGone(secondEvicted)) { try { dropFromHousePlans(secondEvicted); } catch { /* both walks count */ } }
 
   // ── The door opens backwards ──
   //
@@ -2723,7 +2748,10 @@ export function simulateBBWeek(options = {}) {
   // to fight it immediately. A returnee is added back to the house here, so
   // everything downstream (plans, deals, perceptions, the closing snapshot)
   // already sees them standing in the room.
-  if (!compressed && (week.twistState?.rules?.addSlots || []).includes('return')) {
+  // One door a night: a house running the Bonus Life and the Battle Back in
+  // the same week must not send tonight's evictee through both of them.
+  if (!compressed && !week.bonusLife?.returned
+      && (week.twistState?.rules?.addSlots || []).includes('return')) {
     try {
       week.battleBack = runBattleBack({
         week, rng,

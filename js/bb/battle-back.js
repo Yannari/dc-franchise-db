@@ -239,8 +239,13 @@ export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', com
  * The bookkeeping matters as much as the beat: an eviction that has been
  * undone must stop counting as an eviction everywhere it is read from, or the
  * returnee ends up seated on the jury they are still playing against.
+ *
+ * Exported because a reversed eviction is a reversed eviction however it was
+ * won. The Bonus Life sends one person to one competition instead of a field
+ * to a gauntlet, but the door it opens is this door, and the grudge ledger it
+ * writes is the reason the returnee is worth having back.
  */
-function applyReturn(name, act, weekNum) {
+export function applyReturn(name, act, weekNum) {
   gs.bb ||= {};
   gs.bb.returns ||= [];
   gs.bb.returns.push({ name, week: weekNum, style: act.style });
@@ -275,11 +280,15 @@ function applyReturn(name, act, weekNum) {
 
   act.grudges = grudges;
   act.allies = keptThem;
+  // A Bonus Life return happens minutes after the vote rather than weeks
+  // later, so the act it writes into carries no weeksOut ledger at all.
+  const weeksOut = act.weeksOut?.[name] || 0;
   act.beats.push(beat(
     `${name} walks back into the house. ${grudges.length
       ? `${grudges.length === 1 ? 'One person' : `${grudges.length} people`} in that room voted ${
         pronouns(name).obj} out and ${pronouns(name).sub} has had ${
-        act.weeksOut[name] > 1 ? `${act.weeksOut[name]} weeks` : 'a week'} to learn their names.`
+        weeksOut > 1 ? `${weeksOut} weeks` : weeksOut === 1 ? 'a week'
+          : 'about eleven minutes'} to learn their names.`
       : 'Nobody in that room voted against them, which is its own kind of problem for whoever did.'} No immunity, no head start, and the block is open to ${pronouns(name).obj} on Thursday like anybody else.`,
     [name], 'BACK IN THE HOUSE', 'gold'));
 }

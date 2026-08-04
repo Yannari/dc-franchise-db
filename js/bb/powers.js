@@ -22,6 +22,8 @@ import { gs } from '../core.js';
  *   useTiming   when the power may fire: 'veto-ceremony' | 'eviction-night'
  *   windowWeeks how many evictions the holder may sit on it (1 = this week)
  *   rules       the same shape the twist contract speaks
+ *   survivesEviction  the holder walking out does NOT dispose it (see below)
+ *   autoFiresAtExpiry the window closing SPENDS it rather than binning it
  */
 export const BB_POWER_DEFINITIONS = {
   'diamond-veto': {
@@ -65,12 +67,25 @@ export const BB_POWER_DEFINITIONS = {
   // BB20. Not immunity — a CHANCE. The holder, or somebody they name, gets a
   // competition to come back with if they are evicted; losing it sends them
   // out for good. Good through the first four evictions.
+  //
+  // Two lifecycle flags no other power needs, and both are load-bearing:
+  //
+  //   survivesEviction   every other power dies with its holder. This one is
+  //                      SPENT by its holder being evicted, so the ordinary
+  //                      'holder-evicted' sweep would bin it at the exact
+  //                      moment it exists to fire.
+  //   autoFiresAtExpiry  Sam Bledsoe never used hers. The window ran out and
+  //                      the power went off anyway on the fourth evictee,
+  //                      whoever that turned out to be — so the fuse is a rule
+  //                      of the power, not a decision the holder can dodge.
   'bonus-life': {
     id: 'bonus-life',
     name: 'Bonus Life',
     rules: { returnChance: true },
     useTiming: 'eviction-night',
     windowWeeks: 4,
+    survivesEviction: true,
+    autoFiresAtExpiry: true,
   },
 };
 
@@ -108,17 +123,37 @@ export function heldPowers(holder, powerId = null) {
     && (!powerId || p.powerId === powerId));
 }
 
-/** The live instance that may fire at this timing, this week — or null. */
-export function activePowerAt(timing, week) {
-  return store().find(p => {
+/**
+ * Every live instance that may fire at this timing, this week.
+ *
+ * More than one CAN be live at once — a house running both Pandora's Box and
+ * the App Store can easily have a secret Diamond and a Bonus Life sitting on
+ * the same eviction night, and they are different powers that fire at
+ * different moments of it. Callers should name the power they came for.
+ */
+export function activePowersAt(timing, week, powerId = null) {
+  return store().filter(p => {
     if (p.used || p.disposed) return false;
     if (week > p.expiresAfterWeek) return false;
+    if (powerId && p.powerId !== powerId) return false;
     const def = BB_POWER_DEFINITIONS[p.powerId];
     if (!def) return false;
     const t = typeof def.useTiming === 'string' ? def.useTiming
       : def.useTiming[p.visibility === 'public' ? 'public' : 'secret'];
     return t === timing;
-  }) || null;
+  });
+}
+
+/**
+ * The live instance that may fire at this timing, this week — or null.
+ *
+ * `powerId` is optional but callers should pass it: without it this returns
+ * whichever instance happens to sit earliest in the store, which meant a
+ * Bonus Life granted before a secret Diamond silently ate the Diamond's
+ * detonation. Every timing in this engine can now hold more than one power.
+ */
+export function activePowerAt(timing, week, powerId = null) {
+  return activePowersAt(timing, week, powerId)[0] || null;
 }
 
 /** Fire it. The instance stays in the store as the record of what happened. */
@@ -137,7 +172,12 @@ export function usePower(instance, week) {
 export function expirePowers(week, house = gs.activePlayers || []) {
   for (const p of store()) {
     if (p.used || p.disposed) continue;
-    if (!house.includes(p.holder)) { p.disposed = true; p.disposedReason = 'holder-evicted'; continue; }
+    const def = BB_POWER_DEFINITIONS[p.powerId] || {};
+    // A Bonus Life is not lost when its holder is: being evicted is the
+    // trigger, not the end. It stays live for whoever has to resolve it.
+    if (!house.includes(p.holder) && !def.survivesEviction) {
+      p.disposed = true; p.disposedReason = 'holder-evicted'; continue;
+    }
     if (week > p.expiresAfterWeek) { p.disposed = true; p.disposedReason = 'expired'; }
   }
 }

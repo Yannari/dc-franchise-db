@@ -733,6 +733,30 @@ export function summariseWeek(week) {
         line('DIAMOND POWER OF VETO — DETONATED');
         line(`  ${act.holder} reveals the secret power live: ${act.saved} comes off the block, and ${act.replacement} takes the empty chair.`);
         break;
+      case 'bonus-life': {
+        line('');
+        if (!act.fired) {
+          line('THE BONUS LIFE — NOT PLAYED');
+          line(`  ${act.holder} is holding a Bonus Life and lets ${act.evicted} walk without it.`);
+          break;
+        }
+        line(`THE BONUS LIFE${act.auto ? ' — THE FUSE RUNS OUT' : ''}`);
+        if (act.auto) {
+          line(`  ${act.holder} never played it. The window closes tonight, so it activates by default on ${act.beneficiary}.`);
+        } else if (act.self) {
+          line(`  ${act.holder} is the one evicted, and plays the Bonus Life to stay in the game.`);
+        } else {
+          line(`  ${act.holder} plays the Bonus Life on ${act.beneficiary}.`);
+        }
+        line(`  ${act.beneficiary} plays the re-entry competition alone: ${act.competition.score} against a standard of ${act.competition.standard}.`);
+        if (act.returned) {
+          line(`  ${act.returned} WINS AND RE-ENTERS THE HOUSE — the eviction is reversed, with no immunity.`);
+          if ((act.grudges || []).length) line(`  Still in the house and on the record voting ${act.returned} out: ${act.grudges.join(', ')}.`);
+        } else {
+          line(`  ${act.beneficiary} FAILS the re-entry competition and leaves for good.`);
+        }
+        break;
+      }
       case 'battle-back': {
         line('');
         line(`BATTLE BACK — ${act.style === 'showdown' ? 'THE SHOWDOWN' : 'THE GAUNTLET'}`);

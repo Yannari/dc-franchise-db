@@ -4450,6 +4450,33 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'bonus-life':
+        if (!act.fired) {
+          sec('THE BONUS LIFE — NOT PLAYED');
+          ln(`  Somebody in this house is holding a Bonus Life, and they let ${act.evicted} walk out without it.`);
+          (act.beats || []).forEach(b => ln(`  ${b.text}`));
+          break;
+        }
+        sec(`THE BONUS LIFE${act.auto ? ' — THE FUSE RUNS OUT' : ''}`);
+        if (act.auto) {
+          ln(`  ${act.holder} never played it. The window closes tonight, so the power fires itself on ${act.beneficiary} — who did not ask for it and was not chosen.`);
+        } else if (act.self) {
+          ln(`  ${act.holder} is the one evicted, and plays the Bonus Life to stay in the game.`);
+        } else {
+          ln(`  ${act.holder} plays the Bonus Life on ${act.beneficiary}.`);
+        }
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln(`  The re-entry competition is run alone, against a standard: ${act.competition.score} needed ${act.competition.standard}.`);
+        if (act.returned) {
+          ln(`  ${act.returned} wins and walks back into the house — the eviction is reversed, with no immunity and no head start.`);
+          if ((act.grudges || []).length) {
+            ln(`  ${act.grudges.join(', ')} voted ${pronouns(act.returned).obj} out and ${act.grudges.length === 1 ? 'is' : 'are'} still in that room.`);
+          }
+        } else {
+          ln(`  ${act.beneficiary} falls short and leaves for good. The second chance is spent and nobody comes back.`);
+        }
+        break;
+
       case 'battle-back':
         sec(`BATTLE BACK — ${act.style === 'showdown' ? 'THE SHOWDOWN' : 'THE GAUNTLET'}`);
         ln(`  ${act.contenders.length} evicted houseguests come back to the lot to fight for the door${

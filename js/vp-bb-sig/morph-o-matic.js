@@ -141,7 +141,7 @@ export function rpBuildSigMorphOMatic(ep, actType, u = {}) {
     <div><span class="mom-k">FASTEST BOARD</span><span class="mom-v"><b>${sealed ? MASK : (rack.length ? `${rack[0].time}s` : '—')}</b></span></div>
     <div class="mom-strip-r"><span class="mom-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
       <span class="mom-v mom-v-txt">${sealed
-        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
         : done && winner
           ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
           : rack.length ? E(rack[0].name) : 'MACHINE WARM'}</span></div>

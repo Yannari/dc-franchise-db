@@ -196,19 +196,44 @@ export const majorityRules = {
     const supPool = [...SUPERLATIVES];
     const eliminationOrder = [];
     let round = 0;
+    // A round that eliminates nobody is legal and interesting once. With four
+    // left it is also LIKELY — of the three possible splits, only 3-1 sends
+    // anybody home, so 4-0 and 2-2 both stall — and a played week produced
+    // three in a row. Two consecutive dead rounds ends the questions and sends
+    // it to the tiebreaker, which is one of the two endings the rules already
+    // give this competition.
+    let deadStreak = 0;
     const maxRounds = Math.min(supPool.length, Math.max(3, participants.length + 2));
 
     while (field.length > 2 && round < maxRounds && supPool.length) {
       round++;
       const sup = supPool.splice(Math.floor(rng() * supPool.length), 1)[0];
-      const pool = house.length >= 2 ? [...house] : [...participants];
-      const a = pool.splice(Math.floor(rng() * pool.length), 1)[0];
-      const b = pool.splice(Math.floor(rng() * pool.length), 1)[0];
-      if (!a || !b) break;
 
-      // What the room genuinely thinks. This is the PRIOR, not the answer —
-      // it is what a houseguest is trying to read when they look around.
-      const tally = tallyHouse(sup, a, b, house, rng);
+      // ── the question a producer would actually ask ──
+      //
+      // Drawn at random, the pair keeps landing on two people the room already
+      // agrees about: everybody reads it correctly, nobody is in the minority,
+      // and the round eliminates nobody. Three of those in a row is a dead
+      // competition, and a played week produced exactly that.
+      //
+      // So several pairs are considered and the most CONTESTED one is asked —
+      // the question the house is closest to evenly split on. That is both the
+      // harder question and the one a show would pick, and it makes rounds
+      // eliminate somebody far more often without touching the rules.
+      let a = null, b = null, tally = null;
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const pool = house.length >= 2 ? [...house] : [...participants];
+        const x = pool.splice(Math.floor(rng() * pool.length), 1)[0];
+        const y = pool.splice(Math.floor(rng() * pool.length), 1)[0];
+        if (!x || !y || x === y) continue;
+        const t = tallyHouse(sup, x, y, house, rng);
+        if (!tally || t.split < tally.split) { a = x; b = y; tally = t; }
+        if (tally.split <= 1) break;               // close enough to ask
+      }
+      if (!a || !b || !tally) break;
+
+      // `tally` is the PRIOR, not the answer — it is what a houseguest is
+      // trying to read when they look around the room.
       const obviousness = clamp(tally.split / Math.max(1, tally.voters.length), 0, 1);
 
       beats.push(beat(
@@ -243,7 +268,10 @@ export const majorityRules = {
       field.forEach(f => {
         const right = roomMajority ? f.pick === roomMajority : null;
         f.picks.push(f.pick);
-        breakdown[f.name].picks.push({ q: round, pick: f.pick, majority: roomMajority, right });
+        // The pair travels with the answer. Deriving it from the answers alone
+        // cannot work: a unanimous round contains only one distinct name, and
+        // the screen drew the question as "Wayne or Wayne".
+        breakdown[f.name].picks.push({ q: round, pair: [a, b], pick: f.pick, majority: roomMajority, right });
         if (right) { f.correct++; breakdown[f.name].correct++; }
       });
 
@@ -251,6 +279,7 @@ export const majorityRules = {
         beats.push(beat(
           `${tie(TIE_LINES)(a, b, forA, forB)} Question ${round} eliminates nobody.`,
           [a, b], 'DEAD EVEN', 'grey'));
+        if (++deadStreak >= 2) break;
         continue;
       }
 
@@ -270,10 +299,12 @@ export const majorityRules = {
             [f.name], 'MINORITY', 'grey'));
         });
         field = field.filter(f => !f.outRound);
+        deadStreak = 0;
       } else {
         beats.push(beat(
           `${safe(SAFE_LINES)(roomMajority)} Question ${round} eliminates nobody.`,
           [roomMajority], 'ALL SAFE', 'grey'));
+        if (++deadStreak >= 2) break;
       }
     }
 

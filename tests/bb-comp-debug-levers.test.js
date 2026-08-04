@@ -12,15 +12,14 @@ import { runBBCompetition } from '../js/bb/comps.js';
 import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
 import { seedGame } from './helpers/setup.js';
 
-// KNOWN GAP, recorded rather than hidden: the six signature competitions in
-// bb-comps/signature.js were written before this contract existed and report
-// their own structures (rounds, strikes, times) but neither lever. They are
-// listed here so the panel's coverage is explicit and the exemption has to be
-// deleted deliberately rather than forgotten. Everything else must report both.
-const NO_LEVERS_YET = new Set([
-  'bb-sig-otev', 'bb-sig-the-wall', 'bb-sig-pressure-cooker',
-  'bb-sig-hide-and-go-veto', 'bb-sig-bb-comics', 'bb-sig-before-or-after',
-]);
+// This began as an exemption list holding the six signature competitions,
+// which reported their own structures (rounds, strikes, times) but neither
+// lever. They are now covered: `noiseRoll` banks each roll against the
+// houseguest who took it, toResult carries the map out, and the dispatcher
+// fills both levers for anybody still missing them — so the contract holds for
+// every competition rather than the ones that remembered to write the fields.
+// The list stays, empty, because the second test below turns it into a ratchet.
+const NO_LEVERS_YET = new Set([]);
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];

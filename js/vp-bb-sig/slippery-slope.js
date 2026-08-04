@@ -134,7 +134,7 @@ export function rpBuildSigSlipperySlope(ep, actType, u = {}) {
     <div><span class="slp-k">WALKED OFF</span><span class="slp-v"><b>${quitters}</b></span></div>
     <div class="slp-strip-r"><span class="slp-k">${sealed || done ? 'RESULT' : 'FULLEST'}</span>
       <span class="slp-v slp-v-txt">${sealed
-        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
         : done && winner
           ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
           : lead && lead.f ? `${E(lead.n)} · ${lead.f}%` : 'BARRELS FULL'}</span></div>

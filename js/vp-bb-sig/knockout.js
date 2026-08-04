@@ -148,7 +148,7 @@ export function rpBuildSigKnockout(ep, actType, u = {}) {
     <div><span class="kno-k">DUELS</span><span class="kno-v"><b>${shownDuels.length}</b><i>/ ${totalDuels}</i></span></div>
     <div class="kno-strip-r"><span class="kno-k">${done ? 'RESULT' : 'AT THE PODIUMS'}</span>
       <span class="kno-v kno-v-txt">${sealed
-        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
         : done && winner
           ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
           : shownDuels.length ? `DUEL ${shownDuels[shownDuels.length - 1].n} DONE` : 'BUZZERS LIVE'}</span></div>

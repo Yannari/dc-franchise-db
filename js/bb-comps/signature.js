@@ -40,7 +40,21 @@ import { bond } from '../bb-events/_read.js';
 // ── shared plumbing ───────────────────────────────────────────────────
 
 /** Symmetric noise of the requested amplitude. 2.5 is this file's floor. */
-const noiseRoll = (rng, amount = 2.5) => (rng() - 0.5) * amount * 2;
+/**
+ * The luck in a competition, optionally recorded as it is rolled.
+ *
+ * The Debug tab explains a result with two levers, aptitude and luck, and these
+ * six competitions reported neither — so a week that drew one of them rendered
+ * blank rows and house-visibility's lever test passed or failed on the draw.
+ * Passing an accumulator and a name banks the roll against that houseguest;
+ * toResult() carries the map out and the dispatcher merges it into the
+ * breakdown, so no competition has to remember to write the field itself.
+ */
+const noiseRoll = (rng, amount = 2.5, acc = null, who = null) => {
+  const v = (rng() - 0.5) * amount * 2;
+  if (acc && who) acc[who] = (acc[who] || 0) + v;
+  return v;
+};
 
 const round2 = v => Math.round(v * 100) / 100;
 
@@ -166,6 +180,7 @@ export const otev = {
   desc: 'A foul-tempered animatronic asks a question about the season. Houseguests slide down into the pit, search a scattered pile for the correct answer and race back up a soaked ramp. The last player up the ramp each round — or anyone carrying the wrong answer — is eliminated, and the last houseguest standing wins the Power of Veto.',
   stats: { mental: 0.26, intuition: 0.20, physical: 0.28, endurance: 0.16, boldness: 0.10 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
     const askedBefore = makePicker(rng);
     const creature = choose(rng, OTEV_CREATURES);
@@ -191,8 +206,8 @@ export const otev = {
         : askedBefore(OTEV_FALLBACK_QUESTIONS);
 
       const rolls = field.map(f => {
-        const recall = (stat(f.name, 'mental') * 0.55 + stat(f.name, 'intuition') * 0.45) + noiseRoll(rng, 3.2);
-        const scramble = (stat(f.name, 'physical') * 0.6 + stat(f.name, 'endurance') * 0.4) + noiseRoll(rng, 2.8);
+        const recall = (stat(f.name, 'mental') * 0.55 + stat(f.name, 'intuition') * 0.45) + noiseRoll(rng, 3.2, luck, f.name);
+        const scramble = (stat(f.name, 'physical') * 0.6 + stat(f.name, 'endurance') * 0.4) + noiseRoll(rng, 2.8, luck, f.name);
         const wrong = recall < 3.4;
         const total = recall * 0.5 + scramble * 0.5 - (wrong ? 4.5 : 0) - hn[f.name];
         return { ...f, recall, scramble, wrong, total };
@@ -242,6 +257,7 @@ export const otev = {
 
     const entries = rankEntries(placements, tiebreaks);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'otev',
       text: `${winner} survives ${round} rounds of ${creature.name} and wins the Power of Veto.`,
     });
@@ -285,6 +301,7 @@ export const theWall = {
   desc: 'Houseguests stand on narrow platforms bolted to a wall that tilts further forward as the night goes on, while timed waves of cold water, slime and moving platforms hit the field. Anyone who falls or steps down is out, and the last houseguest still on the wall wins Head of Household.',
   stats: { endurance: 0.40, temperament: 0.26, physical: 0.20, boldness: 0.14 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
     const grind = makePicker(rng);
     const beats = [];
@@ -318,7 +335,7 @@ export const theWall = {
 
       const rolls = standing.map(h => {
         const throwDrag = h.threw && wave >= 2 ? 5 + rng() * 3 : 0;
-        const hold = h.apt - fatigue - throwDrag - hn[h.name] + noiseRoll(rng, 2.9);
+        const hold = h.apt - fatigue - throwDrag - hn[h.name] + noiseRoll(rng, 2.9, luck, h.name);
         return { ...h, hold };
       }).sort((a, b) => a.hold - b.hold);
 
@@ -366,7 +383,7 @@ export const theWall = {
     }
 
     // The last two. Sorted by one more independent hold, and then negotiated.
-    const finalTwo = standing.map(h => ({ ...h, hold: h.apt - wave * 0.42 - hn[h.name] + noiseRoll(rng, 2.6) - (h.threw ? 6 : 0) }))
+    const finalTwo = standing.map(h => ({ ...h, hold: h.apt - wave * 0.42 - hn[h.name] + noiseRoll(rng, 2.6, luck, h.name) - (h.threw ? 6 : 0) }))
       .sort((a, b) => b.hold - a.hold);
     let [champ, second] = finalTwo;
 
@@ -405,6 +422,7 @@ export const theWall = {
     const placements = [champ.name, ...(second ? [second.name] : []), ...out.reverse()];
     const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'the-wall',
       text: `${champ.name} outlasts ${participants.length - 1} houseguests on the wall through ${wave} hazard waves.`,
     });
@@ -453,6 +471,7 @@ export const pressureCooker = {
   desc: 'Houseguests are sealed in a glass box, each holding a button down with one hand. Lifting a thumb eliminates that player, and every elimination opens a mystery box — some hold prizes offered to the players still holding on, some hold punishments applied to everyone left inside. The last houseguest still on the button wins Head of Household.',
   stats: { endurance: 0.38, temperament: 0.30, boldness: 0.16, physical: 0.16 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
     const hold = makePicker(rng);
     const beats = [];
@@ -484,7 +503,7 @@ export const pressureCooker = {
 
       const rolls = inside.map(h => {
         const throwDrag = h.threw && box >= 2 ? 5 + rng() * 3 : 0;
-        const grip = h.apt - h.drag - throwDrag - box * 0.30 + noiseRoll(rng, 2.7);
+        const grip = h.apt - h.drag - throwDrag - box * 0.30 + noiseRoll(rng, 2.7, luck, h.name);
         return { ...h, grip };
       }).sort((a, b) => a.grip - b.grip);
 
@@ -579,6 +598,7 @@ export const pressureCooker = {
     const placements = [champ.name, ...out.reverse()];
     const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'pressure-cooker',
       text: `${champ.name} holds the button for ${round2(hours + 1)} hours and wins Head of Household.`,
     });
@@ -627,6 +647,7 @@ export const hideAndGoVeto = {
   desc: 'Every player hides a veto card somewhere in the house, then searches in timed turns while the others wait outside. Every card that is found goes up on the board and its owner is eliminated, and the houseguest whose card is never found wins the Power of Veto.',
   stats: { intuition: 0.34, mental: 0.30, strategic: 0.24, physical: 0.12 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
     const missed = makePicker(rng);
     const places = makePicker(rng);
@@ -644,7 +665,7 @@ export const hideAndGoVeto = {
     const cards = participants.map(name => {
       // Half the drag lands on the hide, half on the search below — a week of
       // slop dulls both halves of this competition, not one.
-      const quality = (stat(name, 'intuition') * 0.45 + stat(name, 'strategic') * 0.35 + stat(name, 'mental') * 0.20) + noiseRoll(rng, 3.0) - hn[name] * 0.5;
+      const quality = (stat(name, 'intuition') * 0.45 + stat(name, 'strategic') * 0.35 + stat(name, 'mental') * 0.20) + noiseRoll(rng, 3.0, luck, name) - hn[name] * 0.5;
       return { owner: name, quality, found: false, where: places(HIDING_PLACES) };
     });
     cards.slice(0, Math.min(4, cards.length)).forEach(c => {
@@ -668,7 +689,7 @@ export const hideAndGoVeto = {
 
         // Cards get easier to find as the clock and the wreckage grow.
         const power = (stat(searcher, 'mental') * 0.40 + stat(searcher, 'intuition') * 0.40 + stat(searcher, 'physical') * 0.20)
-          + noiseRoll(rng, 2.6) + turn * 0.9 - hn[searcher] * 0.5;
+          + noiseRoll(rng, 2.6, luck, searcher) + turn * 0.9 - hn[searcher] * 0.5;
         mess[searcher] += 1 + rng();
 
         const target = targets.reduce((a, b) => (a.quality <= b.quality ? a : b));
@@ -735,6 +756,7 @@ export const hideAndGoVeto = {
 
     const entries = rankEntries(placements, tiebreaks);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'hide-and-go-veto',
       text: `${winner} is the last houseguest whose card is never found, and wins the Power of Veto.`,
     });
@@ -781,8 +803,9 @@ export const bbComics = {
   types: ['veto', 'hoh'],
   weight: () => 1.3,
   desc: 'One at a time and against the clock, each houseguest zips across the yard to a wall of comic book covers — one for every player in the house — and rebuilds the order they were shown. Every misplaced cover means zipping back to the platform and running it again, and the fastest completed time wins.',
-  stats: { mental: 0.40, intuition: 0.26, temperament: 0.20, physical: 0.14 },
+  stats: { mental: 0.40, endurance: 0.26, physical: 0.20, intuition: 0.14 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const clean = makePicker(rng);
     const flub = makePicker(rng);
     const melt = makePicker(rng);
@@ -809,7 +832,7 @@ export const bbComics = {
       const speed = (stat(name, 'physical') * 0.6 + stat(name, 'endurance') * 0.4);
       // Slop drag lands where this comp lives: seconds on the wire, and a
       // duller recall on every cover check below.
-      let time = 62 - speed * 2.2 + hn[name] * 2.5 + noiseRoll(rng, 5);
+      let time = 62 - speed * 2.2 + hn[name] * 2.5 + noiseRoll(rng, 5, luck, name);
       let mistakes = 0;
       // BB Comics runs as a Head of Household competition as often as it runs
       // as a veto, and an HOH nobody wants has to be losable on purpose. A
@@ -832,7 +855,7 @@ export const bbComics = {
         // over seven. At a 3.1 bar the same houseguest ran clean in 24 of 40
         // seeded runs, which is a sort with a zipline attached to it.
         const recall = (stat(name, 'mental') * 0.55 + stat(name, 'intuition') * 0.30 + stat(name, 'temperament') * 0.15)
-          + noiseRoll(rng, 3.4) - i * 0.30 - mistakes * 0.6 - hn[name] * 0.3;
+          + noiseRoll(rng, 3.4, luck, name) - i * 0.30 - mistakes * 0.6 - hn[name] * 0.3;
         if (recall < 3.9) {
           mistakes++;
           time += 21 + rng() * 9;
@@ -888,6 +911,7 @@ export const bbComics = {
     const threwMap = Object.fromEntries(runs.map(r => [r.name, !!r.threw]));
     const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'bb-comics',
       text: `${winner.name} runs BB Comics in ${winner.time} seconds and wins ${isVeto ? 'the Power of Veto' : 'Head of Household'}.`,
     });
@@ -931,6 +955,7 @@ export const beforeOrAfter = {
   desc: 'Houseguests are asked whether one thing that happened in this house came before or after another. In a full field a wrong answer is a strike and two strikes eliminate; once the field is small a single wrong answer eliminates outright. The last houseguest still in wins.',
   stats: { mental: 0.44, intuition: 0.26, strategic: 0.18, temperament: 0.12 },
   simulate(participants, context, api, rng) {
+    const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const wrongSay = makePicker(rng);
     const rightSay = makePicker(rng);
     const askedBefore = makePicker(rng);
@@ -974,7 +999,7 @@ export const beforeOrAfter = {
         // A thrower gets one wrong on purpose, early, and lets the strikes do
         // the rest — the same shape as bailing off a wall, in a quiz.
         const deliberate = f.threw && q <= 2;
-        const answer = f.apt - hn[f.name] + noiseRoll(rng, 3.2) - (deliberate ? 9 : 0);
+        const answer = f.apt - hn[f.name] + noiseRoll(rng, 3.2, luck, f.name) - (deliberate ? 9 : 0);
         if (answer < difficulty) {
           f.strikes++;
           f.lastWrong = q;
@@ -1035,6 +1060,7 @@ export const beforeOrAfter = {
     const placements = [champ.name, ...out.reverse()];
     const entries = rankEntries(placements, tiebreaks, threwMap);
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'before-or-after',
       text: `${champ.name} is the last houseguest standing in Before or After.`,
     });

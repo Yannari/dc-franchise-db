@@ -163,6 +163,30 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
   if (winner !== placements[0] || !participants.includes(winner)) throw new Error(`Big Brother competition ${comp.id} returned an invalid winner.`);
   const scores = raw.scores || {};
   if (participants.some(name => !Number.isFinite(Number(scores[name])))) throw new Error(`Big Brother competition ${comp.id} requires a numeric score for every participant.`);
+  // ── the Debug tab's two levers, guaranteed ──
+  //
+  // The Competitions panel explains a result with aptitude and luck. A custom
+  // competition that reported neither rendered blank rows, and whether the
+  // lever test passed came down to which competition the week drew. Aptitude is
+  // computable from the stat profile for anybody, and luck is merged from
+  // whatever the competition banked, so this holds for every competition rather
+  // than the ones that remembered.
+  const scoreRows = raw.breakdown || raw.debug?.scoreBreakdown || null;
+  if (scoreRows && comp.stats) {
+    for (const name of participants) {
+      const row = scoreRows[name];
+      if (!row || typeof row !== 'object') continue;
+      if (!Number.isFinite(row.statTotal ?? row.base)) {
+        const stats = pStats(name);
+        row.base = Math.round(Object.entries(comp.stats)
+          .reduce((sum, [stat, weight]) => sum + (stats[stat] || 0) * weight, 0) * 100) / 100;
+      }
+      if (!Number.isFinite(row.randomRoll ?? row.roll) && Number.isFinite(raw.luck?.[name])) {
+        row.roll = Math.round(raw.luck[name] * 100) / 100;
+      }
+    }
+  }
+
   const beats = raw.beats || [];
   const events = raw.events || [];
   for (const event of [...beats, ...events]) {

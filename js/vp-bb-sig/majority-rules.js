@@ -116,18 +116,28 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
   const rounds = steps.filter(s => s.kind === 'round');
   const totalRounds = rounds.length;
 
-  // Who each question was ABOUT, and everybody's lock-in for it, straight from
-  // the breakdown. The pair is read off the picks rather than the sentence, so
-  // a reworded question never breaks the board.
+  // Who each question was ABOUT, and everybody's lock-in for it.
+  //
+  // The pair comes off the answer record, then off the question sentence, and
+  // only then off the answers themselves. That order matters: a unanimous
+  // round contains exactly ONE distinct answer, so deriving the pair from the
+  // answers drew the question as "Wayne or Wayne" with both sides flagged as
+  // the majority. Seasons saved before the pair was recorded fall through to
+  // parsing the sentence, which still has both names in it.
+  const ASKED = /—\s*(.+?)\s+or\s+(.+?)\s*\?/;
   rounds.forEach(r => {
     const picks = roster.map(n => ({ name: n, pick: (breakdown[n]?.picks || []).find(p => p.q === r.q) }))
       .filter(x => x.pick);
     r.picks = picks;
     r.majority = picks.find(x => x.pick.majority)?.pick.majority || null;
+
+    const recorded = picks.find(x => Array.isArray(x.pick.pair) && x.pick.pair.filter(Boolean).length === 2);
+    const asked = ASKED.exec(r.beat.text || '');
     const names = [...new Set(picks.map(x => x.pick.pick))];
-    r.pair = r.majority
-      ? [r.majority, names.find(n => n !== r.majority) || names[0]].filter(Boolean)
-      : names.slice(0, 2);
+    r.pair = recorded ? [...recorded.pick.pair]
+      : asked ? [asked[1].trim(), asked[2].trim()]
+        : r.majority ? [r.majority, names.find(n => n !== r.majority)].filter(Boolean)
+          : names.slice(0, 2);
     r.forMaj = picks.filter(x => x.pick.right === true).length;
     r.forMin = picks.filter(x => x.pick.right === false).length;
     // Still in at the top of this round: nobody eliminated in an earlier one.
@@ -185,7 +195,7 @@ export function rpBuildSigMajorityRules(ep, actType, u = {}) {
     <div><span class="mjr-k">QUESTION</span><span class="mjr-v"><b>${shownRounds.length}</b><i>/ ${totalRounds}</i></span></div>
     <div class="mjr-strip-r"><span class="mjr-k">${sealed ? 'RESULT' : done ? 'RESULT' : 'STATUS'}</span>
       <span class="mjr-v mjr-v-txt">${sealed
-        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
         : done && winner
           ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
           : lastRound ? `ROUND ${lastRound.q} LOCKED` : 'BOARDS DOWN'}</span></div>

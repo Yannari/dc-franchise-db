@@ -128,13 +128,17 @@ export function scoreField(participants, { mix, luck = 3, context, rng, throwPen
 }
 
 /** The result shape the dispatcher validates. */
-export function toResult(entries, { beats = [], events = [], text, variant = null, breakdown = {} }) {
+export function toResult(entries, { beats = [], events = [], text, variant = null, breakdown = {}, luck = null }) {
   const placements = entries.map(e => e.name);
   return {
     winner: placements[0],
     placements,
     scores: Object.fromEntries(entries.map(e => [e.name, e.score])),
     beats, events, variant, breakdown,
+    // Per-houseguest luck, when the competition recorded it. The dispatcher
+    // merges this into the breakdown so a competition never has to remember to
+    // write the Debug tab's fields into every one of its own result rows.
+    luck,
     text: text || beats.map(b => b.text).join(' '),
   };
 }

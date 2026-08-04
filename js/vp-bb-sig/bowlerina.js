@@ -120,7 +120,7 @@ export function rpBuildSigBowlerina(ep, actType, u = {}) {
     <div><span class="bwl-k">TOP SCORE</span><span class="bwl-v"><b>${sealed ? MASK : (shown.length ? shown[0].total : '—')}</b></span></div>
     <div class="bwl-strip-r"><span class="bwl-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
       <span class="bwl-v bwl-v-txt">${sealed
-        ? (done ? 'SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
+        ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
         : done && winner
           ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
           : shown.length ? E(shown[0].name) : 'BARS UP'}</span></div>

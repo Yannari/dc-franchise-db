@@ -410,12 +410,12 @@ export const TWIST_CATALOG = [
   { id:'bb-split-house', emoji:'🪟', name:'Split House', format:'big-brother',
     category:'power', phase:'any',
     desc:'Two Heads of Household are crowned, then pick sides schoolyard-style. The two halves are sealed off from each other for the whole week — separate nominations, separate veto, separate vote — and one houseguest from each side is evicted on the same night.',
-    incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-instant-eviction'],
+    incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-instant-eviction', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-of-the-block', emoji:'⚔️', name:'Battle of the Block', format:'big-brother',
     category:'power', phase:'any',
     desc:'Two Heads of Household, each nominating two houseguests. The four nominees compete as pairs; the winning pair comes off the block and DETHRONES the Head of Household who nominated them. The survivor keeps the power and their two nominations stand.',
-    incompatible:['bb-invisible-hoh'], incompatibleModes:['block-buster'] },
+    incompatible:['bb-invisible-hoh', 'bb-hacker'], incompatibleModes:['block-buster'] },
   { id:'bb-app-store', emoji:'📱', name:'The App Store', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'Three powers go on the shelf and nobody in the house can compete for one. The audience votes, and the audience votes for whoever it has been watching \u2014 so the powers land on the houseguests with the most screen time, not the ones playing best. Winners are told in private and the house is told only that somebody out there is now holding something.',
@@ -427,14 +427,23 @@ export const TWIST_CATALOG = [
     // chair, Battle of the Block runs two blocks of two, and a Split House has
     // two blocks in two houses — none of them can also carry a secret third
     // nominee without the ceremony meaning something different in each half.
-    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation'],
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation', 'bb-hacker'],
+    incompatibleModes:['block-buster'] },
+  { id:'bb-hacker', emoji:'💻', name:'The Hacker', format:'big-brother',
+    category:'power', phase:'any',
+    desc:'Every houseguest plays the Hacker Competition alone, and only the winner is told they won. That winner holds three separate powers and may use any, all or none of them — always anonymously. They can take one nominee off the block and seat somebody else in the empty chair; they can walk one houseguest into the veto competition without a chip being drawn; and on eviction night they can cancel one vote before it is counted. The houseguest taken down is not safe — they can be named as the replacement at the veto ceremony. The house sees three things happen and never finds out who did any of them.',
+    // Three hacks, three different nights, and the block is one of them — so it
+    // collides with everything that reshapes the block, and with the week that
+    // has no veto to hack.
+    incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house',
+      'bb-den-of-temptation', 'bb-instant-eviction'],
     incompatibleModes:['block-buster'] },
   { id:'bb-den-of-temptation', emoji:'😈', name:'Den of Temptation', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'The audience sends one houseguest into the Den alone and offers them a real power for nothing. There is no competition and no catch they can see — except that accepting puts a curse into the house, and the curse never lands on them. Take it and a houseguest chosen at random must nominate themselves alongside the Head of Household’s two. Refuse and nothing happens to anybody. The house is told a curse has landed and is never told who caused it, so it spends the week hunting a culprit and is perfectly capable of settling on the wrong one.',
     // The curse seats a third chair, so it collides with everything else that
     // reshapes the block for exactly the reasons Roadkill does.
-    incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house'],
+    incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
     category:'returns', phase:'any',

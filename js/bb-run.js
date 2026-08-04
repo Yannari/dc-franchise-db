@@ -182,6 +182,17 @@ export function weekToEpisode(week) {
         refilled: !!week.roadkillRefilled }
       : null,
     roadkillGuesses: (week.roadkillGuesses || []).map(g => ({ ...g })),
+    // The Hacker, same reasoning and three times over: what was done, and who
+    // the house decided did it. The competition object itself stays on the act
+    // — this is the summary the screens and the replay read.
+    hacker: week.hacker
+      ? { winner: week.hacker.winner,
+        blockHack: week.hacker.blockHack ? { ...week.hacker.blockHack } : null,
+        vetoHack: week.hacker.vetoHack ? { ...week.hacker.vetoHack } : null,
+        voteHack: week.hacker.voteHack ? { ...week.hacker.voteHack } : null }
+      : null,
+    hackerGuesses: (week.hackerGuesses || []).map(g => ({ ...g })),
+    hackerVote: week.hackerVote ? { ...week.hackerVote } : null,
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,
     initialNominees: [...(week.initialNominees || [])],
     finalNominees: [...(week.finalNominees || [])],
@@ -251,7 +262,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -692,6 +703,30 @@ export function summariseWeek(week) {
         }
         (act.results || []).filter(r => r.threw).forEach(r => line(`  ${r.name} threw the competition.`));
         break;
+      case 'hacker': {
+        line('');
+        line('THE HACKER — PLAYED ALONE, RESULT SEALED');
+        _competition(line, act.competition);
+        line('  The winner is told in private and is never named to the house.');
+        if (act.blockHack) {
+          line(`  The block is hacked: ${act.blockHack.down} comes down, ${act.blockHack.up} goes up.`);
+          if (act.blockHack.why) line(`  ${act.blockHack.why}`);
+          line(`  ${act.blockHack.down} is NOT safe — the veto ceremony can seat them again.`);
+        } else {
+          line('  The block is left exactly as the Head of Household made it.');
+        }
+        break;
+      }
+      case 'hacker-vote': {
+        line('');
+        line('A VOTE IS CANCELLED');
+        line(`  ${act.voter}'s ballot is nullified before the count — ${act.voter} was voting to evict ${act.wouldHaveVoted}.`);
+        line(`  ${act.flips ? 'It changes who leaves tonight.'
+          : act.levels ? 'It levels the count, and the tie is the Head of Household\'s to break.'
+            : 'It does not change who leaves tonight.'}`);
+        line('  The house hears a count one short of the number of people who believe they voted.');
+        break;
+      }
       case 'roadkill': {
         line('');
         line('BB ROADKILL — PLAYED ALONE, RESULT SEALED');
@@ -723,6 +758,9 @@ export function summariseWeek(week) {
         line('');
         line('POWER OF VETO');
         line(`  Played by: ${(act.participants || []).join(', ')}.`);
+        if (act.hacked) {
+          line(`  ${act.hacked.pick} plays with no chip drawn for them — the hacker took ${act.hacked.replaced}'s seat and gave it away.`);
+        }
         _competition(line, act.competition);
         line(`  ${act.winner} wins the Power of Veto.`);
         break;

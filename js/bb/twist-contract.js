@@ -179,6 +179,29 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody in this room is about to put a third key on the wall, and nobody will be able to prove it was them.',
     },
   },
+  'bb-hacker': {
+    id: 'bb-hacker', layer: 'scheduled', category: 'nomination-power',
+    timing: 'post-noms', duration: { weeks: 1 },
+    // BB20's shape, and the first twist to consume `cancelVotes` — the rule has
+    // been in BASE_WEEK_RULES since this contract was written with nothing to
+    // read it.
+    //
+    // Everybody plays it alone and only the winner is told. What they hold is
+    // not one power but three, each optional, each anonymous, each spent on a
+    // different night: take a nominee down and seat a replacement; walk one
+    // houseguest into the veto competition; cancel one ballot before the count.
+    //
+    // The rule the wiki settles and memory gets wrong: the nominee the hacker
+    // takes down is NOT safe. They are a legal replacement at the veto ceremony
+    // three days later. The reprieve is a stay, not a pardon.
+    rules: { hackerActive: true, cancelVotes: 1 },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The Hacker',
+      rule: 'Every houseguest will play the Hacker Competition alone, and only the winner will be told they won. That winner may do three things this week, any of them, none of them, all of them, and always anonymously: they may take one nominee off the block and put somebody else up in their place, they may choose one houseguest to play in the veto competition, and they may cancel one vote at the eviction. Their name will never be read out.',
+      sting: 'Three things are about to happen in this house and nobody is going to have done them.',
+    },
+  },
   'bb-split-house': {
     id: 'bb-split-house', layer: 'scheduled', category: 'power-structure',
     timing: 'week', duration: { weeks: 1 },

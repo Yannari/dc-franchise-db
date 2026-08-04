@@ -41,6 +41,7 @@ import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
+import { rpBuildBBHacker, rpBuildBBHackerVote } from './vp-bb-hacker.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
 import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
@@ -20245,6 +20246,20 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Total Drama episode — one challenge screen, one camp screen.
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
+      case 'hacker': {
+        const hk = rpBuildBBHacker(view, act, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (hk) screens.push({ id: id('bb-hacker'), label: 'The Hacker', html: hk });
+        break;
+      }
+      case 'hacker-vote': {
+        const hv = rpBuildBBHackerVote(view, act, {
+          tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
+        });
+        if (hv) screens.push({ id: id('bb-hackervote'), label: 'The Cancelled Vote', html: hv });
+        break;
+      }
       case 'roadkill': {
         const rk = rpBuildBBRoadkill(view, act, {
           tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,

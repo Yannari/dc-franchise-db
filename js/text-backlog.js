@@ -4348,6 +4348,46 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'hacker': {
+        sec('THE HACKER');
+        ln('  Every houseguest plays it alone, and only the winner is told they won.');
+        if (act.competition) {
+          ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
+          ln(`  Rules: ${act.competition.desc || ''}`);
+          (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        ln('');
+        if (act.blockHack) {
+          ln(`  The wall changes by itself. ${act.blockHack.down} comes off the block.`);
+          ln(`  ${act.blockHack.up} goes up in the empty chair, with nobody's name attached to it.`);
+          if (act.blockHack.why) ln(`  ${act.blockHack.why}`);
+          ln(`  ${act.blockHack.down} is not safe. A houseguest taken down by the hacker can be`);
+          ln('  named as the replacement at the veto ceremony — it is a stay, not a pardon.');
+        } else {
+          ln('  Nothing happens to the block. An unused hack is a hack nobody can trace,');
+          ln('  and the house spends the week waiting for a move that never comes.');
+        }
+        ln('');
+        ln('  The house will spend the week deciding who did this, and the house is');
+        ln('  wrong about as often as it is right.');
+        beats(act);
+        break;
+      }
+
+      case 'hacker-vote': {
+        sec('A VOTE IS CANCELLED');
+        ln(`  ${act.voter} is called in before the eviction and told that ${act.voter}'s ballot`);
+        ln('  will not be counted tonight — and that nothing may be said about it.');
+        ln(`  ${act.voter} was voting to evict ${act.wouldHaveVoted}.`);
+        ln(`  ${act.flips ? 'It is the vote the night turns on.'
+          : act.levels ? 'It levels the count, and a level count belongs to the Head of Household.'
+            : 'It does not change who leaves.'}`);
+        ln('  The count that gets read out is one short of the number of houseguests');
+        ln('  who believe they voted, and every one of them can do arithmetic.');
+        beats(act);
+        break;
+      }
+
       case 'roadkill': {
         sec('BB ROADKILL');
         ln('  Every houseguest plays it alone, and only the winner is told they won.');
@@ -4423,6 +4463,10 @@ export function generateBBSummaryText(ep) {
         if (act.competition) {
           ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
           (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
+        }
+        if (act.hacked) {
+          ln(`  One name in that draw has no chip behind it: ${act.hacked.pick} is walked into the`);
+          ln(`  competition by the hacker, and ${act.hacked.replaced} loses the seat they drew.`);
         }
         ln(`  ${act.winner} wins the Power of Veto.`);
         beats(act);

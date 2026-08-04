@@ -13,6 +13,10 @@ import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { runDenOfTemptation } from './temptation.js';
 import {
+  chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
+  makeHackerGuesser, recordHackerWin,
+} from './hacker.js';
+import {
   updateRomanticSparks, checkFirstMove, checkShowmanceFormation,
   updateShowmancePhases, checkShowmanceBreakup,
   checkShowmanceSabotage, checkLoveTriangleFormation, updateLoveTrianglePhases,
@@ -1702,6 +1706,110 @@ export function simulateBBWeek(options = {}) {
   revise('noms', { hoh, nominees: [...nominees] });
 
   // ══════════════════════════════════════════════════════════════════
+  // THE HACKER
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // It runs HERE, after the ceremony, because that is the order the twist
+  // needs: the house has heard two names read out and watched somebody take
+  // responsibility for them, and then the wall changes by itself.
+  //
+  // Everybody plays alone, only the winner is told, and the winner is never
+  // named. The first of their three authorities is spent now; the second at
+  // the veto draw and the third at the count, each recorded separately because
+  // they are separate decisions with separate fallout.
+  const hackerActive = week.twistState?.rules?.hackerActive === true
+    && !compressed && house.length >= 6;
+  if (hackerActive) {
+    const hkComp = runBBCompetition({
+      // Same slot as Roadkill's: a lone time-trial with one winner, kept out of
+      // the HOH and veto pools so a week never plays the same competition twice.
+      type: 'tiebreaker', participants: [...house], house, week, rng,
+      library: competitionLibrary, seed: options.seed,
+      forcedId: options.forcedCompetitions?.hacker,
+      haveNots: week.haveNots || [],
+      // Nobody throws a competition nobody can see them lose.
+      allowThrowing: false,
+    });
+    const hacker = hkComp.winner;
+    week.hacker = { winner: hacker, competition: hkComp,
+      blockHack: null, vetoHack: null, voteHack: null };
+
+    const blockHack = chooseHackerBlockHack({
+      hacker, nominees: [...nominees], house, hoh, plan, rng,
+      protectedNames: [...untouchable, ...(week.botbSafe || [])],
+    });
+    if (blockHack.use && nominees.includes(blockHack.down) && house.includes(blockHack.up)) {
+      nominees = nominees.map(name => (name === blockHack.down ? blockHack.up : name));
+      week.initialNominees = [...nominees];
+      gs.bb.stats[blockHack.up].timesNominated++;
+      setSpotlight({ nominees: [...nominees] });
+      revise('noms', { hoh, nominees: [...nominees] });
+    }
+    week.hacker.blockHack = blockHack.use
+      ? { down: blockHack.down, up: blockHack.up, why: blockHack.why, reason: blockHack.reason }
+      : null;
+
+    week.acts.push(addBeats({
+      type: 'hacker', secret: true, winner: hacker, competition: hkComp,
+      results: hkComp.placements.map(n => ({ name: n, score: hkComp.scores[n] })),
+      blockHack: week.hacker.blockHack, why: blockHack.why,
+    }, { nominees: week.hacker.blockHack ? [week.hacker.blockHack.up] : [] }));
+    recordHackerWin(hacker, week, { block: !!week.hacker.blockHack });
+
+    // ── the empty chair looks for a hand ──
+    //
+    // Roadkill's blame shape, applied to a nomination that REPLACED one the
+    // house watched somebody take responsibility for. The grievance, the bond
+    // damage and the strategic memory all land on the name the victim picked,
+    // right or wrong.
+    const hkGuess = makeHackerGuesser({ week, house, hoh, rng });
+    if (week.hacker.blockHack) {
+      const { down, up } = week.hacker.blockHack;
+      const guess = hkGuess(up);
+      const beats = [];
+      if (guess && guess !== up) {
+        try { addBond(up, guess, -1.5); } catch { /* no bond, no grievance */ }
+        rememberBBStrategy(up, guess, 'put-me-up-anonymously', 2,
+          { twist: 'bb-hacker', correct: guess === hacker }, { week, act: 'nominations' });
+        beats.push({
+          eventId: 'hacker-blame',
+          text: `${up} was not on that block when the ceremony ended and is on it now, with nobody's name attached to the change. `
+            + `${up} settles on ${guess}. ${guess === hacker
+              ? 'It is the right name, and it will never be provable.'
+              : `It is the wrong name. ${guess} spends the week answering for something ${guess} did not do.`}`,
+          players: [up, guess],
+          badgeText: 'WHO DID THIS', badgeClass: 'red',
+        });
+      }
+      // The Head of Household ran a ceremony that lasted an hour. Their reign
+      // is scored on the block, and the block is no longer the one they made.
+      if (hoh && hoh !== hacker && !hohSecret) {
+        try { rememberStrategy(hoh, up, 'block-rewritten', week.num, 1, { act: 'hacker' }); } catch { /* texture */ }
+        beats.push({
+          eventId: 'hacker-overwritten',
+          text: `${hoh} nominated ${down} in front of the whole house and defended the choice for an hour. `
+            + `The wall now reads ${up}, and ${hoh} has no more idea why than anybody else does.`,
+          players: [hoh, up].filter(Boolean),
+          badgeText: 'A REIGN OVERWRITTEN', badgeClass: 'red',
+        });
+      }
+      if (down && down !== up) {
+        beats.push({
+          eventId: 'hacker-stay-of-execution',
+          text: `${down} comes off the block and gets told, in the same breath, that it changes nothing about the veto ceremony — `
+            + `a houseguest taken down by the hacker can be put straight back up as the replacement. It is a stay, not a pardon.`,
+          players: [down],
+          badgeText: 'A STAY, NOT A PARDON', badgeClass: 'blue',
+        });
+      }
+      if (beats.length) {
+        week.acts.push(addBeats({ type: 'house', phase: 'post-noms', hackerBlame: true,
+          socialBeats: beats }, {}));
+      }
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
   // The Battle of the Block
   // ══════════════════════════════════════════════════════════════════
   //
@@ -2010,6 +2118,30 @@ export function simulateBBWeek(options = {}) {
       plan?.backdoorTarget || null);
     week.vetoDraw = vetoDraw;
     let vetoPlayers = vetoDraw.players;
+    // ── the hacker's second authority: a seat nobody drew a chip for ──
+    //
+    // The loudest of the three, and the only one with witnesses: the house
+    // watches a name walk into the competition with no chip to account for it.
+    // The pick CONSUMES a drawn seat rather than adding one, so the field is
+    // the size it always was — the hacker is choosing who plays, not how many.
+    if (week.hacker && !compressed) {
+      const vetoHack = chooseHackerVetoHack({
+        hacker: week.hacker.winner, house, playing: [...vetoPlayers],
+        nominees: [...nominees], hoh, rng,
+      });
+      if (vetoHack.pick && house.includes(vetoHack.pick) && !vetoPlayers.includes(vetoHack.pick)) {
+        // Whoever was drawn last and is neither the HOH nor a nominee loses the
+        // seat: those three play by right, and the hacker cannot take that away.
+        const byRight = [hoh, ...nominees].filter(Boolean);
+        const droppable = [...vetoPlayers].reverse().find(n => !byRight.includes(n));
+        if (droppable) {
+          vetoPlayers = vetoPlayers.map(n => (n === droppable ? vetoHack.pick : n));
+          week.hacker.vetoHack = { pick: vetoHack.pick, replaced: droppable,
+            self: vetoHack.self, why: vetoHack.why, reason: vetoHack.reason };
+          vetoDraw.hacked = { pick: vetoHack.pick, replaced: droppable };
+        }
+      }
+    }
     vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
     vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
     const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
@@ -2023,6 +2155,9 @@ export function simulateBBWeek(options = {}) {
     recordCompDominance(vetoCompetition, house, week.num);
     week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner,
       results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
+      // A seat that no chip accounts for, if the hacker spent their second
+      // authority — the one hack the whole house watches happen.
+      hacked: vetoDraw.hacked || null,
       automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
 
     // Somebody holds the veto and has not yet said what they will do with it.
@@ -2653,6 +2788,67 @@ export function simulateBBWeek(options = {}) {
           week.acts.push({ type: 'diamond-detonation', ...week.diamondDetonation, socialBeats: beats });
         }
       }
+    }
+  }
+
+  // ── the hacker's third authority: one ballot, cancelled ──
+  //
+  // The first consumer of `cancelVotes`, which has been sitting in
+  // BASE_WEEK_RULES since the contract was written with nothing to read it.
+  //
+  // It fires HERE, after every plea, plan and forecast — the ballots below are
+  // the ones that would really have been cast — and it fires before the count,
+  // so the number the house hears read out is one short of the number of people
+  // who believe they voted. The silenced houseguest is told in private and told
+  // to say nothing, which is a burden rather than an alibi: admitting it means
+  // admitting somebody chose you, and you cannot say who.
+  if (!compressed && week.hacker && (week.twistState?.rules?.cancelVotes || 0) > 0) {
+    const voteHack = chooseHackerVoteHack({
+      hacker: week.hacker.winner, ballots, nominees: [...nominees], hoh, house, rng,
+    });
+    const idx = voteHack.voter ? ballots.findIndex(b => b.voter === voteHack.voter) : -1;
+    if (idx >= 0) {
+      const [killed] = ballots.splice(idx, 1);
+      week.hacker.voteHack = { voter: voteHack.voter, saved: voteHack.saved,
+        wouldHaveVoted: killed.evict, flips: voteHack.flips, levels: voteHack.levels,
+        why: voteHack.why, reason: voteHack.reason };
+      week.hackerVote = { ...week.hacker.voteHack };
+      const beats = [];
+      // The silenced voter has to blame somebody, and cannot see the hand.
+      const hkGuess = makeHackerGuesser({ week, house, hoh, rng });
+      const guess = hkGuess(voteHack.voter);
+      beats.push({
+        eventId: 'hacker-vote-cancelled',
+        text: `${voteHack.voter} is called in before the vote and told, privately, that ${pronouns(voteHack.voter).posAdj} ballot will not be counted tonight — `
+          + `and that ${pronouns(voteHack.voter).sub} may not tell the house why. `
+          + `${pronouns(voteHack.voter).Sub} ${pronouns(voteHack.voter).sub === 'they' ? 'sit' : 'sits'} through the whole eviction with a vote ${pronouns(voteHack.voter).sub} already knows does not exist.`,
+        players: [voteHack.voter],
+        badgeText: 'CANCELLED', badgeClass: 'red',
+      });
+      if (guess && guess !== voteHack.voter) {
+        try { addBond(voteHack.voter, guess, -1.2); } catch { /* no bond, no grievance */ }
+        rememberBBStrategy(voteHack.voter, guess, 'cancelled-my-vote', 2,
+          { twist: 'bb-hacker', correct: guess === week.hacker.winner }, { week, act: 'eviction' });
+        beats.push({
+          eventId: 'hacker-vote-blame',
+          text: `${voteHack.voter} spends the walk back to the sofa working out who did it, and settles on ${guess}. `
+            + `${guess === week.hacker.winner ? 'It is the right name, and saying it out loud would mean admitting the whole thing.' : `It is the wrong name, and ${guess} will never know ${pronouns(guess).sub} ${pronouns(guess).sub === 'they' ? 'were' : 'was'} tried and convicted.`}`,
+          players: [voteHack.voter, guess],
+          badgeText: guess === week.hacker.winner ? 'DEAD ON' : 'THE WRONG DOOR',
+          badgeClass: guess === week.hacker.winner ? 'gold' : 'red',
+        });
+      }
+      week.acts.push(addBeats({
+        type: 'hacker-vote', secret: true, voter: voteHack.voter,
+        saved: voteHack.saved, wouldHaveVoted: killed.evict,
+        flips: voteHack.flips, levels: voteHack.levels,
+        why: voteHack.why, winner: week.hacker.winner, socialBeats: beats,
+      }, {}));
+    } else if (voteHack.why) {
+      // Declining to use it is a decision too, and the debug panel is owed the
+      // reasoning even though nothing happened in front of anybody.
+      week.hacker.voteHack = { voter: null, held: true, why: voteHack.why,
+        reason: voteHack.reason };
     }
   }
 

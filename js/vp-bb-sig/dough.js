@@ -1,18 +1,23 @@
 // ══════════════════════════════════════════════════════════════════════
-// vp-bb-sig/dough.js — "The Pit"
+// vp-bb-sig/dough.js — "The Counting Room"
 //
 // The themed screen for js/bb-comps/classics.js → Rollin' in the Dough
 // (`variant: 'dough'`).
 //
-// Nothing is bagged and nothing is strapped on, so the only decision in this
-// competition is how much to pick up — and the instrument is that decision,
-// trip by trip. Each trip is a bar whose LENGTH is the armful they went in
-// with: the long ones are the greedy ones, and a spilled trip is drawn full
-// length and then struck out, because they carried all of it and banked none
-// of it.
+// The pit is warm and filthy; the room the coins get counted in is neither.
+// That contrast is the screen: cold stainless and mint under strip lighting,
+// with the only warm thing in it being the coins themselves.
 //
-// The vault fills down the right-hand side as the trips are read. Declines
-// when the trip data is missing.
+// Structurally it shares nothing with the other screens. There are no cards in
+// a column and no sidebar: each houseguest is a full-width LEDGER ROW, read
+// left to right the way a counting-room sheet is — who, then the trips laid
+// out as a conveyor of armfuls, then the vault tube at the far right filling
+// to what they actually banked. Each trip is drawn at the WIDTH of the armful
+// they went in with, so the greedy trips are visibly the long ones, and a
+// spilled trip is drawn full length and then struck through: they carried all
+// of it and banked none of it.
+//
+// Declines when the trip data is missing.
 // ══════════════════════════════════════════════════════════════════════
 
 import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
@@ -33,9 +38,9 @@ export function rpBuildSigDough(ep, actType, u = {}) {
 
   const E = v => (typeof u.esc === 'function' ? u.esc(v) : String(v ?? ''));
   const AV = (n, px) => (typeof u.avatar === 'function' ? u.avatar(n, px) : '');
-  const ORD = n => (typeof u.ordinal === 'function' ? u.ordinal(n) : String(n));
-  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PHYSICAL', accent: '#d8a76a' };
-  const PALETTE = '#e0b478';                       // raw dough under work lights
+  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PHYSICAL', accent: '#5fd6bb' };
+  const MINT = '#63dcc0';
+  const COIN = '#f0c04a';
   const isHoh = actType === 'hoh';
 
   const stateKey = `bb_sig_dough_${ep.num}_${actType}${ep?._seg ? `_s${ep._seg}` : ''}`;
@@ -50,12 +55,12 @@ export function rpBuildSigDough(ep, actType, u = {}) {
     'Nothing is bagged. Everything is carried in the arms, which is the whole competition.',
     'The wall is the slow part. Almost nobody works that out in time.',
     'Coins that go into the dough are not coming back out of it tonight.',
-    'A big armful is worth more and drops more, and both of those are true every trip.',
+    'A big armful is worth more and drops more, and both are true every trip.',
     'The pit is thigh-deep and gets deeper wherever somebody has already been.',
   ];
   const WIN_FLAV = [
     'The pit gets drained. It takes longer than the competition did.',
-    'A competition won by the person who was least greedy on the third trip.',
+    'Won by whoever was least greedy on the third trip.',
     'The vaults get counted out loud. One of them is nearly empty.',
     'Everybody is the same colour by the end. The totals are not.',
   ];
@@ -92,60 +97,37 @@ export function rpBuildSigDough(ep, actType, u = {}) {
     .sort((a, b) => (b.vault ?? -1) - (a.vault ?? -1));
 
   const biggestLoad = Math.max(6, ...withTrips.flatMap(([, v]) => (v.trips || []).map(t => t.load || 0)));
+  const bestVault = Math.max(1, ...withTrips.map(([, v]) => v.vault || 0));
 
-  /** Every trip, drawn at the length of the armful it went in with. */
-  const trips = list => `<div class="dgh-trips">
+  /** The conveyor: each trip at the width of the armful it went in with. */
+  const conveyor = list => `<div class="dgh-belt">
     ${list.map(t => {
-    const w = Math.max(10, Math.round(((t.load || 0) / biggestLoad) * 100));
-    return `<div class="dgh-trip ${t.spilled ? 'is-spilled' : ''}">
-        <span class="dgh-tn">${t.trip}</span>
-        <span class="dgh-bar"><b style="width:${sealed ? 30 : w}%"></b></span>
-        <span class="dgh-load">${sealed ? MASK : (t.spilled ? 'SPILLED' : `+${t.load}`)}</span>
-      </div>`;
+    const w = Math.max(9, Math.round(((t.load || 0) / biggestLoad) * 100));
+    const coins = Math.max(1, Math.min(7, Math.round((t.load || 0) / 3)));
+    return `<span class="dgh-trip ${t.spilled ? 'is-spilled' : ''}" style="flex:0 0 ${sealed ? 34 : w}%"
+        title="Trip ${t.trip}: ${t.spilled ? 'spilled' : `${t.load} coins`}">
+        <span class="dgh-stack">${Array.from({ length: sealed ? 2 : coins }, () => '<i></i>').join('')}</span>
+        <span class="dgh-tlab">${sealed ? MASK : (t.spilled ? 'SPILLED' : `+${t.load}`)}</span>
+      </span>`;
   }).join('')}
   </div>`;
 
-  /** The vault, filling as the trips land. */
-  const vault = bd => {
-    const best = Math.max(1, ...withTrips.map(([, v]) => v.vault || 0));
-    const pct = sealed ? 0 : Math.round(((bd.vault || 0) / best) * 100);
-    return `<div class="dgh-vault" title="${bd.vault ?? 0} in the vault">
-      <span class="dgh-vault-fill" style="height:${pct}%"></span>
-      <span class="dgh-vault-n">${sealed ? MASK : (bd.vault ?? 0)}</span>
-      <span class="dgh-vault-k">VAULT</span>
+  /** The vault tube at the end of the row, filling to what they banked. */
+  const tube = bd => {
+    const pct = sealed ? 0 : Math.round(((bd.vault || 0) / bestVault) * 100);
+    return `<div class="dgh-tube" title="${bd.vault ?? 0} banked">
+      <span class="dgh-fill" style="height:${pct}%"></span>
+      <b>${sealed ? MASK : (bd.vault ?? 0)}</b>
     </div>`;
   };
 
-  const strip = `<div class="dgh-strip">
-    <div><span class="dgh-k">VAULTS COUNTED</span><span class="dgh-v"><b>${shown.length}</b><i>/ ${fieldSize}</i></span></div>
-    <div><span class="dgh-k">FULLEST</span><span class="dgh-v"><b>${
-  sealed ? MASK : (shown.length ? shown[0].vault : '—')}</b></span></div>
-    <div class="dgh-strip-r"><span class="dgh-k">${sealed || done ? 'RESULT' : 'LEADER'}</span>
-      <span class="dgh-v dgh-v-txt">${sealed
-    ? (done ? 'RESULT SEALED — THE HOUSE NEVER FINDS OUT' : 'RESULT SEALED')
-    : done && winner
-      ? `${E(winner)} — ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}`
-      : shown.length ? E(shown[0].name) : 'PIT UNTOUCHED'}</span></div>
-  </div>`;
-
-  const boardHtml = sealed ? '' : `<aside class="dgh-side">
-    <div class="dgh-side-h"><span class="dgh-k">THE VAULTS</span></div>
-    ${shown.length ? shown.map((r, i) => `<div class="dgh-side-row ${i === 0 ? 'is-lead' : ''}">
-      <span class="dgh-side-p">${ORD(i + 1)}</span>
-      <span>${AV(r.name, 24)}</span>
-      <span class="dgh-side-n">${E(r.name)}</span>
-      <span class="dgh-side-t">${E(r.vault)}</span>
-    </div>`).join('') : '<p class="dgh-side-e">Nobody has crossed yet.</p>'}
-  </aside>`;
-
   const cards = steps.map((s, i) => {
-    if (i > state.idx) return '<div class="dgh-card is-locked"><span class="dgh-lock">&#9679; &#9679; &#9679;</span></div>';
+    if (i > state.idx) return '<div class="dgh-row is-locked"><span class="dgh-lock">&#9635;&#9635;&#9635;</span></div>';
 
     if (s.kind === 'open') {
-      return `<article class="dgh-card dgh-open">
-        <header class="dgh-hd"><span class="dgh-tag">${E(s.beat.badgeText || 'THE PIT')}</span>
-          <span class="dgh-sub">${fieldSize} in the dough</span></header>
-        <p class="dgh-body">${E(s.beat.text)}</p>
+      return `<article class="dgh-row dgh-open">
+        <div class="dgh-text"><span class="dgh-chip">${E(s.beat.badgeText || 'THE PIT')}</span>
+          <p class="dgh-body">${E(s.beat.text)}</p></div>
       </article>`;
     }
     if (s.kind === 'cut') {
@@ -156,201 +138,205 @@ export function rpBuildSigDough(ep, actType, u = {}) {
 
     if (s.kind === 'win') {
       const w = breakdown[winner] || {};
-      return `<article class="dgh-card dgh-win">
-        <header class="dgh-hd"><span class="dgh-tag dgh-tag-gold">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</span>
-          <span class="dgh-sub">fullest vault</span></header>
-        <div class="dgh-win-b">
-          <figure class="dgh-win-av">${AV(winner, 72)}</figure>
-          <div><div class="dgh-win-n">${E(winner)}</div>
-            <p class="dgh-body">${E(winner)} banked ${sealed ? MASK : (w.vault ?? 0)} across ${
-  sealed ? MASK : (w.trips || []).length} trips${w.spills ? `, and gave ${w.spills === 1 ? 'one armful' : `${w.spills} armfuls`} back to the pit on the way` : ' without dropping a single coin'}.</p></div>
+      return `<article class="dgh-row dgh-win">
+        <div class="dgh-who"><figure>${AV(winner, 46)}</figure>
+          <b>${E(winner)}</b><em>${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</em></div>
+        <div class="dgh-text">
+          <p class="dgh-body">${E(winner)} banked ${sealed ? MASK : (w.vault ?? 0)} across ${
+  sealed ? MASK : (w.trips || []).length} trips${w.spills ? `, and gave ${w.spills === 1 ? 'one armful' : `${w.spills} armfuls`} back to the pit on the way` : ' without dropping a single coin'}.</p>
+          <p class="dgh-flav">${E(flav(WIN_FLAV, i))}</p>
         </div>
-        <p class="dgh-flav">${E(flav(WIN_FLAV, i))}</p>
+        ${tube(w)}
       </article>`;
     }
     if (s.kind === 'note') {
-      return `<article class="dgh-card dgh-note">
-        <header class="dgh-hd"><span class="dgh-tag dgh-tag-quiet">${E(s.beat.badgeText || '')}</span></header>
-        <p class="dgh-body">${E(s.beat.text)}</p>
+      return `<article class="dgh-row dgh-note">
+        <div class="dgh-text"><span class="dgh-chip is-quiet">${E(s.beat.badgeText || '')}</span>
+          <p class="dgh-body">${E(s.beat.text)}</p></div>
       </article>`;
     }
 
     const bd = breakdown[s.name] || {};
-    return `<article class="dgh-card dgh-run ${bd.threw ? 'is-threw' : ''}">
-      <header class="dgh-hd">
-        <span class="dgh-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
-        <span class="dgh-tag ${bd.threw ? 'dgh-tag-quiet' : ''} ${(bd.spills || 0) >= 2 ? 'dgh-tag-red' : ''}">${
-  sealed ? MASK : E(s.beat.badgeText || '')}</span>
-      </header>
-      <p class="dgh-body">${E(s.beat.text)}</p>
-
-      <div class="dgh-run-b">
-        ${trips(bd.trips || [])}
-        ${vault(bd)}
+    return `<article class="dgh-row dgh-run ${(bd.spills || 0) >= 2 ? 'is-messy' : ''} ${bd.threw ? 'is-threw' : ''}">
+      <div class="dgh-who">
+        <figure>${AV(s.name, 40)}</figure>
+        <b>${E(s.name)}</b>
+        <em>${sealed ? MASK : E(s.beat.badgeText || '')}</em>
       </div>
-
-      <div class="dgh-nums">
-        <span><i>IN THE VAULT</i><b>${sealed ? MASK : (bd.vault ?? 0)}</b></span>
-        <span><i>TRIPS</i><b>${sealed ? MASK : (bd.trips || []).length}</b></span>
-        <span><i>SPILLED</i><b>${sealed ? MASK : (bd.spills ?? 0)}</b></span>
-        <span><i>BIGGEST ARMFUL</i><b>${sealed ? MASK : (bd.bestLoad ?? 0)}</b></span>
-        ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
+      <div class="dgh-text">
+        <p class="dgh-body">${E(s.beat.text)}</p>
+        ${conveyor(bd.trips || [])}
+        <div class="dgh-meta">
+          <span>trips <b>${sealed ? MASK : (bd.trips || []).length}</b></span>
+          <span>spilled <b>${sealed ? MASK : (bd.spills ?? 0)}</b></span>
+          <span>biggest armful <b>${sealed ? MASK : (bd.bestLoad ?? 0)}</b></span>
+          ${bd.haveNot ? '<span>have-not <b>yes</b></span>' : ''}
+        </div>
+        <p class="dgh-flav">${E(flav(RUN_FLAV, i))}</p>
       </div>
-      <p class="dgh-flav">${E(flav(RUN_FLAV, i))}</p>
+      ${tube(bd)}
     </article>`;
   }).join('');
 
+  // The tally is a strip along the BOTTOM, above the controls — a counting
+  // room reads its totals off the bench, not off a column at the side.
+  const tally = sealed ? '' : `<div class="dgh-bench">
+    <span class="dgh-benchk">COUNTED</span>
+    ${shown.length ? shown.map((r, i) => `<span class="dgh-slot ${i === 0 ? 'is-top' : ''}">
+      <i>${E(String(r.name).split(' ')[0])}</i><b>${E(r.vault)}</b></span>`).join('')
+    : '<span class="dgh-benche">nothing counted yet</span>'}
+  </div>`;
+
   const weights = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
 
-  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigdgh">
+  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigcount">
   <style>
-  .sigdgh{--dg-ink:#f8efe1;--dg-dim:#a3907a;--dg-line:rgba(224,180,120,.24);
-    max-width:1100px;margin:0 auto;color:var(--dg-ink);
-    font-family:Inter,system-ui,-apple-system,sans-serif;
-    background:radial-gradient(ellipse at 50% -16%,rgba(224,180,120,.14),transparent 58%),
-      linear-gradient(180deg,#1d1811,#0c0a07 82%);
-    border-radius:12px;padding:16px 14px 0;position:relative;overflow:clip}
-  .dgh-eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3.4px;
-    color:var(--dg-dim);text-align:center}
-  .dgh-title{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30px;letter-spacing:3px;
-    text-align:center;color:#ffe3bd;text-shadow:0 0 20px rgba(224,180,120,.42);margin:3px 0 2px}
-  .dgh-tagline{text-align:center;font-size:11px;letter-spacing:2px;color:var(--dg-dim);margin-bottom:13px}
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  .sigcount{--ct-steel:#c8d4d6;--ct-dim:#6f8386;--ct-line:rgba(99,220,192,.2);--ct-mint:${MINT};
+    --ct-coin:${COIN};
+    max-width:1100px;margin:0 auto;color:var(--ct-steel);font-family:'IBM Plex Mono',ui-monospace,monospace;
+    background:
+      repeating-linear-gradient(180deg,rgba(255,255,255,.022) 0 1px,transparent 1px 4px),
+      linear-gradient(180deg,#16211f,#0a1211 78%);
+    border-radius:12px;padding:0;position:relative;overflow:clip}
 
-  .dgh-what{border:1px solid var(--dg-line);border-radius:10px;padding:10px 12px;margin-bottom:12px;
-    background:rgba(224,180,120,.05)}
-  .dgh-what-h{display:flex;align-items:center;gap:9px;margin-bottom:5px}
-  .dgh-what-c{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:2px;
-    color:${PALETTE};border:1px solid var(--dg-line);border-radius:3px;padding:2px 7px}
-  .dgh-what-h b{font-family:Georgia,serif;font-size:15px;letter-spacing:.6px}
-  .dgh-what-d{font-size:12.5px;line-height:1.6;color:#e0cfb6;margin:0}
-  .dgh-w{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
-  .dgh-w span{display:flex;align-items:center;gap:5px;font-family:ui-monospace,Consolas,monospace;
-    font-size:8px;letter-spacing:1.2px;color:var(--dg-dim)}
-  .dgh-w s{display:block;width:44px;height:3px;border-radius:2px;background:rgba(224,180,120,.16);
-    text-decoration:none}
-  .dgh-w s b{display:block;height:100%;border-radius:2px;background:${PALETTE}}
+  /* strip lighting across the top of the room */
+  .ct-head{position:relative;padding:15px 16px 12px;border-bottom:1px solid var(--ct-line);
+    background:linear-gradient(180deg,rgba(99,220,192,.1),transparent)}
+  .ct-head::before{content:'';position:absolute;left:8%;right:8%;top:0;height:2px;background:var(--ct-mint);
+    box-shadow:0 0 22px 3px rgba(99,220,192,.55)}
+  .ct-week{font-size:9px;letter-spacing:3px;color:var(--ct-dim)}
+  .ct-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:35px;line-height:1;
+    letter-spacing:2px;text-transform:uppercase;color:#e9f7f4;margin:3px 0 3px}
+  .ct-sub{font-size:9px;letter-spacing:2.6px;color:var(--ct-mint)}
 
-  .dgh-strip{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:10px;padding:9px 11px;margin-bottom:12px;
-    border:1px solid var(--dg-line);border-radius:10px;background:rgba(11,9,6,.62)}
-  .dgh-k{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;
-    color:var(--dg-dim)}
-  .dgh-v{display:block;margin-top:3px}
-  .dgh-v b{font-family:Georgia,serif;font-size:18px;color:#ffe3bd}
-  .dgh-v i{font-style:normal;font-size:10px;color:var(--dg-dim);margin-left:4px}
-  .dgh-v-txt{font-size:12px;color:${PALETTE};letter-spacing:1.2px}
-  .dgh-strip-r{border-left:1px solid var(--dg-line);padding-left:11px}
+  .ct-sealed{margin-top:9px;display:inline-block;font-size:9px;letter-spacing:2.6px;color:#0a1211;
+    background:var(--ct-mint);padding:4px 12px;border-radius:2px}
+  .ct-body{padding:13px 16px 0}
+  .dgh-what{border-left:3px solid var(--ct-mint);padding:8px 0 8px 11px;margin-bottom:13px}
+  .dgh-what b{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;
+    text-transform:uppercase;color:#e9f7f4}
+  .dgh-what-c{font-size:8px;letter-spacing:2px;color:var(--ct-mint);margin-right:8px}
+  .dgh-what-d{font-size:12px;line-height:1.62;color:#a9bcbd;margin:5px 0 0;font-family:Inter,system-ui,sans-serif}
+  .dgh-w{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+  .dgh-w span{font-size:8px;letter-spacing:1px;color:var(--ct-dim);display:flex;align-items:center;gap:5px}
+  .dgh-w s{display:block;width:40px;height:2px;background:rgba(99,220,192,.18);text-decoration:none}
+  .dgh-w s b{display:block;height:100%;background:var(--ct-mint)}
 
-  .dgh-grid{display:grid;grid-template-columns:1fr 236px;gap:12px;align-items:start}
-  .dgh-grid-sealed{display:block}
-  .dgh-side{position:sticky;top:56px;border:1px solid var(--dg-line);border-radius:10px;padding:9px;
-    background:rgba(11,9,6,.74)}
-  .dgh-side-h{margin-bottom:7px}
-  .dgh-side-row{display:grid;grid-template-columns:22px 24px 1fr auto;align-items:center;gap:7px;
-    padding:4px 5px;border-radius:6px;font-size:11.5px}
-  .dgh-side-row.is-lead{background:rgba(224,180,120,.13)}
-  .dgh-side-p{font-family:ui-monospace,Consolas,monospace;font-size:9px;color:var(--dg-dim)}
-  .dgh-side-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .dgh-side-t{font-family:Georgia,serif;color:#ffe3bd}
-  .dgh-side-e{font-size:11px;color:var(--dg-dim);margin:0}
+  /* every run is a full-width ledger row: who | conveyor | vault tube */
+  .dgh-row{display:grid;grid-template-columns:132px 1fr 46px;gap:13px;align-items:stretch;
+    padding:11px 12px;margin-bottom:8px;border:1px solid var(--ct-line);border-radius:3px;
+    background:linear-gradient(90deg,rgba(99,220,192,.06),rgba(10,18,17,.5) 40%);
+    animation:ctSlide .3s ease both}
+  @keyframes ctSlide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  .dgh-row.is-locked{grid-template-columns:1fr;justify-items:center;opacity:.16;animation:none;
+    background:none;border-style:dashed}
+  .dgh-lock{letter-spacing:5px;color:var(--ct-dim)}
+  .dgh-row.is-messy{border-color:rgba(240,120,90,.4)}
+  .dgh-row.is-threw{opacity:.72}
+  .dgh-open,.dgh-note{grid-template-columns:1fr}
 
-  .dgh-card{border:1px solid var(--dg-line);border-radius:10px;padding:11px 12px;margin-bottom:9px;
-    background:linear-gradient(180deg,rgba(44,34,20,.74),rgba(10,8,5,.82));animation:dghIn .3s ease both}
-  @keyframes dghIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-  .dgh-card.is-locked{opacity:.12;text-align:center;padding:7px;animation:none;background:none}
-  .dgh-lock{font-family:ui-monospace,Consolas,monospace;letter-spacing:5px;color:var(--dg-dim)}
-  .dgh-card.is-threw{opacity:.72;border-style:dashed}
-  .dgh-hd{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:7px}
-  .dgh-runner{display:flex;align-items:center;gap:8px}
-  .dgh-runner b{font-size:13px;letter-spacing:.6px}
-  .dgh-tag{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;color:${PALETTE};
-    border:1px solid var(--dg-line);background:rgba(224,180,120,.1);padding:2px 8px;border-radius:3px}
-  .dgh-tag-gold{color:#ffd970;border-color:rgba(255,217,112,.45);background:rgba(255,217,112,.1)}
-  .dgh-tag-red{color:#ff8a72;border-color:rgba(230,90,70,.5);background:rgba(230,90,70,.12)}
-  .dgh-tag-quiet{color:var(--dg-dim);background:none}
-  .dgh-sub{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.4px;color:var(--dg-dim)}
-  .dgh-body{font-size:13.5px;line-height:1.65;margin:0}
-  .dgh-flav{font-size:10.5px;color:var(--dg-dim);font-style:italic;margin:7px 0 0}
+  .dgh-who{display:flex;flex-direction:column;gap:4px;justify-content:center;
+    border-right:1px solid var(--ct-line);padding-right:11px}
+  .dgh-who .bb-av{border-radius:3px;border:1px solid rgba(99,220,192,.3)}
+  .dgh-who b{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.6px;
+    color:#e9f7f4}
+  .dgh-who em{font-style:normal;font-size:7.5px;letter-spacing:1.6px;color:var(--ct-mint)}
+  .dgh-text{min-width:0}
+  .dgh-chip{display:inline-block;font-size:8px;letter-spacing:2px;color:var(--ct-mint);
+    border:1px solid var(--ct-line);padding:2px 7px;margin-bottom:6px}
+  .dgh-chip.is-quiet{color:var(--ct-dim)}
+  .dgh-body{font-family:Inter,system-ui,sans-serif;font-size:13.5px;line-height:1.62;margin:0;color:#dae9e8}
+  .dgh-flav{font-size:9.5px;color:var(--ct-dim);margin:7px 0 0}
 
-  /* trips on the left at the length of the armful, vault filling on the right */
-  .dgh-run-b{display:flex;gap:12px;align-items:stretch;margin:11px 0 8px;padding:10px 12px;
-    border-radius:9px;background:rgba(7,6,4,.6);border:1px solid rgba(224,180,120,.13)}
-  .dgh-trips{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-  .dgh-trip{display:grid;grid-template-columns:14px 1fr 58px;gap:8px;align-items:center}
-  .dgh-tn{font-family:ui-monospace,Consolas,monospace;font-size:8px;color:var(--dg-dim)}
-  .dgh-bar{height:9px;border-radius:5px;background:rgba(224,180,120,.1);overflow:hidden}
-  .dgh-bar b{display:block;height:100%;border-radius:5px;
-    background:linear-gradient(90deg,rgba(224,180,120,.55),${PALETTE})}
-  .dgh-load{font-family:ui-monospace,Consolas,monospace;font-size:9px;color:#ffe3bd;text-align:right}
-  .dgh-trip.is-spilled .dgh-bar b{background:repeating-linear-gradient(45deg,
-    rgba(230,90,70,.5) 0 4px,rgba(230,90,70,.2) 4px 8px)}
-  .dgh-trip.is-spilled .dgh-load{color:#ff8a72;font-size:8px;letter-spacing:1px}
-  .dgh-trip.is-spilled{position:relative}
-  .dgh-trip.is-spilled::after{content:'';position:absolute;left:22px;right:62px;top:50%;height:1px;
-    background:rgba(230,90,70,.75)}
+  /* the conveyor of armfuls */
+  .dgh-belt{display:flex;gap:4px;margin:9px 0 7px;padding:7px 8px;border-radius:3px;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 8px,transparent 8px 16px),
+      rgba(6,12,11,.55);border:1px solid rgba(99,220,192,.12)}
+  .dgh-trip{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:5px 2px;border-radius:2px;background:rgba(99,220,192,.07);min-width:0}
+  .dgh-stack{display:flex;gap:1px;align-items:flex-end;height:14px}
+  .dgh-stack i{width:5px;height:5px;border-radius:50%;background:var(--ct-coin);
+    box-shadow:0 0 5px rgba(240,192,74,.5)}
+  .dgh-tlab{font-size:8px;letter-spacing:.6px;color:#cfe0df;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:100%}
+  .dgh-trip.is-spilled{background:rgba(240,120,90,.12)}
+  .dgh-trip.is-spilled .dgh-stack i{background:#6f5a3a;box-shadow:none}
+  .dgh-trip.is-spilled .dgh-tlab{color:#ff9b7f}
+  .dgh-trip.is-spilled::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:1px;
+    background:#ff7b5c}
 
-  .dgh-vault{position:relative;width:56px;flex:none;border-radius:7px;overflow:hidden;
-    border:1px solid rgba(224,180,120,.3);background:rgba(10,8,5,.7);
-    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px 0 5px;
-    min-height:74px}
-  .dgh-vault-fill{position:absolute;left:0;right:0;bottom:0;
-    background:linear-gradient(180deg,${PALETTE},rgba(224,180,120,.35));transition:height .5s ease}
-  .dgh-vault-n{position:relative;font-family:Georgia,serif;font-size:16px;color:#2a1f10;font-weight:700}
-  .dgh-vault-k{position:relative;font-family:ui-monospace,Consolas,monospace;font-size:7px;
-    letter-spacing:1.4px;color:rgba(42,31,16,.75)}
+  .dgh-meta{display:flex;flex-wrap:wrap;gap:13px;font-size:8.5px;letter-spacing:1px;color:var(--ct-dim)}
+  .dgh-meta b{color:#e9f7f4;font-size:11px}
 
-  .dgh-nums{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
-  .dgh-nums span{display:flex;flex-direction:column;gap:2px}
-  .dgh-nums i{font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
-    letter-spacing:1.4px;color:var(--dg-dim)}
-  .dgh-nums b{font-family:Georgia,serif;font-size:15px;color:#ffe3bd}
+  /* the vault tube at the end of the row */
+  .dgh-tube{position:relative;border-radius:3px;overflow:hidden;border:1px solid rgba(240,192,74,.35);
+    background:rgba(6,12,11,.7);display:flex;align-items:flex-end;justify-content:center;min-height:64px}
+  .dgh-fill{position:absolute;left:0;right:0;bottom:0;transition:height .55s ease;
+    background:linear-gradient(180deg,var(--ct-coin),rgba(240,192,74,.35))}
+  .dgh-tube b{position:relative;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;
+    color:#241c07;padding-bottom:3px}
 
-  .dgh-win{border-color:rgba(255,217,112,.45);background:linear-gradient(180deg,rgba(62,50,16,.46),rgba(10,8,5,.86))}
-  .dgh-win-b{display:flex;gap:13px;align-items:flex-start}
-  .dgh-win-av .bb-av{border-radius:9px;border:2px solid rgba(255,217,112,.6)}
-  .dgh-win-n{font-family:Georgia,serif;font-size:18px;letter-spacing:1.4px;color:#ffd970;margin-bottom:4px}
+  .dgh-win{border-color:rgba(240,192,74,.5);
+    background:linear-gradient(90deg,rgba(240,192,74,.12),rgba(10,18,17,.55) 45%)}
+  .dgh-win .dgh-who em{color:var(--ct-coin)}
 
-  .dgh-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:8px;justify-content:center;align-items:center;
-    padding:10px;margin:6px -14px 0;background:linear-gradient(180deg,rgba(12,10,7,0),rgba(12,10,7,.96) 40%)}
-  .dgh-count,.dgh-done{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:2px;
-    color:var(--dg-dim)}
-  .dgh-done{color:${PALETTE}}
+  /* totals along the bench, not down a sidebar */
+  .dgh-bench{display:flex;align-items:center;gap:7px;overflow-x:auto;margin:12px 0 0;padding:8px 10px;
+    border-top:1px solid var(--ct-line);background:rgba(99,220,192,.05)}
+  .dgh-benchk{font-size:8px;letter-spacing:2px;color:var(--ct-dim);flex:none}
+  .dgh-slot{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 9px;
+    border-radius:2px;background:rgba(6,12,11,.6);border:1px solid var(--ct-line)}
+  .dgh-slot i{font-style:normal;font-size:8px;color:var(--ct-dim)}
+  .dgh-slot b{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#e9f7f4}
+  .dgh-slot.is-top{border-color:var(--ct-coin)}
+  .dgh-slot.is-top b{color:var(--ct-coin)}
+  .dgh-benche{font-size:9px;color:var(--ct-dim)}
 
-  ${sealCss('dgh', PALETTE)}
-  @media(max-width:860px){.dgh-grid{grid-template-columns:1fr}.dgh-side{position:static;order:-1}}
+  .dgh-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:9px;justify-content:center;align-items:center;
+    padding:11px;background:linear-gradient(180deg,rgba(10,18,17,0),rgba(10,18,17,.97) 45%)}
+  .dgh-count,.dgh-done{font-size:9px;letter-spacing:2px;color:var(--ct-dim)}
+  .dgh-done{color:var(--ct-mint)}
+
+  ${sealCss('dgh', MINT)}
   @media(max-width:700px){
-    .dgh-strip{grid-template-columns:1fr 1fr}
-    .dgh-strip-r{grid-column:1/-1;border-left:0;border-top:1px solid var(--dg-line);padding:6px 0 0}
-    .dgh-title{font-size:22px}
+    .ct-name{font-size:25px}
+    .dgh-row{grid-template-columns:1fr;gap:9px}
+    .dgh-who{flex-direction:row;align-items:center;border-right:0;padding-right:0;
+      border-bottom:1px solid var(--ct-line);padding-bottom:7px}
+    .dgh-tube{min-height:34px;flex-direction:row}
   }
   @media(prefers-reduced-motion:reduce){
-    .sigdgh *,.sigdgh *::before,.sigdgh *::after{animation:none!important;transition:none!important}
+    .sigcount *,.sigcount *::before,.sigcount *::after{animation:none!important;transition:none!important}
   }
   </style>
 
-  <div class="dgh-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
-  <div class="dgh-title">${E((comp.name || "ROLLIN' IN THE DOUGH").toUpperCase())}</div>
-  <div class="dgh-tagline">wade &middot; carry it in your arms &middot; climb the wall anyway</div>
-
-  <div class="dgh-what">
-    <div class="dgh-what-h"><span class="dgh-what-c">${E(cat.label)}</span><b>${E(comp.name || "Rollin' in the Dough")}</b></div>
-    ${comp.desc ? `<p class="dgh-what-d">${E(comp.desc)}</p>` : ''}
-    ${weights.length ? `<div class="dgh-w">${weights.map(([k, w]) =>
-    `<span>${E(k)}<s><b style="width:${Math.round(w * 100)}%"></b></s>${Math.round(w * 100)}%</span>`).join('')}</div>` : ''}
-    ${(comp.excluded || []).filter(Boolean).length ? `<p class="dgh-what-d">Sat out: ${
-  (comp.excluded || []).filter(Boolean).map(E).join(', ')}${
-  isHoh && act.outgoingHoh ? ` &middot; ${E(act.outgoingHoh)} cannot defend the room` : ''}</p>` : ''}
+  <div class="ct-head">
+    <div class="ct-week">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
+    <div class="ct-name">${E(comp.name || "Rollin' in the Dough")}</div>
+    <div class="ct-sub">WADE &middot; CARRY IT IN YOUR ARMS &middot; CLIMB THE WALL ANYWAY</div>
+    ${sealed ? `<div class="ct-sealed">RESULT SEALED${done ? ' — THE HOUSE NEVER FINDS OUT' : ''}</div>` : ''}
   </div>
 
-  ${strip}
-  <div class="${sealed ? 'dgh-grid-sealed' : 'dgh-grid'}">
-    <div>${cards}</div>
-    ${boardHtml}
+  <div class="ct-body">
+    <div class="dgh-what">
+      <span class="dgh-what-c">${E(cat.label)}</span><b>${E(comp.name || "Rollin' in the Dough")}</b>
+      ${comp.desc ? `<p class="dgh-what-d">${E(comp.desc)}</p>` : ''}
+      ${weights.length ? `<div class="dgh-w">${weights.map(([k, w]) =>
+    `<span>${E(k)}<s><b style="width:${Math.round(w * 100)}%"></b></s>${Math.round(w * 100)}%</span>`).join('')}</div>` : ''}
+      ${(comp.excluded || []).filter(Boolean).length ? `<p class="dgh-what-d">Sat out: ${
+  (comp.excluded || []).filter(Boolean).map(E).join(', ')}${
+  isHoh && act.outgoingHoh ? ` &middot; ${E(act.outgoingHoh)} cannot defend the room` : ''}</p>` : ''}
+    </div>
+
+    ${cards}
+    ${tally}
   </div>
 
   <div class="dgh-ctrl">
     ${done ? `<span class="dgh-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE PIT IS DRAINED.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.dgh-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
-  state.idx < 0 ? 'Into the pit' : 'Next vault'}</button>
+      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.dgh-row:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
+  state.idx < 0 ? 'Open the room' : 'Count the next'}</button>
       <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
     <span class="dgh-count">${Math.min(total, revealed)} / ${total}</span>
   </div>

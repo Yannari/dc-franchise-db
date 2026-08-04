@@ -1181,8 +1181,32 @@ export function simulateBBWeek(options = {}) {
   // the sofas fill, the voice reads it out. A house that finds out a rule
   // mid-ceremony is a house that was never told the rules; the announcement
   // is also information, and information moves people.
+  // ── can the Battle of the Block actually happen this week? ──
+  //
+  // Decided here, before the announcement, because the announcement is a
+  // promise to the house. The Block Buster already owns the third chair and
+  // its own way off the block, and the Battle owns four chairs across two
+  // blocks — they cannot both run, and the mode wins because it is the
+  // season's standing rule rather than one week's card. Working that out at
+  // the HOH act (where it used to be) meant the voice announced two Heads of
+  // Household on a week that then quietly seated one.
+  const botbWanted = !compressed && week.twistState?.rules?.hohCount === 2;
+  week.botbStoodDown = !botbWanted ? null
+    : safetyActive ? 'block-buster'
+      : doubleVote ? 'double-vote'
+        : hohSecret ? 'invisible-hoh'
+          // Two HOHs and four nominees leaves house.length - 6 people who are
+          // neither, and the week still needs somebody left to vote.
+          : house.length < 8 ? 'house-too-small'
+            : null;
+  const botbPossible = botbWanted && !week.botbStoodDown;
+
   if (!compressed && (week.twistState?.announcements || []).length) {
-    const announced = week.twistState.announcements;
+    // A twist that will not run does not get announced. The house is told the
+    // rules it is about to live under, not the ones that were considered.
+    const announced = week.twistState.announcements
+      .filter(a => a?.twist !== 'bb-battle-of-the-block' || botbPossible);
+    if (announced.length) {
     const beats = [];
     const byStat = (stat, pool = house) => [...pool].sort((a, b) => pStats(b)[stat] - pStats(a)[stat]);
     // The sharpest player in the room starts recalculating before the voice
@@ -1221,6 +1245,7 @@ export function simulateBBWeek(options = {}) {
       });
     }
     week.acts.push({ type: 'twist-announcement', announced, socialBeats: beats });
+    }
   }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
@@ -1240,12 +1265,7 @@ export function simulateBBWeek(options = {}) {
   // winning pair dethrones whoever put them up. The co-HOH is decided here so
   // the nomination stretch below can run twice; the battle itself and the
   // dethroning happen after both ceremonies, further down.
-  const botbActive = !compressed
-    && week.twistState?.rules?.hohCount === 2
-    // Two HOHs and four nominees leaves house.length - 6 people who are
-    // neither, and the week needs somebody left to vote.
-    && house.length >= 8
-    && !safetyActive && !doubleVote && !hohSecret;
+  const botbActive = botbPossible;
   const coHoh = botbActive
     ? (hohCompetition.placements.find(n => n !== hoh && hohPlayers.includes(n)) || null)
     : null;

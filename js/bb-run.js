@@ -163,6 +163,13 @@ export function weekToEpisode(week) {
     // The resolved twist contract — which twist changed which rule — so the
     // Debug panel can show hook mutations on replay, not just live.
     twistState: week.twistState || null,
+    // The Battle of the Block's own fields. `botbStoodDown` records WHY a
+    // scheduled battle did not happen, so a week that quietly ran as an
+    // ordinary one can still say so on the debug screen instead of looking
+    // like the twist was never wired up.
+    botbStoodDown: week.botbStoodDown || null,
+    coHoh: week.coHoh || null,
+    dethronedHoh: week.dethronedHoh || null,
     hohSecret: !!week.hohSecret,
     hohGuesses: (week.hohGuesses || []).map(g => ({ ...g })),
     invisibleReveal: week.invisibleReveal ? { ...week.invisibleReveal } : null,

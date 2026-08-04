@@ -210,3 +210,39 @@ describe('the battle narrates the pair result, not the arena one', () => {
     }
   });
 });
+
+describe('Battle of the Block and the Block Buster cannot share a week', () => {
+  // They are structurally incompatible: the Block Buster owns a third chair
+  // and its own way off the block, the Battle owns four chairs across two
+  // blocks. The season mode wins, because it is a standing rule rather than
+  // one week's card. What matters is that standing down is HONEST — the house
+  // must never be told about a rule that then does not arrive.
+  const withMode = (mode) => {
+    house();
+    seasonConfig.bbSafetyMode = mode;
+    return playWeek();
+  };
+
+  it('the Block Buster keeps the block, and the battle stands down', () => {
+    const ep = withMode('block-buster');
+    expect(actOf(ep, 'battle-of-the-block'), 'both twists ran in one week').toBeFalsy();
+    expect(actOf(ep, 'safety'), 'the Block Buster did not run either').toBeTruthy();
+    expect(ep.initialNominees.length, 'the Block Buster needs three chairs').toBe(3);
+    expect(ep.botbStoodDown, 'no reason recorded for standing down').toBe('block-buster');
+  });
+
+  it('and the house is never promised a battle that will not happen', () => {
+    const ep = withMode('block-buster');
+    const announcement = actOf(ep, 'twist-announcement');
+    const announced = (announcement?.announced || []).map(a => a.twist);
+    expect(announced, 'the voice announced two Heads of Household and then seated one')
+      .not.toContain('bb-battle-of-the-block');
+  });
+
+  it('with the mode off, the battle runs as normal', () => {
+    const ep = withMode('off');
+    expect(actOf(ep, 'battle-of-the-block'), 'the battle did not run').toBeTruthy();
+    expect(ep.initialNominees.length).toBe(2);
+    expect(ep.botbStoodDown).toBeFalsy();
+  });
+});

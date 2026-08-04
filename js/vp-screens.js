@@ -20834,6 +20834,25 @@ export function rpBuildBBDebug(ep) {
       html += dbgPanel('TWIST CONTRACT', 'gold', ep.twistState.applied.map(a =>
         dbgNote(`${_bbEsc(a.twist)}: ${_bbEsc(a.rule)} ${a.from !== undefined ? `${_bbEsc(String(a.from))} → ` : ''}${_bbEsc(String(a.to))}`)).join(''));
     }
+    // A scheduled Battle of the Block that never ran, and why. Without this a
+    // week where the Block Buster owns the block reads as a twist that simply
+    // failed to fire.
+    if (ep.botbStoodDown) {
+      const WHY = {
+        'block-buster': 'the Block Buster owns the third chair and its own way off the block; the two cannot share a week',
+        'double-vote': 'the double-vote eviction owns the block this week',
+        'invisible-hoh': 'a sealed Head of Household cannot be two people',
+        'house-too-small': 'two blocks need at least eight houseguests and somebody left to vote',
+      };
+      html += dbgPanel('BATTLE OF THE BLOCK — STOOD DOWN', 'grey',
+        dbgNote(`scheduled, but did not run: ${_bbEsc(WHY[ep.botbStoodDown] || ep.botbStoodDown)}`)
+        + dbgNote('the week ran as an ordinary one, and the house was never told otherwise'));
+    }
+    if (ep.dethronedHoh) {
+      html += dbgPanel('BATTLE OF THE BLOCK', 'gold',
+        dbgPortraitRow(ep.hoh, '<div style="color:#9ef0bd;font-size:11px">kept the room</div>')
+        + dbgPortraitRow(ep.dethronedHoh, '<div style="color:#ff9d9d;font-size:11px">dethroned — no key, no safety, and a vote</div>'));
+    }
     // The invisible week's truth: who it really was, and who guessed right.
     if (ep.hohSecret) {
       html += dbgPanel('INVISIBLE HOH (THE TRUTH)', 'gold',

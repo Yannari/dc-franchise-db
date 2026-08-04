@@ -32,7 +32,7 @@ const THEMED = [
   'bb-sig-hide-and-go-veto', 'bb-sig-bb-comics', 'bb-sig-before-or-after',
   'bb-mental-quiz', 'bb-mental-memory', 'bb-physical-precision',
   'bb-physical-slide', 'bb-mental-knockout',
-  'bb-classic-slingshot', 'bb-classic-rollerball',
+  'bb-classic-slingshot', 'bb-classic-rollerball', 'bb-classic-in-the-balance', 'bb-classic-hanoi',
 ];
 
 describe('themed competition screens render', () => {

@@ -28,6 +28,8 @@ import { rpBuildSigMorphOMatic } from './vp-bb-sig/morph-o-matic.js';
 import { rpBuildSigBowlerina } from './vp-bb-sig/bowlerina.js';
 import { rpBuildSigSlingshot } from './vp-bb-sig/slingshot.js';
 import { rpBuildSigRollerball } from './vp-bb-sig/rollerball.js';
+import { rpBuildSigInTheBalance } from './vp-bb-sig/in-the-balance.js';
+import { rpBuildSigHanoi } from './vp-bb-sig/hanoi.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
@@ -16843,6 +16845,8 @@ const _BB_SIG_BUILDERS = {
   'duel': rpBuildSigKnockout,
   'slingshot': rpBuildSigSlingshot,
   'rollerball': rpBuildSigRollerball,
+  'balance': rpBuildSigInTheBalance,
+  'hanoi': rpBuildSigHanoi,
 };
 
 export function rpBuildBBComp(ep, actType) {

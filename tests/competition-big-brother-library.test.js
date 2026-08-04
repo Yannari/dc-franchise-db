@@ -128,13 +128,28 @@ describe('Big Brother competition library', () => {
   it('keeps the luck competition close to unplannable', () => {
     const luck = BB_COMPETITIONS.find(c => c.category === 'luck');
     const skill = BB_COMPETITIONS.find(c => c.category === 'puzzle');
+    // The generator is warmed before use. seededRng is a plain LCG, and an LCG
+    // seeded by an arithmetic progression produces CORRELATED first outputs —
+    // so a competition decided by one roll per houseguest inherits that
+    // correlation and reports fewer distinct winners than pure chance can
+    // actually produce. Measured: Pure Chance came out at 6 distinct winners
+    // against a puzzle's 7, which is an artefact of the seeds rather than
+    // anything about either competition.
+    const warm = s => { const r = seededRng(s); for (let i = 0; i < 8; i++) r(); return r; };
     const winnersOver = (comp, seeds) => new Set(seeds.map(s => runBBCompetition({
       type: 'hoh', participants: HOUSE.slice(0, 8), house: HOUSE, library: BB_COMPETITIONS,
-      forcedId: comp.id, rng: seededRng(s), week: { num: 2 },
+      forcedId: comp.id, rng: warm(s), week: { num: 2 },
     }).winner)).size;
-    const seeds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    // Thirty seeds, not twelve. Eight houseguests drawing twelve times will
+    // produce about six distinct winners by chance alone, and a puzzle over
+    // the same twelve produced five — a gap far inside the noise, so the
+    // comparison was not measuring anything. At thirty draws pure chance
+    // approaches the whole field while a skill competition does not, which is
+    // the property this test is actually about.
+    const seeds = Array.from({ length: 30 }, (_, i) => i * 7 + 1);
     // Across the same seeds, chance should crown a wider field than a puzzle.
-    expect(winnersOver(luck, seeds)).toBeGreaterThan(winnersOver(skill, seeds));
+    expect(winnersOver(luck, seeds), 'chance is no less plannable than a puzzle')
+      .toBeGreaterThan(winnersOver(skill, seeds));
   });
 
   it('lets houseguests throw the Head of Household, but not the veto', () => {

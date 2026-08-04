@@ -13,6 +13,7 @@ import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, bbTwistsForWeek, BB_TWIST_IDS } from '../js/bb-run.js';
 import { buildBBWeekScreens } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
+import { BB_COMPETITIONS } from '../js/bb-comps/index.js';
 
 const CAST = [['A','mastermind'],['B','social-butterfly'],['C','challenge-beast'],['D','schemer'],
   ['E','hero'],['F','floater'],['G','villain'],['H','loyal-soldier'],['I','underdog'],['J','goat'],
@@ -71,6 +72,18 @@ describe('house twists', () => {
     const veto = (ep.acts || []).find(a => a.type === 'veto');
     const breakdown = veto?.competition?.debug?.scoreBreakdown || {};
     expect(Object.keys(breakdown).length).toBeGreaterThan(0);
+    // Pure Chance is the one competition with nothing for slop to take away:
+    // the ball is identical, the mark is identical, and it is out of their
+    // hands before anything is decided. It declares that, and the contract
+    // respects the declaration rather than demanding a penalty that would be
+    // a lie about the competition.
+    const def = BB_COMPETITIONS.find(c => c.id === veto?.competition?.id);
+    if (def?.pureChance) {
+      for (const row of Object.values(breakdown)) {
+        expect(row.haveNotPenalty || 0, 'a pure chance competition charged for slop').toBe(0);
+      }
+      return;
+    }
     for (const [name, row] of Object.entries(breakdown)) {
       if (ep.haveNots.includes(name)) expect(row.haveNotPenalty).toBeGreaterThan(0);
       else expect(row.haveNotPenalty || 0).toBe(0);

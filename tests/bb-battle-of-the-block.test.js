@@ -319,6 +319,7 @@ describe('a week with two Heads of Household says so', () => {
 // the Battle of the Block, your partner does, and you go to the block anyway.
 import { PAIR_COMPS } from '../js/bb-comps/pairs.js';
 import { aptitude } from '../js/bb-comps/_shared.js';
+import { REIGN_EVENTS } from '../js/bb-events/reign.js';
 
 describe('the Battle is played in pairs, not four solos', () => {
   beforeEach(() => house());
@@ -429,5 +430,96 @@ describe('the Battle is played in pairs, not four solos', () => {
       expect(text, `the transcript never shows ${owner}'s pair total`)
         .toContain(String(pairScores[owner]));
     }
+  });
+
+  it('the memory wall hangs both keys, then takes one down', () => {
+    // Two crowns are on the wall until the battle takes one off. The wall
+    // marked ep.hoh alone, so half the power in the house was never lit.
+    const { ep, battle } = battleOf();
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+    const screens = buildVPScreens(ep);
+
+    // Every houseguest wearing an HOH badge on a given wall.
+    const crowned = html => [...html.matchAll(
+      /<div class="bbw-cell[^"]*is-hoh[^"]*">[\s\S]*?<div class="bbw-name">([^<]+)</g)]
+      .map(m => m[1].trim());
+
+    // House Life screens are numbered in act order, so the nth house act is
+    // the nth bb-house screen.
+    const houseActs = (ep.acts || []).filter(a => a.type === 'house');
+    const wallFor = phase => {
+      const idx = houseActs.findIndex(a => a.phase === phase);
+      if (idx < 0) return null;
+      const screen = screens.find(x => x.id === `bb-house-${idx + 1}`);
+      return screen ? crowned(screen.html) : null;
+    };
+
+    const before = wallFor('post-hoh');
+    if (before) {
+      for (const name of battle.hohs) {
+        expect(before, `${name} held the room and the wall did not say so`).toContain(name);
+      }
+    }
+    // After the battle only one crown is left, and it is the reign that
+    // SURVIVED it — the pair that won took their own nominator's key off.
+    const after = wallFor('campaign') || wallFor('post-veto');
+    if (after) {
+      expect(after, 'a dethroned Head of Household kept their key on the wall')
+        .not.toContain(battle.dethroned);
+      expect(after).toContain(battle.reigning);
+    }
+    // Whatever the wall says, the reigning HOH is the one whose pair LOST.
+    expect(ep.hoh).toBe(battle.reigning);
+    expect(battle.reigning).not.toBe(battle.dethroned);
+  });
+
+  it('house life happens to both Heads of Household, not just one', () => {
+    // ~100 events read ctx.hoh as "the person with the power". Handed one
+    // name, the co-HOH could never be the subject of a reign event, never
+    // called a house meeting, and never had anybody sucking up to them.
+    let sawBoth = 0;
+    for (const seed of [4242, 77, 909, 31]) {
+      house();
+      const ep = playWeek(seed);
+      const battle = actOf(ep, 'battle-of-the-block');
+      if (!battle) continue;
+      const preBattle = (ep.acts || [])
+        .filter(a => a.type === 'house' && a.phase === 'post-hoh')
+        .flatMap(a => a.socialBeats || []);
+      if (!preBattle.length) continue;
+      const text = preBattle.map(b => b.text).join(' ');
+      if (battle.hohs.every(n => text.includes(n))) sawBoth++;
+    }
+    expect(sawBoth, 'no seeded week ever put both Heads of Household in house life')
+      .toBeGreaterThan(0);
+  });
+
+  it('has house events that only a two-crown week can produce', () => {
+    const ids = REIGN_EVENTS.map(e => e.id);
+    expect(ids).toContain('reign-carve-it-up');
+    expect(ids).toContain('reign-works-both-rooms');
+    for (const id of ['reign-carve-it-up', 'reign-works-both-rooms']) {
+      const event = REIGN_EVENTS.find(e => e.id === id);
+      // Silent on an ordinary week: one crown, nothing to divide.
+      expect(event.weight(NAMES, { phase: 'post-hoh', hoh: NAMES[0], week: {} }),
+        `${id} fired on a week with one Head of Household`).toBe(0);
+      // And available when there are two of them still standing.
+      expect(event.weight(NAMES, { phase: 'post-hoh', hohs: [NAMES[0], NAMES[1]], week: {} }),
+        `${id} never fires even with two crowns`).toBeGreaterThan(0);
+      // Once one has been dethroned the window has closed.
+      expect(event.weight(NAMES, { phase: 'post-hoh', hohs: [NAMES[0], NAMES[1]],
+        week: { dethronedHoh: NAMES[0] } }), `${id} fired after the battle`).toBe(0);
+    }
+  });
+
+  it('writes the pair names once, not double-escaped', () => {
+    // `E(a + ' &amp; ' + b)` escapes the ampersand a second time and the
+    // screen reads "Nichelle &amp; Ripper".
+    const { ep } = battleOf();
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+    buildVPScreens(ep);
+    Object.keys(_tvState).forEach(k => { _tvState[k].idx = 999; });
+    const html = buildVPScreens(ep).find(s => s.id === 'bb-botb').html;
+    expect(html, 'an ampersand was escaped twice').not.toMatch(/&amp;amp;/);
   });
 });

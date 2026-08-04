@@ -1121,7 +1121,8 @@ export function simulateBBWeek(options = {}) {
       // and house life was only ever told about one — so half the power in the
       // room was invisible to every event that reacts to holding it.
       coHoh: week.hohSecret ? null : (week.coHoh || null),
-      hohs: week.hohSecret ? [] : [week.hoh, week.coHoh].filter(Boolean),
+      hohs: week.hohSecret ? []
+        : (week.crownedHohs || [week.hoh, week.coHoh]).filter(Boolean),
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
@@ -1311,6 +1312,13 @@ export function simulateBBWeek(options = {}) {
     // Frankie Grande's two dethroned weeks are not in his HOH record. The
     // co-HOH's win is credited only if they survive the battle, below.
     week.coHoh = coHoh;
+    // Who was crowned, as a fact that survives the battle.
+    //
+    // `week.hoh` becomes the reign that SURVIVES, and roughly half the time
+    // that is the co-HOH — at which point `hoh` and `coHoh` name the same
+    // person and the pair of them no longer says who the two crowns were. Any
+    // surface asking "who held power this week" then saw one name twice.
+    week.crownedHohs = [hoh, coHoh];
     if (!hohSecret) setSpotlight({ hoh: coHoh });
   }
   week.hohCompetition = hohCompetition;

@@ -170,6 +170,7 @@ export function weekToEpisode(week) {
     // like the twist was never wired up.
     botbStoodDown: week.botbStoodDown || null,
     coHoh: week.coHoh || null,
+    crownedHohs: week.crownedHohs || null,
     dethronedHoh: week.dethronedHoh || null,
     hohSecret: !!week.hohSecret,
     hohGuesses: (week.hohGuesses || []).map(g => ({ ...g })),

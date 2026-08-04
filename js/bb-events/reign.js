@@ -302,7 +302,137 @@ const theReckoning = {
   },
 };
 
+
+// -- two crowns in one house -------------------------------------------
+//
+// A Battle of the Block week is not one reign twice as big. It is two people
+// holding the same power at the same time, knowing that by the end of the
+// night one of them will have had it taken off them by their own nominees --
+// and that which one is decided by who they choose to put up. Nothing in the
+// library could say that, because every event here reads a single `ctx.hoh`.
+
+/** Both crowns are still on the wall -- the window before the battle. */
+const _twoCrowns = ctx => {
+  const hohs = (ctx?.hohs || []).filter(Boolean);
+  return hohs.length === 2 && !ctx?.week?.dethronedHoh ? hohs : null;
+};
+
+const carveItUp = {
+  id: 'reign-carve-it-up',
+  category: 'house-life',
+  weight(house, ctx) {
+    const hohs = _twoCrowns(ctx);
+    if (!hohs || house.length < 6 || _spent('reign-carve-it-up', ctx)) return 0;
+    // Weighted near the top of the band. Its window is a single act — the
+    // stretch between two crownings and the two ceremonies, which is the only
+    // time in the week the pair of them can still divide the house — and at a
+    // middling weight it lost that one draw to the hundred events that are
+    // eligible every week of the season.
+    return ctx.phase === 'post-hoh' ? band(13) : 0;
+  },
+  fire(house, ctx, api, rng) {
+    const [a, b] = _twoCrowns(ctx);
+    _spend('reign-carve-it-up', ctx);
+    const p = pronouns(a);
+    const between = bond(a, b);
+    // Four names have to come off one house, and neither of them wants to be
+    // the one whose pair walks off the block.
+    const pool = _quiet(_others(house, a, b));
+    const [x, y] = pool;
+    const agree = between + (rng() - 0.5) * 6 > 0;
+
+    const text = agree
+      ? _variant([
+        `${a} and ${b} sit down in one of the two Head of Household rooms and split the house between them like people dividing a bill. ${a} takes ${x}. ${b} takes ${y}. Neither of them says the obvious thing out loud, which is that one of these two ceremonies is going to cost the person who held it.`,
+        `Two crowns, one conversation. ${a} and ${b} work out who is putting up whom before either of them has spoken to a single nominee, and by the time they come downstairs the week is already decided.`,
+        `${a} wants ${x} up. ${b} does not care who goes up as long as it is not ${y}. It takes them four minutes to agree and they are both pleased with themselves in a way that will not survive the night.`,
+        `${b} asks ${a} straight out: "If your two win, I keep the room. You know that." ${a} knows that. They make the deal anyway, because the alternative is making it with somebody else.`,
+      ], ctx, a, b, x)
+      : _variant([
+        `${a} and ${b} cannot agree on a single name. Two Heads of Household, two rooms, and by the end of it they are nominating around each other rather than with each other.`,
+        `${b} refuses to take ${y} up, and ${a} refuses to take anybody instead. The conversation ends with both of them saying "fine" and meaning something much worse than fine.`,
+        `The problem with two Heads of Household is that only one of them survives the night, and ${a} and ${b} both work that out mid-sentence. The rest of the conversation is two people being careful.`,
+        `${a} offers ${b} a straight split. ${b} says ${pronouns(b).sub} will think about it, which ${a} correctly reads as no.`,
+      ], ctx, a, b, y);
+
+    if (agree) {
+      api.addBond(a, b, 1.4);
+      api.remember(a, b, 'carved-the-house-up-with-me', 2, {});
+      api.remember(b, a, 'carved-the-house-up-with-me', 2, {});
+    } else {
+      api.addBond(a, b, -1.6);
+      api.suspicion(a, b, 1.2);
+      api.suspicion(b, a, 1.2);
+      api.popDelta(a, -1);
+    }
+    // Either way, the people whose names were in that room find out.
+    for (const n of [x, y].filter(Boolean)) api.suspicion(n, agree ? a : b, 0.7);
+    void p;
+
+    return { text, players: [a, b, x].filter(Boolean),
+      badgeText: agree ? 'TWO CROWNS, ONE DEAL' : 'TWO CROWNS, NO DEAL',
+      badgeClass: agree ? 'green' : 'red' };
+  },
+};
+
+const worksBothRooms = {
+  id: 'reign-works-both-rooms',
+  category: 'social',
+  weight(house, ctx) {
+    const hohs = _twoCrowns(ctx);
+    if (!hohs || house.length < 7 || _spent('reign-works-both-rooms', ctx)) return 0;
+    return band(6);
+  },
+  fire(house, ctx, api, rng) {
+    const [a, b] = _twoCrowns(ctx);
+    _spend('reign-works-both-rooms', ctx);
+    // Two rooms means two chances to be safe, and somebody always takes both.
+    const worker = _quiet(_others(house, a, b))[0];
+    const p = pronouns(worker);
+    const st = pStats(worker);
+    const they = p.sub === 'they';
+    // Getting away with it is what social play IS, and getting caught is what
+    // makes two crowns dangerous rather than twice as safe.
+    const caught = rng() > Math.min(0.82, 0.28 + st.social * 0.05 + st.strategic * 0.02);
+
+    const text = caught
+      ? _variant([
+        `${worker} tells ${a} that ${b} is the real problem this week, then goes upstairs and tells ${b} exactly the same thing about ${a}. The two of them compare notes within the hour, because they are the only two people in the house who have a reason to talk to each other.`,
+        `Two Head of Household rooms, and ${worker} is in both of them inside twenty minutes saying different things. It works right up until ${a} repeats one of the sentences back to ${b}.`,
+        `${worker} works both rooms and forgets that ${a} and ${b} now have something in common. They find the contradiction without even looking for it.`,
+        `${worker} promises ${a} a vote and promises ${b} the same vote. ${p.Sub} ${they ? 'have' : 'has'} one.`,
+      ], ctx, worker, a, b)
+      : _variant([
+        `${worker} spends the afternoon moving between the two Head of Household rooms, and comes out of both of them safe. Nobody upstairs compares notes, because neither of them wants to admit how much they said.`,
+        `${worker} plays the two rooms off each other beautifully. ${a} thinks ${p.sub} ${they ? 'are' : 'is'} loyal, ${b} thinks the same, and both of them are wrong in a way that costs ${worker} nothing.`,
+        `Two crowns is two chances, and ${worker} takes both of them. By the evening ${p.sub} ${they ? 'have' : 'has'} been told the target by two different people and neither of them knows.`,
+        `${worker} says almost nothing in either room and leaves both of them believing ${p.sub} agreed. It is the best work ${p.sub} ${they ? 'have' : 'has'} done all season.`,
+      ], ctx, worker, a, b);
+
+    if (caught) {
+      api.addBond(worker, a, -1.8);
+      api.addBond(worker, b, -1.8);
+      api.suspicion(a, worker, 2);
+      api.suspicion(b, worker, 2);
+      // Two Heads of Household who agree on nothing else now agree on this.
+      api.addBond(a, b, 0.8);
+      api.setTarget(a, worker, 'played both Head of Household rooms in one afternoon');
+      api.popDelta(worker, -2);
+    } else {
+      api.addBond(worker, a, 0.9);
+      api.addBond(worker, b, 0.9);
+      api.remember(worker, a, 'told-me-what-i-wanted-to-hear', 1, {});
+      api.popDelta(worker, 2);
+    }
+
+    return { text, players: [worker, a, b],
+      badgeText: caught ? 'CAUGHT IN BOTH ROOMS' : 'WORKED BOTH ROOMS',
+      badgeClass: caught ? 'red' : 'gold' };
+  },
+};
+
 export const REIGN_EVENTS = [
   houseMeeting, saysItOutLoud, testsTheAlliance,
   letsTheHouseDecide, apologisesForIt, theReckoning,
+  carveItUp, worksBothRooms,
 ];

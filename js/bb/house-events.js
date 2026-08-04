@@ -397,6 +397,14 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
 
   for (let beat = 0; beat < desired; beat++) {
     const beatCtx = { ...ctx, beat };
+    // A Battle of the Block week seats TWO Heads of Household, and roughly a
+    // hundred events read `ctx.hoh` as "the person with the power". Handing
+    // them one name meant half the power in the house could not be written
+    // about at all: the co-HOH was never the subject of a reign event, never
+    // called the house meeting, never had anybody sucking up to them. Rather
+    // than teach every event to count, the beats alternate between the two —
+    // so across an act both of them are seen holding it.
+    if ((ctx.hohs || []).length === 2) beatCtx.hoh = ctx.hohs[beat % 2];
     const usable = events.filter(event => event?.id && typeof event.weight === 'function' && typeof event.fire === 'function')
       .map(event => ({ event, uses: uses.get(event.id) || 0, weight: Math.max(0, Number(event.weight(house, beatCtx)) || 0) }))
       .filter(entry => entry.weight > 0);

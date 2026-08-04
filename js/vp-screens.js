@@ -16126,7 +16126,24 @@ function _bbfStatus(ep, phase) {
   };
   if (phase === 'pre-hoh') return s;
   set(ep.hoh, 'hoh');
-  if (phase === 'post-hoh') return s;
+  // A Battle of the Block week hangs TWO keys, and the wall showed one. Until
+  // the battle is played both of them are Head of Household — the wall only
+  // stops saying so once one of them has been dethroned, which happens after
+  // the second nomination ceremony. `ep.hoh` is already the reign that
+  // SURVIVED the battle, so from post-noms onward the wall is correct: the
+  // houseguest whose pair won the battle took their own nominator's crown off,
+  // and it is the other one who is still wearing it.
+  if (phase === 'post-hoh') {
+    // Both crowns, from wherever this episode record kept them. `ep.hoh` is
+    // the reign that survived the battle and `ep.coHoh` is often that same
+    // person, so neither field alone recovers the pair — the crowning does.
+    const hohAct = (ep.acts || []).find(a => a.type === 'hoh');
+    const battle = (ep.acts || []).find(a => a.type === 'battle-of-the-block');
+    const crowns = ep.crownedHohs || battle?.hohs
+      || [ep.hoh, ep.coHoh, hohAct?.coHoh];
+    (crowns || []).forEach(n => set(n, 'hoh'));
+    return s;
+  }
   // On a Block Buster week, three houseguests are on the block through the
   // whole campaign stretch — the arena that trims it to two airs minutes
   // before the vote, AFTER this screen. The wall must not know the result.

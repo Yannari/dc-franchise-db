@@ -81,7 +81,7 @@ export function rpBuildBBBattleOfTheBlock(ep, u = {}) {
         // Battle is how you take the crown off the person who nominated you.
         const won = owner === act.dethroned;
         return `<div class="botb-tally-row ${won ? 'is-won' : ''}">
-          <span class="botb-tally-pair">${E((act.pairs?.[owner] || []).join(' &amp; '))}</span>
+          <span class="botb-tally-pair">${(act.pairs?.[owner] || []).map(E).join(' &amp; ')}</span>
           <span class="botb-tally-n">${E(comp.pairScores[owner])}</span></div>`;
       }).join('')}<div class="botb-tally-cap">One track each. Neither half of a pair scored a point of their own.</div></div>` : ''}`
       : '<span class="botb-lock">— —</span>'}

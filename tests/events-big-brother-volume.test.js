@@ -54,12 +54,19 @@ function playSeasons(seeds) {
   // season schedules one — the invisible-* family exists only on sealed
   // weeks, and a sweep that never seals one reports six live events as dead.
   const invisibleSeasons = new Set([44, 88]);
+  // And two run a Battle of the Block, for the same reason: the two-crown
+  // events exist only on a week with two Heads of Household, and a sweep that
+  // never seats a second one reports live events as dead.
+  const botbSeasons = new Set([23, 37, 71, 129, 151, 178]);
   for (const seed of seeds) {
     reset();
     const rng = seededRng(seed);
     const weeks = [];
     let n = 0;
     while ((gs.activePlayers || []).length > 3) {
+      const week = ++n;
+      const extra = invisibleSeasons.has(seed) && week === 2 ? ['bb-invisible-hoh']
+        : botbSeasons.has(seed) && week === 2 ? ['bb-battle-of-the-block'] : [];
       weeks.push(simulateBBWeek({
         rng, houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
         // Have-nots on, because a normal season has them: the default season
@@ -67,10 +74,8 @@ function playSeasons(seeds) {
         // so the events about being one correctly cannot fire — and a sweep
         // for dead code that plays an unrepresentative season reports live
         // events as dead.
-        twists: (invisibleSeasons.has(seed) && ++n === 2)
-          ? ['bb-have-nots', 'bb-invisible-hoh'] : ['bb-have-nots'],
+        twists: ['bb-have-nots', ...extra],
       }));
-      if (!invisibleSeasons.has(seed)) n++;
     }
     for (const act of weeks.flatMap(w => w.acts || [])) {
       for (const b of act.socialBeats || []) fired[b.eventId] = (fired[b.eventId] || 0) + 1;

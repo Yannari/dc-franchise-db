@@ -153,7 +153,14 @@ export const morphOMatic = {
     // Fastest board wins.
     runs.sort((x, y) => x.time - y.time);
 
-    runs.forEach(r => {
+    // Narrated worst card first, building to the winner.
+    //
+    // `runs` stays sorted best-first because the placements are read off it,
+    // but revealing in that order hands the viewer the winning score in the
+    // first card and leaves the rest of the competition as a countdown to
+    // nothing. The generic board already counts up from last place for exactly
+    // this reason.
+    [...runs].reverse().forEach(r => {
       const p = pron(r.name);
       if (r.threw) {
         beats.push(beat(threwSay(THROW_LINES)(r.name), [r.name], 'THREW IT', 'grey'));

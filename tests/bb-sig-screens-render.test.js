@@ -91,3 +91,65 @@ describe('themed competition screens render', () => {
     });
   }
 });
+
+// ── the arena's per-game instruments ──────────────────────────────────
+//
+// A Block Buster game that has no stage of its own falls back to
+// _bbArenaGenericStage, which is a row of podiums — correct, and identical for
+// every game that lands on it. The five new games each have an instrument, and
+// this is what proves it: the generic stage's own class must be absent and the
+// game's own prefix present.
+import { buildVPScreens } from '../js/vp-screens.js';
+import { ARENA_CLASSIC_COMPS } from '../js/bb-comps/index.js';
+
+const ARENA_STAGE_PREFIX = {
+  'bb-arena-perfect-shot': 'pfs-',
+  'bb-arena-niagara-balls': 'ngb-',
+  'bb-arena-knight-moves': 'knm-',
+  'bb-arena-instant-crossword': 'icw-',
+  'bb-arena-on-tilt': 'otl-',
+};
+
+describe('every new Block Buster game draws its own instrument', () => {
+  beforeEach(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.popularity = {};
+    NAMES.forEach(n => {
+      gs.bb.stats[n] = { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
+        timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+    });
+    Object.keys(_tvState).forEach(k => delete _tvState[k]);
+  });
+
+  it('has a stage registered for all five, and none of them share one', () => {
+    const prefixes = Object.values(ARENA_STAGE_PREFIX);
+    expect(new Set(prefixes).size, 'two games share a stage prefix').toBe(prefixes.length);
+    expect(ARENA_CLASSIC_COMPS.map(c => c.id).sort())
+      .toEqual(Object.keys(ARENA_STAGE_PREFIX).sort());
+  });
+
+  for (const [id, prefix] of Object.entries(ARENA_STAGE_PREFIX)) {
+    it(`${id} draws ${prefix}`, () => {
+      const noms = NAMES.slice(0, 3);
+      const result = runBBCompetition({
+        type: 'arena', participants: noms, house: NAMES, library: BB_COMPETITIONS,
+        forcedId: id, rng: seededRng(19), week: { num: 4, houseAtStart: NAMES },
+      });
+      const ep = {
+        num: 4, format: 'big-brother', houseAtStart: NAMES, hoh: 'Bowie',
+        initialNominees: noms, finalNominees: noms.slice(0, 2),
+        acts: [{ type: 'safety', participants: noms, winner: result.winner,
+          competition: result, results: result.placements.map(n => ({ name: n, score: result.scores[n] })),
+          socialBeats: [] }],
+      };
+      const screen = buildVPScreens(ep).find(x => /safety|buster/i.test(x.id));
+      expect(screen, `${id}: no Block Buster screen`).toBeTruthy();
+      expect(screen.html, `${id}: fell back to the generic podiums`).toContain(`${prefix}stage`);
+      // The lanes carry every nominee, not just the winner.
+      for (const n of noms) {
+        expect(screen.html, `${id}: ${n} is not on the stage`).toContain(n);
+      }
+    });
+  }
+});

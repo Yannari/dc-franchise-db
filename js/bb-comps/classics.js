@@ -51,6 +51,15 @@ const round2 = v => Math.round(v * 100) / 100;
 function prepare(participants, context, self, rng) {
   return participants.map(name => {
     const t = throwRead(name, context, rng);
+    // A week of slop and no sleep, charged ONCE, here.
+    //
+    // Each competition used to subtract its own small term inline and none of
+    // them reported it, so the Debug tab showed nothing and the have-not
+    // contract — every have-not in a competition carries a penalty — could not
+    // see a disadvantage that was really being applied. Half of these
+    // competitions had simply never applied one at all.
+    const isHaveNot = (context.haveNots || []).includes(name);
+    const hn = isHaveNot ? 0.05 + rng() * 0.05 : 0;
     return {
       name,
       p: pron(name),
@@ -58,10 +67,10 @@ function prepare(participants, context, self, rng) {
       // The declared profile, read rather than restated — a competition tuned
       // in `stats` and simulated off a second hard-coded copy is a competition
       // whose screen describes something it is not.
-      skill: aptitude(name, self.stats) / 10,
+      skill: aptitude(name, self.stats) / 10 - hn,
       base: round2(aptitude(name, self.stats)),
       threw: t.threw, threwChance: t.chance,
-      haveNot: (context.haveNots || []).includes(name),
+      haveNot: isHaveNot, haveNotPenalty: round2(hn * 10),
       // The night they are having, rolled once.
       //
       // A competition of six shots or five trips adds per-attempt noise that
@@ -83,7 +92,10 @@ function finish(runs, { beats, self, sortBy, scoreOf, breakdownOf, pickThrow, te
   return toResult(entries, {
     beats,
     variant: self.variant,
-    breakdown: Object.fromEntries(runs.map(r => [r.name, breakdownOf(r)])),
+    // Merged in rather than left to each competition to remember: the
+    // have-not fields are a contract every competition owes the Debug tab.
+    breakdown: Object.fromEntries(runs.map(r => [r.name,
+      { ...breakdownOf(r), haveNot: r.haveNot, haveNotPenalty: r.haveNotPenalty }])),
     luck: Object.fromEntries(runs.map(r => [r.name, round2(r.luck)])),
     text: text || beats.map(b => b.text).join(' '),
   });
@@ -140,7 +152,7 @@ const slingshotAim = {
         // houseguest took 65% of forty runs, which is a competition with a
         // winner rather than a competition.
         const aim = clamp(0.22 + r.skill * 0.86 + r.form * 1.5 + groove + noise
-          - (r.threw ? 0.42 : 0) - (r.haveNot ? 0.07 : 0), 0, 1);
+          - (r.threw ? 0.42 : 0), 0, 1);
         const value = aim >= 0.93 ? 10 : aim >= 0.79 ? 6 : aim >= 0.61 ? 4 : aim >= 0.38 ? 2 : 0;
         groove = clamp(groove + (value ? 0.02 : -0.035), -0.08, 0.06);
         if (!value) r.misses++;
@@ -216,7 +228,7 @@ const rollerball = {
       for (let i = 0; i < 8; i++) {
         const noise = (rng() - 0.5) * 0.55;
         r.luck += noise;
-        const control = clamp(0.2 + r.skill * 1.05 + noise - (r.threw ? 0.4 : 0) - (r.haveNot ? 0.06 : 0), 0, 1);
+        const control = clamp(0.2 + r.skill * 1.05 + noise - (r.threw ? 0.4 : 0), 0, 1);
         // Reaching for the deep pocket is what fails. The further into a run
         // somebody is, the more they are reaching.
         const reach = 0.06 + i * 0.045;
@@ -305,7 +317,7 @@ const towerOfHanoi = {
       // Progress up the tower, before the resets are charged against it.
       r.reached = clamp(0.25 + care * 0.95 + (rng() - 0.5) * 0.2, 0, 1);
       r.solved = r.reached >= 0.9 && r.resets <= 2;
-      r.time = round2(240 - care * 95 + r.resets * 26 + (rng() - 0.5) * 20 + (r.haveNot ? 8 : 0));
+      r.time = round2(240 - care * 95 + r.resets * 26 + (rng() - 0.5) * 20);
       r.score = round2((r.solved ? 60 : 0) + r.reached * 40 - r.resets * 4 - (r.solved ? r.time * 0.06 : 0));
     }
 
@@ -365,7 +377,7 @@ const spellingSearch = {
     for (const r of runs) {
       const noise = (rng() - 0.5) * 2.2;
       r.luck += noise;
-      const run = clamp(r.skill + noise / 15 - (r.threw ? 0.35 : 0) - (r.haveNot ? 0.05 : 0), 0.02, 1);
+      const run = clamp(r.skill + noise / 15 - (r.threw ? 0.35 : 0), 0.02, 1);
       r.tiles = Math.max(3, Math.round(5 + run * 9 + (rng() - 0.5) * 2));
       // Having the letters is not having the word. The gap between the two is
       // where this competition is won.
@@ -625,7 +637,7 @@ const rollinInTheDough = {
         r.luck += noise;
         // Carrying more is worth more and drops more. That is the whole choice.
         const load = Math.round(4 + greed * 9 + r.skill * 5 + noise * 4);
-        const grip = clamp(r.skill * 1.1 + r.form * 1.6 + noise - load * 0.045 - (r.haveNot ? 0.06 : 0), 0, 1);
+        const grip = clamp(r.skill * 1.1 + r.form * 1.6 + noise - load * 0.045, 0, 1);
         if (grip < 0.16) { r.spills++; r.trips.push({ trip: i + 1, load, spilled: true }); continue; }
         r.vault += load;
         r.trips.push({ trip: i + 1, load });
@@ -693,7 +705,7 @@ const readySetWoah = {
       for (const r of runs) {
         const noise = (rng() - 0.5) * 0.55;
         r.luck += noise;
-        const discipline = clamp(r.skill * 1.1 + noise - (r.threw ? 0.4 : 0) - (r.haveNot ? 0.05 : 0), 0, 1);
+        const discipline = clamp(r.skill * 1.1 + noise - (r.threw ? 0.4 : 0), 0, 1);
         if (isGo) {
           const gained = round2(2 + discipline * 6);
           r.ground += gained;
@@ -771,7 +783,7 @@ const solveForX = {
       for (let q = 0; q < QUESTIONS; q++) {
         const noise = (rng() - 0.5) * 0.6;
         r.luck += noise;
-        const got = rng() < clamp(0.1 + r.skill * 0.85 + noise * 0.35 - (r.threw ? 0.35 : 0) - (r.haveNot ? 0.04 : 0), 0.02, 0.95);
+        const got = rng() < clamp(0.1 + r.skill * 0.85 + noise * 0.35 - (r.threw ? 0.35 : 0), 0.02, 0.95);
         if (got) r.correct++;
         r.answers.push({ q: q + 1, correct: got });
       }
@@ -851,7 +863,7 @@ const inTheBalance = {
         const noise = (rng() - 0.5) * 0.5;
         r.luck += noise;
         const steady = clamp(r.skill * 1.15 + noise - stage * 0.11
-          - (r.threw ? 0.4 : 0) - (r.haveNot ? 0.07 : 0), 0, 1);
+          - (r.threw ? 0.4 : 0), 0, 1);
         if (rng() > steady) break;
         t += 40 + steady * 55;
         stage++;

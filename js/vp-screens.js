@@ -18007,6 +18007,153 @@ function _bbArenaGenericStage(ctx) {
   </div>`;
 }
 
+
+// ── 14. PERFECT SHOT — three marks, and a miss sends you back in ──
+function _bbArenaPerfectShotStage(ctx) {
+  const MARKS = 3;
+  const rows = _bbArenaRows(ctx).map(row => {
+    // How far out they got, and how many they sank. Both read off the score
+    // rather than invented, so the instrument never contradicts the result.
+    const reach = row.decided ? Math.max(1, Math.ceil((row.pct / 100) * MARKS)) : 0;
+    const sunk = row.decided ? Math.max(1, Math.round((row.pct / 100) * 9)) : 0;
+    const marks = Array.from({ length: MARKS }, (_, m) => `<span class="pfs-mark ${
+      row.decided && m < reach ? 'is-reached' : ''} ${row.decided && m === reach - 1 ? 'is-standing' : ''}">
+      <i></i><b>${m === MARKS - 1 ? 'DEEP' : m === 0 ? 'NEAR' : 'MID'}</b></span>`).join('<span class="pfs-gap"></span>');
+    return `<div class="pfs-lane ${row.cls}">
+      <div class="pfs-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="pfs-sunk">${row.decided ? `${sunk} SUNK` : '— SUNK'}</span>
+        <span class="pfs-score">${row.score}</span></div>
+      <div class="pfs-court">
+        <div class="pfs-marks">${marks}</div>
+        <div class="pfs-hoop" aria-hidden="true"><svg viewBox="0 0 34 22">
+          <rect x="1" y="1" width="4" height="20" rx="1" fill="rgba(210,170,120,.5)"/>
+          <ellipse cx="21" cy="9" rx="11" ry="3.4" fill="none" stroke="rgba(240,120,60,.95)" stroke-width="2"/>
+          <path d="M11 10 L13 18 M21 11 L21 19 M31 10 L29 18" stroke="rgba(250,244,232,.5)" stroke-width="1"/>
+        </svg></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="pfs-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('pfs-', ctx, 'THE FAR MARK')}
+    <div class="pfs-lanes">${rows}</div>
+    ${_bbArenaFoot('pfs-', 'SINK AND STEP BACK', 'MISS AND STEP IN', 'DEEP MARK PAYS')}
+  </div>`;
+}
+
+// ── 15. NIAGARA BALLS — a wall of water between the rack and the cradle ──
+function _bbArenaNiagaraStage(ctx) {
+  const rows = _bbArenaRows(ctx).map(row => {
+    const carried = row.decided ? Math.max(1, Math.round((row.pct / 100) * 8)) : 0;
+    const cradle = Array.from({ length: 8 }, (_, b) =>
+      `<i class="${b < carried ? 'is-in' : ''}"></i>`).join('');
+    // The falls are the course. They run whether anybody is under them or not.
+    const falls = Array.from({ length: 5 }, (_, f) =>
+      `<span class="ngb-fall" style="animation-delay:${(f * 0.24).toFixed(2)}s"></span>`).join('');
+    return `<div class="ngb-lane ${row.cls}">
+      <div class="ngb-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="ngb-carried">${row.decided ? `${carried}/8 ACROSS` : '—/8 ACROSS'}</span>
+        <span class="ngb-score">${row.score}</span></div>
+      <div class="ngb-course">
+        <span class="ngb-beam" aria-hidden="true"></span>
+        <span class="ngb-falls" aria-hidden="true">${falls}</span>
+        <span class="ngb-cradle">${cradle}</span>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="ngb-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('ngb-', ctx, 'UNDER THE FALL')}
+    <div class="ngb-lanes">${rows}</div>
+    ${_bbArenaFoot('ngb-', 'NARROW BEAMS', 'FIVE FALLS', 'DROPPED IS GONE')}
+  </div>`;
+}
+
+// ── 16. KNIGHT MOVES — every square used goes dark behind them ──
+function _bbArenaKnightMovesStage(ctx) {
+  const SQ = 24;
+  const rows = _bbArenaRows(ctx).map(row => {
+    const crossed = row.decided ? Math.max(2, Math.round((row.pct / 100) * SQ)) : 0;
+    // A fixed route per nominee — the board is the same board every night,
+    // only how far along it they got changes.
+    const seed = _bbArenaHash(row.name, 7);
+    const board = Array.from({ length: SQ }, (_, s) => {
+      const dark = (s + Math.floor(s / 8)) % 2 === 0;
+      const used = s < crossed;
+      const here = s === crossed - 1;
+      return `<span class="knm-sq ${dark ? 'is-dark' : ''} ${used ? 'is-used' : ''} ${here ? 'is-here' : ''}">${
+        here ? '<i class="knm-kn">&#9822;</i>' : ''}</span>`;
+    }).join('');
+    return `<div class="knm-lane ${row.cls}">
+      <div class="knm-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="knm-sq-n">${row.decided ? `${crossed}/${SQ} SQUARES` : `—/${SQ} SQUARES`}</span>
+        <span class="knm-score">${row.score}</span></div>
+      <div class="knm-board" data-route="${seed}">${board}</div>
+    </div>`;
+  }).join('');
+  return `<div class="knm-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('knm-', ctx, 'TWO AND ONE ACROSS')}
+    <div class="knm-lanes">${rows}</div>
+    ${_bbArenaFoot('knm-', 'ONE LEGAL MOVE', 'USED SQUARES GO DARK', 'STRANDED MEANS RESTART')}
+  </div>`;
+}
+
+// ── 17. INSTANT CROSSWORD — the house, set as a puzzle ──
+function _bbArenaCrosswordStage(ctx) {
+  const CELLS = 25;
+  const rows = _bbArenaRows(ctx).map(row => {
+    const filled = row.decided ? Math.max(2, Math.round((row.pct / 100) * 17)) : 0;
+    const seed = _bbArenaHash(row.name, 5);
+    let seen = 0;
+    const grid = Array.from({ length: CELLS }, (_, c) => {
+      // A fixed pattern of blocked squares, same grid for everybody.
+      const blocked = (c * 7 + seed) % 11 === 0;
+      if (blocked) return '<span class="icw-cell is-block"></span>';
+      seen++;
+      const on = seen <= filled;
+      return `<span class="icw-cell ${on ? 'is-filled' : ''}">${
+        on ? String.fromCharCode(65 + ((c * 5 + seed) % 26)) : ''}</span>`;
+    }).join('');
+    return `<div class="icw-lane ${row.cls}">
+      <div class="icw-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="icw-filled">${row.decided ? `${filled} SQUARES` : '— SQUARES'}</span>
+        <span class="icw-score">${row.score}</span></div>
+      <div class="icw-grid">${grid}</div>
+    </div>`;
+  }).join('');
+  return `<div class="icw-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('icw-', ctx, 'CLUES FROM THE HOUSE')}
+    <div class="icw-lanes">${rows}</div>
+    ${_bbArenaFoot('icw-', 'EVERY CLUE HAPPENED', 'WRONG MEANS PULL IT APART', 'MOST SQUARES WINS')}
+  </div>`;
+}
+
+// ── 18. ON TILT — the useful nudge and the disastrous one are the same nudge ──
+function _bbArenaOnTiltStage(ctx) {
+  const rows = _bbArenaRows(ctx).map(row => {
+    const balls = row.decided ? Math.max(1, Math.round((row.pct / 100) * 3)) : 0;
+    // The tilt light is the one thing in the arena that can take everything
+    // back, so the instrument shows who is near it.
+    const tilted = row.decided && row.pct < 45;
+    const bumpers = Array.from({ length: 7 }, (_, b) =>
+      `<i class="${row.decided && ((b * 3 + _bbArenaHash(row.name, 5)) % 7) < balls * 2 ? 'is-lit' : ''}"></i>`).join('');
+    const ballRow = Array.from({ length: 3 }, (_, b) =>
+      `<span class="otl-ball ${row.decided && b < balls ? 'is-played' : ''}"></span>`).join('');
+    return `<div class="otl-lane ${row.cls} ${tilted ? 'is-tilted' : ''}">
+      <div class="otl-who">${_bbAvatar(row.name, 32)}<b>${_bbEsc(row.name)}</b>
+        <span class="otl-balls">${ballRow}</span>
+        <span class="otl-score">${row.score}</span></div>
+      <div class="otl-table">
+        <span class="otl-bumpers">${bumpers}</span>
+        <span class="otl-tilt ${tilted ? 'is-on' : ''}">TILT</span>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="otl-stage ${ctx.savedShown ? 'is-decided' : ''}">
+    ${_bbArenaStrip('otl-', ctx, 'THREE BALLS EACH')}
+    <div class="otl-lanes">${rows}</div>
+    ${_bbArenaFoot('otl-', 'NUDGE IT', 'DO NOT LEAN ON IT', 'NO EXTRA BALL')}
+  </div>`;
+}
+
 const _BB_ARENA_STAGES = {
   'bb-arena-flash-wall': _bbArenaFlashWallStage,
   'bb-arena-house-of-cards': _bbArenaHouseOfCardsStage,
@@ -18021,6 +18168,11 @@ const _BB_ARENA_STAGES = {
   'bb-arena-white-knuckle': _bbArenaWhiteKnuckleStage,
   'bb-arena-spin-cycle': _bbArenaSpinCycleStage,
   'bb-arena-chain-reaction': _bbArenaChainReactionStage,
+  'bb-arena-perfect-shot': _bbArenaPerfectShotStage,
+  'bb-arena-niagara-balls': _bbArenaNiagaraStage,
+  'bb-arena-knight-moves': _bbArenaKnightMovesStage,
+  'bb-arena-instant-crossword': _bbArenaCrosswordStage,
+  'bb-arena-on-tilt': _bbArenaOnTiltStage,
 };
 
 /**

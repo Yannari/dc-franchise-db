@@ -1646,6 +1646,234 @@
       .blk-live i, .blk-dig.is-on { animation:none; }
     }
 
+    /* ── pfs- PERFECT SHOT: hardwood and sodium light. Three marks receding
+       from the hoop, and a lane that shows how far back somebody got. ── */
+    .pfs-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(214,150,70,.34);
+                     background:radial-gradient(ellipse at 78% -20%, rgba(255,190,90,.15), transparent 60%),
+                       linear-gradient(180deg,#1a1310,#0e0b09 82%); }
+    .pfs-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .pfs-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .pfs-live      { display:inline-flex; align-items:center; gap:5px; color:#ffc06a;
+                     border:1px solid rgba(255,190,90,.5); border-radius:12px; padding:2px 9px; }
+    .pfs-live i    { width:6px; height:6px; border-radius:50%; background:#ffbe5a;
+                     animation:pfsBulb 1.5s ease-in-out infinite; }
+    .pfs-stage.is-decided .pfs-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .pfs-stage.is-decided .pfs-live i { background:#3fb950; animation:none; }
+    @keyframes pfsBulb { 50% { opacity:.28; } }
+    .pfs-title     { color:#f2cd95; }
+    .pfs-clock     { margin-left:auto; color:#9b8570; }
+    .pfs-clock b   { color:#ffc06a; font-size:12px; letter-spacing:2px; }
+    .pfs-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .pfs-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(255,190,90,.18); background:rgba(255,190,90,.045);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .pfs-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.32); background:rgba(60,24,18,.34); }
+    .pfs-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .pfs-who       { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .pfs-who b     { font-size:12px; color:#f8eee0; }
+    .pfs-sunk      { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#f2cd95; }
+    .pfs-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#f8eee0;
+                     min-width:38px; text-align:right; }
+    .pfs-court     { display:flex; align-items:center; gap:10px; }
+    .pfs-marks     { display:flex; align-items:center; flex:1; min-width:0; }
+    .pfs-gap       { flex:1; height:1px; background:repeating-linear-gradient(90deg,
+                       rgba(255,190,90,.3) 0 5px, transparent 5px 11px); }
+    .pfs-mark      { display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .pfs-mark i    { width:13px; height:13px; border-radius:50%; box-sizing:border-box;
+                     border:2px solid rgba(255,190,90,.32); transition:background .3s, border-color .3s; }
+    .pfs-mark b    { font-family:ui-monospace,Consolas,monospace; font-size:7px; letter-spacing:1.2px;
+                     color:#8b7460; }
+    .pfs-mark.is-reached i  { background:rgba(255,190,90,.55); border-color:#ffbe5a; }
+    .pfs-mark.is-standing i { background:#ffbe5a; box-shadow:0 0 12px rgba(255,190,90,.7); }
+    .pfs-mark.is-reached b  { color:#f2cd95; }
+    .pfs-hoop svg  { width:34px; height:22px; display:block; }
+    @media (prefers-reduced-motion: reduce) { .pfs-live i { animation:none; } }
+
+    /* ── ngb- NIAGARA BALLS: spray and cold light. A beam, five falls running
+       whether anybody is under them or not, and a cradle that fills. ── */
+    .ngb-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(90,200,220,.32);
+                     background:radial-gradient(ellipse at 50% -25%, rgba(120,220,235,.15), transparent 62%),
+                       linear-gradient(180deg,#0b1a1f,#071115 82%); }
+    .ngb-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .ngb-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .ngb-live      { display:inline-flex; align-items:center; gap:5px; color:#79dced;
+                     border:1px solid rgba(120,220,235,.45); border-radius:12px; padding:2px 9px; }
+    .ngb-live i    { width:6px; height:6px; border-radius:50%; background:#79dced;
+                     animation:ngbBulb 1.5s ease-in-out infinite; }
+    .ngb-stage.is-decided .ngb-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .ngb-stage.is-decided .ngb-live i { background:#3fb950; animation:none; }
+    @keyframes ngbBulb { 50% { opacity:.3; } }
+    .ngb-title     { color:#a8e8f3; }
+    .ngb-clock     { margin-left:auto; color:#6f8f96; }
+    .ngb-clock b   { color:#79dced; font-size:12px; letter-spacing:2px; }
+    .ngb-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .ngb-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(120,220,235,.17); background:rgba(120,220,235,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .ngb-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.32); background:rgba(30,40,50,.4); }
+    .ngb-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .ngb-who       { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .ngb-who b     { font-size:12px; color:#eaf8fb; }
+    .ngb-carried   { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#a8e8f3; }
+    .ngb-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#eaf8fb;
+                     min-width:38px; text-align:right; }
+    .ngb-course    { position:relative; display:flex; align-items:center; gap:10px; height:30px; }
+    .ngb-beam      { position:absolute; left:0; right:64px; top:19px; height:3px; border-radius:2px;
+                     background:linear-gradient(90deg,rgba(160,190,205,.55),rgba(160,190,205,.2)); }
+    .ngb-falls     { position:relative; display:flex; gap:14px; flex:1; height:30px; padding-left:6px; }
+    .ngb-fall      { width:3px; height:100%; border-radius:2px; align-self:flex-start;
+                     background:linear-gradient(180deg,rgba(190,240,250,.85),rgba(120,220,235,0));
+                     animation:ngbFall 1.1s linear infinite; }
+    @keyframes ngbFall { 0% { opacity:.25; transform:scaleY(.6); } 45% { opacity:.9; transform:scaleY(1); }
+                         100% { opacity:.25; transform:scaleY(.6); } }
+    .ngb-cradle    { display:flex; gap:3px; padding:4px 6px; border-radius:7px;
+                     border:1px solid rgba(120,220,235,.3); background:rgba(10,26,32,.6); }
+    .ngb-cradle i  { width:7px; height:7px; border-radius:50%; background:rgba(120,220,235,.14);
+                     transition:background .3s, box-shadow .3s; }
+    .ngb-cradle i.is-in { background:#79dced; box-shadow:0 0 8px rgba(120,220,235,.65); }
+    @media (prefers-reduced-motion: reduce) { .ngb-live i, .ngb-fall { animation:none; } }
+
+    /* ── knm- KNIGHT MOVES: ivory and graphite. A board that burns out behind
+       whoever is crossing it. ── */
+    .knm-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(200,196,186,.28);
+                     background:linear-gradient(180deg,#16171a,#0d0e10 84%); }
+    .knm-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .knm-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .knm-live      { display:inline-flex; align-items:center; gap:5px; color:#dcd8ce;
+                     border:1px solid rgba(200,196,186,.42); border-radius:12px; padding:2px 9px; }
+    .knm-live i    { width:6px; height:6px; border-radius:50%; background:#dcd8ce;
+                     animation:knmBulb 1.6s ease-in-out infinite; }
+    .knm-stage.is-decided .knm-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .knm-stage.is-decided .knm-live i { background:#3fb950; animation:none; }
+    @keyframes knmBulb { 50% { opacity:.3; } }
+    .knm-title     { color:#e8e4da; }
+    .knm-clock     { margin-left:auto; color:#8b8880; }
+    .knm-clock b   { color:#dcd8ce; font-size:12px; letter-spacing:2px; }
+    .knm-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .knm-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(200,196,186,.15); background:rgba(200,196,186,.04);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .knm-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.3); background:rgba(40,26,26,.36); }
+    .knm-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .knm-who       { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .knm-who b     { font-size:12px; color:#f2efe7; }
+    .knm-sq-n      { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#c9c5bb; }
+    .knm-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#f2efe7;
+                     min-width:38px; text-align:right; }
+    .knm-board     { display:grid; grid-template-columns:repeat(8,1fr); gap:2px; max-width:100%; }
+    .knm-sq        { aspect-ratio:1; border-radius:2px; background:rgba(232,228,218,.13);
+                     display:flex; align-items:center; justify-content:center;
+                     transition:background .3s, opacity .3s; }
+    .knm-sq.is-dark  { background:rgba(232,228,218,.05); }
+    .knm-sq.is-used  { background:rgba(20,20,22,.92); }
+    .knm-sq.is-here  { background:rgba(232,228,218,.9); }
+    .knm-kn        { font-style:normal; font-size:11px; line-height:1; color:#16171a; }
+    @media (prefers-reduced-motion: reduce) { .knm-live i { animation:none; } }
+
+    /* ── icw- INSTANT CROSSWORD: newsprint. Black squares, filled letters, and
+       a grid that has to be pulled apart when an answer is wrong. ── */
+    .icw-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(224,214,190,.3);
+                     background:linear-gradient(180deg,#1b1a16,#100f0d 84%); }
+    .icw-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .icw-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .icw-live      { display:inline-flex; align-items:center; gap:5px; color:#e6dcc0;
+                     border:1px solid rgba(224,214,190,.44); border-radius:12px; padding:2px 9px; }
+    .icw-live i    { width:6px; height:6px; border-radius:50%; background:#e6dcc0;
+                     animation:icwBulb 1.6s ease-in-out infinite; }
+    .icw-stage.is-decided .icw-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .icw-stage.is-decided .icw-live i { background:#3fb950; animation:none; }
+    @keyframes icwBulb { 50% { opacity:.3; } }
+    .icw-title     { color:#efe6cd; }
+    .icw-clock     { margin-left:auto; color:#8f8873; }
+    .icw-clock b   { color:#e6dcc0; font-size:12px; letter-spacing:2px; }
+    .icw-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .icw-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(224,214,190,.16); background:rgba(224,214,190,.04);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .icw-lane.is-out   { opacity:.5; border-color:rgba(248,81,73,.3); background:rgba(44,30,26,.36); }
+    .icw-lane.is-saved { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .icw-who       { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .icw-who b     { font-size:12px; color:#f6f0e2; }
+    .icw-filled    { margin-left:auto; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.4px; color:#efe6cd; }
+    .icw-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#f6f0e2;
+                     min-width:38px; text-align:right; }
+    .icw-grid      { display:grid; grid-template-columns:repeat(13,1fr); gap:2px; max-width:100%; }
+    .icw-cell      { aspect-ratio:1; border-radius:1px; box-sizing:border-box;
+                     border:1px solid rgba(224,214,190,.22); background:rgba(224,214,190,.06);
+                     display:flex; align-items:center; justify-content:center;
+                     font-family:ui-monospace,Consolas,monospace; font-size:8px; color:transparent;
+                     transition:background .3s, color .3s; }
+    .icw-cell.is-block  { background:#0b0a09; border-color:rgba(224,214,190,.12); }
+    .icw-cell.is-filled { background:#efe6cd; color:#16150f; border-color:#efe6cd; }
+    @media (prefers-reduced-motion: reduce) { .icw-live i { animation:none; } }
+
+    /* ── otl- ON TILT: backglass neon. Bumpers light, three balls drain, and
+       the tilt panel takes everything the ball earned. ── */
+    .otl-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;
+                     border:1px solid rgba(230,80,190,.34);
+                     background:radial-gradient(ellipse at 30% -20%, rgba(120,230,240,.14), transparent 58%),
+                       radial-gradient(ellipse at 80% -10%, rgba(230,80,190,.16), transparent 60%),
+                       linear-gradient(180deg,#150a18,#0a060c 84%); }
+    .otl-stage.is-decided { border-color:rgba(126,226,168,.42); }
+    .otl-strip     { display:flex; align-items:center; gap:12px; margin-bottom:12px;
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.6px; }
+    .otl-live      { display:inline-flex; align-items:center; gap:5px; color:#ff7bd5;
+                     border:1px solid rgba(230,80,190,.5); border-radius:12px; padding:2px 9px; }
+    .otl-live i    { width:6px; height:6px; border-radius:50%; background:#ff7bd5;
+                     animation:otlBulb 1s ease-in-out infinite; }
+    .otl-stage.is-decided .otl-live { color:#7ee2a8; border-color:rgba(63,185,80,.5); }
+    .otl-stage.is-decided .otl-live i { background:#3fb950; animation:none; }
+    @keyframes otlBulb { 50% { opacity:.25; } }
+    .otl-title     { color:#8ff0ff; }
+    .otl-clock     { margin-left:auto; color:#9a7d96; }
+    .otl-clock b   { color:#ff7bd5; font-size:12px; letter-spacing:2px; }
+    .otl-lanes     { display:flex; flex-direction:column; gap:9px; }
+    .otl-lane      { padding:8px 10px; border-radius:10px; max-width:100%;
+                     border:1px solid rgba(230,80,190,.2); background:rgba(230,80,190,.05);
+                     transition:opacity .3s, border-color .3s, background .3s; }
+    .otl-lane.is-out    { opacity:.5; border-color:rgba(248,81,73,.32); background:rgba(50,18,34,.4); }
+    .otl-lane.is-saved  { border-color:rgba(126,226,168,.5); background:rgba(63,185,80,.08);
+                     box-shadow:0 0 22px rgba(63,185,80,.14); }
+    .otl-lane.is-tilted { border-color:rgba(248,81,73,.5); }
+    .otl-who       { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+    .otl-who b     { font-size:12px; color:#fbeaf6; }
+    .otl-balls     { margin-left:auto; display:flex; gap:4px; }
+    .otl-ball      { width:9px; height:9px; border-radius:50%; box-sizing:border-box;
+                     border:1px solid rgba(143,240,255,.5); transition:background .3s, box-shadow .3s; }
+    .otl-ball.is-played { background:#8ff0ff; box-shadow:0 0 9px rgba(143,240,255,.7); }
+    .otl-score     { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:#fbeaf6;
+                     min-width:38px; text-align:right; }
+    .otl-table     { display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:8px;
+                     background:rgba(12,6,14,.6); border:1px solid rgba(230,80,190,.16); }
+    .otl-bumpers   { display:flex; gap:7px; flex:1; }
+    .otl-bumpers i { width:11px; height:11px; border-radius:50%; background:rgba(230,80,190,.14);
+                     box-sizing:border-box; border:1px solid rgba(230,80,190,.3);
+                     transition:background .3s, box-shadow .3s; }
+    .otl-bumpers i.is-lit { background:#ff7bd5; box-shadow:0 0 11px rgba(255,123,213,.75); }
+    .otl-tilt      { font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:2.4px;
+                     color:rgba(248,81,73,.3); border:1px solid rgba(248,81,73,.24);
+                     border-radius:4px; padding:2px 8px; }
+    .otl-tilt.is-on { color:#ff6a5f; border-color:#f85149; background:rgba(248,81,73,.14);
+                     animation:otlTilt .5s steps(2) infinite; }
+    @keyframes otlTilt { 50% { opacity:.35; } }
+    @media (prefers-reduced-motion: reduce) { .otl-live i, .otl-tilt.is-on { animation:none; } }
+
     /* ── bls- LAST SHOT: midway crimson and gold. A rail of ten targets per
        nominee and a rack of twelve balls that never restocks. ── */
     .bls-stage     { margin:0 0 16px; padding:14px; border-radius:12px; overflow:hidden;

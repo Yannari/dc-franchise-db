@@ -36,6 +36,7 @@ import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { aptitude, beat, choose, clamp, makePicker, throwRead, toResult, THROW_LINES, vb } from './_shared.js';
 import { bond } from '../bb-events/_read.js';
+import { dangerLevel, TOO_DESPERATE_TO_STOP } from '../bb/strategy.js';
 
 // ── shared plumbing ───────────────────────────────────────────────────
 
@@ -549,13 +550,22 @@ export const pressureCooker = {
         // off the button for a prize is an impulse, and the houseguest who
         // cannot sit with a want is the one who takes it. Strategic pulls the
         // other way — the cost of the room is obvious to anybody counting.
+        // How much trouble they are in, on the model the whole library shares.
+        // It is a multiplier rather than a term because it is not one factor
+        // among several: a houseguest who believes they are going home does
+        // not come off the button for a prize at any price, and the offer is
+        // only interesting to somebody who can afford to say yes.
+        const danger = dangerLevel(mark.name, context);
         const temptation =
           (stat(mark.name, 'boldness') * 0.25
             + (10 - stat(mark.name, 'temperament')) * 0.35
             + (10 - stat(mark.name, 'strategic')) * 0.25
             + mark.drag * 0.15) + prize.pull;
-        const greed = temptation / 14;
-        const takes = rng() < clamp(greed, 0.04, 0.62) && inside.length > 2;
+        const greed = (temptation / 14) * (1 - danger) * (1 - danger);
+        // A hard floor, not a nudge: winning this competition is the escape,
+        // so anybody who needs the escape does not trade it for a prize.
+        const takes = danger < TOO_DESPERATE_TO_STOP
+          && rng() < clamp(greed, 0.04, 0.62) && inside.length > 2;
         if (takes) {
           beats.push(beat(
             `Box ${box} opens on ${prize.label}, and it is offered to ${mark.name} alone. ${p.Sub} ${vb(p, 'looks', 'look')} at it for eleven seconds and then takes ${p.posAdj} thumb off the button to go and get it.`,

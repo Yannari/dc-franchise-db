@@ -21654,13 +21654,13 @@ export function rpBuildBBEvictionInterview(ep) {
         for (const liar of t.liars || []) rows.push(`<div class="biv-truth-row">${_bbAvatar(liar, 24)}<span><strong>${_bbEsc(liar)}</strong> said one name to the house and wrote another in the Diary Room.</span></div>`);
         return `<div class="bbns-card is-key biv-truth">
           <div class="bbns-card-h">${_bbAvatar(iv.host, 30)}<span class="bbns-pill gold">WHAT ${_bbEsc(iv.evictee).toUpperCase()} NEVER SAW</span></div>
-          <div class="bbns-card-b">"Before the goodbyes — there are a couple of things you should know." ${rows.join('')}
+          <div class="bbns-card-b">${iv.hostLines?.truth || '"Before the goodbyes — there are a couple of things you should know."'} ${rows.join('')}
           <div class="biv-truth-react">${t.reaction || ''}</div></div></div>`;
       }
       case 'byes-intro':
         return `<div class="bbns-card is-open">
           <div class="bbns-card-h">${_bbAvatar(iv.host, 30)}<span class="bbns-pill grey">THE GOODBYES</span></div>
-          <div class="bbns-card-b">"Your housemates recorded some messages, in case tonight went the way it went." The monitor comes on, and ${_bbEsc(iv.evictee)} turns to face it.</div></div>`;
+          <div class="bbns-card-b">${iv.hostLines?.goodbyes || '"Your housemates recorded some messages, in case tonight went the way it went."'} The monitor comes on, and ${_bbEsc(iv.evictee)} turns to face it.</div></div>`;
       case 'bye': {
         if (step.tone === 'montage') {
           return `<div class="bbns-card biv-bye is-flat">

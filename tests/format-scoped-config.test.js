@@ -85,7 +85,7 @@ describe('format-scoped setup screen', () => {
   it('gives the house its own options and keeps them out of Total Drama', () => {
     const bb = configScopeFor('big-brother');
     const td = configScopeFor('total-drama');
-    for (const own of ['cfg-bb-interview', 'cfg-bb-havenots']) {
+    for (const own of ['cfg-bb-interview', 'cfg-bb-host', 'cfg-bb-host-style', 'cfg-bb-havenots']) {
       expect(bb.fields).toContain(own);
       expect(td.fields).not.toContain(own);
     }

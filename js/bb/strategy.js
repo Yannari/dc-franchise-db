@@ -814,22 +814,45 @@ export function shouldThrowVeto(name, context = {}) {
   return { throwChance: clamp(blood, 0, 0.5), reason, nerve };
 }
 
-export function gunningFor(name, context = {}, rng = Math.random) {
+/**
+ * How much trouble a houseguest is in, 0..1.
+ *
+ * Two competitions needed this and both had started to guess at it — one with
+ * a flat `inDanger ? -0.1 : 0.06`, which is not a model, it is a coin with the
+ * edges filed off. It matters because it drives the two opposite behaviours a
+ * competition can produce: somebody in danger plays HARDER (gunningFor), and
+ * somebody in danger will not walk off the lane for a prize at any price.
+ *
+ * On the block is most of it, and it is worth most when the competition is the
+ * thing that could save you. Being exposed with nobody to hide behind counts
+ * even off the block.
+ */
+/**
+ * Past this much trouble, a lesser prize is not a decision.
+ *
+ * Both taunting competitions use it as a hard floor rather than another
+ * multiplier, because the behaviour is categorical: somebody who believes
+ * they are going home will not take a letter instead of the win, and no
+ * amount of low temperament makes them. Below it, temptation scales.
+ */
+export const TOO_DESPERATE_TO_STOP = 0.5;
+
+export function dangerLevel(name, context = {}) {
   const nominees = context.nominees || [];
   const house = context.house || [];
-  const stats = pStats(name);
   const onTheBlock = nominees.includes(name);
-
-  // The veto is the only thing that can save a nominee, so it is worth most.
   const stake = onTheBlock ? (context.type === 'veto' || context.type === 'arena' ? 1 : 0.55) : 0;
-
-  // Nobody left to hide behind: exposure counts even when off the block.
   const { enemies = 0, safety = 0 } = typeof shouldThrowHoh === 'function' && house.length
     ? shouldThrowHoh(name, house) : {};
   const exposed = Math.max(0, enemies - safety) / Math.max(4, house.length);
+  return Math.min(1, stake + exposed * 0.8);
+}
 
-  const danger = Math.min(1, stake + exposed * 0.8);
+export function gunningFor(name, context = {}, rng = Math.random) {
+  const stats = pStats(name);
+  const danger = dangerLevel(name, context);
   if (danger <= 0) return { bonus: 0, reason: null };
+  const onTheBlock = (context.nominees || []).includes(name);
 
   // Nerve is what turns fear into a performance.
   const nerve = 0.45 + (stats.boldness / 10) * 0.75 + (stats.temperament / 10) * 0.3;
@@ -840,7 +863,11 @@ export function gunningFor(name, context = {}, rng = Math.random) {
   const bonus = danger * nerve * (0.45 + rng() * 0.45);
   return {
     bonus,
-    reason: onTheBlock ? (stake === 1 ? 'playing for their life' : 'on the block') : 'no cover left',
+    // `stake` now lives inside dangerLevel, so the reason is read from the same
+    // two facts it is derived from rather than a variable that is no longer here.
+    reason: onTheBlock
+      ? ((context.type === 'veto' || context.type === 'arena') ? 'playing for their life' : 'on the block')
+      : 'no cover left',
   };
 }
 

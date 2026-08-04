@@ -134,7 +134,10 @@ describe('BB Roadkill', () => {
     // The rule that is easiest to get wrong: the Head of Household never owned
     // the third chair, so they do not get to refill it either.
     let seen = 0;
-    for (const seed of [...SEEDS, 58, 991, 12, 3003]) {
+    // A wide sweep on purpose: this branch needs the veto winner to choose to
+    // save specifically the third nominee, which is a conjunction, and the
+    // assertion below refuses to pass if no seed produced one.
+    for (const seed of Array.from({ length: 40 }, (_, i) => i * 313 + 7)) {
       house();
       const ep = play(seed);
       const rk = actOf(ep, 'roadkill');

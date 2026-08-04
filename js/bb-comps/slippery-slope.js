@@ -34,6 +34,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { pStats, pronouns } from '../players.js';
+import { dangerLevel, TOO_DESPERATE_TO_STOP } from '../bb/strategy.js';
 import { getBond } from '../bonds.js';
 import { aptitude, beat, toResult, makePicker, throwRead, clamp, THROW_LINES, vb } from './_shared.js';
 
@@ -42,11 +43,53 @@ const pron = name => { try { return pronouns(name) || NEUTRAL; } catch { return 
 const round1 = v => Math.round(v * 10) / 10;
 
 /** What is in the small container this week. No safety — see the header. */
+/**
+ * What is in the small container, and what taking it actually does.
+ *
+ * The prize used to be a line of text and a flat one point of popularity, so
+ * quitting a competition for it was a shrug: nothing about the house was
+ * different afterwards and nothing about the decision was interesting. Each
+ * one now pays out differently in the only currency this game has, which is
+ * what the rest of the house thinks of you:
+ *
+ *   · Something you keep for yourself reads as taking money over the game, and
+ *     the people who were counting on you to win feel it.
+ *   · Something you share buys real goodwill — you fed the house, and walking
+ *     off the lane is forgiven at the table that night.
+ *   · A letter from home is neither. Nobody in that house will hold it against
+ *     anybody, and watching somebody read one changes how they are seen.
+ *
+ * `line` is a bare noun phrase because it is dropped mid-sentence into the
+ * take lines; anything editorial goes in `sting`, which gets its own beat.
+ * The previous copy carried a trailing clause and produced "takes a luxury
+ * budget for the whole house, claimed by one person who has to explain why
+ * they stopped and walks off the lane".
+ */
 const SIDE_PRIZES = [
-  { key: 'cash', label: 'FIVE THOUSAND DOLLARS', line: 'a cash prize nobody in this house is rich enough to sneer at' },
-  { key: 'letter', label: 'A LETTER FROM HOME', line: 'a letter from home, which is the cruellest thing they have ever put in that box' },
-  { key: 'feast', label: 'A NIGHT OFF SLOP', line: 'a proper meal and a night off slop for whoever takes it' },
-  { key: 'shopping', label: 'A LUXURY BUDGET', line: 'a luxury budget for the whole house, claimed by one person who has to explain why they stopped' },
+  {
+    key: 'cash', label: 'FIVE THOUSAND DOLLARS',
+    line: 'five thousand dollars',
+    sting: n => `Nobody in this house is rich enough to sneer at it. Two of them do anyway, once ${n} is out of the room.`,
+    shared: false, pop: -2.5, allies: -0.9, house: 0,
+  },
+  {
+    key: 'letter', label: 'A LETTER FROM HOME',
+    line: 'a letter from home',
+    sting: n => `${n} reads it twice on the lane and once more in the lounge, out loud, and the house is very quiet for it.`,
+    shared: false, pop: 3, allies: 0.3, house: 0.5,
+  },
+  {
+    key: 'feast', label: 'A NIGHT OFF SLOP',
+    line: 'a proper meal and a night off slop',
+    sting: n => `${n} eats it in front of everybody, which is the part the house actually minds.`,
+    shared: false, pop: -1, allies: -0.5, house: -0.2,
+  },
+  {
+    key: 'shopping', label: 'A LUXURY BUDGET FOR THE HOUSE',
+    line: 'a luxury budget for the whole house',
+    sting: n => `It is everybody's, and everybody knows who bought it. ${n} does not have to explain the stopping to a single person.`,
+    shared: true, pop: 2, allies: 0.4, house: 0.9,
+  },
 ];
 
 const OPEN_LINES = [
@@ -73,6 +116,9 @@ const FUMBLE_LINES = [
   (n, p) => `${n} is there. ${p.Sub} ${vb(p, 'reaches', 'reach')} in with an arm that has been carrying a scoop for ten minutes, and the ball squirts out of ${p.posAdj} fingers.`,
   (n, p) => `The ball is right at the top and ${n} cannot hold it. Half the container goes over the side in the attempt.`,
   (n) => `${n} touches it, loses it, and says something the edit will have to cover with a horn.`,
+  (n, p) => `${n} has the ball between two fingers for most of a second. ${p.Sub} ${vb(p, 'does', 'do')} not have it for the rest of the second.`,
+  (n, p) => `${n} goes in too fast, wears the top third of ${p.posAdj} own container, and watches the ball settle back down out of reach.`,
+  (n, p) => `Everybody on the yard sees ${n} get a hand to it. ${p.Sub} ${vb(p, 'comes', 'come')} up holding nothing and does not look at anybody.`,
 ];
 
 const GRIND_LINES = [
@@ -86,6 +132,9 @@ const TAKE_LINES = [
   (n, p, prize, pct) => `${n} looks at ${p.posAdj} own container, sitting at ${pct}%, then at the small one. ${p.Sub} ${vb(p, 'takes', 'take')} ${prize} and walks off the lane while the competition is still running.`,
   (n, p, prize, pct) => `At ${pct}% full and a long way back, ${n} makes the call nobody wants to be seen making, and fills the small container for ${prize}.`,
   (n, p, prize, pct) => `${n} stops. Everybody sees ${p.obj} stop. ${p.Sub} ${vb(p, 'pours', 'pour')} into the small box, takes ${prize}, and is out of the competition by ${p.posAdj} own hand.`,
+  (n, p, prize, pct) => `${n} does the arithmetic at ${pct}% — the lead, the trips left, the slope — and decides it does not come out. The scoop goes into the small container for ${prize}.`,
+  (n, p, prize, pct) => `Nobody talks ${n} out of it, because nobody tries. ${p.Sub} ${vb(p, 'walks', 'walk')} the last scoop to the small box, takes ${prize}, and leaves the lane at ${pct}%.`,
+  (n, p, prize) => `${n} has been beaten since the fourth trip and is the only one who has admitted it. ${prize.charAt(0).toUpperCase()}${prize.slice(1)}, and out.`,
 ];
 
 export const slipperySlope = {
@@ -94,7 +143,12 @@ export const slipperySlope = {
   category: 'physical',
   types: ['veto', 'arena', 'hoh'],
   desc: 'One greased, sloping lane each, a barrel of liquid at the top and a container at the bottom with a ping-pong ball floating in it. Houseguests carry what they can in a scoop, fall over most of the way, and pour in whatever survives. The first to fill their container high enough to pull the ball out wins — but a smaller container in every lane holds a lesser prize for anyone willing to quit the competition to take it.',
-  stats: { physical: 0.30, endurance: 0.26, temperament: 0.18, boldness: 0.14, intuition: 0.12 },
+  // No boldness. It was being counted twice: once here, deciding how well
+  // somebody carries a scoop up a greased slope, and again in the temptation
+  // formula below, deciding whether they walk off for the prize. The second
+  // one is where it belongs — nerve is about the CHOICE, not the climbing —
+  // so its weight is redistributed across the three stats that do the work.
+  stats: { physical: 0.36, endurance: 0.30, temperament: 0.20, intuition: 0.14 },
   weight: () => 1.2,
   simulate(participants, context, api, rng) {
     const beats = [];
@@ -197,22 +251,36 @@ export const slipperySlope = {
           if (p.tookPrize || p === champ) continue;
           const behind = clamp((lead - p.fill) / FULL, 0, 1);
           const s = pStats(p.name);
-          const temptation = behind * 0.55 + (10 - s.boldness) / 10 * 0.16
-            + (p.inDanger ? -0.10 : 0.06) + (p.threw ? 0.25 : 0);
-          if (behind > 0.28 && rng() < temptation * 0.35) {
+          // How much trouble they are in, on the same model the whole library
+          // uses. This is the dominant term, not a flat nudge: somebody who
+          // believes they are going home on Thursday does not walk off a
+          // competition that could save them, and no prize is worth enough to
+          // change that. A flat `inDanger ? -0.1 : 0.06` was letting nominees
+          // stroll off the lane for a letter.
+          const danger = dangerLevel(p.name, context);
+          const nerve = (10 - s.boldness) / 10;          // low nerve stops sooner
+          const temptation = (behind * 0.55 + nerve * 0.22 + (p.threw ? 0.25 : 0) + 0.06)
+            * (1 - danger) * (1 - danger);
+          if (behind > 0.28 && danger < TOO_DESPERATE_TO_STOP && rng() < temptation * 0.35) {
             p.tookPrize = true; p.out = true;
             p.prizeTrip = trip;
             const pr = pron(p.name);
             beats.push(beat(
               take(TAKE_LINES)(p.name, pr, prize.line, Math.round(p.fill)),
               [p.name], 'TOOK THE PRIZE', 'grey'));
-            // A visible surrender. Some of the house respects the honesty and
-            // some of it files the name under "not playing to win".
-            api.popDelta(p.name, -1);
-            api.record(p.name, 'slippery-side-prize', { prize: prize.key, fill: Math.round(p.fill), trip });
+            // What the prize actually buys. A visible surrender is a visible
+            // surrender either way, but the house does not react the same to
+            // somebody who took money and somebody who fed them.
+            beats.push(beat(prize.sting(p.name), [p.name], prize.label, prize.shared ? 'green' : 'grey'));
+            api.popDelta(p.name, prize.pop);
+            api.record(p.name, 'slippery-side-prize',
+              { prize: prize.key, shared: prize.shared, fill: Math.round(p.fill), trip });
             for (const other of live) {
               if (other === p) continue;
-              try { if (getBond(p.name, other.name) >= 3) api.addBond(p.name, other.name, -0.4); } catch { /* no bond, no fallout */ }
+              // Everybody left on a lane feels it a little; the people who were
+              // counting on this person feel it properly.
+              if (prize.house) { try { api.addBond(p.name, other.name, prize.house); } catch { /* no bond */ } }
+              try { if (getBond(p.name, other.name) >= 3) api.addBond(p.name, other.name, prize.allies); } catch { /* no bond, no fallout */ }
             }
             break;   // one defection per trip, so the yard reacts to each one
           }

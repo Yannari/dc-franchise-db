@@ -871,6 +871,8 @@ export function saveConfig() {
     // House options. Read only by the Big Brother engine; harmless defaults on
     // a Total Drama season, which never looks at them.
     bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
+    bbHost:      g('cfg-bb-host')?.value?.trim() || 'Don',
+    bbHostStyle: g('cfg-bb-host-style')?.value || 'balanced',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
@@ -1006,6 +1008,8 @@ export function renderConfig() {
   window.renderSettingOptions?.();
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
   set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
+  set('cfg-bb-host', seasonConfig.bbHost || 'Don');
+  set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
@@ -1290,4 +1294,3 @@ export function renderAllianceList() {
     </div>`;
   }).join('');
 }
-

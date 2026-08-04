@@ -913,6 +913,8 @@ const CONFIG_SCOPE = {
     'cfg-finale-format':     ['total-drama'],  // the house finale is the three-part HOH
     'cfg-finale-assistants': ['total-drama'],
     'cfg-bb-interview':      ['big-brother'],
+    'cfg-bb-host':           ['big-brother'],
+    'cfg-bb-host-style':     ['big-brother'],
     'cfg-bb-havenots':       ['big-brother'],
     'cfg-bb-safety':         ['big-brother'],
     'cfg-bb-safety-stops':   ['big-brother'],

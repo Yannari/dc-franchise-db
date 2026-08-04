@@ -130,9 +130,11 @@ const slingshotAim = {
   name: 'Slingshot Aim', category: 'precision',
   types: ['hoh', 'veto', 'tiebreaker'],
   desc: 'Each houseguest is given a giant slingshot anchored to the lawn and a crate of balls, with a board of scoring rings standing across the yard behind a run of hanging obstacles. They draw the band back themselves, judge the arc over the obstacles and let go, one ball at a time, with the tight centre rings worth several times the outer ones. A ball that clips an obstacle or sails long is gone from the crate and scores nothing, so nobody gets to simply fire until something lands. The highest total after six shots wins.',
-  // Drawing and holding a heavy band is physical; the arc over the obstacles is
-  // spatial judgement; and the last of it is not flinching on the release.
-  stats: { physical: 0.30, intuition: 0.30, temperament: 0.22, mental: 0.18 },
+  // Drawing a heavy band to the same place six times is the competition, so
+  // physical carries it outright; mental is judging the arc over the obstacles
+  // and correcting after each shot; temperament is not flinching on the
+  // release, and intuition is the last small part nobody can coach.
+  stats: { physical: 0.50, mental: 0.35, temperament: 0.10, intuition: 0.05 },
   weight: () => 1.1,
   simulate(participants, context, api, rng) {
     const beats = [];

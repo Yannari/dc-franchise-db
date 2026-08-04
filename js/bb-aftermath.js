@@ -14,7 +14,7 @@
 // is generated from what really happened in the week — who flipped, whether the
 // flip was visible, and who the evictee had already decided to blame.
 
-import { gs, seasonConfig } from './core.js';
+import { gs, seasonConfig, players } from './core.js';
 import { pronouns, pStats } from './players.js';
 import {
   bond, perceived, trusts, grudge, remembers, targetOf, sharesAlliance,
@@ -22,6 +22,71 @@ import {
 } from './bb-events/_read.js';
 
 const _pick = (rng, list) => list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
+
+// Hosts do not play the game, so contestant stats are the wrong vocabulary for
+// them. A small editorial profile controls how they ask, press and release.
+// The name remains independent: a custom host can be warm, incisive, playful
+// or balanced without pretending to have an idol-finding score.
+export const BB_HOST_STYLES = {
+  balanced: { label: 'Balanced', warmth: 2, pressure: 2, humour: 1 },
+  warm:     { label: 'Warm', warmth: 4, pressure: 1, humour: 1 },
+  incisive: { label: 'Incisive', warmth: 1, pressure: 4, humour: 0 },
+  playful:  { label: 'Playful', warmth: 2, pressure: 2, humour: 4 },
+};
+
+function hostStyle() {
+  const key = seasonConfig.bbHostStyle || 'balanced';
+  return BB_HOST_STYLES[key] ? key : 'balanced';
+}
+
+function hostQuestion(style, kind, v, rng) {
+  const pools = {
+    blindside: {
+      balanced: [`"${v.name} — that was a ${v.vote} vote. Did you have any idea?"`, `"When did you first feel that vote moving away from you?"`],
+      warm: [`"${v.name}, take a breath. That was a ${v.vote} vote. How surprised are you right now?"`, `"I know that exit happened quickly. When did you realise you might be in trouble?"`],
+      incisive: [`"${v.name}, you said you had the votes. You lost ${v.vote}. Where did your read fail?"`, `"That was not close. Who lied to you most convincingly?"`],
+      playful: [`"${v.name}, your vote count and the house's vote count were apparently using different maths. What happened?"`, `"That door opened before your face got the memo. How blindsided were you?"`],
+    },
+    close: {
+      balanced: [`"${v.name}, that vote was close. Did you think you had it?"`, `"One vote separated the chairs from the front door. Where did you think it was landing?"`],
+      warm: [`"${v.name}, you came within a vote of staying. How certain did you feel before the result?"`, `"That was painfully close. Did you believe you had survived it?"`],
+      incisive: [`"${v.name}, you needed one more vote. Whose vote did you miscount?"`, `"Close only matters if you know where the missing vote was. Did you?"`],
+      playful: [`"${v.name}, one vote just ruined your evening. Which houseguest owes you an explanation?"`, `"You were one conversation away. Which conversation are you replaying first?"`],
+    },
+    blame: {
+      balanced: ['"Who do you think made this happen?"', '"Whose fingerprints are on this vote?"'],
+      warm: ['"You have had only a few seconds to process it, but who do you believe turned the vote?"', '"Who hurts the most to suspect right now?"'],
+      incisive: ['"Name the person who outplayed you this week."', '"No qualifiers: who sent you out?"'],
+      playful: ['"If I handed you one enormous red marker, whose face are you circling?"', '"Who is getting the first awkward phone call after the season?"'],
+    },
+    regret: {
+      balanced: ['"What would you do differently?"', '"Where did your game actually turn?"'],
+      warm: ['"Be fair to yourself—but if you could replay one decision, which one would it be?"', '"What lesson are you taking out of the house with you?"'],
+      incisive: ['"What was your fatal mistake?"', '"Strip away the bad luck. What did you do wrong?"'],
+      playful: ['"You get one rewind and absolutely no production assistance. Where are you using it?"', '"Which decision is going to make you yell at the television later?"'],
+    },
+    identity: {
+      balanced: ['"What did the house misunderstand about your game?"', '"What part of your game never made it into the room?"'],
+      warm: ['"What do you hope the people still inside understood about you?"', '"What are you proudest of, even tonight?"'],
+      incisive: ['"What is the strongest argument that you deserved to stay?"', '"Were you underestimated—or correctly identified as a threat?"'],
+      playful: ['"Give your game a title. Comedy, tragedy, or an unfinished revenge story?"', '"What will your housemates pretend they miss most tomorrow?"'],
+    },
+  };
+  return _pick(rng, pools[kind]?.[style] || pools[kind]?.balanced || ['"What happened?"']);
+}
+
+function evicteeVoice(name) {
+  const player = players.find(x => x.name === name) || {};
+  const s = pStats(name);
+  const archetype = player.archetype || '';
+  if (isVillainous(name) || ['villain', 'schemer', 'chaos-agent'].includes(archetype)) return 'defiant';
+  if (archetype === 'mastermind' || s.strategic >= 8) return 'analytical';
+  if (archetype === 'social-butterfly' || s.social >= 8) return 'social';
+  if (archetype === 'underdog') return 'underdog';
+  if (archetype === 'hothead' || s.temperament <= 3) return 'volatile';
+  if (isNice(name) || ['hero', 'loyal-soldier'].includes(archetype)) return 'sincere';
+  return 'guarded';
+}
 
 /** Who the evictee walks out believing did it — right or wrong. */
 function readOfTheRoom(evictee, week, house) {
@@ -146,6 +211,9 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   // Drama setting and defaults to Chris, so inheriting it put the wrong man in
   // the interview chair; the house gets its own knob and its own default.
   const host = seasonConfig.bbHost || 'Don';
+  const style = hostStyle();
+  const voice = evicteeVoice(evictee);
+  const stats = pStats(evictee);
   const [top, second] = read.margin;
   const blindsided = (second ?? 0) === 0 || (top - (second ?? 0)) >= Math.max(2, house.length / 3);
 
@@ -158,25 +226,62 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
 
   const questions = [];
 
+  const firstAnswers = blindsided ? {
+    analytical: [
+      `"No. I had a structure in my head and every piece of it was real except the votes. That is a fairly important exception."`,
+      `"I saw the warning signs and explained every one of them away. That is worse than not seeing them."`,
+      `"My count was internally consistent and completely fictional. Somebody did excellent work."`,
+    ],
+    defiant: [
+      `"Blindsided, yes. Beaten? For tonight. Those are different things."`,
+      `"They needed the whole house to do it and half of them still could not look at me. I can live with that."`,
+      `"I hope they enjoy the quiet. I was the only interesting problem they had."`,
+    ],
+    social: [
+      `"I knew the conversations felt wrong. I just thought the relationships underneath them were still real."`,
+      `"The hard part is not the vote. It is realising how many people hugged me after they had decided."`,
+      `"I trusted affection as evidence. In that house, apparently, it is just excellent camouflage."`,
+    ],
+    volatile: [
+      `"I am trying very hard not to answer that while I can still hear them celebrating through the wall."`,
+      `"No. Not even slightly. Give me ten minutes and a less expensive microphone."`,
+      `"Everybody was brave once the vote was anonymous. Fantastic."`,
+    ],
+    underdog: [
+      `"I knew I was climbing every week. I thought I had one more rung."`,
+      `"Part of me expected it all season. That does not make the door feel any lighter."`,
+      `"I survived enough close calls that I started mistaking survival for safety."`,
+    ],
+    sincere: [
+      `"No. I believed people I cared about. I do not regret caring; I regret forgetting where we were."`,
+      `"I felt something shift, but I wanted to believe the promises more than the silence."`,
+      `"I am hurt. That is the honest answer. The game answer can come after I sleep."`,
+    ],
+    guarded: [
+      `"No. And I counted this morning, then counted again before the vote. I had it both times."`,
+      `"I knew something was wrong when nobody would look at me. I did not know how wrong."`,
+      `"Apparently I was the last person in the house to receive the weekly update."`,
+    ],
+  } : {
+    analytical: [`"I knew the range. I just assigned the swing vote to the wrong side."`, `"I had two paths and prepared for the one that did not happen."`],
+    defiant: [`"I thought I had it because keeping me was the smarter move. That was my mistake: assuming everybody wanted the smarter move."`, `"I knew it was close. Somebody made a choice they will have to defend later."`],
+    social: [`"I thought one relationship would hold. Most of them did. One was enough."`, `"I could feel both sides pulling. I believed the person who sounded most like a friend."`],
+    volatile: [`"I had one more vote until somebody discovered courage at the last possible second."`, `"Close is a lovely word for losing by one."`],
+    underdog: [`"I thought I had scraped together one more week. I have been doing that all season."`, `"I knew it could break either way. I let myself hope."`],
+    sincere: [`"I believed I had one more. I cannot be angry that somebody played for themselves."`, `"I knew it was close. I just hoped trust would be the tiebreaker."`],
+    guarded: [`"I thought I had one more. I have thought that before and been right."`, `"One vote. I will be thinking about which one for a while."`],
+  };
+
   questions.push({
-    q: blindsided
-      ? `"${evictee} — that was a ${top}${second != null ? `–${second}` : ''} vote. Did you have any idea?"`
-      : `"${evictee}, that vote was close. Did you think you had it?"`,
-    a: blindsided
-      ? _pick(rng, [
-        `"No. And I counted. I counted this morning and I counted an hour before the vote and I had it."`,
-        `"I knew something was wrong when nobody would look at me. I just didn't know how wrong."`,
-        `"I've been in that house ${timeIn} and I have never felt more stupid than in the last thirty seconds of it."`,
-      ])
-      : _pick(rng, [
-        `"I thought I had one more. I've thought that before and been right, so — that's the game."`,
-        `"I knew it was close. I'd rather lose that way than not be in the conversation at all."`,
-        `"One vote. That's what it came down to. I'll be thinking about which one for a while."`,
-      ]),
+    q: hostQuestion(style, blindsided ? 'blindside' : 'close', {
+      name: evictee, vote: `${top}${second != null ? `–${second}` : ''}`,
+    }, rng),
+    a: _pick(rng, firstAnswers[voice] || firstAnswers.guarded)
+      .replace('{time}', timeIn),
   });
 
   questions.push({
-    q: `"Who do you think did it?"`,
+    q: hostQuestion(style, 'blame', { name: evictee }, rng),
     a: read.correct
       ? _pick(rng, [
         `"${read.blamed}. I know it was ${pronouns(read.blamed).obj}, and I knew before I stood up."`,
@@ -192,17 +297,29 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   if (read.betrayedByAlly.length) {
     const traitor = read.betrayedByAlly[0];
     questions.push({
-      q: `"You and ${traitor} were close. Would it change anything if ${pronouns(traitor).sub} voted against you?"`,
-      a: isNice(evictee)
-        ? `"${pronouns(traitor).Sub} wouldn't. I'd want to see it before I believed it."`
-        : `"Then ${pronouns(traitor).sub} had better hope ${pronouns(traitor).sub} wins, because I get a vote at the end of this."`,
+      q: style === 'warm'
+        ? `"I need to ask you something difficult. You trusted ${traitor}. What would it mean if ${pronouns(traitor).sub} voted against you?"`
+        : style === 'incisive'
+          ? `"You are protecting ${traitor}. ${pronouns(traitor).Sub} voted you out. What do you say to ${pronouns(traitor).obj} now?"`
+          : style === 'playful'
+            ? `"You keep leaving ${traitor} off the suspect board. Should I lend you my notes?"`
+            : `"You and ${traitor} were close. Would it change anything if ${pronouns(traitor).sub} voted against you?"`,
+      a: voice === 'sincere'
+        ? `"I would want to hear why before I decided what it means. That relationship was bigger than one vote to me."`
+        : voice === 'analytical'
+          ? `"Then ${pronouns(traitor).sub} identified the moment our interests separated before I did. I can respect the move before I forgive it."`
+          : voice === 'volatile'
+            ? `"Then it is lucky there is a wall between us right now."`
+            : isNice(evictee)
+              ? `"${pronouns(traitor).Sub} wouldn't. I would need to see it before I believed it."`
+              : `"Then ${pronouns(traitor).sub} had better hope ${pronouns(traitor).sub} wins, because I may get a vote at the end of this."`,
       loaded: true,
     });
   }
 
   questions.push({
-    q: `"Anything you'd do differently?"`,
-    a: pStats(evictee).strategic >= 6
+    q: hostQuestion(style, 'regret', { name: evictee }, rng),
+    a: stats.strategic >= 6
       ? _pick(rng, [
         `"I'd have made a move a week earlier. I sat still because sitting still was working, and sitting still is how you end up here."`,
         `"I trusted a number instead of a person. The number was fine. The person wasn't."`,
@@ -211,6 +328,21 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
         `"I'd have talked to more people. I got comfortable with the ones who were easy to talk to."`,
         `"Honestly? I'd do most of it the same. I just wouldn't do it with ${read.blamed}."`,
       ]),
+  });
+
+  const identityAnswers = {
+    analytical: [`"People saw the plans. They did not see how often I abandoned a better one because the room was not ready."`, `"That I was not cold. I was precise. There is a difference, even if it looks identical on television."`],
+    defiant: [`"They thought being loud meant being careless. I knew exactly whose nerves I was touching."`, `"They understood me perfectly. That is why it took all of them."`],
+    social: [`"They thought the relationships were decoration. They were the game I was playing."`, `"That listening was strategy. I learned more over coffee than most people learned in meetings."`],
+    volatile: [`"That every reaction was random. Some of them were extremely well earned."`, `"They kept calling me emotional when what they meant was inconveniently honest."`],
+    underdog: [`"They mistook needing help for having no agency. I was still choosing every hand I took."`, `"That surviving is a move when the whole house has agreed you are supposed to disappear."`],
+    sincere: [`"That loyalty was not weakness. It was a choice, and I knew the cost."`, `"I meant what I said in there. Maybe that made me easier to beat, but it did not make me fake."`],
+    guarded: [`"They thought quiet meant comfortable. I was working; I just did not announce every shift."`, `"Probably nothing. If they misunderstood me, I gave them the material."`],
+  };
+  questions.push({
+    q: hostQuestion(style, 'identity', { name: evictee }, rng),
+    a: _pick(rng, identityAnswers[voice] || identityAnswers.guarded),
+    personality: voice,
   });
 
   // ── The walk-out. The audience's first verdict, before a word is said. ──
@@ -307,8 +439,37 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
   const jurySeats = Number(seasonConfig.jurySize) || 0;
   const joinsJury = jurySeats > 0 && (remaining - 3) < jurySeats;
 
+  const hostLines = {
+    truth: _pick(rng, {
+      balanced: ['"Before the goodbyes, there are a couple of things you should know."', '"Let me show you the part of the week you could not see."'],
+      warm: ['"Some of this may be hard to hear, but you deserve to leave with the truth."', '"Before the messages, I want to give you the missing pieces."'],
+      incisive: ['"Your read was incomplete. Here is what actually happened."', '"You named the move. Now let us name the people who made it."'],
+      playful: ['"We have checked the tapes, and the tapes brought receipts."', '"Time for the least enjoyable answer key in television."'],
+    }[style]),
+    goodbyes: _pick(rng, {
+      balanced: ['"Your housemates recorded some messages in case tonight went this way."', '"The people still inside had a chance to say goodbye."'],
+      warm: ['"Some people in that house care about you very much. Let us hear from them."', '"Your housemates left messages for you. Take all the time you need."'],
+      incisive: ['"You have heard their promises. Now hear what they recorded after making their decisions."', '"These messages were recorded after the votes began to settle."'],
+      playful: ['"Your housemates recorded messages—some kinder than their ballots."', '"The house has prepared a farewell montage and, inevitably, several explanations."'],
+    }[style]),
+  };
+
+  const partingPools = {
+    analytical: joinsJury
+      ? [`"I have better information now. Everybody left should be worried about what I do with it."`, `"The game is over for me. The evaluation is not."`]
+      : [`"I lost the week before I lost the vote. I can admit that now."`, `"Good move. I would still like to see whether it was the right one."`],
+    defiant: joinsJury
+      ? [`"I am on the jury now. They wanted my vote more than they wanted me in the house—so they can earn it."`, `"They got me out. They did not get the last word."`]
+      : [`"Tell them congratulations. Make sure they hear it in my voice."`, `"The house wanted peace and quiet. I give it three days."`],
+    social: [`"The game ended. The relationships did not all end with it. I will sort out which are which."`, `"I walked in wanting people. I am leaving knowing exactly what people can do."`],
+    volatile: [`"I have several last words. Production has requested one."`, `"Ask me again after I stop hearing that vote in my head."`],
+    underdog: [`"I was not supposed to last this long. I just wish I had stopped believing that sentence."`, `"They finally got me. It took them long enough."`],
+    sincere: [`"I would do it again. All of it. I might just ask better questions."`, `"I lost a game. I do not want to lose the good parts with it."`],
+    guarded: [`"Play hard. That is all I have got."`, `"I will know what I think when I have seen what actually happened."`],
+  };
+
   return {
-    evictee, host, blindsided,
+    evictee, host, hostStyle: style, hostProfile: BB_HOST_STYLES[style], hostLines, evicteeVoice: voice, blindsided,
     blamed: read.blamed, blameCorrect: read.correct,
     betrayedBy: read.betrayedByAlly,
     votes: { ...(week.votes || {}) },
@@ -318,11 +479,6 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random) {
     goodbyes,
     joinsJury,
     // The evictee's parting shot, which the jury will hear about.
-    parting: isVillainous(evictee)
-      ? (joinsJury ? `"Whoever's left — I'm on that jury now, and I remember everything."`
-        : `"Tell them I said congratulations. Make sure they hear it in my voice."`)
-      : isNice(evictee)
-        ? `"I'd do it again. All of it. Even this bit."`
-        : `"Play hard. That's all I've got."`,
+    parting: _pick(rng, partingPools[voice] || partingPools.guarded),
   };
 }

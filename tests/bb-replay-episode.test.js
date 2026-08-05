@@ -16,7 +16,7 @@ import { gs as gsRef, players, seasonConfig, relationships, TWIST_CATALOG,
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, isBigBrotherSeason } from '../js/bb-run.js';
-import { replayEpisode } from '../js/run-ui.js';
+import { replayEpisode, _saveBBCheckpoint } from '../js/run-ui.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -137,4 +137,46 @@ describe('a re-run that fails changes nothing', () => {
   // renderRunTab, which is module-local and paints the whole run surface, so
   // exercising it needs a real DOM rather than a stub. These two cover the
   // reported bug — a re-run that fails must leave the season untouched.
+});
+
+// ── the season that stopped being re-runnable ─────────────────────────
+//
+// Reported with a screenshot: episodes 1-3 carried the replay button, episode
+// 3 was a double eviction ("Caleb + Scary Girl"), and episodes 4 and 5 had no
+// button at all. Not one episode — every episode after it, for the rest of the
+// season.
+//
+// The checkpoint was keyed by the WEEK count and the button looks it up by the
+// EPISODE number. Those agree only while one episode is one week. A double
+// eviction pushes two weeks for one episode, so from that point on every
+// checkpoint was filed under a number no episode would ever carry.
+describe('a two-week episode does not unfile every checkpoint after it', () => {
+  it('keys checkpoints by episode number across a double eviction', () => {
+    house();
+    // Play a plain week, then the double, then two more.
+    withSeededRandom(31, () => {
+      seasonConfig.twistSchedule = [{ id: 't1', episode: 2, type: 'bb-double-eviction' }];
+      for (let i = 0; i < 4; i++) {
+        // Through the REAL writer, the way simulateNext does it. Writing the
+        // keys by hand here would test my own arithmetic and pass against the
+        // very bug it exists to catch.
+        _saveBBCheckpoint();
+        simulateBBEpisode();
+      }
+    });
+
+    const eps = globalThis.gs.episodeHistory.map(e => e.num);
+    expect(eps.length, 'the season did not play').toBeGreaterThan(2);
+    // The double really did run — otherwise this proves nothing.
+    expect(globalThis.gs.bb.weeks.length,
+      'no double eviction happened, so the divergence was never exercised')
+      .toBeGreaterThan(eps.length);
+
+    // Every episode has a checkpoint filed under ITS OWN number, which is what
+    // the replay button reads. This is the assertion the screenshot was of.
+    for (const num of eps) {
+      expect(gsCheckpoints[num], `episode ${num} has no checkpoint — no replay button`)
+        .toBeTruthy();
+    }
+  });
 });

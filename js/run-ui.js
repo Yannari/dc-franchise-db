@@ -792,8 +792,19 @@ export function viewEpisode(num) {
  * at all. Called from BOTH the normal run and the replay re-run, because a
  * replayed week must itself be replayable, the way a TD episode is.
  */
-function _saveBBCheckpoint() {
-  const cpNum = (gs.bb?.weeks?.length || 0) + 1;
+export function _saveBBCheckpoint() {
+  // Keyed by the EPISODE the checkpoint belongs to, which is the number the
+  // replay button looks it up by — `gsCheckpoints[ep.num]`.
+  //
+  // It used to key on the week count, and those two agree only while one
+  // episode is one week. A double eviction pushes TWO weeks for one episode
+  // and so does a Split House, so from the first one onward every checkpoint
+  // after it was written under a number no episode would ever carry: the
+  // button vanished on the next episode and never came back for the rest of
+  // the season. The season was not corrupt, it was mislabelled — and this is
+  // the same divergence that made the episode counter jump, which is why the
+  // count must come from the same place the episode number does.
+  const cpNum = (gs.episodeHistory?.length || 0) + 1;
   try {
     gsCheckpoints[cpNum] = JSON.parse(JSON.stringify(gs));
     repairGsSets(gsCheckpoints[cpNum]);

@@ -17121,12 +17121,23 @@ export function rpBuildBBComp(ep, actType) {
       <b>${_bbEsc(comp?.name || (isHoh ? 'Head of Household' : 'Power of Veto'))}</b>
     </div>
     ${comp?.desc ? `<p class="bbc-what-d">${_bbEsc(comp.desc)}</p>` : ''}
-    ${weights.length ? `<div class="bbc-what-w">
-      ${weights.map(([stat, w]) => `<span class="bbc-stat">
+    <div class="bbc-what-w">
+      ${weights.length
+    ? weights.map(([stat, w]) => `<span class="bbc-stat">
         <i>${_bbEsc(stat)}</i>
         <span class="bbc-stat-bar"><b style="width:${Math.round(w * 100)}%;background:${cat.accent}"></b></span>
-        <u>${Math.round(w * 100)}%</u></span>`).join('')}
-    </div>` : ''}
+        <u>${Math.round(w * 100)}%</u></span>`).join('')
+    // A competition with no stat weights is not a rendering gap, it is a
+    // FACT about that competition — Pure Chance tests nothing, which is the
+    // most useful thing the board can tell you about it. Going silent here
+    // made the explainer look broken and made the board test flaky, because
+    // the harness draws an unseeded competition and only sometimes drew the
+    // one comp in the library with nothing to weigh.
+    : `<span class="bbc-stat">
+        <i>no stats tested</i>
+        <span class="bbc-stat-bar"><b style="width:100%;background:${cat.accent}"></b></span>
+        <u>luck</u></span>`}
+    </div>
     <div class="bbc-what-f">
       <span>${(act?.participants || rows).length} playing</span>
       ${satOut.length ? `<span>Sat out: ${satOut.map(_bbEsc).join(', ')}${

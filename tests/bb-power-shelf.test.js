@@ -78,9 +78,26 @@ describe('the shelf has more than one thing on it', () => {
 describe('The Cloud', () => {
   beforeEach(() => house());
 
+  // Enough seeds that a zero-fire run is not a coin flip.
+  //
+  // The Cloud stopped being automatic and became a DECISION, which is right —
+  // and immediately made this test flaky, because five seeds is nowhere near
+  // enough to observe a decision that is usually "no". Measured over 200
+  // seeded weeks with the Cloud granted every time: it is played in 14.5% of
+  // them overall, 55% of the weeks where its holder is actually in the Head of
+  // Household's plan (22 of 40), and about 4% otherwise — a holder who senses
+  // nothing coming mostly sits on it, which is the point of making it a
+  // decision.
+  //
+  // At 14.5% a five-seed window comes up empty roughly 45% of the time. Thirty
+  // brings that under 1%, which is the difference between a guard and a coin.
+  const CLOUD_SEEDS = [2026, 77, 4242, 31, 909, 12, 88, 141, 203, 317,
+    404, 512, 633, 719, 826, 934, 1041, 1158, 1263, 1372,
+    1489, 1596, 1703, 1818, 1925, 2044, 2157, 2268, 2379, 2481];
+
   it('takes its holder off the nomination ceremony, and no further', () => {
     let proved = 0;
-    for (const seed of [2026, 77, 4242, 31, 909]) {
+    for (const seed of CLOUD_SEEDS) {
       house();
       const ep = withSeededRandom(seed, () => {
         // Granted to somebody who is not about to hold the room.

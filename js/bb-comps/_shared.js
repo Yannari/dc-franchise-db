@@ -103,11 +103,45 @@ export function throwRead(name, context, rng) {
  * puzzle, near-total for a crapshoot — which is a real Big Brother competition
  * type, not a design failure, and the reason the house can never fully plan.
  */
-export function scoreField(participants, { mix, luck = 3, context, rng, throwPenalty = 6 }) {
+/**
+ * `swingBy` is the fix for a modelling error worth stating plainly, because it
+ * was in a third of the library: temperament was being used as GRIT.
+ *
+ * In this simulator low temperament means volatile — angry, impulsive, quick to
+ * snap — and that is not the same as weak-willed. A hothead can be ferociously
+ * determined, and plenty have stayed on a wall out of pure spite. Any
+ * competition that folds temperament into the average of "how long can this
+ * person last" is quietly saying short fuse = quitter.
+ *
+ * So an endurance competition passes its staying power as `mix` and its
+ * temperament as `swingBy`, and temperament stops setting the LEVEL and starts
+ * setting the SPREAD. A calm houseguest lands near their own number every time;
+ * a volatile one is a coin toss between walking off early and planting
+ * themselves out of stubbornness.
+ *
+ * No compensation is added here, and that is a deliberate difference from the
+ * competitions that run their own elimination loops. Everything scoring through
+ * scoreField is ONE roll that gets ranked, and in a single ranked roll variance
+ * is already fair: a wider swing wins more often and finishes last more often
+ * in equal measure, leaving the average where it was. It is only when a
+ * competition eliminates people round after round that a wide swing becomes a
+ * pure penalty — every round is another chance to come up short — and those
+ * comps (the wall, the pressure cooker) pay for the swing themselves.
+ *
+ * Measured the wrong way round first: adding the compensation here handed the
+ * volatile houseguest 50 wins out of 200 against the calm one's 4.
+ *
+ * Competitions where temperament genuinely IS the skill — a steady hand on a
+ * balance beam, not flinching at a buzzer — should keep it in `mix` and not
+ * pass this at all.
+ */
+export function scoreField(participants, { mix, luck = 3, context, rng, throwPenalty = 6, swingBy = null }) {
   const breakdown = {};
   const entries = participants.map(name => {
+    const steady = swingBy ? aptitude(name, swingBy) : null;
+    const width = steady == null ? luck : luck * (0.62 + (10 - steady) * 0.085);
     const base = aptitude(name, mix);
-    const roll = (rng() - 0.5) * luck * 2;
+    const roll = (rng() - 0.5) * width * 2;
     const t = throwRead(name, context, rng);
     const penalty = t.threw ? throwPenalty + rng() * 3 : 0;
     // Slop and no sleep, applied before the field is ranked so the narration
@@ -120,7 +154,13 @@ export function scoreField(participants, { mix, luck = 3, context, rng, throwPen
     const gun = gunningFor(name, context, rng);
     const score = base + roll - penalty - haveNotPenalty + gun.bonus;
     breakdown[name] = { base, roll, threwChance: t.chance, threw: t.threw, penalty,
-      haveNot, haveNotPenalty, gunningFor: gun.reason, gunningBonus: gun.bonus, score };
+      haveNot, haveNotPenalty, gunningFor: gun.reason, gunningBonus: gun.bonus, score,
+      // Reported so the Debug tab can show WHY two houseguests with the same
+      // staying power had different nights.
+      ...(steady == null ? {} : {
+        steadiness: Math.round(steady * 100) / 100,
+        swing: Math.round(width * 100) / 100,
+      }) };
     return { name, score, threw: t.threw, base };
   });
   entries.sort((a, b) => b.score - a.score);

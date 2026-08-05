@@ -575,7 +575,18 @@ export const pressureCooker = {
   // stand there with a thumb down. Boldness belongs to the other question, and
   // it now lives entirely in the prize offer below, where it is actually
   // deciding something.
-  stats: { endurance: 0.50, temperament: 0.35, physical: 0.15 },
+  //
+  // And the same correction the wall needed: at 35% this was the heaviest
+  // temperament weight in the library, all of it read as "the mental
+  // discipline to keep holding" — which is determination, not composure. A
+  // volatile houseguest is not less able to hold a button down; they are less
+  // PREDICTABLE about how long they will choose to. So temperament sets the
+  // spread around somebody's holding power rather than the holding power.
+  stats: { endurance: 0.60, temperament: 0.25, physical: 0.15 },
+  roles: {
+    capacity: { endurance: 0.78, physical: 0.22 },
+    steadiness: { temperament: 1 },
+  },
   simulate(participants, context, api, rng) {
     const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
@@ -588,7 +599,15 @@ export const pressureCooker = {
       const t = throwRead(name, context, rng);
       // A have-not walks into the box already dragging — slop is a head start
       // for everyone else, applied through the same fatigue the boxes add.
-      return { name, apt: aptitude(name, this.stats), threw: t.threw, threwChance: t.chance, drag: hn[name], tempted: 0 };
+      // Holding power, and the width of the night around it. The spite term
+      // exists for the same reason it does everywhere else: in a competition
+      // that eliminates on every box, a wider swing with no matching ceiling
+      // is just a penalty for having a temper.
+      const steady = aptitude(name, this.roles.steadiness);
+      const swing = 0.62 + (10 - steady) * 0.085;
+      return { name, apt: aptitude(name, this.roles.capacity) + (swing - 1) * 1.6,
+        steady, swing,
+        threw: t.threw, threwChance: t.chance, drag: hn[name], tempted: 0 };
     });
 
     beats.push(beat(
@@ -609,7 +628,10 @@ export const pressureCooker = {
 
       const rolls = inside.map(h => {
         const throwDrag = h.threw && box >= 2 ? 5 + rng() * 3 : 0;
-        const grip = h.apt - h.drag - throwDrag - box * 0.30 + noiseRoll(rng, 2.7, luck, h.name);
+        // Width per houseguest, not per competition: the calm one lands near
+        // their own number, the volatile one is a different person each box.
+        const grip = h.apt - h.drag - throwDrag - box * 0.30
+          + noiseRoll(rng, 2.7 * h.swing, luck, h.name);
         return { ...h, grip };
       }).sort((a, b) => a.grip - b.grip);
 
@@ -634,7 +656,8 @@ export const pressureCooker = {
       });
 
       inside = rolls.filter(r => !dropping.includes(r))
-        .map(({ name, apt, threw, threwChance, drag, tempted }) => ({ name, apt, threw, threwChance, drag, tempted }));
+        .map(({ name, apt, steady, swing, threw, threwChance, drag, tempted }) =>
+          ({ name, apt, steady, swing, threw, threwChance, drag, tempted }));
       if (inside.length <= 1) break;
 
       // A box opens for every houseguest who leaves. Half of them are offers

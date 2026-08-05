@@ -100,7 +100,11 @@ export function rpBuildSigTheWall(ep, actType, u) {
   // and finally the gold winner beat. Classification is by badge, so an unknown
   // badge degrades into a new wave header rather than being silently dropped.
   const beats = (comp.beats || []).filter(b => b && b.text);
-  const DROP_TAGS = new Set(['DROPS', 'FIRST DOWN', 'THREW IT']);
+  // STEPS DOWN is the voluntary exit, and it has to be in this set: an exit
+  // tag the classifier does not know degrades into a new wave header, so the
+  // houseguest never leaves the face and the wave count inflates.
+  const DROP_TAGS = new Set(['DROPS', 'FIRST DOWN', 'THREW IT', 'STEPS DOWN']);
+  const STEP_TAGS = new Set(['STEPS DOWN']);
   const steps = [];
   let cur = null;
   let waveNo = 0;
@@ -139,8 +143,13 @@ export function rpBuildSigTheWall(ep, actType, u) {
   let stand = fieldSize;
   steps.forEach(s => {
     s.fell = [];
+    s.stepped = [];
     if (s.kind === 'wave') {
       s.fell = s.drops.map(d => (d.players || [])[0]).filter(Boolean);
+      // Which of them chose it. Coming off a wall on your own legs looks
+      // nothing like being thrown off one, and the set-piece should say so.
+      s.stepped = s.drops.filter(d => STEP_TAGS.has(String(d.badgeText || '').toUpperCase().trim()))
+        .map(d => (d.players || [])[0]).filter(Boolean);
       stand -= s.drops.length;
     } else if (s.kind === 'deal') {
       // Either an ally steps down on a promise or the second one runs out of
@@ -160,12 +169,26 @@ export function rpBuildSigTheWall(ep, actType, u) {
   const done = state.idx >= total - 1;
 
   const fallenNow = new Set();
-  steps.slice(0, revealed).forEach(s => s.fell.forEach(n => fallenNow.add(n)));
+  const steppedNow = new Set();
+  steps.slice(0, revealed).forEach(s => {
+    s.fell.forEach(n => fallenNow.add(n));
+    (s.stepped || []).forEach(n => steppedNow.add(n));
+  });
   const standingNow = revealed ? steps[revealed - 1].standing : fieldSize;
 
   // ── the wall set-piece ───────────────────────────────────────────────
   const ROWS = 3;
   const per = Math.max(1, Math.ceil(roster.length / ROWS));
+  // Spaced by rank within their own zone rather than by a hash of the roster
+  // index: a modulo scatter collides as soon as two houseguests land on the
+  // same remainder, and five people on the pad stacked into two blobs.
+  const walkedList = roster.filter(n => steppedNow.has(n));
+  const fellList = roster.filter(n => fallenNow.has(n) && !steppedNow.has(n));
+  const spread = (list, name, from, to) => {
+    const k = list.indexOf(name);
+    if (list.length <= 1) return (from + to) / 2;
+    return from + (k * ((to - from) / (list.length - 1)));
+  };
   const pegs = roster.map((name, i) => {
     const row = Math.min(ROWS - 1, Math.floor(i / per));
     const col = i % per;
@@ -173,9 +196,21 @@ export function rpBuildSigTheWall(ep, actType, u) {
     // The face leans, so the ledges are not level — pegs ride the slope.
     const ledgeY = 17 + row * 21 + (left - 50) * 0.075;
     const isDown = fallenNow.has(name);
+    const walked = steppedNow.has(name);
     // Deterministic lateral scatter in the water, so pegs do not stack.
-    const splashX = 9 + ((i * 37) % 82);
-    return { name, isDown, left: isDown ? splashX : left, top: isDown ? 84 : ledgeY, i };
+    // The water is the left half; the pad is the right end. Keeping the two
+    // zones apart is the whole point of drawing them differently.
+    const splashX = spread(fellList, name, 7, 50);
+    // The two exits end up in different places. Anybody thrown off the face
+    // lands in the water; anybody who climbed down is standing on the pad at
+    // the foot of the rig, dry, watching — which is the whole difference the
+    // competition now models.
+    // Kept to the right-hand end, under its own label and clear of the water.
+    const padX = spread(walkedList, name, 60, 94);
+    return { name, isDown, walked,
+      left: walked ? padX : isDown ? splashX : left,
+      // Sat just above the pad caption so the label stays readable behind them.
+      top: walked ? 87 : isDown ? 84 : ledgeY, i };
   });
 
   const wallSvg = `<svg class="sgw-face" viewBox="0 0 1000 340" preserveAspectRatio="none" aria-hidden="true">
@@ -221,14 +256,15 @@ export function rpBuildSigTheWall(ep, actType, u) {
     ${wallSvg}
     <div class="sgw-rain" aria-hidden="true"></div>
     <div class="sgw-pegs">
-      ${pegs.map(p => `<div class="sgw-peg ${p.isDown ? 'is-down' : 'is-up'}"
+      ${pegs.map(p => `<div class="sgw-peg ${p.walked ? 'is-walked' : p.isDown ? 'is-down' : 'is-up'}"
             style="left:${p.left.toFixed(2)}%;top:${p.top.toFixed(2)}%;animation-delay:${(p.i % 7) * 40}ms"
-            title="${E(p.name)}${p.isDown ? ' — off the wall' : ' — still up'}">
+            title="${E(p.name)}${p.walked ? ' — climbed down' : p.isDown ? ' — off the wall' : ' — still up'}">
         <span class="sgw-peg-av">${AV(p.name, 26)}</span>
         <span class="sgw-peg-n">${E(String(p.name).split(' ')[0])}</span>
       </div>`).join('')}
     </div>
     <figcaption class="sgw-splash-label">SPLASH ZONE</figcaption>
+    ${steppedNow.size ? '<figcaption class="sgw-pad-label">THE PAD &middot; CAME DOWN</figcaption>' : ''}
   </figure>`;
 
   // ── the live strip ───────────────────────────────────────────────────
@@ -267,6 +303,7 @@ export function rpBuildSigTheWall(ep, actType, u) {
   const dropTone = tag => {
     const t = String(tag || '').toUpperCase();
     if (t === 'THREW IT') return 'is-threw';
+    if (t === 'STEPS DOWN') return 'is-walked';
     if (t === 'FIRST DOWN') return 'is-first';
     return '';
   };
@@ -433,6 +470,19 @@ export function rpBuildSigTheWall(ep, actType, u) {
   .sgw-peg.is-down .bb-av{border-color:#4c6b90;box-shadow:none;filter:grayscale(.7)}
   .sgw-peg.is-down .sgw-peg-n{color:#7f9ab8}
   @keyframes sgw-splash{from{transform:translate(-50%,-160%);opacity:0}to{transform:translate(-50%,-50%);opacity:.62}}
+  /* Climbed down: dry, on the pad, and lit warm rather than drowned blue —
+     the difference between losing the wall and deciding you are finished. */
+  .sgw-peg.is-walked{opacity:.85;animation:sgw-climb .62s cubic-bezier(.3,.9,.4,1) both}
+  .sgw-peg.is-walked .bb-av{border-color:#ffb861;box-shadow:0 0 12px rgba(255,184,97,.35);filter:none}
+  .sgw-peg.is-walked .sgw-peg-n{color:#ffd9a8}
+  @keyframes sgw-climb{from{transform:translate(-50%,-210%);opacity:0}
+    to{transform:translate(-50%,-50%);opacity:.85}}
+  .sgw-pad-label{position:absolute;right:10px;bottom:6px;font-family:'Chakra Petch',monospace;
+    font-size:9px;letter-spacing:3px;color:rgba(255,184,97,.62)}
+  /* A voluntary exit reads warm on the card too, so the two kinds of leaving
+     are never the same colour anywhere on the screen. */
+  .sgw-drop.is-walked{border-left-color:#ffb861}
+  .sgw-drop.is-walked .sgw-drop-tag{color:#241608;background:#ffb861;border-color:#ffb861}
 
   .sgw-strip{position:sticky;top:46px;z-index:6;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;
     padding:8px 10px;margin-bottom:14px;border:1px solid var(--sgw-line);border-radius:8px;

@@ -36,10 +36,18 @@ export const pressureWall = {
   category: 'endurance',
   types: ['hoh', 'veto'],
   desc: 'The whole house hangs off narrow grips on a wall face that tilts, shakes and sprays them in waves, and the waves get worse the longer it runs. There is no score and no clock — losing your grip or stepping down simply ends your night, in front of everybody. The last houseguest still on the wall wins, and once it is down to two the competition is usually settled by a conversation rather than a fall.',
-  stats: { endurance: 0.44, temperament: 0.24, physical: 0.18, boldness: 0.14 },
+  // Temperament here was standing in for determination, which it is not: it
+  // is volatility. It keeps its place on the bars because it still decides
+  // nights — as the SPREAD around somebody's staying power rather than as part
+  // of the staying power itself. See scoreField's swingBy.
+  stats: { endurance: 0.50, physical: 0.20, temperament: 0.18, boldness: 0.12 },
+  roles: {
+    capacity: { endurance: 0.62, physical: 0.24, boldness: 0.14 },
+    steadiness: { temperament: 1 },
+  },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.stats, luck: 2.2, context, rng,
+      mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 2.2, context, rng,
     });
     const beats = [];
     const say = makePicker(rng);
@@ -106,10 +114,17 @@ export const coldSoak = {
   category: 'endurance',
   types: ['hoh', 'veto', 'arena'],
   desc: 'Houseguests stand on platforms barely wider than their own feet while cold water and wind hit them in timed waves, hour after hour, usually through the night. Nothing about it is difficult. It is only cold, and it does not stop, and that turns out to be worse. Stepping off the platform ends a run, and the last houseguest still standing on theirs wins.',
-  stats: { endurance: 0.38, temperament: 0.30, boldness: 0.18, physical: 0.14 },
+  // Same correction as Hold the Line, and this one had it worst: a competition
+  // whose entire subject is being cold for a long time was reading a short
+  // fuse as an inability to stand there.
+  stats: { endurance: 0.48, temperament: 0.20, boldness: 0.18, physical: 0.14 },
+  roles: {
+    capacity: { endurance: 0.60, boldness: 0.22, physical: 0.18 },
+    steadiness: { temperament: 1 },
+  },
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.stats, luck: 2.6, context, rng,
+      mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 2.6, context, rng,
     });
     const beats = [];
     const say = makePicker(rng);

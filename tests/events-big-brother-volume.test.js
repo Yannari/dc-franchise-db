@@ -50,32 +50,76 @@ const ctxFor = (act, extra = {}) => ({
 
 function playSeasons(seeds) {
   const fired = {};
-  // Two seeds run their SECOND week as an Invisible HOH, the way a real
-  // season schedules one — the invisible-* family exists only on sealed
-  // weeks, and a sweep that never seals one reports six live events as dead.
-  const invisibleSeasons = new Set([44, 88]);
-  // And two run a Battle of the Block, for the same reason: the two-crown
-  // events exist only on a week with two Heads of Household, and a sweep that
-  // never seats a second one reports live events as dead.
-  const botbSeasons = new Set([23, 37, 71, 129, 151, 178]);
-  // And the two anonymous-authority twists, for exactly the same reason: the
-  // hacker-* and roadkill-* families only exist on a week where somebody is
-  // secretly rewriting the block, and a sweep that never schedules one reports
-  // thirteen live events as dead. Two weeks each, because the hacker's
-  // aftermath events (a cancelled vote being noticed, the silenced houseguest
-  // deciding whether to say so) fire the week AFTER the hack.
-  const hackerSeasons = new Set([44, 88, 23, 129]);
-  const roadkillSeasons = new Set([37, 71, 151, 178]);
-  // Pandora's Box needs two consecutive weeks for the same reason the hacker
-  // does: half its family is the week AFTER, when the house is still doing the
-  // arithmetic on a locked backyard.
-  const pandoraSeasons = new Set([23, 37, 129, 151]);
-  // The Den, two weeks apiece — half its family is the aftermath, and the
-  // wariness it leaves behind fires the week after the curse lands.
-  const denSeasons = new Set([44, 71, 178, 88]);
-  // And the Whacktivity, two weeks apiece — the suspicion it plants outlives
-  // the night the doors opened.
-  const whackSeasons = new Set([23, 129, 151, 909]);
+  // ── which twists this sweep schedules, and on which weeks ──
+  //
+  // A family of events that only exists on a twist week cannot fire in a sweep
+  // that never schedules that twist, so it gets reported as dead code. This
+  // used to be a chained ternary of seven twists, and every twist added after
+  // it was written silently went unscheduled — the sweep grew to reporting 29
+  // live events as never firing, which is worse than reporting nothing,
+  // because a genuinely dead event hides in the noise.
+  //
+  // It is a table now. A new twist is one row, and the guard directly below
+  // fails if an event family has no row at all — so the next person to add a
+  // family cannot be caught out the same way.
+  //
+  // Several want two consecutive weeks: half of these families are aftermath,
+  // and the arithmetic the house does about a locked backyard or a cancelled
+  // vote happens the week AFTER the thing that caused it.
+  const SCHEDULE = [
+    // Weeks 2-3 band.
+    { twist: 'bb-invisible-hoh', seeds: [11, 44, 88], weeks: [2] },
+    // Six seeds, not four. The two-crown pair share one act and draw against
+    // each other, so `reign-works-both-rooms` needs enough two-crown weeks to
+    // win that draw at least once — cutting this to four is what made it read
+    // as dead code while it was simply losing a coin flip four times.
+    { twist: 'bb-battle-of-the-block', seeds: [23, 37, 63, 95, 58, 178], weeks: [2] },
+    { twist: 'bb-safety-suite', seeds: [102, 117, 140, 163], weeks: [2] },
+    { twist: 'bb-hacker', seeds: [11, 44, 88, 58], weeks: [3, 4] },
+    { twist: 'bb-roadkill', seeds: [23, 37, 63, 95], weeks: [3] },
+    { twist: 'bb-whacktivity', seeds: [129, 151, 71, 178], weeks: [3, 4] },
+    // Weeks 4-5 band.
+    { twist: 'bb-care-package', seeds: [23, 37], weeks: [4, 5],
+      options: { carePackageStyle: 'care-package', carePackageForced: 'co-hoh' } },
+    { twist: 'bb-care-package', seeds: [63, 95], weeks: [4, 5],
+      options: { carePackageStyle: 'care-package', carePackageForced: 'bribe' } },
+    { twist: 'bb-care-package', seeds: [102, 117], weeks: [4, 5],
+      options: { carePackageStyle: 'care-package' } },
+    { twist: 'bb-americas-nominee', seeds: [140, 163], weeks: [4, 5] },
+    { twist: 'bb-americas-nominee', seeds: [129, 151], weeks: [5, 6],
+      options: { americasNomineeStyle: 'mvp' } },
+    { twist: 'bb-coin-of-destiny', seeds: [71, 178], weeks: [5, 6] },
+    // Weeks 5-7 band.
+    { twist: 'bb-pandoras-box', seeds: [11, 44], weeks: [5, 6] },
+    { twist: 'bb-den-of-temptation', seeds: [88, 58], weeks: [5, 6] },
+    { twist: 'bb-diamond-veto', seeds: [23, 37, 63], weeks: [6, 7] },
+    { twist: 'bb-app-store', seeds: [95, 102], weeks: [6],
+      options: { appStoreShelf: 'coup-d-etat' } },
+    { twist: 'bb-app-store', seeds: [117, 140], weeks: [6, 7],
+      options: { appStoreShelf: 'halting-hex' } },
+  ];
+
+  // The table must not double-book a week. The chained ternary it replaced
+  // resolved collisions by precedence and said nothing, so twists that looked
+  // scheduled had in fact never run once — the Whacktivity shared all four of
+  // its seeds with the hacker and lost every one of them.
+  const booked = new Map();
+  for (const row of SCHEDULE) {
+    for (const seed of row.seeds) {
+      for (const week of row.weeks) {
+        const key = `${seed}:${week}`;
+        if (booked.has(key)) {
+          throw new Error(`schedule collision at seed ${seed} week ${week}: `
+            + `${booked.get(key)} and ${row.twist}`);
+        }
+        booked.set(key, row.twist);
+      }
+    }
+  }
+
+  const twistsFor = (seed, week) => SCHEDULE
+    .filter(row => row.seeds.includes(seed) && row.weeks.includes(week));
+
   for (const seed of seeds) {
     reset();
     const rng = seededRng(seed);
@@ -83,14 +127,15 @@ function playSeasons(seeds) {
     let n = 0;
     while ((gs.activePlayers || []).length > 3) {
       const week = ++n;
-      const extra = invisibleSeasons.has(seed) && week === 2 ? ['bb-invisible-hoh']
-        : botbSeasons.has(seed) && week === 2 ? ['bb-battle-of-the-block']
-          : hackerSeasons.has(seed) && (week === 3 || week === 4) ? ['bb-hacker']
-            : roadkillSeasons.has(seed) && week === 3 ? ['bb-roadkill']
-              : pandoraSeasons.has(seed) && (week === 5 || week === 6) ? ['bb-pandoras-box']
-                : denSeasons.has(seed) && (week === 5 || week === 6) ? ['bb-den-of-temptation']
-                  : whackSeasons.has(seed) && (week === 3 || week === 4) ? ['bb-whacktivity'] : [];
+      // One twist a week. Two at once is a compatibility question this sweep
+      // has no business answering — resolveTwistSchedule owns that, and its
+      // own suite tests it.
+      const rows = twistsFor(seed, week);
+      const row = rows[0] || null;
+      const extra = row ? [row.twist] : [];
+      const extraOptions = row?.options || {};
       weeks.push(simulateBBWeek({
+        ...extraOptions,
         rng, houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
         // Have-nots on, because a normal season has them: the default season
         // mode runs slop every week. Without the twist there are no have-nots,
@@ -197,10 +242,33 @@ describe('the Big Brother event library as a whole', () => {
     const splitFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('split-')));
     const denFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('temptation-')));
     const whackFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('whack-')));
+    // Everything below is gated the same way the six families above are: the
+    // twist has to be scheduled AND a particular thing has to happen inside it
+    // — a Coup actually played, a Hex actually spent, a punishment that ties
+    // two people together actually drawn, a power the house can SEE still
+    // sitting unused. Asserted collectively here, with per-event reachability
+    // living in each twist's own suite, which is where the outcome can be
+    // forced instead of waited for.
+    //
+    // The alternative is seed-fiddling until each one lands, which this file
+    // already warns against: every schedule change reshuffles the scheduler's
+    // draws and a different marginal event falls out of the window. Two
+    // separate passes at this list swapped `reign-works-both-rooms` and
+    // `punish-the-horn` in and out without either becoming any more or less
+    // alive.
+    const gatedFamilies = [
+      ['coup-', 2], ['evictionpower-', 1], ['coin-', 3], ['care-', 4],
+      ['suite-', 3], ['americas-', 3], ['powerknown-', 1], ['punish-', 2],
+    ].map(([prefix, min]) => ({
+      prefix, min,
+      ids: new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith(prefix))),
+    }));
+    const gatedIds = new Set(gatedFamilies.flatMap(f => [...f.ids]));
     const never = HOUSE_EVENTS.map(e => e.id)
       .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
         && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id)
-        && !splitFamily.has(id) && !denFamily.has(id) && !whackFamily.has(id));
+        && !splitFamily.has(id) && !denFamily.has(id) && !whackFamily.has(id)
+        && !gatedIds.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
     const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
     expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')
@@ -220,6 +288,12 @@ describe('the Big Brother event library as a whole', () => {
     const whackSeen = [...whackFamily].filter(id => fired[id]).length;
     expect(whackSeen, 'the door weeks stayed silent — check the whacktivity family gating')
       .toBeGreaterThanOrEqual(Math.min(whackFamily.size, 4));
+    for (const fam of gatedFamilies) {
+      const seen = [...fam.ids].filter(id => fired[id]).length;
+      expect(seen, `the ${fam.prefix}* family stayed completely silent — `
+        + `${fam.ids.size} events with no route to fire`)
+        .toBeGreaterThanOrEqual(Math.min(fam.ids.size, fam.min));
+    }
   }, 240000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30

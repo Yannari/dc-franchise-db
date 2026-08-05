@@ -67,6 +67,14 @@ const FOLDED = new Set([
   'roadkill-win',  // the memory record, not the act
 ]);
 
+// Acts that live on the EPISODE and never on a week. summariseWeek takes a
+// week, so it could not write these if it wanted to — a branch for one there
+// reads as coverage and can never fire. The in-app backlog is built from the
+// episode and does write them in full, which is what the per-twist tests
+// assert. Verified by construction: bb-run builds this straight into ep.acts
+// and neither half-week is ever handed it.
+const EPISODE_ONLY = new Set(['split-house']);
+
 describe('every act the engine emits reaches both transcripts', () => {
   it('has no act type that falls silently through the switch', () => {
     // Every BB twist the Format Designer can schedule, one per attempt, plus a
@@ -108,7 +116,7 @@ describe('every act the engine emits reaches both transcripts', () => {
     const missingBacklog = [];
     for (const type of [...seen].sort()) {
       if (FOLDED.has(type)) continue;
-      if (!runCases.has(type)) missingRun.push(type);
+      if (!runCases.has(type) && !EPISODE_ONLY.has(type)) missingRun.push(type);
       if (!backlogCases.has(type)) missingBacklog.push(type);
     }
 
@@ -119,14 +127,33 @@ describe('every act the engine emits reaches both transcripts', () => {
       `these acts are emitted but the text backlog (text-backlog.js) never writes them: ${missingBacklog.join(', ')}`)
       .toEqual([]);
 
-    // The VP is allowed to be sparser — plenty of acts are prose rather than a
-    // screen — but the twist acts that carry a built screen must be registered.
-    const mustDraw = ['temptation', 'bonus-life', 'pandoras-box', 'battle-back',
-      'roadkill', 'app-store', 'diamond-detonation', 'battle-of-the-block'];
-    for (const type of mustDraw) {
-      if (!seen.has(type)) continue;
-      expect(vpCases.has(type), `${type} has no screen registered in buildVPScreens`).toBe(true);
-    }
+    // ── the VP ──
+    //
+    // This used to be an ALLOWLIST of eight act types that must draw, which is
+    // the wrong shape for a guard: it only catches the twists somebody
+    // remembered to add to it. Five twists shipped text-only underneath it —
+    // the Coin, America's Nominee, the Care Package, the Safety Suite and the
+    // Halting Hex all reached both transcripts and drew nothing, and the test
+    // stayed green because none of them were on the list.
+    //
+    // So it is a DENYLIST now. Every act the engine emits must have a screen
+    // unless it is named here with a reason, which means a new twist fails
+    // this test by default instead of passing by omission.
+    const PROSE_ONLY = new Map([
+      ['safety', 'folded into the nomination and veto prose'],
+      ['have-nots', 'drawn, but only when the twist is on — see its own case'],
+      ['generic-result', 'a competition with no signature screen of its own'],
+      ['tiebreaker', 'read out inside the eviction screen'],
+      ['arena', 'drawn by the Block Buster screens, not by act type'],
+      ['roadkill-win', 'the memory record, not an act with a scene in it'],
+      ['temptation-curse', 'drawn on the nomination ceremony as the chair nobody filled — '
+        + 'the curse has no scene of its own, it IS that third key turning'],
+    ]);
+    const undrawn = [...seen].sort()
+      .filter(type => !vpCases.has(type) && !PROSE_ONLY.has(type) && !FOLDED.has(type));
+    expect(undrawn,
+      `these acts are emitted but buildVPScreens draws nothing for them: ${undrawn.join(', ')}`)
+      .toEqual([]);
     // Every twist in the catalogue, three seeds each, plus three plain weeks —
     // so this grows with the catalogue and blew the default 90s budget the
     // moment it reached fifteen twists. It is slow because it is thorough, not

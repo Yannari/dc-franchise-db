@@ -83,9 +83,10 @@ export function runCoinOfDestiny({ week, house, hoh, nominees = [], rng = Math.r
   })).sort((a, b) => b.score - a.score);
   const winner = scores[0].name;
   beats.push(beat(
-    `${winner} wins the game and is taken out of the room. Nobody else is told what happens next, `
-      + 'which is the only part of this the house is certain about.',
-    [winner], 'WINS THE GAME', 'gold'));
+    `They go through one at a time, alone, and ${winner} comes out of it holding the coin. The house is `
+      + 'not told that, and will not be told it later — the only thing the room saw for certain was who '
+      + 'was willing to pay.',
+    [winner], 'HOLDS THE COIN', 'gold'));
 
   // ── the call ──
   //

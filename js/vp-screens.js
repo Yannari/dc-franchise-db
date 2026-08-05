@@ -17,6 +17,10 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // Total Drama twist-challenge VP. rpBuildBBComp dispatches on the tag and
 // falls back to the generic board when a builder declines (secret HOH,
 // missing data) or throws.
+import { rpBuildBBCarePackage, rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
+import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
+import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
+import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
@@ -20527,6 +20531,40 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'app-store':
         screens.push({ id: id('bb-appstore'), label: 'The App Store', html: rpBuildBBAppStore(view, act) });
         break;
+      // The twist screens that live in vp-bb-twists.js. They take the reveal
+      // helpers as arguments rather than importing them, the way Battle Back
+      // does — this file owns _tvState/_bbReveal/_bbEsc and importing back into
+      // it would be a cycle.
+      case 'care-package': {
+        const cpDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc };
+        screens.push({ id: id('bb-carepackage'), label: 'Care Package',
+          html: rpBuildBBCarePackage(view, act, cpDeps) });
+        break;
+      }
+      case 'care-package-play': {
+        const cppDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc };
+        screens.push({ id: id('bb-carepackage-play'), label: 'Package Spent',
+          html: rpBuildBBCarePackagePlay(view, act, cppDeps) });
+        break;
+      }
+      case 'coin-of-destiny': {
+        const cdDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc };
+        screens.push({ id: id('bb-coin'), label: 'The Coin',
+          html: rpBuildBBCoinOfDestiny(view, act, cdDeps) });
+        break;
+      }
+      case 'americas-nominee': {
+        const anDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc };
+        screens.push({ id: id('bb-americasnominee'), label: "America's Nominee",
+          html: rpBuildBBAmericasNominee(view, act, anDeps) });
+        break;
+      }
+      case 'safety-suite': {
+        const ssDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc };
+        screens.push({ id: id('bb-safetysuite'), label: 'Safety Suite',
+          html: rpBuildBBSafetySuite(view, act, ssDeps) });
+        break;
+      }
       case 'temptation':
         screens.push({ id: id('bb-temptation'), label: 'The Den', html: rpBuildBBTemptation(view, act) });
         break;

@@ -133,7 +133,10 @@ function appeal(name, powerId, { nominees = [], hoh = null, rng = Math.random } 
  */
 export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.random, offered = [] } = {}) {
   const room = (house || []).filter(Boolean);
-  const shelf = (offered || []).filter(id => BB_POWER_DEFINITIONS[id]).slice(0, 3);
+  // Deduped, because the doors are authored one at a time now and the same
+  // power standing behind two of them would collapse two rooms into one set
+  // of entrants. Empty strings are doors the author closed and drop out here.
+  const shelf = [...new Set((offered || []).filter(id => BB_POWER_DEFINITIONS[id]))].slice(0, 3);
   // Three doors and nobody to walk through them is not a twist.
   if (!shelf.length || room.length < 5) return null;
 

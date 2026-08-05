@@ -157,6 +157,54 @@ describe('the choice', () => {
   });
 });
 
+describe('the doors are authored, one at a time', () => {
+  beforeEach(() => house());
+
+  // The control used to be a single dropdown listing every distinct TRIO,
+  // which is four options at four powers and four hundred and fifty-five at
+  // fifteen. The registry is meant to grow, so the engine has to take any
+  // three ids — including a short list — rather than a fixed shape.
+  it('stands exactly the powers it was given behind the doors', () => {
+    const chosen = ['bonus-life', 'diamond-veto', 'the-cloud'];
+    for (let seed = 1; seed <= 12; seed++) {
+      house();
+      const act = run(seed, { offered: chosen });
+      if (!act) continue;
+      expect(act.rooms.map(r => r.powerId).sort()).toEqual([...chosen].sort());
+      return;
+    }
+    throw new Error('no whacktivity ran in 12 seeds');
+  });
+
+  it('runs a two-door week when a door is left closed', () => {
+    // An empty door is how the Format Designer says "this one does not open".
+    for (let seed = 1; seed <= 12; seed++) {
+      house();
+      const act = run(seed, { offered: ['coup-d-etat', '', 'the-cloud'] });
+      if (!act) continue;
+      expect(act.rooms).toHaveLength(2);
+      expect(act.rooms.map(r => r.powerId).sort()).toEqual(['coup-d-etat', 'the-cloud']);
+      return;
+    }
+    throw new Error('no whacktivity ran in 12 seeds');
+  });
+
+  it('never stands the same power behind two doors', () => {
+    // Three independent selects can be pointed at the same power; two rooms
+    // competing for one thing would split the entrants for no reason.
+    for (let seed = 1; seed <= 12; seed++) {
+      house();
+      const act = run(seed, { offered: ['the-cloud', 'the-cloud', 'bonus-life'] });
+      if (!act) continue;
+      const ids = act.rooms.map(r => r.powerId);
+      expect(new Set(ids).size, 'a power stood behind two doors').toBe(ids.length);
+      expect(ids.sort()).toEqual(['bonus-life', 'the-cloud']);
+      return;
+    }
+    throw new Error('no whacktivity ran in 12 seeds');
+  });
+});
+
 describe('winning one', () => {
   beforeEach(() => house());
 

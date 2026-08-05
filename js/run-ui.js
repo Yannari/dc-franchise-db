@@ -1389,25 +1389,31 @@ export function renderTimeline() {
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-whacktivity') {
-        // Which three powers are behind the doors. 'auto' takes the first three
-        // off the registry, so a new power is competable for with no new UI.
+        // One dropdown per door. The previous control listed every distinct
+        // TRIO as a single option, which is four choices at four powers and
+        // four hundred and fifty-five at fifteen — the registry is meant to
+        // grow, so the UI cannot be combinatorial in it.
+        //
+        // A door left empty simply does not open, so two-door and one-door
+        // weeks are authorable instead of being a shape nobody can express.
         const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
         const ids = Object.keys(defs);
-        const chosen = Array.isArray(t.doors) && t.doors.length ? t.doors.join(',') : 'auto';
-        const combos = [['auto', 'First three powers']];
-        // Every distinct trio, listed plainly — three dropdowns for one choice
-        // is more UI than a three-item pick is worth.
-        for (let i = 0; i < ids.length; i++) {
-          for (let j = i + 1; j < ids.length; j++) {
-            for (let k = j + 1; k < ids.length; k++) {
-              const trio = [ids[i], ids[j], ids[k]];
-              combos.push([trio.join(','), trio.map(x => defs[x].name.replace(/^The /, '')).join(' · ')]);
-            }
-          }
-        }
-        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','doors',this.value==='auto'?'auto':this.value.split(','))" onclick="event.stopPropagation()" title="What is behind the three doors" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
-        combos.forEach(([v, label]) => { h += `<option value="${v}" ${v === chosen ? 'selected' : ''}>${label}</option>`; });
-        h += `</select>`;
+        const doors = Array.isArray(t.doors) && t.doors.length
+          ? [...t.doors, '', '', ''].slice(0, 3)
+          : ids.slice(0, 3);
+        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:3px";
+        let h = '';
+        doors.forEach((chosen, idx) => {
+          h += `<select onchange="event.stopPropagation();_updateWhackDoor('${t.id}',${idx},this.value)" onclick="event.stopPropagation()" title="Door ${idx + 1}" style="${style}">`;
+          h += `<option value="" ${!chosen ? 'selected' : ''}>Door ${idx + 1}: closed</option>`;
+          ids.forEach(id => {
+            // A power already standing behind another door is shown but
+            // marked, so the author can see why it is not available twice.
+            const taken = doors.some((d, i) => i !== idx && d === id);
+            h += `<option value="${id}" ${id === chosen ? 'selected' : ''} ${taken ? 'disabled' : ''}>${defs[id].name.replace(/^The /, '')}${taken ? ' (in use)' : ''}</option>`;
+          });
+          h += `</select>`;
+        });
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-den-of-temptation') {
@@ -1773,6 +1779,35 @@ export function updateTwist(id, field, value) {
     while (reasons.length < value) reasons.push('random');
     t.returnReasons = reasons.slice(0, value);
   }
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+/**
+ * One door of a Whacktivity, set independently of the other two.
+ *
+ * The control used to be a single dropdown listing every distinct TRIO, which
+ * works at four powers (four combinations) and falls apart the moment the
+ * registry grows — ten powers is a hundred and twenty options, fifteen is four
+ * hundred and fifty-five. Three selects is one option per power per door,
+ * forever, and lets the author actually author the room.
+ *
+ * A door set to '' is a door that does not open, so a two-door or one-door
+ * week is authorable rather than a special case.
+ */
+export function _updateWhackDoor(twistId, doorIdx, powerId) {
+  const t = (seasonConfig.twistSchedule || []).find(x => x.id === twistId);
+  if (!t) return;
+  const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
+  const current = Array.isArray(t.doors) ? [...t.doors] : Object.keys(defs).slice(0, 3);
+  while (current.length < 3) current.push('');
+  current[doorIdx] = powerId;
+  // The same power cannot stand behind two doors: picking it for one clears it
+  // from the other rather than silently collapsing two rooms into one.
+  for (let i = 0; i < current.length; i++) {
+    if (i !== doorIdx && powerId && current[i] === powerId) current[i] = '';
+  }
+  t.doors = current;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   renderTimeline();
 }

@@ -4565,6 +4565,38 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'safety-suite': {
+        sec('THE SAFETY SUITE');
+        ln('  One entry per houseguest, for the whole season. The Head of Household');
+        ln('  cannot enter, and neither can anybody who has already spent theirs.');
+        ln('');
+        if (act.entrants?.length) {
+          ln(`  Swiped the pass: ${act.entrants.join(', ')}.`);
+        } else {
+          ln('  Nobody swipes. The suite sits empty for the full hour.');
+        }
+        if (act.held?.length) ln(`  Kept it in their pocket: ${act.held.join(', ')}.`);
+        if (act.exhausted?.length) {
+          ln(`  Out of entries for good: ${act.exhausted.join(', ')}.`);
+        }
+        if (act.entrants?.length) {
+          ln('');
+          if (!act.winner) {
+            ln(act.solo
+              ? '  The lone entrant does not beat the clock. No safety, and no entry left.'
+              : '  Nobody beats the clock. Every entry spent, nobody safe.');
+          } else {
+            ln(`  ${act.winner} beats the clock and is safe for the week.`);
+            if (act.plusOne) {
+              ln(`  ${act.winner} names ${act.plusOne} as the Plus One: also safe,`);
+              ln(`  and taking ${act.punishmentLabel} in exchange for it.`);
+            }
+          }
+        }
+        beats(act);
+        break;
+      }
+
       case 'care-package': {
         sec("AMERICA'S CARE PACKAGE");
         ln(`  The contents are announced before the vote, so the whole house knows`);

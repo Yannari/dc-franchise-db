@@ -13,6 +13,7 @@ import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
+import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, carePackageProtects, coHohNominee, carePackageVoteBlock,
   carePackageBribe, neverNots } from './care-package.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
@@ -1495,6 +1496,26 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // ── THE SAFETY SUITE: one entry, one season ──
+  //
+  // Runs before nominations because that is the only place it means anything,
+  // and after the Head of Household is crowned because who holds the key is
+  // most of what anybody is deciding about when they choose whether to swipe.
+  if (!compressed && twists.has('bb-safety-suite')) {
+    try {
+      week.safetySuite = runSafetySuite({ week, house, hoh, rng });
+      if (week.safetySuite) {
+        // The Plus One's punishment is a real cost, so slop is real slop.
+        if (week.safetySuite.punishment === 'slop' && week.safetySuite.plusOne) {
+          week.haveNots = [...new Set([...(week.haveNots || []), week.safetySuite.plusOne])];
+          gs.bb.haveNots = [...week.haveNots];
+        }
+        week.acts.push(addBeats(week.safetySuite,
+          { players: [...safetySuiteSafe(week.safetySuite)] }));
+      }
+    } catch { week.safetySuite = null; }
+  }
+
   // ── AMERICA'S CARE PACKAGE: the only distributor that hides nothing ──
   //
   // Contents announced before the vote, recipient named in front of everybody.
@@ -1638,7 +1659,7 @@ export function simulateBBWeek(options = {}) {
   // one ceremony — which is the line between them and the Cloud sitting
   // directly above.
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
-    carePackageProtects(week.carePackage)].filter(Boolean);
+    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
   let nominees = [...new Set(plan.nominees)]
     .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   while (nominees.length < 2) {
@@ -2444,7 +2465,7 @@ export function simulateBBWeek(options = {}) {
       // Super Safety and the Co-HOH key cover the WEEK, so they cover this
       // chair too. The Cloud deliberately does not: it buys one ceremony, and
       // this is the ceremony it does not buy.
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -2508,7 +2529,7 @@ export function simulateBBWeek(options = {}) {
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
     if (coup) {
-      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage)].filter(Boolean);
+      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
       if (eligible.length >= 2) {
         usePower(coup, week.num);
@@ -3008,7 +3029,7 @@ export function simulateBBWeek(options = {}) {
       }
       if (save) {
         const other = nominees.find(n => n !== save);
-        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || []), carePackageProtects(week.carePackage)].filter(Boolean);
+        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
         const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
         let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);
         if (replacement && house.includes(replacement) && !protectedNames.includes(replacement)) {

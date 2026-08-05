@@ -236,6 +236,26 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  'bb-safety-suite': {
+    id: 'bb-safety-suite', layer: 'scheduled', category: 'safety',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB22, and the first consumer of `addSlots`, which has been sitting in
+    // BASE_WEEK_RULES since the contract was written with nothing to read it.
+    // An extra competition happens before nominations and it is not for power
+    // — it is for staying off the block, which is a different act with a
+    // different shape and needed its own slot rather than a second veto.
+    //
+    // The twist is the economy, not the competition: one entry per houseguest
+    // per SEASON. Everything interesting follows from that — when to spend it,
+    // what spending it says about you, and who has nothing left by week three.
+    rules: { addSlots: ['safety'] },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'public' },
+    announcement: {
+      name: 'The Safety Suite',
+      rule: 'The Safety Suite is open before nominations. Any houseguest except the Head of Household may enter — ONCE, for the whole season. Whoever beats the clock is safe for the week and must choose a Plus One, who is also safe and takes a punishment for it.',
+      sting: 'Every one of you has exactly one of these. Somebody is about to spend theirs in week one.',
+    },
+  },
   'bb-care-package': {
     id: 'bb-care-package', layer: 'scheduled', category: 'distribution',
     timing: 'week-opening', duration: { weeks: 1 },

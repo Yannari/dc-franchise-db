@@ -15,7 +15,7 @@
 // scaffolding is shared with arena.js deliberately — the falls, the play-by-
 // play coverage and the finish are the arena's voice, and five games written
 // with their own versions of it would sound like a different show.
-import { pronouns } from '../players.js';
+import { pronouns, pStats } from '../players.js';
 import { scoreField, toResult, beat, vb } from './_shared.js';
 import { arenaFinish, arenaFalls, arenaPlayByPlay, arenaGrudge, say } from './arena.js';
 import { bond } from '../bb-events/_read.js';
@@ -189,7 +189,10 @@ const PLAY_onTilt = {
     (n, p) => `The ball does something on ${n}'s table that the arena has probably never seen and does not have a rule for. It counts.`,
   ],
   mid: [
-    (n, p) => `${n} leans on it once too often. TILT, and everything on the board resets to nothing.`,
+    // No TILT line in here. The tilt is a real event with real consequences
+    // further down — a coverage line that says the light came on and then
+    // changes nothing is the decorative version of the only rule this table has.
+    (n, p) => `${n} traps the ball on a flipper, holds it, and cannot think of a single thing to do with it that is better than letting go.`,
     (n, p) => `${n} plays it clean and gets nothing for it, because the table does not care how clean anybody is.`,
     (n, p) => `${n} has the best hands in the arena and the worst table in it.`,
   ],
@@ -217,6 +220,47 @@ const onTilt = {
       `${unlucky.name} loses the first ball down the middle without touching a flipper. There is nothing to learn from it and nothing ${p.sub} could have done, and ${p.sub} ${vb(p, 'is', 'are')} now playing two balls against three.`,
       [unlucky.name], 'STRAIGHT DOWN THE MIDDLE', 'red'));
     arenaPlayByPlay(entries, rng, beats, PLAY_onTilt);
+
+    // ── THE TILT ──
+    //
+    // The light the whole competition is named after, and it was only ever
+    // arriving as one line in the random play-by-play pool — so most nights
+    // nobody tilted at all and the table's one real rule never came up.
+    //
+    // It is a temperament read now. Leaning on the table is what somebody does
+    // when they have stopped playing and started arguing with it, so the least
+    // even-tempered player in the arena is the likeliest to do it, and the
+    // consequences are the point: a tilt is loud, it is funny from the glass,
+    // and it is watched by three people who have to sit in a house with them
+    // afterwards.
+    const tiltPull = entries.map(e => {
+      const st = pStats(e.name);
+      return { e, pull: (10 - (st.temperament || 5)) * 0.09 + (st.boldness || 5) * 0.03 };
+    }).sort((x, y) => y.pull - x.pull);
+    const tiltCandidate = tiltPull[0];
+    if (tiltCandidate && rng() < Math.min(0.72, tiltCandidate.pull)) {
+      const who = tiltCandidate.e.name;
+      const tp = pronouns(who);
+      beats.push(beat(
+        `${who} loses a ball to the left outlane and hits the table with both hips at once. The TILT light comes on, everything that ball earned goes back to zero, and the flippers die under ${tp.posAdj} hands for the rest of it. ${tp.Sub} ${vb(tp, 'stands', 'stand')} there with nothing to hit and nowhere to put it.`,
+        [who], 'TILT', 'red'));
+      // Great television, poor composure — and the house saw both.
+      api.popDelta(who, 2);
+      api.record(who, 'tilted', { competition: 'On Tilt' });
+      // Somebody at the glass laughs before they can stop themselves. It is not
+      // cruelty and it costs them anyway, because it was not their night to
+      // find funny.
+      const glass = (context.house || []).filter(n => n && !participants.includes(n));
+      if (glass.length) {
+        const laugher = glass[Math.floor(rng() * glass.length)];
+        beats.push(beat(
+          `${laugher} laughs at it from behind the glass, once, and loudly enough to carry. ${who} does not look over, which is worse than looking over.`,
+          [laugher, who], 'HEARD THAT', 'red'));
+        api.addBond(who, laugher, -0.8);
+        api.popDelta(laugher, -1);
+      }
+    }
+
     arenaFalls([...entries].reverse(), rng, beats);
     arenaGrudge(entries, api, beats);
     arenaFinish(entries, api, rng, beats);
@@ -225,6 +269,10 @@ const onTilt = {
     const last = entries[entries.length - 1];
     const winner = entries[0];
     if (last && winner && bond(last.name, winner.name) <= 0) api.addBond(last.name, winner.name, -0.3);
+    // ...and the flipside nobody writes down: winning a crapshoot earns you
+    // nothing with the room. The house does not credit luck, so the winner
+    // takes none of the respect a real competition win carries.
+    if (winner) api.record(winner.name, 'won-on-luck', { competition: 'On Tilt' });
     return toResult(entries, { beats, breakdown, variant: 'ontilt' });
   },
 };

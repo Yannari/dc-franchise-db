@@ -17,7 +17,8 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // Total Drama twist-challenge VP. rpBuildBBComp dispatches on the tag and
 // falls back to the generic board when a builder declines (secret HOH,
 // missing data) or throws.
-import { rpBuildBBCarePackage, rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
+import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
+import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
@@ -46,6 +47,7 @@ import { rpBuildSigSolveForX } from './vp-bb-sig/solve-for-x.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
 import { rpBuildSigKnightMoves } from './vp-bb-sig/knight-moves.js';
+import { rpBuildSigOnTilt } from './vp-bb-sig/on-tilt.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17051,6 +17053,7 @@ const _BB_SIG_BUILDERS = {
   'readyset': rpBuildSigReadySetWoah,
   'solveforx': rpBuildSigSolveForX,
   'knightmoves': rpBuildSigKnightMoves,
+  'ontilt': rpBuildSigOnTilt,
 };
 
 export function rpBuildBBComp(ep, actType) {

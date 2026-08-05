@@ -1713,8 +1713,27 @@ export function simulateBBWeek(options = {}) {
   // and is still a legal replacement at the veto ceremony three days later.
   // That is the whole decision in the power: spend it on the ceremony you can
   // see, and hope the one you cannot see does not come for you.
+  //
+  // It used to fire the instant it existed, which threw the decision away: the
+  // holder burned an eight-week power on the first ceremony whether or not
+  // anybody was coming for them. So it is now a READ. The holder cannot see
+  // the HOH's plan; intuition is how close they get to seeing it, warmth with
+  // the Head of Household is why they talk themselves out of it, and an
+  // expiring window is why they spend it on a quiet week anyway.
   const cloud = activePowerAt('nominations', week.num);
+  let cloudPlayed = false;
   if (cloud && house.includes(cloud.holder) && cloud.holder !== hoh) {
+    const st = pStats(cloud.holder);
+    const aimedAt = (plan.nominees || []).includes(cloud.holder);
+    const read = 0.30 + (st.intuition || 5) * 0.062;   // how well they sense it
+    const comfort = Math.max(0, (() => {
+      try { return getPerceivedBond(cloud.holder, hoh); } catch { return 0; }
+    })()) * 0.045;
+    const lastChance = week.num >= cloud.expiresAfterWeek ? 0.5 : 0;
+    const pull = 0.06 + (aimedAt ? read : 0) + lastChance - comfort;
+    cloudPlayed = rng() < Math.min(0.94, pull);
+  }
+  if (cloudPlayed) {
     usePower(cloud, week.num);
     week.cloud = { holder: cloud.holder, visibility: cloud.visibility };
     week.acts.push(addBeats({
@@ -3185,7 +3204,22 @@ export function simulateBBWeek(options = {}) {
       }
       if (save) {
         const other = nominees.find(n => n !== save);
-        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
+        // ── who the detonation may NOT seat ──
+        //
+        // The veto winner and anybody the veto took off the block are both
+        // safe for the week, and this list was missing both of them. Caught by
+        // playing a season rather than by a test: a houseguest was nominated,
+        // won the veto, used it on himself, and was then seated straight back
+        // onto the block by a secret Diamond and evicted. Two rules broken in
+        // one ceremony.
+        //
+        // The ordinary replacement path already protects them; this path built
+        // its own list and `save` here means the DIAMOND's save, which is a
+        // different person from the veto's.
+        const protectedNames = [hoh, holder, save, other,
+          week.vetoWinner, week.vetoDecision?.use ? week.vetoDecision.save : null,
+          ...(week.botbSafe || []), carePackageProtects(week.carePackage),
+          ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
         const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
         let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);
         if (replacement && house.includes(replacement) && !protectedNames.includes(replacement)) {

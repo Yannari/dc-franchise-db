@@ -253,7 +253,14 @@ export function expirePowers(week, house = gs.activePlayers || []) {
       p.disposed = true; p.disposedReason = 'holder-evicted';
       disposed.push(p); continue;
     }
-    if (week > p.expiresAfterWeek) {
+    // `expiresAfterWeek` is the LAST week the thing can be played — every use
+    // site treats it that way (`week <= expiresAfterWeek` is live, `week >=`
+    // is last chance). This sweep runs at the very end of that week, after all
+    // of them, so the window has genuinely closed and the viewer should be
+    // told tonight. It used to wait for `>`, which left a dead week where the
+    // power was unusable but not yet disposed and pushed the audience's note
+    // about it a full episode late.
+    if (week >= p.expiresAfterWeek) {
       p.disposed = true; p.disposedReason = 'expired';
       disposed.push(p);
     }

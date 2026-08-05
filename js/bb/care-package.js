@@ -24,10 +24,12 @@
 //   · a houseguest may receive ONE package all season, then leaves the pool
 //
 // The five, in the order the show ran them.
-import { gs } from '../core.js';
+import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { makePicker, clamp } from '../bb-comps/_shared.js';
+import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
+import { BB_PUNISHMENTS, applyPunishment } from './punishments.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
@@ -71,6 +73,36 @@ export const CARE_PACKAGES = [
   },
 ];
 
+// ══════════════════════════════════════════════════════════════════════
+// The BB Time Capsule (BB28)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The same audience channel, one rule harder. The viewers still vote a
+// houseguest in — but the vote no longer HANDS them anything. It sends them
+// into a room to attempt a challenge, alone, and what they come out with
+// depends on whether they beat it: a power from a past season if they do, a
+// punishment from a past season if they do not.
+//
+// That single change fixes the thing wrong with a pure gift twist. Being the
+// country's favourite stops being free money and becomes a coin-flip with a
+// costume on the other side of it — so the house's reaction to somebody being
+// picked is no longer envy, it is pity and calculation at the same time.
+//
+// What a win pays out is the existing power inventory, which is exactly what
+// the show does: the capsule is stocked with powers from previous seasons.
+
+/** What the capsule asks of whoever the audience sends in. */
+const CAPSULE_MIX = { mental: 0.32, physical: 0.26, temperament: 0.22, endurance: 0.20 };
+/** Beat this and you come out holding something. */
+const CAPSULE_CLOCK = 5.2;
+
+const CAPSULE_ENTRY = [
+  (n, p) => `${n} is called to the capsule. The house watches ${p.obj} go in and the door seals, and nobody out here knows what is being asked in there.`,
+  (n, p) => `The vote is read out and it is ${n}. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} about four seconds to enjoy being the favourite before the door opens and it becomes a competition.`,
+  (n, p) => `${n} goes in alone. Whatever is on the other side of that door, ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} coming back out wearing it or holding it.`,
+  (n, p) => `America sends ${n} into the capsule, which is the part everybody forgets is a punishment as often as it is a prize.`,
+];
+
 const store = () => { gs.bb ||= {}; gs.bb.carePackages ||= []; return gs.bb.carePackages; };
 /** Season-long, and the only care package effect that outlives its week. */
 export const neverNots = () => { gs.bb ||= {}; gs.bb.neverNots ||= []; return gs.bb.neverNots; };
@@ -88,13 +120,27 @@ const DELIVERY = [
  * Which package: the show ran them in a fixed order, one a week, so this
  * counts what has already been delivered rather than reading the week number —
  * a season that schedules the twist on weeks 2, 5 and 9 still gets the Pass,
- * then the vote block, then Super Safety.
+ * then the vote block, then Super Safety. `forced` overrides that entirely,
+ * because the rotation is a default and not a rule: this is a DISTRIBUTOR, and
+ * an author who wants the bribe in week two should be able to say so.
+ *
+ * A package the season cannot use is skipped rather than delivered. The
+ * Never-Not Pass exempts its holder from being a Have-Not, so on a season with
+ * Have-Nots switched off it is an envelope containing nothing — the audience's
+ * one gift of the week, spent on a rule that is not in play. That is the only
+ * package whose value depends on the season's configuration, and it is the
+ * FIRST in the rotation, so without this check the most common way to book
+ * this twist is also the way to waste it.
  *
  * Who: the audience, which in this simulator means popularity — the same
  * currency the App Store spends. The floor keeps an invisible houseguest a
- * long shot rather than an impossibility, and previous recipients are out of
- * the pool entirely, which is the rule that makes the last package in a season
- * a genuinely different vote from the first.
+ * long shot rather than an impossibility.
+ *
+ * ONE EACH, for the whole season, with no exceptions and no reopening. This is
+ * the same fairness rule the audience-favourite twists run on: the vote is a
+ * popularity contest, and a popularity contest that can pick the same darling
+ * every single week stops being a twist and becomes a subsidy. When everybody
+ * eligible has already had one, the package simply does not go out.
  *
  * @returns {object|null} the act, or null when there is nobody left to give to
  */
@@ -102,16 +148,19 @@ export function runCarePackage({ week, house, hoh, rng = Math.random, forced = n
   const room = (house || []).filter(Boolean);
   if (room.length < 4) return null;
   const delivered = store();
-  const pkg = (forced && CARE_PACKAGES.find(p => p.id === forced))
-    || CARE_PACKAGES[delivered.length % CARE_PACKAGES.length];
+  const haveNotsOn = seasonConfig?.bbHaveNots && seasonConfig.bbHaveNots !== 'off';
+  const usable = CARE_PACKAGES.filter(p => p.effect !== 'never-not' || haveNotsOn);
+  if (!usable.length) return null;
+  const pkg = (forced && usable.find(p => p.id === forced))
+    || usable[delivered.length % usable.length];
   const say = makePicker(rng);
 
-  // One each. When everybody has had one — a long season, a small house — the
-  // pool reopens rather than the twist silently doing nothing.
+  // One each, for good. No reopening: a houseguest who has had a package is out
+  // of this pool for the rest of the season, and if that empties the pool the
+  // week simply has no package in it.
   const had = new Set(delivered.map(d => d.recipient));
-  let pool = room.filter(n => !had.has(n));
-  const poolReopened = !pool.length;
-  if (poolReopened) pool = [...room];
+  const pool = room.filter(n => !had.has(n));
+  if (!pool.length) return null;
 
   const weights = pool.map(name => ({
     name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)),
@@ -143,7 +192,7 @@ export function runCarePackage({ week, house, hoh, rng = Math.random, forced = n
   const act = {
     type: 'care-package', week: week?.num || 0, secret: false,
     packageId: pkg.id, package: pkg.name, blurb: pkg.blurb, catch: pkg.catch,
-    effect: pkg.effect, recipient, hoh: hoh || null, poolReopened,
+    effect: pkg.effect, recipient, hoh: hoh || null,
     ineligible: [...had].filter(n => room.includes(n)),
     blocked: [], bribe: null, coNominee: null, beats,
   };
@@ -257,4 +306,107 @@ export function carePackageBribe({ act, ballots, nominees, house, rng = Math.ran
       [mark, act.recipient], 'REFUSED, AND FILED', 'gold'));
   }
   return act.bribe;
+}
+
+/**
+ * Run the BB Time Capsule.
+ *
+ * The audience picks with the same weighting and the same one-per-season rule
+ * the care package uses — being sent in is an honour you only receive once,
+ * whichever way it goes for you.
+ *
+ * The challenge is winnable rather than a formality: a little over half of
+ * entrants beat the clock, so the twist produces powers and costumes in
+ * roughly equal numbers across a season and neither outcome ever feels like
+ * the default.
+ *
+ * @param {string[]} shelf  power ids a win may pay out
+ * @param {string[]} rack   punishment ids a loss may hand over
+ * @returns {object|null} the act, or null when nobody is eligible
+ */
+export function runTimeCapsule({ week, house, hoh, rng = Math.random,
+  shelf = null, rack = null } = {}) {
+  const room = (house || []).filter(Boolean);
+  if (room.length < 4) return null;
+  const delivered = store();
+  const say = makePicker(rng);
+
+  // One trip each, for the whole season, exactly as with the package.
+  const had = new Set(delivered.map(d => d.recipient));
+  const pool = room.filter(n => !had.has(n));
+  if (!pool.length) return null;
+
+  const weights = pool.map(name => ({
+    name, weight: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)),
+  }));
+  const total = weights.reduce((sum, c) => sum + c.weight, 0);
+  let roll = rng() * total;
+  let picked = weights[weights.length - 1];
+  for (const c of weights) { roll -= c.weight; if (roll <= 0) { picked = c; break; } }
+  const favourite = picked.name;
+  const p = pronouns(favourite);
+
+  const beats = [beat(say(CAPSULE_ENTRY)(favourite, p), [favourite],
+    "AMERICA'S FAVOURITE", 'gold')];
+
+  const score = aptitude(favourite, CAPSULE_MIX) + (rng() - 0.5) * 5.2;
+  const won = score >= CAPSULE_CLOCK;
+
+  const act = {
+    type: 'time-capsule', week: week?.num || 0, secret: false, style: 'time-capsule',
+    recipient: favourite, favourite, won, hoh: hoh || null,
+    powerId: null, power: null, punishmentId: null, punishment: null,
+    punishmentCost: null, tetheredTo: null,
+    ineligible: [...had].filter(n => room.includes(n)),
+    beats,
+  };
+  delivered.push({ week: week?.num || 0, package: 'time-capsule', recipient: favourite });
+
+  if (won) {
+    // A power from a past season, which is precisely what this inventory is.
+    const ids = (Array.isArray(shelf) && shelf.length ? shelf : Object.keys(BB_POWER_DEFINITIONS))
+      .filter(id => BB_POWER_DEFINITIONS[id]);
+    const powerId = ids[Math.floor(rng() * ids.length)] || ids[0];
+    const def = BB_POWER_DEFINITIONS[powerId];
+    grantPower(powerId, favourite, {
+      week: week?.num || 1, visibility: 'holder-secret', source: 'bb-time-capsule',
+    });
+    act.powerId = powerId;
+    act.power = def.name;
+    beats.push(beat(
+      `${favourite} beats it, and comes out of that room holding ${def.name}. The house is told the capsule `
+        + 'was beaten and is not told what came out of it, which is a worse thing to know than nothing.',
+      [favourite], 'CAME OUT HOLDING SOMETHING', 'gold'));
+    return act;
+  }
+
+  // A punishment from a past season, worn in front of everybody.
+  const rackIds = (Array.isArray(rack) && rack.length ? rack : Object.keys(BB_PUNISHMENTS))
+    .filter(id => BB_PUNISHMENTS[id]);
+  const punishmentId = rackIds[Math.floor(rng() * rackIds.length)] || rackIds[0];
+  const pdef = BB_PUNISHMENTS[punishmentId];
+  // Adam and Eve needs somebody to be tied to, and it is not a volunteer role.
+  const partner = pdef.tether
+    ? room.filter(n => n !== favourite)
+      .sort((a, b) => getPerceivedBond(favourite, b) - getPerceivedBond(favourite, a))[0] || null
+    : null;
+  applyPunishment(favourite, punishmentId, { week: week?.num || 1, partner });
+  act.punishmentId = punishmentId;
+  act.punishment = pdef.name;
+  act.punishmentCost = pdef.cost;
+  act.tetheredTo = partner;
+  beats.push(beat(
+    `${favourite} does not beat it, and comes out in ${pdef.name}. ${pdef.blurb}`,
+    [favourite], 'CAME OUT WEARING SOMETHING', 'red'));
+  beats.push(beat(
+    `${pdef.cost} Being the country's favourite has cost ${favourite} a week of being taken seriously, `
+      + 'which in this house is most of what a week is for.',
+    [favourite, partner].filter(Boolean), 'THE REAL PRICE', 'red'));
+  if (partner) {
+    beats.push(beat(
+      `${partner} did not vote for this, was not voted for, and is now attached to ${favourite} `
+        + 'until it comes off. Neither of them can hold a private conversation again this week.',
+      [partner, favourite], 'TETHERED', 'red'));
+  }
+  return act;
 }

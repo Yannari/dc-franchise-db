@@ -95,7 +95,8 @@ export function rpBuildBBSafetySuite(ep, act, deps) {
          <br><br>${(act.entrants || []).length
     ? `${esc((act.entrants || []).join(', '))} will never be able to do this again. `
     : ''}That list is the thing the house is really playing off by week three: everybody knows exactly
-         who has nothing left to buy their way out with.`, 'gold', 'is-final');
+         who has nothing left to buy their way out with.`, 'gold', 'is-final',
+        [act.winner, act.plusOne]);
     }
     return _beatCard(step.b);
   };

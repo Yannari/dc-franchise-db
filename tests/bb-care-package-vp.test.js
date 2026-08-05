@@ -28,8 +28,10 @@ function house(weeks = 1) {
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
     bbHaveNots: 'off', bbSafetyMode: 'off' });
+  // The audience channel now defaults to the Time Capsule, so BB18's delivery
+  // shape has to be asked for by name. The capsule has its own screen test.
   seasonConfig.twistSchedule = Array.from({ length: weeks },
-    (_, i) => ({ episode: i + 1, type: 'bb-care-package' }));
+    (_, i) => ({ episode: i + 1, type: 'bb-care-package', cpStyle: 'care-package' }));
 }
 
 /** Play until a care-package act exists, and return its episode. */

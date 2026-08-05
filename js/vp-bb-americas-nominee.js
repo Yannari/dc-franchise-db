@@ -74,7 +74,7 @@ export function rpBuildBBAmericasNominee(ep, act, deps) {
     if (step.kind === 'chairs') {
       return _card('TWO CHAIRS WITH A HAND ON THEM',
         `The Head of Household filled two of these and the whole house watched it happen. There is a
-         third, and there is nobody in this building to ask about it.`, 'blue');
+         third, and there is nobody in this building to ask about it.`, 'blue', '', hohNoms);
     }
     if (step.kind === 'third') {
       return _card('AND ONE WITHOUT',
@@ -88,7 +88,7 @@ export function rpBuildBBAmericasNominee(ep, act, deps) {
              <br><br>Nobody in that house did this. Not one of them. They will still spend the week working
              out which of them did, because a chair with no hand on it is not a thing a house can leave
              alone.`,
-        'red', 'is-final');
+        'red', 'is-final', [act.nominee]);
     }
     return _beatCard(step.b);
   };

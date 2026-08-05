@@ -28,15 +28,22 @@ const CAST = NAMES.map((name, i) => ({
   name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
 }));
 
-function house(weeks = 1) {
+// The audience channel defaults to the Time Capsule, so every test of BB18's
+// straight-delivery shape has to ask for it by name.
+function house(weeks = 1, { haveNots = 'off', pkg = null, cpStyle = 'care-package' } = {}) {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
-    bbHaveNots: 'off', bbSafetyMode: 'off' });
+    bbHaveNots: haveNots, bbSafetyMode: 'off' });
   seasonConfig.twistSchedule = Array.from({ length: weeks },
-    (_, i) => ({ episode: i + 1, type: 'bb-care-package' }));
+    (_, i) => ({ episode: i + 1, type: 'bb-care-package', cpStyle,
+      ...(pkg ? { package: pkg } : {}) }));
 }
+
+/** The packages a season with this configuration can actually use. */
+const usable = haveNots =>
+  CARE_PACKAGES.filter(p => p.effect !== 'never-not' || (haveNots && haveNots !== 'off'));
 
 const actOf = (ep, type = 'care-package') => (ep.acts || []).find(a => a.type === type) || null;
 
@@ -83,7 +90,7 @@ describe("America's Care Package", () => {
     }
   });
 
-  it('runs the five in order and never gives one houseguest two', () => {
+  it('runs them in order and never gives one houseguest two', () => {
     for (let seed = 1; seed <= 8; seed++) {
       house(5);
       const seen = [];
@@ -93,13 +100,59 @@ describe("America's Care Package", () => {
         if (act) seen.push(act);
       }
       if (seen.length < 3) continue;
+      // The rotation wraps: four usable packages over five booked weeks means
+      // week five starts the list again.
+      const order = usable('off');
       expect(seen.map(a => a.packageId))
-        .toEqual(CARE_PACKAGES.slice(0, seen.length).map(p => p.id));
+        .toEqual(seen.map((_, i) => order[i % order.length].id));
       const names = seen.map(a => a.recipient);
       expect(new Set(names).size, 'somebody got two packages').toBe(names.length);
       return;
     }
     throw new Error('no season delivered three packages');
+  });
+
+  it('does not spend a week handing out a pass that does nothing', () => {
+    // The Never-Not Pass exempts its holder from being a Have-Not. With
+    // Have-Nots switched off it is an empty envelope — and it is FIRST in the
+    // rotation, so the commonest way to book this twist was also the way to
+    // waste it.
+    house(2);
+    const off = withSeededRandom(38, () => simulateBBEpisode());
+    expect(actOf(off)?.packageId, 'delivered a dead package').not.toBe('never-not');
+
+    // With Have-Nots on it leads the rotation exactly as the show ran it.
+    house(2, { haveNots: 'every-week' });
+    const on = withSeededRandom(38, () => simulateBBEpisode());
+    expect(actOf(on)?.packageId).toBe('never-not');
+    expect(gs.bb.neverNots).toContain(actOf(on).recipient);
+  });
+
+  it('lets the season book a specific package onto a specific week', () => {
+    for (const want of ['bribe', 'co-hoh', 'super-safety']) {
+      house(1, { pkg: want });
+      const ep = withSeededRandom(38, () => simulateBBEpisode());
+      expect(actOf(ep)?.packageId, `${want} was not honoured`).toBe(want);
+    }
+  });
+
+  it('stops entirely rather than giving anybody a second one', () => {
+    // Twelve houseguests, twelve packages booked. Once everybody eligible has
+    // had one the twist goes quiet — it never reopens the pool, because a
+    // popularity vote that can pick the same darling twice stops being a twist.
+    house(12, { pkg: 'bribe' });
+    const recipients = [];
+    for (let w = 0; w < 12; w++) {
+      // A twelve-week run reaches the finale before it runs out of weeks, and
+      // the engine returns null once the season is over.
+      const ep = withSeededRandom(38 + w * 3, () => simulateBBEpisode());
+      if (!ep) break;
+      const act = actOf(ep);
+      if (act) recipients.push(act.recipient);
+    }
+    expect(recipients.length, 'no packages were delivered at all').toBeGreaterThan(2);
+    expect(new Set(recipients).size, 'somebody received two packages')
+      .toBe(recipients.length);
   });
 
   it('makes Super Safety and the Co-HOH key unnominatable', () => {

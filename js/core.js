@@ -503,9 +503,9 @@ export const TWIST_CATALOG = [
     // the week arguing about the same chairs.
     incompatible:['bb-battle-of-the-block', 'bb-split-house'],
     incompatibleModes:['block-buster'] },
-  { id:'bb-care-package', emoji:'📦', name:"America's Care Package", format:'big-brother',
+  { id:'bb-care-package', emoji:'📦', name:"The Audience Vote", format:'big-brother',
     category:'power', phase:'any',
-    desc:'Every week the audience votes one houseguest a care package, and the contents are announced before the vote so the whole house knows what is being handed out. The recipient is named publicly — nobody competes for it and nobody can refuse it. Five packages run in order: a Never-Not pass, the power to strike two eviction votes, Super Safety with a costume attached, a Co-Head of Household key, and $5,000 to buy a vote with. A houseguest may only ever receive one, so the pool shrinks every week — and every delivery tells the room who the country likes better than them.',
+    desc:'The audience votes one houseguest in every week, and the twist runs one of two shapes. The BB TIME CAPSULE sends the favourite into a room to attempt a challenge alone: beat it and they come out holding a power from a past season, fail it and they come out wearing a punishment from one — the Egg Detective suit, the red unitard, Lord of the Latrine, Hamazon, Camp Guide, or tethered to another houseguest in Adam and Eve. A costume is not a joke here: it is subtracted from every pitch they make for as long as they are in it, so being the country’s favourite can cost a week of being taken seriously. AMERICA’S CARE PACKAGE runs the older shape, where the contents are announced before the vote and simply handed over: a Never-Not pass, the power to strike two eviction votes, Super Safety, a Co-Head of Household key, or $5,000 to buy a vote with. Either way a houseguest may only ever be chosen once, so the pool shrinks every week.',
     // The Co-HOH package fills a second key, so anything that already owns the
     // shape of the block or the count of the Heads of Household is out.
     incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh'],

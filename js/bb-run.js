@@ -31,6 +31,9 @@ import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
+// The Format Designer stocks the care package shelf from this the same way it
+// stocks the box and the doors from the power inventory.
+export { CARE_PACKAGES } from './bb/care-package.js';
 
 /** Is this season a Big Brother season? */
 export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
@@ -682,6 +685,9 @@ export function simulateBBEpisode() {
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-whacktivity');
   const denEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-den-of-temptation');
+  // The audience channel: which shape it runs, and what it is stocked with.
+  const cpEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-care-package');
 
   // ══════════════════════════════════════════════════════════════════
   // The Split House
@@ -719,6 +725,13 @@ export function simulateBBEpisode() {
     pandorasPrize: boxEntry?.prize || undefined,
     temptationOffer: denEntry?.offer || 'random',
     whacktivityDoors: whackEntry?.doors || 'auto',
+    // Which package the audience is voting over. 'auto' runs the show's
+    // rotation; a package id books that one onto this week, which is the whole
+    // point of the twist being a distributor rather than a fixed schedule.
+    carePackageForced: cpEntry?.package || null,
+    // Which shape the audience channel runs this week: the Time Capsule's
+    // challenge (default) or BB18's straight delivery.
+    carePackageStyle: cpEntry?.cpStyle || 'time-capsule',
     // What the audience is voting over. 'all' stocks the whole inventory; a
     // power id stocks just that one, which is how a season books a specific
     // power onto a specific week.
@@ -1010,6 +1023,20 @@ export function summariseWeek(week) {
           line(`  ${act.winner} beats the clock and is safe.`);
           if (act.plusOne) line(`  Plus One: ${act.plusOne}, safe, with ${act.punishmentLabel} for it.`);
         }
+        break;
+      }
+      case 'time-capsule': {
+        line('');
+        line('THE BB TIME CAPSULE');
+        line(`  America votes ${act.favourite} into the capsule.`);
+        if (act.won) {
+          line('  The challenge is beaten. Something from a past season comes out with them,');
+          line('  and the house is told only that the capsule was beaten.');
+        } else {
+          line(`  The challenge beats them, and they come out in ${act.punishment}.`);
+          if (act.tetheredTo) line(`  ${act.tetheredTo} is tied to them until it comes off.`);
+        }
+        if (act.ineligible?.length) line(`  Already been in: ${act.ineligible.join(', ')}.`);
         break;
       }
       case 'care-package': {

@@ -30,6 +30,7 @@ import { rememberStrategy } from '../strategy-memory.js';
 import { listBlocs, learnAbout } from './blocs.js';
 import { bbAllianceStrength, bbThreat, getBBTarget } from './shared-strategy.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
+import { socialDrag } from './punishments.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -92,7 +93,8 @@ function approachArgument(recruiter, voter, target, keeping) {
  * `stated` (the position they gave the house — a liar's differs from the
  * ballot), and `evict` (where it actually is right now).
  */
-export function runVoteOperation({ ballots = [], nominees = [], hoh = null, commitments = new Map(), rng = Math.random } = {}) {
+export function runVoteOperation({ ballots = [], nominees = [], hoh = null,
+  commitments = new Map(), rng = Math.random, week = 0 } = {}) {
   const empty = { plans: [], independents: [], moves: [] };
   if (ballots.length < 2 || nominees.length < 2) {
     ballots.forEach(b => { b.stated = b.evict; });
@@ -228,7 +230,9 @@ export function runVoteOperation({ ballots = [], nominees = [], hoh = null, comm
       // people do also just say yes to their friends.
       const persuade = rStats.social * 0.35 + rStats.strategic * 0.2
         + tacticalCooperation(voter, recruiter) * 0.45
-        + Math.max(0, getPerceivedBond(voter, recruiter)) * 0.25 + noise(rng, 3);
+        + Math.max(0, getPerceivedBond(voter, recruiter)) * 0.25 + noise(rng, 3)
+        // Nobody takes the room seriously while it is dressed as an egg.
+        - socialDrag(recruiter, week);
       const resist = strength * 6 + vStats.loyalty * 0.15 + vStats.intuition * 0.1;
       const argument = approachArgument(recruiter, voter, plan.target, plan.keeping);
       let outcome;
@@ -435,7 +439,10 @@ export function resolveFinalPleas({ nominees = [], ballots = [], hoh = null, wee
         + dims.trust * 0.35 + dims.obligation * 0.3 + dims.affection * 0.15
         - dims.resentment * 0.35 - suspicionOf(voter, speaker) * 0.3
         + benefit
-        + (caught ? -3 : unsupported.length * 0.7);
+        + (caught ? -3 : unsupported.length * 0.7)
+        // Campaigning for your life in a costume is measurably worse than
+        // campaigning for it in your own clothes.
+        - socialDrag(speaker, week);
 
       const keepDeal = dealBetween(voter, other);
       const resist = strength * 5.5

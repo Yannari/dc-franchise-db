@@ -1473,6 +1473,37 @@ export function renderTimeline() {
         });
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-care-package') {
+        // A distributor, so the shelf is authorable. 'auto' runs the show's
+        // rotation; anything else books that package onto this week — which
+        // matters most for the Never-Not Pass, since it is first in the
+        // rotation and does nothing at all on a season without Have-Nots.
+        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px";
+        const cpStyle = t.cpStyle || 'time-capsule';
+        // Which shape the audience channel runs. The capsule makes the
+        // favourite earn it; the package just hands it over.
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','cpStyle',this.value)" onclick="event.stopPropagation()" title="What the audience vote does" style="${style}">`;
+        h += `<option value="time-capsule" ${cpStyle === 'time-capsule' ? 'selected' : ''}>Time Capsule: they play for it</option>`;
+        h += `<option value="care-package" ${cpStyle === 'care-package' ? 'selected' : ''}>Care Package: handed over</option>`;
+        h += `</select>`;
+        // Only the package shape has a shelf to stock — the capsule pays out of
+        // the power inventory and the punishment rack.
+        if (cpStyle === 'care-package') {
+          const pkgs = (typeof CARE_PACKAGES !== 'undefined' && CARE_PACKAGES) || [];
+          const chosen = t.package || 'auto';
+          const haveNots = seasonConfig.bbHaveNots && seasonConfig.bbHaveNots !== 'off';
+          h += `<select onchange="event.stopPropagation();updateTwist('${t.id}','package',this.value)" onclick="event.stopPropagation()" title="Which package the audience votes over" style="${style}">`;
+          h += `<option value="auto" ${chosen === 'auto' ? 'selected' : ''}>Next in the rotation</option>`;
+          pkgs.forEach(p => {
+            // Said out loud rather than hidden: a Never-Not Pass on a season
+            // with no Have-Nots is an empty envelope, and the engine skips it.
+            const dead = p.effect === 'never-not' && !haveNots;
+            h += `<option value="${p.id}" ${p.id === chosen ? 'selected' : ''} ${dead ? 'disabled' : ''}>${p.name}${dead ? ' (no Have-Nots this season)' : ''}</option>`;
+          });
+          h += `</select>`;
+        }
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-den-of-temptation') {
         // What is on the table in the Den. Same source as the box and the
         // shelf; 'random' lets the season surprise itself.

@@ -14,8 +14,9 @@ import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
-import { runCarePackage, carePackageProtects, coHohNominee, carePackageVoteBlock,
-  carePackageBribe, neverNots } from './care-package.js';
+import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
+  carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
+import { punishedHaveNots } from './punishments.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import {
@@ -1524,10 +1525,26 @@ export function simulateBBWeek(options = {}) {
   // and the house has to be told who holds them before the keys turn.
   if (!compressed && twists.has('bb-care-package')) {
     try {
-      week.carePackage = runCarePackage({
-        week, house, hoh, rng, forced: options.carePackageForced || null,
-      });
+      // Two shapes on one audience channel. The Time Capsule (BB28) makes the
+      // favourite EARN it — a challenge, a power if they beat it, a punishment
+      // from a past season if they do not — and is the default, because a vote
+      // that only ever hands out gifts has no second act in it. 'care-package'
+      // runs BB18's straight delivery.
+      const style = options.carePackageStyle === 'care-package' ? 'care-package' : 'time-capsule';
+      week.carePackage = style === 'time-capsule'
+        ? runTimeCapsule({ week, house, hoh, rng,
+          shelf: options.capsuleShelf || null, rack: options.capsuleRack || null })
+        : runCarePackage({
+          week, house, hoh, rng, forced: options.carePackageForced || null,
+        });
       if (week.carePackage) {
+        // A slop punishment is real slop, and the have-not act has already run
+        // by now, so it is merged in rather than chosen there.
+        const punished = punishedHaveNots(week.num).filter(n => house.includes(n));
+        if (punished.length) {
+          week.haveNots = [...new Set([...(week.haveNots || []), ...punished])];
+          gs.bb.haveNots = [...week.haveNots];
+        }
         week.acts.push(addBeats(week.carePackage, { players: [week.carePackage.recipient] }));
       }
     } catch { week.carePackage = null; }
@@ -2872,7 +2889,7 @@ export function simulateBBWeek(options = {}) {
   // answer, every approach, every refusal, every yes that was a lie. It also
   // writes `stated` — the public position — HERE, so anything that moves a
   // ballot after this point is visible as a move.
-  week.voteOperation = runVoteOperation({ ballots, nominees, hoh, commitments, rng });
+  week.voteOperation = runVoteOperation({ ballots, nominees, hoh, commitments, rng, week: week.num });
   week.blocMoves = week.voteOperation.moves;
   week.campaign = [];
   // A compressed cycle has no time in it: one round of campaigning, live, with

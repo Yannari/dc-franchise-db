@@ -4597,6 +4597,33 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'time-capsule': {
+        sec('THE BB TIME CAPSULE');
+        ln('  The audience vote no longer hands anybody anything. It sends them');
+        ln('  into a room to attempt a challenge, alone, and what they walk out');
+        ln('  with depends on whether they beat it.');
+        ln('');
+        ln(`  America votes in ${act.favourite}.`);
+        if (act.won) {
+          ln('  They beat it, and come out holding a power from a past season.');
+          ln('  The house is told the capsule was beaten and never told what came out,');
+          ln('  which is a worse thing to know than nothing at all.');
+        } else {
+          ln(`  They do not beat it, and come out in ${act.punishment}.`);
+          if (act.punishmentCost) ln(`  ${act.punishmentCost}`);
+          if (act.tetheredTo) {
+            ln(`  ${act.tetheredTo} did not vote for this and is attached to them anyway,`);
+            ln('  until it comes off.');
+          }
+          ln('  Being the favourite has cost them a week of being taken seriously.');
+        }
+        if (act.ineligible?.length) {
+          ln(`  Already had their trip, and can never have another: ${act.ineligible.join(', ')}.`);
+        }
+        beats(act);
+        break;
+      }
+
       case 'care-package': {
         sec("AMERICA'S CARE PACKAGE");
         ln(`  The contents are announced before the vote, so the whole house knows`);
@@ -4609,7 +4636,7 @@ export function generateBBSummaryText(ep) {
         if (act.ineligible?.length) {
           ln(`  Out of the pool for good, having already had one: ${act.ineligible.join(', ')}.`);
         }
-        if (act.poolReopened) ln('  Everybody in this house has now had one, so the pool has reopened.');
+        ln('  A houseguest may only ever receive one, so that name leaves the pool for good.');
         if (act.coNominee) {
           ln('');
           ln(`  ${act.recipient} takes the second key and names ${act.coNominee}.`);

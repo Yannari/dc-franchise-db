@@ -34,20 +34,48 @@
 let _tvState = {};
 let _bbReveal = () => '';
 let _bbEsc = v => String(v ?? '');
+let _bbAvatar = () => '';
 export function _deps(d) {
   if (!d) return false;
   if (d.tvState) _tvState = d.tvState;
   if (d.reveal) _bbReveal = d.reveal;
   if (d.esc) _bbEsc = d.esc;
+  if (d.avatar) _bbAvatar = d.avatar;
   return Boolean(d.tvState && d.reveal && d.esc);
 }
+
+/**
+ * The faces on a card.
+ *
+ * Every card in these screens is ABOUT somebody, and a wall of prose with no
+ * portraits in it reads as a transcript rather than as television. The beat
+ * cards already carry a `players` array and the twist cards know their own
+ * cast, so both get a row of avatars under the badge.
+ *
+ * Deduplicated and capped: a beat naming five people is a beat, not a group
+ * photograph, and six 24px portraits wrap badly on a phone.
+ */
+export const _faces = (names, px = 24) => {
+  const cast = [...new Set((names || []).filter(Boolean))].slice(0, 4);
+  if (!cast.length) return '';
+  return `<span class="bbtw-faces">${cast.map(n =>
+    `<span class="bbtw-face" title="${_bbEsc(n)}">${_bbAvatar(n, px)}</span>`).join('')}</span>`;
+};
+
+/** Shared by every screen in the family, so the faces sit the same way. */
+export const FACE_CSS = `
+.bbtw-faces{display:inline-flex;align-items:center;gap:4px;margin-right:8px;vertical-align:middle}
+.bbtw-face{display:inline-flex}
+.bbtw-face .bb-av{border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.bbns-card-b .bbtw-faces{float:left}
+`;
 
 /** Every screen here reveals one step at a time out of the same scaffolding. */
 export function _shell({ ep, stateKey, total, title, sub, cls, css, stage, cards, firstLabel }) {
   const state = _tvState[stateKey];
   const done = state.idx >= total - 1;
   return `<div class="rp-page bb-room bb-block bbns ${cls}">
-    <style>${css}</style>
+    <style>${css}${FACE_CSS}</style>
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div class="${cls}-title">${_bbEsc(title)}</div>
     <div class="${cls}-sub">${_bbEsc(sub)}</div>
@@ -64,13 +92,18 @@ export function _shell({ ep, stateKey, total, title, sub, cls, css, stage, cards
 export const _key = (ep, tag) => `bb_${tag}_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
 export const _init = key => { if (!_tvState[key]) _tvState[key] = { idx: -1 }; return _tvState[key]; };
 export const _hidden = () => '<div class="bbns-card is-hidden"><span>?</span></div>';
-export const _card = (pill, body, tone = '', extra = '') =>
+export const _card = (pill, body, tone = '', extra = '', cast = []) =>
   `<div class="bbns-card ${extra}">
     <div class="bbns-card-h"><span class="bbns-pill ${tone}">${_bbEsc(pill)}</span></div>
-    <div class="bbns-card-b">${body}</div></div>`;
-/** Beats arrive pre-written by the engine; the screen only has to place them. */
+    <div class="bbns-card-b">${_faces(cast)}${body}</div></div>`;
+/**
+ * Beats arrive pre-written by the engine; the screen only has to place them —
+ * and put the faces of the people in them on the front, which is the whole
+ * reason the engine bothers to carry `players` on every beat.
+ */
 export const _beatCard = b => _card(b.badgeText || 'THE HOUSE', _bbEsc(b.text || ''),
-  b.badgeClass === 'red' ? 'red' : b.badgeClass === 'grey' ? 'grey' : b.badgeClass === 'blue' ? 'blue' : 'gold');
+  b.badgeClass === 'red' ? 'red' : b.badgeClass === 'grey' ? 'grey' : b.badgeClass === 'blue' ? 'blue' : 'gold',
+  '', b.players || []);
 
 // ══════════════════════════════════════════════════════════════════════
 // America's Care Package
@@ -190,16 +223,16 @@ export function rpBuildBBCarePackage(ep, act, deps) {
          ${act.coNominee ? `As Co-Head of Household, ${_bbEsc(act.recipient)} names ${_bbEsc(act.coNominee)}.` : ''}
          <br><br>This is the part the secret twists can never do. There is nothing to work out and
          nobody to suspect — just a room of people who have all just been told, out loud, that the
-         country picked somebody else.`, 'red', 'is-final');
+         country picked somebody else.`, 'red', 'is-final', [act.recipient, act.coNominee]);
     }
     if (step.kind === 'pool') {
       return _card('THE POOL SHRINKS',
         `Out of the running for good, having already had one:
          <div class="bbcp-pool">${(act.ineligible || [])
     .map(n => `<span class="bbcp-chip is-out">${_bbEsc(n)}</span>`).join('')}</div>
-         <br>A houseguest may only ever receive one. Every week this runs, the list of people the
-         audience is still allowed to reach gets shorter — which makes the last package of a season
-         a completely different vote from the first.`, 'grey');
+         <br>A houseguest may only ever receive one, ever. Every week this runs, the list of people
+         the audience is still allowed to reach gets shorter — which makes the last package of a
+         season a completely different vote from the first.`, 'grey');
     }
     return _beatCard(step.b);
   };
@@ -260,7 +293,8 @@ export function rpBuildBBCarePackagePlay(ep, act, deps) {
           `${_bbEsc(act.recipient)} removes two eviction votes — ${_bbEsc(struck.join(' and '))} —
            and says both names out loud.
            <br><br>A hacked ballot leaves its owner hunting. This leaves them with a name, a date and
-           an audience, and nothing at all to do about any of it.`, 'red');
+           an audience, and nothing at all to do about any of it.`, 'red', '',
+        [act.recipient, ...struck]);
       }
       return _card('PUBLIC MONEY, PRIVATE SPENDING',
         `The whole house watched five thousand dollars arrive. Not one of them will ever be told

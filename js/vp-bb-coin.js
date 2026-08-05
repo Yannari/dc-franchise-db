@@ -96,7 +96,8 @@ export function rpBuildBBCoinOfDestiny(ep, act, deps) {
              and lost in front of the entire house for nothing.
              <br><br>They are still on that list. Everybody who bought in is, and the list does not record
              who won.`,
-        act.calledRight ? 'red' : 'grey', 'is-final');
+        act.calledRight ? 'red' : 'grey', 'is-final',
+        act.calledRight ? [act.hoh, ...(act.nominees || [])] : (act.buyers || []));
     }
     return _beatCard(step.b);
   };

@@ -28,6 +28,9 @@ const CAST = NAMES.map((name, i) => ({
 }));
 
 function house() {
+  for (const k of STUBBED) {
+    if (!priorGlobals.has(k)) priorGlobals.set(k, globalThis[k]);
+  }
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   // run-ui.js has no imports — it reads everything as a bare global, exactly
   // the way main.js wires it in the browser. `gs` in particular has to be a
@@ -52,7 +55,29 @@ function house() {
   globalThis.gs.namedAlliances = []; globalThis.gs.jury = []; globalThis.gs.episode = 0;
 }
 
+// Everything this file puts on the shared globals, put back.
+//
+// vitest reuses a worker across files, so a stub left standing here is a stub
+// the NEXT file inherits. Overriding document.getElementById in particular —
+// run-ui reaches for '#run-main' on the way out — replaced jsdom's real lookup
+// for every test that ran afterwards, and bb-invisible-hoh failed building VP
+// screens for reasons that had nothing to do with itself.
+const STUBBED = ['players', 'seasonConfig', 'relationships', 'pStats', 'pronouns',
+  'ordinal', 'getBond', 'getPerceivedBond', 'bKey', 'bondLabel', 'romanticCompat',
+  'TWIST_CATALOG', 'gsCheckpoints', 'repairGsSets', 'isBigBrotherSeason',
+  'simulateBBEpisode', 'runBBFinale', 'updatePopularity', 'saveGameState',
+  'renderRunTab', '_idbDelete', '_idbPut', '_autoRevealSpoiler', 'viewingEpNum',
+  'confirm', 'alert'];
+const priorGlobals = new Map();
+let priorGetElementById;
+
 afterAll(() => {
+  for (const k of STUBBED) {
+    if (priorGlobals.has(k)) globalThis[k] = priorGlobals.get(k);
+    else delete globalThis[k];
+  }
+  if (globalThis.document) globalThis.document.getElementById = priorGetElementById;
+  delete globalThis.gs;
   seasonConfig.twistSchedule = [];
   delete seasonConfig.format;
 });
@@ -64,6 +89,7 @@ beforeEach(() => {
   globalThis.alert = () => {};
   // It repaints and scrolls on the way out; neither exists here.
   globalThis.document = globalThis.document || {};
+  if (priorGetElementById === undefined) priorGetElementById = globalThis.document.getElementById;
   globalThis.document.getElementById = () => ({ scrollTop: 0, style: {}, querySelector: () => null });
 });
 

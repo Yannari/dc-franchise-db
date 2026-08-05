@@ -891,24 +891,56 @@ export function replayEpisode(epNum) {
     ? `Re-run Episode ${epNum}?\n\nEpisodes ${epNum}–${epNum + laterEps.length} will be replaced with new results.`
     : `Re-run Episode ${epNum}?`;
   if (!confirm(warnMsg)) return;
-  // Restore gs to state before this episode ran
-  gs = JSON.parse(JSON.stringify(checkpoint));
-  repairGsSets(gs);
-  // Drop checkpoints for this ep and later (they'll be re-created on next run)
-  Object.keys(gsCheckpoints).forEach(k => {
-    if (Number(k) >= epNum) {
-      delete gsCheckpoints[k];
-      _idbDelete('cp_' + k);
-    }
-  });
-  // Re-run this episode — the format decides the engine, exactly as
-  // simulateNext does. The replay path only knew Total Drama's two engines,
-  // so a house had checkpoints it could never spend.
-  if (isBigBrotherSeason()) _saveBBCheckpoint();
-  const ep = isBigBrotherSeason()
-    ? (simulateBBEpisode() || runBBFinale())
-    : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
-  if (!ep) return;
+
+  // NOTHING is thrown away until the new episode exists.
+  //
+  // This used to roll gs back, delete every checkpoint from here on, and only
+  // then simulate — with a bare `if (!ep) return`. So a re-run that came back
+  // empty, or threw anywhere inside the engine, left the season already
+  // truncated: the episode you asked to re-run was gone, its checkpoints were
+  // gone with it, and the screen dropped you on the previous episode with no
+  // way forward. "It deleted the episode instead of re-running it" is exactly
+  // that path.
+  //
+  // Now the rollback is reversible until the replacement is in hand.
+  const before = JSON.parse(JSON.stringify(gs));
+  const droppedKeys = Object.keys(gsCheckpoints).filter(k => Number(k) >= epNum);
+  const droppedCps = droppedKeys.map(k => [k, gsCheckpoints[k]]);
+
+  let ep = null;
+  let failure = null;
+  try {
+    gs = JSON.parse(JSON.stringify(checkpoint));
+    repairGsSets(gs);
+    // Re-run this episode — the format decides the engine, exactly as
+    // simulateNext does. The replay path only knew Total Drama's two engines,
+    // so a house had checkpoints it could never spend.
+    if (isBigBrotherSeason()) _saveBBCheckpoint();
+    ep = isBigBrotherSeason()
+      ? (simulateBBEpisode() || runBBFinale())
+      : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
+  } catch (e) {
+    failure = e;
+  }
+
+  if (!ep) {
+    // Put the season back exactly as it was and say so, rather than leaving a
+    // hole where an episode used to be.
+    gs = before;
+    repairGsSets(gs);
+    for (const [k, cp] of droppedCps) gsCheckpoints[k] = cp;
+    // The restore is the important half; a repaint that throws must not leave
+    // the caller believing the season was lost.
+    try { renderRunTab(); } catch { /* the state is already back */ }
+    alert(`Episode ${epNum} could not be re-run, so nothing was changed.${
+      failure ? `\n\n${failure.message || failure}` : ''}`);
+    return;
+  }
+
+  // It worked. Only now are the old checkpoints past this point unreachable.
+  for (const k of droppedKeys) {
+    if (Number(k) > ep.num) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+  }
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;

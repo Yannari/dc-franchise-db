@@ -147,6 +147,127 @@ export function blocsWith(name) {
   return listBlocs().filter(bloc => bloc.members.includes(name));
 }
 
+// ── 1b. who in it is actually staying ─────────────────────────────────
+//
+// `_measure` answers "does this group hold together", which is a fact about
+// the GROUP: average the bonds across every pair and you get a six that likes
+// itself or a six that does not. What it cannot tell you is the thing you
+// actually want to know watching an alliance — WHICH ONE of them leaves.
+//
+// A group can measure well and still have one member sitting at the edge of
+// it, and that member decides the season. So this is the per-person view: how
+// attached is each individual to THIS group, on the evidence that would make
+// somebody stay or go.
+//
+// Four things move it, all proportional and none of them a gate:
+//
+//   inward     how they feel about these specific people — not the group's
+//              average, theirs. A six can average warm and contain one person
+//              who cannot stand the other five.
+//   the stat   `loyalty` is who they are. It is the difference between two
+//              people with identical bonds where one of them still flips.
+//   outward    the best relationship they have OUTSIDE the group. Somebody
+//              whose closest person in the house is not in the room is not
+//              being held by the room.
+//   elsewhere  a competing home. Belonging to a stronger second bloc is the
+//              most reliable predictor of which way a vote actually lands.
+//
+// Deliberately NOT wired into `_measure`'s cohesion. That number feeds
+// `power`, power feeds targeting and targeting feeds whole seasons; redefining
+// it would re-roll every read in the house to make a screen prettier. Both
+// figures come off the same bonds, so they agree without being the same
+// calculation.
+const _mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+
+/**
+ * How firmly one member is held by one bloc, 0–10, with the reason.
+ *
+ * 10 is somebody who would go down with it. 0 is somebody already gone in
+ * everything but the announcement.
+ */
+export function memberLoyalty(name, bloc) {
+  const others = (bloc?.members || []).filter(n => n !== name);
+  if (!others.length) return { name, loyalty: 5, reason: 'has nobody in here to be loyal to' };
+
+  const inward = _mean(others.map(other => getBond(name, other)));
+  const stat = pStats(name).loyalty ?? 5;
+  const outsiders = live().filter(n => n !== name && !bloc.members.includes(n));
+  const outward = outsiders.length ? Math.max(...outsiders.map(n => getBond(name, n))) : -10;
+  const elsewhere = blocsWith(name)
+    .filter(b => b.id !== bloc.id)
+    .reduce((sum, b) => sum + b.power, 0);
+
+  // A better relationship outside only counts for the amount it BEATS the
+  // group by — a well-liked houseguest with friends everywhere is not
+  // disloyal, they are just popular.
+  const pullAway = Math.max(0, outward - inward);
+
+  const score = clamp(
+    0.42
+    + inward * 0.045
+    + stat * 0.030
+    - pullAway * 0.035
+    - elsewhere * 0.16,
+    0, 1);
+
+  // Whichever term is doing the most work, said in words.
+  const reason = elsewhere > 0.5
+    ? `has a second home that is doing better than this one`
+    : pullAway > 3
+      ? `is closer to somebody outside this than to anybody in it`
+      : inward < 0
+        ? `does not actually like these people`
+        : stat >= 7 && inward > 2
+          ? `would go down with this group`
+          : inward > 4
+            ? `is held by the room`
+            : `is in it for now`;
+
+  return {
+    name,
+    loyalty: Math.round(score * 100) / 10,
+    reason,
+    inward: Math.round(inward * 10) / 10,
+    outward: Math.round(outward * 10) / 10,
+    elsewhere: Math.round(elsewhere * 100) / 100,
+  };
+}
+
+/**
+ * The whole membership of a bloc, sorted firmest-first, with the crack named.
+ *
+ * `weakest` is the member most likely to leave it — and it is only reported as
+ * a CRACK when there is a real gap between them and the next one up. An
+ * alliance where everybody is equally committed does not have a weak link just
+ * because somebody has to be last in the sort.
+ */
+export function blocRoster(bloc) {
+  const rows = (bloc?.members || []).map(name => memberLoyalty(name, bloc))
+    .sort((a, b) => b.loyalty - a.loyalty);
+  const weakest = rows[rows.length - 1] || null;
+  const nextUp = rows[rows.length - 2] || null;
+  // Somebody always sorts last. A crack is not "the lowest number" — it is a
+  // member who is actually loose, and a flag that fires on every group tells
+  // you nothing. Three rules, all of which have to hold:
+  //
+  //   - they must be genuinely uncommitted (a 7.4 is not leaving, whatever the
+  //     person above them scores). This was reporting "CRACK: Millie — is held
+  //     by the room", which contradicts itself in the same sentence.
+  //   - the GAP rule needs three or more members. In a pair, one of the two is
+  //     always the lower one and a point-and-a-half between them is ordinary.
+  //   - a really low number stands on its own, whatever the rest look like.
+  const loose = !!weakest && weakest.loyalty <= 5;
+  const gapped = !!(nextUp && rows.length >= 3 && nextUp.loyalty - weakest.loyalty >= 1.5);
+  const cracking = loose && (weakest.loyalty <= 3.5 || gapped);
+  return {
+    id: bloc?.id, name: bloc?.name, kind: bloc?.kind,
+    members: rows,
+    average: Math.round(_mean(rows.map(r => r.loyalty)) * 10) / 10,
+    weakest: cracking ? weakest : null,
+    cracking,
+  };
+}
+
 // ── 2. what somebody believes exists ──────────────────────────────────
 
 let _knowVersion = 0;

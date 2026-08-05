@@ -164,6 +164,9 @@ export function weekToEpisode(week) {
     // The resolved twist contract — which twist changed which rule — so the
     // Debug panel can show hook mutations on replay, not just live.
     twistState: week.twistState || null,
+    // The alliance board as it stood this week — who is in what, how firmly,
+    // and which member is the crack.
+    allianceBoard: (week.allianceBoard || []).map(b => ({ ...b, members: (b.members || []).map(m => ({ ...m })) })),
     // The Battle of the Block's own fields. `botbStoodDown` records WHY a
     // scheduled battle did not happen, so a week that quietly ran as an
     // ordinary one can still say so on the debug screen instead of looking
@@ -690,6 +693,20 @@ export function summariseWeek(week) {
   const line = t => lines.push(t);
   line(`WEEK ${week.num}`);
   line('═'.repeat(40));
+
+  // Where the alliances stand and which member is on their way out of one.
+  // The week's own snapshot, so a replay reads what was true then rather than
+  // recomputing off bonds that have moved on since.
+  if ((week.allianceBoard || []).length) {
+    line('');
+    line('THE ALLIANCE BOARD');
+    for (const b of week.allianceBoard) {
+      const kind = b.kind === 'couple' ? 'showmance' : 'alliance';
+      line(`  ${b.name || 'an unnamed group'} (${kind}, ${b.members.length} votes, avg ${b.average.toFixed(1)}):`);
+      line(`    ${b.members.map(m => `${m.name} ${m.loyalty.toFixed(1)}`).join('   ')}`);
+      if (b.weakest) line(`    CRACK: ${b.weakest.name} — ${b.weakest.reason}.`);
+    }
+  }
 
   for (const act of week.acts || []) {
     switch (act.type) {

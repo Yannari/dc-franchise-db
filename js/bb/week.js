@@ -853,6 +853,30 @@ function _attachAllianceFallout(week, house) {
  * The per-stretch panels read bonds, alliances and showmances, so that is
  * what a per-stretch snapshot carries.
  */
+/**
+ * Who was holding which alliance together, as it stood at the end of THIS week.
+ *
+ * Snapshotted rather than recomputed on replay: loyalty is made of bonds and
+ * bonds keep moving, so a board rebuilt in December would show a season that
+ * never happened. Taken at both week exits — the ordinary eviction and the
+ * walkout/expulsion path — because a week that ended strangely still had
+ * alliances in it.
+ */
+function _snapshotAllianceBoard() {
+  try {
+    const house = gs.activePlayers || [];
+    return listBlocs()
+      .filter(b => (b.members || []).every(m => house.includes(m)))
+      .map(b => ({
+        ...blocRoster(b),
+        name: b.label || b.name || null,
+        power: Math.round((b.power || 0) * 100) / 100,
+        share: Math.round((b.share || 0) * 100) / 100,
+        exposed: !!b.exposed,
+      }));
+  } catch { return []; }
+}
+
 function _snapshotHouse(full = true) {
   const light = {
     bonds: { ...(gs.bonds || {}) },
@@ -2565,16 +2589,7 @@ export function simulateBBWeek(options = {}) {
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
-  // Who was holding which alliance together, as it stood at the end of THIS
-  // week. Snapshotted rather than recomputed on replay, because loyalty is
-  // made of bonds and bonds keep moving — a board rebuilt in December would
-  // show a season that never happened.
-  try {
-    week.allianceBoard = listBlocs()
-      .filter(b => (b.members || []).every(m => (gs.activePlayers || []).includes(m)))
-      .map(b => ({ ...blocRoster(b), power: Math.round((b.power || 0) * 100) / 100,
-        share: Math.round((b.share || 0) * 100) / 100, exposed: !!b.exposed }));
-  } catch { week.allianceBoard = []; }
+  week.allianceBoard = _snapshotAllianceBoard();
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
     // How they wore it, judged on what the week actually achieved rather than on
@@ -3059,6 +3074,7 @@ export function simulateBBWeek(options = {}) {
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
+  week.allianceBoard = _snapshotAllianceBoard();
   week.perceptionChanges = updateBBPerceptions({ house:gs.activePlayers, week, rng });
   _attachRomance(week, rng);
   // How they wore it, judged on what the week actually achieved rather than on

@@ -18675,6 +18675,62 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
+ * The alliance board.
+ *
+ * The house's strategy was legible only as prose: alliances formed in week one
+ * — reliably, ten seasons out of ten — and the only trace was a couple of
+ * lines buried in twenty-five House Life beats. You could see WHO was aligned
+ * and never how firmly, so the thing you actually want to know watching an
+ * alliance (which one of them leaves) was unreadable.
+ *
+ * So the number under each face is the point of this screen. Group cohesion
+ * already existed and answers a different question — does this six hold
+ * together — which a six containing one person at the edge can pass while that
+ * person decides the season.
+ *
+ * Reads the snapshot taken at the end of the week rather than recomputing:
+ * loyalty is made of bonds, bonds keep moving, and a board rebuilt on replay
+ * would show a season that never happened.
+ */
+export function rpBuildBBAllianceBoard(ep) {
+  const board = ep?.allianceBoard || [];
+  if (!board.length) return '';
+
+  // Warm at the top, cold at the bottom, so the crack reads as colour before
+  // anybody has read a digit.
+  const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
+
+  const member = (m, weakName) => `<div class="bbal-member ${m.name === weakName ? 'is-weak' : ''}">
+      <div class="bbal-face">${rpPortrait(m.name, 'sm')}</div>
+      <div class="bbal-who" title="${_bbEsc(m.name)}">${_bbEsc(m.name)}</div>
+      <div class="bbal-num" style="color:${tone(m.loyalty)}">${m.loyalty.toFixed(1)}</div>
+      <div class="bbal-bar"><i style="width:${Math.max(4, Math.min(100, m.loyalty * 10))}%;background:${tone(m.loyalty)}"></i></div>
+    </div>`;
+
+  const bloc = b => `<div class="bbal-bloc ${b.cracking ? 'is-cracking' : ''} ${b.kind === 'couple' ? 'is-couple' : ''}">
+      <div class="bbal-head">
+        <span class="bbal-name">${_bbEsc(b.name || 'an unnamed group')}</span>
+        <span class="bbal-kind">${b.kind === 'couple' ? 'showmance' : 'alliance'}${b.exposed ? ' · exposed' : ''}</span>
+        <span class="bbal-meta">${b.members.length} votes · avg ${b.average.toFixed(1)}</span>
+      </div>
+      <div class="bbal-row">${b.members.map(m => member(m, b.weakest?.name)).join('')}</div>
+      ${b.weakest
+        ? `<div class="bbal-crack"><b>${_bbEsc(b.weakest.name)}</b> is the crack — ${_bbEsc(b.weakest.reason)}.</div>`
+        : `<div class="bbal-target">Nobody in this one is looking for the door.</div>`}
+    </div>`;
+
+  return `<div class="rp-page bb-room bb-block bbns">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#e6edf3;margin-bottom:4px">THE ALLIANCE BOARD</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">How firmly each of them is actually holding on.</div>
+    <div class="bbal-grid">${board.map(bloc).join('')}</div>
+    <div style="margin-top:14px;font-size:10px;color:#6e7681;text-align:center;font-family:ui-monospace,Consolas,monospace;letter-spacing:.6px">
+      0 = gone in everything but the announcement · 10 = would go down with it
+    </div>
+  </div>`;
+}
+
+/**
  * The App Store.
  *
  * The only distributor with no room and no door — it happens on a phone, in a
@@ -20521,6 +20577,14 @@ function _bbCycleScreens(view, screens, suffix = '') {
       html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
     pendingBeats = [];
   }
+  // Where the house stands now that somebody has gone. Last, because the board
+  // is snapshotted at the end of the week and because "who is about to break"
+  // is the question you leave an episode with rather than the one you enter it
+  // with. Silent when there is nothing organised yet, which is most of week one.
+  try {
+    const boardHtml = rpBuildBBAllianceBoard(view);
+    if (boardHtml) screens.push({ id: id('bb-alliances'), label: 'Alliance Board', html: boardHtml });
+  } catch { /* a board that will not draw must not cost the week its screens */ }
   // A week with no eviction — a walkout or an expulsion — still played the
   // competition, so it must not vanish with the vote.
   if (deferred.length) {

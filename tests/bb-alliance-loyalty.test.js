@@ -18,6 +18,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { memberLoyalty, blocRoster, listBlocs } from '../js/bb/blocs.js';
 import { rpBuildBBAllianceBoard } from '../js/vp-screens.js';
+import { generateBBSummaryText } from '../js/text-backlog.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -191,8 +192,18 @@ describe('in a played season', () => {
     const vals = b.members.map(m => m.loyalty);
     expect([...vals].sort((x, y) => y - x)).toEqual(vals);
 
+    // BOTH transcript writers. The act-coverage guard only walks act TYPES,
+    // and the board is a week-level field rather than an act — which is
+    // exactly how it reached the tests-facing writer and missed the in-app
+    // one on the first pass.
     const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
-    expect(text).toMatch(/THE ALLIANCE BOARD/);
+    expect(text, 'missing from summariseWeek').toMatch(/THE ALLIANCE BOARD/);
+    const backlog = generateBBSummaryText(ep);
+    expect(backlog, 'missing from the in-app text backlog').toMatch(/THE ALLIANCE BOARD/);
+    for (const m of b.members) {
+      expect(backlog, `${m.name} is not in the backlog board`).toContain(m.name);
+      expect(backlog).toContain(m.loyalty.toFixed(1));
+    }
 
     const html = rpBuildBBAllianceBoard(ep);
     expect(html).toMatch(/THE ALLIANCE BOARD/);

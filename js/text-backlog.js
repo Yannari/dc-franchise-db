@@ -4835,6 +4835,28 @@ export function generateBBSummaryText(ep) {
     if (moved.length > 18) ln(`  (${moved.length - 18} smaller revisions not listed)`);
   }
 
+  // WHERE EVERY ALLIANCE STANDS.
+  //
+  // Last, because "who is about to break" is the question you leave a week
+  // with rather than the one you enter it with. The number is each member's
+  // own hold on THIS group — 0 is gone in everything but the announcement, 10
+  // is would go down with it — and it is the week's own snapshot, so reading
+  // an old week shows what was true then.
+  if ((ep.allianceBoard || []).length) {
+    sec('THE ALLIANCE BOARD');
+    for (const b of ep.allianceBoard) {
+      const kind = b.kind === 'couple' ? 'showmance' : 'alliance';
+      ln(`  ${b.name || 'an unnamed group'} — ${kind}, ${b.members.length} votes, average hold ${b.average.toFixed(1)}`);
+      for (const m of b.members) {
+        ln(`    ${String(m.loyalty.toFixed(1)).padStart(4)}  ${m.name} — ${m.reason}`);
+      }
+      if (b.weakest) {
+        ln(`    ↳ ${b.weakest.name} is the crack: ${b.weakest.reason}.`);
+      }
+      ln('');
+    }
+  }
+
   return L.join('\n');
 }
 

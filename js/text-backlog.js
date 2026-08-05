@@ -4604,12 +4604,20 @@ export function generateBBSummaryText(ep) {
         ln('  with depends on whether they beat it.');
         ln('');
         ln(`  America votes in ${act.favourite}.`);
+        if (act.challenge) {
+          ln('');
+          ln(`  ${act.challenge.name}. ${act.challenge.desc}`);
+          ln('');
+          const got = (act.stages || []).filter(s => s.grade !== 'bad').length;
+          ln(`  ${got} of ${(act.stages || []).length} stages clear,`
+            + ` ${Number(act.total || 0).toFixed(1)} against a target of ${Number(act.target || 0).toFixed(1)}.`);
+        }
         if (act.won) {
           ln('  They beat it, and come out holding a power from a past season.');
           ln('  The house is told the capsule was beaten and never told what came out,');
           ln('  which is a worse thing to know than nothing at all.');
         } else {
-          ln(`  They do not beat it, and come out in ${act.punishment}.`);
+          ln(`  They do not beat it, and come out ${act.punishmentVerb || 'wearing'} ${act.punishment}.`);
           if (act.punishmentCost) ln(`  ${act.punishmentCost}`);
           if (act.tetheredTo) {
             ln(`  ${act.tetheredTo} did not vote for this and is attached to them anyway,`);

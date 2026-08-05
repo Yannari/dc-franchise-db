@@ -1504,6 +1504,20 @@ export function renderTimeline() {
         }
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-americas-nominee') {
+        // Two shapes, and they are genuinely different twists. Direct: the
+        // audience names the third nominee and there is nobody in the building
+        // to catch, so every accusation lands on an innocent. MVP: a real
+        // houseguest was voted Most Valuable Player and named them in secret,
+        // so there IS a culprit sitting in that room being no more suspicious
+        // than anybody else.
+        const chosen = t.anStyle === 'mvp' ? 'mvp' : 'direct';
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','anStyle',this.value)" onclick="event.stopPropagation()" title="Who actually names the third nominee" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        h += `<option value="direct" ${chosen === 'direct' ? 'selected' : ''}>Named by the audience</option>`;
+        h += `<option value="mvp" ${chosen === 'mvp' ? 'selected' : ''}>Named by a secret MVP</option>`;
+        h += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-den-of-temptation') {
         // What is on the table in the Den. Same source as the box and the
         // shelf; 'random' lets the season surprise itself.
@@ -1834,6 +1848,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-den-of-temptation') entry.offer = 'random';
     if (twistId === 'bb-whacktivity') entry.doors = 'auto';
+    if (twistId === 'bb-americas-nominee') entry.anStyle = 'direct';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);

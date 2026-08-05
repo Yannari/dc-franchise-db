@@ -21,6 +21,9 @@ import { gs } from '../core.js';
 /**
  * What a punishment does.
  *
+ *   verb     how the sentence carries it. Costumes are WORN and slop is
+ *            SERVED, and one preposition for both produced lines like "is in a
+ *            week on slop for the week".
  *   drag     subtracted from persuasion while it is live. 1.0 is roughly a
  *            third of an average houseguest's social contribution, so 1.6 is
  *            severe without being a mute button — an excellent player in a
@@ -31,37 +34,37 @@ import { gs } from '../core.js';
  */
 export const BB_PUNISHMENTS = {
   'egg-detective': {
-    id: 'egg-detective', name: 'the Egg Detective costume', drag: 1.6, weeks: 1,
+    id: 'egg-detective', verb: 'wearing', name: 'the Egg Detective costume', drag: 1.6, weeks: 1,
     blurb: 'A full-body egg suit with a detective hat, worn everywhere, at all times.',
     cost: 'Nobody has a serious conversation with an egg. Every pitch this week starts a foot behind.',
   },
   'red-unitard': {
-    id: 'red-unitard', name: 'the red unitard', drag: 1.4, weeks: 1,
+    id: 'red-unitard', verb: 'wearing', name: 'the red unitard', drag: 1.4, weeks: 1,
     blurb: 'The unitard. It has been in this house since long before any of them arrived.',
     cost: 'It is the oldest humiliation the show owns, and the house treats whoever is in it accordingly.',
   },
   'lord-of-the-latrine': {
-    id: 'lord-of-the-latrine', name: 'Lord of the Latrine', drag: 1.2, weeks: 1,
+    id: 'lord-of-the-latrine', verb: 'wearing', name: 'Lord of the Latrine', drag: 1.2, weeks: 1,
     blurb: 'Robes, a crown, and the duty of announcing every single visit anybody makes to the bathroom.',
     cost: 'It is impossible to hold a private conversation when your job is to interrupt the house all day.',
   },
   'hamazon': {
-    id: 'hamazon', name: 'Hamazon', drag: 0.9, weeks: 1,
+    id: 'hamazon', verb: 'wearing', name: 'Hamazon', drag: 0.9, weeks: 1,
     blurb: 'A siren goes off, ham arrives, and they have to eat it. Repeatedly. All week.',
     cost: 'Being summoned out of every room you are working is its own kind of tax.',
   },
   'camp-guide': {
-    id: 'camp-guide', name: 'Camp Guide', drag: 1.3, weeks: 1,
+    id: 'camp-guide', verb: 'wearing', name: 'Camp Guide', drag: 1.3, weeks: 1,
     blurb: 'Build the camp. Take the camp down. Build the camp again, on the horn, whenever it sounds.',
     cost: 'Hours a day spent outside, alone, while the house decides things inside without them.',
   },
   'adam-and-eve': {
-    id: 'adam-and-eve', name: 'Adam and Eve', drag: 1.5, weeks: 1, tether: true,
+    id: 'adam-and-eve', verb: 'wearing', name: 'Adam and Eve', drag: 1.5, weeks: 1, tether: true,
     blurb: 'Two houseguests, two costumes, and a tether between them they cannot take off.',
     cost: 'Neither of them can have a private conversation again until it comes off — including with each other.',
   },
   'slop': {
-    id: 'slop', name: 'a week on slop', drag: 0.7, weeks: 1, slop: true,
+    id: 'slop', verb: 'serving', name: 'a week on slop', drag: 0.7, weeks: 1, slop: true,
     blurb: 'No costume. Just slop, for the week, in a house that eats in front of them.',
     cost: 'Quieter than the costumes and longer-lasting: hunger makes people short with each other.',
   },

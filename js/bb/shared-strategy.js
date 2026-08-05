@@ -154,6 +154,37 @@ export function bbAllianceStrength(a, b) {
  * will object to. A brilliant player who stays quiet and keeps their friends
  * gets to stay brilliant and quiet for a while, which is the entire art of it.
  */
+/**
+ * How much of a threat this houseguest's ADVANTAGES make them, to a house that
+ * can only act on what it knows.
+ *
+ *   public and live      the loudest thing on the board. The room has been told
+ *                        who is holding a power that has not gone off yet, and
+ *                        "take them out before they can use it" is the oldest
+ *                        correct read in this game.
+ *   spent in public      a power that fired and was seen. It is gone, but the
+ *                        house has learned something permanent about who ends
+ *                        up holding things, and that follows somebody around
+ *                        for the rest of the season.
+ *   secret, either way   nothing. The house cannot target what it does not
+ *                        know, and pretending otherwise would hand it a read it
+ *                        never earned.
+ */
+export function knownPowerWeight(name, week = 0) {
+  let store = [];
+  try { store = gs.bb?.powers || []; } catch { return 0; }
+  let weight = 0;
+  for (const p of store) {
+    if (p.holder !== name) continue;
+    const live = !p.used && !p.disposed && (!week || week <= p.expiresAfterWeek);
+    if (live && p.visibility === 'public') weight += 1.7;
+    // Firing one is public whatever its visibility was beforehand: the house
+    // watched it happen even if it never knew it was coming.
+    else if (p.used) weight += 0.85;
+  }
+  return Math.min(3.2, weight);
+}
+
 export function bbThreatProfile(name) {
   const stats = pStats(name);
   const others = (gs.activePlayers || players.map(player => player.name)).filter(other => other !== name);
@@ -211,7 +242,21 @@ export function bbThreatProfile(name) {
   }).length;
   const control = ballots.length >= 2 ? (matched / ballots.length) * 1.2 : 0;
 
-  const observed = competition + isolation + friction + centrality + control;
+  // ── an advantage the house can actually see ──
+  //
+  // This was missing entirely, and it was the biggest hole in the threat model:
+  // powers fired when their moment came and were invisible to every decision
+  // the house made, including the PUBLIC ones where the room had been told
+  // outright who was holding what. A houseguest carrying a known game-changer
+  // was rated exactly as dangerous as one carrying nothing.
+  //
+  // Only what is genuinely known counts. A secret power is worth nothing here
+  // by definition — the hunt for an anonymous holder is its own mechanic, run
+  // by the individual twists, and reading it here would let the house act on
+  // information it does not have.
+  const powers = knownPowerWeight(name, week);
+
+  const observed = competition + isolation + friction + centrality + control + powers;
 
   // ── what nobody can see yet ──
   const base = stats.strategic * 0.27 + stats.social * 0.18 + stats.physical * 0.12

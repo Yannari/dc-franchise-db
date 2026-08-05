@@ -5,6 +5,7 @@ import { getRelationshipDimensions } from '../js/relationships.js';
 import { memoriesAbout } from '../js/strategy-memory.js';
 import { createHouseEventApi, houseEventState, scheduleHouseBeats } from '../js/bb/house-events.js';
 import { beatsInvolving } from '../js/bb-events/_read.js';
+import { BOND_EVENTS } from '../js/bb-events/bonds.js';
 import { chooseNominationPlan } from '../js/bb/strategy.js';
 import { simulateBBWeek } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
@@ -127,6 +128,18 @@ describe('Big Brother house-event scheduler contract', () => {
     }];
     simulateBBWeek({ rng:rng(33), houseEvents:probe });
     expect(got).toBe('function');
+  });
+
+  it('uses the current week in the bad-day bond event prose', () => {
+    gs.popularity.A = -1;
+    const event = BOND_EVENTS.find(({ id }) => id === 'bond-bad-day');
+    const api = createHouseEventApi({ act:'house', week:{ num:2 } });
+    const variants = Array.from({ length: 12 }, (_, beat) =>
+      event.fire([...gs.activePlayers], { act:'house', beat, week:{ num:2 } }, api).text);
+    const elapsedTimeVariant = variants.find(text => text.includes('not a small thing'));
+
+    expect(elapsedTimeVariant).toContain('after 2 weeks in one house');
+    expect(elapsedTimeVariant).not.toContain('five weeks');
   });
 
   it('feeds event targets and suspicion into later nomination strategy', () => {

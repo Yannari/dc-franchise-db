@@ -27,9 +27,10 @@
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
+import { makePicker, clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 import { BB_PUNISHMENTS, applyPunishment } from './punishments.js';
+import { runCapsuleAttempt } from './capsule-challenges.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
@@ -90,11 +91,6 @@ export const CARE_PACKAGES = [
 //
 // What a win pays out is the existing power inventory, which is exactly what
 // the show does: the capsule is stocked with powers from previous seasons.
-
-/** What the capsule asks of whoever the audience sends in. */
-const CAPSULE_MIX = { mental: 0.32, physical: 0.26, temperament: 0.22, endurance: 0.20 };
-/** Beat this and you come out holding something. */
-const CAPSULE_CLOCK = 5.2;
 
 const CAPSULE_ENTRY = [
   (n, p) => `${n} is called to the capsule. The house watches ${p.obj} go in and the door seals, and nobody out here knows what is being asked in there.`,
@@ -325,7 +321,7 @@ export function carePackageBribe({ act, ballots, nominees, house, rng = Math.ran
  * @returns {object|null} the act, or null when nobody is eligible
  */
 export function runTimeCapsule({ week, house, hoh, rng = Math.random,
-  shelf = null, rack = null } = {}) {
+  shelf = null, rack = null, forcedChallenge = null } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 4) return null;
   const delivered = store();
@@ -349,12 +345,24 @@ export function runTimeCapsule({ week, house, hoh, rng = Math.random,
   const beats = [beat(say(CAPSULE_ENTRY)(favourite, p), [favourite],
     "AMERICA'S FAVOURITE", 'gold')];
 
-  const score = aptitude(favourite, CAPSULE_MIX) + (rng() - 0.5) * 5.2;
-  const won = score >= CAPSULE_CLOCK;
+  // What is actually in the room. The capsule used to be one hidden roll,
+  // which meant nobody watching could tell what had just been failed.
+  const attempt = runCapsuleAttempt(favourite, rng, forcedChallenge);
+  const won = attempt.won;
+  beats.push(beat(
+    `${attempt.challenge.name}. ${attempt.challenge.desc}`,
+    [favourite], 'WHAT IS IN THE ROOM', 'blue'));
+  for (const st of attempt.stages) {
+    beats.push(beat(st.text, [favourite],
+      `STAGE ${st.index} OF ${attempt.challenge.stages}`,
+      st.grade === 'good' ? 'gold' : st.grade === 'near' ? 'blue' : 'red'));
+  }
 
   const act = {
     type: 'time-capsule', week: week?.num || 0, secret: false, style: 'time-capsule',
     recipient: favourite, favourite, won, hoh: hoh || null,
+    challenge: attempt.challenge, stages: attempt.stages,
+    total: attempt.total, target: attempt.target, margin: attempt.margin,
     powerId: null, power: null, punishmentId: null, punishment: null,
     punishmentCost: null, tetheredTo: null,
     ineligible: [...had].filter(n => room.includes(n)),
@@ -393,11 +401,13 @@ export function runTimeCapsule({ week, house, hoh, rng = Math.random,
   applyPunishment(favourite, punishmentId, { week: week?.num || 1, partner });
   act.punishmentId = punishmentId;
   act.punishment = pdef.name;
+  act.punishmentVerb = pdef.verb || 'wearing';
   act.punishmentCost = pdef.cost;
   act.tetheredTo = partner;
   beats.push(beat(
-    `${favourite} does not beat it, and comes out in ${pdef.name}. ${pdef.blurb}`,
-    [favourite], 'CAME OUT WEARING SOMETHING', 'red'));
+    `${favourite} does not beat it, and comes out ${pdef.verb || 'wearing'} ${pdef.name}. ${pdef.blurb}`,
+    [favourite], pdef.verb === 'serving' ? 'CAME OUT WITH SOMETHING' : 'CAME OUT WEARING SOMETHING',
+    'red'));
   beats.push(beat(
     `${pdef.cost} Being the country's favourite has cost ${favourite} a week of being taken seriously, `
       + 'which in this house is most of what a week is for.',

@@ -43,6 +43,7 @@ import { COIN_EVENTS } from './coin-of-destiny.js';
 import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { SAFETY_SUITE_EVENTS } from './safety-suite.js';
 import { PUNISHMENT_EVENTS } from './punishments.js';
+import { POWER_KNOWLEDGE_EVENTS } from './power-knowledge.js';
 import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
@@ -81,6 +82,7 @@ export const HOUSE_EVENTS = [
   ...CARE_PACKAGE_EVENTS,
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,
+  ...POWER_KNOWLEDGE_EVENTS,
   ...CONSEQUENCE_ARC_EVENTS,
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,

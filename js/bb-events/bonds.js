@@ -211,11 +211,13 @@ const badDay = {
       || pStats(n).temperament <= 4) || house[0];
     const friend = _others(house, low).sort((x, y) => bond(y, low) - bond(x, low))[0];
     const p = pronouns(low);
+    const weekNum = Math.max(1, Number(ctx?.week?.num) || 1);
+    const timeTogether = `${weekNum} ${weekNum === 1 ? 'week' : 'weeks'}`;
     const text = _variant([
       `${low} is having a bad day for reasons that have nothing to do with the game, and ${friend} is the only person who asks about the reasons instead of the game.`,
       `${friend} finds ${low} sitting on the bathroom floor and does not ask what happened, just sits down too. They are there twenty minutes and neither of them says much.`,
       `Nobody in here gets to be homesick out loud. ${low} is anyway, and ${friend} lets ${p.obj} be, and does not tell anybody afterwards.`,
-      `${friend} notices before ${low} says anything, which after five weeks in one house is not a small thing.`,
+      `${friend} notices before ${low} says anything, which after ${timeTogether} in one house is not a small thing.`,
     ], ctx, low, friend);
 
     api.addBond(low, friend, 1.5);

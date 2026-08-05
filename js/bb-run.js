@@ -681,6 +681,13 @@ export function simulateBBEpisode() {
   // power registry, so a power added to the shelf is offerable here for free.
   // Which powers are behind the three doors. Same per-entry pattern, read off
   // the power registry, so a new power is competable for with no new UI.
+  // Which shape America's Nominee runs in. week.js has read
+  // options.americasNomineeStyle since the twist was written and NOTHING ever
+  // set it, so the MVP variant was unreachable and its whole event family —
+  // the house watching the actual culprit overplay their innocence — was dead
+  // code that no amount of reweighting could have revived.
+  const anEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-americas-nominee');
   const whackEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-whacktivity');
   const denEntry = (seasonConfig.twistSchedule || [])
@@ -724,6 +731,7 @@ export function simulateBBEpisode() {
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
     temptationOffer: denEntry?.offer || 'random',
+    americasNomineeStyle: anEntry?.anStyle === 'mvp' ? 'mvp' : 'direct',
     whacktivityDoors: whackEntry?.doors || 'auto',
     // Which package the audience is voting over. 'auto' runs the show's
     // rotation; a package id books that one onto this week, which is the whole
@@ -1029,11 +1037,13 @@ export function summariseWeek(week) {
         line('');
         line('THE BB TIME CAPSULE');
         line(`  America votes ${act.favourite} into the capsule.`);
+        if (act.challenge) line(`  Tonight's challenge: ${act.challenge.name}.`);
         if (act.won) {
           line('  The challenge is beaten. Something from a past season comes out with them,');
           line('  and the house is told only that the capsule was beaten.');
         } else {
-          line(`  The challenge beats them, and they come out in ${act.punishment}.`);
+          line(`  ${act.challenge?.name || 'The challenge'} beats them, and they come out `
+            + `${act.punishmentVerb || 'wearing'} ${act.punishment}.`);
           if (act.tetheredTo) line(`  ${act.tetheredTo} is tied to them until it comes off.`);
         }
         if (act.ineligible?.length) line(`  Already been in: ${act.ineligible.join(', ')}.`);

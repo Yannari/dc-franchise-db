@@ -238,14 +238,25 @@ export function usePower(instance, week) {
  * let one change hands on the way out.
  */
 export function expirePowers(week, house = gs.activePlayers || []) {
+  // Returns what it just disposed, so a caller can tell the VIEWER about a
+  // power that was carried for weeks and never spent. The house is told
+  // nothing — it never knew the thing existed — but a power quietly vanishing
+  // out of the game with nobody ever mentioning it is a story the audience is
+  // owed, and it was happening invisibly.
+  const disposed = [];
   for (const p of store()) {
     if (p.used || p.disposed) continue;
     const def = BB_POWER_DEFINITIONS[p.powerId] || {};
     // A Bonus Life is not lost when its holder is: being evicted is the
     // trigger, not the end. It stays live for whoever has to resolve it.
     if (!house.includes(p.holder) && !def.survivesEviction) {
-      p.disposed = true; p.disposedReason = 'holder-evicted'; continue;
+      p.disposed = true; p.disposedReason = 'holder-evicted';
+      disposed.push(p); continue;
     }
-    if (week > p.expiresAfterWeek) { p.disposed = true; p.disposedReason = 'expired'; }
+    if (week > p.expiresAfterWeek) {
+      p.disposed = true; p.disposedReason = 'expired';
+      disposed.push(p);
+    }
   }
+  return disposed;
 }

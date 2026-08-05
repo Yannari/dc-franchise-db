@@ -2952,7 +2952,34 @@ export function simulateBBWeek(options = {}) {
       { nominees: [...nominees], evicted: departure.name }));
 
     gs.activePlayers = house.filter(name => name !== departure.name);
-    expirePowers(week.num, gs.activePlayers);
+    // ── what quietly left the game ──
+  //
+  // A power carried for a month and never spent used to vanish in silence:
+  // disposed in the store, mentioned nowhere, and the only trace was a line in
+  // the debug panel nobody opens mid-season. The HOUSE is told nothing — most
+  // of these it never knew existed — but the viewer is owed it, so this is a
+  // note to the audience and nothing else. No bonds move, no reads change.
+  const _binned = expirePowers(week.num, gs.activePlayers) || [];
+  if (!compressed && _binned.length) {
+    week.powersExpired = _binned.map(p => ({
+      powerId: p.powerId, holder: p.holder, reason: p.disposedReason,
+      name: BB_POWER_DEFINITIONS[p.powerId]?.name || p.powerId,
+      heldSince: p.acquiredWeek,
+    }));
+    week.acts.push({
+      type: 'power-expired', week: week.num, viewerOnly: true,
+      expired: week.powersExpired.map(x => ({ ...x })),
+      beats: week.powersExpired.map(x => ({
+        type: 'power-expired',
+        text: x.reason === 'holder-evicted'
+          ? `${x.holder} walks out of the front door still holding ${x.name}, and it goes out with them. Nobody in that house ever knew it was in the building.`
+          : `${x.holder} has been carrying ${x.name} since week ${x.heldSince} and never played it. The window closes tonight. It is simply gone, and the house will never learn there was anything to use.`,
+        players: [x.holder],
+        badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
+        badgeClass: 'grey',
+      })),
+    });
+  }
     if (!gs.eliminated.includes(departure.name)) gs.eliminated.push(departure.name);
     week.allianceChanges.betrayals = _cappedBondWindow(() => settleBBAllianceWeek(week, rng));
   _attachAllianceFallout(week, house);
@@ -3503,7 +3530,34 @@ export function simulateBBWeek(options = {}) {
   // panel, which is not a thing anybody watches.
   week.powerLedger = powerLedgerFor(week.num);
   // Powers whose holder just left, or whose window just closed, end here.
-  expirePowers(week.num, gs.activePlayers);
+  // ── what quietly left the game ──
+  //
+  // A power carried for a month and never spent used to vanish in silence:
+  // disposed in the store, mentioned nowhere, and the only trace was a line in
+  // the debug panel nobody opens mid-season. The HOUSE is told nothing — most
+  // of these it never knew existed — but the viewer is owed it, so this is a
+  // note to the audience and nothing else. No bonds move, no reads change.
+  const _binned = expirePowers(week.num, gs.activePlayers) || [];
+  if (!compressed && _binned.length) {
+    week.powersExpired = _binned.map(p => ({
+      powerId: p.powerId, holder: p.holder, reason: p.disposedReason,
+      name: BB_POWER_DEFINITIONS[p.powerId]?.name || p.powerId,
+      heldSince: p.acquiredWeek,
+    }));
+    week.acts.push({
+      type: 'power-expired', week: week.num, viewerOnly: true,
+      expired: week.powersExpired.map(x => ({ ...x })),
+      beats: week.powersExpired.map(x => ({
+        type: 'power-expired',
+        text: x.reason === 'holder-evicted'
+          ? `${x.holder} walks out of the front door still holding ${x.name}, and it goes out with them. Nobody in that house ever knew it was in the building.`
+          : `${x.holder} has been carrying ${x.name} since week ${x.heldSince} and never played it. The window closes tonight. It is simply gone, and the house will never learn there was anything to use.`,
+        players: [x.holder],
+        badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
+        badgeClass: 'grey',
+      })),
+    });
+  }
   // Somebody leaving rearranges everybody's plan: a shield walks out and the
   // person hiding behind them is suddenly the biggest thing in the room, and a
   // promise made to somebody who is now in the jury is not a promise any more.

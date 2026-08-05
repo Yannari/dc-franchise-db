@@ -1113,6 +1113,16 @@ export function summariseWeek(week) {
         line('  The votes were read out and they no longer decide anything.');
         break;
       }
+      case 'power-expired':
+        line('');
+        line('WHAT QUIETLY LEFT THE GAME');
+        for (const x of act.expired || []) {
+          line(`  ${x.name} — ${x.holder} ${x.reason === 'holder-evicted'
+            ? 'took it out of the front door with them.'
+            : `held it since week ${x.heldSince} and never played it.`}`);
+        }
+        line('  Told to nobody in the house. This note is for the viewer.');
+        break;
       case 'hidden-power': {
         line('');
         if (act.phase === 'hidden') {

@@ -4738,6 +4738,13 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'power-expired':
+        sec('WHAT QUIETLY LEFT THE GAME');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('  None of this was announced. The house is not told when a power expires, because');
+        ln('  most of the time it was never told the power existed — this is for the viewer alone.');
+        break;
+
       case 'hidden-power':
         if (act.phase === 'hidden') {
           sec('SOMETHING IN THIS HOUSE');

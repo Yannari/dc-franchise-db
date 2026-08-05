@@ -146,6 +146,8 @@ describe('every act the engine emits reaches both transcripts', () => {
       ['tiebreaker', 'read out inside the eviction screen'],
       ['arena', 'drawn by the Block Buster screens, not by act type'],
       ['roadkill-win', 'the memory record, not an act with a scene in it'],
+      ['power-expired', 'a note to the VIEWER that a power died unspent — the house is '
+        + 'never told, so there is no scene to draw, only a line in the transcripts'],
       ['temptation-curse', 'drawn on the nomination ceremony as the chair nobody filled — '
         + 'the curse has no scene of its own, it IS that third key turning'],
     ]);

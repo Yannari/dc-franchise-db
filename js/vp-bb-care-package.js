@@ -28,7 +28,7 @@ const CP_CSS = `
 .bbcp-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 6px,transparent 6px 12px)}
 .bbcp-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr}
 @media(max-width:760px){.bbcp-grid{grid-template-columns:1fr}}
-.bbcp-bay{padding:16px 14px 12px}
+.bbcp-bay{padding:16px 14px 12px;display:flex;align-items:center;justify-content:center}
 .bbcp-crate{display:block;width:100%;max-width:330px;height:auto;margin:0 auto;filter:drop-shadow(0 16px 30px rgba(0,0,0,.6))}
 .bbcp-drop{animation:bbcp-drop 1s cubic-bezier(.22,1,.36,1) both}
 @keyframes bbcp-drop{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}

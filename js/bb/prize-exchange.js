@@ -32,7 +32,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { BB_PUNISHMENTS, applyPunishment } from './punishments.js';
+import { BB_PUNISHMENTS, applyPunishment, drawPunishment } from './punishments.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
@@ -108,11 +108,12 @@ export function runPrizeExchange({ week, order = [], nominees = [], hoh = null,
   // One box each. The veto, then punishments for about a third of the rest,
   // then prizes — a pool with real teeth in it, which is what makes opening an
   // unknown box a gamble rather than a formality.
-  const punishIds = Object.keys(BB_PUNISHMENTS).filter(id => !BB_PUNISHMENTS[id].tether);
   const boxes = [{ kind: 'veto', name: 'the Power of Veto' }];
   const punishCount = Math.max(1, Math.round((pickers.length - 1) * 0.34));
   for (let i = 0; i < punishCount; i++) {
-    const id = punishIds[Math.floor(rng() * punishIds.length)];
+    // No tether in a box: Adam and Eve ties two people together and a box has
+    // one person's name on it.
+    const id = drawPunishment(rng, p => !p.tether);
     boxes.push({ kind: 'punishment', id, name: BB_PUNISHMENTS[id].name, def: BB_PUNISHMENTS[id] });
   }
   while (boxes.length < pickers.length) {

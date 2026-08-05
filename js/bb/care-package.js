@@ -29,7 +29,7 @@ import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
 import { makePicker, clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
-import { BB_PUNISHMENTS, applyPunishment } from './punishments.js';
+import { BB_PUNISHMENTS, applyPunishment, drawPunishment } from './punishments.js';
 import { runCapsuleAttempt } from './capsule-challenges.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
@@ -389,9 +389,10 @@ export function runTimeCapsule({ week, house, hoh, rng = Math.random,
   }
 
   // A punishment from a past season, worn in front of everybody.
-  const rackIds = (Array.isArray(rack) && rack.length ? rack : Object.keys(BB_PUNISHMENTS))
-    .filter(id => BB_PUNISHMENTS[id]);
-  const punishmentId = rackIds[Math.floor(rng() * rackIds.length)] || rackIds[0];
+  const rackIds = (Array.isArray(rack) && rack.length ? rack : null);
+  const punishmentId = rackIds
+    ? rackIds.filter(id => BB_PUNISHMENTS[id])[Math.floor(rng() * rackIds.length)] || rackIds[0]
+    : drawPunishment(rng);
   const pdef = BB_PUNISHMENTS[punishmentId];
   // Adam and Eve needs somebody to be tied to, and it is not a volunteer role.
   const partner = pdef.tether

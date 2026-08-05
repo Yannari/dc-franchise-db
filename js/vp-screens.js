@@ -20702,7 +20702,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
           const draw = rpBuildBBVetoDraw(view);
           if (draw && draw.trim()) screens.push({ id: id('bb-vdraw'), label: 'The Draw', html: draw });
         } catch { /* no draw recorded, no screen */ }
-        screens.push({ id: id('bb-veto'), label: 'Veto', html: rpBuildBBComp(view, 'veto') });
+        screens.push({ id: id('bb-veto'),
+          label: act.orderOnly ? 'The Pick Order' : 'Veto',
+          html: rpBuildBBComp(view, 'veto') });
         break;
       case 'veto-ceremony':
         screens.push({ id: id('bb-cer'), label: 'Veto Ceremony', html: rpBuildBBCeremony(view) });

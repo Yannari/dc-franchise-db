@@ -4514,7 +4514,13 @@ export function generateBBSummaryText(ep) {
           ln(`  One name in that draw has no chip behind it: ${act.hacked.pick} is walked into the`);
           ln(`  competition by the hacker, and ${act.hacked.replaced} loses the seat they drew.`);
         }
-        ln(`  ${act.winner} wins the Power of Veto.`);
+        if (act.orderOnly) {
+          ln(`  ${act.winner} wins the competition — and this week that awards the`);
+          ln('  LAST PICK rather than the veto itself.');
+          ln(`  Pick order, worst finish to best: ${(act.pickOrder || []).join(' → ')}.`);
+        } else {
+          ln(`  ${act.winner} wins the Power of Veto.`);
+        }
         beats(act);
         break;
 

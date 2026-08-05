@@ -21,6 +21,10 @@ import { gs } from '../core.js';
 /**
  * What a punishment does.
  *
+ *   weight   how often it comes up when something draws from the rack. The
+ *            costumes are weighted above the chores: an egg suit is what this
+ *            punishment is FOR, and a flat draw had Camp Guide and Hamazon —
+ *            neither of which is really a costume — turning up as often as it.
  *   verb     how the sentence carries it. Costumes are WORN and slop is
  *            SERVED, and one preposition for both produced lines like "is in a
  *            week on slop for the week".
@@ -34,37 +38,37 @@ import { gs } from '../core.js';
  */
 export const BB_PUNISHMENTS = {
   'egg-detective': {
-    id: 'egg-detective', verb: 'wearing', name: 'the Egg Detective costume', drag: 1.6, weeks: 1,
+    id: 'egg-detective', weight: 2.0, verb: 'wearing', name: 'the Egg Detective costume', drag: 1.6, weeks: 1,
     blurb: 'A full-body egg suit with a detective hat, worn everywhere, at all times.',
     cost: 'Nobody has a serious conversation with an egg. Every pitch this week starts a foot behind.',
   },
   'red-unitard': {
-    id: 'red-unitard', verb: 'wearing', name: 'the red unitard', drag: 1.4, weeks: 1,
+    id: 'red-unitard', weight: 1.9, verb: 'wearing', name: 'the red unitard', drag: 1.4, weeks: 1,
     blurb: 'The unitard. It has been in this house since long before any of them arrived.',
     cost: 'It is the oldest humiliation the show owns, and the house treats whoever is in it accordingly.',
   },
   'lord-of-the-latrine': {
-    id: 'lord-of-the-latrine', verb: 'wearing', name: 'Lord of the Latrine', drag: 1.2, weeks: 1,
+    id: 'lord-of-the-latrine', weight: 1.1, verb: 'wearing', name: 'Lord of the Latrine', drag: 1.2, weeks: 1,
     blurb: 'Robes, a crown, and the duty of announcing every single visit anybody makes to the bathroom.',
     cost: 'It is impossible to hold a private conversation when your job is to interrupt the house all day.',
   },
   'hamazon': {
-    id: 'hamazon', verb: 'wearing', name: 'Hamazon', drag: 0.9, weeks: 1,
+    id: 'hamazon', weight: 0.8, verb: 'wearing', name: 'Hamazon', drag: 0.9, weeks: 1,
     blurb: 'A siren goes off, ham arrives, and they have to eat it. Repeatedly. All week.',
     cost: 'Being summoned out of every room you are working is its own kind of tax.',
   },
   'camp-guide': {
-    id: 'camp-guide', verb: 'wearing', name: 'Camp Guide', drag: 1.3, weeks: 1,
+    id: 'camp-guide', weight: 0.8, verb: 'wearing', name: 'Camp Guide', drag: 1.3, weeks: 1,
     blurb: 'Build the camp. Take the camp down. Build the camp again, on the horn, whenever it sounds.',
     cost: 'Hours a day spent outside, alone, while the house decides things inside without them.',
   },
   'adam-and-eve': {
-    id: 'adam-and-eve', verb: 'wearing', name: 'Adam and Eve', drag: 1.5, weeks: 1, tether: true,
+    id: 'adam-and-eve', weight: 1.5, verb: 'wearing', name: 'Adam and Eve', drag: 1.5, weeks: 1, tether: true,
     blurb: 'Two houseguests, two costumes, and a tether between them they cannot take off.',
     cost: 'Neither of them can have a private conversation again until it comes off — including with each other.',
   },
   'slop': {
-    id: 'slop', verb: 'serving', name: 'a week on slop', drag: 0.7, weeks: 1, slop: true,
+    id: 'slop', weight: 0.9, verb: 'serving', name: 'a week on slop', drag: 0.7, weeks: 1, slop: true,
     blurb: 'No costume. Just slop, for the week, in a house that eats in front of them.',
     cost: 'Quieter than the costumes and longer-lasting: hunger makes people short with each other.',
   },
@@ -121,4 +125,26 @@ export function punishedHaveNots(week) {
   return activePunishments(week)
     .filter(p => BB_PUNISHMENTS[p.id]?.slop)
     .map(p => p.name);
+}
+
+/**
+ * Draw one from the rack, honouring the weights.
+ *
+ * Shared by every source — the capsule, Pandora's Box and the prize exchange —
+ * so a punishment's rarity is a property of the punishment rather than of
+ * whichever twist happened to reach for it.
+ *
+ * @param {function} rng
+ * @param {function} [allow] filter, e.g. costumes only
+ */
+export function drawPunishment(rng = Math.random, allow = () => true) {
+  const pool = Object.values(BB_PUNISHMENTS).filter(allow);
+  if (!pool.length) return null;
+  const total = pool.reduce((sum, p) => sum + (p.weight || 1), 0);
+  let roll = rng() * total;
+  for (const p of pool) {
+    roll -= (p.weight || 1);
+    if (roll <= 0) return p.id;
+  }
+  return pool[pool.length - 1].id;
 }

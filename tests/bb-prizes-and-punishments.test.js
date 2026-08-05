@@ -130,6 +130,36 @@ describe('Prizes and Punishments', () => {
     expect(act.vetoHolder).toBe(vetoSteals[0].thief);
   });
 
+  it('does not let the competition claim to award the veto', () => {
+    // The bug this pins: the ordinary veto act still ran after the exchange
+    // with `winner` reassigned to the final holder, so the episode showed a
+    // scoreboard and then said somebody else had won it. The competition's
+    // winner and the veto's holder are two different facts and both are true.
+    const played = play();
+    expect(played, 'the exchange never ran').toBeTruthy();
+    const { ep, act } = played;
+    const veto = (ep.acts || []).find(a => a.type === 'veto');
+    expect(veto, 'no veto act').toBeTruthy();
+    expect(veto.orderOnly, 'the comp still claimed to award the veto').toBe(true);
+    expect(veto.winner).toBe(act.compWinner);
+    expect(veto.vetoHolder).toBe(act.vetoHolder);
+    expect(ep.vetoWinner).toBe(act.vetoHolder);
+    expect(veto.pickOrder).toEqual(act.order);
+
+    // And it says so, rather than printing "wins the Power of Veto".
+    const text = summariseWeek(gs.bb.weeks[gs.bb.weeks.length - 1]);
+    expect(text).toMatch(/awards the LAST PICK/);
+    expect(text).not.toContain(`${act.compWinner} wins the Power of Veto`);
+  });
+
+  it('shows the boxes AFTER the competition that set the order', () => {
+    const played = play();
+    expect(played, 'the exchange never ran').toBeTruthy();
+    const types = (played.ep.acts || []).map(a => a.type);
+    expect(types.indexOf('prize-exchange'), 'the boxes came out before the comp')
+      .toBeGreaterThan(types.indexOf('veto'));
+  });
+
   it('reaches both transcripts', () => {
     const played = play();
     expect(played, 'no exchange to transcribe').toBeTruthy();

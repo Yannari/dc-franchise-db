@@ -16,7 +16,7 @@ import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
-import { punishedHaveNots, applyPunishment, BB_PUNISHMENTS } from './punishments.js';
+import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
@@ -1639,9 +1639,7 @@ export function simulateBBWeek(options = {}) {
       //
       // Costumes only. Slop is the Have-Not economy's currency and borrowing
       // it here would quietly make a second have-not every time the box opens.
-      const wearable = Object.keys(BB_PUNISHMENTS)
-        .filter(id => !BB_PUNISHMENTS[id].slop && !BB_PUNISHMENTS[id].tether);
-      const priceId = wearable[Math.floor(rng() * wearable.length)] || 'red-unitard';
+      const priceId = drawPunishment(rng, p => !p.slop && !p.tether) || 'red-unitard';
       const priceDef = BB_PUNISHMENTS[priceId];
       applyPunishment(hoh, priceId, { week: week.num });
       boxAct.consequence = priceId;
@@ -2462,6 +2460,10 @@ export function simulateBBWeek(options = {}) {
         }
       }
     }
+    // Set when Prizes and Punishments turns the competition into an
+    // order-setter rather than a veto-awarder.
+    let vetoOrderOnly = null;
+    let pendingExchangeAct = null;
     vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
     vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
     const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
@@ -2488,8 +2490,18 @@ export function simulateBBWeek(options = {}) {
         });
         if (exchange?.vetoHolder) {
           week.prizeExchange = exchange;
+          // The competition still happened and still had a winner — it simply
+          // did not award the veto. Keeping both facts apart is the difference
+          // between a coherent episode and one that shows a scoreboard and
+          // then contradicts it a line later.
+          exchange.compWinner = vetoWinner;
+          vetoOrderOnly = { compWinner: vetoWinner, order: [...exchange.order] };
           vetoWinner = exchange.vetoHolder;
-          week.acts.push(addBeats(exchange, { nominees: [...nominees] }));
+          // Held back rather than pushed here. The competition act has not been
+          // pushed yet, and acts render in order — pushing the exchange now put
+          // the boxes on screen BEFORE the competition that decided who opens
+          // one first.
+          pendingExchangeAct = exchange;
           // A punishment out of the boxes can put somebody on slop, and the
           // have-not act ran long before this.
           const late = punishedHaveNots(week.num).filter(n => house.includes(n));
@@ -2506,12 +2518,23 @@ export function simulateBBWeek(options = {}) {
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
     week.vetoCompetition = vetoCompetition;
     recordCompDominance(vetoCompetition, house, week.num);
-    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers, winner: vetoWinner,
+    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers,
+      // On a Prizes and Punishments week the competition's winner is NOT the
+      // veto holder, and the act says so rather than quietly relabelling one
+      // as the other. `vetoHolder` is who walks away with it.
+      winner: vetoOrderOnly ? vetoOrderOnly.compWinner : vetoWinner,
+      orderOnly: !!vetoOrderOnly, pickOrder: vetoOrderOnly?.order || null,
+      vetoHolder: vetoWinner,
       results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
       // A seat that no chip accounts for, if the hacker spent their second
       // authority — the one hack the whole house watches happen.
       hacked: vetoDraw.hacked || null,
       automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
+
+    // ...and the boxes come out after the competition that set the order.
+    if (pendingExchangeAct) {
+      week.acts.push(addBeats(pendingExchangeAct, { nominees: [...nominees], vetoWinner }));
+    }
 
     // Somebody holds the veto and has not yet said what they will do with it.
     if (!compressed) houseAct('post-veto', { nominees: [...nominees], vetoWinner });

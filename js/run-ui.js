@@ -1159,6 +1159,31 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     if (_allTypes.includes('tied-destinies')) elims = Math.max(elims, 2);
     if (_allTypes.includes('emissary-vote')) elims = Math.max(elims, 2);
+    // ── Big Brother ──
+    //
+    // Every twist above is a Total Drama one, so this projection assumed a
+    // house evicts exactly one person a week no matter what was scheduled: a
+    // Split House week showed 16 left going to 15 when two houseguests walk
+    // out the same night, and every episode after it was off by one for the
+    // rest of the season. The season-shape panel in bb-run.js already counts
+    // both of these; the timeline never learned.
+    //
+    // Both really do take two. A double eviction runs a second cycle in all
+    // three of its styles, and a Split House evicts one houseguest from each
+    // side on the same night.
+    if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
+    // The Split House stands down rather than running badly, and the projection
+    // has to stand down with it or it is wrong in the other direction — the
+    // guard here mirrors `splitPossible` in bb-run.js exactly: ten houseguests
+    // (two sides of five, each needing an HOH, two nominees and somebody left
+    // to vote), no second cycle already scheduled, and no three-nominee mode.
+    if (_allTypes.includes('bb-split-house')
+        && active >= 10
+        && !_allTypes.includes('bb-double-eviction')
+        && !_allTypes.includes('bb-instant-eviction')
+        && !(seasonConfig.bbSafetyMode && seasonConfig.bbSafetyMode !== 'off')) {
+      elims = Math.max(elims, 2);
+    }
     // Exile Duel: person goes to exile (0 elims this ep) — duel happens next episode (1 elim)
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;

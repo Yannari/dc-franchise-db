@@ -17,6 +17,7 @@
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
+import { scheduleHouseBeats } from './bb/house-events.js';
 import { getPerceivedBond } from './bonds.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 // The dispatcher's own fallbacks — listed in the pinning dropdowns so "an
@@ -384,6 +385,25 @@ export function bbTwistsForWeek(weekNum) {
  * evictions — and one episode, because that is how it is watched.
  */
 function simulateSplitHouseEpisode({ house, epNum, twists }) {
+  // ── everybody, together, before any of it ──
+  //
+  // One stretch of house life with the whole cast in it. It has to be built
+  // out here rather than inside a side's week: the sides are sealed, and an
+  // opener run inside one of them forms cross-side bonds and alliances that
+  // later side acts then name — which is exactly the wall this twist exists to
+  // put up. Out here it happens before there is a wall to cross.
+  const openerWeek = { num: (gs.bb.weeks?.length || 0) + 1, houseAtStart: [...house], acts: [] };
+  let sharedOpener = null;
+  try {
+    sharedOpener = {
+      type: 'house', phase: 'pre-hoh', sharedOpener: true, segment: 0,
+      socialBeats: scheduleHouseBeats(HOUSE_EVENTS, house,
+        { act: 'house', phase: 'pre-hoh', hoh: null, coHoh: null, hohs: [],
+          nominees: [], vetoWinner: null, week: openerWeek },
+        { rng: Math.random, min: 22, max: 30 }),
+    };
+  } catch { sharedOpener = null; }
+
   // ── the crowning, before anybody is divided ──
   const eligible = house.filter(name => name !== gs.bb.outgoingHoh);
   const crowning = runBBCompetition({
@@ -468,6 +488,11 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
       // is on the other side of it, to write about the people who are not
       // there.
       return simulateBBWeek({ ...common, house: side, preCrownedHoh, segment,
+        // The opening stretch of house life belongs to the undivided house and
+        // happens once. Side A plays it for everybody; side B skips it.
+        // Both sides skip it: the opening stretch belongs to the undivided
+        // house and is built below, before anybody is crowned or divided.
+        skipOpeningHouse: true,
         splitSide: segment === 1 ? 'A' : 'B',
         splitOther: segment === 1 ? [...sideB] : [...sideA],
         splitPicks: picks.map(p => ({ ...p })) });
@@ -493,7 +518,13 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   };
   // The crowning is the one thing both halves shared, so it opens the episode
   // ahead of either side's week.
+  // The order the night actually happened in: everybody together, then the
+  // competition that crowns two, then the wall. The opening stretch was played
+  // by the whole house so it sits ahead of the crowning rather than inside
+  // side A's half, where it would read as something that happened behind a
+  // wall that had not gone up yet.
   ep.acts = [
+    ...(sharedOpener ? [sharedOpener] : []),
     { type: 'split-house', crowning, hohs: [hohA, hohB],
       // Aliased so the generic competition board can draw this the way it
       // draws any other HOH night: the house was told two crowns were on the

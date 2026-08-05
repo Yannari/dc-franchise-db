@@ -144,3 +144,39 @@ describe('two evictees who never met', () => {
     expect(labels.every(l => !/side$/.test(l)), `labels were: ${labels.join(' | ')}`).toBe(true);
   });
 });
+
+describe('the night runs in the order it happened', () => {
+  let ep = null;
+  beforeEach(() => { ep = play(7, [{ id: 't1', episode: 1, type: 'bb-split-house' }]); });
+
+  it('opens with ONE stretch of house life and the whole house in it', () => {
+    const openers = (ep.acts || []).filter(a => a.type === 'house' && a.phase === 'pre-hoh');
+    expect(openers, 'each side played its own opening stretch behind a wall that did not exist yet')
+      .toHaveLength(1);
+    // Played before anybody was divided, so it belongs to neither side.
+    expect(openers[0].sharedOpener).toBe(true);
+    expect(openers[0].segment).toBe(0);
+  });
+
+  it('puts that stretch before the crowning and the crowning before the wall', () => {
+    const labels = (buildVPScreens(ep) || []).map(s2 => s2.label);
+    const life = labels.indexOf('House Life');
+    const crown = labels.indexOf('Two Crowns');
+    const wall = labels.indexOf('The House Splits');
+    expect(life).toBeGreaterThan(-1);
+    expect(life, 'the house was crowned before it was ever seen together').toBeLessThan(crown);
+    expect(crown, 'the wall went up before anybody saw the crowns won').toBeLessThan(wall);
+  });
+
+  it('gives each side exactly one stretch before its nomination ceremony', () => {
+    // Two was the bug: the opening stretch ran per side AND the post-crowning
+    // one did, so every ceremony arrived behind two House Life screens.
+    for (const seg of [1, 2]) {
+      const acts = (ep.acts || []).filter(a => (a.segment || 0) === seg);
+      const noms = acts.findIndex(a => a.type === 'nominations');
+      expect(noms, `side ${seg} never nominated`).toBeGreaterThan(-1);
+      const before = acts.slice(0, noms).filter(a => a.type === 'house');
+      expect(before.length, `side ${seg} had ${before.length} stretches before nominations`).toBe(1);
+    }
+  });
+});

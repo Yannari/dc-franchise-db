@@ -18,6 +18,8 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
 import { rpBuildBBAmericasNominee } from '../js/vp-bb-americas-nominee.js';
+import { rpBuildBBSafetySuite } from '../js/vp-bb-safety-suite.js';
+import { rpBuildBBCoinOfDestiny } from '../js/vp-bb-coin.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -92,5 +94,68 @@ describe('it looks like Big Brother', () => {
     expect(html).toMatch(/bban-frame/);
     // The nameplate under the third photograph is redacted — that IS the twist.
     expect(html).toMatch(/bban-redact/);
+  });
+});
+
+// ── the other two from the same batch ─────────────────────────────────
+//
+// Five twists shipped screens in one pass and all of them drew abstract
+// shapes with names typed inside. These two get their own object rather than
+// a copy of the wall: a suite is a door you may walk through once a season,
+// and a coin is a coin.
+const DEPS = () => ({
+  tvState: _tvState, reveal: (e, k, i) => `_r('${k}',${i})`,
+  esc: v => String(v ?? ''), avatar: n => `<img data-hg="${n}">`,
+});
+
+function playFor(type, twist) {
+  for (let seed = 1; seed <= 25; seed++) {
+    house([{ id: 't1', episode: 1, type: twist }]);
+    const played = withSeededRandom(seed * 7, () => simulateBBEpisode());
+    const act = (played.acts || []).find(a => a.type === type);
+    if (act) return { ep: played, act };
+  }
+  return null;
+}
+
+function opened(fn, ep, act) {
+  const deps = DEPS();
+  fn(ep, act, deps);
+  for (const k of Object.keys(_tvState)) _tvState[k].idx = 99;
+  return fn(ep, act, deps);
+}
+
+describe('the Safety Suite is a room, not a word list', () => {
+  it('puts faces on the rope and on whoever walked out safe', () => {
+    const found = playFor('safety-suite', 'bb-safety-suite');
+    expect(found, 'no Safety Suite week in 25 seeds').toBeTruthy();
+    const html = opened(rpBuildBBSafetySuite, found.ep, found.act);
+
+    expect(html, 'no avatars anywhere on the screen').toMatch(/data-hg=/);
+    expect(html).toMatch(/bbss-room/);
+    // The rope is the fact this twist is about: who can still walk in, and who
+    // never can again.
+    expect(html).toMatch(/bbss-rope/);
+    expect(html).toMatch(/bbss-face/);
+    if (found.act.winner) {
+      expect(html, 'somebody beat the clock and got no medal').toMatch(/bbss-medal/);
+      expect(html).toContain(found.act.winner);
+    }
+  });
+});
+
+describe('the Coin of Destiny happens to a crown', () => {
+  it('shows who paid, and what the call did to the Head of Household', () => {
+    const found = playFor('coin-of-destiny', 'bb-coin-of-destiny');
+    expect(found, 'no Coin week in 25 seeds').toBeTruthy();
+    const html = opened(rpBuildBBCoinOfDestiny, found.ep, found.act);
+
+    expect(html, 'no avatars on a screen about who paid').toMatch(/data-hg=/);
+    expect(html).toMatch(/bbcd-vaultroom/);
+    expect(html).toMatch(/bbcd-counter/);
+    // Paying is public; the call is not. Both have to be on screen as such.
+    expect(html).toMatch(/PAID|KEPT IT/);
+    if (found.act.hoh) expect(html).toMatch(/bbcd-throne/);
+    if (found.act.dethroned) expect(html).toMatch(/is-dethroned/);
   });
 });

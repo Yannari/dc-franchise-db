@@ -15,15 +15,56 @@ import { _shell, _deps, _key, _init, _hidden, _card, _beatCard } from './vp-bb-t
 const SS_CSS = `
 .bbss-title{font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#86efac;text-shadow:0 0 18px rgba(134,239,172,.25);margin-bottom:4px}
 .bbss-sub{text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px}
-.bbss-stage{max-width:520px;margin:0 auto 18px}
-.bbss-door{display:block;width:100%;max-width:240px;height:auto;margin:0 auto 14px}
-.bbss-clock{font-size:9px;letter-spacing:1.4px;font-family:var(--font-mono,monospace)}
-.bbss-board{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
-.bbss-pass{font-size:10.5px;letter-spacing:.5px;padding:3px 9px;border-radius:3px;border:1px solid rgba(134,239,172,.4);color:#86efac;background:rgba(134,239,172,.07)}
-.bbss-pass.is-spent{opacity:.45;text-decoration:line-through;border-style:dashed;color:#8b949e;border-color:rgba(139,148,158,.3);background:none}
-.bbss-legend{text-align:center;font-size:9px;letter-spacing:1.2px;color:#64748b;margin-top:10px}
-`;
 
+/* THE SUITE. A door you may walk through once in a season, and a rope with a
+   pass on it for every houseguest who still could. The drama is the rope: you
+   can see at a glance who has already spent theirs and can never come back. */
+.bbss-room{position:relative;max-width:600px;margin:0 auto 20px;padding:22px 18px 18px;
+  border-radius:12px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% -8%,rgba(134,239,172,.10),rgba(4,10,8,.96) 60%);
+  border:1px solid rgba(134,239,172,.22);box-shadow:inset 0 0 60px rgba(0,0,0,.7)}
+.bbss-room::after{content:'';position:absolute;left:50%;top:0;width:190px;height:150px;
+  transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(ellipse at top,rgba(134,239,172,.18),transparent 70%)}
+.bbss-door{display:block;width:100%;max-width:190px;height:auto;margin:0 auto 6px;position:relative;z-index:1}
+.bbss-clock{font-size:9px;letter-spacing:1.4px;font-family:var(--font-mono,monospace)}
+
+/* the two who walk out safe, chained together */
+.bbss-safe{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0 4px;
+  position:relative;z-index:1}
+.bbss-safe .bbss-who{text-align:center;width:92px}
+.bbss-medal{position:relative;width:66px;height:66px;margin:0 auto;border-radius:50%;
+  overflow:hidden;border:2px solid #4ade80;
+  box-shadow:0 0 0 3px rgba(74,222,128,.16),0 0 26px -4px rgba(74,222,128,.9);
+  animation:bbss-glow 2.8s ease-in-out infinite}
+.bbss-medal img,.bbss-medal .bb-av,.bbss-medal .rp-portrait{width:100%;height:100%;object-fit:cover}
+@keyframes bbss-glow{0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,.14),0 0 20px -6px rgba(74,222,128,.7)}
+  50%{box-shadow:0 0 0 4px rgba(74,222,128,.24),0 0 34px 0 rgba(74,222,128,1)}}
+.bbss-link{width:26px;height:2px;background:repeating-linear-gradient(90deg,#4ade80 0 5px,transparent 5px 9px);
+  opacity:.75;flex:none}
+.bbss-role{font-family:var(--font-mono,ui-monospace,monospace);font-size:8px;letter-spacing:1.3px;
+  color:#4ade80;margin-top:5px}
+.bbss-nm{font-size:11px;color:#e6edf3;font-weight:600;margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbss-pun{display:block;font-family:var(--font-mono,monospace);font-size:8px;letter-spacing:.8px;
+  color:#fbbf24;margin-top:3px}
+
+/* the rope: one pass per houseguest, struck when it is gone for good */
+.bbss-rope{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;
+  position:relative;z-index:1}
+.bbss-pass{width:52px;text-align:center;opacity:.95}
+.bbss-face{position:relative;width:40px;height:40px;margin:0 auto;border-radius:4px;overflow:hidden;
+  border:1px solid rgba(134,239,172,.45);background:#0b1a12}
+.bbss-face img,.bbss-face .bb-av,.bbss-face .rp-portrait{width:100%;height:100%;object-fit:cover}
+.bbss-pass.is-spent{opacity:.4}
+.bbss-pass.is-spent .bbss-face{filter:grayscale(1);border-style:dashed;border-color:rgba(139,148,158,.35)}
+.bbss-pass.is-spent .bbss-face::after{content:'';position:absolute;left:-4px;right:-4px;top:50%;
+  height:1.5px;background:#8b949e;transform:rotate(-24deg)}
+.bbss-tag{font-size:8.5px;color:#86efac;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbss-pass.is-spent .bbss-tag{color:#64748b}
+.bbss-legend{text-align:center;font-size:9px;letter-spacing:1.2px;color:#64748b;margin-top:12px}
+@media(prefers-reduced-motion:reduce){.bbss-medal{animation:none}}
+`;
 /**
  * @param {object} ep   the episode view
  * @param {object} act  the `safety-suite` act
@@ -55,6 +96,8 @@ export function rpBuildBBSafetySuite(ep, act, deps) {
 
   const clock = run ? (act.winner ? 'CLOCK BEATEN' : 'CLOCK WINS') : 'ONE ENTRY EACH';
   const clockCol = run ? (act.winner ? '#4ade80' : '#f87171') : '#4ade80';
+  const AV = (n, px) => (typeof deps.avatar === 'function' ? deps.avatar(n, px) : '');
+
   const DOOR = `<svg class="bbss-door" viewBox="0 0 180 132" role="img"
       aria-label="The Safety Suite door">
     <rect x="16" y="8" width="148" height="116" rx="6" fill="rgba(18,30,24,.92)" stroke="#2f4f3c" stroke-width="1.6"/>
@@ -65,9 +108,35 @@ export function rpBuildBBSafetySuite(ep, act, deps) {
     <text class="bbss-clock" x="90" y="119" text-anchor="middle" style="fill:${clockCol}">${clock}</text>
   </svg>`;
 
-  const BOARD = `<div class="bbss-board">${roster.map(n =>
-    `<span class="bbss-pass ${spent.has(n) ? 'is-spent' : ''}">${esc(n)}</span>`).join('')}</div>
+  // The two who walk out of it safe, and the chain between them. A plus-one is
+  // not a second winner — they are safe BECAUSE somebody chose them, and they
+  // pay a punishment for it, so the medal carries the price underneath.
+  const SAFE = (run && act.winner) ? `<div class="bbss-safe">
+      <div class="bbss-who">
+        <div class="bbss-medal">${AV(act.winner, 66)}</div>
+        <div class="bbss-role">BEAT THE CLOCK</div>
+        <div class="bbss-nm">${esc(act.winner)}</div>
+      </div>
+      ${act.plusOne ? `<span class="bbss-link"></span>
+      <div class="bbss-who">
+        <div class="bbss-medal">${AV(act.plusOne, 66)}</div>
+        <div class="bbss-role">PLUS ONE</div>
+        <div class="bbss-nm">${esc(act.plusOne)}</div>
+        ${act.punishment ? `<span class="bbss-pun">${esc(act.punishment)}</span>` : ''}
+      </div>` : ''}
+    </div>` : '';
+
+  // The rope. Every houseguest who could still walk through that door, and
+  // every one who never can again — which is the fact this twist is actually
+  // about, and it was a list of struck-through words.
+  const ROPE = `<div class="bbss-rope">${roster.map(n => `
+    <div class="bbss-pass ${spent.has(n) ? 'is-spent' : ''}" title="${esc(n)}">
+      <div class="bbss-face">${AV(n, 40)}</div>
+      <div class="bbss-tag">${esc(n)}</div>
+    </div>`).join('')}</div>
     <div class="bbss-legend">STRUCK THROUGH = NO ENTRY LEFT, FOR THE REST OF THE SEASON</div>`;
+
+  const ROOM = `<div class="bbss-room">${DOOR}${SAFE}${ROPE}</div>`;
 
   const card = (step, i) => {
     if (i > state.idx) return _hidden();
@@ -105,7 +174,7 @@ export function rpBuildBBSafetySuite(ep, act, deps) {
     ep, stateKey, total, cls: 'bbss', css: SS_CSS,
     title: 'THE SAFETY SUITE',
     sub: 'One entry per houseguest. For the whole season.',
-    stage: `<div class="bbss-stage">${DOOR}${BOARD}</div>`,
+    stage: ROOM,
     cards: steps.map(card).join(''),
     firstLabel: 'The offer',
   });

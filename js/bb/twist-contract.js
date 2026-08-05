@@ -67,35 +67,6 @@ export const POWER_ACQUISITION_CHANNELS = Object.freeze([
 ]);
 
 /**
- * How each channel READS on a card, in the words a viewer would use.
- *
- * Eight distributors all filed under "Advantages" tells you nothing: a power
- * you win, one a country votes you, one you buy and one you have to go and
- * find are four different twists wearing the same label. The channel is the
- * interesting axis and it was only ever visible in the contract, so it is
- * surfaced on the card — a season can now be read at a glance as "three powers
- * nobody can earn" rather than as six identical badges.
- *
- * `verb` is deliberately what HAPPENS TO YOU, not the machinery: it is the
- * difference the house actually feels.
- */
-export const ACQUISITION_LABEL = Object.freeze({
-  'veto-competition':      { verb: 'won',     tag: 'WON IT',     hint: 'the week’s own veto competition awards it' },
-  'dedicated-competition': { verb: 'won',     tag: 'WON IT',     hint: 'a competition exists just for this power' },
-  'pandoras-box':          { verb: 'gambled', tag: 'GAMBLED ON', hint: 'the Head of Household opens a door not knowing what is behind it' },
-  'hidden-search':         { verb: 'found',   tag: 'FOUND IT',   hint: 'already in the house — somebody has to go and look' },
-  'audience':             { verb: 'given',   tag: 'GIVEN IT',   hint: 'nobody in the house can earn it; the audience decides' },
-  'temptation':            { verb: 'offered', tag: 'OFFERED IT', hint: 'handed over privately, and somebody else pays for it' },
-  'purchase':              { verb: 'bought',  tag: 'BOUGHT IT',  hint: 'paid for with something earned' },
-  'random-draw':           { verb: 'drawn',   tag: 'DRAWN',      hint: 'pure luck, and nobody is told the result' },
-});
-
-/** The channel a twist hands its power out through, or null if it hands out none. */
-export function twistChannel(twistId) {
-  return BB_TWIST_CONTRACTS[twistId]?.acquisition?.channel || null;
-}
-
-/**
  * The registry. One descriptor per twist id, shaped as the design doc's
  * contract: layer, category, timing, duration, and the rules delta — plus,
  * for powers, how they are acquired and who knows.

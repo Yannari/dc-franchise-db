@@ -12,6 +12,7 @@
 // decides the season. This is the per-person view, and the assertions below
 // are about it behaving like loyalty rather than like a random number.
 import { beforeEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
@@ -234,6 +235,22 @@ describe('in a played season', () => {
     const status = rpBuildBBOverview(ep, 'closing');
     expect(status).toMatch(/holding on/i);
     for (const m of b.members) expect(status).toContain(m.name);
+  });
+
+  it('does not stack the holds panel on top of the suspicion caption', () => {
+    // The caption under the suspicion bar was position:absolute inside a
+    // 4px-tall track, so it took no layout space at all and the holds panel
+    // rendered straight through it. Anything that follows that bar has to be
+    // able to sit under a caption that is one line or three, which means the
+    // caption has to be in normal flow rather than every sibling guessing a
+    // margin — .bbb-hunt guessed 14px and was already too small.
+    const css = readFileSync('css/simulator.css', 'utf8');
+    const from = css.indexOf('.bbb-bar span');
+    expect(from, 'the suspicion caption rule vanished').toBeGreaterThan(-1);
+    const rule = css.slice(from, css.indexOf('}', from));
+    expect(rule, 'the caption is absolutely positioned again — siblings will overlap it')
+      .not.toMatch(/position\s*:\s*absolute/);
+    expect(rule).toMatch(/display\s*:\s*block/);
   });
 
   it('leaves the alliance panel readable when a week has no board', () => {

@@ -20,8 +20,10 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { rpBuildBBCarePackage, rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
+import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
 import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
+import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
@@ -20543,6 +20545,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // helpers as arguments rather than importing them, the way Battle Back
       // does — this file owns _tvState/_bbReveal/_bbEsc and importing back into
       // it would be a cycle.
+      case 'prize-exchange': {
+        const pxDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-prizeexchange'), label: 'Prizes & Punishments',
+          html: rpBuildBBPrizeExchange(view, act, pxDeps) });
+        break;
+      }
       case 'time-capsule': {
         const tcDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-timecapsule'), label: 'Time Capsule',
@@ -20571,6 +20579,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const anDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         heldUntilNoms.push({ id: id('bb-americasnominee'), label: "America's Nominee",
           html: rpBuildBBAmericasNominee(view, act, anDeps) });
+        break;
+      }
+      case 'hidden-power': {
+        const hpDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id(`bb-hidden-${act.phase}`),
+          label: act.phase === 'hidden' ? 'Something In This House'
+            : act.phase === 'expired' ? 'Never Found'
+              : act.found ? 'Found It' : 'The House Is Looking',
+          html: rpBuildBBHidden(view, act, hpDeps) });
         break;
       }
       case 'safety-suite': {

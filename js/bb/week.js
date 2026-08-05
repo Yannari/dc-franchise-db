@@ -17,8 +17,10 @@ import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, BB_PUNISHMENTS } from './punishments.js';
+import { runPrizeExchange } from './prize-exchange.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
+import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
   makeHackerGuesser, recordHackerWin,
@@ -1543,6 +1545,27 @@ export function simulateBBWeek(options = {}) {
     } catch { week.carePackage = null; }
   }
 
+  // ── something in this house ──
+  //
+  // Hidden once, then looked for every week it stays findable. The search runs
+  // at week opening because being SEEN looking is the cost, and the house has
+  // to have all week to hold it against them.
+  if (!compressed && twists.has('bb-hidden-power')) {
+    try {
+      const hid = hidePower({ week, house, rng, powerId: options.hiddenPowerId || 'the-cloud' });
+      if (hid) week.acts.push(addBeats(hid, {}));
+    } catch { /* the week runs with nothing behind the cereal */ }
+  }
+  if (!compressed && hiddenPowerState()) {
+    try {
+      const hunt = searchForPower({ week, house, nominees: [], rng });
+      if (hunt) {
+        week.hiddenPower = hunt;
+        week.acts.push(addBeats(hunt, { players: (hunt.searchers || []).slice(0, 3) }));
+      }
+    } catch { /* nobody looked */ }
+  }
+
   // Three doors, one choice each, and the Head of Household barred. Runs at
   // week opening alongside the other distributors and BEFORE nominations,
   // because the whole reason somebody picks the door that stops a nomination
@@ -2445,6 +2468,39 @@ export function simulateBBWeek(options = {}) {
     const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
     let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
     if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
+    // ── PRIZES AND PUNISHMENTS ──
+    //
+    // The competition just decided the PICK ORDER, not the holder. Worst
+    // finisher picks first out of unopened boxes; the winner picks last with
+    // everything visible and stealable, which is what winning buys in this
+    // format. The veto is one of the boxes and can change hands several times
+    // before it settles.
+    //
+    // It runs here, between the competition and the credit, so the houseguest
+    // who ends up HOLDING the veto is the one the rest of the week — the
+    // ceremony, the replacement, the record — treats as the winner.
+    if (!compressed && twists.has('bb-prizes-and-punishments')) {
+      try {
+        const exchange = runPrizeExchange({
+          week, order: [...vetoCompetition.placements].reverse(),
+          nominees: [...nominees], hoh, rng,
+          archetypeOf: n => players.find(p => p.name === n)?.archetype || '',
+        });
+        if (exchange?.vetoHolder) {
+          week.prizeExchange = exchange;
+          vetoWinner = exchange.vetoHolder;
+          week.acts.push(addBeats(exchange, { nominees: [...nominees] }));
+          // A punishment out of the boxes can put somebody on slop, and the
+          // have-not act ran long before this.
+          const late = punishedHaveNots(week.num).filter(n => house.includes(n));
+          if (late.length) {
+            week.haveNots = [...new Set([...(week.haveNots || []), ...late])];
+            gs.bb.haveNots = [...week.haveNots];
+          }
+        }
+      } catch { week.prizeExchange = null; }
+    }
+
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });

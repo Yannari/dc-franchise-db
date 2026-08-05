@@ -284,7 +284,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -686,6 +686,10 @@ export function simulateBBEpisode() {
   // set it, so the MVP variant was unreachable and its whole event family —
   // the house watching the actual culprit overplay their innocence — was dead
   // code that no amount of reweighting could have revived.
+  // What is behind the cereal. Read off the power registry like the box and
+  // the shelf, so a new power is hideable with no new UI.
+  const hpEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-hidden-power');
   const anEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-americas-nominee');
   const whackEntry = (seasonConfig.twistSchedule || [])
@@ -732,6 +736,7 @@ export function simulateBBEpisode() {
     pandorasPrize: boxEntry?.prize || undefined,
     temptationOffer: denEntry?.offer || 'random',
     americasNomineeStyle: anEntry?.anStyle === 'mvp' ? 'mvp' : 'direct',
+    hiddenPowerId: hpEntry?.hidden || 'the-cloud',
     whacktivityDoors: whackEntry?.doors || 'auto',
     // Which package the audience is voting over. 'auto' runs the show's
     // rotation; a package id books that one onto this week, which is the whole
@@ -1020,6 +1025,19 @@ export function summariseWeek(week) {
         line('  The house is never told who called it.');
         break;
       }
+      case 'prize-exchange': {
+        line('');
+        line('PRIZES AND PUNISHMENTS');
+        line(`  Pick order: ${(act.order || []).join(', ')}.`);
+        for (const s of act.steals || []) {
+          line(`  ${s.thief} steals ${s.item} from ${s.victim}.`);
+        }
+        line(`  The Power of Veto ends with ${act.vetoHolder}.`);
+        if (act.punished?.length) {
+          line(`  Punishments: ${act.punished.map(p => `${p.name} (${p.punishment})`).join(', ')}.`);
+        }
+        break;
+      }
       case 'safety-suite': {
         line('');
         line('THE SAFETY SUITE');
@@ -1091,6 +1109,24 @@ export function summariseWeek(week) {
         line(`  ${act.holder} plays the Halting Hex${act.selfSave ? ' on themselves' : ` on ${act.spared}`}.`);
         line(`  ${act.spared} was leaving. Nobody leaves. ${(act.nominees || []).join(' and ')} come off the block.`);
         line('  The votes were read out and they no longer decide anything.');
+        break;
+      }
+      case 'hidden-power': {
+        line('');
+        if (act.phase === 'hidden') {
+          line('SOMETHING IN THIS HOUSE');
+          line(`  ${act.power} is hidden somewhere in the building. No clue, no competition, no map.`);
+          line('  Where it is, is not public — and neither is who finds it.');
+          break;
+        }
+        if (act.phase === 'expired') {
+          line('NEVER FOUND');
+          line('  The fuse runs out with it still where it was put. Nobody in that house ever learned it existed.');
+          break;
+        }
+        line(act.found ? 'FOUND IT' : 'THE HOUSE IS LOOKING');
+        line(`  Searching this week: ${(act.searchers || []).join(', ') || 'nobody'}.`);
+        if (act.found) line('  Somebody found it. Who, and what it is, stays off this page.');
         break;
       }
       case 'whacktivity': {

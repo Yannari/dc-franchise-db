@@ -4568,6 +4568,31 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'prize-exchange': {
+        sec('PRIZES AND PUNISHMENTS');
+        ln('  The competition did not award the veto. It decided who picks first.');
+        ln(`  Pick order: ${(act.order || []).join(', ')}.`);
+        ln('  Finish last and you pick blind; win it and you pick last, with every');
+        ln('  opened box on the table and stealable.');
+        ln('');
+        for (const s of act.steals || []) {
+          ln(`  ${s.thief} takes ${s.item} from ${s.victim}${s.kind === 'veto'
+            ? ' — and it is frozen the moment it changes hands.' : '.'}`);
+        }
+        ln('');
+        ln(`  The Power of Veto ends the night with ${act.vetoHolder}.`);
+        if (act.punished?.length) {
+          ln(`  Walking away worse off: ${act.punished
+            .map(p => `${p.name} in ${p.punishment}`).join(', ')}.`);
+        }
+        if (act.prizes?.length) {
+          ln(`  And better off: ${act.prizes
+            .map(p => `${p.name} with ${p.prize}`).join(', ')}.`);
+        }
+        beats(act);
+        break;
+      }
+
       case 'safety-suite': {
         sec('THE SAFETY SUITE');
         ln('  One entry per houseguest, for the whole season. The Head of Household');
@@ -4706,6 +4731,32 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
       }
+
+      case 'hidden-power':
+        if (act.phase === 'hidden') {
+          sec('SOMETHING IN THIS HOUSE');
+          ln(`  ${act.power} is hidden somewhere in this house, in a real place any one of them could`);
+          ln('  reach, put there before they moved in. There is no clue and no competition. The only');
+          ln('  instruction is that nobody will be told where, and nobody will be told who finds it.');
+          (act.beats || []).forEach(b => ln(`  ${b.text}`));
+          break;
+        }
+        if (act.phase === 'expired') {
+          sec('NEVER FOUND');
+          (act.beats || []).forEach(b => ln(`  ${b.text}`));
+          break;
+        }
+        sec(act.found ? 'SOMEBODY FOUND IT' : 'THE HOUSE IS LOOKING');
+        // The search is public — everybody sees who has been in the pantry
+        // twice. The FIND is not, so the beat naming the finder is withheld.
+        (act.beats || []).filter(b => b.badgeText !== 'FOUND IT')
+          .forEach(b => ln(`  ${b.text}`));
+        if (act.found) {
+          ln('  Somebody walked out of a room with it in their pocket and rejoined a conversation');
+          ln('  about washing up. Who, and what it was, stays off this page — the reveal belongs to');
+          ln('  the night it fires.');
+        }
+        break;
 
       case 'whacktivity':
         sec('THE WHACKTIVITY COMPETITIONS');

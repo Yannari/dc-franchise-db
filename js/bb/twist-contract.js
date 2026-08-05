@@ -151,6 +151,23 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Everybody is about to watch everybody else choose a door.',
     },
   },
+  'bb-hidden-power': {
+    id: 'bb-hidden-power', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 4 },
+    // No rules delta. It changes who is holding what, and only if anybody ever
+    // thinks to look behind the cereal.
+    rules: {},
+    // The last unused channel, and the only one where the power does not come
+    // to you: it is already in the building. Wiki-adjacent rather than a
+    // transcription — the lineage is the secret room, and BB18's phone booth
+    // is already spoken for by the Round Trip Ticket.
+    acquisition: { channel: 'hidden-search', secrecy: 'secret' },
+    announcement: {
+      name: 'Something In This House',
+      rule: 'There is a power hidden somewhere in this house. It is in a real place that any one of you could reach, it was put there before you moved in, and that is the whole of what you are being told. There is no clue and there is no competition. Whoever finds it will not be announced.',
+      sting: 'You are all about to start watching each other walk into rooms.',
+    },
+  },
   'bb-den-of-temptation': {
     id: 'bb-den-of-temptation', layer: 'scheduled', category: 'distribution',
     timing: 'week-opening', duration: { weeks: 1 },
@@ -234,6 +251,21 @@ export const BB_TWIST_CONTRACTS = {
       name: 'The Coin of Destiny',
       rule: 'Any houseguest may buy into the Coin of Destiny. They play for it, and whoever wins calls a coin toss in private. Call it correctly and they take this week’s nominations away from the Head of Household and make their own — and the house will never be told who did it.',
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
+    },
+  },
+  'bb-prizes-and-punishments': {
+    id: 'bb-prizes-and-punishments', layer: 'scheduled', category: 'veto-power',
+    timing: 'veto', duration: { weeks: 1 },
+    // The show's oldest veto format. No rules delta: the week's shape is
+    // untouched and there is still exactly one veto — what changes is HOW it
+    // reaches a holder. The competition stops awarding it and starts setting
+    // the pick order for an exchange in which it is one of the boxes.
+    rules: {},
+    acquisition: { channel: 'veto-competition', secrecy: 'public' },
+    announcement: {
+      name: 'Prizes and Punishments',
+      rule: 'This week’s veto competition does not award the veto. It sets the order in which houseguests choose a wrapped box — and the Power of Veto is in one of them, along with cash, holidays, and punishments. Later pickers may steal what has already been opened, but anything stolen once is frozen and cannot be taken again.',
+      sting: 'Somebody in this room is about to choose five thousand dollars over the only thing that could have saved them.',
     },
   },
   'bb-safety-suite': {

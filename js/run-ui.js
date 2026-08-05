@@ -46,6 +46,12 @@ export function getEpisodeEliminations(ep) {
     ep.eliminated,
     ep.tiedDestinies?.eliminatedPartner,
     ep.emissaryEliminated,
+    // Big Brother's second eviction of the night. This list knew every Total
+    // Drama shape for a double elimination and none of the house's, so a Split
+    // House or a Double Eviction reported one name — and everything built on
+    // this helper (the hub card, the season timeline, the episode trail)
+    // silently lost a houseguest, which is why the count never went 16 -> 14.
+    ep.alsoEliminated,
   ].filter(Boolean);
   return [...new Set(names)];
 }
@@ -537,10 +543,12 @@ export function renderEpisodeView(epRecord) {
   const topVotes = voteEntries[0]?.[1] || 0;
   const chips = voteEntries.map(([n,v]) => `<span class="ep-vote-chip ${v===topVotes?'top':''}">${n}: ${v}</span>`).join('');
 
+  // One source for "who left this episode", so a night that removes two never
+  // has to be taught to a second hand-rolled ternary chain.
+  const _sfNames = getEpisodeEliminations(epRecord);
   const _sfElim = _spoilerFree ? '???'
-    : epRecord.multiTribalElims?.length >= 2 ? epRecord.multiTribalElims.join(' + ')
-    : epRecord.firstEliminated ? `${epRecord.firstEliminated} + ${epRecord.eliminated||'?'}`
-    : (epRecord.eliminated||'None');
+    : _sfNames.length ? _sfNames.join(' + ')
+    : 'None';
 
   card.innerHTML = `<div class="ep-result">
     <div class="ep-result-header">
@@ -760,7 +768,11 @@ export function renderEpisodeHistory() {
       : '';
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
-      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : ep.isInterlude ? 'Interlude' : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
+      <div class="ep-hist-elim">${_spoilerFree ? '???'
+        : ep.isInterlude ? 'Interlude'
+        // One source for who left, so a night that removes two people
+        // never has to be taught to a second hand-rolled chain of ternaries.
+        : (getEpisodeEliminations(ep).join(' + ') || (ep.isFinale ? 'FTC' : '—'))}</div>
       <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${mcTag}${mnTag}${mgrTag}${mtfTag}${dpTag}${ilTag}${tiTag}${tddTag}${suTag}${brunchTag}${bsTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${tdtTag}${amgTag}${paTag}${talTag}${nocTag}${bcbTag}${scTag}${womTag}${phTag}${hkTag}${tcTag}${xtTag}${lhTag}${hsTag}${otcTag}${wwTag}${taTag}${ccTag}${ytTag}${aeTag}${bbbTag}${ctTag}${csTag}${ofTag}${modTag}${fmdTag}${ohTag}${bcTag}${smTag}${ocTag}${shTag}${hhTag}${hodTag}${ppTag}${gcTag}${rrTag}${kfTag}${swoTag}${tdTag}${weTag}${brutalerTag}${cftTag}${fcTag}${vsTag}${ssrTag}${bbTag}${azTag}${nmTag}${tosTag}${rdTag}${ttTag}${mmhTag}${gpTag}${hbTag}${hdTag}${brbTag}${gfoTag}${alsTag}${rpTag}${dhTag}${iibTag}${fcrTag}${baTag}${ptTag}${prwTag}${amhTag}${cocTag}${rtcTag}${aucTag}${ncTag}</div>
     </div>`;
   }).join('');

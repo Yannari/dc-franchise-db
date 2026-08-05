@@ -20666,6 +20666,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
         try {
           const iv = rpBuildBBEvictionInterview(view);
           if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });
+          // Two evictions, two chairs. The second evictee of a split or a
+          // double had an interview written for them and no screen to sit in.
+          const iv2 = rpBuildBBEvictionInterview(view, 'secondEvictionInterview');
+          if (iv2 && iv2.trim()) {
+            screens.push({ id: id('bb-interview-2'), label: 'Second Evictee', html: iv2 });
+          }
         } catch { /* no interview, no screen */ }
         break;
       default:
@@ -22211,10 +22217,13 @@ export function rpBuildBBDebug(ep) {
  * the car to the jury house or home. Each goodbye is a TV frame now, and
  * the camera stays on the person watching it.
  */
-export function rpBuildBBEvictionInterview(ep) {
-  const iv = ep.evictionInterview;
+export function rpBuildBBEvictionInterview(ep, which = null) {
+  // `which` names the interview record to draw. A Split House and a Double
+  // Eviction both send two people out on one night, and the second was being
+  // generated and never drawn.
+  const iv = which ? ep[which] : ep.evictionInterview;
   if (!iv) return '';
-  const stateKey = `bb_iv_${ep.num}`;
+  const stateKey = `bb_iv_${ep.num}${which === 'secondEvictionInterview' ? '_2' : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
   const p = (n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } })(iv.evictee);

@@ -97,11 +97,19 @@ export function houseStructure(config = {}, castSize = 0) {
   // One eviction a week down to the final three, minus the extra body each
   // scheduled double eviction takes in the same episode.
   const evictions = Math.max(0, N - 3);
-  const doubles = (config.twistSchedule || [])
-    .filter(t => t && t.type === 'bb-double-eviction').length;
+  // Every scheduled night that removes TWO houseguests shortens the season by
+  // a week. The Split House does exactly that — one eviction per side — and was
+  // not counted here, so a season with one scheduled ran a week longer on the
+  // projection than it does in play.
+  const twoAtOnce = (config.twistSchedule || [])
+    .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'));
+  const doubles = twoAtOnce.length;
+  const splits = twoAtOnce.filter(t => t.type === 'bb-split-house').length;
   const weeks = Math.max(0, evictions - Math.min(doubles, Math.max(0, evictions - 1)));
+  const doubleLabel = doubles
+    ? ` (${doubles} double${splits ? `, ${splits} of them a split` : ''})` : '';
   segs.push({
-    label: `${weeks} week${weeks === 1 ? '' : 's'}${doubles ? ` (${doubles} double)` : ''}`,
+    label: `${weeks} week${weeks === 1 ? '' : 's'}${doubleLabel}`,
     ok: weeks >= 1,
     why: weeks >= 1 ? undefined : 'No weeks to play — cast more houseguests',
   });
@@ -492,6 +500,14 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   for (const w of [weekA, weekB]) { delete w.openingState; delete w.closingState; }
 
   ep.evictionInterview = generateBBEvictionInterview(ep, weekA);
+  // TWO people left this house tonight, one from each side, and only the first
+  // was being interviewed — the second walked straight past the chair. Each is
+  // interviewed against their OWN side's week, because the vote that removed
+  // them and the room that did it are different on each side of the wall.
+  if (weekB.evicted) {
+    ep.secondEvictionInterview =
+      generateBBEvictionInterview(ep, weekB, Math.random, weekB.evicted);
+  }
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep) : '';
   try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
@@ -617,6 +633,9 @@ export function simulateBBEpisode() {
     ep.alsoEliminated = week.secondEvicted;
     ep.doubleEvictionStyle = 'double-vote';
   }
+  // Held outside the block so the second evictee's interview can be written
+  // against the cycle that actually removed them.
+  let secondWeek = null;
   if (twists.includes('bb-double-eviction') && deStyle !== 'double-vote'
     && (gs.activePlayers || []).length > Math.max(4, houseFinaleSize())) {
     const second = simulateBBWeek({
@@ -652,10 +671,19 @@ export function simulateBBEpisode() {
     // never read back off the ledger.
     delete second.openingState;
     delete second.closingState;
+    secondWeek = second;
   }
   // The aftermath of a Big Brother week is one person, interviewed on the way
   // out, finding out what was actually happening around them.
   ep.evictionInterview = generateBBEvictionInterview(ep, week);
+  // And the second eviction of a double gets its own chair for the same
+  // reason. `secondWeek` is the compressed cycle when there was one; a
+  // double-vote night removes both from the SAME week, so that record is the
+  // right context for both interviews.
+  if (ep.alsoEliminated) {
+    ep.secondEvictionInterview = generateBBEvictionInterview(
+      ep, secondWeek || week, Math.random, ep.alsoEliminated);
+  }
   // The shared text backlog owns transcripts for both shows, so a Big Brother
   // week is written by the same system that writes a Total Drama episode.
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText

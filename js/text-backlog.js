@@ -4833,9 +4833,14 @@ export function generateBBSummaryText(ep) {
     }
   }
 
-  const iv = ep.evictionInterview;
-  if (iv) {
-    sec('THE EVICTEE INTERVIEW');
+  // Two evictions on one night get two interviews. A Split House and a Double
+  // Eviction both remove two people, and only the first was ever transcribed.
+  for (const [heading, iv] of [
+    ['THE EVICTEE INTERVIEW', ep.evictionInterview],
+    ['THE SECOND EVICTEE INTERVIEW', ep.secondEvictionInterview],
+  ]) {
+    if (!iv) continue;
+    sec(heading);
     iv.questions.forEach(q => {
       ln(`  ${iv.host}: ${q.q}`);
       ln(`  ${iv.evictee}: ${q.a}${q.wrong ? '   (wrong)' : ''}`);

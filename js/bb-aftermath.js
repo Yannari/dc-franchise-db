@@ -279,9 +279,15 @@ function goodbyeMessages(evictee, house, week, rng) {
  * Returns null when there is nothing to interview — no eviction, or the segment
  * is switched off in the season config.
  */
-export function generateBBEvictionInterview(ep, week, rng = Math.random) {
+/**
+ * @param {string} [who] which evictee to interview. Defaults to the episode's
+ *   headline eviction — but a Split House and a Double Eviction both send TWO
+ *   people out on the same night, and the second one was walking past the
+ *   chair. Passing the name explicitly is how they get sat in it.
+ */
+export function generateBBEvictionInterview(ep, week, rng = Math.random, who = null) {
   if (seasonConfig.bbEvictionInterview === 'disabled') return null;
-  const evictee = ep.eliminated;
+  const evictee = who || ep.eliminated;
   if (!evictee) return null;
   const house = (week.houseAtStart || []).filter(Boolean);
   const read = readOfTheRoom(evictee, week, house);

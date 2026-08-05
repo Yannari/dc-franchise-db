@@ -279,7 +279,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee', 'bb-coin-of-destiny']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -938,6 +938,31 @@ export function summariseWeek(week) {
           ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
+        break;
+      }
+      case 'care-package': {
+        line('');
+        line("AMERICA'S CARE PACKAGE");
+        line(`  This week's package: ${act.package}. ${act.blurb}`);
+        line(`  ${act.catch}`);
+        line(`  The audience votes it to ${act.recipient}, and the house is told out loud.`);
+        if (act.ineligible?.length) {
+          line(`  Already had one and can never have another: ${act.ineligible.join(', ')}.`);
+        }
+        if (act.coNominee) line(`  As Co-Head of Household, ${act.recipient} names ${act.coNominee}.`);
+        break;
+      }
+      case 'care-package-play': {
+        line('');
+        line(`THE CARE PACKAGE IS SPENT — ${act.package}`);
+        if (act.blocked?.length) {
+          line(`  ${act.recipient} strikes the votes of ${act.blocked.join(' and ')}, by name and in public.`);
+        }
+        if (act.bribe) {
+          line(act.bribe.taken
+            ? `  $${act.bribe.amount.toLocaleString()} changes hands. A vote moves to ${act.bribe.evict}, and the house is never told whose.`
+            : `  $${act.bribe.amount.toLocaleString()} is refused, and ${act.bribe.mark} keeps what the offer gave away instead.`);
+        }
         break;
       }
       case 'americas-nominee': {

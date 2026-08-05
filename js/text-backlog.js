@@ -4565,6 +4565,50 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'care-package': {
+        sec("AMERICA'S CARE PACKAGE");
+        ln(`  The contents are announced before the vote, so the whole house knows`);
+        ln(`  what is on offer: ${act.package}.`);
+        ln(`  ${act.blurb}`);
+        ln(`  ${act.catch}`);
+        ln('');
+        ln(`  The audience votes, and it goes to ${act.recipient} — named out loud,`);
+        ln('  in front of everybody, by people none of them have ever met.');
+        if (act.ineligible?.length) {
+          ln(`  Out of the pool for good, having already had one: ${act.ineligible.join(', ')}.`);
+        }
+        if (act.poolReopened) ln('  Everybody in this house has now had one, so the pool has reopened.');
+        if (act.coNominee) {
+          ln('');
+          ln(`  ${act.recipient} takes the second key and names ${act.coNominee}.`);
+        }
+        beats(act);
+        break;
+      }
+
+      case 'care-package-play': {
+        sec(`THE CARE PACKAGE IS SPENT — ${act.package}`);
+        if (act.blocked?.length) {
+          ln(`  ${act.recipient} strikes two eviction votes: ${act.blocked.join(' and ')}.`);
+          ln('  Both names are read out. Unlike a hacked ballot there is nothing to work');
+          ln('  out — they know exactly whose hand did it, and so does everybody else.');
+        }
+        if (act.bribe) {
+          ln('');
+          if (act.bribe.taken) {
+            ln(`  $${act.bribe.amount.toLocaleString()} is offered in private and taken.`);
+            ln(`  A vote moves off ${act.bribe.keep} and onto ${act.bribe.evict}.`);
+            ln('  The house knows the money exists. It will never be told where it went.');
+          } else {
+            ln(`  $${act.bribe.amount.toLocaleString()} is offered in private and refused.`);
+            ln(`  ${act.bribe.mark} now knows exactly who ${act.recipient} is protecting,`);
+            ln('  which is worth considerably more than the money was.');
+          }
+        }
+        beats(act);
+        break;
+      }
+
       case 'americas-nominee': {
         sec("AMERICA'S NOMINEE");
         ln(act.style === 'mvp'

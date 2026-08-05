@@ -13,6 +13,8 @@ import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
+import { runCarePackage, carePackageProtects, coHohNominee, carePackageVoteBlock,
+  carePackageBribe, neverNots } from './care-package.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import {
@@ -386,9 +388,12 @@ function tally(ballots, nominees) {
  * than assumed. And anybody who did not play cannot be last in a competition
  * they were not in: the outgoing HOH sits out by rule, so they are exempt.
  */
-function chooseHaveNots(placements, house, wanted, hoh) {
-  // Worst-first among the people who actually competed.
-  const played = (placements || []).filter(name => house.includes(name) && name !== hoh);
+function chooseHaveNots(placements, house, wanted, hoh, passHolders = []) {
+  // Worst-first among the people who actually competed — minus anybody holding
+  // a Never-Not Pass, which is the one care package that outlives its week and
+  // the only standing exemption in the game.
+  const played = (placements || []).filter(name => house.includes(name) && name !== hoh
+    && !passHolders.includes(name));
   if (!played.length) return { names: [], reasons: [], count: 0, field: 0 };
   const worstFirst = [...played].reverse();
 
@@ -1400,7 +1405,8 @@ export function simulateBBWeek(options = {}) {
   if (twists.has('bb-have-nots')) {
     // Read off the competition that just happened, so the two acts are the same
     // story rather than a result followed by an unrelated punishment.
-    const slop = chooseHaveNots(hohCompetition.placements, house, options.haveNotCount, hoh);
+    const slop = chooseHaveNots(hohCompetition.placements, house, options.haveNotCount, hoh,
+      neverNots().filter(n => house.includes(n)));
     const haveNots = slop.names;
     week.haveNots = [...haveNots];
     gs.bb.haveNots = [...haveNots];
@@ -1487,6 +1493,23 @@ export function simulateBBWeek(options = {}) {
         shelf: shelf.map(id => BB_POWER_DEFINITIONS[id].name),
       }, { players: winners.map(w => w.name) }));
     }
+  }
+
+  // ── AMERICA'S CARE PACKAGE: the only distributor that hides nothing ──
+  //
+  // Contents announced before the vote, recipient named in front of everybody.
+  // It runs here, with the other distributors and before nominations, because
+  // two of the five packages (Super Safety, Co-HOH) change who can be seated
+  // and the house has to be told who holds them before the keys turn.
+  if (!compressed && twists.has('bb-care-package')) {
+    try {
+      week.carePackage = runCarePackage({
+        week, house, hoh, rng, forced: options.carePackageForced || null,
+      });
+      if (week.carePackage) {
+        week.acts.push(addBeats(week.carePackage, { players: [week.carePackage.recipient] }));
+      }
+    } catch { week.carePackage = null; }
   }
 
   // Three doors, one choice each, and the Head of Household barred. Runs at
@@ -1611,7 +1634,11 @@ export function simulateBBWeek(options = {}) {
     }, { players: [cloud.holder] }));
   }
 
-  const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder].filter(Boolean);
+  // Super Safety and the Co-HOH key both protect for the whole WEEK, not for
+  // one ceremony — which is the line between them and the Cloud sitting
+  // directly above.
+  const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
+    carePackageProtects(week.carePackage)].filter(Boolean);
   let nominees = [...new Set(plan.nominees)]
     .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   while (nominees.length < 2) {
@@ -1623,6 +1650,18 @@ export function simulateBBWeek(options = {}) {
     nominees = chooseNominationPlan(hoh, house, rng).nominees
       .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   }
+  // ── the second key the Head of Household did not agree to ──
+  //
+  // A Co-HOH names one of the two nominees. It goes in the SECOND chair, so
+  // the Head of Household keeps the target they actually wanted and loses only
+  // the half of the block they were using as a pawn — which is precisely the
+  // half they had a plan for.
+  if (week.carePackage?.effect === 'co-hoh' && house.includes(week.carePackage.recipient)) {
+    const co = coHohNominee({ act: week.carePackage, house, hoh, rng,
+      untouchable: [...untouchable, nominees[0]].filter(Boolean) });
+    if (co && !nominees.includes(co)) nominees = [nominees[0], co].filter(Boolean);
+  }
+
   // A Block Buster week is always three on the block — the third chair is the
   // mode, not a choice the Head of Household gets to make. Three go up, the
   // three compete, and two face the vote.
@@ -2402,7 +2441,10 @@ export function simulateBBWeek(options = {}) {
       gs.bb.stats[vetoDecision.save].timesSaved++;
       week.americasChairEmptied = true;
     } else if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...nominees.filter(name => name !== vetoDecision.save)];
+      // Super Safety and the Co-HOH key cover the WEEK, so they cover this
+      // chair too. The Cloud deliberately does not: it buys one ceremony, and
+      // this is the ceremony it does not buy.
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -2466,7 +2508,7 @@ export function simulateBBWeek(options = {}) {
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
     if (coup) {
-      const protectedNow = [hoh, vetoWinner, coup.holder].filter(Boolean);
+      const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
       if (eligible.length >= 2) {
         usePower(coup, week.num);
@@ -2966,7 +3008,7 @@ export function simulateBBWeek(options = {}) {
       }
       if (save) {
         const other = nominees.find(n => n !== save);
-        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || [])].filter(Boolean);
+        const protectedNames = [hoh, holder, save, other, ...(week.botbSafe || []), carePackageProtects(week.carePackage)].filter(Boolean);
         const chooserPlan = { target: myTarget || null, pawn: null, backdoorTarget: myTarget || null };
         let replacement = chooseReplacement(holder, house, protectedNames, chooserPlan, rng);
         if (replacement && house.includes(replacement) && !protectedNames.includes(replacement)) {
@@ -3029,6 +3071,66 @@ export function simulateBBWeek(options = {}) {
         }
       }
     }
+  }
+
+  // ── the care package's eviction-night halves ──
+  //
+  // Both fire here, with the Hacker's cancel, for the same reason: the ballots
+  // below are the ones that would really have been cast, so a vote removed or
+  // bought now is a real move rather than a guess at one.
+  //
+  // The contrast with the Hacker is the whole point of running them in the
+  // same season. The Hacker takes a ballot anonymously and leaves the voter
+  // hunting. This takes two by name, out loud, and leaves them with nothing to
+  // work out and nowhere to put it.
+  if (!compressed && week.carePackage
+    && (week.carePackage.effect === 'vote-block' || week.carePackage.effect === 'bribe')) {
+    try {
+      // The opening act has already been played, so anything these produce is
+      // a separate scene on eviction night rather than a retroactive edit to a
+      // screen the viewer watched three acts ago.
+      const beatsBefore = week.carePackage.beats.length;
+      const blocked = carePackageVoteBlock({
+        act: week.carePackage, ballots, nominees: [...nominees], house, rng,
+      });
+      for (const name of blocked) {
+        const idx = ballots.findIndex(b => b.voter === name);
+        if (idx >= 0) ballots.splice(idx, 1);
+      }
+      if (blocked.length) {
+        week.carePackageBlocked = [...blocked];
+        for (const name of blocked) {
+          try { addBond(name, week.carePackage.recipient, -1.6); } catch { /* no bond, no grievance */ }
+          rememberBBStrategy(name, week.carePackage.recipient, 'took-my-vote', 2,
+            { twist: 'bb-care-package', public: true }, { week, act: 'eviction' });
+        }
+      }
+      const bribe = carePackageBribe({
+        act: week.carePackage, ballots, nominees: [...nominees], house, rng,
+      });
+      if (bribe) {
+        week.carePackageBribe = { ...bribe };
+        // Taking money to move a vote is a debt; refusing it is intelligence.
+        try {
+          if (bribe.taken) addBond(bribe.mark, week.carePackage.recipient, 1.2);
+          else addBond(bribe.mark, week.carePackage.recipient, -0.8);
+        } catch { /* no bond, no debt */ }
+        rememberBBStrategy(bribe.mark, week.carePackage.recipient,
+          bribe.taken ? 'bought-my-vote' : 'tried-to-buy-me', 2,
+          { twist: 'bb-care-package', amount: bribe.amount }, { week, act: 'eviction' });
+      }
+      const fresh = week.carePackage.beats.slice(beatsBefore);
+      if (fresh.length) {
+        week.acts.push(addBeats({
+          type: 'care-package-play', secret: false,
+          packageId: week.carePackage.packageId, package: week.carePackage.package,
+          recipient: week.carePackage.recipient,
+          blocked: [...(blocked || [])], bribe: bribe ? { ...bribe } : null,
+          beats: fresh,
+        }, { players: [week.carePackage.recipient, ...(blocked || []),
+          bribe?.mark].filter(Boolean) }));
+      }
+    } catch { /* a package that cannot fire leaves the week intact */ }
   }
 
   // ── the hacker's third authority: one ballot, cancelled ──

@@ -40,6 +40,7 @@ import { COUP_EVENTS } from './coup.js';
 import { EVICTION_POWER_EVENTS } from './eviction-powers.js';
 import { AMERICAS_NOMINEE_EVENTS } from './americas-nominee.js';
 import { COIN_EVENTS } from './coin-of-destiny.js';
+import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
@@ -75,6 +76,7 @@ export const HOUSE_EVENTS = [
   ...EVICTION_POWER_EVENTS,
   ...AMERICAS_NOMINEE_EVENTS,
   ...COIN_EVENTS,
+  ...CARE_PACKAGE_EVENTS,
   ...CONSEQUENCE_ARC_EVENTS,
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,

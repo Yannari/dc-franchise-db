@@ -236,6 +236,27 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  'bb-care-package': {
+    id: 'bb-care-package', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB18, and the first PUBLIC audience grant in this catalogue. Every other
+    // twist here hides the power, the holder or both; this one announces the
+    // contents before the vote, hands the box over on camera and names the
+    // recipient to the whole house.
+    //
+    // No rules delta, and for a reason worth stating: the delta belongs to the
+    // PACKAGE, not the twist. Super Safety changes who may be nominated, the
+    // vote block removes two ballots, Co-HOH adds a second key — those cannot
+    // be one static descriptor, so care-package.js carries them and the week
+    // engine reads the delivered package instead of this entry.
+    rules: {},
+    acquisition: { channel: 'audience', secrecy: 'public' },
+    announcement: {
+      name: "America's Care Package",
+      rule: 'Every week the audience votes one houseguest a care package, and the contents are announced BEFORE the vote. The winner is named publicly. Once a houseguest has received a package they can never receive another.',
+      sting: 'This house is about to be told, out loud, who the country likes best.',
+    },
+  },
   'bb-americas-nominee': {
     id: 'bb-americas-nominee', layer: 'scheduled', category: 'nomination-power',
     timing: 'nominations', duration: { weeks: 1 },

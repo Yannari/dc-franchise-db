@@ -496,6 +496,13 @@ export const TWIST_CATALOG = [
     desc:'Any houseguest may buy into the Coin of Destiny, and everybody sees who does. They play for it, and the winner is taken away to call a coin toss in private. Call it right and they take the week’s nominations off the Head of Household and name their own; call it wrong and they have paid, played and lost in front of everybody for nothing. Either way the house is told the nominations changed and never told whose hand did it, so a dethroned Head of Household spends the week looking at everybody who bought in.',
     incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh'],
     incompatibleModes:['block-buster'] },
+  { id:'bb-care-package', emoji:'📦', name:"America's Care Package", format:'big-brother',
+    category:'power', phase:'any',
+    desc:'Every week the audience votes one houseguest a care package, and the contents are announced before the vote so the whole house knows what is being handed out. The recipient is named publicly — nobody competes for it and nobody can refuse it. Five packages run in order: a Never-Not pass, the power to strike two eviction votes, Super Safety with a costume attached, a Co-Head of Household key, and $5,000 to buy a vote with. A houseguest may only ever receive one, so the pool shrinks every week — and every delivery tells the room who the country likes better than them.',
+    // The Co-HOH package fills a second key, so anything that already owns the
+    // shape of the block or the count of the Heads of Household is out.
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh'],
+    incompatibleModes:['block-buster'] },
   { id:'bb-americas-nominee', emoji:'🗳️', name:"America's Nominee", format:'big-brother',
     category:'power', phase:'any',
     desc:'A third houseguest goes on the block every week and nobody in the house puts them there. In the MVP variant the audience votes one houseguest the Most Valuable Player and that houseguest secretly names the third nominee, revealed just before the veto competition; in the direct variant the audience names the third nominee itself. Either way the house spends the week hunting a culprit who may not be in the building. If the veto saves the third nominee there is no replacement — the chair simply empties.',

@@ -724,45 +724,32 @@
       .bbpb-hall.is-open .bbpb-door, .bbdd-gem.is-lit svg { animation:none; }
     }
 
-    /* ── the alliance board ────────────────────────────────────────────
-       Not a card stack. A standings board: every group in the house as a
-       block, its members in a row with a loyalty figure under each face, and
-       the one who is leaving picked out in red. The point is that you can read
-       an alliance in two seconds without being narrated at. */
-    .bbal-grid     { display:flex; flex-direction:column; gap:12px; }
-    .bbal-bloc     { border-radius:10px; padding:11px 12px 12px;
-                     background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(0,0,0,.28));
-                     border:1px solid rgba(255,255,255,.12); }
-    .bbal-bloc.is-cracking { border-color:rgba(201,52,60,.45);
-                     background:linear-gradient(180deg, rgba(201,52,60,.10), rgba(0,0,0,.3)); }
-    .bbal-bloc.is-couple   { border-color:rgba(233,109,168,.4); }
-    .bbal-head     { display:flex; align-items:baseline; gap:8px; margin-bottom:9px; flex-wrap:wrap; }
-    .bbal-name     { font-family:var(--font-display,Georgia,serif); font-size:15px;
-                     letter-spacing:1px; color:#e6edf3; }
-    .bbal-kind     { font-family:ui-monospace,Consolas,monospace; font-size:9px;
-                     letter-spacing:1.4px; text-transform:uppercase; color:#8b949e; }
-    .bbal-meta     { margin-left:auto; font-family:ui-monospace,Consolas,monospace;
-                     font-size:10px; letter-spacing:1px; color:#8b949e; }
-    .bbal-row      { display:flex; gap:10px; flex-wrap:wrap; }
-    .bbal-member   { width:62px; text-align:center; }
-    .bbal-face     { position:relative; width:44px; margin:0 auto 3px; }
-    .bbal-face img, .bbal-face .rp-portrait { width:44px; height:44px; border-radius:8px; }
-    .bbal-member.is-weak .bbal-face::after { content:''; position:absolute; inset:-2px;
-                     border-radius:10px; border:2px solid #c9343c; }
-    .bbal-who      { font-size:9.5px; color:#cdd6f4; line-height:1.15;
-                     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    /* the number under the face — the whole reason this screen exists */
-    .bbal-num      { font-family:ui-monospace,Consolas,monospace; font-size:13px;
-                     font-weight:700; line-height:1.3; }
-    .bbal-bar      { height:3px; border-radius:2px; margin-top:2px;
-                     background:rgba(255,255,255,.1); overflow:hidden; }
-    .bbal-bar i    { display:block; height:100%; border-radius:2px; }
-    .bbal-crack    { margin-top:9px; padding:6px 8px; border-radius:6px; font-size:11px;
-                     color:#f0a500; background:rgba(240,165,0,.09);
-                     border-left:2px solid #f0a500; }
-    .bbal-target   { margin-top:6px; font-size:11px; color:#8b949e; }
-    .bbal-target b { color:#e6edf3; font-weight:600; }
-    @media (max-width:520px) { .bbal-member { width:54px; } .bbal-face, .bbal-face img { width:38px; } }
+    /* the detail behind those digits, on House Status where there is room */
+    .bbb-holds     { margin:7px 0 4px; padding:6px 8px; border-radius:6px;
+                     background:rgba(255,255,255,.035); }
+    .bbb-holds-h   { font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.2px; text-transform:uppercase; color:#8b949e;
+                     margin-bottom:4px; }
+    .bbb-hold-row  { display:flex; align-items:baseline; gap:7px; font-size:11px;
+                     padding:1.5px 0; }
+    .bbb-hold-row b{ font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     min-width:26px; text-align:right; }
+    .bbb-hold-row span { color:#e6edf3; min-width:74px; }
+    .bbb-hold-row em   { color:#8b949e; font-style:normal; font-size:10.5px; }
+    .bbb-crack     { margin-top:5px; font-size:10.5px; color:#f0a500; }
+
+    /* ── the hold on an alliance ───────────────────────────────────────
+       One digit under the face, in the alliance panel that already existed.
+       A whole screen for this was too much furniture for a single number per
+       person — the point is reading an alliance at a glance and seeing which
+       of them is going, not being handed a report. The reasoning lives on the
+       house status screen, where there is room for it. */
+    .bbf-hold      { display:inline-flex; flex-direction:column; align-items:center;
+                     gap:1px; margin-right:3px; vertical-align:top; }
+    .bbf-hold b    { font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     font-weight:700; line-height:1; }
+    .bbf-hold.is-weak img, .bbf-hold.is-weak .rp-portrait {
+                     outline:1.5px solid #c9343c; outline-offset:1px; border-radius:4px; }
 
     /* ── the App Store ─────────────────────────────────────────────────
        The one distributor with no room and no door: it happens on a phone,

@@ -44,7 +44,7 @@ import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
 import { rpBuildBBHacker, rpBuildBBHackerVote } from './vp-bb-hacker.js';
 import { rpBuildBBPowerPlayed } from './vp-bb-power.js';
 import { rpBuildBBBattleBack } from './vp-bb-battle-back.js';
-import { listBlocs, blocExposure, knowledgeOf } from './bb/blocs.js';
+import { listBlocs, blocExposure, knowledgeOf, blocRoster } from './bb/blocs.js';
 import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 import { bbArrivalLine } from './bb-writing.js';
 import { rpBuildOffTheChain } from './chal/off-the-chain.js';
@@ -16613,6 +16613,56 @@ function _bbfBondLabel(v) {
  * snapshot so the screen can say which way each pair is moving — a bar with no
  * direction on it does not explain anything.
  */
+/**
+ * An avatar with that houseguest's hold on this group under it.
+ *
+ * Deliberately just the digit. A whole screen for this was too much furniture
+ * for what is a single number per face — the point is being able to look at an
+ * alliance and see which of them is leaving, not to read a report about it.
+ * The reason behind each number is on the house status screen.
+ *
+ * Falls back to the bare avatar when the week has no board (old saves, and any
+ * cycle that ended before the snapshot was taken), so nothing breaks on replay.
+ */
+function _bbfHold(name, members, boardFor) {
+  const board = typeof boardFor === 'function' ? boardFor(members) : null;
+  const row = board?.members?.find(m => m.name === name);
+  if (!row) return _bbAvatar(name, 22);
+  const v = row.loyalty;
+  const tone = v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
+  const weak = board.weakest?.name === name;
+  return `<span class="bbf-hold ${weak ? 'is-weak' : ''}" title="${_bbEsc(name)} — ${_bbEsc(row.reason)}">
+    ${_bbAvatar(name, 22)}<b style="color:${tone}">${v.toFixed(1)}</b></span>`;
+}
+
+/**
+ * Why each of those numbers is what it is.
+ *
+ * The digit under the face in House Life says WHICH member is loose; this says
+ * why, and it belongs here because House Status is the screen with room to
+ * explain itself. Computed live rather than from the week's snapshot — this
+ * screen is already a live picture of where everybody stands, and the two
+ * would otherwise disagree on the "Before" variant.
+ */
+function _bbHoldDetail(bloc) {
+  let roster = null;
+  try { roster = typeof blocRoster === 'function' ? blocRoster(bloc) : null; } catch { roster = null; }
+  if (!roster?.members?.length) return '';
+  const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
+  const rows = roster.members.map(m => `<div class="bbb-hold-row">
+      <b style="color:${tone(m.loyalty)}">${m.loyalty.toFixed(1)}</b>
+      <span>${_bbEsc(m.name)}</span>
+      <em>${_bbEsc(m.reason)}</em>
+    </div>`).join('');
+  return `<div class="bbb-holds">
+    <div class="bbb-holds-h">How firmly each of them is holding on &middot; average ${roster.average.toFixed(1)}</div>
+    ${rows}
+    ${roster.weakest
+      ? `<div class="bbb-crack">${_bbEsc(roster.weakest.name)} is the crack — ${_bbEsc(roster.weakest.reason)}.</div>`
+      : ''}
+  </div>`;
+}
+
 function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   // Read the state as it stood at the END OF THIS STRETCH, not the end of the
   // week. The panels used to take the episode's single closing snapshot, so
@@ -16660,6 +16710,29 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
     .map(a => ({ ...a, members: (a.members || []).filter(m => inHouse.has(m)) }))
     .filter(a => a.members.length >= 2)
     .slice(0, 5);
+
+  // How firmly each member is holding on to the group they are standing in.
+  // One digit under the face is the whole feature: you can read an alliance at
+  // a glance instead of being told about it, and the reasoning behind the
+  // number lives on the house status screen where there is room for it.
+  // Matched on OVERLAP rather than on a name or an exact set.
+  //
+  // Neither of the obvious keys works. A showmance's label is built from its
+  // players in whatever order they sit in, so names miss couples; and this
+  // panel draws the group as it stood at THIS point in the week while the
+  // board is the end-of-week snapshot, so a group that recruited somebody on
+  // Wednesday has two different member sets and an exact match finds nothing.
+  // Most-shared-members is stable against both.
+  const boardFor = members => {
+    const want = new Set(members || []);
+    if (want.size < 2) return null;
+    let best = null, bestShared = 1;
+    for (const b of ep?.allianceBoard || []) {
+      const shared = (b.members || []).filter(m => want.has(m.name)).length;
+      if (shared > bestShared) { best = b; bestShared = shared; }
+    }
+    return best;
+  };
 
   const row = p => {
     const [a, b] = p.names;
@@ -16723,14 +16796,14 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => _bbAvatar(m, 22)).join('')}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor)).join('')}</span>
           <span class="bbf-ally-c">${a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbAvatar(m, 22)).join('')}</span>
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor)).join('')}</span>
         </div>`).join('')}` : ''}
     </div>
   </div>`;
@@ -18675,62 +18748,6 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
- * The alliance board.
- *
- * The house's strategy was legible only as prose: alliances formed in week one
- * — reliably, ten seasons out of ten — and the only trace was a couple of
- * lines buried in twenty-five House Life beats. You could see WHO was aligned
- * and never how firmly, so the thing you actually want to know watching an
- * alliance (which one of them leaves) was unreadable.
- *
- * So the number under each face is the point of this screen. Group cohesion
- * already existed and answers a different question — does this six hold
- * together — which a six containing one person at the edge can pass while that
- * person decides the season.
- *
- * Reads the snapshot taken at the end of the week rather than recomputing:
- * loyalty is made of bonds, bonds keep moving, and a board rebuilt on replay
- * would show a season that never happened.
- */
-export function rpBuildBBAllianceBoard(ep) {
-  const board = ep?.allianceBoard || [];
-  if (!board.length) return '';
-
-  // Warm at the top, cold at the bottom, so the crack reads as colour before
-  // anybody has read a digit.
-  const tone = v => v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
-
-  const member = (m, weakName) => `<div class="bbal-member ${m.name === weakName ? 'is-weak' : ''}">
-      <div class="bbal-face">${rpPortrait(m.name, 'sm')}</div>
-      <div class="bbal-who" title="${_bbEsc(m.name)}">${_bbEsc(m.name)}</div>
-      <div class="bbal-num" style="color:${tone(m.loyalty)}">${m.loyalty.toFixed(1)}</div>
-      <div class="bbal-bar"><i style="width:${Math.max(4, Math.min(100, m.loyalty * 10))}%;background:${tone(m.loyalty)}"></i></div>
-    </div>`;
-
-  const bloc = b => `<div class="bbal-bloc ${b.cracking ? 'is-cracking' : ''} ${b.kind === 'couple' ? 'is-couple' : ''}">
-      <div class="bbal-head">
-        <span class="bbal-name">${_bbEsc(b.name || 'an unnamed group')}</span>
-        <span class="bbal-kind">${b.kind === 'couple' ? 'showmance' : 'alliance'}${b.exposed ? ' · exposed' : ''}</span>
-        <span class="bbal-meta">${b.members.length} votes · avg ${b.average.toFixed(1)}</span>
-      </div>
-      <div class="bbal-row">${b.members.map(m => member(m, b.weakest?.name)).join('')}</div>
-      ${b.weakest
-        ? `<div class="bbal-crack"><b>${_bbEsc(b.weakest.name)}</b> is the crack — ${_bbEsc(b.weakest.reason)}.</div>`
-        : `<div class="bbal-target">Nobody in this one is looking for the door.</div>`}
-    </div>`;
-
-  return `<div class="rp-page bb-room bb-block bbns">
-    <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#e6edf3;margin-bottom:4px">THE ALLIANCE BOARD</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">How firmly each of them is actually holding on.</div>
-    <div class="bbal-grid">${board.map(bloc).join('')}</div>
-    <div style="margin-top:14px;font-size:10px;color:#6e7681;text-align:center;font-family:ui-monospace,Consolas,monospace;letter-spacing:.6px">
-      0 = gone in everything but the announcement · 10 = would go down with it
-    </div>
-  </div>`;
-}
-
-/**
  * The App Store.
  *
  * The only distributor with no room and no door — it happens on a phone, in a
@@ -20577,14 +20594,6 @@ function _bbCycleScreens(view, screens, suffix = '') {
       html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
     pendingBeats = [];
   }
-  // Where the house stands now that somebody has gone. Last, because the board
-  // is snapshotted at the end of the week and because "who is about to break"
-  // is the question you leave an episode with rather than the one you enter it
-  // with. Silent when there is nothing organised yet, which is most of week one.
-  try {
-    const boardHtml = rpBuildBBAllianceBoard(view);
-    if (boardHtml) screens.push({ id: id('bb-alliances'), label: 'Alliance Board', html: boardHtml });
-  } catch { /* a board that will not draw must not cost the week its screens */ }
   // A week with no eviction — a walkout or an expulsion — still played the
   // competition, so it must not vanish with the vote.
   if (deferred.length) {
@@ -21441,6 +21450,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
         <span class="bbb-votes">${b.members.length} members &middot; up to ${b.members.length} votes &middot; ${Math.round(b.share * 100)}% of the house</span></div>
       <div class="bbb-bar"><i style="width:${pct}%;background:${state.color}"></i>
         <span>Average suspicion among non-members: ${pct}%<br>${awarenessText}</span></div>
+      ${_bbHoldDetail(b)}
       ${hunters.length ? `<div class="bbb-hunt">${hunters.map(h =>
         `${_bbEsc(h.who)} is coming for ${_bbEsc(h.target)} to break it up`).join(' &middot; ')}</div>` : ''}
     </div>`;

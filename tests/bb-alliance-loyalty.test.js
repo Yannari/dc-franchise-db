@@ -17,7 +17,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { memberLoyalty, blocRoster, listBlocs } from '../js/bb/blocs.js';
-import { rpBuildBBAllianceBoard } from '../js/vp-screens.js';
+import { rpBuildBBHouseLife, rpBuildBBOverview } from '../js/vp-screens.js';
 import { generateBBSummaryText } from '../js/text-backlog.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -205,16 +205,46 @@ describe('in a played season', () => {
       expect(backlog).toContain(m.loyalty.toFixed(1));
     }
 
-    const html = rpBuildBBAllianceBoard(ep);
-    expect(html).toMatch(/THE ALLIANCE BOARD/);
-    for (const m of b.members) expect(html).toContain(m.name);
-    // The number under the face is the entire point of the screen.
-    expect(html).toContain(b.members[0].loyalty.toFixed(1));
+    // No screen of its own. The number goes under the avatar in the alliance
+    // panel House Life already had — one digit per face is the whole feature,
+    // and a dedicated page was more furniture than it was worth.
+    // Note the panel shows the alliances that existed AT THAT BEAT, which is
+    // correct and is not the same list as the end-of-week board — a group that
+    // formed on Wednesday is on the board and not in Monday's panel. So the
+    // check is that every digit drawn is a real member's hold, not that any
+    // particular group appears.
+    const houseActs = (ep.acts || []).filter(a => a.type === 'house');
+    const drawn = houseActs
+      .map((a, i) => rpBuildBBHouseLife(ep, a, i + 1))
+      .filter(html => /bbf-hold/.test(html));
+    expect(drawn.length, 'no House Life panel drew a hold digit').toBeGreaterThan(0);
+
+    const real = new Set(ep.allianceBoard
+      .flatMap(x => x.members.map(m => m.loyalty.toFixed(1))));
+    for (const html of drawn) {
+      const digits = [...html.matchAll(/class="bbf-hold[^"]*"[\s\S]*?<b[^>]*>([\d.]+)<\/b>/g)]
+        .map(m => m[1]);
+      expect(digits.length).toBeGreaterThan(0);
+      for (const d of digits) {
+        expect(real.has(d), `${d} is not any member's hold on the board`).toBe(true);
+      }
+    }
+
+    // ...and the reasoning behind the digits lives on House Status.
+    const status = rpBuildBBOverview(ep, 'closing');
+    expect(status).toMatch(/holding on/i);
+    for (const m of b.members) expect(status).toContain(m.name);
   });
 
-  it('draws nothing rather than an empty board when nobody has organised', () => {
+  it('leaves the alliance panel readable when a week has no board', () => {
+    // Old saves and any cycle that ended before the snapshot: the panel must
+    // fall back to the bare avatar rather than breaking.
     house();
-    expect(rpBuildBBAllianceBoard({ num: 1, allianceBoard: [] })).toBe('');
+    const ep = withSeededRandom(9, () => simulateBBEpisode());
+    const houseAct = (ep.acts || []).find(a => a.type === 'house');
+    const life = rpBuildBBHouseLife({ ...ep, allianceBoard: [] }, houseAct, 1);
+    expect(life).toBeTruthy();
+    expect(life).not.toMatch(/bbf-hold/);
   });
 
   it('leaves group cohesion alone', () => {

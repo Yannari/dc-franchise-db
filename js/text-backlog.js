@@ -4548,6 +4548,34 @@ export function generateBBSummaryText(ep) {
         ln('  Who took what stays off this page for the same reason it stays off the feeds.');
         break;
 
+      case 'americas-nominee': {
+        sec("AMERICA'S NOMINEE");
+        ln(act.style === 'mvp'
+          ? '  The audience votes a Most Valuable Player, and only that houseguest is told they won it.'
+          : '  The audience names the third nominee itself. Nobody in this house had a vote,');
+        ln(act.style === 'mvp'
+          ? '  They name a third nominee, and the house is told there is a third chair and not who filled it.'
+          : '  and nobody in this house can be blamed for it, which does not stop anybody trying.');
+        ln('');
+        ln(`  A third key turns on the wall. ${act.nominee} is nominated.`);
+        ln('  If the veto is used to save them, the chair simply empties: there is no');
+        ln('  replacement, because nobody in this house owns the pen for that seat.');
+        beats(act);
+        break;
+      }
+
+      case 'halting-hex': {
+        sec('THE EVICTION IS CANCELLED');
+        ln(`  ${act.holder} stops the night with the Halting Hex${act.selfSave ? '' : `, and does it for ${act.spared}`}.`);
+        ln(`  ${act.spared} was on ${act.spared === act.holder ? 'their' : 'their'} way out of the door.`);
+        ln(`  ${(act.nominees || []).join(' and ')} come off the block by default.`);
+        ln('  Every vote cast tonight is on the record and none of it decides anything,');
+        ln('  which is a problem for the people who cast them rather than for the block.');
+        ln('  The Hex is spent. The same houseguests can be nominated again next week.');
+        beats(act);
+        break;
+      }
+
       case 'whacktivity':
         sec('THE WHACKTIVITY COMPETITIONS');
         ln('  Three competitions, three different powers, and one choice each. The Head of Household');

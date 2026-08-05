@@ -491,6 +491,13 @@ export const TWIST_CATALOG = [
     // nominee without the ceremony meaning something different in each half.
     incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
+  { id:'bb-americas-nominee', emoji:'🗳️', name:"America's Nominee", format:'big-brother',
+    category:'power', phase:'any',
+    desc:'A third houseguest goes on the block every week and nobody in the house puts them there. In the MVP variant the audience votes one houseguest the Most Valuable Player and that houseguest secretly names the third nominee, revealed just before the veto competition; in the direct variant the audience names the third nominee itself. Either way the house spends the week hunting a culprit who may not be in the building. If the veto saves the third nominee there is no replacement — the chair simply empties.',
+    // The block's shape is the conflict, exactly as it is for Roadkill.
+    incompatible:['bb-roadkill', 'bb-hacker', 'bb-battle-of-the-block', 'bb-split-house',
+      'bb-den-of-temptation'],
+    incompatibleModes:['block-buster'] },
   { id:'bb-hacker', emoji:'💻', name:'The Hacker', format:'big-brother',
     category:'power', phase:'any',
     desc:'Every houseguest plays the Hacker Competition alone, and only the winner is told they won. That winner holds three separate powers and may use any, all or none of them — always anonymously. They can take one nominee off the block and seat somebody else in the empty chair; they can walk one houseguest into the veto competition without a chip being drawn; and on eviction night they can cancel one vote before it is counted. The houseguest taken down is not safe — they can be named as the replacement at the veto ceremony. The house sees three things happen and never finds out who did any of them.',

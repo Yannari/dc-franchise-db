@@ -217,6 +217,26 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Three things are about to happen in this house and nobody is going to have done them.',
     },
   },
+  'bb-americas-nominee': {
+    id: 'bb-americas-nominee', layer: 'scheduled', category: 'nomination-power',
+    timing: 'nominations', duration: { weeks: 1 },
+    // BB15, both halves of it. For three weeks the audience voted a houseguest
+    // MVP and that houseguest secretly named a third nominee; for three more
+    // the audience named the third directly. Same chair, different hand, and
+    // the entry chooses which.
+    //
+    // The rule that separates it from every other third-chair twist we have —
+    // and the one the wiki is explicit about — is that if the veto saves the
+    // third nominee there is NO replacement. Roadkill hands the pen to the
+    // person who filled the chair; this one simply empties it.
+    rules: { nomineeCount: 3, thirdChairNoReplacement: true },
+    acquisition: { channel: 'audience', secrecy: 'holder-secret' },
+    announcement: {
+      name: "America's Nominee",
+      rule: 'There will be a THIRD nominee this week, and nobody in this house chooses them. The audience does. If the veto is used to save that third nominee, the chair simply empties — there is no replacement.',
+      sting: 'One of you is about to be nominated by a room none of you can see.',
+    },
+  },
   'bb-split-house': {
     id: 'bb-split-house', layer: 'scheduled', category: 'power-structure',
     timing: 'week', duration: { weeks: 1 },

@@ -105,6 +105,26 @@ export const BB_POWER_DEFINITIONS = {
     catch: 'It is not immunity. Lose the competition and you are gone for good — and if the window runs out unused it fires anyway, on whoever the next evictee happens to be.',
     moment: 'Eviction night, after the vote.',
   },
+
+  // BB19, and the reason the Den of Temptation existed: Jessica took it and
+  // used it on the eviction that was about to remove Cody. It cancels ONE of
+  // the next four evictions outright — nobody goes home, the week's votes are
+  // read out and then thrown away — and everything else about the week stands.
+  //
+  // The one rule people misremember is that it is not protection. It stops the
+  // night, not the nomination: the same houseguest can be nominated again the
+  // following week with nothing left to stop it.
+  'halting-hex': {
+    id: 'halting-hex',
+    name: 'The Halting Hex',
+    rules: { cancelEviction: true },
+    useTiming: 'eviction-night',
+    windowWeeks: 4,
+    blurb: 'Cancels one eviction outright: the votes are read, and then nobody leaves.',
+    catch: 'It stops the night, not the nomination — everybody on that block is a legal nominee again next week, with the Hex already spent.',
+    moment: 'Eviction night, after the votes are counted.',
+  },
+
 };
 
 function store() {

@@ -11,6 +11,7 @@ import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
+import { resolveHaltingHex } from './eviction-powers.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import {
@@ -1685,6 +1686,59 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // ── AMERICA'S NOMINEE ──
+  //
+  // BB15's third chair, and the one nobody in the building filled. Two shapes,
+  // both real: the audience votes a houseguest MVP and that houseguest names
+  // the third nominee in secret, or the audience names the third itself.
+  //
+  // The MVP is chosen by popularity, which is the honest model of an audience
+  // vote and also the cruel one — the house's most WATCHED player gets the
+  // power, not its best. The nominee is chosen the same way in reverse: the
+  // audience puts up whoever it has least time for.
+  const mvpActive = week.twistState?.rules?.thirdChairNoReplacement === true
+    && !compressed && house.length >= 6;
+  if (mvpActive) {
+    const style = options.americasNomineeStyle === 'mvp' ? 'mvp' : 'direct';
+    const offLimits = [hoh, ...untouchable, ...nominees];
+    const pool = house.filter(n => !offLimits.includes(n));
+    if (pool.length) {
+      const pop = name => (gs.popularity?.[name] || 0);
+      let mvp = null;
+      let third = null;
+      if (style === 'mvp') {
+        // The audience's favourite holds the pen, and uses their own read.
+        mvp = [...house].sort((a, b) => pop(b) - pop(a))[0] || null;
+        const theirPool = pool.filter(n => n !== mvp);
+        third = theirPool.length
+          ? chooseReplacement(mvp, house, [...offLimits, mvp], plan, rng) || theirPool[0]
+          : null;
+        if (third && !theirPool.includes(third)) third = theirPool[0];
+      } else {
+        // The audience nominates directly: least watched, least liked, with
+        // enough noise that it is not simply a popularity sort every week.
+        third = [...pool]
+          .sort((a, b) => (pop(a) + rng() * 2) - (pop(b) + rng() * 2))[0] || null;
+      }
+      if (third) {
+        nominees.push(third);
+        week.americasNominee = { nominee: third, style, mvp };
+        week.acts.push(addBeats({
+          type: 'americas-nominee', secret: true, nominee: third, style, mvp,
+          detail: style === 'mvp'
+            ? `${mvp} was voted the Most Valuable Player and has named a third nominee. The house is told there is a third chair and not who filled it.`
+            : 'The audience has named a third nominee. Nobody in this house had a vote and nobody in this house can be blamed.',
+        }, { nominees: [third] }));
+        if (style === 'mvp' && mvp) {
+          gs.bb.competitionMemories ||= {};
+          (gs.bb.competitionMemories[mvp] ||= []).push({
+            type: 'mvp-nomination', week: week.num, detail: { nominated: third },
+          });
+        }
+      }
+    }
+  }
+
   // ── the curse takes its chair ──
   //
   // Nobody chose this name and nobody can be blamed for it, which is what
@@ -2288,6 +2342,11 @@ export function simulateBBWeek(options = {}) {
     // Saving the Roadkill nominee hands the pen to whoever put them there, not
     // to the Head of Household — the third chair was never the HOH's to fill,
     // and it is not theirs to refill either.
+    // BB15's rule: save the audience's nominee and the chair simply empties.
+    // Nobody in the house filled it, so nobody in the house owns the pen for
+    // it — which is the one thing that makes this different from Roadkill.
+    const americasChair = !!week.americasNominee
+      && vetoDecision?.use && vetoDecision?.save === week.americasNominee.nominee;
     const roadkillChair = !!week.roadkill && vetoDecision?.save === week.roadkill.nominee;
     const chairAuthority = diamond ? vetoWinner : (roadkillChair ? week.roadkill.winner : hoh);
     if (roadkillChair) week.roadkillRefilled = true;
@@ -2305,7 +2364,12 @@ export function simulateBBWeek(options = {}) {
       vetoDecision = { use: false, save: null, reason: 'no-replacement',
         why: `${vetoWinner} could take ${vetoDecision.save} down, but there is no eligible houseguest left to put up in the empty chair. The rules make the decision: the medallion stays in the box.` };
     }
-    if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
+    if (americasChair && nominees.includes(vetoDecision.save)) {
+      // No replacement, and no ceremony beyond the saving.
+      nominees = nominees.filter(n => n !== vetoDecision.save);
+      gs.bb.stats[vetoDecision.save].timesSaved++;
+      week.americasChairEmptied = true;
+    } else if (vetoDecision.use && nominees.includes(vetoDecision.save)) {
       const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), ...nominees.filter(name => name !== vetoDecision.save)];
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
@@ -3085,8 +3149,27 @@ export function simulateBBWeek(options = {}) {
       week.dealBreaks.push({ breaker: ballot.voter, victim: gone, tier: tierOf(deal), madeEp: deal.madeEp });
     }
   }
+  // ── The Halting Hex ──
+  //
+  // Before anybody is removed from the roster, because the whole power is that
+  // the removal does not happen. The votes stand as a matter of record; the
+  // result does not, and the block empties by default.
+  week.haltingHex = null;
+  if (!compressed && evicted) {
+    try {
+      const hex = resolveHaltingHex({ week, evicted, nominees, hoh, rng });
+      if (hex) {
+        week.haltingHex = hex;
+        week.acts.push(hex);
+        week.evictionCancelled = true;
+        week.evicted = null;
+        evicted = null;
+      }
+    } catch { week.haltingHex = null; }
+  }
+
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
-  if (!gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
+  if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
 
   // ── The Bonus Life ──
@@ -3096,7 +3179,7 @@ export function simulateBBWeek(options = {}) {
   // its holder walking. Sweeping first would bin the fuse on the one night it
   // exists to go off. It also runs before the battle back so that a house
   // running both does not send the same evictee through two doors.
-  if (!compressed && evicted) {
+  if (!compressed && evicted && !week.roundTrip?.returned) {
     try {
       week.bonusLife = resolveBonusLife({ week, evicted, rng });
       if (week.bonusLife) {
@@ -3135,7 +3218,7 @@ export function simulateBBWeek(options = {}) {
   // already sees them standing in the room.
   // One door a night: a house running the Bonus Life and the Battle Back in
   // the same week must not send tonight's evictee through both of them.
-  if (!compressed && !week.bonusLife?.returned
+  if (!compressed && !week.bonusLife?.returned && !week.roundTrip?.returned
       && (week.twistState?.rules?.addSlots || []).includes('return')) {
     try {
       week.battleBack = runBattleBack({

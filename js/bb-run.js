@@ -279,7 +279,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -929,6 +929,24 @@ export function summariseWeek(week) {
           (act.winners || []).length === 1 ? '' : 's'} leave the shelf and the house is told only that somebody out there is now holding something.`);
         line('  Who won what is not public. The Debug panel owns the truth.');
         break;
+      case 'americas-nominee': {
+        line('');
+        line("AMERICA'S NOMINEE");
+        line(act.style === 'mvp'
+          ? '  The audience has voted a Most Valuable Player, and only that houseguest is told.'
+          : '  The audience has named a third nominee. Nobody in the house had a vote.');
+        line(`  A third key turns: ${act.nominee} is nominated.`);
+        line('  If the veto saves them, the chair empties. There is no replacement.');
+        break;
+      }
+      case 'halting-hex': {
+        line('');
+        line('THE EVICTION IS CANCELLED');
+        line(`  ${act.holder} plays the Halting Hex${act.selfSave ? ' on themselves' : ` on ${act.spared}`}.`);
+        line(`  ${act.spared} was leaving. Nobody leaves. ${(act.nominees || []).join(' and ')} come off the block.`);
+        line('  The votes were read out and they no longer decide anything.');
+        break;
+      }
       case 'whacktivity': {
         line('');
         line('THE WHACKTIVITY COMPETITIONS');

@@ -504,14 +504,14 @@ export const TWIST_CATALOG = [
     incompatible:['bb-diamond-veto'],
     incompatibleModes:[] },
   { id:'bb-safety-suite', emoji:'🛗', name:'The Safety Suite', format:'big-brother',
-    category:'power', phase:'any',
+    category:'advantages', phase:'any',
     desc:'A second competition runs before nominations, and it is not for power — it is for staying off the block. Any houseguest except the Head of Household may enter, but only ONCE for the entire season, so the real decision is which week is worth spending it on. Whoever beats the clock is safe, and must then choose a Plus One who is also safe and takes a punishment in exchange. If only one houseguest enters, safety is not a formality: they still have to beat the clock, and the house watches them fail if they do not.',
     // Both change who can be seated before the ceremony, so they would spend
     // the week arguing about the same chairs.
     incompatible:['bb-battle-of-the-block', 'bb-split-house'],
     incompatibleModes:['block-buster'] },
   { id:'bb-care-package', emoji:'📦', name:"The Audience Vote", format:'big-brother',
-    category:'power', phase:'any',
+    category:'advantages', phase:'any',
     desc:'The audience votes one houseguest in every week, and the twist runs one of two shapes. The BB TIME CAPSULE sends the favourite into a room to attempt a challenge alone: beat it and they come out holding a power from a past season, fail it and they come out wearing a punishment from one — the Egg Detective suit, the red unitard, Lord of the Latrine, Hamazon, Camp Guide, or tethered to another houseguest in Adam and Eve. A costume is not a joke here: it is subtracted from every pitch they make for as long as they are in it, so being the country’s favourite can cost a week of being taken seriously. AMERICA’S CARE PACKAGE runs the older shape, where the contents are announced before the vote and simply handed over: a Never-Not pass, the power to strike two eviction votes, Super Safety, a Co-Head of Household key, or $5,000 to buy a vote with. Either way a houseguest may only ever be chosen once, so the pool shrinks every week.',
     // The Co-HOH package fills a second key, so anything that already owns the
     // shape of the block or the count of the Heads of Household is out.

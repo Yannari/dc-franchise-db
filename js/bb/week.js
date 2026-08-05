@@ -3362,18 +3362,38 @@ export function simulateBBWeek(options = {}) {
       secondEvicted = preference.evict;
       tieBreak = { voter: hoh, evict: secondEvicted, slot: 2, anonymous: hohSecret };
     }
-  } else if (votes[nominees[0]] === votes[nominees[1]]) {
-    const preference = initialVotePreference(hoh, nominees, rng);
-    evicted = preference.evict;
-    // An invisible HOH still breaks the tie — through the wall screen, with
-    // the room watching nobody stand up.
-    tieBreak = { voter: hoh, evict: evicted, anonymous: hohSecret };
   } else {
-    evicted = votes[nominees[0]] > votes[nominees[1]] ? nominees[0] : nominees[1];
+    // WHOEVER HAS THE MOST VOTES LEAVES — over every chair, not the first two.
+    //
+    // This compared nominees[0] against nominees[1] and nothing else, which is
+    // correct for exactly as long as a block has two people on it. It has not
+    // for a long time: America's Nominee, Roadkill, the Den's curse and the
+    // Block Buster all seat a third, and on those weeks the third chair's
+    // votes were never read at all.
+    //
+    // Reported from a real week that voted 11-2-0 and evicted the houseguest
+    // with TWO — because two beat the zero next to it and the eleven was not
+    // in the comparison. The tally was right the whole time; the wrong name
+    // was pulled out of it.
+    const ranked = [...nominees].sort((a, b) => (votes[b] || 0) - (votes[a] || 0));
+    const most = votes[ranked[0]] || 0;
+    const tied = ranked.filter(n => (votes[n] || 0) === most);
+    if (tied.length > 1) {
+      const preference = initialVotePreference(hoh, tied, rng);
+      evicted = preference.evict;
+      // An invisible HOH still breaks the tie — through the wall screen, with
+      // the room watching nobody stand up.
+      tieBreak = { voter: hoh, evict: evicted, anonymous: hohSecret };
+    } else {
+      evicted = ranked[0];
+    }
   }
   if (!doubleVote) {
     evicted = hook(hooks, 'evictionResult', evicted, { week, house, hoh, nominees: [...nominees], ballots, votes, tieBreak }) || evicted;
-    if (!nominees.includes(evicted)) evicted = votes[nominees[0]] >= votes[nominees[1]] ? nominees[0] : nominees[1];
+    if (!nominees.includes(evicted)) {
+      // Same rule as above: the most votes, over every chair.
+      evicted = [...nominees].sort((a, b) => (votes[b] || 0) - (votes[a] || 0))[0];
+    }
   }
   week.evicted = evicted;
   week.secondEvicted = secondEvicted;

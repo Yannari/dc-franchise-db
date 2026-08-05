@@ -2346,6 +2346,14 @@ export function simulateBBWeek(options = {}) {
     // It fires after the veto ceremony has settled the block because it
     // OVERRULES that ceremony rather than taking part in it: the house has
     // just watched the week resolve, and then it does not resolve.
+    //
+    // ORDER MATTERS ON THE SCREEN, and it was wrong: the coup resolves here,
+    // after the ceremony, but its card was pushed BEFORE the ceremony's — so a
+    // viewer watched somebody overrule a block they had not been shown yet,
+    // and then watched the veto meeting produce the block that had already
+    // been overruled. The act is built now and pushed after the ceremony.
+    const blockAfterCeremony = [...nominees];
+    let coupAct = null;
     const coup = (gs.bb?.powers || []).find(pw => pw.powerId === 'coup-d-etat'
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek
       && house.includes(pw.holder));
@@ -2370,7 +2378,7 @@ export function simulateBBWeek(options = {}) {
             visibility: coup.visibility };
           nominees.forEach(name => gs.bb.stats[name].timesNominated++);
           setSpotlight({ nominees: [...nominees] });
-          week.acts.push(addBeats({
+          coupAct = addBeats({
             type: 'power-played', powerId: 'coup-d-etat', holder: coup.holder,
             name: BB_POWER_DEFINITIONS['coup-d-etat'].name, timing: 'veto-ceremony',
             secret: false, visibility: coup.visibility,
@@ -2378,7 +2386,7 @@ export function simulateBBWeek(options = {}) {
             detail: `${coup.holder} takes ${taken.join(' and ')} off the block and puts up `
               + `${named.join(' and ')}. ${hoh} watches a week of work come apart from a chair `
               + 'nobody can put them in.',
-          }, { nominees: [...named], players: [coup.holder] }));
+          }, { nominees: [...named], players: [coup.holder] });
           // Overruling somebody in public is not free, and the two people just
           // put up did not have a week that ended this way an hour ago.
           try { addBond(hoh, coup.holder, -2.4); } catch { /* no bond, no fallout */ }
@@ -2398,15 +2406,28 @@ export function simulateBBWeek(options = {}) {
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority, anonymous: hohSecret && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
-      nominees: [...nominees] },
+      // The block as the CEREMONY left it. `nominees` may already have been
+      // rewritten by a Coup d'Etat below, and reporting that here had the
+      // ceremony announcing a final block that contradicted its own
+      // replacement in the same breath.
+      nominees: [...blockAfterCeremony] },
       // Handed over explicitly rather than left to be inferred. actFacts works
       // `saved` out by diffing week.initialNominees against week.finalNominees,
       // and finalNominees is not written until after this act exists — so every
       // event on this act that needs to know who came down was reading null,
       // and veto-saved-gratitude could never fire.
-      { nominees: [...nominees], vetoWinner,
+      { nominees: [...blockAfterCeremony], vetoWinner,
         saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
-    revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: vetoDecision.save || null });
+    revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
+      saved: vetoDecision.save || null });
+
+    // ...and NOW the coup, standing up on a block the house has just watched
+    // settle. Everything downstream — campaigning, the vote, the plans — reads
+    // `nominees`, which the coup already rewrote.
+    if (coupAct) {
+      week.acts.push(coupAct);
+      revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: null });
+    }
 
     // The person who just went up ALWAYS reacts. The ceremony act schedules
     // one to three beats from the general pool, and in about half of all
@@ -2631,7 +2652,11 @@ export function simulateBBWeek(options = {}) {
   try { week.reign = week.hohSecret ? null : recordReign(week); } catch { week.reign = null; }
   gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
     gs.bb.weeks.push(week);
-    gs.episode = (gs.episode || 0) + 1;
+    // One episode, however many cycles it took. A double eviction runs the week
+  // engine twice and a Split House runs it once per side, so an unconditional
+  // bump made the counter jump 4 -> 6 and every episode after it was misnumbered
+  // for the rest of the season. The second segment is the same night.
+  if (Number(options.segment || 1) <= 1) gs.episode = (gs.episode || 0) + 1;
     return week;
   }
 
@@ -3118,7 +3143,11 @@ export function simulateBBWeek(options = {}) {
   // of next week's competition — the twist's stated perk.
   gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
   gs.bb.weeks.push(week);
-  gs.episode = (gs.episode || 0) + 1;
+  // One episode, however many cycles it took. A double eviction runs the week
+  // engine twice and a Split House runs it once per side, so an unconditional
+  // bump made the counter jump 4 -> 6 and every episode after it was misnumbered
+  // for the rest of the season. The second segment is the same night.
+  if (Number(options.segment || 1) <= 1) gs.episode = (gs.episode || 0) + 1;
   return week;
 }
 

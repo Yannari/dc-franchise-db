@@ -416,7 +416,23 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
       if (score > bestScore) { bestScore = score; best = name; }
     }
     side.push(best);
-    picks.push({ by: picking, picked: best });
+    // WHY they took that name. A schoolyard pick with no reasoning is a list,
+    // and the whole drama of the wall is watching somebody take an ally, take
+    // a body away from the other side, or reach for a stranger because
+    // everybody they trust has already gone.
+    const bond = (() => { try { return getPerceivedBond(picking, best); } catch { return 0; } })();
+    const rival = picking === hohA ? hohB : hohA;
+    const theirBond = (() => { try { return getPerceivedBond(rival, best); } catch { return 0; } })();
+    const why = bond >= 5
+      ? `${best} is one of ${picking}'s, and a vote on the wrong side of that wall is a vote ${picking} cannot reach`
+      : theirBond >= 5
+        ? `${best} is closer to ${rival} than to ${picking} — taking ${best} is less about wanting ${best} and more about ${rival} not having ${best}`
+        : bond <= -3
+          ? `${picking} does not like ${best} at all, and would rather have ${best} where ${picking} can watch ${best} than loose on the other side`
+          : pool.length <= 2
+            ? `there is nobody left to want. ${best} goes to ${picking} because somebody has to`
+            : `${picking} barely knows ${best}, which this early is its own kind of safe`;
+    picks.push({ by: picking, picked: best, why, bond: Math.round(bond * 10) / 10 });
     pool.splice(pool.indexOf(best), 1);
     picking = picking === hohA ? hohB : hohA;
   }
@@ -479,6 +495,10 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   // ahead of either side's week.
   ep.acts = [
     { type: 'split-house', crowning, hohs: [hohA, hohB],
+      // Aliased so the generic competition board can draw this the way it
+      // draws any other HOH night: the house was told two crowns were on the
+      // line and then never shown anybody winning them.
+      competition: crowning, coHoh: hohB,
       sides: { [hohA]: [...sideA], [hohB]: [...sideB] }, picks,
       results: crowning.placements.map(n => ({ name: n, score: crowning.scores[n] })),
       socialBeats: [] },
@@ -758,6 +778,12 @@ export function summariseWeek(week) {
         line(`  ${(act.hohs || []).join(' and ')} are the two Heads of Household.`);
         for (const owner of act.hohs || []) {
           line(`  ${owner}'s side: ${(act.sides?.[owner] || []).join(', ')}.`);
+        }
+        if ((act.picks || []).length) {
+          line('  The pick, in order:');
+          for (const pk of act.picks) {
+            line(`    ${pk.by} takes ${pk.picked}${pk.why ? ` — ${pk.why}` : ''}.`);
+          }
         }
         line('  The two sides will not see or speak to each other again until eviction night.');
         break;

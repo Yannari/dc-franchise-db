@@ -75,6 +75,7 @@ export function rpBuildBBSplitHouse(ep, u = {}) {
             <span class="spl-takes">takes</span>
             <figure>${AV(pick.picked, 38)}<figcaption>${E(pick.picked)}</figcaption></figure>
           </div>
+          ${pick.why ? `<p class="spl-why">${E(pick.why)}.</p>` : ''}
         </article>`
       : '<article class="spl-card is-locked"><span class="spl-lock">— —</span></article>');
   });

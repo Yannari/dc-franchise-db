@@ -751,6 +751,9 @@
     .bbf-hold.is-weak img, .bbf-hold.is-weak .rp-portrait {
                      outline:1.5px solid #c9343c; outline-offset:1px; border-radius:4px; }
 
+    .spl-why       { margin:6px 2px 0; font-size:10.5px; line-height:1.4; color:#8b949e;
+                     text-align:center; }
+
     /* ── the Whacktivity doors ─────────────────────────────────────────
        Three doorways side by side, each one lit in its power's colour, with
        the people who chose it queued underneath. The drama is the CROWD: you

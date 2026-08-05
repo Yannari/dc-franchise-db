@@ -17036,7 +17036,7 @@ export function rpBuildBBComp(ep, actType) {
   // every board, themed or not, and names nobody: the second crown is the
   // competition's runner-up, so printing it here would hand over the top two
   // placements before a single card is turned.
-  const twoCrowns = actType === 'hoh' && act?.coHoh
+  const twoCrowns = (actType === 'hoh' || actType === 'split-house') && act?.coHoh
     ? `<div style="max-width:1100px;margin:0 auto 10px;padding:9px 12px;border:1px solid rgba(214,178,102,.34);border-radius:9px;background:rgba(214,178,102,.09);text-align:center">
         <span style="font-family:var(--font-display);font-size:10px;letter-spacing:2.6px;color:#d6b266">TWO HEADS OF HOUSEHOLD</span>
         <div style="font-size:12.5px;color:#c9d3e6;margin-top:5px">Tonight this competition crowns two. Both of them will nominate, and by the end of the week only one of them still holds the room.</div>
@@ -20520,6 +20520,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       }
       case 'split-house': {
+        // The competition that crowned BOTH of them, before anybody is divided.
+        // The split screen mentioned it in a sentence and never drew a board,
+        // so a week that turns on two people earning two crowns showed neither
+        // of them winning anything. rpBuildBBComp finds the act by type, and
+        // the act now carries its crowning as `competition`.
+        try {
+          const crown = rpBuildBBComp(view, 'split-house');
+          if (crown && crown.trim()) {
+            screens.push({ id: id('bb-split-hoh'), label: 'Two Crowns', html: crown });
+          }
+        } catch { /* the division still draws without the board */ }
         const sh = rpBuildBBSplitHouse(view, {
           tvState: _tvState, reveal: _bbReveal, avatar: _bbAvatar, esc: _bbEsc,
         });
@@ -20664,13 +20675,46 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Diary Room itself, so a second page repeating the same nine votes was
         // the night told twice.
         try {
+          // A Split House's two evictees are not a double eviction's two.
+          // They leave on the same night from two houses that never saw each
+          // other, so "Evictee Interview" then "Second Evictee" reads as one
+          // chair used twice in a row. Named by their side, they read as what
+          // they are: one from each half of a house that was cut down the
+          // middle. A real double keeps the plain first/second, because there
+          // the second genuinely does follow the first.
+          // Read from the EPISODE's split record, not from the acts: the second
+          // cycle's view is filtered to segment-2 acts and the crowning act
+          // belongs to neither half, so looking it up there found nothing and
+          // side B's evictee fell back to the double-eviction wording.
+          const split = view.splitHouse || null;
+          const sideOf = n => {
+            if (!n || !split) return null;
+            const byEviction = Object.keys(split.evicted || {})
+              .find(o => split.evicted[o] === n);
+            if (byEviction) return byEviction;
+            return Object.keys(split.sides || {})
+              .find(o => (split.sides[o] || []).includes(n)) || null;
+          };
+          const firstOut = view.eliminated || null;
+          const secondOut = view.alsoEliminated || null;
+          // A two-cycle week draws this block once per cycle, and the second
+          // interview belongs to the LAST cycle — rendering it in both put the
+          // same evictee in two chairs. The first cycle draws only its own.
+          const twoCycle = !!view.doubleEviction;
+          const drawSecond = !twoCycle || view._seg === 2;
+          const label1 = split && sideOf(firstOut)
+            ? `Evictee · ${sideOf(firstOut)}'s side` : 'Evictee Interview';
+          const label2 = split && sideOf(secondOut)
+            ? `Evictee · ${sideOf(secondOut)}'s side` : 'Second Evictee';
+
           const iv = rpBuildBBEvictionInterview(view);
-          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: 'Evictee Interview', html: iv });
+          if (iv && iv.trim()) screens.push({ id: id('bb-interview'), label: label1, html: iv });
           // Two evictions, two chairs. The second evictee of a split or a
           // double had an interview written for them and no screen to sit in.
-          const iv2 = rpBuildBBEvictionInterview(view, 'secondEvictionInterview');
+          const iv2 = drawSecond
+            ? rpBuildBBEvictionInterview(view, 'secondEvictionInterview') : '';
           if (iv2 && iv2.trim()) {
-            screens.push({ id: id('bb-interview-2'), label: 'Second Evictee', html: iv2 });
+            screens.push({ id: id('bb-interview-2'), label: label2, html: iv2 });
           }
         } catch { /* no interview, no screen */ }
         break;

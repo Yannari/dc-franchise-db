@@ -4245,7 +4245,7 @@ export function generateBBSummaryText(ep) {
         }
         ln('');
         ln(`  ${(act.hohs || []).join(' and ')} take the two rooms — and then they take sides.`);
-        for (const pick of act.picks || []) ln(`    ${pick.by} picks ${pick.picked}.`);
+        for (const pick of act.picks || []) ln(`    ${pick.by} picks ${pick.picked}${pick.why ? ` — ${pick.why}` : ''}.`);
         ln('');
         for (const owner of act.hohs || []) {
           ln(`  ${owner}'s side: ${(act.sides?.[owner] || []).join(', ')}.`);

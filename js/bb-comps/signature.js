@@ -286,6 +286,21 @@ const WALL_GO = [
   (n, p) => `${n} loses the wall slowly, in three separate instalments, each one worse to watch than the last.`,
 ];
 
+// Coming off a wall because you are DONE is a different scene from being
+// thrown off it, and it is the one the format actually turns on — almost
+// nobody is prised off a wall, they climb down.
+const WALL_DOWN = [
+  (n, p) => `${n} does not fall. ${p.Sub} ${vb(p, 'looks', 'look')} at the padding for a while, says "yeah, I'm done", and ${vb(p, 'climbs', 'climb')} down while the wave is still coming.`,
+  (n, p) => `${n} could hold this. ${p.Sub} ${vb(p, 'has', 'have')} decided ${p.sub} ${vb(p, 'does', 'do')} not want to, which takes about six seconds to say and four hours to arrive at.`,
+  (n, p) => `${n} steps off between waves, in the quiet, with nothing dramatic happening at all. That is how most of these end.`,
+  (n, p) => `The cold gets to the part of ${n} that makes decisions before it gets to ${p.posAdj} hands. ${p.Sub} ${vb(p, 'is', 'are')} on the ground and apologising to nobody in particular.`,
+  (n, p) => `${n} asks how long it has been. Somebody tells ${p.obj}. ${p.Sub} ${vb(p, 'comes', 'come')} down on the next wave.`,
+  // Not every voluntary exit is a quiet one. Coming off angry is still coming
+  // off, and it is the exit a short fuse gets.
+  (n, p) => `${n} takes one more wave of slime in the face, says something short into the noise, and ${vb(p, 'is', 'are')} off the wall before anybody works out what it was.`,
+  (n, p) => `Somebody laughs at the wrong moment. ${n} is down in ten seconds and it is very clear that the wall had nothing to do with it.`,
+];
+
 const WALL_GRIND = [
   (n, p) => `${n} has stopped talking. ${p.Sub} ${vb(p, 'has', 'have')} been in the same position for forty minutes and the position is not a good one.`,
   (n, p) => `${n} works ${p.posAdj} feet back onto the ledge an inch at a time and buys another hour with it.`,
@@ -300,18 +315,70 @@ export const theWall = {
   types: ['hoh', 'tiebreaker', 'return'],
   weight: () => 1.3,
   desc: 'Houseguests stand on narrow platforms bolted to a wall that tilts further forward as the night goes on, while timed waves of cold water, slime and moving platforms hit the field. Anyone who falls or steps down is out, and the last houseguest still on the wall wins Head of Household.',
-  stats: { endurance: 0.40, temperament: 0.26, physical: 0.20, boldness: 0.14 },
+  // Boldness is gone. Nothing on this wall is a wager — there is no prize
+  // offer, no hold-or-drop gamble, nothing being risked for a reward — so it
+  // was 14% of the weight on a stat with no mechanism behind it. (Slippery
+  // Slope keeps its boldness because that competition really does ask a
+  // question; it asks it at the prize, not on the climb.)
+  //
+  // Temperament stays, but NOT as a grit stat, which is the trap. In this
+  // simulator low temperament means volatile — angry, impulsive, quick to
+  // snap — and that is not the same as weak-willed. Plenty of hotheads have
+  // stayed on a wall out of pure spite, and reading temperament as "willing to
+  // suffer" quietly turns every short fuse into a quitter.
+  //
+  // So temperament does not set the LEVEL here, it sets the SPREAD. How long
+  // somebody is prepared to stay up there comes from endurance; how
+  // PREDICTABLE that is comes from temperament. A calm houseguest performs
+  // near their own number every time. A volatile one is a coin toss between
+  // storming down at hour two and planting themselves out of stubbornness
+  // until everybody else has gone — same average, wildly different night.
+  stats: { endurance: 0.46, physical: 0.30, temperament: 0.24 },
+  roles: {
+    // What the body can do. One check, not two — an earlier version rolled
+    // "grip" and "resolve" separately and took the worse, which sounded right
+    // and measured terribly: with temperament moved out of resolve's average,
+    // resolve was just grip again, so the same endurance number got checked
+    // twice and one houseguest took 75% of the competition.
+    capacity: { endurance: 0.61, physical: 0.39 },
+    // And the dial for how far from that number the night actually lands.
+    steadiness: { temperament: 1 },
+  },
   simulate(participants, context, api, rng) {
     const luck = {};   // banked by noiseRoll, merged into the breakdown downstream
     const say = makePicker(rng);
     const grind = makePicker(rng);
+    const down = makePicker(rng);
     const beats = [];
     const breakdown = {};
     const hn = haveNotDrag(participants, context, rng);
 
     const holders = participants.map(name => {
       const t = throwRead(name, context, rng);
-      return { name, apt: aptitude(name, this.stats), threw: t.threw, threwChance: t.chance, waves: 0, last: 0 };
+      // Steadiness 10 swings by about 2; steadiness 1 swings by about 6, in
+      // both directions — the volatile houseguest is as likely to outlast the
+      // field on stubbornness as to walk off in the third hour.
+      const steady = aptitude(name, this.roles.steadiness);
+      const swing = 2.4 + (10 - steady) * 0.42;
+      // Variance is not free in a competition that eliminates every wave, and
+      // measuring proved it: each wave is another chance to roll under the bar,
+      // while rolling high only buys survival, which is capped. Left alone, a
+      // wide swing simply loses — and the screen would once again be saying
+      // short fuse = quitter, which is the thing being fixed.
+      //
+      // So the swing buys something real: stubbornness. A volatile houseguest
+      // holds a higher line on the nights they decide to, which is exactly how
+      // it looks from the sofa — the person nobody expected is still up there
+      // at hour nine, right up until the week they walk off at hour two.
+      const spite = (swing - 2.4) * 0.55;
+      return { name, apt: aptitude(name, this.stats),
+        capacity: aptitude(name, this.roles.capacity) + spite,
+        steady,
+        // Calm houseguests land near their own number every time; volatile
+        // ones are a coin toss between storming down early and planting
+        // themselves out of stubbornness. Same average, different night.
+        swing,
+        threw: t.threw, threwChance: t.chance, waves: 0, last: 0 };
     });
 
     beats.push(beat(
@@ -336,8 +403,26 @@ export const theWall = {
 
       const rolls = standing.map(h => {
         const throwDrag = h.threw && wave >= 2 ? 5 + rng() * 3 : 0;
-        const hold = h.apt - fatigue - throwDrag - hn[h.name] + noiseRoll(rng, 2.9, luck, h.name);
-        return { ...h, hold };
+        // Two ways off. GRIP is whether the body holds the platform through
+        // the hazard; RESOLVE is whether the person is still willing to be up
+        // there at all. Misery compounds faster than fatigue does — hour six
+        // is not twice as hard as hour three, it is worse than that — so
+        // resolve carries the steeper multiplier.
+        // Named apart from h.grip / h.resolve deliberately: these are THIS
+        // wave's rolls, and writing them back over the base stats would carry
+        // the fatigue forward and charge it again next wave.
+        // One roll, on the width temperament sets. This is where the stat
+        // earns its 24%: it does not decide how long somebody CAN stay up
+        // there, it decides how far tonight lands from that.
+        const hold = h.capacity - fatigue - throwDrag - hn[h.name]
+          + noiseRoll(rng, h.swing, luck, h.name);
+        // And then HOW they came off, which is a separate question with a
+        // separate answer. Most people leave a wall on their own legs, and the
+        // shorter the fuse the likelier the exit was a decision rather than a
+        // slip — an angry houseguest is not less determined, they are just
+        // more likely to be done in a way everybody hears.
+        const quit = rng() < clamp(0.30 + (10 - h.steady) * 0.045, 0.2, 0.78);
+        return { ...h, hold, quit };
       }).sort((a, b) => a.hold - b.hold);
 
       // Everyone under the bar goes, but never the whole wall at once, and at
@@ -362,12 +447,20 @@ export const theWall = {
       falling.forEach(f => {
         const p = pronouns(f.name);
         beats.push(beat(
-          f.threw ? say(THROW_LINES)(f.name) : say(WALL_GO)(f.name, p),
-          [f.name], f.threw ? 'THREW IT' : out.length === 0 ? 'FIRST DOWN' : 'DROPS', f.threw ? 'grey' : 'challenge'));
+          f.threw ? say(THROW_LINES)(f.name)
+            : f.quit ? down(WALL_DOWN)(f.name, p) : say(WALL_GO)(f.name, p),
+          [f.name],
+          f.threw ? 'THREW IT'
+            : f.quit ? 'STEPS DOWN' : out.length === 0 ? 'FIRST DOWN' : 'DROPS',
+          f.threw ? 'grey' : 'challenge'));
         tiebreaks[f.name] = clamp(wave * 0.4 + f.hold / 4, 0, 9.9);
         threwMap[f.name] = f.threw;
         breakdown[f.name] = {
           wavesSurvived: wave - 1, fellOnWave: wave, hazard: hazard.label,
+          // Which of the two gave out, and by how much — the Debug tab was
+          // reporting one aptitude for a competition with two ways to lose.
+          leftBy: f.quit ? 'stepped down' : 'lost the wall',
+          capacity: round2(f.capacity), swing: round2(f.swing),
           aptitude: round2(f.apt), hold: round2(f.hold), threwChance: f.threwChance, threw: f.threw, score: round2(f.hold),
           ...hnFields(hn[f.name]),
         };
@@ -375,7 +468,10 @@ export const theWall = {
         if (wave >= 4) api.popDelta(f.name, 1);
       });
 
-      standing = stillUp.map(({ name, apt, threw, threwChance }) => ({ name, apt, threw, threwChance }));
+      // grip and resolve travel with them: dropping the fields here left the
+      // next wave rolling both checks against undefined.
+      standing = stillUp.map(({ name, apt, capacity, steady, swing, threw, threwChance }) =>
+        ({ name, apt, capacity, steady, swing, threw, threwChance }));
 
       if (wave === 3 || wave === 7) {
         const grinder = standing[Math.floor(rng() * standing.length)];
@@ -384,7 +480,10 @@ export const theWall = {
     }
 
     // The last two. Sorted by one more independent hold, and then negotiated.
-    const finalTwo = standing.map(h => ({ ...h, hold: h.apt - wave * 0.42 - hn[h.name] + noiseRoll(rng, 2.6, luck, h.name) - (h.threw ? 6 : 0) }))
+    // The last two, asked once more on their own widths.
+    const finalTwo = standing.map(h => ({ ...h,
+      hold: h.capacity - wave * 0.42 - hn[h.name] + noiseRoll(rng, h.swing, luck, h.name)
+        - (h.threw ? 6 : 0) }))
       .sort((a, b) => b.hold - a.hold);
     let [champ, second] = finalTwo;
 

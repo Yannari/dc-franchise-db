@@ -43,7 +43,7 @@ import { resolveBBCampaignAct, settleBBAllianceWeek, updateBBAllianceLifecycle, 
 import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePlan } from './plans.js';
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
-import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack } from './blocs.js';
+import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
@@ -1964,8 +1964,24 @@ export function simulateBBWeek(options = {}) {
       week.botbSafe = [...savedPair];
       plan = hohPairWins ? coPlan : plan;
       week.plan = plan;
-      gs.bb.stats[reigning].hohWins++;      // credited to the reign that survived
-      gs.bb.stats[dethroned].hohWins--;     // and taken back off the one that did not
+      // Exactly one reign goes in the record, and which adjustment is needed
+      // depends on WHICH of the two survived — because only the first Head of
+      // Household was credited at the crowning, and the co-HOH never was.
+      //
+      // Crediting the survivor unconditionally and debiting the dethroned
+      // unconditionally is right only when the co-HOH survives. When the FIRST
+      // HOH survives it double-counts them and pushes the dethroned co-HOH to
+      // minus one win. Nothing caught it because it needs the first HOH's pair
+      // to win the battle, and no seeded fixture had produced that branch.
+      if (hohPairWins) {
+        // The first Head of Household's own pair won, so they are the one
+        // dethroned: credit the co-HOH, who was never credited, and take the
+        // crowning back off the first.
+        gs.bb.stats[reigning].hohWins++;
+        gs.bb.stats[dethroned].hohWins--;
+      }
+      // Otherwise the first Head of Household survives — already credited at
+      // the crowning — and the dethroned co-HOH never had a win to remove.
       setSpotlight({ hoh: reigning, nominees: [...stuckPair] });
       revise('noms', { hoh: reigning, nominees: [...stuckPair] });
     } else {
@@ -2549,6 +2565,16 @@ export function simulateBBWeek(options = {}) {
   week.housePlans = Object.fromEntries((gs.activePlayers || [])
     .map(name => [name, describeHousePlan(name)]).filter(([, text]) => text));
   week.closingState = _snapshotHouse();
+  // Who was holding which alliance together, as it stood at the end of THIS
+  // week. Snapshotted rather than recomputed on replay, because loyalty is
+  // made of bonds and bonds keep moving — a board rebuilt in December would
+  // show a season that never happened.
+  try {
+    week.allianceBoard = listBlocs()
+      .filter(b => (b.members || []).every(m => (gs.activePlayers || []).includes(m)))
+      .map(b => ({ ...blocRoster(b), power: Math.round((b.power || 0) * 100) / 100,
+        share: Math.round((b.share || 0) * 100) / 100, exposed: !!b.exposed }));
+  } catch { week.allianceBoard = []; }
     week.perceptionChanges = updateBBPerceptions({ house: gs.activePlayers, week, rng });
     _attachRomance(week, rng);
     // How they wore it, judged on what the week actually achieved rather than on

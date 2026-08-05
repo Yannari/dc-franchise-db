@@ -449,6 +449,17 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
     const rival = picking === hohA ? hohB : hohA;
     const mine = picking === hohA ? sideA : sideB;
     const myTarget = safely(() => getBBTarget(picking), null);
+    // How much of this pick is a plan and how much is a feeling.
+    //
+    // Every reason below used to assume a strategist, so a loyal-soldier was
+    // credited with executing bloc splits and isolation plays they would never
+    // think of. Proportional both ways: the more strategically somebody plays
+    // the more the reads weigh, and the less they do the more the pick is
+    // simply "I want to be in there with somebody I like" — which is a real
+    // reason and the honest one for most of this cast.
+    const pst = safely(() => pStats(picking), {});
+    const strat = Math.max(0, Math.min(1, (pst.strategic ?? 5) / 10));
+    const warm = 1 - strat;
     // Groups this picker has actually worked out, strongest read first. A bloc
     // they have not noticed cannot be a reason for anything.
     const known = safely(() => knownBlocsFor(picking), []) || [];
@@ -471,11 +482,17 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
         ? inKnownBloc.bloc.members.filter(m => pool.includes(m) && m !== name).length : 0;
 
       const reasons = [
-        { key: 'target', v: myTarget === name ? 3.4 : 0 },
-        { key: 'split', v: blocLoose ? 1.5 + (inKnownBloc.read || 0) * 0.7 : 0 },
-        { key: 'numbers', v: Math.max(0, bond) * 0.42 + alliesMine * 0.5 },
-        { key: 'isolate', v: alliesAnywhere >= 2 && alliesLoose === 0 && bond < 3 ? 1.9 : 0 },
-        { key: 'deny', v: Math.max(0, theirs - bond) * 0.34 },
+        // Reads. A plan you have to be playing a game to have.
+        { key: 'target', v: (myTarget === name ? 3.4 : 0) * (0.35 + strat * 0.65) },
+        { key: 'split', v: (blocLoose ? 1.5 + (inKnownBloc.read || 0) * 0.7 : 0) * strat },
+        { key: 'isolate', v: (alliesAnywhere >= 2 && alliesLoose === 0 && bond < 3 ? 1.9 : 0) * strat },
+        { key: 'deny', v: Math.max(0, theirs - bond) * 0.34 * (0.4 + strat * 0.6) },
+        // Half a read. Anybody can count votes, even if they cannot scheme.
+        { key: 'numbers', v: (Math.max(0, bond) * 0.42 + alliesMine * 0.5) * (0.5 + strat * 0.5) },
+        // No read at all, and no less real for it: a week sealed behind a wall
+        // is a great deal easier next to somebody you actually like.
+        { key: 'ally', v: Math.max(0, bond) * 0.42 * (0.55 + warm)
+            + (pst.loyalty ?? 5) * 0.035 * warm },
       ].sort((x, y) => y.v - x.v);
 
       const score = reasons.reduce((sum, r) => sum + r.v, 0) + (Math.random() - 0.5) * 1.4;
@@ -499,7 +516,9 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
             ? `every person ${best} trusts has already gone to one side or the other. Pulled across now, ${best} arrives with nobody to run to — which is what makes ${best} nominateable`
             : w.key === 'deny'
               ? `${best} is closer to ${rival} than to ${picking}. This is less about wanting ${best} and more about ${rival} not having ${best}`
-              : `there is nobody left to want. ${best} goes to ${picking} because somebody has to`;
+              : w.key === 'ally'
+                ? `${picking} likes ${best} and is not thinking any further than that. A week sealed behind a wall is a great deal easier next to somebody you would have chosen anyway`
+                : `there is nobody left to want. ${best} goes to ${picking} because somebody has to`;
 
     picks.push({
       by: picking, picked: best, why, reason: w.key,

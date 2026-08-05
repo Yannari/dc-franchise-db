@@ -207,3 +207,41 @@ describe('the alliance panel shows the wall', () => {
     }
   });
 });
+
+describe('the pick fits the person making it', () => {
+  it('lets a houseguest who does not scheme pick somebody they simply like', () => {
+    // Every reason but this one assumes a strategist, and crediting a
+    // loyal-soldier with executing a bloc split is a lie about who they are.
+    // Pooled across seeds, because one season's two HOHs is not a sample.
+    // On week THREE, not week one. A read needs something to read: on the
+    // opening week nobody has formed a bloc worth splitting or run out of
+    // allies to be isolated from, so every strategic reason scores near zero
+    // for everybody and the comparison is noise rather than behaviour.
+    const byStrat = { lo: {}, hi: {} };
+    for (const seed of [7, 21, 55, 99, 131]) {
+      const ep = play(seed, [{ id: 't1', episode: 3, type: 'bb-split-house' }], 3);
+      const act = (ep.acts || []).find(a => a.type === 'split-house');
+      if (!act) continue;
+      for (const pk of act.picks) {
+        const band = pStats(pk.by).strategic >= 6 ? 'hi' : 'lo';
+        byStrat[band][pk.reason] = (byStrat[band][pk.reason] || 0) + 1;
+      }
+    }
+    const share = (b, k) => {
+      const total = Object.values(byStrat[b]).reduce((x, y) => x + y, 0) || 1;
+      return (byStrat[b][k] || 0) / total;
+    };
+    const loPicks = Object.values(byStrat.lo).reduce((x, y) => x + y, 0);
+    const hiPicks = Object.values(byStrat.hi).reduce((x, y) => x + y, 0);
+    expect(loPicks, 'no low-strategic houseguest ever held a crown').toBeGreaterThan(3);
+    expect(hiPicks, 'no strategic houseguest ever held a crown').toBeGreaterThan(3);
+
+    // Affection carries the warm players and the reads carry the cold ones.
+    expect(share('lo', 'ally'), 'a non-strategic picker is still playing the wall')
+      .toBeGreaterThan(share('hi', 'ally'));
+    const hiReads = share('hi', 'split') + share('hi', 'isolate') + share('hi', 'deny');
+    const loReads = share('lo', 'split') + share('lo', 'isolate') + share('lo', 'deny');
+    expect(hiReads, 'the strategists are not reading anything')
+      .toBeGreaterThan(loReads);
+  });
+});

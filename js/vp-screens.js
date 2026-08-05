@@ -20486,6 +20486,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
   const id = base => `${base}${suffix}`;
   // Beats displaced from a competition screen, waiting for the next House Life stretch.
   let pendingBeats = [];
+  // Screens that name a NOMINEE and are emitted by the engine before the
+  // ceremony act. The engine seats a third chair while it is still working out
+  // the block, so America's Nominee and Roadkill both land ahead of the
+  // nominations act — and drawing them in that order tells the viewer who is
+  // on the block before the ceremony reads a single key. They are held here
+  // and flushed the moment the ceremony has been drawn.
+  const heldUntilNoms = [];
   for (const act of view.acts || []) {
     switch (act.type) {
       case 'house': {
@@ -20562,7 +20569,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
       }
       case 'americas-nominee': {
         const anDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
-        screens.push({ id: id('bb-americasnominee'), label: "America's Nominee",
+        heldUntilNoms.push({ id: id('bb-americasnominee'), label: "America's Nominee",
           html: rpBuildBBAmericasNominee(view, act, anDeps) });
         break;
       }
@@ -20658,6 +20665,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
           ? { id: id('bb-noms-2'), label: `Nominations · ${act.hoh || 'Second HOH'}`,
             html: rpBuildBBNominations(view, act) }
           : { id: id('bb-noms'), label: 'Nomination Ceremony', html: rpBuildBBNominations(view, act) });
+        // The chair that was filled from outside the building goes here, after
+        // the two that were filled inside it — the ceremony reveals the block,
+        // and only then does the twist explain the name nobody can account for.
+        if (heldUntilNoms.length) screens.push(...heldUntilNoms.splice(0, heldUntilNoms.length));
         break;
       case 'battle-of-the-block': {
         const botb = rpBuildBBBattleOfTheBlock(view, {
@@ -20796,6 +20807,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
       html: rpBuildBBHouseLife(view, { type: 'house', socialBeats: pendingBeats }, houseSlot) });
     pendingBeats = [];
   }
+  // A week that never held a ceremony (an instant eviction, a cycle that fell
+  // over) must not swallow a screen that was waiting for one.
+  if (heldUntilNoms.length) screens.push(...heldUntilNoms.splice(0, heldUntilNoms.length));
   // A week with no eviction — a walkout or an expulsion — still played the
   // competition, so it must not vanish with the vote.
   if (deferred.length) {

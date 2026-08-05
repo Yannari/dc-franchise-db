@@ -32,6 +32,7 @@ import { VOTE_PLAN_EVENTS } from './vote-plans.js';
 import { INVISIBLE_EVENTS } from './invisible.js';
 import { HACKER_EVENTS } from './hacker.js';
 import { ROADKILL_EVENTS } from './roadkill.js';
+import { PANDORA_EVENTS } from './pandora.js';
 import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
@@ -59,6 +60,7 @@ export const HOUSE_EVENTS = [
   ...INVISIBLE_EVENTS,
   ...HACKER_EVENTS,
   ...ROADKILL_EVENTS,
+  ...PANDORA_EVENTS,
   ...CONSEQUENCE_ARC_EVENTS,
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,

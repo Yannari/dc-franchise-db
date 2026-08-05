@@ -66,6 +66,10 @@ function playSeasons(seeds) {
   // deciding whether to say so) fire the week AFTER the hack.
   const hackerSeasons = new Set([44, 88, 23, 129]);
   const roadkillSeasons = new Set([37, 71, 151, 178]);
+  // Pandora's Box needs two consecutive weeks for the same reason the hacker
+  // does: half its family is the week AFTER, when the house is still doing the
+  // arithmetic on a locked backyard.
+  const pandoraSeasons = new Set([23, 37, 129, 151]);
   for (const seed of seeds) {
     reset();
     const rng = seededRng(seed);
@@ -76,7 +80,8 @@ function playSeasons(seeds) {
       const extra = invisibleSeasons.has(seed) && week === 2 ? ['bb-invisible-hoh']
         : botbSeasons.has(seed) && week === 2 ? ['bb-battle-of-the-block']
           : hackerSeasons.has(seed) && (week === 3 || week === 4) ? ['bb-hacker']
-            : roadkillSeasons.has(seed) && week === 3 ? ['bb-roadkill'] : [];
+            : roadkillSeasons.has(seed) && week === 3 ? ['bb-roadkill']
+              : pandoraSeasons.has(seed) && (week === 5 || week === 6) ? ['bb-pandoras-box'] : [];
       weeks.push(simulateBBWeek({
         rng, houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,
         // Have-nots on, because a normal season has them: the default season
@@ -173,9 +178,10 @@ describe('the Big Brother event library as a whole', () => {
     // collectively; per-event reachability lives in their own suites.
     const hackerFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('hacker-')));
     const roadkillFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('roadkill-')));
+    const pandoraFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('pandora-')));
     const never = HOUSE_EVENTS.map(e => e.id)
       .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
-        && !hackerFamily.has(id) && !roadkillFamily.has(id));
+        && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
     const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
     expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')
@@ -186,6 +192,9 @@ describe('the Big Brother event library as a whole', () => {
     const roadkillSeen = [...roadkillFamily].filter(id => fired[id]).length;
     expect(roadkillSeen, 'the roadkill weeks stayed silent — check the roadkill family gating')
       .toBeGreaterThanOrEqual(Math.min(roadkillFamily.size, 2));
+    const pandoraSeen = [...pandoraFamily].filter(id => fired[id]).length;
+    expect(pandoraSeen, 'the box weeks stayed silent — check the pandora family gating')
+      .toBeGreaterThanOrEqual(Math.min(pandoraFamily.size, 4));
   }, 240000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30

@@ -491,6 +491,11 @@ export const TWIST_CATALOG = [
     // nominee without the ceremony meaning something different in each half.
     incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
+  { id:'bb-coin-of-destiny', emoji:'🪙', name:'The Coin of Destiny', format:'big-brother',
+    category:'power', phase:'any',
+    desc:'Any houseguest may buy into the Coin of Destiny, and everybody sees who does. They play for it, and the winner is taken away to call a coin toss in private. Call it right and they take the week’s nominations off the Head of Household and name their own; call it wrong and they have paid, played and lost in front of everybody for nothing. Either way the house is told the nominations changed and never told whose hand did it, so a dethroned Head of Household spends the week looking at everybody who bought in.',
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh'],
+    incompatibleModes:['block-buster'] },
   { id:'bb-americas-nominee', emoji:'🗳️', name:"America's Nominee", format:'big-brother',
     category:'power', phase:'any',
     desc:'A third houseguest goes on the block every week and nobody in the house puts them there. In the MVP variant the audience votes one houseguest the Most Valuable Player and that houseguest secretly names the third nominee, revealed just before the veto competition; in the direct variant the audience names the third nominee itself. Either way the house spends the week hunting a culprit who may not be in the building. If the veto saves the third nominee there is no replacement — the chair simply empties.',

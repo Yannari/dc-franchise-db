@@ -217,6 +217,25 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Three things are about to happen in this house and nobody is going to have done them.',
     },
   },
+  'bb-coin-of-destiny': {
+    id: 'bb-coin-of-destiny', layer: 'scheduled', category: 'power-structure',
+    timing: 'nominations', duration: { weeks: 1 },
+    // BB23's shape. Houseguests pay in, play a game of skill, and the winner
+    // calls a coin toss. Call it right and they take the nominations off the
+    // Head of Household — PRIVATELY. The HOH is dethroned in front of the
+    // house and never finds out by whom unless the winner says so.
+    //
+    // Which makes it the Coup's opposite and the reason both are worth having:
+    // the Coup is played standing up with a name attached, and this one leaves
+    // a dethroned HOH with a room full of suspects.
+    rules: { ceremonyAuthority: 'coin-holder' },
+    acquisition: { channel: 'purchase', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The Coin of Destiny',
+      rule: 'Any houseguest may buy into the Coin of Destiny. They play for it, and whoever wins calls a coin toss in private. Call it correctly and they take this week’s nominations away from the Head of Household and make their own — and the house will never be told who did it.',
+      sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
+    },
+  },
   'bb-americas-nominee': {
     id: 'bb-americas-nominee', layer: 'scheduled', category: 'nomination-power',
     timing: 'nominations', duration: { weeks: 1 },

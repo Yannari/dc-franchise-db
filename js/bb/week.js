@@ -12,6 +12,7 @@ import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
+import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import {
@@ -1683,6 +1684,37 @@ export function simulateBBWeek(options = {}) {
         type: 'roadkill-win', competitionId: rkComp.id, week: week.num,
         detail: { nominated: third },
       });
+    }
+  }
+
+  // ── THE COIN OF DESTINY ──
+  //
+  // Runs after the Head of Household has settled on two, because the whole
+  // power is taking those two away. Buying in is public, the game is public,
+  // the call is not — so the house ends the night knowing the block changed
+  // and never knowing whose hand changed it.
+  const coinActive = week.twistState?.rules?.ceremonyAuthority === 'coin-holder'
+    && !compressed && house.length >= 5;
+  if (coinActive) {
+    const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees], rng });
+    if (coin) {
+      const named = coinNominations({ act: coin, house, hoh, untouchable, rng });
+      if (named && named.length === 2) {
+        nominees = [...named];
+        week.initialNominees = [...nominees];
+        named.forEach(name => gs.bb.stats[name].timesNominated++);
+        setSpotlight({ nominees: [...nominees] });
+        revise('noms', { hoh, nominees: [...nominees] });
+        // The dethroning is public and the hand is not, so the grievance has
+        // nowhere to land — which is the entire difference from a Coup.
+        week.coinDethroned = hoh;
+      }
+      week.coin = {
+        winner: coin.winner, calledRight: coin.calledRight,
+        buyers: [...coin.buyers], dethroned: coin.dethroned || null,
+        nominees: [...(coin.nominees || [])],
+      };
+      week.acts.push(addBeats(coin, { nominees: [...(coin.nominees || [])] }));
     }
   }
 

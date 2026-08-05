@@ -4548,6 +4548,23 @@ export function generateBBSummaryText(ep) {
         ln('  Who took what stays off this page for the same reason it stays off the feeds.');
         break;
 
+      case 'coin-of-destiny': {
+        sec('THE COIN OF DESTINY');
+        ln(`  Anybody could buy in, and everybody saw who did: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        ln(`  ${act.winner} wins the game of skill and is taken out of the room to call the toss.`);
+        ln('');
+        if (act.calledRight) {
+          ln(`  The call is right. This week's nominations are taken off ${act.hoh}.`);
+          ln(`  ${(act.nominees || []).join(' and ')} are nominated instead.`);
+          ln(`  ${act.hoh} finds out with everybody else, and is never told whose hand did it.`);
+        } else {
+          ln('  The call is wrong. The nominations stand exactly as they were,');
+          ln(`  and ${act.winner} has paid, played and lost in front of the whole house.`);
+        }
+        beats(act);
+        break;
+      }
+
       case 'americas-nominee': {
         sec("AMERICA'S NOMINEE");
         ln(act.style === 'mvp'

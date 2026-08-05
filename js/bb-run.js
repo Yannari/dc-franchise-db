@@ -279,7 +279,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-americas-nominee', 'bb-coin-of-destiny']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -929,6 +929,17 @@ export function summariseWeek(week) {
           (act.winners || []).length === 1 ? '' : 's'} leave the shelf and the house is told only that somebody out there is now holding something.`);
         line('  Who won what is not public. The Debug panel owns the truth.');
         break;
+      case 'coin-of-destiny': {
+        line('');
+        line('THE COIN OF DESTINY');
+        line(`  Bought in: ${(act.buyers || []).join(', ') || 'nobody'}.`);
+        line(`  ${act.winner} wins the game and is taken away to call it.`);
+        line(act.calledRight
+          ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
+          : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
+        line('  The house is never told who called it.');
+        break;
+      }
       case 'americas-nominee': {
         line('');
         line("AMERICA'S NOMINEE");

@@ -304,7 +304,13 @@ const towerOfHanoi = {
   name: 'Tower of Hanoi', category: 'puzzle',
   types: ['hoh', 'veto', 'tiebreaker'],
   desc: 'Each houseguest stands at three pegs with a stack of graduated discs on the first one, and has to rebuild that stack in order on the third. Only one disc moves at a time and a larger disc may never come to rest on a smaller one — put one down wrong and a horn sounds, the board is cleared and the whole stack goes back to the start. The tower is deep enough that the solution is longer than it looks and every reset costs the entire run. Fastest completed tower wins, and anybody still building when time is called is ranked on how far up they got.',
-  stats: { mental: 0.42, strategic: 0.22, temperament: 0.22, intuition: 0.14 },
+  // Temperament was carrying a fifth of this on the theory that a reset is
+  // demoralising, and it is — but the thing that CAUSES a reset here is putting
+  // a large disc on a small one, which is an attention failure, not an
+  // emotional one. That work belongs to mental, which is where it has gone.
+  // What is left for temperament is real and small: starting the same four
+  // minutes again, cleanly, for the third time.
+  stats: { mental: 0.48, strategic: 0.26, intuition: 0.14, temperament: 0.12 },
   weight: () => 1.1,
   simulate(participants, context, api, rng) {
     const beats = [];

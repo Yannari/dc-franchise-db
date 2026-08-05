@@ -1,21 +1,19 @@
 // ══════════════════════════════════════════════════════════════════════
-// vp-bb-sig/hanoi.js — "The Drawing Office"
+// vp-bb-sig/hanoi.js — "The Tiki Tower"
 //
 // The themed screen for js/bb-comps/classics.js → Tower of Hanoi
 // (`variant: 'hanoi'`).
 //
-// The competition is a rule, applied without exception, until a tower exists.
-// That is not a game — it is a specification. So the screen is a drawing
-// office: every run is a technical DRAWING SHEET on blueprint paper, the three
-// pegs rendered as a dimensioned elevation with the built discs inked solid
-// and the ones still on the first peg left as dashed outline, and each reset
-// stamped across the sheet in red like a rejected revision.
+// A sunset beach, and the tower is a tiki totem. Three bamboo poles planted in
+// black volcanic sand, five carved rings stacked widest-to-narrowest, and one
+// rule: a wide ring may never come down on a narrow one. Put one down wrong
+// and a conch sounds — and the tide comes in, takes the whole thing back to
+// the first pole, and you start the four minutes again.
 //
-// Nothing here is shared with the rest of the set: white line-work on navy
-// graph paper, a title block ruled along the bottom of every sheet the way a
-// real drawing carries one, and the standings kept in a revision register down
-// the side of the page rather than a leaderboard. No card has a rounded corner
-// anywhere on this screen.
+// Every mechanic gets its island: the horn is a conch, a reset is a wave, the
+// clock is the sun going down, and a finished tower is crowned with a lei. The
+// pegs are drawn as real carved rings with tapa banding rather than boxes,
+// because the totem going back up is the only thing anybody is watching.
 //
 // Declines when the tower data is missing.
 // ══════════════════════════════════════════════════════════════════════
@@ -23,6 +21,8 @@
 import { isSealedHoh, planSeal, sealCss, sealCutCard, sealIronyCard, MASK } from './_sealed.js';
 
 const DISCS = 5;
+/** Carved-ring colours, widest to narrowest — sun-bleached wood into dark koa. */
+const RING = ['#e8b163', '#dc9448', '#c87a3a', '#a75f2f', '#7f4526'];
 
 /** @returns {string} html, or '' to fall back to the generic screen */
 export function rpBuildSigHanoi(ep, actType, u = {}) {
@@ -40,8 +40,7 @@ export function rpBuildSigHanoi(ep, actType, u = {}) {
 
   const E = v => (typeof u.esc === 'function' ? u.esc(v) : String(v ?? ''));
   const AV = (n, px) => (typeof u.avatar === 'function' ? u.avatar(n, px) : '');
-  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PUZZLE', accent: '#8fd0ff' };
-  const INK = '#a8d8ff';
+  const cat = (typeof u.cat === 'function' ? u.cat(comp.category) : u.cat) || { label: 'PUZZLE', accent: '#ffb347' };
   const isHoh = actType === 'hoh';
 
   const stateKey = `bb_sig_hanoi_${ep.num}_${actType}${ep?._seg ? `_s${ep._seg}` : ''}`;
@@ -54,15 +53,16 @@ export function rpBuildSigHanoi(ep, actType, u = {}) {
 
   const RUN_FLAV = [
     'The solution is longer than it looks and it is the same length for everybody.',
-    'Small onto large. That is the whole specification, and it ends most of these.',
-    'The horn for a wrong placement is louder than the horn for finishing.',
-    'Nobody here is slow. People are wrong at speed.',
-    'The discs go back to the first peg by themselves, which is the worst part.',
+    'Narrow onto wide. That is the whole rule, and it ends most of these.',
+    'The conch for a wrong ring is louder than the conch for finishing.',
+    'Nobody out here is slow. People are wrong at speed.',
+    'The rings go back to the first pole by themselves, which is the worst part.',
+    'The sun is going down at exactly the rate the clock is.',
   ];
   const WIN_FLAV = [
-    'The pegs get covered. Two people are still at theirs, working it out.',
+    'The poles get pulled out of the sand. Two people are still at theirs, working it out.',
     'A competition where being confident cost more than being slow.',
-    'The tower comes apart in four seconds. It went up in four minutes.',
+    'The totem comes apart in four seconds. It went up in four minutes.',
     'Everybody knew the rule. That was never the difficulty.',
   ];
 
@@ -97,220 +97,336 @@ export function rpBuildSigHanoi(ep, actType, u = {}) {
     .map(s => ({ name: s.name, ...breakdown[s.name] }))
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
 
-  /** The elevation: three pegs, built discs inked, the rest left as outline. */
-  const elevation = bd => {
+  // The sun sits where the field is: high while everybody is still building,
+  // on the water by the time the last tower is called.
+  const sunPct = Math.round(100 * (shown.length / Math.max(1, fieldSize)));
+
+  /** Three bamboo poles in black sand, carved rings stacked on two of them. */
+  const totem = bd => {
     const built = sealed ? 0 : Math.round((bd.reached || 0) * DISCS);
     const left = DISCS - built;
-    const disc = (size, cls) => `<i class="hnb-d ${cls}" style="width:${24 + size * 12}px"></i>`;
-    const stack = (count, from, cls) => Array.from({ length: count }, (_, k) =>
-      disc(from - k, cls)).reverse().join('');
-    return `<div class="hnb-elev ${bd.solved && !sealed ? 'is-signed' : ''}">
-      <span class="hnb-peg"><span>${stack(left, left - 1, 'is-outline')}</span></span>
-      <span class="hnb-peg"><span></span></span>
-      <span class="hnb-peg"><span>${stack(built, DISCS - 1, 'is-inked')}</span></span>
-      <span class="hnb-dim" aria-hidden="true"><em></em><b>${sealed ? MASK : `${Math.round((bd.reached || 0) * 100)}%`}</b><em></em></span>
+    const ring = (size, cls, k) => `<i class="tik-ring ${cls}" style="width:${26 + size * 13}px;
+      background:${RING[size]};--k:${k}"></i>`;
+    // The first pole keeps the rings nobody has moved yet, widest at the
+    // bottom; the third grows the finished totem the same way.
+    const poleStack = (count, from, cls) => Array.from({ length: count },
+      (_, k) => ring(from - k, cls, k)).reverse().join('');
+    return `<div class="tik-yard ${bd.solved && !sealed ? 'is-crowned' : ''}">
+      <div class="tik-pole"><span class="tik-rings">${poleStack(left, left - 1, 'is-waiting')}</span>
+        <b class="tik-pn">I</b></div>
+      <div class="tik-pole"><span class="tik-rings"></span><b class="tik-pn">II</b></div>
+      <div class="tik-pole is-target"><span class="tik-rings">${poleStack(built, DISCS - 1, 'is-set')}</span>
+        <b class="tik-pn">III</b></div>
+      <span class="tik-pct">${sealed ? MASK : `${Math.round((bd.reached || 0) * 100)}%`}</span>
     </div>`;
   };
 
   const cards = steps.map((s, i) => {
-    if (i > state.idx) return '<div class="hnb-sheet is-blank"><span class="hnb-blank">SHEET WITHHELD</span></div>';
+    if (i > state.idx) return '<div class="tik-card is-locked"><span class="tik-lock">~ ~ ~</span></div>';
 
     if (s.kind === 'open') {
-      return `<article class="hnb-sheet hnb-brief">
-        <p class="hnb-body">${E(s.beat.text)}</p>
-        <div class="hnb-title"><span>SPEC</span><b>${E(s.beat.badgeText || 'THE TOWER')}</b>
-          <span>${fieldSize} AT THE PEGS</span></div>
+      return `<article class="tik-card tik-open">
+        <header class="tik-hd"><span class="tik-tag">${E(s.beat.badgeText || 'THE TOWER')}</span>
+          <span class="tik-sub">${fieldSize} on the sand</span></header>
+        <p class="tik-body">${E(s.beat.text)}</p>
       </article>`;
     }
     if (s.kind === 'cut') {
-      return sealCutCard('hnb', { standing: Math.max(0, fieldSize - shown.length),
+      return sealCutCard('tik', { standing: Math.max(0, fieldSize - shown.length),
         unit: 'still building', salt: Number(ep.num) || 0 });
     }
-    if (s.kind === 'irony') return sealIronyCard('hnb', { winner, avatar: AV, esc: E, isHoh });
+    if (s.kind === 'irony') return sealIronyCard('tik', { winner, avatar: AV, esc: E, isHoh });
 
     if (s.kind === 'win') {
       const w = breakdown[winner] || {};
-      return `<article class="hnb-sheet hnb-approved">
-        <div class="hnb-stampbig">${w.solved ? 'APPROVED' : 'BEST SUBMISSION'}</div>
-        <p class="hnb-body">${w.solved
-    ? `${E(winner)} rebuilt the whole tower in ${sealed ? MASK : `${Math.round(w.seconds || 0)} seconds`}${
-      w.resets ? `, sent back to the start ${w.resets === 1 ? 'once' : `${w.resets} times`} on the way` : ' without a single illegal placement'}.`
-    : `Nobody finished it. ${E(winner)} was furthest up when time was called.`}</p>
-        <p class="hnb-flav">${E(flav(WIN_FLAV, i))}</p>
-        <div class="hnb-title"><span>${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</span>
-          <b>${E(winner)}</b><span>SIGNED OFF</span></div>
+      return `<article class="tik-card tik-win">
+        <header class="tik-hd"><span class="tik-tag tik-tag-gold">${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</span>
+          <span class="tik-sub">${w.solved ? 'tower complete' : 'furthest up'}</span></header>
+        <div class="tik-win-b">
+          <figure class="tik-win-av">${AV(winner, 74)}<span class="tik-lei" aria-hidden="true"></span></figure>
+          <div>
+            <div class="tik-win-n">${E(winner)}</div>
+            <p class="tik-body">${w.solved
+    ? `${E(winner)} rebuilt the whole totem in ${sealed ? MASK : `${Math.round(w.seconds || 0)} seconds`}${
+      w.resets ? `, sent back to the first pole ${w.resets === 1 ? 'once' : `${w.resets} times`} on the way` : ' without one wrong ring'}.`
+    : `Nobody finished it. ${E(winner)} was furthest up the pole when the sun went.`}</p>
+          </div>
+        </div>
+        <p class="tik-flav">${E(flav(WIN_FLAV, i))}</p>
       </article>`;
     }
     if (s.kind === 'note') {
-      return `<article class="hnb-sheet hnb-brief">
-        <p class="hnb-body">${E(s.beat.text)}</p>
-        <div class="hnb-title"><span>NOTE</span><b>${E(s.beat.badgeText || '')}</b><span></span></div>
+      return `<article class="tik-card tik-open">
+        <header class="tik-hd"><span class="tik-tag tik-tag-quiet">${E(s.beat.badgeText || '')}</span></header>
+        <p class="tik-body">${E(s.beat.text)}</p>
       </article>`;
     }
 
     const bd = breakdown[s.name] || {};
     const resets = bd.resets || 0;
-    return `<article class="hnb-sheet hnb-run ${bd.solved ? 'is-solved' : ''} ${bd.threw ? 'is-threw' : ''}">
-      ${!sealed && resets ? `<div class="hnb-revs">${Array.from({ length: Math.min(4, resets) },
-    (_, k) => `<span class="hnb-rev" style="transform:rotate(${-7 + k * 4}deg)">REV ${k + 1} &mdash; REJECTED</span>`).join('')}</div>` : ''}
-      <p class="hnb-body">${E(s.beat.text)}</p>
-      ${elevation(bd)}
-      <div class="hnb-schedule">
-        <span>TIME<b>${sealed ? MASK : `${Math.round(bd.seconds || 0)}s`}</b></span>
-        <span>RESETS<b>${sealed ? MASK : resets}</b></span>
-        <span>BUILT<b>${sealed ? MASK : `${Math.round((bd.reached || 0) * 100)}%`}</b></span>
-        ${bd.haveNot ? '<span>HAVE-NOT<b>YES</b></span>' : ''}
+    return `<article class="tik-card tik-run ${bd.solved ? 'is-solved' : ''} ${bd.threw ? 'is-threw' : ''}">
+      <header class="tik-hd">
+        <span class="tik-runner">${AV(s.name, 34)}<b>${E(s.name)}</b></span>
+        <span class="tik-tag ${bd.solved ? 'tik-tag-gold' : resets >= 3 ? 'tik-tag-red' : ''}">${
+  sealed ? MASK : E(s.beat.badgeText || '')}</span>
+      </header>
+      <p class="tik-body">${E(s.beat.text)}</p>
+      ${totem(bd)}
+      ${!sealed && resets ? `<div class="tik-conch">${Array.from({ length: Math.min(4, resets) },
+    (_, k) => `<span class="tik-wave" style="--w:${k}">
+        <svg viewBox="0 0 46 16" aria-hidden="true"><path d="M1 11q5-8 11 0t11 0 11 0 11 0" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        CONCH &mdash; TAKEN BACK</span>`).join('')}</div>` : ''}
+      <div class="tik-nums">
+        <span><i>TIME</i><b>${sealed ? MASK : `${Math.round(bd.seconds || 0)}s`}</b></span>
+        <span><i>CONCHES</i><b>${sealed ? MASK : resets}</b></span>
+        <span><i>BUILT</i><b>${sealed ? MASK : `${Math.round((bd.reached || 0) * 100)}%`}</b></span>
+        ${bd.haveNot ? '<span><i>HAVE-NOT</i><b>yes</b></span>' : ''}
       </div>
-      <p class="hnb-flav">${E(flav(RUN_FLAV, i))}</p>
-      <div class="hnb-title">
-        <span>DRAWN BY</span>
-        <b>${AV(s.name, 22)}${E(s.name)}</b>
-        <span>${sealed ? MASK : E(s.beat.badgeText || '')}</span>
-      </div>
+      <p class="tik-flav">${E(flav(RUN_FLAV, i))}</p>
     </article>`;
   }).join('');
 
-  // A revision register, not a leaderboard.
-  const register = sealed ? '' : `<aside class="hnb-reg">
-    <div class="hnb-regh">REGISTER</div>
-    ${shown.length ? shown.map((r, i) => `<div class="hnb-regrow">
-      <span>${String(i + 1).padStart(2, '0')}</span><b>${E(r.name)}</b>
-      <i>${r.solved ? `${Math.round(r.seconds)}s` : `${Math.round((r.reached || 0) * 100)}%`}</i>
-    </div>`).join('') : '<div class="hnb-regempty">NO SHEETS FILED</div>'}
+  const board = sealed ? '' : `<aside class="tik-side">
+    <div class="tik-side-h"><span class="tik-k">THE SAND</span>
+      <span class="tik-side-r">${shown.length} / ${fieldSize} built</span></div>
+    ${shown.length ? shown.map((r, i) => `<div class="tik-side-row ${i === 0 ? 'is-lead' : ''}">
+      <span class="tik-side-p">${String(i + 1).padStart(2, '0')}</span>
+      <span>${AV(r.name, 24)}</span>
+      <span class="tik-side-n">${E(r.name)}</span>
+      <span class="tik-side-t">${r.solved ? `${Math.round(r.seconds)}s` : `${Math.round((r.reached || 0) * 100)}%`}</span>
+    </div>`).join('') : '<p class="tik-side-e">Nobody has come off the sand yet.</p>'}
   </aside>`;
 
   const weights = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
 
-  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigdraw">
+  return `<div class="rp-page bb-room ${isHoh ? 'bb-power' : 'bb-block'} sigtik">
   <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-  .sigdraw{--dw-paper:#0d2a44;--dw-ink:${INK};--dw-dim:#5f88ab;--dw-red:#ff6b5c;
-    max-width:1100px;margin:0 auto;color:var(--dw-ink);font-family:'Space Mono',ui-monospace,monospace;
-    background:
-      repeating-linear-gradient(0deg,rgba(168,216,255,.07) 0 1px,transparent 1px 22px),
-      repeating-linear-gradient(90deg,rgba(168,216,255,.07) 0 1px,transparent 1px 22px),
-      linear-gradient(180deg,#0e2c47,#081a2b 85%);
-    padding:0;position:relative;overflow:clip}
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;500;600&display=swap');
+  .sigtik{--tk-ink:#fff2dd;--tk-dim:#c39a76;--tk-gold:#ffb347;--tk-sea:#2e8f97;--tk-deep:#12303a;
+    --tk-line:rgba(255,179,71,.26);
+    max-width:1100px;margin:0 auto;color:var(--tk-ink);
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    background:linear-gradient(180deg,#3a1c4a 0%,#8a3b52 26%,#e0663f 48%,#1d5a63 64%,#0c2a31 100%);
+    border-radius:12px;padding:0 0 0;position:relative;overflow:clip}
 
-  .dw-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
-    padding:14px 16px 11px;border-bottom:2px solid var(--dw-ink)}
-  .dw-t{font-weight:700;font-size:25px;letter-spacing:5px;text-transform:uppercase;color:#e6f4ff}
-  .dw-w{font-size:9px;letter-spacing:2.4px;color:var(--dw-dim)}
-  .dw-scale{font-size:8.5px;letter-spacing:1.8px;color:var(--dw-dim);text-align:right}
-  .dw-sealed{margin-top:7px;display:inline-block;font-size:9px;letter-spacing:2.4px;color:#081a2b;
-    background:var(--dw-ink);padding:3px 11px}
+  /* ── the beach ── */
+  .tik-scene{position:relative;height:190px;overflow:hidden;
+    border-radius:12px 12px 0 0}
+  .tik-scene svg{position:absolute;inset:0;width:100%;height:100%}
+  .tik-sun{position:absolute;left:50%;width:104px;height:104px;border-radius:50%;
+    transform:translateX(-50%);
+    background:radial-gradient(circle,#fff3c4 0%,#ffcf5c 42%,#ff8a3d 74%,rgba(255,138,61,0) 78%);
+    box-shadow:0 0 70px 22px rgba(255,150,70,.42);
+    top:calc(6px + var(--sun) * 0.9px);transition:top .6s ease;
+    animation:tikSun 9s ease-in-out infinite}
+  @keyframes tikSun{0%,100%{filter:brightness(1)}50%{filter:brightness(1.13)}}
+  .tik-glare{position:absolute;left:0;right:0;bottom:0;height:74px;pointer-events:none;
+    background:repeating-linear-gradient(180deg,rgba(255,214,150,.30) 0 2px,transparent 2px 7px);
+    mask-image:radial-gradient(ellipse 40% 100% at 50% 100%,#000 0%,transparent 72%);
+    -webkit-mask-image:radial-gradient(ellipse 40% 100% at 50% 100%,#000 0%,transparent 72%);
+    animation:tikGlare 7s ease-in-out infinite}
+  @keyframes tikGlare{0%,100%{opacity:.55}50%{opacity:.9}}
 
-  .dw-body{display:grid;grid-template-columns:1fr 176px;gap:14px;padding:13px 16px 0;align-items:start}
-  .hnb-spec{border:1px solid rgba(168,216,255,.3);padding:9px 11px;margin-bottom:12px}
-  .hnb-spec b{font-weight:700;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:#e6f4ff}
-  .hnb-spec-c{font-size:8px;letter-spacing:2px;color:var(--dw-dim);margin-right:8px}
-  .hnb-spec-d{font-size:11.5px;line-height:1.62;color:#bcd9f0;margin:6px 0 0;font-family:Inter,system-ui,sans-serif}
-  .hnb-w{display:flex;flex-wrap:wrap;gap:11px;margin-top:8px}
-  .hnb-w span{font-size:8px;letter-spacing:1px;color:var(--dw-dim);display:flex;align-items:center;gap:5px}
-  .hnb-w s{display:block;width:38px;height:5px;text-decoration:none;border:1px solid rgba(168,216,255,.4)}
-  .hnb-w s b{display:block;height:100%;background:var(--dw-ink)}
+  .tik-head{position:relative;z-index:3;text-align:center;padding:16px 16px 0}
+  .tik-eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3.4px;
+    color:rgba(255,242,221,.72)}
+  .tik-title{font-family:Pacifico,'Brush Script MT',cursive;font-size:44px;line-height:1.05;
+    color:#fff3d6;text-shadow:0 3px 0 rgba(120,40,20,.45),0 0 34px rgba(255,179,71,.55);margin:2px 0}
+  .tik-tagline{font-size:11px;letter-spacing:2px;color:#ffe0b0}
 
-  /* every run is a drawing sheet — square corners, ruled title block */
-  .hnb-sheet{position:relative;border:1px solid rgba(168,216,255,.4);padding:11px 12px 0;margin-bottom:11px;
-    background:rgba(6,20,34,.55);animation:dwInk .3s ease both}
-  @keyframes dwInk{from{opacity:0}to{opacity:1}}
-  .hnb-sheet.is-blank{border-style:dashed;opacity:.2;text-align:center;padding:12px;animation:none}
-  .hnb-blank{font-size:9px;letter-spacing:3px;color:var(--dw-dim)}
-  .hnb-sheet.is-solved{border-color:var(--dw-ink);box-shadow:0 0 0 1px rgba(168,216,255,.25)}
-  .hnb-sheet.is-threw{opacity:.66}
-  .hnb-body{font-family:Inter,system-ui,sans-serif;font-size:13.5px;line-height:1.62;margin:0;color:#dcecfa}
-  .hnb-flav{font-size:9.5px;color:var(--dw-dim);margin:8px 0 0}
+  .tik-body-wrap{padding:14px 14px 0;position:relative;z-index:3;
+    background:linear-gradient(180deg,rgba(8,26,31,.55),rgba(6,20,24,.9) 22%)}
 
-  /* rejected revisions, stamped across the sheet */
-  .hnb-revs{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:3px;align-items:flex-end;
-    pointer-events:none}
-  .hnb-rev{font-size:8px;letter-spacing:1.6px;color:var(--dw-red);border:1px solid var(--dw-red);
-    padding:2px 6px;opacity:.85}
+  /* ── the what-it-is panel ── */
+  .tik-what{border:1px solid var(--tk-line);border-radius:12px;padding:10px 12px;margin-bottom:12px;
+    background:rgba(255,179,71,.06)}
+  .tik-what-h{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+  .tik-what-c{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:2px;
+    color:var(--tk-gold);border:1px solid var(--tk-line);border-radius:3px;padding:2px 7px}
+  .tik-what-h b{font-family:Pacifico,cursive;font-size:19px;color:#ffe0b0}
+  .tik-what-d{font-size:12.5px;line-height:1.6;color:#f0dcc4;margin:0}
+  .tik-w{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px}
+  .tik-w span{display:flex;align-items:center;gap:5px;font-family:ui-monospace,Consolas,monospace;
+    font-size:8px;letter-spacing:1.2px;color:var(--tk-dim)}
+  .tik-w s{display:block;width:44px;height:3px;border-radius:2px;background:rgba(255,179,71,.18);
+    text-decoration:none}
+  .tik-w s b{display:block;height:100%;border-radius:2px;background:var(--tk-gold)}
 
-  /* the elevation */
-  .hnb-elev{position:relative;display:flex;align-items:flex-end;gap:26px;margin:13px 0 9px;
-    padding:0 6px 16px;border-bottom:1px solid rgba(168,216,255,.4)}
-  .hnb-peg{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:62px}
-  .hnb-peg::before{content:'';position:absolute;bottom:0;left:50%;width:1px;height:56px;
-    background:rgba(168,216,255,.55)}
-  .hnb-peg > span{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px}
-  .hnb-d{display:block;height:8px}
-  .hnb-d.is-outline{border:1px dashed rgba(168,216,255,.5)}
-  .hnb-d.is-inked{background:var(--dw-ink)}
-  .hnb-elev.is-signed .hnb-d.is-inked{background:#e6f4ff;box-shadow:0 0 9px rgba(230,244,255,.5)}
-  .hnb-dim{position:absolute;left:6px;right:6px;bottom:0;display:flex;align-items:center;gap:6px}
-  .hnb-dim em{flex:1;height:1px;background:rgba(168,216,255,.45)}
-  .hnb-dim b{font-size:9px;letter-spacing:1.4px;color:var(--dw-dim)}
+  .tik-grid{display:grid;grid-template-columns:1fr 236px;gap:12px;align-items:start}
+  .tik-grid-sealed{display:block}
+  .tik-side{position:sticky;top:56px;border:1px solid var(--tk-line);border-radius:12px;padding:9px;
+    background:rgba(10,32,38,.82)}
+  .tik-side-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .tik-side-r{font-family:ui-monospace,Consolas,monospace;font-size:8px;color:var(--tk-dim)}
+  .tik-k{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;
+    color:var(--tk-dim)}
+  .tik-side-row{display:grid;grid-template-columns:22px 24px 1fr auto;align-items:center;gap:7px;
+    padding:4px 5px;border-radius:7px;font-size:11.5px}
+  .tik-side-row.is-lead{background:rgba(255,179,71,.16)}
+  .tik-side-p{font-family:ui-monospace,Consolas,monospace;font-size:9px;color:var(--tk-dim)}
+  .tik-side-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tik-side-t{font-family:Pacifico,cursive;color:#ffe0b0;font-size:13px}
+  .tik-side-e{font-size:11px;color:var(--tk-dim);margin:0}
 
-  .hnb-schedule{display:flex;flex-wrap:wrap;gap:16px;font-size:8px;letter-spacing:1.4px;color:var(--dw-dim)}
-  .hnb-schedule b{display:block;font-size:13px;color:#e6f4ff;letter-spacing:0}
+  /* ── cards ── */
+  .tik-card{border:1px solid var(--tk-line);border-radius:12px;padding:11px 12px;margin-bottom:9px;
+    background:linear-gradient(180deg,rgba(28,64,72,.72),rgba(8,24,28,.88));
+    animation:tikIn .32s ease both;position:relative;overflow:hidden}
+  @keyframes tikIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .tik-card.is-locked{opacity:.14;text-align:center;padding:8px;animation:none;background:none}
+  .tik-lock{font-family:ui-monospace,Consolas,monospace;letter-spacing:6px;color:var(--tk-dim)}
+  .tik-card.is-threw{opacity:.72;border-style:dashed}
+  .tik-card.is-solved{border-color:rgba(255,179,71,.55)}
+  .tik-hd{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:7px}
+  .tik-runner{display:flex;align-items:center;gap:8px}
+  .tik-runner .bb-av{border-radius:50%;border:2px solid rgba(255,179,71,.4)}
+  .tik-runner b{font-size:13px;letter-spacing:.4px}
+  .tik-tag{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.8px;
+    color:var(--tk-gold);border:1px solid var(--tk-line);background:rgba(255,179,71,.1);
+    padding:2px 8px;border-radius:3px}
+  .tik-tag-gold{color:#3a1c0a;background:var(--tk-gold);border-color:var(--tk-gold)}
+  .tik-tag-red{color:#ffd9d1;border-color:rgba(230,90,70,.55);background:rgba(230,90,70,.2)}
+  .tik-tag-quiet{color:var(--tk-dim);background:none}
+  .tik-sub{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.4px;color:var(--tk-dim)}
+  .tik-body{font-size:13.5px;line-height:1.65;margin:0}
+  .tik-flav{font-size:10.5px;color:var(--tk-dim);font-style:italic;margin:7px 0 0}
 
-  /* the ruled title block every drawing carries */
-  .hnb-title{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
-    margin:11px -12px 0;padding:7px 12px;border-top:1px solid rgba(168,216,255,.4);
-    font-size:8px;letter-spacing:1.8px;color:var(--dw-dim);background:rgba(168,216,255,.05)}
-  .hnb-title b{display:flex;align-items:center;gap:7px;font-size:12px;letter-spacing:1px;color:#e6f4ff}
-  .hnb-title .bb-av{border-radius:0;border:1px solid rgba(168,216,255,.5)}
-  .hnb-approved .hnb-title{background:rgba(168,216,255,.12)}
-  .hnb-stampbig{display:inline-block;font-weight:700;font-size:11px;letter-spacing:3px;color:#081a2b;
-    background:var(--dw-ink);padding:3px 10px;margin-bottom:8px}
+  /* ── three poles in black sand ── */
+  .tik-yard{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    align-items:end;margin:11px 0 8px;padding:14px 12px 0;height:132px;border-radius:10px;
+    background:linear-gradient(180deg,rgba(46,143,151,.16),rgba(20,16,14,.9) 62%),
+      radial-gradient(ellipse 70% 40% at 50% 100%,rgba(255,179,71,.14),transparent 70%);
+    border:1px solid rgba(255,179,71,.16);overflow:hidden}
+  .tik-yard::after{content:'';position:absolute;left:0;right:0;bottom:0;height:22px;
+    background:linear-gradient(180deg,#241a14,#120d0a);
+    box-shadow:inset 0 2px 0 rgba(255,179,71,.16)}
+  .tik-pole{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+    align-items:center;height:100%;padding-bottom:22px;z-index:2}
+  .tik-pole::before{content:'';position:absolute;bottom:18px;width:7px;height:88px;border-radius:4px;
+    background:linear-gradient(90deg,#8a6a34,#d8b06a 42%,#7d5c2c);
+    box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+  .tik-pole.is-target::before{background:linear-gradient(90deg,#8a6a34,#ffe6a8 42%,#7d5c2c)}
+  .tik-rings{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2}
+  .tik-ring{display:block;height:11px;border-radius:6px;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.5);
+    border:1px solid rgba(60,30,10,.5);position:relative}
+  .tik-ring::after{content:'';position:absolute;inset:2px 5px;border-radius:3px;
+    background:repeating-linear-gradient(90deg,rgba(60,26,10,.34) 0 2px,transparent 2px 6px)}
+  .tik-ring.is-set{animation:tikSet .34s cubic-bezier(.2,1.3,.4,1) both;
+    animation-delay:calc(var(--k) * .08s)}
+  @keyframes tikSet{from{opacity:0;transform:translateY(-26px) scale(.92)}to{opacity:1;transform:none}}
+  /* Still on the first pole: present, unlit, and clearly not done yet. */
+  .tik-ring.is-waiting{opacity:.62;filter:saturate(.55) brightness(.85)}
+  .tik-pn{position:absolute;bottom:3px;font-family:ui-monospace,Consolas,monospace;font-size:8px;
+    letter-spacing:1.6px;color:rgba(255,224,176,.7);z-index:3}
+  .tik-pct{position:absolute;right:10px;top:9px;font-family:Pacifico,cursive;font-size:17px;
+    color:#ffe0b0;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+  .tik-yard.is-crowned{box-shadow:inset 0 0 30px rgba(255,179,71,.25)}
+  .tik-yard.is-crowned .tik-pole.is-target::after{content:'';position:absolute;bottom:100px;width:34px;
+    height:12px;border-radius:50%;border:3px dotted #ff7fa8;opacity:.9;
+    animation:tikLei 2.6s ease-in-out infinite}
+  @keyframes tikLei{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
 
-  /* revision register, not a leaderboard */
-  .hnb-reg{position:sticky;top:56px;border:1px solid rgba(168,216,255,.4);background:rgba(6,20,34,.7)}
-  .hnb-regh{font-size:8px;letter-spacing:2.6px;color:var(--dw-dim);padding:6px 9px;
-    border-bottom:1px solid rgba(168,216,255,.3)}
-  .hnb-regrow{display:grid;grid-template-columns:20px 1fr auto;gap:7px;align-items:baseline;
-    padding:4px 9px;font-size:10.5px;border-bottom:1px dotted rgba(168,216,255,.18)}
-  .hnb-regrow span{color:var(--dw-dim);font-size:8px}
-  .hnb-regrow b{color:#dcecfa;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .hnb-regrow i{font-style:normal;color:var(--dw-ink)}
-  .hnb-regempty{padding:8px 9px;font-size:9px;color:var(--dw-dim)}
+  /* ── the tide taking it back ── */
+  .tik-conch{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 2px}
+  .tik-wave{display:flex;align-items:center;gap:5px;color:#7fd7e0;
+    font-family:ui-monospace,Consolas,monospace;font-size:7.5px;letter-spacing:1.4px;
+    border:1px solid rgba(127,215,224,.32);border-radius:20px;padding:3px 9px 3px 6px;
+    background:rgba(46,143,151,.14);
+    animation:tikWave .5s ease both;animation-delay:calc(var(--w) * .1s)}
+  @keyframes tikWave{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+  .tik-wave svg{width:26px;height:10px}
 
-  .hnb-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:9px;justify-content:center;align-items:center;
-    padding:11px;margin-top:12px;border-top:2px solid var(--dw-ink);
-    background:linear-gradient(180deg,rgba(8,26,43,0),rgba(8,26,43,.97) 45%)}
-  .hnb-count,.hnb-done{font-size:9px;letter-spacing:2px;color:var(--dw-dim)}
-  .hnb-done{color:var(--dw-ink)}
+  .tik-nums{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+  .tik-nums span{display:flex;flex-direction:column;gap:2px}
+  .tik-nums i{font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
+    letter-spacing:1.4px;color:var(--tk-dim)}
+  .tik-nums b{font-family:Pacifico,cursive;font-size:16px;color:#ffe0b0}
 
-  ${sealCss('hnb', INK)}
-  @media(max-width:860px){.dw-body{grid-template-columns:1fr}.hnb-reg{position:static;order:-1}}
-  @media(max-width:700px){.dw-t{font-size:19px;letter-spacing:3px}.hnb-elev{gap:14px}}
+  .tik-win{border-color:rgba(255,179,71,.6);
+    background:linear-gradient(180deg,rgba(120,66,26,.6),rgba(8,24,28,.9))}
+  .tik-win-b{display:flex;gap:14px;align-items:flex-start}
+  .tik-win-av{margin:0;position:relative}
+  .tik-win-av .bb-av{border-radius:50%;border:3px solid var(--tk-gold);
+    box-shadow:0 0 28px rgba(255,179,71,.45)}
+  .tik-lei{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:66px;height:16px;
+    border-radius:50%;border:4px dotted #ff7fa8;opacity:.95}
+  .tik-win-n{font-family:Pacifico,cursive;font-size:26px;color:#ffe0b0;margin-bottom:2px}
+
+  .tik-ctrl{position:sticky;bottom:0;z-index:7;display:flex;gap:8px;justify-content:center;
+    align-items:center;padding:10px;margin:6px -14px 0;
+    background:linear-gradient(180deg,rgba(6,20,24,0),rgba(6,20,24,.96) 40%)}
+  .tik-count,.tik-done{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:2px;
+    color:var(--tk-dim)}
+  .tik-done{color:var(--tk-gold)}
+
+  ${sealCss('tik', '#ffb347')}
+  @media(max-width:860px){.tik-grid{grid-template-columns:1fr}.tik-side{position:static;order:-1}}
+  @media(max-width:700px){.tik-title{font-size:30px}.tik-scene{height:140px}
+    .tik-yard{height:118px}.tik-pole::before{height:74px}}
   @media(prefers-reduced-motion:reduce){
-    .sigdraw *,.sigdraw *::before,.sigdraw *::after{animation:none!important;transition:none!important}
+    .sigtik *,.sigtik *::before,.sigtik *::after{animation:none!important;transition:none!important}
   }
   </style>
 
-  <div class="dw-head">
-    <div>
-      <div class="dw-w">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
-      <div class="dw-t">${E((comp.name || 'TOWER OF HANOI').toUpperCase())}</div>
-      ${sealed ? `<div class="dw-sealed">RESULT SEALED${done ? ' — THE HOUSE NEVER FINDS OUT' : ''}</div>` : ''}
-    </div>
-    <div class="dw-scale">ONE DISC AT A TIME<br>NEVER LARGE ONTO SMALL<br>OR START AGAIN</div>
+  <div class="tik-scene" aria-hidden="true">
+    <div class="tik-sun" style="--sun:${sunPct}"></div>
+    <svg viewBox="0 0 600 190" preserveAspectRatio="none">
+      <path d="M0 132h600v58H0z" fill="#12303a" opacity=".9"/>
+      <path d="M0 132q60 8 120 0t120 0 120 0 120 0 120 0v12H0z" fill="#2e8f97" opacity=".55"/>
+      <path d="M0 150q75 10 150 0t150 0 150 0 150 0v40H0z" fill="#0c2a31"/>
+    </svg>
+    <svg viewBox="0 0 600 190" preserveAspectRatio="xMidYMax meet">
+      <g fill="#1a0f18" opacity=".92">
+        <path d="M56 190V96c0-6 3-9 6-9s6 3 6 9v94z"/>
+        <path d="M62 92c-16-14-36-16-48-8 14-2 30 2 44 12zM62 92c16-15 38-17 50-9-15-2-32 2-46 13z"/>
+        <path d="M62 92c-13-19-12-38-2-47-3 15 0 31 8 44zM62 92c15-16 34-20 46-14-15 1-31 7-42 18z"/>
+        <path d="M540 190v-78c0-5 3-8 5-8s5 3 5 8v78z"/>
+        <path d="M545 108c-13-12-30-13-40-7 12-1 25 2 36 10zM545 108c13-12 31-14 41-7-12-1-26 2-37 10z"/>
+        <path d="M545 108c-11-16-10-32-2-39-2 12 0 26 7 37z"/>
+      </g>
+      <g opacity=".9">
+        <rect x="150" y="128" width="5" height="62" fill="#2b1a10"/>
+        <rect x="446" y="128" width="5" height="62" fill="#2b1a10"/>
+        <path d="M152.5 112c9 8 9 18 0 24-9-6-9-16 0-24z" fill="#ffb347">
+          <animate attributeName="opacity" values="1;.7;1" dur="1.7s" repeatCount="indefinite"/></path>
+        <path d="M448.5 112c9 8 9 18 0 24-9-6-9-16 0-24z" fill="#ffb347">
+          <animate attributeName="opacity" values=".75;1;.75" dur="2.1s" repeatCount="indefinite"/></path>
+      </g>
+    </svg>
+    <div class="tik-glare"></div>
   </div>
 
-  <div class="dw-body">
-    <div>
-      <div class="hnb-spec">
-        <span class="hnb-spec-c">${E(cat.label)}</span><b>${E(comp.name || 'Tower of Hanoi')}</b>
-        ${comp.desc ? `<p class="hnb-spec-d">${E(comp.desc)}</p>` : ''}
-        ${weights.length ? `<div class="hnb-w">${weights.map(([k, w]) =>
+  <div class="tik-head">
+    <div class="tik-eyebrow">WEEK ${E(ep.num)} &middot; ${isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</div>
+    <div class="tik-title">${E(comp.name || 'Tower of Hanoi')}</div>
+    <div class="tik-tagline">three poles &middot; one rule &middot; the tide takes it all back</div>
+  </div>
+
+  <div class="tik-body-wrap">
+    <div class="tik-what">
+      <div class="tik-what-h"><span class="tik-what-c">${E(cat.label)}</span><b>${E(comp.name || 'Tower of Hanoi')}</b></div>
+      ${comp.desc ? `<p class="tik-what-d">${E(comp.desc)}</p>` : ''}
+      ${weights.length ? `<div class="tik-w">${weights.map(([k, w]) =>
     `<span>${E(k)}<s><b style="width:${Math.round(w * 100)}%"></b></s>${Math.round(w * 100)}%</span>`).join('')}</div>` : ''}
-        ${(comp.excluded || []).filter(Boolean).length ? `<p class="hnb-spec-d">Sat out: ${
+      ${(comp.excluded || []).filter(Boolean).length ? `<p class="tik-what-d">Sat out: ${
   (comp.excluded || []).filter(Boolean).map(E).join(', ')}${
   isHoh && act.outgoingHoh ? ` &middot; ${E(act.outgoingHoh)} cannot defend the room` : ''}</p>` : ''}
-      </div>
-      ${cards}
     </div>
-    ${register}
-  </div>
 
-  <div class="hnb-ctrl">
-    ${done ? `<span class="hnb-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE PEGS ARE COVERED.'}</span>` : `
-      <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.hnb-sheet:not(.is-blank)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
-  state.idx < 0 ? 'Issue the spec' : 'File the next sheet'}</button>
-      <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
-    <span class="hnb-count">${Math.min(total, revealed)} / ${total}</span>
+    <div class="${sealed ? 'tik-grid-sealed' : 'tik-grid'}">
+      <div>${cards}</div>
+      ${board}
+    </div>
+
+    <div class="tik-ctrl">
+      ${done ? `<span class="tik-done">${sealed ? 'THE HOUSE NEVER FINDS OUT.' : 'THE POLES COME OUT OF THE SAND.'}</span>` : `
+        <button class="rp-btn" onclick="${u.reveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}requestAnimationFrame(()=>{const c=document.querySelectorAll('.tik-card:not(.is-locked)');const e=c[c.length-1];if(e)e.scrollIntoView({behavior:'smooth',block:'center'});});">${
+  state.idx < 0 ? 'Start the clock' : 'Next tower'}</button>
+        <button class="rp-btn rp-btn-ghost" onclick="${u.reveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span class="tik-count">${Math.min(total, revealed)} / ${total}</span>
+    </div>
   </div>
 </div>`;
 }

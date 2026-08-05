@@ -1452,10 +1452,15 @@ export function simulateEpisode() {
   const _sdChalException = (a, b) =>
     (a === 'sudden-death' && _sdCompatibleChal.has(b)) ||
     (b === 'sudden-death' && _sdCompatibleChal.has(a));
+  // Card-vs-card was already enforced here; season MODES were not, and a
+  // one-way declaration only blocked in the direction it was written. Both now
+  // go through the shared resolver, so the Format Designer, the quick-setup
+  // validator and both engines answer the same question the same way.
+  const _legalTypes = new Set(resolveTwistSchedule(
+    _rawScheduled.map(t => t.type), seasonConfig,
+    { isException: _sdChalException }));
   const scheduledTwists = _rawScheduled.filter(twist => {
-    const cat = TWIST_CATALOG.find(c => c.id === twist.type);
-    const incomp = cat?.incompatible || [];
-    if (incomp.some(ic => _usedTypes.has(ic) && !_sdChalException(twist.type, ic))) return false; // blocked by already-scheduled twist
+    if (!_legalTypes.has(twist.type) || _usedTypes.has(twist.type)) return false;
     _usedTypes.add(twist.type);
     return true;
   });

@@ -199,6 +199,9 @@ const functions = [
   // Season modes are a second axis of twist compatibility; run-ui reads this
   // as a bare global the same way it reads the catalogue itself.
   'activeSeasonModes', 'twistModeClashes',
+  // The shared compatibility resolver — both engines and the designer answer
+  // the same question with it, and episode.js calls it as a bare global.
+  'twistsClash', 'resolveTwistSchedule',
 ];
 
 for (const name of functions) {

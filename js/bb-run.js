@@ -14,7 +14,7 @@
 // `js/episode.js` is not touched and not called. Total Drama's rules are not
 // involved in a Big Brother week.
 
-import { gs, seasonConfig, seasonFormat } from './core.js';
+import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { getPerceivedBond } from './bonds.js';
@@ -343,10 +343,20 @@ export function bbTwistsForWeek(weekNum) {
     .map(t => t.type)
     .filter(id => BB_TWIST_IDS.has(id));
 
+  // What the cards say they cannot run beside — another card, or a season-long
+  // mode. This used to be enforced only by the Format Designer while you were
+  // authoring, so a week that became illegal AFTER it was booked still ran:
+  // schedule the Den, switch the Block Buster on, and the Den went ahead in a
+  // season the catalog would now refuse to add it to.
+  const legal = resolveTwistSchedule(scheduled, seasonConfig);
+
   // Have-nots can be a standing feature of the season rather than a one-off,
   // which is how the format usually runs it: somebody is always on slop.
+  // Applied AFTER the filter — it is a season-long choice made explicitly in
+  // the config rather than a card on this week, so it is not the filter's to
+  // overrule.
   const mode = seasonConfig.bbHaveNots || 'twist';
-  const out = new Set(scheduled);
+  const out = new Set(legal);
   if (mode === 'every-week') out.add('bb-have-nots');
   if (mode === 'off') out.delete('bb-have-nots');
   return [...out];

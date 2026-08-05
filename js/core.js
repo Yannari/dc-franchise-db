@@ -116,6 +116,61 @@ export function twistModeClashes(twist, cfg) {
 }
 
 /**
+ * Do these two cards refuse each other?
+ *
+ * SYMMETRIC on purpose. Twenty-seven pairs in this catalog are declared one way
+ * only — the newer card names the older ones and the older ones were never
+ * edited back. That is harmless while the only consumer is the Format
+ * Designer's add-check, which looks in both directions. Any consumer that walks
+ * a schedule in order is not so lucky: a one-way pair would be dropped or kept
+ * depending purely on which was authored first.
+ *
+ * Making the resolver symmetric fixes it once. Requiring the data to be mutual
+ * would fix it twenty-seven times and rot again on the next card added.
+ */
+export function twistsClash(aId, bId) {
+  if (!aId || !bId || aId === bId) return false;
+  const a = TWIST_CATALOG.find(c => c.id === aId);
+  const b = TWIST_CATALOG.find(c => c.id === bId);
+  return !!((a?.incompatible || []).includes(bId) || (b?.incompatible || []).includes(aId));
+}
+
+/**
+ * Resolve a week's scheduled twist ids down to the ones that may actually run.
+ *
+ * These declarations used to be enforced ONLY while authoring — the catalog
+ * greyed a card out, the add-check refused it, the quick-setup validator
+ * warned. Nothing re-checked afterwards, so a schedule that became illegal
+ * later still ran: book a twist, switch a clashing season mode on, and the
+ * engine did as it was told. Presets, saves and randomised seasons never went
+ * past the add-check at all.
+ *
+ * Order decides ties: the first card scheduled keeps the week. Arbitrary, but
+ * stable, and already how the Total Drama path behaved.
+ *
+ * `isException` lets a format keep a pair the catalog forbids in general
+ * (Total Drama's sudden-death-plus-challenge case).
+ */
+export function resolveTwistSchedule(ids, cfg, { isException = () => false } = {}) {
+  const kept = [];
+  for (const id of ids || []) {
+    const card = TWIST_CATALOG.find(c => c.id === id);
+    // A season-long setting the card refuses to run beside.
+    //
+    // `standsDownInEngine` cards pass through anyway. The Battle of the Block
+    // already resolves this case itself and RECORDS WHY — the debug screen says
+    // "scheduled, but did not run: the Block Buster owns the block" — so
+    // dropping it here would produce exactly the same week with the
+    // explanation deleted. A twist that explains its own absence beats one that
+    // silently never arrives, and the filter defers to it.
+    if (card && !card.standsDownInEngine && twistModeClashes(card, cfg).length) continue;
+    if (kept.some(other => twistsClash(id, other) && !isException(id, other))) continue;
+    kept.push(id);
+  }
+  return kept;
+}
+
+/**
  * The subcategories the Format Designer groups twists under.
  *
  * One vocabulary, shared by every show, with the labels in the order the
@@ -327,7 +382,10 @@ export const TWIST_CATALOG = [
   { id:'rescue-island-life', emoji:'🏝️', name:'Rescue Island Life', category:'social',     phase:'any',        desc:'A non-elimination interlude. Check in on the players marooned on Rescue Island as they survive, process their exits, feud, and train for a shot at returning. No challenge, no vote, nobody goes home. Requires Rescue Island to be enabled.', engineType:'rescue-island-life' },
   { id:'jury-house',      emoji:'🏛️', name:'Jury House',           category:'social',     phase:'any',        desc:'A non-elimination interlude. The eliminated players share a fully furnished lodge — grudges, friendships, game talk, and processing their exits. No survival, no challenge, no vote, nobody goes home.', engineType:'jury-house' },
   { id:'aftermath',       emoji:'🎬', name:'Aftermath Show',       category:'social',     phase:'any',        desc:'Total Drama Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage.', engineType:'aftermath' },
-  { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
+  { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', // 'pre-merge' was listed here as an incompatibility and is not a card id — it
+    // is a phase, so the rule could never match anything and did nothing at all.
+    // `phase:'post-merge'` above is what actually keeps this out of the pre-merge.
+    engineType:'tied-destinies' },
   { id:'chain-of-command', emoji:'⛓️', name:'Chain of Command',    category:'elim',       phase:'post-merge', desc:'Immunity winner starts a chain by picking players safe one by one. Last unpicked is eliminated. No vote — pure social selection.', engineType:'chain-of-command', incompatible:['no-tribal','double-elim','double-boot','tied-destinies'] },
   { id:'african-lying-safari', emoji:'🦁', name:'African Lying Safari', category:'challenge', chalSeries:'world-tour', chalStyle:'hunt', phase:'post-merge', desc:'3-phase safari hunt: dodge soccer balls for plums, smash gourds for tranq darts, then track and tranquilize the host across 6 zones. Social events between ticks — help, sabotage, theft, lies.', engineType:'african-lying-safari', incompatible:['sudden-death','slasher-night','triple-dog-dare','say-uncle','operation-classified','super-hero-ld','princess-pride','get-a-clue','crouching-courtney','houston','top-dog','walk-like-an-egyptian','crazy-fun-time','frozen-crossing','truth-or-shark','bigger-badder-brutaler','rock-n-rule','brunch-of-disgustingness','phobia-factor','cliff-dive','awake-a-thon','dodgebrawl','talent-show','sucky-outdoors','up-the-creek','paintball-hunt','hells-kitchen','trust-challenge','basic-straining','monster-cash','alien-egg','beach-blanket-bogus','crazytown','chefshank','one-flu','masters-of-disasters','oceans-heist','million-bucks-bc','sports-marathon','full-metal-drama','x-treme-torture','lucky-hunt','hide-and-be-sneaky','off-the-chain','wawanakwa-gone-wild','tri-armed-triathlon','camp-castaways','are-we-there-yeti','slap-slap-revolution','broadway-baby','amazon-race','night-at-museum','rock-the-dock','midnight-manhunt','greeces-pieces','hangar-black','viking-sour','bridal-brawls','great-fake-out','picnic-hanging-dork','tropical-takedown','planes-trains','project-runaway','mine-over-matter','haunted-house','hung-out-to-dry','merry-go-round-up','maze-of-the-fallen','demons-plainer','tusks-and-ladders','killer-clown','bumper-car-bash','say-cheese','wheel-of-misfortune'] },
   { id:'rapa-phooey', emoji:'🥚', name:'Rapa Phooey!', category:'challenge',
@@ -413,6 +471,10 @@ export const TWIST_CATALOG = [
     incompatible:['bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-double-eviction', 'bb-instant-eviction', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
   { id:'bb-battle-of-the-block', emoji:'⚔️', name:'Battle of the Block', format:'big-brother',
+    // The engine stands this down itself when the Block Buster owns the block,
+    // and records why for the debug screen — so the schedule resolver must not
+    // strip it first and delete the explanation.
+    standsDownInEngine:true,
     category:'power', phase:'any',
     desc:'Two Heads of Household, each nominating two houseguests. The four nominees compete as pairs; the winning pair comes off the block and DETHRONES the Head of Household who nominated them. The survivor keeps the power and their two nominations stand.',
     incompatible:['bb-invisible-hoh', 'bb-hacker'], incompatibleModes:['block-buster'] },

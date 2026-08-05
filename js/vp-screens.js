@@ -38,6 +38,7 @@ import { rpBuildSigReadySetWoah } from './vp-bb-sig/ready-set-woah.js';
 import { rpBuildSigSolveForX } from './vp-bb-sig/solve-for-x.js';
 import { rpBuildSigSlipperySlope } from './vp-bb-sig/slippery-slope.js';
 import { rpBuildSigKnockout } from './vp-bb-sig/knockout.js';
+import { rpBuildSigKnightMoves } from './vp-bb-sig/knight-moves.js';
 import { rpBuildBBBattleOfTheBlock } from './vp-bb-botb.js';
 import { rpBuildBBSplitHouse } from './vp-bb-split.js';
 import { rpBuildBBRoadkill } from './vp-bb-roadkill.js';
@@ -17023,6 +17024,7 @@ const _BB_SIG_BUILDERS = {
   'dough': rpBuildSigDough,
   'readyset': rpBuildSigReadySetWoah,
   'solveforx': rpBuildSigSolveForX,
+  'knightmoves': rpBuildSigKnightMoves,
 };
 
 export function rpBuildBBComp(ep, actType) {

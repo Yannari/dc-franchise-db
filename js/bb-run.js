@@ -270,7 +270,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -538,6 +538,10 @@ export function simulateBBEpisode() {
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-battle-back');
   // Which temptation is on the table. Same per-entry pattern, and it reads the
   // power registry, so a power added to the shelf is offerable here for free.
+  // Which powers are behind the three doors. Same per-entry pattern, read off
+  // the power registry, so a new power is competable for with no new UI.
+  const whackEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-whacktivity');
   const denEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-den-of-temptation');
 
@@ -576,6 +580,7 @@ export function simulateBBEpisode() {
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
     pandorasPrize: boxEntry?.prize || undefined,
     temptationOffer: denEntry?.offer || 'random',
+    whacktivityDoors: whackEntry?.doors || 'auto',
     // What the audience is voting over. 'all' stocks the whole inventory; a
     // power id stocks just that one, which is how a season books a specific
     // power onto a specific week.
@@ -839,6 +844,19 @@ export function summariseWeek(week) {
           (act.winners || []).length === 1 ? '' : 's'} leave the shelf and the house is told only that somebody out there is now holding something.`);
         line('  Who won what is not public. The Debug panel owns the truth.');
         break;
+      case 'whacktivity': {
+        line('');
+        line('THE WHACKTIVITY COMPETITIONS');
+        for (const r of act.rooms || []) {
+          const who = r.entrants.length ? r.entrants.join(', ') : 'nobody';
+          if (!r.opened) { line(`  ${r.power}: DID NOT OPEN — ${who} had picked it.`); continue; }
+          line(`  ${r.power}: OPENED — ${who}${r.entrants.length ? ` (${r.entrants.length} of 5)` : ''}.`);
+          if (r.soloFailed) line('    Entered alone and did not beat it. The power goes unclaimed.');
+        }
+        if ((act.satOut || []).length) line(`  Sat out entirely: ${act.satOut.join(', ')}.`);
+        line('  Who won what is not public — the house is told only that the competitions happened.');
+        break;
+      }
       case 'temptation': {
         line('');
         line('THE DEN OF TEMPTATION');

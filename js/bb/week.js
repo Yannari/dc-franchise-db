@@ -12,6 +12,7 @@ import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
+import { runWhacktivity } from './whacktivity.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
   makeHackerGuesser, recordHackerWin,
@@ -1471,6 +1472,31 @@ export function simulateBBWeek(options = {}) {
         type: 'app-store', secret: true, winners: winners.map(w => ({ ...w })),
         shelf: shelf.map(id => BB_POWER_DEFINITIONS[id].name),
       }, { players: winners.map(w => w.name) }));
+    }
+  }
+
+  // Three doors, one choice each, and the Head of Household barred. Runs at
+  // week opening alongside the other distributors and BEFORE nominations,
+  // because the whole reason somebody picks the door that stops a nomination
+  // is that they can see one coming.
+  if (!compressed && twists.has('bb-whacktivity')) {
+    try {
+      const wanted = options.whacktivityDoors;
+      // 'auto' stocks three of the shelf. Anything the Diamond Veto already has
+      // two distributors for stays available here too — this is the only
+      // channel you can actually PLAY for, so nothing is held back from it.
+      const doors = Array.isArray(wanted) && wanted.length
+        ? wanted
+        : Object.keys(BB_POWER_DEFINITIONS).slice(0, 3);
+      week.whacktivity = runWhacktivity({
+        week, house, hoh, nominees: [], rng, offered: doors,
+      });
+      if (week.whacktivity) {
+        week.acts.push(addBeats(week.whacktivity,
+          { players: week.whacktivity.rooms.flatMap(r => r.entrants).slice(0, 4) }));
+      }
+    } catch (e) {
+      week.whacktivity = null;
     }
   }
 

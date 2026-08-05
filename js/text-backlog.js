@@ -4548,6 +4548,38 @@ export function generateBBSummaryText(ep) {
         ln('  Who took what stays off this page for the same reason it stays off the feeds.');
         break;
 
+      case 'whacktivity':
+        sec('THE WHACKTIVITY COMPETITIONS');
+        ln('  Three competitions, three different powers, and one choice each. The Head of Household');
+        ln('  cannot play. Five to a room, and nobody sees who else picked their door until they are');
+        ln('  standing in it.');
+        ln('  Only one of the three opens tonight, so picking the crowded door is a gamble twice over.');
+        for (const r of act.rooms || []) {
+          if (!r.opened) {
+            ln(`  ${r.power} — did not open. ${r.entrants.length ? `${r.entrants.join(', ')} had picked it, and told the house so for nothing.` : 'Nobody had picked it anyway.'}`);
+            continue;
+          }
+          if (r.empty) { ln(`  ${r.power} — opened, and nobody had wanted it badly enough to be standing there.`); continue; }
+          ln(`  ${r.power} — opened. ${r.entrants.join(', ')}.`);
+          if (r.entrants.length >= 3) {
+            ln(`    ${r.entrants.length} of them chose the same door, and every one of them now knows who else is hunting.`);
+          }
+          if (r.soloFailed) {
+            ln('    Walked in alone and still had to beat it, and did not. The power goes unclaimed.');
+          }
+        }
+        if ((act.satOut || []).length) {
+          ln(`  Played nothing at all: ${act.satOut.join(', ')} — walking into any of those rooms tells`);
+          ln('  the house you think you need something.');
+        }
+        // Everything EXCEPT the win. That beat names the person who walked out
+        // holding something, and the whole twist is that nobody is told.
+        (act.beats || []).filter(b => b.badgeText !== 'WON IN PRIVATE')
+          .forEach(b => ln(`  ${b.text}`));
+        ln('  Winners are told in private. Who is holding what stays off this page for the same reason');
+        ln('  it stays off the feeds — the reveal belongs to the night it fires.');
+        break;
+
       case 'temptation':
         sec('THE DEN OF TEMPTATION');
         ln(`  The audience chooses ${act.entrant}, and the Den offers ${pronouns(act.entrant).obj} ${act.power} outright — no competition, no vote.`);

@@ -18748,6 +18748,89 @@ export function rpBuildBBPandorasBox(ep, act) {
 }
 
 /**
+ * The Whacktivity competitions.
+ *
+ * Three doorways, each lit in its power's colour, with the people who chose it
+ * queued underneath. The drama is the CROWD — you can see at a glance which
+ * door everybody wanted and which one somebody walked into alone — so the
+ * screen is the hall rather than the competitions.
+ *
+ * What is behind the doors stays dark. The grants are secret, and unlike the
+ * App Store the viewer is not even told a power definitely changed hands: a
+ * lone entrant can lose, and an empty room hands out nothing.
+ */
+export function rpBuildBBWhacktivity(ep, act) {
+  if (!act) return '';
+  const rooms = act.rooms || [];
+  const stateKey = `bb_wk_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // The choices first, then whatever each room did — the win itself is never
+  // a card, because nobody in the house is told.
+  const beats = (act.beats || []).filter(b => b.badgeText !== 'WON IN PRIVATE');
+  const steps = [{ kind: 'hall' }, ...beats.map(b => ({ kind: 'beat', b })), { kind: 'sealed' }];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const open = state.idx >= 0;
+
+  const HUE = ['#e3b341', '#a371f7', '#3fb950'];
+
+  const door = (r, i) => {
+    const colour = HUE[i % HUE.length];
+    const n = (r.entrants || []).length;
+    return `<div class="bbwk-door ${r.empty ? 'is-empty' : ''}" style="color:${colour}">
+      <div class="bbwk-arch"></div>
+      <div class="bbwk-power">${_bbEsc(r.power)}</div>
+      <div class="bbwk-queue">${open ? (r.entrants || []).map(nm => _bbAvatar(nm, 22)).join('') : ''}</div>
+      <div class="bbwk-count" style="color:${colour}">${
+        !open ? 'sealed'
+          : !r.opened ? 'did not open'
+            : r.empty ? 'opened · nobody'
+              : `${n} in${n >= 3 ? ' · crowded' : n === 1 ? ' · alone' : ''}`}</div>
+      ${open && r.soloFailed ? `<div class="bbwk-sealed">missed it</div>` : ''}
+    </div>`;
+  };
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    if (step.kind === 'hall') {
+      return `<div class="bbns-card is-open">
+        <div class="bbns-card-h"><span class="bbns-pill gold">ONE DOOR EACH</span></div>
+        <div class="bbns-card-b">Three competitions run at once and each one is for a different power. Every houseguest may enter one of them or none, five to a room, and the Head of Household may not play at all. Nobody finds out who else picked their door until they are standing in it.</div></div>`;
+    }
+    if (step.kind === 'sealed') {
+      const unclaimed = rooms.filter(r => r.empty || r.soloFailed).length;
+      return `<div class="bbns-card is-final">
+        <div class="bbns-card-h"><span class="bbns-pill grey">TOLD IN PRIVATE</span></div>
+        <div class="bbns-card-b">The winners are told behind a shut door and the house is told nothing at all — not who won, and not whether anybody did.${
+          unclaimed ? ` ${unclaimed === 1 ? 'One room' : `${unclaimed} rooms`} handed out nothing, and nobody out here will ever know which.` : ''
+        } Everybody did see who walked in, though, and the person holding the keys was watching them do it.</div></div>`;
+    }
+    const b = step.b || {};
+    return `<div class="bbns-card">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 3).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'grey'}">${b.badgeText || 'THE HALL'}</span></div>
+      <div class="bbns-card-b">${b.text}</div></div>`;
+  };
+
+  return `<div class="rp-page bb-room bb-block bbns bbwk">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#e3b341;text-shadow:0 0 20px rgba(227,179,65,.28);margin-bottom:4px">WHACKTIVITY</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Three doors. You get one, and everybody watches you choose.</div>
+    <div class="bbwk-hall">${rooms.map(door).join('')}</div>
+    ${open && (act.satOut || []).length
+      ? `<div class="bbwk-sat">Played nothing at all: <b>${act.satOut.map(n => _bbEsc(n)).join(', ')}</b></div>` : ''}
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${state.idx < 0 ? 'The hall' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
  * The App Store.
  *
  * The only distributor with no room and no door — it happens on a phone, in a
@@ -20416,6 +20499,9 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
+      case 'whacktivity':
+        screens.push({ id: id('bb-whacktivity'), label: 'Whacktivity', html: rpBuildBBWhacktivity(view, act) });
         break;
       case 'app-store':
         screens.push({ id: id('bb-appstore'), label: 'The App Store', html: rpBuildBBAppStore(view, act) });

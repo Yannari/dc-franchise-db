@@ -751,6 +751,31 @@
     .bbf-hold.is-weak img, .bbf-hold.is-weak .rp-portrait {
                      outline:1.5px solid #c9343c; outline-offset:1px; border-radius:4px; }
 
+    /* ── the Whacktivity doors ─────────────────────────────────────────
+       Three doorways side by side, each one lit in its power's colour, with
+       the people who chose it queued underneath. The drama is the CROWD: you
+       can see at a glance which door everybody wanted and which one somebody
+       walked into alone. What is behind them stays dark. */
+    .bbwk-hall     { display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+                     margin-bottom:14px; }
+    .bbwk-door     { position:relative; border-radius:10px 10px 4px 4px; padding:10px 8px 9px;
+                     background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.34));
+                     border:1px solid rgba(255,255,255,.14); text-align:center; }
+    .bbwk-door.is-empty { opacity:.45; }
+    .bbwk-arch     { height:52px; margin:0 auto 7px; width:44px; border-radius:22px 22px 3px 3px;
+                     background:linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,.4));
+                     border:2px solid currentColor; box-shadow:0 0 14px -2px currentColor inset; }
+    .bbwk-power    { font-family:var(--font-display,Georgia,serif); font-size:12px;
+                     line-height:1.2; color:#e6edf3; margin-bottom:5px; min-height:29px; }
+    .bbwk-queue    { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; min-height:24px; }
+    .bbwk-count    { margin-top:6px; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1.2px; text-transform:uppercase; }
+    .bbwk-sealed   { margin-top:5px; font-family:ui-monospace,Consolas,monospace; font-size:9px;
+                     letter-spacing:1px; color:#6e7681; }
+    .bbwk-sat      { margin:-4px 0 14px; text-align:center; font-size:11px; color:#8b949e; }
+    .bbwk-sat b    { color:#cdd6f4; font-weight:600; }
+    @media (max-width:560px) { .bbwk-hall { grid-template-columns:1fr; } }
+
     /* ── the App Store ─────────────────────────────────────────────────
        The one distributor with no room and no door: it happens on a phone,
        somewhere else, in a country the houseguests cannot see. So the screen

@@ -136,6 +136,21 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every houseguest in this room is about to start being nice to the cameras.',
     },
   },
+  'bb-whacktivity': {
+    id: 'bb-whacktivity', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // BB21's shape. No rules delta — a distributor changes who is holding
+    // what, not how the week is played, and what the powers DO lives in
+    // powers.js. The twist is entirely in the ACQUISITION: three doors, one
+    // choice each, and the Head of Household barred from all of them.
+    rules: {},
+    acquisition: { channel: 'dedicated-competition', secrecy: 'secret' },
+    announcement: {
+      name: 'The Whacktivity Competitions',
+      rule: 'Three competitions will run this week and each one is for a different power. You may enter ONE of them, or none, and only five houseguests may play any one. The Head of Household may not play at all. Winners will be told in private and this house will not be told who they are.',
+      sting: 'Everybody is about to watch everybody else choose a door.',
+    },
+  },
   'bb-den-of-temptation': {
     id: 'bb-den-of-temptation', layer: 'scheduled', category: 'distribution',
     timing: 'week-opening', duration: { weeks: 1 },

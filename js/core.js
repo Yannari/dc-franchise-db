@@ -507,6 +507,10 @@ export const TWIST_CATALOG = [
     // reshapes the block for exactly the reasons Roadkill does.
     incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
+  { id:'bb-whacktivity', emoji:'🚪', name:'Whacktivity', format:'big-brother',
+    category:'advantages', phase:'any',
+    desc:'Three separate competitions run at once, each one attached to a different power, and every houseguest picks ONE to enter or sits out entirely. Five to a room. You choose your door before you know who else chose it, so the power everybody wants is the one you have to beat four people for — and the Head of Household cannot play. A houseguest alone in a room still has to beat the competition rather than being handed it. Winners are told in private and the house is told nothing, but everybody saw who walked in.',
+    incompatible:[] },
   { id:'bb-battle-back', emoji:'🚪', name:'Battle Back', format:'big-brother',
     category:'returns', phase:'any',
     desc:'The evicted houseguests are not gone. After this week\'s eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.',

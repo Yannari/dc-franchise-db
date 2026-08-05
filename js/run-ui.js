@@ -1376,6 +1376,28 @@ export function renderTimeline() {
         prizeHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'bb-whacktivity') {
+        // Which three powers are behind the doors. 'auto' takes the first three
+        // off the registry, so a new power is competable for with no new UI.
+        const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
+        const ids = Object.keys(defs);
+        const chosen = Array.isArray(t.doors) && t.doors.length ? t.doors.join(',') : 'auto';
+        const combos = [['auto', 'First three powers']];
+        // Every distinct trio, listed plainly — three dropdowns for one choice
+        // is more UI than a three-item pick is worth.
+        for (let i = 0; i < ids.length; i++) {
+          for (let j = i + 1; j < ids.length; j++) {
+            for (let k = j + 1; k < ids.length; k++) {
+              const trio = [ids[i], ids[j], ids[k]];
+              combos.push([trio.join(','), trio.map(x => defs[x].name.replace(/^The /, '')).join(' · ')]);
+            }
+          }
+        }
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','doors',this.value==='auto'?'auto':this.value.split(','))" onclick="event.stopPropagation()" title="What is behind the three doors" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        combos.forEach(([v, label]) => { h += `<option value="${v}" ${v === chosen ? 'selected' : ''}>${label}</option>`; });
+        h += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-den-of-temptation') {
         // What is on the table in the Den. Same source as the box and the
         // shelf; 'random' lets the season surprise itself.
@@ -1705,6 +1727,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-den-of-temptation') entry.offer = 'random';
+    if (twistId === 'bb-whacktivity') entry.doors = 'auto';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }
     seasonConfig.twistSchedule.push(entry);

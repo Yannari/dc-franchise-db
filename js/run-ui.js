@@ -1328,7 +1328,7 @@ export function _setBBComp(ep, slot, compId) {
   else delete entry[slot];
   // A week with nothing pinned carries no entry, so a cleared picker leaves no
   // residue in the saved config.
-  if (!entry.hoh && !entry.veto) {
+  if (!entry.hoh && !entry.veto && !entry.arena) {
     seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(c => c !== entry);
   }
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
@@ -1608,9 +1608,18 @@ export function renderTimeline() {
     // Competition pinning: every Big Brother week has an HOH and a veto, so
     // the pickers are always there rather than something you add. The finale
     // runs its own staged competition and is not pinnable.
+    //
+    // The arena is the third one, and it only appears when the Block Buster is
+    // switched on for the season — there is no arena on a week that does not
+    // stage one, and a dead dropdown is worse than no dropdown. Its library is
+    // separate from the other two on purpose: an arena game is played by the
+    // nominees with the whole house at the glass, so nothing in it serves an
+    // HOH or veto slot and nothing from those lists can be pinned here.
+    const arenaOn = !!seasonConfig.bbSafetyMode && seasonConfig.bbSafetyMode !== 'off';
     const compRow = (isHouse && !isFinale)
       ? `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
-          ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
+          ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}${
+  arenaOn ? _bbCompPicker(ep, 'arena', 'ARENA') : ''}
         </div>`
       : '';
 

@@ -89,6 +89,7 @@ function playSeasons(seeds) {
     { twist: 'bb-americas-nominee', seeds: [129, 151], weeks: [5, 6],
       options: { americasNomineeStyle: 'mvp' } },
     { twist: 'bb-coin-of-destiny', seeds: [71, 178], weeks: [5, 6] },
+    { twist: 'bb-prizes-and-punishments', seeds: [11, 44, 129, 151], weeks: [7] },
     // Weeks 5-7 band.
     { twist: 'bb-pandoras-box', seeds: [11, 44], weeks: [5, 6] },
     { twist: 'bb-den-of-temptation', seeds: [88, 58], weeks: [5, 6] },
@@ -259,6 +260,7 @@ describe('the Big Brother event library as a whole', () => {
     const gatedFamilies = [
       ['coup-', 2], ['evictionpower-', 1], ['coin-', 3], ['care-', 4],
       ['suite-', 3], ['americas-', 3], ['powerknown-', 1], ['punish-', 2],
+      ['exchange-', 2],
     ].map(([prefix, min]) => ({
       prefix, min,
       ids: new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith(prefix))),

@@ -310,13 +310,6 @@ export function bbForcedCompsForWeek(epNum) {
   const forced = {};
   if (entry.hoh) forced.hoh = entry.hoh;
   if (entry.veto) forced.veto = entry.veto;
-  // The arena has always been pinnable by the engine — week.js reads
-  // `forcedCompetitions.arena` — and was the one slot this resolver never
-  // passed through, so the whole Block Buster library (eighteen games, every
-  // one of them written) could only ever come up at random. A booked season
-  // could choose its Head of Household competition and not the one somebody's
-  // game actually ends on.
-  if (entry.arena) forced.arena = entry.arena;
   return Object.keys(forced).length ? forced : undefined;
 }
 

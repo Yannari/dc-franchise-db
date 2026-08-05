@@ -280,7 +280,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -1025,6 +1025,20 @@ export function summariseWeek(week) {
           ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
+        break;
+      }
+      case 'camp-comeback': {
+        line('');
+        line('CAMP COMEBACK');
+        line(`  ${act.arrival} is evicted and does not leave. Camp: ${(act.camp || []).join(', ')}.`);
+        if (act.full) line('  Camp is full. The door opens.');
+        break;
+      }
+      case 'camp-return': {
+        line('');
+        line('THE CAMP COMEBACK DOOR');
+        line(`  ${(act.played || []).join(', ')} play for one place back in the game.`);
+        line(`  ${act.winner} returns. ${(act.gone || []).join(', ')} leave for good.`);
         break;
       }
       case 'prize-exchange': {

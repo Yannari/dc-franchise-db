@@ -18,6 +18,7 @@ import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { runPrizeExchange } from './prize-exchange.js';
+import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
@@ -3536,6 +3537,34 @@ export function simulateBBWeek(options = {}) {
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
   if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
+
+  // ── CAMP COMEBACK ──
+  //
+  // The eviction above is real and stays real: they are out of the roster, out
+  // of the vote and out of the nominations. They simply do not leave the
+  // house. Nothing else in the week engine has to know, which is exactly why
+  // this runs AFTER the removal rather than instead of it.
+  if (!compressed && twists.has('bb-camp-comeback') && evicted) {
+    try {
+      const camped = sendToCamp({ week, evicted, house, rng });
+      if (camped) {
+        week.campComeback = camped;
+        week.acts.push(addBeats(camped, { players: [evicted] }));
+        // A camper is not in the jury — they have not finished losing yet.
+        gs.jury = (gs.jury || []).filter(n => n !== evicted);
+        if (camped.full) {
+          const back = runCampComeback({ week, house: gs.activePlayers, rng });
+          if (back?.winner) {
+            week.campReturn = back;
+            week.acts.push(addBeats(back, { players: [back.winner] }));
+            gs.activePlayers = [...new Set([...gs.activePlayers, back.winner])];
+            gs.eliminated = (gs.eliminated || []).filter(n => n !== back.winner);
+            week.returnedHouseguest = back.winner;
+          }
+        }
+      }
+    } catch { week.campComeback = null; }
+  }
 
   // ── The Bonus Life ──
   //

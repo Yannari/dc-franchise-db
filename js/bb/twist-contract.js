@@ -253,6 +253,20 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  'bb-camp-comeback': {
+    id: 'bb-camp-comeback', layer: 'scheduled', category: 'return',
+    timing: 'eviction', duration: { weeks: 4 },
+    // No rules delta, which is the point: an evicted houseguest is still
+    // evicted. They leave gs.activePlayers, stop competing, stop voting and
+    // stop being nominatable exactly as they always did — they simply do not
+    // leave the building. The week engine needs to know nothing.
+    rules: {},
+    announcement: {
+      name: 'Camp Comeback',
+      rule: 'The next four houseguests evicted will not leave. They move into Camp Comeback — no competitions, no votes, no nominations — and live in this house with everybody who voted them out. When the fourth arrives, all four play for one place back in the game.',
+      sting: 'You are about to vote somebody out and then eat breakfast with them.',
+    },
+  },
   'bb-prizes-and-punishments': {
     id: 'bb-prizes-and-punishments', layer: 'scheduled', category: 'veto-power',
     timing: 'veto', duration: { weeks: 1 },

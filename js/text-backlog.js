@@ -4574,6 +4574,30 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'camp-comeback': {
+        sec('CAMP COMEBACK');
+        ln(`  ${act.arrival} is voted out, and stays.`);
+        ln('  No competitions, no votes, no nominations — and no front door either.');
+        ln(`  Living in the camp room: ${(act.camp || []).join(', ')}.`);
+        if (act.full) {
+          ln('');
+          ln('  That is four. The door opens.');
+        }
+        beats(act);
+        break;
+      }
+
+      case 'camp-return': {
+        sec('THE CAMP COMEBACK DOOR');
+        ln(`  ${(act.played || []).join(', ')} play for a single place back in the game.`);
+        ln('');
+        ln(`  ${act.winner} walks back into the house — carrying every conversation`);
+        ln('  the house had while it thought they could not hear.');
+        ln(`  ${(act.gone || []).join(', ')} are evicted for the second time, and this time they go.`);
+        beats(act);
+        break;
+      }
+
       case 'prize-exchange': {
         sec('PRIZES AND PUNISHMENTS');
         ln('  The competition did not award the veto. It decided who picks first.');

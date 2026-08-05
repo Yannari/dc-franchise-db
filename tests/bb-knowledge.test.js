@@ -209,8 +209,14 @@ describe('the house talks, and the jury talks more', () => {
     gs.jury = ['Zee', 'Ripper', 'Scary'];
     // Zee did not know, because nobody in the house ever told them.
     expect(knowsVote('Zee', 'Chase', 'Zee')).toBe(false);
+    // Fixed rng, for the reason the other `told` calls in this file already
+    // give: sourceType 'told' is a persuasion ROLL inside learn(), not a
+    // transfer. Unseeded, this test was really asking whether Zee happened to
+    // believe Ripper — and it flipped the day an unrelated event family
+    // started consuming a different amount of randomness earlier in the file.
     learn('Zee', factId('vote', 'Chase', 'Zee'),
-      { source: 'Ripper', sourceType: 'told', confidence: 0.9, from: 'Ripper', ep: 5 });
+      { source: 'Ripper', sourceType: 'told', confidence: 0.9, from: 'Ripper', ep: 5,
+        rng: () => 0 });
     const before = getBond('Zee', 'Chase');
     const learned = reconcileBBJury(gs.jury, { week: 5 });
     expect(learned.some(l => l.juror === 'Zee' && l.voter === 'Chase')).toBe(true);

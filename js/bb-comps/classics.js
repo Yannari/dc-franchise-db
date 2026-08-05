@@ -445,7 +445,23 @@ const stayOrFold = {
   desc: 'The houseguests play rounds at a table in the yard, each dealt a hidden card worth a hidden number of points. Before the cards are turned every player must declare — stay in and keep the card, or fold and take a small guaranteed score instead — and they declare out loud, in turn, watching each other do it. The lowest card left standing at the end of a round is wiped to zero, so staying in on a bad card costs everything it was worth and folding on a good one throws it away. The highest total after the last round wins.',
   // The cards are luck. Everything else is reading a face and controlling your
   // own, which is why this is the one competition a social player can steal.
+  //
+  // `stats` is the honest SUMMARY of the three jobs below — the pattern
+  // Knockout established for a competition that asks for different things at
+  // different moments. It used to be the whole model: all five weights were
+  // blended into one number that decided one thing, so boldness carried the
+  // heaviest weight on the bars and had no separate effect whatsoever, and
+  // social did nothing at all in a game whose entire premise is declaring out
+  // loud in front of people.
   stats: { boldness: 0.28, intuition: 0.26, social: 0.22, strategic: 0.14, temperament: 0.10 },
+  // Reading where your card sits, the line you draw for staying, the voice
+  // that moves somebody else's decision, and not tilting after a wipe.
+  roles: {
+    read: { intuition: 0.62, strategic: 0.38 },
+    nerve: { boldness: 0.74, temperament: 0.26 },
+    table: { social: 0.70, boldness: 0.30 },
+    calm: { temperament: 1 },
+  },
   weight: () => 1.05,
   simulate(participants, context, api, rng) {
     const beats = [];
@@ -455,48 +471,97 @@ const stayOrFold = {
       participants.slice(0, 3), `${ROUNDS} ROUNDS`));
 
     const runs = prepare(participants, context, this, rng);
-    for (const r of runs) { r.total = 0; r.wiped = 0; r.folds = 0; r.rounds = []; }
+    for (const r of runs) {
+      r.total = 0; r.wiped = 0; r.folds = 0; r.rounds = []; r.pushed = 0; r.tilt = 0;
+      r.read = aptitude(r.name, stayOrFold.roles.read) / 10;
+      r.nerve = aptitude(r.name, stayOrFold.roles.nerve) / 10;
+      r.table = aptitude(r.name, stayOrFold.roles.table) / 10;
+      r.calm = aptitude(r.name, stayOrFold.roles.calm) / 10;
+    }
 
     for (let round = 0; round < ROUNDS; round++) {
       const table = runs.map(r => {
         const card = 1 + Math.floor(rng() * 10);          // the luck, undisguised
         const noise = (rng() - 0.5) * 0.5;
         r.luck += noise;
-        // Reading the table is knowing roughly where your card sits. A good
-        // read folds a bad card and stays on a good one; a poor read does the
-        // opposite and pays for it.
-        const read = clamp(r.skill + noise, 0, 1);
-        const believesLow = card <= 4 ? read > 0.35 : read < 0.28;
-        const stay = r.threw ? false : !believesLow;
-        return { r, card, stay, read };
+        // What they think they are holding. Nobody is shown the deck, so the
+        // read is an ESTIMATE of where the card sits — and a poor read is not
+        // slightly wrong, it is wrong by half the deck.
+        const fog = 1.2 + (1 - r.read) * 7;
+        const perceived = clamp(card + (rng() - 0.5) * fog, 1, 10);
+        // And where they draw the line, which is the whole difference between
+        // two houseguests holding the same six. Nerve stays on it; caution
+        // takes the two points and keeps its night tidy. A wipe last round
+        // pushes the line up on anybody who cannot let it go.
+        const threshold = 6.6 - r.nerve * 3.4 + r.tilt;
+        const stay = r.threw ? false : perceived >= threshold;
+        return { r, card, perceived, threshold, stay, pushed: false };
       });
+
+      // They declare OUT LOUD, in turn, watching each other do it — which is
+      // the one thing in this competition a social player owns. The loudest
+      // read at the table goes to work on whoever is closest to the line, and
+      // talks them over it in the wrong direction.
+      const pusher = [...table].sort((a, b) => b.r.table - a.r.table)[0];
+      const marks = table.filter(t => t !== pusher && !t.r.threw
+        && Math.abs(t.perceived - t.threshold) < 1.5);
+      const mark = marks.sort((a, b) => (a.r.calm + a.r.read) - (b.r.calm + b.r.read))[0];
+      if (pusher && mark
+        && rng() < clamp(0.12 + (pusher.r.table - (mark.r.calm * 0.6 + mark.r.read * 0.4)) * 0.6, 0, 0.66)) {
+        mark.stay = !mark.stay;
+        mark.pushed = true;
+        mark.r.pushed++;
+        beats.push(beat(
+          mark.stay
+            ? `${pusher.r.name} declares before ${mark.r.name} does, and does it like somebody holding the whole table. ${mark.r.name} was going to fold. ${mark.r.name} stays in instead, on a card that has not improved.`
+            : `${pusher.r.name} folds early, cheerfully, out loud — and ${mark.r.name} folds behind ${pusher.r.name} rather than be the only one still holding. Nobody made ${mark.r.name} do that.`,
+          [pusher.r.name, mark.r.name], 'TALKED OVER THE LINE', 'gold'));
+      }
+
       const inPlay = table.filter(t => t.stay);
       const lowest = inPlay.length ? inPlay.reduce((lo, t) => (t.card < lo.card ? t : lo)) : null;
       for (const t of table) {
-        if (!t.stay) { t.r.folds++; t.r.total += 2; t.r.rounds.push({ round: round + 1, card: t.card, folded: true }); continue; }
+        // Tilt decays for everybody who did not just lose a card, so a bad
+        // round is a bad round rather than a bad night.
+        t.r.tilt = round2(t.r.tilt * 0.45);
+        if (!t.stay) {
+          t.r.folds++; t.r.total += 2;
+          t.r.rounds.push({ round: round + 1, card: t.card, folded: true, pushed: t.pushed });
+          continue;
+        }
         if (lowest && t === lowest && inPlay.length > 1) {
-          t.r.wiped++; t.r.rounds.push({ round: round + 1, card: t.card, wiped: true }); continue;
+          t.r.wiped++;
+          // Losing a card in front of everybody costs the next decision too,
+          // unless you are the kind of person it does not.
+          t.r.tilt = round2(1.5 * (1 - t.r.calm));
+          t.r.rounds.push({ round: round + 1, card: t.card, wiped: true, pushed: t.pushed });
+          continue;
         }
         t.r.total += t.card;
-        t.r.rounds.push({ round: round + 1, card: t.card });
+        t.r.rounds.push({ round: round + 1, card: t.card, pushed: t.pushed });
       }
 
       // The table is the story. Somebody gets read and somebody gets away with
       // it, and both of those are things people carry out of the yard.
       if (inPlay.length >= 2 && round < ROUNDS - 1) {
-        const reader = [...table].sort((a, b) => b.read - a.read)[0];
-        const mark = [...table].filter(t => t !== reader).sort((a, b) => a.read - b.read)[0];
-        if (reader && mark) {
-          const readerWon = reader.read > 0.55;
+        const reader = [...table].sort((a, b) => b.r.read - a.r.read)[0];
+        const other = [...table].filter(t => t !== reader && t !== mark)
+          .sort((a, b) => a.r.read - b.r.read)[0];
+        if (reader && other) {
+          // Whether the read PAID, not whether the reader is good on paper:
+          // they called it right if the card they judged really was where they
+          // judged it. A sharp player who misjudged a six gets called out for
+          // it in front of the same table.
+          const readerWon = Math.abs(reader.perceived - reader.card) < 1.5;
           beats.push(beat(
-            readerWon ? called(FOLD_CALLED)(reader.r.name, mark.r.name)
-              : worked(FOLD_WORKED)(mark.r.name, reader.r.name),
-            [reader.r.name, mark.r.name],
+            readerWon ? called(FOLD_CALLED)(reader.r.name, other.r.name)
+              : worked(FOLD_WORKED)(other.r.name, reader.r.name),
+            [reader.r.name, other.r.name],
             readerWon ? 'CALLED' : 'BLUFFED', readerWon ? 'gold' : 'red'));
           // Being read at a table in front of everybody is a small humiliation
           // and it lands where humiliations land.
-          const loser = readerWon ? mark.r.name : reader.r.name;
-          const winner = readerWon ? reader.r.name : mark.r.name;
+          const loser = readerWon ? other.r.name : reader.r.name;
+          const winner = readerWon ? reader.r.name : other.r.name;
           api.addBond(loser, winner, -0.5);
           api.popDelta(winner, 0.8);
           api.record(winner, 'read-them-at-the-table', { round: round + 1, opponent: loser });
@@ -512,6 +577,9 @@ const stayOrFold = {
       } else if (r.wiped >= 2) {
         beats.push(beat(`${r.name} stays in twice on cards that could not survive the table and loses both. ${r.total} points, and a lot of information given away for free.`,
           [r.name], `WIPED ${r.wiped}×`, 'red'));
+      } else if (r.pushed) {
+        beats.push(beat(`${r.name} finishes on ${r.total}, and ${r.pushed === 1 ? 'one of those decisions was not really ' + r.name + '\'s' : `${r.pushed} of those decisions were not really ${r.name}'s`}. Declaring out loud in front of people costs something, and it is not always points.`,
+          [r.name], `${r.total} POINTS`, 'grey'));
       } else {
         beats.push(beat(`${r.name} finishes on ${r.total}, having stayed in exactly when it was worth staying in.`,
           [r.name], `${r.total} POINTS`));
@@ -525,8 +593,13 @@ const stayOrFold = {
       beats, self: this,
       sortBy: (a, b) => b.total - a.total,
       scoreOf: r => r.total,
+      // The three jobs are reported separately, because "aptitude 6.2" tells a
+      // reader nothing about a competition where one number reads the card and
+      // a different one decides what to do about it.
       breakdownOf: r => ({ base: r.base, roll: round2(r.luck), total: r.total, folds: r.folds,
-        wiped: r.wiped, rounds: r.rounds, threw: r.threw, threwChance: r.threwChance }),
+        wiped: r.wiped, pushed: r.pushed,
+        read: round2(r.read * 10), nerve: round2(r.nerve * 10), table: round2(r.table * 10),
+        rounds: r.rounds, threw: r.threw, threwChance: r.threwChance }),
     });
   },
 };

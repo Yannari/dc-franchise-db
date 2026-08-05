@@ -27,7 +27,7 @@
 
 import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { addBond } from '../bonds.js';
+import { addBond, getPerceivedBond } from '../bonds.js';
 import { makePicker, clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
@@ -96,25 +96,66 @@ function pickEntrant(house, rng) {
 /**
  * Does the offer get taken?
  *
- * Proportional and never gated, but the stat that dominates is loyalty, which
- * is the only place in this engine where loyalty buys nothing and costs
- * something. Boldness and strategic play push towards yes; a hero or a
- * loyal-soldier has to talk themselves into it.
+ * Two halves, and the second one was missing entirely.
+ *
+ * WHO THEY ARE. Boldness and strategic play push towards yes; loyalty pushes
+ * hard against, because this is the one place in the engine where loyalty
+ * costs you something — the price is paid by somebody else.
+ *
+ * WHERE THEY STAND. A houseguest who can feel the week closing on them and a
+ * houseguest nobody has thought about all season were evaluating that envelope
+ * identically, which is exactly backwards: the whole point of a temptation is
+ * that it is worth most to the person who needs it most. Being somebody's
+ * target, having nobody left, and having spent time on the block all push
+ * towards taking it — and a comfortable houseguest can afford the principle.
+ *
+ * Everything proportional, nothing gated, so a safe villain still grabs it and
+ * a desperate hero can still refuse.
  */
-function acceptRead(name, rng) {
+function acceptRead(name, rng, { house = [], hoh = null } = {}) {
   const st = pStats(name);
   const archetype = players.find(p => p.name === name)?.archetype;
   const nice = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(archetype);
   const wicked = ['villain', 'mastermind', 'schemer'].includes(archetype);
 
-  const pull = 0.42
+  // Base tuned against the REAL roster rather than a flat 5-across cast: it
+  // averages loyalty 6.07, so the old numbers put an ordinary houseguest under
+  // a coin flip and a loyal one near a quarter. On the show almost every
+  // temptation offered was taken — refusing is the exception worth writing a
+  // scene about, not the default — so an ordinary houseguest now says yes
+  // about six times in ten and it is the principled ones who hold out.
+  const who = 0.60
     + st.boldness * 0.035
     + st.strategic * 0.028
-    - st.loyalty * 0.055
+    - st.loyalty * 0.045
     + (wicked ? 0.16 : 0)
     - (nice ? 0.14 : 0);
-  return rng() < clamp(pull, 0.05, 0.94);
+
+  // ── where they stand ──
+  const room = (house || []).filter(n => n && n !== name);
+  // Everybody who is currently aiming at them. Being hunted by the house is
+  // the clearest reason to take something that stops a nomination.
+  const hunted = room.filter(n => gs.intentions?.[n]?.targets?.[0] === name).length;
+  // The person holding the keys aiming at you is worth more than anybody else.
+  const hohAim = hoh && gs.intentions?.[hoh]?.targets?.[0] === name ? 1 : 0;
+  // Nobody to hide behind. Mean perceived bond across the room, so a
+  // well-liked houseguest reads as safe and an isolated one does not.
+  const warmth = room.length
+    ? room.reduce((sum, n) => sum + (() => { try { return getPerceivedBond(name, n); } catch { return 0; } })(), 0) / room.length
+    : 0;
+  // And what has already happened to them this season.
+  const blocked = Number(gs.bb?.stats?.[name]?.timesOnTheBlock || 0);
+
+  const exposure =
+      hunted * 0.09
+    + hohAim * 0.16
+    + Math.max(0, -warmth) * 0.055
+    - Math.max(0, warmth) * 0.030
+    + Math.min(3, blocked) * 0.05;
+
+  return rng() < clamp(who + exposure, 0.05, 0.94);
 }
+
 
 /**
  * Run the Den for this week. Returns an act, or null if it cannot run.
@@ -142,7 +183,7 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
 
   beats.push(beat(say(OFFER)(entrant, pr, def.name), [entrant], 'THE DEN', 'gold'));
 
-  const accepted = acceptRead(entrant, rng);
+  const accepted = acceptRead(entrant, rng, { house: room, hoh: week?.hoh || null });
 
   if (!accepted) {
     beats.push(beat(say(DECLINE)(entrant, pr), [entrant], 'DECLINED', 'grey'));

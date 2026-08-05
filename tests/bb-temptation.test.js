@@ -12,7 +12,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
-import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { heldPowers, BB_POWER_DEFINITIONS } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
@@ -337,5 +337,63 @@ describe('in a played week', () => {
     for (const b of act.beats) {
       expect(html, `a beat never reached the screen: ${b.badgeText}`).toContain(b.text.slice(0, 40));
     }
+  });
+});
+
+describe('where they stand, not just who they are', () => {
+  // The read was personality only — boldness, strategic, loyalty, archetype —
+  // so a houseguest who could feel the week closing on them and one nobody had
+  // thought about all season evaluated that envelope identically. A temptation
+  // is worth most to whoever needs it most, and that was nowhere in it.
+  const RUNS = 120;
+
+  function acceptRate(prep) {
+    let took = 0, total = 0;
+    for (let seed = 1; seed <= RUNS; seed++) {
+      house();
+      gs.intentions = {};
+      prep();
+      const act = withSeededRandom(seed, () => runDenOfTemptation({
+        week: { num: 1, hoh: gs.activePlayers[0] }, house: [...gs.activePlayers],
+        rng: Math.random, offered: 'the-cloud',
+      }));
+      if (!act) continue;
+      total++;
+      if (act.accepted) took++;
+    }
+    return total ? took / total : 0;
+  }
+
+  it('takes it far more often when there is nobody left to hide behind', () => {
+    const comfortable = acceptRate(() => {
+      const hs = gs.activePlayers;
+      for (const a of hs) for (const b of hs) if (a < b) addBond(a, b, 7);
+    });
+    const isolated = acceptRate(() => {
+      const hs = gs.activePlayers;
+      for (const a of hs) for (const b of hs) if (a < b) addBond(a, b, -6);
+    });
+    expect(isolated, `isolated ${isolated.toFixed(2)} vs comfortable ${comfortable.toFixed(2)}`)
+      .toBeGreaterThan(comfortable + 0.15);
+  });
+
+  it('takes it more often when the house is aiming at them', () => {
+    const quiet = acceptRate(() => {});
+    const hunted = acceptRate(() => {
+      const hs = gs.activePlayers;
+      for (const n of hs) gs.intentions[n] = { targets: [hs[(hs.indexOf(n) + 1) % hs.length]] };
+    });
+    expect(hunted, `hunted ${hunted.toFixed(2)} vs quiet ${quiet.toFixed(2)}`)
+      .toBeGreaterThan(quiet);
+  });
+
+  it('is not so reluctant that refusing becomes the norm', () => {
+    // The reported symptom: everybody refused. On the show almost every
+    // temptation offered was taken — refusing is the exception worth writing a
+    // scene about. Tuned against the REAL roster, which averages loyalty 6.07
+    // rather than the flat 5 the first version assumed.
+    const base = acceptRate(() => {});
+    expect(base, `an ordinary week accepts only ${(base * 100).toFixed(0)}% of the time`)
+      .toBeGreaterThan(0.33);
   });
 });

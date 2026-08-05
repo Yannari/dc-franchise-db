@@ -438,7 +438,15 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
     const before = [...(gs.activePlayers || [])];
     gs.activePlayers = [...side];
     try {
-      return simulateBBWeek({ ...common, house: side, preCrownedHoh, segment });
+      // The side is told it IS a side. `segment` alone cannot say so — a
+      // double eviction's second cycle carries one too — and the house event
+      // pool needs to know it is playing half a week behind a wall, plus who
+      // is on the other side of it, to write about the people who are not
+      // there.
+      return simulateBBWeek({ ...common, house: side, preCrownedHoh, segment,
+        splitSide: segment === 1 ? 'A' : 'B',
+        splitOther: segment === 1 ? [...sideB] : [...sideA],
+        splitPicks: picks.map(p => ({ ...p })) });
     } finally {
       gs.activePlayers = before;
     }

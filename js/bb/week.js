@@ -987,6 +987,14 @@ export function simulateBBWeek(options = {}) {
   week.compressed = compressed;
   if (options.segment) week.segment = options.segment;
   else if (compressed) week.segment = 2;
+  // A half-house behind a wall, and who is on the other side of it. Recorded
+  // rather than inferred: `segment` is also set by a compressed second cycle,
+  // so nothing downstream can tell the two apart without this.
+  if (options.splitSide) {
+    week.splitSide = options.splitSide;
+    week.splitOther = [...(options.splitOther || [])];
+    week.splitPicks = (options.splitPicks || []).map(p => ({ ...p }));
+  }
   // The resolved twist contract: every rule a twist may change, merged with
   // an applied log saying which twist changed what. The engine consults the
   // RULES at its interception points rather than asking for twists by name;

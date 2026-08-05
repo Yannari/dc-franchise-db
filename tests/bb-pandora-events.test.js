@@ -87,6 +87,29 @@ describe('the Pandora family', () => {
     expect(checked, 'no beats were ever checked').toBeGreaterThan(0);
   });
 
+  it('adds no screen of its own', () => {
+    // The rule the Hacker had to learn: a twist's reactions go INSIDE the
+    // house life the house was already having. These are scheduled house
+    // events rather than acts pushed by the twist, so they cannot add a
+    // stretch — this is the guard that keeps it that way.
+    house();
+    seasonConfig.twistSchedule = [];
+    const plain = withSeededRandom(4242, () => simulateBBEpisode());
+    const plainHouse = (plain.acts || []).filter(a => a.type === 'house').length;
+
+    let boxWeeks = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      house(['bb-pandoras-box']);
+      const ep = withSeededRandom(seed * 71 + 3, () => simulateBBEpisode());
+      if (!ep.acts?.some(a => a.type === 'pandoras-box')) continue;
+      boxWeeks++;
+      const boxHouse = (ep.acts || []).filter(a => a.type === 'house').length;
+      expect(boxHouse, 'a box week grew an extra House Life stretch')
+        .toBeLessThanOrEqual(plainHouse);
+    }
+    expect(boxWeeks, 'no box week was produced to compare').toBeGreaterThan(0);
+  });
+
   it('stays silent when the Head of Household is invisible', () => {
     // A sealed week has no public owner for the box, and every one of these
     // events talks ABOUT that owner — so naming one would out the Invisible

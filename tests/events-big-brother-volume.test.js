@@ -179,9 +179,18 @@ describe('the Big Brother event library as a whole', () => {
     const hackerFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('hacker-')));
     const roadkillFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('roadkill-')));
     const pandoraFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('pandora-')));
+    // The split family is unreachable from THIS harness by construction, not
+    // by accident: a split week is assembled in bb-run's simulateBBEpisode,
+    // which crowns two Heads of Household and runs the week engine twice over
+    // disjoint rosters. This sweep calls simulateBBWeek directly, so no amount
+    // of scheduling here produces a side for them to fire on. Their
+    // reachability lives in tests/bb-split-events.test.js, which plays real
+    // episodes.
+    const splitFamily = new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith('split-')));
     const never = HOUSE_EVENTS.map(e => e.id)
       .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
-        && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id));
+        && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id)
+        && !splitFamily.has(id));
     expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
     const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
     expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')

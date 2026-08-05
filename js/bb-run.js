@@ -31,6 +31,23 @@ import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
+import { ACQUISITION_LABEL, twistChannel } from './bb/twist-contract.js';
+
+/**
+ * How a twist hands its power out, for the Format Designer card.
+ *
+ * A FUNCTION rather than the map itself: main.js copies only functions onto
+ * window, so an exported object never arrives in the bare-globals world — the
+ * same trap that left the Pandora's Box cargo dropdown with one item in it.
+ *
+ * @returns {{channel,verb,tag,hint}|null} null when the twist hands out nothing
+ */
+export function twistChannelBadge(twistId) {
+  const channel = twistChannel(twistId);
+  if (!channel) return null;
+  const label = ACQUISITION_LABEL[channel];
+  return label ? { channel, ...label } : { channel, verb: channel, tag: channel.toUpperCase(), hint: '' };
+}
 // The Format Designer stocks the care package shelf from this the same way it
 // stocks the box and the doors from the power inventory.
 export { CARE_PACKAGES } from './bb/care-package.js';

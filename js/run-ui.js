@@ -1806,6 +1806,14 @@ export function renderTwistCatalog() {
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
+          ${(() => {
+    // How this twist hands its power over, if it hands one over at all.
+    // Eight distributors filed under "Advantages" read as one thing; won /
+    // given / found / bought / offered are five, and it is the axis a season
+    // is actually built along.
+    const b = typeof twistChannelBadge === 'function' ? twistChannelBadge(t.id) : null;
+    return b ? `<span class="twist-channel tc-${b.channel}" title="${b.hint}">${b.tag}</span>` : '';
+  })()}
           <span class="twist-phase">${t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
         <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>

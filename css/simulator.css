@@ -758,6 +758,23 @@
     .spl-why       { margin:6px 2px 0; font-size:10.5px; line-height:1.4; color:#8b949e;
                      text-align:center; }
 
+    /* ── how a power reaches somebody ──────────────────────────────────
+       Eight distributors all filed under "Advantages" told you nothing. The
+       channel is the axis a season is actually built along — three powers
+       nobody can earn plays completely differently from three you compete for
+       — so it rides on the card in its own colour. */
+    .twist-channel { display:inline-block; font-family:ui-monospace,Consolas,monospace;
+                     font-size:8px; letter-spacing:1.1px; padding:1px 5px; border-radius:3px;
+                     margin-bottom:2px; border:1px solid currentColor; opacity:.9; }
+    .twist-channel.tc-veto-competition,
+    .twist-channel.tc-dedicated-competition { color:#3fb950; }   /* you can play for it */
+    .twist-channel.tc-audience             { color:#57a6e8; }   /* you cannot */
+    .twist-channel.tc-pandoras-box         { color:#e3b341; }   /* you gamble */
+    .twist-channel.tc-temptation           { color:#c9343c; }   /* somebody pays */
+    .twist-channel.tc-purchase             { color:#d29922; }
+    .twist-channel.tc-hidden-search        { color:#c084fc; }   /* you go and look */
+    .twist-channel.tc-random-draw          { color:#8b949e; }
+
     /* ── the Whacktivity doors ─────────────────────────────────────────
        Three doorways side by side, each one lit in its power's colour, with
        the people who chose it queued underneath. The drama is the CROWD: you

@@ -16625,9 +16625,15 @@ function _bbfBondLabel(v) {
  * Falls back to the bare avatar when the week has no board (old saves, and any
  * cycle that ended before the snapshot was taken), so nothing breaks on replay.
  */
-function _bbfHold(name, members, boardFor) {
+function _bbfHold(name, members, boardFor, away = false) {
   const board = typeof boardFor === 'function' ? boardFor(members) : null;
   const row = board?.members?.find(m => m.name === name);
+  // Behind the wall: no hold is shown, because on a split week nobody on this
+  // side knows how that person is holding up. Present, unreachable, greyed.
+  if (away) {
+    return `<span class="bbf-hold is-away" title="${_bbEsc(name)} — on the other side of the wall">
+      ${_bbAvatar(name, 22)}<b>·</b></span>`;
+  }
   if (!row) return _bbAvatar(name, 22);
   const v = row.loyalty;
   const tone = v >= 7 ? '#3fb950' : v >= 5 ? '#57a6e8' : v >= 3.5 ? '#d29922' : '#f47067';
@@ -16724,6 +16730,18 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
   // board is the end-of-week snapshot, so a group that recruited somebody on
   // Wednesday has two different member sets and an exact match finds nothing.
   // Most-shared-members is stable against both.
+  // ── the wall ──
+  //
+  // On a Split House this panel is drawn once per side, and an alliance does
+  // not stop existing because it was cut in half — it stops being REACHABLE.
+  // Members on the other side are shown greyed rather than dropped, because
+  // the interesting fact about a five in a split week is that only two of them
+  // are on this side of the wall and the alliance cannot vote as itself.
+  const wallSide = act?.side || null;
+  const onThisSide = wallSide && ep?.splitHouse?.sides?.[wallSide]
+    ? new Set(ep.splitHouse.sides[wallSide]) : null;
+  const away = n => !!onThisSide && !onThisSide.has(n);
+
   const boardFor = members => {
     const want = new Set(members || []);
     if (want.size < 2) return null;
@@ -16797,14 +16815,15 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
       <div class="bbf-panel-h">Alliances in play<small>${alliances.length || 'none'}</small></div>
       ${alliances.length ? alliances.map(a => `<div class="bbf-ally">
           <span class="bbf-ally-n">${a.name}</span>
-          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor)).join('')}</span>
-          <span class="bbf-ally-c">${a.members.length}</span>
+          <span class="bbf-ally-m">${a.members.map(m => _bbfHold(m, a.members, boardFor, away(m))).join('')}</span>
+          <span class="bbf-ally-c">${onThisSide
+            ? `${a.members.filter(m => !away(m)).length}/${a.members.length}` : a.members.length}</span>
         </div>`).join('')
         : `<div style="font-size:11px;color:#484f58">Nothing anybody has been willing to name.</div>`}
       ${showmances.length ? `<div class="bbf-panel-h" style="margin-top:12px">Showmances<small>${showmances.length}</small></div>
         ${showmances.map(sh => `<div class="bbf-ally">
           <span class="bbf-ally-n" style="color:#ff7b72">${(sh.players || []).join(' &amp; ')}</span>
-          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor)).join('')}</span>
+          <span class="bbf-ally-m">${(sh.players || []).map(m => _bbfHold(m, sh.players || [], boardFor, away(m))).join('')}</span>
         </div>`).join('')}` : ''}
     </div>
   </div>`;

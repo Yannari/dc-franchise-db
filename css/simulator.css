@@ -748,6 +748,10 @@
                      gap:1px; margin-right:3px; vertical-align:top; }
     .bbf-hold b    { font-family:ui-monospace,Consolas,monospace; font-size:9px;
                      font-weight:700; line-height:1; }
+    /* Behind the wall on a Split House: present in the alliance, unreachable
+       this week, and no hold shown because nobody on this side can see it. */
+    .bbf-hold.is-away        { opacity:.32; filter:grayscale(1); }
+    .bbf-hold.is-away b      { color:#6e7681; }
     .bbf-hold.is-weak img, .bbf-hold.is-weak .rp-portrait {
                      outline:1.5px solid #c9343c; outline-offset:1px; border-radius:4px; }
 

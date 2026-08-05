@@ -18,7 +18,7 @@ import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/c
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
-import { buildVPScreens } from '../js/vp-screens.js';
+import { buildVPScreens, rpBuildBBHouseLife } from '../js/vp-screens.js';
 import { generateBBSummaryText } from '../js/text-backlog.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -177,6 +177,33 @@ describe('the night runs in the order it happened', () => {
       expect(noms, `side ${seg} never nominated`).toBeGreaterThan(-1);
       const before = acts.slice(0, noms).filter(a => a.type === 'house');
       expect(before.length, `side ${seg} had ${before.length} stretches before nominations`).toBe(1);
+    }
+  });
+});
+
+describe('the alliance panel shows the wall', () => {
+  it('greys the members on the other side instead of dropping them', () => {
+    // A five does not stop existing because the house was cut in half. It
+    // stops being REACHABLE — and the interesting fact on a split week is that
+    // only two of them are on this side and it cannot vote as itself.
+    let ep = null;
+    for (let seed = 1; seed <= 20 && !ep; seed++) {
+      const played = play(seed * 3, [{ id: 't1', episode: 1, type: 'bb-split-house' }]);
+      const houseActs = (played.acts || []).filter(a => a.type === 'house' && a.side);
+      if (houseActs.length && (played.allianceBoard || []).length) ep = played;
+    }
+    if (!ep) return; // no alliance formed before the wall in any seed; nothing to assert
+    const act = (ep.acts || []).find(a => a.type === 'house' && a.side);
+    const html = rpBuildBBHouseLife(ep, act, 1);
+    const mine = new Set(ep.splitHouse.sides[act.side] || []);
+    const others = (ep.houseAtStart || []).filter(n => !mine.has(n));
+
+    // Anybody from the far side who appears in this panel is greyed, never
+    // shown with a hold this side could not know.
+    for (const name of others) {
+      const at = html.indexOf(`title="${name} — on the other side of the wall"`);
+      if (at === -1) continue;
+      expect(html.slice(at - 120, at)).toMatch(/is-away/);
     }
   });
 });

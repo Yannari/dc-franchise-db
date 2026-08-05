@@ -19,6 +19,8 @@ import { simulateBBWeek } from './bb/week.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { scheduleHouseBeats } from './bb/house-events.js';
 import { getPerceivedBond } from './bonds.js';
+import { knownBlocsFor } from './bb/blocs.js';
+import { getBBTarget } from './bb/shared-strategy.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 // The dispatcher's own fallbacks — listed in the pinning dropdowns so "an
 // ordinary one this week" is an authorable choice, not just what you get.
@@ -417,42 +419,92 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
 
   // ── the schoolyard pick ──
   //
-  // They alternate, and they pick the people they want to be locked in with:
-  // an ally is a vote on your side of the wall and a body on the other side is
-  // one you cannot reach. Highest perceived bond first, which is exactly how a
-  // schoolyard pick goes.
+  // Not "take whoever you like most". A wall splits the house into two games
+  // and the pick is the last decision anybody makes with the whole house in
+  // the room, so it is played on what the picker actually KNOWS:
+  //
+  //   the target   somebody you want gone has to be on YOUR side, because you
+  //                cannot nominate through a wall. Taking your target is not
+  //                affection, it is the only way to reach them.
+  //   the split    a bloc you have worked out is a bloc you can break. Pull one
+  //                member across and the rest of it spends the week on the
+  //                other side of a wall without their numbers.
+  //   the numbers  a side is a voting bloc for a week. Somebody who will vote
+  //                the way you ask is worth more than somebody you merely like.
+  //   isolation    take a person AWAY from everybody they trust and they arrive
+  //                on your side with nobody — which is what makes them nominate
+  //                -able without costing you anything.
+  //
+  // All proportional, all noisy, and the reason recorded is whichever term
+  // actually decided it rather than a label chosen afterwards.
   const sideA = [hohA];
   const sideB = [hohB];
   const pool = house.filter(n => n !== hohA && n !== hohB);
   let picking = hohA;
   const picks = [];
+  const safely = (fn, fallback) => { try { return fn(); } catch { return fallback; } };
+
   while (pool.length) {
     const side = picking === hohA ? sideA : sideB;
-    let best = pool[0], bestScore = -Infinity;
-    for (const name of pool) {
-      let score = 0;
-      try { score = getPerceivedBond(picking, name); } catch { score = 0; }
-      score += (Math.random() - 0.5) * 1.4;      // nobody picks perfectly
-      if (score > bestScore) { bestScore = score; best = name; }
-    }
-    side.push(best);
-    // WHY they took that name. A schoolyard pick with no reasoning is a list,
-    // and the whole drama of the wall is watching somebody take an ally, take
-    // a body away from the other side, or reach for a stranger because
-    // everybody they trust has already gone.
-    const bond = (() => { try { return getPerceivedBond(picking, best); } catch { return 0; } })();
     const rival = picking === hohA ? hohB : hohA;
-    const theirBond = (() => { try { return getPerceivedBond(rival, best); } catch { return 0; } })();
-    const why = bond >= 5
-      ? `${best} is one of ${picking}'s, and a vote on the wrong side of that wall is a vote ${picking} cannot reach`
-      : theirBond >= 5
-        ? `${best} is closer to ${rival} than to ${picking} — taking ${best} is less about wanting ${best} and more about ${rival} not having ${best}`
-        : bond <= -3
-          ? `${picking} does not like ${best} at all, and would rather have ${best} where ${picking} can watch ${best} than loose on the other side`
-          : pool.length <= 2
-            ? `there is nobody left to want. ${best} goes to ${picking} because somebody has to`
-            : `${picking} barely knows ${best}, which this early is its own kind of safe`;
-    picks.push({ by: picking, picked: best, why, bond: Math.round(bond * 10) / 10 });
+    const mine = picking === hohA ? sideA : sideB;
+    const myTarget = safely(() => getBBTarget(picking), null);
+    // Groups this picker has actually worked out, strongest read first. A bloc
+    // they have not noticed cannot be a reason for anything.
+    const known = safely(() => knownBlocsFor(picking), []) || [];
+
+    let best = pool[0], bestScore = -Infinity, bestWhy = null;
+    for (const name of pool) {
+      const bond = safely(() => getPerceivedBond(picking, name), 0);
+      const theirs = safely(() => getPerceivedBond(rival, name), 0);
+      // Who this person has left in the pool, and who they already have on my
+      // side — the difference between taking somebody and isolating them.
+      const closeTo = n => safely(() => getPerceivedBond(name, n), 0) >= 3.5;
+      const alliesLoose = pool.filter(n => n !== name && closeTo(n)).length;
+      const alliesMine = mine.filter(closeTo).length;
+      // Somebody with nobody ANYWHERE is a floater, not an isolation play.
+      // Isolating means cutting a person off from people they actually have.
+      const alliesAnywhere = house.filter(n => n !== name && closeTo(n)).length;
+      const inKnownBloc = known.find(k => k.bloc.members.includes(name));
+      // Splitting only counts while part of that bloc is still unclaimed.
+      const blocLoose = inKnownBloc
+        ? inKnownBloc.bloc.members.filter(m => pool.includes(m) && m !== name).length : 0;
+
+      const reasons = [
+        { key: 'target', v: myTarget === name ? 3.4 : 0 },
+        { key: 'split', v: blocLoose ? 1.5 + (inKnownBloc.read || 0) * 0.7 : 0 },
+        { key: 'numbers', v: Math.max(0, bond) * 0.42 + alliesMine * 0.5 },
+        { key: 'isolate', v: alliesAnywhere >= 2 && alliesLoose === 0 && bond < 3 ? 1.9 : 0 },
+        { key: 'deny', v: Math.max(0, theirs - bond) * 0.34 },
+      ].sort((x, y) => y.v - x.v);
+
+      const score = reasons.reduce((sum, r) => sum + r.v, 0) + (Math.random() - 0.5) * 1.4;
+      if (score > bestScore) {
+        bestScore = score; best = name;
+        bestWhy = reasons[0].v > 0.35 ? reasons[0].key : 'nobody-left';
+        bestWhy = { key: bestWhy, bloc: inKnownBloc?.bloc?.label || null, alliesAnywhere };
+      }
+    }
+
+    side.push(best);
+    const bond = safely(() => getPerceivedBond(picking, best), 0);
+    const w = bestWhy || { key: 'nobody-left' };
+    const why = w.key === 'target'
+      ? `${best} is who ${picking} came into this week wanting gone, and you cannot nominate through a wall — taking ${best} is the only way to reach ${best} at all`
+      : w.key === 'split'
+        ? `${picking} has worked out ${w.bloc || 'that group'} and is taking a piece of it. The rest of them spend the week on the other side of a wall, one body short`
+        : w.key === 'numbers'
+          ? `${picking} needs votes more than friends this week, and ${best} is a vote ${picking} can actually ask for`
+          : w.key === 'isolate'
+            ? `every person ${best} trusts has already gone to one side or the other. Pulled across now, ${best} arrives with nobody to run to — which is what makes ${best} nominateable`
+            : w.key === 'deny'
+              ? `${best} is closer to ${rival} than to ${picking}. This is less about wanting ${best} and more about ${rival} not having ${best}`
+              : `there is nobody left to want. ${best} goes to ${picking} because somebody has to`;
+
+    picks.push({
+      by: picking, picked: best, why, reason: w.key,
+      bond: Math.round(bond * 10) / 10,
+    });
     pool.splice(pool.indexOf(best), 1);
     picking = picking === hohA ? hohB : hohA;
   }
@@ -802,23 +854,10 @@ export function summariseWeek(week) {
 
   for (const act of week.acts || []) {
     switch (act.type) {
-      case 'split-house': {
-        line('');
-        line('THE HOUSE IS SPLIT');
-        _competition(line, act.crowning);
-        line(`  ${(act.hohs || []).join(' and ')} are the two Heads of Household.`);
-        for (const owner of act.hohs || []) {
-          line(`  ${owner}'s side: ${(act.sides?.[owner] || []).join(', ')}.`);
-        }
-        if ((act.picks || []).length) {
-          line('  The pick, in order:');
-          for (const pk of act.picks) {
-            line(`    ${pk.by} takes ${pk.picked}${pk.why ? ` — ${pk.why}` : ''}.`);
-          }
-        }
-        line('  The two sides will not see or speak to each other again until eviction night.');
-        break;
-      }
+      // NOTE: no 'split-house' case here on purpose. That act lives on the
+      // EPISODE and neither half-week carries it, so a branch here could never
+      // fire on a real season — it read as coverage and was doing nothing. The
+      // in-app backlog is built from the episode and does write it in full.
       case 'hoh':
         line('');
         line(act.secret ? 'HEAD OF HOUSEHOLD — RESULT SEALED'

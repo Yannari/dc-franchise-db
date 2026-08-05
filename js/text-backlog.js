@@ -4524,7 +4524,10 @@ export function generateBBSummaryText(ep) {
         if (act.opened) {
           // The transcript is a public record: it carries the claim, never
           // the prize. The Debug panel owns the truth.
-          ln(`  ${act.hoh} opens it. The house pays the price, and ${act.hoh} claims the box held ${act.publicClaim}.`);
+          ln(`  ${act.hoh} opens it — and pays for it in ${act.consequenceName || 'public'},`);
+          ln(`  worn all week, while claiming the box held ${act.publicClaim}.`);
+          ln('  The prize is never named. The price cannot be hidden, which is the');
+          ln('  whole difficulty of selling the claim.');
         } else {
           ln(`  ${act.hoh} leaves it closed.`);
         }

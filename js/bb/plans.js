@@ -21,7 +21,7 @@ import { gs, players } from '../core.js';
 import { getBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { evaluateEndgameBeatability } from '../intentions.js';
-import { bbThreatProfile, bbHeat } from './shared-strategy.js';
+import { bbThreatProfile, bbHeat, knownPowersOf } from './shared-strategy.js';
 
 const clamp01 = n => Math.max(0, Math.min(1, n));
 
@@ -255,6 +255,29 @@ export function formHousePlan(name, { house = houseNow(), week = null } = {}) {
   preferredCore.forEach(n => { origins.preferredCore[n] = 'closest thing to trust they have in this house'; });
   backupAllies.forEach(n => { origins.backupAllies[n] = 'fallback if the core does not hold'; });
   targets.forEach(n => { origins.targets[n] = 'dangerous, and not on their side'; });
+  // ── and the specific reason, when there is one everybody can see ──
+  //
+  // A publicly held power already moves the threat model, so a holder is more
+  // likely to be a target than they were. The REASON was still the generic one,
+  // which meant a houseguest went up for holding a Coup d'Etat and the plan
+  // recorded it as "dangerous, and not on their side" — the right nomination
+  // with the wrong story attached to it, and the story is what the transcripts
+  // and the screens read back.
+  //
+  // Secret powers deliberately do not appear here. The house cannot cite a
+  // reason it was never given.
+  const planWeek = (gs.episode || 0) + 1;
+  targets.forEach(n => {
+    const held = knownPowersOf(n, planWeek);
+    if (!held.length) return;
+    const first = held[0];
+    origins.targets[n] = held.length > 1
+      ? `holding ${held.length} powers this house has been told about`
+      : first.weeksLeft > 0
+        ? `holding ${first.name}, and it does not expire for ${first.weeksLeft === 1
+          ? 'another week' : `${first.weeksLeft} more weeks`}`
+        : `holding ${first.name}, and this is the last week it can go off`;
+  });
   revenge.forEach(n => { origins.revenge[n] = 'resentment crossed the line into a grudge'; });
   partners.slice(0, 2).forEach(n => { origins.finalThree[n] = 'confirmed by a deal they actually shook on'; });
   if (shield) origins.shield[shield.name] = shield.why;

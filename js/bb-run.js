@@ -992,7 +992,8 @@ export function summariseWeek(week) {
         line('');
         line("PANDORA'S BOX");
         line(act.opened
-          ? `  ${act.hoh} opens the box. The house pays; ${act.hoh} claims it held ${act.publicClaim}.`
+          ? `  ${act.hoh} opens the box, and pays for it in ${act.consequenceName || 'public'};`
+            + ` ${act.hoh} claims it held ${act.publicClaim}.`
           : `  ${act.hoh} leaves the box closed.`);
         break;
       case 'diamond-detonation':

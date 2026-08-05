@@ -16,7 +16,7 @@ import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
-import { punishedHaveNots } from './punishments.js';
+import { punishedHaveNots, applyPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import {
@@ -1538,13 +1538,6 @@ export function simulateBBWeek(options = {}) {
           week, house, hoh, rng, forced: options.carePackageForced || null,
         });
       if (week.carePackage) {
-        // A slop punishment is real slop, and the have-not act has already run
-        // by now, so it is merged in rather than chosen there.
-        const punished = punishedHaveNots(week.num).filter(n => house.includes(n));
-        if (punished.length) {
-          week.haveNots = [...new Set([...(week.haveNots || []), ...punished])];
-          gs.bb.haveNots = [...week.haveNots];
-        }
         week.acts.push(addBeats(week.carePackage, { players: [week.carePackage.recipient] }));
       }
     } catch { week.carePackage = null; }
@@ -1607,7 +1600,29 @@ export function simulateBBWeek(options = {}) {
       // Matt told — the prize itself never appears in a public field.
       const claims = ['a dollar', 'a protein bar', 'a photo from home', 'twenty-four hours of elevator music'];
       boxAct.publicClaim = claims[Math.floor(rng() * claims.length)];
-      boxAct.consequence = 'backyard-lockdown';
+
+      // ── the price, which used to be a string ──
+      //
+      // `consequence: 'backyard-lockdown'` was narration with nothing behind
+      // it: the box cost a paragraph and a popularity point. It costs a real
+      // punishment now, and the punishment lands on the HOH — they opened it
+      // for personal gain, so they pay the visible half of a secret win.
+      //
+      // Which is the best interaction this twist has. The prize is invisible
+      // and the price is not, so the house spends the week looking at a Head
+      // of Household in a costume, knowing they opened that box for SOMETHING,
+      // and never finding out what. It also makes the lie much harder to sell:
+      // nobody gets put in a unitard over a protein bar.
+      //
+      // Costumes only. Slop is the Have-Not economy's currency and borrowing
+      // it here would quietly make a second have-not every time the box opens.
+      const wearable = Object.keys(BB_PUNISHMENTS)
+        .filter(id => !BB_PUNISHMENTS[id].slop && !BB_PUNISHMENTS[id].tether);
+      const priceId = wearable[Math.floor(rng() * wearable.length)] || 'red-unitard';
+      const priceDef = BB_PUNISHMENTS[priceId];
+      applyPunishment(hoh, priceId, { week: week.num });
+      boxAct.consequence = priceId;
+      boxAct.consequenceName = priceDef.name;
       if (seasonConfig.popularityEnabled !== false) {
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[hoh] = (gs.popularity[hoh] || 0) - 1;
@@ -1618,17 +1633,19 @@ export function simulateBBWeek(options = {}) {
       for (const reader of readers) {
         _cappedBondWindow(() => addBond(reader, hoh, -0.3));
         boxAct.socialBeats.push({
-          text: `${reader} listens to ${hoh} explain that the box held ${boxAct.publicClaim}, nods along, and believes approximately none of it. Nobody locks down a backyard over ${boxAct.publicClaim}.`,
+          text: `${reader} listens to ${hoh} explain that the box held ${boxAct.publicClaim}, nods along, and believes approximately none of it. Nobody gets put in ${priceDef.name} over ${boxAct.publicClaim}.`,
           players: [reader, hoh], badgeText: 'SMELLS A LIE', badgeClass: 'grey',
           eventId: 'pandoras-box-doubt', category: 'ceremonies', location: 'backyard',
           effects: [{ kind: 'bond', text: `${reader} & ${hoh} -0.3`, delta: -0.3 }],
         });
       }
       boxAct.socialBeats.unshift({
-        text: `The backyard doors lock with everybody's laundry still on the line, and a voice announces that the house can thank ${hoh} for it. ${hoh} emerges from the HOH room holding, apparently, ${boxAct.publicClaim}.`,
+        text: `${hoh} emerges from the HOH room in ${priceDef.name}, holding, apparently, ${boxAct.publicClaim}. `
+          + `${priceDef.cost} Whatever was actually in that box, it is going to have to be worth a week of this.`,
         players: [hoh], badgeText: 'THE PRICE', badgeClass: 'red',
         eventId: 'pandoras-box-consequence', category: 'ceremonies', location: 'backyard',
-        effects: [{ kind: 'pop', text: `${hoh} -1`, delta: -1 }],
+        effects: [{ kind: 'pop', text: `${hoh} -1`, delta: -1 },
+          { kind: 'punishment', text: `${hoh}: ${priceDef.name}` }],
       });
     } else {
       boxAct.socialBeats.push({
@@ -1637,8 +1654,24 @@ export function simulateBBWeek(options = {}) {
         eventId: 'pandoras-box-declined', category: 'ceremonies', location: 'hoh-room',
       });
     }
-    week.pandorasBox = { hoh, opened, publicClaim: boxAct.publicClaim || null };
+    week.pandorasBox = { hoh, opened, publicClaim: boxAct.publicClaim || null,
+      punishmentId: boxAct.consequence || null, punishment: boxAct.consequenceName || null };
     week.acts.push(boxAct);
+  }
+
+  // ── slop handed out by a PUNISHMENT, from wherever ──
+  //
+  // The have-not act ran before any of these distributors, so a punishment
+  // that puts somebody on slop has to merge into the list rather than choose
+  // from it. This used to live inside the care package block, which meant it
+  // only worked for the one source that existed at the time; it is general
+  // now, so anything that can punish can put somebody on slop.
+  if (!compressed) {
+    const punished = punishedHaveNots(week.num).filter(n => house.includes(n));
+    if (punished.length) {
+      week.haveNots = [...new Set([...(week.haveNots || []), ...punished])];
+      gs.bb.haveNots = [...week.haveNots];
+    }
   }
 
   // The house now knows who holds power, and reacts to it.

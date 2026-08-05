@@ -10,6 +10,7 @@ import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { visibleCentrality } from './blocs.js';
 import { reignHeat } from './reign.js';
+import { BB_POWER_DEFINITIONS } from './powers.js';
 import {
   evaluatePitchResponse, propagatePitchLeaks,
   resolveCompetingPitches, resolvePitchCounterplay,
@@ -170,6 +171,19 @@ export function bbAllianceStrength(a, b) {
  *                        know, and pretending otherwise would hand it a read it
  *                        never earned.
  */
+export function knownPowersOf(name, week = 0) {
+  let store = [];
+  try { store = gs.bb?.powers || []; } catch { return []; }
+  return store
+    .filter(p => p.holder === name && p.visibility === 'public'
+      && !p.used && !p.disposed && (!week || week <= p.expiresAfterWeek))
+    .map(p => ({
+      powerId: p.powerId,
+      name: BB_POWER_DEFINITIONS[p.powerId]?.name || p.powerId,
+      weeksLeft: Math.max(0, p.expiresAfterWeek - week),
+    }));
+}
+
 export function knownPowerWeight(name, week = 0) {
   let store = [];
   try { store = gs.bb?.powers || []; } catch { return 0; }

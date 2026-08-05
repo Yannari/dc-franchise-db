@@ -1306,7 +1306,19 @@ export function simulateBBWeek(options = {}) {
   }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
-  if (!compressed) houseAct('pre-hoh');
+  //
+  // A Split House gets exactly ONE of these and the whole house is in it. The
+  // division has not happened yet at this point in the night — the crowning
+  // comes first and the wall after it — so running this per side produced two
+  // opening stretches behind a wall that did not exist, and put two House Life
+  // screens in front of each nomination ceremony instead of one.
+  //
+  // A Split House skips it on BOTH sides (`skipOpeningHouse`) and builds the
+  // stretch outside either week, because the sides are sealed: an opener run
+  // in here — even over the undivided roster — forms cross-side bonds and
+  // alliances inside a week that later names them out loud, which is the one
+  // wall this twist exists to put up.
+  if (!compressed && !options.skipOpeningHouse) houseAct('pre-hoh');
 
   // ── a Head of Household who was crowned before this cycle began ──
   //
@@ -2390,11 +2402,27 @@ export function simulateBBWeek(options = {}) {
           // Overruling somebody in public is not free, and the two people just
           // put up did not have a week that ended this way an hour ago.
           try { addBond(hoh, coup.holder, -2.4); } catch { /* no bond, no fallout */ }
+          // Bonds moved and nothing REMEMBERED, which meant the loudest public
+          // act in the game left no strategic trace: the dethroned Head of
+          // Household carried no grievance into next week's targeting, and two
+          // houseguests seated by somebody else's hand filed it as nothing.
+          // Same records the Diamond's detonation writes, for the same event.
+          try {
+            rememberStrategy(hoh, coup.holder, 'coup-hijack', week.num, 3,
+              { act: 'coup-d-etat', named: [...named] });
+          } catch { /* texture */ }
           for (const name of named) {
             try { addBond(name, coup.holder, -1.8); } catch { /* no bond */ }
+            try {
+              rememberStrategy(name, coup.holder, 'renomination', week.num, 3,
+                { act: 'coup-d-etat' });
+            } catch { /* texture */ }
           }
           for (const name of taken) {
             try { addBond(name, coup.holder, 2.2); } catch { /* no bond */ }
+            // Being lifted off a block by somebody else's power is the largest
+            // debt this game can create, and it was not being recorded either.
+            try { recordProtection(coup.holder, name, { strength: 2.2, ep: week.num }); } catch { /* texture */ }
           }
           if (!gs.popularity) gs.popularity = {};
           gs.popularity[coup.holder] = (gs.popularity[coup.holder] || 0) + 4;

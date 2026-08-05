@@ -127,7 +127,11 @@ describe('every act the engine emits reaches both transcripts', () => {
       if (!seen.has(type)) continue;
       expect(vpCases.has(type), `${type} has no screen registered in buildVPScreens`).toBe(true);
     }
-  });
+    // Every twist in the catalogue, three seeds each, plus three plain weeks —
+    // so this grows with the catalogue and blew the default 90s budget the
+    // moment it reached fifteen twists. It is slow because it is thorough, not
+    // because anything is wrong.
+  }, 300000);
 
   it('writing the App Store transcript did not leak who won', () => {
     // The grants are holder-secret. Adding the missing transcript is only

@@ -36,6 +36,7 @@ import { PANDORA_EVENTS } from './pandora.js';
 import { SPLIT_HOUSE_EVENTS } from './split-house.js';
 import { TEMPTATION_EVENTS } from './temptation.js';
 import { WHACKTIVITY_EVENTS } from './whacktivity.js';
+import { COUP_EVENTS } from './coup.js';
 import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
@@ -67,6 +68,7 @@ export const HOUSE_EVENTS = [
   ...SPLIT_HOUSE_EVENTS,
   ...TEMPTATION_EVENTS,
   ...WHACKTIVITY_EVENTS,
+  ...COUP_EVENTS,
   ...CONSEQUENCE_ARC_EVENTS,
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,

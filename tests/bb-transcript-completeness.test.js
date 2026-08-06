@@ -126,6 +126,29 @@ describe('the Big Brother transcript as a whole', () => {
       'these acts had house reactions the transcript never wrote down').toEqual([]);
   });
 
+  // A beat that casts the same houseguest twice draws their face twice, side
+  // by side, on the card — and it is almost always a sign the prose is broken
+  // too, because an event that picked one person for two roles is describing
+  // something that cannot happen. Twelve of these were live at once: two
+  // visitors to the HOH room who were the same visitor, an organiser listing
+  // herself as her own unreliable vote, a pitch to nominate the person being
+  // pitched to, and a swing voter bidding against themselves.
+  it('never casts the same houseguest twice in one beat', () => {
+    const bad = new Map();
+    for (const { twist, ep } of runs) {
+      for (const act of ep.acts || []) {
+        for (const b of [...(act.beats || []), ...(act.socialBeats || [])]) {
+          const cast = (b?.players || []).filter(Boolean);
+          if (cast.length === new Set(cast).size) continue;
+          const key = `${act.type}|${b.badgeText || '-'}`;
+          if (!bad.has(key)) bad.set(key, `${twist}: ${cast.join(' + ')}`);
+        }
+      }
+    }
+    expect([...bad.entries()].map(([k, v]) => `${k} — ${v}`),
+      'these beats put the same person on the card twice').toEqual([]);
+  });
+
   // Whacktivity's variant arrays are called as fn(name, pronouns, powerName),
   // and two variants declared (n, power) — so the pronouns OBJECT bound to
   // `power` and the house was told somebody "wins [object Object]". Cheap to

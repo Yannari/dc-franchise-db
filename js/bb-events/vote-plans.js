@@ -195,9 +195,16 @@ const countOnFingers = {
     if (!plan) return _fallback(`Nobody in this house can be bothered to count tonight.`, house.slice(0, 1), 'NO COUNT');
     const lieutenant = _lieutenant(plan, house);
     const org = plan.organizer;
-    const solid = plan.stances.filter(s => s.stance === 'dependable' && house.includes(s.voter)).map(s => s.voter);
+    // The organiser and the lieutenant are the two people reading the count
+    // OUT, so they do not appear as names inside it. Leaving them in produced
+    // "Nichelle does it on her fingers for Jo: Jo does not need asking twice,
+    // Nichelle said yes with a whole face doing something else" — an organiser
+    // listing herself as her own unreliable vote — and duplicated their faces
+    // on the card through the trailing cast slot.
+    const inTally = s => house.includes(s.voter) && s.voter !== org && s.voter !== lieutenant;
+    const solid = plan.stances.filter(s => s.stance === 'dependable' && inTally(s)).map(s => s.voter);
     const torn = plan.stances.filter(s => ['leaning', 'pulled', 'conflicted'].includes(s.stance)
-      && house.includes(s.voter)).map(s => s.voter);
+      && inTally(s)).map(s => s.voter);
     const short = plan.expected < plan.majority;
     const gap = Math.max(1, plan.majority - plan.expected);
 
@@ -451,21 +458,38 @@ function _swing(ctx, house) {
   for (const plan of plans) {
     for (const name of _claimed(plan)) {
       if (!house.includes(name)) continue;
+      // Nobody is the vote their own count is short of. A plan claims its
+      // organiser along with everybody else, so without this the pivotal
+      // swing could be the person doing the courting — "Bowie's count does
+      // not reach without Bowie", cast three times over on one card.
+      if (name === plan.organizer) continue;
       if (!claims.has(name)) claims.set(name, []);
       const list = claims.get(name);
       if (!list.includes(plan)) list.push(plan);
     }
   }
-  const doubles = [...claims.entries()].filter(([, list]) => list.length >= 2);
+  // Two rooms means two DIFFERENT organisers. One person can run more than one
+  // plan, and "both sides need you" cast that organiser twice on the same card
+  // while claiming they were bidding against themselves.
+  const twoRooms = list => {
+    const out = [];
+    for (const plan of list) {
+      if (!out.some(p => p.organizer === plan.organizer)) out.push(plan);
+      if (out.length === 2) break;
+    }
+    return out;
+  };
+  const doubles = [...claims.entries()].filter(([, list]) => twoRooms(list).length >= 2);
   if (doubles.length) {
     const name = _quiet(doubles.map(([n]) => n))[0];
-    return { voter: name, plans: claims.get(name).slice(0, 2), both: true };
+    return { voter: name, plans: twoRooms(claims.get(name)), both: true };
   }
   // A room that is short is a room with a price, and the person it is short by
   // is standing right there. Same story, one alliance.
   for (const plan of plans) {
     if (!(plan.needed > 0)) continue;
-    const open = plan.approaches.find(a => house.includes(a?.voter) && a.outcome !== 'agrees');
+    const open = plan.approaches.find(a => house.includes(a?.voter) && a.outcome !== 'agrees'
+      && a.voter !== plan.organizer);
     if (open) return { voter: open.voter, plans: [plan], both: false };
   }
   return null;
@@ -519,11 +543,15 @@ function _doubleCount(ctx, house) {
   // The operation records this explicitly: a voter claimed by two rooms gets an
   // 'elsewhere' stance in the room that lost them.
   for (const losing of plans) {
-    const s = losing.stances.find(x => x?.stance === 'elsewhere' && house.includes(x.voter));
+    // Not an organiser. The pair-scan below already refuses to make somebody
+    // the disputed vote in their own count; this path did not, and produced
+    // "Nichelle has Nichelle down for Jo" with her face on the card twice.
+    const s = losing.stances.find(x => x?.stance === 'elsewhere' && house.includes(x.voter)
+      && x.voter !== losing.organizer);
     if (!s) continue;
     const winner = plans.find(p => p !== losing
       && (p.alliance === s.with || (p.members || []).includes(s.voter)));
-    if (winner && winner.organizer !== losing.organizer) {
+    if (winner && winner.organizer !== losing.organizer && winner.organizer !== s.voter) {
       return { voter: s.voter, a: winner, b: losing };
     }
   }

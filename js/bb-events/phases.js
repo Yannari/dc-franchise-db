@@ -358,14 +358,21 @@ const hohRoomReveal = {
 const targetsAlign = {
   id: 'phase-targets-align',
   category: 'phases',
+  // The name being offered cannot be the person it is offered TO. Somebody
+  // whose target happens to be the Head of Household was still eligible to
+  // pitch, which produced "if you're looking at Bowie, so am I — the most
+  // useful sentence anybody says to Bowie today", and a card with Bowie's
+  // face on it twice. Walking into the HOH room to suggest nominating the
+  // Head of Household is a different event, and not this one.
   weight(house, ctx) {
     if (!ctx?.hoh) return 0;
-    const pitchers = house.filter(n => n !== ctx.hoh && targetOf(n));
+    const pitchers = house.filter(n => n !== ctx.hoh && targetOf(n) && targetOf(n) !== ctx.hoh);
     return pitchers.length ? at('post-hoh', ctx, pitchers.length * 3) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
-    const pitcher = _leastSeen(house.filter(n => n !== hoh && targetOf(n)))[0];
+    const pitcher = _leastSeen(house.filter(n => n !== hoh && targetOf(n) && targetOf(n) !== hoh))[0];
+    if (!pitcher) return null;
     const mark = targetOf(pitcher);
     const p = pronouns(pitcher);
     const text = _variant([

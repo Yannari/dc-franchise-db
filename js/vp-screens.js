@@ -27,6 +27,7 @@ import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
 import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
 import { rpBuildBBTeamAmerica } from './vp-bb-team-america.js';
+import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
@@ -20561,6 +20562,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // helpers as arguments rather than importing them, the way Battle Back
       // does — this file owns _tvState/_bbReveal/_bbEsc and importing back into
       // it would be a cycle.
+      // The Halting Hex cancels an entire eviction and had no screen at all —
+      // it reached both transcripts and never reached a viewer. The act only
+      // exists when the power is granted AND played, which is why the act
+      // coverage sweep never observed it and never asked.
+      case 'halting-hex': {
+        const hxDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-haltinghex'), label: 'The Halting Hex',
+          html: rpBuildBBHaltingHex(view, act, hxDeps) });
+        break;
+      }
       case 'team-america': {
         const taDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-teamamerica'), label: 'Team America',

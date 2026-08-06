@@ -65,7 +65,9 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
       : `The vote is read out and ${evicted} is leaving — and then ${holder} stops the night. `
         + `Nobody is going home. ${holder} has just told this entire house that ${p.sub} `
         + `${p.sub === 'they' ? 'were' : 'was'} holding something, and spent it on somebody else.`,
-    [holder, evicted], 'THE EVICTION IS CANCELLED', 'gold'),
+    // Deduped: on a self-save the holder and the person leaving are the same
+    // houseguest, and the card drew their face twice side by side.
+    [...new Set([holder, evicted])], 'THE EVICTION IS CANCELLED', 'gold'),
   beat(
     `${nominees.filter(Boolean).join(' and ')} come off the block by default. Every vote cast tonight `
       + 'is now a matter of public record and no consequence, which is its own problem for the people who cast them.',

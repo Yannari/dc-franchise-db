@@ -209,7 +209,11 @@ const outOfTheBoxes = {
     ], ctx, who, other);
     api.popDelta(who, 1);
     api.suspicion(other, who, -0.3);
-    return { text, players: [who, other, ...all.slice(1, 2).map(x => x.name)].filter(Boolean),
+    // The trailing slot is "somebody else still serving it" and was taken
+    // straight off the list, so when that happened to be `other` the card
+    // showed the same face twice.
+    const alsoWearing = all.slice(1, 3).map(x => x.name).filter(n => n !== who && n !== other);
+    return { text, players: [who, other, alsoWearing[0]].filter(Boolean),
       badgeText: 'STILL WEARING IT', badgeClass: 'red' };
   },
 };

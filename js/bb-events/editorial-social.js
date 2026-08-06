@@ -81,7 +81,15 @@ const hohOrbit = {
   id:'editorial-hoh-orbit', category:'social',
   weight:(h,c) => c?.hoh && h.includes(c.hoh) && h.length >= 5 ? fit(c, 2.8) : 0,
   fire(h,c,api,rng) {
-    const hoh=c.hoh, a=other(h,hoh,rng), b=other(h,hoh,rng);
+    // Two DIFFERENT visitors. `other` only excludes the name it is given, so
+    // drawing twice against the same house drew the same person about one time
+    // in eight — and three of the four lines below need two people to work at
+    // all: "Dawn waiting with coffee, and before the door shuts Dawn appears
+    // at the top of the stairs" is not a scene. The beat also cast them twice,
+    // so the card showed the same face side by side.
+    const hoh=c.hoh, a=other(h,hoh,rng);
+    const b=pick(h.filter(n=>n!==hoh && n!==a),rng);
+    if(!a||!b) return null;
     const text=pick([
       `${a} comes up to the HOH room for the fourth time that day. This time the excuse is a missing water bottle. ${hoh} lets ${pronouns(a).obj} in, then asks what ${a} really wants.`,
       `${a} stretches out on the HOH bed and settles in for a long talk. ${b} passes the open door twice, waiting for a turn alone with ${hoh}.`,

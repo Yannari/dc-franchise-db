@@ -12,12 +12,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
-import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds.js';
 import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { TEAM_SIZE, MISSION_FEE, TEAM_MISSIONS, teamMembers, isTeamMember,
   fillTeam, runMission } from '../js/bb/team-america.js';
+import { makeEndgameDeal } from '../js/bb/deals.js';
 import { TEAM_AMERICA_EVENTS } from '../js/bb-events/team-america.js';
 import { HOUSE_EVENTS } from '../js/bb-events/index.js';
 import { seedGame } from './helpers/setup.js';
@@ -183,6 +184,14 @@ describe('Team America', () => {
       const plan = { nominees: [...nominees], target: nominees[0], pawn: nominees[1],
         structure: 'target-pawn', structureWhy: 'the classic' };
       fillTeam(active, lands);
+      // Missions that declare `available` need something to exist in the house
+      // before they can act on it, and a freshly seeded house has none of it.
+      // Build the precondition rather than letting the mission fire into an
+      // empty room — the gate is the thing under test everywhere else.
+      const team = teamMembers(active);
+      const outs = active.filter(n => !team.includes(n));
+      if (id === 'expose') makeEndgameDeal(outs[0], outs[1], 'final-two', { week: { num: 1 } });
+      if (id === 'deal') addBond(outs[0], outs[1], 6);
       const act = runMission({ week: { num: 3 }, house: active, rng: lands,
         forced: id, plan, hoh });
       return { act, plan, team: act.members, outsiders: active.filter(n => !act.members.includes(n)) };
@@ -287,6 +296,50 @@ describe('Team America', () => {
         .toBeGreaterThanOrEqual(Math.max(...team.map(n => gs.popularity[n])));
       // Being noticed wrecks the game and helps the edit — that is the trade.
       expect(act.mission.noticed).toBe(true);
+    });
+  });
+
+  // The mission used to be `TEAM_MISSIONS[missions.length % length]`, so every
+  // season in the franchise ran the same list in the same order and the
+  // hardest job always landed last. For a twist whose whole appeal is "what
+  // will the country make them do this week", that is the wrong shape.
+  describe('what the country asks for', () => {
+    it('does not run the same list in the same order every season', () => {
+      const orders = new Set();
+      for (const seed of [3, 9, 21, 44]) {
+        const ids = play(5, seed).map(e => actOf(e)?.mission?.id).filter(Boolean);
+        if (ids.length >= 4) orders.add(ids.join('>'));
+      }
+      expect(orders.size, 'every season drew the identical mission order').toBeGreaterThan(1);
+    });
+
+    it('does not ask for the same job twice in a row', () => {
+      for (const seed of [3, 9, 21]) {
+        const ids = play(5, seed).map(e => actOf(e)?.mission?.id).filter(Boolean);
+        for (let i = 1; i < ids.length; i++) {
+          expect(ids[i], `${ids[i]} was set two weeks running`).not.toBe(ids[i - 1]);
+        }
+      }
+    });
+
+    it('never sets a job the house has nothing to do it with', () => {
+      // `expose` needs a real final two between two non-members to expose. If
+      // it can be drawn into a week where none exists, the mission completes
+      // and changes nothing, which is the failure this whole pass is about.
+      const gated = TEAM_MISSIONS.filter(m => m.available);
+      expect(gated.length, 'no mission declares what it needs').toBeGreaterThan(0);
+      for (const seed of [3, 9, 21, 44]) {
+        for (const ep of play(5, seed)) {
+          const act = actOf(ep);
+          const def = TEAM_MISSIONS.find(m => m.id === act?.mission?.id);
+          if (!def?.available) continue;
+          // Only a mission that LANDED should have changed anything — failing
+          // costs nothing, so a failed one having no effect is the design.
+          if (!act.mission.done) continue;
+          expect(act.mission.effect,
+            `${def.id} was set in a week it could not act in`).toBeTruthy();
+        }
+      }
     });
   });
 

@@ -30,7 +30,7 @@ const TIER_RANK = { working: 0, 'final-three': 1, 'final-two': 2 };
 const WORKING_TYPES = new Set(['safety', 'vote', 'veto', 'info']);
 
 /** Two is a double game. Three is the most anybody can keep straight. */
-const MAX_ENDGAME_DEALS = 3;
+export const MAX_ENDGAME_DEALS = 3;
 
 const clamp01 = n => Math.max(0, Math.min(1, n));
 const statsOf = name => players.find(p => p.name === name)?.stats || {};

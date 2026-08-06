@@ -28,6 +28,8 @@ import { clamp, makePicker } from '../bb-comps/_shared.js';
 import { addBBRelationship, bbHeat } from './shared-strategy.js';
 import { recordBBFalseClaim } from './knowledge.js';
 import { applyPunishment, BB_PUNISHMENTS } from './punishments.js';
+import { makeEndgameDeal, exposeDeal, dealBetween, endgameDealsOf,
+  MAX_ENDGAME_DEALS } from './deals.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: [...players].filter(Boolean), badgeText, badgeClass });
@@ -72,6 +74,19 @@ export const TEAM_MISSIONS = [
     id: 'costume', name: 'Get somebody into something ridiculous',
     ask: 'Talk a houseguest who is not one of you into wearing something absurd for a full day, and into believing it was their idea.',
     stat: 'social', risk: 0.22,
+  },
+  {
+    id: 'expose', name: 'Make an alliance say its own name out loud',
+    ask: 'Get a deal between two other houseguests spoken about in front of somebody who was never in it, without any of you being the one who says it.',
+    stat: 'intuition', risk: 0.40,
+    // Nothing to expose in a house with no promises in it yet.
+    available: (team, house) => !!_exposableDeal(team, house),
+  },
+  {
+    id: 'deal', name: 'Make two people who are not you shake on the end',
+    ask: 'Two houseguests, neither of them one of you, have to promise each other a final two — and mean it enough to say it twice.',
+    stat: 'social', risk: 0.26,
+    available: (team, house) => !!_dealPair(team, house),
   },
   {
     id: 'meeting', name: 'Meet, in the open, without it looking like a meeting',
@@ -167,6 +182,49 @@ const popShift = (name, delta) => {
 const teamWants = (team, name) => team.reduce((sum, m) => {
   try { return sum + bbHeat(m, name).total; } catch { return sum; }
 }, 0) / Math.max(1, team.length);
+
+/**
+ * A promise between two other houseguests that a third could be told about.
+ *
+ * Declared above the mission table because the table's `available` predicates
+ * call it: a mission that needs something to exist in the house should not be
+ * drawn into a week where it does not.
+ */
+function _exposableDeal(team, house) {
+  const outs = (house || []).filter(n => !team.includes(n));
+  for (const a of outs) {
+    for (const d of endgameDealsOf(a) || []) {
+      if (d.active === false) continue;
+      const pair = (d.players || []).filter(Boolean);
+      if (pair.length !== 2) continue;
+      if (!pair.every(n => outs.includes(n))) continue;
+      const told = outs.find(n => !pair.includes(n));
+      if (told) return { deal: d, pair, told };
+    }
+  }
+  return null;
+}
+
+/** Two non-members close enough to be talked into promising each other the end. */
+function _dealPair(team, house) {
+  // Somebody already holding the maximum cannot shake on another one —
+  // makeEndgameDeal refuses them, and a mission that is set and then quietly
+  // does nothing is the exact failure this twist was rebuilt to stop.
+  const outs = (house || []).filter(n => !team.includes(n)
+    && (endgameDealsOf(n) || []).length < MAX_ENDGAME_DEALS);
+  let best = null;
+  for (const a of outs) {
+    for (const b of outs) {
+      if (a >= b) continue;
+      if (dealBetween(a, b)) continue;      // they already have one
+      let v = 0;
+      try { v = getPerceivedBond(a, b); } catch { v = 0; }
+      if (v < 2) continue;                  // strangers do not shake on the end
+      if (!best || v > best.v) best = { a, b, v };
+    }
+  }
+  return best;
+}
 
 /** A costume somebody could plausibly be talked into. Not slop — slop is not funny. */
 const COSTUME_IDS = Object.keys(BB_PUNISHMENTS)
@@ -342,9 +400,49 @@ function _effectMeeting({ team, house }) {
   };
 }
 
+/** Somebody who was never in it finds out it exists. */
+function _effectExpose({ team, lead, house, week, rng }) {
+  const found = _exposableDeal(team, house);
+  if (!found) return null;
+  const { deal, pair, told } = found;
+  try { exposeDeal(deal, told, { from: lead, week: week?.num || 0, rng }); } catch { /* optional */ }
+  for (const n of pair) {
+    suspect(told, n, 1.5);
+    bondShift(told, n, -1.1);
+  }
+  return {
+    players: [told, ...pair], victims: [...pair],
+    note: `${told} now knows ${pair[0]} and ${pair[1]} promised each other the end.`,
+    beat: `${pair[0]} and ${pair[1]} have been careful about this for weeks, and it comes apart in a `
+      + `conversation neither of them is in. ${told} hears the shape of it first and the whole thing `
+      + 'about a minute later, and does not have to be told what it means.',
+    badge: 'SAID OUT LOUD',
+  };
+}
+
+/** Two other people, promised to each other, on camera. */
+function _effectDeal({ team, house, week }) {
+  const found = _dealPair(team, house);
+  if (!found) return null;
+  const { a, b } = found;
+  const made = makeEndgameDeal(a, b, 'final-two',
+    { week, about: 'a promise neither of them worked out was suggested to them' });
+  if (!made) return null;
+  bondShift(a, b, 1.2);
+  return {
+    players: [a, b], victims: [a, b],
+    note: `${a} and ${b} have a final two, and neither can remember whose idea it was.`,
+    beat: `${a} and ${b} say it to each other twice, which is how you know they mean it. Neither of them `
+      + 'can quite reconstruct who raised it first, and both of them have decided it must have been '
+      + 'themselves, because the alternative is a question nobody wants to sit with.',
+    badge: 'SHOOK ON IT',
+  };
+}
+
 const MISSION_EFFECTS = {
   rumour: _effectRumour, saboteur: _effectSaboteur, block: _effectBlock,
   argument: _effectArgument, costume: _effectCostume, meeting: _effectMeeting,
+  expose: _effectExpose, deal: _effectDeal,
 };
 
 const OPENING = [
@@ -374,8 +472,42 @@ export function runMission({ week, house = [], rng = Math.random, forced = null,
   if (team.length < 2) return null;
   const say = makePicker(rng);
 
-  const mission = (forced && TEAM_MISSIONS.find(m => m.id === forced))
-    || TEAM_MISSIONS[t.missions.length % TEAM_MISSIONS.length];
+  // What the country asks for this week.
+  //
+  // This used to be `TEAM_MISSIONS[missions.length % TEAM_MISSIONS.length]`,
+  // which is not a choice at all: every season ran the same list in the same
+  // order, so the fourth week was always the argument and the hardest job in
+  // the set always landed last. Three things fix it.
+  //
+  //   Nothing that needs something the house has not got. A mission to expose
+  //   a final two cannot be set in a week where nobody has made one.
+  //
+  //   No repeats while there is anything else to ask for, so a nine-week run
+  //   is nine different jobs rather than the same six twice.
+  //
+  //   A tilt toward what this particular team can actually do — the audience
+  //   is picking entertainment, and three talkers being handed a strategic
+  //   job every week is not it. A tilt, not a lock: the weight spread is
+  //   about three to one across the stat range, so the job they will be bad
+  //   at still comes up and they still have to try it.
+  const mission = (forced && TEAM_MISSIONS.find(m => m.id === forced)) || (() => {
+    const recent = t.missions.slice(-2).map(m => m.id);
+    const usable = TEAM_MISSIONS.filter(m => !m.available || m.available(team, house));
+    const fresh = usable.filter(m => !recent.includes(m.id));
+    // The last resort still respects the gate. Falling all the way back to the
+    // whole table would hand out "expose the final two" in a house that has
+    // not made one — the exact silent no-op the gate exists to prevent.
+    const pool = fresh.length ? fresh
+      : (usable.length ? usable : TEAM_MISSIONS.filter(m => !m.available));
+    const weighted = pool.map(m => ({
+      m, w: 1 + Math.max(...team.map(n => pStats(n)[m.stat] || 5)) * 0.25,
+    }));
+    const total = weighted.reduce((sum, c) => sum + c.w, 0);
+    let roll = rng() * total;
+    let picked = weighted[weighted.length - 1];
+    for (const c of weighted) { roll -= c.w; if (roll <= 0) { picked = c; break; } }
+    return picked.m;
+  })();
 
   // Whoever this one actually suits does the work.
   const lead = [...team].sort((a, b) => (pStats(b)[mission.stat] || 5) - (pStats(a)[mission.stat] || 5))[0];

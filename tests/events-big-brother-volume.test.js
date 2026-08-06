@@ -38,6 +38,11 @@ function reset() {
   gs.romanticSparks = [];
   seasonConfig.romance = 'enabled';
   seasonConfig.finaleSize = 3;
+  // Every real season has one, and events that reason about the end now derive
+  // their window from it rather than from a hard-coded house size. Leaving it
+  // unset made this harness a season with NO jury, which correctly silenced
+  // jury-management and then shifted what fired everywhere else.
+  seasonConfig.jurySize = 7;
 }
 
 const ACTS = ['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign'];

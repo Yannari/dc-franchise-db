@@ -17,7 +17,8 @@
 
 import { gs } from '../core.js';
 import { pronouns } from '../players.js';
-import { endgameDealsOf, dealBetween, tierOf, sincerityOf, isEndgameDeal } from '../bb/deals.js';
+import { endgameDealsOf, dealBetween, tierOf, sincerityOf, isEndgameDeal, juryPactsOf } from '../bb/deals.js';
+import { juryOpensAt } from '../bb/jury.js';
 import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
@@ -95,6 +96,23 @@ function _safetyPair(house, ctx) {
   return other ? { hoh: ctx.hoh, other } : null;
 }
 
+/**
+ * Two people close enough to say it out loud, who have not already said it.
+ *
+ * Checks the live pacts rather than generic promise memory: `remembers(a, b,
+ * 'promise')` is true of any promise these two ever made, so keying on it would
+ * silently exclude everybody who had ever agreed anything.
+ */
+function _juryPactPair(house, ctx) {
+  for (const a of _leastSeen(house)) {
+    const held = juryPactsOf(a).flatMap(d => d.players || []);
+    const b = _others(house, a).find(n =>
+      bond(a, n) >= 3 && !held.includes(n) && trustOf(a, n) >= 0);
+    if (b) return { a, b };
+  }
+  return null;
+}
+
 function _defector(house, ctx) {
   for (const mark of _leastSeen(house)) {
     // A formal alliance if one exists, otherwise the people this houseguest is
@@ -108,13 +126,29 @@ function _defector(house, ctx) {
   return null;
 }
 
+/**
+ * Somebody working a vote they do not have yet.
+ *
+ * The other half of this pair is a FUTURE juror, not a seated one, and that is
+ * not a compromise — jurors are sequestered, so nobody inside the house can
+ * talk to one. Anything happening in here is necessarily prospective: you are
+ * being careful with somebody precisely because they are going to leave before
+ * you do. That is `plan.juryPlan`'s territory, kept deliberately separate from
+ * the seated panel in bb/jury.js.
+ *
+ * The window was a hard-coded nine that ignored jurySize, so a season with a
+ * jury of three started managing votes with nine people left and six evictions
+ * still to go before any of them counted. It derives from the setting now — and
+ * a season configured with NO jury never fires this at all, because there is no
+ * vote at the end to be securing.
+ */
 function _juryPair(house, ctx) {
-  // Only worth doing once the house is small enough for a jury to exist.
-  if (house.length > 9) return null;
+  const opens = juryOpensAt();
+  if (!opens || house.length > opens) return null;
   const player = _leastSeen(house).find(n => pStats(n).strategic >= 5);
   if (!player) return null;
-  const juror = _others(house, player).sort((a, b) => bond(player, a) - bond(player, b))[0];
-  return juror ? { player, juror } : null;
+  const mark = _others(house, player).sort((a, b) => bond(player, a) - bond(player, b))[0];
+  return mark ? { player, mark } : null;
 }
 
 // ── the events ────────────────────────────────────────────────────────
@@ -337,6 +371,53 @@ const numbersCheck = {
   },
 };
 
+/**
+ * "Let's get to jury together" — the pact everybody in this house makes.
+ *
+ * Fires only BEFORE the window opens, because the promise is about surviving to
+ * a date and stops meaning anything once the date has passed. It is a working
+ * deal by design: it does not outrank an alliance, does not touch the endgame
+ * cap, and two people can hold it while sitting in separate final twos. What it
+ * buys them is a few weeks of not writing each other's names down, and a bond
+ * if they both make it.
+ */
+const juryPact = {
+  id: 'deals-jury-pact',
+  category: 'deals',
+  weight(house, ctx) {
+    const opens = juryOpensAt();
+    // Only worth saying while it is still in doubt, and only once the end is
+    // close enough to picture — a week-one promise about jury is small talk.
+    // Exactly one week wide: the eve of jury, when the milestone is close
+    // enough to name and still in doubt. That is when people actually say this
+    // to each other, and it is also the only width that behaves — given a
+    // three- or four-week window this displaced other events outright, and the
+    // volume guard caught pawn-in-danger-panic going from rare to never. A late
+    // game has a lot of twist beats competing for very few slots, so a new
+    // event here has to earn its place rather than take somebody else's.
+    if (!opens || house.length !== opens + 1) return 0;
+    const pair = _juryPactPair(house, ctx);
+    if (!pair) return 0;
+    return _w(bondFactor(bond(pair.a, pair.b)) * 3.5, ctx);
+  },
+  fire(house, ctx, api) {
+    const { a, b } = _juryPactPair(house, ctx);
+    const left = house.length - juryOpensAt();
+    const text = _variant([
+      `"${left} more. That is all we have to do." ${a} does not say get to the end, or win — just get to the part where losing still means something. ${b} shakes on it.`,
+      `${a} and ${b} work out how many evictions are left before the jury, decide it is survivable, and promise each other they will both be there for it.`,
+      `Neither of them mentions the final two, because neither of them means it. What they mean is that they would both like to be voting rather than watching, and they can do that together.`,
+      `"I am not asking you to take me to the end." ${a} says it plainly. "I am asking you not to be the reason I miss jury." ${b} agrees, and finds ${pronouns(b).obj}self meaning it.`,
+    ], ctx, a, b);
+
+    api.addBond(a, b, 0.9);
+    api.sideDeal?.(a, b, 'make-jury', { reason: 'get to jury together' });
+    api.remember(a, b, 'promise', 2, { week: ctx.week?.num || 0, about: 'jury together' });
+    api.remember(b, a, 'promise', 2, { week: ctx.week?.num || 0, about: 'jury together' });
+    return { text, players: [a, b], badgeText: 'TO THE JURY, TOGETHER', badgeClass: 'green' };
+  },
+};
+
 const juryManagement = {
   id: 'deals-jury-management',
   category: 'deals',
@@ -346,26 +427,33 @@ const juryManagement = {
     return _w(band(pStats(pair.player).strategic * 1.1), ctx);
   },
   fire(house, ctx, api) {
-    const { player, juror } = _juryPair(house, ctx);
+    const { player, mark } = _juryPair(house, ctx);
     const p = pronouns(player);
+    const m = pronouns(mark);
     const clumsy = pStats(player).social <= 4;
+    // Written for somebody still in the house. The old pool apologised for a
+    // cut that has not happened — "why the vote against you was not personal",
+    // "somebody who has nothing but hard feelings" — to a houseguest who is
+    // still playing and might yet outlast the person apologising. What this
+    // conversation actually is: laying groundwork with a vote you expect to
+    // need, while pretending it is about anything else.
     const text = clumsy ? _variant([
-      `${player} tries to explain to ${juror} why the vote against ${pronouns(juror).obj} was not personal, and manages to make it sound considerably more personal.`,
-      `The apology arrives about a week too early and lands as exactly what it is.`,
-      `${player} says "no hard feelings" to somebody who has nothing but hard feelings.`,
-      `${juror} listens to ${player} explain ${p.posAdj} game and comes away with a much clearer sense of who to vote against.`,
-    ], ctx, player, juror) : _variant([
-      `${player} explains why cutting ${juror} was necessary instead of apologizing for it. ${juror} does not like the answer, but cannot find a hole in it.`,
-      `"I'd do it again." ${juror} respects that more than ${pronouns(juror).sub} expected to, and ${player} knew ${pronouns(juror).sub} would.`,
-      `${player} starts building the case for the end of the game weeks before anyone else remembers there is an end.`,
-      `It is not a conversation about tonight. ${juror} works out about halfway through that it is a conversation about the last night, and answers accordingly.`,
-    ], ctx, player, juror);
+      `${player} tells ${mark} there would be no hard feelings if it ever came to it, which informs ${mark} that ${p.sub} has already thought about it coming to it.`,
+      `The groundwork arrives about three weeks early and lands as exactly what it is. ${mark} files it.`,
+      `${player} explains ${p.posAdj} game to ${mark} at some length. ${m.Sub} comes away with a much clearer sense of who to vote against at the end.`,
+      `"If you go before me, I hope you'd still respect the play." ${mark} notes the word ${player} chose was "if".`,
+    ], ctx, player, mark) : _variant([
+      `${player} does not apologise for anything, because nothing has happened yet. ${p.Sub} simply makes sure ${mark} knows what ${p.posAdj} game has been, in the version ${p.sub} wants repeated in a jury house.`,
+      `"Whatever happens to either of us, I want you to think I played it straight." ${mark} recognises the sentence as an investment and takes it anyway.`,
+      `${player} starts building the case for the last night weeks before anybody else remembers there is one.`,
+      `It is not a conversation about tonight. ${mark} works out halfway through that it is a conversation about a vote ${m.sub} does not have yet, and answers accordingly.`,
+    ], ctx, player, mark);
 
-    api.addBond(player, juror, clumsy ? -0.7 : 0.8);
-    api.remember(juror, player, clumsy ? 'insult' : 'respect', 2, { about: 'jury management' });
+    api.addBond(player, mark, clumsy ? -0.7 : 0.8);
+    api.remember(mark, player, clumsy ? 'insult' : 'respect', 2, { about: 'jury management' });
     api.popDelta(player, clumsy ? -1 : 1);
     return {
-      text, players: [player, juror],
+      text, players: [player, mark],
       badgeText: clumsy ? 'BOTCHED IT' : 'PLAYING THE END',
       badgeClass: clumsy ? 'red' : 'gold',
     };
@@ -646,6 +734,7 @@ export const DEALS_EVENTS = [
   safetyDeal,
   defectionOffer,
   numbersCheck,
+  juryPact,
   juryManagement,
   competingDeals,
   voteFlip,

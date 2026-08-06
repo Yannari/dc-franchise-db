@@ -17,6 +17,11 @@
 // jurors plus that cut is seven; starting a week early makes eight.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig, setGs } from '../js/core.js';
+import { getBond } from '../js/bonds.js';
+import {
+  makeJuryPact, juryPactsOf, makeEndgameDeal, endgameDealsOf, settleDeals,
+  tierOf, isEndgameDeal,
+} from '../js/bb/deals.js';
 import {
   juryOpensAt, evictionSeatsAJuror, jurorOrdinalFor, seatedJurors, isSeatedJuror,
   juryStillToSeat, juryLines,
@@ -169,6 +174,70 @@ describe('what the transcripts say about it', () => {
     const out = write({ num: 3, evicted: null });
     expect(out).toMatch(/Jury \(2\): B, C\./);
     expect(out).not.toMatch(/joins the jury/);
+  });
+});
+
+describe('"let us get to jury together"', () => {
+  // The most common promise in the house, and the one it could not make. It is
+  // deliberately the WEAKEST kind of deal — it must not compete with a final
+  // two, because in a real house people hold both at once.
+  beforeEach(() => {
+    setGs({ episode: 0, activePlayers: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+      bb: { weeks: [] }, sideDeals: [], bonds: {}, perceivedBonds: {},
+      relationshipDimensions: {}, intentions: {} });
+    seasonConfig.jurySize = 3;   // opens at 5 left
+  });
+
+  it('is a working deal, so it never outranks an endgame promise', () => {
+    const pact = makeJuryPact('A', 'B', { week: { num: 2 } });
+    expect(tierOf(pact)).toBe('working');
+    expect(isEndgameDeal(pact), 'a jury pact must not rank as an endgame deal').toBe(false);
+  });
+
+  it('does not count against the endgame-deal cap', () => {
+    // Somebody can hold three final twos AND still promise to make jury with
+    // a fourth person. Those are different promises about different nights.
+    makeJuryPact('A', 'B', { week: { num: 2 } });
+    expect(endgameDealsOf('A')).toHaveLength(0);
+    expect(makeEndgameDeal('A', 'C', 'final-two', { week: { num: 2 } })).toBeTruthy();
+    expect(endgameDealsOf('A')).toHaveLength(1);
+  });
+
+  it('survives the week it was made in, unlike other working deals', () => {
+    // The whole point: it runs to a milestone, not to Thursday.
+    makeJuryPact('A', 'B', { week: { num: 2 } });
+    settleDeals({ house: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], week: { num: 3 } });
+    expect(juryPactsOf('A')).toHaveLength(1);
+  });
+
+  it('is kept when they both make it, and pays out', () => {
+    const before = getBond('A', 'B');
+    const pact = makeJuryPact('A', 'B', { week: { num: 2 } });
+    // Five left, a jury of three — the window is open.
+    settleDeals({ house: ['A', 'B', 'C', 'D', 'E'], week: { num: 6 } });
+    expect(pact.active).toBe(false);
+    expect(pact.juryPactKept).toBe(true);
+    expect(pact.lapsedBecause).toMatch(/both made it/);
+    expect(getBond('A', 'B'), 'making it together was worth nothing').toBeGreaterThan(before);
+  });
+
+  it('fails quietly when one of them does not make it', () => {
+    const pact = makeJuryPact('A', 'B', { week: { num: 2 } });
+    const before = getBond('A', 'B');
+    // B is gone, and the house is still above the window.
+    settleDeals({ house: ['A', 'C', 'D', 'E', 'F', 'G'], week: { num: 4 } });
+    expect(pact.active).toBe(false);
+    expect(pact.juryPactKept).toBe(false);
+    expect(pact.lapsedBecause).toMatch(/B did not make it/);
+    // No bond punishment on top of the eviction — being voted out is the
+    // grievance, and stapling a second one to it double-counts.
+    expect(getBond('A', 'B')).toBe(before);
+  });
+
+  it('does not resolve while they are still climbing toward it', () => {
+    const pact = makeJuryPact('A', 'B', { week: { num: 2 } });
+    settleDeals({ house: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], week: { num: 3 } });
+    expect(pact.active, 'resolved before the jury was anywhere near').toBe(true);
   });
 });
 

@@ -20,10 +20,11 @@
 // that happens in this house — but only one of them can be kept.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players } from '../core.js';
-import { getBond } from '../bonds.js';
+import { getBond, addBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { planSkill, housePlan } from './plans.js';
 import { recordBBDeal, learnBBDeal } from './knowledge.js';
+import { juryOpensAt } from './jury.js';
 
 const TIER_RANK = { working: 0, 'final-three': 1, 'final-two': 2 };
 
@@ -160,6 +161,48 @@ export function makeEndgameDeal(a, b, tier = 'final-two', { week = null, about =
   return deal;
 }
 
+/**
+ * "Let's get to jury together."
+ *
+ * The most common promise in the house and the one it could not make. It is
+ * NOT an endgame deal and is deliberately kept at the working tier: it does not
+ * outrank an alliance, it does not count against the three-endgame-deal cap,
+ * and at a vote it is worth the same small nudge any other working deal is
+ * (0.5 against a final two's 6.5). Two people can hold this and still be in
+ * separate final twos, which is exactly how the house works.
+ *
+ * What makes it worth having is that it ENDS somewhere specific. Every other
+ * working deal expires on Thursday and an endgame deal runs to the last night;
+ * this one runs to a milestone, and the milestone arriving is the whole point.
+ * It is a promise about surviving, not about winning, so it dissolves the
+ * moment surviving stops being the question.
+ */
+export function makeJuryPact(a, b, { week = null } = {}) {
+  if (!a || !b || a === b) return null;
+  const round = Number(week?.num || (gs.episode || 0) + 1);
+  const existing = deals().find(d => d.active !== false && !d.broken
+    && d.type === 'make-jury' && (d.players || []).includes(a) && (d.players || []).includes(b));
+  if (existing) return existing;
+
+  const deal = {
+    players: [a, b], type: 'make-jury', tier: 'working', active: true, genuine: true,
+    madeEp: round, format: 'big-brother',
+    about: 'getting to the jury together',
+    sincerity: Object.fromEntries([a, b].map(n => [n, sincerityFor(n, n === a ? b : a, 'final-three')])),
+    broken: false, brokenBy: null, brokenEp: null, exposedTo: [],
+  };
+  deals().push(deal);
+  return deal;
+}
+
+/** The live "get to jury together" pacts this person is in. */
+export function juryPactsOf(name) {
+  const live = houseNow();
+  return deals().filter(d => d.active !== false && !d.broken && d.type === 'make-jury'
+    && (d.players || []).includes(name)
+    && (d.players || []).every(n => live.includes(n)));
+}
+
 /** Every live endgame deal this person is in, strongest promise first. */
 export function endgameDealsOf(name) {
   const live = houseNow();
@@ -287,6 +330,31 @@ export function settleDeals({ house = houseNow(), week = null } = {}) {
   for (const deal of deals()) {
     if (deal.active === false || deal.broken) continue;
     const gone = (deal.players || []).filter(n => !house.includes(n));
+
+    // ── "Let's get to jury together" resolves at the milestone, not on a week ──
+    //
+    // Handled before the general departure rule, because a jury pact ending is
+    // not the same event as a deal lapsing: it either came true or it did not,
+    // and both of those are worth something. Kept, the two of them owe each
+    // other nothing more and think better of each other for it — and one of
+    // them is about to be voting. Failed, it lapses quietly; the person who
+    // went home early has the eviction itself to be angry about and does not
+    // need a second grievance stapled to it.
+    if (deal.type === 'make-jury') {
+      const opens = juryOpensAt();
+      const kept = !gone.length && opens > 0 && house.length <= opens;
+      if (!kept && !gone.length) continue;          // still climbing toward it
+      deal.active = false;
+      deal.lapsedEp = round;
+      deal.juryPactKept = kept;
+      deal.lapsedBecause = kept
+        ? 'they both made it to the jury'
+        : `${gone.join(' and ')} did not make it`;
+      if (kept) addBond(deal.players[0], deal.players[1], 1.2);
+      lapsed.push(deal);
+      continue;
+    }
+
     if (gone.length) {
       deal.active = false;
       deal.lapsedEp = round;

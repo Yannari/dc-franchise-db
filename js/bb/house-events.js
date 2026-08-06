@@ -4,7 +4,7 @@ import { gs, seasonConfig, players } from '../core.js';
 import {
   addBBRelationship, addBBShowmanceSpark, rememberBBStrategy, setBBTarget,
 } from './shared-strategy.js';
-import { makeEndgameDeal, breakDeal, exposeDeal, tierOf } from './deals.js';
+import { makeEndgameDeal, makeJuryPact, breakDeal, exposeDeal, tierOf } from './deals.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -108,6 +108,20 @@ export function createHouseEventApi(ctx = {}) {
             { players: [a, b], tier });
         }
         return !!deal;
+      }
+
+      // "Get to jury together" is a working deal that outlives the week — it
+      // runs to a milestone instead of to Thursday — so it has its own
+      // constructor and must not fall through to the generic push, or it would
+      // be dropped by the end-of-week sweep the moment it was made.
+      if (type === 'make-jury') {
+        const pact = makeJuryPact(a, b, { week: ctx.week });
+        if (pact) {
+          Object.assign(pact, detail, { type: 'make-jury', tier: 'working' });
+          note('deal', `${a} & ${b} promised to get to jury together`,
+            { players: [a, b], tier: 'working' });
+        }
+        return !!pact;
       }
 
       const existing = gs.sideDeals.find(deal => deal.active !== false

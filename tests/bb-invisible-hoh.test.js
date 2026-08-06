@@ -183,7 +183,24 @@ describe('the Invisible HOH', () => {
     Object.keys(_tvState).filter(k => k.startsWith('bb_')).forEach(k => { _tvState[k].idx = 99; });
     const screens = buildVPScreens(gs.episodeHistory[0]);
     const hohScreen = screens.find(s => s.id.includes('bb-hoh'));
-    expect(hohScreen.html).toContain('RESULT SEALED');
+    // The competition is drawn at random and a sealed screen says so in its own
+    // words — a lane board prints "RESULT SEALED", the tiki yard "THE HOUSE
+    // NEVER FINDS OUT", the poker table simply goes dark. This used to assert
+    // one of those phrasings and so failed about one run in three, on nothing
+    // worse than the season picking a different competition.
+    //
+    // "ONLY YOU KNOW" is the one thing every sealed competition shares: rule 3
+    // of the contract in vp-bb-sig/_sealed.js, the single card where the winner
+    // may be named, rendered by the seventeen themed screens through
+    // sealIronyCard and by the generic board in its own copy.
+    //
+    // Deliberately NOT asserted here: that the winner is unnamed everywhere
+    // else. A houseguest's name legitimately appears all over these screens as
+    // a COMPETITOR — Majority Rules lists the whole house on its board — so
+    // "does the name occur" cannot tell a leak from a roster. Catching a real
+    // leak means proving a screen shows LESS when sealed than when not, which
+    // is a sweep across all twenty-three competitions and belongs in its own
+    // file, not smuggled into a one-episode test.
     expect(hohScreen.html).toContain('ONLY YOU KNOW');
     const nomScreen = screens.find(s => s.id.includes('bb-noms'));
     expect(nomScreen.html).toContain('THE VOICE OF BIG BROTHER');

@@ -109,6 +109,14 @@ export function sealCutCard(p, { standing = null, unit = 'still in', salt = 0 } 
 /**
  * The dramatic irony card: the viewer is told, the house is not.
  * The ONLY place a sealed competition is allowed to print the winner.
+ *
+ * Every sealed screen renders exactly one of these — the themed ones from here,
+ * the generic board its own copy — which makes "ONLY YOU KNOW" the one thing
+ * common to every sealed competition, and the only honest thing for a guard to
+ * look for. The BANNER is not: each theme writes its own ("RESULT SEALED" on a
+ * lane board, "THE HOUSE NEVER FINDS OUT" in the tiki yard, the poker table
+ * simply goes dark), which is correct and is why pinning a test to one of them
+ * made it fail whenever the season drew a different competition.
  */
 export function sealIronyCard(p, { winner, avatar, esc, isHoh = true }) {
   const E = typeof esc === 'function' ? esc : (v => String(v ?? ''));

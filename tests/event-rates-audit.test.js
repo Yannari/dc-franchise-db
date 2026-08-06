@@ -28,7 +28,7 @@
 // library where most of what has been written never reaches anybody and the
 // same dozen events carry every week. Repetition is not the enemy; a thin pool
 // is, and repetition is its symptom.
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
@@ -47,7 +47,37 @@ const CAST = NAMES.map((name, i) => ({
 
 const SEASONS = 8;
 
-afterAll(() => { seasonConfig.twistSchedule = []; delete seasonConfig.format; });
+// ── Isolation, because this file MEASURES rather than asserts a fixture ──
+//
+// seasonConfig is one shared mutable object and every suite writes its own keys
+// into it. Setting only the handful this file cares about left whatever a
+// previous file had turned on — a safety mode, an interview setting, a mole —
+// still switched on underneath the measurement, which changes what fires. The
+// numbers then depended on which files ran first, and this failed in a full run
+// while passing on its own, which is the least useful way for a guard to
+// behave.
+//
+// So the config is wiped to an explicit baseline for each season and handed
+// back exactly as found afterwards. Wiping without restoring would be the same
+// discourtesy pointed at whoever runs next.
+const CONFIG_BASELINE = {
+  format: 'big-brother', finaleSize: 3, jurySize: 7,
+  bbHaveNots: 'off', bbSafetyMode: 'off', bbDepartures: 'off',
+  romance: 'enabled', popularityEnabled: true, setting: 'bb-house',
+};
+let _configBefore = null;
+
+beforeAll(() => { _configBefore = { ...seasonConfig }; });
+afterAll(() => {
+  for (const key of Object.keys(seasonConfig)) delete seasonConfig[key];
+  Object.assign(seasonConfig, _configBefore || {});
+});
+
+function resetConfig(schedule) {
+  for (const key of Object.keys(seasonConfig)) delete seasonConfig[key];
+  Object.assign(seasonConfig, CONFIG_BASELINE,
+    { twistSchedule: schedule.map(t => ({ ...t })) });
+}
 
 // A season nobody would actually design: no twists at all. Useful as a
 // baseline, and misleading on its own — a twist brings its own event family,
@@ -73,12 +103,15 @@ function measure(schedule = []) {
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
     Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
       ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat, TWIST_CATALOG });
-    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
-      bbHaveNots: 'off', bbSafetyMode: 'off', romance: 'enabled' });
-    seasonConfig.twistSchedule = schedule.map(t => ({ ...t }));
+    resetConfig(schedule);
     gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
     gs.episodeHistory = []; gs.jury = []; gs.episode = 0;
     gs.knowledge = {}; gs.sideDeals = []; gs.intentions = {};
+    // seedGame replaces gs wholesale, but these are written by systems that
+    // create them on demand and a leftover from a previous file would ride
+    // along inside the fresh object's prototype-free gaps otherwise.
+    gs.popularity = {}; gs.showmances = []; gs.romanticSparks = [];
+    gs.playerStates = {}; gs.socialStatus = {};
 
     for (let w = 0; w < 12 && gs.activePlayers.length > 3; w++) {
       withSeededRandom(1000 + s * 37 + w, () => simulateBBEpisode());

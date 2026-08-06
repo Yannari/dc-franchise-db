@@ -5288,6 +5288,34 @@ export function generateBBFinaleText(ep) {
       }
       ln(`  ${act.finalHoh} takes ${act.kept} to the end.`);
       if (act.cut) ln(`  ${act.cut} is evicted at the final three, and becomes the last juror.`);
+    } else if (act.type === 'jury-questioning') {
+      sec('THE JURY QUESTIONS THE FINAL TWO');
+      for (const x of act.exchanges || []) {
+        ln('');
+        ln(`  ${x.juror} — to ${x.asked}:`);
+        ln(`    ${x.question}`);
+        for (const a of x.answers || []) {
+          ln(`    ${a.finalist}: ${a.text}`);
+          ln(`      ${a.reaction}`);
+        }
+      }
+      if ((act.swung || []).length) {
+        ln('');
+        ln(`  Changed their mind in that room: ${act.swung.join(', ')}.`);
+      }
+    } else if (act.type === 'closing-statements') {
+      sec('CLOSING STATEMENTS');
+      for (const s of act.statements || []) {
+        ln('');
+        ln(`  ${s.intro}`);
+        ln(`    ${s.text}`);
+      }
+    } else if (act.type === 'americas-favourite') {
+      sec("AMERICA'S FAVOURITE HOUSEGUEST");
+      ln(`  The one prize the house has no vote in.`);
+      (act.tally || []).forEach(t => ln(`    ${t.name} — ${t.share}%`));
+      ln('');
+      ln(`  ${act.winner} takes it, for ${act.reason}. $${(act.prize || 0).toLocaleString()}.`);
     } else if (act.type === 'jury-vote') {
       sec('THE JURY VOTE');
       ln(`  Jury: ${(act.jury || []).join(', ')}.`);

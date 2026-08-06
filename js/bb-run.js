@@ -30,6 +30,7 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { GENERIC_BB_COMPS, runBBCompetition } from './bb/comps.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale, finalCompPool } from './bb-finale.js';
+import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
@@ -1361,8 +1362,16 @@ export function runBBFinale() {
   const ep = simulateBBFinale();
   if (!ep) return null;
   ep.num = (gs.episodeHistory?.length || 0) + 1;
+  // The finale's transcript, on BOTH paths.
+  //
+  // This used to fall back to an empty string, which meant every headless
+  // season — the test suite, the audits, anything run without a browser —
+  // produced a finale with no transcript at all. The weekly writer has
+  // `summariseWeek` for exactly this reason; the finale had nothing, so the
+  // one episode that ends the season was the one nobody could read.
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
-    ? window.generateSummaryText(ep) : '';
+    ? window.generateSummaryText(ep)
+    : generateBBFinaleText(ep);
   try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({

@@ -21033,8 +21033,14 @@ export function buildBBWeekScreens(ep) {
       screens.push({ id: 'bb-final-hoh', label: 'Final HOH', html: rpBuildBBFinalHoh(ep) });
     } else if (act.type === 'final-cut') {
       screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
+    } else if (act.type === 'jury-questioning') {
+      screens.push({ id: 'bb-ftc-questions', label: 'The Questions', html: rpBuildBBJuryQuestioning(ep) });
+    } else if (act.type === 'closing-statements') {
+      screens.push({ id: 'bb-ftc-speeches', label: 'Closing Statements', html: rpBuildBBClosingStatements(ep) });
     } else if (act.type === 'jury-vote') {
       screens.push({ id: 'bb-jury', label: 'The Jury Vote', html: rpBuildBBJuryVote(ep) });
+    } else if (act.type === 'americas-favourite') {
+      screens.push({ id: 'bb-afh', label: "America's Favourite", html: rpBuildBBAmericasFavourite(ep) });
     }
   }
 
@@ -22651,6 +22657,139 @@ export function rpBuildBBFinalHoh(ep) {
     subtitle: 'Three parts. One of them ends up choosing who sits at the end.',
     accent: '#f0a500', room: 'bb-power',
     stateKey: `bb_fhoh_${ep.num}`, scenes,
+  });
+}
+
+/**
+ * The questioning, with the vote visibly moving.
+ *
+ * The lean rail is the reason this screen exists. Every other finale screen
+ * reports a result; this one shows seven decisions being made, one question at
+ * a time, and a juror whose mind was made up weeks ago visibly refusing to
+ * move while the one beside them swings. The numbers are the same ones the
+ * ballot is about to be counted from — `before` and `after` are snapshots of
+ * the stored read, so nothing here is a decoration of the vote, it IS the vote.
+ */
+export function rpBuildBBJuryQuestioning(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'jury-questioning');
+  if (!act) return '';
+  const [fa, fb] = act.finalTwo || [];
+
+  /** One juror's rail row: where they were, where the question left them. */
+  const rail = (juror, upTo) => {
+    const before = act.before?.[juror] || {};
+    // Only the exchanges already revealed have happened, so the rail can never
+    // spoil a swing the viewer has not watched yet.
+    const done = (act.exchanges || []).slice(0, upTo + 1).some(x => x.juror === juror);
+    const now = done ? (act.after?.[juror] || before) : before;
+    const gap = (Number(now[fa]) || 0) - (Number(now[fb]) || 0);
+    const wasGap = (Number(before[fa]) || 0) - (Number(before[fb]) || 0);
+    const moved = done && Math.abs(gap - wasGap) >= 0.15;
+    const flipped = done && Math.sign(gap) !== Math.sign(wasGap) && Math.abs(gap) > 0.05;
+    // -1..1 across the rail, clamped so a runaway read still fits the bar.
+    const pos = Math.max(-1, Math.min(1, gap / 5));
+    const left = 50 + pos * 46;
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <div style="width:74px;font-size:10px;color:${flipped ? '#f0a500' : '#8b949e'};text-align:right;white-space:nowrap">${juror}${flipped ? ' ⟲' : ''}</div>
+      <div style="position:relative;flex:1;height:14px;border-radius:7px;background:linear-gradient(90deg,rgba(88,166,255,.16),rgba(255,255,255,.04),rgba(248,81,73,.16));border:1px solid var(--border)">
+        <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.16)"></div>
+        <div title="${juror}: ${gap > 0 ? fa : gap < 0 ? fb : 'undecided'}" style="position:absolute;left:${left}%;top:50%;transform:translate(-50%,-50%);width:${moved ? 12 : 9}px;height:${moved ? 12 : 9}px;border-radius:50%;background:${gap > 0 ? '#58a6ff' : gap < 0 ? '#f85149' : '#8b949e'};box-shadow:0 0 ${moved ? 10 : 4}px ${gap > 0 ? 'rgba(88,166,255,.8)' : gap < 0 ? 'rgba(248,81,73,.8)' : 'rgba(139,148,158,.5)'};transition:left .5s ease,width .3s ease,height .3s ease"></div>
+      </div>
+      <div style="width:52px;font-size:9px;color:${moved ? '#f0a500' : 'var(--muted)'};letter-spacing:.5px">${done ? (moved ? 'MOVED' : 'HELD') : ''}</div>
+    </div>`;
+  };
+
+  const scenes = (act.exchanges || []).map(x => {
+    const answers = (x.answers || []).map(a => `
+      <div style="margin-top:8px;padding:8px 10px;border-left:2px solid ${a.landed ? 'rgba(63,185,80,.55)' : 'rgba(248,81,73,.5)'};background:rgba(255,255,255,.02)">
+        <div style="font-size:11px;color:#c9d1d9"><strong>${a.finalist}</strong> ${a.text}</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:4px">${a.reaction}</div>
+      </div>`).join('');
+    return {
+      text: `<div style="font-size:10px;letter-spacing:1px;color:#8b949e;text-transform:uppercase">${x.juror} → ${x.asked}</div>
+        <div style="margin:6px 0;font-size:12px;color:#e6edf3">${x.question}</div>${answers}`,
+      players: [x.juror, ...(x.answers || []).map(a => a.finalist)],
+      badgeText: (x.answers || []).some(a => a.immovable) ? 'MIND MADE UP'
+        : (x.answers || []).every(a => !a.landed) ? 'NOBODY LANDED IT' : 'THE CHAIRS',
+      badgeClass: (x.answers || []).some(a => a.landed) ? 'gold' : 'red',
+    };
+  });
+
+  // The rail is drawn at the state the reveal has reached, so it moves as the
+  // viewer clicks rather than arriving finished.
+  const stateKey = `bb_ftcq_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  const idx = _tvState[stateKey]?.idx ?? -1;
+  const board = `<div style="margin:10px 0 16px;padding:12px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;margin-bottom:8px">
+      <span style="color:#58a6ff">${fa}</span><span style="color:var(--muted)">WHERE THE JURY IS</span><span style="color:#f85149">${fb}</span>
+    </div>
+    ${(act.jury || []).map(j => rail(j, idx)).join('')}
+  </div>`;
+
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: 'THE JURY QUESTIONS THE FINAL TWO',
+    subtitle: 'Seven people who were each removed from this game by one of them.',
+    accent: '#d29922', room: 'bb-live',
+    header: board,
+    stateKey, scenes,
+    footer: (act.swung || []).length
+      ? `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,.35);background:rgba(240,165,0,.07);text-align:center;font-size:11px;color:#f0a500">
+          ${act.swung.join(', ')} changed ${act.swung.length === 1 ? 'their mind' : 'their minds'} in that room.
+        </div>`
+      : `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid var(--border);text-align:center;font-size:11px;color:var(--muted)">
+          Nobody moved. Every vote in this room was decided before anybody sat down.
+        </div>`,
+  });
+}
+
+/** The last thing either of them gets to say. */
+export function rpBuildBBClosingStatements(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'closing-statements');
+  if (!act) return '';
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: 'CLOSING STATEMENTS',
+    subtitle: 'No questions. No interruptions. One last go.',
+    accent: '#f0a500', room: 'bb-live',
+    stateKey: `bb_ftcs_${ep.num}`,
+    scenes: (act.statements || []).flatMap(s => [
+      { text: s.intro, players: [s.finalist], badgeText: s.finalist.toUpperCase(), badgeClass: 'grey' },
+      { text: `<div style="font-size:12px;color:#e6edf3;line-height:1.6">${s.text}</div>`,
+        players: [s.finalist],
+        badgeText: s.moved.length ? `MOVED ${s.moved.length}` : 'NO MOVEMENT',
+        badgeClass: s.moved.length ? 'gold' : 'grey' },
+    ]),
+  });
+}
+
+/** The only prize the house has no vote in. */
+export function rpBuildBBAmericasFavourite(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'americas-favourite');
+  if (!act) return '';
+  const top = act.tally || [];
+  const max = Math.max(1, ...top.map(t => t.share));
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: "AMERICA'S FAVOURITE HOUSEGUEST",
+    subtitle: 'The jury decided the winner. This one was never theirs to decide.',
+    accent: '#3fb950', room: 'bb-live',
+    stateKey: `bb_afh_${ep.num}`,
+    scenes: [
+      { text: 'Every houseguest voted out of that house is on this ballot. Neither of the two who made it to the end is.',
+        players: [], badgeText: 'THE VOTE AT HOME', badgeClass: 'grey' },
+      { text: `<div>${top.map(t => `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="width:90px;font-size:11px;color:#c9d1d9;text-align:right">${t.name}</div>
+            <div style="flex:1;height:10px;border-radius:5px;background:rgba(255,255,255,.05);overflow:hidden">
+              <div style="width:${(t.share / max) * 100}%;height:100%;background:linear-gradient(90deg,#3fb950,#58a6ff)"></div>
+            </div>
+            <div style="width:44px;font-size:10px;color:var(--muted)">${t.share}%</div>
+          </div>`).join('')}</div>`,
+        players: top.map(t => t.name), badgeText: 'THE COUNT', badgeClass: 'challenge' },
+      { text: `<strong>${act.winner}</strong> takes it — for ${act.reason}. $${(act.prize || 0).toLocaleString()}.`,
+        players: [act.winner], badgeText: "AMERICA'S FAVOURITE", badgeClass: 'gold' },
+    ],
   });
 }
 

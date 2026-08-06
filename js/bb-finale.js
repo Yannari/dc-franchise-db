@@ -19,6 +19,7 @@ import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
 import { reconcileBBJury } from './bb/knowledge.js';
 import { seedJurorReads, sentimentAdjustment } from './bb/jury-sentiment.js';
+import { runJuryQuestioning, runClosingStatements, runAmericasFavourite } from './bb/finale-night.js';
 import { seatedJurors } from './bb/jury.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
@@ -314,12 +315,32 @@ export function simulateBBFinale(rng = Math.random) {
   // The person cut at three never sat in the lodge, so they arrive with the
   // read their game earned them and nothing else — seeded here rather than
   // walking into the vote with no opinion at all.
+  for (const juror of jury) {
+    try { seedJurorReads(juror, week?.num || 0); } catch { /* votes on résumé alone */ }
+  }
+
+  // ── the questioning, and then the speeches ──
+  //
+  // Both run BEFORE the adjustments are read, which is the entire point: the
+  // vote has to be counted after the room, not before it. Wrapped because a
+  // finale that cannot stage its own Q&A still has to produce a winner.
+  let questioning = { exchanges: [] };
+  let closing = { statements: [] };
+  try {
+    questioning = runJuryQuestioning({ finalTwo, jury, week: week?.num || 0, rng });
+    if (questioning.exchanges.length) {
+      acts.push({ type: 'jury-questioning', finalTwo, jury, ...questioning });
+    }
+    closing = runClosingStatements({ finalTwo, jury, week: week?.num || 0, rng });
+    if (closing.statements.length) {
+      acts.push({ type: 'closing-statements', finalTwo, statements: closing.statements });
+    }
+  } catch { /* the vote still happens */ }
+
   const adjustments = {};
   for (const juror of jury) {
-    try {
-      seedJurorReads(juror, week?.num || 0);
-      adjustments[juror] = sentimentAdjustment(juror, finalTwo);
-    } catch { /* this juror votes on résumé alone */ }
+    try { adjustments[juror] = sentimentAdjustment(juror, finalTwo); }
+    catch { /* this juror votes on résumé alone */ }
   }
   const verdict = simulateJuryVote(finalTwo, adjustments);
   const votes = verdict.votes || {};
@@ -327,12 +348,25 @@ export function simulateBBFinale(rng = Math.random) {
   const runnerUp = finalTwo.find(n => n !== winner) || null;
   acts.push({ type: 'jury-vote', jury, votes, reasoning: verdict.reasoning || [], winner, runnerUp,
     // What the jury house taught them, so the screen can say so.
-    learned: juryLearned });
+    learned: juryLearned,
+    // And who changed their mind in the chairs tonight, so the vote can be read
+    // against the room rather than as an unexplained tally.
+    swung: questioning.swung || [] });
+
+  // ── America's Favourite ──
+  //
+  // The last thing decided, and the only one the house has no vote in.
+  // `gs.popularity` has been filled in all season by competitions, camp events
+  // and every heroic or cowardly moment, and nothing has ever read it at the
+  // end.
+  let favourite = null;
+  try { favourite = runAmericasFavourite({ finalTwo, rng }); } catch { favourite = null; }
+  if (favourite) acts.push({ type: 'americas-favourite', ...favourite });
 
   gs.phase = 'complete';
   gs.winner = winner;
   gs.bb ||= {};
-  gs.bb.finale = { finalHoh, finalTwo, cut, jury, votes, winner, runnerUp };
+  gs.bb.finale = { finalHoh, finalTwo, cut, jury, votes, winner, runnerUp, favourite };
 
   return {
     num: week.num,
@@ -343,7 +377,7 @@ export function simulateBBFinale(rng = Math.random) {
     houseAtStart: house,
     finalHoh, finalTwo, cut,
     jury, juryVotes: votes,
-    winner, runnerUp,
+    winner, runnerUp, favourite,
     eliminated: cut || null,
     acts,
     // Total Drama's finale record shape, so anything reading a season winner

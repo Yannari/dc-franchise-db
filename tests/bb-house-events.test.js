@@ -87,7 +87,11 @@ describe('Big Brother house-event scheduler contract', () => {
     // draws — there is one per voter a nominee actually got alone, the same way
     // the alliance lifecycle attaches one per real event — so two nominees
     // working four people each is eight beats and that is correct.
-    const ceremonies = week.acts.filter(a => a.type !== 'house' && a.type !== 'campaign');
+    // The jury house is not one of these and cannot be: it is the one act of
+    // the week that happens somewhere the houseguests are not, so no house
+    // event can attach to it. It carries its own beats instead.
+    const ceremonies = week.acts.filter(a => a.type !== 'house' && a.type !== 'campaign'
+      && a.type !== 'jury-house');
     const campaigns = week.acts.filter(a => a.type === 'campaign');
     expect(ceremonies.every(act => act.socialBeats.length >= 1 && act.socialBeats.length <= 6)).toBe(true);
     expect(campaigns.every(act => act.socialBeats.length >= 1)).toBe(true);
@@ -95,7 +99,9 @@ describe('Big Brother house-event scheduler contract', () => {
     expect(houseActs.every(act => act.socialBeats.length >= 8)).toBe(true);
     // Eviction night used to be hardcoded to silence, which made a farewell
     // speech impossible to write. It gets its beats like every other act now.
-    const eviction = week.acts.at(-1);
+    // Last act of the week IN THE HOUSE — once the jury is open the week ends
+    // somewhere else, in a lodge nobody still playing can reach.
+    const eviction = week.acts.filter(a => a.type !== 'jury-house').at(-1);
     expect(eviction.type).toBe('eviction');
     expect(eviction.socialBeats.length).toBeGreaterThan(0);
   });

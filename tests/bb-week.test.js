@@ -25,6 +25,10 @@ describe('Big Brother headless week engine', () => {
     expect(week.acts.map(act => act.type)).toEqual([
       'house', 'hoh', 'house', 'nominations', 'house', 'veto', 'house',
       'veto-ceremony', ...week.acts.filter(a => a.type === 'campaign').map(() => 'campaign'), 'eviction',
+      // And, once the jury is open, the room the evictee walks into. It comes
+      // after the eviction because it is generated in maintenance, which is
+      // the only point at which tonight's evictee is somebody to check in on.
+      ...week.acts.filter(a => a.type === 'jury-house').map(() => 'jury-house'),
     ]);
     expect(week.acts.every(act => !('day' in act))).toBe(true);
     expect(week.acts.find(a => a.type === 'hoh').results.map(result => result.name)).not.toContain('A');

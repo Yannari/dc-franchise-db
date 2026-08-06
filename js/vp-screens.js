@@ -27,6 +27,7 @@ import { rpBuildBBTimeCapsule } from './vp-bb-time-capsule.js';
 import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
 import { rpBuildBBTeamAmerica } from './vp-bb-team-america.js';
+import { rpBuildBBJuryHouse } from './vp-bb-jury-house.js';
 import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
 import { rpBuildBBVetoDrawTwist } from './vp-bb-veto-draw.js';
@@ -20197,6 +20198,11 @@ export function rpBuildBBEviction(ep) {
     ...(act?.tieBreak ? [{ kind: 'tie' }] : []),
     { kind: 'verdict' },
     { kind: 'goodbyes' },
+    // Between the goodbyes and the door, because that is exactly where it
+    // happens: bag in hand, nothing left to lose, and a room that has to keep
+    // living with whatever gets said.
+    ...(act?.lastWords ? [{ kind: 'lastwords' }, { kind: 'room' }] : []),
+    ...(act?.lastWords?.response ? [{ kind: 'answer' }] : []),
     { kind: 'door' },
     ...(ep.dealBreaks || []).map(d => ({ kind: 'dealbreak', d })),
     ...(act?.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
@@ -20326,6 +20332,47 @@ export function rpBuildBBEviction(ep) {
             `${_bbEsc(evicted)} asks who knew. Nobody answers before the clock forces the question toward the door.`,
             `${_bbEsc(evicted)} keeps the goodbye quick until one person holds on. For a moment the vote disappears and the relationship does not.`,
           ], 'bye')}</div></div>`;
+      // ── The blowup ──
+      //
+      // The audience is the only party in the building that knows whether any
+      // of this is true, and the screen says so out loud. The house cannot: the
+      // vote is secret, so every person on that sofa is working out whether to
+      // believe it from who is shouting and who is being named — which is what
+      // the reaction card underneath is.
+      case 'lastwords': {
+        const lw = act.lastWords;
+        const verdict = lw.isTrue === true
+          ? '<span class="bbns-pill red">EVERY WORD OF IT IS TRUE</span>'
+          : lw.isTrue === false
+            ? '<span class="bbns-pill grey">NONE OF IT IS TRUE</span>'
+            : '';
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(lw.speaker, 30)}<span class="bbns-pill red">${
+  lw.register === 'explosion' ? 'THEY LOSE IT' : 'ONE LAST THING'}</span>${verdict}</div>
+          <div class="bbns-card-b">${vvar([
+    `${_bbEsc(lw.speaker)} gets as far as the door and stops.`,
+    `The bag is already on ${pv(lw.speaker).posAdj} shoulder when ${pv(lw.speaker).sub} turns around.`,
+    `Nobody expected anything else tonight. ${_bbEsc(lw.speaker)} had other ideas.`,
+    `The hugs are done. ${_bbEsc(lw.speaker)} does not go through the door.`,
+  ], lw.speaker, 'lw-open')}
+          <br><br>${_bbEsc(lw.speech)}
+          ${lw.isTrue === false ? `<br><br><em>${_bbEsc(lw.reveal.accused)} did not do it. Nobody in that room can know that.</em>` : ''}</div></div>`;
+      }
+      case 'room': {
+        const lw = act.lastWords;
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${_bbAvatar(lw.reveal.accused, 30)}<span class="bbns-pill grey">THE ROOM</span></div>
+          <div class="bbns-card-b">${lw.reactions.map(r =>
+    `<div style="margin-bottom:6px">${_bbEsc(r.text)}</div>`).join('')}</div></div>`;
+      }
+      case 'answer': {
+        const lw = act.lastWords;
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${_bbAvatar(lw.reveal.accused, 30)}<span class="bbns-pill ${
+  lw.response.kind === 'own' ? 'gold' : 'blue'}">${
+  lw.response.kind === 'own' ? 'OWNS IT' : lw.response.kind === 'deflect' ? 'RISES ABOVE IT' : 'DENIES IT'}</span></div>
+          <div class="bbns-card-b">${_bbEsc(lw.response.text)}</div></div>`;
+      }
       case 'door':
         if (act?.doubleVote && act?.secondEvicted) {
           return `<div class="bbns-card is-final bbev-door-card">
@@ -20892,6 +20939,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
           }
         } catch { /* no interview, no screen */ }
         break;
+      case 'jury-house': {
+        // Last, and after the interview on purpose: the person who just walked
+        // out of the front door is the person who walks into this one.
+        const jhDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        const jh = rpBuildBBJuryHouse(view, act, jhDeps);
+        if (jh && jh.trim()) {
+          screens.push({ id: id(`bb-jury-house-${act.week || 0}`),
+            label: act.full ? 'Jury House · Roundtable' : 'Jury House', html: jh });
+        }
+        break;
+      }
       default:
         break;
     }

@@ -1,6 +1,8 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { gs, seasonConfig, players } from './core.js';
 import { juryLines } from './bb/jury.js';
+import { lastWordsLines } from './bb/last-words.js';
+import { juryHouseLines } from './bb/jury-house.js';
 import { describeIntentionsPlan } from './intentions.js';
 import { buildInfoFlowLog } from './knowledge-integration.js';
 import { standingFromSnapshot, standingMovement, roleLabel } from './social-status.js';
@@ -5166,12 +5168,20 @@ export function generateBBSummaryText(ep) {
         } else {
           ln(`  ${act.evicted} is evicted from the Big Brother house.`);
         }
+        // Between the verdict and the door, if they had something to say. Same
+        // shared builder as the run transcript, for the same reason as the jury
+        // roster below it.
+        lastWordsLines(act.lastWords, ln);
         // The same helper the run transcript uses, so the two writers cannot
         // drift on who is out there — the last thing a reader needs is two
         // different jury rosters for the same night.
         juryLines({ num: ep.num, evicted: act.evicted }, ln);
         break;
       }
+
+      case 'jury-house':
+        juryHouseLines(act, ln);
+        break;
 
       default:
         break;

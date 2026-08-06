@@ -47,7 +47,7 @@ const live = () => (gs.activePlayers || []).filter(Boolean);
  * believes a particular piece of news should not depend on how many unrelated
  * dice were rolled earlier in the week.
  */
-function stableRng(...parts) {
+export function stableRng(...parts) {
   let seed = 2166136261;
   const key = parts.join('|');
   for (let i = 0; i < key.length; i++) seed = Math.imul(seed ^ key.charCodeAt(i), 16777619);

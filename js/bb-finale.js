@@ -18,6 +18,7 @@ import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
 import { reconcileBBJury } from './bb/knowledge.js';
+import { seedJurorReads, sentimentAdjustment } from './bb/jury-sentiment.js';
 import { seatedJurors } from './bb/jury.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
@@ -255,7 +256,17 @@ export function simulateBBFinale(rng = Math.random) {
   // they have left.
   let juryLearned = [];
   try { juryLearned = reconcileBBJury(jury, { week: week?.num || 0 }); } catch { juryLearned = []; }
-  const verdict = simulateJuryVote(finalTwo);
+  // The person cut at three never sat in the lodge, so they arrive with the
+  // read their game earned them and nothing else — seeded here rather than
+  // walking into the vote with no opinion at all.
+  const adjustments = {};
+  for (const juror of jury) {
+    try {
+      seedJurorReads(juror, week?.num || 0);
+      adjustments[juror] = sentimentAdjustment(juror, finalTwo);
+    } catch { /* this juror votes on résumé alone */ }
+  }
+  const verdict = simulateJuryVote(finalTwo, adjustments);
   const votes = verdict.votes || {};
   const winner = finalTwo.slice().sort((a, b) => (votes[b] || 0) - (votes[a] || 0))[0];
   const runnerUp = finalTwo.find(n => n !== winner) || null;

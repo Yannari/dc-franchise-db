@@ -2526,7 +2526,17 @@ export function _juryLayerRead(juror, finalist) {
     straightShooter, respectedThreat, strategicJuror, grievanceReason, respectReason, trustReason, topValue, mod };
 }
 
-export function simulateJuryVote(finalists) {
+/**
+ * The last vote.
+ *
+ * `adjustments` is an optional `{ [juror]: { [finalist]: number } }` of feeling
+ * the season accumulated outside this function — Big Brother's jury house
+ * builds one across the back half of a season, and passes it in here so the
+ * ballot reads what the audience watched happen instead of recomputing the
+ * whole opinion from stats on the night. Absent, every term below behaves
+ * exactly as it always has, which is what keeps Total Drama's finale identical.
+ */
+export function simulateJuryVote(finalists, adjustments = null) {
   // Seat the jury to the configured size (also dedups). Fix the source so the
   // VP, text and vote all agree on exactly who sits on the jury.
   const jury = seatedJury();
@@ -2599,7 +2609,11 @@ export function simulateJuryVote(finalists) {
       const _layerMod = _juryLayerRead(juror, f).mod;
       const score = (jS.strategic > 7 || jS.intuition > 7
         ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
-        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus + _layerMod;
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8) + _reputationBonus + _layerMod
+        // Whatever happened to this juror between their eviction and tonight.
+        // Zero unless the caller supplies it, so Total Drama's finale — which
+        // has no jury house to accumulate one — is unchanged to the digit.
+        + (Number(adjustments?.[juror]?.[f]) || 0);
       return { name: f, score: score + (Math.random() * 1.5) };
     });
     scores.sort((a, b) => b.score - a.score);

@@ -58,6 +58,8 @@ import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, ti
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
+import { checkBBLastWords } from './last-words.js';
+import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
@@ -722,6 +724,21 @@ function runHouseMaintenance(week, rng = Math.random) {
     ['ballot knowledge', () => { recordBBVotes(week); }],
     // Then a week of people talking, which is the only way any of it moves.
     ['knowledge spread', () => { week.knowledgeEvents = tickBBKnowledge(week, rng); }],
+    // AFTER the ballots are facts and the house has talked, because the person
+    // at the door is working from what they managed to piece together — not
+    // from the ballots, which nobody but each voter has ever seen.
+    //
+    // Deliberately NOT handed the week's generator. Both of these draw their
+    // own stable stream keyed by the week and the person, for the reason
+    // knowledge.js gives for doing the same: whether somebody goes off at the
+    // door should not depend on how many unrelated dice were rolled earlier in
+    // the week. Threading `rng` in here also silently reseats every draw made
+    // after it, which is not a bug in this feature but is a rewrite of every
+    // seeded season anybody has saved.
+    ['last words', () => { checkBBLastWords(week); }],
+    // And then the room they walk into, which is the only place any of it can
+    // be argued with.
+    ['jury house', () => { generateBBJuryHouse(week); }],
   ];
   // Same guard as the romance and scheme bridges: these are shared Total Drama
   // systems and several of them write gs.popularity directly rather than

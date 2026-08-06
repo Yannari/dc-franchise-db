@@ -109,21 +109,42 @@ function recordBigMoves(finalists) {
 /**
  * One part of the three-part final competition.
  *
- * Parts one and two name their competition outright rather than drawing one:
- * they are written set pieces in the `final` slot, which no weekly draw can
- * reach. Part three still draws from the quiz shelf — the jury quiz that
- * belongs there is the jury's build, not this one's.
+ * Parts one and two DRAW, from the whole roster: every endurance competition
+ * the library has can be a part one, every physical or precision one can be a
+ * part two, and the set pieces written specifically for finale night sit in
+ * that pool alongside them rather than replacing it. A finale that always
+ * played the same wall would be the twelfth week of the season with a bigger
+ * light rig, and the library exists precisely so it does not have to be.
+ *
+ * Part three does not draw. It is the jury quiz, every season, because the
+ * question part three asks — how well do you know the people you evicted — is
+ * the only one worth deciding a season on.
  */
-function finalPart(participants, label, rng, week, { compId = null, category = null } = {}) {
-  const type = compId ? 'final' : 'hoh';
+const FINAL_ROLES = {
+  endurance: { categories: ['endurance'] },
+  skill: { categories: ['physical', 'precision', 'puzzle'] },
+};
+
+function finalPart(participants, label, rng, week, { compId = null, role = null } = {}) {
   let forced = compId || undefined;
-  if (!forced && category) {
-    const pool = BB_COMPETITIONS.filter(c => c.category === category && c.types.includes('hoh'));
+  if (!forced && role) {
+    const spec = FINAL_ROLES[role] || { categories: [] };
+    const pool = BB_COMPETITIONS.filter(c =>
+      // Written for finale night...
+      (c.finalRole === role && c.types.includes('final'))
+      // ...or an ordinary competition of the right shape, which is most of them.
+      || (spec.categories.includes(c.category) && c.types.includes('hoh')));
     forced = pool.length ? pool[Math.floor(rng() * pool.length)].id : undefined;
   }
+  // The slot has to match the competition that was drawn: the set pieces live
+  // in `final` and the rest of the library in `hoh`.
+  const chosen = forced ? BB_COMPETITIONS.find(c => c.id === forced) : null;
+  const type = chosen?.types.includes('final') ? 'final' : 'hoh';
   const result = runBBCompetition({
     type, participants: [...participants], house: [...participants],
     week, rng, library: BB_COMPETITIONS, forcedId: forced, allowThrowing: false,
+    // The jury quiz needs to know who is on the bench it is quoting.
+    jury: [...(week?.jury || seatedJurors())],
   });
   return { part: label, competition: result, winner: result.winner, participants: [...participants] };
 }
@@ -148,17 +169,17 @@ export function simulateBBFinale(rng = Math.random) {
   if (house.length >= 3) {
     // Everybody plays part one, the outgoing Head of Household included, and
     // whoever wins it does not play part two at all.
-    const one = finalPart(house, 'Part One — The Wall', rng, week, { compId: 'bb-final-part-one' });
+    const one = finalPart(house, 'Part One — Endurance', rng, week, { role: 'endurance' });
     acts.push({ type: 'final-hoh-part', ...one, partNum: 1 });
 
-    // The two who lost the wall run part two alone, against a clock.
+    // Whoever won part one sits it out; the other two play for the last seat.
     const twoField = house.filter(n => n !== one.winner);
-    const two = finalPart(twoField, 'Part Two — The Run', rng, week, { compId: 'bb-final-part-two' });
+    const two = finalPart(twoField, 'Part Two — Skill', rng, week, { role: 'skill' });
     acts.push({ type: 'final-hoh-part', ...two, partNum: 2 });
 
-    // The two winners meet in part three, which is always a question of how
-    // closely they were paying attention.
-    const three = finalPart([one.winner, two.winner], 'Part Three — The House', rng, week, { category: 'quiz' });
+    // The two winners meet in part three, which is always the jury quiz.
+    const three = finalPart([one.winner, two.winner], 'Part Three — Jury Statements', rng, week,
+      { compId: 'bb-final-part-three' });
     acts.push({ type: 'final-hoh-part', ...three, partNum: 3 });
     finalHoh = three.winner;
 

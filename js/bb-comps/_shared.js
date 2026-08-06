@@ -167,14 +167,21 @@ export function scoreField(participants, { mix, luck = 3, context, rng, throwPen
   return { entries, breakdown };
 }
 
-/** The result shape the dispatcher validates. */
-export function toResult(entries, { beats = [], events = [], text, variant = null, breakdown = {}, luck = null }) {
+/**
+ * The result shape the dispatcher validates.
+ *
+ * `detail` is whatever structured record a competition needs to survive to a
+ * screen — the jury quiz's statements and answers, say. Beats are prose and
+ * breakdown rows are debug numbers; neither can carry "here are three options
+ * and which one was true" in a form a board can render.
+ */
+export function toResult(entries, { beats = [], events = [], text, variant = null, breakdown = {}, luck = null, detail = null }) {
   const placements = entries.map(e => e.name);
   return {
     winner: placements[0],
     placements,
     scores: Object.fromEntries(entries.map(e => [e.name, e.score])),
-    beats, events, variant, breakdown,
+    beats, events, variant, breakdown, detail,
     // Per-houseguest luck, when the competition recorded it. The dispatcher
     // merges this into the breakdown so a competition never has to remember to
     // write the Debug tab's fields into every one of its own result rows.

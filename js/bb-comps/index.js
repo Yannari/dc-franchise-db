@@ -24,6 +24,7 @@ import { PAIR_COMPS } from './pairs.js';
 import { CLASSIC_COMPS } from './classics.js';
 import { ARENA_CLASSIC_COMPS } from './arena-classics.js';
 import { FINAL_HOH_COMPS } from './final-hoh.js';
+import { JURY_QUIZ_COMPS } from './jury-quiz.js';
 
 /**
  * How strongly a written competition outranks a fallback.
@@ -71,6 +72,7 @@ export const BB_COMPETITIONS = [
   // them, but no weekly slot declares their type, so no weekly draw can reach
   // them.
   ...FINAL_HOH_COMPS,
+  ...JURY_QUIZ_COMPS,
 ].map(production);
 
 export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) => {
@@ -81,5 +83,5 @@ export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) =>
 /** Which competitions can serve a given slot — the dispatcher's own filter. */
 export const competitionsFor = type => BB_COMPETITIONS.filter(c => c.types.includes(type));
 
-export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS };
+export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS, JURY_QUIZ_COMPS };
 export default BB_COMPETITIONS;

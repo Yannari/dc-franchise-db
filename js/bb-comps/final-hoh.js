@@ -71,7 +71,17 @@ const WALL_HOURS = [
   { at: 4, line: 'Four hours. This has stopped being a competition and started being a question about character.' },
   { at: 5, line: 'Five hours, and the conversation up there has gone somewhere strange and quiet.' },
   { at: 6, line: 'Six hours. Everything hurts, everything is wet, and the wall does not care.' },
+  { at: 7, line: 'Seven hours. Somebody up there has started talking to the wall itself.' },
+  { at: 8, line: 'Eight hours. Whatever is holding these people on is not in the arms any more.' },
 ];
+
+/** How long they have been up there, in words the narration can use mid-line. */
+const heldFor = hours => {
+  const whole = Math.floor(hours);
+  if (whole < 1) return 'half an hour';
+  const h = `${whole} hour${whole === 1 ? '' : 's'}`;
+  return hours % 1 ? `${h} and thirty minutes` : h;
+};
 
 const WALL_WEATHER = [
   { label: 'THE TILT', line: 'The wall tips forward and holds there, and three sets of knuckles go white at once.' },
@@ -126,8 +136,9 @@ const WALL_OFFER = [
 const WALL_ACCEPT = [
   (t, o, p) => `${t} looks at ${o} for a long moment, says "you'd better mean it", and opens ${p.posAdj} hands.`,
   (t, o, p) => `${t} takes the deal. ${p.Sub} ${vb(p, 'drops', 'drop')} clean, lands on ${p.posAdj} feet, and does not look back up.`,
-  (t, o, p) => `${t} says ${p.sub} ${vb(p, 'has', 'have')} been up here four hours to be told something ${p.sub} already knew, and lets go.`,
+  (t, o, p, held) => `${t} says ${p.sub} ${vb(p, 'has', 'have')} been up here ${held} to be told something ${p.sub} already knew, and lets go.`,
   (t, o, p) => `${t} shakes on it one-handed, which should not be possible at this height, and comes down.`,
+  (t, o, p, held) => `${t} holds on for another few seconds — long enough that everybody thinks the answer is no — and then, ${held} in, ${p.sub} ${vb(p, 'steps', 'step')} off.`,
 ];
 
 const WALL_REFUSE = [
@@ -172,12 +183,32 @@ export const finalWall = {
   name: 'The Wall',
   category: 'endurance',
   types: ['final'],
+  // Which of the two slots this can serve. The finale draws part one from every
+  // endurance competition the library has plus the set pieces written for it —
+  // the wall is one of the things part one can be, not what part one is.
+  finalRole: 'endurance',
   weight: () => 1,
   desc: 'The last three houseguests stand on narrow footplates bolted to a wall angled out over the yard, holding a grip bar with nothing under them but padding. Every few minutes the wall tilts further, the water and the wind come on, and the platforms drop an inch without warning, so the only way to stay on is to keep re-setting your feet while soaked and freezing. Anybody whose hands open is out and cannot return, the three of them can talk to each other the entire time — including about deals to come down — and the last houseguest left on the wall wins the first part of the final Head of Household.',
   stats: { endurance: 0.46, physical: 0.20, temperament: 0.16, boldness: 0.10, loyalty: 0.08 },
   simulate(participants, context, api, rng) {
     const say = makePicker(rng);
     const weather = makePicker(rng);
+    // A wall runs for hours and narrates the same category of thing every half
+    // hour, so a picker alone is not enough: once its pool is exhausted it
+    // starts reusing, and with a large field two rounds can assemble the same
+    // sentence. `line()` guarantees the beat text has not been printed before
+    // by scanning the pool for an unused rendering when the pick collides.
+    const luck = {};   // banked per player, merged into the breakdown downstream
+    const printed = new Set();
+    const line = (prefix, pool, ...args) => {
+      for (const candidate of [say(pool), ...pool]) {
+        const text = `${prefix}${candidate(...args)}`;
+        if (!printed.has(text)) { printed.add(text); return text; }
+      }
+      const fallback = `${prefix}${pool[0](...args)}`;
+      printed.add(fallback);
+      return fallback;
+    };
     const beats = [];
     const breakdown = {};
     const week = context?.week || null;
@@ -198,19 +229,31 @@ export const finalWall = {
     const deals = [];
     let hours = 0;
     let round = 0;
+    let offerMade = false;
 
-    // The wall runs in half-hour rounds. Twelve of them is six hours, which is
-    // long enough that the record is believable and short enough that the
-    // narration does not become a list.
-    while (field.length > 1 && round < 12) {
+    // The wall runs in half-hour rounds, up to eight hours.
+    //
+    // Attrition is deliberately slow. The first cut of this fell apart in three
+    // rounds — a final three wall that was over in ninety minutes, which is not
+    // a wall, and left the narration announcing the one-hour mark two beats
+    // before somebody won it. The last competition of the season has to be able
+    // to run all night, so the fall threshold starts well below anybody's grip
+    // and fatigue takes real time to catch up with it.
+    while (field.length > 1 && round < 16) {
       round++;
       hours = round * 0.5;
 
       const hazard = weather(WALL_WEATHER);
       const hourMark = WALL_HOURS.find(h => h.at === hours);
       const rolls = field.map(f => {
-        f.fatigue += 0.34 + rng() * 0.22;
-        const grip = f.hold + nerveRoll(f.name, rng) - f.fatigue;
+        f.fatigue += 0.21 + rng() * 0.15;
+        const swing = nerveRoll(f.name, rng);
+        // Banked for the Debug tab: how much the night's nerve swing gave or
+        // took across the whole wall. Every competition owes the panel an
+        // aptitude and a luck figure, and one that reports neither renders a
+        // blank row next to the ones that do.
+        luck[f.name] = round2((luck[f.name] || 0) + swing);
+        const grip = f.hold + swing - f.fatigue;
         return { ...f, grip };
       });
       rolls.sort((a, b) => a.grip - b.grip);
@@ -221,22 +264,36 @@ export const finalWall = {
       if (field.length > 1 && round >= 2) {
         const weakest = rolls[0];
         const strongest = rolls[rolls.length - 1];
-        const offerable = rolls.length >= 2 && hours >= 1.5 && weakest.name !== strongest.name;
+        // ONE offer a wall.
+        //
+        // Rolling the read every half hour compounded it into a near-certainty:
+        // measured at 83% of walls ending in a bought exit, which makes the
+        // most dramatic thing this competition can do the ordinary way it ends.
+        // The offer is a moment somebody chooses, not a tax on staying up there,
+        // so it gets made once — after two hours, when the weakest has been on
+        // the wall long enough for the answer to mean something.
+        const offerable = rolls.length >= 2 && hours >= 2 && !offerMade
+          && weakest.name !== strongest.name;
         const read = offerable
           ? offerRead(weakest.name, strongest.name, { hours, grip: weakest.grip, rng })
           : { took: false, chance: 0 };
 
+        if (offerable) offerMade = true;
+
         if (offerable && read.took) {
           const p = pronouns(weakest.name);
           beats.push(beat(
-            `${choose(rng, WALL_OFFER)(strongest.name, weakest.name)} ${choose(rng, WALL_ACCEPT)(weakest.name, strongest.name, p)}`,
+            `${choose(rng, WALL_OFFER)(strongest.name, weakest.name)} ${choose(rng, WALL_ACCEPT)(weakest.name, strongest.name, p, heldFor(hours))}`,
             [strongest.name, weakest.name], 'DEAL ON THE WALL', 'gold'));
           // A real deal, not a line. The final cut reads exactly this object and
           // has to decide whether to honour it in front of the jury.
           let deal = null;
           try {
+            // `week` here is the week OBJECT — makeEndgameDeal reads `week.num`
+            // off it, and handing it the number instead files the promise as
+            // having been made in week NaN.
             deal = makeEndgameDeal(strongest.name, weakest.name, 'final-two',
-              { week: weekNum, about: 'a promise made on the wall' });
+              { week: week || { num: weekNum }, about: 'a promise made on the wall' });
           } catch { /* the drop still happened */ }
           deals.push({ from: strongest.name, to: weakest.name, tier: 'final-two', made: !!deal });
           api.addBond(strongest.name, weakest.name, 1.4);
@@ -267,11 +324,11 @@ export const finalWall = {
           api.popDelta(weakest.name, 2);
         } else if (rng() < 0.5) {
           const pair = [rolls[0].name, rolls[1].name];
-          beats.push(beat(choose(rng, WALL_SOLIDARITY)(pair[0], pair[1]), pair, 'UP THERE TOGETHER', 'green'));
+          beats.push(beat(line('', WALL_SOLIDARITY, pair[0], pair[1]), pair, 'UP THERE TOGETHER', 'green'));
           api.addBond(pair[0], pair[1], 0.6);
         } else {
           const target = rolls[0].name === strongest.name ? rolls[1].name : rolls[0].name;
-          beats.push(beat(choose(rng, WALL_TAUNT)(strongest.name, target), [strongest.name, target], 'MIND GAMES', 'red'));
+          beats.push(beat(line('', WALL_TAUNT, strongest.name, target), [strongest.name, target], 'MIND GAMES', 'red'));
           api.addBond(strongest.name, target, -1);
           api.popDelta(strongest.name, -1);
         }
@@ -280,12 +337,16 @@ export const finalWall = {
       // ── the hazard itself ──
       const faller = rolls[0];
       // Coming off is a threshold, not a ranking: everybody can survive a round.
-      const falls = faller.grip < 1.6 + round * 0.34;
+      const falls = faller.grip < 0.4 + round * 0.2;
       const p = pronouns(faller.name);
       if (falls && field.length > 1) {
         beats.push(beat(
-          `${hourMark ? `${hourMark.line} ` : ''}${hazard.line} ${say(WALL_FALL)(faller.name, p)}`,
-          [faller.name], field.length === 2 ? 'SECOND OUT' : hazard.label, field.length === 2 ? 'red' : 'challenge'));
+          line(`${hourMark ? `${hourMark.line} ` : ''}${hazard.line} `, WALL_FALL, faller.name, p),
+          [faller.name],
+          // Somebody leaving the last competition of their season is not a
+          // weather report, and badging it with the hazard read as one.
+          field.length === 2 ? 'SECOND OUT' : 'FIRST OUT',
+          field.length === 2 ? 'red' : 'challenge'));
         tiebreaks[faller.name] = clamp(faller.grip / 2 + 2, 0, 9.9);
         breakdown[faller.name] = {
           hoursHeld: hours, droppedDeliberately: false, grip: round2(faller.grip),
@@ -295,7 +356,7 @@ export const finalWall = {
         field = rolls.slice(1).map(({ name, hold, fatigue }) => ({ name, hold, fatigue }));
       } else {
         beats.push(beat(
-          `${hourMark ? `${hourMark.line} ` : ''}${hazard.line} ${say(WALL_HOLD)(faller.name, p)}`,
+          line(`${hourMark ? `${hourMark.line} ` : ''}${hazard.line} `, WALL_HOLD, faller.name, p),
           [faller.name], hazard.label, 'challenge'));
         field = rolls.map(({ name, hold, fatigue }) => ({ name, hold, fatigue }));
       }
@@ -311,7 +372,7 @@ export const finalWall = {
     const placements = [...survivors, ...out.reverse()];
     const winner = placements[0];
     const wp = pronouns(winner);
-    const held = `${Math.floor(hours)} hour${Math.floor(hours) === 1 ? '' : 's'}${hours % 1 ? ' and thirty minutes' : ''}`;
+    const held = heldFor(hours);
     beats.push(beat(
       `After ${held}, ${winner} is the only one still on the wall. ${wp.Sub} ${vb(wp, 'has', 'have')} the first seat in part three, and ${wp.sub} ${vb(wp, 'watches', 'watch')} part two from the sofa like everybody else.`,
       [winner], 'WINS PART ONE', 'gold'));
@@ -325,12 +386,16 @@ export const finalWall = {
       base: round2(Number(tiebreaks[name]) || 0),
     }));
 
+    // The deal is NOT pushed to `events`: the dispatcher validates that array as
+    // renderable beats and would reject a record with no text of its own. It
+    // reaches the finale on the breakdown row instead (`droppedDeliberately`,
+    // `dealWith`), which is where a reader looking for why somebody in a final
+    // three came off a wall at four hours would go anyway.
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'final-wall',
-      // Read by the finale so the visual player can put the deal on screen as a
-      // deal rather than as a competition beat that happens to mention one.
-      events: deals.map(d => ({ type: 'wall-deal', ...d })),
-      text: `${winner} holds the wall for ${held} and takes part one of the final Head of Household.`,
+      text: `${winner} holds the wall for ${held} and takes part one of the final Head of Household.`
+        + (deals.length ? ` ${deals[0].to} came down on a promise from ${deals[0].from}.` : ''),
     });
   },
 };
@@ -339,31 +404,51 @@ export const finalWall = {
 // Part 2 — the run
 // ══════════════════════════════════════════════════════════════════════
 
+// `noun` is what the section is called INSIDE a sentence, which is not what it
+// is called on a badge. Feeding the badge text back into the narration produced
+// "clears the buzzer at a pace that looks unsustainable", where the buzzer is a
+// button at the end of a sprint and cannot be cleared at any pace at all.
 const RUN_SEGMENTS = [
-  { key: 'haul', label: 'THE HAUL', line: n => `${n} drags the first crate out of the sand and gets it moving.`,
+  { key: 'haul', label: 'THE HAUL', noun: 'the crates',
+    line: n => `${n} drags the first crate out of the sand and gets it moving.`,
     mix: { physical: 0.62, endurance: 0.30, boldness: 0.08 }, base: 78 },
-  { key: 'sort', label: 'THE SORT', line: n => `${n} hits the board and starts matching faces to weeks.`,
+  { key: 'sort', label: 'THE SORT', noun: 'the board',
+    line: n => `${n} hits the sorting board and starts matching faces to the weeks they left in.`,
     mix: { mental: 0.55, intuition: 0.30, temperament: 0.15 }, base: 96 },
-  { key: 'climb', label: 'THE CLIMB', line: n => `${n} takes the netting with the crate up on one shoulder.`,
+  { key: 'climb', label: 'THE CLIMB', noun: 'the net',
+    line: n => `${n} takes the cargo net with the crate up on one shoulder.`,
     mix: { physical: 0.45, endurance: 0.45, temperament: 0.10 }, base: 84 },
-  { key: 'balance', label: 'THE BEAM', line: n => `${n} steps onto the beam and stops rushing, which is the whole trick.`,
+  { key: 'balance', label: 'THE BEAM', noun: 'the beam',
+    line: n => `${n} steps onto the beam and stops rushing, which is the whole trick.`,
     mix: { temperament: 0.50, intuition: 0.30, physical: 0.20 }, base: 70 },
-  { key: 'finish', label: 'THE BUZZER', line: n => `${n} comes off the beam onto the home straight with everything left.`,
+  { key: 'finish', label: 'THE BUZZER', noun: 'the home straight',
+    line: n => `${n} comes off the beam onto the home straight with everything left.`,
     mix: { physical: 0.50, endurance: 0.34, boldness: 0.16 }, base: 62 },
 ];
 
 const RUN_FAST = [
   (n, p, s) => `${n} takes ${s} without a wasted movement and is gone before the clock has caught up.`,
-  (n, p, s) => `${n} clears ${s} at a pace that looks unsustainable and turns out not to be.`,
+  (n, p, s) => `${n} goes through ${s} at a pace that looks unsustainable and turns out not to be.`,
   (n, p, s) => `${n} gets ${p.posAdj} whole body into ${s} and buys back time nobody thought was available.`,
-  (n, p, s) => `${n} is quick and tidy through ${s}, which is a rarer combination than quick.`,
+  (n, p, s) => `${n} is quick and tidy at ${s}, which is a rarer combination than quick.`,
+  (n, p, s) => `${n} has clearly walked ${s} through in ${p.posAdj} head already, and it shows in every decision.`,
+  (n, p, s) => `${n} does not stop moving once at ${s}. Not once.`,
+  (n, p, s) => `${n} makes ${s} look like the easy part of the course, which it is not.`,
+  (n, p, s) => `${n} is through ${s} while the voice on the speaker is still explaining it.`,
 ];
 
 const RUN_SLOW = [
   (n, p, s) => `${n} loses grip halfway through ${s} and has to start that section again from the mark.`,
-  (n, p, s) => `${n} gets ${p.posAdj} feet wrong on ${s}, goes down hard, and takes a moment ${p.sub} ${vb(p, 'does', 'do')} not have.`,
+  (n, p, s) => `${n} gets ${p.posAdj} feet wrong at ${s}, goes down hard, and takes a moment ${p.sub} ${vb(p, 'does', 'do')} not have.`,
   (n, p, s) => `${n} rushes ${s}, knocks the whole run of it over, and has to reset every piece by hand.`,
-  (n, p, s) => `${n} stalls on ${s} — not tired, just suddenly unable to make the decision — and the clock keeps going.`,
+  (n, p, s) => `${n} stalls at ${s} — not tired, just suddenly unable to make the decision — and the clock keeps going.`,
+  (n, p, s) => `${n} tries to carry too much through ${s} at once, drops half of it, and goes back for the half.`,
+  // Deliberately phrased so the section noun is never a sentence's subject:
+  // some of them are plural ("the crates") and a template that conjugates a
+  // verb onto them prints "the crates is winning".
+  (n, p, s) => `${n} is fighting ${s} rather than running it, and losing.`,
+  (n, p, s) => `${n} finishes ${s}, looks at it, and knows before the buzzer that it cost too long.`,
+  (n, p, s) => `Something goes wrong for ${n} at ${s} that nobody watching can identify, ${p.ref} included.`,
 ];
 
 const RUN_MISREAD = [
@@ -387,6 +472,9 @@ const clock = secs => {
 
 const gapWords = secs => {
   const s = Math.round(Math.abs(secs));
+  // Two runs can land inside the same second, and "0 seconds in it, and 0
+  // seconds is all it needs to be" is not a sentence anybody should read.
+  if (s < 1) return 'under a second';
   if (s < 60) return `${s} second${s === 1 ? '' : 's'}`;
   const m = Math.floor(s / 60);
   return `${m} minute${m === 1 ? '' : 's'}${s % 60 ? ` and ${s % 60} seconds` : ''}`;
@@ -397,17 +485,27 @@ export const finalRun = {
   name: 'The Run',
   category: 'physical',
   types: ['final'],
+  finalRole: 'skill',
   weight: () => 1,
   desc: 'The two houseguests who lost part one run the same course alone, against a clock, with nobody watching the other one go. They haul crates out of the sand, match evicted houseguests to the weeks they left in on a sorting board, climb a cargo net carrying a crate, cross a beam and sprint the home straight to a buzzer. The full instructions are posted once at the start and never repeated, so a section built in the wrong order has to be taken apart and rebuilt with the clock running — which is how a commanding lead gets lost. The faster of the two times wins part two and goes through to face the part one winner.',
   stats: { physical: 0.34, mental: 0.24, endurance: 0.18, intuition: 0.14, temperament: 0.10 },
   simulate(participants, context, api, rng) {
     const say = makePicker(rng);
+    const luck = {};   // banked per player, merged into the breakdown downstream
     const beats = [];
     const breakdown = {};
-    const runners = participants.slice(0, 2);
+    // Every houseguest handed to it runs, rather than the first two.
+    //
+    // The finale only ever sends the two who lost the wall, so slicing to two
+    // was true and fragile: the library smoke-tests every competition with a
+    // full house, and one that silently drops ten of the twelve people given to
+    // it is a single scheduling mistake away from doing that in a real week.
+    const runners = [...participants];
 
     beats.push(beat(
-      `${runners[0]} and ${runners[1]} run this one alone. Same course, same clock, and neither of them gets to see the other one do it.`,
+      runners.length === 2
+        ? `${runners[0]} and ${runners[1]} run this one alone. Same course, same clock, and neither of them gets to see the other one do it.`
+        : `${runners.length} houseguests run this one alone, one at a time. Same course, same clock, and nobody watches anybody else do it.`,
       runners, 'PART TWO', 'gold'));
 
     const runs = runners.map(name => {
@@ -427,7 +525,11 @@ export const finalRun = {
         const apt = Object.entries(seg.mix).reduce((sum, [k, w]) => sum + stat(name, k) * w, 0);
         // Ten stat points is worth about 45% of the base time, so a strong
         // houseguest is meaningfully faster without the weak one being lapped.
-        let secs = seg.base * (1.28 - (apt / 10) * 0.52) + (rng() - 0.5) * seg.base * 0.16;
+        const wobble = (rng() - 0.5) * seg.base * 0.16;
+        // Banked in seconds, summed across the course: what the run gave or
+        // cost this houseguest that their stats did not account for.
+        luck[name] = round2((luck[name] || 0) - wobble);
+        let secs = seg.base * (1.28 - (apt / 10) * 0.52) + wobble;
         const stumbled = rng() < clamp(0.30 - apt * 0.02, 0.04, 0.30);
         if (stumbled) secs += seg.base * (0.28 + rng() * 0.34);
 
@@ -445,8 +547,8 @@ export const finalRun = {
 
         const line = i === misreadAt
           ? say(RUN_MISREAD)(name, p)
-          : stumbled ? say(RUN_SLOW)(name, p, seg.label.toLowerCase())
-            : say(RUN_FAST)(name, p, seg.label.toLowerCase());
+          : stumbled ? say(RUN_SLOW)(name, p, seg.noun)
+            : say(RUN_FAST)(name, p, seg.noun);
         beats.push(beat(`${seg.line(name)} ${line}`, [name],
           i === misreadAt ? 'PENALTY' : seg.label, i === misreadAt ? 'red' : 'challenge'));
       });
@@ -503,6 +605,7 @@ export const finalRun = {
     }));
 
     return toResult(entries, {
+      luck,
       beats, breakdown, variant: 'final-run',
       text: `${winner.name} runs ${clock(winner.total)} and takes part two of the final Head of Household.`,
     });

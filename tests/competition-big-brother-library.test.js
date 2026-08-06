@@ -197,16 +197,20 @@ describe('Big Brother competition library', () => {
     // test above ('returns a valid, renderable result for every competition');
     // here the arena only has to show it collectively carries its slots, which
     // still trips if a weight bug zeroes the arena pool.
-    // Slot-gated pools. The arena only opens on a Block Buster week and the
-    // pair pool only on a Battle of the Block week, so neither can be reached
-    // by an ordinary season and neither belongs in the reachability count.
+    // Slot-gated pools. The arena only opens on a Block Buster week, the pair
+    // pool only on a Battle of the Block week, and the `final` pool only on
+    // finale night — none can be reached by an ordinary season and none belongs
+    // in the reachability count.
     // Per-game reachability is proven by the forced-run test above.
+    const gated = ['arena', 'pair', 'final'];
     const arenaOnly = new Set(BB_COMPETITIONS
-      .filter(c => c.types.length === 1 && ['arena', 'pair'].includes(c.types[0])).map(c => c.id));
+      .filter(c => c.types.length === 1 && gated.includes(c.types[0])).map(c => c.id));
     const never = BB_COMPETITIONS.map(c => c.id)
       .filter(id => !used.has(id) && !arenaOnly.has(id));
     expect(never, `never picked in a real season: ${never.join(', ')}`).toEqual([]);
-    const arenaSeen = [...arenaOnly].filter(id => used.has(id)).length;
+    // The arena is the only gated pool with enough games for a spread to mean
+    // anything; the finale plays its two by id.
+    const arenaSeen = [...arenaOnly].filter(id => used.has(id) && !id.startsWith('bb-final-part')).length;
     expect(arenaSeen, 'arena pool barely selected — check arena weights')
       .toBeGreaterThanOrEqual(Math.min(arenaOnly.size, 9));
     // The written library should carry the season; the fallback is a safety net.

@@ -220,6 +220,12 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
     // it by averaging the four individual scores, which cannot represent a pair
     // that lost because of one of its halves — the whole point of the format.
     pairScores:raw.pairScores || null, pairWinner:raw.pairWinner || null,
+    // A competition's own structured record, carried verbatim for the screens.
+    // Beats are prose and breakdown rows are debug numbers, so a competition
+    // whose result IS data — the jury quiz's statements, the options offered
+    // and which ending was true — had nowhere to put it and was silently
+    // losing it here.
+    detail:raw.detail || null,
     debug:{
       competitionId:comp.id, source, type:context.type, variant:raw.variant || null,
       participants:[...participants], excluded:[...(context.excluded || [])],
@@ -250,6 +256,10 @@ export function runBBCompetition(options = {}) {
     // competition handed no pairing declines to run rather than inventing
     // partners for people the week never put together.
     pairs:(options.pairs || []).map(pair => ({ owner:pair.owner, members:[...(pair.members || [])] })),
+    // Who is on the jury bench. Only finale night fills it, and only the jury
+    // quiz reads it — a competition that quotes seven people has to be told
+    // which seven rather than guessing from whoever is not still playing.
+    jury:[...(options.jury || [])],
   };
   const selection = chooseCompetition(options.library || [], type, context, rng, options.forcedId);
   const comp = selection.comp;

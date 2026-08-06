@@ -22634,7 +22634,14 @@ export function rpBuildBBFinalHoh(ep) {
   const scenes = parts.flatMap(part => [
     { text: `<strong>${part.part}</strong> — ${part.participants.join(', ')} play${part.participants.length === 1 ? 's' : ''} ${part.competition?.name ? `<em>${part.competition.name}</em>` : 'for the last power in the house'}.`,
       players: part.participants, badgeText: part.part.split('—')[0].trim().toUpperCase(), badgeClass: 'grey' },
-    ...((part.competition?.beats || []).slice(0, 3).map(b =>
+    // Every beat, not the first three.
+    //
+    // Parts one and two are written set pieces now: the wall runs for hours and
+    // the house negotiates its own exits up there, and the run is lost on a
+    // rules penalty two sections before the finish. Capping at three meant the
+    // screen showed the opening hazard and then jumped to a winner, so the
+    // deal that decided part one was narrated only in the transcript.
+    ...((part.competition?.beats || []).map(b =>
       ({ text: b.text, players: b.players, badgeText: b.badgeText, badgeClass: b.badgeClass || 'challenge' }))),
     { text: `${part.winner} takes it.`, players: [part.winner], badgeText: 'WINS THE PART', badgeClass: 'gold' },
   ]);

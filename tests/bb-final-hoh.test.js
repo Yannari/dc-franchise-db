@@ -15,6 +15,7 @@ import { gs, seasonConfig } from '../js/core.js';
 import { runBBCompetition, BB_COMP_TYPES } from '../js/bb/comps.js';
 import { BB_COMPETITIONS, FINAL_HOH_COMPS } from '../js/bb-comps/index.js';
 import { endgameDealsOf } from '../js/bb/deals.js';
+import { addBond } from '../js/bonds.js';
 import { simulateBBFinale } from '../js/bb-finale.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -28,7 +29,22 @@ const CAST = [
 ].map(([name, archetype, gender], i) =>
   ({ name, archetype, gender, sexuality: 'straight', stats: spread(i + 1) }));
 
-const seededRng = (seed = 7) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+/**
+ * A seeded rng, WARMED.
+ *
+ * This LCG's first output is dominated by its additive constant, so for small
+ * consecutive seeds every stream starts at roughly the same number — which made
+ * "part one drew the same competition twenty-five times" look like a broken
+ * pool when it was really twenty-five identical first draws. Burning a few
+ * values decorrelates the streams. Anything that consumes the very first roll
+ * of a fresh seed is reading a near-constant.
+ */
+const seededRng = (seed = 7) => {
+  let s = seed;
+  const next = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let i = 0; i < 8; i++) next();
+  return next;
+};
 
 function reset(active = ['A', 'B', 'C']) {
   seedGame(CAST, { episode: 0, eliminated: CAST.map(p => p.name).filter(n => !active.includes(n)) });
@@ -36,6 +52,7 @@ function reset(active = ['A', 'B', 'C']) {
   gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
   gs.popularity = {};
   gs.jury = [];
+  gs.episodeHistory = [];
   seasonConfig.jurySize = 3;
   seasonConfig.finaleSize = 3;
 }
@@ -45,9 +62,32 @@ const runPart = (id, participants, rng) => runBBCompetition({
   week: { num: 12 }, rng, library: BB_COMPETITIONS, forcedId: id, allowThrowing: false,
 });
 
+/** The dispatcher files a competition's own rows under debug.scoreBreakdown. */
+const rowsOf = result => result.debug?.scoreBreakdown || {};
+
 beforeEach(() => reset());
 
 describe('the final HOH set pieces', () => {
+  it('parts one and two draw from the whole roster, not just the set pieces', () => {
+    // The set pieces are options, not the format. Over many seeds the finale
+    // should reach ordinary library competitions for both slots as well as the
+    // two written for finale night — otherwise every season's last night is the
+    // same two competitions with a bigger light rig.
+    const seenOne = new Set();
+    const seenTwo = new Set();
+    for (let seed = 1; seed <= 25; seed++) {
+      reset();
+      const ep = simulateBBFinale(seededRng(seed));
+      const parts = ep.acts.filter(a => a.type === 'final-hoh-part');
+      seenOne.add(parts[0].competition.id);
+      seenTwo.add(parts[1].competition.id);
+    }
+    expect(seenOne.size, 'part one always drew the same competition').toBeGreaterThan(2);
+    expect(seenTwo.size, 'part two always drew the same competition').toBeGreaterThan(2);
+    // And the written set pieces are genuinely in those pools.
+    expect([...seenOne, ...seenTwo].some(id => id.startsWith('bb-final-part'))).toBe(true);
+  });
+
   it('declares a slot no weekly draw can reach', () => {
     expect(BB_COMP_TYPES).toContain('final');
     for (const comp of FINAL_HOH_COMPS) {
@@ -64,7 +104,7 @@ describe('the final HOH set pieces', () => {
     expect(result.placements).toHaveLength(3);
     expect(new Set(result.placements).size).toBe(3);
     expect(result.winner).toBe(result.placements[0]);
-    const held = Math.max(...Object.values(result.breakdown).map(b => b.hoursHeld || 0));
+    const held = Math.max(...Object.values(rowsOf(result)).map(b => b.hoursHeld || 0));
     expect(held).toBeGreaterThanOrEqual(1);
     // Scores must strictly decrease down the placements — the dispatcher's
     // contract, and the reason order has to be converted rather than reported.
@@ -79,16 +119,21 @@ describe('the final HOH set pieces', () => {
     for (let seed = 1; seed <= 60 && !found; seed++) {
       reset();
       const result = runPart('bb-final-part-one', ['A', 'B', 'C'], seededRng(seed));
-      const drop = (result.events || []).find(e => e.type === 'wall-deal');
-      if (drop) found = { drop, result };
+      const entry = Object.entries(rowsOf(result)).find(([, row]) => row.droppedDeliberately);
+      if (entry) found = { dropper: entry[0], row: entry[1], result };
     }
     expect(found, 'no wall deal in 60 seeded runs').toBeTruthy();
-    expect(found.drop.made).toBe(true);
-    expect(endgameDealsOf(found.drop.from).some(d => d.members?.includes(found.drop.to)
-      || d.a === found.drop.to || d.b === found.drop.to)).toBe(true);
-    // The person who dropped is not the winner, and the record says they chose to.
-    expect(found.result.winner).not.toBe(found.drop.to);
-    expect(found.result.breakdown[found.drop.to].droppedDeliberately).toBe(true);
+    const partner = found.row.dealWith;
+    expect(partner).toBeTruthy();
+    // A real deal object, not a line of narration: the final cut reads exactly
+    // this and has to honour or break it in front of the jury.
+    const deal = endgameDealsOf(partner).find(d => (d.players || []).includes(found.dropper));
+    expect(deal, 'the promise on the wall was never filed as a deal').toBeTruthy();
+    expect(deal.tier).toBe('final-two');
+    expect(Number.isFinite(deal.madeEp)).toBe(true);
+    expect(found.result.winner).not.toBe(found.dropper);
+    // And the beat says so out loud.
+    expect(found.result.beats.some(b => b.badgeText === 'DEAL ON THE WALL')).toBe(true);
   });
 
   it('the run can be lost by somebody who was faster', () => {
@@ -100,7 +145,7 @@ describe('the final HOH set pieces', () => {
       reset();
       const result = runPart('bb-final-part-two', ['A', 'B'], seededRng(seed));
       runs++;
-      const rows = Object.entries(result.breakdown);
+      const rows = Object.entries(rowsOf(result));
       const loser = rows.find(([n]) => n !== result.winner);
       const winnerRow = rows.find(([n]) => n === result.winner);
       if (loser[1].misread && !winnerRow[1].misread
@@ -120,18 +165,17 @@ describe('the final HOH set pieces', () => {
     expect(b.beats.map(x => x.text)).toEqual(a.beats.map(x => x.text));
   });
 
-  it('the finale plays the wall, then the run, with the right fields', () => {
+  it('the finale plays three parts with the right fields', () => {
     reset();
     const ep = simulateBBFinale(seededRng(21));
     const parts = ep.acts.filter(a => a.type === 'final-hoh-part');
     expect(parts).toHaveLength(3);
 
     const [one, two, three] = parts;
-    expect(one.competition.variant).toBe('final-wall');
     expect(one.participants).toHaveLength(3);
-
-    expect(two.competition.variant).toBe('final-run');
     expect(two.participants).toHaveLength(2);
+    // Part three is the jury quiz every season — it does not draw.
+    expect(three.competition.id).toBe('bb-final-part-three');
     // The wall winner sits part two out. This is the rule, and it is the one
     // an ordinary "everybody plays" loop would silently break.
     expect(two.participants).not.toContain(one.winner);
@@ -140,6 +184,89 @@ describe('the final HOH set pieces', () => {
     expect(new Set(three.participants)).toEqual(new Set([one.winner, two.winner]));
     expect([one.winner, two.winner]).toContain(three.winner);
     expect(ep.finalTwo).toContain(three.winner);
+  });
+
+  // ── part three ──
+
+  /** A season the jury quiz can quote: three evictions with real ballots. */
+  function seasonWithJury() {
+    reset(['A', 'B', 'C']);
+    gs.bb.weeks = [
+      { num: 1, houseAtStart: ['A', 'B', 'C', 'D', 'E', 'F'], hoh: 'A', vetoWinner: 'C',
+        nominees: ['D', 'E'], evicted: 'D',
+        ballots: [{ voter: 'B', evict: 'D' }, { voter: 'C', evict: 'D' }, { voter: 'F', evict: 'E' }] },
+      { num: 2, houseAtStart: ['A', 'B', 'C', 'E', 'F'], hoh: 'B', vetoWinner: 'A',
+        nominees: ['E', 'F'], evicted: 'E',
+        ballots: [{ voter: 'A', evict: 'E' }, { voter: 'C', evict: 'E' }] },
+      { num: 3, houseAtStart: ['A', 'B', 'C', 'F'], hoh: 'C', vetoWinner: 'B',
+        nominees: ['F', 'A'], evicted: 'F',
+        ballots: [{ voter: 'A', evict: 'F' }, { voter: 'B', evict: 'F' }] },
+    ];
+    gs.jury = ['D', 'E', 'F'];
+  }
+
+  it('the jury quiz asks about things that actually happened', () => {
+    seasonWithJury();
+    const result = runBBCompetition({
+      type: 'final', participants: ['A', 'B'], house: ['A', 'B'], jury: ['D', 'E', 'F'],
+      week: { num: 4 }, rng: seededRng(9), library: BB_COMPETITIONS, forcedId: 'bb-final-part-three',
+    });
+    const qs = result.detail?.questions || [];
+    expect(qs.length, 'no statements were built from a season that has three').toBe(3);
+    for (const q of qs) {
+      expect(['D', 'E', 'F']).toContain(q.juror);
+      // The true ending is a real person, and it is one of the options offered.
+      expect(q.options[q.truthIndex]).toBeTruthy();
+      expect(q.options).toContain(q.options[q.truthIndex]);
+      // Nobody is asked about themselves, and the finalists are never an option
+      // for a question whose answer they are supposed to have to know.
+      expect(q.options).not.toContain(q.juror);
+      // Both finalists answered, and an answer is an index into the options.
+      for (const f of ['A', 'B']) {
+        expect(q.answers[f].answer).toBeGreaterThanOrEqual(0);
+        expect(q.answers[f].answer).toBeLessThan(q.options.length);
+        expect(q.answers[f].right).toBe(q.answers[f].answer === q.truthIndex);
+      }
+    }
+  });
+
+  it('the quiz rewards knowing the jury, not being clever', () => {
+    // Two finalists with identical stats, one of whom actually lived with the
+    // jury. Over many seeded runs the one with the read has to win more.
+    let withRead = 0;
+    let without = 0;
+    for (let seed = 1; seed <= 120; seed++) {
+      seasonWithJury();
+      // A is in every week with the jurors and voted them out; B is a stranger.
+      ['D', 'E', 'F'].forEach(j => { addBond('A', j, 5); addBond('B', j, 0); });
+      gs.bb.weeks.forEach(w => { w.houseAtStart = w.houseAtStart.filter(n => n !== 'B'); });
+      const result = runBBCompetition({
+        type: 'final', participants: ['A', 'B'], house: ['A', 'B'], jury: ['D', 'E', 'F'],
+        week: { num: 4 }, rng: seededRng(seed), library: BB_COMPETITIONS, forcedId: 'bb-final-part-three',
+      });
+      if (result.winner === 'A') withRead++; else without++;
+    }
+    expect(withRead).toBeGreaterThan(without);
+    // But never a certainty — the last question of the season has to be losable.
+    expect(without).toBeGreaterThan(0);
+  });
+
+  it('a tie goes to a number question', () => {
+    let sawTiebreak = false;
+    for (let seed = 1; seed <= 120 && !sawTiebreak; seed++) {
+      seasonWithJury();
+      const result = runBBCompetition({
+        type: 'final', participants: ['A', 'B'], house: ['A', 'B'], jury: ['D', 'E', 'F'],
+        week: { num: 4 }, rng: seededRng(seed), library: BB_COMPETITIONS, forcedId: 'bb-final-part-three',
+      });
+      if (result.detail?.tiebreak) {
+        sawTiebreak = true;
+        expect(Number.isFinite(result.detail.tiebreak.target)).toBe(true);
+        expect(result.winner).toBe(result.detail.tiebreak.winner);
+        expect(result.beats.some(b => b.badgeText === 'THE TIEBREAKER')).toBe(true);
+      }
+    }
+    expect(sawTiebreak, 'no tie in 120 runs of a three-question quiz').toBe(true);
   });
 
   it('every beat names somebody and carries a badge', () => {

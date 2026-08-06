@@ -535,6 +535,11 @@ export function snapshotGameState() {
       house: gs.bb.house
         ? { ...gs.bb.house, memories: undefined, eventHistory: undefined }
         : gs.bb.house,
+      // Same reason as memories and eventHistory above: the jury's reads are a
+      // season-long log that only the live state ever answers from. Snapshotted
+      // per episode it would be copied a dozen times over a season and read
+      // back never — the exact shape that took gs to nineteen megabytes.
+      jurySentiment: undefined,
     })) : null,
     isMerged:     gs.isMerged,
     activePlayers: [...gs.activePlayers],

@@ -156,6 +156,34 @@ describe('the Big Brother viewing party as a whole', () => {
       'these acts narrated something no screen ever shows').toEqual([]);
   });
 
+  // The beat-level duplicate guard cannot see this one: a screen builder that
+  // writes avatars straight into card markup has no `players` array to check.
+  // That is exactly how the veto ceremony shipped a Head of Household who won
+  // the veto being told, by himself, over two identical faces, that he must
+  // name a replacement — the handover line addresses the HOH by name and never
+  // branched on the holder BEING the HOH.
+  it('never draws the same face twice side by side', () => {
+    // Scoped to a single card HEADER, which is where faces sit shoulder to
+    // shoulder. A wider window flags perfectly good screens — an interview
+    // shows its subject in the header and again in the body on purpose.
+    const HEAD = /class="bbns-card-h">([\s\S]*?)<\/div>/g;
+    const AV = /assets\/avatars\/([a-z0-9-]+)\.png/g;
+    const bad = new Map();
+    for (const { twist, screens } of runs) {
+      for (const s of screens) {
+        for (const head of String(s.html || '').matchAll(HEAD)) {
+          const slugs = [...head[1].matchAll(AV)].map(m => m[1]);
+          if (slugs.length === new Set(slugs).size) continue;
+          const dupe = slugs.find((n, i) => slugs.indexOf(n) !== i);
+          const key = `${s.id || s.label}|${dupe}`;
+          if (!bad.has(key)) bad.set(key, twist);
+        }
+      }
+    }
+    expect([...bad.entries()].map(([k, v]) => `${k} (on ${v})`),
+      'these screens drew one houseguest twice in the same card header').toEqual([]);
+  });
+
   it('never renders a stringified object onto a screen', () => {
     const bad = [];
     for (const { twist, screens } of runs) {

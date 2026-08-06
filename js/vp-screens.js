@@ -19537,6 +19537,21 @@ export function rpBuildBBCeremony(ep) {
                 `${_bbEsc(hoh)} sits very still, doing the arithmetic of a week that no longer belongs to ${pv(hoh).obj}.`,
                 `Somebody whispers the rule to somebody else, and the panic relocates to everyone ${_bbEsc(holder)} has ever frowned at.`,
               ], hoh, replacement, 'diamond-handover')}</div></div>`
+          // A Head of Household who wins the veto and uses it hands over to
+          // NOBODY. The handover line is the holder addressing the Head of
+          // Household by name, so when they were the same person the room
+          // watched Wayne tell Wayne that Wayne must name a replacement, over
+          // two identical avatars. The rule three cases up already branches on
+          // holder === hoh; this one never did.
+          : holder && hoh && holder === hoh
+          ? `<div class="bbns-card is-key">
+              <div class="bbns-card-h">${_bbAvatar(hoh, 30)}<span class="bbns-pill red">NO HANDOVER</span></div>
+              <div class="bbns-card-b">There is nobody to hand it to. ${_bbEsc(hoh)} won the veto, used it on ${_bbEsc(saved)}, and is the Head of Household — so the ceremony does not pass to anybody. ${vvar([
+                `${_bbEsc(hoh)} takes ${pv(hoh).posAdj} own medallion off, sits back down in ${pv(hoh).posAdj} own chair, and names the replacement ${pv(hoh).ref}. Nobody else in the room gets a say at any point in it.`,
+                `The whole ceremony happens inside one person. ${_bbEsc(hoh)} saved ${_bbEsc(saved)} and now has to fill the seat ${pv(hoh).sub} just emptied, in front of everybody who was hoping it would be somebody else's decision.`,
+                `No handover, no speech, no pause. ${_bbEsc(hoh)} has both halves of this ceremony and the room works out what that means about ten seconds before ${pv(hoh).sub} says the name.`,
+                `${_bbEsc(hoh)} is the only person who has spoken all ceremony and is about to speak again. There is nobody to turn to, so the room turns to ${pv(hoh).obj} twice.`,
+              ], hoh, replacement, 'self-handover')}</div></div>`
           : `<div class="bbns-card is-key">
               <div class="bbns-card-h">${_bbAvatar(holder, 30)}${hoh ? _bbAvatar(hoh, 30) : ''}<span class="bbns-pill red">THE HANDOVER</span></div>
               <div class="bbns-card-b">"${_bbEsc(hoh)}, since I have just vetoed one of your nominations, you must name a replacement nominee." ${vvar([

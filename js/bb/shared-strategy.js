@@ -8,6 +8,7 @@ import { getRelationshipDimensions, relationshipDecisionProfile } from '../relat
 import { pitchTrust, tacticalCooperation, targetProtection } from '../relationships.js';
 import { recordAttractionSpark, recordBetrayal } from '../relationship-events.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
+import { knowsVote, learnBBVote } from './knowledge.js';
 import { visibleCentrality } from './blocs.js';
 import { reignHeat } from './reign.js';
 import { BB_POWER_DEFINITIONS } from './powers.js';
@@ -792,13 +793,54 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
     for (const ballot of week.ballots) {
       if (!members.has(ballot.voter) || !members.has(ballot.evict)) continue;
       if (alliance.betrayals?.some(item => item.week === week.num && item.player === ballot.voter && item.victim === ballot.evict)) continue;
-      const incident = { week:week.num, ep:week.num, player:ballot.voter, voter:ballot.voter, victim:ballot.evict, severity:'major', reason:'voted to evict an ally' };
+      // ── Does the victim actually know who did it? ──
+      //
+      // The vote is secret. Julie reads a COUNT — five to two — and never a
+      // ballot, so an ally voting against you is something you have to be told
+      // or work out, and this recorded the grudge as though the victim had been
+      // handed a printout. That is the single most omniscient thing left in the
+      // house: everybody knew exactly who flipped, every time, and the format's
+      // whole paranoia — campaigning to people who already wrote your name
+      // down, suspecting the wrong person for a month — could not happen.
+      //
+      // Two ways to know, both honest. Either they OBSERVED it, which in
+      // practice means somebody told them and it travelled through the
+      // knowledge layer; or they DEDUCE it, which is a real thing people do
+      // from a count that only adds up one way. Deduction is proportional to
+      // intuition and to how few people it could have been — two votes out of
+      // three allies is arithmetic, two out of eleven is a guess — and it is
+      // written back as a belief with a `deduced` source, so it carries lower
+      // confidence than being told and can decay like anything else.
+      let known = false;
+      try {
+        known = knowsVote(ballot.evict, ballot.voter, ballot.evict);
+        if (!known) {
+          const field = Math.max(1, week.ballots.length - 1);
+          const chance = clamp(((pStats(ballot.evict).intuition || 5) / 10) * (1.6 / field), 0, 0.7);
+          if (rng() < chance) {
+            learnBBVote(ballot.evict, ballot.voter, ballot.evict, week.num);
+            known = true;
+          }
+        }
+      } catch { known = false; }
+
+      const incident = { week:week.num, ep:week.num, player:ballot.voter, voter:ballot.voter, victim:ballot.evict, severity:'major', reason:'voted to evict an ally', known };
+      // The alliance ledger records it either way: it HAPPENED, the finale and
+      // the jury need it, and a betrayal nobody catches is still a betrayal.
+      // What is gated is the victim's grudge, because a grudge is a reaction
+      // and you cannot react to something you do not know.
       alliance.betrayals ||= [];
       alliance.betrayals.push(incident);
       alliance.history ||= [];
-      alliance.history.push({ week:week.num, type:'betrayal', player:ballot.voter, victim:ballot.evict });
-      recordBetrayal(ballot.evict, ballot.voter, { severity:1, ep:week.num });
-      rememberStrategy(ballot.evict, ballot.voter, 'alliance-betrayal', week.num, 2, { alliance:alliance.name, format:'big-brother' });
+      alliance.history.push({ week:week.num, type:'betrayal', player:ballot.voter, victim:ballot.evict, known });
+      if (known) {
+        recordBetrayal(ballot.evict, ballot.voter, { severity:1, ep:week.num });
+        rememberStrategy(ballot.evict, ballot.voter, 'alliance-betrayal', week.num, 2, { alliance:alliance.name, format:'big-brother' });
+      }
+
+      // Nothing to explain to a room that has not worked out there is anything
+      // to explain. An unexposed defector keeps their seat and their story.
+      if (!known) { incidents.push({ alliance:alliance.name, ...incident, repair:null }); continue; }
 
       // A defection is not automatically the end of an alliance. Real houses
       // survive one — the person explains themselves, some of the room buys

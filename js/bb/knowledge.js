@@ -282,6 +282,27 @@ export function knowsVote(knower, voter, evicted) {
 }
 
 /**
+ * Somebody works out a ballot from the count.
+ *
+ * The honest third way to learn a vote, next to observing one and being told.
+ * A house is read a total and never a ballot, but a total only adds up so many
+ * ways — two votes out of three allies is arithmetic rather than suspicion —
+ * and the people who are good at this are the ones the format calls good at
+ * this.
+ *
+ * Recorded as `deduced` (credibility 0.62, below being told) rather than
+ * observed, because working it out is not the same as knowing it: it decays,
+ * it can be argued out of them, and if the count was a coincidence they are
+ * simply wrong in a way the system can later expose.
+ */
+export function learnBBVote(knower, voter, evicted, week = 0, rng = Math.random) {
+  if (!knower || !voter) return false;
+  const id = factId('vote', voter, evicted);
+  if (!getFact(id)) return false;
+  return !!learn(knower, id, { source: 'the count', sourceType: 'deduced', ep: week, rng });
+}
+
+/**
  * Everybody this person believes voted out the evictee — right or wrong.
  *
  * The list a houseguest is actually working from when they decide who to blame,

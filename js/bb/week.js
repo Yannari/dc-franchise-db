@@ -802,7 +802,25 @@ function _attachAllianceFallout(week, house) {
   const inHouse = n => house.includes(n);
 
   for (const incident of week.allianceChanges?.betrayals || []) {
-    const { player, victim, alliance, repair } = incident;
+    const { player, victim, alliance, repair, known } = incident;
+
+    // An undetected flip is not nothing — it is the best week of that player's
+    // game — but it cannot be narrated as an accusation, because nobody has
+    // anybody to accuse. The vote is read as a COUNT, so what the room actually
+    // has is arithmetic that does not work, and the wrong person to suspect.
+    if (!known) {
+      beats.push({
+        text: `The count does not work. <strong>${alliance}</strong> went into the vote sure of `
+          + `its own numbers and came out of it one short, and nobody in that room is going to `
+          + `admit which chair it came from. <strong>${player}</strong> asks the question twice, `
+          + `loudly, and is believed.`,
+        players: [player, victim].filter(Boolean),
+        badgeText: 'THE NUMBERS DO NOT ADD UP', badgeClass: 'grey',
+        eventId: 'alliance-betrayal-unseen', category: 'deals', location: 'living-room',
+      });
+      continue;
+    }
+
     beats.push({
       text: `<strong>${player}</strong> votes to evict <strong>${victim}</strong>, even though they `
         + `were together in <strong>${alliance}</strong>. By the time everyone gets back inside, `

@@ -304,10 +304,17 @@ function resolveBelief(listener, speaker, reveal, isTrue, rng) {
   // "Conflicted" is not a fifth outcome. It is what this formula produces when
   // both terms are big: somebody they trust has named somebody they love.
   const conflicted = forTerm > 0.55 && againstTerm > 0.55;
+  // The label picks the SENTENCE, and it has to agree with the number, because
+  // the screen groups people by the number. It did not: a listener over the
+  // line with no prior suspicion fell through to 'doubt-planted' and ended up
+  // filed under BOUGHT IT while saying something noncommittal — so a band
+  // reading "six people bought it" quoted a shrug. Prior suspicion now chooses
+  // BETWEEN two convinced registers instead of demoting one of them out of
+  // being convinced at all.
   const label = conflicted ? 'conflicted'
-    : belief > 0.55 ? (prior > 0.35 ? 'confirmed' : 'doubt-planted')
+    : belief > 0.55 ? 'confirmed'
       : belief < -0.25 ? 'dismissed' : 'doubt-planted';
-  return { belief, label, forTerm, againstTerm, conflicted };
+  return { belief, label, forTerm, againstTerm, conflicted, prior };
 }
 
 /**
@@ -435,16 +442,27 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
       `"People say things when they lose," ${listener} offers, to nobody, in the flattest voice available.`,
       `${listener} laughs once, sharply, and goes to get a glass of water.`,
     ]);
-    case 'confirmed': return draw('confirmed', [
-      `${listener} goes very still. It is not news — it is the first time somebody else has said it out loud.`,
-      `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for two weeks.`,
-      `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
-      `Something settles behind ${listener}'s face. The last piece of a week ${P(listener).sub} could not make add up.`,
-      `${listener} mouths "I knew it" at the wall, where no camera is supposed to be.`,
-      `${listener} does not react at all, which for ${P(listener).obj} is the loudest available reaction.`,
-      `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
-      `"Right," says ${listener}, very quietly, and does not elaborate for anybody.`,
-    ]);
+    // Two registers, because being convinced arrives two different ways. The
+    // person who already suspected it hears a confirmation; the person who did
+    // not hears news. Quoting an "I knew it" line at somebody with no prior
+    // suspicion was the other half of the band-versus-sentence mismatch.
+    case 'confirmed': return (reaction.prior || 0) > 0.35
+      ? draw('confirmed-knew', [
+        `${listener} goes very still. It is not news — it is the first time somebody else has said it out loud.`,
+        `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for two weeks.`,
+        `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
+        `${listener} mouths "I knew it" at the wall, where no camera is supposed to be.`,
+        `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
+        `"Right," says ${listener}, very quietly, and does not elaborate for anybody.`,
+      ])
+      : draw('confirmed-new', [
+        `Something settles behind ${listener}'s face. The last piece of a week ${P(listener).sub} could not make add up.`,
+        `${listener} had no opinion about ${a} an hour ago. ${P(listener).Sub} has a very firm one now.`,
+        `${listener} believes it immediately, and is visibly annoyed at how obvious it suddenly looks.`,
+        `${listener} turns to look at ${a} for the first time all night, and keeps looking.`,
+        `"Huh," says ${listener}, in the tone of somebody rearranging the entire week.`,
+        `${listener} does not react at all, which for ${P(listener).obj} is the loudest available reaction.`,
+      ]);
     case 'conflicted': return draw('conflicted', [
       `${listener} is caught between two people ${P(listener).sub} trusts, and there is nowhere to put ${P(listener).posAdj} face.`,
       `${listener} glances at ${a}, then at the door, then at nothing. Both of those people were supposed to be safe.`,

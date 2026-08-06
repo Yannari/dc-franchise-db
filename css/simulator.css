@@ -627,6 +627,15 @@
        quote from the person who felt it most strongly. The quiet middle stays
        portraits, because "seven people privately filed it away" is one fact,
        not seven sentences. */
+    /* The verdict on the accusation — audience-only knowledge, so it reads as
+       an aside under the speech rather than as a second badge competing with
+       the register in the header. */
+    .bbev-truth    { margin-top:12px; padding-top:9px; border-top:1px dashed rgba(255,255,255,.10);
+                     font-family:ui-monospace,Consolas,monospace; font-size:9.5px;
+                     letter-spacing:1.3px; text-transform:uppercase; line-height:1.6; }
+    .bbev-truth.is-true  { color:#f85149; }
+    .bbev-truth.is-false { color:#8b949e; }
+
     .bbev-room     { display:flex; flex-direction:column; gap:7px; }
     .bbev-band     { border:1px solid rgba(255,255,255,.08); border-radius:7px;
                      padding:8px 10px; background:rgba(255,255,255,.02); }

@@ -20341,14 +20341,20 @@ export function rpBuildBBEviction(ep) {
       // the reaction card underneath is.
       case 'lastwords': {
         const lw = act.lastWords;
+        // ONE pill in the header. The truth of the accusation was a second one
+        // up there, and the header spreads its children to opposite ends — so
+        // the card wore a badge in each corner and neither read as primary.
+        // The verdict is a different KIND of statement anyway: the register is
+        // what the house is watching, the verdict is something only the
+        // audience is being told. It belongs under the speech, as a stamp.
         const verdict = lw.isTrue === true
-          ? '<span class="bbns-pill red">EVERY WORD OF IT IS TRUE</span>'
+          ? `<div class="bbev-truth is-true">Every word of it is true.</div>`
           : lw.isTrue === false
-            ? '<span class="bbns-pill grey">NONE OF IT IS TRUE</span>'
+            ? `<div class="bbev-truth is-false">None of it is true — ${_bbEsc(lw.reveal.accused)} did not do it, and nobody in that room can know that.</div>`
             : '';
         return `<div class="bbns-card is-key">
           <div class="bbns-card-h">${_bbAvatar(lw.speaker, 30)}<span class="bbns-pill red">${
-  lw.register === 'explosion' ? 'THEY LOSE IT' : 'ONE LAST THING'}</span>${verdict}</div>
+  lw.register === 'explosion' ? 'THEY LOSE IT' : 'ONE LAST THING'}</span></div>
           <div class="bbns-card-b">${vvar([
     `${_bbEsc(lw.speaker)} gets as far as the door and stops.`,
     `The bag is already on ${pv(lw.speaker).posAdj} shoulder when ${pv(lw.speaker).sub} turns around.`,
@@ -20356,7 +20362,7 @@ export function rpBuildBBEviction(ep) {
     `The hugs are done. ${_bbEsc(lw.speaker)} does not go through the door.`,
   ], lw.speaker, 'lw-open')}
           <br><br>${_bbEsc(lw.speech)}
-          ${lw.isTrue === false ? `<br><br><em>${_bbEsc(lw.reveal.accused)} did not do it. Nobody in that room can know that.</em>` : ''}</div></div>`;
+          ${verdict}</div></div>`;
       }
       // ── The room, as a split rather than a list ──
       //

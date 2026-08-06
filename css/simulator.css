@@ -619,6 +619,38 @@
       .bbev-onair i, .bbev-key.is-cast { animation:none; }
     }
 
+    /* ── the room, after a blowup ───────────────────────────────────────
+       Fourteen people react to one accusation, and the first version simply
+       printed fourteen sentences. It read as a wall — and it threw away the
+       only thing the mechanic actually computes, which is HOW THE ROOM SPLIT.
+       So the split is the card: one band per verdict, the faces in it, and a
+       quote from the person who felt it most strongly. The quiet middle stays
+       portraits, because "seven people privately filed it away" is one fact,
+       not seven sentences. */
+    .bbev-room     { display:flex; flex-direction:column; gap:7px; }
+    .bbev-band     { border:1px solid rgba(255,255,255,.08); border-radius:7px;
+                     padding:8px 10px; background:rgba(255,255,255,.02); }
+    .bbev-band-h   { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .bbev-band-t   { font-family:ui-monospace,Consolas,monospace; font-size:8.5px;
+                     letter-spacing:1.8px; text-transform:uppercase; color:#8b949e; }
+    .bbev-band-n   { font-family:ui-monospace,Consolas,monospace; font-size:11px;
+                     color:#e6edf3; background:rgba(255,255,255,.06); border-radius:20px;
+                     padding:1px 8px; }
+    .bbev-band-faces { display:flex; flex-wrap:wrap; gap:4px; margin-left:auto; }
+    .bbev-band-faces .bb-av { border:1px solid rgba(255,255,255,.16); }
+    .bbev-quote    { font-size:12.5px; line-height:1.6; color:#c9d1d9;
+                     border-left:2px solid rgba(255,255,255,.14); padding-left:9px;
+                     margin-top:5px; }
+    .bbev-band.is-dismissed { border-color:rgba(88,166,255,.30); background:rgba(88,166,255,.05); }
+    .bbev-band.is-dismissed .bbev-band-t { color:#79c0ff; }
+    .bbev-band.is-dismissed .bbev-quote  { border-left-color:rgba(88,166,255,.5); }
+    .bbev-band.is-torn      { border-color:rgba(240,165,0,.32); background:rgba(240,165,0,.06); }
+    .bbev-band.is-torn .bbev-band-t      { color:#f0a500; }
+    .bbev-band.is-torn .bbev-quote       { border-left-color:rgba(240,165,0,.55); }
+    .bbev-band.is-bought    { border-color:rgba(248,81,73,.34); background:rgba(248,81,73,.06); }
+    .bbev-band.is-bought .bbev-band-t    { color:#f85149; }
+    .bbev-band.is-bought .bbev-quote     { border-left-color:rgba(248,81,73,.55); }
+
     /* ── the veto ceremony ─────────────────────────────────────────────
        Same stage grammar as the nomination ceremony, with the medallion as the
        centrepiece: unlit until "I have decided", gold when used, ash when the

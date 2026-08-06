@@ -20358,12 +20358,47 @@ export function rpBuildBBEviction(ep) {
           <br><br>${_bbEsc(lw.speech)}
           ${lw.isTrue === false ? `<br><br><em>${_bbEsc(lw.reveal.accused)} did not do it. Nobody in that room can know that.</em>` : ''}</div></div>`;
       }
+      // ── The room, as a split rather than a list ──
+      //
+      // A flat run of one sentence per houseguest was unreadable at fourteen
+      // people, and repeated itself besides — the text pool wraps well before
+      // a full house is served. It also buried the finding: the whole point of
+      // resolving belief per listener is that the room DIVIDES, and a
+      // paragraph cannot show a division.
+      //
+      // So the bands are the card. Each one quotes only the person who felt it
+      // most strongly, which sidesteps the repetition entirely (three lines
+      // drawn, not fourteen) and puts the strongest writing where it is read.
       case 'room': {
         const lw = act.lastWords;
+        const sorted = [...lw.reactions].sort((a, b) => b.belief - a.belief);
+        const torn = sorted.filter(r => r.conflicted);
+        const rest = sorted.filter(r => !r.conflicted);
+        const bought = rest.filter(r => r.belief > 0.55);
+        const waved = rest.filter(r => r.belief < -0.25);
+        const unsure = rest.filter(r => r.belief >= -0.25 && r.belief <= 0.55);
+
+        const band = (cls, title, group, quoteFrom) => {
+          if (!group.length) return '';
+          const quote = quoteFrom ? group[quoteFrom === 'first' ? 0 : group.length - 1] : null;
+          return `<div class="bbev-band ${cls}">
+            <div class="bbev-band-h">
+              <span class="bbev-band-t">${title}</span>
+              <span class="bbev-band-n">${group.length}</span>
+              <span class="bbev-band-faces">${group.map(r => _bbAvatar(r.listener, 22)).join('')}</span>
+            </div>
+            ${quote ? `<div class="bbev-quote">${_bbEsc(quote.text)}</div>` : ''}
+          </div>`;
+        };
+
         return `<div class="bbns-card">
           <div class="bbns-card-h">${_bbAvatar(lw.reveal.accused, 30)}<span class="bbns-pill grey">THE ROOM</span></div>
-          <div class="bbns-card-b">${lw.reactions.map(r =>
-    `<div style="margin-bottom:6px">${_bbEsc(r.text)}</div>`).join('')}</div></div>`;
+          <div class="bbns-card-b"><div class="bbev-room">
+            ${band('is-bought', `Bought it${lw.isTrue === false ? ' — and it was not true' : ''}`, bought, 'first')}
+            ${band('is-torn', 'Caught between them', torn, 'first')}
+            ${band('', 'Not sure', unsure, null)}
+            ${band('is-dismissed', 'Waved it off', waved, 'last')}
+          </div></div></div>`;
       }
       case 'answer': {
         const lw = act.lastWords;

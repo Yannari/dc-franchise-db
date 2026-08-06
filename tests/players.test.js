@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { pStats, pronouns, romanticCompat, overall, threat, threatTier } from '../js/players.js';
+import { pStats, pronouns, romanticCompat, overall, threat, threatTier, threatScore, isAllianceBottom } from '../js/players.js';
 import { ARCHETYPES } from '../js/core.js';
 import { seedGame, makePlayer, seedPlayers } from './helpers/setup.js';
 
@@ -122,6 +122,23 @@ describe('players.js — pure functions', () => {
     it('challenge-beast has higher threat than goat', () => {
       expect(parseFloat(threat(ARCHETYPES['challenge-beast'])))
         .toBeGreaterThan(parseFloat(threat(ARCHETYPES['goat'])));
+    });
+  });
+
+  // Both of these read bonds, and both used to read them through a BARE
+  // `getBond` that only resolved because main.js hangs every export on window
+  // for the onclick handlers. Off the page that is a ReferenceError, and
+  // bonds.js reaches threatScore from inside checkPerceivedBondTriggers — so
+  // every headless week logged `perceived bonds: getBond is not defined` and
+  // silently skipped the four triggers after the goat-keeping one.
+  describe('reads bonds without a browser', () => {
+    it('scores a threat headless', () => {
+      expect(typeof threatScore('Alice')).toBe('number');
+      expect(Number.isFinite(threatScore('Alice'))).toBe(true);
+    });
+
+    it('answers the alliance-bottom question headless', () => {
+      expect(typeof isAllianceBottom('Alice', ['Alice', 'Bob', 'Carol'])).toBe('boolean');
     });
   });
 

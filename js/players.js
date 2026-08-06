@@ -1,5 +1,18 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
+// threatScore and isAllianceBottom read bonds, and read them as a BARE
+// identifier — which worked only because main.js hangs every export on window
+// for the onclick handlers, so `getBond` happened to resolve in a browser. Off
+// the page there is no window and it is a ReferenceError, which is why every
+// headless week recorded `perceived bonds: getBond is not defined` and quietly
+// skipped the rest of that maintenance step: bonds.js reaches threatScore from
+// the goat-keeping trigger, and the exception took the four triggers after it
+// down with it.
+//
+// bonds.js imports pStats and threatScore from here, so this closes a cycle.
+// It is a safe one: both sides are hoisted function declarations called at
+// run time, and neither module touches the other while it is being evaluated.
+import { getBond } from './bonds.js';
 import { META_WEIGHTS } from './franchise-meta.js';
 
 export function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }

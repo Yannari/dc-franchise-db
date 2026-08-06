@@ -104,6 +104,39 @@ export function seatedJurors({ upToWeek = null, config = seasonConfig } = {}) {
   return size ? out.slice(-size) : out;
 }
 
+/**
+ * The jury, said out loud on the night it changes.
+ *
+ * Reaching jury is the milestone the whole back half of a season is played
+ * toward, and neither transcript mentioned it at all — somebody evicted in week
+ * nine read exactly like somebody evicted in week two. So the night it opens is
+ * announced, and after that the roster is carried, because "who is already out
+ * there" is the number every remaining houseguest is doing sums against and a
+ * reader could not see it.
+ *
+ * Lives here rather than in either writer because BOTH call it: the run
+ * transcript and the in-app one. A section that exists in one of them is a
+ * section half the readers never see, and two copies of this would eventually
+ * disagree about who is on the panel.
+ *
+ * @param {object} week  needs `num` and `evicted`
+ * @param {function} line  the writer's own line sink
+ */
+export function juryLines(week, line) {
+  const seated = seatedJurors({ upToWeek: week?.num });
+  if (!seated.length) return;
+  const justSeated = seated[seated.length - 1] === week?.evicted;
+  if (justSeated && seated.length === 1) {
+    line('');
+    line(`  ${week.evicted} is the first member of the jury.`);
+    line('  From tonight, everybody voted out helps decide who wins.');
+  } else if (justSeated) {
+    line('');
+    line(`  ${week.evicted} joins the jury — number ${seated.length} out there.`);
+  }
+  line(`  Jury (${seated.length}): ${seated.join(', ')}.`);
+}
+
 /** Is this person on the jury as things stand? */
 export function isSeatedJuror(name, opts = {}) {
   return !!name && seatedJurors(opts).includes(name);

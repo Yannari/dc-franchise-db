@@ -16,7 +16,7 @@
 
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
-import { juryOpensAt } from './bb/jury.js';
+import { juryOpensAt, juryLines } from './bb/jury.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { scheduleHouseBeats } from './bb/house-events.js';
 import { getPerceivedBond } from './bonds.js';
@@ -1291,6 +1291,7 @@ export function summariseWeek(week) {
         if (week.invisibleReveal?.to === act.evicted) {
           line(`  In the goodbye messages, the Invisible HOH finally signs the week: ${week.invisibleReveal.hoh} tells ${act.evicted} it was them all along. The house still does not know.`);
         }
+        juryLines(week, line);
         break;
       }
       default:

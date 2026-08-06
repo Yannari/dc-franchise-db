@@ -30,6 +30,7 @@ import {
   isNice, isVillainous, suspicionOf,
 } from './_read.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
+import { seatedJurors } from '../bb/jury.js';
 
 // ── shared plumbing ───────────────────────────────────────────────────
 
@@ -863,14 +864,24 @@ const endgameJuryMath = {
   id: 'arc-endgame-jury-math',
   category: 'deals',
   location: 'hoh-room',
+  // Both halves read the SAME roster, and it is the real one.
+  //
+  // This used to count `gs.eliminated.slice(-5)` — a hard-coded five that
+  // ignored jurySize entirely, so a season with a jury of three and a season
+  // with a jury of nine both had somebody counting the same five names, and
+  // pre-jurors who cannot vote were counted among them. The event fired and
+  // then reasoned about the wrong room.
+  //
+  // weight() and fire() must agree or the event fires and finds nothing, so
+  // neither derives it separately.
   weight(house, ctx) {
     if (!endgame(house) || house.length < 3) return 0;
-    const jury = (gs.eliminated || []).slice(-5);
-    if (jury.length < 3) return 0;
+    if (seatedJurors().length < 3) return 0;
     return fit(ctx, 6.8);
   },
   fire(house, ctx, api, rng = () => 0.5) {
-    const jury = (gs.eliminated || []).slice(-5);
+    const jury = seatedJurors();
+    if (jury.length < 3) return null;
     const counter = quiet(house)[0] || house[0];
     const others = house.filter(n => n !== counter);
     const juryLove = n => jury.reduce((sum, j) => sum + bond(n, j), 0);

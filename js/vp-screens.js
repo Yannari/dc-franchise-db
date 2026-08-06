@@ -22511,12 +22511,26 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
         return `<div class="bbns-card is-final">
           <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill gold">THE LAST WORD</span></div>
           <div class="bbns-card-b">${iv.parting}</div></div>`;
-      case 'car':
+      case 'car': {
+        // Which juror, not just that there is one. The first is the milestone
+        // the whole house has been playing toward and gets said in full; after
+        // that the broadcast counts, because "TO THE JURY HOUSE" seven times
+        // running stops meaning anything by the third.
+        const n = Number(iv.juryNumber) || 0;
+        const ORD = ['', 'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH',
+          'SEVENTH', 'EIGHTH', 'NINTH'];
+        const pill = !iv.joinsJury ? 'GOING HOME'
+          : n === 1 ? 'FIRST MEMBER OF THE JURY'
+            : n > 1 && n < ORD.length ? `${ORD[n]} JUROR`
+              : 'TO THE JURY HOUSE';
         return `<div class="bbns-card is-final biv-car">
-          <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill ${iv.joinsJury ? 'gold' : 'grey'}">${iv.joinsJury ? 'TO THE JURY HOUSE' : 'GOING HOME'}</span></div>
+          <div class="bbns-card-h">${_bbAvatar(iv.evictee, 30)}<span class="bbns-pill ${iv.joinsJury ? 'gold' : 'grey'}">${pill}</span></div>
           <div class="bbns-card-b">${iv.joinsJury
-            ? `The car outside is not going home — it is going to the jury house, where ${_bbEsc(iv.evictee)} will spend the rest of the season deciding who deserves to win a game ${p.sub} just lost. Everybody still inside should think about that.`
+            ? (n === 1
+              ? `The car outside is not going home — it is going to the jury house, and ${_bbEsc(iv.evictee)} is the first one in it. From tonight every eviction is a vote at the end, and everybody still inside has just started playing a different game whether they have realised it or not.`
+              : `The car outside is not going home — it is going to the jury house, where ${_bbEsc(iv.evictee)} will spend the rest of the season deciding who deserves to win a game ${p.sub} just lost. That is ${n} of them out there now, and they talk to each other.`)
             : `The car takes ${_bbEsc(iv.evictee)} home. The season goes on without ${p.obj} — but the tapes are forever, and ${p.sub} has a lot of television to catch up on.`}</div></div>`;
+      }
       default:
         return `<div class="bbns-card is-hidden"><span>?</span></div>`;
     }

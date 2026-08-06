@@ -566,11 +566,29 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     defiant: joinsJury
       ? [`"I am on the jury now. They wanted my vote more than they wanted me in the house—so they can earn it."`, `"They got me out. They did not get the last word."`]
       : [`"Tell them congratulations. Make sure they hear it in my voice."`, `"The house wanted peace and quiet. I give it three days."`],
-    social: [`"The game ended. The relationships did not all end with it. I will sort out which are which."`, `"I walked in wanting people. I am leaving knowing exactly what people can do."`],
-    volatile: [`"I have several last words. Production has requested one."`, `"Ask me again after I stop hearing that vote in my head."`],
-    underdog: [`"I was not supposed to last this long. I just wish I had stopped believing that sentence."`, `"They finally got me. It took them long enough."`],
-    sincere: [`"I would do it again. All of it. I might just ask better questions."`, `"I lost a game. I do not want to lose the good parts with it."`],
-    guarded: [`"Play hard. That is all I have got."`, `"I will know what I think when I have seen what actually happened."`],
+    // Every voice gets a jury version, not just the two that had one.
+    //
+    // Walking out with a vote is the single biggest change that can happen to a
+    // houseguest, and five of these seven used to leave saying exactly what
+    // they would have said in week two. The phrasing stays theirs — the social
+    // player thinks about the people, the volatile one is still furious, the
+    // underdog still cannot quite believe the run — but all of them now know
+    // what they are carrying out of the door.
+    social: joinsJury
+      ? [`"I am not out of this. I am just watching it from a different room, with a vote in my pocket."`, `"Every one of them was nice to me on the way out. They are going to need me to remember which ones meant it."`]
+      : [`"The game ended. The relationships did not all end with it. I will sort out which are which."`, `"I walked in wanting people. I am leaving knowing exactly what people can do."`],
+    volatile: joinsJury
+      ? [`"They should be glad I have a few weeks to calm down before I have to write anybody's name on anything."`, `"I have several last words and now I have somewhere to spend them."`]
+      : [`"I have several last words. Production has requested one."`, `"Ask me again after I stop hearing that vote in my head."`],
+    underdog: joinsJury
+      ? [`"Nobody thought I would make jury. Now they have to come and ask me for something."`, `"I was not supposed to be here long enough to matter at the end. Somebody miscounted."`]
+      : [`"I was not supposed to last this long. I just wish I had stopped believing that sentence."`, `"They finally got me. It took them long enough."`],
+    sincere: joinsJury
+      ? [`"I want to give this vote to somebody who earned it. That is the only job I have left and I intend to do it properly."`, `"I lost the game tonight. I would still like to help decide who wins it."`]
+      : [`"I would do it again. All of it. I might just ask better questions."`, `"I lost a game. I do not want to lose the good parts with it."`],
+    guarded: joinsJury
+      ? [`"I will be watching. That is all anybody needs to know."`, `"They will find out what I think about it at the end, same as everybody else."`]
+      : [`"Play hard. That is all I have got."`, `"I will know what I think when I have seen what actually happened."`],
   };
 
   return {

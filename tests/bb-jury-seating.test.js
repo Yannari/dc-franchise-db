@@ -19,7 +19,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig, setGs } from '../js/core.js';
 import {
   juryOpensAt, evictionSeatsAJuror, jurorOrdinalFor, seatedJurors, isSeatedJuror,
-  juryStillToSeat,
+  juryStillToSeat, juryLines,
 } from '../js/bb/jury.js';
 
 beforeEach(() => {
@@ -130,5 +130,62 @@ describe('who is on it', () => {
     seasonConfig.jurySize = 0;
     gs.bb.weeks = [week(3, 9, 'C'), week(4, 8, 'D')];
     expect(seatedJurors()).toEqual([]);
+  });
+});
+
+describe('what the transcripts say about it', () => {
+  const week = (num, houseAtStart, evicted, extra = {}) =>
+    ({ num, houseAtStart: Array.from({ length: houseAtStart }, (_, i) => `P${i}`),
+      evicted, ...extra });
+  const write = w => { const out = []; juryLines(w, l => out.push(l)); return out.join('\n'); };
+
+  it('says nothing at all before the jury opens', () => {
+    // A pre-jury eviction must not carry a roster, or the milestone stops
+    // being one.
+    gs.bb.weeks = [week(1, 12, 'A')];
+    expect(write(gs.bb.weeks[0])).toBe('');
+  });
+
+  it('announces the first juror in full, once', () => {
+    gs.bb.weeks = [week(1, 10, 'A'), week(2, 9, 'B')];
+    const out = write(gs.bb.weeks[1]);
+    expect(out).toMatch(/B is the first member of the jury/);
+    expect(out).toMatch(/everybody voted out helps decide who wins/);
+    expect(out).toMatch(/Jury \(1\): B\./);
+  });
+
+  it('counts after that, and carries the roster', () => {
+    gs.bb.weeks = [week(2, 9, 'B'), week(3, 8, 'C'), week(4, 7, 'D')];
+    const out = write(gs.bb.weeks[2]);
+    expect(out, 'the first-juror line is not repeated').not.toMatch(/first member/);
+    expect(out).toMatch(/D joins the jury — number 3 out there/);
+    expect(out).toMatch(/Jury \(3\): B, C, D\./);
+  });
+
+  it('still carries the roster on a week that seats nobody', () => {
+    // A cancelled eviction, or a week somebody returned: the panel is still
+    // out there and the reader is still doing sums against it.
+    gs.bb.weeks = [week(2, 9, 'B'), week(3, 8, 'C')];
+    const out = write({ num: 3, evicted: null });
+    expect(out).toMatch(/Jury \(2\): B, C\./);
+    expect(out).not.toMatch(/joins the jury/);
+  });
+});
+
+describe('a seated juror is not a jury PLAN', () => {
+  it('keeps the two ideas apart', () => {
+    // plan.juryPlan is prospective — the ACTIVE houseguests somebody hopes will
+    // eventually vote for them. seatedJurors is who is actually out there and
+    // can. Collapsing them would lose the "who do I want voting for me" read
+    // that drives the whole endgame, so this pins that they answer different
+    // questions from different sources.
+    gs.bb.weeks = [
+      { num: 3, houseAtStart: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], evicted: 'I' },
+    ];
+    gs.intentions = { A: { juryPlan: ['B', 'C'] } };
+
+    expect(seatedJurors(), 'the panel is who has left').toEqual(['I']);
+    expect(gs.intentions.A.juryPlan, 'the plan is who is still playing').toEqual(['B', 'C']);
+    expect(seatedJurors().some(n => gs.intentions.A.juryPlan.includes(n))).toBe(false);
   });
 });

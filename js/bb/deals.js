@@ -221,6 +221,13 @@ export function endgameDealsOf(name) {
 
 /** Do these two have something at the end, and how strong is it from a's side? */
 export function dealBetween(a, b) {
+  // Nobody has a deal with themselves, and without this line everybody does:
+  // every deal in endgameDealsOf(a) contains `a`, so asking for the deal
+  // between a person and themselves returned the first one they were in. It
+  // reached the screen as somebody breaking a final two with themselves —
+  // the same face drawn twice on an eviction card — and it was silently
+  // wrong in shouldUseVeto and the vote model long before that.
+  if (!a || !b || a === b) return null;
   return endgameDealsOf(a).find(d => (d.players || []).includes(b)) || null;
 }
 

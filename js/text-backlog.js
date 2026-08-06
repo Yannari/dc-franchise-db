@@ -4604,6 +4604,26 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'veto-draw-twist': {
+        sec(act.kind === 'redraw' ? 'THE VETO PLAYER REDRAW' : 'THE VETO REPLACEMENT');
+        ln(act.kind === 'redraw'
+          ? '  Every chip drawn for this competition goes back in the bag.'
+          : '  One seat in this competition changes hands, and nobody in the house picks it.');
+        ln(`  ${act.hoh} and the nominees play by right and are not touched.`);
+        ln('');
+        ln(`  Drawn in:   ${(act.before || []).join(', ') || 'nobody'}`);
+        if (!act.changed) {
+          ln('  The bag hands back every name it was given. The field is identical,');
+          ln('  and everybody in the room now knows how easily it might not have been.');
+        } else {
+          ln(`  Out:        ${(act.lost || []).join(', ')}`);
+          ln(`  In:         ${(act.gained || []).join(', ')}`);
+          ln(`  Playing:    ${[act.hoh, ...(act.nominees || []), ...(act.after || [])].filter(Boolean).join(', ')}`);
+        }
+        beats(act);
+        break;
+      }
+
       case 'second-veto': {
         sec(act.kind === 'secret' ? 'THE SECOND MEDALLION' : 'THE SECOND VETO');
         if (act.kind === 'secret') {

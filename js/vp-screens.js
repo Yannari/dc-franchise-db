@@ -29,6 +29,7 @@ import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
 import { rpBuildBBTeamAmerica } from './vp-bb-team-america.js';
 import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
+import { rpBuildBBVetoDrawTwist } from './vp-bb-veto-draw.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
@@ -20586,6 +20587,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const hxDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-haltinghex'), label: 'The Halting Hex',
           html: rpBuildBBHaltingHex(view, act, hxDeps) });
+        break;
+      }
+      case 'veto-draw-twist': {
+        const vdDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id(`bb-vetodraw-${act.kind || 'x'}`),
+          label: act.kind === 'redraw' ? 'The Redraw' : 'The Replacement',
+          html: rpBuildBBVetoDrawTwist(view, act, vdDeps) });
         break;
       }
       case 'second-veto': {

@@ -253,6 +253,35 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  // ── the field, not the medallion ──
+  //
+  // These two sit at a different hook from every other veto twist in this file:
+  // they fire between the draw and the competition, so nothing has been won yet
+  // and there is no holder to give anything to. What they change is who is
+  // standing there, which is why their timing is 'veto-draw' and why neither
+  // one carries a `replacementAuthority` or a count.
+  'bb-veto-redraw': {
+    id: 'bb-veto-redraw', layer: 'scheduled', category: 'veto',
+    timing: 'veto-draw', duration: { weeks: 1 },
+    rules: { vetoRedraw: true },
+    acquisition: { channel: 'scheduled', secrecy: 'open' },
+    announcement: {
+      name: 'The Veto Player Redraw',
+      rule: 'The chips drawn for this week’s veto competition are void. Every houseguest who drew their way into the competition returns to the bag and the draw is run again. The Head of Household and the nominees play by right and are not redrawn.',
+      sting: 'Somebody in this room is about to lose a seat they have already been promised things for.',
+    },
+  },
+  'bb-veto-replacement': {
+    id: 'bb-veto-replacement', layer: 'scheduled', category: 'veto',
+    timing: 'veto-draw', duration: { weeks: 1 },
+    rules: { vetoReplace: 1 },
+    acquisition: { channel: 'scheduled', secrecy: 'open' },
+    announcement: {
+      name: 'The Veto Replacement',
+      rule: 'One houseguest who drew into this week’s veto competition will be removed from it, and one houseguest who did not draw in will take that place. Neither name is chosen by anybody in this house.',
+      sting: 'One seat changes hands, and nobody gets to argue about it.',
+    },
+  },
   'bb-double-veto': {
     id: 'bb-double-veto', layer: 'scheduled', category: 'veto',
     timing: 'veto-ceremony', duration: { weeks: 1 },

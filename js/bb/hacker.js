@@ -72,6 +72,21 @@ export function chooseHackerBlockHack({ hacker, nominees = [], house = [], hoh, 
   const myTarget = _target(hacker);
   const reason = { selfSave: false, ally: null, allyWorth: 0, targetSeatable: false, exposure: 0, pull: 0 };
 
+  // The Head of Household won it. Everybody plays this competition — the wiki
+  // is explicit that every houseguest competes — so an HOH holding the hack is
+  // legal and does happen, and it is the ONE holder for whom the first
+  // authority is worthless: this is their own block, made three days ago, out
+  // of their own plan. Anonymously undoing it buys them nothing and hands the
+  // house a mystery whose only honest answer is a person the house has already
+  // ruled out, which is exactly how somebody ended up being accused of hacking
+  // their own nominations. They keep the other two authorities, which are
+  // about the veto field and the count and are worth having.
+  if (hacker && hoh && hacker === hoh) {
+    return { down: null, up: null, used: false, reason: { ...reason, ownBlock: true },
+      why: `${hacker} is holding a power whose first use would be undoing ${hacker}'s own nominations. `
+        + 'The block stands, because it is already the block they wanted.' };
+  }
+
   let down = null;
   if (nominees.includes(hacker)) {
     down = hacker;

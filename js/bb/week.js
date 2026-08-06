@@ -18,6 +18,7 @@ import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { resolveVetoRules, isDiamond } from './veto-rules.js';
+import { applyVetoDrawTwist } from './veto-draw.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { fillTeam, runMission } from './team-america.js';
@@ -2565,6 +2566,29 @@ export function simulateBBWeek(options = {}) {
         }
       }
     }
+    // ── THE FIELD ITSELF ──
+    //
+    // After the hacker's pick and before anything is played: the only hook in
+    // the week that edits WHO IS STANDING THERE. Deliberately after the draw
+    // rather than instead of it — the twist is a thing done to a field that
+    // already exists, and the scene is people losing seats they were already
+    // holding.
+    if (!compressed) {
+      try {
+        const redrawn = applyVetoDrawTwist({
+          week, players: [...vetoPlayers], house, hoh, nominees: [...nominees], rng,
+        });
+        if (redrawn) {
+          vetoPlayers = redrawn.players;
+          week.vetoDrawTwist = {
+            kind: redrawn.act.kind, changed: redrawn.act.changed,
+            lost: [...redrawn.act.lost], gained: [...redrawn.act.gained],
+          };
+          week.acts.push(addBeats(redrawn.act,
+            { players: [...redrawn.act.lost, ...redrawn.act.gained], nominees: [...nominees] }));
+        }
+      } catch { /* the field stands as it was drawn */ }
+    }
     // Set when Prizes and Punishments turns the competition into an
     // order-setter rather than a veto-awarder.
     let vetoOrderOnly = null;
@@ -3468,7 +3492,16 @@ export function simulateBBWeek(options = {}) {
         // The ordinary replacement path already protects them; this path built
         // its own list and `save` here means the DIAMOND's save, which is a
         // different person from the veto's.
-        const protectedNames = [hoh, holder, save, other,
+        // ...and `other` is not "the rest of the block", it is ONE name. This
+        // list was written for a two-chair block and a third chair is no longer
+        // exotic: the Den's curse seats one, so does Roadkill, so does
+        // America's Nominee. With three up, the third was not protected here
+        // and chooseReplacement could name somebody who was ALREADY on the
+        // block — which produced a final block of three with the same
+        // houseguest in two of the chairs, and an eviction card that drew their
+        // face twice. Protect the whole block, since the whole block is what
+        // cannot be renominated onto itself.
+        const protectedNames = [hoh, holder, save, other, ...nominees,
           week.vetoWinner, week.vetoDecision?.use ? week.vetoDecision.save : null,
           ...(week.botbSafe || []), carePackageProtects(week.carePackage),
           ...safetySuiteSafe(week.safetySuite)].filter(Boolean);

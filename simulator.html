@@ -605,8 +605,12 @@
   <input type="checkbox" id="cfg-finale-assistants" onchange="saveConfig()"> Enable Assistants (Final Challenge)
 </label>
             </div>
+            <!-- Both shows end in front of a panel, so the control is shared —
+                 but they do not call it the same thing and the house reads a
+                 consequence off it (the week the jury opens), which Total Drama
+                 does not. updateSlider('jury') rewrites the label per format. -->
             <div class="slider-control">
-              <label>Council Size: <strong id="jury-display">9</strong> Members</label>
+              <label><span id="jury-label">Council Size</span>: <strong id="jury-display">9</strong> Members<span id="jury-note" class="jury-note"></span></label>
               <input type="range" min="3" max="15" value="9" id="cfg-jury" class="setup-slider" oninput="updateSlider('jury');saveConfig()">
             </div>
 

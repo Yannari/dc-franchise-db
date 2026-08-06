@@ -5699,8 +5699,13 @@
     .twist-add-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .twist-card.assignable { cursor: pointer; }
     .twist-card.assignable:hover { border-color: var(--accent); background: var(--accent-dim); }
+    /* The consequence of the jury slider, read back beside it. */
+    .jury-note { color: var(--muted); font-weight: 400; font-size: 11px; }
+    .jury-note.bad { color: #f85149; }
     .fd-ep-marker { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(148,163,184,0.1); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
     .fd-ep-marker.merge { background: rgba(16,185,129,0.15); color: #10b981; }
+    /* The house has no merge; the week the jury opens is its structural turn. */
+    .fd-ep-marker.jury { background: rgba(168,85,247,0.16); color: #c084fc; }
     .fd-ep-marker.finale { background: rgba(245,158,11,0.15); color: #f59e0b; }
     .fd-episode.finale { border-color: rgba(245,158,11,0.3); }
     .fd-ep-twists { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }

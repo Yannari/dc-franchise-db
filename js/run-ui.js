@@ -1015,6 +1015,39 @@ export function updateSlider(name) {
   const el  = document.getElementById('cfg-' + name);
   const disp = document.getElementById(name + '-display');
   if (el && disp) disp.textContent = el.value;
+  if (name === 'jury') _updateJuryLabel(el);
+}
+
+/**
+ * The same slider, in each show's own words.
+ *
+ * Total Drama sends you to a Council; the house sends you to a jury, and the
+ * number means something extra there. A house has no merge and no swap, so the
+ * jury opening is the one structural date in the season — the night the person
+ * evicted stops going home and starts picking the winner — and it is derived
+ * from this slider rather than set anywhere. Showing it here is the difference
+ * between choosing a number and choosing a season shape.
+ *
+ * The arithmetic matches houseStructure() in bb-run.js: the jury is the last
+ * `jurySize` people out and the houseguest cut at the final three is one of
+ * them, so it opens with jurySize + 2 still in the house.
+ */
+function _updateJuryLabel(el) {
+  const label = document.getElementById('jury-label');
+  const note  = document.getElementById('jury-note');
+  const isHouse = (typeof seasonFormat !== 'undefined'
+    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+  if (label) label.textContent = isHouse ? 'Jury Size' : 'Council Size';
+  if (!note) return;
+  const size = Number(el?.value) || Number(seasonConfig.jurySize) || 0;
+  const cast = players.length;
+  if (!isHouse || size <= 0) { note.textContent = ''; return; }
+  // Say so when the season cannot seat the jury it is asking for, rather than
+  // letting the blueprint be the only place that mentions it.
+  note.textContent = cast && size > cast - 2
+    ? ` — needs ${size + 2} houseguests, ${cast} cast`
+    : ` — jury opens at ${size + 2} left`;
+  note.classList.toggle('bad', !!cast && size > cast - 2);
 }
 
 export function updateCastSizeDisplay() {
@@ -1378,10 +1411,28 @@ export function renderTimeline() {
     return;
   }
 
+  // Where the house's season turns.
+  //
+  // A Big Brother season has no merge — there are no tribes to dissolve — so
+  // the timeline was stamping MERGE on a week that means nothing, purely
+  // because the episode map is shared with Total Drama and hands every season a
+  // pre/post split. What the house actually turns on is the jury opening: the
+  // night the person evicted stops going home and starts deciding the winner.
+  //
+  // `houseStructure()` puts that at jurySize + 2 remaining — the jury is the
+  // last `jurySize` people out and the houseguest cut at the final three is one
+  // of them, so the rest come from the weekly evictions. Same arithmetic here,
+  // and it stays null when the season is playing without a jury.
+  const juryOpensAt = isHouse && Number(seasonConfig.jurySize) > 0
+    ? Number(seasonConfig.jurySize) + 2
+    : null;
+
   let html = '';
   epMap.forEach(({ ep, active, phase }) => {
     const isFinale   = phase === 'finale';
-    const isMergeEp  = phase === 'post-merge' && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
+    const isMergeEp  = !isHouse && phase === 'post-merge'
+      && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
+    const isJuryEp   = juryOpensAt !== null && active === juryOpensAt && !isFinale;
     const isSelected = selectedEpisodes.has(ep);
     const twists     = schedule.filter(t => Number(t.episode) === ep);
     const twistTags  = twists.map(t => {
@@ -1601,8 +1652,12 @@ export function renderTimeline() {
       return `<span class="fd-ep-twist-tag" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : '🔀'} ${cat ? cat.name : t.type} ×</span>`;
     }).join('');
 
-    const markerClass = isFinale ? 'fd-ep-marker finale' : isMergeEp ? 'fd-ep-marker merge' : 'fd-ep-marker';
-    const markerText  = isFinale ? 'FINALE' : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
+    const markerClass = isFinale ? 'fd-ep-marker finale'
+      : isJuryEp ? 'fd-ep-marker jury'
+        : isMergeEp ? 'fd-ep-marker merge' : 'fd-ep-marker';
+    const markerText  = isFinale ? 'FINALE'
+      : isJuryEp ? `JURY · ${active} left`
+        : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
     const phaseLabel  = phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so

@@ -542,16 +542,62 @@ function _stepperHTML(kind, legacyId, label) {
   </div>`;
 }
 
+/**
+ * What the jury number actually buys, under the control that sets it.
+ *
+ * Redrawn by _updateDynamic on every step, because the whole value of the line
+ * is watching the date move while you choose. Reads the legacy input rather
+ * than seasonConfig: qsStep writes the input and calls saveConfig after, so
+ * during a step the config is one behind and the card would lag by a click.
+ */
+function _houseNoteHTML() {
+  const N = _players().length;
+  const jury = Number(_g('cfg-jury')?.value ?? _cfg().jurySize) || 0;
+  const opens = jury > 0 ? jury + 2 : 0;
+  const fits = !N || !opens || opens <= N;
+  const body = opens
+    ? (fits
+      ? `The jury opens with <strong>${opens}</strong> houseguests left — everybody evicted from that night on votes for the winner.`
+      : `A jury of ${jury} needs ${opens} houseguests and only ${N} are cast.`)
+    : 'No jury — the season is played out without a panel.';
+  return `<div id="qs-housenote" class="qs-housenote${fits ? '' : ' bad'}">${body}</div>`;
+}
+
 function _structureCardHTML() {
   const cfg = _cfg();
   const N = _players().length;
+  const isHouse = _format() === 'big-brother';
+
+  const caststrip = `<div class="qs-caststrip">
+      <span class="qs-cast-count">${N}</span>
+      <span class="qs-cast-word">${isHouse ? 'houseguest' : 'player'}${N === 1 ? '' : 's'} cast</span>
+      <button class="qs-link" onclick="qsGoCast()">Edit cast →</button>
+    </div>`;
+
+  // The house gets its own card rather than Total Drama's with bits hidden.
+  //
+  // Quick Setup is the DEFAULT view, and it was offering a Big Brother season
+  // starting tribes, a merge point and a "Council" — three things a house does
+  // not have, on the first screen anybody sees. The one structural number it
+  // does own is the jury, and the size of it decides the only date in the
+  // season: the night the person evicted stops going home and starts picking
+  // the winner. Everything else is fixed by the format — one house, one
+  // eviction a week, a final three — so there is nothing else to ask.
+  if (isHouse) {
+    return `<section class="qs-card">
+      <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3>
+        <span class="qs-card-hint">One house, one eviction a week, a final three.</span></div>
+      ${caststrip}
+      <div class="qs-steppers">
+        ${_stepperHTML('jury', 'cfg-jury', 'Jury size')}
+      </div>
+      ${_houseNoteHTML()}
+    </section>`;
+  }
+
   return `<section class="qs-card">
     <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3></div>
-    <div class="qs-caststrip">
-      <span class="qs-cast-count">${N}</span>
-      <span class="qs-cast-word">player${N === 1 ? '' : 's'} cast</span>
-      <button class="qs-link" onclick="qsGoCast()">Edit cast →</button>
-    </div>
+    ${caststrip}
     <div class="qs-steppers">
       ${_stepperHTML('teams', 'cfg-teams', 'Starting tribes')}
       ${_stepperHTML('merge', 'cfg-merge', 'Merge at (players left)')}
@@ -749,6 +795,9 @@ function _updateDynamic() {
   const bp = _g('qs-blueprint'); if (bp) bp.innerHTML = _blueprintInnerHTML();
   const rc = _g('qs-readycheck'); if (rc) rc.innerHTML = _readyRowsHTML();
   const sw = _g('qs-start-wrap'); if (sw) sw.innerHTML = _startBtnHTML();
+  // The house's structure card carries a derived line — the week the jury
+  // opens — and the point of it is watching that date move as you choose.
+  const hn = _g('qs-housenote'); if (hn) hn.outerHTML = _houseNoteHTML();
 }
 
 function _updatePresetCards() {
@@ -848,6 +897,12 @@ export function qsOnFormatChange() {
   renderHostOptions();
   renderSettingOptions();
   applyFormatScope();
+  // Quick Setup's own cards are built per show — the Structure card asks a
+  // house for a jury and a camp for tribes, a merge and a finale format — and
+  // it was only ever rebuilt when the tab was opened. Switching show while
+  // sitting on the panel left the previous show's card on screen, so a season
+  // switched to Total Drama was still being asked for a jury and nothing else.
+  renderQuickSetup();
   window.renderTwistCatalog?.();
   window.renderFormatToggle?.();
 }
@@ -1012,6 +1067,12 @@ export function applyFormatScope() {
     show(_g(id), formats.includes(fmt));
   }
   if (fmt === 'big-brother') qsOnHouseOptionChange();
+
+  // The jury slider is shared by both shows but not NAMED by both — a house
+  // does not send you to a Council — and in a house it also reports the week
+  // the jury opens. Neither is a visibility question, so scoping does not cover
+  // it; the label has to be redrawn whenever the show changes.
+  window.updateSlider?.('jury');
 
   _placeRomance(fmt);
   renderHouseStructure();
@@ -1286,6 +1347,11 @@ const QS_CSS = `
 .qs-preset-na { font-size:12px; color:var(--muted); line-height:1.5; }
 
 /* Structure */
+/* What the jury size actually buys you, said under the control that sets it. */
+.qs-housenote { margin-top:12px; padding:9px 12px; border-radius:8px; font-size:12px; line-height:1.5;
+  color:var(--muted); background:var(--surface2); border:1px solid var(--border); }
+.qs-housenote strong { color:var(--text); }
+.qs-housenote.bad { color:var(--text); background:rgba(248,81,73,.10); border-color:rgba(248,81,73,.42); }
 .qs-caststrip { display:flex; align-items:baseline; gap:8px; padding:10px 12px; background:var(--surface2);
   border:1px solid var(--border); border-radius:10px; margin-bottom:14px; }
 .qs-cast-count { font-family:var(--font-display,sans-serif); font-size:24px; color:var(--text); }

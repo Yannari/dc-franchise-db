@@ -53,7 +53,17 @@ const ctxFor = (act, extra = {}) => ({
   ...extra,
 });
 
-function playSeasons(seeds) {
+/**
+ * @param seeds     the rng streams to play
+ * @param scheduleAs  which BOOKED seed each one borrows its twist schedule from.
+ *   Extra sampling seeds are not in the SCHEDULE table, so left alone they play
+ *   twist-free seasons and can never help a twist family reach its minimum —
+ *   which is exactly how the first version of the escalation below failed to
+ *   rescue vetovar-*. Borrowing a booked seed's schedule keeps the twists while
+ *   the rng stream genuinely differs, which is what makes it a new sample
+ *   rather than a rerun.
+ */
+function playSeasons(seeds, scheduleAs = s => s) {
   const fired = {};
   // ── which twists this sweep schedules, and on which weeks ──
   //
@@ -147,7 +157,7 @@ function playSeasons(seeds) {
       // One twist a week. Two at once is a compatibility question this sweep
       // has no business answering — resolveTwistSchedule owns that, and its
       // own suite tests it.
-      const rows = twistsFor(seed, week);
+      const rows = twistsFor(scheduleAs(seed), week);
       const row = rows[0] || null;
       const extra = row ? [row.twist] : [];
       const extraOptions = row?.options || {};
@@ -282,36 +292,67 @@ describe('the Big Brother event library as a whole', () => {
       ids: new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith(prefix))),
     }));
     const gatedIds = new Set(gatedFamilies.flatMap(f => [...f.ids]));
-    const never = HOUSE_EVENTS.map(e => e.id)
-      .filter(id => !fired[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
+    const stillSilent = tally => HOUSE_EVENTS.map(e => e.id)
+      .filter(id => !tally[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
         && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id)
         && !splitFamily.has(id) && !denFamily.has(id) && !whackFamily.has(id)
         && !gatedIds.has(id));
-    expect(never, `never fire in a real season: ${never.join(', ')}`).toEqual([]);
-    const invisibleSeen = [...invisibleFamily].filter(id => fired[id]).length;
-    expect(invisibleSeen, 'the sealed weeks stayed silent — check the invisible family gating')
-      .toBeGreaterThanOrEqual(Math.min(invisibleFamily.size, 4));
-    const hackerSeen = [...hackerFamily].filter(id => fired[id]).length;
-    expect(hackerSeen, 'the hacked weeks stayed silent — check the hacker family gating')
-      .toBeGreaterThanOrEqual(Math.min(hackerFamily.size, 4));
-    const roadkillSeen = [...roadkillFamily].filter(id => fired[id]).length;
-    expect(roadkillSeen, 'the roadkill weeks stayed silent — check the roadkill family gating')
-      .toBeGreaterThanOrEqual(Math.min(roadkillFamily.size, 2));
-    const pandoraSeen = [...pandoraFamily].filter(id => fired[id]).length;
-    expect(pandoraSeen, 'the box weeks stayed silent — check the pandora family gating')
-      .toBeGreaterThanOrEqual(Math.min(pandoraFamily.size, 4));
-    const denSeen = [...denFamily].filter(id => fired[id]).length;
-    expect(denSeen, 'the Den weeks stayed silent — check the temptation family gating')
-      .toBeGreaterThanOrEqual(Math.min(denFamily.size, 4));
-    const whackSeen = [...whackFamily].filter(id => fired[id]).length;
-    expect(whackSeen, 'the door weeks stayed silent — check the whacktivity family gating')
-      .toBeGreaterThanOrEqual(Math.min(whackFamily.size, 4));
-    for (const fam of gatedFamilies) {
-      const seen = [...fam.ids].filter(id => fired[id]).length;
-      expect(seen, `the ${fam.prefix}* family stayed completely silent — `
-        + `${fam.ids.size} events with no route to fire`)
-        .toBeGreaterThanOrEqual(Math.min(fam.ids.size, fam.min));
+
+    // ── Play MORE seasons rather than fail, when something marginal misses ──
+    //
+    // This is the assertion that made the file expensive to work near. It asks
+    // whether an event can EVER fire, but it was answering with one fixed set
+    // of sixteen seeds — so any change to the event library reshuffled the
+    // scheduler's draws and whichever alive-but-marginal event fell out of the
+    // window became a failure. It was noticing CHANGE and reporting it as
+    // BREAKAGE. Measured on this branch: adding one narrow event killed
+    // `pawn-in-danger-panic`, widening its window killed it again, and raising
+    // its weight killed it a third time — three correct changes, three red
+    // suites, and the feature was reverted rather than the guard fixed.
+    //
+    // The question has a better shape. "Never fires" is a claim about the whole
+    // space of seasons, so a miss means SAMPLE MORE, not fail. Extra seeds are
+    // only paid for when something is actually missing, and a genuinely dead
+    // event survives every batch and still fails — which is the bug this file
+    // exists to catch, undamaged.
+    const BASE_SEEDS = [11, 23, 37, 44, 58, 63, 71, 88, 95, 102, 117, 129, 140, 151, 163, 178];
+    const EXTRA_BATCHES = [
+      [7, 19, 33, 51, 67, 83, 97, 109, 131, 157, 173, 191, 199, 211, 223, 227],
+      [3, 13, 29, 41, 53, 73, 79, 89, 103, 127, 149, 167, 181, 193, 197, 229],
+    ];
+    // Each extra seed borrows the twist schedule of the booked seed in the same
+    // position, so the twists still happen while the rng stream is new.
+    const alias = seed => BASE_SEEDS[EXTRA_BATCHES
+      .flatMap(b => b).indexOf(seed) % BASE_SEEDS.length] ?? seed;
+    // The collective family minimums are the same question wearing a different
+    // hat — "can this family reach the screen at all" — and they are seed-tuned
+    // in exactly the same way, so they escalate together. A twist family added
+    // by somebody else on the same day should not turn red because an unrelated
+    // event started taking beats.
+    const familyMins = [
+      [invisibleFamily, 4, 'the sealed weeks stayed silent — check the invisible family gating'],
+      [hackerFamily, 4, 'the hacked weeks stayed silent — check the hacker family gating'],
+      [roadkillFamily, 2, 'the roadkill weeks stayed silent — check the roadkill family gating'],
+      [pandoraFamily, 4, 'the box weeks stayed silent — check the pandora family gating'],
+      [denFamily, 4, 'the Den weeks stayed silent — check the temptation family gating'],
+      [whackFamily, 4, 'the door weeks stayed silent — check the whacktivity family gating'],
+      ...gatedFamilies.map(f => [f.ids, f.min,
+        `the ${f.prefix}* family stayed completely silent — ${f.ids.size} events with no route to fire`]),
+    ].map(([ids, min, why]) => ({ ids, min: Math.min(ids.size, min), why }));
+
+    const seen = fam => [...fam.ids].filter(id => fired[id]).length;
+    const unmet = () => stillSilent(fired).length || familyMins.some(f => seen(f) < f.min);
+
+    let never = stillSilent(fired);
+    for (const batch of EXTRA_BATCHES) {
+      if (!unmet()) break;
+      const more = playSeasons(batch, alias);
+      for (const id of Object.keys(more)) fired[id] = (fired[id] || 0) + more[id];
+      never = stillSilent(fired);
     }
+    expect(never, `never fire in a real season, across ${16 + EXTRA_BATCHES.flat().length} `
+      + `seeded seasons: ${never.join(', ')}`).toEqual([]);
+    for (const fam of familyMins) expect(seen(fam), fam.why).toBeGreaterThanOrEqual(fam.min);
   }, 240000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30

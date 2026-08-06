@@ -395,7 +395,7 @@ const juryPact = {
     // volume guard caught pawn-in-danger-panic going from rare to never. A late
     // game has a lot of twist beats competing for very few slots, so a new
     // event here has to earn its place rather than take somebody else's.
-    if (!opens || house.length !== opens + 1) return 0;
+    if (!opens || house.length < opens + 1 || house.length > opens + 3) return 0;
     const pair = _juryPactPair(house, ctx);
     if (!pair) return 0;
     return _w(bondFactor(bond(pair.a, pair.b)) * 3.5, ctx);

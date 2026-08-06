@@ -169,12 +169,36 @@ function ensureBBState() {
 function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = null) {
   const playing = [hoh, ...nominees].filter(Boolean);
   const eligible = house.filter(name => !playing.includes(name));
-  const seats = Math.max(0, Math.min(3, house.length - playing.length));
   const read = (a, b) => (typeof readBond === 'function' ? readBond(a, b) : 0);
 
-  // One chip per eligible houseguest, plus a couple of choice chips.
+  // ── the field is six, not "the block plus three" ──
+  //
+  // Seats were hardcoded to three, which is right for the ordinary week and
+  // wrong for every week with a third nominee. Roadkill, America's Nominee and
+  // the Block Buster all push a third name into `nominees`, so the house was
+  // fielding SEVEN players for a veto — the one number the format never moves.
+  // Since BB15 the rule is explicit: with three nominees the Head of Household
+  // draws two names, and six play.
+  const FIELD = 6;
+  const seats = Math.max(0, Math.min(FIELD - playing.length, eligible.length));
+
+  // ── and at six houseguests there is nothing to draw for ──
+  //
+  // The Head of Household, the nominees and the rest ARE the field, so the bag
+  // never comes out. Drawing chips to select all three remaining houseguests is
+  // a ceremony with no outcome, and the house knows it.
+  if (house.length <= FIELD) {
+    return { players: [...house], draws: [], automatic: [...house], everybodyPlays: true };
+  }
+
+  // One chip per HOUSEGUEST — including the three people doing the drawing.
+  // Leaving the Head of Household and the nominees out of the bag made the
+  // format's best small moment unreachable: drawing your own chip, or a
+  // nominee's, hands the drawer the pick, and those three chips are a real part
+  // of the odds. The `usable` branch below has always handled it; nothing could
+  // ever reach it.
   const bag = [
-    ...eligible.map(name => ({ kind: 'name', name })),
+    ...house.map(name => ({ kind: 'name', name })),
     { kind: 'choice' }, { kind: 'choice' },
   ];
   const draws = [];
@@ -194,6 +218,12 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
       draws.push({ drawer, chip: 'name', drew: chip.name, chose: null });
       continue;
     }
+    // WHY they are picking, which is a different scene each way: a blank chip
+    // is luck, your own name out of your own hand is the house laughing, and a
+    // nominee's chip means the person on the block just handed the drawer the
+    // pick.
+    const chipWas = chip.kind === 'choice' ? 'choice'
+      : chip.name === drawer ? 'own' : 'playing';
 
     const left = house.filter(name => !playing.includes(name));
     if (!left.length) break;
@@ -219,14 +249,20 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
     playing.push(wanted);
     // Why that name. A choice chip is a decision made in front of everybody,
     // and the house reads who somebody reaches for.
-    const why = drawer === hoh
+    const how = chipWas === 'own'
+      ? `${drawer} pulls out ${drawer}'s own chip, to a room that enjoys it far too much, and picks again. `
+      : chipWas === 'playing'
+        ? `${drawer} draws ${chip.name}'s chip — already playing, so the pick comes back to ${drawer}. `
+        : '';
+    const why = how + (drawer === hoh
       ? (avoid && pickable.length < left.length
         ? `${hoh} picks ${wanted} and pointedly does not pick ${avoid}.`
         : `${hoh} picks ${wanted}, who has no reason to want the block changed.`)
       : promised.has(wanted)
         ? `${drawer} is on the block and picks ${wanted}, who spent two days promising exactly this.`
-        : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`;
-    draws.push({ drawer, chip: 'choice', drew: null, chose: wanted, why });
+        : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`);
+    draws.push({ drawer, chip: 'choice', chipWas, drew: chipWas === 'choice' ? null : chip.name,
+      chose: wanted, why });
   }
 
   // Anything the bag could not fill, fill at random rather than leave short.

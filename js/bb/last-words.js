@@ -302,8 +302,20 @@ function resolveBelief(listener, speaker, reveal, isTrue, rng) {
   const belief = forTerm - againstTerm + prior * 1.2 + smell + (rng() - 0.5) * 0.9;
 
   // "Conflicted" is not a fifth outcome. It is what this formula produces when
-  // both terms are big: somebody they trust has named somebody they love.
-  const conflicted = forTerm > 0.55 && againstTerm > 0.55;
+  // both pulls are real: somebody they trust has named somebody they like.
+  //
+  // As two absolute cutoffs at 0.55 this required a bond of about seven with
+  // the person shouting AND about four with the person named, at the same time,
+  // and measured ZERO across a hundred and forty-five reactions — the most
+  // interesting state in the system was unreachable.
+  //
+  // Being torn is a RELATIVE condition anyway: it is not "both numbers are
+  // large", it is "neither side wins". So both pulls have to matter, and they
+  // have to be close enough to each other that the listener genuinely cannot
+  // settle it.
+  const strong = Math.max(forTerm, againstTerm);
+  const weak = Math.min(forTerm, againstTerm);
+  const conflicted = weak > 0.3 && strong > 0.45 && weak / strong > 0.55;
   // The label picks the SENTENCE, and it has to agree with the number, because
   // the screen groups people by the number. It did not: a listener over the
   // line with no prior suspicion fell through to 'doubt-planted' and ended up

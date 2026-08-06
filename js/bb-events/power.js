@@ -1029,11 +1029,17 @@ const backdoorPlan = {
     if (!real || _noms(ctx).includes(real)) return 0;
     // And the person holding the veto has to be somebody who might use it.
     if (ctx?.vetoWinner === real) return 0;
+    // Nobody explains a plan to backdoor themselves. On a two-Head-of-Household
+    // week the plan on the week belongs to one of them and the scene can be
+    // cast from the other, which put the same houseguest in the room and on the
+    // block in one card — "those two were never the point, H is" said by H.
+    if (real === _hoh(ctx)) return 0;
     return band(13);
   },
   fire(house, ctx, api) {
     const hoh = _hoh(ctx);
     const real = ctx.week.plan.backdoorTarget;
+    if (!real || real === hoh) return null;
     const noms = _noms(ctx);
     const ally = closestTo(hoh, _others(house, hoh, real, ...noms)) || _others(house, hoh, real)[0];
     const p = pronouns(hoh);

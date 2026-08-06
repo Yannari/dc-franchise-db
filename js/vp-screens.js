@@ -28,6 +28,7 @@ import { rpBuildBBPrizeExchange } from './vp-bb-prize-exchange.js';
 import { rpBuildBBCampComeback, rpBuildBBCampReturn } from './vp-bb-camp.js';
 import { rpBuildBBTeamAmerica } from './vp-bb-team-america.js';
 import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
+import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
@@ -20585,6 +20586,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const hxDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-haltinghex'), label: 'The Halting Hex',
           html: rpBuildBBHaltingHex(view, act, hxDeps) });
+        break;
+      }
+      case 'second-veto': {
+        const svDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id(`bb-secondveto-${act.kind || 'x'}`),
+          label: act.kind === 'secret' ? 'Secret Veto' : 'Second Veto',
+          html: rpBuildBBSecondVeto(view, act, svDeps) });
         break;
       }
       case 'team-america': {

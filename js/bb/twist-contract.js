@@ -253,6 +253,35 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  'bb-double-veto': {
+    id: 'bb-double-veto', layer: 'scheduled', category: 'veto',
+    timing: 'veto-ceremony', duration: { weeks: 1 },
+    rules: { doubleVeto: true },
+    acquisition: { channel: 'veto-competition', secrecy: 'open' },
+    announcement: {
+      name: 'The Double Power of Veto',
+      rule: 'There are TWO Powers of Veto this week. The winner of the veto competition holds one, and the runner-up holds the other. Both may be used at the same ceremony, and each one used means a replacement nominee.',
+      sting: 'The block the Head of Household built can be gone by the end of one meeting.',
+    },
+  },
+  'bb-secret-veto': {
+    id: 'bb-secret-veto', layer: 'scheduled', category: 'veto',
+    timing: 'veto-ceremony', duration: { weeks: 1 },
+    rules: { secretVeto: true, vetoVisibility: 'public' },
+    acquisition: { channel: 'random-draw', secrecy: 'secret' },
+    // No announcement. A veto the house is told about is not a secret one.
+  },
+  'bb-forced-veto': {
+    id: 'bb-forced-veto', layer: 'scheduled', category: 'veto',
+    timing: 'veto-ceremony', duration: { weeks: 1 },
+    rules: { vetoMustBeUsed: true },
+    acquisition: { channel: 'veto-competition', secrecy: 'open' },
+    announcement: {
+      name: 'The Forced Power of Veto',
+      rule: 'This week the Power of Veto MUST be used. Whoever wins it will take a nominee off the block whether they want to or not, and the Head of Household will name a replacement.',
+      sting: 'Winning the veto this week is not protection. It is an obligation with somebody’s name on it.',
+    },
+  },
   'bb-team-america': {
     id: 'bb-team-america', layer: 'scheduled', category: 'alliance',
     timing: 'week-opening', duration: { weeks: 1 },

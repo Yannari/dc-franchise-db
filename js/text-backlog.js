@@ -4604,6 +4604,32 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'second-veto': {
+        sec(act.kind === 'secret' ? 'THE SECOND MEDALLION' : 'THE SECOND VETO');
+        if (act.kind === 'secret') {
+          ln('  Nobody competed for this one. It was given quietly to one houseguest,');
+          ln('  and the house was never told it existed.');
+        } else {
+          ln('  Two medallions came out of the same competition. This is the other one.');
+        }
+        ln('');
+        if (!act.used) {
+          ln(act.anonymous
+            ? '  It is not used. Nobody in the house ever learns it was there to use.'
+            : `  ${act.holder} does not use it. The block stands as the ceremony left it.`);
+        } else {
+          ln(act.anonymous
+            ? `  ${act.saved} comes off the block and ${act.replacement} goes up in their place.`
+            : `  ${act.holder} uses it on ${act.saved}, and ${act.replacement} goes up instead.`);
+          if (act.anonymous) {
+            ln('  Nobody is told whose hand did it, which leaves everybody in that room');
+            ln('  looking at everybody else and a Head of Household whose block has been');
+            ln('  rewritten by somebody they cannot name.');
+          }
+        }
+        beats(act);
+        break;
+      }
       case 'team-america': {
         sec('TEAM AMERICA');
         ln('  An alliance nobody in this house chose, and nobody in it can refuse.');

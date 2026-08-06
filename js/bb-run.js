@@ -281,7 +281,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-secret-veto', 'bb-forced-veto']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -1026,6 +1026,19 @@ export function summariseWeek(week) {
           ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
+        break;
+      }
+      case 'second-veto': {
+        line('');
+        line(act.kind === 'secret' ? 'THE SECOND MEDALLION' : 'THE SECOND VETO');
+        if (!act.used) {
+          line(`  ${act.anonymous ? 'It is not used.' : `${act.holder} does not use it.`}`);
+        } else if (act.anonymous) {
+          line(`  ${act.saved} comes off the block and ${act.replacement} goes up.`);
+          line('  The house is never told whose hand did it.');
+        } else {
+          line(`  ${act.holder} uses it on ${act.saved}. ${act.replacement} goes up instead.`);
+        }
         break;
       }
       case 'team-america': {

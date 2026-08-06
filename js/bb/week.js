@@ -17,6 +17,7 @@ import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
   carePackageVoteBlock, carePackageBribe, neverNots } from './care-package.js';
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
+import { resolveVetoRules, isDiamond } from './veto-rules.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { fillTeam, runMission } from './team-america.js';
@@ -2599,11 +2600,28 @@ export function simulateBBWeek(options = {}) {
         { week: week.num, visibility: 'public', source: 'bb-diamond-veto' });
     }
     const grantedDiamond = activePowerAt('veto-ceremony', week.num);
-    // Assigned immediately below; the chair predicate closes over it so the
-    // authority can be decided in one place with the diamond.
-    const diamond = week.twistState?.rules?.replacementAuthority === 'veto-holder'
-      || (grantedDiamond?.holder === vetoWinner && grantedDiamond?.powerId === 'diamond-veto');
+    // What shape the medallion is this week, resolved in one place from the
+    // twist contract and from any power somebody is holding. `diamond` is
+    // derived from it rather than computed separately, so a Diamond week runs
+    // through the new profile down exactly the path it always ran down — which
+    // is the only way to know the generalisation did not change anything.
+    week.vetoRules = resolveVetoRules({
+      week, vetoWinner, vetoPlayers: [...vetoPlayers], house, hoh, rng,
+    });
+    const diamond = isDiamond(week.vetoRules);
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
+    // A veto that MUST be used stops being a decision about whether and starts
+    // being a decision about who — and the holder cannot decline it just
+    // because the honest answer this week was nobody.
+    if (week.vetoRules.primary.mustUse && !vetoDecision.use) {
+      const forced = [...nominees].sort((a, b) =>
+        getPerceivedBond(vetoWinner, b) - getPerceivedBond(vetoWinner, a))[0];
+      if (forced) {
+        vetoDecision = { use: true, save: forced, reason: 'forced',
+          why: `${vetoWinner} has no say in whether the medallion comes out of the box — only in whose name is on it. `
+            + `${forced} comes down because somebody had to.` };
+      }
+    }
     vetoDecision = hook(hooks, 'vetoDecision', vetoDecision, { week, house, hoh, nominees: [...nominees], vetoWinner }) || vetoDecision;
     // Saving the Roadkill nominee hands the pen to whoever put them there, not
     // to the Head of Household — the third chair was never the HOH's to fill,
@@ -2788,6 +2806,59 @@ export function simulateBBWeek(options = {}) {
     if (coupAct) {
       week.acts.push(coupAct);
       revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: null });
+    }
+
+    // ── THE SECOND MEDALLION ──
+    //
+    // A Double veto is not a stronger veto, it is another one, and a Secret is
+    // another one nobody can see being used. Either way the block gets
+    // rewritten a second time in the same meeting.
+    //
+    // Deliberately its own pass rather than a generalisation of the block
+    // above. That block carries a decade of rules — the americas chair, the
+    // roadkill pen, the no-eligible-replacement case, the protection debt —
+    // and folding a second holder through it would have put all of that at
+    // risk to save a few lines. The one rule that MUST cross over is that a
+    // nominee taken down by the first medallion cannot be put back up by the
+    // second, which is what `savedThisWeek` carries.
+    const savedThisWeek = [vetoDecision.use ? vetoDecision.save : null].filter(Boolean);
+    for (const extra of (week.vetoRules?.extra || [])) {
+      if (!house.includes(extra.holder)) continue;
+      // Nothing left to save, or nobody left to put up in the empty chair.
+      const eligible = house.filter(n => n !== hoh && n !== vetoWinner && n !== extra.holder
+        && !nominees.includes(n) && !savedThisWeek.includes(n));
+      if (!nominees.length || !eligible.length) continue;
+      let dec = shouldUseVeto(extra.holder, nominees, plan, rng,
+        { hoh, house, diamond: extra.authority === 'veto-holder', hohSecret });
+      if (!dec?.use || !nominees.includes(dec.save)) {
+        week.acts.push(addBeats({
+          type: 'second-veto', kind: extra.kind, holder: extra.holder, used: false,
+          anonymous: extra.visibility === 'anonymous', saved: null, replacement: null,
+          nominees: [...nominees],
+        }, { players: [extra.holder], nominees: [...nominees] }));
+        continue;
+      }
+      const authority = extra.authority === 'veto-holder' ? extra.holder : hoh;
+      const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...savedThisWeek,
+        ...(week.botbSafe || []), carePackageProtects(week.carePackage),
+        ...safetySuiteSafe(week.safetySuite),
+        ...nominees.filter(n => n !== dec.save)].filter(Boolean);
+      const secondRep = chooseReplacement(authority, house, protectedNames, plan, rng);
+      if (!secondRep || !house.includes(secondRep) || protectedNames.includes(secondRep)) continue;
+      nominees = nominees.map(n => (n === dec.save ? secondRep : n));
+      savedThisWeek.push(dec.save);
+      gs.bb.stats[dec.save].timesSaved++;
+      gs.bb.stats[secondRep].timesNominated++;
+      week.finalNominees = [...nominees];
+      if (dec.save !== extra.holder) {
+        try { recordProtection(extra.holder, dec.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
+      }
+      week.acts.push(addBeats({
+        type: 'second-veto', kind: extra.kind, holder: extra.holder, used: true,
+        anonymous: extra.visibility === 'anonymous', saved: dec.save, replacement: secondRep,
+        authority, nominees: [...nominees],
+      }, { players: [extra.holder, dec.save, secondRep].filter(Boolean), nominees: [...nominees] }));
+      revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: dec.save });
     }
 
     // The person who just went up ALWAYS reacts. The ceremony act schedules

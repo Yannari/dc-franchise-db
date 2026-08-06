@@ -36,6 +36,10 @@ const THEMED = [
   'bb-classic-spelling', 'bb-classic-stay-or-fold',
   'bb-classic-tumblin-dice', 'bb-classic-dough',
   'bb-classic-ready-set-woah', 'bb-classic-solve-for-x',
+  // Batch one of the recurring-competition expansion.
+  'bb-social-zingbot', 'bb-social-drink-or-bluff',
+  'bb-recall-who-said-it', 'bb-recall-drunk-speeches',
+  'bb-duress-punch-slap-kick', 'bb-duress-black-box',
 ];
 
 describe('themed competition screens render', () => {

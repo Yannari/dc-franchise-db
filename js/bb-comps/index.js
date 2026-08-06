@@ -25,6 +25,9 @@ import { CLASSIC_COMPS } from './classics.js';
 import { ARENA_CLASSIC_COMPS } from './arena-classics.js';
 import { FINAL_HOH_COMPS } from './final-hoh.js';
 import { JURY_QUIZ_COMPS } from './jury-quiz.js';
+import { RECALL_COMPS } from './recall.js';
+import { SOCIAL_COMPS } from './social.js';
+import { DURESS_COMPS } from './duress.js';
 
 /**
  * How strongly a written competition outranks a fallback.
@@ -73,6 +76,12 @@ export const BB_COMPETITIONS = [
   // them.
   ...FINAL_HOH_COMPS,
   ...JURY_QUIZ_COMPS,
+  // Batch one of the recurring-competition expansion. Deliberately weighted
+  // toward the slots the library was thin in: memory had two competitions
+  // against ten mental, and nothing anywhere was scored on `social`.
+  ...RECALL_COMPS,
+  ...SOCIAL_COMPS,
+  ...DURESS_COMPS,
 ].map(production);
 
 export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) => {
@@ -83,5 +92,5 @@ export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) =>
 /** Which competitions can serve a given slot — the dispatcher's own filter. */
 export const competitionsFor = type => BB_COMPETITIONS.filter(c => c.types.includes(type));
 
-export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS, JURY_QUIZ_COMPS };
+export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS, JURY_QUIZ_COMPS, RECALL_COMPS, SOCIAL_COMPS, DURESS_COMPS };
 export default BB_COMPETITIONS;

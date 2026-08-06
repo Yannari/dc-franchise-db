@@ -32,6 +32,8 @@ import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
 import { rpBuildBBVetoDrawTwist } from './vp-bb-veto-draw.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
+import { rpBuildSigZingbot, rpBuildSigDrinkOrBluff, rpBuildSigWhoSaidIt,
+  rpBuildSigDrunkSpeeches, rpBuildSigPunchSlapKick, rpBuildSigBlackBox } from './vp-bb-sig/_batch1.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
 import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';
@@ -17034,6 +17036,13 @@ export function rpBuildBBVetoDraw(ep) {
 // HOH, missing data), which drops through to the generic board below.
 const _BB_SIG_BUILDERS = {
   'otev': rpBuildSigOtev,
+  // Batch one of the recurring-competition expansion.
+  'zingbot': rpBuildSigZingbot,
+  'drink-or-bluff': rpBuildSigDrinkOrBluff,
+  'who-said-it': rpBuildSigWhoSaidIt,
+  'drunk-speeches': rpBuildSigDrunkSpeeches,
+  'punch-slap-kick': rpBuildSigPunchSlapKick,
+  'black-box': rpBuildSigBlackBox,
   'the-wall': rpBuildSigTheWall,
   'pressure-cooker': rpBuildSigPressureCooker,
   'hide-and-go-veto': rpBuildSigHideAndGoVeto,

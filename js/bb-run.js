@@ -281,7 +281,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-secret-veto', 'bb-forced-veto']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto']);
 
 /**
  * Which twists are scheduled for the week about to be played.

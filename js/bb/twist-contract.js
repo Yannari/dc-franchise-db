@@ -264,13 +264,23 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'The block the Head of Household built can be gone by the end of one meeting.',
     },
   },
-  'bb-secret-veto': {
-    id: 'bb-secret-veto', layer: 'scheduled', category: 'veto',
-    timing: 'veto-ceremony', duration: { weeks: 1 },
-    rules: { secretVeto: true, vetoVisibility: 'public' },
-    acquisition: { channel: 'random-draw', secrecy: 'secret' },
-    // No announcement. A veto the house is told about is not a secret one.
-  },
+  // 'bb-secret-veto' is NOT here, and that is the point.
+  //
+  // The real one (BBCAN2) was FOUND — Allison pulled it out of the War Room,
+  // held it two weeks across three veto competitions, and then stood up at a
+  // veto meeting and used it in front of everybody. The secret is the HOLDING,
+  // not the hand.
+  //
+  // None of that is a week you schedule. A twist card says "this happens on
+  // episode 4"; a power somebody searches for and sits on says nothing of the
+  // sort, and putting it on the Format Designer's shelf made it a one-week
+  // assignment handed to a random houseguest, which is a different twist that
+  // happens to share a name.
+  //
+  // The MECHANISM stays: veto-rules.js still reads a `secretVeto` rule and
+  // still fields a second, quieter medallion. What it needs is an owner on the
+  // hidden-search channel that bb-hidden-power already uses, and a duration
+  // measured in weeks rather than one.
   'bb-forced-veto': {
     id: 'bb-forced-veto', layer: 'scheduled', category: 'veto',
     timing: 'veto-ceremony', duration: { weeks: 1 },

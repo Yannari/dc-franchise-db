@@ -13,7 +13,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
-import { simulateBBEpisode, summariseWeek } from '../js/bb-run.js';
+import { simulateBBEpisode, summariseWeek, BB_TWIST_IDS } from '../js/bb-run.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { resolveVetoRules, isDiamond } from '../js/bb/veto-rules.js';
@@ -158,41 +158,32 @@ describe('the veto variants', () => {
     }
   });
 
-  it('keeps the secret veto secret', () => {
-    const c = BB_TWIST_CONTRACTS['bb-secret-veto'];
-    expect(c.acquisition.secrecy).toBe('secret');
-    expect(c.announcement, 'a veto the house is told about is not a secret one').toBeUndefined();
-    for (const seed of [7, 19, 31]) {
-      for (const ep of play('bb-secret-veto', 3, seed)) {
-        const act = actOf(ep, 'second-veto');
-        if (!act) continue;
-        expect(act.anonymous).toBe(true);
-        // The transcript may say the block changed. It may not say who.
-        const week = (gs.bb.weeks || []).find(w => w.num === ep.num);
-        const text = summariseWeek(week);
-        // The act's OWN lines, not a character window — the social beats
-        // attached to this act name half the house for unrelated reasons, and
-        // the secret is about attribution, not about the name never appearing.
-        const lines = text.split(/\r?\n/);
-        const at = lines.findIndex(l => l.trim() === 'THE SECOND MEDALLION');
-        if (at < 0) continue;
-        const section = lines.slice(at, at + 4).join(' ');
-        // Who came DOWN is public — the house watches somebody leave the block,
-        // and a holder who saves themselves is still deniable, because anybody
-        // could have been the one who saved them. What must never appear is the
-        // attribution: no sentence may say this holder used it.
-        expect(section, 'the secret holder was named as the hand that did it')
-          .not.toContain(`${act.holder} uses it`);
-        if (act.used) {
-          expect(section, 'an anonymous veto did not say the hand was unknown')
-            .toContain('never told whose hand');
-        }
-      }
-    }
+  // A veto you FIND is not a week you SCHEDULE.
+  //
+  // The real Secret Power of Veto was found in the War Room, held for two
+  // weeks across three veto competitions, and then used standing up in front
+  // of the whole house — the secret is the holding, not the hand. As a Format
+  // Designer card it became a one-week power assigned at random to somebody,
+  // which is a different twist wearing the same name. It comes back on the
+  // hidden-search channel or not at all, so until then it must not be
+  // offerable, and the rule mechanism must survive for whatever owns it next.
+  it('does not offer the secret veto as a schedulable week', () => {
+    expect(TWIST_CATALOG.some(t => t.id === 'bb-secret-veto'),
+      'a found power is on the week-card shelf').toBe(false);
+    expect(BB_TWIST_CONTRACTS['bb-secret-veto']).toBeUndefined();
+    expect(BB_TWIST_IDS.has('bb-secret-veto')).toBe(false);
+    // The mechanism is still there for a power to switch on later.
+    const secret = resolveVetoRules({
+      week: { num: 2, twistState: { rules: { secretVeto: true } } },
+      vetoWinner: 'Bowie', house: NAMES, hoh: 'Chase', rng: () => 0.4,
+    });
+    expect(secret.extra).toHaveLength(1);
+    expect(secret.extra[0].kind).toBe('secret');
+    expect(secret.extra[0].holder).not.toBe('Bowie');
   });
 
   it('is in the catalogue and reaches both transcripts', () => {
-    for (const id of ['bb-double-veto', 'bb-secret-veto', 'bb-forced-veto']) {
+    for (const id of ['bb-double-veto', 'bb-forced-veto']) {
       expect(TWIST_CATALOG.some(t => t.id === id), `${id} is not in the catalogue`).toBe(true);
       expect(BB_TWIST_CONTRACTS[id], `${id} has no contract`).toBeTruthy();
     }

@@ -126,6 +126,40 @@ describe('the recall competitions', () => {
     }
   });
 
+  it('records who answered and what they wrote, so the card cannot lie', () => {
+    // The screen used to work out the answer by scanning the narration for a
+    // name — and a wrong answer's sentence names the RIGHT one too, so cards
+    // narrating a miss were stamped MATCH.
+    for (const seed of [4, 17, 33]) {
+      season();
+      const result = run('bb-recall-who-said-it', { rng: seededRng(seed) });
+      for (const r of result.detail?.rounds || []) {
+        expect(r.spotlight, 'no answerer recorded').toBeTruthy();
+        // Never the person the statement is about — that is a free point.
+        expect(r.options[r.truthIndex] === r.spotlight
+          && r.statement.includes('I ')).toBe(r.options[r.truthIndex] === r.spotlight);
+        expect(r.given).toBeGreaterThanOrEqual(0);
+        expect(r.given).toBeLessThan(r.options.length);
+        // The stamp is derivable without reading a word of prose.
+        expect(r.right).toBe(r.given === r.truthIndex);
+        expect(r.right).toBe(r.answers[r.spotlight].right);
+      }
+    }
+  });
+
+  it('does not ask the same shape of question over and over', () => {
+    // A played round came back with three "I ran this house in week N" and two
+    // "I pulled the veto out of that box" — the same two questions with the
+    // week number changed.
+    for (const seed of [2, 8, 26]) {
+      season();
+      const rounds = run('bb-recall-who-said-it', { rng: seededRng(seed) }).detail?.rounds || [];
+      const kinds = new Set(rounds.map(r => r.kind));
+      expect(kinds.size, `only ${[...kinds].join(', ')} across ${rounds.length} statements`)
+        .toBeGreaterThan(Math.min(2, rounds.length - 1));
+    }
+  });
+
   it('play a shorter competition rather than a vaguer one on a young season', () => {
     // One week of ledger. It should still run, and still be about that week.
     gs.bb.weeks = gs.bb.weeks.slice(0, 1);

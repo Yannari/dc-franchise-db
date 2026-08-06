@@ -132,13 +132,24 @@ export const whoSaidIt = {
     const cast = [...new Set([...castSeen(), ...participants])];
     const asked = [];
     const used = new Set();
+    const askedKinds = new Set();
     const rounds = Math.min(6, pool.length);
 
     for (let r = 0; r < rounds; r++) {
       const fresh = pool.filter(f => !used.has(f.statement));
       if (!fresh.length) break;
-      const fact = fresh[Math.floor(rng() * fresh.length)];
+      // Prefer a SHAPE of statement this quiz has not used yet.
+      //
+      // Drawing blind from the pool produced a played round of six where three
+      // statements were "I ran this house in week N" and two more were "I
+      // pulled the veto out of that box in week N" — the same two questions
+      // with the week number changed, which reads as a competition that only
+      // knows one thing.
+      const unusedKind = fresh.filter(f => !askedKinds.has(f.kind));
+      const from = unusedKind.length ? unusedKind : fresh;
+      const fact = from[Math.floor(rng() * from.length)];
       used.add(fact.statement);
+      askedKinds.add(fact.kind);
       const { options, truthIndex } = optionsFor(fact.subject, cast, rng);
       if (options.length < 2) continue;
 
@@ -148,12 +159,24 @@ export const whoSaidIt = {
         answers[name] = a;
         if (a.right) score[name]++;
       });
-      asked.push({ statement: fact.statement, options, truthIndex, answers, week: fact.week, kind: fact.kind });
 
       // One houseguest narrated per round, so a twelve-person house does not
-      // print twelve lines a question.
-      const spotlight = participants[Math.floor(rng() * participants.length)];
+      // print twelve lines a question — and never the person the statement is
+      // ABOUT, because "Chase guesses Chase" is not a question, it is a gift.
+      const eligible = participants.filter(n => n !== fact.subject);
+      const spotlight = (eligible.length ? eligible : participants)[
+        Math.floor(rng() * (eligible.length || participants.length))];
       const a = answers[spotlight];
+      // The spotlight and what they wrote are recorded, not left to be
+      // recovered from the prose. The screen used to scan the narration for a
+      // name to decide whether to stamp the card MATCH, and "It was Raj" put
+      // the right answer in the sentence describing a wrong one — so a card
+      // narrating a miss was stamped correct.
+      asked.push({
+        statement: fact.statement, options, truthIndex, answers,
+        week: fact.week, kind: fact.kind,
+        spotlight, given: a.given, right: a.right,
+      });
       beats.push(beat(
         `${host(WSI_HOST)} ${fact.statement} `
         + (a.right ? say(WSI_RIGHT)(spotlight, options[truthIndex])

@@ -65,7 +65,20 @@ const _STYLE = `<style>
   font-size:9px;color:#3a2e20;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px}
 .sigwsi .ws-pol.is-truth{outline:3px solid var(--ws-ok);outline-offset:2px}
 .sigwsi .ws-pol.is-wrong{outline:3px solid var(--ws-string);outline-offset:2px;filter:saturate(.5)}
-.sigwsi .ws-line{margin-top:12px;font-size:13px;color:#4a3c2a;line-height:1.55}
+.sigwsi .ws-line{margin-top:10px;font-size:13px;color:#4a3c2a;line-height:1.55}
+/* Who actually answered, said plainly.
+   The narration names one houseguest out of twelve while the board shows three
+   OTHER faces, so without this line a card is four names and no way to tell
+   which of them is the person answering. */
+.sigwsi .ws-verdict{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:13px;padding:8px 10px;
+  border-radius:3px;background:rgba(42,33,24,.07);border:1px solid rgba(42,33,24,.14)}
+.sigwsi .ws-who{width:26px;height:26px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+  border:1px solid rgba(42,33,24,.3)}
+.sigwsi .ws-who img{width:100%;height:100%;object-fit:cover}
+.sigwsi .ws-wrote{font-size:12.5px;color:#3a2e20}
+.sigwsi .ws-wrote em{font-style:normal;font-weight:600;text-decoration:underline}
+.sigwsi .ws-truth{margin-left:auto;font-size:11.5px;color:#6b5946}
+.sigwsi .ws-truth b{color:var(--ws-ok)}
 .sigwsi .ws-stamp{position:absolute;right:10px;top:12px;font-family:'Special Elite',cursive;font-size:15px;
   letter-spacing:2px;padding:3px 9px;border:2.5px solid;border-radius:3px;transform:rotate(-11deg);opacity:.85}
 .sigwsi .ws-stamp.is-ok{color:var(--ws-ok);border-color:var(--ws-ok)}
@@ -142,19 +155,32 @@ export function rpBuildSigWhoSaidIt(ep, actType, u = {}) {
     }
     qi++;
     const rest = b.text.replace(`"${quote}"`, '').trim();
-    // Whose name the narrated houseguest actually wrote, for the string.
-    const named = round.options.find(o => new RegExp(`\\b${o}\\b`).test(rest)) || null;
+    // Read from the record, never from the prose.
+    //
+    // This used to scan the narration for whichever option name appeared in it
+    // and call that the answer given. But the sentence describing a WRONG
+    // answer names the right one too — "It was Raj, and the groan along the
+    // line arrives before the answer does" — so cards narrating a miss were
+    // being stamped MATCH. The competition now records who answered and what
+    // they wrote, and this reads that.
     const truth = round.options[round.truthIndex];
-    const right = named === truth;
+    const answerer = round.spotlight || null;
+    const named = round.given != null ? round.options[round.given] : null;
+    const right = !!round.right;
     const suspects = round.options.map(o => `<figure class="ws-pol ${
       o === truth ? 'is-truth' : o === named ? 'is-wrong' : ''}">
       <div class="ws-pol-i">${avatar(o, 68)}</div>
       <figcaption class="ws-pol-n">${esc(o)}</figcaption></figure>`).join('');
     cards += `<div class="ws-case"><span class="ws-pin"></span>
-      ${named ? `<div class="ws-stamp ${right ? 'is-ok' : 'is-no'}">${right ? 'MATCH' : 'NO MATCH'}</div>` : ''}
+      ${answerer ? `<div class="ws-stamp ${right ? 'is-ok' : 'is-no'}">${right ? 'MATCH' : 'NO MATCH'}</div>` : ''}
       <div class="ws-no">Statement ${qi} of ${asked}${round.week ? ` · week ${round.week}` : ''}</div>
       <div class="ws-quote">"${esc(quote)}"</div>
       <div class="ws-suspects">${suspects}</div>
+      ${answerer ? `<div class="ws-verdict">
+        <span class="ws-who">${avatar(answerer, 26)}</span>
+        <span class="ws-wrote"><b>${esc(answerer)}</b> wrote <em>${esc(named || '—')}</em></span>
+        <span class="ws-truth">it was <b>${esc(truth)}</b></span>
+      </div>` : ''}
       <div class="ws-line">${rest}</div>
     </div>`;
   });

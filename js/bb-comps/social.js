@@ -53,7 +53,7 @@ const ZING_ARRIVAL = [
  * house being read back to itself — and it is the reason this lands hard enough
  * to be worth a bond and a popularity hit.
  */
-function zingFor(name, rng) {
+function zingFor(name, rng, say) {
   const st = gs.bb?.stats?.[name] || {};
   const wins = (st.hohWins || 0) + (st.vetoWins || 0);
   const blocked = st.timesOnTheBlock || st.timesNominated || 0;
@@ -78,9 +78,22 @@ function zingFor(name, rng) {
   if (evictedWeek) {
     options.push(`"${name} was Head of Household in week ${evictedWeek} and spent the entire reign telling everybody it was 'a really hard decision'. It was two people. Out of a house. ZING!"`);
   }
-  options.push(`"${name}! I've been watching the feeds and I have to ask — is the strategy 'lie very still and hope'? Because it's working, and that's the saddest part. ZING!"`);
-  options.push(`"${name}, you talk about your game a LOT for somebody whose game is mostly walking into rooms other people are already talking in. ZING!"`);
-  return choose(rng, options);
+  // The general-purpose ones, for a houseguest whose season has not handed the
+  // robot anything specific yet. Deep on purpose: most of a house qualifies for
+  // no targeted zing in the first few weeks, and a shallow fallback pool had
+  // FIVE houseguests in one roast being told they lie very still and hope.
+  options.push(
+    `"${name}! I've been watching the feeds and I have to ask — is the strategy 'lie very still and hope'? Because it's working, and that's the saddest part. ZING!"`,
+    `"${name}, you talk about your game a LOT for somebody whose game is mostly walking into rooms other people are already talking in. ZING!"`,
+    `"${name}! Every week you tell that camera you're about to make a big move. At this rate the move is going to be out the front door. ZING!"`,
+    `"${name}, I asked the other houseguests to describe your game and four of them described somebody else's. ZING!"`,
+    `"${name}! You've got a final two with everybody in this house. That's not a strategy, that's a mailing list. ZING!"`,
+    `"${name}, you're playing a really quiet game. Beautifully quiet. Nobody in America can hear it either. ZING!"`,
+    `"${name}! I love how you say 'trust me' with your whole chest and then look at the floor. The floor knows. ZING!"`,
+    `"${name}, your big strategic insight this week was that somebody has to go home. Groundbreaking. ZING!"`);
+  // Never twice in one roast. `say` is the competition's own non-repeating
+  // picker, so a house of twelve gets twelve different jokes.
+  return say ? say(options) : choose(rng, options);
 }
 
 const ZING_REACTION_GOOD = [
@@ -120,7 +133,7 @@ export const zingbot = {
 
     const zings = [];
     for (const target of house) {
-      const text = zingFor(target, rng);
+      const text = zingFor(target, rng, say);
       const p = pronouns(target);
       // How hard it lands. A volatile houseguest wears a public roast much
       // worse than a calm one, and the audience likes somebody who can take it.

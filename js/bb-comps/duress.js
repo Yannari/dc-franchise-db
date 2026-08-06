@@ -173,9 +173,14 @@ export const blackBox = {
       let seconds = 0;
       const attempts = 5;
       for (let i = 0; i < attempts; i++) {
-        const roll = (rng() - 0.5) * 3.6;
+        const roll = (rng() - 0.5) * 4.2;
         luck[name] = round2((luck[name] || 0) + roll);
-        const ok = feel + roll > 4.6;
+        // 6.4, not 4.6. At the lower threshold essentially everybody placed all
+        // five — a twelve-person field where every single run read "5 of 5" —
+        // which killed the object count as a dimension and quietly turned the
+        // wiki's "most objects, then fastest time" into a stopwatch. Finding a
+        // thing you cannot see has to be able to go wrong.
+        const ok = feel + roll > 6.0;
         if (ok) { placed++; seconds += 22 + rng() * 16; }
         else seconds += 38 + rng() * 26;
       }

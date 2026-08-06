@@ -32,8 +32,12 @@ import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
 import { rpBuildBBVetoDrawTwist } from './vp-bb-veto-draw.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
-import { rpBuildSigZingbot, rpBuildSigDrinkOrBluff, rpBuildSigWhoSaidIt,
-  rpBuildSigDrunkSpeeches, rpBuildSigPunchSlapKick, rpBuildSigBlackBox } from './vp-bb-sig/_batch1.js';
+import { rpBuildSigZingbot } from './vp-bb-sig/zingbot.js';
+import { rpBuildSigDrinkOrBluff } from './vp-bb-sig/drink-or-bluff.js';
+import { rpBuildSigWhoSaidIt } from './vp-bb-sig/who-said-it.js';
+import { rpBuildSigDrunkSpeeches } from './vp-bb-sig/drunk-speeches.js';
+import { rpBuildSigPunchSlapKick } from './vp-bb-sig/punch-slap-kick.js';
+import { rpBuildSigBlackBox } from './vp-bb-sig/black-box.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
 import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';

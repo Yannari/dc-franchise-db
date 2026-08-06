@@ -229,6 +229,21 @@ describe('the duress competitions', () => {
     expect(Math.max(...best)).toBeGreaterThan(4);
   });
 
+  it('The Black Box does not hand everybody five out of five', () => {
+    // If every run places all five, the object count is dead and the wiki's
+    // "most objects, THEN fastest time" has quietly become a stopwatch. That is
+    // exactly what the first tuning did — measured, a whole twelve-person field
+    // reading 5 of 5 on every card.
+    const seen = new Set();
+    for (let seed = 1; seed <= 40; seed++) {
+      season();
+      const result = run('bb-duress-black-box', { type: 'veto', field: gs.activePlayers.slice(0, 5), rng: seededRng(seed) });
+      Object.values(result.debug.scoreBreakdown).forEach(r => seen.add(r.placed));
+    }
+    expect(seen.size, 'every run placed the same number of objects').toBeGreaterThan(2);
+    expect([...seen].some(v => v < 5), 'nobody ever missed one').toBe(true);
+  });
+
   it('The Black Box breaks a tie on time, the way the wiki says it does', () => {
     for (let seed = 1; seed <= 40; seed++) {
       season();

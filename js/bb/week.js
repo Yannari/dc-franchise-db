@@ -2606,7 +2606,8 @@ export function simulateBBWeek(options = {}) {
     // through the new profile down exactly the path it always ran down — which
     // is the only way to know the generalisation did not change anything.
     week.vetoRules = resolveVetoRules({
-      week, vetoWinner, vetoPlayers: [...vetoPlayers], house, hoh, rng,
+      week, vetoWinner, placements: [...(vetoCompetition?.placements || [])],
+      vetoPlayers: [...vetoPlayers], house, hoh, rng,
     });
     const diamond = isDiamond(week.vetoRules);
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });

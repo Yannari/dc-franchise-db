@@ -77,10 +77,14 @@ describe('the veto variants', () => {
 
     const dbl = resolveVetoRules({
       week: { num: 2, twistState: { rules: { doubleVeto: true } } },
-      vetoWinner: 'Bowie', vetoPlayers: ['Bowie', 'Ripper', 'Zee'], house: NAMES, hoh: 'Chase',
+      vetoWinner: 'Bowie', placements: ['Bowie', 'Zee', 'Ripper'],
+      vetoPlayers: ['Bowie', 'Ripper', 'Zee'], house: NAMES, hoh: 'Chase',
     });
     expect(dbl.extra).toHaveLength(1);
-    expect(dbl.extra[0].holder, 'the runner-up takes the other one').toBe('Ripper');
+    // Second on the SCOREBOARD, not second in the draw. The draw puts Ripper
+    // ahead of Zee and the scoreboard does the opposite; the medallion follows
+    // the scoreboard, because coming closest to winning it is the whole claim.
+    expect(dbl.extra[0].holder, 'the second medallion did not follow the standings').toBe('Zee');
     expect(dbl.extra[0].holder).not.toBe('Bowie');
   });
 

@@ -52,12 +52,20 @@ const DEFAULT_PRIMARY = Object.freeze({
  * not won by anybody in public — it goes to somebody the house is not watching,
  * on the same popularity weighting every other audience channel uses.
  */
-function _secondHolder(kind, { vetoWinner, vetoPlayers = [], house = [], hoh = null, rng = Math.random }) {
+function _secondHolder(kind, {
+  vetoWinner, placements = [], vetoPlayers = [], house = [], hoh = null, rng = Math.random,
+}) {
+  // FINISHING order, not the draw. `vetoPlayers` is who was picked to play —
+  // the Head of Household and the nominees are in it by right and sit at the
+  // front — so reading the second medallion off it handed the thing to
+  // whoever happened to be drawn first rather than to whoever came closest to
+  // winning it, which is the entire premise of the twist.
+  const order = (placements.length ? placements : vetoPlayers);
   const pool = (kind === 'double'
-    ? vetoPlayers.filter(n => n && n !== vetoWinner && house.includes(n))
+    ? order.filter(n => n && n !== vetoWinner && house.includes(n))
     : house.filter(n => n && n !== vetoWinner && n !== hoh));
   if (!pool.length) return null;
-  if (kind === 'double') return pool[0];      // the field is already in finishing order
+  if (kind === 'double') return pool[0];      // first past the winner
   const weights = pool.map(name => ({ name, w: Math.max(0.6, 3 + (gs.popularity?.[name] || 0)) }));
   const total = weights.reduce((sum, c) => sum + c.w, 0);
   let roll = rng() * total;
@@ -72,7 +80,8 @@ function _secondHolder(kind, { vetoWinner, vetoPlayers = [], house = [], hoh = n
  * @returns {{primary: object, extra: object[]}}
  */
 export function resolveVetoRules({
-  week, vetoWinner = null, vetoPlayers = [], house = [], hoh = null, rng = Math.random,
+  week, vetoWinner = null, placements = [], vetoPlayers = [], house = [], hoh = null,
+  rng = Math.random,
 } = {}) {
   const rules = week?.twistState?.rules || {};
   const primary = { ...DEFAULT_PRIMARY };
@@ -103,7 +112,7 @@ export function resolveVetoRules({
   // ── count ──
   for (const kind of ['double', 'secret']) {
     if (!rules[kind === 'double' ? 'doubleVeto' : 'secretVeto']) continue;
-    const holder = _secondHolder(kind, { vetoWinner, vetoPlayers, house, hoh, rng });
+    const holder = _secondHolder(kind, { vetoWinner, placements, vetoPlayers, house, hoh, rng });
     if (!holder) continue;
     extra.push({
       kind, holder,

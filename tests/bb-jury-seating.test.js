@@ -18,6 +18,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig, setGs } from '../js/core.js';
 import { getBond } from '../js/bonds.js';
+import { nominationPlanPull } from '../js/bb/strategy.js';
 import {
   makeJuryPact, juryPactsOf, makeEndgameDeal, endgameDealsOf, settleDeals,
   tierOf, isEndgameDeal,
@@ -238,6 +239,38 @@ describe('"let us get to jury together"', () => {
     const pact = makeJuryPact('A', 'B', { week: { num: 2 } });
     settleDeals({ house: ['A', 'B', 'C', 'D', 'E', 'F', 'G'], week: { num: 3 } });
     expect(pact.active, 'resolved before the jury was anywhere near').toBe(true);
+  });
+});
+
+describe('a jury plan is worth something at the block', () => {
+  // The point of keeping juryPlan around is that it should COST something to
+  // nominate a vote you are counting on. It was written every week by the
+  // planning layer and read by nothing, so it never once changed a decision.
+  it('makes a Head of Household prefer somebody else', () => {
+    setGs({ episode: 4, activePlayers: ['A', 'B', 'C'], bb: { weeks: [] },
+      bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, intentions: {} });
+    gs.intentions.A = {
+      owner: 'A', targets: [], revenge: [], preferredCore: [], backupAllies: [],
+      finalThree: [], juryPlan: [], shield: null, goat: null, origins: {},
+    };
+    const bare = nominationPlanPull('A', 'B');
+    gs.intentions.A.juryPlan = ['B'];
+    const wanted = nominationPlanPull('A', 'B');
+
+    expect(wanted, 'wanting their vote did not make them any safer').toBeLessThan(bare);
+  });
+
+  it('is a preference, not a shield', () => {
+    // A real target still goes up. The jury discount must not outweigh being
+    // the person somebody is actually coming for.
+    setGs({ episode: 4, activePlayers: ['A', 'B', 'C'], bb: { weeks: [] },
+      bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, intentions: {} });
+    gs.intentions.A = {
+      owner: 'A', targets: ['B'], revenge: [], preferredCore: [], backupAllies: [],
+      finalThree: [], juryPlan: ['B'], shield: null, goat: null, origins: {},
+    };
+    expect(nominationPlanPull('A', 'B'),
+      'the jury discount cancelled out the top target').toBeGreaterThan(0);
   });
 });
 

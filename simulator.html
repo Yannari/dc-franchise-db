@@ -505,6 +505,22 @@
               <div class="cast-size-bar"><div id="cast-size-fill" class="cast-size-fill" style="width:0%"></div></div>
             </div>
 
+            <!-- Directly under the cast, because it is the same question asked
+                 twice: how many people are in this, and how many of them end up
+                 deciding it. It used to sit in END GAME, three sections down
+                 past the finale format, which read as a detail of the last
+                 night rather than a shape the whole season is played into.
+
+                 Both shows end in front of a panel so the control is shared,
+                 but they do not call it the same thing and only the house reads
+                 a consequence off it — the week the jury opens.
+                 updateSlider('jury') rewrites the label and that note per
+                 format. -->
+            <div class="slider-control">
+              <label><span id="jury-label">Council Size</span>: <strong id="jury-display">9</strong> Members<span id="jury-note" class="jury-note"></span></label>
+              <input type="range" min="3" max="15" value="9" id="cfg-jury" class="setup-slider" oninput="updateSlider('jury');saveConfig()">
+            </div>
+
             <!-- What this house season will actually be. Derived, not
                  configured — a house has one group and no merge, so the column
                  is better filled with the shape than with invented knobs. -->
@@ -604,14 +620,6 @@
 <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px">
   <input type="checkbox" id="cfg-finale-assistants" onchange="saveConfig()"> Enable Assistants (Final Challenge)
 </label>
-            </div>
-            <!-- Both shows end in front of a panel, so the control is shared —
-                 but they do not call it the same thing and the house reads a
-                 consequence off it (the week the jury opens), which Total Drama
-                 does not. updateSlider('jury') rewrites the label per format. -->
-            <div class="slider-control">
-              <label><span id="jury-label">Council Size</span>: <strong id="jury-display">9</strong> Members<span id="jury-note" class="jury-note"></span></label>
-              <input type="range" min="3" max="15" value="9" id="cfg-jury" class="setup-slider" oninput="updateSlider('jury');saveConfig()">
             </div>
 
             <div class="setup-section-label" id="sec-settings-mechanics">SETTINGS &amp; MECHANICS</div>

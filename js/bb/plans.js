@@ -117,7 +117,24 @@ export function houseStage(size = houseNow().length) {
   return 'early';
 }
 
-const emptyOrigins = () => ({ preferredCore: {}, backupAllies: {}, targets: {}, revenge: {}, finalThree: {}, goat: {}, shield: {} });
+const emptyOrigins = () => ({ preferredCore: {}, backupAllies: {}, targets: {}, revenge: {}, finalThree: {}, goat: {}, shield: {}, juryPlan: {} });
+
+/**
+ * Why this person is somebody you want voting for you at the end.
+ *
+ * Every other plan field records its reason and juryPlan recorded none, so the
+ * screen could show three names under "Jury plan" and nothing that explained
+ * them — and now that the list actually keeps people off the block, an
+ * unexplained entry is a nomination nobody can account for.
+ */
+function juryPlanReason(name, other) {
+  const t = trustOf(name, other);
+  const b = getBond(name, other);
+  if (respectOf(name, other) >= 2) return 'would respect the game, not just the friendship';
+  if (t > 3) return 'trusts them enough to believe they would vote honestly';
+  if (b >= 5) return 'close enough that a bitter jury vote is unlikely';
+  return 'somebody who would not take an eviction personally';
+}
 
 function liveDeals(name) {
   return (gs.sideDeals || []).filter(d => d.active !== false && d.genuine !== false && (d.players || []).includes(name));
@@ -270,6 +287,7 @@ export function formHousePlan(name, { house = houseNow(), week = null } = {}) {
   // Who you are counting on to vote for you, once there is a jury to count.
   const juryPlan = stage === 'early' || skill < 6 ? []
     : byTrust.filter(n => trustOf(name, n) > 1).slice(0, 3);
+  juryPlan.forEach(n => { origins.juryPlan[n] = juryPlanReason(name, n); });
 
   // The conditions under which you would turn on your own. An architect knows
   // them in advance; a reactive player finds out in the moment.
@@ -556,7 +574,18 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
         .slice(0, skill >= 7 ? 3 : 2);
       // Once there is a jury, who they are counting on to vote for them.
       if (stage !== 'early' && skill >= 6) {
+        const before = [...(plan.juryPlan || [])];
         plan.juryPlan = byTrust.filter(n => trustOf(name, n) > 1).slice(0, 3);
+        plan.origins.juryPlan ||= {};
+        plan.juryPlan.forEach(n => { plan.origins.juryPlan[n] = juryPlanReason(name, n); });
+        // The list now keeps people off the block, so a change to it is a
+        // change to who gets nominated and belongs in the plan's history
+        // rather than happening silently.
+        const joined = plan.juryPlan.filter(n => !before.includes(n));
+        if (joined.length && before.length) {
+          changes.push(logChange(plan, round, 'juryPlan', before, [...plan.juryPlan],
+            `${nameOf(joined)} became somebody ${name} wants on the jury`));
+        }
       }
       // And the terms on which they would turn on their own people.
       //

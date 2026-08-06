@@ -83,6 +83,20 @@ export function nominationPlanPull(hoh, candidate) {
   if (plan.goat === candidate) pull -= 2.2;
   if (plan.preferredCore?.includes(candidate)) pull -= 2.4;
   if (plan.backupAllies?.includes(candidate)) pull -= 1.1;
+  // A vote you are going to need at the end.
+  //
+  // `juryPlan` — the people this houseguest wants voting FOR them — has been
+  // written by the planning layer since it existed and, in a house, read by
+  // NOTHING. It was set every week, printed on a screen, and changed no
+  // decision, so "I need that person to like me at the end" never once kept a
+  // name off the block. That is most of what jury management actually is.
+  //
+  // Small on purpose, and smaller than the core discount: it is a reason to
+  // prefer somebody else, not a shield. A real threat still goes up. It also
+  // costs nothing to a houseguest who cannot see that far, because plans.js
+  // only writes a juryPlan for the players with the skill to think past
+  // Thursday, and the whole pull is scaled by strategic on the way out.
+  if (plan.juryPlan?.includes(candidate)) pull -= 1.6;
   return pull * weight;
 }
 

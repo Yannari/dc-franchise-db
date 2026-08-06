@@ -79,13 +79,27 @@ export function readOf(finalist, juror) {
   const votedThemOut = !!(own?.ballots || []).some(b => b.voter === finalist && b.evict === juror);
   const heldThePower = own?.hoh === finalist;
   const wits = (stat(finalist, 'mental') * 0.6 + stat(finalist, 'intuition') * 0.4) / 10;
-  return clamp(
-    shared * 0.26
+  const base = shared * 0.26
     + bond * 0.28
     + (votedThemOut ? 0.14 : 0)
     + (heldThePower ? 0.10 : 0)
-    + wits * 0.22,
-    0, 0.96);
+    + wits * 0.22;
+  // ── and the two days they spent revising for this ──
+  //
+  // Every term above is something that already HAPPENED — weeks together, a
+  // bond, a ballot, a stat. None of it can be prepared for, which left the
+  // final three's two days at the memory wall (js/bb/finale-house.js) as
+  // scenery: a finalist could recite eviction votes to an empty kitchen at two
+  // in the morning and score exactly the same as one who sunbathed.
+  //
+  // Applied as a multiplier rather than a sixth term on purpose. The five
+  // weights above are tuned against each other and sum to one; adding to that
+  // sum would mean re-tuning all of them. This leaves their relative shape
+  // untouched and moves the whole read by ±12%, which is enough to decide a
+  // close Part Three and not enough to win one on homework alone.
+  const study = Number(gs.bb?.finaleStudy?.[finalist]);
+  const prep = Number.isFinite(study) ? 0.88 + study * 0.24 : 1;
+  return clamp(base * prep, 0, 0.96);
 }
 
 // ── the five things a juror is asked to finish ──

@@ -33,7 +33,7 @@ const SV_CSS = `
   background:radial-gradient(70% 55% at 50% 42%,transparent 0%,rgba(0,0,0,.55) 100%)}
 .bbsv-band{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid var(--sv-line);
   background:rgba(216,178,74,.09);font-family:var(--font-mono);font-size:8.5px;letter-spacing:2.4px;color:#e8cf8d;text-transform:uppercase}
-.bbsv-body{position:relative;padding:16px 14px 18px;z-index:2}
+.bbsv-body{position:relative;padding:16px 14px 46px;z-index:2}
 
 /* ── the block, before and after ── */
 .bbsv-block{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:520px;margin:0 auto 14px}
@@ -42,21 +42,40 @@ const SV_CSS = `
   background:rgba(255,255,255,.02);transition:border-color .5s ease,background .5s ease,opacity .5s ease}
 .bbsv-chair .bb-av{border:1px solid rgba(239,233,220,.2);filter:grayscale(.65)}
 .bbsv-chair span{font-family:var(--font-mono);font-size:10.5px;color:var(--sv-dim);letter-spacing:.6px}
-.bbsv-chair em{display:block;font-style:normal;font-size:7px;letter-spacing:1.4px;color:var(--sv-dead);text-transform:uppercase;margin-top:2px}
+/* Legibility, found by rendering it: at --sv-dead these sub-labels were the
+   same value as the border they sat next to and could not be read at all. */
+.bbsv-chair em{display:block;font-style:normal;font-size:7.5px;letter-spacing:1.4px;color:#7a7161;text-transform:uppercase;margin-top:3px}
+.bbsv-room.is-live .bbsv-chair em{color:#9a8f79}
+.bbsv-chair.is-new em{color:#c98a7a}
+.bbsv-chair.is-gone em{color:#8b8271}
 /* Live again: the meeting reopened. */
 .bbsv-room.is-live .bbsv-chair{background:rgba(255,255,255,.035);border-color:#5a4f38}
 .bbsv-room.is-live .bbsv-chair span{color:var(--sv-ink)}
 .bbsv-room.is-live .bbsv-chair .bb-av{filter:none}
 .bbsv-chair.is-new{border-color:#7d3a2e;background:rgba(201,80,60,.1)}
 .bbsv-chair.is-new span{color:#f0b6a8}
-.bbsv-chair.is-gone{opacity:.28;text-decoration:line-through}
+/* Full width, on its own row. Sitting in the left column of a two-up grid it
+   read as a THIRD nominee rather than as the seat that emptied — and at .28
+   the portrait was a smudge. */
+.bbsv-chair.is-gone{grid-column:1/-1;opacity:.5;border-style:dashed}
+/* The strike belongs to the NAME. Putting it on the span drew it through the
+   sub-label too, and text-decoration cannot be cancelled by a descendant — so
+   "CAME DOWN" was itself crossed out, which says the opposite of what happened. */
+.bbsv-chair .bbsv-nm{font-style:normal}
+.bbsv-chair.is-gone .bbsv-nm{text-decoration:line-through}
 
 /* ── ADJOURNED, and the tearing of it ── */
-.bbsv-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-9deg);
-  font-family:var(--font-display);font-size:clamp(22px,5vw,42px);letter-spacing:6px;color:var(--sv-dead);
-  border:4px solid currentColor;padding:3px 16px;pointer-events:none;z-index:3;white-space:nowrap}
-.bbsv-room.is-live .bbsv-stamp{color:var(--sv-red);border-color:var(--sv-red);opacity:.22}
-@media(prefers-reduced-motion:reduce){.bbsv-stamp{transform:translate(-50%,-50%)}}
+/* Rendered and looked at: at top:44% and z-index:3 the stamp landed squarely
+   across the chair of the person who came down and struck their name out
+   twice over — the one line in the room a viewer most needs to read. It sits
+   in the empty band under the seal now, and BEHIND the chairs rather than on
+   top of them, so it can never eat a name again. */
+.bbsv-stamp{position:absolute;right:30px;bottom:14px;transform:rotate(-6deg);transform-origin:100% 50%;
+  font-family:var(--font-display);font-size:clamp(15px,2.9vw,26px);letter-spacing:5px;color:var(--sv-dead);
+  border:3px solid currentColor;padding:2px 12px;pointer-events:none;z-index:1;white-space:nowrap;opacity:.62}
+.bbsv-room.is-live .bbsv-stamp{color:var(--sv-red);border-color:var(--sv-red);opacity:.34}
+.bbsv-chair,.bbsv-seal,.bbsv-who{position:relative;z-index:2}
+@media(prefers-reduced-motion:reduce){.bbsv-stamp{transform:none}}
 
 /* ── the medallion itself ── */
 .bbsv-seal{width:88px;height:88px;margin:6px auto 12px;display:block}
@@ -96,7 +115,14 @@ export function rpBuildBBSecondVeto(ep, act, deps) {
   const stateKey = _key(ep, `sv${act.kind || ''}`);
   const state = _init(stateKey);
 
-  const secret = !!act.anonymous;
+  // Two different kinds of secret, and they are not interchangeable. ANONYMOUS
+  // means the house never learns whose hand it was — the name gets redacted.
+  // HIDDEN means the medallion was found rather than won, so nobody knew it was
+  // in the building at all, and then the use is completely public: they learn
+  // it exists and whose pocket it was in at the same moment. Both are "a
+  // medallion nobody competed for"; only the first one hides a name.
+  const found = !!act.hidden;
+  const secret = !!act.anonymous || found;
   const beats = act.beats || [];
   const steps = [{ kind: 'adjourned' }, ...beats.map(b => ({ kind: 'beat', b })), { kind: 'result' }];
   const total = steps.length;
@@ -111,16 +137,16 @@ export function rpBuildBBSecondVeto(ep, act, deps) {
   const chairs = seats.map(n => {
     const isNew = live && n === act.replacement;
     return `<div class="bbsv-chair ${isNew ? 'is-new' : ''}">${avatar(n, 30)}
-      <span>${esc(n)}<em>${isNew ? 'put here after it ended' : 'on the block'}</em></span></div>`;
+      <span><i class="bbsv-nm">${esc(n)}</i><em>${isNew ? 'put here after it ended' : 'on the block'}</em></span></div>`;
   }).join('');
   const goneChair = live && act.saved
     ? `<div class="bbsv-chair is-gone">${avatar(act.saved, 30)}
-        <span>${esc(act.saved)}<em>came down</em></span></div>`
+        <span><i class="bbsv-nm">${esc(act.saved)}</i><em>came down</em></span></div>`
     : '';
 
   const holderLine = !live
     ? 'somebody in this room is not getting up'
-    : (secret
+    : (act.anonymous
       ? 'used by <span class="bbsv-redact"></span>'
       : `used by <b>${esc(act.holder || '')}</b>`);
 
@@ -142,11 +168,15 @@ export function rpBuildBBSecondVeto(ep, act, deps) {
       return _card('THE MEETING IS OVER',
         `The veto has been used or it has not, the block is what it is, and everybody in this room has
          already worked out what the week looks like from here. Chairs are being pushed back.
-         <br><br>${secret
-    ? 'There is a second medallion in this house. It was not won, it was found, and the only person who '
-      + 'knows where it is has been sitting through this entire meeting saying nothing.'
-    : 'There were two medallions in that competition. Everybody watched the second one be won. Nobody has '
-      + 'watched it be used, and the meeting is adjourning.'}`,
+         <br><br>${found
+    ? 'There is a second medallion in this house and not one person in this room knows it. It was not won, '
+      + 'it was found — behind something, in a place any of them could have reached — and whoever found it '
+      + 'has sat through this entire meeting saying nothing.'
+    : act.anonymous
+      ? 'There is a second medallion in this house. Everybody knows that much and nobody knows whose pocket '
+        + 'it is in, which has made every conversation this week about the same unanswerable question.'
+      : 'There were two medallions in that competition. Everybody watched the second one be won. Nobody has '
+        + 'watched it be used, and the meeting is adjourning.'}`,
         'grey', '', seats);
     }
     if (step.kind === 'beat') return _beatCard(step.b);
@@ -160,11 +190,14 @@ export function rpBuildBBSecondVeto(ep, act, deps) {
     return _card('IT DID NOT STAY FINISHED',
       `${esc(act.saved)} is off the block. ${esc(act.replacement)} is on it, and was on the sofa when this
        meeting started.
-       <br><br>${secret
+       <br><br>${act.anonymous
     ? 'Nobody is told whose hand did it. The Head of Household built this block, watched it settle, and '
       + 'then watched somebody in that room rewrite it — and has to keep working with all of them.'
-    : `The Head of Household did not choose either name sitting there now. One meeting, two medallions, `
-      + 'and a week that belongs to somebody else entirely.'}`,
+    : found
+      ? `This house has learned two things in one second: that there was a veto hidden in it, and that `
+        + `${esc(act.holder || '')} is the one who went looking. Neither of those is a thing anybody gets to unknow.`
+      : `The Head of Household did not choose either name sitting there now. One meeting, two medallions, `
+        + 'and a week that belongs to somebody else entirely.'}`,
     'red', 'is-final', [act.saved, act.replacement].filter(Boolean));
   };
 

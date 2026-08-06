@@ -2830,8 +2830,16 @@ export function simulateBBWeek(options = {}) {
         && !nominees.includes(n) && !savedThisWeek.includes(n));
       if (!nominees.length || !eligible.length) continue;
       let dec = shouldUseVeto(extra.holder, nominees, plan, rng,
-        { hoh, house, diamond: extra.authority === 'veto-holder', hohSecret });
+        { hoh, house, diamond: extra.authority === 'veto-holder', hohSecret,
+          second: true, anonymous: extra.visibility === 'anonymous' });
       if (!dec?.use || !nominees.includes(dec.save)) {
+        // A FOUND power that goes unspent is not a scene. The house never knew
+        // it was in the building, so there is nothing to narrate and nothing
+        // for anybody to react to — and the instance stays live for the next
+        // ceremony, which is the whole reason it is measured in weeks. The
+        // announced Double is the opposite: everybody watched that medallion
+        // be won, so a meeting where it does not come out is the story.
+        if (extra.hidden) continue;
         const pq = pronouns(extra.holder);
         week.acts.push(addBeats({
           type: 'second-veto', kind: extra.kind, holder: extra.holder, used: false,
@@ -2847,6 +2855,12 @@ export function simulateBBWeek(options = {}) {
             players: [...new Set([extra.holder, ...nominees].filter(Boolean))], badgeText: 'LEFT IN THE BOX', badgeClass: 'grey' },
           ],
         }, { players: [extra.holder], nominees: [...nominees] }));
+        // On the WEEK, not only in the act. Everything downstream that wants to
+        // react to a second medallion — the event library, the campaign, next
+        // week's arithmetic — reads `week`, and an outcome that lives only
+        // inside an act it was written on is an outcome nothing can answer.
+        week.secondVeto = { kind: extra.kind, holder: extra.holder, used: false,
+          anonymous: extra.visibility === 'anonymous', saved: null, replacement: null };
         continue;
       }
       const authority = extra.authority === 'veto-holder' ? extra.holder : hoh;
@@ -2864,11 +2878,18 @@ export function simulateBBWeek(options = {}) {
       if (dec.save !== extra.holder) {
         try { recordProtection(extra.holder, dec.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
       }
+      week.secondVeto = { kind: extra.kind, holder: extra.holder, used: true,
+        anonymous: extra.visibility === 'anonymous', saved: dec.save, replacement: secondRep,
+        authority, hidden: !!extra.hidden };
+      // Spent. Without this the found power sits live in the store and comes
+      // out again at every ceremony inside its window.
+      if (extra.instance) { try { usePower(extra.instance, week.num); } catch { /* ledger */ } }
       const ph = pronouns(extra.holder);
       const pr = pronouns(secondRep);
       week.acts.push(addBeats({
         type: 'second-veto', kind: extra.kind, holder: extra.holder, used: true,
-        anonymous: extra.visibility === 'anonymous', saved: dec.save, replacement: secondRep,
+        anonymous: extra.visibility === 'anonymous', hidden: !!extra.hidden,
+        saved: dec.save, replacement: secondRep,
         authority, nominees: [...nominees],
         // The scene the screen is built on: a ceremony that had already ended,
         // ending again. Written here rather than in the builder because the
@@ -2880,8 +2901,12 @@ export function simulateBBWeek(options = {}) {
           { text: extra.visibility === 'anonymous'
             ? `A second medallion comes out and the room does not get to see whose hand it came out of. `
               + `${dec.save} comes down. Nobody is told anything else.`
-            : `${extra.holder} has been holding the second medallion since the competition, through every `
-              + `conversation this house had about the block, and uses it now on ${dec.save}.`,
+            : extra.hidden
+              ? `${extra.holder} takes out a veto this house did not know existed. It was not won, it was `
+                + `found — in the building the whole time, in a room every one of them walks through — and `
+                + `${dec.save} comes down off the block because ${ph.sub} went looking and nobody else did.`
+              : `${extra.holder} has been holding the second medallion since the competition, through every `
+                + `conversation this house had about the block, and uses it now on ${dec.save}.`,
           players: [...new Set([extra.holder, dec.save])], badgeText: 'THE SECOND MEDALLION', badgeClass: 'gold' },
           { text: `${secondRep} was on the sofa when this meeting started. ${pr.Sub} `
             + `${pr.sub === 'they' ? 'are' : 'is'} on the block now, put there by a ceremony that had `
@@ -3269,7 +3294,43 @@ export function simulateBBWeek(options = {}) {
         });
       }
     }
-    campaignAct.socialBeats = [...thirdBeats, ...pitchBeats, ...(campaignAct.socialBeats || [])];
+    // ── The nominee who does not campaign ──
+    //
+    // Not everybody works the room, and the ones who do not are half the real
+    // stories: the pawn who was told they were safe and believed it, the goat
+    // who does not think it is their place to ask, the player who read the
+    // count wrong. Dropping their beats silently would delete them from the
+    // week; this says what they did instead, and — where it applies — that
+    // they are wrong. Only in the first campaign act, because it is one
+    // decision about the week rather than a new one every day.
+    const quietBeats = [];
+    if (campaignIndex === 0) {
+      for (const pitch of campaign.pitches || []) {
+        const d = pitch.drive;
+        if (!d || d.campaigns) continue;
+        const p = pronouns(pitch.pitcher);
+        const text = d.misread
+          ? `${pitch.pitcher} does not campaign. ${p.Sub} has counted the room and made it `
+            + `${d.believedAgainst} against — and there are ${d.votesAgainst}. Nobody in the house `
+            + `corrects ${p.obj}, because everybody who could has already decided.`
+          : d.felt < 0.34
+            ? `${pitch.pitcher} does not campaign. As far as ${p.sub} can tell there is nothing `
+              + `to campaign about, and a nominee who goes around asking for votes ${p.sub} `
+              + `already has looks like a nominee who knows something.`
+            : `${pitch.pitcher} does not campaign. ${p.Sub} knows the number and has decided that `
+              + `walking up to people and asking would not change it — which may be the read of `
+              + `the week, or the last mistake of a season.`;
+        quietBeats.push({
+          text, players: [pitch.pitcher],
+          badgeText: d.misread ? 'DOES NOT SEE IT' : 'SITS IT OUT',
+          badgeClass: d.misread ? 'red' : 'grey',
+          eventId: 'campaign-declined', category: 'deals', location: 'bedroom',
+        });
+      }
+    }
+
+    campaignAct.socialBeats = [...thirdBeats, ...pitchBeats, ...quietBeats,
+      ...(campaignAct.socialBeats || [])];
     week.acts.push(campaignAct);
   }
   // The Block Buster airs HERE — after the campaigning it was invisibly

@@ -17,6 +17,7 @@ import { simulateBBEpisode, summariseWeek, BB_TWIST_IDS } from '../js/bb-run.js'
 import { generateSummaryText } from '../js/text-backlog.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { resolveVetoRules, isDiamond } from '../js/bb/veto-rules.js';
+import { BB_POWER_DEFINITIONS, grantPower } from '../js/bb/powers.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -180,6 +181,42 @@ describe('the veto variants', () => {
     expect(secret.extra).toHaveLength(1);
     expect(secret.extra[0].kind).toBe('secret');
     expect(secret.extra[0].holder).not.toBe('Bowie');
+  });
+
+  // ...and this is where it went instead.
+  //
+  // The channel is the twist. A power somebody FOUND behind the cereal is held
+  // across ceremonies, which is the only version of this that produces the
+  // scene it is famous for — the holder sitting in rooms for a fortnight while
+  // people plan a block in front of them.
+  it('gives the secret veto a home on the channel it was found on', () => {
+    house('bb-double-veto', 1);
+    gs.bb ||= {};
+    gs.bb.powers = [];
+    const def = BB_POWER_DEFINITIONS['secret-veto'];
+    expect(def, 'the mechanism has no owner at all').toBeTruthy();
+    expect(def.windowWeeks, 'a found power held for one week is a scheduled twist again')
+      .toBeGreaterThan(1);
+    grantPower('secret-veto', 'Zee', { week: 2, visibility: 'secret', source: 'bb-hidden-power' });
+
+    const at = num => resolveVetoRules({ week: { num }, vetoWinner: 'Bowie', house: NAMES, hoh: 'Chase' });
+    const found = at(3);
+    expect(found.extra).toHaveLength(1);
+    expect(found.extra[0]).toMatchObject({
+      kind: 'secret', holder: 'Zee', hidden: true,
+      // The USE is public. The secret was that it was in the building.
+      visibility: 'public',
+    });
+    // Still in the pocket a ceremony later, and gone once the fuse runs out.
+    expect(at(4).extra, 'a three-ceremony window expired after one').toHaveLength(1);
+    expect(at(5).extra, 'the fuse never ran out').toEqual([]);
+    // And it does not stack with the rule-driven mechanism it replaced.
+    const both = resolveVetoRules({
+      week: { num: 3, twistState: { rules: { secretVeto: true } } },
+      vetoWinner: 'Bowie', house: NAMES, hoh: 'Chase', rng: () => 0.4,
+    });
+    expect(both.extra.filter(e => e.kind === 'secret'), 'two secret medallions in one room')
+      .toHaveLength(1);
   });
 
   it('is in the catalogue and reaches both transcripts', () => {

@@ -125,6 +125,32 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'Eviction night, after the votes are counted.',
   },
 
+  // BB21, and it belongs HERE rather than on the week-card shelf.
+  //
+  // It was FOUND — hidden in the house, not competed for — and it was good for
+  // two weeks and three veto competitions, which is why the holder spent a
+  // fortnight sitting in rooms where people talked about the block in front of
+  // them. Offered as a schedulable one-week twist it became "somebody is
+  // secretly given a veto tonight", which is a different twist wearing the
+  // name: the secret is the HOLDING, and holding is the only part a one-week
+  // card cannot express.
+  //
+  // The other rule people misremember: the USE is not secret. The holder
+  // stands up at a ceremony that has already finished and everybody watches
+  // them do it. What nobody knew was that it was in the building at all.
+  'secret-veto': {
+    id: 'secret-veto',
+    name: 'The Secret Power of Veto',
+    rules: { secretVeto: true },
+    useTiming: 'veto-ceremony',
+    // Three veto ceremonies, which is what "two weeks" bought on the show once
+    // a double eviction is counted.
+    windowWeeks: 3,
+    blurb: 'A second, real veto that nobody knew was in the house: the holder can take a nominee off the block after the ceremony has already ended.',
+    catch: 'Using it is completely public — the house does not learn it exists until the moment the holder stands up, and then they know exactly whose hand it was.',
+    moment: 'A veto ceremony, after it has been adjourned.',
+  },
+
 };
 
 function store() {

@@ -277,10 +277,11 @@ export const BB_TWIST_CONTRACTS = {
   // assignment handed to a random houseguest, which is a different twist that
   // happens to share a name.
   //
-  // The MECHANISM stays: veto-rules.js still reads a `secretVeto` rule and
-  // still fields a second, quieter medallion. What it needs is an owner on the
-  // hidden-search channel that bb-hidden-power already uses, and a duration
-  // measured in weeks rather than one.
+  // It has its owner now, and it is not a contract: `secret-veto` is a POWER
+  // (bb/powers.js), stocked on the hidden-search channel bb-hidden-power
+  // already runs, with a three-ceremony window. Schedule "Something In This
+  // House" and set what is hidden — that is where this lives, because that is
+  // how it was acquired.
   'bb-forced-veto': {
     id: 'bb-forced-veto', layer: 'scheduled', category: 'veto',
     timing: 'veto-ceremony', duration: { weeks: 1 },

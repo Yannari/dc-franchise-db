@@ -916,6 +916,76 @@ export function updateBBPerceptions({ house = gs.activePlayers || [], week = nul
   return { corrected, created, removed };
 }
 
+/**
+ * Whether a nominee campaigns at all, and why not.
+ *
+ * Every nominee used to work the room, every week, without exception — the only
+ * thing that varied was how many people they got to. That is not the show. Half
+ * of the real ones are people who sat on the sofa all week because they had been
+ * told they were a pawn and believed it, and the blindside is only a blindside
+ * because somebody did not see it coming.
+ *
+ * Four things decide it, and the first two matter most:
+ *
+ *   THE READ. How many votes they think are against them, which is not how many
+ *   there are. Intuition is the accuracy of that count — a sharp nominee reads
+ *   the room close to true, a poor one is off by two either way and can walk
+ *   into Thursday convinced they are fine.
+ *
+ *   WILLINGNESS. Asking eleven people to keep you is exposure, and not everybody
+ *   can do it. Social and boldness carry it; the archetype decides the floor,
+ *   because a mastermind works the room on principle and a goat genuinely does
+ *   not think it is their place.
+ *
+ *   STRATEGY. What they do with the read once they have it.
+ *
+ * Proportional throughout, and noisy: nobody is guaranteed to campaign and
+ * nobody is guaranteed not to. Returns the read as well as the verdict, because
+ * a houseguest who sat out believing the wrong number is a scene, and silently
+ * dropping their beats would just make them vanish for a week.
+ */
+export function campaignDrive(nominee, ballots = [], rng = Math.random) {
+  const s = pStats(nominee);
+  const arch = players.find(p => p.name === nominee)?.archetype || 'floater';
+  const against = ballots.filter(b => b.evict === nominee).length;
+  const majority = Math.floor(ballots.length / 2) + 1;
+
+  // The read. Error shrinks as intuition rises; the direction is a coin flip,
+  // so a bad read cuts both ways — panicking when safe is as real as sitting
+  // still when doomed.
+  const blur = (1 - clamp((s.intuition || 5) / 10, 0, 1)) * 2.6;
+  const perceived = Math.max(0, Math.round(against + (rng() - 0.5) * 2 * blur));
+  // How much trouble they believe they are in, 0..1.
+  const felt = clamp(perceived / Math.max(1, majority), 0, 1);
+
+  const floor = { mastermind: 0.55, schemer: 0.5, villain: 0.45, 'social-butterfly': 0.45,
+    'perceptive-player': 0.4, underdog: 0.4, hothead: 0.35, showmancer: 0.3,
+    'challenge-beast': 0.25, 'loyal-soldier': 0.25, wildcard: 0.25, 'chaos-agent': 0.25,
+    hero: 0.25, floater: 0.15, goat: 0.1 }[arch] ?? 0.25;
+  const willing = clamp(floor
+    + ((s.social || 5) / 10) * 0.3
+    + ((s.boldness || 5) / 10) * 0.25, 0, 1);
+  const strategy = clamp((s.strategic || 5) / 10, 0, 1);
+
+  // Danger is the driver: somebody who KNOWS the house is coming will fight
+  // even if it costs them, and somebody who thinks they are safe mostly will
+  // not bother whoever they are.
+  const drive = clamp(felt * 0.55 + willing * 0.3 + strategy * 0.15, 0, 1);
+  const campaigns = rng() < drive;
+
+  return {
+    campaigns, drive, felt, willing, strategy,
+    votesAgainst: against, believedAgainst: perceived,
+    // The interesting failure, and the one worth narrating: they are in real
+    // trouble and do not know it.
+    misread: !campaigns && against >= majority,
+    reason: campaigns ? 'works the room'
+      : against >= majority ? 'believes they are safe and is not'
+        : felt < 0.34 ? 'believes they are safe'
+          : 'has decided there is nothing to be gained by asking',
+  };
+}
+
 export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.activePlayers || [], campaignIndex = 0, rng = Math.random } = {}) {
   if (nominees.length < 2) throw new Error('A Big Brother campaign requires at least two nominees.');
   gs.playerStates ||= {};
@@ -936,9 +1006,23 @@ export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.a
           || (getPerceivedBond(nominee, a) - getPerceivedBond(nominee, b)))[0];
     const existingSupporters = ballots.filter(ballot => ballot.evict === pitchTarget).map(ballot => ballot.voter);
     const competingSupport = ballots.filter(ballot => ballot.evict === nominee).length;
+    // Does this one campaign at all? Only the FIRST campaign act decides it —
+    // the engine re-runs the act and a nominee who sat out on Tuesday has not
+    // changed their mind by Wednesday for no reason, so the verdict is kept on
+    // the week rather than re-rolled.
+    gs._bbCampaignDrive ||= {};
+    if (campaignIndex === 0 || !gs._bbCampaignDrive[nominee]) {
+      gs._bbCampaignDrive[nominee] = campaignDrive(nominee, ballots, rng);
+    }
+    const drive = gs._bbCampaignDrive[nominee];
+
     const approachBudget = clamp(1 + Math.floor((pStats(nominee).social || 5) / 3), 1, Math.max(1, ballots.length));
-    const approaches = ballots.filter(ballot => ballot.evict === nominee || ballot.margin < 2.2)
-      .sort((a, b) => a.margin - b.margin || a.voter.localeCompare(b.voter)).slice(0, approachBudget);
+    // Somebody who is not campaigning approaches nobody. Everything downstream
+    // — flips, leaks, counterplay — falls out of an empty response list on its
+    // own, so this is the only gate needed.
+    const approaches = !drive.campaigns ? []
+      : ballots.filter(ballot => ballot.evict === nominee || ballot.margin < 2.2)
+        .sort((a, b) => a.margin - b.margin || a.voter.localeCompare(b.voter)).slice(0, approachBudget);
     const liar = ['schemer','villain','chaos-agent','mastermind'].includes(players.find(player => player.name === nominee)?.archetype)
       && (pStats(nominee).loyalty || 5) <= 5;
     const claimedSupport = Math.min(eligibleVoters, existingSupporters.length + 1 + (liar ? 1 : 0));
@@ -961,6 +1045,9 @@ export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.a
       claimedSupport, existingSupporters, confirmedSupport:existingSupporters.length,
       responses, flipped, confirmedCoalition:[...new Set([...existingSupporters, ...flipped])],
       success:flipped.length > 0,
+      // Carried so the week can SAY somebody sat out. A nominee who quietly
+      // stops appearing has not been characterised, they have been deleted.
+      drive,
     };
   });
 

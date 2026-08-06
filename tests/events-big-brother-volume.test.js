@@ -109,6 +109,11 @@ function playSeasons(seeds) {
       options: { appStoreShelf: 'coup-d-etat' } },
     { twist: 'bb-app-store', seeds: [117, 140], weeks: [6, 7],
       options: { appStoreShelf: 'halting-hex' } },
+    // Weeks 8-9 band. The veto variants want the week of AND the week after:
+    // the medallion nobody used and the block the Head of Household did not
+    // choose are both arguments the campaign is still having on Thursday.
+    { twist: 'bb-double-veto', seeds: [11, 44, 129, 151], weeks: [8, 9] },
+    { twist: 'bb-forced-veto', seeds: [23, 37, 63, 117], weeks: [8, 9] },
   ];
 
   // The table must not double-book a week. The chained ternary it replaced
@@ -271,7 +276,7 @@ describe('the Big Brother event library as a whole', () => {
     const gatedFamilies = [
       ['coup-', 2], ['evictionpower-', 1], ['coin-', 3], ['care-', 4],
       ['suite-', 3], ['americas-', 3], ['powerknown-', 1], ['punish-', 2],
-      ['exchange-', 2], ['camp-', 2], ['team-', 2],
+      ['exchange-', 2], ['camp-', 2], ['team-', 2], ['vetovar-', 2],
     ].map(([prefix, min]) => ({
       prefix, min,
       ids: new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith(prefix))),

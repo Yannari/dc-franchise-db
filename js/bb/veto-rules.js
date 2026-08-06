@@ -109,9 +109,26 @@ export function resolveVetoRules({
   // ── knowledge ──
   if (rules.vetoVisibility === 'anonymous') primary.visibility = 'anonymous';
 
+  // ── the Secret Power of Veto, on the channel it actually came from ──
+  //
+  // Not a scheduled week. It is hidden in the house, found by looking, and
+  // carried for three ceremonies — so the holder is whoever went and found it
+  // rather than whoever a distributor picked, and the instance is the thing
+  // that expires. Public on use: the house learns it existed and whose hand it
+  // was in the same second.
+  const hidden = activePowerAt('veto-ceremony', week?.num, 'secret-veto');
+  if (hidden && hidden.holder !== vetoWinner && house.includes(hidden.holder)) {
+    extra.push({
+      kind: 'secret', holder: hidden.holder, instance: hidden,
+      authority: 'hoh', visibility: 'public', mustUse: false, hidden: true,
+    });
+  }
+
   // ── count ──
   for (const kind of ['double', 'secret']) {
     if (!rules[kind === 'double' ? 'doubleVeto' : 'secretVeto']) continue;
+    // A found one is already in the room; a rule must not conjure a second.
+    if (kind === 'secret' && extra.some(e => e.kind === 'secret')) continue;
     const holder = _secondHolder(kind, { vetoWinner, placements, vetoPlayers, house, hoh, rng });
     if (!holder) continue;
     extra.push({

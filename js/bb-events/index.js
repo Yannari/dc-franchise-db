@@ -51,6 +51,7 @@ import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
 import { HAVENOT_LIFE_EVENTS } from './havenot-life.js';
+import { VETO_VARIANT_EVENTS } from './veto-variants.js';
 
 /** Every house event, in no particular order — the scheduler weights them. */
 export const HOUSE_EVENTS = [
@@ -93,15 +94,16 @@ export const HOUSE_EVENTS = [
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,
   ...HAVENOT_LIFE_EVENTS,
+  ...VETO_VARIANT_EVENTS,
 ];
 
 /** The same events grouped, for debug screens and for testing one slice. */
 export const HOUSE_EVENTS_BY_CATEGORY = {
-  ceremonies: [...CEREMONY_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'ceremonies'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS].filter(e => e.category === 'ceremonies')],
-  social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'social'), ...SCHEME_EVENTS.filter(e => e.category === 'social'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'social'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'social'), ...BLOC_EVENTS.filter(e => e.category === 'social'), ...REIGN_EVENTS.filter(e => e.category === 'social'), ...SHOWMANCE_EVENTS.filter(e => e.category === 'social'), ...BOND_EVENTS.filter(e => e.category === 'social'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS].filter(e => e.category === 'social')],
-  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'deals'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'deals'), ...BLOC_EVENTS.filter(e => e.category === 'deals'), ...FALLOUT_EVENTS.filter(e => e.category === 'deals'), ...REIGN_EVENTS.filter(e => e.category === 'deals'), ...SHOWMANCE_EVENTS.filter(e => e.category === 'deals'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS].filter(e => e.category === 'deals')],
-  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'house-life'), ...FALLOUT_EVENTS.filter(e => e.category === 'house-life'), ...REIGN_EVENTS.filter(e => e.category === 'house-life'), ...BOND_EVENTS.filter(e => e.category === 'house-life'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS].filter(e => e.category === 'house-life')],
-  phases: [...PHASE_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'phases'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS].filter(e => e.category === 'phases')],
+  ceremonies: [...CEREMONY_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'ceremonies'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS, ...VETO_VARIANT_EVENTS].filter(e => e.category === 'ceremonies')],
+  social: [...SOCIAL_EVENTS, ...EDITORIAL_SOCIAL_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'social'), ...SCHEME_EVENTS.filter(e => e.category === 'social'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'social'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'social'), ...BLOC_EVENTS.filter(e => e.category === 'social'), ...REIGN_EVENTS.filter(e => e.category === 'social'), ...SHOWMANCE_EVENTS.filter(e => e.category === 'social'), ...BOND_EVENTS.filter(e => e.category === 'social'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS, ...VETO_VARIANT_EVENTS].filter(e => e.category === 'social')],
+  deals: [...DEALS_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'deals'), ...POWER_EVENTS.filter(e => e.category === 'deals'), ...SCHEME_EVENTS.filter(e => e.category === 'deals'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'deals'), ...STORY_FOLLOWUP_EVENTS.filter(e => e.category === 'deals'), ...BLOC_EVENTS.filter(e => e.category === 'deals'), ...FALLOUT_EVENTS.filter(e => e.category === 'deals'), ...REIGN_EVENTS.filter(e => e.category === 'deals'), ...SHOWMANCE_EVENTS.filter(e => e.category === 'deals'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS, ...VETO_VARIANT_EVENTS].filter(e => e.category === 'deals')],
+  'house-life': [...HOUSE_LIFE_EVENTS, ...VENUE_EVENTS.filter(e => e.category === 'house-life'), ...POWER_EVENTS.filter(e => e.category === 'house-life'), ...LOCATION_TEXTURE_EVENTS.filter(e => e.category === 'house-life'), ...FALLOUT_EVENTS.filter(e => e.category === 'house-life'), ...REIGN_EVENTS.filter(e => e.category === 'house-life'), ...BOND_EVENTS.filter(e => e.category === 'house-life'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS, ...VETO_VARIANT_EVENTS].filter(e => e.category === 'house-life')],
+  phases: [...PHASE_EVENTS, ...POWER_EVENTS.filter(e => e.category === 'phases'), ...[...VOTE_PLAN_EVENTS, ...CONSEQUENCE_ARC_EVENTS, ...ALLIANCE_LIFE_EVENTS, ...SHOWMANCE_ARC_EVENTS, ...HAVENOT_LIFE_EVENTS, ...VETO_VARIANT_EVENTS].filter(e => e.category === 'phases')],
 };
 
 export function houseEventsFor(...categories) {

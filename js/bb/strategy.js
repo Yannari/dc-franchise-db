@@ -438,7 +438,15 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     // On an invisible week the holder cannot name the person they would be
     // crossing. Fear of SOMEBODY is real but diffuse — measured against a
     // named, watching Head of Household it is less than half the weight.
-    const secrecy = context.hohSecret ? 0.45 : 1;
+    // A SECOND medallion is not weighed like the first one, and the model was
+    // weighing it identically. Two things are genuinely different by the time
+    // it comes out: the ceremony has already happened, so whatever blood the
+    // Head of Household was going to spill this week has largely been spilled
+    // by whoever held the first one — and if the second is a secret, there is
+    // no hand for the anger to land on at all. Measured, a non-nominee second
+    // holder used it 25% of the time, which made the whole twist a formality.
+    const second = context.second ? (context.anonymous ? 0.3 : 0.6) : 1;
+    const secrecy = (context.hohSecret ? 0.45 : 1) * second;
     const isTarget = saved === plan?.target;
     const isPawn = saved === plan?.pawn && !isTarget;
     let anger = isTarget ? 3.4 : isPawn ? 0.9 : 2.1;

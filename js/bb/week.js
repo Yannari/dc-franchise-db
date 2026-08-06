@@ -795,6 +795,18 @@ function runHouseMaintenance(week, rng = Math.random) {
  * transition in the lifecycle now has a beat, because a consequence nobody can
  * see is indistinguishable from no consequence at all.
  */
+/**
+ * The faces a fallout beat should actually carry.
+ *
+ * Deduped, and never the person who was just evicted: these beats live on the
+ * eviction screen, whose card header already draws the evictee, so repeating
+ * them there sets the same face beside itself. It also reads wrong — the
+ * argument about who flipped is had by the people still in the room.
+ */
+function _reactingFaces(names, week) {
+  return [...new Set(names.filter(Boolean))].filter(n => n !== week?.evicted);
+}
+
 function _attachAllianceFallout(week, house) {
   const beats = [];
   // The cycle's own house. ORing in the global roster let alliance fallout
@@ -814,10 +826,37 @@ function _attachAllianceFallout(week, house) {
           + `its own numbers and came out of it one short, and nobody in that room is going to `
           + `admit which chair it came from. <strong>${player}</strong> asks the question twice, `
           + `loudly, and is believed.`,
-        players: [player, victim].filter(Boolean),
+        // The room, not the person who left. The eviction screen already draws
+        // the evictee in its card header, so naming them again here put the
+        // same face beside itself — which is how this reads as a bug even
+        // though the beat is about the people staying behind.
+        players: _reactingFaces([player, victim], week),
         badgeText: 'THE NUMBERS DO NOT ADD UP', badgeClass: 'grey',
         eventId: 'alliance-betrayal-unseen', category: 'deals', location: 'living-room',
       });
+      // Somebody has to have done it, and the room has picked. This is the
+      // half the viewer needs and the house never gets: the accusation lands
+      // on a person who did nothing, and — when the real one steered it —
+      // lands there because the real one put it there.
+      const mis = incident.misattribution;
+      if (mis) {
+        beats.push({
+          text: mis.deflected
+            ? `<strong>${player}</strong> does not wait to be asked. By the time anybody has finished `
+              + `counting, ${player} has walked <strong>${mis.reactor}</strong> through it twice and left `
+              + `<strong>${mis.wrongSuspect}</strong>'s name sitting in the middle of it — not accused, `
+              + `just the only one who fits. ${mis.reactor} arrives at it alone, which is why it sticks.`
+            : `<strong>${mis.reactor}</strong> has decided it was <strong>${mis.wrongSuspect}</strong>. `
+              + `It was not. There is no evidence and no confession, only a number that will not `
+              + `reconcile and somebody who was already easy to believe it of — and the house now has a `
+              + `feud running along a line that does not exist.`,
+          players: _reactingFaces([mis.reactor, mis.wrongSuspect], week),
+          badgeText: mis.deflected ? 'UNDER THE BUS' : 'WRONG SUSPECT',
+          badgeClass: 'red',
+          eventId: mis.deflected ? 'alliance-deflected-blame' : 'alliance-misattributed',
+          category: 'deals', location: 'living-room',
+        });
+      }
       continue;
     }
 
@@ -825,7 +864,7 @@ function _attachAllianceFallout(week, house) {
       text: `<strong>${player}</strong> votes to evict <strong>${victim}</strong>, even though they `
         + `were together in <strong>${alliance}</strong>. By the time everyone gets back inside, `
         + `the remaining members are comparing votes and asking where ${player} was.`,
-      players: [player, victim].filter(Boolean),
+      players: _reactingFaces([player, victim], week),
       badgeText: 'VOTED OUT AN ALLY', badgeClass: 'red',
       eventId: 'alliance-betrayal', category: 'deals', location: 'living-room',
     });
@@ -862,7 +901,9 @@ function _attachAllianceFallout(week, house) {
           + `stop checking in before votes and eventually stop using the name.`
         : `<strong>${alliance.name}</strong> is down to ${left.length === 1 ? `${left[0]}, alone` : 'nobody'}. `
           + `There are not enough members left to keep the alliance going.`,
-      players: left.slice(0, 4),
+      // Deduped: a members array that picked up the same name twice drew the
+      // same face beside itself in the card header.
+      players: [...new Set(left)].slice(0, 4),
       badgeText: collapsed ? 'IT STOPS BEING TRUE' : 'OUT OF NUMBERS', badgeClass: 'red',
       eventId: 'alliance-collapsed', category: 'deals', location: 'living-room',
     });

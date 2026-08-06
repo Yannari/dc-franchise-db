@@ -784,6 +784,131 @@ export function updateBBAllianceLifecycle({ phase = 'opening', house = gs.active
   return { formed: alliance, alliances: allianceStore() };
 }
 
+const _VILLAINY = ['villain', 'schemer', 'mastermind', 'chaos-agent'];
+const _archOf = name => players.find(p => p.name === name)?.archetype || 'floater';
+
+/**
+ * Does the room work out who flipped?
+ *
+ * Adapted from Total Drama's `detectBetrayals` gate in alliances.js, which is
+ * the better-developed half of this idea, with two changes the house needs.
+ *
+ * FIELD SIZE is the dominant lever, exactly as it is there — and it is the
+ * SUSPECT POOL, the people who actually cast a ballot this week, not the season.
+ * Your name could only have been written by somebody in that room. A flip at
+ * final five is arithmetic; the same flip in a house of fourteen is one vote
+ * among many. The gradual floor climbs smoothly rather than stepping, so even a
+ * smooth operator stops being able to hide late without there being a cliff
+ * where the game suddenly changes character.
+ *
+ * TRUST is the house's own term and the one Total Drama does not have. Who you
+ * suspect is not just a question of arithmetic — it is a question of who you
+ * were willing to believe. Somebody you trust is the LAST person you look at,
+ * which is precisely why betraying them works and why it hurts.
+ *
+ * Everything else is cover: a lone rogue vote is glaring where a bloc diffuses
+ * blame, a known flipper is the first place anybody looks, and a smooth operator
+ * (social + strategic) muddies it.
+ */
+export function betrayalDetectChance(alliance, traitor, victim, week) {
+  const ballots = week?.ballots || [];
+  const field = Math.max(2, ballots.length);
+  const t = pStats(traitor);
+  const members = new Set(alliance?.members || []);
+
+  // A bloc that moved together hides inside itself; one name on its own does not.
+  const insideFlips = ballots.filter(b => members.has(b.voter) && b.evict === victim).length;
+  const isLone = insideFlips <= 1;
+
+  // Only betrayals the house actually CAUGHT count as reputation. Counting the
+  // hidden ones would leak the answer into the question.
+  const knownFlips = (gs.bb?.alliances || allianceStore() || []).reduce((n, a) =>
+    n + (a.betrayals || []).filter(b => b.player === traitor && b.known).length, 0);
+
+  // The sharpest read in the room, and how far the victim was willing to trust
+  // the person who did it.
+  const readers = [...members].filter(n => n !== traitor && (gs.activePlayers || []).includes(n));
+  const bestRead = readers.reduce((m, n) => Math.max(m, pStats(n).intuition || 5), 0);
+  const trust = clamp(Number(getRelationshipDimensions(victim, traitor)?.trust) || 0, -10, 10);
+
+  let p = 0.45
+    + (8 - field) * 0.07
+    + (isLone ? 0.15 : -0.12)
+    + knownFlips * 0.10
+    + bestRead * 0.02
+    - ((t.social || 5) + (t.strategic || 5) - 10) * 0.022
+    // The person you trusted is the last one you look at.
+    - Math.max(0, trust) * 0.035;
+  p = clamp(p, 0.05, 0.97);
+  return Math.max(p, clamp((11.5 - field) * 0.15, 0, 0.96));
+}
+
+/**
+ * Somebody has to have done it.
+ *
+ * Total Drama's `_misattributeBlame`, brought across: an undetected flip leaves
+ * the alliance one short and certain of it, and the most impulsive loyal member
+ * lashes out at a plausible wrong person. The grudge is real — it steers their
+ * next vote onto somebody innocent, which is how a house ends up eating itself
+ * over something that never happened.
+ *
+ * The house's addition is DEFLECTION. In Total Drama the traitor is passive
+ * while the room guesses; here, a schemer who got away with it can help the
+ * room guess wrong, and the person they point at is chosen to be believed
+ * rather than to be guilty. That is the difference between getting away with
+ * something and running the aftermath of it, and it is what turns one flip into
+ * a month of the wrong argument.
+ */
+function _misattribute(alliance, traitor, victim, week, rng) {
+  const live = gs.activePlayers || [];
+  const readers = (alliance.members || []).filter(n =>
+    n !== traitor && n !== victim && live.includes(n));
+  if (!readers.length) return null;
+
+  const impulsive = name => {
+    const s = pStats(name), a = _archOf(name);
+    let v = (6 - (s.temperament || 5)) * 0.10 + ((s.boldness || 5) - 5) * 0.03
+      + (5 - (s.intuition || 5)) * 0.04;
+    if (a === 'hothead') v += 0.22;
+    else if (a === 'chaos-agent' || a === 'wildcard') v += 0.10;
+    else if (a === 'perceptive-player') v -= 0.15;
+    else if (a === 'mastermind' || a === 'schemer') v -= 0.08;
+    return clamp(v, 0.03, 0.9);
+  };
+  const reactor = [...readers].sort((a, b) => impulsive(b) - impulsive(a))[0];
+
+  // Can the traitor steer it? Villainous archetypes with the wit to do it, and
+  // only if the reactor is somebody they can actually talk to.
+  const ts = pStats(traitor);
+  const deflects = _VILLAINY.includes(_archOf(traitor))
+    && rng() < clamp(((ts.strategic || 5) / 10) * 0.55 + ((ts.social || 5) / 10) * 0.25, 0, 0.8);
+
+  // An ally's name written demands a culprit; anything smaller only starts a
+  // witch hunt if somebody impulsive is in the room. A traitor working the room
+  // supplies the certainty himself.
+  if (!deflects && rng() >= Math.max(impulsive(reactor), 0.55)) return null;
+
+  const pool = (alliance.members || []).filter(p => p !== reactor && p !== traitor
+    && p !== victim && live.includes(p));
+  const outside = live.filter(p => p !== reactor && p !== traitor && p !== victim
+    && !(alliance.members || []).includes(p));
+  const candidates = pool.length && rng() < 0.6 ? pool : pool.concat(outside);
+  if (!candidates.length) return null;
+
+  // Who gets blamed. Left alone, the room reaches for whoever it already
+  // dislikes and whoever LOOKS like a betrayer. A deflecting traitor instead
+  // picks the person the reactor is most ready to believe it of.
+  const score = p => (deflects ? getPerceivedBond(reactor, p) : getBond(reactor, p))
+    - (_VILLAINY.includes(_archOf(p)) ? 2 : 0);
+  const wrongSuspect = [...candidates].sort((a, b) => score(a) - score(b))[0];
+  if (!wrongSuspect) return null;
+
+  addBond(reactor, wrongSuspect, deflects ? -2.4 : -2);
+  try { rememberStrategy(reactor, wrongSuspect, 'alliance-betrayal', week.num, 2,
+    { alliance: alliance.name, format: 'big-brother', misattributed: true }); } catch { /* texture */ }
+  return { reactor, wrongSuspect, deflected: deflects, realBetrayer: traitor };
+}
+
 export function settleBBAllianceWeek(week, rng = Math.random) {
   if (!week?.ballots?.length) return [];
   const incidents = [];
@@ -812,17 +937,26 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       // written back as a belief with a `deduced` source, so it carries lower
       // confidence than being told and can decay like anything else.
       let known = false;
+      let detectP = 0;
       try {
+        // Being TOLD is certain — it already went through the belief check on
+        // the way in. Everything below is the alliance working it out instead.
         known = knowsVote(ballot.evict, ballot.voter, ballot.evict);
         if (!known) {
-          const field = Math.max(1, week.ballots.length - 1);
-          const chance = clamp(((pStats(ballot.evict).intuition || 5) / 10) * (1.6 / field), 0, 0.7);
-          if (rng() < chance) {
-            learnBBVote(ballot.evict, ballot.voter, ballot.evict, week.num);
+          detectP = betrayalDetectChance(alliance, ballot.voter, ballot.evict, week);
+          if (rng() < detectP) {
+            learnBBVote(ballot.evict, ballot.voter, ballot.evict, week.num, rng);
             known = true;
           }
         }
-      } catch { known = false; }
+      } catch (err) {
+        // Deliberately loud in development. A silent catch here already hid a
+        // ReferenceError once and turned detection off entirely — every flip
+        // went unseen and the numbers looked like a design choice rather than
+        // a bug. The week still settles; it just says so.
+        known = false;
+        (week._detectErrors ||= []).push(String(err?.message || err));
+      }
 
       const incident = { week:week.num, ep:week.num, player:ballot.voter, voter:ballot.voter, victim:ballot.evict, severity:'major', reason:'voted to evict an ally', known };
       // The alliance ledger records it either way: it HAPPENED, the finale and
@@ -839,8 +973,14 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
       }
 
       // Nothing to explain to a room that has not worked out there is anything
-      // to explain. An unexposed defector keeps their seat and their story.
-      if (!known) { incidents.push({ alliance:alliance.name, ...incident, repair:null }); continue; }
+      // to explain. An unexposed defector keeps their seat and their story —
+      // and, if they are the sort, gets to choose whose story it becomes.
+      if (!known) {
+        let mis = null;
+        try { mis = _misattribute(alliance, ballot.voter, ballot.evict, week, rng); } catch { mis = null; }
+        incidents.push({ alliance:alliance.name, ...incident, repair:null, detectP, misattribution: mis });
+        continue;
+      }
 
       // A defection is not automatically the end of an alliance. Real houses
       // survive one — the person explains themselves, some of the room buys

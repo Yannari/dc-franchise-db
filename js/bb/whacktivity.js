@@ -52,7 +52,7 @@ const round2 = v => Math.round(v * 100) / 100;
 const PICKED = [
   (n, p, power) => `${n} walks into the one offering ${power} without breaking stride. ${p.Sub} has known which door ${p.sub} wanted since the rules were read out.`,
   (n, p, power) => `${n} stands in the corridor for a while and then picks ${power}. Whatever ${p.sub} decided, ${p.sub} decided it about ${p.posAdj} own week.`,
-  (n, power) => `${n} goes for ${power}, and does not look at who is following ${n} in.`,
+  (n, p, power) => `${n} goes for ${power}, and does not look at who is following ${n} in.`,
   (n, p, power) => `${n} takes ${power}. ${p.Sub} counted the room first, which is the only sensible way to pick a door nobody can see through.`,
 ];
 
@@ -67,14 +67,18 @@ const CROWDED = [
   (power, k) => `The room offering ${power} fills up — ${k} houseguests, one prize, and every one of them now knows exactly who else is hunting.`,
 ];
 
+// Every variant in these arrays is called as fn(name, pronouns, powerName).
+// A variant that declares (n, power) binds the PRONOUNS OBJECT to `power` and
+// narrates "wins [object Object]" — keep the full signature even where a
+// variant does not use every argument.
 const ALONE = [
   (n, p, power) => `${n} is the only one who wanted ${power}, and finds out that being alone in there is not the same as winning it. The clock runs whether anybody is racing ${p.obj} or not.`,
-  (n, power) => `Nobody else picked ${power}. ${n} still has to beat it.`,
+  (n, p, power) => `Nobody else picked ${power}. ${n} still has to beat it.`,
 ];
 
 const WON = [
   (n, p, power) => `${n} takes it, and is told in a room with the door shut. ${p.Sub} walks back out with ${power} and a face that is trying very hard to be a normal face.`,
-  (n, power) => `${n} wins ${power}. The house is told nothing at all, which is the only reason it is worth having.`,
+  (n, p, power) => `${n} wins ${power}. The house is told nothing at all, which is the only reason it is worth having.`,
   (n, p) => `${n} wins, and spends the rest of the night practising looking disappointed.`,
 ];
 

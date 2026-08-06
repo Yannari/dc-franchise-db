@@ -4177,8 +4177,37 @@ export function generateBBSummaryText(ep) {
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
   const ln = s => L.push(plain(s));
   const sec = title => { ln(''); ln(title); ln('─'.repeat(Math.max(8, title.length))); };
-  const beats = act => (act?.socialBeats || []).forEach(b =>
-    ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+  /**
+   * Everything an act narrated, in the order the viewing party shows it.
+   *
+   * This used to render `socialBeats` and nothing else, which quietly made it
+   * the biggest hole in the transcript. Twenty-odd cases end by calling it,
+   * plainly meaning "and now write down what happened" — and an act's OWN
+   * narration lives in `act.beats`, so for Prizes and Punishments, the Coin of
+   * Destiny, Battle Back, Camp Comeback, the Halting Hex, the camp door, the
+   * Safety Suite and the Time Capsule every line of written prose was rendered
+   * as a card in the viewing party and then dropped on the way to text. The
+   * cases read fine, because each one summarises the act's STRUCTURE — who
+   * bought in, the pick order, who won — so the omission looked like a style.
+   *
+   * `own: false` is for the handful of acts that print `act.beats` themselves
+   * because they have to filter it: a hidden power, a Whacktivity win and a
+   * temptation are all deliberately withheld from the page, and that filtering
+   * is the twist working, not a bug to fix here.
+   */
+  // Social beats render exactly once per act, whoever asks for them. The
+  // filtered cases below branch and `break` in four or five places and never
+  // call this at all, so their house reactions had nowhere to go either; the
+  // flush after the switch catches those without double-printing the acts
+  // that already came through here.
+  const socialDone = new Set();
+  const beats = (act, { own = true } = {}) => {
+    if (own) (act?.beats || []).forEach(b => ln(`  ${b.text}`));
+    if (!act || socialDone.has(act)) return;
+    socialDone.add(act);
+    (act.socialBeats || []).forEach(b =>
+      ln(`  [${b.badgeText || 'HOUSE'}] ${b.text}`));
+  };
 
   ln(`WEEK ${ep.num}`);
   ln('═'.repeat(46));
@@ -4581,15 +4610,10 @@ export function generateBBSummaryText(ep) {
         ln('');
         ln(`  Mission ${act.missionNumber}: ${act.mission.name}.`);
         ln('');
-        // Verbatim, not paraphrased. This used to restate the mission in three
-        // short lines of its own and then call beats(), which only renders
-        // socialBeats — so the assignment, the objective, the outcome and what
-        // the mission actually DID to the house were all written, screened in
-        // the viewing party, and never reached the transcript at all.
-        (act.beats || []).forEach(b => {
-          ln(`  ${b.badgeText ? `[${b.badgeText}] ` : ''}${b.text}`);
-          ln('');
-        });
+        // Verbatim, not paraphrased — the helper prints act.beats now, which
+        // is what every case calling it always meant.
+        beats(act);
+        ln('');
         if (act.mission.done && act.mission.effect?.note) {
           ln(`  And the house is different: ${act.mission.effect.note}`);
           ln('');
@@ -5103,6 +5127,11 @@ export function generateBBSummaryText(ep) {
       default:
         break;
     }
+    // Whatever the case above did or did not do, the house's own reactions to
+    // this act reach the page. A no-op for the twenty cases that end in
+    // beats(act); the safety net for the handful that filter their narration
+    // themselves, branch, and break out before they ever get there.
+    beats(act, { own: false });
   }
 
   // Two evictions on one night get two interviews. A Split House and a Double

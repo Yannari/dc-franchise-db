@@ -187,10 +187,18 @@ const blockIsolation = {
 const safeRelief = {
   id: 'phase-safe-relief',
   category: 'phases',
-  weight(house, ctx) { return _noms(ctx).length ? at('post-noms', ctx, 8) : 0; },
+  // Two safe houseguests, not one. This is an event about a PAIR being quietly
+  // relieved together, and the weight used to ask only whether anybody was
+  // nominated — so on a double eviction, where the house is small and most of
+  // it is on the block, `_safe` came back with a single name and the second
+  // one narrated as "M and undefined are not on the block".
+  weight(house, ctx) {
+    return _noms(ctx).length && _safe(house, ctx).length >= 2 ? at('post-noms', ctx, 8) : 0;
+  },
   fire(house, ctx, api) {
     const safe = _leastSeen(_safe(house, ctx)).slice(0, 2);
     const [a, b] = safe;
+    if (!a || !b) return null;
     const nominee = _noms(ctx)[0];
     const text = _variant([
       `${a} and ${b} are not on the block and have the decency to be quiet about how relieved they are, for nearly an hour.`,

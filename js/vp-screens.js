@@ -20203,6 +20203,9 @@ export function rpBuildBBEviction(ep) {
     // living with whatever gets said.
     ...(act?.lastWords ? [{ kind: 'lastwords' }, { kind: 'room' }] : []),
     ...(act?.lastWords?.response ? [{ kind: 'answer' }] : []),
+    // Rare, and it comes last: the room has heard the accusation, the denial
+    // and each other before anybody squares up.
+    ...(act?.lastWords?.confrontation ? [{ kind: 'confront' }] : []),
     { kind: 'door' },
     ...(ep.dealBreaks || []).map(d => ({ kind: 'dealbreak', d })),
     ...(act?.socialBeats || []).map(b => ({ kind: 'beat', beat: b })),
@@ -20413,6 +20416,27 @@ export function rpBuildBBEviction(ep) {
   lw.response.kind === 'own' ? 'gold' : 'blue'}">${
   lw.response.kind === 'own' ? 'OWNS IT' : lw.response.kind === 'deflect' ? 'RISES ABOVE IT' : 'DENIES IT'}</span></div>
           <div class="bbns-card-b">${_bbEsc(lw.response.text)}</div></div>`;
+      }
+      // ── The fight ──
+      //
+      // The only card on this night where somebody still playing does something
+      // about what they just heard, so it gets the room's full attention: two
+      // faces, the exchange as dialogue rather than prose, and the cost stated
+      // underneath, because a shouting match that changes nothing is a scene
+      // and this one is a move.
+      case 'confront': {
+        const c = act.lastWords.confrontation;
+        const swung = (act.lastWords.reactions || []).filter(r => r.movedByConfrontation).length;
+        return `<div class="bbns-card is-key bbev-fight">
+          <div class="bbns-card-h">${_bbAvatar(c.challenger, 30)}${_bbAvatar(c.accused, 30)}<span class="bbns-pill red">IT BOILS OVER</span></div>
+          <div class="bbns-card-b">
+            <div class="bbev-fight-l is-challenger">${_bbEsc(c.opener)}</div>
+            <div class="bbev-fight-l is-accused">${_bbEsc(c.answer)}</div>
+            <div class="bbev-fight-l is-close">${_bbEsc(c.close)}</div>
+            <div class="bbev-fight-cost">${_bbEsc(c.challenger)} and ${_bbEsc(c.accused)} do not come back from this quickly${
+  swung ? ` · ${swung} ${swung === 1 ? 'houseguest was' : 'houseguests were'} pushed off the fence watching it` : ''}${
+  c.wasTrue === false ? ' · and none of it was true' : ''}</div>
+          </div></div>`;
       }
       case 'door':
         if (act?.doubleVote && act?.secondEvicted) {

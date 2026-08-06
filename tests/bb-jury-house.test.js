@@ -138,6 +138,68 @@ describe('last words at the door', () => {
     expect(lines.join('\n')).toContain(evicted);
     expect(lines.length).toBeGreaterThan(3);
   });
+
+  // ── the confrontation ──
+  it('is started by the most betrayed, not the most convinced', () => {
+    const evicted = 'N';
+    addBond(evicted, 'A', 6);
+    // K trusts the evictee AND was close to whoever gets named — the person
+    // with something to lose. F believes it too but never liked anybody.
+    addBond('K', evicted, 9);
+    addBond('F', evicted, 9);
+    const week = weekWith(evicted, { voters: ['A', 'B', 'C', 'D'] });
+    const accused = 'A';
+    addBond('K', accused, 9);
+    addBond('F', accused, -6);
+    const record = checkBBLastWords(week, () => 0.01);
+    expect(record).toBeTruthy();
+    if (record.confrontation && record.reveal.accused === accused) {
+      expect(record.confrontation.challenger).toBe('K');
+    }
+  });
+
+  // These two run PLAYED SEASONS rather than hand-built weeks, and they have
+  // to. A confrontation needs a strategic accusation, a strategic accusation
+  // needs beliefs, and beliefs need a season to happen in — every blowup in a
+  // hand-built fixture comes out `personal`, which by design cannot start
+  // anything. The first version of these tests asserted against fixtures,
+  // measured zero, and was reporting a calibration problem that did not exist
+  // while hiding the real one, which was that the odds were ten times too low.
+  it('costs the person who started it too', () => {
+    let found = null;
+    for (const seed of [3, 7, 11, 19, 27, 35, 43, 51]) {
+      reset();
+      simulateBBSeason({ rng: seededRng(seed) });
+      const week = (gs.bb.weeks || []).find(w => w.lastWords?.confrontation);
+      if (week) { found = week.lastWords.confrontation; break; }
+    }
+    expect(found, 'no confrontation fired across eight seasons').toBeTruthy();
+    // The house is warier of the accused for it...
+    const sus = gs.bb?.house?.suspicion || {};
+    expect(sus[`${found.challenger}→${found.accused}`]).toBeGreaterThan(0);
+    // ...and it is on the record as something the challenger did in public,
+    // which is what makes it a move rather than a mood.
+    expect(found.challenger).not.toBe(found.accused);
+    expect(['owns', 'turns', 'denies']).toContain(found.kind);
+  });
+
+  it('stays rare enough to mean something', () => {
+    let blowups = 0, fights = 0;
+    for (const seed of [3, 7, 11, 19, 27, 35, 43, 51, 59, 67]) {
+      reset();
+      simulateBBSeason({ rng: seededRng(seed) });
+      for (const w of gs.bb.weeks || []) {
+        if (!w.lastWords) continue;
+        blowups++;
+        if (w.lastWords.confrontation) fights++;
+      }
+    }
+    expect(blowups).toBeGreaterThan(10);
+    // A shouting match every week means nothing; one that never happens is
+    // dead code. Both ends are asserted, and the measured rate is ~25%.
+    expect(fights).toBeGreaterThan(0);
+    expect(fights).toBeLessThan(blowups * 0.6);
+  });
 });
 
 describe('juror sentiment', () => {

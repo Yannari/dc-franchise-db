@@ -636,6 +636,19 @@
     .bbev-truth.is-true  { color:#f85149; }
     .bbev-truth.is-false { color:#8b949e; }
 
+    /* The confrontation — the one card where somebody still playing acts on
+       what they heard, so it reads as dialogue rather than as narration. */
+    .bbev-fight    { border-left:3px solid #f85149;
+                     background:linear-gradient(90deg, rgba(248,81,73,.10), transparent 70%); }
+    .bbev-fight-l  { font-size:13px; line-height:1.65; padding:5px 0 5px 11px; margin-bottom:3px;
+                     border-left:2px solid transparent; }
+    .bbev-fight-l.is-challenger { border-left-color:#f0a500; color:#f0f6fc; }
+    .bbev-fight-l.is-accused    { border-left-color:#58a6ff; color:#f0f6fc; margin-left:16px; }
+    .bbev-fight-l.is-close      { color:#8b949e; font-style:italic; border-left-color:rgba(255,255,255,.10); }
+    .bbev-fight-cost { margin-top:9px; padding-top:8px; border-top:1px dashed rgba(248,81,73,.28);
+                     font-family:ui-monospace,Consolas,monospace; font-size:9px; letter-spacing:1.2px;
+                     text-transform:uppercase; color:#f85149; line-height:1.6; }
+
     .bbev-room     { display:flex; flex-direction:column; gap:7px; }
     .bbev-band     { border:1px solid rgba(255,255,255,.08); border-radius:7px;
                      padding:8px 10px; background:rgba(255,255,255,.02); }

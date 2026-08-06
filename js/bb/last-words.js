@@ -502,6 +502,140 @@ function responseFor(reveal, accused, kind, rng) {
   ]);
 }
 
+// ── the confrontation ─────────────────────────────────────────────────
+//
+// Without this the room reacts and the night ends. Fourteen people privately
+// update their opinion of somebody and not one of them does anything about it,
+// which is why even a good reaction card reads as texture rather than as an
+// event. A confrontation is the thing that turns the split into something that
+// happened.
+//
+// The person who starts it is NOT the most convinced — it is the most
+// BETRAYED. Somebody who believed the accusation and was close to the accused
+// an hour ago has had something taken from them; somebody who believed it about
+// a person they never liked has merely had a suspicion confirmed, and confirmed
+// suspicions do not make anybody stand up in a living room.
+//
+// It has to stay rare. If every blowup ends in a shouting match then the
+// shouting stops meaning anything, so the roll is deliberately hard to pass and
+// only the top candidate ever gets to make it.
+
+// Who raises their voice. An amplifier on a probability, not a gate: a
+// loyal-soldier who feels genuinely betrayed can absolutely start one.
+const CONFRONTS = {
+  hothead: 1.7, 'chaos-agent': 1.45, villain: 1.3, wildcard: 1.25,
+  'challenge-beast': 1.15, mastermind: 1.0, schemer: 1.0, hero: 1.05,
+  'loyal-soldier': 1.1, underdog: 0.95, 'social-butterfly': 0.9,
+  showmancer: 0.9, 'perceptive-player': 0.75, floater: 0.5, goat: 0.4,
+};
+
+/**
+ * Somebody says it out loud.
+ *
+ * @returns {object|null} the scene, or null if the room stays civil
+ */
+function checkConfrontation(week, reveal, reactions, rng, isTrue) {
+  const accused = reveal.accused;
+  if (reveal.type === 'personal' || !(gs.activePlayers || []).includes(accused)) return null;
+
+  const scored = reactions
+    .filter(r => r.belief > 0 && r.listener !== accused)
+    .map(r => {
+      const s = pStats(r.listener);
+      // Betrayal, not conviction: belief times how much they had invested in
+      // the person who has just been named.
+      //
+      // The baseline matters. As a bare multiplier this made the whole
+      // mechanic UNREACHABLE in any house where the two were not already
+      // close — bond 0 meant heat 0 meant no fight was possible however
+      // convinced anybody was — and a mechanic that cannot fire is worse than
+      // one that fires too often. Betrayal still does most of the work; the
+      // floor leaves room for somebody to square up on principle.
+      const invested = 0.18 + (Math.max(0, getBond(r.listener, accused)) / 10) * 0.82;
+      const nerve = (s.boldness / 10) * 0.6 + ((10 - s.temperament) / 10) * 0.6;
+      return { ...r, heat: r.belief * invested * nerve * (CONFRONTS[archetypeOf(r.listener)] ?? 1) };
+    })
+    .sort((a, b) => b.heat - a.heat);
+
+  const top = scored[0];
+  if (!top || top.heat <= 0) return null;
+  // Calibrated against measurement rather than intuition. Across ten played
+  // seasons the best candidate's heat lands between 0.08 and 0.15 — belief
+  // itself is rarely above 0.7 and the other two terms are fractions — so the
+  // 0.85 this started with was a one-in-ten chance and produced ZERO fights in
+  // twenty-four blowups, which is indistinguishable from a broken feature.
+  //
+  // At the gain below, measured over the same ten seasons: 7 fights from 28
+  // blowups. That is one in four overall and one in two of the ones that can
+  // start anything (half are the purely personal kind, which cannot), or about
+  // two fights every three seasons — often enough to be part of the format,
+  // rare enough that the room going quiet still means something.
+  if (rng() >= clamp01(top.heat * 9)) return null;
+
+  const challenger = top.listener;
+  const aS = pStats(accused);
+  // How the accused plays it, which is the same question the response card
+  // asked but with the room now watching a fight rather than a speech.
+  const ownIt = isTrue === true && rng() < clamp01((aS.boldness / 10) * 0.5);
+  const kind = ownIt ? 'owns' : rng() < clamp01(aS.social / 13) ? 'turns' : 'denies';
+
+  const opener = pick(rng, [
+    `"No — say it again." ${challenger} is on ${P(challenger).posAdj} feet before the door has finished closing. "Say it to my face, because I have been defending you for three weeks."`,
+    `${challenger} does not wait for the room to settle. "Was that true? Look at me and tell me that was not true."`,
+    `"I want to hear it from you," ${challenger} says, and the living room goes very quiet very fast.`,
+    `${challenger} puts a glass down harder than ${P(challenger).sub} means to. "That is twice now. Twice I've heard your name and told people they were wrong."`,
+  ]);
+  const answer = kind === 'owns' ? pick(rng, [
+    `"Yes," says ${accused}. "It was me. You'd have done it if you'd had the numbers, and you know that."`,
+    `${accused} does not flinch. "It's true. I'm not going to stand here and insult you by pretending it isn't."`,
+  ]) : kind === 'turns' ? pick(rng, [
+    `"You're doing this now? On the word of somebody who just lost?" ${accused} turns to the room. "Listen to what's actually happening here."`,
+    `${accused} does not raise ${P(accused).posAdj} voice, which somehow makes it worse. "I think you wanted a reason. I think you've been waiting for one."`,
+  ]) : pick(rng, [
+    `"That is a LIE," ${accused} says, over the top of ${P(challenger).obj}. "That is a lie and you are letting somebody play you from the doorway."`,
+    `${accused} is shouting now too. "I did not do that! You've known me for six weeks — six weeks — and this is what it takes?"`,
+  ]);
+  const close = pick(rng, [
+    `Somebody says the word bedtime. Nobody moves. It ends the way these end — with both of them still talking and nothing settled.`,
+    `Two houseguests get between them. The rest of the room has already started deciding who was right.`,
+    `${challenger} walks out to the backyard mid-sentence. ${accused} stays exactly where ${P(accused).sub} is, which the room also notices.`,
+    `It stops as suddenly as it started, and everybody in that room understands the week has changed shape.`,
+  ]);
+
+  // ── what it costs, and it costs BOTH of them ──
+  const size = Math.abs(top.belief);
+  addBond(challenger, accused, -(1.6 + size));
+  bumpSuspicion(challenger, accused, 1.4 + size);
+  try {
+    rememberBBStrategy(challenger, accused, 'confronted-in-public', Math.min(5, 2 + size),
+      { over: reveal.type }, { week });
+  } catch { /* the fight happened anyway */ }
+  // Going public on an evictee's word is a bet. If the accusation was false,
+  // the challenger has just torched a real relationship over nothing — and the
+  // people who waved it off watched them do it.
+  for (const r of reactions) {
+    if (r.listener === challenger) continue;
+    if (r.belief < 0) {
+      addBond(r.listener, challenger, -(0.4 + (isTrue === false ? 0.5 : 0)));
+      bumpSuspicion(r.listener, challenger, 0.5);
+    } else if (r.conflicted) {
+      // The fight is exactly the pressure that gets somebody off the fence —
+      // and watching it happen pushes them toward the person shouting.
+      r.belief += 0.5 * (1 - clamp01(Math.abs(r.belief)));
+      bumpSuspicion(r.listener, accused, 0.8);
+      r.movedByConfrontation = true;
+    }
+  }
+  if (seasonConfig.popularityEnabled !== false) {
+    gs.popularity ||= {};
+    gs.popularity[challenger] = (gs.popularity[challenger] || 0) + (isTrue === false ? -0.5 : 0.4);
+    gs.popularity[accused] = (gs.popularity[accused] || 0) + (kind === 'owns' ? 0.3 : -0.4);
+  }
+
+  return { challenger, accused, kind, opener, answer, close,
+    wasTrue: isTrue, heat: Number(top.heat.toFixed(3)) };
+}
+
 // ── the event ─────────────────────────────────────────────────────────
 
 /**
@@ -580,6 +714,14 @@ export function checkBBLastWords(week, rngIn) {
     }
   }
 
+  // ── and sometimes somebody says it out loud ──
+  //
+  // After the response, because the accused's denial is part of what the room
+  // has heard by the time anybody squares up — and because a confrontation
+  // moves the people still on the fence, which the response has just finished
+  // adjusting.
+  const confrontation = checkConfrontation(week, reveal, reactions, rng, isTrue);
+
   // ── the audience ──
   if (seasonConfig.popularityEnabled !== false) {
     gs.popularity ||= {};
@@ -602,7 +744,7 @@ export function checkBBLastWords(week, rngIn) {
   const record = {
     speaker: evictee, register: trigger.register, chance: trigger.chance,
     blindside: trigger.blindside, reveal: { ...reveal }, isTrue,
-    fabricated: !!reveal.fabricated, speech, response, reactions,
+    fabricated: !!reveal.fabricated, speech, response, reactions, confrontation,
     week: week.num || 0,
     // Carried so the jury house knows what this juror walked in believing and
     // who in the room already argued against it.
@@ -635,6 +777,14 @@ export function lastWordsLines(record, line) {
       : 'and there was nothing in it to be right or wrong about';
   line(`    (${verdict}.)`);
   for (const reaction of record.reactions) line(`    ${reaction.text}`);
+  const c = record.confrontation;
+  if (c) {
+    line('');
+    line(`  ${c.challenger} does not let it go.`);
+    line(`    ${c.opener}`);
+    line(`    ${c.answer}`);
+    line(`    ${c.close}`);
+  }
 }
 
 /** Was this houseguest's exit a blowup? For screens and tests. */

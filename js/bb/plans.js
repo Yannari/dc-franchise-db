@@ -22,8 +22,34 @@ import { getBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { evaluateEndgameBeatability } from '../intentions.js';
 import { bbThreatProfile, bbHeat, knownPowersOf } from './shared-strategy.js';
+import { recordBBTarget, believedHunters } from './knowledge.js';
 
 const clamp01 = n => Math.max(0, Math.min(1, n));
+
+/**
+ * "I want them out" enters the house as something people can find out.
+ *
+ * A plan used to be a private object nobody could ever learn about: a
+ * houseguest could be hunted for six weeks by somebody they trusted and there
+ * was no mechanism by which they might discover it. The intention is now a
+ * fact, observed by the person who holds it and told to the people they are
+ * actually working with — which is exactly how it gets out, because a core of
+ * three is three more mouths and every one of them propagates like anything
+ * else.
+ *
+ * Only the top target. A plan lists three; the one somebody says out loud in
+ * the storage room is the one they are actually moving on this week.
+ */
+function recordPlanTarget(plan, round) {
+  const target = plan?.targets?.[0];
+  if (!plan?.owner || !target) return;
+  try {
+    recordBBTarget(plan.owner, target, {
+      week: round,
+      toldTo: (plan.preferredCore || []).slice(0, 3),
+    });
+  } catch { /* the plan stands; the house just never gets the chance to hear it */ }
+}
 
 function store() {
   if (!gs.intentions || typeof gs.intentions !== 'object') gs.intentions = {};
@@ -296,6 +322,7 @@ export function formHousePlan(name, { house = houseNow(), week = null } = {}) {
   };
   revenge.forEach(n => { plan.revengeSince[n] = round; });
   store()[name] = plan;
+  recordPlanTarget(plan, round);
   return plan;
 }
 
@@ -577,7 +604,37 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
       }
     }
 
+    // ── Somebody told them who is coming for them ──
+    //
+    // The other half of recording an intention. Being hunted used to be
+    // strictly unknowable: a houseguest could be somebody's top target for six
+    // weeks and there was no mechanism by which they might ever find out, so
+    // the quarry never reacted and the hunter never paid for talking. Now that
+    // an intention travels, hearing it is a real event — and the answer to
+    // "they want me out" is almost always "then I want them out first".
+    //
+    // What scales with skill is not WHETHER they react but how fast: a sharp
+    // player moves the hunter straight to the top of the list, and somebody who
+    // cannot see past Thursday files it at the back, where a three-deep list
+    // means they may never get to it at all. Same news, different players.
+    for (const hunter of believedHunters(name)) {
+      if (!pool.includes(hunter)) continue;
+      if (plan.targets.includes(hunter) || hunter === plan.shield || hunter === plan.goat) continue;
+      const before = [...plan.targets];
+      const slot = Math.min(3, Math.max(0, Math.round((10 - skill) * 0.3)));
+      plan.targets.splice(slot, 0, hunter);
+      plan.targets = plan.targets.slice(0, 3);
+      if (!plan.targets.includes(hunter)) continue;   // heard it, sat on it
+      plan.origins.targets[hunter] = 'word got back that they are the one coming';
+      changes.push(logChange(plan, round, 'targets', before, [...plan.targets],
+        `${name} found out ${hunter} is gunning for them`));
+    }
+
     _resolveShieldTargetClash(plan, changes, round);
+
+    // The plan may have a different top target than it started the week with,
+    // and it is the CURRENT one people talk about.
+    recordPlanTarget(plan, round);
 
     plan.confidence = clamp01(Math.max(0.2, Math.min(0.95,
       skill / 10 + (plan.targets.length ? 0.05 : -0.1) + (plan.shield ? 0.05 : 0))));

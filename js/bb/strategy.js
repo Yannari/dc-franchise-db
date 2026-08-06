@@ -7,6 +7,7 @@ import { getRelationshipDimension, relationshipDecisionProfile, targetProtection
 import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-strategy.js';
 import { housePlan } from './plans.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
+import { believesDeal } from './knowledge.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -152,6 +153,12 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   };
   const pawnPool = ranked.slice(1).sort((a, b) => pawnFit(b.name) - pawnFit(a.name));
 
+  // Does the Head of Household believe this person has somebody bound to them
+  // at the end who is still in the house? Belief, not truth — see the
+  // pair-split note below for why that distinction is the whole point.
+  const knownEndgamePartner = name => eligible.find(other => other !== name
+    && believesDeal(hoh, name, other)) || null;
+
   const structures = [];
 
   // ── The classic: the target and a chair. Still the most common play on
@@ -172,7 +179,15 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
       score: 4.6 + clamp(margin, -3, 3) * 0.9
         + clamp((9 - eligible.length) * 0.22, 0, 1.4)
         + hohStats.social * 0.08
-        + ({ mastermind: 1, schemer: 0.8, 'perceptive-player': 0.6, 'loyal-soldier': 0.4 }[arch] || 0),
+        + ({ mastermind: 1, schemer: 0.8, 'perceptive-player': 0.6, 'loyal-soldier': 0.4 }[arch] || 0)
+        // Knowing the target has a partner at the end is a reason NOT to seat a
+        // chair. The pawn play rests on a second nominee nobody fights for, and
+        // that premise dies the moment you know the one person guaranteed to
+        // fight for the target is sitting safe in the house with a free week to
+        // work the vote. The penalty lifts when the partner IS the second seat,
+        // because then it is no longer a pawn structure — it is a pair split.
+        - (knownEndgamePartner(primary.name)
+          && knownEndgamePartner(primary.name) !== pawn ? 1.6 : 0),
     });
   }
 
@@ -204,21 +219,49 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
     const deal = dealBetween(hoh, name);
     return deal ? sincerityOf(deal, hoh) > 0.5 : false;
   };
-  const partner = (() => {
-    const mates = (gs.namedAlliances || [])
-      .filter(a => a.active !== false && (a.members || []).includes(primary.name))
-      .flatMap(a => a.members)
-      .filter(m => m !== primary.name && eligible.includes(m) && !promisedEnd(m));
-    const pool = mates.length ? mates
-      : eligible.filter(n => n !== primary.name && !promisedEnd(n) && getPerceivedBond(primary.name, n) >= 4);
-    return pool.sort((a, b) => heat(b) - heat(a))[0] || null;
-  })();
+  // Where the pairing comes from, strongest signal first.
+  //
+  // A promise about the end is the tightest thing two people in this house can
+  // have, and it used to be the one the block could not see: deals lived in
+  // their own store, exposure wrote to a private list nothing acted on, and a
+  // known final two was worth less to a nominating Head of Household than a
+  // visible friendship. It now outranks both.
+  //
+  // Deliberately a BELIEF and not the truth. The Head of Household acts on what
+  // they have been told, so a rumour about a handshake that never happened puts
+  // an innocent pair on the block together, and a real final two nobody has
+  // breathed a word about stays invisible. Being wrong in public is the price
+  // of playing on gossip, and it is the reason exposing a deal is worth doing.
+  const believedPair = eligible.filter(name => name !== primary.name && !promisedEnd(name)
+    && believesDeal(hoh, primary.name, name));
+  const mates = (gs.namedAlliances || [])
+    .filter(a => a.active !== false && (a.members || []).includes(primary.name))
+    .flatMap(a => a.members)
+    .filter(m => m !== primary.name && eligible.includes(m) && !promisedEnd(m));
+  const pairSource = believedPair.length ? 'deal' : mates.length ? 'alliance' : 'bond';
+  const partner = (believedPair.length ? believedPair
+    : mates.length ? mates
+      : eligible.filter(n => n !== primary.name && !promisedEnd(n) && getPerceivedBond(primary.name, n) >= 4)
+  ).sort((a, b) => heat(b) - heat(a))[0] || null;
   if (partner) {
     structures.push({
       kind: 'pair-split', nominees: [primary.name, partner], target: primary.name, pawn: null,
-      why: `${primary.name} and ${partner} go up together — the pair cannot pull each other off`,
+      why: pairSource === 'deal'
+        ? `${primary.name} and ${partner} have something at the end and ${hoh} knows it — they go up together, and only one of them is coming down`
+        : `${primary.name} and ${partner} go up together — the pair cannot pull each other off`,
+      // Knowing about the deal is worth more than seeing the friendship: it is
+      // the difference between guessing at a bond and having been told.
+      //
+      // Sized to work WITH the matching penalty on the pawn structure rather
+      // than to overpower it. The two together are what let a known deal decide
+      // a week: splitting gets more attractive and seating a chair gets more
+      // dangerous, which is the actual reasoning rather than a thumb on a
+      // scale. It still only clears the classic play in combination with the
+      // bond term, and that is the discrimination worth having — a known deal
+      // between two people who are visibly inseparable splits them, and one
+      // between two who act like strangers does not override the standard play.
       score: 2.8 + Math.max(0, getPerceivedBond(primary.name, partner)) * 0.18 + heat(partner) * 0.08
-        + hohStats.strategic * 0.1
+        + hohStats.strategic * 0.1 + (pairSource === 'deal' ? 1.6 : 0)
         + ({ mastermind: 0.9, schemer: 0.9, 'perceptive-player': 0.7, villain: 0.4 }[arch] || 0),
     });
   }

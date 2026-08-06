@@ -28,10 +28,38 @@
 import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
-import { factId, recordFact, learn, believes, getFact, propagate, pruneStale, isAccurate }
+import { factId, recordFact, learn, believes, getFact, propagate, pruneStale }
   from '../knowledge.js';
 
 const live = () => (gs.activePlayers || []).filter(Boolean);
+
+/**
+ * A belief roll that depends on who and when, and on nothing else.
+ *
+ * Whether somebody accepts what they were told runs through `_assess`, which
+ * needs randomness. Reaching for Math.random here is a real bug rather than a
+ * style question: a season is driven by a SEEDED generator, and an unseeded
+ * draw in the middle of it means the same seed stops producing the same season
+ * — which the replay guards catch and which would quietly make every saved
+ * house unreproducible. Threading the week's generator down through two plan
+ * functions and everything that calls them is the invasive fix; this is the
+ * better one, because it is also more faithful. Whether a particular person
+ * believes a particular piece of news should not depend on how many unrelated
+ * dice were rolled earlier in the week.
+ */
+function stableRng(...parts) {
+  let seed = 2166136261;
+  const key = parts.join('|');
+  for (let i = 0; i < key.length; i++) seed = Math.imul(seed ^ key.charCodeAt(i), 16777619);
+  seed >>>= 0;
+  return () => {
+    seed = (seed + 0x6D2B79F5) >>> 0;
+    let t = seed;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 // ── recording ─────────────────────────────────────────────────────────
 
@@ -84,15 +112,96 @@ export function recordBBDeal(a, b, tier = 'final-two', week = 0) {
   return id;
 }
 
-/** Who somebody is coming for. They know; anybody they told may know. */
+/**
+ * Somebody finds out about a promise they were not in the room for.
+ *
+ * The deal itself is recorded by the handshake; this is the second half, and
+ * the half that makes exposure worth anything. A name passed across the kitchen
+ * becomes a belief with a source, which means it propagates onward like every
+ * other fact, decays if nobody repeats it, and — because whoever told them may
+ * have been guessing or lying — can be wrong. Returns false when there is no
+ * such deal on record, so a rumour about a handshake that never happened does
+ * not quietly become a fact.
+ */
+export function learnBBDeal(knower, a, b, { from = null, week = 0, confidence = 0.8,
+  rng = null } = {}) {
+  if (!knower || !a || !b || a === b) return false;
+  const [x, y] = [a, b].sort();
+  const id = factId('deal', x, y);
+  if (!getFact(id)) return false;
+  const roll = rng || stableRng('deal', x, y, knower, from || '', week);
+  // Being in the room is knowledge; being told is a persuasion roll the
+  // listener can fail. So this reports whether the belief actually formed,
+  // not merely that somebody opened their mouth.
+  return !!learn(knower, id, {
+    source: from || 'observation', sourceType: from ? 'told' : 'observed',
+    from, confidence, ep: week, rng: roll,
+  });
+}
+
+/**
+ * Does this person think those two are going to the end together?
+ *
+ * The question a Head of Household is really asking when they look at a pair.
+ * Deliberately a BELIEF and not the truth: somebody who has been told a lie
+ * about a final two should act on it, and be wrong.
+ */
+export function believesDeal(knower, a, b) {
+  if (!knower || !a || !b || a === b) return false;
+  const [x, y] = [a, b].sort();
+  return !!believes(knower, factId('deal', x, y));
+}
+
+/**
+ * Who somebody is coming for. They know; anybody they told may know.
+ *
+ * Keyed by HUNTER AND QUARRY, not by quarry alone. Keying it on the target
+ * meant two people coming for the same houseguest — the normal case in a house
+ * where everybody can see who the threat is — wrote the same fact id, and the
+ * second one silently overwrote the first's hunter. Half the intentions in the
+ * house would have vanished into the other half.
+ */
 export function recordBBTarget(actor, target, { week = 0, toldTo = [] } = {}) {
-  if (!actor || !target) return null;
-  const id = factId('target', target);
-  recordFact({ type: 'target', subject: target, payload: { hunter: actor }, ep: week });
+  if (!actor || !target || actor === target) return null;
+  const id = factId('target', actor, target);
+  recordFact({ type: 'target', subject: actor, object: target,
+    payload: { hunter: actor, quarry: target }, ep: week });
   learn(actor, id, { sourceType: 'observed', ep: week });
-  toldTo.filter(Boolean).forEach(name => learn(name, id,
-    { source: actor, sourceType: 'told', from: actor, ep: week }));
+  toldTo.filter(Boolean).filter(n => n !== actor).forEach(name => learn(name, id,
+    { source: actor, sourceType: 'told', from: actor, ep: week,
+      rng: stableRng('target', actor, target, name, week) }));
   return id;
+}
+
+/**
+ * Does this person think that person is coming for them — or for anybody?
+ *
+ * The question that turns being hunted into something the quarry can act on.
+ * A belief, so somebody can be certain about a target that was never set and
+ * miss one that was.
+ */
+export function believesTarget(knower, actor, target) {
+  if (!knower || !actor || !target) return false;
+  return !!believes(knower, factId('target', actor, target));
+}
+
+/**
+ * Everybody this person believes is CURRENTLY gunning for them.
+ *
+ * Target facts carry a validity of one episode, because who somebody wants out
+ * is the most perishable thing in the house — it is renewed every week the
+ * intention still stands. A belief past that window comes back marked stale and
+ * is dropped here: acting this week on a name you heard six weeks ago is not
+ * being well informed, it is holding a grudge, and the plan has a revenge list
+ * for that.
+ */
+export function believedHunters(name) {
+  if (!name) return [];
+  return live().filter(other => {
+    if (other === name) return false;
+    const belief = believes(name, factId('target', other, name));
+    return !!belief && belief.valence !== 'stale';
+  });
 }
 
 /**
@@ -183,22 +292,14 @@ export function believedVoters(knower, evicted) {
   return live().filter(name => name !== knower && knowsVote(knower, name, evicted));
 }
 
-/** Is what they believe about this actually true? */
-export function beliefIsAccurate(knower, type, subject, object = null) {
-  try { return isAccurate(knower, factId(type, subject, object)); } catch { return false; }
-}
-
-/** For the screens: how much of the house's business does this person know? */
-export function knowledgeScore(name) {
-  if (!name) return 0;
-  let known = 0;
-  for (const other of live()) {
-    if (other === name) continue;
-    // Votes they think they can account for.
-    known += believedVoters(name, null).length ? 1 : 0;
-  }
-  return known;
-}
+// `beliefIsAccurate` and `knowledgeScore` used to live here and are gone. Both
+// were written for consumers that never arrived, and `knowledgeScore` had
+// quietly been broken the whole time it sat unused: it looped over the house
+// without ever reading the loop variable and asked `believedVoters(name, null)`,
+// which returns an empty array on its own null guard, so it answered 0 for
+// everybody in every season. A scoreboard that always reads zero is worse than
+// no scoreboard. If a screen ever wants either of them, `isAccurate` in
+// ../knowledge.js is the honest primitive to build on.
 
 // ── the jury house ────────────────────────────────────────────────────
 

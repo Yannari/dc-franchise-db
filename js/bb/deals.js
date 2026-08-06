@@ -23,6 +23,7 @@ import { gs, players } from '../core.js';
 import { getBond } from '../bonds.js';
 import { getRelationshipDimensions } from '../relationships.js';
 import { planSkill, housePlan } from './plans.js';
+import { recordBBDeal, learnBBDeal } from './knowledge.js';
 
 const TIER_RANK = { working: 0, 'final-three': 1, 'final-two': 2 };
 
@@ -113,6 +114,27 @@ export function makeEndgameDeal(a, b, tier = 'final-two', { week = null, about =
   };
   deals().push(deal);
 
+  // Into the knowledge model, so the house can find out about it later.
+  //
+  // A trio is recorded as its three pairs rather than one three-way fact: what
+  // travels across a kitchen is "those two are working together", and a player
+  // who hears one leg of a final three has not been handed the other two.
+  // Only the people in the room observe it; everybody else has to be told.
+  try {
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        recordBBDeal(members[i], members[j], tier, round);
+        // Everybody who was standing there knows every leg of it, including the
+        // one between the other two — recordBBDeal only tells the pair itself,
+        // which would leave the third person in a final three unaware of the
+        // half of it they watched being agreed.
+        for (const witness of members) {
+          learnBBDeal(witness, members[i], members[j], { week: round });
+        }
+      }
+    }
+  } catch { /* the promise still stands even if nobody can gossip about it */ }
+
   // The plan should know about it immediately — a deal you have to wait a week
   // to act on is not a deal.
   for (const member of members) {
@@ -149,10 +171,10 @@ export function endgameDealsOf(name) {
       || ((b.sincerity?.[name] || 0) - (a.sincerity?.[name] || 0)));
 }
 
-export function finalTwoPartner(name) {
-  const deal = endgameDealsOf(name).find(d => tierOf(d) === 'final-two');
-  return deal ? (deal.players || []).find(n => n !== name) || null : null;
-}
+// `finalTwoPartner` used to sit here and had no callers anywhere in the
+// simulator. Everything that wants this asks `dealBetween` or walks
+// `endgameDealsOf`, both of which say which tier they got and how much the
+// asker means it — a bare partner name loses exactly the part that matters.
 
 /** Do these two have something at the end, and how strong is it from a's side? */
 export function dealBetween(a, b) {
@@ -213,13 +235,46 @@ export function breakDeal(deal, breaker, { week = null, reason = '' } = {}) {
   return { deal, breaker, victims, round, reason };
 }
 
-/** Somebody told somebody else. A deal only costs you once people know. */
-export function exposeDeal(deal, toWhom) {
+/**
+ * Somebody told somebody else. A deal only costs you once people know.
+ *
+ * `exposedTo` used to be the whole of this: a private list on the deal that two
+ * places read and nothing acted on, so being exposed cost a pair precisely
+ * nothing. The list stays, because a few consumers want the plain roll of who
+ * has been told — but the telling now also enters the knowledge model, which is
+ * what makes it travel. The person told can pass it on next week without
+ * anybody scripting it, and a Head of Household who believes it can split the
+ * pair up on the block.
+ */
+// `rng` stays null by default so learnBBDeal derives a stable one — an
+// unseeded draw inside a seeded season breaks replay. Tests pass one to make
+// the belief roll a certainty rather than a coin flip.
+export function exposeDeal(deal, toWhom, { from = null, week = null, rng = null } = {}) {
   if (!deal) return false;
   deal.exposedTo ||= [];
   const names = Array.isArray(toWhom) ? toWhom : [toWhom];
+  const round = Number(week?.num || week || (gs.episode || 0) + 1);
+  const members = deal.players || [];
   let added = false;
-  for (const n of names) if (n && !deal.exposedTo.includes(n)) { deal.exposedTo.push(n); added = true; }
+  for (const n of names) {
+    if (!n || deal.exposedTo.includes(n)) continue;
+    deal.exposedTo.push(n);
+    added = true;
+    // The roll still takes anybody, including the people who were in it —
+    // the finale exposes a broken deal to the whole jury and the person who
+    // got cut is sitting on it. What they do NOT get is a fresh discovery:
+    // they were in the room, they already hold the fact, and running them
+    // through the belief check would overwrite first-hand knowledge with
+    // hearsay.
+    if (members.includes(n)) continue;
+    try {
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          learnBBDeal(n, members[i], members[j], { from, week: round, rng });
+        }
+      }
+    } catch { /* they were still told; it just does not spread from here */ }
+  }
   return added;
 }
 

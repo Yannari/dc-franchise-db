@@ -16,6 +16,7 @@
 
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
+import { juryOpensAt } from './bb/jury.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { scheduleHouseBeats } from './bb/house-events.js';
 import { getPerceivedBond } from './bonds.js';
@@ -119,7 +120,7 @@ export function houseStructure(config = {}, castSize = 0) {
   // The jury is the last `jurySize` people out, and the houseguest cut at the
   // final three is one of them — so the rest come from the weekly evictions.
   if (jurySize > 0) {
-    const opensAt = jurySize + 2;
+    const opensAt = juryOpensAt(config);
     const fits = jurySize <= evictions + 1;
     segs.push({
       label: fits ? `jury opens at ${opensAt}` : `jury of ${jurySize}`,

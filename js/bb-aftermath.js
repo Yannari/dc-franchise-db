@@ -15,6 +15,7 @@
 // flip was visible, and who the evictee had already decided to blame.
 
 import { gs, seasonConfig, players } from './core.js';
+import { evictionSeatsAJuror, jurorOrdinalFor } from './bb/jury.js';
 import { pronouns, pStats } from './players.js';
 import {
   bond, perceived, trusts, grudge, remembers, targetOf, sharesAlliance,
@@ -534,9 +535,14 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   }));
 
   // ── Where the car goes. ──
-  const remaining = house.length - 1;
-  const jurySeats = Number(seasonConfig.jurySize) || 0;
-  const joinsJury = jurySeats > 0 && (remaining - 3) < jurySeats;
+  //
+  // This used to do the arithmetic again inline, off the post-eviction count,
+  // and declared jury one eviction early: a seven-person jury was announced
+  // from ten houseguests when the timeline had promised nine. The seating was
+  // never affected — the finale clamps to jurySize — so the only symptom was
+  // the tenth boot being told they were a juror on the way out the door.
+  const joinsJury = evictionSeatsAJuror(house.length);
+  const juryNumber = jurorOrdinalFor(house.length);
 
   const hostLines = {
     truth: _pick(rng, {
@@ -577,6 +583,9 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     truth,
     goodbyes,
     joinsJury,
+    // Which juror they are, so the broadcast can say FIRST MEMBER OF THE JURY
+    // and then count rather than repeating the same sentence for all seven.
+    juryNumber,
     // The evictee's parting shot, which the jury will hear about.
     parting: pickLayeredAnswer(rng,
       statFlavoredLines(evictee, 'parting', { joinsJury }),

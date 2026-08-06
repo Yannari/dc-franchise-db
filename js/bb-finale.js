@@ -18,6 +18,7 @@ import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
 import { reconcileBBJury } from './bb/knowledge.js';
+import { seatedJurors } from './bb/jury.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
@@ -41,7 +42,13 @@ export function seatBBJury(extra = []) {
   // stops counting as a departure, or the returnee ends up on the jury they
   // are still playing against. A second eviction later has its own week entry
   // and seats them properly.
-  const evicted = weeks.filter(w => !w.evictionReversed).map(w => w.evicted).filter(Boolean);
+  //
+  // Which evictions are seats is bb/jury.js's rule now, so a mid-season reader
+  // and this vote cannot disagree about who is on the panel. The trailing slice
+  // stays as a belt-and-braces clamp: `extra` carries the final-three cut, and
+  // a season that returned somebody through a Battle Back can otherwise arrive
+  // here with one more name than there are chairs.
+  const evicted = seatedJurors();
   const size = Math.max(0, Number(seasonConfig.jurySize) || 9);
   const all = [...evicted, ...extra].filter(Boolean);
   const jury = size ? all.slice(-size) : all;

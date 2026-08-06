@@ -4536,6 +4536,24 @@ export function generateBBSummaryText(ep) {
       case 'veto':
         sec('POWER OF VETO');
         ln(`  Played by: ${(act.participants || []).join(', ')}.`);
+        // Between the draw and the competition, because that is when it
+        // happened. Its beats are printed here rather than by the generic
+        // helper: the twist rides on this act instead of owning one, so that
+        // a transcript can never show a field being rewritten before it has
+        // shown the field being drawn.
+        if (act.drawTwist) {
+          const dt = act.drawTwist;
+          ln('');
+          ln(dt.kind === 'redraw' ? '  THE VETO REDRAW' : '  THE VETO REPLACEMENT');
+          ln(dt.anonymous
+            ? '  Somebody in this house is holding a power over who plays for the veto.'
+            : `  ${dt.holder} is holding a power over who plays for the veto.`);
+          ln('');
+          (dt.beats || []).forEach(b => ln(`    ${b.text}`));
+          ln('');
+          ln(`  Playing after it: ${[dt.hoh, ...(dt.nominees || []), ...(dt.after || [])].filter(Boolean).join(', ')}`);
+          ln('');
+        }
         if (act.competition) {
           ln(`  ${act.competition.name}${act.competition.category ? ` (${act.competition.category})` : ''}`);
           (act.competition.beats || []).forEach(b => ln(`    · ${b.text}`));
@@ -4599,26 +4617,6 @@ export function generateBBSummaryText(ep) {
         } else {
           ln('  The call is wrong. The nominations stand exactly as they were,');
           ln(`  and ${act.winner} has paid, played and lost in front of the whole house.`);
-        }
-        beats(act);
-        break;
-      }
-
-      case 'veto-draw-twist': {
-        sec(act.kind === 'redraw' ? 'THE VETO PLAYER REDRAW' : 'THE VETO REPLACEMENT');
-        ln(act.kind === 'redraw'
-          ? '  Every chip drawn for this competition goes back in the bag.'
-          : '  One seat in this competition changes hands, and nobody in the house picks it.');
-        ln(`  ${act.hoh} and the nominees play by right and are not touched.`);
-        ln('');
-        ln(`  Drawn in:   ${(act.before || []).join(', ') || 'nobody'}`);
-        if (!act.changed) {
-          ln('  The bag hands back every name it was given. The field is identical,');
-          ln('  and everybody in the room now knows how easily it might not have been.');
-        } else {
-          ln(`  Out:        ${(act.lost || []).join(', ')}`);
-          ln(`  In:         ${(act.gained || []).join(', ')}`);
-          ln(`  Playing:    ${[act.hoh, ...(act.nominees || []), ...(act.after || [])].filter(Boolean).join(', ')}`);
         }
         beats(act);
         break;

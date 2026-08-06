@@ -2573,6 +2573,13 @@ export function simulateBBWeek(options = {}) {
     // rather than instead of it — the twist is a thing done to a field that
     // already exists, and the scene is people losing seats they were already
     // holding.
+    //
+    // NOT pushed as its own act. It happens between the draw and the
+    // competition, and both of those live inside the single `veto` act — so an
+    // act of its own lands BEFORE the draw in week.acts and every transcript
+    // and screen showed the redraw happening before the thing it redraws.
+    // It rides on the veto act instead and is rendered between the two.
+    let drawTwist = null;
     if (!compressed) {
       try {
         const redrawn = applyVetoDrawTwist({
@@ -2580,12 +2587,11 @@ export function simulateBBWeek(options = {}) {
         });
         if (redrawn) {
           vetoPlayers = redrawn.players;
+          drawTwist = redrawn.act;
           week.vetoDrawTwist = {
-            kind: redrawn.act.kind, changed: redrawn.act.changed,
-            lost: [...redrawn.act.lost], gained: [...redrawn.act.gained],
+            kind: drawTwist.kind, changed: drawTwist.changed, holder: drawTwist.holder,
+            lost: [...drawTwist.lost], gained: [...drawTwist.gained],
           };
-          week.acts.push(addBeats(redrawn.act,
-            { players: [...redrawn.act.lost, ...redrawn.act.gained], nominees: [...nominees] }));
         }
       } catch { /* the field stands as it was drawn */ }
     }
@@ -2655,6 +2661,8 @@ export function simulateBBWeek(options = {}) {
       orderOnly: !!vetoOrderOnly, pickOrder: vetoOrderOnly?.order || null,
       vetoHolder: vetoWinner,
       results:vetoResults, competition:vetoCompetition, draw: vetoDraw.draws,
+      // Between the draw and the competition, chronologically and on screen.
+      drawTwist,
       // A seat that no chip accounts for, if the hacker spent their second
       // authority — the one hack the whole house watches happen.
       hacked: vetoDraw.hacked || null,

@@ -281,7 +281,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto', 'bb-veto-redraw', 'bb-veto-replacement']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -987,6 +987,17 @@ export function summariseWeek(week) {
         if (act.hacked) {
           line(`  ${act.hacked.pick} plays with no chip drawn for them — the hacker took ${act.hacked.replaced}'s seat and gave it away.`);
         }
+        if (act.drawTwist) {
+          const dt = act.drawTwist;
+          line(dt.kind === 'redraw' ? '  THE VETO REDRAW' : '  THE VETO REPLACEMENT');
+          line(`    Drawn: ${(dt.before || []).join(', ')}.`);
+          if (!dt.changed) line('    The bag returns the same three names. Nothing changes.');
+          else {
+            line(`    Out: ${(dt.lost || []).join(', ')}. In: ${(dt.gained || []).join(', ')}.`);
+            if (dt.selfSeat) line(`    ${dt.holder} put ${dt.holder} into the competition.`);
+            else if (!dt.anonymous && dt.holder) line(`    ${dt.holder} chose both names.`);
+          }
+        }
         _competition(line, act.competition);
         if (act.orderOnly) {
           line(`  ${act.winner} wins the competition — which this week awards the LAST PICK,`);
@@ -1026,18 +1037,6 @@ export function summariseWeek(week) {
           ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
-        break;
-      }
-      case 'veto-draw-twist': {
-        line('');
-        line(act.kind === 'redraw' ? 'THE VETO PLAYER REDRAW' : 'THE VETO REPLACEMENT');
-        line(`  Drawn: ${(act.before || []).join(', ') || 'nobody'}.`);
-        if (!act.changed) {
-          line('  The bag returns every name it was given. The field is unchanged.');
-        } else {
-          line(`  Out: ${(act.lost || []).join(', ')}. In: ${(act.gained || []).join(', ')}.`);
-          line(`  Playing: ${[act.hoh, ...(act.nominees || []), ...(act.after || [])].filter(Boolean).join(', ')}.`);
-        }
         break;
       }
       case 'second-veto': {

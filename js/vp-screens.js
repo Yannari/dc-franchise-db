@@ -20589,13 +20589,6 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBHaltingHex(view, act, hxDeps) });
         break;
       }
-      case 'veto-draw-twist': {
-        const vdDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
-        screens.push({ id: id(`bb-vetodraw-${act.kind || 'x'}`),
-          label: act.kind === 'redraw' ? 'The Redraw' : 'The Replacement',
-          html: rpBuildBBVetoDrawTwist(view, act, vdDeps) });
-        break;
-      }
       case 'second-veto': {
         const svDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id(`bb-secondveto-${act.kind || 'x'}`),
@@ -20778,6 +20771,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
           const draw = rpBuildBBVetoDraw(view);
           if (draw && draw.trim()) screens.push({ id: id('bb-vdraw'), label: 'The Draw', html: draw });
         } catch { /* no draw recorded, no screen */ }
+        // Between the draw and the competition, which is when it happens. As
+        // its own act it sorted ahead of the draw and the viewer watched a
+        // field being rewritten before they had seen it drawn.
+        if (act.drawTwist) {
+          const vdDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+          screens.push({ id: id(`bb-vetodraw-${act.drawTwist.kind || 'x'}`),
+            label: act.drawTwist.kind === 'redraw' ? 'The Redraw' : 'The Replacement',
+            html: rpBuildBBVetoDrawTwist(view, act.drawTwist, vdDeps) });
+        }
         screens.push({ id: id('bb-veto'),
           label: act.orderOnly ? 'The Pick Order' : 'Veto',
           html: rpBuildBBComp(view, 'veto') });

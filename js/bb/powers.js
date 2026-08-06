@@ -125,6 +125,41 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'Eviction night, after the votes are counted.',
   },
 
+  // ── the two that edit the FIELD rather than the medallion ──
+  //
+  // These shipped first as schedulable week cards and that was wrong, for a
+  // reason worth writing down: a redraw that production simply announces has
+  // no agent in it. Nobody decides, so nobody can be blamed, so the narration
+  // has to keep saying "nobody chose this" — which is a twist explaining why
+  // it is not interesting. As POWERS they are the opposite. Somebody is
+  // holding this, somebody decides whose afternoon of promises gets thrown
+  // away, and the best use of one is the most self-serving: take a seat off
+  // the person most likely to spend the veto against you, and sit in it
+  // yourself.
+  //
+  // Both fire at the draw, which is a timing nothing else in the inventory
+  // uses: after the chips are out and before a single thing is played.
+  'veto-redraw': {
+    id: 'veto-redraw',
+    name: 'The Veto Redraw',
+    rules: { vetoRedraw: true },
+    useTiming: 'veto-draw',
+    windowWeeks: 2,
+    blurb: 'Voids every chip drawn for the veto competition and runs the draw again from scratch.',
+    catch: 'It is a re-roll, not a choice — the holder cannot say who comes out or who goes in, and the bag can hand back the same three names.',
+    moment: 'The veto draw, chips already on the table.',
+  },
+  'veto-replacement': {
+    id: 'veto-replacement',
+    name: 'The Veto Replacement',
+    rules: { vetoReplace: 1 },
+    useTiming: 'veto-draw',
+    windowWeeks: 2,
+    blurb: 'Takes one houseguest out of the veto competition and puts another in — the holder names both.',
+    catch: 'The Head of Household and the nominees play by right and cannot be removed, so it can only ever move one of the three drawn seats.',
+    moment: 'The veto draw, before anybody has played for anything.',
+  },
+
   // BB21, and it belongs HERE rather than on the week-card shelf.
   //
   // It was FOUND — hidden in the house, not competed for — and it was good for

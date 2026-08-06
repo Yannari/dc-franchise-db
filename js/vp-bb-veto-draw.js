@@ -115,11 +115,15 @@ export function rpBuildBBVetoDrawTwist(ep, act, deps) {
 
   const redraw = act.kind === 'redraw';
   const beats = act.beats || [];
-  const steps = [{ kind: 'drawn' }, ...beats.map(b => ({ kind: 'beat', b })), { kind: 'field' }];
+  // No scene-setting card of its own. The engine's first beat already states
+  // the rule — six play, three by right and three by luck — because the text
+  // transcript has no cards and needs it there; a screen card saying the same
+  // thing put the identical paragraph on the page twice in a row.
+  const steps = [...beats.map(b => ({ kind: 'beat', b })), { kind: 'field' }];
   const total = steps.length;
   // The chips move one step in, not at the end: the viewer watches the table
   // change rather than being shown the answer and then told the story.
-  const moved = state.idx >= 2;
+  const moved = state.idx >= 1;
 
   const plates = [act.hoh, ...(act.nominees || [])].filter(Boolean).map((n, i) =>
     `<div class="bbvd-plate">${avatar(n, 22)}
@@ -139,7 +143,8 @@ export function rpBuildBBVetoDrawTwist(ep, act, deps) {
 
   const STAGE = `<div class="bbvd-table ${moved ? 'is-open' : ''}">
     <div class="bbvd-band">
-      <span>${redraw ? 'Every chip, back in the bag' : 'One seat, changing hands'}</span>
+      <span>${act.anonymous ? 'Somebody is holding a power over this draw'
+    : `${esc(act.holder || '')} is holding a power over this draw`}</span>
       <span>Week ${ep.num}</span></div>
     <div class="bbvd-plates">${plates}</div>
     <div class="bbvd-rule">these three play by right — no twist has ever taken that away</div>
@@ -153,34 +158,30 @@ export function rpBuildBBVetoDrawTwist(ep, act, deps) {
 
   const card = (step, i) => {
     if (i > state.idx) return _hidden();
-    if (step.kind === 'drawn') {
-      return _card('THE FIELD AS IT STOOD',
-        `${esc((act.before || []).join(', ') || 'nobody')} drew their way into this competition, and the
-         two days since have been built entirely on that fact — who was worth talking to, who owed
-         whom, which nominee had a route off the block and which did not.
-         <br><br>${redraw
-    ? 'None of it survives the next sentence. Every chip on that table is void and the draw runs again '
-      + 'from the beginning.'
-    : 'One of those names is about to be taken out of it, and one name that is not on the table is about '
-      + 'to be put in. Nobody in this house chooses either.'}`,
-        'grey', '', act.before || []);
-    }
     if (step.kind === 'beat') return _beatCard(step.b);
     if (!act.changed) {
-      return _card('THE SAME FIELD, TWICE',
-        `The bag gives back every name it was given. Nothing about this competition has changed, and
-         everybody standing in it has just watched how easily it could have — which is not the same
-         as nothing happening.`,
+      return _card('THE SAME THREE NAMES',
+        `The bag gives back exactly what it was given. The competition is the competition it was five
+         minutes ago, a power has been spent on nothing at all, and everybody standing in it has just
+         watched how easily it could have gone the other way.`,
         'grey', 'is-final', act.after || []);
     }
+    const gone = (act.lost || []).join(' and ');
+    const came = (act.gained || []).join(' and ');
     return _card('WHO IS ACTUALLY PLAYING',
       `${esc([act.hoh, ...(act.nominees || []), ...(act.after || [])].filter(Boolean).join(', '))}.
-       <br><br>${esc((act.lost || []).join(' and '))} ${
-  (act.lost || []).length === 1 ? 'is' : 'are'} not on that list and ${
-  (act.lost || []).length === 1 ? 'was' : 'were'} an hour ago. ${esc((act.gained || []).join(' and '))}
-       ${(act.gained || []).length === 1 ? 'is' : 'are'}, and did nothing whatsoever to be — which is
-       the part this house will keep coming back to, because there is nobody to be angry with and
-       that has never stopped anybody.`,
+       <br><br>${esc(gone)} ${(act.lost || []).length === 1 ? 'is' : 'are'} not on that list and
+       ${(act.lost || []).length === 1 ? 'was' : 'were'} an hour ago.
+       ${act.selfSeat
+    ? `The seat went to the one person who could arrange for it to: ${esc(came)} is playing for a veto
+       ${act.anonymous ? 'nobody can prove they arranged to play for' : 'they put themselves into'}.`
+    : `${esc(came)} ${(act.gained || []).length === 1 ? 'is' : 'are'} on it instead.`}
+       <br><br>${act.anonymous
+    ? 'The house is never told whose hand did this, which leaves everybody in that room with the same '
+      + 'question and no way to answer it.'
+    : `${esc(act.holder || 'The holder')} did this in front of everybody, which means ${esc(gone)}
+       ${(act.lost || []).length === 1 ? 'knows' : 'know'} exactly who to be angry with — and will be,
+       for as long as it takes.`}`,
     'red', 'is-final', [...(act.lost || []), ...(act.gained || [])]);
   };
 

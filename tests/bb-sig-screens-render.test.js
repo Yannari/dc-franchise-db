@@ -40,6 +40,9 @@ const THEMED = [
   'bb-social-zingbot', 'bb-social-drink-or-bluff',
   'bb-recall-who-said-it', 'bb-recall-drunk-speeches',
   'bb-duress-punch-slap-kick', 'bb-duress-black-box',
+  // Batch two.
+  'bb-stamina-dizzy-discs', 'bb-stamina-log-roll', 'bb-stamina-hold-up',
+  'bb-hand-caged-eggs', 'bb-hand-laser-maze', 'bb-hand-water-rescue',
 ];
 
 describe('themed competition screens render', () => {

@@ -38,6 +38,12 @@ import { rpBuildSigWhoSaidIt } from './vp-bb-sig/who-said-it.js';
 import { rpBuildSigDrunkSpeeches } from './vp-bb-sig/drunk-speeches.js';
 import { rpBuildSigPunchSlapKick } from './vp-bb-sig/punch-slap-kick.js';
 import { rpBuildSigBlackBox } from './vp-bb-sig/black-box.js';
+import { rpBuildSigDizzyDiscs } from './vp-bb-sig/dizzy-discs.js';
+import { rpBuildSigLogRoll } from './vp-bb-sig/log-roll.js';
+import { rpBuildSigHoldUp } from './vp-bb-sig/hold-up.js';
+import { rpBuildSigCagedEggs } from './vp-bb-sig/caged-eggs.js';
+import { rpBuildSigLaserMaze } from './vp-bb-sig/laser-maze.js';
+import { rpBuildSigWaterRescue } from './vp-bb-sig/water-rescue.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
 import { rpBuildSigPressureCooker } from './vp-bb-sig/pressure-cooker.js';
 import { rpBuildSigHideAndGoVeto } from './vp-bb-sig/hide-and-go-veto.js';
@@ -17047,6 +17053,13 @@ const _BB_SIG_BUILDERS = {
   'drunk-speeches': rpBuildSigDrunkSpeeches,
   'punch-slap-kick': rpBuildSigPunchSlapKick,
   'black-box': rpBuildSigBlackBox,
+  // Batch two.
+  'dizzy-discs': rpBuildSigDizzyDiscs,
+  'log-roll': rpBuildSigLogRoll,
+  'hold-up': rpBuildSigHoldUp,
+  'caged-eggs': rpBuildSigCagedEggs,
+  'laser-maze': rpBuildSigLaserMaze,
+  'water-rescue': rpBuildSigWaterRescue,
   'the-wall': rpBuildSigTheWall,
   'pressure-cooker': rpBuildSigPressureCooker,
   'hide-and-go-veto': rpBuildSigHideAndGoVeto,

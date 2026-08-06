@@ -106,12 +106,23 @@ function recordBigMoves(finalists) {
   }
 }
 
-/** One part of the three-part final competition. */
-function finalPart(participants, label, category, rng, week) {
-  const pool = BB_COMPETITIONS.filter(c => c.category === category && c.types.includes('hoh'));
-  const forced = pool.length ? pool[Math.floor(rng() * pool.length)].id : undefined;
+/**
+ * One part of the three-part final competition.
+ *
+ * Parts one and two name their competition outright rather than drawing one:
+ * they are written set pieces in the `final` slot, which no weekly draw can
+ * reach. Part three still draws from the quiz shelf — the jury quiz that
+ * belongs there is the jury's build, not this one's.
+ */
+function finalPart(participants, label, rng, week, { compId = null, category = null } = {}) {
+  const type = compId ? 'final' : 'hoh';
+  let forced = compId || undefined;
+  if (!forced && category) {
+    const pool = BB_COMPETITIONS.filter(c => c.category === category && c.types.includes('hoh'));
+    forced = pool.length ? pool[Math.floor(rng() * pool.length)].id : undefined;
+  }
   const result = runBBCompetition({
-    type: 'hoh', participants: [...participants], house: [...participants],
+    type, participants: [...participants], house: [...participants],
     week, rng, library: BB_COMPETITIONS, forcedId: forced, allowThrowing: false,
   });
   return { part: label, competition: result, winner: result.winner, participants: [...participants] };
@@ -135,18 +146,20 @@ export function simulateBBFinale(rng = Math.random) {
 
   // ── the three-part Head of Household ──
   if (house.length >= 3) {
-    const one = finalPart(house, 'Part One — Endurance', 'endurance', rng, week);
-    acts.push({ type: 'final-hoh-part', ...one });
+    // Everybody plays part one, the outgoing Head of Household included, and
+    // whoever wins it does not play part two at all.
+    const one = finalPart(house, 'Part One — The Wall', rng, week, { compId: 'bb-final-part-one' });
+    acts.push({ type: 'final-hoh-part', ...one, partNum: 1 });
 
-    // Everybody except the part-one winner plays part two.
+    // The two who lost the wall run part two alone, against a clock.
     const twoField = house.filter(n => n !== one.winner);
-    const two = finalPart(twoField, 'Part Two — The Yard', 'physical', rng, week);
-    acts.push({ type: 'final-hoh-part', ...two });
+    const two = finalPart(twoField, 'Part Two — The Run', rng, week, { compId: 'bb-final-part-two' });
+    acts.push({ type: 'final-hoh-part', ...two, partNum: 2 });
 
     // The two winners meet in part three, which is always a question of how
     // closely they were paying attention.
-    const three = finalPart([one.winner, two.winner], 'Part Three — The House', 'quiz', rng, week);
-    acts.push({ type: 'final-hoh-part', ...three });
+    const three = finalPart([one.winner, two.winner], 'Part Three — The House', rng, week, { category: 'quiz' });
+    acts.push({ type: 'final-hoh-part', ...three, partNum: 3 });
     finalHoh = three.winner;
 
     // The one decision the whole season has been pointing at.

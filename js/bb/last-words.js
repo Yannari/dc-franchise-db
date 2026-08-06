@@ -350,6 +350,26 @@ function applyReaction(listener, speaker, reveal, reaction, week, rng) {
 // ── the words ─────────────────────────────────────────────────────────
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
+
+/**
+ * A picker that will not say the same thing twice in one scene.
+ *
+ * Ten people react to one blowup, and a plain pick() over three variants put
+ * the identical sentence on five of them — a room of strangers agreeing word
+ * for word, which reads as a bug even though every line was fine on its own.
+ * Exhaust the pool and it starts reusing rather than running out of room to
+ * react in.
+ */
+function drawer(rng) {
+  const used = new Set();
+  return (key, list) => {
+    const fresh = list.filter((_, i) => !used.has(`${key}#${i}`));
+    const from = fresh.length ? fresh : list;
+    const chosen = from[Math.floor(rng() * from.length) % from.length];
+    used.add(`${key}#${list.indexOf(chosen)}`);
+    return chosen;
+  };
+}
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
 
 function speechFor(reveal, speaker, register, rng) {
@@ -402,28 +422,49 @@ function speechFor(reveal, speaker, register, rng) {
   ]);
 }
 
-function reactionText(listener, speaker, reveal, reaction, rng) {
+function reactionText(listener, speaker, reveal, reaction, draw) {
   const a = reveal.accused;
   switch (reaction.label) {
-    case 'dismissed': return pick(rng, [
+    case 'dismissed': return draw('dismissed', [
       `${listener} does not even look up. "${P(speaker).Sub} would say anything right now."`,
       `${listener} scoffs and moves closer to ${a}. Whatever that was, it was not evidence.`,
       `"That's a bitter person talking," ${listener} says, loud enough for ${a} to hear it and be grateful.`,
+      `${listener} rolls ${P(listener).posAdj} eyes at the ceiling and mouths something to ${a} that looks a lot like "ignore it".`,
+      `${listener} is already talking over the end of it. Nothing said on the way out of a door has ever been true in ${P(listener).posAdj} experience.`,
+      `${listener} puts a hand on ${a}'s shoulder without saying anything, which says it.`,
+      `"People say things when they lose," ${listener} offers, to nobody, in the flattest voice available.`,
+      `${listener} laughs once, sharply, and goes to get a glass of water.`,
     ]);
-    case 'confirmed': return pick(rng, [
+    case 'confirmed': return draw('confirmed', [
       `${listener} goes very still. It is not news — it is the first time somebody else has said it out loud.`,
       `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for two weeks.`,
       `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
+      `Something settles behind ${listener}'s face. The last piece of a week ${P(listener).sub} could not make add up.`,
+      `${listener} mouths "I knew it" at the wall, where no camera is supposed to be.`,
+      `${listener} does not react at all, which for ${P(listener).obj} is the loudest available reaction.`,
+      `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
+      `"Right," says ${listener}, very quietly, and does not elaborate for anybody.`,
     ]);
-    case 'conflicted': return pick(rng, [
+    case 'conflicted': return draw('conflicted', [
       `${listener} is caught between two people ${P(listener).sub} trusts, and there is nowhere to put ${P(listener).posAdj} face.`,
       `${listener} glances at ${a}, then at the door, then at nothing. Both of those people were supposed to be safe.`,
       `${listener} says nothing at all, which everybody in the room notices.`,
+      `${listener} starts a sentence in ${a}'s defence and does not finish it.`,
+      `${listener} wants very badly for that to be a lie, and cannot quite get there.`,
+      `${listener} keeps looking at ${a} out of the side of ${P(listener).posAdj} eye for the rest of the night.`,
+      `${listener} has just been asked to choose between two people, by somebody who will not be here to see which way it went.`,
+      `${listener} folds ${P(listener).posAdj} arms and stares at the carpet like it owes ${P(listener).obj} an answer.`,
     ]);
-    default: return pick(rng, [
+    default: return draw('doubt', [
       `${listener} files it away without a word. It might be nothing. It might not.`,
       `${listener} tilts ${P(listener).posAdj} head slightly. Not convinced — but not un-convinced either.`,
       `${listener} keeps clapping the way you do when you are thinking about something else entirely.`,
+      `${listener} does the maths on ${P(listener).posAdj} fingers, discreetly, against ${P(listener).posAdj} leg.`,
+      `${listener} looks at ${a} for slightly too long and then looks away, having decided nothing.`,
+      `${listener} will not act on that tonight. ${P(listener).Sub} will remember it on Thursday.`,
+      `${listener} makes a note of it the way you note a name you keep hearing.`,
+      `${listener} shrugs, but the shrug takes a moment too long to arrive.`,
+      `Whatever ${listener} thinks of it stays behind ${P(listener).posAdj} face, where it is no use to anybody.`,
     ]);
   }
 }
@@ -491,10 +532,13 @@ export function checkBBLastWords(week, rngIn) {
   // ── the room ──
   const listeners = (gs.activePlayers || []).filter(n => n !== evictee && n !== reveal.accused);
   const reactions = [];
+  // One drawer for the whole room, so fourteen people do not react in the same
+  // eight words.
+  const draw = drawer(rng);
   for (const listener of listeners) {
     const reaction = resolveBelief(listener, evictee, reveal, isTrue, rng);
     applyReaction(listener, evictee, reveal, reaction, week, rng);
-    reactions.push({ listener, ...reaction, text: reactionText(listener, evictee, reveal, reaction, rng) });
+    reactions.push({ listener, ...reaction, text: reactionText(listener, evictee, reveal, reaction, draw) });
   }
 
   // ── the accused answers ──

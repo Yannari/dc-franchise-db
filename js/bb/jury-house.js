@@ -40,6 +40,18 @@ const archetypeOf = name => players.find(p => p.name === name)?.archetype || 'fl
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
 
+/** A picker that will not repeat itself inside one scene. See last-words.js. */
+function drawer(rng) {
+  const used = new Set();
+  return (key, list) => {
+    const fresh = list.filter((_, i) => !used.has(`${key}#${i}`));
+    const from = fresh.length ? fresh : list;
+    const chosen = from[Math.floor(rng() * from.length) % from.length];
+    used.add(`${key}#${list.indexOf(chosen)}`);
+    return chosen;
+  };
+}
+
 // Who lobbies. The project's archetype rule, applied to a room where the only
 // currency left is other people's votes: villains work it freely, neutrals only
 // with the strategy and without the loyalty, nice archetypes never — they argue
@@ -172,6 +184,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
 function longWeekBeats(residents, week, rng) {
   const beats = [];
   const seen = new Set();
+  const draw = drawer(rng);
 
   // Grudges, hashed out between people who removed each other.
   for (const juror of residents) {
@@ -181,15 +194,18 @@ function longWeekBeats(residents, week, rng) {
     const mended = getBond(juror, enemy) + (rng() - 0.3) * 3 > -1;
     if (mended) addBond(juror, enemy, 1.2);
     beats.push(beat(mended ? 'CLOSURE' : 'GRUDGE', [juror, enemy], mended
-      ? pick(rng, [
+      ? draw('closure', [
         `${juror} and ${enemy} end up doing dishes at the same sink and, forty minutes later, are laughing about the week it all went wrong.`,
         `"I hated you in there," ${juror} tells ${enemy}. "Out here you're just a person who did a thing." It is not forgiveness exactly, but it will do.`,
         `${enemy} apologises properly, without qualifying it. ${juror} was not expecting that and has to sit down.`,
       ])
-      : pick(rng, [
+      : draw('grudge', [
         `${juror} and ${enemy} manage a full day in a shared house without addressing a single word to each other.`,
         `${enemy} tries to start something. ${juror} takes ${P(juror).posAdj} plate outside and eats standing up.`,
         `Somebody suggests a game of cards. ${juror} looks at ${enemy} and says ${P(juror).sub} is going for a walk.`,
+        `${juror} has worked out the exact route through the lodge that never passes ${enemy}, and walks it about nine times a day.`,
+        `${enemy} says good morning. ${juror} says nothing, for long enough that somebody else fills the silence.`,
+        `They are both very polite about the washing-up rota, which is somehow worse than shouting.`,
       ])));
   }
 
@@ -197,11 +213,16 @@ function longWeekBeats(residents, week, rng) {
   for (const juror of residents) {
     if (seen.has(juror)) continue;
     seen.add(juror);
-    beats.push(beat('THE LONG DAYS', [juror], pick(rng, [
+    beats.push(beat('THE LONG DAYS', [juror], draw('long', [
       `${juror} has watched the same stretch of ceiling for three days and rerun the same conversation about eight hundred times.`,
       `${juror} keeps a running list of what ${P(juror).sub} would have done differently. It is on page two.`,
       `${juror} is sleeping properly for the first time in six weeks and is furious about how good it feels.`,
       `${juror} asks nobody in particular whether it counts as playing the game if you are still thinking about it this hard.`,
+      `${juror} has learned to cook one thing extremely well and will not be taking questions about why.`,
+      `${juror} still wakes at the hour the house used to get its wake-up call, and lies there remembering there is nowhere to be.`,
+      `${juror} has started narrating ${P(juror).posAdj} own afternoons to a camera that is not there.`,
+      `Somebody finds ${juror} out on the porch at two in the morning, doing the numbers again.`,
+      `${juror} swore ${P(juror).sub} would not care by now. ${P(juror).Sub} cares.`,
     ])));
   }
   return beats;
@@ -223,6 +244,9 @@ function roundtable(residents, week, rng) {
   const contenders = (gs.activePlayers || []).slice();
   if (!contenders.length || residents.length < 2) return null;
   const lines = [];
+  // Six people argued over in one sitting used the same four sentences, so the
+  // same objection landed on three different finalists in the same scene.
+  const draw = drawer(rng);
   const backerUse = {}, doubterUse = {};
 
   for (const player of contenders) {
@@ -238,17 +262,25 @@ function roundtable(residents, week, rng) {
     backerUse[backer] = (backerUse[backer] || 0) + 1;
     doubterUse[doubter] = (doubterUse[doubter] || 0) + 1;
 
-    const backText = pick(rng, [
+    const backText = draw('back', [
       `${backer} makes the case for ${player}. "${P(player).Sub} has been making decisions since week one. Everybody else in there is reacting to ${P(player).obj}."`,
       `"I'll say it," ${backer} says. "${player} is the only person in that house actually playing. The rest are surviving."`,
       `${backer} keeps coming back to ${player}. "${P(player).Sub} looked me in the eye and told me the truth when a lie was easier. That counts."`,
       `${backer} lays out ${player}'s week-by-week. Halfway through, the room realises how much of the season has ${player}'s hands on it.`,
+      `"${player} got me out and I'm sitting here arguing for ${P(player).obj}," ${backer} says. "That should tell you something."`,
+      `${backer} points out that every single person in this lodge was removed by a plan ${player} was standing in the middle of.`,
+      `"Name one week ${player} was not in danger and did something about it," ${backer} says. Nobody manages it quickly.`,
+      `${backer} has stopped being angry about it. "${P(player).Sub} beat me. I'd rather lose to somebody who was trying."`,
     ]);
-    const doubtText = pick(rng, [
+    const doubtText = draw('doubt', [
       `${doubter} is not having it. "${player} has been carried by other people's numbers all season and we're calling it a résumé?"`,
       `"${player} never took a shot ${P(player).sub} could lose," ${doubter} says. "That's not a game, that's a seat."`,
       `${doubter} shakes ${P(doubter).posAdj} head. "Every one of us is out here because somebody made a hard call. ${player} has never made one."`,
       `"You're all describing somebody who was in the room when things happened," ${doubter} says. "That isn't the same as doing them."`,
+      `"${player} has been safe for six weeks," ${doubter} says. "Ask yourselves who arranged that, because it was not ${P(player).obj}."`,
+      `${doubter} wants a single decision named that cost ${player} anything. The room offers a few. ${P(doubter).Sub} is not impressed by any of them.`,
+      `"I liked ${player}," says ${doubter}. "I'm not paying somebody for being pleasant to me on the way to the door."`,
+      `${doubter} has heard this speech about ${player} three times now and it gets shorter every week.`,
     ]);
 
     // Everybody in the room hears both, and moves.

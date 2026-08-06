@@ -23,6 +23,7 @@ import { SIGNATURE_COMPS } from './signature.js';
 import { PAIR_COMPS } from './pairs.js';
 import { CLASSIC_COMPS } from './classics.js';
 import { ARENA_CLASSIC_COMPS } from './arena-classics.js';
+import { FINAL_HOH_COMPS } from './final-hoh.js';
 
 /**
  * How strongly a written competition outranks a fallback.
@@ -65,6 +66,11 @@ export const BB_COMPETITIONS = [
   // keep resolving to the original single-sort competitions, and the signature
   // set is an addition to the library rather than a replacement of it.
   ...SIGNATURE_COMPS,
+  // Only the finale asks for these, and it asks by id. They carry the
+  // production weight like everything else so that nothing has to special-case
+  // them, but no weekly slot declares their type, so no weekly draw can reach
+  // them.
+  ...FINAL_HOH_COMPS,
 ].map(production);
 
 export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) => {
@@ -75,5 +81,5 @@ export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) =>
 /** Which competitions can serve a given slot — the dispatcher's own filter. */
 export const competitionsFor = type => BB_COMPETITIONS.filter(c => c.types.includes(type));
 
-export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS };
+export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS };
 export default BB_COMPETITIONS;

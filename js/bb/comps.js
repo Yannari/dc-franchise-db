@@ -16,7 +16,13 @@ import { shouldThrowHoh, shouldThrowVeto, gunningFor } from './strategy.js';
 // nothing written for one nominee coming off the block alone can serve a night
 // where the block comes off in twos — the arena's own closing beats announced
 // each player's fate individually, and the week had to strip them back out.
-export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker', 'return', 'pair']);
+// 'final' is the last Head of Household, parts one and two. A type of its own
+// because these two must never be drawable for a weekly slot: the wall runs to
+// six hours and lets the field negotiate its own exits, and the run is played
+// by exactly two people alone against a clock. Neither is a week four HOH, and
+// a weekly draw that turned one up would be narrating a set piece out of place.
+// Nothing requests this type except the finale, which forces both by id.
+export const BB_COMP_TYPES = Object.freeze(['hoh', 'veto', 'arena', 'tiebreaker', 'return', 'pair', 'final']);
 const VALID_TYPES = new Set(BB_COMP_TYPES);
 const VALID_STATS = new Set(['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament']);
 

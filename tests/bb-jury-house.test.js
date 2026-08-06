@@ -183,6 +183,36 @@ describe('last words at the door', () => {
     expect(['owns', 'turns', 'denies']).toContain(found.kind);
   });
 
+  // Variety is a feature here, and an easy one to lose: every line added to a
+  // pool reads fine on its own, and the only way to see that a room sounds
+  // repetitive is to count templates across a season. This measures 56 distinct
+  // shapes from ~180 reactions; the floor is set below that with room to move
+  // so ordinary text edits do not trip it, but deleting a pool would.
+  it('does not put the same sentence in everybody\'s mouth', () => {
+    const seen = [];
+    for (const seed of [3, 7, 11, 19, 27, 35, 43, 51, 59, 67]) {
+      reset();
+      simulateBBSeason({ rng: seededRng(seed) });
+      for (const w of gs.bb.weeks || []) {
+        for (const r of w.lastWords?.reactions || []) {
+          // Strip names and pronouns to compare the TEMPLATE, not the casting.
+          let t = r.text;
+          CAST.forEach(p => { t = t.split(p.name).join('~'); });
+          seen.push(t.replace(/\b(he|she|they|his|her|their|him|them)\b/gi, '*'));
+        }
+      }
+    }
+    expect(seen.length).toBeGreaterThan(80);
+    const distinct = new Set(seen);
+    expect(distinct.size).toBeGreaterThan(40);
+    // And no single line may carry the room: the most repeated template stays
+    // well under a fifth of everything said.
+    const counts = {};
+    seen.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+    const worst = Math.max(...Object.values(counts));
+    expect(worst).toBeLessThan(seen.length * 0.2);
+  });
+
   it('stays rare enough to mean something', () => {
     let blowups = 0, fights = 0;
     for (const seed of [3, 7, 11, 19, 27, 35, 43, 51, 59, 67]) {

@@ -429,10 +429,181 @@ function speechFor(reveal, speaker, register, rng) {
   ]);
 }
 
+// ── who is reacting, not just how ─────────────────────────────────────
+//
+// Nine variants per verdict still read as one voice, because the variants were
+// all written for a generic houseguest. The room does not contain generic
+// houseguests: a schemer hearing an accusation is doing arithmetic with it, a
+// loyal soldier is deciding whether somebody's word is worth anything, and a
+// goat is mostly hoping nobody looks at them. Same verdict, different person,
+// different sentence.
+//
+// Grouped rather than per-archetype: fifteen archetypes times five verdicts is
+// a catalogue nobody will keep consistent, and these six cover the registers
+// that actually differ.
+const VOICE = {
+  villain: 'calculating', mastermind: 'calculating', schemer: 'calculating',
+  'loyal-soldier': 'principled', hero: 'principled',
+  hothead: 'volatile', 'chaos-agent': 'volatile',
+  'social-butterfly': 'relational', showmancer: 'relational',
+  'perceptive-player': 'analytic', wildcard: 'analytic',
+  goat: 'quiet', floater: 'quiet', underdog: 'quiet', 'challenge-beast': 'quiet',
+};
+
+function voiceLines(voice, label, listener, speaker, a) {
+  const L = listener, S = speaker;
+  const table = {
+    calculating: {
+      dismissed: [
+        `${L} does not believe a word of it and is already thinking about who benefits if the house does.`,
+        `"Convenient," says ${L}, filing the whole scene under things to bring up when it is useful.`,
+        `${L} decides it is false and immediately starts working out how to make it stick anyway.`,
+      ],
+      confirmed: [
+        `${L} believes it instantly and says nothing, because a thing everybody knows is worth less than a thing only you know.`,
+        `${L} files it as leverage rather than as news. There is a difference and ${P(L).sub} has always known it.`,
+        `You can watch ${L} recalculate the next three weeks without ${P(L).posAdj} face moving at all.`,
+      ],
+      conflicted: [
+        `${L} cannot decide which version is more useful, which is not the same as which is true, and ${P(L).sub} knows that too.`,
+        `Two people ${L} needs have just called each other liars. That is a problem before it is a betrayal.`,
+      ],
+      doubt: [
+        `${L} does not need it to be true. ${P(L).Sub} needs to know who else believed it.`,
+        `${L} watches the room instead of the doorway, counting faces.`,
+        `${L} is less interested in whether it happened than in who ${S} chose to say it in front of.`,
+        `${L} makes a private note that ${a} is now a name the house associates with something.`,
+      ],
+    },
+    principled: {
+      dismissed: [
+        `${L} will not have somebody's name taken apart when they cannot answer for it, and says so.`,
+        `"We are not doing this," ${L} says, to the room rather than to anybody in it.`,
+        `${L} looks genuinely angry — not at ${a}, at the way it was done.`,
+      ],
+      confirmed: [
+        `${L} takes it hard. It is not the game part that lands, it is that somebody lied to ${P(L).posAdj} face and let ${P(L).obj} defend them.`,
+        `${L} nods slowly, and something closes behind ${P(L).posAdj} eyes that will not open again this season.`,
+        `"Then ${P(a).sub} should have said so," ${L} says quietly. That is the whole objection.`,
+      ],
+      conflicted: [
+        `${L} believes people should be able to be believed, and has just been handed proof that two of them cannot both be.`,
+        `${L} would rather be wrong about this than right, and is not sure ${P(L).sub} is.`,
+      ],
+      doubt: [
+        `${L} refuses to convict anybody on a parting shot, and refuses to forget it either.`,
+        `${L} will go and ask ${a} directly, which in this house counts as eccentric.`,
+        `${L} thinks somebody should have said all this to ${a}'s face a week ago, when it could have been answered.`,
+        `${L} dislikes the whole shape of it — the door, the audience, the timing — more than the content.`,
+      ],
+    },
+    volatile: {
+      dismissed: [
+        `${L} laughs, too loud, and tells the room exactly what ${P(L).sub} thinks of people who talk on the way out.`,
+        `"Oh, NOW we're saying things," ${L} announces, to nobody who asked.`,
+      ],
+      confirmed: [
+        `${L} is up out of ${P(L).posAdj} seat before the sentence is finished, and somebody has to say ${P(L).posAdj} name twice.`,
+        `${L} does not wait for the door to shut. "I KNEW it. I said it. I said it on Sunday."`,
+        `${L} goes red and stays quiet, which for ${P(L).obj} is the more frightening version.`,
+      ],
+      conflicted: [
+        `${L} wants somebody to be the villain immediately and cannot pick, which is intolerable.`,
+        `${L} makes a noise of pure frustration and leaves the room rather than choose.`,
+      ],
+      doubt: [
+        `${L} demands to know who else heard it, which is not the same as believing it.`,
+        `${L} is going to be chewing on that for a week and everybody can already tell.`,
+        `"What does that even MEAN," ${L} says, to a room that is trying to move on.`,
+        `${L} says ${P(L).sub} does not care, twice, unprompted.`,
+      ],
+    },
+    relational: {
+      dismissed: [
+        `${L} is at ${a}'s side before the door shuts, doing the thing ${P(L).sub} does where nobody is allowed to feel accused.`,
+        `${L} steers the conversation somewhere else with the skill of somebody who has done it a hundred times.`,
+      ],
+      confirmed: [
+        `${L} is less shocked that it happened than that ${P(L).sub} did not see it, and takes that personally.`,
+        `${L} believes it, and the first thing ${P(L).sub} thinks about is who needs to be told and in what order.`,
+      ],
+      conflicted: [
+        `${L} loves both of them and is visibly doing sums about which friendship survives the week.`,
+        `${L} touches ${a}'s arm and cannot quite meet ${P(a).posAdj} eye, which is its own answer.`,
+      ],
+      doubt: [
+        `${L} says something kind and non-committal, and privately moves ${a} one place down a list ${P(L).sub} keeps.`,
+        `${L} will have this conversation again tonight, in the bedroom, with three different people.`,
+        `${L} checks how ${a} is taking it before deciding how ${P(L).sub} is taking it.`,
+        `${L} reads the room first and forms an opinion second, which is the correct order in this house.`,
+      ],
+    },
+    analytic: {
+      dismissed: [
+        `${L} has already checked it against the week and it does not fit. ${P(L).Sub} says so once, precisely, and lets it go.`,
+        `"The timings are wrong," ${L} says, and is the only person in the room who has bothered to check.`,
+      ],
+      confirmed: [
+        `${L} does not look surprised, because ${P(L).sub} worked it out on Tuesday and has been waiting for corroboration.`,
+        `${L} nods once. Another piece fits a shape ${P(L).sub} has been assembling quietly for a fortnight.`,
+      ],
+      conflicted: [
+        `${L} can build a version of the week where either of them is telling the truth, and hates both.`,
+        `${L} goes very quiet, which usually means ${P(L).sub} is testing the claim against everything ${P(L).sub} knows.`,
+      ],
+      doubt: [
+        `${L} treats it as a data point rather than a verdict, and looks for the second one.`,
+        `${L} is not convinced. ${P(L).Sub} is, however, now watching ${a} properly for the first time.`,
+        `${L} notes which parts of that were specific and which were noise, and only keeps the specific ones.`,
+        `${L} wants to know why ${S} said it TONIGHT, and what changed this afternoon.`,
+      ],
+    },
+    quiet: {
+      dismissed: [
+        `${L} hopes very much that this is finished, and busies ${P(L).ref} with the dishes.`,
+        `${L} agrees with whoever spoke last, as a matter of policy.`,
+      ],
+      confirmed: [
+        `${L} believes it, and immediately worries about what believing it will cost ${P(L).obj}.`,
+        `${L} says nothing at all. Saying nothing has kept ${P(L).obj} here this long.`,
+      ],
+      conflicted: [
+        `${L} would like somebody to tell ${P(L).obj} what to think about this, and nobody is going to.`,
+        `${L} looks at the floor and waits for the room to decide, so ${P(L).sub} can decide the same thing.`,
+      ],
+      doubt: [
+        `${L} nods along without committing to anything, which is the whole game as far as ${P(L).sub} is concerned.`,
+        `${L} does not want a side. ${P(L).Sub} wants Thursday to come quietly.`,
+        `${L} is mostly relieved that none of the names being shouted were ${P(L).posAdj} own.`,
+        `${L} waits to see which way the room goes, and will have thought that all along.`,
+      ],
+    },
+  };
+  const key = label === 'confirmed' ? 'confirmed' : label === 'dismissed' ? 'dismissed'
+    : label === 'conflicted' ? 'conflicted' : 'doubt';
+  return (table[voice] || {})[key] || [];
+}
+
+/**
+ * What this particular person says about it.
+ *
+ * The listener's own register and the general lines go into ONE pool, drawn
+ * together — so a hothead can only ever draw hothead lines or neutral ones,
+ * never a schemer's, and the drawer still guarantees nobody in the room repeats
+ * anybody else.
+ */
 function reactionText(listener, speaker, reveal, reaction, draw) {
+  const voice = VOICE[archetypeOf(listener)];
+  const own = voice ? voiceLines(voice, reaction.label, listener, speaker, reveal.accused) : [];
+  const general = generalReaction(listener, speaker, reveal, reaction);
+  return draw(`${voice || 'plain'}-${reaction.label}`, [...own, ...general]);
+}
+
+function generalReaction(listener, speaker, reveal, reaction) {
   const a = reveal.accused;
+  const pool = (_label, lines) => lines; // these are POOLS; the caller draws
   switch (reaction.label) {
-    case 'dismissed': return draw('dismissed', [
+    case 'dismissed': return pool('dismissed', [
       `${listener} does not even look up. "${P(speaker).Sub} would say anything right now."`,
       `${listener} scoffs and moves closer to ${a}. Whatever that was, it was not evidence.`,
       `"That's a bitter person talking," ${listener} says, loud enough for ${a} to hear it and be grateful.`,
@@ -447,7 +618,7 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
     // not hears news. Quoting an "I knew it" line at somebody with no prior
     // suspicion was the other half of the band-versus-sentence mismatch.
     case 'confirmed': return (reaction.prior || 0) > 0.35
-      ? draw('confirmed-knew', [
+      ? pool('confirmed-knew', [
         `${listener} goes very still. It is not news — it is the first time somebody else has said it out loud.`,
         `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for two weeks.`,
         `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
@@ -455,7 +626,7 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
         `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
         `"Right," says ${listener}, very quietly, and does not elaborate for anybody.`,
       ])
-      : draw('confirmed-new', [
+      : pool('confirmed-new', [
         `Something settles behind ${listener}'s face. The last piece of a week ${P(listener).sub} could not make add up.`,
         `${listener} had no opinion about ${a} an hour ago. ${P(listener).Sub} has a very firm one now.`,
         `${listener} believes it immediately, and is visibly annoyed at how obvious it suddenly looks.`,
@@ -463,7 +634,7 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
         `"Huh," says ${listener}, in the tone of somebody rearranging the entire week.`,
         `${listener} does not react at all, which for ${P(listener).obj} is the loudest available reaction.`,
       ]);
-    case 'conflicted': return draw('conflicted', [
+    case 'conflicted': return pool('conflicted', [
       `${listener} is caught between two people ${P(listener).sub} trusts, and there is nowhere to put ${P(listener).posAdj} face.`,
       `${listener} glances at ${a}, then at the door, then at nothing. Both of those people were supposed to be safe.`,
       `${listener} says nothing at all, which everybody in the room notices.`,
@@ -473,7 +644,10 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
       `${listener} has just been asked to choose between two people, by somebody who will not be here to see which way it went.`,
       `${listener} folds ${P(listener).posAdj} arms and stares at the carpet like it owes ${P(listener).obj} an answer.`,
     ]);
-    default: return draw('doubt', [
+    // The workhorse pool by a distance — "not sure" is the biggest band in
+    // almost every room, so it gets drawn several times a night and dominated
+    // the season's repeats until it was widened to match.
+    default: return pool('doubt', [
       `${listener} files it away without a word. It might be nothing. It might not.`,
       `${listener} tilts ${P(listener).posAdj} head slightly. Not convinced — but not un-convinced either.`,
       `${listener} keeps clapping the way you do when you are thinking about something else entirely.`,
@@ -483,6 +657,18 @@ function reactionText(listener, speaker, reveal, reaction, draw) {
       `${listener} makes a note of it the way you note a name you keep hearing.`,
       `${listener} shrugs, but the shrug takes a moment too long to arrive.`,
       `Whatever ${listener} thinks of it stays behind ${P(listener).posAdj} face, where it is no use to anybody.`,
+      `${listener} asks somebody, later and quietly, whether they heard the same thing ${P(listener).sub} did.`,
+      `${listener} says "hm" and nothing else for the rest of the night.`,
+      `${listener} was not listening properly and is now pretending very hard to have been.`,
+      `${listener} takes it about as seriously as anything else said in that doorway, which is to say partly.`,
+      `${listener} decides to see how ${a} behaves tomorrow before deciding anything at all.`,
+      `${listener} stacks it next to the other three things ${P(listener).sub} has been told about ${a} this month.`,
+      `${listener} would like some evidence, and knows perfectly well ${P(listener).sub} is never going to get any.`,
+      `${listener} looks at the carpet for a second too long, then goes back to the conversation ${P(listener).sub} was having.`,
+      `${listener} gives the doorway a long look and keeps ${P(listener).posAdj} face still.`,
+      `${listener} has heard four versions of this week already. This is the fifth.`,
+      `${listener} claps politely, the way you do at a thing you have not decided about yet.`,
+      `Nothing in ${listener}'s face moves, and nothing in ${P(listener).posAdj} head settles either.`,
     ]);
   }
 }

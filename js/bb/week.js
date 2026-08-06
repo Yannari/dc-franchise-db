@@ -19,6 +19,7 @@ import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
 import { punishedHaveNots, applyPunishment, drawPunishment, BB_PUNISHMENTS } from './punishments.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
+import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
@@ -1498,6 +1499,30 @@ export function simulateBBWeek(options = {}) {
         shelf: shelf.map(id => BB_POWER_DEFINITIONS[id].name),
       }, { players: winners.map(w => w.name) }));
     }
+  }
+
+  // ── TEAM AMERICA: three people with a job ──
+  //
+  // Runs at week opening, before nominations, because half the missions are
+  // about steering a nomination and a job handed out after the keys turn is
+  // not a job. Empty seats refill first — the show replaced members as they
+  // were evicted, and a team of one cannot run a rumour.
+  //
+  // The plan goes in because the block mission edits it: "get a specific name
+  // nominated" has to be able to actually seat somebody, and this is the last
+  // point in the week where that is still possible. It only ever moves the
+  // chair nobody was asked to sit in — the pawn negotiation above is a scene
+  // the week has already shown, and quietly overwriting it would be a lie.
+  if (!compressed && twists.has('bb-team-america')) {
+    try {
+      fillTeam(house, rng);
+      week.teamAmerica = runMission({
+        week, house, rng, forced: options.teamMission || null, plan, hoh,
+      });
+      if (week.teamAmerica) {
+        week.acts.push(addBeats(week.teamAmerica, { players: week.teamAmerica.members }));
+      }
+    } catch { week.teamAmerica = null; }
   }
 
   // ── THE SAFETY SUITE: one entry, one season ──

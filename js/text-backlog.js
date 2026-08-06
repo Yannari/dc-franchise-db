@@ -4574,6 +4574,31 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'team-america': {
+        sec('TEAM AMERICA');
+        ln('  An alliance nobody in this house chose, and nobody in it can refuse.');
+        ln(`  Members: ${(act.members || []).join(', ')}.`);
+        ln('');
+        ln(`  Mission ${act.missionNumber}: ${act.mission.name}.`);
+        ln('');
+        // Verbatim, not paraphrased. This used to restate the mission in three
+        // short lines of its own and then call beats(), which only renders
+        // socialBeats — so the assignment, the objective, the outcome and what
+        // the mission actually DID to the house were all written, screened in
+        // the viewing party, and never reached the transcript at all.
+        (act.beats || []).forEach(b => {
+          ln(`  ${b.badgeText ? `[${b.badgeText}] ` : ''}${b.text}`);
+          ln('');
+        });
+        if (act.mission.done && act.mission.effect?.note) {
+          ln(`  And the house is different: ${act.mission.effect.note}`);
+          ln('');
+        }
+        ln(`  Paid this season: $${(act.earned || 0).toLocaleString()}.`);
+        beats(act);
+        break;
+      }
+
       case 'camp-comeback': {
         sec('CAMP COMEBACK');
         ln(`  ${act.arrival} is voted out, and stays.`);

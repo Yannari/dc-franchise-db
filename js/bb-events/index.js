@@ -46,6 +46,7 @@ import { PUNISHMENT_EVENTS } from './punishments.js';
 import { POWER_KNOWLEDGE_EVENTS } from './power-knowledge.js';
 import { PRIZE_EXCHANGE_EVENTS } from './prize-exchange.js';
 import { CAMP_EVENTS } from './camp-comeback.js';
+import { TEAM_AMERICA_EVENTS } from './team-america.js';
 import { CONSEQUENCE_ARC_EVENTS } from './consequence-arcs.js';
 import { ALLIANCE_LIFE_EVENTS } from './alliance-life.js';
 import { SHOWMANCE_ARC_EVENTS } from './showmance-arcs.js';
@@ -87,6 +88,7 @@ export const HOUSE_EVENTS = [
   ...POWER_KNOWLEDGE_EVENTS,
   ...PRIZE_EXCHANGE_EVENTS,
   ...CAMP_EVENTS,
+  ...TEAM_AMERICA_EVENTS,
   ...CONSEQUENCE_ARC_EVENTS,
   ...ALLIANCE_LIFE_EVENTS,
   ...SHOWMANCE_ARC_EVENTS,

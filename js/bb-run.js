@@ -280,7 +280,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america']);
 
 /**
  * Which twists are scheduled for the week about to be played.
@@ -1025,6 +1025,15 @@ export function summariseWeek(week) {
           ? `  The call is right. The nominations are taken off ${act.hoh}: ${(act.nominees || []).join(' and ')} go up.`
           : '  The call is wrong. Nothing changes, and everybody still knows who paid to try.');
         line('  The house is never told who called it.');
+        break;
+      }
+      case 'team-america': {
+        line('');
+        line('TEAM AMERICA');
+        line(`  Mission ${act.missionNumber}: ${act.mission.name}.`);
+        line(`  ${act.mission.done ? 'Complete' : 'Failed'}${act.mission.noticed
+          ? ' — and the house noticed it was being steered.' : '.'}`);
+        if (act.mission.effect?.note) line(`  ${act.mission.effect.note}`);
         break;
       }
       case 'camp-comeback': {

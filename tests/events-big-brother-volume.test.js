@@ -93,6 +93,9 @@ function playSeasons(seeds) {
     // Camp fills one eviction at a time, so this one wants a run of weeks
     // rather than a slot — the campers only start talking once there are some.
     { twist: 'bb-camp-comeback', seeds: [58, 88, 95, 163], weeks: [7, 8, 9] },
+    // Team America wants consecutive weeks: the residue events read the
+    // week AFTER a mission as well as the week of it.
+    { twist: 'bb-team-america', seeds: [71, 102, 178], weeks: [7, 8, 9] },
     // Weeks 5-7 band.
     { twist: 'bb-pandoras-box', seeds: [11, 44], weeks: [5, 6] },
     { twist: 'bb-den-of-temptation', seeds: [88, 58], weeks: [5, 6] },
@@ -263,7 +266,7 @@ describe('the Big Brother event library as a whole', () => {
     const gatedFamilies = [
       ['coup-', 2], ['evictionpower-', 1], ['coin-', 3], ['care-', 4],
       ['suite-', 3], ['americas-', 3], ['powerknown-', 1], ['punish-', 2],
-      ['exchange-', 2], ['camp-', 2],
+      ['exchange-', 2], ['camp-', 2], ['team-', 2],
     ].map(([prefix, min]) => ({
       prefix, min,
       ids: new Set(HOUSE_EVENTS.map(e => e.id).filter(id => id.startsWith(prefix))),

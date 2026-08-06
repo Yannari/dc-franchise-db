@@ -253,6 +253,17 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Somebody is about to lose their week to a coin, and never learn whose hand threw it.',
     },
   },
+  'bb-team-america': {
+    id: 'bb-team-america', layer: 'scheduled', category: 'alliance',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // No rules delta. The week is untouched — this runs entirely inside the
+    // social layer, which is the only place a secret job could live.
+    rules: {},
+    acquisition: { channel: 'audience', secrecy: 'secret' },
+    // No announcement: the house is never told this exists. That is the whole
+    // twist — three people are working and everybody else is only ever going
+    // to notice the work.
+  },
   'bb-camp-comeback': {
     id: 'bb-camp-comeback', layer: 'scheduled', category: 'return',
     timing: 'eviction', duration: { weeks: 4 },

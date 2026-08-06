@@ -29,7 +29,7 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 // ordinary one this week" is an authorable choice, not just what you get.
 import { GENERIC_BB_COMPS, runBBCompetition } from './bb/comps.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
-import { simulateBBFinale } from './bb-finale.js';
+import { simulateBBFinale, finalCompPool } from './bb-finale.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
@@ -336,6 +336,14 @@ export function bbCompetitionsForSlot(type) {
   // is neither power nor safety, so anything the library can stage is fair.
   // Its own 'return' declarations are only three comps deep, which would make
   // the picker useless.
+  // The two parts of the final Head of Household are a role, not a type: each
+  // draws from the ordinary library plus the set pieces written for finale
+  // night, and the finale itself owns that definition so the picker and the
+  // night can never disagree about what is eligible.
+  if (type === 'final-1' || type === 'final-2') {
+    const pool = finalCompPool(type === 'final-1' ? 'endurance' : 'skill');
+    return pool.map(c => shape(c, false)).sort((a, b) => a.name.localeCompare(b.name));
+  }
   const serves = c => (type === 'battle-back'
     ? ['hoh', 'veto', 'return'].some(t => (c.types || []).includes(t))
     : (c.types || []).includes(type));

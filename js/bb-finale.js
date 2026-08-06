@@ -120,20 +120,41 @@ function recordBigMoves(finalists) {
  * question part three asks — how well do you know the people you evicted — is
  * the only one worth deciding a season on.
  */
-const FINAL_ROLES = {
+export const FINAL_ROLES = {
   endurance: { categories: ['endurance'] },
   skill: { categories: ['physical', 'precision', 'puzzle'] },
 };
 
+/**
+ * Everything that can serve one part of the final Head of Household.
+ *
+ * Exported because the Season Timeline's pickers must offer exactly what the
+ * finale can actually run. A dropdown built from a second, hand-kept list is a
+ * dropdown that eventually offers a competition the night refuses to stage.
+ */
+export function finalCompPool(role) {
+  const spec = FINAL_ROLES[role] || { categories: [] };
+  return BB_COMPETITIONS.filter(c =>
+    // Written for finale night...
+    (c.finalRole === role && c.types.includes('final'))
+    // ...or an ordinary competition of the right shape, which is most of them.
+    || (spec.categories.includes(c.category) && c.types.includes('hoh')));
+}
+
+/** What the designer pinned to this part, if anything. */
+const pinnedFor = role => {
+  const pins = seasonConfig?.bbFinalComps || {};
+  const id = role === 'endurance' ? pins.one : role === 'skill' ? pins.two : null;
+  // A pin for a competition that has since left the library is ignored rather
+  // than thrown: a saved season should not stop playing because a comp was
+  // renamed.
+  return id && BB_COMPETITIONS.some(c => c.id === id) ? id : null;
+};
+
 function finalPart(participants, label, rng, week, { compId = null, role = null } = {}) {
-  let forced = compId || undefined;
+  let forced = compId || (role ? pinnedFor(role) : null) || undefined;
   if (!forced && role) {
-    const spec = FINAL_ROLES[role] || { categories: [] };
-    const pool = BB_COMPETITIONS.filter(c =>
-      // Written for finale night...
-      (c.finalRole === role && c.types.includes('final'))
-      // ...or an ordinary competition of the right shape, which is most of them.
-      || (spec.categories.includes(c.category) && c.types.includes('hoh')));
+    const pool = finalCompPool(role);
     forced = pool.length ? pool[Math.floor(rng() * pool.length)].id : undefined;
   }
   // The slot has to match the competition that was drawn: the set pieces live

@@ -17,6 +17,7 @@ import { BB_COMPETITIONS, FINAL_HOH_COMPS } from '../js/bb-comps/index.js';
 import { endgameDealsOf } from '../js/bb/deals.js';
 import { addBond } from '../js/bonds.js';
 import { simulateBBFinale } from '../js/bb-finale.js';
+import { bbCompetitionsForSlot } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
 
 const STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -86,6 +87,40 @@ describe('the final HOH set pieces', () => {
     expect(seenTwo.size, 'part two always drew the same competition').toBeGreaterThan(2);
     // And the written set pieces are genuinely in those pools.
     expect([...seenOne, ...seenTwo].some(id => id.startsWith('bb-final-part'))).toBe(true);
+  });
+
+  it('the designer can pin parts one and two, and part three is not a choice', () => {
+    // The Season Timeline's finale row offers exactly what the night can run,
+    // so the picker's list and the draw pool must be the same list.
+    const onePool = bbCompetitionsForSlot('final-1').map(c => c.id);
+    const twoPool = bbCompetitionsForSlot('final-2').map(c => c.id);
+    expect(onePool).toContain('bb-final-part-one');
+    expect(twoPool).toContain('bb-final-part-two');
+    expect(onePool.length).toBeGreaterThan(1);
+    expect(twoPool.length).toBeGreaterThan(1);
+    // Part three is never offered: it is the format, not a default.
+    expect([...onePool, ...twoPool]).not.toContain('bb-final-part-three');
+
+    // Pinned, the finale runs exactly that — on every seed.
+    for (const seed of [2, 40, 77]) {
+      reset();
+      seasonConfig.bbFinalComps = { one: 'bb-endurance-soak', two: 'bb-final-part-two' };
+      const parts = simulateBBFinale(seededRng(seed)).acts.filter(a => a.type === 'final-hoh-part');
+      expect(parts[0].competition.id).toBe('bb-endurance-soak');
+      expect(parts[1].competition.id).toBe('bb-final-part-two');
+      expect(parts[2].competition.id).toBe('bb-final-part-three');
+    }
+    delete seasonConfig.bbFinalComps;
+  });
+
+  it('a pin for a competition that no longer exists is ignored, not fatal', () => {
+    // A saved season should not stop playing because a comp was renamed.
+    reset();
+    seasonConfig.bbFinalComps = { one: 'bb-comp-that-was-deleted' };
+    const parts = simulateBBFinale(seededRng(5)).acts.filter(a => a.type === 'final-hoh-part');
+    expect(parts).toHaveLength(3);
+    expect(parts[0].competition.id).toBeTruthy();
+    delete seasonConfig.bbFinalComps;
   });
 
   it('declares a slot no weekly draw can reach', () => {

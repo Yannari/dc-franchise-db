@@ -1368,6 +1368,44 @@ export function _setBBComp(ep, slot, compId) {
   renderTimeline();
 }
 
+/**
+ * The finale's two pickers.
+ *
+ * Stored on their own config key rather than in `bbCompSchedule`, which is
+ * keyed by episode number: the finale's number moves whenever the cast size or
+ * the eviction schedule changes, so a pin filed against it would quietly become
+ * a pin on an ordinary week. There is only ever one finale, so it does not need
+ * an index.
+ *
+ * Part three takes no picker. It is the jury quiz every season — that is the
+ * format, not a default.
+ */
+export function _setBBFinalComp(role, compId) {
+  seasonConfig.bbFinalComps = { ...(seasonConfig.bbFinalComps || {}) };
+  if (compId) seasonConfig.bbFinalComps[role] = compId;
+  else delete seasonConfig.bbFinalComps[role];
+  if (!seasonConfig.bbFinalComps.one && !seasonConfig.bbFinalComps.two) {
+    delete seasonConfig.bbFinalComps;
+  }
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+function _bbFinalCompPicker(role, slot, label) {
+  const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
+  if (!list.length) return '';
+  const chosen = (seasonConfig.bbFinalComps || {})[role] || '';
+  const pinned = !!chosen;
+  let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
+    pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
+    pinned ? 'Pinned — the finale runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}`;
+  h += `<select onchange="event.stopPropagation();_setBBFinalComp('${role}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
+    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:150px">`;
+  h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
+  list.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name}</option>`; });
+  return h + `</select></label>`;
+}
+
 /** One slot's dropdown, listing only what can serve it. */
 function _bbCompPicker(ep, slot, label) {
   const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
@@ -1661,12 +1699,26 @@ export function renderTimeline() {
     const phaseLabel  = phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so
-    // the pickers are always there rather than something you add. The finale
-    // runs its own staged competition and is not pinnable.
-    const compRow = (isHouse && !isFinale)
-      ? `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
-          ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
-        </div>`
+    // the pickers are always there rather than something you add.
+    //
+    // The finale gets its own two. Parts one and two DRAW — from every
+    // endurance competition in the library for part one, and every physical,
+    // precision or puzzle one for part two, with the set pieces written for
+    // finale night sitting in those pools — so they are pinnable exactly like a
+    // week is. Part three has no picker because it is not a choice: it is the
+    // jury quiz, every season.
+    const compRow = isHouse
+      ? (isFinale
+        // Full opacity inside a row the designer dims: the rest of the finale
+        // card is greyed because nothing can be booked onto it, but these two
+        // are live controls and a dimmed control reads as a disabled one.
+        ? `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(245,158,11,0.18);opacity:1">
+            ${_bbFinalCompPicker('one', 'final-1', 'PART 1')}${_bbFinalCompPicker('two', 'final-2', 'PART 2')}
+            <span style="font-size:9.5px;letter-spacing:.5px;color:var(--muted,#7d8590);align-self:center" title="Part three is the jury quiz every season">PART 3 · Jury Statements</span>
+          </div>`
+        : `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
+            ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
+          </div>`)
       : '';
 
     html += `<div class="fd-episode ${isSelected ? 'selected' : ''} ${isFinale ? 'finale' : ''} ${phase === 'ri-duel' ? 'ri-ep' : ''}" onclick="${isFinale ? '' : `toggleEpisode(${ep})`}" ${isFinale ? 'style="opacity:.6;cursor:default"' : ''}>

@@ -2832,10 +2832,20 @@ export function simulateBBWeek(options = {}) {
       let dec = shouldUseVeto(extra.holder, nominees, plan, rng,
         { hoh, house, diamond: extra.authority === 'veto-holder', hohSecret });
       if (!dec?.use || !nominees.includes(dec.save)) {
+        const pq = pronouns(extra.holder);
         week.acts.push(addBeats({
           type: 'second-veto', kind: extra.kind, holder: extra.holder, used: false,
           anonymous: extra.visibility === 'anonymous', saved: null, replacement: null,
           nominees: [...nominees],
+          beats: [
+            { text: `The veto meeting is over. Everybody in the room knows there is a second medallion in it, `
+              + `and everybody in the room is still sitting down.`,
+            players: [...nominees], badgeText: 'NOBODY GETS UP', badgeClass: 'grey' },
+            { text: `${extra.holder} keeps it. ${pq.Sub} ${pq.sub === 'they' ? 'have' : 'has'} just told this `
+              + `house, without saying a word, that the block is exactly where ${pq.sub} wanted it — which is `
+              + `a thing ${(nominees[0] || 'the nominees')} will be doing arithmetic about all week.`,
+            players: [...new Set([extra.holder, ...nominees].filter(Boolean))], badgeText: 'LEFT IN THE BOX', badgeClass: 'grey' },
+          ],
         }, { players: [extra.holder], nominees: [...nominees] }));
         continue;
       }
@@ -2854,10 +2864,34 @@ export function simulateBBWeek(options = {}) {
       if (dec.save !== extra.holder) {
         try { recordProtection(extra.holder, dec.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
       }
+      const ph = pronouns(extra.holder);
+      const pr = pronouns(secondRep);
       week.acts.push(addBeats({
         type: 'second-veto', kind: extra.kind, holder: extra.holder, used: true,
         anonymous: extra.visibility === 'anonymous', saved: dec.save, replacement: secondRep,
         authority, nominees: [...nominees],
+        // The scene the screen is built on: a ceremony that had already ended,
+        // ending again. Written here rather than in the builder because the
+        // engine is the only thing that knows who was in the room.
+        beats: [
+          { text: `The veto meeting is over. The block is settled, the chairs have been pushed back, and `
+            + `${extra.holder} does not get up with everybody else.`,
+          players: [extra.holder], badgeText: 'IT IS NOT OVER', badgeClass: 'blue' },
+          { text: extra.visibility === 'anonymous'
+            ? `A second medallion comes out and the room does not get to see whose hand it came out of. `
+              + `${dec.save} comes down. Nobody is told anything else.`
+            : `${extra.holder} has been holding the second medallion since the competition, through every `
+              + `conversation this house had about the block, and uses it now on ${dec.save}.`,
+          players: [...new Set([extra.holder, dec.save])], badgeText: 'THE SECOND MEDALLION', badgeClass: 'gold' },
+          { text: `${secondRep} was on the sofa when this meeting started. ${pr.Sub} `
+            + `${pr.sub === 'they' ? 'are' : 'is'} on the block now, put there by a ceremony that had `
+            + `already finished once, and ${hoh} — who built this block — did not choose either name on it.`,
+          players: [...new Set([secondRep, hoh].filter(Boolean))], badgeText: 'THE CHAIR FILLS AGAIN', badgeClass: 'red' },
+          { text: `${ph.Sub} ${ph.sub === 'they' ? 'have' : 'has'} spent one week's goodwill and bought one `
+            + `person a week. ${dec.save} knows exactly what that cost, and so does everybody who was `
+            + `counting on the block staying where it was.`,
+          players: [...new Set([extra.holder, dec.save])], badgeText: 'WHAT IT COST', badgeClass: 'blue' },
+        ],
       }, { players: [extra.holder, dec.save, secondRep].filter(Boolean), nominees: [...nominees] }));
       revise('veto', { hoh, nominees: [...nominees], vetoWinner, saved: dec.save });
     }

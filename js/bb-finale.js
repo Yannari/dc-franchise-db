@@ -25,6 +25,7 @@ import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
+import { generateBBFinaleHouse } from './bb/finale-house.js';
 
 /** Everyone still playing, in roster order. */
 const houseNow = () => [...(gs.activePlayers || [])];
@@ -186,6 +187,16 @@ export function simulateBBFinale(rng = Math.random) {
   let finalTwo = [...house];
   let finalHoh = null;
   let cut = null;
+
+  // ── the days before any of it ──
+  //
+  // Three people in a house built for sixteen, with nothing to win until finale
+  // night: the memory wall, and two days of revising for a quiz about seven
+  // jurors. It runs FIRST because it is the only part of the last week that is
+  // not a competition, and because the revision figure it publishes is about
+  // Part Three, which has not happened yet.
+  const finaleHouse = generateBBFinaleHouse(week, rng);
+  if (finaleHouse) acts.push(finaleHouse);
 
   // ── the three-part Head of Household ──
   if (house.length >= 3) {

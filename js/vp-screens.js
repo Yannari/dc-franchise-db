@@ -21103,8 +21103,21 @@ export function buildBBWeekScreens(ep) {
 
   // The finale's acts belong to no cycle and are rendered once, in order.
   for (const act of ep.acts || []) {
-    if (act.type === 'final-hoh-part' && !screens.some(x => x.id === 'bb-final-hoh')) {
-      screens.push({ id: 'bb-final-hoh', label: 'Final HOH', html: rpBuildBBFinalHoh(ep) });
+    if (act.type === 'finale-house') {
+      screens.push({ id: 'bb-finale-house', label: 'The Final Three',
+        html: rpBuildBBFinaleHouse(ep, act) });
+    } else if (act.type === 'final-hoh-part') {
+      // One screen PER PART. They were merged into a single page by an id
+      // guard, which made sense when the parts were three lines each and stopped
+      // making sense the moment they became three different competitions: a
+      // wall that runs for hours, a skill run lost on a penalty, and a quiz
+      // about seven jurors do not belong on one scroll.
+      const n = act.partNum || (screens.filter(x => /^bb-final-hoh-/.test(x.id)).length + 1);
+      screens.push({
+        id: `bb-final-hoh-${n}`,
+        label: n === 1 ? 'Part 1 · Endurance' : n === 2 ? 'Part 2 · Skill' : 'Part 3 · The Jury Quiz',
+        html: rpBuildBBFinalHohPart(ep, act),
+      });
     } else if (act.type === 'final-cut') {
       screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
     } else if (act.type === 'jury-questioning') {
@@ -22705,6 +22718,80 @@ export function rpBuildBBEvictionInterview(ep, which = null) {
       <span class="bbns-counter">${Math.min(total, revealed)} / ${total}</span>
     </div>
   </div>`;
+}
+
+/**
+ * The last three days, before anything is played for.
+ *
+ * The memory wall and the revision are the only scene in a Big Brother season
+ * where nobody is competing, campaigning or voting, and the screen should feel
+ * like that: a quiet page in a loud week.
+ */
+export function rpBuildBBFinaleHouse(ep, act) {
+  if (!act) return '';
+  const study = act.study || {};
+  const ranked = Object.entries(study).sort((a, b) => b[1] - a[1]);
+  const scenes = (act.acts || []).flatMap(part => [
+    { text: `<strong>${_bbEsc(part.title)}</strong>`, players: act.finalists,
+      badgeText: part.title.toUpperCase(), badgeClass: 'grey' },
+    ...part.beats.map(b => ({ text: b.text, players: b.players,
+      badgeText: b.badgeText, badgeClass: b.badgeClass || 'blue' })),
+  ]);
+  // The revision board last, because it is the only thing on this page that
+  // Part Three is about to care about.
+  if (ranked.length) {
+    scenes.push({
+      text: `Going into Part Three: ${ranked.map(([n, v]) =>
+        `<strong>${_bbEsc(n)}</strong> ${Math.round(v * 100)}%`).join(' · ')}. `
+        + `A quiz about seven jurors rewards the two days nobody films.`,
+      players: ranked.map(([n]) => n),
+      badgeText: 'HOW READY THEY ARE', badgeClass: 'gold',
+    });
+  }
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — the final three`,
+    title: 'THE LAST QUIET DAYS',
+    subtitle: 'Three people, a wall of photographs, and a quiz to revise for.',
+    accent: '#58a6ff', room: 'bb-room',
+    stateKey: `bb_fhouse_${ep.num}`, scenes,
+  });
+}
+
+/**
+ * One part of the final Head of Household, as its own screen.
+ *
+ * Each part is a different competition with a different shape — the endurance
+ * hold, the skill run, the jury quiz — so each gets its own page, its own
+ * accent and its own framing of what winning it actually buys.
+ */
+export function rpBuildBBFinalHohPart(ep, act) {
+  if (!act) return '';
+  const n = act.partNum || 1;
+  const meta = n === 1
+    ? { title: 'PART ONE', sub: 'Everybody plays. The winner sits out Part Two and waits.',
+      accent: '#58a6ff', room: 'bb-room' }
+    : n === 2
+      ? { title: 'PART TWO', sub: 'The two who lost Part One. The winner meets the waiting one.',
+        accent: '#f0a500', room: 'bb-power' }
+      : { title: 'PART THREE', sub: 'Two finalists, seven jurors, and the last power in the house.',
+        accent: '#f85149', room: 'bb-power' };
+  const scenes = [
+    { text: `${act.participants.join(', ')} play ${act.competition?.name
+      ? `<em>${_bbEsc(act.competition.name)}</em>` : 'for the last power in the house'}.`,
+    players: act.participants, badgeText: 'THE FIELD', badgeClass: 'grey' },
+    ...((act.competition?.beats || []).map(b => ({ text: b.text, players: b.players,
+      badgeText: b.badgeText, badgeClass: b.badgeClass || 'challenge' }))),
+    { text: n === 3
+      ? `${_bbEsc(act.winner)} wins the final Head of Household, and with it the only choice left in this game.`
+      : `${_bbEsc(act.winner)} takes Part ${n === 1 ? 'One' : 'Two'}.`,
+    players: [act.winner], badgeText: n === 3 ? 'FINAL HEAD OF HOUSEHOLD' : 'WINS THE PART',
+    badgeClass: 'gold' },
+  ];
+  return _bbSceneScreen(ep, {
+    eyebrow: `Week ${ep.num} — finale`,
+    title: meta.title, subtitle: meta.sub, accent: meta.accent, room: meta.room,
+    stateKey: `bb_fhoh${n}_${ep.num}`, scenes,
+  });
 }
 
 /** The three-part Head of Household, on one screen. */

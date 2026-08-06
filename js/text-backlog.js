@@ -2,6 +2,7 @@
 import { gs, seasonConfig, players } from './core.js';
 import { juryLines } from './bb/jury.js';
 import { lastWordsLines } from './bb/last-words.js';
+import { finaleHouseLines } from './bb/finale-house.js';
 import { juryHouseLines } from './bb/jury-house.js';
 import { describeIntentionsPlan } from './intentions.js';
 import { buildInfoFlowLog } from './knowledge-integration.js';
@@ -5267,7 +5268,9 @@ export function generateBBFinaleText(ep) {
   ln('═'.repeat(46));
 
   for (const act of ep.acts || []) {
-    if (act.type === 'final-hoh-part') {
+    if (act.type === 'finale-house') {
+      finaleHouseLines(act, ln);
+    } else if (act.type === 'final-hoh-part') {
       sec(act.part.toUpperCase());
       ln(`  Played by: ${(act.participants || []).join(', ')}.`);
       if (act.competition) {

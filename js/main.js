@@ -167,7 +167,7 @@ for (const [prop, setter] of Object.entries(stateVars)) {
 // ── Expose constants directly on window ──
 const constants = [
   'STATS', 'ARCHETYPES', 'ARCHETYPE_NAMES', 'THREAT_TIERS',
-  'REL_TYPES', 'ADVANTAGES', 'ADV_SOURCE_LABELS',
+  'REL_TYPES', 'REL_KINSHIP', 'ADVANTAGES', 'ADV_SOURCE_LABELS',
   'TWIST_CATALOG',
   'DARE_POOL', 'DARE_CATEGORIES',
   'SAY_UNCLE_POOL', 'SAY_UNCLE_CATEGORIES',

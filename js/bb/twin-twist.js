@@ -23,7 +23,7 @@
 // having to know the twist exists. The tell is real: somebody who was the best
 // endurance player in the house last Thursday cannot hold a wall this Thursday,
 // and nobody can say why.
-import { gs, players, seasonConfig } from '../core.js';
+import { gs, players, seasonConfig, kinshipPairs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
@@ -93,13 +93,38 @@ export function installTwinTwist(house = [], { enterWeek = 5, rng = Math.random,
 
   const entry = (players || []).find(p => p.name === front);
   if (!entry) return null;
-  const statsA = { ...entry.stats };
-  const statsB = twinStats(statsA, rng);
+
+  // ── a twin the cast actually declared ──
+  //
+  // The Relationships tab can now say that two people are twins, and when it
+  // does this stops guessing: the one in the house plays the identity, the one
+  // outside it is the person who has been swapping in — under their own name,
+  // with their own stat line, rather than a generated approximation of one.
+  // That is also the real shape of it. Adria and Natalie were both cast; only
+  // one of them walked through the door on night one.
+  const declared = kinshipPairs('twins')
+    .map(pair => {
+      const inside = [pair.a, pair.b].filter(n => cast.includes(n));
+      const outside = [pair.a, pair.b].find(n => !cast.includes(n));
+      return inside.length === 1 && outside ? { front: inside[0], other: outside } : null;
+    })
+    .filter(Boolean);
+  const useDeclared = declared.find(d => d.front === front) || (!pick && declared[0]) || null;
+  const seat = useDeclared ? useDeclared.front : front;
+  const seatEntry = (players || []).find(p => p.name === seat) || entry;
+
+  const statsA = { ...seatEntry.stats };
+  // Their real stats when the roster has them, and a lopsided variant when it
+  // does not.
+  const twinEntry = useDeclared
+    ? (players || []).find(p => p.name === useDeclared.other) : null;
+  const statsB = twinEntry?.stats ? { ...twinEntry.stats } : twinStats(statsA, rng);
 
   gs.bb ||= {};
   gs.bb.twins = {
-    front,
-    other: secondName(front),
+    front: seat,
+    other: useDeclared ? useDeclared.other : secondName(seat),
+    declared: !!useDeclared,
     statsA, statsB,
     // 'a' is the one the house met on night one.
     active: 'a',
@@ -338,7 +363,13 @@ export function checkTwinEntry(week) {
   const frontStats = st.active === 'a' ? st.statsA : st.statsB;
   const otherStats = st.active === 'a' ? st.statsB : st.statsA;
   if (entry) entry.stats = { ...frontStats };
-  if (!(players || []).some(p => p.name === st.other)) {
+  const already = (players || []).find(p => p.name === st.other);
+  if (already) {
+    // A declared twin the cast already holds — they keep their own record and
+    // simply walk in.
+    already.stats = { ...otherStats };
+    already.twinOf = st.front;
+  } else {
     players.push({
       name: st.other,
       slug: String(st.other).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),

@@ -1148,11 +1148,15 @@ export function openRelForm(id) {
   if (id) {
     const r = relationships.find(r=>r.id===id); if(!r) return;
     document.getElementById('rel-a').value = r.a; document.getElementById('rel-b').value = r.b;
-    document.getElementById('rel-note').value = r.note||''; setRelType(r.type);
+    document.getElementById('rel-note').value = r.note||'';
+    { const k=document.getElementById('rel-kin'); if(k) k.value = r.kin || 'none'; }
+    setRelType(r.type);
     document.getElementById('rel-form-title').textContent = 'Edit Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Update';
   } else {
-    document.getElementById('rel-note').value=''; setRelType('neutral');
+    document.getElementById('rel-note').value='';
+    { const k=document.getElementById('rel-kin'); if(k) k.value='none'; }
+    setRelType('neutral');
     document.getElementById('rel-form-title').textContent = 'Add Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Add';
   }
@@ -1176,7 +1180,12 @@ export function submitRel() {
   const key=[a,b].sort().join('|');
   const dup = relationships.find(r => { if(editingRelId&&r.id===editingRelId) return false; return [r.a,r.b].sort().join('|')===key; });
   if (dup) { alert(`A relationship between ${a} and ${b} already exists.`); return; }
-  const rel = { id: editingRelId||Date.now().toString(36)+Math.random().toString(36).slice(2,4), a, b, type: activeRelType, bond: REL_TYPES[activeRelType]?.bond??0, note: document.getElementById('rel-note').value.trim() };
+  // `type` is how they feel about each other; `kin` is how they know each
+  // other. Two axes, because a pair can be siblings and nemeses at once.
+  const rel = { id: editingRelId||Date.now().toString(36)+Math.random().toString(36).slice(2,4), a, b,
+    type: activeRelType, bond: REL_TYPES[activeRelType]?.bond??0,
+    kin: document.getElementById('rel-kin')?.value || 'none',
+    note: document.getElementById('rel-note').value.trim() };
   if (editingRelId) { const i=relationships.findIndex(r=>r.id===editingRelId); if(i!==-1) relationships[i]=rel; }
   else relationships.push(rel);
   saveRels(); closeRelForm(); renderRelList();
@@ -1197,7 +1206,10 @@ export function renderRelList() {
   const list = document.getElementById('rel-list');
   if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
   const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });
-  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(r.a)}<span style="font-size:12px;font-weight:600">${r.a}</span><span class="rel-arrow">\u2194</span>${miniAvatar(r.b)}<span style="font-size:12px;font-weight:600">${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div><span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
+  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(r.a)}<span style="font-size:12px;font-weight:600">${r.a}</span><span class="rel-arrow">\u2194</span>${miniAvatar(r.b)}<span style="font-size:12px;font-weight:600">${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div>${
+    r.kin && r.kin!=='none' && REL_KINSHIP[r.kin]
+      ? `<span class="rel-badge" style="background:rgba(163,113,247,0.14);color:#a371f7">${REL_KINSHIP[r.kin].label}</span>`
+      : ''}<span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════════════

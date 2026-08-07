@@ -58,6 +58,62 @@ export const REL_TYPES = {
   rideordie:   { label: 'Ride or Die',     color: '#22c55e', bond:  8, bg: 'rgba(34,197,94,0.12)' },
   unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 10, bg: 'rgba(16,185,129,0.12)' },
 };
+/**
+ * HOW two houseguests know each other, which is a different axis from how they
+ * FEEL about each other.
+ *
+ * REL_TYPES above is a bond strength: hatred to unbreakable. This is the
+ * relation itself, and the two are orthogonal — a pair can be siblings AND
+ * nemeses, or twins AND unbreakable. Splitting them is what lets a twist ask
+ * the cast a question it could not ask before: the Twin Twist wants a declared
+ * twin, Rivals wants an ex-partner or an estranged parent, and a family season
+ * wants everybody who is related to anybody.
+ *
+ * `family` marks blood and marriage — the set a family twist draws from.
+ * `tense` marks the relations that come with history, which is what Rivals is
+ * cast on: BB8 seated an estranged father and daughter, a pair of ex-boyfriends
+ * and two ex-best-friends.
+ */
+export const REL_KINSHIP = {
+  none:        { label: 'No connection',   family: false, tense: false },
+  twins:       { label: 'Twins',           family: true,  tense: false },
+  siblings:    { label: 'Siblings',        family: true,  tense: false },
+  'parent-child': { label: 'Parent & child', family: true, tense: false },
+  cousins:     { label: 'Cousins',         family: true,  tense: false },
+  married:     { label: 'Married',         family: true,  tense: false },
+  partners:    { label: 'Partners',        family: true,  tense: false },
+  estranged:   { label: 'Estranged family', family: true, tense: true },
+  exes:        { label: 'Exes',            family: false, tense: true },
+  'ex-friends':{ label: 'Ex-best-friends', family: false, tense: true },
+  'old-friends': { label: 'Friends from before', family: false, tense: false },
+  colleagues:  { label: 'Worked together', family: false, tense: false },
+};
+
+/** The declared relation between two houseguests, or 'none'. */
+export function kinshipBetween(a, b) {
+  if (!a || !b) return 'none';
+  const key = [a, b].sort().join('|');
+  const rel = (relationships || []).find(r => [r.a, r.b].sort().join('|') === key);
+  return rel?.kin && REL_KINSHIP[rel.kin] ? rel.kin : 'none';
+}
+
+/** Every declared pair of a given kind, or of every kind in a set. */
+export function kinshipPairs(kinds = null) {
+  const want = kinds ? new Set([].concat(kinds)) : null;
+  return (relationships || [])
+    .filter(r => r?.kin && REL_KINSHIP[r.kin] && r.kin !== 'none'
+      && (!want || want.has(r.kin)))
+    .map(r => ({ a: r.a, b: r.b, kin: r.kin, label: REL_KINSHIP[r.kin].label, note: r.note || '' }));
+}
+
+/** Everybody related to anybody — what a family twist is cast from. */
+export const familyPairs = () => kinshipPairs(
+  Object.keys(REL_KINSHIP).filter(k => REL_KINSHIP[k].family));
+
+/** Pairs with history — what Rivals is cast from. */
+export const tensePairs = () => kinshipPairs(
+  Object.keys(REL_KINSHIP).filter(k => REL_KINSHIP[k].tense));
+
 export const ADVANTAGES = [
   { key: 'idol',      label: 'Hidden Immunity Idol', default: 2, defaultSources: ['camp'] },
   { key: 'beware',    label: 'Beware Advantage',     default: 0, defaultSources: ['camp'] },

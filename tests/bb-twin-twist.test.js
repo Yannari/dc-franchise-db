@@ -13,7 +13,8 @@
 // somebody eventually notices, and that beating the calendar physically grows
 // the roster.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { gs, players, seasonConfig, relationships } from '../js/core.js';
+import { gs, players, seasonConfig, relationships, setRelationships,
+  kinshipBetween, kinshipPairs, familyPairs, tensePairs } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
@@ -72,6 +73,54 @@ describe('the twist itself', () => {
   it('can be cast by hand', () => {
     const st = installTwinTwist(NAMES, { rng: Math.random, pick: 'Kit' });
     expect(st.front).toBe('Kit');
+  });
+});
+
+describe('a twin the cast declared', () => {
+  // The Relationships tab carries HOW two houseguests know each other as a
+  // separate axis from how they feel about each other, so a season can say
+  // "these two are twins" and the twist can stop guessing.
+  it('seats the declared pair and brings the real person in', () => {
+    house();
+    // Kit is in the house. Kit's twin is cast but does not walk through the
+    // door on night one — which is the actual shape of it: Adria and Natalie
+    // were both cast and only one of them entered.
+    players.push({ name: 'Kip', slug: 'kip', gender: 'f', sexuality: 'straight',
+      archetype: 'floater', stats: spread(20) });
+    setRelationships([{ id: 'r1', a: 'Kit', b: 'Kip', type: 'unbreakable', bond: 10, kin: 'twins' }]);
+    globalThis.relationships = relationships;
+
+    const st = installTwinTwist(NAMES, { rng: Math.random });
+    expect(st.declared).toBe(true);
+    expect(st.front).toBe('Kit');
+    expect(st.other).toBe('Kip');
+    // Their own stat line, not a generated approximation of one.
+    expect(st.statsB).toEqual(spread(20));
+
+    gs.activePlayers = [...NAMES];
+    checkTwinEntry(aWeek({ num: st.enterWeek }));
+    expect(gs.activePlayers).toContain('Kip');
+    // And they keep the roster record the cast already gave them.
+    expect(players.filter(p => p.name === 'Kip').length).toBe(1);
+    setRelationships([]);
+  });
+
+  it('reads the two axes apart', () => {
+    setRelationships([
+      { id: 'a', a: 'Kit', b: 'Lex', type: 'nemesis', bond: -8, kin: 'siblings' },
+      { id: 'b', a: 'Gus', b: 'Iris', type: 'friend', bond: 5, kin: 'exes' },
+      { id: 'c', a: 'Eli', b: 'Fern', type: 'ally', bond: 3 },
+    ]);
+    globalThis.relationships = relationships;
+    // Siblings who hate each other is a thing the model has to be able to say.
+    expect(kinshipBetween('Kit', 'Lex')).toBe('siblings');
+    expect(kinshipBetween('Lex', 'Kit')).toBe('siblings');
+    expect(kinshipBetween('Eli', 'Fern')).toBe('none');
+    // What a family season draws from, and what Rivals draws from.
+    expect(familyPairs().map(p => p.kin)).toEqual(['siblings']);
+    expect(tensePairs().map(p => p.kin)).toEqual(['exes']);
+    expect(kinshipPairs('exes')[0].label).toBe('Exes');
+    setRelationships([]);
   });
 });
 

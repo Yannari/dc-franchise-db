@@ -1189,8 +1189,19 @@ export function updateTwinsUI() {
   const container = document.getElementById('bb-twins-select');
   if (!container || typeof players === 'undefined' || !players.length) return;
   const chosen = seasonConfig.bbTwinsPlayer || '';
+  // Who the CAST has already said has a twin. You only ever pick one name here
+  // — the one the house meets on night one — so the only question the picker
+  // cannot answer on its own is who the other one is. A player declared as a
+  // twin in Relationships brings their real name and real stat line; anybody
+  // else gets a stranger generated for them, and it is worth being able to see
+  // which of the two you are choosing.
+  const declared = new Set();
+  for (const r of (typeof relationships !== 'undefined' ? relationships : []) || []) {
+    if (r?.kin === 'twins') { declared.add(r.a); declared.add(r.b); }
+  }
   container.innerHTML = players.map(p => {
     const sel = chosen === p.name;
+    const kin = declared.has(p.name);
     const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const init = (p.name || '?')[0].toUpperCase();
     return `<div onclick="pickTwin('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
@@ -1198,7 +1209,8 @@ export function updateTwinsUI() {
         <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
         <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
       </div>
-      <span style="font-size:9px;color:${sel ? '#a371f7' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
+      <span style="font-size:9px;color:${sel ? '#a371f7' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}${
+  kin ? ' <b style="color:#a371f7" title="Has a declared twin in Relationships">&#9679;</b>' : ''}</span>
     </div>`;
   }).join('');
 }

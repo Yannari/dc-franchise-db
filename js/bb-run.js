@@ -699,7 +699,12 @@ function carryGoodbyesToJury(ep, weekNum) {
 
 export function simulateBBEpisode() {
   prepareHouse();
-  const house = (gs.activePlayers || []).filter(Boolean);
+  // Not const: seating the Twin Twist can take a houseguest back OUT of the
+  // house on night one. A season that cast both twins and declared them has one
+  // of them in the storeroom from the start, and every downstream read — the
+  // week's roster, `ep.houseAtStart`, the memory wall — has to be the house
+  // that actually walked in.
+  let house = (gs.activePlayers || []).filter(Boolean);
   if (house.length <= houseFinaleSize()) return null;
 
   // ── the season-long twist, installed once ──
@@ -730,6 +735,9 @@ export function simulateBBEpisode() {
         pick: seasonConfig.bbTwins === 'choose' ? (seasonConfig.bbTwinsPlayer || null) : null,
       });
     } catch { /* the season plays without one */ }
+    // Re-read, in case the second twin was one of the people standing here a
+    // moment ago.
+    house = (gs.activePlayers || []).filter(Boolean);
   }
 
   const weekNum = (gs.bb.weeks?.length || 0) + 1;

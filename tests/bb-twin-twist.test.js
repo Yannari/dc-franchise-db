@@ -128,6 +128,39 @@ describe('a twin the cast declared', () => {
     setRelationships([]);
   });
 
+  it('takes one of them back out when the season cast both', () => {
+    // The obvious way to set this up, and the way that used to fail silently:
+    // put both twins in the cast, mark them twins, and the pair check demanded
+    // exactly one of them be outside — so it invented a stranger and left the
+    // two declared twins in the house as ordinary houseguests who happened to
+    // be related. Only one of them walked through the door on night one.
+    house();
+    setRelationships([{ id: 'r1', a: 'Kit', b: 'Lex', type: 'unbreakable', bond: 10, kin: 'twins' }]);
+    globalThis.relationships = relationships;
+    gs.activePlayers = [...NAMES];
+
+    const st = installTwinTwist([...NAMES], { rng: Math.random, pick: 'Kit' });
+    expect(st.declared).toBe(true);
+    expect(st.held).toBe(true);
+    expect(st.front).toBe('Kit');
+    expect(st.other).toBe('Lex');
+    // Their real stat line, not a generated approximation of one.
+    const lex = spread(NAMES.indexOf('Lex') + 1);
+    for (const k of STAT_KEYS) expect(st.statsB[k]).toBe(lex[k]);
+    // And Lex is not in the house — Lex has been in the storeroom all along.
+    expect(gs.activePlayers).not.toContain('Lex');
+    expect(gs.activePlayers).toContain('Kit');
+    // The roster record survives, which is what lets them walk in later.
+    expect(players.find(p => p.name === 'Lex')).toBeTruthy();
+
+    st.completed = st.quota;
+    const entry = checkTwinEntry(aWeek({ num: 6, houseAtStart: gs.activePlayers }));
+    expect(entry).toBeTruthy();
+    expect(gs.activePlayers).toContain('Lex');
+    expect(players.filter(p => p.name === 'Lex').length).toBe(1);
+    setRelationships([]);
+  });
+
   it('reads the two axes apart', () => {
     setRelationships([
       { id: 'a', a: 'Kit', b: 'Lex', type: 'nemesis', bond: -8, kin: 'siblings' },
@@ -316,21 +349,31 @@ describe('the house noticing', () => {
     // mutters. Spread evenly over eleven names, nobody ever gets past a hunch.
     house();
     const st = installTwinTwist(NAMES, { rng: Math.random });
-    const watcher = NAMES.find(n => n !== st.front);
-    st.suspicion[watcher] = 1.4;
-    let landedOnWatcher = 0, rounds = 0;
-    for (let i = 0; i < 120; i++) {
-      st.suspicion = { [watcher]: 1.4 };
-      const out = twinTells(aWeek(), { rng: Math.random });
-      if (!out) continue;
-      rounds++;
-      if (out.notices.some(n => n.observer === watcher)) landedOnWatcher++;
-    }
-    expect(rounds).toBeGreaterThan(20);
-    // Two tells a week over eleven candidates puts the floor at about 0.18 if
-    // nobody is favoured. Anything well clear of that is the room converging.
-    expect(landedOnWatcher / rounds, 'the person already watching is no likelier to see the next one')
-      .toBeGreaterThan(0.35);
+    // Deliberately the LAST name the loop would otherwise reach, so the only
+    // thing that can put them near the front is already having noticed.
+    const watcher = NAMES.filter(n => n !== st.front).at(-1);
+
+    const hits = seed => {
+      let landed = 0, rounds = 0;
+      for (let i = 0; i < 150; i++) {
+        st.suspicion = seed ? { [watcher]: 1.4 } : {};
+        const out = twinTells(aWeek(), { rng: Math.random });
+        if (!out) continue;
+        rounds++;
+        if (out.notices.some(n => n.observer === watcher)) landed++;
+      }
+      return { rate: landed / Math.max(1, rounds), rounds };
+    };
+    const primed = hits(true);
+    const cold = hits(false);
+    expect(primed.rounds).toBeGreaterThan(20);
+    expect(cold.rounds).toBeGreaterThan(20);
+    // Somebody who caught one thing is looking for the next; somebody at the
+    // back of the room is not. Left unsorted these two were the same number,
+    // suspicion sprayed over eleven names, and the house said it out loud in
+    // nought seasons out of forty.
+    expect(primed.rate, `primed ${primed.rate.toFixed(2)} vs cold ${cold.rate.toFixed(2)}`)
+      .toBeGreaterThan(cold.rate * 1.6);
   });
 
   it('needs three people and three weeks before anybody says it out loud', () => {

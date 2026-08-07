@@ -135,13 +135,30 @@ export function installTwinTwist(house = [], { quota = 4, rng = Math.random, pic
   // with their own stat line, rather than a generated approximation of one.
   // That is also the real shape of it. Adria and Natalie were both cast; only
   // one of them walked through the door on night one.
+  // Two ways a season can declare it, and BOTH have to work — the second one is
+  // what anybody actually does. Casting only one of the pair is the tidy
+  // version; casting both and marking them twins is the obvious version, and it
+  // used to fail the `inside.length === 1` check, silently invent a stranger,
+  // and leave the two declared twins sitting in the house as ordinary
+  // houseguests who happened to be related.
   const declared = kinshipPairs('twins')
     .map(pair => {
       const inside = [pair.a, pair.b].filter(n => cast.includes(n));
       const outside = [pair.a, pair.b].find(n => !cast.includes(n));
-      return inside.length === 1 && outside ? { front: inside[0], other: outside } : null;
+      // One in, one waiting: the tidy version.
+      if (inside.length === 1 && outside) return { front: inside[0], other: outside, held: false };
+      // Both cast: only one of them walked through the door on night one, which
+      // is the real shape of it. Adria and Natalie were both cast.
+      if (inside.length === 2) {
+        const seatFirst = pick && inside.includes(pick) ? pick : inside[0];
+        return { front: seatFirst, other: inside.find(n => n !== seatFirst), held: true };
+      }
+      return null;
     })
     .filter(Boolean);
+  // A hand-picked front wins, and a declaration naming that person wins with
+  // it. Picking somebody who is not half of a declared pair still gets a
+  // generated twin — that is the user overriding the cast on purpose.
   const useDeclared = declared.find(d => d.front === front) || (!pick && declared[0]) || null;
   const seat = useDeclared ? useDeclared.front : front;
   const seatEntry = (players || []).find(p => p.name === seat) || entry;
@@ -152,11 +169,23 @@ export function installTwinTwist(house = [], { quota = 4, rng = Math.random, pic
   const twinEntry = useDeclared ? (players || []).find(p => p.name === useDeclared.other) : null;
   const statsB = twinEntry?.stats ? { ...twinEntry.stats } : twinStats(statsA, rng);
 
+  // Cast in, but not through the door. When the season declared both of them
+  // the second one is taken out of the active house here — they have been in
+  // the storeroom since night one, and every roster-scoped system in the
+  // simulator reads `gs.activePlayers`, so this is the only place it has to be
+  // said. Their record stays on `players`, which is what lets them walk in
+  // later under their own name.
+  if (useDeclared?.held) {
+    gs.activePlayers = (gs.activePlayers || []).filter(n => n !== useDeclared.other);
+  }
+
   gs.bb ||= {};
   gs.bb.twins = {
     front: seat,
     other: useDeclared ? useDeclared.other : secondName(seat),
     declared: !!useDeclared,
+    // Whether the second one was cast and pulled back out, or never cast at all.
+    held: !!useDeclared?.held,
     statsA, statsB,
     // 'a' is the one the house met on night one.
     active: 'a',

@@ -1890,6 +1890,9 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       immunityWins: pd.immunityWins,
       rewardWins: pd.rewardWins,
       votesReceived: pd.totalVotesReceived,
+      // What the audience made of them. Live-only until now, which left fame
+      // and every audience-facing page with nothing to read.
+      popularity: Number(gs.popularity?.[player.name]) || 0,
       idolsFound: pd.idolsFound,
       // advPlayed counts every advantage actually played (idols, extra votes, vote
       // steals/blocks, the Second Life Amulet, …); advHeld counts advantages still
@@ -2563,6 +2566,9 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         status: place === 1 ? 'Winner' : place <= finalOrder.length ? 'Finalist'
               : place <= jurySize + finalOrder.length ? 'Jury' : 'Pre-Jury',
         votesReceived: bb.votesReceived || 0,
+        // What the audience made of them. Live-only until now, which left fame
+        // and every audience-facing page with nothing to read.
+        popularity: Number(gs.popularity?.[name]) || 0,
         juryVotes: 0,                      // the engine does not model a jury vote yet
         notes: '[AI_FILL]',
         story: '[AI_FILL]',
@@ -2702,6 +2708,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       challengeWins: compWins,
       votesReceived: entry.votesReceived || 0,
       juryVotes: entry.juryVotes || 0,
+      popularity: Number(entry.popularity) || 0,
       bb: {
         hohWins: bb.hohWins || 0,
         vetoWins: bb.vetoWins || 0,

@@ -62,6 +62,7 @@ import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
+import { runSaboteurWeek, checkSaboteurBank, saboteurEvicted, saboteurState } from './saboteur.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1096,6 +1097,17 @@ export function simulateBBWeek(options = {}) {
   // end, in the upkeep, which is the right order — you learn from a vote after
   // you have watched it.
   try { week.blocReads = observeBlocs({ house, rng }); } catch { week.blocReads = []; }
+
+  // ── the second game, if one is running ──
+  //
+  // The bank date is checked before the week starts rather than during it: the
+  // reveal changes who this house is willing to sit next to, and a house that
+  // finds out on eviction night has already made every decision of the week
+  // without knowing.
+  try {
+    const banked = checkSaboteurBank(week);
+    if (banked) week.acts.push(banked);
+  } catch { /* the twist ends quietly rather than ending the week */ }
   // A fresh week is nobody's yet.
   setSpotlight({ hoh: null, nominees: [], vetoWinner: null, vetoPlayers: [] });
 
@@ -3751,6 +3763,17 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // ── the saboteur's week ──
+  //
+  // Here, and not earlier: the week's shape is known — who holds power, who is
+  // on the block, what the saboteur played in and lost — and nothing has been
+  // decided by the vote yet, so a mission that breaks somebody's campaign
+  // breaks it while campaigning still matters.
+  try {
+    const sabAct = runSaboteurWeek(week, { rng });
+    if (sabAct) week.acts.push(sabAct);
+  } catch { /* the house has a normal week */ }
+
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
   let evicted;
@@ -3803,6 +3826,13 @@ export function simulateBBWeek(options = {}) {
     }
   }
   week.evicted = evicted;
+  // The twist's other ending. Somebody walks out of that door with six weeks of
+  // banked money and nothing to show for it, and the house is told at the door
+  // what it has just done.
+  try {
+    const blown = saboteurEvicted(evicted, week);
+    if (blown) week.acts.push(blown);
+  } catch { /* the eviction stands either way */ }
   week.secondEvicted = secondEvicted;
   week.votes = votes;
   week.ballots = ballots;

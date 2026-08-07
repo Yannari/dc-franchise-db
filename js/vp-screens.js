@@ -20,6 +20,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
+import { rpBuildBBSaboteur, rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
@@ -20716,6 +20717,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'app-store':
         screens.push({ id: id('bb-appstore'), label: 'The App Store', html: rpBuildBBAppStore(view, act) });
+        break;
+      // The season-long twist. Two screens, and both of them are the audience's
+      // alone — the house is never told any of this, which is the format.
+      case 'saboteur':
+        screens.push({ id: id('bb-saboteur'), label: 'The Saboteur',
+          html: rpBuildBBSaboteur(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'saboteur-reveal':
+        screens.push({ id: id('bb-saboteur-reveal'), label: act.evicted ? 'The Saboteur Is Out' : 'It Was Them',
+          html: rpBuildBBSaboteurReveal(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       // The twist screens that live in vp-bb-twists.js. They take the reveal
       // helpers as arguments rather than importing them, the way Battle Back

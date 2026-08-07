@@ -546,6 +546,19 @@
               </select>
               <div class="hint hint-tight">Three on the block; one wins their way off before the vote.</div>
             </div>
+            <div class="form-group">
+              <label class="form-label">The Saboteur</label>
+              <select id="cfg-bb-saboteur" onchange="saveConfig()" class="form-input">
+                <option value="off">Off</option>
+                <option value="on">On &mdash; one of them is being paid to wreck it</option>
+              </select>
+              <div class="hint hint-tight">A season-long twist. One houseguest takes a job every week; the house is told a saboteur exists and never told who.</div>
+            </div>
+            <div class="form-group" id="grp-bb-saboteur-bank">
+              <label class="form-label">Bank date (week)</label>
+              <input type="number" id="cfg-bb-saboteur-bank" class="form-input" min="2" max="12" value="5" onchange="saveConfig()">
+              <div class="hint hint-tight">Survive to this week and the money is theirs &mdash; and the house is told who it was.</div>
+            </div>
             <div class="form-group" id="grp-bb-safety-stops">
               <label class="form-label">Stops with this many left</label>
               <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">

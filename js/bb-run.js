@@ -33,6 +33,7 @@ import { generateBBEvictionInterview } from './bb-aftermath.js';
 import { simulateBBFinale, finalCompChoices } from './bb-finale.js';
 import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
+import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -699,6 +700,21 @@ export function simulateBBEpisode() {
   prepareHouse();
   const house = (gs.activePlayers || []).filter(Boolean);
   if (house.length <= houseFinaleSize()) return null;
+
+  // ── the season-long twist, installed once ──
+  //
+  // Not scheduled onto a week, because there is no week to schedule it on: it
+  // is chosen on night one, before anybody has done anything worth sabotaging,
+  // and it runs until it banks or gets caught. `bbSaboteur` is a season knob
+  // rather than a twist-schedule entry for the same reason.
+  if (seasonConfig.bbSaboteur && seasonConfig.bbSaboteur !== 'off' && !saboteurState()) {
+    try {
+      installBBSaboteur(house, {
+        bankWeek: Number(seasonConfig.bbSaboteurBankWeek) || 5,
+        rng: Math.random,
+      });
+    } catch { /* the season plays without one */ }
+  }
 
   const weekNum = (gs.bb.weeks?.length || 0) + 1;
   // The EPISODE number is the show's count, and it is continuous. A double

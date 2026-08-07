@@ -72,6 +72,28 @@ export const POWER_ACQUISITION_CHANNELS = Object.freeze([
  * for powers, how they are acquired and who knows.
  */
 export const BB_TWIST_CONTRACTS = {
+  // ── the first season-long twist ──
+  //
+  // Every other entry here is `layer: 'scheduled'`: it arrives on a week,
+  // changes that week's rules and leaves. This one is installed on night one
+  // and consulted every week until it ends, which is a different kind of thing
+  // and needs saying so — a season twist is not a week twist with a long
+  // duration, because there is no week it can be scheduled ON.
+  //
+  // It changes no week RULES at all. What it changes is what a houseguest is
+  // willing to do and what the house believes about it, which the engine reads
+  // through js/bb/saboteur.js rather than through the rules object.
+  'bb-saboteur': {
+    id: 'bb-saboteur', layer: 'season', category: 'hidden-agenda',
+    timing: 'season-opening', duration: { weeks: null },
+    rules: {},
+    acquisition: { channel: 'random-draw', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The Saboteur',
+      rule: 'One of you is being paid to wreck this season. Every week they are given a job, and every job they finish is money in their pocket. You are not going to be told who it is.',
+      sting: 'Somebody in this room is working for the other side.',
+    },
+  },
   'bb-double-eviction': {
     id: 'bb-double-eviction', layer: 'scheduled', category: 'week-structure',
     timing: 'week', duration: { weeks: 1 },

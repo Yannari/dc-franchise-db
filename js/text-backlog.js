@@ -4442,6 +4442,44 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // ── the season-long twist ──
+      //
+      // The house is never told any of this. The audience is told all of it,
+      // which is the format: the whole pleasure of a saboteur is watching a
+      // room convict the wrong person while you know better. So it reaches the
+      // page in full, including the names the house got wrong.
+      case 'saboteur': {
+        sec('THE SABOTEUR');
+        ln(`  Week ${act.week} — the mission: ${act.mission.name}.`);
+        ln(`  "${act.mission.brief}"  ($${(act.mission.pay || 0).toLocaleString()})`);
+        ln('');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        if ((act.notices || []).length) {
+          ln('');
+          ln('  WHO NOTICED, AND WHO THEY BLAMED');
+          act.notices.forEach(n => ln(`    ${n.observer} → ${n.named}${n.correct ? '' : '   (wrong)'}`));
+        }
+        ln('');
+        ln(`  Banked so far: $${(act.banked || 0).toLocaleString()}. `
+          + `Bank date: week ${act.bankWeek}.`);
+        break;
+      }
+
+      case 'saboteur-reveal': {
+        sec(act.evicted ? 'THE SABOTEUR IS EVICTED' : 'THE SABOTEUR BANKS IT');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        if ((act.wronglyBlamed || []).length) {
+          ln('');
+          ln(`  Convicted of it by somebody, at some point, and innocent all along: ${
+            [...new Set(act.wronglyBlamed)].join(', ')}.`);
+        }
+        ln('');
+        ln(act.evicted
+          ? `  ${act.missions} job${act.missions === 1 ? '' : 's'} done, $${(act.lost || 0).toLocaleString()} lost at the door.`
+          : `  ${act.missions} job${act.missions === 1 ? '' : 's'} done, $${(act.banked || 0).toLocaleString()} kept.`);
+        break;
+      }
+
       case 'hacker-vote': {
         sec('A VOTE IS CANCELLED');
         ln(`  ${act.voter} is called in before the eviction and told that ${act.voter}'s ballot`);

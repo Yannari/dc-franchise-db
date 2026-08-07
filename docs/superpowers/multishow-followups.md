@@ -171,3 +171,30 @@ stand.
 - The loader pattern `join(process.cwd(), f)` is now copied in three test files.
   `fileURLToPath(new URL(...))` is the correct fix; a shared helper would stop
   the fourth copy.
+
+---
+
+## Production apply — restore points (2026-08-07)
+
+Recorded immediately before the multi-show migration was applied to the live D1.
+
+- **Time Travel bookmark:** `00000058-00000000-000050c0-cb8e9e034b8f9128ff14efa53e3d10f6`
+- **Logical export:** `backups/dc-franchise-pre-multishow-20260807.sql` (233 KB, gitignored)
+  — verified to contain 262 appearances, 152 players, 37 bonds, 14 seasons.
+
+Restore, preferred:
+
+```bash
+npx wrangler d1 time-travel restore dc-franchise --config worker/wrangler.toml \
+  --bookmark=00000058-00000000-000050c0-cb8e9e034b8f9128ff14efa53e3d10f6
+```
+
+Fallback, if the Time Travel window has passed:
+
+```bash
+npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote \
+  --file backups/dc-franchise-pre-multishow-20260807.sql --yes
+```
+
+The export file is gitignored on purpose — it is a full copy of the franchise and the
+repo is public. Keep it somewhere off the checkout until the site is verified good.

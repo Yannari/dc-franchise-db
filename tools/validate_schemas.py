@@ -53,8 +53,7 @@ if sys.stdout.encoding != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 try:
-    import jsonschema
-    from jsonschema import validate, ValidationError
+    from jsonschema.validators import validator_for
 except ImportError:
     print("ERROR: jsonschema not installed.")
     print("Run: pip install jsonschema")
@@ -64,33 +63,55 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 errors_found = 0
 
 
+def _identify(node):
+    """Name a single record from whichever identifying keys it carries."""
+    strong = [k for k in ("seasonNumber", "season", "name", "title") if k in node]
+    weak = [k for k in ("playerSlug", "id") if k in node]
+    keys = strong[:2] or weak[:1]
+    bits = [f"{k}={node[k]!r}" for k in keys if isinstance(node[k], (str, int))]
+    return ", ".join(bits)
+
+
 def describe(data, path):
-    """Walk `data` along `path` and name the nearest identifiable record, so a
-    failure reads 'season 1 "Total Drama Island"' instead of 'seasons -> 0'."""
+    """Walk `data` along `path` and name the records it passes through, so a
+    failure reads "name='Alejandro' -> season=4" instead of a bare JSON path.
+
+    Both the OUTERMOST and the INNERMOST identifiable record are kept. Reporting
+    only the innermost would say `season=4` on a 152-player file without ever
+    saying which player — a real diagnostic gap.
+    """
     node = data
-    label = ""
+    labels = []
     for part in path:
         try:
             node = node[part]
         except (KeyError, IndexError, TypeError):
             break
         if isinstance(node, dict):
-            bits = []
-            for key in ("seasonNumber", "season", "id", "name", "title", "playerSlug"):
-                if key in node and isinstance(node[key], (str, int)):
-                    bits.append(f"{key}={node[key]!r}")
-                if len(bits) == 2:
-                    break
-            if bits:
-                label = ", ".join(bits)
-    return label
+            got = _identify(node)
+            if got:
+                labels.append(got)
+    if len(labels) > 2:
+        labels = [labels[0], labels[-1]]
+    return " -> ".join(labels)
 
 
 def check(label, data, schema):
-    """Report EVERY violation in the file, not just the first one."""
+    """Report EVERY violation in the file, not just the first one.
+
+    The validator CLASS is selected from the schema rather than hardcoded:
+    pinning a dialect (e.g. Draft7Validator) would silently ignore any future
+    keyword outside that draft — `if`/`then`/`else`, `prefixItems`,
+    `dependentRequired` — and a validator that quietly stops validating is the
+    exact failure this file exists to prevent. With no `$schema` declared,
+    validator_for falls back to the library's latest, matching what the old
+    `validate()` call did.
+    """
     global errors_found
+    validator_cls = validator_for(schema)
+    validator_cls.check_schema(schema)
     found = sorted(
-        jsonschema.Draft7Validator(schema).iter_errors(data),
+        validator_cls(schema).iter_errors(data),
         key=lambda e: list(e.absolute_path),
     )
     if not found:

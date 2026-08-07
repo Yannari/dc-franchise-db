@@ -2407,8 +2407,11 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
   }
 
   if (!finalSeasonData.awards || typeof finalSeasonData.awards !== 'object') finalSeasonData.awards = {};
-  if (!finalSeasonData.awards.fanFavorite?.name && finale.favourite?.winner) {
-    const fav = finale.favourite.winner;
+  // Read again rather than closed over: the finale moved into
+  // buildBigBrotherSeasonDocument and this was left pointing at nothing.
+  const favourite = gs.bb?.finale?.favourite;
+  if (!finalSeasonData.awards.fanFavorite?.name && favourite?.winner) {
+    const fav = favourite.winner;
     finalSeasonData.awards.fanFavorite = {
       name: fav,
       playerSlug: _slug(fav),

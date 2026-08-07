@@ -13,14 +13,15 @@
 // What it cannot reach: the publish request, the worker and the D1 sync. Those
 // need a browser and a network. This covers everything up to the moment the
 // documents leave the page.
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import { simulateBBFinale } from '../js/bb-finale.js';
 import { buildBigBrotherSeasonDocument, mergeBigBrotherSeason,
-  mergeBigBrotherSeasonsDatabase, publishingIsOff, setPublishMode } from '../js/stats-export.js';
+  mergeBigBrotherSeasonsDatabase, publishingIsOff, setPublishMode,
+  exportAndFillBigBrotherSeason } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -49,6 +50,70 @@ function playSeason(seed = 11) {
     simulateBBFinale();
   });
 }
+
+describe('pressing the export button', () => {
+  // Everything above tests the pieces. This runs the FUNCTION THE BUTTON CALLS,
+  // which is the only thing that would have caught what shipped: splitting the
+  // document builder out left `finale` behind in the fan-favourite block, and
+  // the export died on `ReferenceError: finale is not defined` the first time
+  // anybody pressed it. Nothing here has a linter, and `node --check` only
+  // parses — it resolves no identifiers — so a stale reference in a branch no
+  // test entered was invisible until a human hit it.
+  //
+  // Stubbed to the edges of the page: no network, no real downloads. What is
+  // being checked is that the whole path executes.
+  let downloaded, realFetch, realCreate, realRevoke;
+
+  beforeEach(() => {
+    playSeason();
+    seasonConfig.seasonNumber = 1;
+    localStorage.setItem('SEASON_BUILDER_WORKER_URL', 'https://example.invalid/ai');
+    setPublishMode('download');          // never touch the live site from a test
+
+    downloaded = [];
+    realFetch = globalThis.fetch;
+    realCreate = globalThis.URL.createObjectURL;
+    realRevoke = globalThis.URL.revokeObjectURL;
+    // Offline: the narrative fill and the database reads both have to cope.
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('offline')));
+    globalThis.URL.createObjectURL = () => 'blob:test';
+    globalThis.URL.revokeObjectURL = () => {};
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+      downloaded.push(this.download);
+    });
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    globalThis.fetch = realFetch;
+    globalThis.URL.createObjectURL = realCreate;
+    globalThis.URL.revokeObjectURL = realRevoke;
+    setPublishMode('publish');
+    delete seasonConfig.seasonNumber;
+  });
+
+  it('runs start to finish and writes all three files', async () => {
+    const status = [];
+    await exportAndFillBigBrotherSeason(s => status.push(s));
+    vi.advanceTimersByTime(2000);        // the staggered downloads
+
+    expect(downloaded, 'the export produced no files').toEqual([
+      'bb-1-data.json', 'players_database.json', 'seasons_database.json',
+    ]);
+    // It said what it was doing, and said it was not publishing.
+    expect(status.join(' | ')).toMatch(/Download-only/);
+  });
+
+  it('survives the AI worker being unreachable', async () => {
+    // Already the case above — fetch rejects — but stated on its own, because a
+    // failed narrative call must cost the prose and not the season.
+    await expect(exportAndFillBigBrotherSeason(() => {})).resolves.not.toThrow();
+    vi.advanceTimersByTime(2000);
+    expect(downloaded).toContain('bb-1-data.json');
+  });
+});
 
 describe('the dry-run switch', () => {
   // Only the flag itself is reachable from here — _publishSeasonToSite needs a

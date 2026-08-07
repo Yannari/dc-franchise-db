@@ -165,10 +165,13 @@ const LEADERBOARD_STATS = {
   wins:          { label: 'Season wins',        expr: 'SUM(CASE WHEN a.placement = 1 THEN 1 ELSE 0 END)', dir: 'DESC' },
   finals:        { label: 'Finals appearances', expr: 'SUM(CASE WHEN a.placement <= 2 THEN 1 ELSE 0 END)', dir: 'DESC' },
   seasons:       { label: 'Seasons played',     expr: 'COUNT(*)',                        dir: 'DESC' },
-  challenges:    { label: 'Challenge wins',     expr: 'SUM(COALESCE(a.challenge_wins,0))', dir: 'DESC' },
-  immunities:    { label: 'Immunity wins',      expr: 'SUM(COALESCE(a.immunity_wins,0))',  dir: 'DESC' },
-  rewards:       { label: 'Reward wins',        expr: 'SUM(COALESCE(a.reward_wins,0))',    dir: 'DESC' },
-  idols:         { label: 'Idols found',        expr: 'SUM(COALESCE(a.idols_found,0))',    dir: 'DESC' },
+  // The four Total Drama stats live in td_appearances now. They read the
+  // LEFT-JOINed alias `td`, so a Big Brother appearance contributes 0 instead
+  // of dropping the player off the board entirely.
+  challenges:    { label: 'Challenge wins',     expr: 'SUM(COALESCE(td.challenge_wins,0))', dir: 'DESC' },
+  immunities:    { label: 'Immunity wins',      expr: 'SUM(COALESCE(td.immunity_wins,0))',  dir: 'DESC' },
+  rewards:       { label: 'Reward wins',        expr: 'SUM(COALESCE(td.reward_wins,0))',    dir: 'DESC' },
+  idols:         { label: 'Idols found',        expr: 'SUM(COALESCE(td.idols_found,0))',    dir: 'DESC' },
   juryVotes:     { label: 'Jury votes',         expr: 'SUM(COALESCE(a.jury_votes,0))',     dir: 'DESC' },
   votesAgainst:  { label: 'Votes against',      expr: 'SUM(COALESCE(a.votes_received,0))', dir: 'DESC' },
   avgPlacement:  { label: 'Best avg placement', expr: 'ROUND(AVG(a.placement), 2)',        dir: 'ASC'  },
@@ -207,6 +210,9 @@ async function leaderboard(env, params) {
            COUNT(*)     AS seasonsPlayed
     FROM appearances a
     JOIN players p ON p.id = a.player_id
+    LEFT JOIN td_appearances td
+           ON td.player_id = a.player_id AND td.season_number = a.season_number
+          AND a.format = 'total-drama'
     GROUP BY p.id, p.name, p.tier
     HAVING COUNT(*) >= ?
     ORDER BY value ${stat.dir}, seasonsPlayed DESC, p.name ASC
@@ -232,22 +238,32 @@ async function relationships(env, params) {
   const [who, runs, mates, bonds] = await d.batch([
     d.prepare('SELECT id, name, tier, total_seasons AS totalSeasons, wins, best_placement AS bestPlacement, avg_placement AS avgPlacement FROM players WHERE id = ?').bind(slug),
 
-    d.prepare(`SELECT a.season_number AS season, s.title AS seasonTitle, a.placement, a.status,
-                      a.tribe, a.challenge_wins AS challengeWins, a.immunity_wins AS immunityWins,
-                      a.idols_found AS idolsFound, a.votes_received AS votesReceived,
+    // A season is now identified by (format, season_number), so BOTH joins carry
+    // the format. The Total Drama-only columns come from td_appearances; for a
+    // Big Brother row they come back NULL rather than matching the wrong season.
+    d.prepare(`SELECT a.season_number AS season, a.format AS format, s.title AS seasonTitle,
+                      a.placement, a.status,
+                      td.tribe, td.challenge_wins AS challengeWins, td.immunity_wins AS immunityWins,
+                      td.idols_found AS idolsFound, a.votes_received AS votesReceived,
                       a.jury_votes AS juryVotes, a.final_vote AS finalVote
                FROM appearances a
-               LEFT JOIN seasons s ON s.season_number = a.season_number
+               LEFT JOIN seasons s ON s.season_number = a.season_number AND s.format = a.format
+               LEFT JOIN td_appearances td ON td.player_id = a.player_id
+                                          AND td.season_number = a.season_number
+                                          AND a.format = 'total-drama'
                WHERE a.player_id = ?
-               ORDER BY a.season_number`).bind(slug),
+               ORDER BY a.format, a.season_number`).bind(slug),
 
     // The self-join: same season, different person. This is the query the
     // static JSON cannot answer without downloading and looping over everyone.
+    // "Same season" means same FORMAT and same number — without the format
+    // clause, Total Drama 1 and Big Brother 1 would report each other's casts.
     d.prepare(`SELECT p.id, p.name, p.tier,
                       COUNT(*) AS sharedSeasons,
                       GROUP_CONCAT(them.season_number) AS seasons
                FROM appearances me
                JOIN appearances them ON them.season_number = me.season_number
+                                    AND them.format = me.format
                                     AND them.player_id <> me.player_id
                JOIN players p ON p.id = them.player_id
                WHERE me.player_id = ?

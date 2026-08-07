@@ -445,6 +445,14 @@ if (!playerId) {
 
       document.getElementById('loading').style.display = 'none';
       document.getElementById('player-content').style.display = 'block';
+
+      // Career fame. Derived from the published databases rather than stored,
+      // so it is computed here rather than read off the player record. Fired
+      // after the profile is on the page — it must never delay the page or take
+      // it down, so it is not awaited and it swallows its own failures.
+      if (window.renderPlayerFame) {
+        window.renderPlayerFame(player.id, document.getElementById('player-fame'));
+      }
     });
   }).catch(error => {
     console.error('Error loading player data:', error);
@@ -802,6 +810,7 @@ function renderPlayerProfile(player) {
   <div class="pp-info">
     <div class="pp-tier-pill">${tc.icon} ${tc.label}</div>
     <div class="pp-name">${player.name}${isWinner?' 👑':''}</div>
+    <div class="pp-fame" id="player-fame"></div>
     <div class="pp-meta">${player.totalSeasons} season${player.totalSeasons>1?'s':''} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winSeason?' (S'+winSeason+' Winner)':''}</div>
     <div class="pp-badges">`;
   (player.badges||[]).forEach(b => {
@@ -1294,6 +1303,39 @@ document.addEventListener('keydown', e => {
   <button id="pp-lb-next" onclick="_lbStep(1)">›</button>
   <div id="pp-lb-counter"></div>
 </div>
+
+<script type="module">
+  // Career fame across every show. js/fame.js derives it from the published
+  // databases — nothing stores a fame field, because decay makes it a function
+  // of when you ask rather than of the player's own record.
+  import { computeFame } from './js/fame.js';
+  import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
+
+  const style = document.createElement('style');
+  style.textContent = FAME_STAR_CSS + `
+    .pp-fame{margin:2px 0 6px;}`;
+  document.head.appendChild(style);
+
+  window.renderPlayerFame = async (playerId, mountEl) => {
+    if (!mountEl || !playerId) return;
+    try {
+      const grab = (url, fallback) =>
+        fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.json() : fallback).catch(() => fallback);
+      const [players, rankings, seasons, franchise] = await Promise.all([
+        grab('players_database.json', null),
+        grab('rankings_database.json', {}),
+        grab('seasons_database.json', { seasons: [] }),
+        grab('franchise_database.json', {}),
+      ]);
+      if (!players) return;                     // no roster, no rating
+      mountEl.innerHTML = renderStars(computeFame({ players, rankings, seasons, franchise }).get(playerId));
+    } catch (err) {
+      // A missing rating must never take the profile down with it.
+      console.warn('Could not compute fame:', err);
+      mountEl.innerHTML = '';
+    }
+  };
+</script>
 
 </body>
 </html>

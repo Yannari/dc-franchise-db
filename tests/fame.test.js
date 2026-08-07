@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { starsFromScore, showRankMultiplier, seasonChronology,
   popularityFactor, seasonAwardPoints, seasonGain, PLACEMENT_BASE,
   computeFame, fameOf, recordsHeld, normaliseStatus } from '../js/fame.js';
+import { renderStars } from '../js/fame-stars.js';
 
 describe('turning a score into stars', () => {
   it('places every threshold on its own step', () => {
@@ -315,5 +316,41 @@ describe('walking a career', () => {
       rankings: {}, seasons: franchiseOf(1) });
     expect(r.score, 'the neutral fallbacks produced nothing').toBeGreaterThan(0);
     expect(r.stars).toBeGreaterThan(0);
+  });
+});
+
+describe('drawing the stars', () => {
+  const fame = s => ({ stars: s, score: 50, locked: false, seasonsPlayed: 2, shows: [], timeline: [] });
+
+  it('draws five positions whatever the rating', () => {
+    // Count opening tags, not class fragments: /fame-star\b/ also matches inside
+    // fame-star-half and fame-star-full, and the [ "] guard is what keeps the
+    // fame-stars wrapper out of the count.
+    for (const s of [0, 0.5, 2.5, 5]) {
+      const html = renderStars(fame(s));
+      expect((html.match(/<span class="fame-star[ "]/g) || []).length, `${s} stars`).toBe(5);
+    }
+  });
+
+  it('draws half stars as halves', () => {
+    expect(renderStars(fame(2.5))).toMatch(/fame-star-half/);
+    expect(renderStars(fame(2))).not.toMatch(/fame-star-half/);
+  });
+
+  it('fills exactly as many as the rating says', () => {
+    expect((renderStars(fame(3)).match(/fame-star-full/g) || []).length).toBe(3);
+    expect((renderStars(fame(0)).match(/fame-star-full/g) || []).length).toBe(0);
+    expect((renderStars(fame(5)).match(/fame-star-full/g) || []).length).toBe(5);
+  });
+
+  it('says so when a rating is locked', () => {
+    expect(renderStars({ ...fame(5), locked: true })).toMatch(/fame-locked/);
+    expect(renderStars(fame(5))).not.toMatch(/fame-locked/);
+  });
+
+  it('shows nothing rather than crashing on missing data', () => {
+    expect(renderStars(null)).toBe('');
+    expect(renderStars(undefined)).toBe('');
+    expect(renderStars({})).toBe('');
   });
 });

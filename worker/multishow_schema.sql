@@ -5,8 +5,13 @@
 --   npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/multishow_schema.sql --yes
 --
 -- SQLite cannot alter a primary key, so the keyed tables are rebuilt
--- create-copy-drop-rename rather than altered. Every rebuild is written so a
--- second run is a no-op that neither loses rows nor relabels them.
+-- create-copy-drop-rename rather than altered. Every rebuild is written so that
+-- a second run compiles and completes against either shape of its source table.
+--
+-- That is NOT the same as "a second run changes nothing". It does not lose rows,
+-- but it CAN relabel them once a second show's data exists. Read WHAT A RE-RUN
+-- CAN STILL GET WRONG, below, before running this a second time — that section
+-- is the honest version of this paragraph and it lists three real hazards.
 --
 -- ─────────────────────────────────────────────────────────────────────────
 -- HOW OFTEN THIS FILE CAN BE RUN

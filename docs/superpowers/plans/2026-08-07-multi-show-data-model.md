@@ -1005,8 +1005,13 @@ relabels or resurrects rows.
 - [ ] **Step 5: Re-sync the data**
 
 ```bash
-curl -X POST https://<worker-host>/api/sync-seasons -H "X-Studio-Token: <STUDIO_TOKEN>"
+curl -X POST https://<worker-host>/api/sync-seasons -H "Authorization: Bearer <STUDIO_TOKEN>"
 ```
+
+**The header is `Authorization: Bearer`, not `X-Studio-Token`.** `worker-studio.js`
+reads `request.headers.get('Authorization')` and strips a `Bearer ` prefix; any
+other header name returns `401 unauthorized` — at the one step that repopulates
+`td_appearances`, which is the step you least want to fail silently past.
 
 **`/api/sync-seasons` takes NO request body.** It fetches `players_database.json`
 from GitHub itself, using `GITHUB_REPO`/`GITHUB_BRANCH` from `worker/wrangler.toml`.

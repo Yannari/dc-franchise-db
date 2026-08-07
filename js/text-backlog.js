@@ -10,7 +10,8 @@ import { standingFromSnapshot, standingMovement, roleLabel } from './social-stat
 import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { EDIT_LABELS } from './edit-layer.js';
-import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech } from './vp-screens.js';
+import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech,
+  _bbIntroQuote, _bbFirstRead } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -4219,6 +4220,27 @@ export function generateBBSummaryText(ep) {
     ln(`${ep.houseAtStart.length} houseguests: ${ep.houseAtStart.join(', ')}`);
   }
 
+  // MOVE-IN DAY.
+  //
+  // The first screen of the season is fourteen people coming through a door and
+  // saying the thing they have been rehearsing on the plane, plus what the room
+  // decides about them in the four seconds after. It reached no reader at all —
+  // the transcript opened on the plan layer, so a season's first impressions,
+  // which every later read is built on top of, existed only in the replay.
+  if (ep.num === 1 && (ep.houseAtStart || []).length) {
+    sec('MOVE-IN DAY');
+    ln('  The front door opens one houseguest at a time.');
+    for (const name of ep.houseAtStart) {
+      ln('');
+      ln(`  ${name}`);
+      try { ln(`    ${_bbIntroQuote(name)}`); } catch { /* no line written for them */ }
+      try {
+        const reads = _bbFirstRead(name) || [];
+        if (reads.length) ln(`    First read: ${reads.join(' · ')}`);
+      } catch { /* the room said nothing */ }
+    }
+  }
+
   // WHAT EVERYBODY IS PLAYING FOR.
   //
   // The plan layer decides the nominations, the veto and the vote. The
@@ -4538,6 +4560,28 @@ export function generateBBSummaryText(ep) {
 
       case 'veto':
         sec('POWER OF VETO');
+        // THE DRAW.
+        //
+        // Six people play and three of them get there out of a bag in front of
+        // everybody, a chip at a time, with a choice chip meaning somebody has
+        // to say a name out loud and live with it. The viewing party gives that
+        // its own screen; the transcript printed the finished field and none of
+        // how it was arrived at — so a reader could not tell a houseguest who
+        // drew their own saviour from one who was picked by the person they had
+        // just nominated.
+        if ((act.automatic || []).length) {
+          ln('');
+          ln('  THE DRAW');
+          (act.automatic || []).filter(Boolean).forEach((n, i) => ln(
+            `    ${n} plays automatically — ${i === 0 ? 'Head of Household' : 'nominated'}.`));
+          (act.draw || []).forEach(d => {
+            if (!d) return;
+            ln(d.chip === 'choice'
+              ? `    ${d.drawer} draws HOUSEGUEST'S CHOICE and picks ${d.chose}.`
+              : `    ${d.drawer} reaches into the bag and pulls ${d.drew}.`);
+          });
+          ln('');
+        }
         ln(`  Played by: ${(act.participants || []).join(', ')}.`);
         // Between the draw and the competition, because that is when it
         // happened. Its beats are printed here rather than by the generic

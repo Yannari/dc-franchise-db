@@ -15724,7 +15724,7 @@ const _bbBeats = act => (act?.socialBeats || []).map(b =>
  * visible stats — what a room full of strangers clocks in the opening hour,
  * phrased as observation rather than numbers.
  */
-function _bbIntroQuote(name) {
+export function _bbIntroQuote(name) {
   const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
   const arch = player.archetype || 'floater';
   const p = pronouns(name);
@@ -15865,7 +15865,7 @@ function _bbIntroQuote(name) {
 }
 
 /** What a room full of strangers clocks in the first hour. */
-function _bbFirstRead(name) {
+export function _bbFirstRead(name) {
   const player = (typeof players !== 'undefined' ? players.find(x => x.name === name) : null) || {};
   const stats = player.stats || {};
   const READS = {

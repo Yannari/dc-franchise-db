@@ -492,6 +492,41 @@ describe('the two endings', () => {
   });
 });
 
+describe('finding it in the house feed', () => {
+  it('puts the event the room saw into House Life, and never the name', () => {
+    // The feed is the only place a viewer can go looking for the twist, and it
+    // was getting the house's REACTION with the thing it was reacting to left
+    // out — "the house spends the morning on who did it" with no it. There is
+    // nothing recognisable to scan for in that.
+    house({ bbSaboteur: 'random', bbSaboteurBankWeek: 9 });
+    let checked = 0;
+    for (let w = 0; w < 4 && checked < 3; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const debrief = (ep.acts || []).find(a => a.type === 'saboteur-debrief' && !a.declined);
+      if (!debrief) continue;
+      const sab = saboteurState().player;
+
+      const feed = (ep.acts || []).flatMap(a => (a.socialBeats || [])
+        .filter(b => /^saboteur-/.test(b.eventId || '')));
+      // Counted loosely on purpose: a compressed cycle can finish a week with
+      // no house stretch left to attach to, and the property worth guarding is
+      // that what DID reach the feed is the right thing, not the arithmetic.
+      if (!feed.length) continue;
+      checked++;
+
+      const landed = feed.at(-1);
+      // The room never learns who. That is the whole split: cause on the
+      // audience's screen, consequence in the house's feed.
+      expect(landed.text).not.toContain(sab);
+      expect(landed.badgeText).toBeTruthy();
+      // And the results screen quotes it exactly, so the two can be matched up.
+      expect(debrief.feedLine).toBe(landed.text);
+    }
+    expect(checked, 'no job ran in four weeks').toBeGreaterThan(0);
+  });
+});
+
 describe('the shape of a season', () => {
   // The numbers this twist lives or dies on, measured rather than asserted from
   // taste. The first tuning produced: 49% of jobs landing, the saboteur caught

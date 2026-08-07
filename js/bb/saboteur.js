@@ -231,20 +231,32 @@ const MISSIONS = [
     can: ctx => ctx.others.length >= 3,
     run(ctx, rng) {
       const target = ctx.hoh && ctx.hoh !== ctx.sab ? ctx.hoh : ctx.others[0];
+      // Two versions of the same night: what they DID, and what the house came
+      // downstairs and found. The feed only ever gets the second one, and until
+      // it did there was nothing in House Life a viewer could recognise — the
+      // room's reaction was going in without the thing it was reacting to.
       const flavour = [
-        `${ctx.sab} empties most of a week's food into a bin bag at four in the morning and puts the bag outside.`,
-        `The hot water goes off. It goes off because ${ctx.sab} turned it off, and it stays off for two days.`,
-        `Every alarm in the house goes at twenty-minute intervals through the night. ${ctx.sab} sleeps through it beautifully.`,
-        `${ctx.sab} takes the batteries out of every microphone pack ${P(ctx.sab).sub} can reach and buries them in the garden.`,
-        `The lights go out at nine and stay out. Somewhere in the dark ${ctx.sab} is standing perfectly still, enjoying it.`,
-        `Every photograph on the memory wall is turned to face the wrong way. It takes the house an hour to notice and a day to stop talking about it.`,
-      ];
+        { did: `${ctx.sab} empties most of a week's food into a bin bag at four in the morning and puts the bag outside.`,
+          saw: `The food is gone. All of it — out of the fridge, into a bin bag, and left by the back door some time before six.` },
+        { did: `The hot water goes off. It goes off because ${ctx.sab} turned it off, and it stays off for two days.`,
+          saw: `There is no hot water, and there is no hot water for two days. Nobody can find anything wrong with it.` },
+        { did: `Every alarm in the house goes at twenty-minute intervals through the night. ${ctx.sab} sleeps through it beautifully.`,
+          saw: `Every alarm in the house goes off, every twenty minutes, all night. By morning nobody has slept and everybody has a theory.` },
+        { did: `${ctx.sab} takes the batteries out of every microphone pack ${P(ctx.sab).sub} can reach and buries them in the garden.`,
+          saw: `Half the microphone packs in the house have no batteries in them. The batteries turn up three days later in the garden.` },
+        { did: `The lights go out at nine and stay out. Somewhere in the dark ${ctx.sab} is standing perfectly still, enjoying it.`,
+          saw: `The lights go out at nine and stay out. Twelve people sit in the dark listening to each other breathe.` },
+        { did: `Every photograph on the memory wall is turned to face the wrong way. It takes the house an hour to notice and a day to stop talking about it.`,
+          saw: `Every photograph on the memory wall is facing the wall. It takes an hour for anybody to notice and a day for anybody to shut up about it.` },
+      ][Math.floor(rng() * 6)];
       for (const n of ctx.others) { try { addBond(n, target, -0.4); } catch { /* nobody to blame yet */ } }
       return {
         touched: [...ctx.others],
-        text: flavour[Math.floor(rng() * flavour.length)],
+        text: flavour.did,
+        houseSees: flavour.saw,
         houseText: `The house spends the whole morning on who did it. ${target} gets most of the looks, `
           + `because ${P(target).sub} ${P(target).sub === 'they' ? 'have' : 'has'} the only room with a lock on it.`,
+        seesBadge: 'SOMETHING HAPPENED IN THE NIGHT',
         botched: `Somebody comes down for water halfway through, and ${ctx.sab} has to spend ten minutes `
           + `being very normal in a kitchen at four in the morning.`,
       };
@@ -763,15 +775,23 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
   // doing it. The cause stays on the audience's screen; the consequence goes
   // where the house lives, unattributed, next to everything else that happened
   // that day.
+  // What the room actually saw, then how it reacted — in that order, because a
+  // reaction with no event in front of it is not something a viewer can find.
+  const near = (result.touched || []).filter(n => n !== sab)[0] || 'Somebody';
+  const MISSED = [
+    `Something starts to go wrong in the house and then stops. Nobody can say what it was.`,
+    `${near} walks in on something half-finished and cannot work out what it was going to be.`,
+    `There is a moment in the middle of the week where the house goes quiet for no reason anybody can name.`,
+    `Something is not where it was. Nothing is missing. ${near} spends an hour deciding whether to mention it.`,
+  ];
   const feedText = worked
-    ? (result.houseText || result.text)
-    : `Something goes wrong in the house and nobody can say what. `
-      + `${(result.touched || []).filter(n => n !== sab)[0] || 'Somebody'} is closest to it and has no explanation.`;
+    ? [result.houseSees, result.houseText].filter(Boolean).join(' ')
+    : MISSED[Math.floor(rng() * MISSED.length)];
   week._saboteurFeed = {
     text: feedText,
     _sabQuote: feedText,
     players: (result.touched || []).filter(n => n !== sab).slice(0, 3),
-    badgeText: worked ? 'NOBODY KNOWS WHO' : 'SOMETHING IS OFF',
+    badgeText: worked ? (result.seesBadge || 'NOBODY KNOWS WHO') : 'SOMETHING IS OFF',
     badgeClass: 'red',
     eventId: `saboteur-${mission.id}`, category: 'house-life', location: 'living-room',
   };

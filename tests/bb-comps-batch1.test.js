@@ -236,6 +236,60 @@ describe('the social competitions read the house', () => {
   });
 
 
+
+
+  it('names every houseguest who got it wrong, not just a count', () => {
+    // "6 of 8 got this one" is a number that hides the two people it is about.
+    season();
+    for (const r of run('bb-recall-who-said-it').detail?.rounds || []) {
+      expect(Object.keys(r.answers).length).toBe(r.field);
+      for (const [who, a] of Object.entries(r.answers)) {
+        // Every answer resolves to a name on that board — the screen draws
+        // `options[a.given]`, and a wrong field name renders a dash for
+        // everybody.
+        expect(r.options[a.given], `${who} has no readable answer`).toBeTruthy();
+        expect(a.right).toBe(a.given === r.truthIndex);
+      }
+    }
+  });
+
+  it('asks about the evicted houseguests, which is the wiki rule', () => {
+    // "The houseguests are asked a series of questions about the evicted
+    // houseguests." A statement about somebody standing at their own board is
+    // answerable by looking along the line.
+    season();
+    const rounds = run('bb-recall-who-said-it').detail?.rounds || [];
+    const out = new Set(gs.eliminated || []);
+    const aboutTheGone = rounds.filter(r => out.has(r.options[r.truthIndex])).length;
+    expect(aboutTheGone, 'no statement was about somebody who had been evicted')
+      .toBeGreaterThan(rounds.length / 2);
+  });
+
+  it('breaks a tie with a number, and throws the question out if everybody matches', () => {
+    // The wiki, for every quiz in this format: exhaust the questions, and if
+    // the top is level it goes to a number. Sorting the tie away silently
+    // handed Head of Household to whoever sorted first.
+    let sawTiebreak = false;
+    for (let seed = 1; seed <= 80 && !sawTiebreak; seed++) {
+      season();
+      const result = run('bb-recall-who-said-it', { rng: seededRng(seed) });
+      const tbs = result.detail?.tiebreaks || [];
+      if (!tbs.length) continue;
+      sawTiebreak = true;
+      const decided = tbs.filter(t => !t.nullified);
+      expect(decided.length, 'a tiebreak ran and decided nothing').toBeGreaterThan(0);
+      for (const t of tbs) {
+        expect(Number.isFinite(t.target)).toBe(true);
+        expect(Object.keys(t.guesses).length).toBeGreaterThan(1);
+        if (t.nullified) expect(new Set(Object.values(t.guesses)).size).toBe(1);
+        else expect(t.winner).toBeTruthy();
+      }
+      // And the tiebreak winner is the one holding the power.
+      expect(result.winner).toBe(decided[decided.length - 1].winner);
+    }
+    expect(sawTiebreak, 'no tie in 80 rounds — the questions may be too easy').toBe(true);
+  });
+
   it('never tells the same joke twice in one roast', () => {
     // The first version rendered each houseguest's options with their name
     // already inside them, so the non-repeating picker saw nine different

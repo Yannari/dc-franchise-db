@@ -170,13 +170,18 @@ describe('Big Brother competition library', () => {
   it('uses every competition across real seasons, and rarely falls back', () => {
     const used = new Set();
     let custom = 0, generic = 0;
-    for (const seed of [11, 23, 37, 44, 58, 63, 71, 88]) {
+    // Twelve seasons, not eight. The weekly shelf is 60-odd competitions now,
+    // and a sweep of eight gives roughly 200 draws — under the coupon-collector
+    // threshold for that many, so a perfectly healthy competition can go
+    // unseen. This is the cheapest honest fix: more draws, rather than a
+    // weaker assertion.
+    for (const seed of [11, 23, 37, 44, 58, 63, 71, 88, 94, 101, 117, 129]) {
       reset();
       // Five of the eight seasons run the Block Buster, because the arena has
       // games of its own now and a sweep that never opens the arena reports
       // thirteen live competitions as dead code. The HEADLESS engine takes the
       // mode as an option — seasonConfig is the played path's knob.
-      const arenaSeason = seed === 11 || seed === 23 || seed === 44 || seed === 63 || seed === 88;
+      const arenaSeason = [11, 23, 44, 63, 88, 101, 129].includes(seed);
       const { weeks } = simulateBBSeason({
         rng: seededRng(seed), finaleSize: 3,
         houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,

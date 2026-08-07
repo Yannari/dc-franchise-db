@@ -82,8 +82,22 @@ const _STYLE = `<style>
 /* How the whole line did, so the running score on the board is explicable.
    Narrating one houseguest a round keeps the prose readable and hides the
    competition — a viewer could not see that six of eight got it. */
-.sigwsi .ws-tally{margin-top:7px;font-size:11px;letter-spacing:.4px;color:#7a6750}
-.sigwsi .ws-tally b{color:#3a2e20}
+/* The WHOLE line's answers, not a headline count.
+   "6 of 8 got this one" tells the viewer a number and hides the two people it
+   is about — and those two are the entire reason the board moves. */
+.sigwsi .ws-field{margin-top:11px;padding:9px 10px;border-radius:3px;background:rgba(42,33,24,.05);
+  border:1px dashed rgba(42,33,24,.22)}
+.sigwsi .ws-field-h{font-size:10.5px;letter-spacing:.6px;color:#7a6750;margin-bottom:7px}
+.sigwsi .ws-field-h b{color:#3a2e20}
+.sigwsi .ws-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sigwsi .ws-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:11px;
+  font-size:10.5px;background:#fff;border:1px solid rgba(42,33,24,.18);color:#3a2e20}
+.sigwsi .ws-chip i{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.sigwsi .ws-chip.is-ok i{background:var(--ws-ok)}
+.sigwsi .ws-chip.is-no i{background:var(--ws-string)}
+.sigwsi .ws-chip.is-no{background:rgba(179,36,31,.07);border-color:rgba(179,36,31,.3)}
+.sigwsi .ws-chip em{font-style:normal;font-size:9.5px;color:#8a7355}
+.sigwsi .ws-chip.is-no em{color:#a34b41}
 .sigwsi .ws-stamp{position:absolute;right:10px;top:12px;font-family:'Special Elite',cursive;font-size:15px;
   letter-spacing:2px;padding:3px 9px;border:2.5px solid;border-radius:3px;transform:rotate(-11deg);opacity:.85}
 .sigwsi .ws-stamp.is-ok{color:var(--ws-ok);border-color:var(--ws-ok)}
@@ -187,20 +201,41 @@ export function rpBuildSigWhoSaidIt(ep, actType, u = {}) {
         <span class="ws-wrote"><b>${esc(answerer)}</b> wrote <em>${esc(named || '—')}</em></span>
         <span class="ws-truth">it was <b>${esc(truth)}</b></span>
       </div>` : ''}
-      ${round.correct != null ? `<div class="ws-tally">
-        <b>${round.correct}</b> of <b>${round.field}</b> houseguests got this one · a point each
+      ${round.answers ? `<div class="ws-field">
+        <div class="ws-field-h"><b>${round.correct}</b> of <b>${round.field}</b> got it · a point each</div>
+        <div class="ws-chips">${Object.entries(round.answers).map(([who, a]) => `
+          <span class="ws-chip ${a.right ? 'is-ok' : 'is-no'}" title="${esc(who)} wrote ${esc(round.options[a.given] || '—')}">
+            <i></i>${esc(who)}<em>${esc(round.options[a.given] || '—')}</em></span>`).join('')}</div>
       </div>` : ''}
       <div class="ws-line">${rest}</div>
     </div>`;
   });
 
-  const board = (comp.placements || []).slice(0, 7).map((n, i) => {
-    const row = breakdown[n] || {};
-    const pct = Math.round(((row.correct || 0) / asked) * 100);
+  // The board as it stands RIGHT NOW, counted from the statements the viewer
+  // has actually watched. It used to sit blank until the last card, which made
+  // the one screen element that explains the scoring useless for the whole
+  // competition.
+  const seenRounds = [];
+  let pinned = 0;
+  beats.slice(0, state.idx + 1).forEach(b => {
+    const q = (b.text.match(/"([^"]+)"/) || [])[1];
+    const r = q ? rounds.find(x => b.text.includes(x.statement)) : null;
+    if (r) { seenRounds.push(r); pinned++; }
+  });
+  const running = {};
+  (act.participants || comp.placements || []).forEach(n => { running[n] = 0; });
+  seenRounds.forEach(r => Object.entries(r.answers || {}).forEach(([n, a]) => {
+    if (a.right) running[n] = (running[n] || 0) + 1;
+  }));
+  const standing = Object.keys(running).sort((a, b) => running[b] - running[a]);
+  const board = standing.slice(0, 8).map((n, i) => {
+    const got = running[n] || 0;
+    const pct = pinned ? Math.round((got / pinned) * 100) : 0;
+    const tb = done && breakdown[n]?.wonTiebreak;
     return `<div class="ws-srow"><i>${i + 1}</i>
-      <span style="min-width:52px">${esc(n)}</span>
-      <span class="ws-bar"><b style="width:${done ? pct : 0}%"></b></span>
-      <em>${done ? `${row.correct || 0}/${asked}` : '—'}</em></div>`;
+      <span style="min-width:52px">${esc(n)}${tb ? ' ⧗' : ''}</span>
+      <span class="ws-bar"><b style="width:${pct}%"></b></span>
+      <em>${pinned ? `${got}/${pinned}` : '—'}</em></div>`;
   }).join('');
 
   return `<div class="rp-page sigwsi">${_STYLE}
@@ -217,7 +252,7 @@ export function rpBuildSigWhoSaidIt(ep, actType, u = {}) {
         <div>${cards}</div>
         <aside class="ws-side">
           <div class="ws-side-h">THE BOARD</div>
-          <div class="ws-side-s">Correct attributions, once every card is pinned.</div>
+          <div class="ws-side-s">Correct attributions after ${pinned} statement${pinned === 1 ? '' : 's'}. ⧗ won the tiebreaker.</div>
           ${board}
           ${done && winner ? `<div class="ws-win">
             <div class="ws-win-f">${avatar(winner, 56)}</div>

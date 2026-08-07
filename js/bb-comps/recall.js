@@ -17,6 +17,7 @@
 //
 // Both read `_recall.js`, which only hands over statements exactly one
 // houseguest could have made — see the uniqueness rule there.
+import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { beat, choose, clamp, makePicker, toResult } from './_shared.js';
 import { attentionOf, castSeen, contextFacts, momentFacts, optionsFor, recallFacts } from './_recall.js';
@@ -70,7 +71,10 @@ function rankByScore(names, score) {
  */
 function answer(name, options, truthIndex, rng, luck) {
   const read = attentionOf(name, statOf);
-  const chance = clamp(1 / options.length + read * 0.58, 0, 0.92);
+  // 0.45, not 0.58. At the higher ceiling a paying-attention houseguest was
+  // over 90% per question, so a six-question round ended with five people on
+  // five of six and the result decided by nothing at all.
+  const chance = clamp(1 / options.length + read * 0.45, 0, 0.82);
   const roll = rng();
   luck[name] = round2((luck[name] || 0) + (chance - roll));
   const right = roll < chance;
@@ -78,6 +82,23 @@ function answer(name, options, truthIndex, rng, luck) {
     : (truthIndex + 1 + Math.floor(rng() * (options.length - 1))) % options.length;
   return { right, given, read: round2(read) };
 }
+
+/**
+ * Numbers a house could be asked for.
+ *
+ * The wiki's examples are "the number of seconds the houseguests have lived in
+ * the house" and "the weight in pounds of an object" — a quantity nobody can
+ * deduce and everybody can estimate. These are counted off the real ledger so
+ * the answer is checkable rather than invented.
+ */
+const TIEBREAK_QUESTIONS = [
+  { text: 'How many days have the houseguests been living in this house?',
+    target: () => Math.max(1, (gs.bb?.weeks?.length || 1) * 7) },
+  { text: 'How many votes have been cast to evict, in total, all season?',
+    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.ballots || []).length, 0) || 1 },
+  { text: 'How many times has somebody been nominated in this house?',
+    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.nominees || []).length, 0) || 1 },
+];
 
 // ══════════════════════════════════════════════════════════════════════
 // Who Said It?
@@ -126,9 +147,15 @@ export const whoSaidIt = {
     // Only statements that are true of exactly one houseguest, and never one
     // about somebody still standing at their own station being asked to
     // identify themselves — that is a free point, not a question.
-    // Topped up from the live week, so a competition drawn in week two asks
-    // about the week it is standing in rather than running to two questions.
-    const pool = [...recallFacts(), ...contextFacts(context)].filter(f => f.subject);
+    // ABOUT THE EVICTED HOUSEGUESTS — the wiki's rule, and it is a better
+    // competition for it: a statement about somebody still standing at their
+    // own board is answerable by looking along the line, and half the house
+    // watched the live week happen this morning. Live facts are kept only as a
+    // top-up for a season too young to have evicted anybody yet.
+    const gone = new Set([...(gs.eliminated || [])]);
+    const all = [...recallFacts(), ...contextFacts(context)].filter(f => f.subject);
+    const aboutTheGone = all.filter(f => gone.has(f.subject));
+    const pool = aboutTheGone.length >= 3 ? aboutTheGone : all;
     const cast = [...new Set([...castSeen(), ...participants])];
     const asked = [];
     const used = new Set();
@@ -136,7 +163,7 @@ export const whoSaidIt = {
     // Where the rotation starts, so two seasons do not always open on the same
     // houseguest's board.
     const spotOffset = Math.floor(rng() * participants.length);
-    const rounds = Math.min(6, pool.length);
+    const rounds = Math.min(8, pool.length);
 
     for (let r = 0; r < rounds; r++) {
       const fresh = pool.filter(f => !used.has(f.statement));
@@ -200,10 +227,50 @@ export const whoSaidIt = {
 
     if (!asked.length) noSeasonYet(participants, beats, api, rng, luck, score);
 
+    // ── the tiebreaker ──
+    //
+    // The wiki is explicit and it is the same rule for every quiz in this
+    // format: when the questions run out and the top is tied, the competition
+    // goes to a number, and if every houseguest writes the SAME number the
+    // question is nullified and another one is asked. Sorting the tie away
+    // silently — which is what this did — hands the Head of Household to
+    // whoever happened to be first in the array.
+    const tiebreaks = [];
+    let tied = participants.filter(n => score[n] === Math.max(...participants.map(x => score[x])));
+    for (let attempt = 0; tied.length > 1 && attempt < 3; attempt++) {
+      const q = TIEBREAK_QUESTIONS[attempt % TIEBREAK_QUESTIONS.length];
+      const target = q.target();
+      const guesses = {};
+      for (const name of tied) {
+        const grasp = (Number(statOf(name).mental) || 0) * 0.5 + (Number(statOf(name).strategic) || 0) * 0.5;
+        const drift = (rng() - 0.5) * 2 * Math.max(2, target * (0.5 - grasp * 0.035));
+        guesses[name] = Math.max(0, Math.round(target + drift));
+      }
+      const distinct = new Set(Object.values(guesses));
+      if (distinct.size === 1) {
+        beats.push(beat(
+          `Tiebreaker: ${q.text} Every board says ${Object.values(guesses)[0]}. The question is thrown out and another one is asked.`,
+          [...tied], 'NULLIFIED', 'grey'));
+        tiebreaks.push({ question: q.text, target, guesses: { ...guesses }, nullified: true });
+        continue;
+      }
+      const closest = [...tied].sort((a, b) =>
+        Math.abs(guesses[a] - target) - Math.abs(guesses[b] - target))[0];
+      beats.push(beat(
+        `${tied.length} houseguests are level, so it goes to a number. ${q.text} `
+        + tied.map(n => `${n} writes ${guesses[n]}.`).join(' ')
+        + ` It is ${target}, and ${closest} is closest.`,
+        [...tied], 'TIEBREAKER', 'red'));
+      tiebreaks.push({ question: q.text, target, guesses: { ...guesses }, winner: closest, nullified: false });
+      score[closest] += 0.5;
+      tied = [closest];
+    }
+
     participants.forEach(name => {
       breakdown[name] = {
-        correct: score[name], asked: asked.length,
+        correct: Math.floor(score[name]), asked: asked.length,
         attention: round2(attentionOf(name, statOf)),
+        wonTiebreak: tiebreaks.some(t => t.winner === name),
         score: round2(score[name]), threw: false,
       };
     });
@@ -223,7 +290,7 @@ export const whoSaidIt = {
 
     return toResult(entries, {
       luck, beats, breakdown, variant: 'who-said-it',
-      detail: { rounds: asked },
+      detail: { rounds: asked, tiebreaks },
       text: winner ? `${winner} names ${score[winner]} of ${asked.length} correctly and wins Head of Household.` : '',
     });
   },

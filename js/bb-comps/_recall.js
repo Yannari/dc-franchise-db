@@ -54,8 +54,17 @@ export function castSeen() {
  * that is what these competitions put on the screen. `week` is carried so the
  * day-recall competitions can ask WHEN instead of WHO from the same material.
  */
+const ordinalOf = n => {
+  const teen = n % 100;
+  if (teen >= 11 && teen <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] || 'th'}`;
+};
+
 export function recallFacts() {
   const raw = [];
+  // A running view of what has been added, so the eviction-order statement can
+  // count the evictions before it without walking the ledger twice.
+  const out = raw;
   const add = (subject, week, kind, statement) => {
     if (subject && Number.isFinite(week) && statement) raw.push({ subject, week, kind, statement });
   };
@@ -85,6 +94,21 @@ export function recallFacts() {
     if (evicted && chairs.length === 2) {
       const survived = chairs.find(n => n !== evicted);
       add(survived, num, 'survived', `"I sat in that chair in week ${num} and watched somebody else leave."`);
+      // ── and two that only an evicted houseguest can say ──
+      //
+      // The wiki's rule for this competition is that the statements are about
+      // the EVICTED houseguests, and the kinds above only produce an evicted
+      // subject when that person happened to hold power before they went. A
+      // season could reach the quiz with one usable statement. These two exist
+      // for every eviction there has ever been, and both are unique by
+      // construction: only one person left beside a given houseguest, and only
+      // one person is the third out.
+      const beside = chairs.find(n => n !== evicted);
+      if (beside) add(evicted, num, 'beside', `"I was sitting on that block next to ${beside} the night I left."`);
+    }
+    if (evicted) {
+      const order = out.filter(f => f.kind === 'order').length + 1;
+      add(evicted, num, 'order', `"I was the ${ordinalOf(order)} houseguest voted out of this house."`);
     }
   });
 

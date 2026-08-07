@@ -657,6 +657,15 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({
     ...ep,
+    // What the fans thought AT THE END OF THIS WEEK.
+    //
+    // Nothing in the house ever wrote this, and snapshotGameState does not
+    // carry popularity either, so every screen that asked an old episode how
+    // popular somebody was fell through to the LIVE score and answered with
+    // today's number. Week three and week eleven showed the same board, which
+    // makes a per-week view of fan sentiment impossible to build and the
+    // existing episode switcher silently useless.
+    popularitySnapshot: { ...(gs.popularity || {}) },
     gsSnapshot: typeof window !== 'undefined' && window.snapshotGameState
       ? window.snapshotGameState() : null,
   });
@@ -894,6 +903,15 @@ export function simulateBBEpisode() {
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({
     ...ep,
+    // What the fans thought AT THE END OF THIS WEEK.
+    //
+    // Nothing in the house ever wrote this, and snapshotGameState does not
+    // carry popularity either, so every screen that asked an old episode how
+    // popular somebody was fell through to the LIVE score and answered with
+    // today's number. Week three and week eleven showed the same board, which
+    // makes a per-week view of fan sentiment impossible to build and the
+    // existing episode switcher silently useless.
+    popularitySnapshot: { ...(gs.popularity || {}) },
     gsSnapshot: typeof window !== 'undefined' && window.snapshotGameState
       ? window.snapshotGameState() : null,
   });
@@ -1410,6 +1428,15 @@ export function runBBFinale() {
   gs.episodeHistory ||= [];
   gs.episodeHistory.push({
     ...ep,
+    // What the fans thought AT THE END OF THIS WEEK.
+    //
+    // Nothing in the house ever wrote this, and snapshotGameState does not
+    // carry popularity either, so every screen that asked an old episode how
+    // popular somebody was fell through to the LIVE score and answered with
+    // today's number. Week three and week eleven showed the same board, which
+    // makes a per-week view of fan sentiment impossible to build and the
+    // existing episode switcher silently useless.
+    popularitySnapshot: { ...(gs.popularity || {}) },
     gsSnapshot: typeof window !== 'undefined' && window.snapshotGameState
       ? window.snapshotGameState() : null,
   });

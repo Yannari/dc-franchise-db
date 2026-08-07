@@ -772,12 +772,23 @@ export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
   const top = scores[0];
   // Certainty has to be shared. One person with a hunch is a hunch; a name three
   // people keep arriving at independently is the house making a decision.
-  // A high bar, tuned on measurement. At three points and two voices the house
-  // called it in week two of thirty-five seasons out of forty — every twist
-  // died before it had done anything. Standing up in front of everybody with
-  // one guess is a thing people do once they are SURE, and being sure takes a
-  // month.
-  if (!top || top.total < 2.9 || Object.keys(state.suspicion[top.name] || {}).length < 3) return null;
+  // ── how sure is sure enough ──
+  //
+  // One incident is not a pattern. The house has to have lived through at least
+  // two weeks of things going wrong before anybody is willing to spend the only
+  // guess they get — otherwise the first successful job produces enough noise
+  // to end the twist, which is what it was doing.
+  const landed = state.missions.filter(m => m.accepted && m.worked).length;
+  if (landed < 2) return null;
+
+  // And the bar comes DOWN as the season goes on. In week two a room full of
+  // half-theories talks itself out of saying anything out loud; by week five
+  // the same room has watched five weeks of it, the bank date is coming, and a
+  // guess that is only probably right is worth making. Standing up early has to
+  // take real certainty; standing up late only has to take nerve.
+  const weeksIn = Math.max(1, (Number(week?.num) || 1) - (state.installedWeek || 1) + 1);
+  const need = Math.max(2.6, 5.2 - weeksIn * 0.5);
+  if (!top || top.total < need || Object.keys(state.suspicion[top.name] || {}).length < 3) return null;
 
   const accuser = top.loudest[0];
   const named = top.name;

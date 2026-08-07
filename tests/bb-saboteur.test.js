@@ -298,19 +298,35 @@ describe('the house naming somebody', () => {
     const state = saboteurState();
     state.suspicion[name] = byWho;
   };
+  // Nobody stands up over one incident, so every fixture below is a house that
+  // has already watched two jobs land — and does it in a later week, because
+  // the bar for saying a name out loud comes down as the season goes on.
+  const twoJobsIn = () => {
+    saboteurState().missions = [
+      { week: 2, accepted: true, worked: true }, { week: 3, accepted: true, worked: true },
+    ];
+  };
+  const late = (over = {}) => aWeek({ num: 5, ...over });
 
   it('says nothing until the house is actually certain, and agrees with itself', () => {
     house();
     installBBSaboteur(NAMES, { rng: Math.random });
     const sab = saboteurState().player;
     const other = NAMES.find(n => n !== sab);
+    twoJobsIn();
     // One person with a hunch is a hunch, however loud.
     convince(sab, { [other]: 6 });
-    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
+    expect(runSaboteurAccusation(late(), { rng: Math.random })).toBeNull();
     // Two voices is still not a house making a decision.
     const second = NAMES.find(n => n !== sab && n !== other);
     convince(sab, { [other]: 3, [second]: 3 });
-    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
+    expect(runSaboteurAccusation(late(), { rng: Math.random })).toBeNull();
+    // And three voices in week one is still too early: one incident is not a
+    // pattern, whatever the room thinks it saw.
+    const third = NAMES.find(n => n !== sab && n !== other && n !== second);
+    convince(sab, { [other]: 3, [second]: 3, [third]: 3 });
+    saboteurState().missions = [{ week: 1, accepted: true, worked: true }];
+    expect(runSaboteurAccusation(aWeek({ num: 1 }), { rng: Math.random })).toBeNull();
   });
 
   it('ends the twist with nothing banked when it is right', () => {
@@ -319,11 +335,11 @@ describe('the house naming somebody', () => {
     const state = saboteurState();
     const sab = state.player;
     state.banked = 12000;
-    state.missions = [{ accepted: true, worked: true }, { accepted: true, worked: true }];
+    twoJobsIn();
     const [a, b, c] = NAMES.filter(n => n !== sab);
     convince(sab, { [a]: 1.6, [b]: 1.2, [c]: 1.1 });
 
-    const out = runSaboteurAccusation(aWeek(), { rng: Math.random });
+    const out = runSaboteurAccusation(late(), { rng: Math.random });
     expect(out).toBeTruthy();
     expect(out.correct).toBe(true);
     expect(out.named).toBe(sab);
@@ -343,11 +359,12 @@ describe('the house naming somebody', () => {
     // The house is loudly certain about somebody who did nothing, and quietly
     // suspicious of the person who did.
     const fourth = NAMES.filter(n => n !== sab)[3];
+    twoJobsIn();
     convince(innocent, { [a]: 1.5, [b]: 1.3, [fourth]: 1.2 });
     convince(sab, { [a]: 1.2, [b]: 0.8 });
     const before = getBond(a, innocent);
 
-    const out = runSaboteurAccusation(aWeek(), { rng: Math.random });
+    const out = runSaboteurAccusation(late(), { rng: Math.random });
     expect(out).toBeTruthy();
     expect(out.correct).toBe(false);
     expect(out.named).toBe(innocent);
@@ -368,12 +385,13 @@ describe('the house naming somebody', () => {
     const state = saboteurState();
     const sab = state.player;
     const gone = NAMES.filter(n => n !== sab)[0];
+    twoJobsIn();
     const others = NAMES.filter(n => n !== sab && n !== gone);
     convince(gone, { [others[0]]: 2, [others[1]]: 2, [others[2]]: 2 });
     // Everybody is certain about somebody who left in week one. Nobody stands
     // up at eviction night to accuse a photograph on the wall.
     const shrunk = NAMES.filter(n => n !== gone);
-    expect(runSaboteurAccusation(aWeek({ houseAtStart: shrunk }), { rng: Math.random })).toBeNull();
+    expect(runSaboteurAccusation(late({ houseAtStart: shrunk }), { rng: Math.random })).toBeNull();
   });
 });
 
@@ -457,6 +475,29 @@ describe('the shape of a season', () => {
     // converge because a house repeats the name it has already heard, and that
     // convergence is the only reason an innocent ever gets convicted.
     if (calls >= 4) expect(right / calls).toBeLessThan(0.6);
+  });
+
+  it('will not spend its guess on the first thing that goes wrong', () => {
+    // One incident is not a pattern, and the house was burning its only
+    // accusation in week one on the noise from a single job. It has to have
+    // lived through two landed jobs before anybody stands up — and the bar for
+    // standing up comes down as the weeks go on, because a room full of
+    // half-theories talks itself out of it early and a room that has watched
+    // five weeks of this does not.
+    const weeks = [];
+    for (let s = 0; s < 12; s++) {
+      house({ bbSaboteur: 'random', bbSaboteurBankWeek: 9 });
+      for (let w = 0; w < 6; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        for (const a of ep.acts || []) {
+          if (a.type === 'saboteur-accusation') weeks.push(a.week);
+        }
+        if (saboteurState()?.caught) break;
+      }
+    }
+    // Never in week one, whatever happened in it.
+    expect(Math.min(...weeks, 99)).toBeGreaterThan(1);
   });
 
   it('only ever gets one guess', () => {

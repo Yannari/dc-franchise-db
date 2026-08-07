@@ -1501,7 +1501,15 @@ export function simulateBBWeek(options = {}) {
   // HOH act and the first scramble.
   const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
   const hohCompetition = preCrowned ? null
-    : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed });
+    : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
+      // The saboteur got to the yard first. Chosen at the briefing, before any
+      // of this ran — see js/bb/saboteur.js.
+      sabotaged: week._sabRig?.slot === 'hoh' ? week._sabRig.mark : null });
+  // What moving that marker actually cost, recorded off the finished board so
+  // the debrief can say it in numbers rather than in adjectives.
+  if (week._sabRig && hohCompetition?.sabotage) {
+    week._sabRig.outcome = { ...hohCompetition.sabotage, comp: hohCompetition.name, slot: 'Head of Household' };
+  }
   const hohResults = hohCompetition
     ? hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }))
     : [];
@@ -3881,12 +3889,18 @@ export function simulateBBWeek(options = {}) {
     }
   }
   week.evicted = evicted;
-  // The twist's other ending. Somebody walks out of that door with six weeks of
+  // The twist's other ending. Somebody walks out of that door with weeks of
   // banked money and nothing to show for it, and the house is told at the door
   // what it has just done.
+  //
+  // Held rather than pushed: this runs before the eviction act is built, so
+  // pushing it here put the reveal on screen BEFORE the result it is reacting
+  // to. It goes on the end of the held pile, which is flushed after the
+  // eviction — so the night reads eviction, then the week's job, then who it
+  // turns out had been doing it.
   try {
     const blown = saboteurEvicted(evicted, week);
-    if (blown) week.acts.push(blown);
+    if (blown) (week._sabHeld ||= []).push(blown);
   } catch { /* the eviction stands either way */ }
   week.secondEvicted = secondEvicted;
   week.votes = votes;

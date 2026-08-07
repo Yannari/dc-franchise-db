@@ -533,6 +533,47 @@ describe('finding it in the house feed', () => {
   });
 });
 
+describe('rigging a competition', () => {
+  it('actually moves the board, and says what it cost', () => {
+    // It used to be a caption: the screen said a marker had been moved four
+    // inches and the standings were exactly what they would have been anyway.
+    // The handicap is applied in js/bb/comps.js, at the one point every
+    // competition passes through, so all sixty hand-written ones feel it
+    // without knowing the twist exists.
+    let rigs = 0, withNumbers = 0;
+    for (let s = 0; s < 20 && rigs < 6; s++) {
+      house({ bbSaboteur: 'random', bbSaboteurBankWeek: 9 });
+      for (let w = 0; w < 5; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        const d = (ep.acts || []).find(a => a.type === 'saboteur-debrief' && a.mission?.id === 'rig');
+        if (d?.worked) {
+          rigs++;
+          // The line the house gets names the competition and the placing,
+          // rather than asserting a loss the board never recorded.
+          if (/finishes \d+(st|nd|rd|th)/.test(d.feedLine || '')) withNumbers++;
+        }
+        if (saboteurState()?.caught || saboteurState()?.survived) break;
+      }
+    }
+    expect(rigs, 'the competition was never rigged').toBeGreaterThan(0);
+    expect(withNumbers, 'a rig that landed never reported a placing').toBeGreaterThan(0);
+  });
+
+  it('leaves every other competition alone', () => {
+    // The handicap is opt-in per competition. A week with no rig in it must
+    // produce no `sabotage` block at all, or this quietly re-ranks the season.
+    house({ bbSaboteur: 'off' });
+    for (let w = 0; w < 3; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      for (const act of ep.acts || []) {
+        if (act.competition) expect(act.competition.sabotage ?? null).toBeNull();
+      }
+    }
+  });
+});
+
 describe('the shape of a season', () => {
   // The numbers this twist lives or dies on, measured rather than asserted from
   // taste. The first tuning produced: 49% of jobs landing, the saboteur caught

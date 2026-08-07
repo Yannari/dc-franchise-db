@@ -53,6 +53,10 @@ import { BB_TWIST_CONTRACTS } from './twist-contract.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
+const ordinalish = n => {
+  const s = ['th', 'st', 'nd', 'rd'][(n % 100 - n % 10 !== 10) && n % 10 < 4 ? n % 10 : 0];
+  return `${n}${s}`;
+};
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
 
@@ -276,22 +280,44 @@ const MISSIONS = [
     // is picked at the debrief, out of the people who actually played.
     can: ctx => ctx.others.length >= 3,
     run(ctx, rng) {
-      const mark = ctx.rigTarget || ctx.others
+      // The mark was chosen at the briefing and handicapped on the real board —
+      // `outcome` is what the competition actually did to them, read back off
+      // js/bb/comps.js. Everything here describes that, rather than describing
+      // a sabotage the standings never felt.
+      const out = ctx.rigOutcome || null;
+      const mark = out?.name || ctx.rigTarget || ctx.others
         .sort((a, b) => getBond(ctx.sab, a) - getBond(ctx.sab, b))[0];
       if (!mark) return null;
-      const beneficiary = ctx.others.filter(n => n !== mark)
-        .sort((a, b) => getBond(ctx.sab, b) - getBond(ctx.sab, a))[0] || ctx.others[0];
+      const slot = out?.slot || 'Head of Household';
       const how = [
-        `${ctx.sab} gets to the yard first and moves one marker about four inches. ${mark} spends the whole competition measuring from the wrong place.`,
+        `${ctx.sab} gets to the yard first and moves one marker about four inches. ${mark} spends the whole ${slot} competition measuring from the wrong place.`,
         `${ctx.sab} loosens the thing ${mark} is about to put ${P(mark).posAdj} whole weight on, and then watches ${P(mark).obj} put ${P(mark).posAdj} whole weight on it.`,
-        `${ctx.sab} feeds ${mark} the wrong number in the ninety seconds before it starts, kindly, as a friend.`,
+        `${ctx.sab} feeds ${mark} the wrong number in the ninety seconds before the ${slot} starts, kindly, as a friend.`,
         `${ctx.sab} counts out loud for ${mark} and counts wrong once, at the exact point where being counted for is the only thing keeping ${P(mark).obj} in it.`,
       ];
-      try { addBond(mark, beneficiary, -1.2); } catch { /* no bond to burn */ }
+      const cost = out
+        ? (out.costTheWin
+          ? `${mark} finishes ${ordinalish(out.placedAfter)} in the ${slot}. `
+            + `Without the marker ${P(mark).sub} ${P(mark).sub === 'they' ? 'win' : 'wins'} it — `
+            + `${out.wonInstead} takes it instead, and will never know why.`
+          : out.placedAfter > out.placedBefore
+            ? `${mark} finishes ${ordinalish(out.placedAfter)} in the ${slot}, ${
+              out.placedAfter - out.placedBefore} place${out.placedAfter - out.placedBefore === 1 ? '' : 's'} `
+              + `below where ${P(mark).sub} would have come.`
+            : `${mark} finishes ${ordinalish(out.placedAfter)} anyway. Whatever ${ctx.sab} did to that yard, `
+              + `it was not enough to move ${P(mark).obj}.`)
+        : `${mark} loses a competition ${P(mark).sub} should have won and cannot say how.`;
+      if (out?.costTheWin && out.wonInstead) {
+        try { addBond(mark, out.wonInstead, -1.2); } catch { /* no bond to burn */ }
+      }
       return {
-        target: mark, beneficiary, touched: [mark],
+        target: mark, beneficiary: out?.wonInstead || null, touched: [mark],
         text: how[Math.floor(rng() * how.length)],
-        houseText: `${mark} loses a competition ${P(mark).sub} should have won and cannot say how.`,
+        houseSees: cost,
+        seesBadge: 'A COMPETITION GOES WRONG',
+        houseText: out?.costTheWin
+          ? `${mark} spends the rest of the night going back over it and cannot find the place where it went.`
+          : `${mark} cannot account for it, and says so to anybody who will listen.`,
         botched: `${mark} catches ${ctx.sab}'s hand on it. Neither of them says anything, which is worse.`,
       };
     },
@@ -593,6 +619,8 @@ function missionContext(sab, week, house, others, weekNum) {
   // Whoever this week put in charge, or — before it has — whoever ran the last
   // one, so a mission about the person with the room can be offered on Monday.
   ctx.power = ctx.hoh || gs.bb?.outgoingHoh || null;
+  // What the rig actually did to the board, if one was set this week.
+  ctx.rigOutcome = week?._sabRig?.outcome || null;
   return ctx;
 }
 
@@ -711,6 +739,14 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
   beats.push(accepted
     ? { text: fresh(ACCEPTS, 'accept')(sab, p), players: [sab], badgeText: 'TAKES THE JOB', badgeClass: 'red' }
     : { text: fresh(REFUSALS, 'refuse')(sab, p), players: [sab], badgeText: 'PASSES', badgeClass: 'grey' });
+
+  // The rig has to be set BEFORE the competition it is rigging. Everybody plays
+  // for Head of Household, so the mark can be chosen on Monday — and it has to
+  // be, or the sabotage is a caption written after a result it did not touch.
+  if (accepted && mission.id === 'rig') {
+    const mark = others.sort((a, b) => getBond(sab, a) - getBond(sab, b))[0];
+    if (mark) week._sabRig = { mark, slot: 'hoh' };
+  }
 
   if (!accepted) {
     // The audience is the employer, and it is watching somebody do nothing.
@@ -936,9 +972,13 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
     `There is a moment in the middle of the week where the house goes quiet for no reason anybody can name.`,
     `Something is not where it was. Nothing is missing. ${near} spends an hour deciding whether to mention it.`,
   ];
-  const feedText = worked
-    ? [result.houseSees, result.houseText].filter(Boolean).join(' ')
-    : MISSED[Math.floor(rng() * MISSED.length)];
+  const feedText = (worked
+    ? [result.houseSees, result.houseText].filter(Boolean).join(' ').trim()
+    : MISSED[Math.floor(rng() * MISSED.length)])
+    // Never empty. A mission whose run() produced no house-visible line at all
+    // still has to put something in the feed, or the week has a sabotage in it
+    // that a reader cannot find.
+    || MISSED[Math.floor(rng() * MISSED.length)];
   week._saboteurFeed = {
     text: feedText,
     _sabQuote: feedText,

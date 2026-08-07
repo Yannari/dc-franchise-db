@@ -189,10 +189,49 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
   if (placements.length !== participants.length || new Set(placements).size !== participants.length || placements.some(name => !participants.includes(name))) {
     throw new Error(`Big Brother competition ${comp.id} returned invalid placements.`);
   }
-  const winner = raw.winner || placements[0];
+  let winner = raw.winner || placements[0];
   if (winner !== placements[0] || !participants.includes(winner)) throw new Error(`Big Brother competition ${comp.id} returned an invalid winner.`);
   const scores = raw.scores || {};
   if (participants.some(name => !Number.isFinite(Number(scores[name])))) throw new Error(`Big Brother competition ${comp.id} requires a numeric score for every participant.`);
+
+  // ── somebody got to the yard first ──
+  //
+  // The Saboteur's rig mission used to be pure narration: the screen said a
+  // marker had been moved four inches and the result of the competition was
+  // exactly what it would have been anyway. A sabotage nobody can see in the
+  // standings is a caption, not a mechanic.
+  //
+  // Applied HERE because it is the one place every competition passes through.
+  // The generic scorer and sixty hand-written ones all arrive with placements
+  // and scores, so a penalty applied to the finished board works for all of
+  // them without each having to know the twist exists. It is scaled off the
+  // spread of the board rather than being a flat number, because competitions
+  // score on wildly different ranges — a fifth of the field's spread is a real
+  // handicap whether the comp is marked out of ten or out of four hundred.
+  let sabotage = null;
+  const mark = context?.sabotaged;
+  if (mark && participants.includes(mark)) {
+    const values = participants.map(name => Number(scores[name]));
+    const spread = Math.max(...values) - Math.min(...values);
+    const penalty = (spread > 0 ? spread : 1) * 0.38;
+    const before = [...placements];
+    const adjusted = Object.fromEntries(participants.map(name =>
+      [name, Number(scores[name]) - (name === mark ? penalty : 0)]));
+    const after = [...participants].sort((a, b) => adjusted[b] - adjusted[a]);
+    sabotage = {
+      name: mark, penalty: Math.round(penalty * 100) / 100,
+      placedBefore: before.indexOf(mark) + 1,
+      placedAfter: after.indexOf(mark) + 1,
+      // The number that makes it a story rather than a stat: did moving that
+      // marker actually take the competition off them?
+      costTheWin: before[0] === mark && after[0] !== mark,
+      wonInstead: before[0] === mark && after[0] !== mark ? after[0] : null,
+    };
+    placements.length = 0;
+    placements.push(...after);
+    for (const name of participants) scores[name] = adjusted[name];
+    winner = placements[0];
+  }
   // ── the Debug tab's two levers, guaranteed ──
   //
   // The Competitions panel explains a result with aptitude and luck. A custom
@@ -234,6 +273,9 @@ function normalizeResult(comp, raw, participants, context, selection, source) {
     desc:comp.desc || '', stats:comp.stats ? { ...comp.stats } : null,
     variant:raw.variant || null, participants:[...participants], excluded:[...(context.excluded || [])],
     winner, placements, scores:Object.fromEntries(participants.map(name => [name, Number(scores[name])])),
+    // Null on every ordinary competition; set only when a saboteur got to the
+    // yard first, and read by js/bb/saboteur.js to say what it actually cost.
+    sabotage,
     beats, events, text:raw.text || beats.map(beat => beat.text).join(' '),
     // A pair competition's real result, kept intact. The week used to recover
     // it by averaging the four individual scores, which cannot represent a pair
@@ -271,6 +313,9 @@ export function runBBCompetition(options = {}) {
     // Who is on slop this week. Custom competitions can read it; the generic
     // scorer applies it directly.
     haveNots:[...(options.haveNots || [])],
+    // One name, handicapped on the finished board by a saboteur who got there
+    // first. See normalizeResult.
+    sabotaged: options.sabotaged || null,
     // Who is playing WITH whom. Only the pair slot fills this, and a pair
     // competition handed no pairing declines to run rather than inventing
     // partners for people the week never put together.

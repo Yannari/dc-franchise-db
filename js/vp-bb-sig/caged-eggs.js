@@ -16,7 +16,7 @@ const _STYLE = `<style>
 .sigegg{--eg-wire:#8e99a4;--eg-shell:#f6efe2;--eg-yolk:#f2b134;--eg-crack:#b8503f;--eg-deck:#2f3a34;
   --eg-deck2:#1a221e;--eg-ink:#eef3ee;--eg-dim:#9aab9f;
   font-family:'Rubik',system-ui,sans-serif;color:var(--eg-ink);position:relative;overflow:clip}
-.sigegg .eg-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigegg .eg-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigegg .eg-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:radial-gradient(70% 44% at 50% 0%,rgba(242,177,52,0.12),transparent 62%),
              linear-gradient(180deg,var(--eg-deck),var(--eg-deck2) 72%,#0e1411)}
@@ -70,7 +70,8 @@ const _STYLE = `<style>
 .sigegg .eg-win-f img{width:100%;height:100%;object-fit:cover}
 .sigegg .eg-win b{display:block;font-size:14px;font-weight:700}
 .sigegg .eg-win i{font-style:normal;font-size:11px;color:var(--eg-dim)}
-.sigegg .eg-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px;position:relative;z-index:4}
+.sigegg .eg-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigegg .eg-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigegg .eg-count{font-size:10px;letter-spacing:2px;color:var(--eg-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigegg *,.sigegg *::before,.sigegg *::after{animation:none!important;transition:none!important}
@@ -145,6 +146,7 @@ export function rpBuildSigCagedEggs(ep, actType, u = {}) {
         <div class="eg-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="eg-title">CAGED EGGS</div>
         <div class="eg-sub">Fingers through the wire, one egg at a time. Anything you break is gone.</div>
+        ${comp.desc ? `<div class="eg-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="eg-grid">
         <div>${cards}</div>

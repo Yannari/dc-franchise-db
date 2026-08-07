@@ -133,6 +133,9 @@ export const whoSaidIt = {
     const asked = [];
     const used = new Set();
     const askedKinds = new Set();
+    // Where the rotation starts, so two seasons do not always open on the same
+    // houseguest's board.
+    const spotOffset = Math.floor(rng() * participants.length);
     const rounds = Math.min(6, pool.length);
 
     for (let r = 0; r < rounds; r++) {
@@ -163,9 +166,14 @@ export const whoSaidIt = {
       // One houseguest narrated per round, so a twelve-person house does not
       // print twelve lines a question — and never the person the statement is
       // ABOUT, because "Chase guesses Chase" is not a question, it is a gift.
+      //
+      // ROTATED, not drawn. Picking at random meant a played six-statement
+      // round was narrated entirely by two houseguests, which reads as though
+      // only two of them were playing. Rotating means six statements show six
+      // different people at their boards.
       const eligible = participants.filter(n => n !== fact.subject);
-      const spotlight = (eligible.length ? eligible : participants)[
-        Math.floor(rng() * (eligible.length || participants.length))];
+      const pool2 = eligible.length ? eligible : participants;
+      const spotlight = pool2[(r + spotOffset) % pool2.length];
       const a = answers[spotlight];
       // The spotlight and what they wrote are recorded, not left to be
       // recovered from the prose. The screen used to scan the narration for a
@@ -176,6 +184,12 @@ export const whoSaidIt = {
         statement: fact.statement, options, truthIndex, answers,
         week: fact.week, kind: fact.kind,
         spotlight, given: a.given, right: a.right,
+        // How the whole line did on this one. Narrating a single houseguest
+        // keeps the prose readable but hides the competition: a viewer could
+        // not see that six of eight got it, which is the only way the running
+        // score on the board makes sense.
+        correct: participants.filter(n => answers[n].right).length,
+        field: participants.length,
       });
       beats.push(beat(
         `${host(WSI_HOST)} ${fact.statement} `

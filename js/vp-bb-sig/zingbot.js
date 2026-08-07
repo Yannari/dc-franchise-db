@@ -71,7 +71,7 @@ const _STYLE = `<style>
 .sigzing{--zg-brick:#2b1a17;--zg-brick2:#1a0f0d;--zg-gold:#ffd24a;--zg-red:#e0332f;--zg-cream:#f6e7c8;
   --zg-dim:#a08f7a;font-family:'Barlow Condensed',system-ui,sans-serif;color:var(--zg-cream);
   position:relative;overflow:clip}
-.sigzing .zgb-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigzing .zgb-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigzing .zgb-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(120% 60% at 50% -6%,rgba(255,210,74,0.22),transparent 60%),
@@ -181,7 +181,8 @@ const _STYLE = `<style>
 .sigzing .zgb-win-f img{width:100%;height:100%;object-fit:cover}
 .sigzing .zgb-win b{display:block;font-family:'Bungee',cursive;font-size:16px;color:var(--zg-gold)}
 .sigzing .zgb-win span{font-size:11.5px;color:#e6d5b6}
-.sigzing .zgb-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigzing .zgb-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigzing .zgb-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigzing .zgb-count{font-family:'Bungee',cursive;font-size:11px;letter-spacing:2px;color:var(--zg-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigzing *,.sigzing *::before,.sigzing *::after{animation:none!important;transition:none!important}
@@ -285,6 +286,7 @@ export function rpBuildSigZingbot(ep, actType, u = {}) {
         <div class="zgb-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')} · the roast</div>
         <div class="zgb-title">ZINGBOT</div>
         <div class="zgb-sub">It has come a very long way to be rude to everybody.</div>
+        ${comp.desc ? `<div class="zgb-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="zgb-stage">${_MIC}<div>${_BOT}<div class="zgb-plinth"></div></div></div>
       <div class="zgb-grid">

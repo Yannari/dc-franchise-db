@@ -21,7 +21,7 @@ const _STYLE = `<style>
 .sigbluff{--bf-felt:#12432f;--bf-felt2:#0a2a1e;--bf-brass:#c9a227;--bf-ivory:#f3ead6;
   --bf-poison:#7ee787;--bf-blood:#a8302c;--bf-dim:#8fae9d;
   font-family:'Cormorant Garamond',Georgia,serif;color:var(--bf-ivory);position:relative;overflow:clip}
-.sigbluff .bf-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigbluff .bf-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigbluff .bf-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(80% 50% at 50% 8%,rgba(201,162,39,0.16),transparent 62%),
@@ -95,7 +95,8 @@ const _STYLE = `<style>
 .sigbluff .bf-win-f img{width:100%;height:100%;object-fit:cover}
 .sigbluff .bf-win b{display:block;font-family:'Cinzel',serif;font-size:14px;color:var(--bf-ivory)}
 .sigbluff .bf-win i{font-size:12px;color:var(--bf-dim)}
-.sigbluff .bf-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigbluff .bf-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigbluff .bf-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigbluff .bf-count{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--bf-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigbluff *,.sigbluff *::before,.sigbluff *::after{animation:none!important;transition:none!important}
@@ -208,6 +209,7 @@ export function rpBuildSigDrinkOrBluff(ep, actType, u = {}) {
         <div class="bf-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="bf-title">TO DRINK OR TO BLUFF</div>
         <div class="bf-sub">One glass is worse than the others, and only one person knows which.</div>
+        ${comp.desc ? `<div class="bf-rules">${esc(comp.desc)}</div>` : ''}
         <div class="bf-rule"></div>
       </div>
       <div class="bf-grid">

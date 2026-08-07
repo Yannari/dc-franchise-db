@@ -15,7 +15,7 @@ const _STYLE = `<style>
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&display=swap');
 .siglaz{--lz-void:#0a0509;--lz-beam:#ff3b57;--lz-safe:#39d0c8;--lz-ink:#f2e9ec;--lz-dim:#8a7a80;
   font-family:'Chakra Petch',system-ui,sans-serif;color:var(--lz-ink);position:relative;overflow:clip}
-.siglaz .lz-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.siglaz .lz-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .siglaz .lz-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:radial-gradient(70% 40% at 50% 6%,rgba(255,59,87,0.14),transparent 62%),
              linear-gradient(180deg,#140910,var(--lz-void) 70%,#050205)}
@@ -83,7 +83,8 @@ const _STYLE = `<style>
 .siglaz .lz-win-f img{width:100%;height:100%;object-fit:cover}
 .siglaz .lz-win b{display:block;font-size:14px;font-weight:700;letter-spacing:1px}
 .siglaz .lz-win i{font-style:normal;font-size:11px;color:var(--lz-dim)}
-.siglaz .lz-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.siglaz .lz-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.siglaz .lz-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .siglaz .lz-count{font-size:10px;letter-spacing:2px;color:var(--lz-dim)}
 @media(prefers-reduced-motion:reduce){
   .siglaz *,.siglaz *::before,.siglaz *::after{animation:none!important;transition:none!important}
@@ -153,6 +154,7 @@ export function rpBuildSigLaserMaze(ep, actType, u = {}) {
         <div class="lz-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="lz-title">LASER MAZE</div>
         <div class="lz-sub">Carry the case through. The case counts as you.</div>
+        ${comp.desc ? `<div class="lz-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="lz-room">${beamRows}<div class="lz-start"></div><div class="lz-plinth"></div></div>
       <div class="lz-grid">

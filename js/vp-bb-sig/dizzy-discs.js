@@ -20,7 +20,7 @@ const _STYLE = `<style>
 .sigdisc{--dz-night:#151033;--dz-night2:#0a0720;--dz-pink:#ff5da2;--dz-cyan:#4ce0e0;--dz-lamp:#ffd166;
   --dz-ink:#f2ecff;--dz-dim:#9d93c4;font-family:'Barlow',system-ui,sans-serif;color:var(--dz-ink);
   position:relative;overflow:clip}
-.sigdisc .dz-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigdisc .dz-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigdisc .dz-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(70% 44% at 50% 4%,rgba(255,93,162,0.18),transparent 62%),
@@ -87,7 +87,8 @@ const _STYLE = `<style>
 .sigdisc .dz-win-f img{width:100%;height:100%;object-fit:cover}
 .sigdisc .dz-win b{display:block;font-family:'Fredoka',cursive;font-size:15px;color:var(--dz-ink)}
 .sigdisc .dz-win i{font-style:normal;font-size:11.5px;color:var(--dz-dim)}
-.sigdisc .dz-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigdisc .dz-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigdisc .dz-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigdisc .dz-count{font-family:'Fredoka',cursive;font-size:11px;letter-spacing:2px;color:var(--dz-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigdisc *,.sigdisc *::before,.sigdisc *::after{animation:none!important;transition:none!important}
@@ -157,6 +158,7 @@ export function rpBuildSigDizzyDiscs(ep, actType, u = {}) {
         <div class="dz-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="dz-title">DIZZY DISCS</div>
         <div class="dz-sub">Spun, bashed, and holding a rope. Last one turning wins.</div>
+        ${comp.desc ? `<div class="dz-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="dz-ring">
         <div class="dz-arm"></div>

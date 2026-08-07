@@ -19,7 +19,7 @@ const _STYLE = `<style>
 .sigdrunk{--dk-wood:#3a2418;--dk-wood2:#241209;--dk-amber:#ffb648;--dk-amber2:#ff8a2b;
   --dk-steel:#b9c0c8;--dk-ink:#f3e7d4;--dk-dim:#a08b70;
   font-family:'Oswald',system-ui,sans-serif;color:var(--dk-ink);position:relative;overflow:clip}
-.sigdrunk .dk-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigdrunk .dk-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigdrunk .dk-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(70% 46% at 50% 2%,rgba(255,182,72,0.16),transparent 62%),
@@ -93,7 +93,8 @@ const _STYLE = `<style>
 .sigdrunk .dk-win-f img{width:100%;height:100%;object-fit:cover}
 .sigdrunk .dk-win b{display:block;font-size:15px;letter-spacing:1px;color:var(--dk-ink)}
 .sigdrunk .dk-win i{font-style:normal;font-weight:300;font-size:11.5px;color:var(--dk-dim)}
-.sigdrunk .dk-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigdrunk .dk-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigdrunk .dk-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigdrunk .dk-count{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dk-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigdrunk *,.sigdrunk *::before,.sigdrunk *::after{animation:none!important;transition:none!important}
@@ -181,6 +182,7 @@ export function rpBuildSigDrunkSpeeches(ep, actType, u = {}) {
         <div class="dk-eyebrow">${esc(actType === 'veto' ? 'POWER OF VETO' : 'HEAD OF HOUSEHOLD')}</div>
         <div class="dk-title">DRUNK SPEECHES</div>
         <div class="dk-sub">Slowed until nobody sounds like themselves. Name the day.</div>
+        ${comp.desc ? `<div class="dk-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="dk-deck">
         <div class="dk-reels">

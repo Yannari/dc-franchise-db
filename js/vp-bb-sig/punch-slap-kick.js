@@ -20,7 +20,7 @@ const _STYLE = `<style>
 @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:wght@400;600;800&display=swap');
 .sigpsk{--pk-steel:#2b3038;--pk-steel2:#171a1f;--pk-haz:#f5c518;--pk-red:#e0332f;--pk-ink:#e9edf2;
   --pk-dim:#8d97a3;font-family:'Barlow',system-ui,sans-serif;color:var(--pk-ink);position:relative;overflow:clip}
-.sigpsk .pk-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigpsk .pk-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigpsk .pk-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(80% 50% at 50% 0%,rgba(245,197,24,0.12),transparent 60%),
@@ -99,7 +99,8 @@ const _STYLE = `<style>
 .sigpsk .pk-win-f img{width:100%;height:100%;object-fit:cover}
 .sigpsk .pk-win b{display:block;font-family:'Black Ops One',cursive;font-size:14px;color:var(--pk-ink)}
 .sigpsk .pk-win i{font-style:normal;font-size:11.5px;color:var(--pk-dim)}
-.sigpsk .pk-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigpsk .pk-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigpsk .pk-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigpsk .pk-count{font-family:'Black Ops One',cursive;font-size:10px;letter-spacing:2px;color:var(--pk-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigpsk *,.sigpsk *::before,.sigpsk *::after{animation:none!important;transition:none!important}
@@ -197,6 +198,7 @@ export function rpBuildSigPunchSlapKick(ep, actType, u = {}) {
         <div class="pk-eyebrow">${esc(actType === 'veto' ? 'POWER OF VETO' : 'HEAD OF HOUSEHOLD')}</div>
         <div class="pk-title">PUNCH, SLAP, KICK</div>
         <div class="pk-sub">Remember the order. While it is happening to you.</div>
+        ${comp.desc ? `<div class="pk-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="pk-rig">
         ${_arm(_FIST, 'PUNCH', true)}${_arm(_PALM, 'SLAP', false)}${_arm(_BOOT, 'KICK', true)}

@@ -19,7 +19,7 @@ const _STYLE = `<style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&display=swap');
 .sigheld{--hu-wall:#cfd3d6;--hu-wall2:#a9aeb3;--hu-cold:#7fa8c9;--hu-warn:#c96f5c;--hu-ink:#20262b;
   --hu-dim:#6b757e;font-family:'Archivo',system-ui,sans-serif;color:var(--hu-ink);position:relative;overflow:clip}
-.sigheld .hu-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigheld .hu-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigheld .hu-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(60% 40% at 50% 0%,rgba(255,255,255,0.5),transparent 60%),
@@ -86,7 +86,8 @@ const _STYLE = `<style>
 .sigheld .hu-win-f img{width:100%;height:100%;object-fit:cover}
 .sigheld .hu-win b{display:block;font-size:14px;font-weight:700}
 .sigheld .hu-win i{font-style:normal;font-size:11px;color:var(--hu-dim)}
-.sigheld .hu-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigheld .hu-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigheld .hu-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigheld .hu-count{font-size:10px;letter-spacing:2px;color:var(--hu-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigheld *,.sigheld *::before,.sigheld *::after{animation:none!important;transition:none!important}
@@ -154,6 +155,7 @@ export function rpBuildSigHoldUp(ep, actType, u = {}) {
         <div class="hu-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="hu-title">WHAT'S THE HOLD UP</div>
         <div class="hu-sub">Nothing is thrown and nothing spins. It is the weight of your own arms, at the end of a pole that magnifies every tremor.</div>
+        ${comp.desc ? `<div class="hu-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="hu-line">${line}</div>
       <div class="hu-grid">

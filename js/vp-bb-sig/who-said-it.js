@@ -19,7 +19,7 @@ const _STYLE = `<style>
 .sigwsi{--ws-cork:#8a6236;--ws-cork2:#6b4a26;--ws-card:#f4ecd8;--ws-ink:#2a2118;--ws-string:#b3241f;
   --ws-ok:#2f7d46;--ws-brass:#c8a05a;font-family:'Oswald',system-ui,sans-serif;color:var(--ws-card);
   position:relative;overflow:clip}
-.sigwsi .ws-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigwsi .ws-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigwsi .ws-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:
     radial-gradient(70% 50% at 50% 0%,rgba(255,229,168,0.14),transparent 60%),
@@ -79,6 +79,11 @@ const _STYLE = `<style>
 .sigwsi .ws-wrote em{font-style:normal;font-weight:600;text-decoration:underline}
 .sigwsi .ws-truth{margin-left:auto;font-size:11.5px;color:#6b5946}
 .sigwsi .ws-truth b{color:var(--ws-ok)}
+/* How the whole line did, so the running score on the board is explicable.
+   Narrating one houseguest a round keeps the prose readable and hides the
+   competition — a viewer could not see that six of eight got it. */
+.sigwsi .ws-tally{margin-top:7px;font-size:11px;letter-spacing:.4px;color:#7a6750}
+.sigwsi .ws-tally b{color:#3a2e20}
 .sigwsi .ws-stamp{position:absolute;right:10px;top:12px;font-family:'Special Elite',cursive;font-size:15px;
   letter-spacing:2px;padding:3px 9px;border:2.5px solid;border-radius:3px;transform:rotate(-11deg);opacity:.85}
 .sigwsi .ws-stamp.is-ok{color:var(--ws-ok);border-color:var(--ws-ok)}
@@ -105,7 +110,8 @@ const _STYLE = `<style>
 .sigwsi .ws-win-f img{width:100%;height:100%;object-fit:cover}
 .sigwsi .ws-win b{display:block;font-family:'Special Elite',cursive;font-size:14px;color:#fff7e4}
 .sigwsi .ws-win i{font-size:11px;color:#c9b48c;font-style:normal}
-.sigwsi .ws-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigwsi .ws-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigwsi .ws-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigwsi .ws-count{font-family:'Special Elite',cursive;font-size:11px;letter-spacing:2px;color:#d8c49c}
 @media(prefers-reduced-motion:reduce){
   .sigwsi *,.sigwsi *::before,.sigwsi *::after{animation:none!important;transition:none!important}
@@ -181,6 +187,9 @@ export function rpBuildSigWhoSaidIt(ep, actType, u = {}) {
         <span class="ws-wrote"><b>${esc(answerer)}</b> wrote <em>${esc(named || '—')}</em></span>
         <span class="ws-truth">it was <b>${esc(truth)}</b></span>
       </div>` : ''}
+      ${round.correct != null ? `<div class="ws-tally">
+        <b>${round.correct}</b> of <b>${round.field}</b> houseguests got this one · a point each
+      </div>` : ''}
       <div class="ws-line">${rest}</div>
     </div>`;
   });
@@ -201,6 +210,7 @@ export function rpBuildSigWhoSaidIt(ep, actType, u = {}) {
         <div class="ws-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="ws-title">WHO SAID IT?</div>
         <div class="ws-sub">Every statement is true of exactly one person in this house.</div>
+        ${comp.desc ? `<div class="ws-rules">${esc(comp.desc)}</div>` : ''}
         <div class="ws-tape">EVIDENCE · DO NOT REMOVE</div>
       </div>
       <div class="ws-grid">

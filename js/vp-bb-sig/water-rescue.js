@@ -17,7 +17,7 @@ const _STYLE = `<style>
 .sigwat{--wt-sky:#7fd4f5;--wt-deep:#0f5f8a;--wt-deep2:#073a56;--wt-sand:#f0c987;--wt-foam:#eaf8ff;
   --wt-ink:#052c3f;--wt-dim:#5d8fa6;font-family:'Nunito Sans',system-ui,sans-serif;color:var(--wt-foam);
   position:relative;overflow:clip}
-.sigwat .wt-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigwat .wt-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigwat .wt-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:linear-gradient(180deg,#bfe9fb 0%,var(--wt-sky) 18%,var(--wt-deep) 52%,var(--wt-deep2) 100%)}
 /* caustics on the water */
@@ -83,7 +83,8 @@ const _STYLE = `<style>
 .sigwat .wt-win-f img{width:100%;height:100%;object-fit:cover}
 .sigwat .wt-win b{display:block;font-family:'Baloo 2',cursive;font-size:16px}
 .sigwat .wt-win i{font-style:normal;font-size:11.5px;color:#bfe4f4}
-.sigwat .wt-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigwat .wt-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigwat .wt-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigwat .wt-count{font-family:'Baloo 2',cursive;font-size:11px;letter-spacing:2px;color:#bfe4f4}
 @media(prefers-reduced-motion:reduce){
   .sigwat *,.sigwat *::before,.sigwat *::after{animation:none!important;transition:none!important}
@@ -160,6 +161,7 @@ export function rpBuildSigWaterRescue(ep, actType, u = {}) {
         <div class="wt-eyebrow">${esc(actType === 'veto' ? 'Power of Veto' : 'Head of Household')}</div>
         <div class="wt-title">WATER RESCUE</div>
         <div class="wt-sub">Get them all out of the water. Then sit down and build a surfboard.</div>
+        ${comp.desc ? `<div class="wt-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="wt-pool">
         <div class="wt-lane" style="top:33%"></div><div class="wt-lane" style="top:66%"></div>

@@ -19,7 +19,7 @@ const _STYLE = `<style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap');
 .sigbox{--bx-void:#04050a;--bx-glow:#9fe8ff;--bx-chalk:#e8eef2;--bx-warm:#ffb02e;--bx-dim:#4d5a66;
   font-family:'Inter',system-ui,sans-serif;color:var(--bx-chalk);position:relative;overflow:clip}
-.sigbox .bx-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.sigbox .bx-wrap{max-width:1100px;margin:0 auto;position:relative;z-index:2;padding-bottom:76px}
 .sigbox .bx-bg{position:absolute;inset:46px 0 0 0;z-index:0;pointer-events:none;
   background:radial-gradient(60% 40% at 50% 6%,rgba(159,232,255,0.08),transparent 60%),
              linear-gradient(180deg,#06070d,#020308 70%,#000)}
@@ -88,7 +88,8 @@ const _STYLE = `<style>
 .sigbox .bx-win-f img{width:100%;height:100%;object-fit:cover}
 .sigbox .bx-win b{display:block;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:1px}
 .sigbox .bx-win i{font-style:normal;font-size:11px;color:#8fa0ad}
-.sigbox .bx-ctl{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 4px}
+.sigbox .bx-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
+.sigbox .bx-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
 .sigbox .bx-count{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--bx-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigbox *,.sigbox *::before,.sigbox *::after{animation:none!important;transition:none!important}
@@ -163,6 +164,7 @@ export function rpBuildSigBlackBox(ep, actType, u = {}) {
         <div class="bx-eyebrow">${esc(actType === 'veto' ? 'POWER OF VETO' : 'HEAD OF HOUSEHOLD')}</div>
         <div class="bx-title">THE BLACK BOX</div>
         <div class="bx-sub">No light at all. Find it by hand, put it where it goes, or do not find it.</div>
+        ${comp.desc ? `<div class="bx-rules">${esc(comp.desc)}</div>` : ''}
       </div>
       <div class="bx-door">SEALED · NO LIGHT INSIDE</div>
       <div class="bx-grid">

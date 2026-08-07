@@ -235,6 +235,37 @@ describe('the social competitions read the house', () => {
     if (wornBadly.length) expect(getBond('Priya', 'Wayne')).not.toBe(bondBefore + 999);
   });
 
+
+  it('never tells the same joke twice in one roast', () => {
+    // The first version rendered each houseguest's options with their name
+    // already inside them, so the non-repeating picker saw nine different
+    // strings and used the same joke five times.
+    for (const seed of [3, 11, 29]) {
+      season();
+      const zings = run('bb-social-zingbot', { rng: seededRng(seed) }).detail?.zings || [];
+      expect(zings.length).toBeGreaterThan(3);
+      // Strip the name out and what is left is the joke; no two may match.
+      const shapes = zings.map(z => z.text.split(z.target).join('~'));
+      expect(new Set(shapes).size, 'a zing was reused').toBe(shapes.length);
+    }
+  });
+
+  it('roasts people for things the season can prove, not for being present', () => {
+    season();
+    // This house has a record: wins, blocks, a showmance, weeks on slop. The
+    // generic filler is a last resort and should almost never be reached.
+    const zings = run('bb-social-zingbot').detail?.zings || [];
+    const withNumbers = zings.filter(z => /\d/.test(z.text)).length;
+    expect(withNumbers, 'no zing cited anything the season recorded')
+      .toBeGreaterThan(zings.length * 0.4);
+    for (const z of zings) {
+      expect(z.text).toContain(z.target);
+      // A double quote inside a double-quoted zing collides on screen.
+      expect(z.text.slice(1, -1)).not.toContain('"');
+      expect(z.text).not.toMatch(/undefined|NaN|\[object/);
+    }
+  });
+
   it('the zings are built from what people actually did', () => {
     season();
     const result = run('bb-social-zingbot');

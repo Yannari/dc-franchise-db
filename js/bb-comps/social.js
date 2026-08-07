@@ -29,6 +29,7 @@ import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { beat, choose, clamp, makePicker, toResult, vb } from './_shared.js';
 import { optionsFor } from './_recall.js';
+import { endgameDealsOf, tierOf } from '../bb/deals.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -46,66 +47,181 @@ const ZING_ARRIVAL = [
 ];
 
 /**
- * Every zing is built from something the season actually recorded.
+ * What the season can actually make fun of somebody for.
  *
- * A generic insult is a line of flavour text. A zing about the three
- * competitions somebody has lost, or the deal they broke in week five, is the
- * house being read back to itself — and it is the reason this lands hard enough
- * to be worth a bond and a popularity hit.
+ * Read once per houseguest, out of the ledger rather than out of stats wherever
+ * the ledger has it: what they have won, what they have never won, how often
+ * they have sat on that block, how many people they have promised the end to,
+ * who they are attached to, and how many of their own votes went with the room.
  */
-function zingFor(name, rng, say) {
+function roastProfile(name) {
   const st = gs.bb?.stats?.[name] || {};
-  const wins = (st.hohWins || 0) + (st.vetoWins || 0);
+  const ws = weeksOf();
+  const hohWins = st.hohWins || 0;
+  const vetoWins = st.vetoWins || 0;
   const blocked = st.timesOnTheBlock || st.timesNominated || 0;
-  const p = pronouns(name);
-  const showmance = (gs.showmances || []).find(sh => !sh.broken && (sh.players || []).includes(name));
+  const saved = st.timesSaved || 0;
+  const weeksIn = ws.filter(w => (w.houseAtStart || []).includes(name)).length;
+  const hohWeeks = ws.filter(w => w.hoh === name).map(w => w.num);
+  const vetoWeeks = ws.filter(w => w.vetoWinner === name).map(w => w.num);
+  // Only weeks that actually recorded an eviction. A week with ballots and no
+  // evictee — a ledger still being written, a cancelled night — counted as a
+  // vote AGAINST the house for everybody, and the robot told a whole cast they
+  // had never once been in the majority.
+  const ballots = ws.filter(w => w.evicted).flatMap(w => (w.ballots || [])
+    .filter(b => b.voter === name)
+    .map(b => ({ week: w.num, evict: b.evict, evicted: w.evicted })));
+  const withTheHouse = ballots.filter(b => b.evict === b.evicted).length;
+  const againstTheHouse = ballots.length - withTheHouse;
+  const showmance = (gs.showmances || []).find(sh => (sh.players || []).includes(name));
   const partner = showmance ? (showmance.players || []).find(n => n !== name) : null;
-  const evictedWeek = weeksOf().find(w => w?.hoh === name)?.num || null;
-
-  const options = [];
-  if (wins === 0) {
-    options.push(`"${name}! I ran the numbers on your competition record and my calculator asked to be excused. Zero wins. ZERO. Even the house plant is disappointed, and it can't move. ZING!"`);
-  }
-  if (wins >= 2) {
-    options.push(`"${name}, ${wins} wins! Congratulations! You've made yourself the biggest threat in this house, which is a bit like winning a race by tying an anvil to your own leg. ZING!"`);
-  }
-  if (blocked >= 2) {
-    options.push(`"${name} has been on that block ${blocked} times. At this point the block isn't a punishment, it's ${p.posAdj} address. I've had ${p.posAdj} mail forwarded. ZING!"`);
-  }
-  if (partner) {
-    options.push(`"${name} and ${partner}! A showmance! Nothing says 'I'm here to win half a million dollars' like handing someone else a vote and calling it love. ZING!"`);
-  }
-  if (evictedWeek) {
-    options.push(`"${name} was Head of Household in week ${evictedWeek} and spent the entire reign telling everybody it was 'a really hard decision'. It was two people. Out of a house. ZING!"`);
-  }
-  // The general-purpose ones, for a houseguest whose season has not handed the
-  // robot anything specific yet. Deep on purpose: most of a house qualifies for
-  // no targeted zing in the first few weeks, and a shallow fallback pool had
-  // FIVE houseguests in one roast being told they lie very still and hope.
-  options.push(
-    `"${name}! I've been watching the feeds and I have to ask — is the strategy 'lie very still and hope'? Because it's working, and that's the saddest part. ZING!"`,
-    `"${name}, you talk about your game a LOT for somebody whose game is mostly walking into rooms other people are already talking in. ZING!"`,
-    `"${name}! Every week you tell that camera you're about to make a big move. At this rate the move is going to be out the front door. ZING!"`,
-    `"${name}, I asked the other houseguests to describe your game and four of them described somebody else's. ZING!"`,
-    `"${name}! You've got a final two with everybody in this house. That's not a strategy, that's a mailing list. ZING!"`,
-    `"${name}, you're playing a really quiet game. Beautifully quiet. Nobody in America can hear it either. ZING!"`,
-    `"${name}! I love how you say 'trust me' with your whole chest and then look at the floor. The floor knows. ZING!"`,
-    `"${name}, your big strategic insight this week was that somebody has to go home. Groundbreaking. ZING!"`);
-  // Never twice in one roast. `say` is the competition's own non-repeating
-  // picker, so a house of twelve gets twelve different jokes.
-  return say ? say(options) : choose(rng, options);
+  let finalTwos = 0;
+  try { finalTwos = endgameDealsOf(name).filter(d => tierOf(d) === 'final-two').length; } catch { finalTwos = 0; }
+  const evictedByThem = ws.filter(w => w.hoh === name && w.evicted).map(w => w.evicted);
+  const nomWeeks = ws.filter(w => (w.nominees || []).includes(name)
+    || (w.finalNominees || []).includes(name)).map(w => w.num);
+  const slop = ws.filter(w => (w.haveNots || []).includes(name)).length;
+  const pop = Number(gs.popularity?.[name]) || 0;
+  return {
+    name, hohWins, vetoWins, wins: hohWins + vetoWins, blocked, saved, weeksIn,
+    hohWeeks, vetoWeeks, votes: ballots.length, withTheHouse, againstTheHouse,
+    showmance: !!showmance, broken: !!showmance?.broken, partner, finalTwos,
+    evictedByThem, nomWeeks, slop, pop,
+  };
 }
 
+/**
+ * The zings, as TEMPLATES rather than as finished sentences.
+ *
+ * This is the fix for a roast that read like one joke told nine times. The
+ * first version rendered each houseguest's options with their name already
+ * inside them, so the non-repeating picker — which dedupes on the item it is
+ * handed — saw nine completely different strings and cheerfully used the same
+ * joke five times. Templates are shared objects, so a picker can tell that the
+ * mailing-list one has already been told.
+ *
+ * `when` is the condition, and the list is ordered SPECIFIC FIRST: a zing about
+ * the four vetoes somebody has actually won beats a zing about houseguests in
+ * general, and the ones at the bottom only fire when the season has handed the
+ * robot nothing to work with.
+ */
+const ZINGS = [
+  // ── competition record ──
+  { when: f => f.wins >= 4,
+    say: f => `${f.name}! ${f.wins} competition wins. You have made yourself the biggest threat in this house, which means every single person out here has quietly agreed to take you out the first week you cannot save yourself. Enjoy the trophies. ZING!` },
+  { when: f => f.vetoWins >= 3,
+    say: f => `${f.name} has won ${f.vetoWins} vetoes. ${f.vetoWins} separate chances to change a week, and ${f.vetoWins} times you used it on the most important person in this house — you. ZING!` },
+  { when: f => f.wins === 0 && f.weeksIn >= 4,
+    say: f => `${f.name}. ${f.weeksIn} weeks in this house, zero wins. Zero. At this point the competitions are just a weekly ceremony to remind everybody you got here by accident. ZING!` },
+  { when: f => f.hohWins >= 2 && f.vetoWins === 0,
+    say: f => `${f.name} has ${f.hohWins} Head of Household wins and not one veto. Brilliant at seizing power, hopeless at keeping yourself out of trouble. That is not a game, that is a personality. ZING!` },
+  { when: f => f.hohWins === 0 && f.vetoWins >= 2,
+    say: f => `${f.name} has ${f.vetoWins} vetoes and has never once won a Head of Household. You are the most decorated passenger this show has ever carried. ZING!` },
+  // ── the block ──
+  { when: f => f.blocked >= 3,
+    say: f => `${f.name} has been on that block ${f.blocked} times. That is not a chair any more, that is an address. I have had your post forwarded. ZING!` },
+  { when: f => f.blocked >= 2 && f.saved >= 1,
+    say: f => `${f.name} has been nominated ${f.blocked} times and pulled off that block by somebody else's veto. You are not playing this game, you are being carried through it by people who feel awkward. ZING!` },
+  { when: f => f.blocked === 0 && f.weeksIn >= 5 && f.wins === 0,
+    say: f => `${f.name} has never won anything and has never been nominated. Do you know what that makes you? Furniture. Lovely furniture. Nobody moves the sofa. ZING!` },
+  { when: f => f.nomWeeks.length >= 2,
+    say: f => `${f.name} sat on that block in week ${f.nomWeeks[0]}, and again in week ${f.nomWeeks[f.nomWeeks.length - 1]}. Twice this house looked at everybody available and said 'no, the same one again'. ZING!` },
+  // ── the reign ──
+  { when: f => f.hohWeeks.length >= 1 && f.evictedByThem.length >= 1,
+    say: f => `${f.name} ran week ${f.hohWeeks[0]} and sent ${f.evictedByThem[0]} out of that door, and has told everybody how hard that decision was roughly four hundred times since. It was two people. Out of a house. ZING!` },
+  { when: f => f.hohWeeks.length >= 2,
+    say: f => `${f.name} has run this house in weeks ${f.hohWeeks.join(' and ')}, and on both occasions the entire place did exactly what somebody else had already decided. Congratulations on the bedroom. ZING!` },
+  // ── the voting record ──
+  { when: f => f.votes >= 4 && f.againstTheHouse === 0,
+    say: f => `${f.name} has cast ${f.votes} votes and been on the winning side of every one. That is not loyalty. That is waiting to see which way the room leans and then leaning harder. ZING!` },
+  { when: f => f.votes >= 3 && f.withTheHouse === 0,
+    say: f => `${f.name} has voted ${f.votes} times and been in the minority every single time. You are not an independent thinker, you are a weather vane facing the wrong way. ZING!` },
+  // ── deals and showmances ──
+  { when: f => f.finalTwos >= 3,
+    say: f => `${f.name} is currently holding ${f.finalTwos} separate final twos. That is not a strategy, that is a mailing list, and at least ${f.finalTwos - 1} people in this yard are going to feel extremely silly. ZING!` },
+  { when: f => f.finalTwos === 2,
+    say: f => `${f.name} has shaken on the final two with two different people. One of you is a genius and two of you are about to be very badly hurt. ZING!` },
+  { when: f => f.showmance && !f.broken && !!f.partner,
+    say: f => `${f.name} and ${f.partner}. Nothing says 'I came here to win half a million dollars' quite like handing somebody else a vote and calling it romance. ZING!` },
+  { when: f => f.broken && !!f.partner,
+    say: f => `${f.name} and ${f.partner} are finished, which this house worked out from the way ${f.name} started doing the washing up alone at one in the morning. ZING!` },
+  // ── conditions ──
+  { when: f => f.slop >= 2,
+    say: f => `${f.name} has done ${f.slop} weeks on slop. That is not a punishment any more, that is a lifestyle, and it is showing up in the competition results. ZING!` },
+  { when: f => f.pop <= -3,
+    say: f => `${f.name}. I asked the audience for one nice thing about your game and the pause was long enough that we had to cut away to the fish. ZING!` },
+  { when: f => f.pop >= 6 && f.wins <= 1,
+    say: f => `${f.name} is adored out there, which is lovely, because it is the only place you are currently winning anything. ZING!` },
+  { when: f => f.weeksIn >= 7 && f.wins <= 1,
+    say: f => `${f.name} has survived ${f.weeksIn} weeks on one win and an enormous quantity of nodding. Genuinely impressive. Profoundly boring. ZING!` },
+  // ── the fallbacks, which still have to be about somebody ──
+  { generic: true, when: () => true,
+    say: f => `${f.name}. I have been watching the feeds and I have to ask — is the strategy 'lie very still and hope'? Because it is working, and that is the saddest part. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}, you talk about your game an awful lot for somebody whose game is mostly walking into rooms other people are already talking in. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}. Every week you tell that camera you are about to make a big move. At this rate the move is going to be out the front door. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}, I asked four houseguests to describe your game and three of them described somebody else's. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}, your enormous strategic insight this week was that somebody has to go home. Groundbreaking. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}. I love the way you say 'trust me' with your whole chest and then check the floor. The floor knows. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name} is playing a beautifully quiet game. Nobody in this house can hear it. Nobody at home can either. ZING!` },
+  { generic: true, when: () => true,
+    say: f => `${f.name}, you have the strategic instincts of a smoke alarm. Very loud, always three minutes late, and about something that is already burning. ZING!` },
+];
+
+/**
+ * One zing, from the sharpest thing the season can actually prove.
+ *
+ * `used` is shared across the whole roast and holds TEMPLATES, so the same joke
+ * cannot be told twice even though every rendering is different — which is
+ * precisely what went wrong before.
+ */
+function zingFor(name, rng, used) {
+  const facts = roastProfile(name);
+  const eligible = ZINGS.filter(z => z.when(facts));
+  const fresh = eligible.filter(z => !used.has(z));
+  const pool = fresh.length ? fresh : eligible;
+  // A generic zing is the LAST resort, never a co-equal option.
+  //
+  // Taking the sharpest third of everything eligible sounds right and is not:
+  // a houseguest with three specific hooks has eight fallbacks in the same
+  // pool, so the top third still contained filler and a man with four
+  // competition wins got told he lies very still and hopes.
+  const specific = pool.filter(z => !z.generic);
+  const from = specific.length ? specific : pool;
+  const sharp = from.slice(0, Math.max(1, Math.ceil(from.length / 2)));
+  const chosen = sharp[Math.floor(rng() * sharp.length)];
+  used.add(chosen);
+  return { text: `"${chosen.say(facts)}"`, facts };
+}
+
+// Deep on purpose. A roast runs once per houseguest, so a pool of three across
+// a house of twelve prints the same reaction four times and makes the whole
+// segment read like a loop.
 const ZING_REACTION_GOOD = [
   (n, p) => `${n} laughs harder than anybody, which is the correct play and also completely genuine.`,
   (n, p) => `${n} takes it on the chin, applauds the robot, and gets a bigger cheer than the joke did.`,
   (n, p) => `${n} shouts "that's FAIR" over the laughing and means it.`,
+  (n, p) => `${n} puts both hands up, concedes the point, and asks the robot to do it again.`,
+  (n, p) => `${n} is laughing so hard ${p.sub} ${vb(p, 'has', 'have')} to sit down on the grass for a second.`,
+  (n, p) => `${n} looks straight down the camera and mouths "it's true", which gets a bigger laugh than the zing.`,
+  (n, p) => `${n} high-fives the person next to ${p.obj}, who was not expecting to be involved.`,
+  (n, p) => `${n} says "I've been waiting all season for that one" and sounds like ${p.sub} ${vb(p, 'means', 'mean')} it.`,
 ];
 
 const ZING_REACTION_BAD = [
   (n, p) => `${n} laughs about a half-second late and stops about a half-second early, and everybody in the yard clocks both.`,
   (n, p) => `${n} does not laugh. ${p.Sub} ${vb(p, 'looks', 'look')} at the robot the way you look at somebody who has read your diary.`,
   (n, p) => `${n} says "okay" quietly, twice, and the second one is not to anybody.`,
+  (n, p) => `${n} smiles with the bottom half of ${p.posAdj} face only, and holds it far too long.`,
+  (n, p) => `${n} starts to answer back, thinks better of it, and stares at the decking instead.`,
+  (n, p) => `${n} laughs, then asks — not as a joke — who wrote that one.`,
+  (n, p) => `${n} claps twice. It is the loneliest sound in the yard.`,
+  (n, p) => `${n} does not move at all, and the person beside ${p.obj} very deliberately does not look over.`,
 ];
 
 export const zingbot = {
@@ -132,8 +248,10 @@ export const zingbot = {
     beats.push(beat(arrival(ZING_ARRIVAL), house.slice(0, 4), 'THE ZINGBOT', 'gold'));
 
     const zings = [];
+    // One set of templates for the whole roast, so no joke is told twice.
+    const usedZings = new Set();
     for (const target of house) {
-      const text = zingFor(target, rng, say);
+      const { text } = zingFor(target, rng, usedZings);
       const p = pronouns(target);
       // How hard it lands. A volatile houseguest wears a public roast much
       // worse than a calm one, and the audience likes somebody who can take it.

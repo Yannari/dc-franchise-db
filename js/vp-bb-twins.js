@@ -138,6 +138,15 @@ const STYLE = `<style>
   margin:0 6px;border:3px solid var(--tw-warn);box-shadow:0 0 30px rgba(227,179,65,.4);vertical-align:middle}
 .bbtw .tw-big figure .bb-av{width:88px!important;height:88px!important;border-radius:7px}
 .bbtw .tw-big h3{margin:12px 0 0;font-family:var(--font-display);font-size:clamp(22px,4vw,36px);color:#fff}
+
+/* ── night one: the rules, for the only people who get them ── */
+.bbtw .tw-rules{position:relative;z-index:2;max-width:760px;margin:18px auto 0;padding:16px 20px;
+  border-radius:10px;background:rgba(0,0,0,.34);border:1px solid rgba(163,113,247,.34)}
+.bbtw .tw-rules b{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
+  letter-spacing:2.6px;color:var(--tw-b);margin-bottom:10px}
+.bbtw .tw-rules ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:9px}
+.bbtw .tw-rules li{font-size:13.5px;line-height:1.62;color:#d6dde5}
+.bbtw .tw-rules li::marker{color:var(--tw-b);font-family:ui-monospace,Consolas,monospace;font-size:11px}
 </style>`;
 
 const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -195,7 +204,46 @@ const shell = (inner, extra = '') => `<div class="rp-page bbtw">${STYLE}
   <div class="tw-bg"></div><div class="tw-wrap">${inner}</div>${extra}</div>`;
 
 /**
- * THE JOB — Monday, and only the viewer is holding the card.
+ * NIGHT ONE — the rules, for the only people allowed to know them.
+ *
+ * Every other twist gets read out in the living room and the announcement
+ * machinery builds a screen off the gathering. This one has no gathering,
+ * because the format is that nobody inside is ever told — so without a screen
+ * of its own a viewer's first sight of the Twin Twist was a changeover in week
+ * one for something nobody had explained.
+ */
+export function rpBuildBBTwinOpen(ep, act, u = {}) {
+  if (!act) return '';
+  const esc = typeof u.esc === 'function' ? u.esc : v => String(v ?? '');
+  const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
+  return shell(`
+    <div class="tw-head">
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; NIGHT ONE &middot; ONLY YOU CAN SEE THIS</div>
+      <div class="tw-title">TWO OF THEM</div>
+      <div class="tw-sub">Nobody in that house is going to be told any of this. You are the only
+        person watching who knows there is anything to find.</div>
+    </div>
+
+    <div class="tw-rules">
+      <b>THE RULES</b>
+      <ol>${(act.rules || []).map(r => `<li>${r}</li>`).join('')}</ol>
+    </div>
+
+    ${pairBlock(act, esc, avatar)}
+
+    <div class="tw-verdict is-done">
+      <h3>${esc(act.goesFirst)} GOES IN</h3>
+      <div class="tw-vsub">${esc(act.waits)} takes the room with no windows
+        &middot; ${esc(act.quota)} jobs to finish &middot; ${money(act.prize)} on the table</div>
+    </div>
+
+    <div class="tw-tells">${(act.beats || []).map(b => `<div class="tw-tell is-good">
+      <b>${esc(b.badgeText || '')}</b>${b.text}</div>`).join('')}</div>
+  `);
+}
+
+/**
+ * THE CHANGEOVER — Monday, and only the viewer is holding the card.
  */
 export function rpBuildBBTwinBrief(ep, act, u = {}) {
   if (!act) return '';
@@ -208,10 +256,13 @@ export function rpBuildBBTwinBrief(ep, act, u = {}) {
 
   return shell(`
     <div class="tw-head">
-      <div class="tw-eyebrow">WEEK ${esc(act.week)} &middot; ONLY YOU CAN SEE THIS</div>
-      <div class="tw-title">THE JOB</div>
-      <div class="tw-sub">One card, taped under a shelf in the storeroom, where exactly one person
-        in this house ever looks.</div>
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; WEEK ${esc(act.week)} &middot; ONLY YOU CAN SEE THIS</div>
+      <div class="tw-title">${act.swap ? 'THE CHANGEOVER' : 'THE FIRST JOB'}</div>
+      <div class="tw-sub">${act.swap
+        ? `One of them goes into the storeroom and the other one comes out. Then a card,
+           taped under a shelf where exactly one person in this house ever looks.`
+        : `Nobody has swapped yet — there is nothing to swap from. Just a card, taped under a shelf
+           on the first morning, before either of them has done anything at all.`}</div>
     </div>
     ${pairBlock(act, esc, avatar)}
     ${act.swap ? `<div class="tw-swap"><b>THE CHANGEOVER</b>${act.swap.text}</div>` : ''}
@@ -257,9 +308,10 @@ export function rpBuildBBTwinWeek(ep, act, u = {}) {
 
   return shell(`
     <div class="tw-head">
-      <div class="tw-eyebrow">WEEK ${esc(act.week)} &middot; ONLY YOU CAN SEE THIS</div>
-      <div class="tw-title">TWO OF THEM</div>
-      <div class="tw-sub">The house has one name for this person and has never counted them.</div>
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; WEEK ${esc(act.week)} &middot; ONLY YOU CAN SEE THIS</div>
+      <div class="tw-title">DID IT WORK</div>
+      <div class="tw-sub">The job, and everybody who felt something this week without being able
+        to name it.</div>
     </div>
 
     ${verdict ? `<div class="tw-verdict ${verdict.cls}">
@@ -288,7 +340,7 @@ export function rpBuildBBTwinEntry(ep, act, u = {}) {
   const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
   return shell(`
     <div class="tw-head">
-      <div class="tw-eyebrow">WEEK ${esc(act.week)} &middot; THE QUOTA, MET</div>
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; WEEK ${esc(act.week)} &middot; THE QUOTA, MET</div>
       <div class="tw-title">BOTH OF THEM</div>
       <div class="tw-sub">${act.completed || 0} jobs across ${act.swaps || 0} changeovers, and not one of
         them was ever meant to be possible for one person.</div>
@@ -320,7 +372,8 @@ export function rpBuildBBTwinCaught(ep, act, u = {}) {
   const quiet = !!act.unfinished;
   return shell(`
     <div class="tw-head">
-      <div class="tw-eyebrow">WEEK ${esc(act.week)} &middot; ${quiet ? 'THE SEASON RAN OUT' : 'SOMEBODY SAID IT'}</div>
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; WEEK ${esc(act.week)} &middot; ${
+        quiet ? 'THE SEASON RAN OUT' : 'SOMEBODY SAID IT'}</div>
       <div class="tw-title">${quiet ? 'NOBODY EVER KNEW' : 'THERE ARE TWO OF THEM'}</div>
       <div class="tw-sub">${quiet
         ? `${esc(act.swaps || 0)} changeovers and not one person in that house ever said the word.
@@ -351,7 +404,7 @@ export function rpBuildBBTwinOut(ep, act, u = {}) {
   const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
   return shell(`
     <div class="tw-head">
-      <div class="tw-eyebrow">WEEK ${esc(act.week)} &middot; ONE VOTE, TWO PEOPLE</div>
+      <div class="tw-eyebrow">THE TWIN TWIST &middot; WEEK ${esc(act.week)} &middot; ONE VOTE, TWO PEOPLE</div>
       <div class="tw-title">THERE WERE TWO</div>
       <div class="tw-sub">The house gets its answer about four seconds too late to use it.</div>
     </div>

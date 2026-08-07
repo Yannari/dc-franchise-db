@@ -4469,8 +4469,26 @@ export function generateBBSummaryText(ep) {
       // page in full, including the names the house got wrong.
       // The twin twist. The house is never told any of this; the audience is
       // told all of it, which is what the page is for.
+      // Namespaced the way the Saboteur's sections are, and for the same
+      // reason: both season twists hand out a weekly job, and a bare "THE JOB"
+      // on a page that also carries "THE SABOTEUR — THE JOB" is two headings
+      // nobody can tell apart.
+      case 'twin-open': {
+        sec('THE TWINS — THE ANNOUNCEMENT');
+        ln('  The house is never told any of this. Only the audience is.');
+        ln('');
+        (act.rules || []).forEach((r, i) => ln(`  ${i + 1}. ${r}`));
+        ln('');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        ln('');
+        ln(`  ${act.goesFirst} walks through the front door. ${act.waits} does not.`);
+        break;
+      }
+
       case 'twin-brief': {
-        sec('THE JOB');
+        // Night one has no changeover in it — nobody has been in the house long
+        // enough to hand anything over.
+        sec(act.swap ? 'THE TWINS — THE CHANGEOVER' : 'THE TWINS — THE FIRST JOB');
         if (act.swap) ln(`  ${act.swap.text}`);
         if (act.swap?.handoff) {
           ln('');
@@ -4491,7 +4509,7 @@ export function generateBBSummaryText(ep) {
       }
 
       case 'twin-week': {
-        sec('TWO OF THEM');
+        sec('THE TWINS — THE RESULT');
         const d = act.debrief;
         if (d) {
           ln(d.declined ? '  NO JOB — they turned it down, and the week does not count.'

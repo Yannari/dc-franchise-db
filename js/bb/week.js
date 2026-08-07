@@ -66,7 +66,7 @@ import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, sabote
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
 import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-eviction.js';
 import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinState,
-  offerTwinMission, resolveTwinMission, twinUnfinished,
+  openTwinTwist, offerTwinMission, resolveTwinMission, twinUnfinished,
   twinExposure as twinExposureLevel } from './twin-twist.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
@@ -1160,7 +1160,13 @@ export function simulateBBWeek(options = {}) {
     const entered = checkTwinEntry(week);
     if (entered) week.acts.push(entered);
     else {
-      const swap = swapTwins(week, { rng });
+      // Night one is not a changeover — there is nothing to change over from.
+      // It is the only place the rules get said out loud, to the only people
+      // allowed to hear them, and the two of them decide between themselves
+      // which one walks through the front door.
+      const opening = openTwinTwist(week, { rng });
+      if (opening) week.acts.push(opening);
+      const swap = opening ? null : swapTwins(week, { rng });
       const brief = offerTwinMission(week, { rng });
       if (swap) week._twinSwap = swap;
       if (brief) week.acts.push({ ...brief, swap: swap || null });

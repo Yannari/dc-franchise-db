@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { starsFromScore, showRankMultiplier, seasonChronology,
   popularityFactor, seasonAwardPoints, seasonGain, PLACEMENT_BASE,
-  computeFame, fameOf, recordsHeld, normaliseStatus } from '../js/fame.js';
+  computeFame, fameOf, recordsHeld, normaliseStatus, fameTerm } from '../js/fame.js';
 import { renderStars } from '../js/fame-stars.js';
 
 describe('turning a score into stars', () => {
@@ -352,5 +352,48 @@ describe('drawing the stars', () => {
     expect(renderStars(null)).toBe('');
     expect(renderStars(undefined)).toBe('');
     expect(renderStars({})).toBe('');
+  });
+});
+
+describe('naming each rung of the ladder', () => {
+  it('gives every step on the scale a word', () => {
+    const named = {};
+    for (let s = 0; s <= 5; s += 0.5) named[s] = fameTerm(s);
+    expect(named).toEqual({
+      0: 'Unknown',
+      0.5: 'Recognised', 1: 'Recognised',
+      1.5: 'Cult Following', 2: 'Cult Following',
+      2.5: 'Household Name', 3: 'Household Name',
+      3.5: 'Star', 4: 'Star',
+      4.5: 'Icon',
+      5: 'Celebrity',
+    });
+  });
+
+  it('reserves Celebrity for the locked top and Icon for the rung below', () => {
+    // 4.5 gets its own word: one step short of Celebrity is a distinct thing to
+    // be, and sharing "Star" with 3.5 would waste the most interesting rung.
+    expect(fameTerm(4.5)).not.toBe(fameTerm(3.5));
+    expect(fameTerm(4.5)).not.toBe(fameTerm(5));
+  });
+
+  it('says Unknown rather than throwing on nonsense', () => {
+    expect(fameTerm(undefined)).toBe('Unknown');
+    expect(fameTerm(NaN)).toBe('Unknown');
+    expect(fameTerm(-3)).toBe('Unknown');
+  });
+
+  it('puts the word in the tooltip, ahead of the numbers', () => {
+    const base = { score: 58.4, seasonsPlayed: 3, shows: [], timeline: [] };
+    expect(renderStars({ ...base, stars: 3, locked: false }))
+      .toMatch(/title="Household Name — 3 stars \(score 58\.4, from 3 seasons\)"/);
+    expect(renderStars({ ...base, stars: 5, locked: true }))
+      .toMatch(/title="Celebrity — famous, and it can no longer fade/);
+    // One season must read "1 season", and one star "1 star". Only a whole one
+    // is singular — 0.5 and 1.5 both take the plural.
+    expect(renderStars({ ...base, stars: 1, seasonsPlayed: 1, locked: false }))
+      .toMatch(/1 star \(score .*, from 1 season\)/);
+    expect(renderStars({ ...base, stars: 0.5, locked: false })).toMatch(/0\.5 stars/);
+    expect(renderStars({ ...base, stars: 1.5, locked: false })).toMatch(/1\.5 stars/);
   });
 });

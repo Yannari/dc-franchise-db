@@ -35,6 +35,41 @@ export function starsFromScore(score) {
   return stars;
 }
 
+/**
+ * What each rung of the ladder is called.
+ *
+ * A number on its own says nothing — five stars means something only once it is
+ * named. Descending, so the first match wins.
+ *
+ * Half-stars share the term below them, which keeps the vocabulary from
+ * straining to find eleven distinct words for a five-point scale. The exception
+ * is 4.5: being one rung short of Celebrity is a distinct thing to be, and
+ * calling it "Star" the same as 3.5 would waste the most interesting rung.
+ *
+ * This lives here rather than in js/fame-stars.js because it is meaning, not
+ * markup — a cast list, a returnee draft or the simulator can want the word
+ * without wanting the HTML.
+ */
+export const FAME_TERMS = [
+  [5, 'Celebrity'],
+  [4.5, 'Icon'],
+  [3.5, 'Star'],
+  [2.5, 'Household Name'],
+  [1.5, 'Cult Following'],
+  [0.5, 'Recognised'],
+  [0, 'Unknown'],
+];
+
+/** What to call a rating. */
+export function fameTerm(stars) {
+  const s = Number(stars);
+  if (!Number.isFinite(s)) return FAME_TERMS[FAME_TERMS.length - 1][1];
+  for (const [at, term] of FAME_TERMS) {
+    if (s >= at) return term;
+  }
+  return FAME_TERMS[FAME_TERMS.length - 1][1];
+}
+
 /** What each tier is worth. Anything not listed is neutral, never zero. */
 export const RANK_MULTIPLIER = {
   'S+': 1.5, 'S': 1.35, 'A': 1.2, 'B': 1.05, 'C': 0.9, 'D': 0.75,

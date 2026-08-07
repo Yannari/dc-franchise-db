@@ -267,6 +267,81 @@ const NOTE_BLIND = [
     + `${into} is going to have to work it out from people's faces.`,
 ];
 
+/**
+ * NIGHT ONE — the only screen that explains the rules, and the only people it
+ * is explained to are watching at home.
+ *
+ * Every other twist in this house gets read out in the living room. This one
+ * cannot be: the whole format is that nobody inside knows there is anything to
+ * find, so the announcement machinery in week.js has no gathering to hang it
+ * on. Without a screen of its own, a viewer's first sight of the twist was a
+ * changeover in week one for a twist they had never been told about.
+ *
+ * It is also where the two of them make the one decision that is genuinely
+ * theirs: which of them walks through the front door. The other one has to
+ * spend a week in a room with no windows, so it goes to whoever is better at
+ * the first week of this game — being liked by strangers, quickly.
+ */
+export function openTwinTwist(week, { rng = Math.random } = {}) {
+  const st = twinState();
+  if (!st || over(st) || st.opened) return null;
+  const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean);
+  if (!house.includes(st.front)) return null;
+  st.opened = true;
+  const weekNum = Number(week?.num) || 1;
+
+  // Whoever reads a room fastest goes in first. A first week is nothing but
+  // strangers deciding whether they like you, and the other one gets to walk
+  // into a house that has already made up its mind — which is easier.
+  const firstWeek = s => (Number(s.social) || 5) * 0.5 + (Number(s.temperament) || 5) * 0.3
+    + (Number(s.intuition) || 5) * 0.2;
+  const aFirst = firstWeek(st.statsA) >= firstWeek(st.statsB);
+  st.active = aFirst ? 'a' : 'b';
+  applyActive();
+  st.swaps.push({ week: weekNum, active: st.active, opening: true });
+
+  const goes = aFirst ? st.front : st.other;
+  const waits = aFirst ? st.other : st.front;
+  const gap = STAT_KEYS.reduce((sum, k) =>
+    sum + Math.abs((Number(st.statsA[k]) || 0) - (Number(st.statsB[k]) || 0)), 0) / STAT_KEYS.length;
+
+  return {
+    type: 'twin-open', secret: true, week: weekNum,
+    front: st.front, other: st.other, declared: !!st.declared,
+    quota: st.quota, prize: st.prize, goesFirst: goes, waits,
+    gap: round2(gap), aFirst,
+    twins: { other: st.other, active: st.active, statsA: { ...st.statsA }, statsB: { ...st.statsB } },
+    rules: [
+      `Two people are playing as ${st.front}. They look the same and they do not play the same, `
+        + `and one of them at a time is in that house.`,
+      `Nobody inside is told. There is no wall, no announcement and no rule anybody can break — `
+        + `the room has to work out on its own that the person it has been talking to is two people.`,
+      `Every week they are given a job only two people sharing a name could finish. `
+        + `Finish ${st.quota} of them and both of them join the game as separate houseguests, `
+        + `with the money.`,
+      `Get found out, or get ${st.front} evicted, and it stops there. `
+        + `The second one never plays and nothing is paid.`,
+    ],
+    beats: [{
+      text: `They decide it between themselves, in a room nobody has seen yet. `
+        + `${goes} goes first, because a first week is nothing but strangers deciding whether `
+        + `they like you and ${goes} is better at being liked by strangers. `
+        + `${waits} takes the room with no windows.`,
+      players: [st.front], badgeText: 'WHO GOES IN FIRST', badgeClass: 'gold',
+    }, {
+      text: gap >= 1.5
+        ? `It is not a small difference between them. There are ${STAT_KEYS.filter(k =>
+          Math.abs((Number(st.statsA[k]) || 0) - (Number(st.statsB[k]) || 0)) >= 2).length} things `
+          + `one of them is clearly better at than the other, and every one of those is a week `
+          + `where somebody in that house watches ${st.front} do something ${st.front} could not do `
+          + `a fortnight ago.`
+        : `They are close enough to be hard to tell apart, which is the good news and also the bad news: `
+          + `nobody is going to catch them on form, and they cannot use the difference for anything either.`,
+      players: [st.front], badgeText: 'HOW ALIKE THEY ARE', badgeClass: 'blue',
+    }],
+  };
+}
+
 const SWAP_LINES = [
   (n, room) => `The one the house has been talking to all week walks into ${room} and does not come out. `
     + `The one who comes out has the same face and has not heard a word of it.`,

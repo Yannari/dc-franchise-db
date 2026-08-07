@@ -171,7 +171,9 @@ describe('the house is told', () => {
     expect(screens.length).toBe(2);
     // Distinct ids, or the viewing party cannot tell the two tabs apart.
     expect(screens[0].id).not.toBe(screens[1].id);
-    expect(screens.map(x => x.label)).toContain('Instant Eviction');
+    // "<Twist>: Announcement" — a twist that also runs weekly screens has to
+    // read as one family down the tab strip.
+    expect(screens.map(x => x.label)).toContain('Instant Eviction: Announcement');
   });
 
   it('reaches the screen and the page, sequestration and all', () => {

@@ -22,7 +22,7 @@ import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
-import { rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
+import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
   rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
@@ -20741,8 +20741,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // label carries the rule so the tabs are not two of the same word.
         screens.push({
           id: id(act.secondCall ? 'bb-twist-2' : 'bb-twist'),
+          // "<Twist>: Announcement", so a twist that also runs weekly screens
+          // reads as one family down the tab strip rather than as an unrelated
+          // rule that happens to share a name with something else.
           label: (act.announced || []).length === 1
-            ? (act.announced[0].name || 'The Announcement')
+            ? `${act.announced[0].name || 'The'}: Announcement`
             : 'The Announcement',
           html: rpBuildBBTwistAnnouncement(view, act),
         });
@@ -20764,40 +20767,56 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // The twin twist. Audience-only, every one of them — the house is never
       // told there is anything to find. Two a week, at opposite ends of it: the
       // job on Monday and whether it came off after eviction night.
+      // The house is never told this twist exists, so there is no gathering for
+      // the announcement machinery to hang a screen on. Night one gets one
+      // anyway, for the only people who are allowed to know: the rules, the two
+      // stat lines, and the two of them deciding between themselves which one
+      // walks through the front door.
+      case 'twin-open':
+        screens.push({ id: id('bb-twins-open'), label: 'Twins: Announcement',
+          html: rpBuildBBTwinOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       case 'twin-brief':
-        screens.push({ id: id('bb-twins-job'), label: 'The Job',
+        screens.push({ id: id('bb-twins-job'), label: 'Twins: Mission',
           html: rpBuildBBTwinBrief(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'twin-caught':
-        screens.push({ id: id('bb-twins-caught'), label: act.unfinished ? 'Nobody Ever Knew' : 'Found Out',
+        screens.push({ id: id('bb-twins-caught'),
+          label: act.unfinished ? 'Twins: Nobody Knew' : 'Twins: Found Out',
           html: rpBuildBBTwinCaught(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'twin-week':
-        screens.push({ id: id('bb-twins'), label: 'Two Of Them',
+        screens.push({ id: id('bb-twins'), label: 'Twins: Results',
           html: rpBuildBBTwinWeek(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'twin-entry':
-        screens.push({ id: id('bb-twins-in'), label: 'Both Of Them',
+        screens.push({ id: id('bb-twins-in'), label: 'Twins: Both In',
           html: rpBuildBBTwinEntry(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'twin-out':
-        screens.push({ id: id('bb-twins-out'), label: 'There Were Two',
+        screens.push({ id: id('bb-twins-out'), label: 'Twins: Evicted',
           html: rpBuildBBTwinOut(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
+      // One family per season twist: "<Twist>: <beat>". Both of them hand out a
+      // weekly job, so "The Job" and "Job Results" were ambiguous the moment a
+      // season ran two — and a viewer scrolling the tabs could not tell which
+      // twist any given screen belonged to.
       case 'saboteur-accusation':
-        screens.push({ id: id('bb-saboteur-call'), label: act.correct ? 'Caught' : 'The Wrong Name',
+        screens.push({ id: id('bb-saboteur-call'),
+          label: act.correct ? 'The Saboteur: Caught' : 'The Saboteur: Wrong Name',
           html: rpBuildBBSaboteurAccusation(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'saboteur-brief':
-        screens.push({ id: id('bb-saboteur-brief'), label: 'The Job',
+        screens.push({ id: id('bb-saboteur-brief'), label: 'The Saboteur: Mission',
           html: rpBuildBBSaboteurBrief(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'saboteur-debrief':
-        screens.push({ id: id('bb-saboteur'), label: 'Job Results',
+        screens.push({ id: id('bb-saboteur'), label: 'The Saboteur: Results',
           html: rpBuildBBSaboteur(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'saboteur-reveal':
-        screens.push({ id: id('bb-saboteur-reveal'), label: act.evicted ? 'The Saboteur Is Out' : 'It Was Them',
+        screens.push({ id: id('bb-saboteur-reveal'),
+          label: act.evicted ? 'The Saboteur: Out' : 'The Saboteur: Reveal',
           html: rpBuildBBSaboteurReveal(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       // The twist screens that live in vp-bb-twists.js. They take the reveal

@@ -2,7 +2,9 @@
 //
 // Separate from js/fame.js on purpose: that module must stay free of the DOM so
 // the simulator can import it without dragging markup along. Everything visual
-// about fame lives here.
+// about fame lives here; the words for each rung live there, because they are
+// meaning rather than markup.
+import { fameTerm } from './fame.js';
 
 export const FAME_STAR_CSS = `
 .fame-rating{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;}
@@ -42,9 +44,12 @@ export function renderStars(fame) {
   }
 
   const seasons = `${fame.seasonsPlayed} season${fame.seasonsPlayed === 1 ? '' : 's'}`;
+  // "1 stars" — only a whole one is singular; 0.5 and 1.5 both take the plural.
+  const rating = `${fame.stars} star${fame.stars === 1 ? '' : 's'}`;
+  const term = fameTerm(fame.stars);
   const title = fame.locked
-    ? `${fame.stars} stars — famous, and it can no longer fade (score ${fame.score}, ${seasons})`
-    : `${fame.stars} stars (score ${fame.score}, from ${seasons})`;
+    ? `${term} — famous, and it can no longer fade (${rating}, score ${fame.score}, ${seasons})`
+    : `${term} — ${rating} (score ${fame.score}, from ${seasons})`;
 
   return `<span class="fame-rating${fame.locked ? ' fame-locked' : ''}" title="${title}">`
     + `<span class="fame-stars">${cells.join('')}</span>`

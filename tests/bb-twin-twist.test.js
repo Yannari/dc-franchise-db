@@ -20,7 +20,7 @@ import { gs, players, seasonConfig, relationships, setRelationships,
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { installTwinTwist, swapTwins, twinTells, twinDiscovery, checkTwinEntry,
+import { installTwinTwist, openTwinTwist, swapTwins, twinTells, twinDiscovery, checkTwinEntry,
   twinEvicted, twinUnfinished, twinState, isTwinIdentity, twinExposure,
   offerTwinMission, resolveTwinMission } from '../js/bb/twin-twist.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
@@ -220,6 +220,52 @@ describe('the swap', () => {
     }
     // It is a range, not a constant — otherwise it is not a dial.
     expect(best - worst).toBeGreaterThan(0.15);
+  });
+});
+
+describe('night one', () => {
+  it('explains the rules to the only people allowed to know them', () => {
+    house();
+    const st = installTwinTwist(NAMES, { rng: Math.random });
+    const open = openTwinTwist(aWeek({ num: 1 }), { rng: Math.random });
+    expect(open).toBeTruthy();
+    expect(open.type).toBe('twin-open');
+    // Audience only. There is no gathering, no wall and nothing read out — the
+    // format is that nobody inside ever learns there is anything to find.
+    expect(open.secret).toBe(true);
+    expect(open.rules.length).toBeGreaterThan(3);
+    // Both halves of the deal: what winning is, and what losing is.
+    expect(open.rules.join(' ')).toContain(String(st.quota));
+    expect(open.rules.join(' ')).toMatch(/found out|evicted/i);
+    // And it happens once.
+    expect(openTwinTwist(aWeek({ num: 2 }), { rng: Math.random })).toBeNull();
+  });
+
+  it('lets the two of them choose which one walks in, and seats that choice', () => {
+    house();
+    const st = installTwinTwist(NAMES, { rng: Math.random });
+    const open = openTwinTwist(aWeek({ num: 1 }), { rng: Math.random });
+    expect([st.front, st.other]).toContain(open.goesFirst);
+    expect(open.waits).not.toBe(open.goesFirst);
+    // The choice is real: whoever went in is the stat line the house is
+    // actually playing against.
+    const live = open.aFirst ? st.statsA : st.statsB;
+    for (const k of STAT_KEYS) expect(pStats(st.front)[k]).toBe(live[k]);
+  });
+
+  it('opens instead of swapping, because there is nothing to swap from', () => {
+    house();
+    installTwinTwist(NAMES, { rng: Math.random });
+    const week = aWeek({ num: 1 });
+    const open = openTwinTwist(week, { rng: Math.random });
+    expect(open).toBeTruthy();
+    // No handoff note on night one — nobody has been in the house yet to write
+    // one, and the brief screen has to cope with that.
+    expect(twinState().handoff ?? null).toBeNull();
+    expect(twinState().knows).toBe(1);
+    const brief = offerTwinMission(week, { rng: Math.random });
+    expect(brief).toBeTruthy();
+    expect(brief.accepted).toBe(true);
   });
 });
 
@@ -479,7 +525,7 @@ describe('the four endings', () => {
 describe('a season with one running', () => {
   it('plays, and reaches the screen and the page', () => {
     house({ bbTwins: 'random', bbTwinsQuota: 3 });
-    let sawBrief = false, sawWeek = false, sawEnd = false;
+    let sawOpen = false, sawBrief = false, sawWeek = false, sawEnd = false;
     for (let w = 0; w < 9; w++) {
       const ep = simulateBBEpisode();
       if (!ep) break;
@@ -496,6 +542,7 @@ describe('a season with one running', () => {
           expect(s.html).not.toMatch(/undefined|NaN|\[object Object\]/);
         }
         for (const a of acts) {
+          if (a.type === 'twin-open') sawOpen = true;
           if (a.type === 'twin-brief') sawBrief = true;
           if (a.type === 'twin-week') sawWeek = true;
           if (['twin-entry', 'twin-out', 'twin-caught'].includes(a.type)) sawEnd = true;
@@ -508,7 +555,8 @@ describe('a season with one running', () => {
       const st = twinState();
       if (st?.entered || st?.caught) break;
     }
-    // Two screens a week, at opposite ends of it.
+    // Night one explains itself, then two screens a week at opposite ends.
+    expect(sawOpen, 'the twist never explained itself to anybody').toBe(true);
     expect(sawBrief, 'the job was never handed over').toBe(true);
     expect(sawWeek, 'no twin week ever resolved').toBe(true);
     expect(sawEnd, 'the twist never ended').toBe(true);
@@ -537,6 +585,37 @@ describe('a season with one running', () => {
     expect(Math.max(...Object.values(endings)) / total,
       `one ending dominates: ${JSON.stringify(endings)}`).toBeLessThan(0.8);
   }, 120000);
+
+  it('does not share a screen name with the other season twist', () => {
+    // Both season twists hand out a weekly job and both label the briefing, so
+    // both shipped a tab called "The Job" — two identical names in the same
+    // episode with no way to tell which twist you were looking at. And the twin
+    // results screen was called "Two Of Them", which names the twist rather
+    // than saying it is where the job resolves.
+    house({ bbTwins: 'random', bbTwinsQuota: 3, bbSaboteur: 'random', bbSaboteurBankWeek: 6 });
+    for (let w = 0; w < 4; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      gs.episodeHistory = [ep];
+      buildVPScreens(ep);
+      Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
+      const screens = buildVPScreens(ep) || [];
+      // Only the two season twists. House Life legitimately repeats across a
+      // week — before power, after nominations, the night before the vote — and
+      // those are the same screen at different points, not a name collision.
+      const twistScreens = screens.filter(s => /bb-twins|bb-saboteur/.test(s.id));
+      const labels = twistScreens.map(s => s.label);
+      const dupes = labels.filter((l, i) => labels.indexOf(l) !== i);
+      expect(dupes, `two twist screens share a name: ${[...new Set(dupes)].join(', ')}`).toEqual([]);
+
+      // And every twin screen says which twist it belongs to.
+      for (const s of screens.filter(x => /bb-twins/.test(x.id))) {
+        expect(s.html, `${s.label} never names the twist`).toContain('THE TWIN TWIST');
+      }
+      const st = twinState();
+      if (st?.entered || st?.caught) break;
+    }
+  }, 60000);
 
   it('does nothing at all when the season did not ask for one', () => {
     house({ bbTwins: 'off' });

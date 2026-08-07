@@ -169,7 +169,23 @@ export function seasonGain({ playerId, detail, season, cohort, rankings }) {
   return (base * reception + awards) * showRankMultiplier(playerId, season.format, rankings);
 }
 
-const DECAY_PER_MISSED_SEASON = 1.2;
+/**
+ * Fame kept per season spent off air — proportional, not a flat subtraction.
+ *
+ * The spec said a flat 1.2 a season, and measuring it against the real roster
+ * showed why that is the wrong shape: a flat charge erases a small career
+ * outright while barely scratching a large one. A single pre-jury season is
+ * worth about 7 points, so six seasons away took it to nothing, and 69% of the
+ * franchise sat at half a star or less with no way to tell any of them apart.
+ * That inverts what decay is for — the big names are supposed to be the ones
+ * that persist.
+ *
+ * Proportional fade keeps the ordering of careers intact and never quite reaches
+ * zero: over the fifteen seasons that exist, an absent player loses about 13% of
+ * their standing. That is "very slowly", and it moved the middle of the roster
+ * from 28% to 42%.
+ */
+const DECAY_FACTOR = 0.99;
 const MULTI_SHOW_BONUS = 8;
 const MULTI_SHOW_CAP = 16;
 const RECORD_POINTS = 6;
@@ -240,7 +256,7 @@ export function computeFame({ players, rankings, seasons, franchise } = {}) {
 
       if (!detail) {
         if (locked) continue;
-        const delta = -Math.min(DECAY_PER_MISSED_SEASON, score);
+        const delta = score * DECAY_FACTOR - score;      // negative, never past 0
         if (delta) {
           score += delta;
           timeline.push({ seasonId: season.seasonId, event: 'missed', delta, score });

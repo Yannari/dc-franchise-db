@@ -228,10 +228,23 @@ describe('walking a career', () => {
     expect(all.get('early').timeline.some(t => t.event === 'missed')).toBe(true);
   });
 
-  it('never decays below zero', () => {
+  it('fades without ever going negative, however long the absence', () => {
+    // Decay is proportional, so it approaches zero rather than punching through
+    // it. This used to assert exactly 0, which was really testing the clamp on
+    // the old flat subtraction — and that flat charge is what erased small
+    // careers outright while barely touching big ones.
     const dbs = { players: { players: [player('faded', [td(1, 'Pre-jury')])] },
       rankings: {}, seasons: franchiseOf(60) };
-    expect(computeFame(dbs).get('faded').score).toBe(0);
+    const r = computeFame(dbs).get('faded');
+    expect(r.score).toBeGreaterThanOrEqual(0);
+    // Sixty seasons away has to cost something real.
+    const fresh = computeFame({ players: { players: [player('faded', [td(1, 'Pre-jury')])] },
+      rankings: {}, seasons: { seasons: [{ seasonNumber: 1, format: 'total-drama', seasonId: 'td-1' }] } });
+    expect(r.score).toBeLessThan(fresh.get('faded').score * 0.7);
+    // Every decay step moves down, never up.
+    const missed = r.timeline.filter(t => t.event === 'missed');
+    expect(missed.length).toBeGreaterThan(0);
+    expect(missed.every(t => t.delta < 0)).toBe(true);
   });
 
   it('locks at five and stops decaying forever', () => {

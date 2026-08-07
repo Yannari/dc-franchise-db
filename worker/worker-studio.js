@@ -25,7 +25,9 @@
 // Season data (requires the token):
 //   POST /api/sync-seasons  -> rebuilds players/appearances/bonds/seasons/rankings
 //                              from the JSON already committed in the repo.
-//   POST /api/publish-season {seasonNumber, season, players, seasons, franchise, rankings}
+//   POST /api/publish-season {seasonNumber, format, season, players, seasons, franchise, rankings}
+//     format defaults to 'total-drama' and decides the season file's name —
+//     without it two shows' season 1 write to the same path.
 //                           -> commits those documents, THEN syncs. Removes the
 //                              old manual "move the downloads into the repo" step.
 //
@@ -860,7 +862,19 @@ async function publishSeason(env, payload = {}) {
   const n = asInt(payload.seasonNumber);
   if (payload.season) {
     if (!n) throw new ValidationError('seasonNumber is required when publishing season data');
-    docs.push([`${SEASON_DIR}/season${n}-data.json`, payload.season]);
+    // The season number alone stopped identifying a season when a second show
+    // arrived: `seasons` is keyed (format, season_number), so Total Drama 1 and
+    // Big Brother 1 both exist and both used to resolve to season1-data.json.
+    // Publishing the Big Brother season would have committed straight over the
+    // Total Drama one — a silent overwrite of a finished season's episode log.
+    //
+    // Total Drama keeps the bare filename because fourteen of these are already
+    // in the repo and several readers match on it by name; every other show is
+    // namespaced by its format prefix.
+    const format = payload.format || 'total-drama';
+    if (!/^[a-z0-9-]+$/.test(format)) throw new ValidationError(`unknown season format: ${format}`);
+    const file = format === 'total-drama' ? `season${n}-data.json` : `${format}-season${n}-data.json`;
+    docs.push([`${SEASON_DIR}/${file}`, payload.season]);
   }
   if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);
   if (payload.seasons)   docs.push([SEASONS_DB_PATH, payload.seasons]);

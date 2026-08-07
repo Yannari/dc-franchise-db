@@ -376,7 +376,7 @@ export function renderGameState() {
         exportBtn.onclick = async () => {
           exportBtn.disabled = true;
           try {
-            await window.exportAndFillNarratives(s => { exportBtn.textContent = s; });
+            await window.exportSeason(s => { exportBtn.textContent = s; });
             exportBtn.textContent = 'All Done!';
             setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 3000);
           } catch (err) {
@@ -489,7 +489,7 @@ export function renderGameState() {
       exportBtn.onclick = async () => {
         exportBtn.disabled = true;
         try {
-          await window.exportAndFillNarratives(s => { exportBtn.textContent = s; });
+          await window.exportSeason(s => { exportBtn.textContent = s; });
           exportBtn.textContent = 'All Done!';
           setTimeout(() => { exportBtn.textContent = 'Export & Fill Narratives'; exportBtn.disabled = false; }, 3000);
         } catch (err) {

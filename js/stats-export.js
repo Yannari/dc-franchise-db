@@ -33,6 +33,25 @@ function _clean(val, fallback = '') {
  * forever after. There is no season for which the combination is meaningful, so
  * this throws rather than quietly picking a winner.
  */
+/**
+ * Does this season detail belong to the season being merged?
+ *
+ * Season numbers are NOT unique on their own any more — `seasons` is keyed
+ * `(format, season_number)`, so Total Drama 1 and Big Brother 1 are two
+ * different seasons that coexist. Every re-merge dedupe used to match on the
+ * number alone, which was harmless only while Big Brother data did not exist:
+ * the moment it does, re-exporting Total Drama 1 finds the player's BIG
+ * BROTHER 1 detail, subtracts that show's numbers from the career totals, and
+ * deletes the detail outright. The player quietly loses a season.
+ *
+ * Untagged details are legacy Total Drama rows written before the format tag,
+ * so they answer to `total-drama` — same rule `_rebuildByShow` uses.
+ */
+function _isSameSeason(detail, seasonNum, format = DEFAULT_FORMAT) {
+  if (!detail || detail.season !== seasonNum) return false;
+  return (detail.format || DEFAULT_FORMAT) === format;
+}
+
 function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
   if (!detail) return detail;
   if (format !== 'big-brother' && detail.bb) {
@@ -76,6 +95,13 @@ function _rebuildByShow(player) {
     }
   }
   player.byShow = byShow;
+  // Counted here, from the details, because this is the one point in either
+  // merge where they are final — and because the details are the only record
+  // that can tell two shows apart. `player.seasons` is a flat list of NUMBERS
+  // read by a dozen pages, so Total Drama 1 and Big Brother 1 collapse to a
+  // single entry in it; counting that array would file a player who did both
+  // as a one-season rookie. `seasons` keeps its shape for those readers.
+  player.totalSeasons = (player.seasonDetails || []).length;
   return player;
 }
 
@@ -1826,7 +1852,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
     // career contributions and season detail so the fresh data below replaces it.
     // (Previously an already-finalized season was skipped entirely with `continue`,
     // so re-exports/corrections never updated existing player records.)
-    const existingDetail = player.seasonDetails?.find(sd => sd.season === seasonNum);
+    const existingDetail = player.seasonDetails?.find(sd => _isSameSeason(sd, seasonNum));
 
     if (existingDetail) {
       player.totalChallengeWins = (player.totalChallengeWins || 0) - (existingDetail.challengeWins || 0);
@@ -1836,13 +1862,13 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       player.totalIdolsFound = (player.totalIdolsFound || 0) - (existingDetail.idolsFound || 0);
       player.totalJuryVotes = (player.totalJuryVotes || 0) - (existingDetail.juryVotes || 0);
       if (existingDetail.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
-      player.seasonDetails = player.seasonDetails.filter(sd => sd.season !== seasonNum);
+      player.seasonDetails = player.seasonDetails.filter(sd => !_isSameSeason(sd, seasonNum));
     }
 
     // Update career stats
     if (!player.seasons) player.seasons = [];
     if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
-    player.totalSeasons = player.seasons.length;
+    // totalSeasons is set by _rebuildByShow, once the details are final.
     player.bestPlacement = Math.min(player.bestPlacement || Infinity, pd.placement || Infinity);
     if (pd.phase === 'Winner') player.wins = (player.wins || 0) + 1;
     player.totalChallengeWins = (player.totalChallengeWins || 0) + (pd.chalRecord?.wins || 0);
@@ -1926,8 +1952,13 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
 
   if (!db.seasons) db.seasons = [];
 
-  // Remove existing entry for this season (allows re-export to overwrite)
-  db.seasons = db.seasons.filter(s => s.seasonNumber !== seasonNum);
+  // Remove existing entry for this season (allows re-export to overwrite).
+  // Matched on format too: `seasons` is keyed (format, season_number), so a
+  // number-only filter would take Big Brother 1 out with Total Drama 1 and
+  // orphan every Big Brother season detail pointing at it — which the sync
+  // then drops silently, counting them as `skipped` and returning ok:true.
+  db.seasons = db.seasons.filter(s =>
+    !(s.seasonNumber === seasonNum && (s.format || DEFAULT_FORMAT) === DEFAULT_FORMAT));
 
   const aiAwards = template.awards || {};
   const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;
@@ -1975,7 +2006,87 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   });
 
   db.franchise = db.franchise || {};
-  db.franchise.totalSeasons = seasonNum;
+  // Math.max, not assignment: two shows share this counter, and Big Brother 2
+  // must not be walked back to 1 because somebody re-exported Total Drama 1.
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+
+  return db;
+}
+
+/**
+ * Fold a finished Big Brother season into seasons_database.json.
+ *
+ * The counterpart to mergeBigBrotherSeason, which records the PLAYERS. Without
+ * this there was no code path that wrote a Big Brother season record at all,
+ * and the consequence was not a visible failure: `/api/sync-seasons` validates
+ * every season detail against the (format, season_number) pairs it finds here,
+ * so Big Brother details with no matching season record are dropped with
+ * `ok:true` and nothing moving but `counts.skipped`. A whole season's worth of
+ * player history would go missing with a success response on top of it.
+ *
+ * The Total Drama merge could not be reused: it reads the raw sim stats object
+ * (`rawStats.castSize`, `autoAwards`, and so on), which a headless Big Brother
+ * house never produces. The season document already carries every field this
+ * record needs, so this reads that instead.
+ */
+export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== 'big-brother') {
+    throw new Error('mergeBigBrotherSeasonsDatabase expects a big-brother season document');
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Big Brother season document has no seasonNumber');
+
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+
+  // Format-matched, so re-exporting Big Brother 1 leaves Total Drama 1 alone.
+  db.seasons = db.seasons.filter(s =>
+    !(s.seasonNumber === seasonNum && s.format === 'big-brother'));
+
+  const awards = seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {};
+  const named = a => (a?.name ? { name: a.name, playerSlug: a.playerSlug || _slug(a.name) } : null);
+  // Most competition wins is derivable here and nowhere else — the Total Drama
+  // path gets it from autoAwards, which the house does not build.
+  const topComp = (seasonDoc.placements || [])
+    .map(p => ({ name: p.name, wins: (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) }))
+    .filter(p => p.wins > 0)
+    .sort((a, b) => b.wins - a.wins)[0] || null;
+
+  db.seasons.push({
+    seasonNumber: seasonNum,
+    format: 'big-brother',
+    seasonId: seasonId('big-brother', seasonNum),
+    title: _clean(seasonDoc.title, `Big Brother ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    // Big Brother counts weeks where Total Drama counts episodes. The field is
+    // shared because every consumer reads it as "how long was this season".
+    episodeCount: seasonDoc.episodeCount,
+    jurySize: seasonDoc.jurySize || 0,
+    winner: {
+      name: seasonDoc.winner?.name || null,
+      playerSlug: seasonDoc.winner?.playerSlug || _slug(seasonDoc.winner?.name || ''),
+      vote: _clean(seasonDoc.winner?.vote),
+      runnerUp: _clean(seasonDoc.winner?.runnerUp),
+      keyStats: _clean(seasonDoc.winner?.keyStats),
+      strategy: _clean(seasonDoc.winner?.strategy),
+      legacy: _clean(seasonDoc.winner?.legacy),
+    },
+    awards: {
+      fanFavorite: named(awards.fanFavorite),
+      bestStrategic: named(awards.bestStrategic || awards.masterStrategist?.gold),
+      mostChallengeWins: topComp
+        ? { name: topComp.name, playerSlug: _slug(topComp.name), detail: `${topComp.wins} comp wins` }
+        : null,
+    },
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId('big-brother', seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+  });
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
 
   return db;
 }
@@ -1985,6 +2096,81 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
 // ── 18. Export & Fill Narratives (combined) ─────────────────────────────
 // Extracts stats → calls AI for narratives → merges databases with
 // filled data → downloads everything at the end.
+
+/**
+ * Ask the AI worker to fill a season template's narrative fields.
+ *
+ * Show-agnostic on purpose: it only ever touches fields both season documents
+ * share (title, subtitle, narrative, winner blurbs, per-placement prose), so
+ * the Big Brother export gets the same treatment without a second copy of this
+ * drifting out of step with the Total Drama one.
+ *
+ * Returns the filled document, or the template untouched when there is nothing
+ * for the worker to read.
+ */
+async function _fillNarratives(template, episodes, workerUrl) {
+  if (!episodes.some(e => e.summary)) return template;
+
+  const response = await fetch(workerUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mode: 'narrative-fill',
+      template,
+      episodes,
+      season: template.seasonNumber,
+      seasonTitle: template.title,
+      // The worker writes in the voice of the show it is given.
+      format: template.format || DEFAULT_FORMAT,
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Worker failed (${response.status}): ${errText}`);
+  }
+
+  const aiResult = await response.json();
+  const filled = JSON.parse(JSON.stringify(template));
+
+  if (aiResult.title && aiResult.title !== '[AI_FILL]') filled.title = aiResult.title;
+  if (aiResult.subtitle && aiResult.subtitle !== '[AI_FILL]') filled.subtitle = aiResult.subtitle;
+  if (aiResult.seasonNarrative) filled.seasonNarrative = aiResult.seasonNarrative;
+
+  if (aiResult.winner) {
+    if (aiResult.winner.keyStats) filled.winner.keyStats = aiResult.winner.keyStats;
+    if (aiResult.winner.strategy) filled.winner.strategy = aiResult.winner.strategy;
+    if (aiResult.winner.legacy) filled.winner.legacy = aiResult.winner.legacy;
+  }
+
+  if (aiResult.placements && Array.isArray(aiResult.placements)) {
+    for (const aiP of aiResult.placements) {
+      const target = filled.placements.find(p => p.name === aiP.name);
+      if (!target) continue;
+      if (aiP.notes) target.notes = aiP.notes;
+      if (aiP.strategicRank != null) target.strategicRank = aiP.strategicRank;
+      if (aiP.story) target.story = aiP.story;
+      if (aiP.gameplayStyle) target.gameplayStyle = aiP.gameplayStyle;
+      if (aiP.keyMoments) target.keyMoments = aiP.keyMoments;
+      if (aiP.emoji) target.emoji = aiP.emoji;
+    }
+  }
+
+  if (aiResult.awards && typeof aiResult.awards === 'object') filled.awards = aiResult.awards;
+  if (aiResult.emoji) filled.emoji = aiResult.emoji;
+  return filled;
+}
+
+/** The Season Builder worker URL, asked for once and remembered. */
+function _resolveWorkerUrl() {
+  let workerUrl = localStorage.getItem('SEASON_BUILDER_WORKER_URL');
+  if (workerUrl) return workerUrl;
+  workerUrl = prompt('Enter your Season Builder Worker URL (Cloudflare Worker):');
+  if (!workerUrl || !workerUrl.trim()) return null;
+  workerUrl = workerUrl.trim();
+  localStorage.setItem('SEASON_BUILDER_WORKER_URL', workerUrl);
+  return workerUrl;
+}
 
 export async function exportAndFillNarratives(onStatus) {
   const _status = onStatus || (() => {});
@@ -2012,70 +2198,15 @@ export async function exportAndFillNarratives(onStatus) {
 
   // Step 2: Call AI worker for narratives
   _status('Calling AI Worker...');
-  let workerUrl = localStorage.getItem('SEASON_BUILDER_WORKER_URL');
-  if (!workerUrl) {
-    workerUrl = prompt('Enter your Season Builder Worker URL (Cloudflare Worker):');
-    if (!workerUrl || !workerUrl.trim()) return;
-    workerUrl = workerUrl.trim();
-    localStorage.setItem('SEASON_BUILDER_WORKER_URL', workerUrl);
-  }
+  const workerUrl = _resolveWorkerUrl();
+  if (!workerUrl) return;
 
   const episodes = (gs.episodeHistory || []).map((ep, i) => ({
     episode: i + 1,
     summary: ep.summaryText || ''
   }));
 
-  let finalSeasonData = template;
-
-  if (episodes.some(e => e.summary)) {
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        mode: 'narrative-fill',
-        template,
-        episodes,
-        season: template.seasonNumber,
-        seasonTitle: template.title
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Worker failed (${response.status}): ${errText}`);
-    }
-
-    const aiResult = await response.json();
-
-    finalSeasonData = JSON.parse(JSON.stringify(template));
-    if (aiResult.title && aiResult.title !== '[AI_FILL]') finalSeasonData.title = aiResult.title;
-    if (aiResult.subtitle && aiResult.subtitle !== '[AI_FILL]') finalSeasonData.subtitle = aiResult.subtitle;
-    if (aiResult.seasonNarrative) finalSeasonData.seasonNarrative = aiResult.seasonNarrative;
-
-    if (aiResult.winner) {
-      if (aiResult.winner.keyStats) finalSeasonData.winner.keyStats = aiResult.winner.keyStats;
-      if (aiResult.winner.strategy) finalSeasonData.winner.strategy = aiResult.winner.strategy;
-      if (aiResult.winner.legacy) finalSeasonData.winner.legacy = aiResult.winner.legacy;
-    }
-
-    if (aiResult.placements && Array.isArray(aiResult.placements)) {
-      for (const aiP of aiResult.placements) {
-        const target = finalSeasonData.placements.find(p => p.name === aiP.name);
-        if (!target) continue;
-        if (aiP.notes) target.notes = aiP.notes;
-        if (aiP.strategicRank != null) target.strategicRank = aiP.strategicRank;
-        if (aiP.story) target.story = aiP.story;
-        if (aiP.gameplayStyle) target.gameplayStyle = aiP.gameplayStyle;
-        if (aiP.keyMoments) target.keyMoments = aiP.keyMoments;
-        if (aiP.emoji) target.emoji = aiP.emoji;
-      }
-    }
-
-    if (aiResult.awards && typeof aiResult.awards === 'object') {
-      finalSeasonData.awards = aiResult.awards;
-    }
-    if (aiResult.emoji) finalSeasonData.emoji = aiResult.emoji;
-  }
+  const finalSeasonData = await _fillNarratives(template, episodes, workerUrl);
 
   // Guarantee a Fan Favorite award so the awards section is never blank. Prefer
   // an editorial pick already present in the awards; otherwise fall back to the
@@ -2149,6 +2280,7 @@ export async function exportAndFillNarratives(onStatus) {
   // into the repo by hand. Falls back to downloads if there's no backend.
   const published = await _publishSeasonToSite({
     seasonNumber: seasonNum,
+    format: DEFAULT_FORMAT,
     season: finalSeasonData,
     franchise: franchiseDb,
     players: playersDb,
@@ -2173,6 +2305,145 @@ export async function exportAndFillNarratives(onStatus) {
   if (seasonsDb) {
     setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), delay);
   }
+}
+
+/**
+ * Export a finished Big Brother season: the house's counterpart to
+ * exportAndFillNarratives.
+ *
+ * This is the piece that was missing rather than broken. The extractor and both
+ * merges existed and were tested, but nothing in the application ever called
+ * them — the only export button ran the Total Drama path, which reads chalRecord
+ * and tribes off the raw sim stats and cannot describe a house at all. A
+ * finished Big Brother season could not be exported by any route.
+ *
+ * The shape deliberately mirrors the Total Drama flow — extract, fill, merge,
+ * publish, fall back to downloads — because the publish endpoint, the D1 sync
+ * and the site all read one season-document format regardless of show.
+ */
+/**
+ * Export whichever season is loaded, by its format.
+ *
+ * The export button used to call the Total Drama path directly, which is why a
+ * Big Brother season could be played to a winner and then not be exportable:
+ * the button worked, it just ran an exporter that reads tribes and challenge
+ * records off a house that has neither. One entry point, one decision.
+ */
+export async function exportSeason(onStatus) {
+  return seasonConfig?.format === 'big-brother'
+    ? exportAndFillBigBrotherSeason(onStatus)
+    : exportAndFillNarratives(onStatus);
+}
+
+export async function exportAndFillBigBrotherSeason(onStatus) {
+  const _status = onStatus || (() => {});
+
+  const weeks = gs.bb?.weeks || [];
+  if (!weeks.length) { alert('No Big Brother weeks have been played yet.'); return; }
+
+  // Placements come from the finale, which is the only thing that knows who
+  // actually won — the week engine stops at a final three.
+  const finale = gs.bb?.finale;
+  if (!finale?.winner) {
+    alert('This season has not crowned a winner yet — play the finale before exporting.');
+    return;
+  }
+  const finalists = [finale.winner, finale.runnerUp, finale.cut].filter(Boolean);
+  const jury = finale.jury || [];
+
+  _status('Extracting the season...');
+  const seasonNum = _getSeasonNumber();
+  let template;
+  try {
+    template = extractBigBrotherSeasonTemplate(weeks, finalists, {
+      seasonNumber: seasonNum,
+      jurySize: jury.length,
+    });
+  } catch (err) {
+    alert('Failed to build the Big Brother season document: ' + (err.message || err));
+    return;
+  }
+
+  // The extractor writes juryVotes: 0 for everybody because the week engine
+  // does not hold a jury vote. The finale does, so the real tally goes in here —
+  // otherwise every Big Brother winner lands on the site with a 0-vote win.
+  const votes = finale.votes || {};
+  for (const p of template.placements) {
+    p.juryVotes = Number(votes[p.name]) || 0;
+  }
+  if (template.winner) {
+    const tally = finalists
+      .map(n => `${n} ${Number(votes[n]) || 0}`)
+      .join(' — ');
+    template.winner.vote = tally;
+  }
+
+  const workerUrl = _resolveWorkerUrl();
+  if (!workerUrl) return;
+
+  _status('Calling AI Worker...');
+  const episodes = (gs.episodeHistory || []).map((ep, i) => ({
+    episode: i + 1,
+    summary: ep.summaryText || '',
+  }));
+
+  let finalSeasonData;
+  try {
+    finalSeasonData = await _fillNarratives(template, episodes, workerUrl);
+  } catch (err) {
+    // A missing narrative is a worse export, not a lost season.
+    console.warn('Narrative fill failed, publishing the raw season:', err);
+    _status('AI fill failed — publishing without narratives.');
+    finalSeasonData = template;
+  }
+
+  if (!finalSeasonData.awards || typeof finalSeasonData.awards !== 'object') finalSeasonData.awards = {};
+  if (!finalSeasonData.awards.fanFavorite?.name && finale.favourite?.winner) {
+    const fav = finale.favourite.winner;
+    finalSeasonData.awards.fanFavorite = {
+      name: fav,
+      playerSlug: _slug(fav),
+      description: `${fav} was voted the house's favourite by the audience.`,
+    };
+  }
+
+  _status('Merging databases...');
+  let playersDb = null, seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+
+    playersDb = mergeBigBrotherSeason(playersExisting, finalSeasonData);
+    seasonsDb = mergeBigBrotherSeasonsDatabase(seasonsExisting, finalSeasonData);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    // Publishing a season document with no databases behind it would leave the
+    // site describing a season none of its players know they played.
+    alert('Could not merge the databases: ' + (err.message || err));
+    return;
+  }
+
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum,
+    format: 'big-brother',
+    season: finalSeasonData,
+    players: playersDb,
+    seasons: seasonsDb,
+  }, _status);
+  if (published) return published;
+
+  _status('Downloading files...');
+  const file = `${seasonId('big-brother', seasonNum)}-data.json`;
+  _downloadJSON(finalSeasonData, file);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
 }
 
 // ── Big Brother season export ────────────────────────────────────────
@@ -2364,7 +2635,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     if (!player.seasons) player.seasons = [];
 
     // Strip a previous recording of this same season before adding the new one.
-    const prior = player.seasonDetails.find(sd => sd.season === seasonNum);
+    const prior = player.seasonDetails.find(sd => _isSameSeason(sd, seasonNum, 'big-brother'));
     if (prior) {
       const pb = prior.bb || {};
       player.totalVotesAgainst = Math.max(0, (player.totalVotesAgainst || 0) - (prior.votesReceived || 0));
@@ -2373,12 +2644,12 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       player.totalHohWins = Math.max(0, (player.totalHohWins || 0) - (pb.hohWins || 0));
       player.totalVetoWins = Math.max(0, (player.totalVetoWins || 0) - (pb.vetoWins || 0));
       if (prior.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
-      player.seasonDetails = player.seasonDetails.filter(sd => sd.season !== seasonNum);
+      player.seasonDetails = player.seasonDetails.filter(sd => !_isSameSeason(sd, seasonNum, 'big-brother'));
     }
 
     const compWins = (bb.hohWins || 0) + (bb.vetoWins || 0);
     if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
-    player.totalSeasons = player.seasons.length;
+    // totalSeasons is set by _rebuildByShow, once the details are final.
     if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
     player.totalVotesAgainst = (player.totalVotesAgainst || 0) + (entry.votesReceived || 0);
     player.totalJuryVotes = (player.totalJuryVotes || 0) + (entry.juryVotes || 0);

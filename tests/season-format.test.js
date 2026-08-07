@@ -8,7 +8,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonFormat, twistFormat, twistsForFormat, formatIsRunnable, formatName,
   TWIST_CATALOG, defaultConfig } from '../js/core.js';
 import { simulateBBSeason } from '../js/bb/week.js';
-import { extractBigBrotherSeasonTemplate, mergeBigBrotherSeason } from '../js/stats-export.js';
+import { extractBigBrotherSeasonTemplate, mergeBigBrotherSeason,
+  mergeBigBrotherSeasonsDatabase } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
 
 const CAST = [
@@ -227,6 +228,117 @@ describe('folding a Big Brother season into the career database', () => {
     const existing = { franchise: { totalSeasons: 20 }, players: [] };
     const { db } = merged(16, existing);
     expect(db.franchise.totalSeasons).toBe(20);
+  });
+});
+
+describe('recording a Big Brother season in seasons_database.json', () => {
+  function seasonDoc(seasonNumber = 1) {
+    const { weeks, finalists } = runSeason(5);
+    return extractBigBrotherSeasonTemplate(weeks, finalists, { seasonNumber });
+  }
+
+  it('refuses a season document from the wrong show', () => {
+    expect(() => mergeBigBrotherSeasonsDatabase({ seasons: [] }, { format: 'total-drama', seasonNumber: 3 }))
+      .toThrow(/big-brother/);
+  });
+
+  it('writes a season record the sync can match a Big Brother detail against', () => {
+    // The point of the whole function. /api/sync-seasons validates every season
+    // detail against the (format, season_number) pairs it finds here; a detail
+    // with no matching record is dropped with ok:true and nothing but
+    // counts.skipped moving, so the failure mode is a silent one.
+    const doc = seasonDoc(1);
+    const db = mergeBigBrotherSeasonsDatabase({ franchise: {}, seasons: [] }, doc);
+    const rec = db.seasons.find(s => s.format === 'big-brother' && s.seasonNumber === 1);
+    expect(rec, 'no Big Brother season record was written').toBeTruthy();
+    expect(rec.seasonId).toBe('bb-1');
+    expect(rec.winner.name).toBe(doc.winner.name);
+    expect(rec.status).toBe('Complete');
+    expect(rec.episodeCount).toBeGreaterThan(0);
+  });
+
+  it('leaves the Total Drama season with the same number alone', () => {
+    // `seasons` is keyed (format, season_number), so these are two different
+    // seasons. A number-only dedupe would delete one to write the other.
+    const existing = { franchise: { totalSeasons: 14 }, seasons: [
+      { seasonNumber: 1, format: 'total-drama', seasonId: 'td-1', title: 'Total Drama One' },
+      { seasonNumber: 2, format: 'total-drama', seasonId: 'td-2', title: 'Total Drama Two' },
+    ] };
+    const db = mergeBigBrotherSeasonsDatabase(existing, seasonDoc(1));
+    expect(db.seasons).toHaveLength(3);
+    expect(db.seasons.find(s => s.seasonId === 'td-1')?.title).toBe('Total Drama One');
+    expect(db.seasons.filter(s => s.seasonId === 'bb-1')).toHaveLength(1);
+  });
+
+  it('re-exporting replaces its own record and only its own', () => {
+    const existing = { franchise: {}, seasons: [
+      { seasonNumber: 1, format: 'total-drama', seasonId: 'td-1', title: 'Total Drama One' },
+    ] };
+    const once = mergeBigBrotherSeasonsDatabase(existing, seasonDoc(1));
+    const twice = mergeBigBrotherSeasonsDatabase(once, seasonDoc(1));
+    expect(twice.seasons.filter(s => s.seasonId === 'bb-1')).toHaveLength(1);
+    expect(twice.seasons.filter(s => s.seasonId === 'td-1')).toHaveLength(1);
+  });
+
+  it('never walks the franchise season count backwards', () => {
+    const db = mergeBigBrotherSeasonsDatabase({ franchise: { totalSeasons: 14 }, seasons: [] }, seasonDoc(1));
+    expect(db.franchise.totalSeasons).toBe(14);
+  });
+});
+
+describe('two shows, one career', () => {
+  it('counts a season in each show as two seasons, one per show', () => {
+    // A player who did Total Drama 1 and Big Brother 1 is a two-season veteran
+    // with one season on each résumé. `player.seasons` holds bare NUMBERS, so
+    // both collapse to a single `1` in it — counting that array would file them
+    // as a rookie. totalSeasons comes off the format-tagged details instead.
+    const { weeks, finalists } = runSeason(5);
+    const doc = extractBigBrotherSeasonTemplate(weeks, finalists, { seasonNumber: 1 });
+    const name = doc.placements[0].name;
+
+    const existing = { players: [{
+      id: name.toLowerCase(), name,
+      seasons: [1], totalSeasons: 1, wins: 0, totalChallengeWins: 4,
+      totalVotesAgainst: 2, badges: [],
+      seasonDetails: [{ season: 1, format: 'total-drama', seasonId: 'td-1',
+        placement: 3, status: 'Jury', challengeWins: 4, votesReceived: 2 }],
+    }] };
+
+    const db = mergeBigBrotherSeason(existing, doc);
+    const player = db.players.find(p => p.name === name);
+
+    expect(player.seasonDetails).toHaveLength(2);
+    expect(player.totalSeasons, 'the Total Drama season was swallowed').toBe(2);
+    expect(player.byShow['total-drama'].seasons).toBe(1);
+    expect(player.byShow['big-brother'].seasons).toBe(1);
+    // The Total Drama season's own numbers survive untouched.
+    expect(player.byShow['total-drama'].totalChallengeWins).toBe(4);
+    expect(player.seasonDetails.find(d => d.format === 'total-drama').placement).toBe(3);
+  });
+
+  it('re-exporting Big Brother 1 does not strip the Total Drama 1 detail', () => {
+    // The dedupe used to match on season number alone, so this run found the
+    // Total Drama detail, subtracted THAT show's numbers from the career totals
+    // and deleted it.
+    const { weeks, finalists } = runSeason(5);
+    const doc = extractBigBrotherSeasonTemplate(weeks, finalists, { seasonNumber: 1 });
+    const name = doc.placements[0].name;
+    const existing = { players: [{
+      id: name.toLowerCase(), name,
+      seasons: [1], totalSeasons: 1, wins: 0, totalChallengeWins: 4,
+      totalVotesAgainst: 2, badges: [],
+      seasonDetails: [{ season: 1, format: 'total-drama', seasonId: 'td-1',
+        placement: 3, status: 'Jury', challengeWins: 4, votesReceived: 2 }],
+    }] };
+
+    const once = mergeBigBrotherSeason(existing, doc);
+    const twice = mergeBigBrotherSeason(once, doc);
+    const player = twice.players.find(p => p.name === name);
+
+    expect(player.seasonDetails.filter(d => d.format === 'total-drama')).toHaveLength(1);
+    expect(player.seasonDetails.filter(d => d.format === 'big-brother')).toHaveLength(1);
+    expect(player.totalSeasons).toBe(2);
+    expect(player.byShow['total-drama'].totalChallengeWins).toBe(4);
   });
 });
 

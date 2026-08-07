@@ -148,6 +148,12 @@ function seat(picked, bankWeek) {
  * is pushed onto the week's own list here, where the existing announcement
  * machinery — the wall, the room going quiet, the first person to make a joke
  * about it — picks it up like any other rule the house is handed.
+ *
+ * It states BOTH halves of the rule. The house is told a saboteur exists, that
+ * the identity is secret, and that naming them correctly in front of everybody
+ * ends it with nothing paid — because `runSaboteurAccusation` lets them do
+ * exactly that, and a house cannot hunt somebody it was never told it was
+ * allowed to catch.
  */
 export function announceSaboteur(week) {
   const state = saboteurState();
@@ -228,10 +234,10 @@ const MISSIONS = [
       return {
         touched: [...ctx.others],
         text: flavour[Math.floor(rng() * flavour.length)],
-        houseText: `The house spends the morning working out who did it. ${target} gets most of the looks, `
-          + `for no better reason than having the room with the door that locks.`,
-        botched: `${ctx.sab} is halfway through it when somebody comes down for water, and has to spend `
-          + `ten minutes being extremely normal in a kitchen at four in the morning.`,
+        houseText: `The house spends the whole morning on who did it. ${target} gets most of the looks, `
+          + `because ${P(target).sub} ${P(target).sub === 'they' ? 'have' : 'has'} the only room with a lock on it.`,
+        botched: `Somebody comes down for water halfway through, and ${ctx.sab} has to spend ten minutes `
+          + `being very normal in a kitchen at four in the morning.`,
       };
     },
   },
@@ -259,10 +265,8 @@ const MISSIONS = [
       return {
         target: mark, beneficiary, touched: [mark],
         text: how[Math.floor(rng() * how.length)],
-        houseText: `${mark} loses a competition ${P(mark).sub} should have won and cannot explain how, `
-          + `which is the worst version of losing one.`,
-        botched: `${mark} catches ${ctx.sab}'s hand on it. Nothing is said, in the way that nothing being said `
-          + `is much worse than something being said.`,
+        houseText: `${mark} loses a competition ${P(mark).sub} should have won and cannot say how.`,
+        botched: `${mark} catches ${ctx.sab}'s hand on it. Neither of them says anything, which is worse.`,
       };
     },
   },
@@ -326,9 +330,8 @@ const MISSIONS = [
         touched: [ctx.sab],
         text: `${ctx.sab} is not out of that competition because ${P(ctx.sab).sub} could not do it. `
           + `${P(ctx.sab).Sub} stopped, at a point where stopping looks exactly like failing.`,
-        houseText: `Nobody thinks anything of it. That is the point of it.`,
-        botched: `${ctx.sab} makes it look a little too easy on the way out, and one person in that yard `
-          + `files it away without knowing why.`,
+        houseText: `Nobody thinks anything of it, which is the whole idea.`,
+        botched: `${ctx.sab} makes it look too easy on the way out, and one person in that yard notices.`,
       };
     },
   },
@@ -377,19 +380,35 @@ function traceMission({ sab, mission, result, house, week, rng }) {
   for (const observer of house) {
     if (observer === sab) continue;
     const near = (result.touched || []).includes(observer);
-    const chance = clamp(mission.noise * (near ? 1.5 : 0.7)
-      + stat(observer, 'intuition') * 0.03 - cover * 0.5, 0.02, 0.85);
+    const chance = clamp(mission.noise * (near ? 1.2 : 0.45)
+      + stat(observer, 'intuition') * 0.02 - cover * 0.6, 0.02, 0.7);
     if (rng() >= chance) continue;
 
     // They know SOMETHING happened. Whether they land on the right person is a
     // separate roll, and a much harder one — most of the time a house that
     // senses a sabotage convicts whoever it already disliked.
-    const readsIt = rng() < clamp(0.12 + stat(observer, 'intuition') * 0.05
-      + (near ? 0.12 : 0) - cover * 0.5, 0.03, 0.7);
-    const wrong = house.filter(n => n !== observer && n !== sab)
+    const readsIt = rng() < clamp(0.05 + stat(observer, 'intuition') * 0.028
+      + (near ? 0.07 : 0) - cover * 0.6, 0.02, 0.45);
+    // Wrong names CONVERGE, and that is the whole reason a house ever convicts
+    // an innocent. Left to pick independently, each observer reached for their
+    // own least-favourite person — so wrong suspicion scattered across nine
+    // names while correct suspicion all landed on one, and the top of the board
+    // was the true answer in six calls out of ten. A house does not work like
+    // that. It repeats the name it has already heard.
+    const standing = Object.entries(state.suspicion)
+      .filter(([n, by]) => n !== sab && house.includes(n)
+        && Object.values(by).reduce((x, y) => x + y, 0) >= 1)
+      .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0)
+        - Object.values(a[1]).reduce((x, y) => x + y, 0))[0]?.[0];
+    const disliked = house.filter(n => n !== observer && n !== sab)
       .sort((a, b) => getBond(observer, a) - getBond(observer, b))[0];
+    const wrong = (standing && standing !== observer && rng() < 0.62) ? standing : disliked;
     const named = readsIt ? sab : (wrong || sab);
-    const weight = readsIt ? 1 : 0.7;
+    // Close together on purpose. A house that is certain about the right person
+    // and merely annoyed at the wrong one never accuses anybody innocent, and
+    // over forty measured seasons that produced thirty-one correct calls out of
+    // thirty-four — a detection minigame, not a twist.
+    const weight = readsIt ? 0.85 : 0.7;
 
     (state.suspicion[named] ||= {});
     state.suspicion[named][observer] = round2((state.suspicion[named][observer] || 0) + weight);
@@ -475,6 +494,19 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
   // whoever they like least among the people who actually competed.
   ctx.rigTarget = others.filter(n => (week?.vetoPlayers || []).includes(n) || week?.hoh === n)
     .sort((a, b) => getBond(sab, a) - getBond(sab, b))[0] || null;
+
+  // Certainty fades. Nobody in that house is keeping a spreadsheet, and a week
+  // where nothing goes wrong is a week where last week's theory gets quietly
+  // dropped — without which suspicion only ever accumulates and the twist
+  // cannot survive its own arithmetic.
+  for (const suspect of Object.keys(state.suspicion)) {
+    const byWho = state.suspicion[suspect];
+    for (const observer of Object.keys(byWho)) {
+      byWho[observer] = round2(byWho[observer] * 0.88);
+      if (byWho[observer] < 0.15) delete byWho[observer];
+    }
+    if (!Object.keys(byWho).length) delete state.suspicion[suspect];
+  }
 
   const eligible = MISSIONS.filter(m => {
     try { return m.can(ctx); } catch { return false; }
@@ -565,8 +597,11 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
   // fewer places there are to do it unobserved.
   const craft = (stat(sab, 'strategic') * 0.4 + stat(sab, 'social') * 0.3
     + stat(sab, 'boldness') * 0.3) / 10;
-  const chance = clamp(0.30 + craft * 0.62 - mission.difficulty * 0.55
-    - saboteurExposure() * 0.25, 0.08, 0.94);
+  // Measured at 0.49 on the first tuning, which made the second game mostly a
+  // record of things that did not happen. A saboteur is cast for being good at
+  // this; failure should be a real risk and not the coin flip it was.
+  const chance = clamp(0.50 + craft * 0.60 - mission.difficulty * 0.45
+    - saboteurExposure() * 0.20, 0.12, 0.95);
   const worked = rng() < chance;
 
   let result = null;
@@ -579,11 +614,11 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
       badgeText: mission.name.toUpperCase(), badgeClass: 'red' });
     if (result.houseText) {
       beats.push({ text: result.houseText, players: result.touched || [],
-        badgeText: 'THE HOUSE', badgeClass: 'grey' });
+        badgeText: 'AND THE HOUSE', badgeClass: 'grey' });
     }
   } else {
-    beats.push({ text: result.botched || `It does not come off. ${sab} gets most of the way there and stops.`,
-      players: result.touched || [sab], badgeText: 'IT DOES NOT COME OFF', badgeClass: 'grey' });
+    beats.push({ text: result.botched || `${sab} gets most of the way there and stops.`,
+      players: result.touched || [sab], badgeText: 'IT GOES WRONG', badgeClass: 'grey' });
   }
 
   // A botched job is LOUDER than a clean one — being nearly caught is how
@@ -612,37 +647,43 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
     gs.popularity[sab] = round2((gs.popularity[sab] || 0) + applause * 1.6);
   }
 
-  // Four ways to convict an innocent, because three identical sentences in a
-  // row is the screen admitting it only knows one.
+  // Who got blamed for it.
+  //
+  // Two cards at most, and the rest counted. Three in a row all saying "X
+  // decided it was Y, and it was not Y" is the same sentence three times, which
+  // is how a screen admits it only has one idea.
   const WRONG_DOORS = [
-    (o, n) => `${o} knows something is wrong with this week and decides it is ${n}. `
-      + `It is not ${n}, and ${n} will never be told ${P(n).sub} ${P(n).sub === 'they' ? 'were' : 'was'} tried for it.`,
-    (o, n) => `${o} has been quietly building a case all week, and tonight ${P(o).sub} `
-      + `${P(o).sub === 'they' ? 'finish' : 'finishes'} it. The case is beautifully argued and it is about ${n}, `
-      + `who did nothing.`,
-    (o, n) => `"It's ${n}." ${o} says it to two people in a bathroom, which in this house is the same as `
-      + `saying it to everybody. ${P(n).Sub} ${P(n).sub === 'they' ? 'have' : 'has'} no idea it has started.`,
-    (o, n) => `${o} works backwards from who ${P(o).sub} already ${P(o).sub === 'they' ? "don't" : "doesn't"} trust `
-      + `and arrives, inevitably, at ${n}. The method is sound. The answer is wrong.`,
+    (o, n) => `${o} decides it was ${n}. It was not ${n}, and nobody is ever going to tell ${P(n).obj} `
+      + `${P(n).sub} ${P(n).sub === 'they' ? 'were' : 'was'} blamed for it.`,
+    (o, n) => `"It's ${n}." ${o} only says it to two people, in the bathroom, which in this house is the `
+      + `same as saying it to everybody.`,
+    (o, n) => `${o} starts from who ${P(o).sub} already ${P(o).sub === 'they' ? "don't" : "doesn't"} like `
+      + `and works backwards to ${n}. It is a tidy piece of thinking about the wrong person.`,
+    (o, n) => `${o} has been putting it together all week and lands on ${n} tonight. ${n} spends the evening `
+      + `wondering why the room has gone quiet.`,
   ];
-  framed.slice(0, 3).forEach((n, i) => {
+  framed.slice(0, 2).forEach((n, i) => {
     beats.push({
       text: WRONG_DOORS[(i + Math.floor(rng() * WRONG_DOORS.length)) % WRONG_DOORS.length](n.observer, n.named),
-      players: [n.observer, n.named], badgeText: 'THE WRONG DOOR', badgeClass: 'red',
+      players: [n.observer, n.named], badgeText: 'BLAMES SOMEBODY ELSE', badgeClass: 'red',
     });
   });
-  // Three ways to be right about it and say nothing, for the same reason as
-  // above: two identical sentences one card apart is a screen with one idea.
+  if (framed.length > 2) {
+    const rest = framed.slice(2);
+    const names = [...new Set(rest.map(n => n.named))];
+    beats.push({
+      text: `${rest.length} more people settle on a name tonight. Between them they pick `
+        + `${names.length === 1 ? names[0] : names.slice(0, 3).join(', ')}, and none of it is right.`,
+      players: rest.slice(0, 4).map(n => n.observer),
+      badgeText: 'AND THE REST OF THE ROOM', badgeClass: 'grey',
+    });
+  }
+  // And the ones who got it right and said nothing.
   const SAW = [
-    (o, x) => `${o} watches ${x} through the whole of it and says nothing. `
-      + `Whatever ${P(o).sub} ${P(o).sub === 'they' ? 'have' : 'has'} worked out, `
-      + `${P(o).sub} ${P(o).sub === 'they' ? 'are' : 'is'} keeping it.`,
-    (o, x) => `${o} does not say a word about it, and starts sitting somewhere ${P(o).sub} can see `
-      + `${x} without turning ${P(o).posAdj} head.`,
-    (o, x) => `Something in ${o}'s face changes while ${x} is talking, and does not change back. `
-      + `${P(o).Sub} will not act on it for another two weeks.`,
-    (o, x) => `${o} has it. ${P(o).Sub} also has nothing to prove it with, and one accusation in this `
-      + `house is worth exactly one attempt.`,
+    (o, x) => `${o} watches ${x} do it and says nothing at all.`,
+    (o, x) => `${o} starts sitting where ${P(o).sub} can see ${x} without having to turn ${P(o).posAdj} head.`,
+    (o, x) => `${o} works it out halfway through and keeps ${P(o).posAdj} face still until ${x} leaves the room.`,
+    (o, x) => `${o} is sure it is ${x}, and has nothing to prove it with. So ${P(o).sub} waits.`,
   ];
   caughtBy.slice(0, 2).forEach((n, i) => {
     beats.push({
@@ -650,6 +691,29 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
       players: [n.observer, sab], badgeText: 'SOMEBODY SAW', badgeClass: 'gold',
     });
   });
+
+  // ── and the house feed sees it happen ──
+  //
+  // The mission screens are the audience's; the feed is the house's. Until now
+  // the sabotage existed only on the former, so a viewer scrolling the week saw
+  // the food gone and the campaign collapse with no event behind either — the
+  // twist was invisible in the one place the week actually reads.
+  //
+  // What goes into the feed is what the ROOM saw, which is never the saboteur
+  // doing it. The cause stays on the audience's screen; the consequence goes
+  // where the house lives, unattributed, next to everything else that happened
+  // that day.
+  const feedText = worked
+    ? (result.houseText || result.text)
+    : `Something goes wrong in the house and nobody can say what. `
+      + `${(result.touched || []).filter(n => n !== sab)[0] || 'Somebody'} is closest to it and has no explanation.`;
+  week._saboteurFeed = {
+    text: feedText,
+    players: (result.touched || []).filter(n => n !== sab).slice(0, 3),
+    badgeText: worked ? 'NOBODY KNOWS WHO' : 'SOMETHING IS OFF',
+    badgeClass: 'red',
+    eventId: `saboteur-${mission.id}`, category: 'house-life', location: 'living-room',
+  };
 
   state.missions.push({ week: weekNum, mission: mission.id, accepted: true, worked,
     paid, applause, caught: caughtBy.length, framed: framed.map(n => n.named) });
@@ -685,6 +749,11 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
 export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
   const state = saboteurState();
   if (!state || state.survived || state.caught || state.revealed) return null;
+  // One guess, and the house has spent it. This is what the wall told them on
+  // night one — "get it wrong and that is the only guess you had" — and without
+  // it the house was standing up to accuse somebody in nine seasons out of ten,
+  // which turns the one real event of the twist into a weekly fixture.
+  if (state.called) return null;
   const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean);
   if (house.length < 5) return null;
   const sab = state.player;
@@ -703,13 +772,19 @@ export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
   const top = scores[0];
   // Certainty has to be shared. One person with a hunch is a hunch; a name three
   // people keep arriving at independently is the house making a decision.
-  if (!top || top.total < 3 || Object.keys(state.suspicion[top.name] || {}).length < 2) return null;
+  // A high bar, tuned on measurement. At three points and two voices the house
+  // called it in week two of thirty-five seasons out of forty — every twist
+  // died before it had done anything. Standing up in front of everybody with
+  // one guess is a thing people do once they are SURE, and being sure takes a
+  // month.
+  if (!top || top.total < 2.9 || Object.keys(state.suspicion[top.name] || {}).length < 3) return null;
 
   const accuser = top.loudest[0];
   const named = top.name;
   const correct = named === sab;
   const p = P(accuser);
   const np = P(named);
+  state.called = true;
   const beats = [{
     text: `${accuser} stops the room. "I want to say this in front of everybody, because I am `
       + `only going to get to say it once." ${p.Sub} ${p.sub === 'they' ? 'name' : 'names'} ${named}.`,

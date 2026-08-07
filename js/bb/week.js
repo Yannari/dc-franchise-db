@@ -1145,10 +1145,12 @@ export function simulateBBWeek(options = {}) {
     announceSaboteur(week);
     const banked = checkSaboteurBank(week);
     if (banked) week.acts.push(banked);
-    // And this week's job, briefed before anything happens — the audience is
-    // told what is coming and the house is not, which is the whole pleasure.
-    const brief = offerSaboteurMission(week, { rng });
-    if (brief) week.acts.push(brief);
+    // This week's job, briefed before anything happens — the audience is told
+    // what is coming and the house is not, which is the whole pleasure. Held
+    // rather than pushed: on the install week the announcement act has not been
+    // built yet, and a briefing that airs before the house has been told the
+    // twist exists is the season's first screen out of order.
+    week._sabBrief = offerSaboteurMission(week, { rng });
   } catch { /* the twist ends quietly rather than ending the week */ }
   // The Invisible HOH (BBCAN9): the competition runs, the result is sealed,
   // and only the winner knows. Everything the engine writes on the house's
@@ -1414,13 +1416,23 @@ export function simulateBBWeek(options = {}) {
     if (announced.length) {
     const beats = [];
     const byStat = (stat, pool = house) => [...pool].sort((a, b) => pStats(b)[stat] - pStats(a)[stat]);
-    // The sharpest player in the room starts recalculating before the voice
-    // finishes. Confidence in front of the room plays well outside it.
+    // What the room was actually told.
+    //
+    // These three reactions were written for a POWER — somebody says "good, I
+    // hope I win it", somebody does the arithmetic on holding it, and the two
+    // people who will never get near it huddle. Handed to the Saboteur they
+    // were nonsense: nothing about that announcement is winnable, and a house
+    // that has just been told one of its own is working against it does not
+    // react by hoping to be picked. An announcement declares its own register
+    // now, and 'paranoia' is the one where the rule is a person in the room.
+    const paranoid = announced.some(a => a?.reactions === 'paranoia');
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
       beats.push({
-        text: `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
+        text: paranoid
+          ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
+          : `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
@@ -1432,19 +1444,25 @@ export function simulateBBWeek(options = {}) {
     }
     if (schemer && schemer !== bold) {
       beats.push({
-        text: `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
-        players: [schemer], badgeText: 'RECALCULATING', badgeClass: 'grey',
+        text: paranoid
+          ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
+          : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
+        players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
       });
     }
     // The two people with the least power in the room hear the same rule and
-    // reach for each other — shared dread is how outsiders become a pair.
+    // reach for each other — shared dread is how outsiders become a pair. Under
+    // a hidden-agenda twist the same look means something colder: the first
+    // thing anybody does is decide who they are prepared to rule out.
     const outsiders = byStat('strategic').slice(-2);
     if (outsiders.length === 2 && getBond(outsiders[0], outsiders[1]) > -1) {
       _cappedBondWindow(() => addBond(outsiders[0], outsiders[1], 0.3));
       beats.push({
-        text: `${outsiders[0]} and ${outsiders[1]} trade one look across the sofas that says the same thing: whatever this rule is for, it is not for people like us. They spend the rest of the evening within arm's reach of each other.`,
-        players: [...outsiders], badgeText: 'SHARED DREAD', badgeClass: 'blue',
+        text: paranoid
+          ? `${outsiders[0]} and ${outsiders[1]} find each other before anybody has moved. Neither says the sentence out loud, because the sentence is "it isn't you, is it" and saying it makes it a question. They rule each other out, on nothing, and stay that way for weeks.`
+          : `${outsiders[0]} and ${outsiders[1]} trade one look across the sofas that says the same thing: whatever this rule is for, it is not for people like us. They spend the rest of the evening within arm's reach of each other.`,
+        players: [...outsiders], badgeText: paranoid ? 'RULING EACH OTHER OUT' : 'SHARED DREAD', badgeClass: 'blue',
         eventId: 'twist-announcement-dread', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
       });
@@ -1452,6 +1470,8 @@ export function simulateBBWeek(options = {}) {
     week.acts.push({ type: 'twist-announcement', announced, socialBeats: beats });
     }
   }
+  // After the wall has spoken, if it spoke this week.
+  if (week._sabBrief) { week.acts.push(week._sabBrief); delete week._sabBrief; }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
   //
@@ -3779,13 +3799,26 @@ export function simulateBBWeek(options = {}) {
   // decided by the vote yet, so a mission that breaks somebody's campaign
   // breaks it while campaigning still matters.
   try {
+    // Resolved HERE, because a mission that breaks somebody's campaign has to
+    // break it while campaigning still matters — but the act is held back and
+    // pushed after eviction night. The result of the week's sabotage is a
+    // better watch once you know how the week ended, and it belongs next to the
+    // eviction rather than three screens before it.
+    week._sabHeld = [];
     const sabAct = resolveSaboteurMission(week, { rng });
-    if (sabAct) week.acts.push(sabAct);
+    if (sabAct) week._sabHeld.push(sabAct);
     // And then, if the house has become certain about somebody, it says so —
     // in front of everybody, once. This is the only thing that can end the
     // second game early, and it ends it whether or not the name is right.
     const called = runSaboteurAccusation(week, { rng });
-    if (called) week.acts.push(called);
+    if (called) week._sabHeld.push(called);
+    // And the consequence lands in the house feed, where the room lives —
+    // unattributed, because the room never sees who did it.
+    if (week._saboteurFeed) {
+      const feed = [...week.acts].reverse().find(a => a?.type === 'house' && Array.isArray(a.socialBeats));
+      if (feed) feed.socialBeats.push(week._saboteurFeed);
+      delete week._saboteurFeed;
+    }
   } catch { /* the house has a normal week */ }
 
   // Eviction act; HOH breaks a tie.
@@ -3880,6 +3913,13 @@ export function simulateBBWeek(options = {}) {
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
       secondEvicted, doubleVote },
     { nominees: [...nominees], evicted, votes, ballots }));
+
+  // Held from before the vote — see the comment where they are produced. After
+  // the door, before the interview.
+  if (week._sabHeld?.length) {
+    week.acts.push(...week._sabHeld);
+    delete week._sabHeld;
+  }
 
   // Voting out the person you promised the end to IS breaking the deal, and it
   // was going unrecorded: thirty-two final twos were made across a season and

@@ -88,10 +88,19 @@ export const BB_TWIST_CONTRACTS = {
     timing: 'season-opening', duration: { weeks: null },
     rules: {},
     acquisition: { channel: 'random-draw', secrecy: 'holder-secret' },
+    // The house is told the RULE, including the half of it that belongs to
+    // them. It used to be told only that a saboteur existed and that the
+    // identity was secret — and then, weeks later, somebody would stand up and
+    // formally name a suspect under a rule nobody in that room had ever been
+    // given. A house cannot hunt somebody it was never told it was allowed to
+    // catch, which is BB27's framing: the room is challenged to uncover them.
     announcement: {
       name: 'The Saboteur',
-      rule: 'One of you is being paid to wreck this season. Every week they are given a job, and every job they finish is money in their pocket. You are not going to be told who it is.',
-      sting: 'Somebody in this room is working for the other side.',
+      // Nothing here is winnable, so the room does not react to it as a prize.
+      // See `reactions` in the announcement block in js/bb/week.js.
+      reactions: 'paranoia',
+      rule: 'One of you is being paid to wreck this season. Every week they are given a job, and every job they finish is money in their pocket. You are not going to be told who it is — but you are allowed to work it out. Name them out loud, in front of the house, and if you are right they leave with nothing. Get it wrong and that is the only guess you had.',
+      sting: 'Somebody in this room is working for the other side. Find them.',
     },
   },
   'bb-double-eviction': {

@@ -27,6 +27,9 @@ const STYLE = `<style>
 .bbsab .sb-eyebrow{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:4px;color:var(--sb-red)}
 .bbsab .sb-title{font-family:var(--font-display);font-size:34px;letter-spacing:3px;color:#fff;margin:7px 0 3px;
   text-shadow:0 0 26px rgba(201,52,60,.45)}
+.bbsab .sb-result{font-size:clamp(38px,7vw,64px);letter-spacing:5px;line-height:1}
+.bbsab .sb-result.is-yes{color:#ff6b63;text-shadow:0 0 40px rgba(201,52,60,.6)}
+.bbsab .sb-result.is-no{color:#8b949e;text-shadow:none}
 .bbsab .sb-sub{font-size:11.5px;color:#8b949e}
 
 .bbsab .sb-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);
@@ -221,9 +224,11 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
     <div class="sb-bg"></div>
     <div class="sb-wrap">
       <div class="sb-head">
-        <div class="sb-eyebrow">WEEK ${esc(act.week)} &middot; THE ROOM THE HOUSE NEVER SEES</div>
-        <div class="sb-title">THE SABOTEUR</div>
-        <div class="sb-sub">Everybody in that house knows one of them is doing this. Only you know which one.</div>
+        <div class="sb-eyebrow">WEEK ${esc(act.week)} &middot; ${esc(act.saboteur).toUpperCase()} &middot; ${esc(m.name || '').toUpperCase()}</div>
+        <div class="sb-title sb-result ${act.worked ? 'is-yes' : 'is-no'}">${act.worked ? 'JOB DONE' : 'JOB FAILED'}</div>
+        <div class="sb-sub">${act.worked
+          ? `$${Number(act.paid || 0).toLocaleString()} for the week, and the house has no idea it was a job.`
+          : 'Nothing paid, and more people were watching than there would have been.'}</div>
       </div>
 
       <div class="sb-grid">
@@ -234,13 +239,6 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
             <div class="sb-job">${esc(m.name || 'A job')}</div>
             <div class="sb-brief">${esc(m.brief || '')}</div>
             <div class="sb-fee"><b>$${Number(m.pay || 0).toLocaleString()}</b><span>ON COMPLETION</span></div>
-          </div>
-          <div class="sb-verdict ${act.worked ? 'is-yes' : 'is-no'}">
-            <b>${act.worked ? 'IT CAME OFF' : 'IT DID NOT COME OFF'}</b>
-            ${act.worked
-              ? `The job is done and the house has no idea it was a job. It paid $${Number(act.paid || 0).toLocaleString()}.`
-              : `The job is not done. Nothing is paid for a near miss — and a near miss is louder than a clean one, `
-                + `because being nearly caught is how people get caught.`}
           </div>
           <div class="sb-beats">${(act.beats || []).map(beat).join('')}</div>
         </div>

@@ -20730,7 +20730,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBSaboteurBrief(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'saboteur-debrief':
-        screens.push({ id: id('bb-saboteur'), label: act.worked ? 'It Worked' : 'It Did Not Work',
+        screens.push({ id: id('bb-saboteur'), label: 'Job Results',
           html: rpBuildBBSaboteur(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'saboteur-reveal':

@@ -89,6 +89,21 @@ describe('the twist itself', () => {
       && (a.announced || []).some(x => x.name === 'The Saboteur'))).toBe(false);
     // The name is never in it.
     expect(JSON.stringify(ann)).not.toContain(saboteurState().player + ' is the');
+
+    // It states BOTH halves of the rule. The house was being told a saboteur
+    // existed and never that it was allowed to catch one — and then somebody
+    // would stand up weeks later and formally name a suspect under a rule
+    // nobody in that room had ever been given.
+    const said = (ann.announced || []).find(a => a.name === 'The Saboteur');
+    expect(said.rule).toMatch(/name them out loud/i);
+    expect(said.rule).toMatch(/leave with nothing/i);
+
+    // And the room reacts to what it was told. The default reactions are
+    // written for a POWER — "good, I hope I win it" — which is nonsense about a
+    // twist nobody can win.
+    const spoken = (ann.socialBeats || []).map(b => b.text).join(' ');
+    expect(spoken).not.toMatch(/I hope I win it/);
+    expect(spoken).toMatch(/one of you|one of them lying|it isn't you/i);
   });
 
   it('casts somebody, and not always the same somebody', () => {
@@ -175,7 +190,7 @@ describe('a mission', () => {
 
   it('is caught sometimes and misattributed more often — which is the whole point', () => {
     let right = 0, wrong = 0, total = 0;
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 150; i++) {
       house();
       installBBSaboteur(NAMES, { rng: Math.random });
       const { debrief } = playWeek();
@@ -185,12 +200,13 @@ describe('a mission', () => {
       }
     }
     expect(total, 'nothing ever reached anybody, so the twist cannot be caught').toBeGreaterThan(30);
-    // The saboteur must be genuinely at risk...
-    expect(right / total).toBeGreaterThan(0.15);
-    // ...and the house must still convict innocents more often than not, or
-    // this is a detection minigame rather than a season of paranoia. Measured
-    // at roughly 40/60 when this was tuned.
-    expect(wrong).toBeGreaterThan(right * 0.8);
+    // The saboteur must be identifiable at all — a house that can never put the
+    // right name to it is not playing.
+    expect(right, 'nobody ever read it correctly').toBeGreaterThan(2);
+    // And it must still reach for the wrong name far more often, or this is a
+    // detection minigame rather than a season of paranoia. Measured at roughly
+    // one right read in six when this was tuned.
+    expect(wrong).toBeGreaterThan(right * 1.5);
   });
 });
 
@@ -288,11 +304,12 @@ describe('the house naming somebody', () => {
     installBBSaboteur(NAMES, { rng: Math.random });
     const sab = saboteurState().player;
     const other = NAMES.find(n => n !== sab);
-    // One person with a hunch is a hunch.
-    convince(sab, { [other]: 2.5 });
-    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
-    // Enough conviction, but only one voice.
+    // One person with a hunch is a hunch, however loud.
     convince(sab, { [other]: 6 });
+    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
+    // Two voices is still not a house making a decision.
+    const second = NAMES.find(n => n !== sab && n !== other);
+    convince(sab, { [other]: 3, [second]: 3 });
     expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
   });
 
@@ -303,8 +320,8 @@ describe('the house naming somebody', () => {
     const sab = state.player;
     state.banked = 12000;
     state.missions = [{ accepted: true, worked: true }, { accepted: true, worked: true }];
-    const [a, b] = NAMES.filter(n => n !== sab);
-    convince(sab, { [a]: 2.2, [b]: 1.5 });
+    const [a, b, c] = NAMES.filter(n => n !== sab);
+    convince(sab, { [a]: 1.6, [b]: 1.2, [c]: 1.1 });
 
     const out = runSaboteurAccusation(aWeek(), { rng: Math.random });
     expect(out).toBeTruthy();
@@ -325,7 +342,8 @@ describe('the house naming somebody', () => {
     const [a, b, innocent] = NAMES.filter(n => n !== sab);
     // The house is loudly certain about somebody who did nothing, and quietly
     // suspicious of the person who did.
-    convince(innocent, { [a]: 2.4, [b]: 1.8 });
+    const fourth = NAMES.filter(n => n !== sab)[3];
+    convince(innocent, { [a]: 1.5, [b]: 1.3, [fourth]: 1.2 });
     convince(sab, { [a]: 1.2, [b]: 0.8 });
     const before = getBond(a, innocent);
 
@@ -350,8 +368,8 @@ describe('the house naming somebody', () => {
     const state = saboteurState();
     const sab = state.player;
     const gone = NAMES.filter(n => n !== sab)[0];
-    convince(gone, { [NAMES.filter(n => n !== sab && n !== gone)[0]]: 4,
-      [NAMES.filter(n => n !== sab && n !== gone)[1]]: 3 });
+    const others = NAMES.filter(n => n !== sab && n !== gone);
+    convince(gone, { [others[0]]: 2, [others[1]]: 2, [others[2]]: 2 });
     // Everybody is certain about somebody who left in week one. Nobody stands
     // up at eviction night to accuse a photograph on the wall.
     const shrunk = NAMES.filter(n => n !== gone);
@@ -396,6 +414,60 @@ describe('the two endings', () => {
     installBBSaboteur(NAMES, { rng: Math.random });
     const other = NAMES.find(n => n !== saboteurState().player);
     expect(saboteurEvicted(other, aWeek())).toBeNull();
+  });
+});
+
+describe('the shape of a season', () => {
+  // The numbers this twist lives or dies on, measured rather than asserted from
+  // taste. The first tuning produced: 49% of jobs landing, the saboteur caught
+  // in 35 seasons out of 40 at an average of week 1.6, and 31 of 34 accusations
+  // correct. Every one of those is the twist failing — a second game that is
+  // mostly a record of things that did not happen, ended in week two, by a
+  // house that is never wrong.
+  //
+  // Sixteen seasons rather than forty: enough to catch a regression to "caught
+  // every time" without putting a minute of sweep in the suite.
+  it('lands its jobs, survives past week one, and mostly convicts the wrong person', () => {
+    let jobs = 0, worked = 0, caught = 0, banked = 0, calls = 0, right = 0;
+    for (let s = 0; s < 16; s++) {
+      house({ bbSaboteur: 'random', bbSaboteurBankWeek: 5 });
+      for (let w = 0; w < 6; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        for (const a of ep.acts || []) {
+          if (a.type === 'saboteur-debrief') { jobs++; if (a.worked) worked++; }
+          if (a.type === 'saboteur-accusation') { calls++; if (a.correct) right++; }
+        }
+        const st = saboteurState();
+        if (st?.caught || st?.survived) break;
+      }
+      const st = saboteurState();
+      if (st?.caught) caught++; else if (st?.survived) banked++;
+    }
+
+    expect(jobs, 'no jobs ran at all').toBeGreaterThan(15);
+    // A cast saboteur is good at this. Half the jobs failing made the second
+    // game mostly a record of things that did not happen.
+    expect(worked / jobs).toBeGreaterThan(0.45);
+    // And the twist has to be able to finish. Caught in every season is the
+    // exact failure this replaced.
+    expect(banked, 'the saboteur never once reached the bank date').toBeGreaterThan(2);
+    expect(caught).toBeLessThan(14);
+    // When the house does stand up, it should usually be wrong — wrong names
+    // converge because a house repeats the name it has already heard, and that
+    // convergence is the only reason an innocent ever gets convicted.
+    if (calls >= 4) expect(right / calls).toBeLessThan(0.6);
+  });
+
+  it('only ever gets one guess', () => {
+    house({ bbSaboteur: 'random', bbSaboteurBankWeek: 9 });
+    let calls = 0;
+    for (let w = 0; w < 7; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      calls += (ep.acts || []).filter(a => a.type === 'saboteur-accusation').length;
+    }
+    expect(calls).toBeLessThan(2);
   });
 });
 

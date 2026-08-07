@@ -241,7 +241,17 @@ export const juryStatements = {
   finalRole: 'quiz',
   weight: () => 1,
   desc: 'Every member of the jury has recorded a statement about their own game with the ending cut off, and the two finalists are read the front half of each one live. For every juror they must choose which of three endings is the one that juror actually gave — who they blame for their eviction, who they trusted, who held the power the week they went — and a correct answer is worth a point. The statements are read out in the jury\'s own words with the jury sitting there listening, so a wrong answer is delivered to the person it is about. Whoever has the most points after every juror has been read wins the final Head of Household, and a tie is settled by a single number question with no options at all.',
-  stats: { mental: 0.30, intuition: 0.34, social: 0.28, temperament: 0.08 },
+  // The honest profile. Stats are barely a fifth of this competition — the rest
+  // is closeness, weeks shared and whether you are the reason that juror is on
+  // the jury — and declaring a full four-stat spread implied the opposite.
+  // `behaviour` is drawn on the screen beside the bar so the viewer is told
+  // what actually decides it.
+  stats: { mental: 0.60, intuition: 0.40 },
+  behaviour: [
+    { label: 'how close you were to that juror', weight: 0.28 },
+    { label: 'weeks in the house together', weight: 0.26 },
+    { label: 'you are the reason they left', weight: 0.24 },
+  ],
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);

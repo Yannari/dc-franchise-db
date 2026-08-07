@@ -423,7 +423,16 @@ export const zingbot = {
   variant: 'zingbot',
   weight: () => 1.1,
   desc: 'The Zingbot is wheeled into the yard and delivers one personalised insult — a zing — about every houseguest in turn, each one built from what that person has actually done this season, and the whole house has to stand there and take it. Once the roast is over the competition begins: the zings are read back with the names removed and the houseguests must identify which houseguest each one was aimed at, writing an answer for every zing in the set. A wrong name scores nothing and nobody is eliminated for it, so the only cost of a bad round is the round. Whoever correctly matches the most zings to their targets wins the power.',
-  stats: { mental: 0.34, social: 0.28, intuition: 0.24, temperament: 0.14 },
+  // Reading the room is the skill: knowing which of these people the robot is
+  // describing. Temperament is out of the scoring entirely — it decides how
+  // somebody WEARS a joke, which is a consequence, not a competition.
+  stats: { social: 0.40, mental: 0.35, intuition: 0.25 },
+  // Stats that decide a CONSEQUENCE rather than the result. Nothing here helps
+  // anybody win — they decide how hard a zing lands on the person taking it,
+  // which is a bond and a popularity hit. Declared so the screen can say so and
+  // so the profile guard is not left thinking the competition reads a stat it
+  // never scores on.
+  effectStats: { label: 'how well a zing is taken', social: 0.45, boldness: 0.35, temperament: 0.20 },
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -446,7 +455,11 @@ export const zingbot = {
       const p = pronouns(target);
       // How hard it lands. A volatile houseguest wears a public roast much
       // worse than a calm one, and the audience likes somebody who can take it.
-      const composure = stat(target, 'temperament') * 0.6 + stat(target, 'social') * 0.4;
+      // Taking a roast well is willingness, not calm. A hothead who can laugh at
+      // themselves wears it better than a placid houseguest who cannot, so this
+      // leans on social and boldness and keeps temperament small.
+      const composure = stat(target, 'social') * 0.45 + stat(target, 'boldness') * 0.35
+        + stat(target, 'temperament') * 0.20;
       const tookItWell = composure + (rng() - 0.5) * 4 > 5;
       zings.push({ target, text, tookItWell, kind });
       beats.push(beat(
@@ -483,7 +496,8 @@ export const zingbot = {
       participants.forEach(name => {
         // Reading the room is the skill: who knows this house well enough to
         // know which of them the robot was describing.
-        const read = clamp((stat(name, 'social') * 0.4 + stat(name, 'mental') * 0.35
+        // The declared profile, read straight off the competition.
+        const read = clamp((stat(name, 'social') * 0.40 + stat(name, 'mental') * 0.35
           + stat(name, 'intuition') * 0.25) / 10, 0, 1);
         // You always know your own.
         const mine = name === zing.target;
@@ -603,7 +617,11 @@ export const drinkOrBluff = {
   variant: 'drink-or-bluff',
   weight: () => 1,
   desc: 'Each round every houseguest is handed an identical glass and told to drink it, but one glass has been poisoned with something considerably worse than the rest and only the person holding it knows. Everybody drinks at the same time, then the house goes round the table and each houseguest accuses somebody of having drawn the bad glass, with a point for a correct accusation and a point to the poisoned houseguest for every person who named somebody else. The poisoned glass moves to a new houseguest every round, so a good bluff one round is worth nothing the next. Whoever has the most points after the last round wins the power.',
-  stats: { social: 0.36, intuition: 0.30, boldness: 0.20, temperament: 0.14 },
+  // Two halves, and the accusing half happens every round while being poisoned
+  // happens once — so reading the table outweighs holding the bluff. Boldness
+  // carries the bluff rather than temperament: lying to a table is an act of
+  // nerve, and a calm houseguest with no nerve is transparent.
+  stats: { intuition: 0.34, social: 0.34, boldness: 0.22, temperament: 0.10 },
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -619,6 +637,8 @@ export const drinkOrBluff = {
     // draw the bad glass — measured, a houseguest close to the whole table beat
     // a houseguest close to nobody by 2.12 points to 1.93, which is not a
     // competition about reading people.
+    // Every accusation printed so far, so no sentence is ever repeated.
+    const printed = new Set();
     const rounds = Math.min(6, Math.max(2, participants.length - 1));
     const played = [];
     const poisonedBefore = new Set();
@@ -632,8 +652,8 @@ export const drinkOrBluff = {
 
       // Can they hold it? Boldness to commit, temperament to stay level, social
       // to run the performance.
-      const composure = stat(poisoned, 'boldness') * 0.36 + stat(poisoned, 'temperament') * 0.34
-        + stat(poisoned, 'social') * 0.30;
+      const composure = stat(poisoned, 'boldness') * 0.48 + stat(poisoned, 'social') * 0.32
+        + stat(poisoned, 'temperament') * 0.20;
       const held = composure + (rng() - 0.5) * 4.5 > 5.2;
       beats.push(beat(
         `Round ${r + 1}. Everybody gets ${pour(DRINKS)}, and one of these is considerably worse than the others. `
@@ -656,7 +676,7 @@ export const drinkOrBluff = {
         // any stat here. And suspicion is not evidence — a houseguest already
         // distrusted gets accused whether or not they did anything, which is
         // how this competition turns the house's paranoia into a score.
-        const skill = clamp((stat(accuser, 'intuition') * 0.55 + stat(accuser, 'social') * 0.45) / 10, 0, 1);
+        const skill = clamp((stat(accuser, 'intuition') * 0.50 + stat(accuser, 'social') * 0.50) / 10, 0, 1);
         const closeness = clamp((getBond(accuser, poisoned) + 4) / 12, 0, 1);
         const chance = clamp(
           (held ? 0.06 : 0.26) + skill * 0.30 + closeness * 0.40,
@@ -701,8 +721,22 @@ export const drinkOrBluff = {
       for (const accuser of speakers) {
         const target = accusations[accuser];
         const repeat = r >= 2 && played.some(prev => prev.accusations[accuser] === target);
-        beats.push(beat(say(repeat ? ACCUSE_REPEAT : ACCUSE)(accuser, target),
-          [accuser, target], 'THE ACCUSATION', 'grey'));
+        // Scanned for an unused rendering, not merely picked.
+        //
+        // Six rounds narrate two accusations each, and a pool of five templates
+        // across twelve lines collides — a picker that dedupes on the TEMPLATE
+        // cannot see that two different templates produced the same sentence
+        // for two different pairs.
+        const pool = repeat ? ACCUSE_REPEAT : ACCUSE;
+        let line = say(pool)(accuser, target);
+        if (printed.has(line)) {
+          const fresh = [...ACCUSE, ...ACCUSE_REPEAT]
+            .map(fn => fn(accuser, target))
+            .find(t => !printed.has(t));
+          line = fresh || line;
+        }
+        printed.add(line);
+        beats.push(beat(line, [accuser, target], 'THE ACCUSATION', 'grey'));
       }
       beats.push(beat(
         `It was ${poisoned}. ` + (held

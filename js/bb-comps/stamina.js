@@ -94,7 +94,11 @@ export const dizzyDiscs = {
   variant: 'dizzy-discs',
   weight: () => 1,
   desc: 'Every houseguest stands on their own motorised disc holding a rope hanging from the rig above them, and once the horn goes the discs spin continuously while a long padded arm sweeps around the yard at body height. They have to keep hold of the rope and stay on the disc through every pass of the arm, which comes round faster and lower as the competition goes on, and the spinning makes bracing for it almost impossible. Anybody who lets go of the rope or steps off their disc is out and cannot get back on. The last houseguest still spinning and still holding wins.',
-  stats: { endurance: 0.42, physical: 0.24, temperament: 0.22, boldness: 0.12 },
+  // Temperament is the spread, not a weight — see `nerve()`. Declaring it at
+  // 0.22 told the screen that calm houseguests are better at being knocked off
+  // a spinning disc, which is neither what the code does nor true.
+  stats: { endurance: 0.55, physical: 0.30, boldness: 0.15 },
+  spreadStat: 'temperament',
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -105,7 +109,7 @@ export const dizzyDiscs = {
 
     let field = participants.map(name => ({
       name,
-      grip: stat(name, 'endurance') * 0.5 + stat(name, 'physical') * 0.28 + stat(name, 'boldness') * 0.1,
+      grip: stat(name, 'endurance') * 0.55 + stat(name, 'physical') * 0.30 + stat(name, 'boldness') * 0.15,
       fatigue: 0,
     }));
     const out = [];

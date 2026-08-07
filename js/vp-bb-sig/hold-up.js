@@ -88,6 +88,13 @@ const _STYLE = `<style>
 .sigheld .hu-win i{font-style:normal;font-size:11px;color:var(--hu-dim)}
 .sigheld .hu-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
 .sigheld .hu-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
+.sigheld .hu-weights{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px auto 2px;max-width:720px}
+.sigheld .hu-w{display:flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.8px;opacity:.9;text-transform:uppercase}
+.sigheld .hu-wb{width:42px;height:5px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.sigheld .hu-wb b{display:block;height:100%;border-radius:3px;background:currentColor}
+.sigheld .hu-w u{text-decoration:none;opacity:.75}
+.sigheld .hu-w.is-spread{opacity:.7;font-style:italic}
+.sigheld .hu-w.is-beh{opacity:.75;text-transform:none;letter-spacing:0;font-size:10px}
 .sigheld .hu-count{font-size:10px;letter-spacing:2px;color:var(--hu-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigheld *,.sigheld *::before,.sigheld *::after{animation:none!important;transition:none!important}
@@ -156,6 +163,19 @@ export function rpBuildSigHoldUp(ep, actType, u = {}) {
         <div class="hu-title">WHAT'S THE HOLD UP</div>
         <div class="hu-sub">Nothing is thrown and nothing spins. It is the weight of your own arms, at the end of a pole that magnifies every tremor.</div>
         ${comp.desc ? `<div class="hu-rules">${esc(comp.desc)}</div>` : ''}
+        ${(() => {
+          // What the competition actually reads. `spreadStat` is drawn apart from
+          // the weights on purpose: a stat that widens the SPREAD does not make a
+          // houseguest better, it makes them less predictable, and putting it in
+          // the same bar would say the opposite.
+          const w = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
+          if (!w.length) return '';
+          const bars = w.map(([k, v]) => `<span class="hu-w"><i>${esc(k)}</i><span class="hu-wb"><b style="width:${Math.round(v * 100)}%"></b></span><u>${Math.round(v * 100)}%</u></span>`).join('');
+          const spread = comp.spreadStat
+            ? `<span class="hu-w is-spread" title="Widens the spread rather than raising the score"><i>± ${esc(comp.spreadStat)}</i><u>consistency</u></span>` : '';
+          const beh = (comp.behaviour || []).map(b => `<span class="hu-w is-beh"><i>${esc(b.label)}</i><u>${Math.round(b.weight * 100)}%</u></span>`).join('');
+          return `<div class="hu-weights">${bars}${spread}${beh}</div>`;
+        })()}
       </div>
       <div class="hu-line">${line}</div>
       <div class="hu-grid">

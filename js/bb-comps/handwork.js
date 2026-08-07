@@ -66,7 +66,10 @@ export const cagedEggs = {
   variant: 'caged-eggs',
   weight: () => 1,
   desc: 'A row of raw eggs sits on a ledge on the far side of a wire fence, and each houseguest has to move all of them to a cradle at the other end of that ledge using nothing but the fingers they can push through the mesh. They cannot reach round the fence, they cannot use anything as a tool, and they can only move one egg at a time. Any egg that breaks is gone for good and has to be replaced from the start of the ledge, which costs far more time than moving it slowly would have. The first houseguest to land every egg in the cradle wins the power.',
-  stats: { intuition: 0.34, temperament: 0.32, physical: 0.20, mental: 0.14 },
+  // One of the few places temperament genuinely IS the skill, which the library
+  // names explicitly: a steady hand on a delicate thing, where somebody who
+  // rushes breaks the egg. Mental was declared and never read; now it is.
+  stats: { intuition: 0.35, temperament: 0.30, physical: 0.20, mental: 0.15 },
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -77,7 +80,8 @@ export const cagedEggs = {
 
     for (const name of participants) {
       const p = pronouns(name);
-      const hands = stat(name, 'intuition') * 0.4 + stat(name, 'temperament') * 0.38 + stat(name, 'physical') * 0.22;
+      const hands = stat(name, 'intuition') * 0.35 + stat(name, 'temperament') * 0.30
+        + stat(name, 'physical') * 0.20 + stat(name, 'mental') * 0.15;
       // FORM IS ROLLED ONCE FOR THE WHOLE RUN.
       //
       // The library learned this the hard way and it caught this competition

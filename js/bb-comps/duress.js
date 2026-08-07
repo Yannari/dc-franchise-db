@@ -56,7 +56,16 @@ export const punchSlapKick = {
   variant: 'punch-slap-kick',
   weight: () => 1,
   desc: 'One at a time the houseguests are strapped into a padded contraption surrounded by mechanical arms, and the machine delivers a sequence of foam punches, slaps and kicks while they stand there and take it. The moment the sequence ends they are asked to recite it back in the exact order it was delivered, and each round the machine adds another hit to the sequence, so the thing being remembered gets longer while the person remembering it gets more rattled. A single wrong answer ends that houseguest\'s run on the spot and their score is the last sequence they got through cleanly. The houseguest who recites the longest sequence correctly wins the Power of Veto.',
-  stats: { mental: 0.40, temperament: 0.34, endurance: 0.16, physical: 0.10 },
+  // Temperament is the SPREAD here, not the level.
+  //
+  // Standing in a machine being hit is a test of whether you will keep
+  // counting, and that is willingness rather than calm — a hothead can be
+  // ferociously stubborn about it. Boldness and endurance carry the staying
+  // power, mental carries the recall, and temperament decides only how
+  // CONSISTENT a run is: a volatile houseguest either goes out on the first
+  // sequence or goes a very long way.
+  stats: { mental: 0.38, endurance: 0.24, boldness: 0.22, intuition: 0.16 },
+  spreadStat: 'temperament',
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -69,8 +78,11 @@ export const punchSlapKick = {
       const p = pronouns(name);
       // Recall under a beating. Temperament is not a flavour term here — a
       // houseguest who rattles loses the sequence they already had.
+      // The declared profile, read straight off the competition.
+      const aptitude = stat(name, 'mental') * 0.38 + stat(name, 'endurance') * 0.24
+        + stat(name, 'boldness') * 0.22 + stat(name, 'intuition') * 0.16;
       const recall = stat(name, 'mental') * 0.55 + stat(name, 'intuition') * 0.15;
-      const composure = stat(name, 'temperament') * 0.6 + stat(name, 'endurance') * 0.4;
+      const composure = stat(name, 'endurance') * 0.55 + stat(name, 'boldness') * 0.45;
       let round = 0;
       let out = false;
       while (!out && round < 9) {
@@ -78,14 +90,18 @@ export const punchSlapKick = {
         // Each round is longer, so the same person fails eventually — the
         // question is only ever how far they get.
         const difficulty = 2.2 + round * 0.62;
-        const roll = (rng() - 0.5) * 3.4;
+        // Nerve widens the swing instead of raising the score — the library's
+        // documented rule, and the reason a hothead is unpredictable here
+        // rather than simply worse.
+        const width = 3.4 * (0.55 + (10 - stat(name, 'temperament')) * 0.09);
+        const roll = (rng() - 0.5) * width + (width - 3.4) * 0.25;
         luck[name] = round2((luck[name] || 0) + roll);
         // No halving. `recall` and `composure` are already weighted averages on
         // the 0-10 stat scale, and dividing their blend by two put the whole
         // field under the first round's threshold — measured, every houseguest
         // went out on sequence one or two and the veto was decided by a coin
         // flip between people who had all failed.
-        const held = recall * 0.62 + composure * 0.38 + roll > difficulty;
+        const held = aptitude + roll > difficulty;
         if (!held) out = true;
       }
       survived[name] = round - 1;
@@ -156,7 +172,12 @@ export const blackBox = {
   variant: 'black-box',
   weight: () => 1,
   desc: 'One at a time the houseguests are shut inside a sealed box in total darkness, given a list of objects to find and a set of marked spots to return them to, and then the lights go out for real. They have to feel their way around a room they cannot see, identify each object by touch alone and get it onto the correct marker, with a buzzer telling them only that something is wrong and never what. Anything left on the wrong marker scores nothing at all. Whoever places the most objects correctly wins, and if two houseguests place the same number the faster time takes it.',
-  stats: { intuition: 0.34, mental: 0.30, temperament: 0.22, physical: 0.14 },
+  // Feeling for something you cannot see is instinct and a mental map, with
+  // hands to do it. Temperament moved to the spread — a jumpy houseguest in a
+  // pitch-dark box is erratic rather than worse — and physical was declared at
+  // 0.14 and never read at all.
+  stats: { intuition: 0.40, mental: 0.30, physical: 0.20, boldness: 0.10 },
+  spreadStat: 'temperament',
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -168,12 +189,18 @@ export const blackBox = {
     const times = {};
     for (const name of participants) {
       const p = pronouns(name);
-      const feel = stat(name, 'intuition') * 0.45 + stat(name, 'mental') * 0.35 + stat(name, 'temperament') * 0.20;
+      const feel = stat(name, 'intuition') * 0.40 + stat(name, 'mental') * 0.30
+        + stat(name, 'physical') * 0.20 + stat(name, 'boldness') * 0.10;
       let placed = 0;
       let seconds = 0;
       const attempts = 5;
       for (let i = 0; i < attempts; i++) {
-        const roll = (rng() - 0.5) * 4.2;
+        // Wide on purpose. Moving temperament out of the level made the read a
+        // cleaner stat sort, and the upset guard measured one houseguest taking
+        // 73% of the wins — a dark room where the best player always finds the
+        // most objects is not a dark room.
+        const width = 5.4 * (0.55 + (10 - stat(name, 'temperament')) * 0.09);
+        const roll = (rng() - 0.5) * width + (width - 5.4) * 0.25;
         luck[name] = round2((luck[name] || 0) + roll);
         // 6.4, not 4.6. At the lower threshold essentially everybody placed all
         // five — a twelve-person field where every single run read "5 of 5" —

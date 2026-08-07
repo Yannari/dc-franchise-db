@@ -97,6 +97,13 @@ const _STYLE = `<style>
 .sigbluff .bf-win i{font-size:12px;color:var(--bf-dim)}
 .sigbluff .bf-ctl{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.72));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
 .sigbluff .bf-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
+.sigbluff .bf-weights{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px auto 2px;max-width:720px}
+.sigbluff .bf-w{display:flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.8px;opacity:.9;text-transform:uppercase}
+.sigbluff .bf-wb{width:42px;height:5px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.sigbluff .bf-wb b{display:block;height:100%;border-radius:3px;background:currentColor}
+.sigbluff .bf-w u{text-decoration:none;opacity:.75}
+.sigbluff .bf-w.is-spread{opacity:.7;font-style:italic}
+.sigbluff .bf-w.is-beh{opacity:.75;text-transform:none;letter-spacing:0;font-size:10px}
 .sigbluff .bf-count{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--bf-dim)}
 @media(prefers-reduced-motion:reduce){
   .sigbluff *,.sigbluff *::before,.sigbluff *::after{animation:none!important;transition:none!important}
@@ -210,6 +217,19 @@ export function rpBuildSigDrinkOrBluff(ep, actType, u = {}) {
         <div class="bf-title">TO DRINK OR TO BLUFF</div>
         <div class="bf-sub">One glass is worse than the others, and only one person knows which.</div>
         ${comp.desc ? `<div class="bf-rules">${esc(comp.desc)}</div>` : ''}
+        ${(() => {
+          // What the competition actually reads. `spreadStat` is drawn apart from
+          // the weights on purpose: a stat that widens the SPREAD does not make a
+          // houseguest better, it makes them less predictable, and putting it in
+          // the same bar would say the opposite.
+          const w = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
+          if (!w.length) return '';
+          const bars = w.map(([k, v]) => `<span class="bf-w"><i>${esc(k)}</i><span class="bf-wb"><b style="width:${Math.round(v * 100)}%"></b></span><u>${Math.round(v * 100)}%</u></span>`).join('');
+          const spread = comp.spreadStat
+            ? `<span class="bf-w is-spread" title="Widens the spread rather than raising the score"><i>± ${esc(comp.spreadStat)}</i><u>consistency</u></span>` : '';
+          const beh = (comp.behaviour || []).map(b => `<span class="bf-w is-beh"><i>${esc(b.label)}</i><u>${Math.round(b.weight * 100)}%</u></span>`).join('');
+          return `<div class="bf-weights">${bars}${spread}${beh}</div>`;
+        })()}
         <div class="bf-rule"></div>
       </div>
       <div class="bf-grid">

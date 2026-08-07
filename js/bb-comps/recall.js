@@ -69,8 +69,8 @@ function rankByScore(names, score) {
  * attention takes it the rest of the way — capped short of certainty, because a
  * competition nobody can lose is not one.
  */
-function answer(name, options, truthIndex, rng, luck) {
-  const read = attentionOf(name, statOf);
+function answer(name, options, truthIndex, rng, luck, weights) {
+  const read = attentionOf(name, statOf, weights);
   // 0.45, not 0.58. At the higher ceiling a paying-attention houseguest was
   // over 90% per question, so a six-question round ended with five people on
   // five of six and the result decided by nothing at all.
@@ -117,7 +117,12 @@ export const whoSaidIt = {
   variant: 'who-said-it',
   weight: () => 1,
   desc: 'Every houseguest takes a numbered station with a board and a marker while a series of statements about this season is read out to the room, each one something a single houseguest in this house could truthfully say about their own game. For each statement they write down which of three named houseguests said it, boards stay face down until the horn, and a wrong name simply scores nothing rather than eliminating anybody. The statements are drawn from what has actually happened in the house — who ran a week, who came off the block, who walked out of the door — and the houseguest with the most correct answers at the end wins Head of Household.',
-  stats: { mental: 0.42, intuition: 0.30, social: 0.18, temperament: 0.10 },
+  // Social is REAL here, not decoration: you know what somebody would say
+  // because you talked to them, and this competition is about the people you
+  // helped evict. Temperament is gone — recalling a fact under no pressure at
+  // all is not a test of composure, and declaring it privileged calm
+  // houseguests for nothing.
+  stats: { mental: 0.40, intuition: 0.30, social: 0.30 },
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -223,7 +228,7 @@ export const whoSaidIt = {
     participants.forEach(name => {
       breakdown[name] = {
         correct: Math.floor(score[name]), asked: asked.length,
-        attention: round2(attentionOf(name, statOf)),
+        attention: round2(attentionOf(name, statOf, whoSaidIt.stats)),
         wonTiebreak: tiebreaks.some(t => t.winner === name),
         score: round2(score[name]), threw: false,
       };
@@ -281,7 +286,9 @@ export const drunkSpeeches = {
   variant: 'drunk-speeches',
   weight: () => 1,
   desc: 'Each houseguest stands at their own station with a board while a speech from earlier in this season is played back to the whole yard, slowed down far enough that the person who gave it sounds thoroughly drunk. They must write down which day of the season the speech was actually given, and the distortion is the difficulty — the words are all there, but the voice is barely recognisable and the delivery gives away nothing about when it happened. A wrong day scores nothing and nobody is eliminated for it. The houseguest who correctly dates the most speeches wins Head of Household.',
-  stats: { mental: 0.38, temperament: 0.26, intuition: 0.24, social: 0.12 },
+  // Dating a distorted recording is recall first and an ear for the room
+  // second. Temperament used to sit at 0.26 and was never read at all.
+  stats: { mental: 0.46, intuition: 0.30, social: 0.24 },
   simulate(participants, context, api, rng) {
     const luck = {};
     const say = makePicker(rng);
@@ -312,7 +319,7 @@ export const drunkSpeeches = {
 
       const answers = {};
       participants.forEach(name => {
-        const a = answer(name, options, truthIndex, rng, luck);
+        const a = answer(name, options, truthIndex, rng, luck, drunkSpeeches.stats);
         answers[name] = a;
         if (a.right) score[name]++;
       });
@@ -338,7 +345,7 @@ export const drunkSpeeches = {
     participants.forEach(name => {
       breakdown[name] = {
         correct: Math.floor(score[name]), asked: asked.length,
-        attention: round2(attentionOf(name, statOf)),
+        attention: round2(attentionOf(name, statOf, drunkSpeeches.stats)),
         wonTiebreak: tiebreaks.some(t => t.winner === name),
         score: round2(score[name]), threw: false,
       };

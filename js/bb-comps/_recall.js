@@ -231,15 +231,20 @@ export function optionsFor(truth, pool, rng, exclude = []) {
  * cleverer who was asleep — so the season's own record of who was IN the house
  * for the weeks being asked about is part of the read.
  */
-export function attentionOf(name, statPick) {
-  const s = statPick(name);
+export function attentionOf(name, statPick, weights = { mental: 0.40, intuition: 0.30, social: 0.30 }) {
+  const s = statPick(name) || {};
+  const stats = Object.entries(weights)
+    .reduce((sum, [k, w]) => sum + ((Number(s[k]) || 0) / 10) * w, 0);
+  // Time in the house is a MULTIPLIER, not a weight.
+  //
+  // It was a fifth of the score, which meant the competition's declared stat
+  // profile — the bar a viewer reads on the screen — was quietly describing
+  // only three quarters of the thing. As a multiplier it still rewards the
+  // houseguest who was in the room for the weeks being asked about, without
+  // pretending to be a stat.
   const weeksHere = weeksOf().filter(w => (w?.houseAtStart || []).includes(name)).length;
-  const total = Math.max(1, weeksOf().length);
-  const present = weeksHere / total;
-  return Math.max(0, Math.min(1,
-    (Number(s.mental) || 0) / 10 * 0.45
-    + (Number(s.intuition) || 0) / 10 * 0.30
-    + present * 0.25));
+  const presence = 0.78 + 0.22 * (weeksHere / Math.max(1, weeksOf().length));
+  return Math.max(0, Math.min(1, stats * presence));
 }
 
 

@@ -541,6 +541,10 @@ async function rosterPublish(env, payload = {}) {
 // tables straight from the repo, which is why the export never had to change.
 
 const SEASON_DIR       = 'data/seasons';   // per-season episode logs live here
+// Season-file prefixes, kept in step with formatPrefix() in js/shows.js. Total
+// Drama is absent on purpose: it predates the second show and keeps the bare
+// `seasonN-data.json` name its existing files and readers already use.
+const SEASON_FILE_PREFIX = { 'big-brother': 'bb' };
 const PLAYERS_DB_PATH  = 'players_database.json';
 const SEASONS_DB_PATH  = 'seasons_database.json';
 const RANKINGS_DB_PATH = 'rankings_database.json';
@@ -870,10 +874,14 @@ async function publishSeason(env, payload = {}) {
     //
     // Total Drama keeps the bare filename because fourteen of these are already
     // in the repo and several readers match on it by name; every other show is
-    // namespaced by its format prefix.
+    // namespaced. The name is the season's `seasonId` — the same "bb-1" string
+    // seasons_database.json already carries — so a reader holding a season
+    // record can derive its episode log without a second lookup table.
     const format = payload.format || 'total-drama';
     if (!/^[a-z0-9-]+$/.test(format)) throw new ValidationError(`unknown season format: ${format}`);
-    const file = format === 'total-drama' ? `season${n}-data.json` : `${format}-season${n}-data.json`;
+    const file = format === 'total-drama'
+      ? `season${n}-data.json`
+      : `${SEASON_FILE_PREFIX[format] || format}-${n}-data.json`;
     docs.push([`${SEASON_DIR}/${file}`, payload.season]);
   }
   if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);

@@ -273,6 +273,49 @@ describe('the whole night', () => {
     }
   });
 
+  it('says how the night works before playing any of it', () => {
+    seasonWithJury();
+    const ep = simulateBBFinale(seededRng(21));
+    const types = ep.acts.map(a => a.type);
+    // Before the first competition, or it is explaining a comp already played.
+    expect(types.indexOf('finale-brief')).toBeGreaterThan(-1);
+    expect(types.indexOf('finale-brief')).toBeLessThan(types.indexOf('final-hoh-part'));
+
+    const brief = ep.acts.find(a => a.type === 'finale-brief');
+    // The jury that VOTES is the seated bench plus the person cut after Part
+    // Three, and a screen that quotes the wrong one of those numbers tells the
+    // viewer the vote is smaller than it is.
+    expect(brief.juryCount).toBe(brief.seated + 1);
+    expect(brief.parts).toHaveLength(3);
+
+    expect(generateBBFinaleText(ep)).toContain('HOW TONIGHT WORKS');
+
+    gs.episodeHistory = [ep];
+    const screen = buildVPScreens(ep).find(s => s.id === 'bb-finale-brief');
+    expect(screen, 'the finale never explains itself').toBeTruthy();
+    expect(screen.label).toBe('How Tonight Works');
+    expect(screen.html).not.toMatch(/undefined|NaN|\[object Object\]/);
+    // A rundown that names a winner is a spoiler, not a rundown.
+    expect(screen.html).not.toContain(ep.winner ? `${ep.winner} wins` : '@@none@@');
+  });
+
+  it('the last days play on the house feed, with the beats in them', () => {
+    seasonWithJury();
+    const ep = simulateBBFinale(seededRng(21));
+    gs.episodeHistory = [ep];
+    const screen = buildVPScreens(ep).find(s => s.id === 'bb-finale-house');
+    expect(screen).toBeTruthy();
+    expect(screen.label).toBe('House Life');
+    // The finale house writes `beats`; the house feed reads `socialBeats`. When
+    // those were not bridged the screen drew its empty state over three days
+    // that are full of material.
+    expect(screen.html).not.toContain('Nobody says anything they would repeat on camera');
+    const act = ep.acts.find(a => a.type === 'finale-house');
+    for (const beat of act.beats) {
+      expect(screen.html, `a ${beat.tag} beat never rendered`).toContain(beat.text.slice(0, 40));
+    }
+  });
+
   it('the questioning screen opens every exchange when revealed', () => {
     seasonWithJury();
     const ep = simulateBBFinale(seededRng(33));

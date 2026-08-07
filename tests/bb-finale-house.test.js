@@ -93,7 +93,9 @@ describe('the three parts', () => {
   it('each get their own screen', () => {
     const ep = playSeason(7);
     const labels = (buildVPScreens(ep) || []).map(s => s.label);
-    expect(labels).toContain('The Final Three');
+    // Renamed: the last days are house life like any other stretch, and they
+    // render on the house feed now rather than on a screen of their own.
+    expect(labels).toContain('House Life');
     expect(labels).toContain('Part 1 · Endurance');
     expect(labels).toContain('Part 2 · Skill');
     expect(labels).toContain('Part 3 · The Jury Quiz');

@@ -21131,9 +21131,29 @@ export function buildBBWeekScreens(ep) {
       // cameras, portraits, the status rail — and the last days before a finale
       // are a stretch of house life. The bespoke version next to it rendered
       // two grey cards and a column of locked rows.
-      const view = { ...ep, acts: [{ ...act, type: 'house', phase: act.phase || 'pre-hoh' }] };
-      screens.push({ id: 'bb-finale-house', label: 'The Final Three',
+      //
+      // The house screen reads `socialBeats`; the finale house writes `beats`
+      // and leaves `socialBeats` empty, so handing the act over unchanged drew
+      // the feed's empty state — "the feeds stay up, nobody says anything they
+      // would repeat on camera" — over three days that are full of it.
+      //
+      // Its three groups become three cameras: the wall is in the living room,
+      // the revising happens in the bedroom, and the last quiet days are in the
+      // backyard, which is where they always are.
+      const ROOMS = { 'The Memory Wall': 'living-room', 'Studying for Part Three': 'bedroom' };
+      const beats = (act.acts || []).length
+        ? (act.acts || []).flatMap(group => (group.beats || []).map(b => ({
+          ...b, location: ROOMS[group.title] || 'backyard', category: b.category || 'social',
+        })))
+        : (act.beats || []).map(b => ({ ...b, location: b.location || 'living-room',
+          category: b.category || 'social' }));
+      const view = { ...ep, acts: [{ ...act, type: 'house', phase: act.phase || 'pre-hoh',
+        socialBeats: beats }] };
+      screens.push({ id: 'bb-finale-house', label: 'House Life',
         html: rpBuildBBHouseLife(view, view.acts[0], 1) || rpBuildBBFinaleHouse(ep, act) });
+    } else if (act.type === 'finale-brief') {
+      screens.push({ id: 'bb-finale-brief', label: 'How Tonight Works',
+        html: rpBuildBBFinaleBrief(ep, act) });
     } else if (act.type === 'final-hoh-part') {
       // THE REAL COMPETITION SCREEN, not a summary of one.
       //
@@ -23036,6 +23056,93 @@ export function rpBuildBBJuryQuestioning(ep) {
       ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">All of them</button>`}
       <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
     </div>
+  </div>`;
+}
+
+/**
+ * How tonight works.
+ *
+ * Eight segments deep, and every one of them changes what the next one means:
+ * who plays Part Two depends on Part One, who is even in the final two depends
+ * on Part Three, and the vote at the end is cast by people whose minds move in
+ * three of the segments before it. A viewer arriving at the first competition
+ * with none of that explained is watching a competition with no stakes on it.
+ *
+ * So the format is stated first, the way it is on the night — a running order,
+ * not a result. Nothing on this screen knows who wins anything.
+ */
+export function rpBuildBBFinaleBrief(ep, actIn) {
+  const act = actIn || (ep.acts || []).find(a => a.type === 'finale-brief');
+  if (!act) return '';
+  const finalists = act.finalists || [];
+  const jury = act.juryCount || 0;
+  const seated = act.seated ?? Math.max(0, jury - 1);
+
+  const parts = (act.parts || []).map(pt => `<li class="bbfb-step is-comp">
+    <span class="bbfb-no">PART ${pt.n}</span>
+    <div>
+      <b>${_bbEsc(pt.comp || String(pt.role || '').toUpperCase())}</b>
+      <u>${_bbEsc(pt.field || '')}</u>
+      <p>${_bbEsc(pt.blurb || '')}</p>
+    </div>
+  </li>`).join('');
+
+  const after = [
+    ['THE DECISION', 'The winner of Part Three casts the only vote of the night: which of the other two they sit beside, and which becomes the last member of the jury.'],
+    ['THE QUESTIONS', `Every juror gets one question. Both finalists answer every one of them, and an answer that lands moves that juror's vote.`],
+    ['THE REUNION', 'Everybody who ever lived in that house comes back to one stage — including the pre-jury, who have no vote and nothing to protect. Votes nobody ever saw get played back.'],
+    ['CLOSING STATEMENTS', 'One speech each. No questions, no interruptions.'],
+    ['THE JURY VOTE', `${jury || 'Seven'} ballots, read one at a time. A majority wins the season.`],
+    ["AMERICA'S FAVOURITE", 'The one prize the house has no say in. Every evicted houseguest is on the ballot; neither finalist is.'],
+  ].map(([t, d], i) => `<li class="bbfb-step">
+    <span class="bbfb-no">${i + 4}</span>
+    <div><b>${t}</b><p>${d}</p></div>
+  </li>`).join('');
+
+  const style = `<style>
+    .bbfb-cast{display:flex;gap:16px;justify-content:center;margin-bottom:16px}
+    .bbfb-cast figure{width:84px;height:84px;border-radius:10px;overflow:hidden;
+      border:2px solid rgba(240,165,0,.5);box-shadow:0 0 26px rgba(240,165,0,.22)}
+    .bbfb-cast figure .bb-av{width:84px!important;height:84px!important;border-radius:8px}
+    .bbfb-cast div{text-align:center}
+    .bbfb-cast span{display:block;font-family:var(--font-display);font-size:15px;color:#fff;margin-top:6px}
+    .bbfb-lede{max-width:640px;margin:0 auto 18px;text-align:center;font-size:13.5px;line-height:1.7;color:#c9d1d9}
+    .bbfb-lede b{color:#f0a500}
+    .bbfb-list{list-style:none;margin:0;padding:0;position:relative}
+    .bbfb-list::before{content:'';position:absolute;left:38px;top:12px;bottom:12px;width:2px;
+      background:linear-gradient(180deg,rgba(240,165,0,.5),rgba(240,165,0,.08))}
+    .bbfb-step{position:relative;display:flex;gap:14px;align-items:flex-start;padding:11px 13px 11px 0;
+      margin-bottom:7px}
+    .bbfb-no{flex:0 0 76px;text-align:center;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
+      letter-spacing:1.6px;color:#8b949e;background:#0d1117;border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;padding:4px 0;position:relative;z-index:1}
+    .bbfb-step.is-comp .bbfb-no{color:#f0a500;border-color:rgba(240,165,0,.55);background:rgba(240,165,0,.1)}
+    .bbfb-step b{display:block;font-family:var(--font-display);font-size:17px;letter-spacing:.6px;color:#fff}
+    .bbfb-step u{display:block;text-decoration:none;font-family:ui-monospace,Consolas,monospace;font-size:8px;
+      letter-spacing:1.6px;color:#f0a500;margin-top:3px;text-transform:uppercase}
+    .bbfb-step p{margin:6px 0 0;font-size:12.5px;line-height:1.65;color:#8b949e}
+    .bbfb-foot{margin-top:16px;padding:13px;border-radius:10px;text-align:center;font-size:12.5px;
+      line-height:1.7;color:#d6dde5;border:1px solid rgba(240,165,0,.32);background:rgba(240,165,0,.07)}
+  </style>`;
+
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#f0a500">HOW TONIGHT WORKS</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 16px">
+      Three houseguests, one night, and nine things left to decide.</div>
+
+    <div class="bbfb-cast">${finalists.map(n => `<div>
+      <figure>${_bbAvatar(n, 84)}</figure><span>${_bbEsc(n)}</span></div>`).join('')}</div>
+
+    <div class="bbfb-lede">Nobody is safe and nobody is nominated. The last Head of Household of the
+      season is played in <b>three parts</b>, and the person who wins it does not win the game — they
+      win the right to choose who they have to beat.</div>
+
+    <ol class="bbfb-list">${parts}${after}</ol>
+
+    <div class="bbfb-foot">${seated} of them are already on that jury. The last seat is still empty, and it
+      belongs to whichever of these three is cut after Part Three — who walks out of the house and
+      straight into the ${jury || 'seven'}-vote count that decides it.</div>
   </div>`;
 }
 

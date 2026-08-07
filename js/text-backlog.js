@@ -5270,6 +5270,19 @@ export function generateBBFinaleText(ep) {
   for (const act of ep.acts || []) {
     if (act.type === 'finale-house') {
       finaleHouseLines(act, ln);
+    } else if (act.type === 'finale-brief') {
+      sec('HOW TONIGHT WORKS');
+      ln(`  ${(act.finalists || []).join(', ')} — three houseguests, nobody safe, nobody nominated.`);
+      ln('  The last Head of Household of the season is played in three parts, and whoever wins it');
+      ln('  does not win the game: they win the right to choose who they have to beat.');
+      for (const pt of act.parts || []) {
+        ln('');
+        ln(`  PART ${pt.n} — ${pt.comp || String(pt.role || '').toUpperCase()} (${pt.field})`);
+        ln(`    ${pt.blurb}`);
+      }
+      ln('');
+      ln(`  Then: the decision, the jury's questions, the reunion, the closing`);
+      ln(`  statements, the ${act.juryCount || 7}-vote jury count, and America's Favourite.`);
     } else if (act.type === 'final-hoh-part') {
       sec(act.part.toUpperCase());
       ln(`  Played by: ${(act.participants || []).join(', ')}.`);

@@ -200,6 +200,39 @@ export function simulateBBFinale(rng = Math.random) {
   const finaleHouse = generateBBFinaleHouse(week, rng);
   if (finaleHouse) acts.push(finaleHouse);
 
+  // ── what is about to happen, said out loud ──
+  //
+  // The night runs eight segments deep and every one of them changes what the
+  // next one means: who plays part two depends on part one, who is even in the
+  // final two depends on part three, and the vote at the end is cast by people
+  // whose minds move in three of the segments before it. A viewer arriving at
+  // the first competition with none of that explained is watching a comp with
+  // no stakes attached, so the house is told the format before it plays it —
+  // the same way it is on the night.
+  //
+  // Pins only, and no results: this is a schedule, not a spoiler.
+  const pins = seasonConfig?.bbFinalComps || {};
+  const pinName = id => BB_COMPETITIONS.find(c => c.id === id)?.name || null;
+  if (house.length >= 3) {
+    acts.push({
+      type: 'finale-brief',
+      finalists: [...house],
+      // Two different numbers, and the screen needs both: how many are already
+      // on that bench, and how many will actually vote — the seat filled after
+      // Part Three counts like every other one.
+      seated: seatedJurors().length,
+      juryCount: seatedJurors().length + 1,
+      parts: [
+        { n: 1, role: 'endurance', comp: pinName(pins.one),
+          field: 'all three', blurb: 'Everybody plays. The winner takes a seat in Part Three and sits out Part Two entirely.' },
+        { n: 2, role: 'skill', comp: pinName(pins.two),
+          field: 'the two who lost Part One', blurb: 'Whoever won Part One does not play. The other two go head to head for the last seat.' },
+        { n: 3, role: 'the jury quiz', comp: 'Jury Statements',
+          field: 'the winners of Parts One and Two', blurb: 'Every juror recorded a statement with the ending cut off. Whoever knows those people best wins the final Head of Household.' },
+      ],
+    });
+  }
+
   // ── the three-part Head of Household ──
   if (house.length >= 3) {
     // Everybody plays part one, the outgoing Head of Household included, and

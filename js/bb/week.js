@@ -1414,7 +1414,20 @@ export function simulateBBWeek(options = {}) {
     // rules it is about to live under, not the ones that were considered.
     const announced = week.twistState.announcements
       .filter(a => a?.twist !== 'bb-battle-of-the-block' || botbPossible);
-    if (announced.length) {
+    // ── one rule per gathering ──
+    //
+    // The house is called in, told a thing, and reacts to that thing. Two rules
+    // read out at one meeting produced a single reaction — whichever register
+    // won — so on a week that opened with both the Saboteur and an Instant
+    // Eviction the room said "well, it's one of you" and nobody mentioned that
+    // somebody was going home that night with no veto to stop it. The second
+    // rule was on the screen and in the transcript and had happened to nobody.
+    //
+    // So they are separate meetings, which is also what the show does: a season
+    // twist is announced on its own night and a week's rule when it applies.
+    for (let annIdx = 0; annIdx < announced.length; annIdx++) {
+    const group = [announced[annIdx]];
+    const again = annIdx > 0;
     const beats = [];
     const byStat = (stat, pool = house) => [...pool].sort((a, b) => pStats(b)[stat] - pStats(a)[stat]);
     // What the room was actually told.
@@ -1426,12 +1439,12 @@ export function simulateBBWeek(options = {}) {
     // that has just been told one of its own is working against it does not
     // react by hoping to be picked. An announcement declares its own register
     // now, and 'paranoia' is the one where the rule is a person in the room.
-    const paranoid = announced.some(a => a?.reactions === 'paranoia');
+    const paranoid = group.some(a => a?.reactions === 'paranoia');
     // A rule that removes something rather than offering something. Nobody is
     // hoping to win an Instant Eviction, and nobody is looking round the room
     // wondering who it is — the safety net is simply gone and everybody in here
     // is standing on it.
-    const dread = !paranoid && announced.some(a => a?.reactions === 'dread');
+    const dread = !paranoid && group.some(a => a?.reactions === 'dread');
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
@@ -1479,7 +1492,7 @@ export function simulateBBWeek(options = {}) {
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
       });
     }
-    week.acts.push({ type: 'twist-announcement', announced, socialBeats: beats });
+    week.acts.push({ type: 'twist-announcement', announced: group, secondCall: again, socialBeats: beats });
     }
   }
   // After the wall has spoken, if it spoke this week.

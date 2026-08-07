@@ -142,6 +142,38 @@ describe('the house is told', () => {
     expect(said).toMatch(/no veto|before dinner|nothing to ask|no afternoon/i);
   });
 
+  it('gets its own gathering when another twist lands the same week', () => {
+    // Two rules read out at one meeting produced ONE reaction — whichever
+    // register won — so a week that opened with both the Saboteur and this said
+    // "well, it's one of you" and nobody mentioned that somebody was going home
+    // that night with no veto to stop it. The second rule was on the screen, in
+    // the transcript, and had happened to nobody.
+    house();
+    seasonConfig.bbSaboteur = 'random';
+    seasonConfig.bbSaboteurBankWeek = 6;
+    const ep = simulateBBEpisode();
+    delete seasonConfig.bbSaboteur;
+
+    const anns = (ep.acts || []).filter(a => a.type === 'twist-announcement');
+    expect(anns.length, 'two rules were read out at one meeting').toBe(2);
+    // One rule each, and each with its own reaction.
+    for (const a of anns) expect((a.announced || []).length).toBe(1);
+    const registers = anns.map(a => (a.socialBeats || []).map(b => b.badgeText).join('|'));
+    expect(registers[0]).not.toBe(registers[1]);
+    // The one about a person in the room, and the one about a rule nobody wins.
+    expect(registers.join(' ')).toMatch(/COUNTING THE ROOM/);
+    expect(registers.join(' ')).toMatch(/NO TIME TO WORK/);
+
+    gs.episodeHistory = [ep];
+    buildVPScreens(ep);
+    Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
+    const screens = (buildVPScreens(ep) || []).filter(x => /bb-twist/.test(x.id));
+    expect(screens.length).toBe(2);
+    // Distinct ids, or the viewing party cannot tell the two tabs apart.
+    expect(screens[0].id).not.toBe(screens[1].id);
+    expect(screens.map(x => x.label)).toContain('Instant Eviction');
+  });
+
   it('reaches the screen and the page, sequestration and all', () => {
     house();
     const { ep, act } = playWeek();

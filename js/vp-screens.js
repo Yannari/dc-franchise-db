@@ -18722,7 +18722,9 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
     if (step.kind === 'summons') {
       return `<div class="bbns-card is-open bbta-voice">
         <div class="bbns-card-h"><span class="bbns-pill grey">THE VOICE OF BIG BROTHER</span></div>
-        <div class="bbns-card-b">"Houseguests. Please gather in the living room." The music cuts out mid-song. ${house.length} people arrive at the sofas at speeds exactly proportional to how safe they feel, and the wall screen is already awake.</div></div>`;
+        <div class="bbns-card-b">${act.secondCall
+          ? `"Houseguests. Please gather in the living room." Nobody has properly sat down from the last time. ${house.length} people come back to the sofas already knowing that a second rule in one night is not how a good week starts.`
+          : `"Houseguests. Please gather in the living room." The music cuts out mid-song. ${house.length} people arrive at the sofas at speeds exactly proportional to how safe they feel, and the wall screen is already awake.`}</div></div>`;
     }
     if (step.kind === 'reveal') {
       const a = step.a;
@@ -20731,7 +20733,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
         break;
       case 'twist-announcement':
-        screens.push({ id: id('bb-twist'), label: 'The Announcement', html: rpBuildBBTwistAnnouncement(view, act) });
+        // One screen per gathering. Two rules read out in the same week are two
+        // separate meetings, so they cannot share an id — a duplicate id is a
+        // screen the viewing party's navigation cannot tell apart, and the
+        // label carries the rule so the tabs are not two of the same word.
+        screens.push({
+          id: id(act.secondCall ? 'bb-twist-2' : 'bb-twist'),
+          label: (act.announced || []).length === 1
+            ? (act.announced[0].name || 'The Announcement')
+            : 'The Announcement',
+          html: rpBuildBBTwistAnnouncement(view, act),
+        });
         break;
       case 'pandoras-box':
         screens.push({ id: id('bb-pandora'), label: "Pandora's Box", html: rpBuildBBPandorasBox(view, act) });

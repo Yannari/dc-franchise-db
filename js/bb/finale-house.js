@@ -296,7 +296,10 @@ export function generateBBFinaleHouse(week, rngIn) {
 export function finaleHouseLines(act, line) {
   if (!act) return;
   line('');
-  line('THE FINAL THREE');
+  // Same name as the screen it mirrors: these three days are house life, and
+  // calling them two different things in two places is how a reader loses the
+  // thread between the transcript and the replay.
+  line('HOUSE LIFE — THE LAST THREE DAYS');
   line(`  ${act.finalists.join(', ')} — three days, and nothing to play for until finale night.`);
   for (const a of act.acts || []) {
     line('');

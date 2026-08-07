@@ -28,6 +28,75 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
 
+// ── the last pitch ──────────────────────────────────────────────────────
+//
+// Written here rather than in the screen that draws it, for the reason
+// finale-house.js already gives about its own lines: two writers describing one
+// scene differently is how a reader ends up with two seasons. The transcript
+// and the VP now print the same sentence because there is only one.
+//
+// Chosen by a hash of the week and the name rather than by the finale's rng, so
+// adding this does not shift a single downstream draw in a seeded season.
+const _pitchHash = (...parts) => {
+  const key = parts.join('|');
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const PITCH_DEAL = [
+  (n, h) => `${n} does not make a speech. ${n} says the week and the room it was agreed in, and lets ${h} sit with it. "You know what you said to me. I've never once made you wonder if I meant it."`,
+  n => `"I'm not going to sell you anything," ${n} says. "We shook on this. I kept my end every single week, including the weeks it cost me. That's the whole pitch."`,
+  (n, h) => `${n} pitches the promise itself. "Everybody on that jury has been lied to by somebody. Don't make me one of them, because they'll ask, and I'll have to answer."`,
+  n => `"You can beat me," ${n} says, which is a strange thing to lead with. "But you told me you wouldn't have to think about it. I'm asking you not to think about it."`,
+];
+
+const PITCH_WEAK = [
+  n => `${n} argues the arithmetic, openly. "I haven't won anything. I haven't put anybody on that jury. Sit next to me and you get to say all of that out loud."`,
+  n => `"Take the person you can beat," ${n} says. "I'd like to pretend that isn't me. It's me."`,
+  (n, h, p) => `${n} makes the case ${p.sub} has been quietly building for weeks: that ${p.sub} is the safe half of any final two, and safe is worth more tonight than loyal.`,
+  n => `"Nobody in that jury room is angry at me," ${n} says. "Nobody's grateful either. That's exactly what you want sitting beside you."`,
+];
+
+const PITCH_STRONG = [
+  n => `${n} does not pretend to be beatable. "I've played a game you're going to have to answer for. So have you. Let's go answer for them together and let them pick."`,
+  n => `"You want the easy one," ${n} says. "I get it. But the jury respects a final two that actually happened, and half of them will punish you for ducking it."`,
+  (n, h, p) => `${n} puts the season on the table — the wins, the weeks on the block, the votes ${p.sub} survived — and dares ${h} to sit beside it.`,
+  n => `"If you cut me you'd better win," ${n} says, evenly. "Because I'll be on that jury in about four minutes, and I vote."`,
+];
+
+/**
+ * What each of the two says to the one person who can act on it.
+ *
+ * Not a plea to a house — a plea to a finalist, about a jury. Which register
+ * they get is what they can truthfully offer: a deal already made, a jury they
+ * can be beaten by, or nothing except having played.
+ */
+function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
+  // Two people, one pool, and a hash that can land on the same line twice —
+  // which it did: both of them "did not pretend to be beatable", in the same
+  // words, one paragraph apart, in the segment whose whole premise is that
+  // these are two different cases. Whoever speaks second steps to the next
+  // unused line in their own pool.
+  const used = new Set();
+  return options.map(name => {
+    const p = pronouns(name);
+    const hasDeal = honoured?.partner === name || betrayal?.partner === name;
+    const other = options.find(n => n !== name);
+    const weaker = (Number(margins.get?.(name) ?? margins[name]) || 0)
+      < (Number(margins.get?.(other) ?? margins[other]) || 0);
+    const pool = hasDeal ? PITCH_DEAL : weaker ? PITCH_WEAK : PITCH_STRONG;
+    const kind = hasDeal ? 'the deal' : weaker ? 'the arithmetic' : 'the resume';
+    let at = _pitchHash(week, name, kind) % pool.length;
+    for (let step = 0; step < pool.length && used.has(pool[at]); step++) {
+      at = (at + 1) % pool.length;
+    }
+    const line = pool[at];
+    used.add(line);
+    return { name, kind, text: line(name, hoh, p) };
+  });
+}
+
 /** Everyone still playing, in roster order. */
 const houseNow = () => [...(gs.activePlayers || [])];
 
@@ -466,6 +535,10 @@ export function simulateBBFinale(rng = Math.random) {
     finalTwo = [finalHoh, keep];
     acts.push({
       type: 'final-cut', finalHoh, kept: keep, cut,
+      // The last thing either of them gets to say, written once so the screen
+      // and the transcript cannot disagree about what was said.
+      pitches: finalPitches({ hoh: finalHoh, options, margins, honoured, betrayal,
+        week: week?.num || 0 }),
       // How they got here, because a result with no reasoning is not a story.
       projected, honoured, betrayal: betrayal ? { partner: betrayal.victims[0], tier: tierOf(bound.deal) } : null,
       hadPromise: !!bound,

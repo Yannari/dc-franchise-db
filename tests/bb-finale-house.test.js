@@ -79,7 +79,9 @@ describe('the final three', () => {
 
   it('reaches the transcript', () => {
     const ep = playSeason(7);
-    expect(ep.summaryText).toContain('THE FINAL THREE');
+    // Named to match the screen it mirrors, rather than after the three people
+    // standing in it.
+    expect(ep.summaryText).toContain('HOUSE LIFE');
     expect(ep.summaryText).toContain('THE MEMORY WALL');
     expect(ep.summaryText).toMatch(/Revision: /);
     const act = (ep.acts || []).find(a => a.type === 'finale-house');

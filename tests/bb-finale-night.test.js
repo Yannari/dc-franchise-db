@@ -344,6 +344,32 @@ describe('the whole night', () => {
     }
   });
 
+  it('the transcript carries the decision the screen shows, not a summary of it', () => {
+    // The house rule is that the text backlog is a complete retranscription of
+    // the replay. The final cut was three lines — "X is the final Head of
+    // Household, X takes Y, Z is evicted" — while the screen had two pitches,
+    // the jury arithmetic and an exit interview on it.
+    seasonWithJury();
+    const ep = simulateBBFinale(seededRng(21));
+    const act = ep.acts.find(a => a.type === 'final-cut');
+    const text = generateBBFinaleText(ep);
+
+    expect(act.pitches).toHaveLength(2);
+    // Two people, one pool: they must not be handed the same line.
+    expect(act.pitches[0].text).not.toBe(act.pitches[1].text);
+    for (const p of act.pitches) {
+      expect(p.text.length).toBeGreaterThan(60);
+      expect(text, `${p.name}'s pitch never reached the transcript`)
+        .toContain(p.text.replace(/<[^>]+>/g, '').slice(0, 50));
+    }
+    // And the walk out, which third place is the only exit never to have had.
+    if (ep.evictionInterview) {
+      expect(text).toContain('THE EXIT INTERVIEW');
+      expect(text).toContain(ep.evictionInterview.parting);
+    }
+    expect(text).not.toMatch(/undefined|NaN|\[object/);
+  });
+
   it('the questioning screen opens every exchange when revealed', () => {
     seasonWithJury();
     const ep = simulateBBFinale(seededRng(33));

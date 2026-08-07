@@ -22170,7 +22170,13 @@ export function rpBuildBBDebug(ep) {
     // which is exactly what the 0.6 floor buys.
     const popMap = ep.popularitySnapshot || snap.popularity
       || (typeof gs !== 'undefined' ? gs.popularity : null) || {};
-    const popHouse = snap.activePlayers || (typeof gs !== 'undefined' ? gs.activePlayers : []) || [];
+    // The WEEK's house, not today's. `snap.activePlayers` is empty whenever the
+    // episode was recorded without a game-state snapshot, and the fallback ends
+    // at the live roster — so week three's board listed the final three and
+    // nobody else, which reads as a bug in the fan pulse rather than in where it
+    // got its names. The episode carries its own roster; use that first.
+    const popHouse = ep.houseAtEnd || ep.houseAtStart || snap.activePlayers
+      || (typeof gs !== 'undefined' ? gs.activePlayers : []) || [];
     if (popHouse.length && Object.keys(popMap).length
         && seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
       const rows = popHouse
@@ -22181,7 +22187,14 @@ export function rpBuildBBDebug(ep) {
         : s >= 3 ? ['RISING', '#57a6e8'] : s === 0 ? ['INVISIBLE', '#6e7681']
         : s <= -10 ? ['HATED', '#f47067'] : s <= -5 ? ['UNPOPULAR', '#f47067']
         : s < 0 ? ['FADING', '#d29922'] : ['STEADY', '#8b949e'];
-      html += dbgPanel('FAN PULSE (AUDIENCE VOTE ODDS)', 'gold', rows.map((r, i) => {
+      // Whether these numbers are THIS week's or just today's. The house now
+      // records a snapshot on every episode, but a season played before it did
+      // has none, and the fallback chain quietly ends at the live score — which
+      // is the difference between a per-week history and eleven copies of the
+      // same board. Say which one is on screen rather than letting the week
+      // buttons imply something the data cannot support.
+      const popLive = !ep.popularitySnapshot;
+      html += dbgPanel(`FAN PULSE (AUDIENCE VOTE ODDS)${popLive ? ' — LIVE SCORES, NOT THIS WEEK' : ''}`, 'gold', rows.map((r, i) => {
         const [label, colour] = tier(r.v);
         const odds = (r.w / totalW) * 100;
         return dbgPortraitRow(r.n,
@@ -22191,7 +22204,9 @@ export function rpBuildBBDebug(ep) {
              <div style="height:100%;width:${Math.round(odds / (rows[0] ? (rows[0].w / totalW) * 100 : 1) * 100)}%;background:${colour};opacity:.75"></div></div>
            <div style="font-size:10px;color:#e3b341;width:44px;text-align:right">${odds.toFixed(1)}%</div>`,
           { tag: `<span style="font-size:9px;color:#6e7681;margin-left:6px">#${i + 1}</span>` });
-      }).join('') + dbgNote('score · vote weight share — what an audience-channel distributor (App Store, Den of Temptation) actually rolls against'));
+      }).join('') + dbgNote(popLive
+        ? 'score · vote weight share — this week predates per-week snapshots, so these are the CURRENT scores, not the ones that were live in this week'
+        : `score · vote weight share as they stood at the end of week ${ep.num} — what an audience-channel distributor (App Store, Den of Temptation) actually rolls against`));
     }
 
     if ((ep.haveNots || []).length) {
@@ -23601,7 +23616,12 @@ export function rpBuildBBFinalCut(ep) {
   // different from every other final plea in the season and it is written from
   // what this houseguest can actually offer: a deal already made, a jury they
   // can be beaten by, or nothing at all except having been there.
+  // Written by the finale (js/bb-finale.js) so this screen and the transcript
+  // print the same sentence. The local version below is the fallback for a
+  // season saved before the act carried them.
+  const written = Object.fromEntries((act.pitches || []).map(p => [p.name, p.text]));
   const pitch = name => {
+    if (written[name]) return written[name];
     const q = pv(name);
     const deal = act.honoured?.partner === name || act.betrayal?.partner === name;
     const weak = (Number(margins[name]) || 0) < (Number(margins[pair.find(n => n !== name)]) || 0);

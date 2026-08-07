@@ -5293,7 +5293,22 @@ export function generateBBFinaleText(ep) {
       ln(`  ${act.winner} takes it.`);
     } else if (act.type === 'final-cut') {
       sec('THE FINAL DECISION');
-      ln(`  ${act.finalHoh} is the final Head of Household.`);
+      ln(`  ${act.finalHoh} holds the only vote left in this game, and two people who have both`);
+      ln(`  been told all season that they were the one.`);
+      for (const p of act.pitches || []) {
+        ln('');
+        ln(`  ${p.name} — the last pitch:`);
+        ln(`    ${_textStripHtml(p.text)}`);
+      }
+      // The arithmetic the decision is actually made of, which the screen puts
+      // under the two chairs and the transcript used to leave out entirely.
+      const marg = Object.entries(act.margins || {}).filter(([, v]) => Number(v));
+      if (marg.length) {
+        ln('');
+        ln(`  ${act.finalHoh}'s projected jury margin against each of them:`);
+        marg.sort((a, b) => b[1] - a[1]).forEach(([n, v]) => ln(`    ${n}: ${v > 0 ? '+' : ''}${Number(v).toFixed(1)}`));
+      }
+      ln('');
       if (act.honoured) {
         ln(`  ${act.finalHoh} shook on this with ${act.honoured.partner} in week ${act.honoured.madeEp}`
           + `${act.honoured.costly ? ', and keeps it at a cost.' : ', and keeps it.'}`);
@@ -5303,7 +5318,28 @@ export function generateBBFinaleText(ep) {
           + `with ${act.betrayal.partner}, and breaks it here, in front of the jury.`);
       }
       ln(`  ${act.finalHoh} takes ${act.kept} to the end.`);
-      if (act.cut) ln(`  ${act.cut} is evicted at the final three, and becomes the last juror.`);
+      if (act.cut) ln(`  ${act.cut} is evicted at the final three, and becomes the last juror — with a vote.`);
+      // The walk out, on the same interview the house gives everybody else.
+      // Third place was the only exit in the format with nothing attached to
+      // it, and the screen has had one since the finale was rebuilt.
+      const iv = ep.evictionInterview;
+      if (iv) {
+        ln('');
+        ln('  THE EXIT INTERVIEW');
+        (iv.questions || []).forEach(q => {
+          ln(`    ${iv.host}: ${q.q}`);
+          ln(`    ${iv.evictee}: ${q.a}`);
+        });
+        if ((iv.goodbyes || []).length) {
+          ln('');
+          ln('    GOODBYE MESSAGES');
+          iv.goodbyes.forEach(g => ln(`      ${g.name} (${g.against ? 'voted against' : 'kept them'}): ${g.text}`));
+        }
+        if (iv.parting) {
+          ln('');
+          ln(`    ${iv.evictee}: ${iv.parting}`);
+        }
+      }
     } else if (act.type === 'jury-questioning') {
       sec('THE JURY QUESTIONS THE FINAL TWO');
       for (const x of act.exchanges || []) {

@@ -304,6 +304,41 @@ describe('the final HOH set pieces', () => {
     expect(sawTiebreak, 'no tie in 120 runs of a three-question quiz').toBe(true);
   });
 
+  it('the designer can pin anything the night can actually stage', () => {
+    // The picker used to offer only comps declaring `hoh`, which is a statement
+    // about which NIGHT a competition airs on and has nothing to do with
+    // whether three finalists can play it — so roughly half the library was
+    // withheld from a dropdown for no reason a user could see.
+    for (const slot of ['final-1', 'final-2']) {
+      const list = bbCompetitionsForSlot(slot);
+      expect(list.length, `${slot} offers ${list.length} competitions`).toBeGreaterThan(25);
+      // Both groups are present: what the night would draw, and everything else.
+      expect(list.some(c => !c.generic)).toBe(true);
+      expect(list.some(c => c.generic)).toBe(true);
+      // Part Three is not pinnable — offering it here stages the same
+      // competition twice in one night.
+      expect(list.some(c => c.id === 'bb-final-part-three')).toBe(false);
+    }
+  });
+
+  it('and pinning one outside the usual shape actually runs', () => {
+    // The pool and the dispatcher have to agree. They did not: the pool was
+    // widened while `finalPart` still asked for the `hoh` slot, so pinning a
+    // veto-only competition offered by the dropdown threw on the night.
+    const vetoOnly = bbCompetitionsForSlot('final-2')
+      .map(c => BB_COMPETITIONS.find(x => x.id === c.id))
+      .find(c => c && !c.types.includes('hoh') && !c.types.includes('final'));
+    expect(vetoOnly, 'no slot-exclusive competition in the picker to test with').toBeTruthy();
+
+    seasonWithJury();
+    seasonConfig.bbFinalComps = { two: vetoOnly.id };
+    const ep = simulateBBFinale(seededRng(12));
+    delete seasonConfig.bbFinalComps;
+    const two = ep.acts.find(a => a.type === 'final-hoh-part' && a.partNum === 2);
+    expect(two.competition.name).toBe(vetoOnly.name);
+    expect(two.winner).toBeTruthy();
+  });
+
   it('every beat names somebody and carries a badge', () => {
     const result = runPart('bb-final-part-one', ['A', 'B', 'C'], seededRng(5));
     for (const b of result.beats) {

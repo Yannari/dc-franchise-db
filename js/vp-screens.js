@@ -21176,7 +21176,11 @@ export function buildBBWeekScreens(ep) {
       };
       screens.push({
         id: `bb-final-hoh-${n}`,
-        label: n === 1 ? 'Part 1 · Endurance' : n === 2 ? 'Part 2 · Skill' : 'Part 3 · The Jury Quiz',
+        // Named by WHICH part, never by what kind of competition it is: the
+        // designer can pin anything the night can stage to Parts One and Two,
+        // and a tab reading "Part 2 · Skill" above a memory wall is the screen
+        // telling the viewer something untrue.
+        label: n === 1 ? 'HOH Part 1' : n === 2 ? 'HOH Part 2' : 'HOH Final Part',
         html: rpBuildBBComp(view, 'hoh') || rpBuildBBFinalHohPart(ep, act),
       });
     } else if (act.type === 'final-cut') {

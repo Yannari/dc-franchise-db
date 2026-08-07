@@ -30,7 +30,7 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 // ordinary one this week" is an authorable choice, not just what you get.
 import { GENERIC_BB_COMPS, runBBCompetition } from './bb/comps.js';
 import { generateBBEvictionInterview } from './bb-aftermath.js';
-import { simulateBBFinale, finalCompPool } from './bb-finale.js';
+import { simulateBBFinale, finalCompChoices } from './bb-finale.js';
 import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
@@ -332,7 +332,10 @@ export function bbForcedCompsForWeek(epNum) {
  * same way it accepts a written comp's.
  */
 export function bbCompetitionsForSlot(type) {
-  const shape = (c, generic) => ({ id: c.id, name: c.name, category: c.category, generic });
+  // `finalRole` rides along so the finale picker can tell the recurring The
+  // Wall apart from the set piece of the same name written for finale night.
+  const shape = (c, generic) => ({ id: c.id, name: c.name, category: c.category,
+    finalRole: c.finalRole || null, generic });
   // The Battle Back is not an HOH or a veto and does not inherit either list's
   // restrictions: it is a competition held outside the house for a prize that
   // is neither power nor safety, so anything the library can stage is fair.
@@ -343,8 +346,13 @@ export function bbCompetitionsForSlot(type) {
   // night, and the finale itself owns that definition so the picker and the
   // night can never disagree about what is eligible.
   if (type === 'final-1' || type === 'final-2') {
-    const pool = finalCompPool(type === 'final-1' ? 'endurance' : 'skill');
-    return pool.map(c => shape(c, false)).sort((a, b) => a.name.localeCompare(b.name));
+    // Two groups, not one list. `generic` carries "this is outside what the
+    // night would have drawn", which is the only thing the picker needs to know
+    // to label them apart.
+    const { usual, rest } = finalCompChoices(type === 'final-1' ? 'endurance' : 'skill');
+    const byName = (a, b) => a.name.localeCompare(b.name);
+    return [...usual.map(c => shape(c, false)).sort(byName),
+      ...rest.map(c => shape(c, true)).sort(byName)];
   }
   const serves = c => (type === 'battle-back'
     ? ['hoh', 'veto', 'return'].some(t => (c.types || []).includes(t))

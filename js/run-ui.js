@@ -1402,7 +1402,26 @@ function _bbFinalCompPicker(role, slot, label) {
   h += `<select onchange="event.stopPropagation();_setBBFinalComp('${role}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
     pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:150px">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
-  list.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name}</option>`; });
+  // Two "The Wall"s exist — the recurring endurance comp and the set piece
+  // written for finale night — and a dropdown with the same word twice in it is
+  // a dropdown you cannot use. The category disambiguates every collision the
+  // library can produce without renaming anything.
+  const seen = {};
+  list.forEach(c => { seen[c.name] = (seen[c.name] || 0) + 1; });
+  const opt = c => `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${
+    c.name}${seen[c.name] > 1 ? ` · ${c.finalRole ? 'finale set piece' : c.category}` : ''}</option>`;
+  const usual = list.filter(c => !c.generic);
+  const rest = list.filter(c => c.generic);
+  if (usual.length) {
+    h += `<optgroup label="${role === 'one' ? 'Usually Part One' : 'Usually Part Two'}">`;
+    usual.forEach(c => { h += opt(c); });
+    h += `</optgroup>`;
+  }
+  if (rest.length) {
+    h += `<optgroup label="Anything else the night can run">`;
+    rest.forEach(c => { h += opt(c); });
+    h += `</optgroup>`;
+  }
   return h + `</select></label>`;
 }
 

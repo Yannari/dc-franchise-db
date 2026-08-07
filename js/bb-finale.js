@@ -116,7 +116,7 @@ function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, 
     parting: finalePick(rng, [
       `"I missed the final two by one question and one vote. Now I get one last vote of my own. That feels fair enough to be cruel."`,
       `"They ended my game five minutes before the jury started asking questions. Convenient for them. I am still asking mine."`,
-      `"No confetti for me. I do get a front-row seat and a key, though, so neither finalist should relax yet."`,
+      `"No confetti for me. I do get a front-row seat on that jury and a vote to go with it, so neither finalist should relax yet."`,
       `"Third place is first place with terrible timing. I will see them at the jury chairs."`,
     ]),
     host,
@@ -227,13 +227,47 @@ export const FINAL_ROLES = {
  * finale can actually run. A dropdown built from a second, hand-kept list is a
  * dropdown that eventually offers a competition the night refuses to stage.
  */
+/**
+ * Can this competition be staged for two or three individuals?
+ *
+ * The old test was `types.includes('hoh')`, which is a question about which
+ * NIGHT a competition airs on, not about whether it can be played — and roughly
+ * half the library is slot-exclusive, so it threw away every veto-only comp for
+ * no reason a viewer could see. What actually matters here is the participant
+ * contract: an arena game is written for two teams and a pair comp for couples,
+ * and neither can be handed three finalists.
+ */
+const playableAlone = c => ['hoh', 'veto', 'tiebreaker', 'return', 'final']
+  .some(t => (c.types || []).includes(t));
+
 export function finalCompPool(role) {
   const spec = FINAL_ROLES[role] || { categories: [] };
   return BB_COMPETITIONS.filter(c =>
     // Written for finale night...
     (c.finalRole === role && c.types.includes('final'))
     // ...or an ordinary competition of the right shape, which is most of them.
-    || (spec.categories.includes(c.category) && c.types.includes('hoh')));
+    || (spec.categories.includes(c.category) && playableAlone(c)));
+}
+
+/**
+ * Everything the designer may PIN to a part — which is a bigger set than what
+ * the night draws on its own.
+ *
+ * The draw stays faithful: left alone, Part One is an endurance competition and
+ * Part Two is a course, because that is what those parts are. But a pinned comp
+ * is a deliberate choice, and refusing to stage a memory wall as Part Two
+ * because the format usually does not is the picker overruling the person using
+ * it. So the recommended set comes first and everything else the night can
+ * physically run comes after it, marked as the departure it is.
+ */
+export function finalCompChoices(role) {
+  const usual = finalCompPool(role);
+  const ids = new Set(usual.map(c => c.id));
+  const rest = BB_COMPETITIONS.filter(c => !ids.has(c.id) && playableAlone(c)
+    // Part Three is the jury quiz and is not pinnable; offering it as a Part One
+    // would stage the same competition twice in one night.
+    && c.finalRole !== 'quiz');
+  return { usual, rest };
 }
 
 /** What the designer pinned to this part, if anything. */
@@ -252,10 +286,14 @@ function finalPart(participants, label, rng, week, { compId = null, role = null 
     const pool = finalCompPool(role);
     forced = pool.length ? pool[Math.floor(rng() * pool.length)].id : undefined;
   }
-  // The slot has to match the competition that was drawn: the set pieces live
-  // in `final` and the rest of the library in `hoh`.
-  const chosen = forced ? BB_COMPETITIONS.find(c => c.id === forced) : null;
-  const type = chosen?.types.includes('final') ? 'final' : 'hoh';
+  // Always the `final` slot, whatever was drawn.
+  //
+  // This used to fall back to `hoh` for anything that was not a set piece,
+  // which quietly re-imposed the restriction the pool had just been widened
+  // past: pin a veto-only competition to Part Two and the dispatcher refused
+  // to stage what the dropdown had offered. `final` accepts anything two or
+  // three people can play (js/bb/comps.js), which is the actual rule.
+  const type = 'final';
   const result = runBBCompetition({
     type, participants: [...participants], house: [...participants],
     week, rng, library: BB_COMPETITIONS, forcedId: forced, allowThrowing: false,
@@ -315,9 +353,9 @@ export function simulateBBFinale(rng = Math.random) {
       seated: seatedJurors().length,
       juryCount: seatedJurors().length + 1,
       parts: [
-        { n: 1, role: 'endurance', comp: pinName(pins.one),
+        { n: 1, role: 'endurance · usually', comp: pinName(pins.one),
           field: 'all three', blurb: 'Everybody plays. The winner takes a seat in Part Three and sits out Part Two entirely.' },
-        { n: 2, role: 'skill', comp: pinName(pins.two),
+        { n: 2, role: 'a course · usually', comp: pinName(pins.two),
           field: 'the two who lost Part One', blurb: 'Whoever won Part One does not play. The other two go head to head for the last seat.' },
         { n: 3, role: 'the jury quiz', comp: 'Jury Statements',
           field: 'the winners of Parts One and Two', blurb: 'Every juror recorded a statement with the ending cut off. Whoever knows those people best wins the final Head of Household.' },
@@ -329,16 +367,16 @@ export function simulateBBFinale(rng = Math.random) {
   if (house.length >= 3) {
     // Everybody plays part one, the outgoing Head of Household included, and
     // whoever wins it does not play part two at all.
-    const one = finalPart(house, 'Part One — Endurance', rng, week, { role: 'endurance' });
+    const one = finalPart(house, 'Part One', rng, week, { role: 'endurance' });
     acts.push({ type: 'final-hoh-part', ...one, partNum: 1 });
 
     // Whoever won part one sits it out; the other two play for the last seat.
     const twoField = house.filter(n => n !== one.winner);
-    const two = finalPart(twoField, 'Part Two — Skill', rng, week, { role: 'skill' });
+    const two = finalPart(twoField, 'Part Two', rng, week, { role: 'skill' });
     acts.push({ type: 'final-hoh-part', ...two, partNum: 2 });
 
     // The two winners meet in part three, which is always the jury quiz.
-    const three = finalPart([one.winner, two.winner], 'Part Three — Jury Statements', rng, week,
+    const three = finalPart([one.winner, two.winner], 'Part Three — The Jury Quiz', rng, week,
       { compId: 'bb-final-part-three' });
     acts.push({ type: 'final-hoh-part', ...three, partNum: 3 });
     finalHoh = three.winner;

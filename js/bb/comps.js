@@ -83,8 +83,27 @@ export function validateBBCompetitionLibrary(library = []) {
   });
 }
 
+/**
+ * Which competitions a slot will accept.
+ *
+ * Every slot but one means exactly what it says. `final` is the exception: the
+ * two parts of the final Head of Household are a ROLE, not an airing slot, and
+ * a competition being written for veto night says nothing about whether three
+ * finalists can play it. What actually disqualifies a comp here is its
+ * participant contract — an arena game wants two teams and a pair comp wants
+ * couples — so those two are the only types that cannot serve.
+ *
+ * Kept in this file rather than in the finale so the picker, the draw and the
+ * runner cannot drift: a pool that offers something the dispatcher then refuses
+ * to stage is a dropdown that throws.
+ */
+const FINAL_SLOT_TYPES = ['hoh', 'veto', 'tiebreaker', 'return', 'final'];
+export const servesSlot = (comp, type) => (type === 'final'
+  ? FINAL_SLOT_TYPES.some(t => (comp.types || []).includes(t))
+  : (comp.types || []).includes(type));
+
 function selectionWeight(comp, type, ctx) {
-  if (!comp.types.includes(type)) return 0;
+  if (!servesSlot(comp, type)) return 0;
   const recent = gs.bb?.recentCompetitionCategories || [];
   const lastIndex = recent.lastIndexOf(comp.category);
   const age = lastIndex < 0 ? 99 : recent.length - 1 - lastIndex;
@@ -102,7 +121,7 @@ function selectionWeight(comp, type, ctx) {
 function chooseCompetition(library, type, ctx, rng, forcedId) {
   const pool = validateBBCompetitionLibrary([...GENERIC_BB_COMPS, ...library]);
   if (forcedId) {
-    const forced = pool.find(comp => comp.id === forcedId && comp.types.includes(type));
+    const forced = pool.find(comp => comp.id === forcedId && servesSlot(comp, type));
     if (!forced) throw new Error(`Forced Big Brother competition ${forcedId} is unavailable for ${type}.`);
     return { comp: forced, weights: [{ id: forced.id, weight: 1, forced: true }] };
   }

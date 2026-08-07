@@ -4,66 +4,168 @@
 --   npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --local  --file worker/multishow_schema.sql --yes
 --   npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/multishow_schema.sql --yes
 --
--- SQLite cannot alter a primary key, so the three keyed tables are rebuilt
+-- SQLite cannot alter a primary key, so the keyed tables are rebuilt
 -- create-copy-drop-rename rather than altered. Every rebuild is written so a
--- second run is a no-op: the _new table is dropped first, and the copy reads
--- from whichever shape the live table is currently in.
+-- second run is a no-op that neither loses rows nor relabels them.
 --
--- Every existing row is Total Drama. Fourteen seasons predate the second show.
+-- ─────────────────────────────────────────────────────────────────────────
+-- HOW `format` IS RECOVERED ON A RE-RUN, AND WHY IT IS NOT `COALESCE(format, …)`
+-- ─────────────────────────────────────────────────────────────────────────
+-- The obvious way to make each copy re-runnable is
+-- `SELECT COALESCE(format,'total-drama') … FROM appearances` — read the value
+-- back when the column is there, default it when it isn't. That does not work
+-- here, and it cannot be made to work:
 --
+--   * D1 resolves column names at PREPARE time. On a first run, `appearances`,
+--     `bonds` and `live_season` have no `format` column at all (see
+--     worker/schema.sql), so ANY statement naming `format` fails to compile
+--     with "no such column: format" — a WHERE guard, a CASE, an
+--     `EXISTS (SELECT … FROM pragma_table_info(…))` test, none of them help,
+--     because none of them run before compilation.
+--     `seasons` is the exception, and the reason it alone can use a plain
+--     `COALESCE(format,'total-drama')`: worker/bb_schema.sql already added the
+--     column to it with `ALTER TABLE seasons ADD COLUMN format`. That makes
+--     bb_schema.sql a hard prerequisite of this file — which it already was,
+--     since the derivations below read `bb_appearances`.
+--
+--   * The only conditional-compilation primitive D1 offers is
+--     `CREATE TABLE IF NOT EXISTS x AS SELECT …`: with `x` already present it
+--     short-circuits WITHOUT preparing the SELECT (verified empirically
+--     against this database). `CREATE TRIGGER` does not help — trigger bodies
+--     ARE resolved at CREATE TRIGGER time (also verified: "no such column").
+--
+--   * That primitive can only express "run once, ever" (its guard table is
+--     created on the first run and persists). It cannot express the
+--     complement, "run on every run except the first", because that would
+--     need a table that exists during run 1's body and not during run 2's —
+--     and nothing can create such a table, since any unconditional create
+--     makes it exist on every run and any unconditional drop on none.
+--
+-- So `format` is never read back off a column that might not exist. It is
+-- DERIVED, from tables that are unconditionally present and already carry the
+-- answer:
+--
+--   appearances → 'big-brother' when the (player_id, season_number) has a row
+--                 in bb_appearances and none in td_appearances; else
+--                 'total-drama'. On a first run bb_appearances is empty and
+--                 every row is correctly Total Drama.
+--   seasons     → read straight back off its own column, which bb_schema.sql
+--                 guarantees exists: COALESCE(format,'total-drama').
+--   bonds       → the format of the bonded player's appearance in that season.
+--   live_season → the format of that player's appearance in that season.
+--
+-- `appearances` is therefore rebuilt FIRST, and the other three read the
+-- rebuilt (format-carrying) table. Every one of these SELECTs compiles on a
+-- pristine database and on an already-migrated one, so the file is genuinely
+-- idempotent and a re-run cannot silently relabel a second show's rows.
+--
+-- The one case no derivation can resolve is a player holding an appearance in
+-- BOTH shows under the SAME season number: the two legacy rows are then
+-- indistinguishable. The re-run guard below refuses the migration with a named
+-- CHECK constraint rather than let it collapse them (it would otherwise abort
+-- on a primary-key collision anyway, just with a far less useful message).
+--
+-- ─────────────────────────────────────────────────────────────────────────
 -- DEVIATION FROM BRIEF (1): D1 (both local miniflare and remote) does not
 -- honor `PRAGMA foreign_keys = OFF` — `PRAGMA foreign_keys` reads back as 1
 -- no matter what this script sets it to, so DROP TABLE always runs its
--- implicit "delete every row, check every FK-holding table" pass. `old
--- appearances` and `old bonds` both carry `FOREIGN KEY (season_number)
+-- implicit "delete every row, check every FK-holding table" pass. Old
+-- `appearances` and old `bonds` both carry `FOREIGN KEY (season_number)
 -- REFERENCES seasons(season_number)`. Dropping `seasons` while either still
 -- references it by the old single-column key fails with
 -- SQLITE_CONSTRAINT_FOREIGNKEY. The fix is ordering, not the pragma:
--- rebuild and drop the OLD appearances/bonds tables (removing their FK
--- clause for good) BEFORE seasons is dropped. The pragma lines are left in
--- as documentation of intent; they are no-ops on D1.
+-- rebuild and drop the OLD appearances/bonds tables (removing their FK clause
+-- for good) BEFORE seasons is dropped. The pragma lines are left in as
+-- documentation of intent; they are no-ops on D1.
 --
 -- DEVIATION FROM BRIEF (2): the brief says "do not drop or recreate
--- bb_appearances" (from bb_schema.sql), and this file does not touch its
--- data or its column list. But its schema-level
+-- bb_appearances" (from bb_schema.sql), and this file does not touch its data
+-- or its column list. But its schema-level
 -- `FOREIGN KEY (season_number) REFERENCES seasons(season_number)` cannot
--- survive seasons losing season_number as a standalone unique/PK column:
--- once seasons's key is (format, season_number), SQLite reports
--- "foreign key mismatch - bb_appearances referencing seasons" on ANY
--- INSERT into seasons afterwards, local or remote, including the
--- coexistence acceptance test itself. bb_appearances has 0 rows in this
--- database, so it is rebuilt in place (same columns, same
--- PRIMARY KEY (player_id, season_number), no data to lose) with the stale
--- FK removed — matching the pattern the brief already uses for
--- appearances/bonds, which also dropped their FK-to-seasons clauses rather
--- than try to keep them valid against a composite key.
+-- survive seasons losing season_number as a standalone unique/PK column: once
+-- seasons's key is (format, season_number), SQLite reports "foreign key
+-- mismatch - bb_appearances referencing seasons" on ANY INSERT into seasons
+-- afterwards, local or remote. So bb_appearances is rebuilt in place — same
+-- columns, same PRIMARY KEY (player_id, season_number), rows copied — with the
+-- stale FK removed, matching the treatment appearances/bonds already get.
 
 PRAGMA foreign_keys = OFF;
+
+-- ── live_season: create the OLD (pre-migration) shape if missing ──────
+-- This table does not exist in every database. Creating the legacy shape up
+-- front gives the re-run guard and the copy below something to read from —
+-- 0 rows the first time this runs anywhere.
+CREATE TABLE IF NOT EXISTS live_season (
+  season_number  INTEGER NOT NULL,
+  player_name    TEXT    NOT NULL,
+  player_id      TEXT,
+  status         TEXT,
+  exit_episode   INTEGER,
+  immunity_wins  INTEGER DEFAULT 0,
+  reward_wins    INTEGER DEFAULT 0,
+  challenge_wins INTEGER DEFAULT 0,
+  votes_received INTEGER DEFAULT 0
+);
 
 -- ── td_appearances: the Total Drama half of an appearance ─────────────
 -- No format column: the table IS the format, exactly like bb_appearances.
 --
--- DEVIATION FROM BRIEF (3): the brief's `CREATE TABLE ... ; INSERT OR
--- IGNORE ... WHERE EXISTS (SELECT 1 FROM pragma_table_info('appearances')
--- WHERE name = 'tribe')` guard does not protect a second run: D1 rejects a
--- statement that references a column which doesn't exist at PREPARE time,
--- regardless of whether a WHERE clause would make that branch runtime-false
--- — confirmed locally with "no such column: tribe". `CREATE TABLE ... AS
--- SELECT` behaves differently: with `IF NOT EXISTS` and the table already
--- present, it short-circuits WITHOUT preparing the SELECT at all (verified
--- against this database). So this form only ever evaluates the
--- tribe-referencing SELECT the one time it can succeed — while
--- `appearances` still carries the old columns — and is a true no-op on
--- every run after. The trade-off: `CREATE TABLE ... AS SELECT` can't
--- declare a PRIMARY KEY inline, so the key is a UNIQUE index instead,
--- which enforces the same constraint.
-CREATE TABLE IF NOT EXISTS td_appearances AS
+-- The table is DECLARED (real PRIMARY KEY, NOT NULLs, DEFAULT 0) rather than
+-- produced by `CREATE TABLE … AS SELECT`, which cannot declare any of those.
+-- The once-only harvest of the legacy columns is pushed into a separate CTAS
+-- instead: `ms_legacy_td_columns` is created on the first run only, while
+-- `appearances` still has tribe/challenge_wins/…, and short-circuits (SELECT
+-- never prepared) on every run after — which is what makes this re-runnable,
+-- since on a second run those columns no longer exist to name. The staging
+-- table is kept permanently and deliberately: it is also the only surviving
+-- copy of the six columns this migration strips off `appearances`.
+DROP INDEX IF EXISTS idx_td_appearances_pk;
+CREATE TABLE IF NOT EXISTS td_appearances (
+  player_id      TEXT    NOT NULL,
+  season_number  INTEGER NOT NULL,
+  tribe          TEXT,
+  challenge_wins INTEGER DEFAULT 0,
+  immunity_wins  INTEGER DEFAULT 0,
+  reward_wins    INTEGER DEFAULT 0,
+  idols_found    INTEGER DEFAULT 0,
+  strategic_rank INTEGER,
+  PRIMARY KEY (player_id, season_number)
+);
+CREATE TABLE IF NOT EXISTS ms_legacy_td_columns AS
   SELECT player_id, season_number, tribe, challenge_wins, immunity_wins,
          reward_wins, idols_found, strategic_rank
   FROM appearances;
-CREATE UNIQUE INDEX IF NOT EXISTS idx_td_appearances_pk ON td_appearances (player_id, season_number);
+INSERT OR IGNORE INTO td_appearances
+  (player_id, season_number, tribe, challenge_wins, immunity_wins, reward_wins,
+   idols_found, strategic_rank)
+  SELECT player_id, season_number, tribe, challenge_wins, immunity_wins,
+         reward_wins, idols_found, strategic_rank
+  FROM ms_legacy_td_columns;
+
+-- ── re-run guard ──────────────────────────────────────────────────────
+-- Refuse, loudly and before anything is dropped, in the one situation the
+-- format derivations below cannot resolve: the same player holding two
+-- appearance rows under one season number, i.e. an appearance in each show.
+-- Those two rows are indistinguishable once `format` is not readable, so the
+-- rebuild would collapse them. The CHECK is named so the failure explains
+-- itself: "CHECK constraint failed: rerun_would_collapse_two_shows_rows".
+-- On a first run and on any Total-Drama-only database this inserts 0 rows.
+DROP TABLE IF EXISTS ms_rerun_guard;
+CREATE TABLE ms_rerun_guard (
+  n INTEGER,
+  CONSTRAINT rerun_would_collapse_two_shows_rows CHECK (n = 0)
+);
+INSERT INTO ms_rerun_guard (n)
+  SELECT 1
+  WHERE EXISTS (SELECT 1 FROM appearances
+                 GROUP BY player_id, season_number HAVING COUNT(*) > 1);
+DROP TABLE ms_rerun_guard;
 
 -- ── appearances: shared core only ─────────────────────────────────────
+-- Rebuilt FIRST, because seasons/bonds/live_season all derive their format
+-- from it. `format` is derived from bb_appearances/td_appearances membership
+-- rather than read off a column that does not exist on a first run — see the
+-- long note at the top of this file.
 DROP TABLE IF EXISTS appearances_new;
 CREATE TABLE appearances_new (
   player_id      TEXT    NOT NULL,
@@ -76,24 +178,26 @@ CREATE TABLE appearances_new (
   final_vote     TEXT,
   PRIMARY KEY (player_id, format, season_number)
 );
--- Hardcoded literal, not COALESCE(format, ...): unlike `seasons`, the
--- pristine `appearances` table (worker/schema.sql) has never had a `format`
--- column added by an ALTER, so referencing `appearances.format` here would
--- break the very first run with "no such column: format". Every row in
--- this table is Total Drama data pre-migration, so the literal is correct
--- on every run — first or repeat — for as long as nothing else writes a
--- non-Total-Drama row into `appearances` between runs of this file, which
--- holds for this migration's own verification cycle.
 INSERT INTO appearances_new
   (player_id, format, season_number, placement, status, votes_received, jury_votes, final_vote)
-  SELECT player_id, 'total-drama', season_number, placement, status,
-         votes_received, jury_votes, final_vote
-  FROM appearances;
+  SELECT a.player_id,
+         CASE WHEN EXISTS (SELECT 1 FROM bb_appearances b
+                            WHERE b.player_id = a.player_id
+                              AND b.season_number = a.season_number)
+               AND NOT EXISTS (SELECT 1 FROM td_appearances t
+                            WHERE t.player_id = a.player_id
+                              AND t.season_number = a.season_number)
+              THEN 'big-brother' ELSE 'total-drama' END,
+         a.season_number, a.placement, a.status,
+         a.votes_received, a.jury_votes, a.final_vote
+  FROM appearances a;
 DROP TABLE appearances;
 ALTER TABLE appearances_new RENAME TO appearances;
 CREATE INDEX IF NOT EXISTS idx_appearances_season ON appearances (format, season_number);
 
 -- ── bonds: format joins the key ───────────────────────────────────────
+-- A bond belongs to the same show as the appearance it was recorded in, and
+-- `appearances` above already carries `format` by this point.
 DROP TABLE IF EXISTS bonds_new;
 CREATE TABLE bonds_new (
   player_id     TEXT    NOT NULL,
@@ -103,12 +207,18 @@ CREATE TABLE bonds_new (
   PRIMARY KEY (player_id, ally_id, format, season_number)
 );
 INSERT INTO bonds_new (player_id, ally_id, format, season_number)
-  SELECT player_id, ally_id, 'total-drama', season_number FROM bonds;
+  SELECT b.player_id, b.ally_id,
+         COALESCE((SELECT a.format FROM appearances a
+                    WHERE a.player_id = b.player_id
+                      AND a.season_number = b.season_number
+                    LIMIT 1), 'total-drama'),
+         b.season_number
+  FROM bonds b;
 DROP TABLE bonds;
 ALTER TABLE bonds_new RENAME TO bonds;
 
 -- ── bb_appearances: drop its stale FK to seasons(season_number) ───────
--- See deviation note (2) above. Empty table, same shape, no data movement.
+-- See deviation note (2) above. Same shape, same rows, no data movement.
 DROP TABLE IF EXISTS bb_appearances_new;
 CREATE TABLE bb_appearances_new (
   player_id        TEXT NOT NULL,
@@ -130,11 +240,17 @@ CREATE INDEX IF NOT EXISTS idx_bb_appearances_season ON bb_appearances (season_n
 
 -- ── seasons: (format, season_number) ──────────────────────────────────
 -- Rebuilt AFTER appearances/bonds/bb_appearances above: those all used to
--- carry `FOREIGN KEY (season_number) REFERENCES seasons(season_number)`,
--- and D1 enforces foreign keys unconditionally (see deviation note up top).
--- DROP TABLE runs an implicit "delete every row" pass that is checked
--- against every table still holding an FK into it, so seasons can only be
--- dropped once nothing references it by the old single-column key.
+-- carry `FOREIGN KEY (season_number) REFERENCES seasons(season_number)`, and
+-- D1 enforces foreign keys unconditionally (see deviation note 1). DROP TABLE
+-- runs an implicit "delete every row" pass checked against every table still
+-- holding an FK into it, so seasons can only be dropped once nothing
+-- references it by the old single-column key.
+--
+-- This is the one table that can read `format` straight back off itself:
+-- worker/bb_schema.sql already added the column with
+-- `ALTER TABLE seasons ADD COLUMN format TEXT DEFAULT 'total-drama'`, so the
+-- COALESCE below compiles on a first run and preserves a real Big Brother
+-- season's format on every run after.
 DROP TABLE IF EXISTS seasons_new;
 CREATE TABLE seasons_new (
   format        TEXT    NOT NULL DEFAULT 'total-drama',
@@ -157,21 +273,8 @@ DROP TABLE seasons;
 ALTER TABLE seasons_new RENAME TO seasons;
 
 -- ── live_season: keyed now; its stat columns are sub-project E ────────
--- This table does not exist yet in this database. Create it in its OLD
--- (pre-migration) shape first if missing, so the copy below always has a
--- source to read from — 0 rows the first time this runs anywhere, real rows
--- once sub-project E starts writing to it.
-CREATE TABLE IF NOT EXISTS live_season (
-  season_number  INTEGER NOT NULL,
-  player_name    TEXT    NOT NULL,
-  player_id      TEXT,
-  status         TEXT,
-  exit_episode   INTEGER,
-  immunity_wins  INTEGER DEFAULT 0,
-  reward_wins    INTEGER DEFAULT 0,
-  challenge_wins INTEGER DEFAULT 0,
-  votes_received INTEGER DEFAULT 0
-);
+-- Format derived from the player's appearance in that season where one
+-- exists; a season still airing may have none yet, hence the default.
 DROP TABLE IF EXISTS live_season_new;
 CREATE TABLE live_season_new (
   format         TEXT    NOT NULL DEFAULT 'total-drama',
@@ -189,9 +292,13 @@ CREATE TABLE live_season_new (
 INSERT INTO live_season_new
   (format, season_number, player_name, player_id, status, exit_episode,
    immunity_wins, reward_wins, challenge_wins, votes_received)
-  SELECT 'total-drama', season_number, player_name, player_id, status, exit_episode,
-         immunity_wins, reward_wins, challenge_wins, votes_received
-  FROM live_season;
+  SELECT COALESCE((SELECT a.format FROM appearances a
+                    WHERE a.player_id = l.player_id
+                      AND a.season_number = l.season_number
+                    LIMIT 1), 'total-drama'),
+         l.season_number, l.player_name, l.player_id, l.status, l.exit_episode,
+         l.immunity_wins, l.reward_wins, l.challenge_wins, l.votes_received
+  FROM live_season l;
 DROP TABLE live_season;
 ALTER TABLE live_season_new RENAME TO live_season;
 

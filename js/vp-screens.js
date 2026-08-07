@@ -21166,6 +21166,8 @@ export function buildBBWeekScreens(ep) {
       if (iv) screens.push({ id: 'bb-final-interview', label: 'Third Place', html: iv });
     } else if (act.type === 'jury-questioning') {
       screens.push({ id: 'bb-ftc-questions', label: 'The Questions', html: rpBuildBBJuryQuestioning(ep) });
+    } else if (act.type === 'reunion') {
+      screens.push({ id: 'bb-reunion', label: 'The Reunion', html: rpBuildBBReunion(ep) });
     } else if (act.type === 'closing-statements') {
       screens.push({ id: 'bb-ftc-speeches', label: 'Closing Statements', html: rpBuildBBClosingStatements(ep) });
     } else if (act.type === 'jury-vote') {
@@ -22946,6 +22948,171 @@ export function rpBuildBBJuryQuestioning(ep) {
           Nobody moved. Every vote in this room was decided before anybody sat down.
         </div>`,
   });
+}
+
+/**
+ * The reunion.
+ *
+ * Everybody who ever lived in that house, on one stage, for the only time. The
+ * screen is built as the stage itself — a riser of every houseguest in eviction
+ * order, the pre-jury on the ends with no ballot under them and the jury in the
+ * middle with one each — because the whole point of the segment is WHO IS IN
+ * THE ROOM: the people with nothing to protect are the reason the truth comes
+ * out, and the people with a vote are the reason it matters.
+ *
+ * A ballot under a juror lights when something said tonight moves them, so the
+ * cost of a revelation is visible on the stage while it is being made.
+ */
+export function rpBuildBBReunion(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'reunion');
+  if (!act) return '';
+  const segments = act.segments || [];
+  const stateKey = `bb_reunion_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const total = segments.length;
+  const done = state.idx >= total - 1;
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+
+  const jury = act.jury || [];
+  const prejury = act.prejury || [];
+  const finalTwo = act.finalTwo || [];
+
+  // Which jurors have been moved by something the viewer has actually watched.
+  // A ledger that arrives finished tells the audience the end of the segment
+  // in the first frame.
+  const seen = segments.slice(0, state.idx + 1);
+  const movedBy = {};
+  seen.forEach((s, i) => {
+    if (s.kind !== 'reaction' || !s.delta) return;
+    const juror = s.speaker;
+    if (!jury.includes(juror)) return;
+    movedBy[juror] = (movedBy[juror] || 0) + Math.abs(Number(s.delta) || 0);
+  });
+  // Everything the segment moved in total, for the closing ledger.
+  const ledger = (act.moved || []).filter(m => jury.includes(m.juror));
+
+  const seat = (name, role) => {
+    const lit = role === 'jury' && movedBy[name];
+    return `<div class="bbru-seat is-${role} ${lit ? 'is-lit' : ''}">
+      <figure>${_bbAvatar(name, 54)}</figure>
+      <span>${_bbEsc(name)}</span>
+      <em>${role === 'jury' ? (lit ? 'MOVED' : 'VOTES') : role === 'final' ? 'ON TRIAL' : 'NO VOTE'}</em>
+      ${role === 'jury' ? `<i class="bbru-ballot ${lit ? 'is-lit' : ''}"></i>` : ''}
+    </div>`;
+  };
+
+  const stage = `<div class="bbru-stage">
+    <div class="bbru-riser">
+      ${prejury.map(n => seat(n, 'pre')).join('')}
+      ${jury.map(n => seat(n, 'jury')).join('')}
+    </div>
+    <div class="bbru-front">${finalTwo.map(n => seat(n, 'final')).join('')}</div>
+    <div class="bbru-meta">
+      <span>${prejury.length} WITH NOTHING TO LOSE</span>
+      <span>${jury.length} WITH A VOTE</span>
+      <span>${Object.keys(movedBy).length} MOVED SO FAR</span>
+    </div>
+  </div>`;
+
+  const KIND = {
+    walkon: { pill: 'grey', label: 'BACK ON THE STAGE' },
+    reveal: { pill: 'red', label: 'THE TAPE' },
+    reaction: { pill: 'gold', label: 'THE REACTION' },
+    repair: { pill: 'blue', label: 'THE WRONG NAME' },
+    clash: { pill: 'red', label: 'THE ROW' },
+    answer: { pill: 'gold', label: 'THE ANSWER' },
+  };
+
+  const card = (s, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    const meta = KIND[s.kind] || { pill: 'grey', label: 'THE STAGE' };
+    const delta = Number(s.delta) || 0;
+    return `<div class="bbns-card ${s.kind === 'reveal' || s.kind === 'clash' ? 'is-key' : ''} ${
+      s.kind === 'reaction' ? 'bbru-react' : ''}">
+      <div class="bbns-card-h">${(s.players || []).slice(0, 3).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${meta.pill}">${_bbEsc(s.badgeText || meta.label)}</span></div>
+      <div class="bbns-card-b">${s.text}</div>
+      ${delta ? `<div class="bbru-delta ${delta < 0 ? 'is-down' : 'is-up'}">
+        ${_bbEsc(s.speaker)}'s read of ${_bbEsc((s.players || [])[1] || '')} moves ${delta > 0 ? '+' : ''}${delta.toFixed(2)}
+        <b>${delta < 0 ? 'against' : 'toward'} them, with the ballot in their hand</b></div>` : ''}
+    </div>`;
+  };
+
+  const style = `<style>
+    .bbru-stage{position:relative;margin-bottom:18px;padding:16px 14px 22px;border-radius:12px;
+      background:radial-gradient(70% 120% at 50% 0%,rgba(240,165,0,.16),transparent 62%),
+        linear-gradient(180deg,rgba(28,20,10,.95),rgba(10,8,6,.98));
+      border:1px solid rgba(240,165,0,.28);box-shadow:0 16px 40px rgba(0,0,0,.55)}
+    .bbru-riser{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+    .bbru-front{display:flex;gap:16px;justify-content:center;margin-top:14px;padding-top:14px;
+      border-top:1px solid rgba(240,165,0,.18)}
+    .bbru-seat{width:66px;text-align:center;position:relative}
+    .bbru-seat figure{width:54px;height:54px;margin:0 auto;border-radius:50%;overflow:hidden;
+      border:2px solid rgba(255,255,255,.16)}
+    .bbru-seat figure .bb-av{width:54px!important;height:54px!important;border-radius:50%}
+    .bbru-seat span{display:block;font-size:10px;color:#e6edf3;margin-top:4px;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis}
+    .bbru-seat em{display:block;font-style:normal;font-family:ui-monospace,Consolas,monospace;
+      font-size:7px;letter-spacing:1.2px;color:#6e7681;margin-top:1px}
+    .bbru-seat.is-pre{opacity:.55;filter:grayscale(.6)}
+    .bbru-seat.is-jury figure{border-color:rgba(240,165,0,.5)}
+    .bbru-seat.is-final{width:86px}
+    .bbru-seat.is-final figure{width:70px;height:70px;border-color:#f0a500;
+      box-shadow:0 0 26px rgba(240,165,0,.35)}
+    .bbru-seat.is-final figure .bb-av{width:70px!important;height:70px!important}
+    .bbru-seat.is-final em{color:#f0a500}
+    .bbru-ballot{display:block;width:22px;height:5px;margin:4px auto 0;border-radius:2px;
+      background:rgba(255,255,255,.12);transition:all .4s ease}
+    .bbru-ballot.is-lit{background:linear-gradient(90deg,#f0a500,#ffd77a);
+      box-shadow:0 0 12px rgba(240,165,0,.7)}
+    .bbru-seat.is-lit figure{border-color:#f0a500;box-shadow:0 0 18px rgba(240,165,0,.45)}
+    .bbru-seat.is-lit em{color:#f0a500}
+    .bbru-meta{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);display:flex;gap:12px;
+      font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.3px;color:#8b949e;
+      background:#120c05;border:1px solid rgba(240,165,0,.3);border-radius:3px;padding:2px 10px;white-space:nowrap}
+    .bbru-react{border-left-color:#f0a500}
+    .bbru-delta{margin-top:8px;padding:6px 9px;border-radius:5px;font-size:10.5px;letter-spacing:.4px;
+      font-family:ui-monospace,Consolas,monospace}
+    .bbru-delta b{display:block;font-weight:400;font-family:inherit;font-size:9.5px;color:#8b949e;margin-top:2px;
+      letter-spacing:.8px}
+    .bbru-delta.is-down{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#ff8b84}
+    .bbru-delta.is-up{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);color:#7ee787}
+    .bbru-ledger{margin-top:16px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,.3);
+      background:rgba(240,165,0,.06)}
+    .bbru-ledger h5{margin:0 0 7px;font-family:ui-monospace,Consolas,monospace;font-size:9px;
+      letter-spacing:2px;color:#f0a500}
+    .bbru-lrow{display:flex;align-items:center;gap:8px;font-size:11px;color:#c9d1d9;margin-bottom:4px}
+    .bbru-lrow i{font-style:normal;margin-left:auto;font-family:ui-monospace,Consolas,monospace;font-size:10px}
+    @media(prefers-reduced-motion:reduce){.bbru-seat,.bbru-ballot{transition:none}}
+  </style>`;
+
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#f0a500">THE REUNION</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">
+      Everybody who was ever in that house, on one stage, before anybody votes.</div>
+    ${stage}
+    <div class="bbns-feed">${segments.map(card).join('')}</div>
+    ${done && ledger.length ? `<div class="bbru-ledger">
+      <h5>WHAT THE STAGE COST THEM</h5>
+      ${ledger.map(m => `<div class="bbru-lrow">
+        <span>${_bbEsc(m.juror)}</span>
+        <span style="color:#8b949e">on ${_bbEsc(m.finalist)}</span>
+        <i style="color:${m.delta < 0 ? '#ff8b84' : '#7ee787'}">${m.delta > 0 ? '+' : ''}${m.delta}</i>
+      </div>`).join('')}
+    </div>` : done ? `<div class="bbru-ledger" style="border-color:var(--border);background:rgba(255,255,255,.02)">
+      <h5 style="color:#8b949e">NOTHING MOVED</h5>
+      <div style="font-size:11px;color:#8b949e">Everything said on that stage was said to people who had already decided.</div>
+    </div>` : ''}
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+      align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));
+      border-top:1px solid rgba(240,165,0,.3)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">Next</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Play it all</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /** The last thing either of them gets to say. */

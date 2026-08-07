@@ -19,7 +19,7 @@ import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
 import { reconcileBBJury } from './bb/knowledge.js';
 import { seedJurorReads, sentimentAdjustment } from './bb/jury-sentiment.js';
-import { runJuryQuestioning, runClosingStatements, runAmericasFavourite } from './bb/finale-night.js';
+import { runJuryQuestioning, runReunion, runClosingStatements, runAmericasFavourite } from './bb/finale-night.js';
 import { seatedJurors } from './bb/jury.js';
 import { rememberStrategy } from './strategy-memory.js';
 import { simulateJuryVote, projectJuryVotes } from './finale.js';
@@ -354,6 +354,18 @@ export function simulateBBFinale(rng = Math.random) {
     questioning = runJuryQuestioning({ finalTwo, jury, week: week?.num || 0, rng });
     if (questioning.exchanges.length) {
       acts.push({ type: 'jury-questioning', finalTwo, jury, ...questioning });
+    }
+    // ── the reunion ──
+    //
+    // Between the questions and the speeches, because everything it reveals has
+    // to still be in the room when the last word is spoken and the ballots are
+    // written. Everybody who ever lived in that house comes back, and the
+    // pre-jury — the only people on the stage with nothing left to protect —
+    // are the reason the truth comes out at all.
+    const prejury = (gs.eliminated || []).filter(n => n && !jury.includes(n) && !finalTwo.includes(n));
+    const reunion = runReunion({ finalTwo, jury, prejury, week: week?.num || 0, rng });
+    if (reunion.segments.length) {
+      acts.push({ type: 'reunion', finalTwo, jury, prejury, ...reunion });
     }
     closing = runClosingStatements({ finalTwo, jury, week: week?.num || 0, rng });
     if (closing.statements.length) {

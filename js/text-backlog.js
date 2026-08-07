@@ -5306,6 +5306,27 @@ export function generateBBFinaleText(ep) {
         ln('');
         ln(`  Changed their mind in that room: ${act.swung.join(', ')}.`);
       }
+    } else if (act.type === 'reunion') {
+      sec('THE REUNION');
+      ln(`  Everybody who was ever in that house is on the stage. `
+        + `${(act.prejury || []).length} of them have no vote and nothing to protect.`);
+      for (const s of act.segments || []) {
+        ln('');
+        ln(`  [${s.badgeText || s.kind}] ${s.speaker || ''}`);
+        ln(`    ${_textStripHtml(s.text)}`);
+        if (s.delta) {
+          ln(`      ${s.speaker}'s read moves ${s.delta > 0 ? '+' : ''}${s.delta} — with the ballot still to write.`);
+        }
+      }
+      const moved = (act.moved || []).filter(m => (act.jury || []).includes(m.juror));
+      if (moved.length) {
+        ln('');
+        ln('  What the stage cost them:');
+        moved.forEach(m => ln(`    ${m.juror} on ${m.finalist}: ${m.delta > 0 ? '+' : ''}${m.delta}`));
+      } else {
+        ln('');
+        ln('  Nothing moved. Everything said on that stage was said to people who had already decided.');
+      }
     } else if (act.type === 'closing-statements') {
       sec('CLOSING STATEMENTS');
       for (const s of act.statements || []) {

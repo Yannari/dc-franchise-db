@@ -34,7 +34,7 @@
 // other way, which is the honest version and the one the user asked for.
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { getBond } from '../bonds.js';
+import { addBond, getBond } from '../bonds.js';
 import { juryValueProfile, juryTopValue } from '../finale.js';
 import { readOf, stanceOf, moveRead } from './jury-sentiment.js';
 import { dealBetween, tierOf } from './deals.js';
@@ -435,6 +435,288 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
     });
   }
   return { statements };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// The reunion
+// ══════════════════════════════════════════════════════════════════════
+//
+// Everybody who was ever in that house is on the stage at once, for the first
+// and only time, and half of them have spent a season being wrong about
+// something. The vote is secret while the game is running — that is the whole
+// reason the house eats itself — and this is the night the secret stops.
+//
+// So this segment is not a curtain call. It is the ledger being read out loud:
+//
+//   • A FLIP NOBODY CAUGHT. `settleBBAllianceWeek` records every ally-on-ally
+//     vote with a `known` flag, and an unknown one means the victim walked out
+//     of that house never learning who did it. Tonight they learn.
+//   • A GRUDGE HELD AGAINST THE WRONG PERSON. When a flip goes uncaught the
+//     house reaches for a plausible culprit instead, and that misattribution is
+//     recorded too — with the innocent party's name on it.
+//   • THE PRE-JURY. Seven people with no vote and nothing to protect, which
+//     makes them the only honest witnesses in the building.
+//
+// And it MOVES VOTES. A juror who learns tonight that the person on the left
+// wrote their name down in week four is a juror whose read has just changed,
+// minutes before they cast the only ballot that pays. Revelations run through
+// `moveRead` like everything else, at a lower credibility than a question asked
+// face to face — this is new information, not persuasion, and headroom still
+// decides how far a hardened mind travels.
+
+const WALKONS = {
+  bitter: [
+    (n, p, wk) => `"Week ${wk}. I've had a long time to think about week ${wk}, and I've come to the conclusion that I was robbed by people who are worse at this than me."`,
+    (n, p, wk) => `"Do I look like somebody who's made peace with it? No. Next question."`,
+    (n, p, wk) => `"I'd love to say there are no hard feelings. There are several, and I've named them."`,
+    (n, p, wk) => `"I watched the episodes. I know exactly what was said about me in that storage room, and I remember every name."`,
+  ],
+  gracious: [
+    (n, p, wk) => `"I went out in week ${wk} and I've spent months telling people it was the best thing I ever did. Most of the time I even mean it."`,
+    (n, p, wk) => `"They got me fair. I'd like it on the record that they got me fair, and also that I'd have got them eventually."`,
+    (n, p, wk) => `"I loved being in there. I hated most of you at the time. Both of those are still true."`,
+    (n, p, wk) => `"No hard feelings — genuinely. I've seen what it did to the people who stayed."`,
+  ],
+  baffled: [
+    (n, p, wk) => `"I still don't know what happened in week ${wk}, and I have watched it back four times."`,
+    (n, p, wk) => `"Somebody in this room lied to my face for a month and I have narrowed it down to everybody."`,
+    (n, p, wk) => `"I thought I was in the majority. I was in a group chat of one."`,
+    (n, p, wk) => `"I keep waiting for the part where it makes sense. It hasn't come yet."`,
+  ],
+};
+
+const TAPE_INTROS = [
+  (v, w) => `The wall lights up, and it is week ${w} again — the vote ${v} never got to see.`,
+  (v, w) => `"Before we go any further," the wall says, "let's look at week ${w}." ${v} is already sitting forward.`,
+  (v, w) => `They play the week ${w} ballots. All of them, in order, with the names on.`,
+  (v, w) => `The screen goes to a Diary Room chair from week ${w}, and half this stage stops breathing.`,
+];
+
+const CONFESSIONS = [
+  (t, v, p) => `"It was me. You spent three months thinking it was somebody else and it was me, and I let you."`,
+  (t, v, p) => `"I wrote your name. I'm not going to sit here on live television and let you keep being wrong about it."`,
+  (t, v, p) => `"Yeah. That one was mine." ${t} does not look away while ${p.sub} says it, which is worth something and not very much.`,
+  (t, v, p) => `"You hugged me on the way out," ${t} says. "I've thought about that hug a lot."`,
+];
+
+const REACTIONS = {
+  juror: [
+    (v, t, p) => `${v} does not shout. ${p.Sub} looks at the person ${p.sub} is about to vote for, and then at the ballot in ${p.posAdj} hand.`,
+    (v, t, p) => `"Minutes," ${v} says. "You told me that in there, and I'm finding out about it four minutes before I vote."`,
+    (v, t, p) => `${v} laughs once, with nothing funny in it, and writes something on the back of ${p.posAdj} card.`,
+    (v, t, p) => `${v} says nothing at all. Everybody on that bench watches ${p.obj} decide what it is worth.`,
+  ],
+  prejury: [
+    (v, t, p) => `${v} throws both hands up. "I KNEW it. I said it in the jury house and nobody believed me — I was gone by then, I said it to a wall."`,
+    (v, t, p) => `"So all that," ${v} says slowly, "the whole speech about how it wasn't you. That was a performance."`,
+    (v, t, p) => `${v} stands up, thinks better of it, and sits down again, which the audience enjoys enormously.`,
+    (v, t, p) => `"I don't get a vote," ${v} says. "I want everybody to notice how much I wish I did."`,
+  ],
+};
+
+const REPAIRS = [
+  (r, w, t) => `${r} turns to ${w}. "I have been horrible to you for two months about something you didn't do."`,
+  (r, w, t) => `"${w}. I'm sorry." ${r} means it, and it is the first time all night anybody has said a sentence that short.`,
+  (r, w, t) => `${r} spent a season certain it was ${w}. It was ${t}. The apology is public and it costs ${r} something to make.`,
+  (r, w, t) => `"I told the whole house you flipped on me," ${r} says to ${w}. "You didn't. ${t} did, and ${t} let me say it."`,
+];
+
+const CLASHES = [
+  (a, b) => `${a} and ${b} start talking at the same time and neither of them stops, and for about fifteen seconds nobody on that stage can be heard at all.`,
+  (a, b) => `"Say it to me now," ${a} says to ${b}. "There's no vote left to protect. Say it now."`,
+  (a, b) => `${b} tries to explain it as strategy. ${a} has heard the word strategy enough times this year and says so, loudly.`,
+  (a, b) => `It takes the host twice to get between ${a} and ${b}, and even then only one of them sits down.`,
+];
+
+const OWNINGS = [
+  (f, p) => `"I did it," ${f} says. "In front of all of you, before the vote, because if I win I want to have said it first."`,
+  (f, p) => `${f} does not deny a word of it. "Every name on that screen, I had a hand in. That's why I'm still sitting here."`,
+  (f, p) => `"I'd rather you hate me and know why," ${f} says, "than like me for something I didn't do."`,
+  (f, p) => `${f} takes it standing up, which is not nothing, and does not offer anybody an excuse.`,
+];
+
+const DUCKINGS = [
+  (f, p) => `${f} calls it a group decision. Four people on that bench say the group's name at the same time and it is not a flattering noise.`,
+  (f, p) => `"It wasn't like that," ${f} says, to a stage that has just watched the tape of it being exactly like that.`,
+  (f, p) => `${f} explains for a while. Nobody interrupts, which is worse than being interrupted.`,
+  (f, p) => `"I don't remember it that way," ${f} says, and lets it sit there.`,
+];
+
+/** Every ally-on-ally flip the season recorded, with the week attached. */
+function betrayalLedger() {
+  const out = [];
+  for (const w of weeks()) {
+    for (const inc of (w?.allianceChanges?.betrayals || [])) {
+      if (inc?.voter && inc?.victim) out.push({ ...inc, num: Number(w.num) || Number(inc.week) || 0 });
+    }
+  }
+  return out;
+}
+
+/**
+ * The reunion.
+ *
+ * Runs after the questioning and before the closing statements, so anything it
+ * reveals is still in the room when the last speeches are made — and, more to
+ * the point, before anybody votes.
+ */
+export function runReunion({ finalTwo = [], jury = [], prejury = [], week = 0, rng = Math.random } = {}) {
+  const segments = [];
+  const moved = [];
+  const onStage = [...new Set([...prejury, ...jury])].filter(Boolean);
+  if (!onStage.length) return { segments, moved };
+
+  // Deduped on the TEMPLATE, not on the rendered line.
+  //
+  // `makeSayer` compares finished sentences, which is right for the
+  // questioning — two finalists answering the same juror produce the same
+  // string. Here every line carries a different name, so the same template
+  // rendered for two different jurors is two different strings and the sayer
+  // let both through: "Minutes," Gus says… followed immediately by "Minutes,"
+  // Fern says…
+  const used = new Set();
+  const say = (list, ...args) => {
+    const fresh = list.filter(fn => !used.has(fn));
+    const from = fresh.length ? fresh : list;
+    const chosen = from[Math.min(from.length - 1, Math.floor(rng() * from.length))];
+    used.add(chosen);
+    return chosen(...args);
+  };
+  const isJuror = name => jury.includes(name);
+  const isFinalist = name => finalTwo.includes(name);
+  const exitWeek = name => evictionOf(name)?.num || 0;
+
+  // ── the walk-on ──
+  //
+  // The pre-jury only. The jury has been on camera all night and is about to be
+  // asked to vote; these are the people the finale normally never hears from.
+  for (const name of prejury.slice(0, 6)) {
+    const p = pronouns(name);
+    const s = pStats(name);
+    // How they wear it: bitterness is low temperament and a real grievance,
+    // grace is high loyalty, and being baffled is what happens to somebody who
+    // never saw the house they were living in.
+    const tone = (s.intuition || 5) <= 4 ? 'baffled'
+      : (s.temperament || 5) <= 4 && getBond(name, finalTwo[0]) < 2 ? 'bitter'
+        : 'gracious';
+    segments.push({
+      kind: 'walkon', speaker: name, players: [name], tone,
+      text: say(WALKONS[tone], name, p, exitWeek(name) || week),
+      badgeText: tone === 'bitter' ? 'STILL ANGRY' : tone === 'baffled' ? 'STILL CONFUSED' : 'NO HARD FEELINGS',
+      badgeClass: tone === 'bitter' ? 'red' : tone === 'baffled' ? 'challenge' : 'green',
+    });
+  }
+
+  // ── the tape ──
+  //
+  // Ranked by how much the reveal is worth to the night: a finalist caught in
+  // front of the people voting is the top of the list, and an innocent party
+  // who has worn the blame all season is right behind it.
+  const hidden = betrayalLedger()
+    .filter(inc => inc.known === false && onStage.includes(inc.victim) && inc.voter !== inc.victim)
+    .filter(inc => isFinalist(inc.voter) || onStage.includes(inc.voter));
+  const drama = inc => (isFinalist(inc.voter) ? 3 : 0) + (isJuror(inc.victim) ? 2 : 0)
+    + (inc.misattribution ? 2 : 0) + (inc.num || 0) * 0.05;
+  const reveals = [...hidden].sort((a, b) => drama(b) - drama(a)).slice(0, 3);
+
+  const exposed = new Set();
+  for (const inc of reveals) {
+    const { voter: traitor, victim } = inc;
+    const tp = pronouns(traitor);
+    const vp = pronouns(victim);
+    segments.push({
+      kind: 'reveal', speaker: traitor, players: [traitor, victim], week: inc.num,
+      text: `${say(TAPE_INTROS, victim, inc.num || week)} ${say(CONFESSIONS, traitor, victim, tp)}`,
+      badgeText: 'THE VOTE THEY NEVER SAW', badgeClass: 'red',
+    });
+
+    // The consequence. A juror who has just learned the person in front of them
+    // wrote their name down is a juror whose read has moved, minutes before the
+    // ballot — at a lower credibility than a question they asked themselves,
+    // because this is new information rather than an argument.
+    let delta = 0;
+    if (isJuror(victim) && isFinalist(traitor)) {
+      delta = moveRead(victim, traitor, {
+        strength: -1.6, credibility: 0.75, kind: 'reunion-reveal', week,
+        text: `${victim} found out at the reunion that ${traitor} wrote their name down in week ${inc.num}`,
+      });
+      if (Math.abs(delta) >= 0.05) moved.push({ juror: victim, finalist: traitor, delta: round2(delta), kind: 'reveal' });
+    }
+    segments.push({
+      kind: 'reaction', speaker: victim, players: [victim, traitor],
+      delta: round2(delta),
+      text: say(REACTIONS[isJuror(victim) ? 'juror' : 'prejury'], victim, traitor, vp),
+      badgeText: isJuror(victim) ? (Math.abs(delta) >= 0.05 ? 'A VOTE MOVES' : 'ALREADY DECIDED') : 'NO VOTE, PLENTY TO SAY',
+      badgeClass: isJuror(victim) ? 'gold' : 'grey',
+    });
+    if (isFinalist(traitor)) exposed.add(traitor);
+
+    // ── and the person who wore it ──
+    const mis = inc.misattribution;
+    if (mis?.reactor && mis?.wrongSuspect && onStage.includes(mis.reactor)) {
+      try { addBond(mis.reactor, mis.wrongSuspect, 2.5); } catch { /* the apology still happened */ }
+      segments.push({
+        kind: 'repair', speaker: mis.reactor, players: [mis.reactor, mis.wrongSuspect, traitor],
+        text: say(REPAIRS, mis.reactor, mis.wrongSuspect, traitor),
+        badgeText: 'BLAMED THE WRONG PERSON', badgeClass: 'blue',
+      });
+      // The wrongly-blamed juror was voting against somebody for a season on
+      // the strength of a lie. That is worth something to the person who
+      // actually did it, and it is worth something back to the innocent one.
+      if (isJuror(mis.reactor) && isFinalist(mis.wrongSuspect)) {
+        const d = moveRead(mis.reactor, mis.wrongSuspect, {
+          strength: 1.4, credibility: 0.8, kind: 'reunion-cleared', week,
+          text: `${mis.wrongSuspect} was cleared at the reunion of a flip ${mis.reactor} blamed them for`,
+        });
+        if (Math.abs(d) >= 0.05) moved.push({ juror: mis.reactor, finalist: mis.wrongSuspect, delta: round2(d), kind: 'cleared' });
+      }
+    }
+  }
+
+  // ── the row ──
+  //
+  // One, and only where the season earned it: a broken deal between two people
+  // who are both on that stage and no longer have any reason to be polite.
+  const pairs = [];
+  for (const a of onStage) {
+    for (const b of onStage) {
+      if (a >= b) continue;
+      const deal = dealBetween(a, b);
+      if (deal?.broken) pairs.push({ a: deal.brokenBy === a ? b : a, b: deal.brokenBy === a ? a : b, deal });
+    }
+  }
+  if (pairs.length) {
+    const row = pairs[Math.floor(rng() * pairs.length)];
+    try { addBond(row.a, row.b, -2); } catch { /* they were not friends anyway */ }
+    segments.push({
+      kind: 'clash', speaker: row.a, players: [row.a, row.b],
+      text: say(CLASHES, row.a, row.b),
+      badgeText: `${tierOf(row.deal) === 'final-two' ? 'A FINAL TWO' : 'A DEAL'} THAT DIED`, badgeClass: 'red',
+    });
+  }
+
+  // ── and the two people who have to sit through all of it ──
+  for (const finalist of finalTwo) {
+    if (!exposed.has(finalist)) continue;
+    const p = pronouns(finalist);
+    const owns = answerStyle(finalist) !== 'deflect';
+    segments.push({
+      kind: 'answer', speaker: finalist, players: [finalist],
+      text: say(owns ? OWNINGS : DUCKINGS, finalist, p),
+      badgeText: owns ? 'OWNS IT' : 'WILL NOT SAY IT', badgeClass: owns ? 'gold' : 'red',
+    });
+    // Owning it in front of the whole stage is a small, real credit with a
+    // jury that has just watched the tape; ducking it in the same room is not.
+    for (const juror of jury) {
+      const d = moveRead(juror, finalist, {
+        strength: owns ? 0.5 : -0.6, credibility: 0.6, kind: 'reunion-answer', week,
+        text: `${finalist} ${owns ? 'owned' : 'would not own'} the reunion tape`,
+      });
+      if (Math.abs(d) >= 0.1) moved.push({ juror, finalist, delta: round2(d), kind: 'answer' });
+    }
+  }
+
+  return { segments, moved, revealed: reveals.length, onStage };
 }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -168,6 +168,75 @@ describe("America's Favourite", () => {
   });
 });
 
+describe('the reunion', () => {
+  // The segment exists to read the ledger out loud, so what is asserted is the
+  // ledger — not that some text appeared. A flip the house never caught has to
+  // reach the person it was cast against, and it has to cost the finalist who
+  // cast it, because that is the only reason the segment sits before the vote.
+  const hideAFlip = (weekNum, voter, victim, mis = null) => {
+    const w = gs.bb.weeks.find(x => x.num === weekNum);
+    w.allianceChanges = { betrayals: [{ week: weekNum, voter, victim, known: false, misattribution: mis }] };
+  };
+
+  it('plays the vote the victim never saw, and it moves their read', async () => {
+    const { runReunion } = await import('../js/bb/finale-night.js');
+    hideAFlip(6, 'Wayne', 'Eli');
+    const before = readOf('Eli', 'Wayne');
+    const out = runReunion({ finalTwo: ['Wayne', 'Priya'], jury: JURY, prejury: [], week: 9, rng: seededRng(5) });
+    const reveal = out.segments.find(s => s.kind === 'reveal');
+    expect(reveal, 'the hidden flip was never played').toBeTruthy();
+    expect(reveal.players).toContain('Eli');
+    expect(readOf('Eli', 'Wayne')).toBeLessThan(before);
+    expect(out.moved.some(m => m.juror === 'Eli' && m.finalist === 'Wayne')).toBe(true);
+  });
+
+  it('clears somebody who wore the blame for a season', async () => {
+    const { runReunion } = await import('../js/bb/finale-night.js');
+    hideAFlip(6, 'Wayne', 'Eli', { reactor: 'Eli', wrongSuspect: 'Priya', realBetrayer: 'Wayne' });
+    const before = { bond: getBond('Eli', 'Priya'), read: readOf('Eli', 'Priya') };
+    const out = runReunion({ finalTwo: ['Wayne', 'Priya'], jury: JURY, prejury: [], week: 9, rng: seededRng(9) });
+    expect(out.segments.some(s => s.kind === 'repair')).toBe(true);
+    expect(getBond('Eli', 'Priya')).toBeGreaterThan(before.bond);
+    expect(readOf('Eli', 'Priya')).toBeGreaterThan(before.read);
+  });
+
+  it('never repeats a line, and says nothing about nobody', async () => {
+    const { runReunion } = await import('../js/bb/finale-night.js');
+    hideAFlip(6, 'Wayne', 'Eli');
+    hideAFlip(7, 'Priya', 'Fern');
+    const out = runReunion({ finalTwo: ['Wayne', 'Priya'], jury: JURY, prejury: ['Dara'], week: 9, rng: seededRng(3) });
+    const texts = out.segments.map(s => s.text);
+    expect(new Set(texts).size).toBe(texts.length);
+    for (const t of texts) expect(t).not.toMatch(/undefined|NaN|\[object/);
+    // The pre-jury is on that stage precisely because it has no vote.
+    expect(out.segments.some(s => s.kind === 'walkon' && s.speaker === 'Dara')).toBe(true);
+  });
+
+  it('runs inside the night, before the speeches, with a screen and a transcript', () => {
+    seasonWithJury();
+    hideAFlip(6, 'Wayne', 'Eli');
+    const ep = simulateBBFinale(seededRng(21));
+    const types = ep.acts.map(a => a.type);
+    expect(types).toContain('reunion');
+    expect(types.indexOf('jury-questioning')).toBeLessThan(types.indexOf('reunion'));
+    expect(types.indexOf('reunion')).toBeLessThan(types.indexOf('closing-statements'));
+
+    expect(generateBBFinaleText(ep)).toContain('THE REUNION');
+
+    gs.episodeHistory = [ep];
+    buildVPScreens(ep);
+    Object.keys(_tvState).filter(k => k.startsWith('bb_reunion_')).forEach(k => { _tvState[k].idx = 99; });
+    const screen = buildVPScreens(ep).find(s => s.id === 'bb-reunion');
+    expect(screen, 'the reunion has no screen').toBeTruthy();
+    expect(screen.html.length).toBeGreaterThan(1000);
+    expect(screen.html).not.toMatch(/undefined|NaN|\[object Object\]/);
+    const act = ep.acts.find(a => a.type === 'reunion');
+    for (const s of act.segments) {
+      expect(screen.html, `a ${s.kind} segment never rendered`).toContain(s.text.slice(0, 40));
+    }
+  });
+});
+
 describe('the whole night', () => {
   it('plays in order and reaches every surface', () => {
     seasonWithJury();

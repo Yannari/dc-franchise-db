@@ -271,9 +271,14 @@ const MISSIONS = [
     // Buster — a houseguest playing to save themselves from the block is playing
     // the real game, and asking them to lose it on purpose is asking them to
     // hand over the season for eight thousand dollars.
-    can: ctx => !!ctx.rigTarget,
+    //
+    // Offered on the certainty that this week HAS competitions in it; the mark
+    // is picked at the debrief, out of the people who actually played.
+    can: ctx => ctx.others.length >= 3,
     run(ctx, rng) {
-      const mark = ctx.rigTarget;
+      const mark = ctx.rigTarget || ctx.others
+        .sort((a, b) => getBond(ctx.sab, a) - getBond(ctx.sab, b))[0];
+      if (!mark) return null;
       const beneficiary = ctx.others.filter(n => n !== mark)
         .sort((a, b) => getBond(ctx.sab, b) - getBond(ctx.sab, a))[0] || ctx.others[0];
       const how = [
@@ -296,10 +301,13 @@ const MISSIONS = [
     name: 'Break a campaign',
     brief: 'Take the legs out of whoever is campaigning to stay, on the day they need them.',
     pay: 6000, noise: 0.4, spice: 0.65, difficulty: 0.34,
-    can: ctx => ctx.nominees.filter(n => n !== ctx.sab).length >= 1,
+    // Every week has somebody campaigning to stay in it; which two are on the
+    // block is not known until the ceremony, so the target waits for the debrief.
+    can: ctx => ctx.others.length >= 3,
     run(ctx, rng) {
       const target = ctx.nominees.filter(n => n !== ctx.sab)
-        .sort((a, b) => (ctx.reads[b] ?? 0) - (ctx.reads[a] ?? 0))[0];
+        .sort((a, b) => (ctx.reads[b] ?? 0) - (ctx.reads[a] ?? 0))[0]
+        || ctx.others.sort((a, b) => (ctx.reads[b] ?? 0) - (ctx.reads[a] ?? 0))[0];
       if (!target) return null;
       const p = P(target);
       for (const n of ctx.others.filter(x => x !== target)) {
@@ -339,14 +347,106 @@ const MISSIONS = [
     },
   },
   {
+    id: 'relic',
+    name: 'Take something that matters',
+    brief: "The Head of Household's key, or a photograph off the wall. Make it disappear.",
+    pay: 5000, noise: 0.58, spice: 0.9, difficulty: 0.3,
+    // Straight off the wiki: the Accomplice's recorded acts were a timer that
+    // killed the lights and a remote that made the HOH relic vanish.
+    // `power` is this week's Head of Household once there is one, and last
+    // week's until then — so the job can be handed over on Monday morning.
+    can: ctx => !!ctx.power && ctx.power !== ctx.sab,
+    run(ctx, rng) {
+      const gone = [
+        { did: `${ctx.sab} lifts the Head of Household key off the side while ${ctx.hoh} is in the shower, and puts it somewhere nobody sensible would look.`,
+          saw: `The Head of Household key is missing. ${ctx.hoh} turns the room over twice and it is not in the room.` },
+        { did: `${ctx.sab} takes ${ctx.hoh}'s photograph off the memory wall and slides it behind the fridge.`,
+          saw: `There is a gap on the memory wall where ${ctx.hoh} used to be. Nobody can find the photograph and nobody will admit to moving it.` },
+        { did: `${ctx.sab} works out which of the Head of Household basket somebody would miss most, and takes exactly that.`,
+          saw: `Half the Head of Household basket is gone. ${ctx.hoh} counts what is left twice and says nothing for an hour.` },
+      ][Math.floor(rng() * 3)];
+      try { addBond(ctx.hoh, ctx.others.filter(n => n !== ctx.hoh)[0], -0.9); } catch { /* fine */ }
+      return {
+        target: ctx.hoh, touched: [ctx.hoh],
+        text: gone.did, houseSees: gone.saw,
+        seesBadge: 'SOMETHING IS MISSING',
+        houseText: `${ctx.hoh} spends the day asking people to turn out their pockets, `
+          + `which goes down about as well as it always does.`,
+        botched: `${ctx.hoh} comes back for a towel and ${ctx.sab} has to put it down again, in one movement, `
+          + `while saying something about the weather.`,
+      };
+    },
+  },
+  {
+    id: 'note',
+    name: "Write it in somebody's hand",
+    brief: 'A note nobody wrote, left where the wrong person will find it.',
+    pay: 6000, noise: 0.34, spice: 0.75, difficulty: 0.36,
+    can: ctx => ctx.others.length >= 4,
+    run(ctx, rng) {
+      // A note is evidence, which is the difference between this and a rumour:
+      // the house does not have to take anybody's word for it.
+      const finder = ctx.others[Math.floor(rng() * ctx.others.length)];
+      const blamed = ctx.others.filter(n => n !== finder)
+        .sort((a, b) => getBond(finder, a) - getBond(finder, b))[0];
+      if (!blamed) return null;
+      try { addBond(finder, blamed, -2.2); } catch { /* nothing to burn */ }
+      return {
+        victim: finder, accused: blamed, touched: [finder, blamed],
+        text: `${ctx.sab} writes out a list of names on a page from the diary-room pad, gets the handwriting `
+          + `close enough, and leaves it in the pocket of a coat ${blamed} wears every day.`,
+        houseSees: `${finder} finds a folded list of names in a coat pocket. `
+          + `${finder}'s name is second on it and the coat belongs to ${blamed}.`,
+        seesBadge: 'SOMEBODY FINDS A NOTE',
+        houseText: `${blamed} says it is not ${P(blamed).posAdj} handwriting. It is nobody's handwriting, `
+          + `which is not a thing anybody can prove at ten at night.`,
+        botched: `The handwriting is wrong and ${finder} knows it is wrong, which means somebody in this `
+          + `house is forging notes and ${finder} now has that to think about instead.`,
+      };
+    },
+  },
+  {
+    id: 'tipoff',
+    name: 'Tell the target',
+    brief: 'Whoever the Head of Household is quietly planning to send home — go and tell them.',
+    pay: 7000, noise: 0.42, spice: 0.85, difficulty: 0.4,
+    can: ctx => !!ctx.power && ctx.power !== ctx.sab && ctx.others.some(n => n !== ctx.power),
+    run(ctx, rng) {
+      const boss = ctx.hoh || ctx.power;
+      const mark = ctx.nominees.filter(n => n !== ctx.sab && n !== boss)[0]
+        || ctx.others.filter(n => n !== boss)
+          .sort((a, b) => getBond(boss, a) - getBond(boss, b))[0];
+      if (!mark) return null;
+      try { addBond(mark, ctx.hoh, -2.2); } catch { /* fine */ }
+      return {
+        target: mark, touched: [mark, ctx.hoh],
+        text: `${ctx.sab} tells ${mark} exactly what ${ctx.hoh} has been saying about ${P(mark).obj} `
+          + `all week, and does it in the way that makes it sound like a favour.`,
+        houseSees: `${mark} walks into the Head of Household room already knowing, and asks ${ctx.hoh} `
+          + `a question ${ctx.hoh} has not told anybody the answer to.`,
+        seesBadge: 'SOMEBODY TALKED',
+        houseText: `${ctx.hoh} spends the rest of the week working out which of the four people who knew `
+          + `is the one who did not keep it.`,
+        botched: `${mark} asks who told ${P(mark).obj}, out loud, in a kitchen with three other people in it. `
+          + `${ctx.sab} discovers a sudden interest in the washing up.`,
+      };
+    },
+  },
+  {
     id: 'throw',
     name: 'Lose on purpose',
     brief: 'A competition they were in the middle of, dropped where nobody could prove it.',
     pay: 5000, noise: 0.3, spice: 0.35, difficulty: 0.12,
-    // Only where losing costs them nothing they were going to keep. Never a
-    // Block Buster: that one is played to get off the block.
-    can: ctx => ctx.competed && !ctx.wonSomething && !ctx.onTheBlock,
+    // Only where losing costs them nothing they were going to keep, and never
+    // a Block Buster: that one is played to get off the block. Whether they
+    // played at all is not known on Monday, so this is offered on the house
+    // being big enough for them to be drawn and checked again at the debrief.
+    can: ctx => ctx.others.length >= 3,
     run(ctx) {
+      // Checked here, where the week has actually been played: if they never
+      // competed, or won the thing, or were playing for their own safety, there
+      // is nothing to throw and the week reports a job that did not come off.
+      if (!ctx.competed || ctx.wonSomething || ctx.onTheBlock) return null;
       return {
         touched: [ctx.sab],
         text: `${ctx.sab} is not out of that competition because ${P(ctx.sab).sub} could not do it. `
@@ -408,8 +508,8 @@ function traceMission({ sab, mission, result, house, week, rng }) {
     // They know SOMETHING happened. Whether they land on the right person is a
     // separate roll, and a much harder one — most of the time a house that
     // senses a sabotage convicts whoever it already disliked.
-    const readsIt = rng() < clamp(0.05 + stat(observer, 'intuition') * 0.028
-      + (near ? 0.07 : 0) - cover * 0.6, 0.02, 0.45);
+    const readsIt = rng() < clamp(0.10 + stat(observer, 'intuition') * 0.042
+      + (near ? 0.09 : 0) - cover * 0.5, 0.03, 0.6);
     // Wrong names CONVERGE, and that is the whole reason a house ever convicts
     // an innocent. Left to pick independently, each observer reached for their
     // own least-favourite person — so wrong suspicion scattered across nine
@@ -423,7 +523,7 @@ function traceMission({ sab, mission, result, house, week, rng }) {
         - Object.values(a[1]).reduce((x, y) => x + y, 0))[0]?.[0];
     const disliked = house.filter(n => n !== observer && n !== sab)
       .sort((a, b) => getBond(observer, a) - getBond(observer, b))[0];
-    const wrong = (standing && standing !== observer && rng() < 0.62) ? standing : disliked;
+    const wrong = (standing && standing !== observer && rng() < 0.55) ? standing : disliked;
     const named = readsIt ? sab : (wrong || sab);
     // Close together on purpose. A house that is certain about the right person
     // and merely annoyed at the wrong one never accuses anybody innocent, and
@@ -465,6 +565,38 @@ const ACCEPTS = [
 ];
 
 /**
+ * Everything a mission needs to choose a target, from whatever the week has so
+ * far. Called once at the briefing (when the week is empty) and again at the
+ * debrief (when it is not).
+ */
+function missionContext(sab, week, house, others, weekNum) {
+  const ctx = {
+    sab, week: weekNum, house, others,
+    onTheBlock: (week?.nominees || []).includes(sab),
+    hoh: week?.hoh || null,
+    nominees: (week?.finalNominees || week?.nominees || []).filter(Boolean),
+    competed: !!(week?.vetoPlayers || []).includes(sab) || week?.hoh === sab
+      || (week?.veto?.participants || []).includes(sab),
+    wonSomething: week?.hoh === sab || week?.vetoWinner === sab,
+    secretHolders: (gs.bb?.powers || []).filter(pw => pw && !pw.used && pw.holder && pw.holder !== sab)
+      .map(pw => pw.holder),
+    reads: Object.fromEntries(others.map(n => [n, getBond(sab, n)])),
+  };
+  // Somebody else's competition, and a real one.
+  //
+  // Not gated on the saboteur PLAYING it — the wiki's actual acts were
+  // tampering rather than competing. The mark is whoever they like least among
+  // the people who actually competed, and if the week has not run one yet this
+  // is null until the debrief rebuilds it.
+  ctx.rigTarget = others.filter(n => (week?.vetoPlayers || []).includes(n) || week?.hoh === n)
+    .sort((a, b) => getBond(sab, a) - getBond(sab, b))[0] || null;
+  // Whoever this week put in charge, or — before it has — whoever ran the last
+  // one, so a mission about the person with the room can be offered on Monday.
+  ctx.power = ctx.hoh || gs.bb?.outgoingHoh || null;
+  return ctx;
+}
+
+/**
  * THE BRIEFING — the mission for the week.
  *
  * Runs at the top of the week, before anything has happened, because the whole
@@ -487,34 +619,20 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
   const others = house.filter(n => n !== sab);
   const p = P(sab);
 
-  // What this week can actually be sabotaged in. A mission the week cannot
-  // support is not offered, rather than offered and fudged.
+  // ── what the week knows YET ──
   //
-  // `rigTarget` is the one that needed care: a competition can only be rigged
-  // against somebody ELSE, it must not be the Block Buster (which is played to
-  // get off the block, and asking somebody to lose that is asking them to hand
-  // over their season), and there has to be a competition coming at all.
-  const onTheBlock = (week?.nominees || []).includes(sab);
-  const ctx = {
-    sab, week: weekNum, house, others, onTheBlock,
-    hoh: week?.hoh || null,
-    nominees: (week?.finalNominees || week?.nominees || []).filter(Boolean),
-    competed: !!(week?.vetoPlayers || []).includes(sab) || week?.hoh === sab
-      || (week?.veto?.participants || []).includes(sab),
-    wonSomething: week?.hoh === sab || week?.vetoWinner === sab,
-    secretHolders: (gs.bb?.powers || []).filter(pw => pw && !pw.used && pw.holder && pw.holder !== sab)
-      .map(pw => pw.holder),
-    reads: Object.fromEntries(others.map(n => [n, getBond(sab, n)])),
-  };
-  // Somebody else's competition, and a real one.
+  // The briefing happens at the top of the week, before the Head of Household
+  // is crowned and long before anybody is nominated. That is the right place
+  // for it dramatically and it quietly broke eligibility: `can()` was reading
+  // `week.hoh` and `week.nominees` off an empty week, so six of the nine
+  // missions could never qualify and every season drew from the same three.
   //
-  // Not gated on the saboteur PLAYING it. The wiki's actual acts were tampering
-  // rather than competing — a timer set going, the Head of Household relic made
-  // to disappear — and requiring them to be in the yard made the job land twice
-  // in sixty weeks, which is not a mechanic, it is a rumour. The mark is
-  // whoever they like least among the people who actually competed.
-  ctx.rigTarget = others.filter(n => (week?.vetoPlayers || []).includes(n) || week?.hoh === n)
-    .sort((a, b) => getBond(sab, a) - getBond(sab, b))[0] || null;
+  // So the context is built twice. This one holds what is true at the top of a
+  // week — who is in the house, who holds a power, how the saboteur reads the
+  // room — and `can()` may only consult this. Anything that needs the week's
+  // shape resolves its target later, in `missionContext`, when the week has
+  // one.
+  const ctx = missionContext(sab, week, house, others, weekNum);
 
   // Certainty fades. Nobody in that house is keeping a spreadsheet, and a week
   // where nothing goes wrong is a week where last week's theory gets quietly
@@ -533,12 +651,19 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
     try { return m.can(ctx); } catch { return false; }
   });
   if (!eligible.length) return null;
-  // Never the same job two weeks running. Production is writing television, and
-  // a saboteur who plants the same lie every Thursday is not a twist, it is a
-  // habit — the house would have worked it out by the third one.
+  // Nothing repeats until everything has been used.
+  //
+  // Blocking only CONSECUTIVE repeats was not enough: four missions are
+  // reliably eligible in a given week and a twist runs five, so a season
+  // repeated one of them almost every time. Production is writing television —
+  // a saboteur who plants the same lie twice in five weeks is not a twist, it
+  // is a habit, and the house would have worked it out by the second one.
+  const used = new Set(state.missions.map(m => m.mission));
+  const unused = eligible.filter(m => !used.has(m.id));
   const last = state.missions.at(-1)?.mission;
-  const pool = eligible.filter(m => m.id !== last);
-  const from = pool.length ? pool : eligible;
+  const from = unused.length ? unused
+    : (eligible.filter(m => m.id !== last).length
+      ? eligible.filter(m => m.id !== last) : eligible);
   const mission = from[Math.floor(rng() * from.length)];
 
   // Lines do not repeat across a season. A saboteur who turns down three
@@ -654,10 +779,15 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
   const job = week?._saboteurJob;
   if (!state || !job || state.survived || state.caught) return null;
   delete week._saboteurJob;
-  const { mission, ctx } = job;
+  const { mission } = job;
   const sab = state.player;
-  const house = ctx.house;
-  const weekNum = ctx.week;
+  const house = job.ctx.house;
+  const weekNum = job.ctx.week;
+  // Rebuilt, because the week now HAS a shape: a Head of Household, two
+  // nominees, a competition that has been played. The briefing chose the job
+  // out of what was knowable on Monday; the target is chosen out of what
+  // actually happened.
+  const ctx = missionContext(sab, week, house, job.ctx.others, weekNum);
 
   // Does it come off? Nerve and wit against how hard the job is, and against a
   // house that is already watching them — the more suspected they are, the
@@ -673,7 +803,29 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
 
   let result = null;
   try { result = mission.run(ctx, rng); } catch { result = null; }
-  if (!result) return null;
+  // The week turned out not to contain the thing the job needed — they were
+  // never drawn for the competition they were supposed to throw, the power they
+  // were supposed to burn got used on Tuesday. It still has to report, and it
+  // still has to count as used, or the same impossible job comes back next week
+  // and the season repeats itself.
+  if (!result) {
+    state.missions.push({ week: weekNum, mission: mission.id, accepted: true, worked: false,
+      paid: 0, applause: 0, impossible: true });
+    state.attempted = (state.attempted || 0) + 1;
+    return {
+      type: 'saboteur-debrief', secret: true, week: weekNum, saboteur: sab,
+      mission: { id: mission.id, name: mission.name, brief: mission.brief, pay: mission.pay },
+      worked: false, impossible: true, paid: 0, applause: 0,
+      applauseTotal: state.applause, banked: state.banked, prize: state.prize,
+      bankWeek: state.bankWeek, exposure: round2(saboteurExposure()), notices: [],
+      quota: state.quota, attempted: state.attempted,
+      beats: [{
+        text: `The week does not give ${sab} the opening the job needed, and there is no version of `
+          + `it that does not look exactly like somebody trying.`,
+        players: [sab], badgeText: 'NO WAY IN', badgeClass: 'grey',
+      }],
+    };
+  }
 
   const beats = [];
   if (worked) {

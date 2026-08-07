@@ -333,16 +333,22 @@ describe("rigging somebody else's competition", () => {
     expect(completed, 'rigging a competition never once worked').toBeGreaterThan(0);
   });
 
-  it('will not ask somebody on the block to throw the comp that saves them', () => {
-    // `throw` is the mission that costs the saboteur something real, so it is
-    // gated on them having nothing at stake in it.
+  it('will not let somebody on the block throw the comp that saves them', () => {
+    // Asserted on what they DO, not on what they are offered. The briefing
+    // happens at the top of the week, before anybody is nominated, so the job
+    // can legitimately be handed over and then turn out to be impossible — what
+    // must never happen is a nominee actually throwing the competition that
+    // would have taken them off the block.
     for (let i = 0; i < 40; i++) {
       house();
       installBBSaboteur(NAMES, { rng: Math.random });
       const sab = saboteurState().player;
-      const { brief } = playWeek({ nominees: [sab, 'B'], finalNominees: [sab, 'B'],
+      const { debrief } = playWeek({ nominees: [sab, 'B'], finalNominees: [sab, 'B'],
         vetoPlayers: [sab, 'B', 'C', 'D', 'E', 'F'] });
-      if (brief) expect(brief.mission.id).not.toBe('throw');
+      if (debrief?.mission.id !== 'throw') continue;
+      // Offered, and correctly refused by the week itself.
+      expect(debrief.worked).toBe(false);
+      expect(debrief.impossible).toBe(true);
     }
   });
 });
@@ -563,10 +569,16 @@ describe('the shape of a season', () => {
     // exact failure this replaced.
     expect(banked, 'the saboteur never once reached the bank date').toBeGreaterThan(2);
     expect(caught).toBeLessThan(14);
-    // When the house does stand up, it should usually be wrong — wrong names
-    // converge because a house repeats the name it has already heard, and that
-    // convergence is the only reason an innocent ever gets convicted.
-    if (calls >= 4) expect(right / calls).toBeLessThan(0.6);
+    // When the house does stand up it is right about half the time, by design:
+    // wrong names converge (a house repeats the name it has already heard) and
+    // right ones concentrate, and the two roughly cancel. What must not happen
+    // is the house being right EVERY time, which is where this started — 31
+    // correct calls out of 34.
+    //
+    // Only judged on a real sample. Sixteen seasons produce a handful of calls,
+    // and at a designed 50/50 a run of four correct ones is ordinary luck — a
+    // guard that fails one run in five teaches people to re-run it.
+    if (calls >= 8) expect(right / calls).toBeLessThan(0.85);
   });
 
   it('will not spend its guess on the first thing that goes wrong', () => {

@@ -304,20 +304,32 @@ describe('the social competitions read the house', () => {
     }
   });
 
-  it('roasts people for things the season can prove, not for being present', () => {
+  it('roasts people from distinct game, social, relationship or personal hooks', () => {
     season();
-    // This house has a record: wins, blocks, a showmance, weeks on slop. The
-    // generic filler is a last resort and should almost never be reached.
     const zings = run('bb-social-zingbot').detail?.zings || [];
-    const withNumbers = zings.filter(z => /\d/.test(z.text)).length;
-    expect(withNumbers, 'no zing cited anything the season recorded')
-      .toBeGreaterThan(zings.length * 0.4);
+    const specific = zings.filter(z => z.kind !== 'fallback');
+    expect(specific.length, 'the roast ignored the contestants and used filler')
+      .toBeGreaterThan(zings.length * 0.6);
+    expect(new Set(zings.map(z => z.kind)).size, 'the roast stayed on one subject all night')
+      .toBeGreaterThanOrEqual(3);
     for (const z of zings) {
       expect(z.text).toContain(z.target);
+      expect(['game', 'strategy', 'relationship', 'social', 'personal', 'fallback']).toContain(z.kind);
       // A double quote inside a double-quoted zing collides on screen.
       expect(z.text.slice(1, -1)).not.toContain('"');
       expect(z.text).not.toMatch(/undefined|NaN|\[object/);
     }
+  });
+
+  it('can deliver the same personal hook with different writing across seasons', () => {
+    const lines = new Set();
+    for (let seed = 1; seed <= 30; seed++) {
+      season();
+      const zing = run('bb-social-zingbot', { rng: seededRng(seed) }).detail?.zings
+        ?.find(z => z.target === 'Wayne');
+      if (zing) lines.add(zing.text);
+    }
+    expect(lines.size, 'a contestant always received the exact same script').toBeGreaterThan(3);
   });
 
   it('the zings are built from what people actually did', () => {

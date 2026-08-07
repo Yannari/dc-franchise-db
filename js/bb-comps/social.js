@@ -24,12 +24,13 @@
 // people you are close to more accurately, and you accuse people you already
 // distrust whether or not they did it. The house's own paranoia decides it,
 // which is not true of any other competition here.
-import { gs } from '../core.js';
+import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { beat, choose, clamp, makePicker, toResult, vb } from './_shared.js';
 import { breakQuizTie, optionsFor } from './_recall.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
+import { strongestStrategicMemory } from '../strategy-memory.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -82,11 +83,38 @@ function roastProfile(name) {
     || (w.finalNominees || []).includes(name)).map(w => w.num);
   const slop = ws.filter(w => (w.haveNots || []).includes(name)).length;
   const pop = Number(gs.popularity?.[name]) || 0;
+  const house = (gs.activePlayers || []).filter(n => n && n !== name);
+  const bondRows = house.map(other => ({ other, bond: getBond(name, other) }))
+    .sort((a, b) => b.bond - a.bond);
+  const closest = bondRows[0]?.bond >= 2 ? bondRows[0].other : null;
+  const enemy = bondRows.at(-1)?.bond <= -2 ? bondRows.at(-1).other : null;
+  const plan = gs.intentions?.[name] || {};
+  const target = (plan.targets || []).find(n => house.includes(n)) || null;
+  const targeters = house.filter(n => (gs.intentions?.[n]?.targets || []).includes(name));
+  const goatFor = house.filter(n => gs.intentions?.[n]?.goat === name);
+  const shieldFor = house.filter(n => gs.intentions?.[n]?.shield === name);
+  const alliances = (gs.namedAlliances || []).filter(a => a.active !== false
+    && (a.members || []).includes(name));
+  const betrayals = house.map(observer => ({ observer, memory: strongestStrategicMemory(observer, name) }))
+    .filter(row => row.memory && /betray|broken|lied|lie|overcommitted|blindsid|insult/.test(row.memory.type));
+  const changedVotes = ballots.filter(b => {
+    const week = ws.find(w => w.num === b.week);
+    return (week?.ballots || []).some(row => row.voter === name && row.changed);
+  }).length;
+  const player = players.find(p => p.name === name) || {};
+  const stats = pStats(name) || {};
+  const statRows = [
+    ['social', stats.social], ['strategic', stats.strategic], ['loyalty', stats.loyalty],
+    ['boldness', stats.boldness], ['intuition', stats.intuition], ['temperament', stats.temperament],
+  ].filter(([, value]) => Number.isFinite(Number(value))).sort((a, b) => Number(b[1]) - Number(a[1]));
   return {
     name, hohWins, vetoWins, wins: hohWins + vetoWins, blocked, saved, weeksIn,
     hohWeeks, vetoWeeks, votes: ballots.length, withTheHouse, againstTheHouse,
     showmance: !!showmance, broken: !!showmance?.broken, partner, finalTwos,
-    evictedByThem, nomWeeks, slop, pop,
+    evictedByThem, nomWeeks, slop, pop, closest, enemy, target, targeters, goatFor,
+    shieldFor, alliances, betrayals, changedVotes, archetype: player.archetype || 'floater',
+    bestTrait: statRows[0]?.[0] || null, bestTraitValue: Number(statRows[0]?.[1]) || 0,
+    worstTrait: statRows.at(-1)?.[0] || null, worstTraitValue: Number(statRows.at(-1)?.[1]) || 0,
   };
 }
 
@@ -173,6 +201,169 @@ const ZINGS = [
     say: f => `${f.name}, you have the strategic instincts of a smoke alarm. Very loud, always three minutes late, and about something that is already burning. ZING!` },
 ];
 
+// Spoken roast material: short setup, sharp turn, out. Each hook owns several
+// deliveries so the same season fact does not always produce the same script.
+// `kind` lets the picker spread the room across game, social, relationship and
+// personality material instead of giving eight consecutive résumé lectures.
+const zing = (kind, when, ...lines) => ({ kind, when, lines });
+const ZING_MATERIAL = [
+  // ── game: wins, power and failure ──
+  zing('game', f => f.wins >= 4,
+    f => `${f.name}, ${f.wins} wins! You have collected every power except the power to lower your threat level. ZING!`,
+    f => `${f.name} has ${f.wins} competition wins and one remaining challenge: surviving five minutes without safety. ZING!`,
+    f => `${f.name}, with ${f.wins} wins, your résumé is glowing. So is the giant target behind your head. ZING!`),
+  zing('game', f => f.vetoWins >= 3,
+    f => `${f.name}, ${f.vetoWins} vetoes! At last, a healthy long-term relationship—with a necklace. ZING!`,
+    f => `${f.name} has won ${f.vetoWins} vetoes. Your closest ally is apparently yourself in danger. ZING!`),
+  zing('game', f => f.wins === 0 && f.weeksIn >= 4,
+    f => `${f.name}, ${f.weeksIn} weeks, zero wins. Even the Zingbot battery has a better competition record. ZING!`,
+    f => `${f.name} has zero wins after ${f.weeksIn} weeks. Good news: nobody can accuse you of being a threat. Or useful. ZING!`,
+    f => `${f.name}, you have competed all season with the quiet dignity of somebody waiting for the rideshare home. ZING!`),
+  zing('game', f => f.hohWins >= 2,
+    f => `${f.name}, ${f.hohWins} HOHs! You love being in charge almost as much as the house loves letting you take the blame. ZING!`,
+    f => `${f.name} has run ${f.hohWins} weeks. Weirdly, every one ended with somebody else getting what they wanted. ZING!`),
+  zing('game', f => f.hohWins === 0 && f.vetoWins >= 2,
+    f => `${f.name}, ${f.vetoWins} vetoes and no HOH. Always saving the day, never planning one. ZING!`,
+    f => `${f.name} can escape any block but has never controlled a week. Congratulations on being the house fire exit. ZING!`),
+  zing('game', f => f.blocked >= 3,
+    f => `${f.name}, nominated ${f.blocked} times! Please stop calling it the block. That is your assigned seating. ZING!`,
+    f => `${f.name} has touched the block ${f.blocked} times. At this point, production charges everybody else rent. ZING!`,
+    f => `${f.name}, the nomination chairs asked if you could leave a toothbrush. ZING!`),
+  zing('game', f => f.blocked >= 2 && f.saved >= 1,
+    f => `${f.name}, the house keeps nominating you and other people keep rescuing you. Your strategy is a group project. ZING!`,
+    f => `${f.name} has been saved after ${f.blocked} nominations. Nothing says mastermind like requiring roadside assistance. ZING!`),
+  zing('game', f => f.blocked === 0 && f.weeksIn >= 5 && f.wins === 0,
+    f => `${f.name}, no wins and no nominations. You are not under the radar; you are part of the carpet. ZING!`,
+    f => `${f.name} has avoided both power and danger for ${f.weeksIn} weeks. Even the cameras are asking for a name tag. ZING!`),
+  zing('game', f => f.hohWeeks.length && f.evictedByThem.length,
+    f => `${f.name}, your big HOH move was evicting ${f.evictedByThem[0]}. You mention it so often I assumed there was a sequel. ZING!`,
+    f => `${f.name} sent ${f.evictedByThem[0]} home in week ${f.hohWeeks[0]}. One move, ${f.weeksIn} weeks of director commentary. ZING!`),
+  zing('game', f => f.votes >= 4 && f.againstTheHouse === 0,
+    f => `${f.name}, ${f.votes} votes and never once against the majority. You do not read the room—you copy its homework. ZING!`,
+    f => `${f.name} is always on the right side of the vote, usually moments after finding out which side that is. ZING!`),
+  zing('game', f => f.votes >= 3 && f.withTheHouse === 0,
+    f => `${f.name}, wrong side of all ${f.votes} votes. You could get lost following a parade. ZING!`,
+    f => `${f.name} has missed the majority ${f.votes} times. The house zigged, you zagged, and somehow hit a wall. ZING!`),
+  zing('game', f => f.changedVotes >= 2,
+    f => `${f.name} changed ${f.changedVotes} votes. Your word is not your bond; it is a free trial. ZING!`,
+    f => `${f.name}, ${f.changedVotes} vote changes! Even your decisions are trying to evict themselves. ZING!`),
+
+  // ── strategy: targets, deals, goats and shields ──
+  zing('strategy', f => f.finalTwos >= 3,
+    f => `${f.name}, ${f.finalTwos} final twos! That is not an alliance structure. That is speed dating with prize money. ZING!`,
+    f => `${f.name} promised the end to ${f.finalTwos} people. I would call you loyal, but apparently everyone already did. ZING!`,
+    f => `${f.name}, you have ${f.finalTwos} final twos and only one final seat. Even the robot can do that math. ZING!`),
+  zing('strategy', f => f.finalTwos === 2,
+    f => `${f.name}, two final-two deals. One is your ride-or-die; the other is whoever is currently in the room. ZING!`,
+    f => `${f.name} promised two people the same chair. Bold strategy for a house full of microphones. ZING!`),
+  zing('strategy', f => f.targeters.length >= 2,
+    f => `${f.name}, ${f.targeters.length} people want you out. Finally, an alliance you brought together! ZING!`,
+    f => `${f.name} is the target of ${f.targeters.length} houseguests. Your social game has achieved consensus. ZING!`,
+    f => `${f.name}, ${f.targeters.join(' and ')} both want you gone. Look at you building bridges! ZING!`),
+  zing('strategy', f => !!f.target,
+    f => `${f.name} has been coming for ${f.target} so quietly that even ${f.target} is getting bored waiting. ZING!`,
+    f => `${f.name}, your master plan is to evict ${f.target}. Step one: tell enough people that Zingbot hears about it. ZING!`),
+  zing('strategy', f => f.goatFor.length >= 2,
+    f => `${f.name}, ${f.goatFor.length} people want you at the end. Not because they love you—because they love winning. ZING!`,
+    f => `${f.name} is in everybody's endgame plan, right between easy vote and guaranteed loss. ZING!`,
+    f => `${f.name}, the good news is people want to take you far. The bad news is the reason. ZING!`),
+  zing('strategy', f => f.goatFor.length === 1,
+    f => `${f.name}, ${f.goatFor[0]} wants you in the final two. How sweet! They also want all the jury votes. ZING!`,
+    f => `${f.name} is ${f.goatFor[0]}'s dream opponent. Try not to think too hard about the word opponent. ZING!`),
+  zing('strategy', f => f.shieldFor.length >= 1,
+    f => `${f.name}, ${f.shieldFor[0]} calls you a shield. That means friend, but with an expiration date. ZING!`,
+    f => `${f.name} is protecting ${f.shieldFor[0]} simply by being more frightening. What a beautiful friendship. ZING!`),
+
+  // ── relationships and social damage ──
+  zing('relationship', f => f.showmance && !f.broken && !!f.partner,
+    f => `${f.name} and ${f.partner}, the perfect showmance: one heart, two votes, zero privacy. ZING!`,
+    f => `${f.name}, you found love with ${f.partner}. America found a bathroom break. ZING!`,
+    f => `${f.name} says ${f.partner} is not a distraction. Correct—distractions are usually brief. ZING!`),
+  zing('relationship', f => f.showmance && !f.broken && !!f.partner,
+    f => `${f.name}, cuddling ${f.partner} under a blanket is not hiding the showmance. It is putting a roof on it. ZING!`,
+    f => `${f.name} and ${f.partner} insist game and romance are separate. So are your beds, technically. ZING!`),
+  zing('relationship', f => f.broken && !!f.partner,
+    f => `${f.name}, things ended with ${f.partner}. Even your showmance knew when to stop dragging you along. ZING!`,
+    f => `${f.name} lost ${f.partner} and kept all the awkward silence. Finally, an HOH you can keep. ZING!`),
+  zing('relationship', f => !!f.closest,
+    f => `${f.name} and ${f.closest} are inseparable. Mostly because neither wants to enter a room alone. ZING!`,
+    f => `${f.name}, your game with ${f.closest} is so close that one eviction could eliminate both personalities. ZING!`,
+    f => `${f.name} trusts ${f.closest} completely. Somewhere, a producer just added thunder. ZING!`),
+  zing('relationship', f => !!f.enemy,
+    f => `${f.name} and ${f.enemy} cannot stand each other. Finally, chemistry without a showmance. ZING!`,
+    f => `${f.name}, every time ${f.enemy} enters a room, your face submits an eviction vote. ZING!`,
+    f => `${f.name} says the problem with ${f.enemy} is game. Your eye twitch says it is also breakfast. ZING!`),
+  zing('social', f => f.alliances.length >= 2,
+    f => `${f.name}, member of ${f.alliances.length} alliances. Nothing builds trust like needing a spreadsheet to remember your friends. ZING!`,
+    f => `${f.name} is in ${f.alliances.length} alliances and somehow still eats alone. ZING!`),
+  zing('social', f => f.betrayals.length >= 2,
+    f => `${f.name}, ${f.betrayals.length} people remember you lying or betraying them. At least your social game is memorable. ZING!`,
+    f => `${f.name} burned ${f.betrayals.length} people. Great résumé—wrong jury. ZING!`,
+    f => `${f.name}, your bridges are not burned. They are an active fire challenge. ZING!`),
+  zing('social', f => f.pop <= -3,
+    f => `${f.name}, America has seen everything and still wants the feeds on another room. ZING!`,
+    f => `${f.name}, your approval rating is ${f.pop}. Even the live-feed fish have muted you. ZING!`,
+    f => `${f.name}, the audience does not hate-watch you. They check the schedule first. ZING!`),
+  zing('social', f => f.pop >= 6,
+    f => `${f.name}, America loves you! Unfortunately, America does not vote in the house. ZING!`,
+    f => `${f.name} has a popularity score of ${f.pop} and a power score of please clap. ZING!`),
+
+  // ── personal style, grounded in the contestant's strongest/weakest traits ──
+  zing('personal', f => f.bestTrait === 'strategic' && f.bestTraitValue >= 8,
+    f => `${f.name}, you are always the smartest person in the room—especially when you are the only one talking. ZING!`,
+    f => `${f.name} thinks six moves ahead and still walks into the furniture. ZING!`),
+  zing('personal', f => f.bestTrait === 'social' && f.bestTraitValue >= 8,
+    f => `${f.name}, everybody likes you. It is almost enough to distract from nobody respecting your game. ZING!`,
+    f => `${f.name} can charm an entire room and control absolutely none of it. ZING!`),
+  zing('personal', f => f.bestTrait === 'loyalty' && f.bestTraitValue >= 8,
+    f => `${f.name}, your loyalty is beautiful. So is a welcome mat, and people step on that too. ZING!`,
+    f => `${f.name} is loyal to the end. Whose end remains unclear. ZING!`),
+  zing('personal', f => f.bestTrait === 'boldness' && f.bestTraitValue >= 8,
+    f => `${f.name}, confidence is speaking before thinking. Your specialty is skipping the thinking entirely. ZING!`,
+    f => `${f.name} makes big moves, loud speeches, and very nervous allies. ZING!`),
+  zing('personal', f => f.worstTrait === 'intuition' && f.worstTraitValue <= 3,
+    f => `${f.name}, your gut has been wrong so often it should lose voting privileges. ZING!`,
+    f => `${f.name} can read a room, provided somebody else explains the ending. ZING!`),
+  zing('personal', f => f.worstTrait === 'temperament' && f.worstTraitValue <= 3,
+    f => `${f.name}, you are calm, composed, and—sorry, I could not finish that without laughing. ZING!`,
+    f => `${f.name} has two settings: totally fine and everybody leave the kitchen. ZING!`),
+  zing('personal', f => f.worstTrait === 'social' && f.worstTraitValue <= 3,
+    f => `${f.name}, your social game is like the Have-Not room: cold, uncomfortable, and nobody visits by choice. ZING!`,
+    f => `${f.name} enters every conversation with the warmth of a production announcement. ZING!`),
+  zing('personal', f => f.archetype === 'mastermind',
+    f => `${f.name}, every mastermind needs minions. You forgot the minions and kept the monologues. ZING!`,
+    f => `${f.name} calls it chess. The rest of the house calls it moving snacks around the table. ZING!`),
+  zing('personal', f => f.archetype === 'challenge-beast',
+    f => `${f.name}, muscles, medals, and the subtle threat level of a fire alarm. ZING!`,
+    f => `${f.name} came to dominate competitions and whisper strategy. One of those is going great. ZING!`),
+  zing('personal', f => f.archetype === 'villain',
+    f => `${f.name}, being the villain requires charm. Right now you are mostly providing the ominous music. ZING!`,
+    f => `${f.name} did not come here to make friends. Mission accomplished early. ZING!`),
+  zing('personal', f => f.archetype === 'hero',
+    f => `${f.name}, you play with honour, integrity, and the strategic flexibility of a brick. ZING!`,
+    f => `${f.name} is the hero of the season—according to ${f.name}. ZING!`),
+  zing('personal', f => f.archetype === 'floater' || f.archetype === 'goat',
+    f => `${f.name}, your game is so under the radar that search and rescue has been notified. ZING!`,
+    f => `${f.name} is floating beautifully. Unfortunately, the finale chairs are on land. ZING!`),
+
+  // ── last-resort observations; still varied, short and playable ──
+  zing('fallback', () => true,
+    f => `${f.name}, your game has layers. Sadly, they are all wallpaper. ZING!`,
+    f => `${f.name}, you bring so much to this house. Mostly pauses in conversations. ZING!`),
+  zing('fallback', () => true,
+    f => `${f.name}, you are playing it safe. From what, airtime? ZING!`,
+    f => `${f.name}, your biggest move is always scheduled for next week. ZING!`),
+  zing('fallback', () => true,
+    f => `${f.name}, the cameras follow you because they are mounted to the walls. ZING!`,
+    f => `${f.name}, even your diary-room confessionals need a follow-up question. ZING!`),
+  zing('fallback', () => true,
+    f => `${f.name}, your strategy is trust the process. The process has requested privacy. ZING!`,
+    f => `${f.name}, you are not mysterious. People just stopped asking. ZING!`),
+  zing('fallback', () => true,
+    f => `${f.name}, you have survived another week. So has the kitchen table, and it made fewer promises. ZING!`,
+    f => `${f.name}, there is still time to make a big move. Please notify production first. ZING!`),
+];
+
 /**
  * One zing, from the sharpest thing the season can actually prove.
  *
@@ -182,21 +373,21 @@ const ZINGS = [
  */
 function zingFor(name, rng, used) {
   const facts = roastProfile(name);
-  const eligible = ZINGS.filter(z => z.when(facts));
+  const eligible = ZING_MATERIAL.filter(z => z.when(facts));
   const fresh = eligible.filter(z => !used.has(z));
   const pool = fresh.length ? fresh : eligible;
-  // A generic zing is the LAST resort, never a co-equal option.
-  //
-  // Taking the sharpest third of everything eligible sounds right and is not:
-  // a houseguest with three specific hooks has eight fallbacks in the same
-  // pool, so the top third still contained filler and a man with four
-  // competition wins got told he lies very still and hopes.
-  const specific = pool.filter(z => !z.generic);
+  // Fallbacks remain emergency material. Among real hooks, favor the category
+  // heard least so the roast changes subject as it moves around the yard.
+  const specific = pool.filter(z => z.kind !== 'fallback');
   const from = specific.length ? specific : pool;
-  const sharp = from.slice(0, Math.max(1, Math.ceil(from.length / 2)));
-  const chosen = sharp[Math.floor(rng() * sharp.length)];
+  const counts = new Map();
+  for (const item of used) counts.set(item.kind, (counts.get(item.kind) || 0) + 1);
+  const least = Math.min(...from.map(item => counts.get(item.kind) || 0));
+  const balanced = from.filter(item => (counts.get(item.kind) || 0) === least);
+  const chosen = balanced[Math.floor(rng() * balanced.length)];
+  const line = chosen.lines[Math.floor(rng() * chosen.lines.length)];
   used.add(chosen);
-  return { text: `"${chosen.say(facts)}"`, facts };
+  return { text: `"${line(facts)}"`, facts, kind: chosen.kind };
 }
 
 // Deep on purpose. A roast runs once per houseguest, so a pool of three across
@@ -251,13 +442,13 @@ export const zingbot = {
     // One set of templates for the whole roast, so no joke is told twice.
     const usedZings = new Set();
     for (const target of house) {
-      const { text } = zingFor(target, rng, usedZings);
+      const { text, kind } = zingFor(target, rng, usedZings);
       const p = pronouns(target);
       // How hard it lands. A volatile houseguest wears a public roast much
       // worse than a calm one, and the audience likes somebody who can take it.
       const composure = stat(target, 'temperament') * 0.6 + stat(target, 'social') * 0.4;
       const tookItWell = composure + (rng() - 0.5) * 4 > 5;
-      zings.push({ target, text, tookItWell });
+      zings.push({ target, text, tookItWell, kind });
       beats.push(beat(
         `${text} ${(tookItWell ? say(ZING_REACTION_GOOD) : say(ZING_REACTION_BAD))(target, p)}`,
         [target], tookItWell ? 'TOOK IT WELL' : 'THAT ONE LANDED', tookItWell ? 'green' : 'red'));

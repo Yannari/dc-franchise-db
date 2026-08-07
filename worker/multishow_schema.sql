@@ -84,7 +84,40 @@
 --
 -- `appearances` is therefore rebuilt FIRST, because `bonds` reads it. Every one
 -- of these SELECTs compiles on a pristine database and on an already-migrated
--- one, so no re-run can silently relabel a second show's rows.
+-- one.
+--
+-- ─────────────────────────────────────────────────────────────────────────
+-- WHAT A RE-RUN CAN STILL GET WRONG — READ BEFORE APPLYING TO PRODUCTION
+-- ─────────────────────────────────────────────────────────────────────────
+-- This file is re-runnable, but it is NOT true that "no re-run can silently
+-- relabel a second show's rows". Three known ways it can, all deliberately
+-- left as-is (each is owned by a later sub-project, and none is reachable by
+-- the first, Total-Drama-only application of this file):
+--
+--   1. live_season is relabelled unconditionally. The backfill below is a
+--      plain literal 'total-drama' — it derives nothing. That is correct the
+--      first time this runs (the column is new, so every row that can exist
+--      predates the second show), but a LATER re-run against a database
+--      holding live Big Brother rows WILL silently relabel them
+--      'total-drama'. Attributing a live season is sub-project E's job; E
+--      rebuilds this table.
+--
+--   2. A Big Brother appearance with no `bb` block is relabelled. The
+--      `appearances.format` derivation reads bb_appearances MEMBERSHIP, but
+--      the sync writes a bb_appearances row only when a `det.bb` block is
+--      present, while the appearance's own format comes from `det.format`. So
+--      an appearance that is Big Brother by `det.format` but carries no `bb`
+--      block has no bb_appearances row to be found, and the next run of this
+--      migration silently relabels it 'total-drama'.
+--
+--   3. td_appearances rows can be RESURRECTED. `ms_legacy_td_columns` is a
+--      frozen snapshot taken on the first run, and the
+--      `INSERT OR IGNORE INTO td_appearances … FROM ms_legacy_td_columns`
+--      below replays it on every run. If a later sync legitimately DROPS an
+--      appearance, a subsequent re-run reinstates the stale td_appearances row
+--      for it. The snapshot is never refreshed — and must never be dropped
+--      either, since dropping it re-arms the CTAS, which then fails with
+--      "no such column: tribe".
 --
 -- ─────────────────────────────────────────────────────────────────────────
 -- DEVIATION FROM BRIEF (1): D1 (both local miniflare and remote) does not
@@ -189,10 +222,12 @@ INSERT INTO ms_rerun_guard (n)
 DROP TABLE ms_rerun_guard;
 
 -- ── appearances: shared core only ─────────────────────────────────────
--- Rebuilt FIRST, because seasons/bonds/live_season all derive their format
--- from it. `format` is derived from bb_appearances/td_appearances membership
--- rather than read off a column that does not exist on a first run — see the
--- long note at the top of this file.
+-- Rebuilt FIRST, because `bonds` derives its format from it. (`seasons` reads
+-- its own column, and `live_season` is backfilled to a literal — neither reads
+-- this table.) `format` here is derived from bb_appearances/td_appearances
+-- membership rather than read off a column that does not exist on a first run
+-- — see the long note at the top of this file, including the re-run caveat
+-- about a Big Brother appearance that carries no `bb` block.
 DROP TABLE IF EXISTS appearances_new;
 CREATE TABLE appearances_new (
   player_id      TEXT    NOT NULL,

@@ -16,7 +16,8 @@
 
 import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
-import { juryOpensAt, juryLines } from './bb/jury.js';
+import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
+import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
 import { lastWordsLines } from './bb/last-words.js';
 import { juryHouseLines } from './bb/jury-house.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
@@ -641,6 +642,7 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
     ep.secondEvictionInterview =
       generateBBEvictionInterview(ep, weekB, Math.random, weekB.evicted);
   }
+  carryGoodbyesToJury(ep, weekA.num);
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText
     ? window.generateSummaryText(ep) : '';
   try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
@@ -651,6 +653,29 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
       ? window.snapshotGameState() : null,
   });
   return ep;
+}
+
+/**
+ * The messages the house recorded, following the evictee onto the jury.
+ *
+ * The house records these, the evictee watches them on the way out, and until
+ * now that was the end of it: a houseguest could gloat into the camera and the
+ * vote at the end of the season had never heard about it.
+ *
+ * A function rather than two copies because there are TWO paths that interview
+ * somebody — the ordinary week and the Split House, which returns from its own
+ * branch — and a feature wired into one of them is a feature that works for
+ * half the season. That is the exact shape of bug this house keeps producing.
+ */
+function carryGoodbyesToJury(ep, weekNum) {
+  for (const [iv, gone] of [[ep.evictionInterview, ep.eliminated],
+    [ep.secondEvictionInterview, ep.alsoEliminated]]) {
+    if (!iv?.goodbyes?.length || !gone || !isSeatedJuror(gone)) continue;
+    try {
+      const moved = applyGoodbyeMessages(gone, iv.goodbyes, weekNum);
+      if (moved.length) iv.sentimentMoved = moved;
+    } catch { /* the messages still played */ }
+  }
 }
 
 export function simulateBBEpisode() {
@@ -840,6 +865,7 @@ export function simulateBBEpisode() {
     ep.secondEvictionInterview = generateBBEvictionInterview(
       ep, secondWeek || week, Math.random, ep.alsoEliminated);
   }
+  carryGoodbyesToJury(ep, week.num);
   // The shared text backlog owns transcripts for both shows, so a Big Brother
   // week is written by the same system that writes a Total Drama episode.
   ep.summaryText = typeof window !== 'undefined' && window.generateSummaryText

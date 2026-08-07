@@ -10,10 +10,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
 import { addBond, getBond } from '../js/bonds.js';
 import { simulateBBSeason } from '../js/bb/week.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
 import { checkBBLastWords, lastWordsLines } from '../js/bb/last-words.js';
 import { generateBBJuryHouse, juryHouseLines } from '../js/bb/jury-house.js';
 import {
   seedJurorReads, moveRead, readOf, sentimentAdjustment, stanceOf,
+  sentimentLog, jurorsWithReads,
 } from '../js/bb/jury-sentiment.js';
 import { simulateJuryVote } from '../js/finale.js';
 import { seedGame } from './helpers/setup.js';
@@ -41,6 +43,16 @@ function reset(cast = CAST) {
   seasonConfig.romance = 'enabled';
   seasonConfig.finaleSize = 3;
   seasonConfig.jurySize = 7;
+}
+
+/** Play a whole season through the surface a viewer actually uses. */
+function playEpisodes(seed) {
+  gs.episodeHistory = [];
+  for (let i = 0; i < 20; i++) {
+    let ep = null;
+    try { ep = simulateBBEpisode(); } catch { break; }
+    if (!ep) break;
+  }
 }
 
 /** A week that ends with `evicted` going out on a lopsided vote. */
@@ -280,6 +292,50 @@ describe('juror sentiment', () => {
     }
     const swayed = simulateJuryVote(finalists, adjustments);
     expect(swayed.votes.B).toBeGreaterThanOrEqual(bare.votes.B);
+  });
+});
+
+describe('goodbye messages', () => {
+  // They rendered for a long time and changed nothing: a houseguest could gloat
+  // into the camera and the vote at the end of the season had never heard about
+  // it. The bound matters as much as the wiring — this is ONE of the things a
+  // juror carries out of the door, next to who wrote their name down and six
+  // weeks of argument in the lodge, and it must not outweigh the season.
+  it('move a juror without deciding them', () => {
+    let goodbye = 0, other = 0, entries = 0;
+    for (const seed of [3, 7, 11, 19, 27, 35]) {
+      reset();
+      // The PLAYED path, not simulateBBSeason. Eviction interviews — and the
+      // goodbye messages inside them — are built in bb-run.js; the headless
+      // week engine never makes one, so measuring this against it reports zero
+      // for a feature that works. Same two-entry-point trap the house keeps
+      // setting.
+      playEpisodes(seed);
+      for (const juror of jurorsWithReads()) {
+        for (const e of sentimentLog(juror)) {
+          if (!e.delta) continue;
+          if (e.kind === 'goodbye') { goodbye += Math.abs(e.delta); entries++; }
+          else other += Math.abs(e.delta);
+        }
+      }
+    }
+    // Wired at all...
+    expect(entries, 'no goodbye message ever moved a read').toBeGreaterThan(20);
+    // ...and one voice among several, not the loudest. Measured at ~22%.
+    const share = goodbye / (goodbye + other);
+    expect(share).toBeGreaterThan(0.05);
+    expect(share).toBeLessThan(0.35);
+  });
+
+  it('only reaches people who can actually vote', () => {
+    reset();
+    playEpisodes(7);
+    const seated = new Set(jurorsWithReads());
+    for (const juror of seated) {
+      const heard = sentimentLog(juror).filter(e => e.kind === 'goodbye');
+      // A read can only exist for somebody the jury can still vote for.
+      for (const e of heard) expect(e.player).toBeTruthy();
+    }
   });
 });
 

@@ -92,25 +92,30 @@ describe('the final three', () => {
 describe('the three parts', () => {
   it('each get their own screen', () => {
     const ep = playSeason(7);
-    const labels = (buildVPScreens(ep) || []).map(s => s.label);
-    // Renamed: the last days are house life like any other stretch, and they
-    // render on the house feed now rather than on a screen of their own.
-    expect(labels).toContain('House Life');
-    expect(labels).toContain('Part 1 · Endurance');
-    expect(labels).toContain('Part 2 · Skill');
-    expect(labels).toContain('Part 3 · The Jury Quiz');
-    // In order, and before the vote.
-    expect(labels.indexOf('Part 1 · Endurance')).toBeLessThan(labels.indexOf('Part 2 · Skill'));
-    expect(labels.indexOf('Part 2 · Skill')).toBeLessThan(labels.indexOf('Part 3 · The Jury Quiz'));
-    expect(labels.indexOf('Part 3 · The Jury Quiz')).toBeLessThan(labels.indexOf('The Jury Vote'));
+    const screens = buildVPScreens(ep) || [];
+    const ids = screens.map(s => s.id);
+    // Asserted on IDS, not labels. The three parts must be three screens —
+    // that is the structural point, and it is the thing that regressed once
+    // already behind an id guard. What they are CALLED is editorial: parts one
+    // and two can have any competition pinned to them, so naming a tab after a
+    // category can state something untrue, and whoever owns the wording should
+    // be free to change it without breaking this.
+    expect(ids).toContain('bb-final-hoh-1');
+    expect(ids).toContain('bb-final-hoh-2');
+    expect(ids).toContain('bb-final-hoh-3');
+    expect(ids.indexOf('bb-final-hoh-1')).toBeLessThan(ids.indexOf('bb-final-hoh-2'));
+    expect(ids.indexOf('bb-final-hoh-2')).toBeLessThan(ids.indexOf('bb-final-hoh-3'));
+    expect(ids.indexOf('bb-final-hoh-3')).toBeLessThan(ids.indexOf('bb-jury'));
+    // And the last days reach a screen of some kind, wherever they are drawn.
+    expect(ids).toContain('bb-finale-house');
   });
 
   it('draws each part rather than listing it', () => {
     const ep = playSeason(7);
     const screens = buildVPScreens(ep) || [];
-    for (const label of ['Part 1 · Endurance', 'Part 2 · Skill', 'Part 3 · The Jury Quiz']) {
-      const html = screens.find(s => s.label === label).html;
-      expect(html.length, `${label} is empty`).toBeGreaterThan(400);
+    for (const id of ['bb-final-hoh-1', 'bb-final-hoh-2', 'bb-final-hoh-3']) {
+      const html = screens.find(s => s.id === id).html;
+      expect(html.length, `${id} is empty`).toBeGreaterThan(400);
       expect(html).not.toContain('undefined');
     }
   });

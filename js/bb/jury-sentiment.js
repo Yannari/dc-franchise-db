@@ -190,6 +190,71 @@ function trimLog(rec) {
   if (rec.log.length > LOG_CAP) rec.log.splice(0, rec.log.length - LOG_CAP);
 }
 
+// How a message lands before the juror's own temperament gets to it. Modest on
+// purpose: a goodbye message is ONE of the things a juror carries out of the
+// door, alongside who wrote their name down, what the lodge argues about for
+// six weeks and what gets said at the final questioning. It should colour a
+// read, not set it — a warm message from somebody with no résumé must not beat
+// a season of play, and a smug one must not sink a game on its own.
+const GOODBYE_TONE = {
+  // Voted them out AND was close to them: the message where the betrayal is
+  // admitted to somebody who did not know. The worst of the four, and still
+  // worth less than finding out from a juror in the lodge (-1.6).
+  confession: -1.0,
+  // Voted them out and never pretended otherwise. Cold rather than cruel.
+  unapologetic: -0.7,
+  // Kept them, or was simply fond of them.
+  warm: 0.8,
+  // Somebody they barely spoke to, being polite.
+  polite: 0.1,
+};
+
+/**
+ * The messages the house recorded, and what they do to a vote.
+ *
+ * Every evictee watches these on the way out and nothing came of it: the
+ * screen showed a houseguest gloating and the ballot at the end of the season
+ * had never heard about it. In the real format this is the moment a juror
+ * decides how they feel about somebody, because it is the last thing that
+ * person says to them and the only one they cannot answer.
+ *
+ * The juror's own temperament decides how much it counts, using the same split
+ * the seeding uses: somebody who values loyalty takes a confession badly,
+ * somebody who values strategy hears a person owning a good move.
+ *
+ * @returns {Array} what moved, for the transcript and the screen
+ */
+export function applyGoodbyeMessages(juror, goodbyes = [], week = 0) {
+  if (!juror || !goodbyes.length) return [];
+  const rec = record(juror);
+  if (rec.goodbyesHeard) return [];   // one airing per evictee
+  rec.goodbyesHeard = true;
+
+  const jS = pStats(juror);
+  const grudge = 0.6 + (jS.loyalty / 10) * 0.8;      // 0.6 – 1.4
+  const respect = 0.3 + (jS.strategic / 10) * 0.7;   // 0.3 – 1.0
+  const moved = [];
+
+  for (const g of goodbyes) {
+    if (!g?.name || g.tone === 'montage') continue;
+    if (!(gs.activePlayers || []).includes(g.name)) continue;   // cannot vote for somebody already gone
+    const base = GOODBYE_TONE[g.tone];
+    if (!base) continue;
+    // A betrayal message is weighed by how much this juror minds betrayal; a
+    // strategic juror hears the same words as somebody explaining a move, and
+    // the sting comes off it.
+    const weight = base < 0
+      ? grudge * (1 - respect * 0.35)
+      : 1;
+    const delta = moveRead(juror, g.name, {
+      strength: base * weight, credibility: 1, kind: 'goodbye', week,
+      text: `${g.name}'s goodbye message ${base < 0 ? 'did not land well' : 'landed'} with ${juror}.`,
+    });
+    if (Math.abs(delta) > 0.01) moved.push({ from: g.name, tone: g.tone, delta: Number(delta.toFixed(2)) });
+  }
+  return moved;
+}
+
 /** Everything that has moved this juror, oldest kept entry first. */
 export function sentimentLog(juror) {
   return [...(store()[juror]?.log || [])];

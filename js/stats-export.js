@@ -5,7 +5,7 @@ import { gs, players, seasonConfig } from './core.js';
 import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
-import { seasonId, DEFAULT_FORMAT } from './shows.js';
+import { seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -51,6 +51,88 @@ function _clean(val, fallback = '') {
 function _isSameSeason(detail, seasonNum, format = DEFAULT_FORMAT) {
   if (!detail || detail.season !== seasonNum) return false;
   return (detail.format || DEFAULT_FORMAT) === format;
+}
+
+/**
+ * What a season's winner badge is called.
+ *
+ * Total Drama keeps the bare `S4 Winner` its fifteen seasons of data already
+ * carry. Every other show is prefixed, because the number alone stopped
+ * identifying a season when the second show arrived — Big Brother 1's winner was
+ * getting `S1 Winner`, the same badge as Total Drama 1's winner, on the same
+ * career page.
+ */
+function _winnerBadge(seasonNum, format = DEFAULT_FORMAT) {
+  return format === DEFAULT_FORMAT
+    ? `S${seasonNum} Winner`
+    : `${(formatPrefix(format) || format).toUpperCase()}${seasonNum} Winner`;
+}
+
+/**
+ * Take one season back off a player's career, whatever show it was.
+ *
+ * Re-exporting a season has to be able to CORRECT it, and correcting means the
+ * old numbers come off first. Two things used to survive that:
+ *
+ *   - the winner's badge, which was only ever added and never removed, so a
+ *     player who lost a re-exported season kept wearing `S1 Winner`; and
+ *   - anybody dropped from the cast, because the merge only ever visited players
+ *     in the NEW season document. Re-export a season with a different cast and
+ *     the people you removed keep the appearance forever — inflating their
+ *     season count, their per-show totals and their fame.
+ *
+ * Returns true if anything was actually removed, so the caller knows to
+ * recompute the derived figures.
+ */
+function _stripSeasonFromPlayer(player, seasonNum, format = DEFAULT_FORMAT) {
+  const detail = (player.seasonDetails || []).find(sd => _isSameSeason(sd, seasonNum, format));
+  if (!detail) return false;
+
+  const bb = detail.bb || {};
+  const less = (field, amount) => {
+    player[field] = Math.max(0, (player[field] || 0) - (amount || 0));
+  };
+  // Shared across both shows.
+  less('totalChallengeWins', detail.challengeWins);
+  less('totalVotesAgainst', detail.votesReceived);
+  less('totalJuryVotes', detail.juryVotes);
+  // Total Drama shapes.
+  less('totalImmunityWins', detail.immunityWins);
+  less('totalRewardWins', detail.rewardWins);
+  less('totalIdolsFound', detail.idolsFound);
+  // Big Brother shapes.
+  less('totalHohWins', bb.hohWins);
+  less('totalVetoWins', bb.vetoWins);
+
+  if (detail.status === 'Winner') {
+    player.wins = Math.max(0, (player.wins || 0) - 1);
+    const badge = _winnerBadge(seasonNum, format);
+    player.badges = (player.badges || []).filter(b => b !== badge);
+  }
+
+  player.seasonDetails = player.seasonDetails.filter(sd => !_isSameSeason(sd, seasonNum, format));
+  player.seasons = (player.seasons || []).filter(n =>
+    n !== seasonNum || (player.seasonDetails || []).some(sd => sd.season === seasonNum));
+  return true;
+}
+
+/**
+ * Take a season off EVERY player, not just the ones in the new cast.
+ *
+ * Call before re-adding, so a re-export with a changed cast leaves nobody
+ * holding an appearance in a season they are no longer in.
+ */
+function _stripSeasonFromAll(db, seasonNum, format = DEFAULT_FORMAT) {
+  for (const player of db.players || []) {
+    if (_stripSeasonFromPlayer(player, seasonNum, format)) {
+      const places = (player.seasonDetails || []).map(sd => sd.placement).filter(p => p && p < 99);
+      player.avgPlacement = places.length
+        ? Math.round(places.reduce((s, v) => s + v, 0) / places.length * 100) / 100
+        : null;
+      player.bestPlacement = places.length ? Math.min(...places) : null;
+      _rebuildByShow(player);
+    }
+  }
 }
 
 function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
@@ -1810,6 +1892,10 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
 
   if (!db.players) db.players = [];
 
+  // Take this season off everybody first, so a re-export with a changed cast
+  // does not leave the people who were removed still holding an appearance.
+  _stripSeasonFromAll(db, seasonNum, DEFAULT_FORMAT);
+
   // Build lookup from AI-filled placements
   const filledPlacements = {};
   if (filledSeasonData?.placements) {
@@ -1853,18 +1939,11 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
     // career contributions and season detail so the fresh data below replaces it.
     // (Previously an already-finalized season was skipped entirely with `continue`,
     // so re-exports/corrections never updated existing player records.)
-    const existingDetail = player.seasonDetails?.find(sd => _isSameSeason(sd, seasonNum));
-
-    if (existingDetail) {
-      player.totalChallengeWins = (player.totalChallengeWins || 0) - (existingDetail.challengeWins || 0);
-      player.totalImmunityWins = (player.totalImmunityWins || 0) - (existingDetail.immunityWins || 0);
-      player.totalRewardWins = (player.totalRewardWins || 0) - (existingDetail.rewardWins || 0);
-      player.totalVotesAgainst = (player.totalVotesAgainst || 0) - (existingDetail.votesReceived || 0);
-      player.totalIdolsFound = (player.totalIdolsFound || 0) - (existingDetail.idolsFound || 0);
-      player.totalJuryVotes = (player.totalJuryVotes || 0) - (existingDetail.juryVotes || 0);
-      if (existingDetail.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
-      player.seasonDetails = player.seasonDetails.filter(sd => !_isSameSeason(sd, seasonNum));
-    }
+    // The strip now happens once for every player before this loop starts —
+    // see _stripSeasonFromAll at the top of the merge. Doing it per-player here
+    // could only ever reach the NEW cast, which is how a player dropped from a
+    // re-exported season kept the appearance forever.
+    _stripSeasonFromPlayer(player, seasonNum);
 
     // Update career stats
     if (!player.seasons) player.seasons = [];
@@ -1936,9 +2015,9 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
     _rebuildByShow(player);
 
     // Update badges
-    if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {
+    if (pd.phase === 'Winner' && !player.badges?.includes(_winnerBadge(seasonNum))) {
       player.badges = player.badges || [];
-      player.badges.push(`S${seasonNum} Winner`);
+      player.badges.push(_winnerBadge(seasonNum));
     }
   }
 
@@ -2659,6 +2738,11 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
   if (!seasonNum) throw new Error('Big Brother season document has no seasonNumber');
   if (!db.players) db.players = [];
 
+  // Take this season off everybody first. Re-exporting only ever visited the
+  // players in the NEW document, so anybody dropped from the cast kept the
+  // appearance — and their season count, per-show totals and fame with it.
+  _stripSeasonFromAll(db, seasonNum, 'big-brother');
+
   for (const entry of seasonDoc.placements || []) {
     const name = entry.name;
     if (!name) continue;
@@ -2679,17 +2763,9 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     if (!player.seasons) player.seasons = [];
 
     // Strip a previous recording of this same season before adding the new one.
-    const prior = player.seasonDetails.find(sd => _isSameSeason(sd, seasonNum, 'big-brother'));
-    if (prior) {
-      const pb = prior.bb || {};
-      player.totalVotesAgainst = Math.max(0, (player.totalVotesAgainst || 0) - (prior.votesReceived || 0));
-      player.totalJuryVotes = Math.max(0, (player.totalJuryVotes || 0) - (prior.juryVotes || 0));
-      player.totalChallengeWins = Math.max(0, (player.totalChallengeWins || 0) - (prior.challengeWins || 0));
-      player.totalHohWins = Math.max(0, (player.totalHohWins || 0) - (pb.hohWins || 0));
-      player.totalVetoWins = Math.max(0, (player.totalVetoWins || 0) - (pb.vetoWins || 0));
-      if (prior.status === 'Winner') player.wins = Math.max(0, (player.wins || 0) - 1);
-      player.seasonDetails = player.seasonDetails.filter(sd => !_isSameSeason(sd, seasonNum, 'big-brother'));
-    }
+    // Already stripped from everybody above; this only matters for a player who
+    // somehow appears twice in one season document.
+    _stripSeasonFromPlayer(player, seasonNum, 'big-brother');
 
     const compWins = (bb.hohWins || 0) + (bb.vetoWins || 0);
     if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
@@ -2733,7 +2809,10 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
 
     if (entry.status === 'Winner') {
       player.badges = player.badges || [];
-      if (!player.badges.includes(`S${seasonNum} Winner`)) player.badges.push(`S${seasonNum} Winner`);
+      // BB1 Winner, not S1 Winner — the bare number is Total Drama's, and both
+      // shows writing it put two different seasons' badges on one career page.
+      const badge = _winnerBadge(seasonNum, 'big-brother');
+      if (!player.badges.includes(badge)) player.badges.push(badge);
     }
   }
 

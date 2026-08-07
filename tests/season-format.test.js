@@ -180,7 +180,11 @@ describe('folding a Big Brother season into the career database', () => {
     const winners = db.players.filter(p => p.wins === 1);
     expect(winners).toHaveLength(1);
     expect(winners[0].name).toBe(doc.winner.name);
-    expect(winners[0].badges).toContain('S16 Winner');
+    // BB16, not S16. Both merges used to write the bare `S${n} Winner`, so a
+    // Big Brother winner and the Total Drama winner of the same-numbered season
+    // wore identical badges — and on a crossover career, both at once.
+    expect(winners[0].badges).toContain('BB16 Winner');
+    expect(winners[0].badges).not.toContain('S16 Winner');
   });
 
   it('re-exporting a season corrects it instead of double-counting', () => {

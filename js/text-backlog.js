@@ -4469,36 +4469,82 @@ export function generateBBSummaryText(ep) {
       // page in full, including the names the house got wrong.
       // The twin twist. The house is never told any of this; the audience is
       // told all of it, which is what the page is for.
+      case 'twin-brief': {
+        sec('THE JOB');
+        if (act.swap) ln(`  ${act.swap.text}`);
+        if (act.swap?.handoff) {
+          ln('');
+          ln(act.swap.handoff.blind
+            ? `  NO NOTE. ${act.swap.handoff.text}`
+            : `  THE HANDOFF (${Math.round((act.swap.handoff.quality || 0) * 100)}% of the week made it `
+              + `across): ${act.swap.handoff.text}`);
+        }
+        ln('');
+        ln(`  THIS WEEK'S JOB — ${act.mission?.name}: ${act.mission?.brief}`);
+        ln(`  Worth $${(act.mission?.pay || 0).toLocaleString()}.`);
+        ln('');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        ln('');
+        ln(`  Jobs finished: ${act.completed || 0} of ${act.quota || 0}. `
+          + `How close the house is: ${Math.round((act.exposure || 0) * 100)}%.`);
+        break;
+      }
+
       case 'twin-week': {
         sec('TWO OF THEM');
-        if (act.swap) ln(`  ${act.swap.text}`);
+        const d = act.debrief;
+        if (d) {
+          ln(d.declined ? '  NO JOB — they turned it down, and the week does not count.'
+            : d.impossible ? '  NO WAY IN — the week never gave them the opening the job needed.'
+              : d.worked ? `  JOB DONE — ${d.mission?.name}. $${(d.paid || 0).toLocaleString()} banked.`
+                : `  JOB FAILED — ${d.mission?.name}. Nothing paid, and it does not count.`);
+          ln('');
+          (d.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        }
         const tells = act.tells?.beats || [];
         if (tells.length) {
           ln('');
           tells.forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
         } else {
+          ln('');
           ln('  Nobody noticed a thing all week.');
         }
-        if (act.exposed) {
-          ln('');
-          (act.exposed.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
-        }
         ln('');
-        ln(`  How close the house is: ${Math.round((act.exposureLevel || 0) * 100)}%.`);
+        ln(`  Jobs finished: ${act.completed || 0} of ${act.quota || 0}. `
+          + `How close the house is: ${Math.round((act.exposureLevel || 0) * 100)}%.`);
         break;
       }
 
       case 'twin-entry': {
         sec('BOTH OF THEM');
+        ln(`  The quota is met — ${act.completed} job${act.completed === 1 ? '' : 's'} across `
+          + `${act.swaps} changeover${act.swaps === 1 ? '' : 's'}, and $${(act.banked || 0).toLocaleString()} paid.`);
+        ln('');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));
         ln('');
         ln(`  ${act.other} is a houseguest from tonight, with ${act.other}'s own stats and own vote.`);
         break;
       }
 
+      case 'twin-caught': {
+        sec(act.unfinished ? 'NOBODY EVER KNEW' : 'THERE ARE TWO OF THEM');
+        ln(act.unfinished
+          ? `  ${act.swaps} changeover${act.swaps === 1 ? '' : 's'} and not one person ever said the word — `
+            + `and it made no difference, because they needed ${act.quota} jobs and finished ${act.completed}.`
+          : `  ${act.teller} says it out loud, in front of everybody, and the jobs stop where they are.`);
+        ln('');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        ln('');
+        ln(`  ${act.completed} of ${act.quota} jobs finished. $${(act.lost || 0).toLocaleString()} unpaid. `
+          + `${act.other} never plays.`);
+        break;
+      }
+
       case 'twin-out': {
         sec('THERE WERE TWO');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('');
+        ln(`  ${act.completed} of ${act.quota} jobs finished, and one vote too few.`);
         break;
       }
 

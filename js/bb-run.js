@@ -724,7 +724,8 @@ export function simulateBBEpisode() {
   if (seasonConfig.bbTwins && seasonConfig.bbTwins !== 'off' && !twinState()) {
     try {
       installTwinTwist(house, {
-        enterWeek: Number(seasonConfig.bbTwinsEnterWeek) || 5,
+        // Jobs finished, not weeks survived — the pair earn the second door.
+        quota: Number(seasonConfig.bbTwinsQuota) || 3,
         rng: Math.random,
         pick: seasonConfig.bbTwins === 'choose' ? (seasonConfig.bbTwinsPlayer || null) : null,
       });

@@ -553,7 +553,7 @@
                 <option value="random">On &mdash; cast at random</option>
                 <option value="choose">On &mdash; I pick who it is</option>
               </select>
-              <div class="hint hint-tight">A season-long twist. One houseguest is secretly two people swapping places. The house is never told &mdash; it has to work it out.</div>
+              <div class="hint hint-tight">A season-long twist. One houseguest is secretly two people swapping places every week. The house is never told &mdash; it has to work it out. They get a job each week that only two people sharing a name could do; finish enough of them and both of them join the game.</div>
             </div>
             <div id="grp-bb-twins-sub" style="display:none;margin:-4px 0 14px 0;padding:10px 12px;
                  border-left:2px solid rgba(163,113,247,.45);background:rgba(163,113,247,.05);border-radius:0 6px 6px 0">
@@ -562,9 +562,9 @@
                 <div id="bb-twins-select" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
               </div>
               <div class="form-group" style="margin-bottom:0">
-                <label class="form-label">Both enter in week</label>
-                <input type="number" id="cfg-bb-twins-week" class="form-input" min="2" max="12" value="5" onchange="saveConfig()">
-                <div class="hint hint-tight">Survive to this week and both of them join the game as separate houseguests &mdash; being found out does not stop it.</div>
+                <label class="form-label">Jobs to finish</label>
+                <input type="number" id="cfg-bb-twins-quota" class="form-input" min="1" max="8" value="3" onchange="saveConfig()">
+                <div class="hint hint-tight">Finish this many weekly jobs and both of them join the game as separate houseguests. Get found out, or get the shared identity evicted, and it ends there &mdash; the second twin never plays and the money is not paid.</div>
               </div>
             </div>
             <div class="form-group">

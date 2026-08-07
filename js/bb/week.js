@@ -65,7 +65,8 @@ import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
 import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-eviction.js';
-import { swapTwins, twinTells, twinExposure_check, checkTwinEntry, twinEvicted, twinState,
+import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinState,
+  offerTwinMission, resolveTwinMission, twinUnfinished,
   twinExposure as twinExposureLevel } from './twin-twist.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
@@ -1150,27 +1151,19 @@ export function simulateBBWeek(options = {}) {
   // this with the room having to work it out. The swap happens first so the
   // whole week — competitions, plans, threat reads — is played against whichever
   // of them is actually in the building.
+  // Two screens a week, at opposite ends of it. The QUOTA is checked first —
+  // last week's job may have been the one that got them both in — then the
+  // changeover, then the job they are being asked to bring off. Everything
+  // else (did it work, who noticed, whether anybody says it out loud) waits
+  // until after eviction night, where the results belong.
   try {
     const entered = checkTwinEntry(week);
-    if (entered) week.acts.push({ type: 'twin-entry', ...entered });
+    if (entered) week.acts.push(entered);
     else {
       const swap = swapTwins(week, { rng });
-      const tells = twinTells(week, { rng });
-      const exposed = twinExposure_check(week, { rng });
-      if (swap || tells || exposed) {
-        const tw = twinState();
-        week.acts.push({
-          type: 'twin-week', secret: true, week: week.num,
-          front: tw?.front || null, swap, tells,
-          exposed: exposed || null,
-          // The two stat lines and how close the room is, for the screen the
-          // house will never see.
-          twins: tw ? { other: tw.other, active: tw.active,
-            statsA: { ...tw.statsA }, statsB: { ...tw.statsB } } : null,
-          exposureLevel: twinExposureLevel(),
-          beats: [...(tells?.beats || []), ...(exposed?.beats || [])],
-        });
-      }
+      const brief = offerTwinMission(week, { rng });
+      if (swap) week._twinSwap = swap;
+      if (brief) week.acts.push({ ...brief, swap: swap || null });
     }
   } catch { /* the house plays a normal week */ }
 
@@ -3990,9 +3983,63 @@ export function simulateBBWeek(options = {}) {
     const blown = saboteurEvicted(evicted, week);
     if (blown) (week._sabHeld ||= []).push(blown);
   } catch { /* the eviction stands either way */ }
+  // ── the twins' week, resolved ──
+  //
+  // After the vote, and deliberately: no twin job changes a ballot, and one of
+  // them turns on having sat on the block and got off it, which is a thing that
+  // is only true once the votes are read. The whole week arrives as one screen —
+  // the changeover, whether the job came off, who noticed, and whether anybody
+  // is sure enough to say it in front of everybody.
   try {
+    const tw0 = twinState();
+    if (tw0 && !tw0.entered && !tw0.caught) {
+      const debrief = resolveTwinMission(week, { rng });
+      // All three sources of suspicion arrive through one door: the handoff
+      // governs the memory slips, the stat gap governs the form slips, and the
+      // job's own noise is handed in here.
+      const tells = twinTells(week, { rng, extraNoise: week._twinJobNoise || 0 });
+      delete week._twinJobNoise;
+      const found = twinDiscovery(week, { rng });
+      const tw = twinState();
+      if (debrief || tells || found) {
+        (week._sabHeld ||= []).push({
+          type: 'twin-week', secret: true, week: week.num,
+          front: tw?.front || null,
+          swap: week._twinSwap || null,
+          handoff: tw?.handoff || null,
+          debrief: debrief || null, tells, exposed: found || null,
+          twins: tw ? { other: tw.other, active: tw.active,
+            statsA: { ...tw.statsA }, statsB: { ...tw.statsB } } : null,
+          exposureLevel: twinExposureLevel(),
+          quota: tw?.quota || 0, completed: tw?.completed || 0, banked: tw?.banked || 0,
+          beats: [...(debrief?.beats || []), ...(tells?.beats || [])],
+        });
+      }
+      // Said out loud in front of everybody: the jobs stop and the second twin
+      // never gets through the door. Its own screen, because it is the ending.
+      if (found) (week._sabHeld ||= []).push(found);
+      // And what the room actually saw, dropped into the feed unattributed.
+      if (week._twinFeed) {
+        const feed = [...week.acts].reverse().find(a => a?.type === 'house' && Array.isArray(a.socialBeats));
+        if (feed) feed.socialBeats.push(week._twinFeed);
+        delete week._twinFeed;
+      }
+    }
+    delete week._twinSwap;
     const twins = twinEvicted(evicted, week);
-    if (twins) (week._sabHeld ||= []).push({ type: 'twin-out', ...twins });
+    if (twins) (week._sabHeld ||= []).push(twins);
+    // The fourth ending: never caught, never got there. Once the house is down
+    // to the finale there is nowhere left for a second houseguest to walk into,
+    // so the twist is told to the room as a thing that already happened — which
+    // is the worst outcome for the twins and the best one to watch.
+    else {
+      const floor = Math.max(3, Number(seasonConfig?.finaleSize) || 3);
+      const left = (gs.activePlayers || []).filter(n => n !== evicted && n !== secondEvicted).length;
+      if (left <= floor) {
+        const quiet = twinUnfinished(week);
+        if (quiet) (week._sabHeld ||= []).push(quiet);
+      }
+    }
   } catch { /* the eviction stands either way */ }
   week.secondEvicted = secondEvicted;
   week.votes = votes;

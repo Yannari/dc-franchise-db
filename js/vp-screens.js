@@ -22,7 +22,8 @@ import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
-import { rpBuildBBTwinWeek, rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
+import { rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
+  rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
@@ -20761,7 +20762,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // The season-long twist. Two screens, and both of them are the audience's
       // alone — the house is never told any of this, which is the format.
       // The twin twist. Audience-only, every one of them — the house is never
-      // told there is anything to find.
+      // told there is anything to find. Two a week, at opposite ends of it: the
+      // job on Monday and whether it came off after eviction night.
+      case 'twin-brief':
+        screens.push({ id: id('bb-twins-job'), label: 'The Job',
+          html: rpBuildBBTwinBrief(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'twin-caught':
+        screens.push({ id: id('bb-twins-caught'), label: act.unfinished ? 'Nobody Ever Knew' : 'Found Out',
+          html: rpBuildBBTwinCaught(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       case 'twin-week':
         screens.push({ id: id('bb-twins'), label: 'Two Of Them',
           html: rpBuildBBTwinWeek(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });

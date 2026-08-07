@@ -23486,6 +23486,7 @@ export function rpBuildBBClosingStatements(ep) {
       </div>
       <div class="bbcs-intro">${s.intro}</div>
       <blockquote class="bbcs-speech">${s.text}</blockquote>
+      ${s.coda ? `<blockquote class="bbcs-speech bbcs-coda">${s.coda}</blockquote>` : ''}
       <div class="bbcs-bench-h">${(s.moved || []).length
         ? `THAT MOVED ${(s.moved || []).length} OF THE ${jury.length} PEOPLE IN FRONT OF THEM · ${
           total > 0 ? '+' : ''}${Math.round(total * 100) / 100} IN TOTAL`
@@ -23515,6 +23516,8 @@ export function rpBuildBBClosingStatements(ep) {
     .bbcs-intro{margin:13px 0 9px;font-size:12px;color:#8b949e;line-height:1.6}
     .bbcs-speech{margin:0;padding:14px 16px;border-left:3px solid #f0a500;border-radius:0 8px 8px 0;
       background:rgba(255,255,255,.035);font-size:15.5px;line-height:1.72;color:#f2ead9}
+    /* The part about the thing the whole room already knows. */
+    .bbcs-coda{margin-top:9px;border-left-color:#a371f7;background:rgba(163,113,247,.09)}
     .bbcs-bench-h{margin:15px 0 7px;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
       letter-spacing:1.8px;color:#8b949e}
     .bbcs-bench{display:flex;gap:8px;flex-wrap:wrap}

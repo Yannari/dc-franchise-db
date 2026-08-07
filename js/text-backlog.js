@@ -5616,6 +5616,8 @@ export function generateBBFinaleText(ep) {
         ln('');
         ln(`  ${s.intro}`);
         ln(`    ${s.text}`);
+        // The part about the thing the whole room already knows.
+        if (s.coda) ln(`    ${s.coda}`);
       }
     } else if (act.type === 'americas-favourite') {
       sec("AMERICA'S FAVOURITE HOUSEGUEST");

@@ -38,6 +38,8 @@ import { addBond, getBond } from '../bonds.js';
 import { juryValueProfile, juryTopValue } from '../finale.js';
 import { readOf, stanceOf, moveRead } from './jury-sentiment.js';
 import { dealBetween, tierOf } from './deals.js';
+import { saboteurState } from './saboteur.js';
+import { twinState } from './twin-twist.js';
 
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
@@ -93,6 +95,50 @@ export function grievanceOf(juror, finalist) {
   };
 }
 
+/**
+ * What a season twist put on this finalist's record — if the house knows.
+ *
+ * Both season twists build all season to a reveal and then the reveal
+ * evaporated: a saboteur could bank fifty thousand dollars for wrecking these
+ * people's weeks, sit down in front of seven of them, and not one juror would
+ * mention it. A pair of twins could both walk in, one of them reach the end,
+ * and the jury vote on six weeks of conversations without ever saying out loud
+ * that half of those conversations were with somebody else.
+ *
+ * Gated on the house actually knowing. A saboteur who was never revealed is a
+ * secret, not a grievance, and a jury cannot ask about something it was never
+ * told.
+ */
+function twistRecordOf(finalist) {
+  const sab = saboteurState();
+  if (sab?.revealed && sab.player === finalist) {
+    return {
+      kind: 'saboteur',
+      banked: sab.banked || 0,
+      missions: (sab.missions || []).filter(m => m.worked).length,
+      caught: !!sab.caught,
+      // Somebody they wrongly convicted along the way, which is the part that
+      // actually stings on a jury bench.
+      framed: [...new Set(Object.keys(sab.suspicion || {}).filter(n => n !== finalist))],
+    };
+  }
+  const tw = twinState();
+  // 'evicted' cannot reach this chair; the other three all can.
+  if (tw?.ending && tw.ending !== 'evicted' && (tw.front === finalist || tw.other === finalist)) {
+    return {
+      kind: 'twin',
+      ending: tw.ending,
+      other: tw.front === finalist ? tw.other : tw.front,
+      swaps: (tw.swaps || []).length,
+      completed: tw.completed || 0,
+      quota: tw.quota || 0,
+      // Both of them made it in, and possibly both to the end.
+      entered: !!tw.entered,
+    };
+  }
+  return null;
+}
+
 /** The case this finalist can truthfully make, distilled from the BB ledger. */
 function finalistCase(name) {
   const ws = weeks();
@@ -115,6 +161,18 @@ function finalistCase(name) {
   return { name, hohs, vetos, wins: hohs + vetos, blocks, boots, flips, correctVotes, votes,
     broken, honoured, survived, weeks: ws.length };
 }
+
+/**
+ * A claim rewritten to sit mid-sentence.
+ *
+ * `.toLowerCase()` on the whole string is what it used to do, and it flattened
+ * every houseguest's name along with the leading "I": "the moment I earned this
+ * seat was when put julia on the jury". Only the first letter should move.
+ */
+const midSentence = s => {
+  const cut = String(s).replace(/^I /, '');
+  return cut.charAt(0).toLowerCase() + cut.slice(1);
+};
 
 const moveClaim = c => c.boots.length
   ? `I put ${c.boots[0]} on the jury when leaving ${c.boots[0]} in the game was bad for mine`
@@ -173,6 +231,25 @@ const QUESTIONS = {
     (j, f, g, p) => `"Name one week where your decision changed the outcome. Not your vote—your decision."`,
     (j, f, g, p) => `"Why should surviving other people's moves earn my vote over somebody who made them?"`,
   ],
+  // ── the two season twists, arriving on the bench ──
+  //
+  // Asked once a night at most. Seven people all asking the same houseguest
+  // about the same reveal is a bench with one idea, and the point of these is
+  // that they are the loudest single thing anybody in that room lived through.
+  saboteur: [
+    (j, f, g, p, t) => `"You were being PAID. Every week we were losing our minds about who was doing this to us, you were sitting in that room collecting for it. So I want to hear you say what the money was worth, out loud, to the people it was taken from."`,
+    (j, f, g, p, t) => `"I want to know one thing and I want a straight answer. When we were all in that kitchen at two in the morning accusing each other — were you enjoying it?"`,
+    (j, f, g, p, t) => `"${t.framed.length ? `${t.framed[0]} wore that for weeks. ${t.framed[0]} got looked at like a liar in a house of eleven people because of something you did.` : 'You watched this house tear itself apart looking for you.'} What do you say to that? And do not tell me it was a job."`,
+    (j, f, g, p, t) => `"Here is my problem. Everything you have said tonight about your game — I do not know which half of it was the game and which half was the other thing you were doing. So convince me there was a player in there at all."`,
+    (j, f, g, p, t) => `"You finished ${t.missions} of them. ${t.missions === 1 ? 'One night' : `${t.missions} weeks`} of my season was something you were told to do to me. Was any single week in that house actually yours?"`,
+  ],
+  twin: [
+    (j, f, g, p, t) => `"I need to know something before I can vote. Every conversation I had with you — was I talking to you, or was I talking to ${t.other}? Because I cannot tell any more, and you can."`,
+    (j, f, g, p, t) => `"${t.swaps} times. ${t.swaps} times one of you walked out of that storeroom and the other one walked in, and we sat there like idiots. When you tell me you built something with me, which of you built it?"`,
+    (j, f, g, p, t) => `"I am not angry about the twist. I am angry that I defended you. I told people they were imagining it. So tell me: how many times did you let me be wrong out loud?"`,
+    (j, f, g, p, t) => `"There is a version of this where it is the best thing anybody has ever done in this house. There is a version where two people played one game and got one vote's worth of scrutiny for it. Tell me which one I watched."`,
+    (j, f, g, p, t) => `"Everybody up there had one body and one set of hours. You had two. Give me the reason that is a résumé and not just an advantage you were handed."`,
+  ],
   loyalty: [
     (j, f, g, p) => `"You kept your word to me when it cost you something. Tell these people why that isn't just weakness dressed up as a strategy."`,
     (j, f, g, p) => `"You're the only person up there who never lied to me. Was that a choice, or did you just never need to?"`,
@@ -186,9 +263,17 @@ const QUESTIONS = {
 const QUESTION_VALUE = {
   betrayal: 'loyalty', cut: 'control', power: 'control',
   resume: 'control', passenger: 'challenge', loyalty: 'honesty',
+  // Being paid to wreck a season is a nerve question. Being two people is a
+  // question about whether anything was real, which is a different thing
+  // entirely and answered by a different kind of person.
+  saboteur: 'control', twin: 'honesty',
 };
 
-function questionFor(juror, finalist, g) {
+function questionFor(juror, finalist, g, twist) {
+  // The reveal outranks almost everything, because it is the loudest thing
+  // anybody in that room lived through — but not a deal this person personally
+  // shook on and broke, which is still the one that gets asked first.
+  if (twist && !g.brokenDeal) return twist.kind;
   if (g.brokenDeal) return 'betrayal';
   if (g.votedMeOut && g.bond >= 2) return 'betrayal';
   if (g.heldThePower) return 'power';
@@ -241,6 +326,10 @@ const STYLE_VALUE = {
 const ANSWER_FAMILY = {
   betrayal: 'grievance', cut: 'grievance', power: 'grievance',
   resume: 'resume', passenger: 'resume', loyalty: 'resume',
+  // A third family, because neither of the other two answers the question. "I
+  // chose my game over you" is not a reply to "were you being paid", and a
+  // résumé is not a reply to "which of you did I have that conversation with".
+  saboteur: 'twist', twin: 'twist',
 };
 
 const ANSWERS = {
@@ -261,6 +350,12 @@ const ANSWERS = {
       f => { const c = finalistCase(f); return `"I broke ${c.broken} deal${c.broken === 1 ? '' : 's'} and honoured ${c.honoured}. I am not proud of every promise. I am proud that every promise had a purpose, and I can explain the purpose now."`; },
       f => { const c = finalistCase(f); return `"Look at the order people left, then look at who benefited. ${c.boots.length ? `${c.boots.join(' and ')} leaving opened the game I needed.` : 'I kept bigger names in front of me until I no longer needed them there.'} That positioning is my résumé."`; },
     ],
+    twist: [
+      f => `"Yes. I was, and I did it well, and I am not going to sit here and be sorry about the one part of my game none of you could have done. You are allowed to hate it. You are not allowed to call it nothing."`,
+      f => `"I had two games running at once and I did not drop either of them. Everybody on that bench had one thing to keep straight. I had one thing to keep straight and one thing to keep hidden, in the same house, from all of you, for the whole season."`,
+      f => `"Ask yourself the real question, which is not whether it was fair. It is whether any of you would have survived doing it. I did. That is the answer."`,
+      f => `"Every single person up here lied to keep a seat. Mine was bigger and I held it longer, and the reason it is the only lie anybody wants to talk about tonight is that it is the only one that worked all the way to the end."`,
+    ],
   },
   relationship: {
     grievance: [
@@ -272,12 +367,18 @@ const ANSWERS = {
       f => `"If you vote against me because of the way I sent you out, I understand. I just need you to know the weeks before that were not fake because the ending was cruel."`,
     ],
     resume: [
-      f => { const c = finalistCase(f); return `"My game was relationships with consequences. People gave me information, safety and time, and I used that time to ${moveClaim(c).replace(/^I /, '').toLowerCase()}. That is social strategy, not an absence of strategy."`; },
+      f => { const c = finalistCase(f); return `"My game was relationships with consequences. People gave me information, safety and time, and I used that time to ${midSentence(moveClaim(c))}. That is social strategy, not an absence of strategy."`; },
       f => `"I was the person people could tell the dangerous version of the plan to. I listened, I kept enough of it private, and I made myself useful to people who did not always like each other."`,
       f => { const c = finalistCase(f); return `"I did not dominate every week. I survived ${c.weeks} of them by knowing when somebody needed reassurance, when they needed a vote, and when they needed to think an idea was theirs."`; },
       f => `"The move I am proudest of is not a nomination. It is that people who had every reason to compare notes kept trusting me long enough for me to reach this chair."`,
       f => { const c = finalistCase(f); return `"I won ${c.wins} competitions. Everything else I won came one conversation at a time. If that looks quieter than control, ask why the loud players are sitting over there."`; },
       f => `"I do not want credit for using people. I want credit for understanding them, showing up for them, and still making the decision when their game stopped fitting mine."`,
+    ],
+    twist: [
+      f => `"It was me. Every conversation you are thinking about right now — the ones that mattered — that was me, and I can tell you what was in them, which is how you will know. The rest was logistics."`,
+      f => `"I know what I am being accused of and it is not lying. It is that you were kind to me and you are not sure who received it. You did. I felt all of it, and I am the one who has to live with knowing you did not know."`,
+      f => `"I could stand here and tell you it was all strategy. It was not. I got close to people I was not supposed to get close to, and the hardest part of the whole thing was not the hiding. It was liking you and not being able to say why I kept getting it wrong."`,
+      f => `"I am not asking you to forgive the secret. I am asking you to notice that I kept every promise I made you while I was carrying it, which was harder than keeping it would have been for anybody else in this room."`,
     ],
   },
   honest: {
@@ -293,9 +394,15 @@ const ANSWERS = {
       f => { const c = finalistCase(f); return `"I did not run this house. I won ${c.wins} competition${c.wins === 1 ? '' : 's'}, survived ${c.survived} vote${c.survived === 1 ? '' : 's'} from the block, and made enough correct decisions to be here. Judge that game, not a bigger one I invent tonight."`; },
       f => { const c = finalistCase(f); return `"My résumé has holes. I can see them. What it also has is ${c.correctVotes} correct eviction vote${c.correctVotes === 1 ? '' : 's'}, ${c.honoured} promise${c.honoured === 1 ? '' : 's'} kept when it mattered, and no quit in it."`; },
       f => `"There were weeks I followed. There were weeks surviving was the move. I would rather admit that than claim everybody else's idea because I happen to be in the chair."`,
-      f => { const c = finalistCase(f); return `"The moment I earned this seat was when ${moveClaim(c).replace(/^I /, '').toLowerCase()}. It was not the biggest move of the season. It was the move my game needed."`; },
+      f => { const c = finalistCase(f); return `"The moment I earned this seat was when ${midSentence(moveClaim(c))}. It was not the biggest move of the season. It was the move my game needed."`; },
       f => `"I benefited from stronger players. I also watched them leave while they kept deciding I was safe for one more week. At some point, being underestimated becomes something you did."`,
       f => `"My case is not that I made no mistakes. My case is that I knew what kind of player I was, adjusted when it failed, and arrived here without pretending I was somebody else."`,
+    ],
+    twist: [
+      f => `"Yes. All of it, exactly the way you think. I am not going to dress it up as a masterclass either — most weeks I was terrified and improvising, and the reason it lasted is that you were all decent enough not to look too hard."`,
+      f => `"I will answer it properly. There were things I did that I would not do again, and there were people in that house who deserved better from me than a secret. I cannot give it back. I can stop pretending it was clever."`,
+      f => `"You are right to be angry and I am not going to argue you out of it. What I will say is that I never once used it to hurt somebody who had not already come for me. That is a small thing. It is the only thing I have."`,
+      f => `"I had an advantage. I am not going to stand here and call it a skill. What I did with it is the part I would like judged, and if the answer is that it was not enough, I would rather hear that than a vote I got by lying twice."`,
     ],
   },
   deflect: {
@@ -314,6 +421,12 @@ const ANSWERS = {
       f => `"A lot happened that you did not see, and I cannot fit all of it into one answer."`,
       f => `"People keep asking for one move because it makes their decision easier. My game was bigger than one move."`,
       f => `"If reaching the final two is not evidence that I played, I do not know what answer you expect from me."`,
+    ],
+    twist: [
+      f => `"That was not my idea. I was put in that position and I did what anybody would have done with it."`,
+      f => `"It's a twist. Every season has one. I don't know why I'm the one being asked to apologise for the format."`,
+      f => `"I think people are making it much bigger tonight than it ever was in the house."`,
+      f => `"Honestly? Half of you would have taken the same deal in about four seconds."`,
     ],
   },
 };
@@ -396,6 +509,12 @@ export function runJuryQuestioning({ finalTwo = [], jury = [], week = 0, rng = M
   // other finalist sat there and was never addressed once. The balance term
   // pushes back on that without overriding a genuine grievance.
   const askedCount = Object.fromEntries(finalTwo.map(f => [f, 0]));
+  // What a season twist left on each finalist's name, and whether it has been
+  // put to them yet. Once a night: a whole bench asking the same person about
+  // the same reveal is seven people with one idea between them, and it would
+  // crowd out every grievance the season actually recorded.
+  const twists = Object.fromEntries(finalTwo.map(f => [f, twistRecordOf(f)]));
+  const twistAsked = Object.fromEntries(finalTwo.map(f => [f, false]));
 
   for (const juror of jury) {
     const jp = pronouns(juror);
@@ -403,6 +522,9 @@ export function runJuryQuestioning({ finalTwo = [], jury = [], week = 0, rng = M
     const asked = [...finalTwo].sort((a, b) => {
       const weight = (g, n) => (g.brokenDeal ? 3 : 0) + (g.votedMeOut ? 2 : 0) + (g.heldThePower ? 1 : 0)
         + (g.strangers ? 0.5 : 0)
+        // A reveal is the single loudest thing anybody in this room lived
+        // through, and somebody is going to want it said out loud.
+        + (twists[n] && !twistAsked[n] ? 2.5 : 0)
         // Hostility is a reason to speak to somebody.
         + Math.max(0, -g.read) * 0.25
         - askedCount[n] * 0.9
@@ -410,8 +532,10 @@ export function runJuryQuestioning({ finalTwo = [], jury = [], week = 0, rng = M
       return weight(grievances[b], b) - weight(grievances[a], a);
     })[0];
     askedCount[asked]++;
-    const kind = questionFor(juror, asked, grievances[asked]);
-    const question = say(QUESTIONS[kind], juror, asked, grievances[asked], jp);
+    const twist = twistAsked[asked] ? null : twists[asked];
+    const kind = questionFor(juror, asked, grievances[asked], twist);
+    if (twist && kind === twist.kind) twistAsked[asked] = true;
+    const question = say(QUESTIONS[kind], juror, asked, grievances[asked], jp, twist);
 
     // Both answer. The one who was not asked still has to follow it, which is
     // the position everybody in that chair dreads.
@@ -428,7 +552,15 @@ export function runJuryQuestioning({ finalTwo = [], jury = [], week = 0, rng = M
       // Answers the question that was asked, in the voice of the game they
       // played. Both halves matter: the style is who they are, the family is
       // whether they are responding.
-      const text = say(ANSWERS[style][ANSWER_FAMILY[kind] || 'resume'], finalist);
+      // A twist question belongs to exactly one person in that chair. The other
+      // finalist was not being paid and was not two people, so handing them the
+      // twist pool would have them confessing to somebody else's season — they
+      // fall back to making their own case, which is what anybody does when a
+      // question is not for them. Both twins reaching the end is the one case
+      // where it genuinely is for both.
+      let family = ANSWER_FAMILY[kind] || 'resume';
+      if (family === 'twist' && twists[finalist]?.kind !== kind) family = 'resume';
+      const text = say(ANSWERS[style][family], finalist);
 
       // Move the read. Strength is what was said; `moveRead` applies this
       // juror's remaining headroom, so a locked mind barely shifts and a
@@ -519,6 +651,53 @@ const STATEMENT_INTROS = [
 ];
 
 /**
+ * The last line of a statement, when the person giving it spent the season
+ * being something the room did not know about.
+ *
+ * A finalist who carries a reveal cannot make a closing statement that never
+ * mentions it — it is the only thing anybody on that bench is thinking about,
+ * and a speech that talks around it reads as a speech that hopes nobody
+ * noticed. Whether they own it or dodge it is the same axis as everything else
+ * they have said tonight: the game they actually played, arriving at the moment
+ * where it has to be said out loud.
+ */
+const TWIST_CODAS = {
+  saboteur: {
+    'own-it': (f, t) => `"And one more thing, because none of you are going to stop thinking about it. `
+      + `I was the saboteur. I did ${t.missions} job${t.missions === 1 ? '' : 's'} in this house and `
+      + `not one of you stopped me. If you want to call that cheating, call it cheating — but I was `
+      + `playing two games in the same building and I am the only person here who got to the end of both."`,
+    relationship: (f, t) => `"I need to say the other thing. I was the saboteur, and the part I want you `
+      + `to hear is that the friendships were not part of the job. Nobody paid me for those. `
+      + `I kept them because I wanted them, in the middle of doing something I could not tell you about, `
+      + `and that is the only bit of it I would do again."`,
+    honest: (f, t) => `"And yes — it was me. I am not going to end on anything cleverer than that. `
+      + `You spent weeks accusing each other and I let you, because the alternative was going home. `
+      + `${t.framed.length ? `${t.framed[0]}, I am sorry. You should not have worn that.` : 'I am sorry for the weeks it cost you.'} `
+      + `Vote how you need to."`,
+    deflect: (f, t) => `"About the other thing — I did not ask for it. It was given to me on night one `
+      + `and there was no version of this where I said no. I would rather be judged on the game `
+      + `I chose than the one I was handed."`,
+  },
+  twin: {
+    'own-it': (f, t) => `"And let us not pretend the last thing is not the only thing. There were two of us. `
+      + `${t.swaps} changeover${t.swaps === 1 ? '' : 's'} and ${t.completed} job${t.completed === 1 ? '' : 's'} `
+      + `that needed both of us, in a house that counts everybody every single day. `
+      + `You are not angry that it was unfair. You are angry that it worked."`,
+    relationship: (f, t) => `"I know what I am asking. I am asking people who are not sure who they were `
+      + `talking to for six weeks to vote for me anyway. So here is what I can offer: I remember all of it. `
+      + `Every conversation, both halves. ${t.other} and I could not afford to forget a single one of you, `
+      + `and somewhere in that is the most attention anybody in this house has ever paid you."`,
+    honest: (f, t) => `"The last thing is the hard thing. There were two of us and you did not know, `
+      + `and I cannot hand that back. What I will not do is stand here and call it a strategy I designed. `
+      + `It was a secret I was given and spent ${t.swaps} week${t.swaps === 1 ? '' : 's'} being frightened of. `
+      + `Judge what I did around it."`,
+    deflect: (f, t) => `"And on the twin thing — that was the format. I did not write it, I did not ask `
+      + `for it, and every season has something. I would rather you looked at the weeks than the gimmick."`,
+  },
+};
+
+/**
  * Closing statements.
  *
  * A last, small push — deliberately smaller than the questioning, because a
@@ -542,12 +721,24 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
   };
   for (const finalist of finalTwo) {
     const style = answerStyle(finalist);
+    const twist = twistRecordOf(finalist);
+    const coda = twist ? TWIST_CODAS[twist.kind]?.[style]?.(finalist, twist) || null : null;
     const moved = [];
     for (const juror of jury) {
       const values = juryValueProfile(juror);
       const offered = STYLE_VALUE[style];
       const appeal = offered ? (values[offered] || 0.3) : 0.1;
-      const strength = (appeal - 0.55) * 1.1 + (rng() - 0.5) * 0.4;
+      let strength = (appeal - 0.55) * 1.1 + (rng() - 0.5) * 0.4;
+      // Addressing it moves the room, in whichever direction the room was
+      // already leaning. A jury that respects the nerve of it hears a case; a
+      // jury that feels lied to hears a confession. Dodging it costs you either
+      // way, because everybody in that room noticed you got to the end of a
+      // speech without saying the word.
+      if (twist) {
+        strength += style === 'deflect'
+          ? -0.35
+          : ((values.control || 0.3) + (values.honesty || 0.3) - 0.7) * 0.6;
+      }
       const delta = moveRead(juror, finalist, {
         strength, credibility: 0.85, kind: 'ftc-statement', week,
         text: `${finalist}'s closing statement`,
@@ -558,6 +749,9 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
       finalist, style,
       intro: intro(finalist),
       text: pick(rng, STATEMENTS[style])(finalist),
+      // The last line, when there is something the room already knows and is
+      // waiting to hear said.
+      coda, twist: twist ? twist.kind : null,
       moved,
     });
   }
@@ -670,6 +864,81 @@ const DUCKINGS = [
 ];
 
 /** Every ally-on-ally flip the season recorded, with the week attached. */
+// ── the season twists, said on a stage with everybody watching ──
+
+const SAB_STAGE = [
+  (n, p, jobs, paid) => `The host does not build up to it. "Let's talk about the saboteur." `
+    + `${n} gets the look from every seat on that stage at once — including the ones belonging to people `
+    + `who went home in week two and have spent the whole time since finding out what happened after.`,
+  (n, p, jobs, paid) => `"${jobs} job${jobs === 1 ? '' : 's'}." The number goes up on the screen behind them `
+    + `and somebody in the second row says it out loud, slowly, as if hearing it makes it worse. `
+    + `${n} does not look at the screen. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} known the number for months.`,
+  (n, p, jobs, paid) => `Everything that went wrong in that house gets put back up on the screen in order, `
+    + `and the room watches its own season happen to it a second time knowing who was doing it. `
+    + `The laughing stops about four clips in.`,
+  (n, p, jobs, paid) => `"Was any of it real?" It comes from the back of the stage, from somebody `
+    + `with no vote and nothing to lose, and it is the only question all night that ${n} `
+    + `does not have a prepared answer to.`,
+];
+
+const SAB_WRONGED = [
+  (accuser, wronged, sab, wp) => `"${wronged}." ${accuser} says it to the floor rather than to anybody. `
+    + `"I told four people it was ${wronged}. I said it like I knew. I have thought about that every day since."`,
+  (accuser, wronged, sab, wp) => `${accuser} does not wait to be asked. `
+    + `"I owe ${wronged} an apology in front of these people, because that is where I did it. `
+    + `I decided it was ${wronged} and I was wrong, and it was never even close."`,
+  (accuser, wronged, sab, wp) => `"I want to say this to ${wronged} and not to ${sab}." ${accuser} turns `
+    + `in the chair. "You spent weeks with people looking at you like that because of something I started. `
+    + `${sab} did it. You just happened to be the one I could believe it about."`,
+  (accuser, wronged, sab, wp) => `${accuser} apologises, and ${wronged} says it is fine in the voice `
+    + `of somebody for whom it has not been fine at any point.`,
+];
+
+// Split on whether the second twin ever got through the door. A pair who both
+// entered have been standing next to each other in front of this cast for
+// weeks — telling that stage they are meeting for the first time is a sentence
+// half the room watched not happen.
+const TWIN_STAGE_HIDDEN = [
+  (front, other, swaps) => `The front door opens and ${other} walks out onto the stage, `
+    + `and the noise the rest of that cast makes is not applause. Half of them stand up. `
+    + `Two people sit very still and start counting backwards through the season.`,
+  (front, other, swaps) => `They stand next to each other for the first time in front of the people `
+    + `they did it to. ${swaps} changeover${swaps === 1 ? '' : 's'}. The screen behind them runs the storeroom `
+    + `footage and the room watches a door open twice.`,
+  (front, other, swaps) => `"Say both names." So they do, and the second one lands in a room `
+    + `where about half the people have never heard it before — the ones who went home early, `
+    + `who spent this whole season being told about a twist they were never in the house for.`,
+  (front, other, swaps) => `Only one of them ever got to play, and the other one has been watching `
+    + `this cast on a screen for weeks with nothing to do about any of it. `
+    + `${other} gets a microphone tonight for the first and only time.`,
+];
+
+const TWIN_STAGE_ENTERED = [
+  (front, other, swaps) => `They both played, and they are both standing there, and somebody on the far end `
+    + `of the stage says quite clearly "I voted for one of you" and cannot finish the sentence.`,
+  (front, other, swaps) => `The screen behind them runs the storeroom footage — ${swaps} `
+    + `changeover${swaps === 1 ? '' : 's'} in a room nobody thought about twice — and the half of that cast `
+    + `who went home before the reveal watch it with their mouths open.`,
+  (front, other, swaps) => `"How many of the people on this stage do you think worked it out?" `
+    + `${front} looks along the row and says a number. It is lower than the number of hands that go up, `
+    + `and considerably higher than the number of people who ever said it out loud.`,
+  (front, other, swaps) => `${front} and ${other} get asked to stand together and there is a long moment `
+    + `where the room simply looks at them, which is the thing the whole season was arranged to prevent.`,
+];
+
+const TWIN_FELT = [
+  (felt, front, other, p) => `"I KNEW." ${felt} is not angry so much as vindicated to the point of shaking. `
+    + `"I said it. In week four, in the kitchen, and everybody told me I was being paranoid."`,
+  (felt, front, other, p) => `${felt} has the calmest voice on the stage. `
+    + `"I want to know which one of you was there the night I told you about my dad. That is all. `
+    + `I am not asking for anything else."`,
+  (felt, front, other, p) => `"Every single time I thought I was going mad, I was right." ${felt} laughs, `
+    + `once, with nothing much in it. "That is somehow worse. I would rather have been going mad."`,
+  (felt, front, other, p) => `${felt} looks at the two of them and takes a long time about it. `
+    + `"I liked you," ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} eventually. `
+    + `"I would just like somebody to tell me which of you I mean."`,
+];
+
 function betrayalLedger() {
   const out = [];
   for (const w of weeks()) {
@@ -796,6 +1065,106 @@ export function runReunion({ finalTwo = [], jury = [], prejury = [], week = 0, r
           text: `${mis.wrongSuspect} was cleared at the reunion of a flip ${mis.reactor} blamed them for`,
         });
         if (Math.abs(d) >= 0.05) moved.push({ juror: mis.reactor, finalist: mis.wrongSuspect, delta: round2(d), kind: 'cleared' });
+      }
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // The season twists, in front of everybody
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // The one room where this belongs. The jury got to ask about it, but the jury
+  // is seven people who were all still in the house when it came out — and the
+  // pre-jury is a bench of people who went home before any of it was known,
+  // watched the rest of the season on a screen, and have been waiting weeks to
+  // say something to somebody's face.
+  //
+  // It also settles the debt the Saboteur's whole engine exists to create: the
+  // house convicted somebody who had done nothing, and until now the only place
+  // that was ever put right was a bond adjustment nobody could see.
+  const sab = saboteurState();
+  if (sab?.revealed && onStage.concat(finalTwo).includes(sab.player)) {
+    const who = sab.player;
+    const wp = pronouns(who);
+    // Whoever wore it worst. Not the loudest accuser — the person the house
+    // actually became certain about, who was innocent the entire time.
+    const wronged = Object.entries(sab.suspicion || {})
+      .filter(([n]) => n !== who && (onStage.includes(n) || isFinalist(n)))
+      .map(([n, by]) => ({ name: n, total: Object.values(by).reduce((x, y) => x + y, 0),
+        loudest: Object.entries(by).sort((a, b) => b[1] - a[1])[0]?.[0] }))
+      .sort((a, b) => b.total - a.total)[0];
+
+    segments.push({
+      kind: 'twist-saboteur', speaker: who, players: [who],
+      text: say(SAB_STAGE, who, wp, (sab.missions || []).filter(m => m.worked).length, sab.banked || 0),
+      badgeText: 'PAID TO WRECK IT', badgeClass: 'red',
+    });
+
+    if (wronged?.name && wronged.loudest) {
+      const w = wronged.name;
+      try { addBond(wronged.loudest, w, 2.5); } catch { /* the apology still happened */ }
+      segments.push({
+        kind: 'twist-cleared', speaker: wronged.loudest, players: [wronged.loudest, w, who],
+        text: say(SAB_WRONGED, wronged.loudest, w, who, pronouns(w)),
+        badgeText: 'CONVICTED THE WRONG PERSON', badgeClass: 'blue',
+      });
+      // Two real consequences, both landing minutes before a ballot: the person
+      // who spent a season being suspected for nothing gets it back, and the
+      // person who actually did it wears it.
+      if (isJuror(wronged.loudest) && isFinalist(w)) {
+        const d = moveRead(wronged.loudest, w, {
+          strength: 1.5, credibility: 0.8, kind: 'reunion-saboteur-cleared', week,
+          text: `${w} was cleared at the reunion — it was ${who} the whole time`,
+        });
+        if (Math.abs(d) >= 0.05) moved.push({ juror: wronged.loudest, finalist: w, delta: round2(d), kind: 'cleared' });
+      }
+      if (isJuror(wronged.loudest) && isFinalist(who)) {
+        const d = moveRead(wronged.loudest, who, {
+          strength: -1.5, credibility: 0.8, kind: 'reunion-saboteur', week,
+          text: `${wronged.loudest} spent a season blaming ${w} for what ${who} was being paid to do`,
+        });
+        if (Math.abs(d) >= 0.05) moved.push({ juror: wronged.loudest, finalist: who, delta: round2(d), kind: 'reveal' });
+      }
+    }
+  }
+
+  const tw = twinState();
+  if (tw?.ending && tw.ending !== 'evicted') {
+    const front = tw.front;
+    const other = tw.other;
+    // Whoever was closest to a person who was never entirely one person. The
+    // twist's own suspicion map is the right place to look: these are the people
+    // who felt something all season and could not name it.
+    const felt = Object.entries(tw.suspicion || {})
+      .filter(([n]) => onStage.includes(n) || isFinalist(n))
+      .sort((a, b) => b[1] - a[1])[0]?.[0]
+      || onStage.filter(n => n !== front && n !== other)
+        .sort((a, b) => getBond(front, b) - getBond(front, a))[0];
+
+    segments.push({
+      kind: 'twist-twin', speaker: front, players: [front, other].filter(Boolean),
+      text: say(tw.entered ? TWIN_STAGE_ENTERED : TWIN_STAGE_HIDDEN,
+        front, other, (tw.swaps || []).length),
+      badgeText: tw.entered ? 'BOTH OF THEM, ALL SEASON' : 'THERE WERE ALWAYS TWO', badgeClass: 'red',
+    });
+
+    if (felt) {
+      segments.push({
+        kind: 'twist-felt', speaker: felt, players: [felt, front],
+        text: say(TWIN_FELT, felt, front, other, pronouns(felt)),
+        badgeText: 'KNEW SOMETHING AND COULD NOT NAME IT', badgeClass: 'blue',
+      });
+      if (isJuror(felt) && isFinalist(front)) {
+        // Being told you were right all along, minutes before you vote. Which
+        // way it cuts depends on the juror, and `moveRead` owns that — a bench
+        // that respects the nerve of it is not the same bench as one that spent
+        // six weeks being quietly gaslit.
+        const admires = (juryValueProfile(felt).control || 0.3) > (juryValueProfile(felt).honesty || 0.3);
+        const d = moveRead(felt, front, {
+          strength: admires ? 1.2 : -1.6, credibility: 0.8, kind: 'reunion-twin', week,
+          text: `${felt} found out at the reunion that ${front} was two people the whole season`,
+        });
+        if (Math.abs(d) >= 0.05) moved.push({ juror: felt, finalist: front, delta: round2(d), kind: admires ? 'cleared' : 'reveal' });
       }
     }
   }

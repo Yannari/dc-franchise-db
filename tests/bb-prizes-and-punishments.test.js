@@ -121,13 +121,24 @@ describe('Prizes and Punishments', () => {
     }
   });
 
-  it('lets the veto be stolen, and freezes it when it is', () => {
+  it('lets the veto be stolen, and the last hand on it keeps it', () => {
+    // This asserted the veto could change hands exactly once, which belonged to
+    // the steal-chain build: boxes froze after a set number of steals so a chain
+    // could not cycle. That design was dropped for straight swaps — one turn per
+    // picker, no re-steals, so the loop is bounded by the field and needs no
+    // freeze. Under swaps the veto moving twice is the format WORKING: it means
+    // a later picker, who paid for that seat by winning the competition, looked
+    // at an open table and took it. Pinning it to one steal quietly outlawed the
+    // thing the last pick is for.
     const played = play(a => a.steals.some(s => s.kind === 'veto'));
     if (!played) return;                 // rare on small samples; pinned above
     const { act } = played;
     const vetoSteals = act.steals.filter(s => s.kind === 'veto');
-    expect(vetoSteals.length, 'the veto was stolen twice').toBe(1);
-    expect(act.vetoHolder).toBe(vetoSteals[0].thief);
+    // Nobody gets a second bite: one swap per picker is what bounds the loop.
+    const thieves = act.steals.map(s => s.thief);
+    expect(new Set(thieves).size, 'somebody swapped twice').toBe(thieves.length);
+    // Whoever took it last is holding it when the music stops.
+    expect(act.vetoHolder).toBe(vetoSteals[vetoSteals.length - 1].thief);
   });
 
   it('does not let the competition claim to award the veto', () => {

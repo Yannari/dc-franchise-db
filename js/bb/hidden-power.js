@@ -188,7 +188,19 @@ export function searchForPower({ week, house, nominees = [], rng = Math.random }
     const st = pStats(name);
     const chance = clamp(0.06 + st.intuition * 0.022 + (1 - hp.traffic) * 0.05
       + (hp.searched.includes(name) ? 0.07 : 0), 0, 0.5);
-    const where = HIDING_PLACES[Math.floor(rng() * HIDING_PLACES.length)];
+    // A fruitless search is narrated with a place that is NOT the real one.
+    //
+    // This used to draw from the whole list, so roughly one search in eight
+    // named the true hiding place in a public beat — and the transcript then
+    // read "X spends twenty minutes <exactly where it is> and comes out with
+    // nothing", which hands the reader the secret the twist is built on. It
+    // failed only when the dice landed there, which is why it presented as a
+    // flaky test rather than as the leak it is.
+    //
+    // Excluding it is also the better scene: the tension of this twist is the
+    // house searching everywhere EXCEPT the one place that matters.
+    const decoys = HIDING_PLACES.filter(p => p.id !== hp.place);
+    const where = decoys[Math.floor(rng() * decoys.length)] || HIDING_PLACES[0];
     if (!hp.searched.includes(name)) hp.searched.push(name);
 
     if (!finder && rng() < chance) { finder = name; continue; }

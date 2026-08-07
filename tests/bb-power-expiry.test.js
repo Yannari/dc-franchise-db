@@ -112,7 +112,17 @@ describe('and the audience is told', () => {
     const holder = openSeason(7);
     const inst = grantPower('the-cloud', holder,
       { week: gs.bb.weeks.length + 1, visibility: 'secret', source: 'test' });
-    inst.expiresAfterWeek = gs.bb.weeks.length + 1;   // one week to play it
+    // The fuse is ALREADY out, so the next week disposes of it at the top.
+    //
+    // This used to give the holder one week to play it — and the holder played
+    // it, every time the dice fell that way, which meant no power ever expired
+    // and this test asserted against an outcome the house had legitimately
+    // declined to produce. It failed the day unrelated changes shifted the RNG,
+    // which is the signature of a premise that was never deterministic rather
+    // than of a regression. What this test is actually for is the DISPOSAL
+    // path: an unplayed power is cleaned up, the viewer is told, the house
+    // never is. Handing it a spent fuse tests exactly that and nothing else.
+    inst.expiresAfterWeek = gs.bb.weeks.length;
 
     let ep = null;
     for (let i = 0; i < 4 && !ep; i++) {

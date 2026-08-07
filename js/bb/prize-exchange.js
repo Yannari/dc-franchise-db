@@ -19,16 +19,14 @@
 // everything on the table visible and stealable. That is what winning buys
 // here, and it is worth more than a veto handed over quietly.
 //
-// TERMINATION, because a steal loop is a real hazard: every box may be stolen
-// at most STEAL_LIMIT times and is frozen after that (the standard white
-// elephant house rule). Total steals are therefore bounded by
-// STEAL_LIMIT x boxes and the exchange cannot cycle, with a chain cap on top.
+// TERMINATION, because a steal loop is a real hazard: nobody gets a second
+// turn. Each houseguest opens once and may swap once, so the exchange is
+// bounded by the field and cannot cycle — see the note above the picking loop
+// for why the chain version, with its per-box freeze, was thrown away.
 //
-// The limit is TWO rather than one, and that is a balance decision rather than
-// a flavour one. At one steal the veto was almost always frozen before the
-// last picker's turn, so winning the competition — which buys the last pick —
-// landed the veto less often than random chance did. Two lets the person who
-// earned the last look actually use it.
+// The veto can therefore change hands more than once in a night, and that is
+// the format working rather than a leak: each later picker sees a table the
+// previous one did not, and taking it is exactly what the last seat is for.
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';

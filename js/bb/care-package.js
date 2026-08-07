@@ -381,8 +381,13 @@ export function runTimeCapsule({ week, house, hoh, rng = Math.random,
     });
     act.powerId = powerId;
     act.power = def.name;
+    // The name of the power is deliberately NOT in this line. The power is
+    // granted `holder-secret` three lines above, and this beat is public — it
+    // goes into both transcripts and onto the screen. Naming it here told every
+    // reader exactly what the house was being kept in the dark about, in the
+    // same sentence that claimed the house was being kept in the dark.
     beats.push(beat(
-      `${favourite} beats it, and comes out of that room holding ${def.name}. The house is told the capsule `
+      `${favourite} beats it, and comes out of that room holding something. The house is told the capsule `
         + 'was beaten and is not told what came out of it, which is a worse thing to know than nothing.',
       [favourite], 'CAME OUT HOLDING SOMETHING', 'gold'));
     return act;

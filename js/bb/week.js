@@ -1982,7 +1982,15 @@ export function simulateBBWeek(options = {}) {
       // A one-at-a-time side competition with a single winner is exactly the
       // tiebreaker slot's shape, and it keeps Roadkill out of the HOH and veto
       // pools so a week never plays the same competition twice.
-      type: 'tiebreaker', participants: [...house], house, week, rng,
+      //
+      // The Head of Household does not play. On the show the HOH can neither
+      // win this nor be named by it, and the second half was already enforced
+      // below while the first was not — so the HOH could quietly win the thing
+      // and become the anonymous third nominator. That breaks the deduction the
+      // whole twist runs on: the house reasons about the third key by ruling
+      // OUT the one person holding the other two keys in public, so a week
+      // where the HOH turned it makes every houseguest provably wrong.
+      type: 'tiebreaker', participants: house.filter(n => n !== hoh), house, week, rng,
       library: competitionLibrary, seed: options.seed,
       forcedId: options.forcedCompetitions?.roadkill,
       haveNots: week.haveNots || [],

@@ -66,11 +66,18 @@ describe('BB Roadkill', () => {
     expect(rk.winner).not.toBe(rk.nominee);
   });
 
-  it('everybody plays it, including the Head of Household', () => {
+  it('everybody plays it except the Head of Household', () => {
+    // This used to assert the HOH played too, which put it in direct conflict
+    // with the blame test below: the house works out who turned the third key
+    // by ruling out the person openly holding the other two, so a week the HOH
+    // could win is a week every houseguest is reasoning correctly and is wrong
+    // anyway. On the show the HOH can neither win this nor be named by it; only
+    // the second half was enforced.
     const ep = play();
     const rk = actOf(ep, 'roadkill');
     const played = (rk.results || []).map(r => r.name);
-    expect(played.sort()).toEqual([...ep.houseAtStart].sort());
+    expect(played, 'the Head of Household played their own secret comp').not.toContain(ep.hoh);
+    expect(played.sort()).toEqual(ep.houseAtStart.filter(n => n !== ep.hoh).sort());
     // And nobody throws a competition they cannot be seen losing.
     const rows = Object.values(rk.competition?.debug?.scoreBreakdown || {});
     expect(rows.some(r => r.threw), 'somebody threw a secret competition').toBe(false);

@@ -23115,24 +23115,125 @@ export function rpBuildBBReunion(ep) {
   </div>`;
 }
 
-/** The last thing either of them gets to say. */
+/**
+ * The last thing either of them gets to say.
+ *
+ * A speech is not a scene, and it was being drawn as one: a badge, a portrait
+ * and a paragraph in list type. This gives each of them the thing the moment
+ * actually is — a microphone, a bench of people they cannot interrupt and
+ * cannot be interrupted by, and the whole room reading them while they talk.
+ *
+ * The bench under each speech is the mechanic made visible. Every juror's face
+ * sits there, and the ones the speech actually moved light up with the number,
+ * so a statement that lands on four people and a statement that lands on nobody
+ * are visibly different objects rather than two identical cards.
+ */
 export function rpBuildBBClosingStatements(ep) {
   const act = (ep.acts || []).find(a => a.type === 'closing-statements');
   if (!act) return '';
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num} — finale`,
-    title: 'CLOSING STATEMENTS',
-    subtitle: 'No questions. No interruptions. One last go.',
-    accent: '#f0a500', room: 'bb-live',
-    stateKey: `bb_ftcs_${ep.num}`,
-    scenes: (act.statements || []).flatMap(s => [
-      { text: s.intro, players: [s.finalist], badgeText: s.finalist.toUpperCase(), badgeClass: 'grey' },
-      { text: `<div style="font-size:12px;color:#e6edf3;line-height:1.6">${s.text}</div>`,
-        players: [s.finalist],
-        badgeText: s.moved.length ? `MOVED ${s.moved.length}` : 'NO MOVEMENT',
-        badgeClass: s.moved.length ? 'gold' : 'grey' },
-    ]),
-  });
+  const statements = act.statements || [];
+  const jury = (ep.acts || []).find(a => a.type === 'jury-vote')?.jury
+    || (ep.acts || []).find(a => a.type === 'jury-questioning')?.jury || [];
+
+  const stateKey = `bb_ftcs_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const total = statements.length;
+  const done = state.idx >= total - 1;
+
+  const STYLE_LABEL = {
+    'own-it': 'RUNS AT IT', relationship: 'PLAYS THE ROOM',
+    honest: 'TELLS THE TRUTH', deflect: 'WILL NOT SAY IT',
+  };
+
+  const panels = statements.map((s, i) => {
+    if (i > state.idx) return `<div class="bbcs-locked">THE MICROPHONE IS STILL WARM</div>`;
+    const movedBy = Object.fromEntries((s.moved || []).map(m => [m.juror, m.delta]));
+    const bench = jury.map(j => {
+      const d = Number(movedBy[j]) || 0;
+      return `<div class="bbcs-j ${d ? (d > 0 ? 'is-up' : 'is-down') : ''}">
+        <figure>${_bbAvatar(j, 38)}</figure>
+        <span>${_bbEsc(j)}</span>
+        <em>${d ? `${d > 0 ? '+' : ''}${d}` : '—'}</em>
+      </div>`;
+    }).join('');
+    const total = (s.moved || []).reduce((n, m) => n + (Number(m.delta) || 0), 0);
+    return `<div class="bbcs-panel">
+      <div class="bbcs-head">
+        <figure>${_bbAvatar(s.finalist, 74)}</figure>
+        <div>
+          <b>${_bbEsc(s.finalist)}</b>
+          <u>${STYLE_LABEL[s.style] || 'MAKES THEIR CASE'}</u>
+        </div>
+        <span class="bbcs-mic"></span>
+      </div>
+      <div class="bbcs-intro">${s.intro}</div>
+      <blockquote class="bbcs-speech">${s.text}</blockquote>
+      <div class="bbcs-bench-h">${(s.moved || []).length
+        ? `THAT MOVED ${(s.moved || []).length} OF THE ${jury.length} PEOPLE IN FRONT OF THEM · ${
+          total > 0 ? '+' : ''}${Math.round(total * 100) / 100} IN TOTAL`
+        : 'NOBODY ON THAT BENCH MOVED'}</div>
+      <div class="bbcs-bench">${bench}</div>
+    </div>`;
+  }).join('');
+
+  const style = `<style>
+    .bbcs-panel{position:relative;margin-bottom:20px;padding:18px 18px 14px;border-radius:12px;
+      background:radial-gradient(90% 60% at 50% 0%,rgba(240,165,0,.12),transparent 62%),
+        linear-gradient(180deg,rgba(24,20,12,.96),rgba(10,9,7,.98));
+      border:1px solid rgba(240,165,0,.28);box-shadow:0 16px 40px rgba(0,0,0,.55);
+      animation:bbns-in .4s ease-out both}
+    .bbcs-head{display:flex;align-items:center;gap:13px}
+    .bbcs-head figure{width:74px;height:74px;border-radius:10px;overflow:hidden;flex:0 0 auto;
+      border:2px solid rgba(240,165,0,.5);box-shadow:0 0 24px rgba(240,165,0,.22)}
+    .bbcs-head figure .bb-av{width:74px!important;height:74px!important;border-radius:8px}
+    .bbcs-head b{display:block;font-family:var(--font-display);font-size:24px;letter-spacing:1px;color:#fff}
+    .bbcs-head u{display:block;text-decoration:none;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
+      letter-spacing:2.4px;color:#f0a500;margin-top:3px}
+    .bbcs-mic{margin-left:auto;width:14px;height:34px;border-radius:7px;flex:0 0 auto;
+      background:linear-gradient(180deg,#3a3f47,#20242a);border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 0 16px rgba(240,165,0,.25),inset 0 3px 0 rgba(255,255,255,.12);position:relative}
+    .bbcs-mic::after{content:'';position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);
+      width:2px;height:11px;background:rgba(255,255,255,.18)}
+    .bbcs-intro{margin:13px 0 9px;font-size:12px;color:#8b949e;line-height:1.6}
+    .bbcs-speech{margin:0;padding:14px 16px;border-left:3px solid #f0a500;border-radius:0 8px 8px 0;
+      background:rgba(255,255,255,.035);font-size:15.5px;line-height:1.72;color:#f2ead9}
+    .bbcs-bench-h{margin:15px 0 7px;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
+      letter-spacing:1.8px;color:#8b949e}
+    .bbcs-bench{display:flex;gap:8px;flex-wrap:wrap}
+    .bbcs-j{width:56px;text-align:center;opacity:.42;transition:opacity .3s ease}
+    .bbcs-j figure{width:38px;height:38px;margin:0 auto;border-radius:50%;overflow:hidden;
+      border:2px solid rgba(255,255,255,.12)}
+    .bbcs-j figure .bb-av{width:38px!important;height:38px!important;border-radius:50%}
+    .bbcs-j span{display:block;font-size:9.5px;color:#c9d1d9;margin-top:3px;white-space:nowrap;overflow:hidden;
+      text-overflow:ellipsis}
+    .bbcs-j em{display:block;font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:9px;
+      color:#6e7681}
+    .bbcs-j.is-up,.bbcs-j.is-down{opacity:1}
+    .bbcs-j.is-up figure{border-color:#3fb950;box-shadow:0 0 14px rgba(63,185,80,.4)}
+    .bbcs-j.is-up em{color:#7ee787}
+    .bbcs-j.is-down figure{border-color:#f85149;box-shadow:0 0 14px rgba(248,81,73,.4)}
+    .bbcs-j.is-down em{color:#ff8b84}
+    .bbcs-locked{margin-bottom:20px;min-height:110px;border:1px dashed rgba(240,165,0,.22);border-radius:12px;
+      display:grid;place-items:center;font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3px;
+      color:rgba(240,165,0,.3)}
+  </style>`;
+
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#f0a500">CLOSING STATEMENTS</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 16px">
+      No questions. No interruptions. One last go, and then they vote.</div>
+    ${panels}
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+      align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));
+      border-top:1px solid rgba(240,165,0,.3)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">Let them speak</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Both of them</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /** The only prize the house has no vote in. */
@@ -23365,52 +23466,186 @@ export function rpBuildBBJuryVote(ep) {
   const state = _tvState[stateKey];
   const jury = act.jury || [];
   const done = state.idx >= jury.length;      // one extra step for the result
-  const reveal = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${idx};`
-    + `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});`
-    + `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+  const reveal = idx => _bbReveal(ep, stateKey, idx);
 
   // Who each juror voted for, from the shared vote's reasoning where it exists.
   const reasonFor = {};
   (act.reasoning || []).forEach(r => { if (r && r.juror) reasonFor[r.juror] = r; });
+  const voteOf = juror => {
+    const r = reasonFor[juror] || {};
+    return r.vote || r.votedFor || null;
+  };
 
-  let html = `<div class="rp-page bb-room bb-live">
-    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#c9343c;text-shadow:0 0 22px rgba(201,52,60,.35);margin-bottom:6px">THE JURY VOTE</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">${jury.length} evicted houseguests decide it.</div>
-    <div class="rp-portrait-row" style="justify-content:center;gap:22px;margin-bottom:20px">
-      ${(ep.finalTwo || []).map(n => rpPortrait(n, 'lg')).join('')}
-    </div>`;
+  const [fa, fb] = ep.finalTwo || Object.keys(act.votes || {});
+  const majority = Math.floor(jury.length / 2) + 1;
+  // Counted from the votes the viewer has actually heard. A board that arrives
+  // finished has told them the season before the first juror stands up.
+  const heard = jury.slice(0, Math.max(0, state.idx + 1));
+  const live = { [fa]: 0, [fb]: 0 };
+  heard.forEach(j => { const v = voteOf(j); if (v in live) live[v]++; });
+  const clinchedBy = jury.findIndex((_, i) => {
+    const upto = { [fa]: 0, [fb]: 0 };
+    jury.slice(0, i + 1).forEach(j => { const v = voteOf(j); if (v in upto) upto[v]++; });
+    return upto[fa] >= majority || upto[fb] >= majority;
+  });
+  const swung = new Set(act.swung || []);
 
+  // ── the wall ──
+  //
+  // Every vote in this house has been a key in a slot all season; this is the
+  // last wall of them. Each juror's key lands on the side they voted for as
+  // they are read, and the majority slot is ringed so the count is measurable
+  // rather than announced.
+  // The two columns are colour-coded, and every juror's card takes the colour
+  // of the side they voted for — without it the card borders are two arbitrary
+  // stripes and the wall above them means nothing.
+  const column = (name, side) => `<div class="bbjv-col is-${side} ${done && act.winner === name ? 'is-win' : ''}">
+    <figure>${_bbAvatar(name, 108)}</figure>
+    <b>${_bbEsc(name || '')}</b>
+    <div class="bbjv-slots">
+      ${Array.from({ length: jury.length }, (_, i) => `<span class="bbjv-slot ${
+        i < live[name] ? 'is-key' : ''} ${i === majority - 1 ? 'is-maj' : ''}"></span>`).join('')}
+    </div>
+    <div class="bbjv-num">${live[name]}</div>
+  </div>`;
+
+  const wall = `<div class="bbjv-wall ${done ? 'is-done' : ''}">
+    ${column(fa, 'a')}
+    <div class="bbjv-mid">
+      <span class="bbjv-maj">${majority} TO WIN</span>
+      <span class="bbjv-read">${heard.length} OF ${jury.length} READ</span>
+    </div>
+    ${column(fb, 'b')}
+  </div>`;
+
+  let cards = '';
   jury.forEach((juror, i) => {
     if (i > state.idx) {
-      html += `<div style="padding:10px;margin-bottom:5px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`;
+      cards += `<div class="bbjv-card is-hidden"><span>?</span></div>`;
       return;
     }
     const r = reasonFor[juror] || {};
-    const voted = r.vote || r.votedFor || null;
-    html += `<div class="rp-brant-entry" style="border-left:3px solid #d29922;background:rgba(210,153,34,.06)">
-      <div class="rp-brant-portraits">${rpPortrait(juror)}</div>
-      <div class="rp-brant-text">${voted ? `"I vote for <strong>${voted}</strong> to win this game."` : `${juror} casts a vote.`}
-        ${r.reason ? `<div style="font-size:11px;color:#8b949e;margin-top:4px">${r.reason}</div>` : ''}</div>
-      ${voted ? `<span class="rp-brant-badge gold">${voted}</span>` : ''}
+    const voted = voteOf(juror);
+    const side = voted === fa ? 'a' : voted === fb ? 'b' : '';
+    const clincher = clinchedBy === i;
+    return cards += `<div class="bbjv-card is-${side} ${clincher ? 'is-clincher' : ''}">
+      <figure>${_bbAvatar(juror, 46)}</figure>
+      <div class="bbjv-body">
+        <div class="bbjv-said">${voted
+          ? `"I vote for <strong>${_bbEsc(voted)}</strong> to win this game."`
+          : `${_bbEsc(juror)} casts a vote.`}</div>
+        ${r.reason ? `<div class="bbjv-why">${r.reason}</div>` : ''}
+        <div class="bbjv-tags">
+          <span class="bbjv-tag">${_bbEsc(juror)}</span>
+          ${swung.has(juror) ? `<span class="bbjv-tag is-swung">CHANGED THEIR MIND TONIGHT</span>` : ''}
+          ${clincher ? `<span class="bbjv-tag is-clinch">THIS IS THE VOTE THAT DID IT</span>` : ''}
+        </div>
+      </div>
     </div>`;
   });
 
-  if (state.idx >= jury.length) {
-    const tally = Object.entries(act.votes || {}).sort((a, b) => b[1] - a[1]);
-    html += `<div style="margin-top:18px;padding:20px;border-radius:10px;border:1px solid rgba(201,52,60,.35);background:rgba(201,52,60,.07);text-align:center">
-      <div style="font-size:10px;letter-spacing:2px;color:#8b949e;text-transform:uppercase">By a vote of ${tally.map(([, v]) => v).join('–')}</div>
-      <div style="margin:14px 0">${rpPortrait(act.winner, 'xl')}</div>
-      <div style="font-family:var(--font-display);font-size:clamp(26px,5vw,44px);line-height:1;color:#fff">${act.winner}</div>
-      <div style="font-size:12px;color:#f0a500;letter-spacing:2px;margin-top:6px">WINS THE SEASON</div>
-      ${act.runnerUp ? `<div style="font-size:11px;color:#8b949e;margin-top:8px">${act.runnerUp} finishes second.</div>` : ''}
-    </div>`;
-  }
+  const tally = Object.entries(act.votes || {}).sort((a, b) => b[1] - a[1]);
+  const crown = done ? `<div class="bbjv-crown">
+    <div class="bbjv-conf">${Array.from({ length: 26 }, (_, i) =>
+      `<i style="left:${(i * 3.8) % 100}%;animation-delay:${(i % 9) * 0.22}s;background:${
+        ['#f0a500', '#fff', '#58a6ff', '#f85149'][i % 4]}"></i>`).join('')}</div>
+    <div class="bbjv-by">BY A VOTE OF ${tally.map(([, v]) => v).join('–')}</div>
+    <figure>${_bbAvatar(act.winner, 150)}</figure>
+    <h3>${_bbEsc(act.winner || '')}</h3>
+    <div class="bbjv-wins">WINS THE SEASON</div>
+    ${act.runnerUp ? `<div class="bbjv-ru">${_bbEsc(act.runnerUp)} finishes second — ${
+      (act.votes || {})[act.runnerUp] || 0} vote${((act.votes || {})[act.runnerUp] || 0) === 1 ? '' : 's'}.</div>` : ''}
+    ${swung.size ? `<div class="bbjv-swung">${[...swung].join(', ')} decided it in that room tonight.</div>` : ''}
+  </div>` : '';
 
-  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
-    ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, jury.length))}">Read the next vote</button>`}
-    ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(jury.length)}">Read them all</button>`}
-    <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(jury.length, Math.max(0, state.idx + 1))} / ${jury.length} votes</span>
+  const style = `<style>
+    .bbjv-wall{position:relative;display:grid;grid-template-columns:1fr 96px 1fr;gap:10px;align-items:start;
+      padding:18px 14px 16px;border-radius:12px;margin-bottom:16px;
+      background:radial-gradient(80% 100% at 50% 0%,rgba(201,52,60,.16),transparent 60%),
+        linear-gradient(180deg,rgba(26,10,12,.97),rgba(9,6,8,.99));
+      border:1px solid rgba(201,52,60,.32);box-shadow:0 16px 42px rgba(0,0,0,.6)}
+    .bbjv-col{text-align:center}
+    .bbjv-col figure{width:108px;height:108px;margin:0 auto;border-radius:10px;overflow:hidden;
+      border:2px solid rgba(255,255,255,.16);transition:all .5s ease}
+    .bbjv-col figure .bb-av{width:108px!important;height:108px!important;border-radius:8px}
+    .bbjv-col b{display:block;font-family:var(--font-display);font-size:17px;letter-spacing:1px;color:#fff;
+      margin:7px 0 6px}
+    .bbjv-col.is-a b{border-bottom:2px solid #58a6ff;display:inline-block;padding-bottom:3px}
+    .bbjv-col.is-b b{border-bottom:2px solid #f85149;display:inline-block;padding-bottom:3px}
+    .bbjv-col.is-win figure{border-color:#f0a500;box-shadow:0 0 34px rgba(240,165,0,.55)}
+    .bbjv-col.is-win b{color:#f0a500}
+    .bbjv-slots{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+    .bbjv-slot{width:13px;height:20px;border-radius:3px 3px 6px 6px;background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);transition:all .35s ease}
+    .bbjv-slot.is-maj{border-color:rgba(240,165,0,.6);box-shadow:inset 0 0 0 1px rgba(240,165,0,.22)}
+    .bbjv-slot.is-key{background:linear-gradient(180deg,#ffd77a,#c98a10);border-color:#f0a500;
+      box-shadow:0 0 12px rgba(240,165,0,.6);animation:bbjvDrop .34s ease-out both}
+    @keyframes bbjvDrop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+    .bbjv-num{font-family:var(--font-display);font-size:26px;color:#f0a500;line-height:1}
+    .bbjv-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+      height:100%;padding-top:44px}
+    .bbjv-maj,.bbjv-read{font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:1.6px;
+      color:#8b949e;text-align:center;padding:3px 6px;border:1px solid rgba(255,255,255,.12);border-radius:3px}
+    .bbjv-maj{color:#f0a500;border-color:rgba(240,165,0,.4)}
+
+    .bbjv-card{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-radius:8px;margin-bottom:7px;
+      background:linear-gradient(180deg,rgba(22,28,36,.85),rgba(15,19,25,.9));
+      border:1px solid rgba(255,255,255,.06);border-left:3px solid rgba(139,148,158,.4);
+      animation:bbns-in .35s ease-out both}
+    .bbjv-card.is-a{border-left-color:#58a6ff}
+    .bbjv-card.is-b{border-left-color:#f85149}
+    .bbjv-card.is-clincher{border-color:rgba(240,165,0,.45);box-shadow:0 0 22px rgba(240,165,0,.16)}
+    .bbjv-card.is-hidden{display:flex;align-items:center;justify-content:center;padding:9px;opacity:.1;
+      border-left-color:transparent;animation:none;font-family:var(--font-display);font-size:15px;color:var(--muted)}
+    .bbjv-card figure{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+      border:2px solid rgba(255,255,255,.14)}
+    .bbjv-card figure .bb-av{width:46px!important;height:46px!important;border-radius:50%}
+    .bbjv-body{flex:1;min-width:0}
+    .bbjv-said{font-size:14px;color:#e6edf3;line-height:1.5}
+    .bbjv-why{font-size:11.5px;color:#8b949e;margin-top:5px;line-height:1.55}
+    .bbjv-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+    .bbjv-tag{font-family:ui-monospace,Consolas,monospace;font-size:7.5px;letter-spacing:1.4px;color:#6e7681;
+      padding:2px 7px;border-radius:9px;border:1px solid rgba(255,255,255,.1)}
+    .bbjv-tag.is-swung{color:#d29922;border-color:rgba(210,153,34,.45)}
+    .bbjv-tag.is-clinch{color:#f0a500;border-color:rgba(240,165,0,.6);background:rgba(240,165,0,.08)}
+
+    .bbjv-crown{position:relative;overflow:hidden;margin-top:18px;padding:26px 18px 22px;border-radius:12px;
+      text-align:center;background:radial-gradient(70% 110% at 50% 0%,rgba(240,165,0,.24),rgba(0,0,0,.55));
+      border:1px solid rgba(240,165,0,.5);box-shadow:0 20px 50px rgba(0,0,0,.6)}
+    .bbjv-by{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3px;color:#8b949e}
+    .bbjv-crown figure{width:150px;height:150px;margin:14px auto 10px;border-radius:12px;overflow:hidden;
+      border:3px solid #f0a500;box-shadow:0 0 46px rgba(240,165,0,.5)}
+    .bbjv-crown figure .bb-av{width:150px!important;height:150px!important;border-radius:9px}
+    .bbjv-crown h3{margin:0;font-family:var(--font-display);font-size:clamp(28px,6vw,50px);line-height:1;color:#fff;
+      text-shadow:0 0 30px rgba(240,165,0,.5)}
+    .bbjv-wins{font-size:11px;letter-spacing:4px;color:#f0a500;margin-top:8px}
+    .bbjv-ru{font-size:11.5px;color:#8b949e;margin-top:10px}
+    .bbjv-swung{margin-top:9px;font-size:11.5px;color:#d29922}
+    .bbjv-conf{position:absolute;inset:0;pointer-events:none}
+    .bbjv-conf i{position:absolute;top:-14px;width:6px;height:11px;border-radius:1px;opacity:.9;
+      animation:bbjvFall 3.4s linear infinite}
+    @keyframes bbjvFall{to{transform:translateY(360px) rotate(420deg);opacity:0}}
+    @media(prefers-reduced-motion:reduce){
+      .bbjv-conf{display:none}
+      .bbjv-slot.is-key,.bbjv-card{animation:none}
+    }
+  </style>`;
+
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#c9343c">THE JURY VOTE</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">
+      ${jury.length} people this house evicted decide which of them did it better.</div>
+    ${wall}
+    <div>${cards}</div>
+    ${crown}
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+      align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));
+      border-top:1px solid rgba(201,52,60,.35)">
+      ${done ? '' : `<button class="rp-btn" onclick="${reveal(Math.min(state.idx + 1, jury.length))}">Read the next vote</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${reveal(jury.length)}">Read them all</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${
+        Math.min(jury.length, Math.max(0, state.idx + 1))} / ${jury.length} VOTES</span>
+    </div>
   </div>`;
-  return html + `</div>`;
 }

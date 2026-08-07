@@ -413,6 +413,18 @@ const STATEMENT_INTROS = [
  */
 export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng = Math.random } = {}) {
   const statements = [];
+  // Two finalists, one pool of openers, and a plain pick gave both of them the
+  // same one: "Cole does not stand up…" immediately above "Wayne does not stand
+  // up…", in the segment where the whole point is that these are two different
+  // people making two different cases.
+  const usedIntros = new Set();
+  const intro = name => {
+    const fresh = STATEMENT_INTROS.filter(fn => !usedIntros.has(fn));
+    const from = fresh.length ? fresh : STATEMENT_INTROS;
+    const chosen = pick(rng, from);
+    usedIntros.add(chosen);
+    return chosen(name);
+  };
   for (const finalist of finalTwo) {
     const style = answerStyle(finalist);
     const moved = [];
@@ -429,7 +441,7 @@ export function runClosingStatements({ finalTwo = [], jury = [], week = 0, rng =
     }
     statements.push({
       finalist, style,
-      intro: pick(rng, STATEMENT_INTROS)(finalist),
+      intro: intro(finalist),
       text: STATEMENTS[style](finalist),
       moved,
     });

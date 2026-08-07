@@ -16,7 +16,26 @@ lived in a gitignored `.superpowers/` directory and is gone with the worktree.
 These two are not "nice to have". Each is a way for the franchise data to go
 wrong quietly, and each becomes reachable the moment real Big Brother data lands.
 
-### 1a. No Big Brother path writes `seasons_database.json`
+### 1a. No Big Brother path writes `seasons_database.json` — FIXED 2026-08-07 (`7a03d4f`)
+
+`mergeBigBrotherSeasonsDatabase` now writes the record, and `exportSeason()`
+routes the export button by format. The entry below is kept because what was
+found alongside it is worth not rediscovering: the extractor and both merges
+had **no callers outside their tests**, so the gap was not "seasons file only" —
+a finished house could not be exported by any route at all.
+
+Three further number-only keys were fixed in the same commit, all of them
+dormant purely because no Big Brother data existed: `publishSeason` wrote
+`season1-data.json` for both shows (Big Brother 1 committed over Total Drama 1's
+episode log), the per-player re-merge dedupe found and deleted the *other*
+show's season detail, and `totalSeasons` counted `player.seasons` — a flat list
+of numbers in which Total Drama 1 and Big Brother 1 collapse to one entry.
+
+**Still outstanding:** `worker/worker-studio.js` must be deployed before the
+first Big Brother publish, or the season document lands on the Total Drama path.
+
+Original finding follows.
+
 
 `mergeBigBrotherSeason` writes **players only**. `_mergeSeasonsDatabase`
 hardcodes `total-drama`. So there is currently no code path that records a Big

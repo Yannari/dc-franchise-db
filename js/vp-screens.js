@@ -20625,18 +20625,44 @@ export function rpBuildBBInstantEviction(ep) {
   const act = (ep.acts || []).find(a => a.type === 'instant-eviction');
   if (!act) return '';
   const noms = act.nominees || [];
+  const seq = act.sequestered || null;
+  // The locked room is the twist, so it opens the screen. The missing veto is
+  // the consequence of it and reads as an afterthought where it belongs.
+  const door = seq ? `<div style="max-width:640px;margin:0 auto 16px;padding:16px 18px;border-radius:10px;
+      background:linear-gradient(180deg,rgba(30,12,12,.95),rgba(10,7,8,.96));
+      border:1px solid rgba(248,81,73,.35);box-shadow:0 12px 30px rgba(0,0,0,.5);text-align:center">
+    <div style="font-family:ui-monospace,Consolas,monospace;font-size:8.5px;letter-spacing:2.4px;color:#ff8b84">
+      SEQUESTERED &middot; ${_bbEsc(String(seq.clock || '').toUpperCase())}</div>
+    <div style="font-family:var(--font-display);font-size:22px;color:#fff;margin:8px 0 6px">
+      ${_bbEsc(act.hoh)} is put in ${_bbEsc(seq.where)}</div>
+    <div style="font-size:13px;line-height:1.6;color:#c9d1d9">${_bbEsc(seq.how)}</div>
+    <div style="margin-top:10px;font-size:12px;color:#8b949e;font-style:italic">
+      No conversations, no pitches, nobody coming up to explain why it should be somebody else.
+      ${_bbEsc(act.hoh)} nominates on what ${_bbEsc(act.hoh)} knew before the competition ended.</div>
+  </div>` : '';
+
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'INSTANT EVICTION', accent: '#f85149', room: 'bb-live',
-    subtitle: 'No veto. No ceremony. The block is already final.',
+    subtitle: seq
+      ? 'The Head of Household nominates alone, behind a locked door, and cannot take it back.'
+      : 'No veto. No ceremony. The block is already final.',
     stateKey: `bb_inst_${ep.num}`,
-    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${noms.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
+    header: door + `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${noms.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
     scenes: [
-      { text: `There is no Power of Veto this week. Nothing is going to come off that wall.`,
-        players: [], badgeText: 'NO VETO', badgeClass: 'red' },
-      { text: `<strong>${noms.join('</strong> and <strong>')}</strong> are locked on the block, and the house votes tonight.`,
+      ...(act.overheard ? [
+        { text: act.overheard.text, players: [act.hoh, ...(act.overheard.overheard || [])],
+          badgeText: 'THE SCREEN IS STILL ON', badgeClass: 'red' },
+        { text: act.overheard.reaction, players: act.overheard.overheard || [],
+          badgeText: 'THE HOUSE HEARD ALL OF IT', badgeClass: 'red' },
+      ] : []),
+      { text: `<strong>${noms.join('</strong> and <strong>')}</strong> are on the block, and there is no Power of Veto this week. Nothing is coming off that wall.`,
         players: noms, badgeText: 'BLOCK IS FINAL', badgeClass: 'red' },
-      { text: `${act.hoh} nominated them a few hours ago. Whatever plan either of them had needed a week, and they have an evening.`,
-        players: [act.hoh], badgeText: 'NO TIME', badgeClass: 'grey' },
+      ...(act.regret ? [
+        { text: act.regret.text, players: [act.hoh, act.regret.missed], badgeText: 'TOO LATE', badgeClass: 'grey' },
+        { text: act.regret.cost, players: [act.regret.missed], badgeText: 'SAFE BY ACCIDENT', badgeClass: 'blue' },
+      ] : []),
+      { text: `The house votes tonight. Whatever plan either of them had needed a week, and they have an evening.`,
+        players: noms, badgeText: 'NO TIME', badgeClass: 'grey' },
       ..._bbBeats(act),
     ],
   });

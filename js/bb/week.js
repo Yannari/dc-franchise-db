@@ -64,6 +64,7 @@ import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
+import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-eviction.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1426,13 +1427,20 @@ export function simulateBBWeek(options = {}) {
     // react by hoping to be picked. An announcement declares its own register
     // now, and 'paranoia' is the one where the rule is a person in the room.
     const paranoid = announced.some(a => a?.reactions === 'paranoia');
+    // A rule that removes something rather than offering something. Nobody is
+    // hoping to win an Instant Eviction, and nobody is looking round the room
+    // wondering who it is — the safety net is simply gone and everybody in here
+    // is standing on it.
+    const dread = !paranoid && announced.some(a => a?.reactions === 'dread');
     const schemer = byStat('strategic')[0];
     const bold = byStat('boldness').find(n => n !== schemer) || byStat('boldness')[0];
     if (bold) {
       beats.push({
         text: paranoid
           ? `${bold} breaks the silence first, and does it by looking straight down the sofa: "Well. It's one of you." Half the room laughs. The other half works out where they were sitting.`
-          : `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
+          : dread
+            ? `${bold} breaks the silence first: "So whoever wins that comp gets to end somebody's game before dinner." Nobody laughs, because nobody can think of a reason to.`
+            : `${bold} breaks the silence first: "Good. I hope I win it." Half the room laughs; the other half writes it down.`,
         players: [bold], badgeText: 'FIRST WORD', badgeClass: 'gold',
         eventId: 'twist-announcement-bravado', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'pop', text: `${bold} +1`, delta: 1 }],
@@ -1446,8 +1454,10 @@ export function simulateBBWeek(options = {}) {
       beats.push({
         text: paranoid
           ? `${schemer} says nothing at all, and is already doing the only arithmetic that matters: ${house.length - 1} other people, one of them lying, and a whole season to find out which. Nobody in this room is going to be believed about anything again.`
-          : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
-        players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : 'RECALCULATING', badgeClass: 'grey',
+          : dread
+            ? `${schemer} works out the only thing worth working out: there is no afternoon of talking anybody round this week, and no veto to hide behind if it goes wrong. Everything has to be done before that competition ends.`
+            : `${schemer} says nothing at all, which from ${schemer} is the loudest possible reaction. The rule has already been taken apart and reassembled twice behind those eyes.`,
+        players: [schemer], badgeText: paranoid ? 'COUNTING THE ROOM' : dread ? 'NO TIME TO WORK' : 'RECALCULATING', badgeClass: 'grey',
         eventId: 'twist-announcement-recalc', category: 'ceremonies', location: 'living-room',
       });
     }
@@ -1461,8 +1471,10 @@ export function simulateBBWeek(options = {}) {
       beats.push({
         text: paranoid
           ? `${outsiders[0]} and ${outsiders[1]} find each other before anybody has moved. Neither says the sentence out loud, because the sentence is "it isn't you, is it" and saying it makes it a question. They rule each other out, on nothing, and stay that way for weeks.`
-          : `${outsiders[0]} and ${outsiders[1]} trade one look across the sofas that says the same thing: whatever this rule is for, it is not for people like us. They spend the rest of the evening within arm's reach of each other.`,
-        players: [...outsiders], badgeText: paranoid ? 'RULING EACH OTHER OUT' : 'SHARED DREAD', badgeClass: 'blue',
+          : dread
+            ? `${outsiders[0]} and ${outsiders[1]} do the same sum at the same time and arrive at the same answer: neither of them is winning that competition, and neither of them has anybody upstairs to ask for anything.`
+            : `${outsiders[0]} and ${outsiders[1]} trade one look across the sofas that says the same thing: whatever this rule is for, it is not for people like us. They spend the rest of the evening within arm's reach of each other.`,
+        players: [...outsiders], badgeText: paranoid ? 'RULING EACH OTHER OUT' : dread ? 'NOTHING TO ASK FOR' : 'SHARED DREAD', badgeClass: 'blue',
         eventId: 'twist-announcement-dread', category: 'ceremonies', location: 'living-room',
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
       });
@@ -1592,6 +1604,15 @@ export function simulateBBWeek(options = {}) {
   // events of this stretch are where that conversation is seen. Deciding it at
   // the ceremony meant the scene and the decision could never be the same
   // thing.
+  // ── Instant Eviction: the door locks before anybody can reach them ──
+  //
+  // The whole twist, and the part the catalogue was missing. A sequestered Head
+  // of Household nominates on what they knew at the top of the stairs, so this
+  // has to happen BEFORE the plan is chosen — not as narration after it.
+  if (skipVeto && !compressed) {
+    try { sequesterHoh(week, house, rng); } catch { /* they nominate normally */ }
+  }
+
   let plan = chooseNominationPlan(hoh, house, rng);
   // The pawn ask only happens when the chosen structure actually seats a
   // pawn. Two real targets, a split pair, a couple of expendables — none of
@@ -1604,6 +1625,15 @@ export function simulateBBWeek(options = {}) {
     plan.pawn = null;
     plan.structure = 'two-targets';
     plan.structureWhy = 'An invisible HOH cannot negotiate a pawn without revealing themselves, so both nominations are meant.';
+  }
+  // You cannot ask somebody to sit as a pawn through a locked door. A
+  // sequestered Head of Household runs both chairs as real nominations for the
+  // same reason an invisible one does — the conversation that makes a pawn a
+  // pawn is not available to them.
+  if (week.sequestered && plan.pawn) {
+    plan.pawn = null;
+    plan.structure = 'two-targets';
+    plan.structureWhy = 'Sequestered before nominations, with no way to ask anybody to volunteer.';
   }
   week.pawnAsk = plan.pawn
     ? _cappedBondWindow(() => negotiatePawn(hoh, house, plan, rng))
@@ -2640,8 +2670,21 @@ export function simulateBBWeek(options = {}) {
     week.vetoCompetition = null;
     week.finalNominees = [...nominees];
     nominees.forEach(name => gs.bb.stats[name].timesOnTheBlock++);
+
+    // What the locked room actually cost them. Both of these are the twist
+    // rather than decoration: one is the house hearing every private reason the
+    // Head of Household had, and the other is them finding out an hour too late
+    // that they nominated the wrong person and having no ceremony to fix it at.
+    let overheard = null;
+    let regret = null;
+    try { overheard = leakDeliberation(week, house, week.plan, rng); } catch { overheard = null; }
+    try { regret = sequesterRegret(week, house, rng); } catch { regret = null; }
+    if (overheard) week.sequestered.overheard = overheard;
+    if (regret) week.sequestered.regret = regret;
+
     week.acts.push(addBeats(
-      { type: 'instant-eviction', nominees: [...nominees], hoh },
+      { type: 'instant-eviction', nominees: [...nominees], hoh,
+        sequestered: week.sequestered || null, overheard, regret },
       { nominees: [...nominees] }));
   }
 

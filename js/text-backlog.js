@@ -4371,8 +4371,27 @@ export function generateBBSummaryText(ep) {
 
       case 'instant-eviction':
         sec('INSTANT EVICTION');
+        // The locked door first: the missing veto is the consequence of the
+        // twist and the sequestration IS the twist.
+        if (act.sequestered) {
+          ln(`  ${act.hoh} is put in ${act.sequestered.where} — ${act.sequestered.clock}.`);
+          ln(`  ${act.sequestered.how}`);
+          ln('  No conversations, no pitches, nobody coming up to explain why it should be somebody');
+          ln(`  else. ${act.hoh} nominates on what ${act.hoh} knew before the competition ended.`);
+          ln('');
+        }
+        if (act.overheard) {
+          ln(`  ${act.overheard.text}`);
+          ln(`  ${act.overheard.reaction}`);
+          ln('');
+        }
         ln('  There is no Power of Veto this week.');
         ln(`  ${(act.nominees || []).join(' and ')} are locked on the block, and the house votes tonight.`);
+        if (act.regret) {
+          ln('');
+          ln(`  ${act.regret.text}`);
+          ln(`  ${act.regret.cost}`);
+        }
         beats(act);
         break;
 

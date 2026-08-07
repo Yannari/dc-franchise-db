@@ -112,6 +112,20 @@ export const BB_TWIST_CONTRACTS = {
     id: 'bb-instant-eviction', layer: 'scheduled', category: 'week-structure',
     timing: 'week', duration: { weeks: 1 },
     rules: { vetoCount: 0 },
+    // Announced like every other rule the house has to live under, and it had
+    // no announcement at all — the veto simply failed to happen and the Head of
+    // Household was taken away without anybody being told why.
+    //
+    // Its own register: there is nothing to win here and nobody to suspect. It
+    // is a safety net being removed from a room that is standing on it, which
+    // is a third thing from a power and a hidden agenda.
+    acquisition: { channel: 'random-draw', secrecy: 'public' },
+    announcement: {
+      name: 'Instant Eviction',
+      reactions: 'dread',
+      rule: 'There will be no Power of Veto this week. The new Head of Household will be taken out of this house the moment they win it, will nominate two of you without speaking to anybody, and one of those two will be evicted tonight.',
+      sting: 'Nothing is coming off that wall.',
+    },
   },
   'bb-have-nots': {
     id: 'bb-have-nots', layer: 'scheduled', category: 'condition',

@@ -343,6 +343,11 @@ Return ONLY valid JSON matching the schema exactly.
 
 async function generateNarrativeFill(body, env) {
   const { template, episodes, season, seasonTitle } = body;
+  // Which show this is. The season document carries it; the request repeats it.
+  // Everything below used to assume Total Drama unconditionally, which was true
+  // right up until the house shipped.
+  const format = body.format || template?.format || 'total-drama';
+  const isBB = format === 'big-brother';
 
   if (!template || !episodes) {
     return new Response(JSON.stringify({ error: "Missing template or episodes" }), {
@@ -453,18 +458,77 @@ async function generateNarrativeFill(body, env) {
     required: ["title", "subtitle", "winner", "placements", "seasonNarrative", "awards"]
   };
 
+  // A houseguest has no tribe, no immunity necklace and no idols, and a Big
+  // Brother placement does not carry `phase`, `challengeWins` or `immunityWins`
+  // at all — its numbers live under `bb` and its standing is `status`. Feeding
+  // the Total Drama line to a house produced "#3 Ripper (undefined) — undefined
+  // chal wins", and the model wrote around the gaps rather than reporting them.
+  const juryVoteOf = name =>
+    template.placements?.find(p => p.name === name)?.juryVotes ?? 0;
+
   const templateSummary = JSON.stringify({
     seasonNumber: template.seasonNumber,
     castSize: template.castSize,
-    episodeCount: template.episodeCount,
+    [isBB ? 'weekCount' : 'episodeCount']: template.episodeCount,
     winner: template.winner?.name,
-    finalists: template.finalists?.map(f => `${f.name} (${f.votes} jury votes)`),
-    placements: template.placements?.map(p =>
-      `#${p.placement} ${p.name} (${p.phase}) — ${p.challengeWins} chal wins, ${p.immunityWins} immunity, ${p.votesReceived} votes against, allies: ${(p.alliances || []).join(', ')}, rivals: ${(p.rivalries || []).join(', ')}`
+    finalists: template.finalists?.map(f =>
+      `${f.name} (${f.votes ?? juryVoteOf(f.name)} jury votes)`),
+    placements: template.placements?.map(p => isBB
+      ? `#${p.placement} ${p.name} (${p.status}) — ${p.bb?.hohWins || 0} HOH wins, `
+        + `${p.bb?.vetoWins || 0} veto wins, nominated ${p.bb?.timesNominated || 0}x, `
+        + `saved off the block ${p.bb?.timesSaved || 0}x, ${p.votesReceived || 0} eviction votes against, `
+        + `${p.juryVotes || 0} jury votes`
+      : `#${p.placement} ${p.name} (${p.phase}) — ${p.challengeWins} chal wins, ${p.immunityWins} immunity, ${p.votesReceived} votes against, allies: ${(p.alliances || []).join(', ')}, rivals: ${(p.rivalries || []).join(', ')}`
     )
   }, null, 2);
 
-  const instructions = `
+  const instructions = isBB ? `
+You are writing narrative content for a Big Brother season. All STATS are already
+filled in — you only write NARRATIVE fields.
+
+THIS IS NOT TOTAL DRAMA. There are no tribes, no challenges, no immunity
+necklaces, no idols, no campfire ceremonies and no Chris McLean. Do not mention
+any of them. The vocabulary is:
+- The house, and houseguests. Everybody lives together from day one.
+- Head of Household (HOH): wins a competition, nominates two people for eviction.
+- The Power of Veto: won in a second competition, can pull a nominee off the
+  block, forcing the HOH to name a replacement.
+- The block, nominees, being "on the block", the renom.
+- Eviction: the house VOTES OUT one nominee each week. Nobody is "eliminated at
+  tribal council" and nobody "goes home from a challenge".
+- The jury: evicted houseguests from the back half of the season, who return on
+  finale night and vote for the WINNER.
+- Comps, alliances, showmances, floaters, pawns, backdoors, blindsides.
+
+SEASON DATA (pre-computed, DO NOT change these numbers):
+${templateSummary}
+
+YOUR JOB: Fill in narrative fields ONLY. For each houseguest, write:
+- notes: 1 sentence summary
+- strategicRank: 1-10 number
+- story: 4-8 sentence narrative arc. Write like a sports documentary voiceover —
+  dramatic, specific, present tense. Anchor it to what actually happened: the
+  weeks they held power, the times they sat on the block and survived, the vote
+  that ended them.
+- gameplayStyle: 3-6 evocative words (NOT generic like "Strategic player")
+- keyMoments: Array of 3-8 specific moment descriptions with week numbers
+
+Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/
+legacy), and all awards.
+
+The award names are shared with the franchise's other show, so read them in Big
+Brother terms: "compBeast" is HOH and veto wins, "advantageKing" is whoever best
+used the season's powers and temptations, "mostClutch" is winning the veto with
+your own name on the block, and "bestPhysical" is the endurance and physical
+comps rather than a challenge record.
+
+IMPORTANT: Use EXACTLY these houseguest names — do not modify, abbreviate, or add suffixes.
+Cast: ${canonicalCast.join(', ')}
+
+${episodeSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim() : `
 You are writing narrative content for a Total Drama season. All STATS are already filled in — you only write NARRATIVE fields.
 
 SEASON DATA (pre-computed, DO NOT change these numbers):

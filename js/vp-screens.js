@@ -22998,41 +22998,189 @@ export function rpBuildBBAmericasFavourite(ep) {
   });
 }
 
-/** The cut: the last decision anybody in this house makes. */
+/**
+ * The cut: the last decision anybody in this house makes.
+ *
+ * This is an eviction — the last one of the season — and it is played on the
+ * eviction-night stage the other twelve were played on, because a viewer who
+ * has watched a whole season of that stage should recognise the final one. Two
+ * chairs, the front door on the end, cards down the middle.
+ *
+ * What changes is what fills the chairs. There is no vote: there is one person
+ * with the only opinion that counts, so the tally under each chair becomes the
+ * arithmetic that opinion is made of — the jury margin the finalist projects
+ * against each of them — and it stays hidden until the moment they do the sum.
+ */
 export function rpBuildBBFinalCut(ep) {
   const act = (ep.acts || []).find(a => a.type === 'final-cut');
   if (!act) return '';
-  const p = pronouns(act.finalHoh);
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num} — finale`,
-    title: 'THE FINAL DECISION',
-    subtitle: `${act.finalHoh} chooses who to sit beside.`,
-    accent: '#f85149', room: 'bb-live',
-    stateKey: `bb_fcut_${ep.num}`,
-    header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:16px">${rpPortrait(act.finalHoh, 'hoh')}</div>`,
-    scenes: [
-      { text: `${act.finalHoh} has the only vote that matters tonight, and two people who have both been told they are the one.`,
-        players: [act.finalHoh], badgeText: 'FINAL HOH', badgeClass: 'gold' },
-      // Whether a promise was kept or broken is the whole meaning of this
-      // decision, and it used to be nowhere on the screen because the cut was
-      // resolved on projected jury margin alone and there was no promise in it.
-      ...(act.honoured ? [{
-        text: act.honoured.costly
-          ? `${p.Sub} shook on this with <strong>${act.honoured.partner}</strong> back in week ${act.honoured.madeEp}, and the arithmetic says take the other one. ${p.Sub} keeps ${p.posAdj} word anyway. It may well cost ${p.obj} the money.`
-          : `${p.Sub} shook on this with <strong>${act.honoured.partner}</strong> in week ${act.honoured.madeEp}, and keeping it happens to be the smart play too. Not every promise has to be expensive to be real.`,
-        players: [act.finalHoh, act.honoured.partner],
-        badgeText: act.honoured.costly ? 'KEPT THEIR WORD' : 'PROMISE KEPT', badgeClass: 'gold',
-      }] : []),
-      ...(act.betrayal ? [{
-        text: `${p.Sub} shook on a ${act.betrayal.tier === 'final-two' ? 'final two' : 'final three'} with <strong>${act.betrayal.partner}</strong>, and everybody watching remembers it. ${p.Sub} cuts ${p.obj} anyway, in front of the jury that decides this.`,
-        players: [act.finalHoh, act.betrayal.partner],
-        badgeText: 'BROKE THE DEAL', badgeClass: 'red',
-      }] : []),
-      { text: `${p.Sub} takes <strong>${act.kept}</strong> to the end.`, players: [act.kept], badgeText: 'TAKEN TO THE END', badgeClass: 'green' },
-      ...(act.cut ? [{ text: `<strong>${act.cut}</strong> is evicted at the final three, one night short, and becomes the last member of the jury — with a vote.`,
-        players: [act.cut], badgeText: 'THE LAST JUROR', badgeClass: 'red' }] : []),
-    ],
-  });
+  const hoh = act.finalHoh;
+  const p = pronouns(hoh);
+  const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Don';
+  // The two the decision is between, in the order they were sitting — never
+  // kept-then-cut, which would answer the question in the seating.
+  const pair = [act.kept, act.cut].filter(Boolean).sort();
+  const margins = act.margins || {};
+  const jurySize = (ep.acts || []).find(a => a.type === 'jury-vote')?.jury?.length
+    || (Array.isArray(gs?.jury) ? gs.jury.length : 0);
+
+  const stateKey = `bb_fcut_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const vvar = (list, ...salt) => {
+    const key = `${ep.num}|${salt.join('|')}`;
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    return list[hash % list.length];
+  };
+
+  // ── each of the two makes the only pitch left ──
+  //
+  // Not a plea to a house — a plea to one person, about a jury. The register is
+  // different from every other final plea in the season and it is written from
+  // what this houseguest can actually offer: a deal already made, a jury they
+  // can be beaten by, or nothing at all except having been there.
+  const pitch = name => {
+    const q = pv(name);
+    const deal = act.honoured?.partner === name || act.betrayal?.partner === name;
+    const weak = (Number(margins[name]) || 0) < (Number(margins[pair.find(n => n !== name)]) || 0);
+    if (deal) return vvar([
+      `<strong>${name}</strong> does not make a speech. ${q.Sub} says the week and the room it was agreed in, and lets ${hoh} sit with it. "You know what you said to me. I've never once made you wonder if I meant it."`,
+      `"I'm not going to sell you anything," <strong>${name}</strong> says. "We shook on this. I kept my end every single week, including the weeks it cost me. That's the whole pitch."`,
+      `<strong>${name}</strong> pitches the promise itself. "Everybody on that jury has been lied to by somebody. Don't make me one of them, because they'll ask, and I'll have to answer."`,
+      `"You can beat me," <strong>${name}</strong> says, which is a strange thing to lead with. "But you told me you wouldn't have to think about it. I'm asking you not to think about it."`,
+    ], name, 'deal-pitch');
+    if (weak) return vvar([
+      `<strong>${name}</strong> argues the arithmetic, openly. "I haven't won anything. I haven't put anybody on that jury. Sit next to me and you get to say all of that out loud."`,
+      `"Take the person you can beat," <strong>${name}</strong> says. "I'd like to pretend that isn't me. It's me."`,
+      `<strong>${name}</strong> makes the case ${q.sub} has been quietly building for weeks: that ${q.sub} is the safe half of any final two, and safe is worth more tonight than loyal.`,
+      `"Nobody in that jury room is angry at me," <strong>${name}</strong> says. "Nobody's grateful either. That's exactly what you want sitting beside you."`,
+    ], name, 'weak-pitch');
+    return vvar([
+      `<strong>${name}</strong> does not pretend to be beatable. "I've played a game you're going to have to answer for. So have you. Let's go answer for them together and let them pick."`,
+      `"You want the easy one," <strong>${name}</strong> says. "I get it. But the jury respects a final two that actually happened, and half of them will punish you for ducking it."`,
+      `<strong>${name}</strong> puts the season on the table — the wins, the weeks on the block, the votes ${q.sub} survived — and dares ${hoh} to sit beside it.`,
+      `"If you cut me you'd better win," <strong>${name}</strong> says, evenly. "Because I'll be on that jury in about four minutes, and I vote."`,
+    ], name, 'strong-pitch');
+  };
+
+  const steps = [
+    { kind: 'live' },
+    ...pair.map(name => ({ kind: 'pitch', name })),
+    { kind: 'math' },
+    ...(act.honoured || act.betrayal ? [{ kind: 'promise' }] : []),
+    { kind: 'verdict' },
+    ...(act.cut ? [{ kind: 'door' }] : []),
+  ];
+  const total = steps.length;
+  const at = kind => steps.findIndex(st => st.kind === kind);
+  const done = state.idx >= total - 1;
+  const decided = state.idx >= at('verdict');
+  const doorOpen = at('door') >= 0 && state.idx >= at('door');
+  const summed = state.idx >= at('math');
+
+  // ── the stage ──
+  const best = Math.max(1, ...pair.map(n => Math.abs(Number(margins[n]) || 0)));
+  // A season thin enough that both projections come out level has no
+  // arithmetic to draw, and printing "0.0" twice reads as a bug rather than as
+  // a dead heat.
+  const hasMargins = pair.some(n => Number(margins[n]));
+  const chairs = pair.map(name => {
+    const out = decided && name === act.cut;
+    const safe = decided && name === act.kept;
+    const m = Number(margins[name]) || 0;
+    const slots = Math.max(3, Math.min(jurySize || 7, 9));
+    const filled = Math.round((Math.abs(m) / best) * slots);
+    return `<div class="bbev-chair ${out ? 'is-evicted' : ''} ${safe ? 'is-survived' : ''}">
+      <div class="bbev-frame">${_bbAvatar(name, 92)}</div>
+      <div class="bbev-cname">${_bbEsc(name)}</div>
+      <div class="bbev-keys">
+        ${Array.from({ length: slots }, (_, i) => `<span class="bbev-key ${
+          summed && hasMargins && i < filled ? 'is-cast' : ''}"></span>`).join('')}
+      </div>
+      <div class="bbev-count">${summed && hasMargins ? `${m > 0 ? '+' : ''}${m.toFixed(1)}` : '—'}<i> ${
+        summed ? (hasMargins ? `${hoh}'s margin` : 'too close to call') : 'not counted yet'}</i></div>
+      <div class="bbev-tag">${out ? 'EVICTED' : safe ? 'TAKEN TO THE END' : 'IN THE BALANCE'}</div>
+    </div>`;
+  }).join('');
+
+  const stage = `<div class="bbev-stage ${decided ? 'is-decided' : ''}">
+    <div class="bbev-onair"><i></i>${decided ? 'FINAL EVICTION' : 'LIVE'}</div>
+    <div class="bbev-chairs">${chairs}</div>
+    <div class="bbev-door ${doorOpen ? 'is-open' : ''}">
+      <div class="bbev-door-slab"><span></span><span></span></div>
+      <div class="bbev-door-t">${doorOpen ? `${_bbEsc(act.cut)} IS THE LAST JUROR` : 'THE FRONT DOOR'}</div>
+    </div>
+    <div class="bbev-meta">
+      <span>1 VOTE</span><span>${_bbEsc(hoh).toUpperCase()} CASTS IT</span>
+      <span>${jurySize ? `${jurySize + (act.cut ? 1 : 0)} ON THE JURY` : ''}</span>
+    </div>
+  </div>`;
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+    switch (step.kind) {
+      case 'live':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h">${pair.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">WE ARE LIVE</span></div>
+          <div class="bbns-card-b">Three people, two chairs and no vote. <strong>${_bbEsc(hoh)}</strong> won the last competition this house will ever run, and the only thing left to do with it is choose. ${_bbEsc(pair[0])} and ${_bbEsc(pair[1])} sit down in front of ${p.obj}, and both of them have spent the whole season being told they were the one.</div></div>`;
+      case 'pitch':
+        return `<div class="bbns-card is-key">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill blue">THE LAST PITCH</span></div>
+          <div class="bbns-card-b">${pitch(step.name)}</div></div>`;
+      case 'math':
+        return `<div class="bbns-card is-open">
+          <div class="bbns-card-h"><span class="bbns-pill grey">THE ARITHMETIC</span></div>
+          <div class="bbns-card-b">${vvar([
+            `${_bbEsc(hoh)} is not listening to either of them any more. ${p.Sub} is counting the bench — seven people, most of whom ${p.sub} had a hand in sending there — and working out which of these two ${p.sub} beats in front of them.`,
+            `The pitches stop mattering the moment ${_bbEsc(hoh)} starts doing the sum. Every juror is a vote with a memory attached, and ${p.sub} knows exactly whose memory belongs to whom.`,
+            `Somewhere behind ${p.posAdj} face, ${_bbEsc(hoh)} runs the jury one name at a time. The numbers under those two chairs are what ${p.sub} arrives at.`,
+          ], 'math')}</div></div>`;
+      case 'promise':
+        return act.honoured
+          ? `<div class="bbns-card is-key bbev-tie">
+              <div class="bbns-card-h">${_bbAvatar(hoh, 30)}${_bbAvatar(act.honoured.partner, 30)}<span class="bbns-pill gold">${
+                act.honoured.costly ? 'KEPT THEIR WORD' : 'PROMISE KEPT'}</span></div>
+              <div class="bbns-card-b">${act.honoured.costly
+                ? `${p.Sub} shook on this with <strong>${_bbEsc(act.honoured.partner)}</strong> back in week ${act.honoured.madeEp}, and the arithmetic says take the other one. ${p.Sub} keeps ${p.posAdj} word anyway. It may well cost ${p.obj} the money.`
+                : `${p.Sub} shook on this with <strong>${_bbEsc(act.honoured.partner)}</strong> in week ${act.honoured.madeEp}, and keeping it happens to be the smart play too. Not every promise has to be expensive to be real.`}</div></div>`
+          : `<div class="bbns-card is-key bbev-ballot is-broke">
+              <div class="bbns-card-h">${_bbAvatar(hoh, 30)}${_bbAvatar(act.betrayal.partner, 30)}<span class="bbns-pill red">BROKE THE DEAL</span></div>
+              <div class="bbns-card-b">${p.Sub} shook on a ${act.betrayal.tier === 'final-two' ? 'final two' : 'final three'} with <strong>${_bbEsc(act.betrayal.partner)}</strong>, and everybody watching remembers it. ${p.Sub} does it anyway, at the last possible moment, in front of the jury that decides this.</div></div>`;
+      case 'verdict':
+        return `<div class="bbns-card is-final bbev-verdict">
+          <div class="bbns-card-h">${_bbAvatar(host, 30)}${_bbAvatar(act.kept, 30)}<span class="bbns-pill red">THE DECISION</span></div>
+          <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen: "${_bbEsc(hoh)}, as the final Head of Household, it is time to cast the sole vote to evict." ${p.Sub} does not look at the person ${p.sub} is about to end. "I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>." <strong>${_bbEsc(act.kept)}</strong> goes to the end.</div></div>`;
+      case 'door':
+        return `<div class="bbns-card">
+          <div class="bbns-card-h">${_bbAvatar(act.cut, 30)}<span class="bbns-pill grey">ONE NIGHT SHORT</span></div>
+          <div class="bbns-card-b">${vvar([
+            `<strong>${_bbEsc(act.cut)}</strong> hugs both of them, and one of those hugs takes noticeably longer than the other. ${pv(act.cut).Sub} walks out of a house ${pv(act.cut).sub} was one night from winning and straight onto the jury — with a vote, and a very particular reason to use it.`,
+            `Ninety-odd days for this: <strong>${_bbEsc(act.cut)}</strong> collects the bag by the door, says something short to ${_bbEsc(hoh)} that the microphones do not quite catch, and becomes the last member of the jury.`,
+            `<strong>${_bbEsc(act.cut)}</strong> takes the walk everybody else took, except ${pv(act.cut).sub} takes it in a final-night dress with the confetti already loaded. The last seat on the jury is ${pv(act.cut).posAdj}, and so is the last vote to fill it.`,
+          ], act.cut, 'door')}</div></div>`;
+      default: return '';
+    }
+  };
+
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+  return `<div class="rp-page bb-room bb-live">
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#f85149">THE FINAL DECISION</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">
+      ${_bbEsc(hoh)} holds the only vote left in this game.</div>
+    ${stage}
+    <div class="bbns-feed">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-bar" style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;
+      justify-content:center;align-items:center;padding:10px 12px;
+      background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));border-top:1px solid rgba(248,81,73,.3)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">Next</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Play it out</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /**

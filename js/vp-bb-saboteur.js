@@ -30,6 +30,13 @@ const STYLE = `<style>
 .bbsab .sb-result{font-size:clamp(38px,7vw,64px);letter-spacing:5px;line-height:1}
 .bbsab .sb-result.is-yes{color:#ff6b63;text-shadow:0 0 40px rgba(201,52,60,.6)}
 .bbsab .sb-result.is-no{color:#8b949e;text-shadow:none}
+.bbsab .sb-result.is-skip{color:#6e7681;text-shadow:none;font-size:clamp(30px,5vw,48px)}
+.bbsab .sb-feed{position:relative;z-index:2;margin-top:14px;padding:12px 14px;border-radius:9px;
+  font-size:13px;line-height:1.6;color:#d6dde5;background:rgba(88,166,255,.07);
+  border:1px dashed rgba(88,166,255,.4)}
+.bbsab .sb-feed b{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8px;
+  letter-spacing:1.8px;color:#58a6ff;margin-bottom:6px}
+.bbsab .sb-feed i{display:block;margin-top:7px;font-size:11px;color:#6e7681;font-style:italic}
 .bbsab .sb-sub{font-size:11.5px;color:#8b949e}
 
 .bbsab .sb-grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);
@@ -225,10 +232,16 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
     <div class="sb-wrap">
       <div class="sb-head">
         <div class="sb-eyebrow">WEEK ${esc(act.week)} &middot; ${esc(act.saboteur).toUpperCase()} &middot; ${esc(m.name || '').toUpperCase()}</div>
-        <div class="sb-title sb-result ${act.worked ? 'is-yes' : 'is-no'}">${act.worked ? 'JOB DONE' : 'JOB FAILED'}</div>
-        <div class="sb-sub">${act.worked
-          ? `$${Number(act.paid || 0).toLocaleString()} for the week, and the house has no idea it was a job.`
-          : 'Nothing paid, and more people were watching than there would have been.'}</div>
+        <div class="sb-title sb-result ${act.declined ? 'is-skip' : act.worked ? 'is-yes' : 'is-no'}">${
+          act.declined ? 'NO JOB' : act.worked ? 'JOB DONE' : 'JOB FAILED'}</div>
+        <div class="sb-sub">${act.declined
+          ? (act.watching?.length
+            ? `Turned down. ${esc(act.watching[0])} has started watching, and a quiet week is worth more than the money — `
+              + `but the audience is watching too, and it does not count towards the quota.`
+            : 'Turned down. Safe, unpaid, and one week further from the quota.')
+          : act.worked
+            ? `$${Number(act.paid || 0).toLocaleString()} for the week, and the house has no idea it was a job.`
+            : 'Nothing paid, and more people were watching than there would have been.'}</div>
       </div>
 
       <div class="sb-grid">
@@ -241,6 +254,11 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
             <div class="sb-fee"><b>$${Number(m.pay || 0).toLocaleString()}</b><span>ON COMPLETION</span></div>
           </div>
           <div class="sb-beats">${(act.beats || []).map(beat).join('')}</div>
+          ${act.feedLine ? `<div class="sb-feed">
+            <b>WHAT THE HOUSE SAW &middot; LOOK FOR THIS ON HOUSE LIFE</b>
+            ${esc(act.feedLine)}
+            <i>The feed never says who did it. This screen is the only place the two halves sit together.</i>
+          </div>` : ''}
         </div>
 
         <aside class="sb-side">
@@ -257,6 +275,8 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
             <div><span>THIS WEEK</span><b>$${Number(act.paid || 0).toLocaleString()}</b></div>
             <div><span>APPLAUSE</span><b>${Number(act.applause || 0) >= 0 ? '+' : ''}${Number(act.applause || 0)}</b></div>
           </div>
+          ${act.quota ? `<div class="sb-bank-l" style="margin-top:8px">JOBS ATTEMPTED ${
+            act.attempted} / ${act.quota} REQUIRED${act.attempted >= act.quota ? ' &middot; MET' : ''}</div>` : ''}
           <div class="sb-side-h" style="margin-top:12px">WHO THINKS IT IS WHO</div>
           <div class="sb-side-s">${notices.length
             ? `${right.length} of ${notices.length} ${right.length === 1 ? 'has' : 'have'} the right name.

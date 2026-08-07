@@ -4476,14 +4476,21 @@ export function generateBBSummaryText(ep) {
       }
 
       case 'saboteur-debrief': {
-        sec('THE SABOTEUR — DID IT WORK');
-        ln(`  ${act.mission.name} — ${act.worked ? 'it comes off.' : 'it does not come off.'}`);
+        sec('THE SABOTEUR — THE RESULT');
+        ln(`  ${act.mission.name} — ${act.declined ? 'turned down.'
+          : act.worked ? 'it comes off.' : 'it does not come off.'}`);
         ln('');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));
         if ((act.notices || []).length) {
           ln('');
           ln('  WHO NOTICED, AND WHO THEY BLAMED');
           act.notices.forEach(n => ln(`    ${n.observer} → ${n.named}${n.correct ? '' : '   (wrong)'}`));
+        }
+        ln('');
+        if (act.feedLine) {
+          ln('');
+          ln('  What the house saw (look for this on House Life):');
+          ln(`    ${act.feedLine}`);
         }
         ln('');
         ln(`  Paid this week: $${(act.paid || 0).toLocaleString()}. `

@@ -128,6 +128,15 @@ function seat(picked, bankWeek) {
     // What the audience thinks of the job so far. This, not the running total,
     // is what the money is actually paid against — see `audiencePayout`.
     applause: 0,
+    // How many jobs they have to actually ATTEMPT before the bank date.
+    //
+    // The wiki's second saboteur was given exactly this shape — "complete 3
+    // acts of sabotage within the next 2 weeks" — and it is what stops laying
+    // low from being free: a week spent being careful is a week that does not
+    // count towards it. Attempts count rather than successes, because going for
+    // it and missing is still doing the job you were paid to do.
+    quota: Math.max(2, Math.ceil((Math.max(2, Number(bankWeek) || 5) - 1) * 0.6)),
+    attempted: 0,
   };
   return gs.bb.saboteur;
 }
@@ -539,7 +548,14 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
   // turns down work that somebody invisible would take without thinking.
   const exposure = saboteurExposure();
   const nerve = (stat(sab, 'boldness') * 0.55 + stat(sab, 'strategic') * 0.45) / 10;
-  const appetite = clamp(0.34 + nerve * 0.55 - exposure * 0.75 - mission.noise * 0.25, 0.05, 0.95);
+  // Squared, not linear. One job puts a saboteur at about a third exposed, and
+  // a linear term had them turning down two jobs in five off the back of it —
+  // which is not somebody on the verge of being caught, it is somebody who has
+  // been noticed once. The curve leaves the early weeks alone and closes hard
+  // at the top: nine in ten when nobody is watching, about four in ten when
+  // half the house is, and almost never once they are properly hunted.
+  const appetite = clamp(0.90 + nerve * 0.15 - exposure * exposure * 1.5
+    - mission.noise * 0.05, 0.03, 0.97);
   // The first job is always taken. Nobody signs up for this, gets handed the
   // card on night one and passes — and a twist whose opening episode is the
   // saboteur declining to do anything is a twist that has not started.
@@ -560,7 +576,20 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
     : { text: fresh(REFUSALS, 'refuse')(sab, p), players: [sab], badgeText: 'PASSES', badgeClass: 'grey' });
 
   if (!accepted) {
-    state.missions.push({ week: weekNum, mission: mission.id, accepted: false, paid: 0, applause: 0 });
+    // The audience is the employer, and it is watching somebody do nothing.
+    // Laying low is a real option at a real price — and it does not count
+    // towards the quota either, which is the half that stops it being free.
+    const bored = -0.45;
+    state.applause = round2(state.applause + bored);
+    if (seasonConfig?.popularityEnabled !== false) {
+      gs.popularity ||= {};
+      gs.popularity[sab] = round2((gs.popularity[sab] || 0) - 1.1);
+    }
+    state.missions.push({ week: weekNum, mission: mission.id, accepted: false, paid: 0, applause: bored });
+    // A turned-down week still gets a result, because a week that opens with a
+    // job and then says nothing about it reads as a missing screen rather than
+    // as a decision. Half the weeks in a season looked broken for this reason.
+    week._saboteurDeclined = { mission, ctx, exposure: round2(exposure) };
   } else {
     week._saboteurJob = { mission, ctx };
   }
@@ -584,6 +613,32 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
  */
 export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
   const state = saboteurState();
+  const declined = week?._saboteurDeclined;
+  if (declined) {
+    delete week._saboteurDeclined;
+    if (!state || state.survived || state.caught) return null;
+    const sab = state.player;
+    const watching = Object.entries(state.suspicion[sab] || {})
+      .sort((a, b) => b[1] - a[1]).map(([n]) => n);
+    return {
+      type: 'saboteur-debrief', secret: true, week: declined.ctx.week, saboteur: sab, applause: -0.45,
+      mission: { id: declined.mission.id, name: declined.mission.name,
+        brief: declined.mission.brief, pay: declined.mission.pay },
+      declined: true, worked: false, paid: 0,
+      quota: state.quota, attempted: state.attempted || 0,
+      applauseTotal: state.applause, banked: state.banked, prize: state.prize,
+      bankWeek: state.bankWeek, exposure: declined.exposure, notices: [],
+      watching: watching.slice(0, 3),
+      beats: [{
+        text: watching.length
+          ? `${sab} spends the week being useful and boring. `
+            + `${watching[0]} has started watching ${P(sab).obj} eat, and that is enough.`
+          : `${sab} does nothing at all this week, on purpose. Nothing goes wrong in the house, `
+            + `and that is its own kind of cover.`,
+        players: [sab], badgeText: 'NO JOB THIS WEEK', badgeClass: 'grey',
+      }],
+    };
+  }
   const job = week?._saboteurJob;
   if (!state || !job || state.survived || state.caught) return null;
   delete week._saboteurJob;
@@ -634,8 +689,13 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
   // against. A job that worked and was fun to watch pays; a job that worked and
   // bored everybody pays a fraction; a botched one pays nothing but is often
   // the most entertaining thing in the episode, so it still earns applause.
-  const applause = round2((worked ? mission.spice : mission.spice * 0.45)
-    + (framed.length ? 0.25 : 0) + (caughtBy.length ? -0.15 : 0));
+  // Trying and missing earns nothing and costs nothing — they went for it,
+  // which is what the audience asked for. Only sitting the week out is held
+  // against them.
+  const applause = worked
+    ? round2(mission.spice + (framed.length ? 0.25 : 0) + (caughtBy.length ? -0.15 : 0))
+    : 0;
+  state.attempted = (state.attempted || 0) + 1;
   state.applause = round2(state.applause + applause);
   const paid = worked ? mission.pay : 0;
   state.banked += paid;
@@ -709,6 +769,7 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
       + `${(result.touched || []).filter(n => n !== sab)[0] || 'Somebody'} is closest to it and has no explanation.`;
   week._saboteurFeed = {
     text: feedText,
+    _sabQuote: feedText,
     players: (result.touched || []).filter(n => n !== sab).slice(0, 3),
     badgeText: worked ? 'NOBODY KNOWS WHO' : 'SOMETHING IS OFF',
     badgeClass: 'red',
@@ -722,7 +783,12 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
     type: 'saboteur-debrief', secret: true, week: weekNum, saboteur: sab,
     mission: { id: mission.id, name: mission.name, brief: mission.brief, pay: mission.pay },
     worked, chance: round2(chance), result,
+    // The exact line the house feed got, so a viewer can go and find it. The
+    // feed never says who did it; this is the only place the two halves are put
+    // next to each other.
+    feedLine: feedText,
     paid, applause, applauseTotal: state.applause,
+    quota: state.quota, attempted: state.attempted || 0,
     banked: state.banked, prize: state.prize, bankWeek: state.bankWeek,
     exposure: round2(saboteurExposure()), notices, beats,
   };
@@ -882,6 +948,10 @@ export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
 export function audiencePayout(state) {
   const done = state.missions.filter(m => m.accepted && m.worked).length;
   const applause = state.applause;
+  // The quota is a floor, not a scale. Somebody who spent the season being
+  // careful and turned in one job has not done the thing they were paid for,
+  // however much the audience enjoyed the one.
+  if ((state.attempted || 0) < (state.quota || 0)) return 0;
   if (!done) return 0;
   if (applause >= 3.2) return state.prize;
   if (applause >= 2.0) return Math.round(state.prize * 0.4);
@@ -918,9 +988,13 @@ export function checkSaboteurBank(week) {
   state.banked = verdict;
   // And the real currency: five weeks of being the most watchable person in
   // that house, whoever they turn out to be.
-  if (state.applause > 0) {
+  // Two parts: what the season of sabotage was worth week by week, and a flat
+  // bonus for the thing that is actually hard — being the person who did all of
+  // it and never once being named for it.
+  if (seasonConfig?.popularityEnabled !== false) {
     gs.popularity ||= {};
-    gs.popularity[sab] = round2((gs.popularity[sab] || 0) + state.applause * 2.2);
+    gs.popularity[sab] = round2((gs.popularity[sab] || 0)
+      + Math.max(0, state.applause) * 2.2 + 5);
   }
   const beats = [{
     text: `The wall tells the house that the saboteur has done the job and been paid for it, `

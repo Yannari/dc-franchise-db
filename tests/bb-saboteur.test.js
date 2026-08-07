@@ -133,17 +133,25 @@ describe('the twist itself', () => {
 
 describe('a mission', () => {
   it('is offered, taken or refused, and pays only when taken', () => {
-    // Eighty rather than forty: at forty this went red about one run in five
-    // purely on the acceptance roll, and a guard that fails at random teaches
-    // people to re-run it rather than read it.
+    // Refusing is now rare on purpose — about one week in twelve, and only when
+    // the house is already watching — so this drives the exposure up by hand
+    // instead of waiting for it. Both branches still have to be reachable, or
+    // one of them is dead code.
     let paid = 0, refused = 0;
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 60; i++) {
       house();
       installBBSaboteur(NAMES, { rng: Math.random });
       // Week two, not week one: the first job of a season is always taken (a
       // saboteur who is handed the card on night one and passes is a twist that
       // has not started), so week one can never exercise the refusal branch.
       playWeek({ num: 2 });
+      // Half of these seasons have a house that is already onto them, which is
+      // the only condition under which anybody sits a week out.
+      if (i % 2) {
+        const st = saboteurState();
+        const watchers = NAMES.filter(n => n !== st.player).slice(0, 5);
+        st.suspicion[st.player] = Object.fromEntries(watchers.map(n => [n, 1.4]));
+      }
       const { brief, debrief } = playWeek({ num: 3 });
       if (!brief) continue;
       expect(brief.mission.name.length).toBeGreaterThan(3);
@@ -161,7 +169,10 @@ describe('a mission', () => {
         expect(debrief.paid).toBe(debrief.worked ? debrief.mission.pay : 0);
       } else {
         refused++;
-        expect(debrief).toBeNull();
+        // A turned-down week still reports a result, or the week reads as a
+        // missing screen rather than as a decision.
+        expect(debrief.declined).toBe(true);
+        expect(debrief.paid).toBe(0);
       }
     }
     // Both branches have to be reachable, or one of them is dead code.
@@ -227,12 +238,58 @@ describe('what the audience is paying for', () => {
     expect(moved, 'a season of sabotage never once reached the audience').toBeGreaterThan(3);
   });
 
+  it('pays nothing to somebody who spent the season laying low', () => {
+    // Declining is a real option with a real price: it costs an audience, and
+    // it does not count towards the quota of jobs they were paid to attempt.
+    // Without the quota, laying low every week was free.
+    house();
+    installBBSaboteur(NAMES, { bankWeek: 5, rng: Math.random });
+    const state = saboteurState();
+    expect(state.quota).toBeGreaterThan(1);
+    // One job done brilliantly, the rest of the season sat out.
+    state.missions = [{ accepted: true, worked: true }];
+    state.attempted = 1;
+    state.applause = 4;
+    expect(audiencePayout(state)).toBe(0);
+    // Meeting it unlocks the verdict again.
+    state.attempted = state.quota;
+    expect(audiencePayout(state)).toBe(state.prize);
+  });
+
+  it('costs popularity to sit a week out, and costs nothing to try and miss', () => {
+    // Run ten hunted saboteurs rather than one: the appetite floor is 3%, so a
+    // single trial goes the other way about one run in thirty and a guard that
+    // fails at random teaches people to re-run it rather than read it.
+    let refusals = 0, dropped = 0;
+    for (let i = 0; i < 10; i++) {
+      house();
+      installBBSaboteur(NAMES, { rng: Math.random });
+      const sab = saboteurState().player;
+      gs.popularity = {};
+      playWeek({ num: 2 });
+      // The whole house is openly onto them, which is the only condition under
+      // which anybody turns work down.
+      saboteurState().suspicion[sab] = Object.fromEntries(
+        NAMES.filter(n => n !== sab).slice(0, 8).map(n => [n, 2.5]));
+      const before = gs.popularity[sab] || 0;
+      const { brief } = playWeek({ num: 3 });
+      if (!brief.accepted) {
+        refusals++;
+        // Sitting out costs an audience.
+        if ((gs.popularity[sab] || 0) < before) dropped++;
+      }
+    }
+    expect(refusals, 'a hunted saboteur took every single job').toBeGreaterThan(6);
+    expect(dropped).toBe(refusals);
+  });
+
   it('can decide the whole thing was worth nothing', () => {
     house();
     installBBSaboteur(NAMES, { rng: Math.random });
     const state = saboteurState();
-    // Jobs done, nobody entertained.
+    // Jobs done, quota met, nobody entertained.
     state.missions = [{ accepted: true, worked: true }, { accepted: true, worked: true }];
+    state.attempted = state.quota;
     state.applause = 0.2;
     expect(audiencePayout(state)).toBe(0);
     // A season people enjoyed pays the lot.
@@ -453,7 +510,7 @@ describe('the shape of a season', () => {
         const ep = simulateBBEpisode();
         if (!ep) break;
         for (const a of ep.acts || []) {
-          if (a.type === 'saboteur-debrief') { jobs++; if (a.worked) worked++; }
+          if (a.type === 'saboteur-debrief' && !a.declined) { jobs++; if (a.worked) worked++; }
           if (a.type === 'saboteur-accusation') { calls++; if (a.correct) right++; }
         }
         const st = saboteurState();

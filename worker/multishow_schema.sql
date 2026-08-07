@@ -9,23 +9,28 @@
 -- second run is a no-op that neither loses rows nor relabels them.
 --
 -- ─────────────────────────────────────────────────────────────────────────
--- HOW OFTEN THIS FILE CAN BE RUN: re-runnable UNTIL crossover data exists,
--- one-shot after that
+-- HOW OFTEN THIS FILE CAN BE RUN
 -- ─────────────────────────────────────────────────────────────────────────
--- Apply it as many times as you like while no single player holds an
--- appearance in two shows under the same season number. From the moment one
--- does — the same person in Total Drama 5 and Big Brother 5, which is a normal
--- thing for a multi-show franchise to record — this file becomes ONE-SHOT and
--- will refuse to run at all, including against a restored backup.
+-- Apply it as many times as you like, EXCEPT while either of these two
+-- conditions holds. Each is refused up front by a named CHECK constraint, so
+-- the file aborts as a whole and changes nothing rather than corrupting rows:
 --
--- The refusal is deliberate and is enforced by the named CHECK constraint
--- `rerun_would_collapse_two_shows_rows` in the re-run guard below. Once the
--- legacy `format`-less shape is gone, those two appearance rows are genuinely
--- indistinguishable to every derivation in this file, so a rebuild would
--- collapse them into one. Aborting the whole file with a constraint whose name
--- says why is the least bad outcome; silently losing a row is the worst. If
--- you hit it, you do not need this migration — the database is already in the
--- target shape.
+--   1. PERMANENT once it happens — one player holding an appearance in two
+--      shows under the same season number (the same person in Total Drama 5
+--      and Big Brother 5, a normal thing for a multi-show franchise to
+--      record). Once the legacy `format`-less shape is gone those two rows are
+--      genuinely indistinguishable to every derivation here, so a rebuild
+--      would collapse them into one. From that moment this file is ONE-SHOT
+--      and will refuse to run at all, including against a restored backup.
+--      There is no loss in that: if you hit it, the database is already in the
+--      target shape and does not need this migration.
+--      Constraint: `rerun_would_collapse_two_shows_rows`.
+--
+--   2. TEMPORARY and recoverable — two shows AIRING the same season number at
+--      the same time, with `live_season` rows that cannot be attributed to
+--      either (see the live_season derivation below). Finish or renumber one
+--      of the two seasons and re-run.
+--      Constraint: `two_shows_airing_one_season_number_live_rows_unattributable`.
 --
 -- ─────────────────────────────────────────────────────────────────────────
 -- HOW `format` IS RECOVERED ON A RE-RUN, AND WHY IT IS NOT `COALESCE(format, …)`
@@ -80,10 +85,10 @@
 --                 Drama — the exact silent relabel this file is meant to
 --                 prevent, in the one table named "live". `seasons` really
 --                 does carry the column (bb_schema.sql), and a live season has
---                 a row there from the day it is created. The appearance-based
---                 derivation is kept only as a second fallback, for the case
---                 where two shows already share the season number and the
---                 `seasons` lookup is therefore ambiguous.
+--                 a row there from the day it is created. When two shows share
+--                 the number the `seasons` lookup is ambiguous, so it falls
+--                 through to the player's own appearance, and only then to a
+--                 last-resort "which of them is unfinished" heuristic.
 --
 -- `appearances` is therefore rebuilt FIRST (bonds read it), and `seasons`
 -- before `live_season`. Every one of these SELECTs compiles on a pristine
@@ -191,6 +196,38 @@ INSERT INTO ms_rerun_guard (n)
   WHERE EXISTS (SELECT 1 FROM appearances
                  GROUP BY player_id, season_number HAVING COUNT(*) > 1);
 DROP TABLE ms_rerun_guard;
+
+-- ── second re-run guard: two shows airing the same season number ──────
+-- The live_season derivation below resolves in three steps — the one show
+-- holding that season number, then the player's appearance, then the one show
+-- whose season of that number is unfinished. Two shows AIRING the same number
+-- at the same time defeats all three at once: two seasons rows, two of them
+-- not Complete, and neither season has any appearances yet because neither has
+-- ended. Every affected row would silently collapse to 'total-drama' (or abort
+-- on the new live_season primary key, which is worse for being cryptic).
+--
+-- So it is refused here instead, by name, before anything is dropped. This is
+-- recoverable: finish or renumber one of the two seasons and re-run.
+-- Deliberately NOT guarded: a live_season row whose season_number has no
+-- `seasons` row at all. Nothing is contending for it, so the 'total-drama'
+-- default relabels nobody.
+DROP TABLE IF EXISTS ms_live_guard;
+CREATE TABLE ms_live_guard (
+  n INTEGER,
+  CONSTRAINT two_shows_airing_one_season_number_live_rows_unattributable CHECK (n = 0)
+);
+INSERT INTO ms_live_guard (n)
+  SELECT 1 FROM live_season l
+   WHERE (SELECT COUNT(*) FROM seasons s
+           WHERE s.season_number = l.season_number) > 1
+     AND (SELECT COUNT(*) FROM seasons s
+           WHERE s.season_number = l.season_number
+             AND COALESCE(s.status,'') <> 'Complete') <> 1
+     AND NOT EXISTS (SELECT 1 FROM appearances a
+                      WHERE a.player_id = l.player_id
+                        AND a.season_number = l.season_number)
+   LIMIT 1;
+DROP TABLE ms_live_guard;
 
 -- ── appearances: shared core only ─────────────────────────────────────
 -- Rebuilt FIRST, because seasons/bonds/live_season all derive their format
@@ -311,12 +348,24 @@ ALTER TABLE seasons_new RENAME TO seasons;
 -- of a live Big Brother season to Total Drama. `seasons` carries the column
 -- (bb_schema.sql) and has a row for a live season from the day it is created.
 --
--- The `seasons` lookup is only trusted when it is unambiguous. Three steps, in
--- order: the one show holding that season number; failing that, the one show
--- whose season of that number is not yet Complete (a live_season row tracks an
--- airing season by definition, so a finished Total Drama 14 is not the season
--- this row belongs to); failing that, the player's appearance; then the
--- default.
+-- Resolution order, strongest evidence first:
+--   1. the `seasons` row for that number, when exactly one show holds it —
+--      direct, recorded fact;
+--   2. the player's own `appearances` row — per-player and deterministic. This
+--      sits ABOVE the status heuristic on purpose: a STALE live_season row
+--      left behind by a COMPLETED Total Drama 14 that now sits beside a live
+--      Big Brother 14 is correctly read as Total Drama here, whereas the
+--      heuristic below would wrongly hand it to whichever season is airing;
+--   3. last resort — the one show whose season of that number is not yet
+--      Complete. A live_season row tracks an airing season by definition, so
+--      when nothing above resolved (a genuinely live season has no appearances
+--      at all) this is the best remaining signal. `status` is unenforced free
+--      text, which is why it ranks last;
+--   4. 'total-drama'.
+--
+-- The case where all of 1-3 fail because TWO shows are airing that number
+-- simultaneously never reaches step 4: it is refused by the second re-run
+-- guard near the top of this file.
 DROP TABLE IF EXISTS live_season_new;
 CREATE TABLE live_season_new (
   format         TEXT    NOT NULL DEFAULT 'total-drama',
@@ -338,16 +387,17 @@ INSERT INTO live_season_new
                     WHERE s.season_number = l.season_number
                       AND (SELECT COUNT(*) FROM seasons s2
                             WHERE s2.season_number = l.season_number) = 1),
+                  (SELECT a.format FROM appearances a
+                    WHERE a.player_id = l.player_id
+                      AND a.season_number = l.season_number
+                    LIMIT 1),
                   (SELECT s.format FROM seasons s
                     WHERE s.season_number = l.season_number
                       AND COALESCE(s.status,'') <> 'Complete'
                       AND (SELECT COUNT(*) FROM seasons s2
                             WHERE s2.season_number = l.season_number
                               AND COALESCE(s2.status,'') <> 'Complete') = 1),
-                  (SELECT a.format FROM appearances a
-                    WHERE a.player_id = l.player_id
-                      AND a.season_number = l.season_number
-                    LIMIT 1), 'total-drama'),
+                  'total-drama'),
          l.season_number, l.player_name, l.player_id, l.status, l.exit_episode,
          l.immunity_wins, l.reward_wins, l.challenge_wins, l.votes_received
   FROM live_season l;

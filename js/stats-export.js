@@ -2,6 +2,7 @@
 // stats-export.js — Per-player data extraction for end-of-season export
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from './core.js';
+import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonId, DEFAULT_FORMAT } from './shows.js';
@@ -2108,8 +2109,16 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
  * Returns the filled document, or the template untouched when there is nothing
  * for the worker to read.
  */
-async function _fillNarratives(template, episodes, workerUrl) {
-  if (!episodes.some(e => e.summary)) return template;
+async function _fillNarratives(template, episodes, workerUrl, onStatus) {
+  // Silence here reads exactly like success: the season comes back with every
+  // narrative field still saying [AI_FILL] and nothing anywhere says the worker
+  // was never called. Say so.
+  if (!episodes.some(e => e.summary)) {
+    const msg = 'No episode text to write from — narratives left unfilled.';
+    console.warn(`${msg} (${episodes.length} episode(s), none with a summary)`);
+    onStatus?.(msg);
+    return template;
+  }
 
   const response = await fetch(workerUrl, {
     method: 'POST',
@@ -2206,7 +2215,7 @@ export async function exportAndFillNarratives(onStatus) {
     summary: ep.summaryText || ''
   }));
 
-  const finalSeasonData = await _fillNarratives(template, episodes, workerUrl);
+  const finalSeasonData = await _fillNarratives(template, episodes, workerUrl, _status);
 
   // Guarantee a Fan Favorite award so the awards section is never blank. Prefer
   // an editorial pick already present in the awards; otherwise fall back to the
@@ -2391,14 +2400,31 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
   if (!workerUrl) return;
 
   _status('Calling AI Worker...');
-  const episodes = (gs.episodeHistory || []).map((ep, i) => ({
+  let episodes = (gs.episodeHistory || []).map((ep, i) => ({
     episode: i + 1,
     summary: ep.summaryText || '',
   }));
 
+  // The week engine is the season's real record; gs.episodeHistory is written by
+  // the PLAYED path only. A house simulated straight through, or one restored
+  // from a save that did not carry the transcripts, leaves the history empty or
+  // textless — and the export would then hand the worker a stack of blank
+  // summaries and get [AI_FILL] back with nothing to explain it. The weeks can
+  // always be re-narrated from what they recorded.
+  if (!episodes.some(e => e.summary) && (gs.bb?.weeks || []).length) {
+    episodes = gs.bb.weeks.map((w, i) => {
+      let summary = '';
+      try { summary = summariseWeek(w) || ''; } catch { summary = ''; }
+      return { episode: w?.num || i + 1, summary };
+    });
+    if (episodes.some(e => e.summary)) {
+      _status('Rebuilding the season transcript from the weeks…');
+    }
+  }
+
   let finalSeasonData;
   try {
-    finalSeasonData = await _fillNarratives(template, episodes, workerUrl);
+    finalSeasonData = await _fillNarratives(template, episodes, workerUrl, _status);
   } catch (err) {
     // A missing narrative is a worse export, not a lost season.
     console.warn('Narrative fill failed, publishing the raw season:', err);

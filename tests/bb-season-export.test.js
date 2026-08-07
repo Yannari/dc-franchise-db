@@ -106,6 +106,30 @@ describe('pressing the export button', () => {
     expect(status.join(' | ')).toMatch(/Download-only/);
   });
 
+  it('sends the worker something to write from, even with no episode history', async () => {
+    // What produced a season of [AI_FILL] with no error anywhere: the export
+    // reads gs.episodeHistory, which only the PLAYED path writes. A house that
+    // was simulated straight through — or restored from a save without the
+    // transcripts — handed the worker a stack of blank summaries, so the fill
+    // was skipped in silence and the season came back with every narrative
+    // field still a placeholder.
+    gs.episodeHistory = [];              // the empty-history case, exactly
+    const sent = [];
+    globalThis.fetch = vi.fn((url, opts) => {
+      try { sent.push(JSON.parse(opts.body)); } catch { /* not the AI call */ }
+      return Promise.reject(new Error('offline'));
+    });
+
+    await exportAndFillBigBrotherSeason(() => {});
+    vi.advanceTimersByTime(2000);
+
+    const call = sent.find(b => b.mode === 'narrative-fill');
+    expect(call, 'the worker was never called at all').toBeTruthy();
+    expect(call.format, 'the worker was not told which show this is').toBe('big-brother');
+    const withText = call.episodes.filter(e => e.summary);
+    expect(withText.length, 'every episode was sent blank').toBeGreaterThan(0);
+  });
+
   it('survives the AI worker being unreachable', async () => {
     // Already the case above — fetch rejects — but stated on its own, because a
     // failed narrative call must cost the prose and not the season.

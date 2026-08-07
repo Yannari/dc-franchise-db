@@ -62,7 +62,8 @@ import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
-import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted, saboteurState } from './saboteur.js';
+import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
+  announceSaboteur, saboteurState } from './saboteur.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1098,20 +1099,6 @@ export function simulateBBWeek(options = {}) {
   // you have watched it.
   try { week.blocReads = observeBlocs({ house, rng }); } catch { week.blocReads = []; }
 
-  // ── the second game, if one is running ──
-  //
-  // The bank date is checked before the week starts rather than during it: the
-  // reveal changes who this house is willing to sit next to, and a house that
-  // finds out on eviction night has already made every decision of the week
-  // without knowing.
-  try {
-    const banked = checkSaboteurBank(week);
-    if (banked) week.acts.push(banked);
-    // And this week's job, briefed before anything happens — the audience is
-    // told what is coming and the house is not, which is the whole pleasure.
-    const brief = offerSaboteurMission(week, { rng });
-    if (brief) week.acts.push(brief);
-  } catch { /* the twist ends quietly rather than ending the week */ }
   // A fresh week is nobody's yet.
   setSpotlight({ hoh: null, nominees: [], vetoWinner: null, vetoPlayers: [] });
 
@@ -1145,6 +1132,24 @@ export function simulateBBWeek(options = {}) {
   // the pre-contract twists (instant/double eviction, have-nots) keep their
   // existing paths and are merely recorded here.
   week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
+
+  // ── the second game, if one is running ──
+  //
+  // After the twist state resolves, because night one's announcement is pushed
+  // onto that list and drawn by the same machinery as every other rule the
+  // house is handed. The bank date is checked before the week rather than
+  // during it: the reveal changes who this house is willing to sit next to, and
+  // a house that finds out on eviction night has already made every decision of
+  // the week without knowing.
+  try {
+    announceSaboteur(week);
+    const banked = checkSaboteurBank(week);
+    if (banked) week.acts.push(banked);
+    // And this week's job, briefed before anything happens — the audience is
+    // told what is coming and the house is not, which is the whole pleasure.
+    const brief = offerSaboteurMission(week, { rng });
+    if (brief) week.acts.push(brief);
+  } catch { /* the twist ends quietly rather than ending the week */ }
   // The Invisible HOH (BBCAN9): the competition runs, the result is sealed,
   // and only the winner knows. Everything the engine writes on the house's
   // behalf this week has to pass one test — could the house actually know

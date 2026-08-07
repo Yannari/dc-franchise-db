@@ -67,6 +67,29 @@ describe('the twist itself', () => {
     expect(contract.acquisition.secrecy).toBe('holder-secret');
   });
 
+  it('tells the house on night one that it exists, and never who', () => {
+    // From the wiki's press release: "Upon moving into the house on premiere
+    // night, Houseguests will discover that one of them is not really there to
+    // win the game." The house knowing the twist EXISTS is what gives the
+    // paranoia somewhere to go — without it a sabotaged house just thinks it is
+    // having bad luck, and nobody is ever suspected of anything.
+    //
+    // The announcement was written into the contract when this shipped and
+    // nothing read it: `resolveWeekTwistState` builds its list from the WEEK's
+    // twists, and a season twist is never one of those.
+    house({ bbSaboteur: 'random', bbSaboteurBankWeek: 6 });
+    const ep = withSeededRandom(140, () => simulateBBEpisode());
+    const ann = (ep.acts || []).find(a => a.type === 'twist-announcement');
+    expect(ann, 'the house was never told a saboteur exists').toBeTruthy();
+    expect((ann.announced || []).map(a => a.name)).toContain('The Saboteur');
+    // And it is announced once, not every week.
+    const two = withSeededRandom(151, () => simulateBBEpisode());
+    expect((two.acts || []).some(a => a.type === 'twist-announcement'
+      && (a.announced || []).some(x => x.name === 'The Saboteur'))).toBe(false);
+    // The name is never in it.
+    expect(JSON.stringify(ann)).not.toContain(saboteurState().player + ' is the');
+  });
+
   it('casts somebody, and not always the same somebody', () => {
     const picked = new Set();
     for (let i = 0; i < 30; i++) {

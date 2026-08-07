@@ -49,6 +49,7 @@ import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
+import { BB_TWIST_CONTRACTS } from './twist-contract.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
@@ -129,6 +130,37 @@ function seat(picked, bankWeek) {
     applause: 0,
   };
   return gs.bb.saboteur;
+}
+
+/**
+ * Night one: the house is told what it is living in.
+ *
+ * The wiki is unambiguous about this — "upon moving into the house on premiere
+ * night, Houseguests will discover that one of them is not really there to win
+ * the game, but rather to sabotage their fellow players." The house knows the
+ * twist EXISTS from the first night and never learns who holds it, which is
+ * what `holder-secret` means in the contract and the whole reason the paranoia
+ * has anywhere to go.
+ *
+ * The announcement was written into the contract when this shipped and nothing
+ * read it: `resolveWeekTwistState` builds its announcement list from the week's
+ * scheduled twists, and a season twist is by definition not one of those. So it
+ * is pushed onto the week's own list here, where the existing announcement
+ * machinery — the wall, the room going quiet, the first person to make a joke
+ * about it — picks it up like any other rule the house is handed.
+ */
+export function announceSaboteur(week) {
+  const state = saboteurState();
+  if (!state || state.announced) return false;
+  const contract = BB_TWIST_CONTRACTS['bb-saboteur'];
+  if (!contract?.announcement || !week?.twistState) return false;
+  week.twistState.announcements = [
+    { twist: 'bb-saboteur', ...contract.announcement },
+    ...(week.twistState.announcements || []),
+  ];
+  state.announced = true;
+  state.announcedWeek = Number(week?.num) || 1;
+  return true;
 }
 
 // ── the missions ────────────────────────────────────────────────────────

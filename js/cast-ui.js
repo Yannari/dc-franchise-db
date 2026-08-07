@@ -875,6 +875,7 @@ export function saveConfig() {
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     bbSaboteur: g('cfg-bb-saboteur')?.value || 'off',
+    bbSaboteurPlayer: seasonConfig.bbSaboteurPlayer || '',
     bbSaboteurBankWeek: Number(g('cfg-bb-saboteur-bank')?.value) || 5,
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
@@ -1014,6 +1015,7 @@ export function renderConfig() {
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
   set('cfg-bb-saboteur', seasonConfig.bbSaboteur || 'off');
+  if (typeof updateSaboteurUI === 'function') updateSaboteurUI();
   set('cfg-bb-saboteur-bank', seasonConfig.bbSaboteurBankWeek || 5);
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');

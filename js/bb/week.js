@@ -62,7 +62,7 @@ import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
-import { runSaboteurWeek, checkSaboteurBank, saboteurEvicted, saboteurState } from './saboteur.js';
+import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted, saboteurState } from './saboteur.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1107,6 +1107,10 @@ export function simulateBBWeek(options = {}) {
   try {
     const banked = checkSaboteurBank(week);
     if (banked) week.acts.push(banked);
+    // And this week's job, briefed before anything happens — the audience is
+    // told what is coming and the house is not, which is the whole pleasure.
+    const brief = offerSaboteurMission(week, { rng });
+    if (brief) week.acts.push(brief);
   } catch { /* the twist ends quietly rather than ending the week */ }
   // A fresh week is nobody's yet.
   setSpotlight({ hoh: null, nominees: [], vetoWinner: null, vetoPlayers: [] });
@@ -3770,7 +3774,7 @@ export function simulateBBWeek(options = {}) {
   // decided by the vote yet, so a mission that breaks somebody's campaign
   // breaks it while campaigning still matters.
   try {
-    const sabAct = runSaboteurWeek(week, { rng });
+    const sabAct = resolveSaboteurMission(week, { rng });
     if (sabAct) week.acts.push(sabAct);
   } catch { /* the house has a normal week */ }
 

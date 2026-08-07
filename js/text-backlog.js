@@ -4448,10 +4448,22 @@ export function generateBBSummaryText(ep) {
       // which is the format: the whole pleasure of a saboteur is watching a
       // room convict the wrong person while you know better. So it reaches the
       // page in full, including the names the house got wrong.
-      case 'saboteur': {
-        sec('THE SABOTEUR');
-        ln(`  Week ${act.week} — the mission: ${act.mission.name}.`);
-        ln(`  "${act.mission.brief}"  ($${(act.mission.pay || 0).toLocaleString()})`);
+      case 'saboteur-brief': {
+        sec('THE SABOTEUR — THE JOB');
+        ln(`  Week ${act.week}. The audience has written this week's mission.`);
+        ln('');
+        ln(`  ${act.mission.name.toUpperCase()}  ($${(act.mission.pay || 0).toLocaleString()})`);
+        ln(`  "${act.mission.brief}"`);
+        ln('');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('');
+        ln(`  ${act.accepted ? 'Taken.' : 'Turned down.'}  Bank date: week ${act.bankWeek}.`);
+        break;
+      }
+
+      case 'saboteur-debrief': {
+        sec('THE SABOTEUR — DID IT WORK');
+        ln(`  ${act.mission.name} — ${act.worked ? 'it comes off.' : 'it does not come off.'}`);
         ln('');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));
         if ((act.notices || []).length) {
@@ -4460,8 +4472,9 @@ export function generateBBSummaryText(ep) {
           act.notices.forEach(n => ln(`    ${n.observer} → ${n.named}${n.correct ? '' : '   (wrong)'}`));
         }
         ln('');
-        ln(`  Banked so far: $${(act.banked || 0).toLocaleString()}. `
-          + `Bank date: week ${act.bankWeek}.`);
+        ln(`  Paid this week: $${(act.paid || 0).toLocaleString()}. `
+          + `Banked: $${(act.banked || 0).toLocaleString()}. `
+          + `The audience rated it ${act.applause > 0 ? '+' : ''}${act.applause}.`);
         break;
       }
 
@@ -4475,8 +4488,8 @@ export function generateBBSummaryText(ep) {
         }
         ln('');
         ln(act.evicted
-          ? `  ${act.missions} job${act.missions === 1 ? '' : 's'} done, $${(act.lost || 0).toLocaleString()} lost at the door.`
-          : `  ${act.missions} job${act.missions === 1 ? '' : 's'} done, $${(act.banked || 0).toLocaleString()} kept.`);
+          ? `  ${act.missions} job${act.missions === 1 ? '' : 's'} landed, $${(act.lost || 0).toLocaleString()} lost at the door.`
+          : `  ${act.missions} job${act.missions === 1 ? '' : 's'} landed. The audience paid $${(act.banked || 0).toLocaleString()}.`);
         break;
       }
 

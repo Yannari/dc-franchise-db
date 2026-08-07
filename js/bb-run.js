@@ -712,6 +712,8 @@ export function simulateBBEpisode() {
       installBBSaboteur(house, {
         bankWeek: Number(seasonConfig.bbSaboteurBankWeek) || 5,
         rng: Math.random,
+        // 'choose' means the user cast it themselves.
+        pick: seasonConfig.bbSaboteur === 'choose' ? (seasonConfig.bbSaboteurPlayer || null) : null,
       });
     } catch { /* the season plays without one */ }
   }

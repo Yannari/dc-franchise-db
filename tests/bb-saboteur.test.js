@@ -10,8 +10,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
-import { installBBSaboteur, runSaboteurWeek, checkSaboteurBank, saboteurEvicted,
-  saboteurState, isSaboteur } from '../js/bb/saboteur.js';
+import { installBBSaboteur, offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank,
+  saboteurEvicted, saboteurState, isSaboteur, audiencePayout } from '../js/bb/saboteur.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
@@ -37,6 +37,14 @@ function house(config = {}) {
     bbHaveNots: 'off', bbSafetyMode: 'off', romance: 'disabled', ...config });
   seasonConfig.twistSchedule = [];
   gs.bb = { weeks: [], stats: {} };
+}
+
+/** Brief and debrief in one call, the way a week runs them. */
+function playWeek(over = {}, rng = Math.random) {
+  const week = aWeek(over);
+  const brief = offerSaboteurMission(week, { rng });
+  const debrief = resolveSaboteurMission(week, { rng });
+  return { week, brief, debrief };
 }
 
 const aWeek = (over = {}) => ({
@@ -69,6 +77,16 @@ describe('the twist itself', () => {
     expect(picked.size, 'the same houseguest every season is not casting').toBeGreaterThan(3);
   });
 
+  it('lets a user cast it by hand', () => {
+    house();
+    const state = installBBSaboteur(NAMES, { rng: Math.random, pick: 'K' });
+    expect(state.player).toBe('K');
+    // A name that is not in the house is ignored rather than seated.
+    house();
+    const other = installBBSaboteur(NAMES, { rng: Math.random, pick: 'Nobody' });
+    expect(NAMES).toContain(other.player);
+  });
+
   it('refuses to run in a house too small to hide anybody in', () => {
     expect(installBBSaboteur(['A', 'B', 'C'], { rng: Math.random })).toBeNull();
   });
@@ -76,24 +94,48 @@ describe('the twist itself', () => {
 
 describe('a mission', () => {
   it('is offered, taken or refused, and pays only when taken', () => {
+    // Eighty rather than forty: at forty this went red about one run in five
+    // purely on the acceptance roll, and a guard that fails at random teaches
+    // people to re-run it rather than read it.
     let paid = 0, refused = 0;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 80; i++) {
       house();
       installBBSaboteur(NAMES, { rng: Math.random });
-      const act = runSaboteurWeek(aWeek(), { rng: Math.random });
-      if (!act) continue;
-      expect(act.mission.name.length).toBeGreaterThan(3);
-      expect(act.beats.length).toBeGreaterThan(0);
-      for (const b of act.beats) {
+      // Week two, not week one: the first job of a season is always taken (a
+      // saboteur who is handed the card on night one and passes is a twist that
+      // has not started), so week one can never exercise the refusal branch.
+      playWeek({ num: 2 });
+      const { brief, debrief } = playWeek({ num: 3 });
+      if (!brief) continue;
+      expect(brief.mission.name.length).toBeGreaterThan(3);
+      expect(brief.beats.length).toBeGreaterThan(0);
+      // The broadcast is a weekly fixture, taken or not.
+      expect(brief.taunt.length).toBeGreaterThan(20);
+      for (const b of [...brief.beats, ...(debrief?.beats || [])]) {
         expect(b.text).not.toMatch(/undefined|NaN|\[object/);
         expect(b.badgeText).toBeTruthy();
       }
-      if (act.accepted) { paid++; expect(act.banked).toBe(act.mission.pay); }
-      else { refused++; expect(act.banked).toBe(0); }
+      if (brief.accepted) {
+        paid++;
+        expect(debrief, 'a job was taken and never resolved').toBeTruthy();
+        // Paid only when it actually came off.
+        expect(debrief.paid).toBe(debrief.worked ? debrief.mission.pay : 0);
+      } else {
+        refused++;
+        expect(debrief).toBeNull();
+      }
     }
     // Both branches have to be reachable, or one of them is dead code.
     expect(paid).toBeGreaterThan(3);
     expect(refused).toBeGreaterThan(3);
+  });
+
+  it('always takes the first job of the season', () => {
+    for (let i = 0; i < 20; i++) {
+      house();
+      installBBSaboteur(NAMES, { rng: Math.random });
+      expect(playWeek({ num: 1 }).brief.accepted).toBe(true);
+    }
   });
 
   it('never runs the same job two weeks in a row', () => {
@@ -101,8 +143,8 @@ describe('a mission', () => {
     installBBSaboteur(NAMES, { rng: Math.random });
     const seen = [];
     for (let w = 2; w < 8; w++) {
-      const act = runSaboteurWeek(aWeek({ num: w }), { rng: Math.random });
-      if (act) seen.push(act.mission.id);
+      const { brief } = playWeek({ num: w });
+      if (brief) seen.push(brief.mission.id);
     }
     for (let i = 1; i < seen.length; i++) expect(seen[i]).not.toBe(seen[i - 1]);
   });
@@ -112,8 +154,8 @@ describe('a mission', () => {
     for (let i = 0; i < 80; i++) {
       house();
       installBBSaboteur(NAMES, { rng: Math.random });
-      const act = runSaboteurWeek(aWeek(), { rng: Math.random });
-      for (const n of act?.notices || []) {
+      const { debrief } = playWeek();
+      for (const n of debrief?.notices || []) {
         total++;
         n.correct ? right++ : wrong++;
       }
@@ -128,12 +170,92 @@ describe('a mission', () => {
   });
 });
 
+describe('what the audience is paying for', () => {
+  it('pays in popularity, not just in money nobody in the house can spend', () => {
+    // The bank is a number on a card the game never reads. Applause is the
+    // currency that exists inside the season, so a job that lands has to move
+    // it — otherwise the whole twist is invisible to everything else.
+    let moved = 0;
+    for (let i = 0; i < 40; i++) {
+      house();
+      installBBSaboteur(NAMES, { rng: Math.random });
+      const sab = saboteurState().player;
+      gs.popularity = {};
+      const { debrief } = playWeek();
+      if (debrief?.worked && (gs.popularity[sab] || 0) > 0) moved++;
+    }
+    expect(moved, 'a season of sabotage never once reached the audience').toBeGreaterThan(3);
+  });
+
+  it('can decide the whole thing was worth nothing', () => {
+    house();
+    installBBSaboteur(NAMES, { rng: Math.random });
+    const state = saboteurState();
+    // Jobs done, nobody entertained.
+    state.missions = [{ accepted: true, worked: true }, { accepted: true, worked: true }];
+    state.applause = 0.2;
+    expect(audiencePayout(state)).toBe(0);
+    // A season people enjoyed pays the lot.
+    state.applause = 4;
+    expect(audiencePayout(state)).toBe(state.prize);
+    // And nothing at all pays nothing, whatever the applause.
+    state.missions = [];
+    expect(audiencePayout(state)).toBe(0);
+  });
+});
+
+describe("rigging somebody else's competition", () => {
+  it('is offered against a rival, and never against a Block Buster', () => {
+    // The user's rule, and the right one: a houseguest playing the Block Buster
+    // is playing to get off the block. Asking them to lose it on purpose is
+    // asking them to hand over their season for eight thousand dollars — so the
+    // mission that touches a competition somebody else is in is `rig`, and the
+    // one that touches their own is `throw`, gated on having nothing at stake.
+    //
+    // Asserted on OFFERS rather than completions. Rigging lands about six times
+    // in a hundred weeks once acceptance and difficulty are applied, which is a
+    // sound rate for a hard job and far too noisy a signal for a test.
+    let offered = 0, completed = 0;
+    for (let i = 0; i < 150; i++) {
+      house();
+      installBBSaboteur(NAMES, { rng: Math.random });
+      const sab = saboteurState().player;
+      const { brief, debrief } = playWeek({
+        vetoPlayers: [...NAMES].slice(0, 6),
+        nominees: [], finalNominees: ['B', 'C'],
+      });
+      if (brief?.mission.id !== 'rig') continue;
+      offered++;
+      if (!debrief?.worked) continue;
+      completed++;
+      // Always somebody else, and somebody who was actually in that yard.
+      expect(debrief.result.target).not.toBe(sab);
+      expect(NAMES.slice(0, 6)).toContain(debrief.result.target);
+    }
+    expect(offered, 'the competition was never a target').toBeGreaterThan(10);
+    expect(completed, 'rigging a competition never once worked').toBeGreaterThan(0);
+  });
+
+  it('will not ask somebody on the block to throw the comp that saves them', () => {
+    // `throw` is the mission that costs the saboteur something real, so it is
+    // gated on them having nothing at stake in it.
+    for (let i = 0; i < 40; i++) {
+      house();
+      installBBSaboteur(NAMES, { rng: Math.random });
+      const sab = saboteurState().player;
+      const { brief } = playWeek({ nominees: [sab, 'B'], finalNominees: [sab, 'B'],
+        vetoPlayers: [sab, 'B', 'C', 'D', 'E', 'F'] });
+      if (brief) expect(brief.mission.id).not.toBe('throw');
+    }
+  });
+});
+
 describe('the two endings', () => {
   it('banks at the bank date, reveals the name, and turns them back into a houseguest', () => {
     house();
     installBBSaboteur(NAMES, { bankWeek: 3, rng: Math.random });
     const sab = saboteurState().player;
-    runSaboteurWeek(aWeek({ num: 2 }), { rng: Math.random });
+    playWeek({ num: 2 });
     expect(checkSaboteurBank(aWeek({ num: 2 }))).toBeNull();   // not yet
 
     const reveal = checkSaboteurBank(aWeek({ num: 3 }));
@@ -142,7 +264,7 @@ describe('the two endings', () => {
     expect(saboteurState().survived).toBe(true);
     expect(saboteurState().revealed).toBe(true);
     // And the second game is over: no more missions, ever.
-    expect(runSaboteurWeek(aWeek({ num: 4 }), { rng: Math.random })).toBeNull();
+    expect(offerSaboteurMission(aWeek({ num: 4 }), { rng: Math.random })).toBeNull();
     expect(isSaboteur(sab)).toBe(true);   // still the person who did it
   });
 
@@ -152,8 +274,8 @@ describe('the two endings', () => {
     const sab = saboteurState().player;
     let banked = 0;
     for (let w = 2; w < 6; w++) {
-      const act = runSaboteurWeek(aWeek({ num: w }), { rng: Math.random });
-      if (act?.accepted) banked = act.banked;
+      const { debrief } = playWeek({ num: w });
+      if (debrief) banked = debrief.banked;
     }
     const out = saboteurEvicted(sab, aWeek({ num: 6 }));
     expect(out).toBeTruthy();
@@ -187,7 +309,7 @@ describe('a season with one running', () => {
       expect(screens.length, 'a saboteur act with no screen').toBeGreaterThan(0);
 
       for (const act of acts) {
-        if (act.type === 'saboteur') sawMission = true;
+        if (act.type === 'saboteur-brief') sawMission = true;
         if (act.type === 'saboteur-reveal') sawReveal = true;
         // The audience is shown all of it — that is the format. The house is
         // told none of it, which is what `secret` is for.

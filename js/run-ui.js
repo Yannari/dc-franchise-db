@@ -1138,6 +1138,45 @@ export function updateMoleUI() {
   }
 }
 
+/**
+ * The Saboteur's own sub-options, shown only when the twist is on.
+ *
+ * Same shape as the Mole's picker, because it is the same decision: a season
+ * twist you cannot point at a specific houseguest is a twist you cannot tell a
+ * story with, and the Mole has let a user cast it by hand since it shipped.
+ */
+export function updateSaboteurUI() {
+  const mode = document.getElementById('cfg-bb-saboteur')?.value || 'off';
+  const sub = document.getElementById('grp-bb-saboteur-sub');
+  const who = document.getElementById('grp-bb-saboteur-who');
+  if (sub) sub.style.display = mode === 'off' ? 'none' : 'block';
+  if (who) who.style.display = mode === 'choose' ? 'block' : 'none';
+  if (mode !== 'choose') return;
+
+  const container = document.getElementById('bb-saboteur-select');
+  if (!container || typeof players === 'undefined' || !players.length) return;
+  const chosen = seasonConfig.bbSaboteurPlayer || '';
+  container.innerHTML = players.map(p => {
+    const sel = chosen === p.name;
+    const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const init = (p.name || '?')[0].toUpperCase();
+    return `<div onclick="pickSaboteur('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#c9343c' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color .15s">
+        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter .15s,opacity .15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
+      </div>
+      <span style="font-size:9px;color:${sel ? '#c9343c' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
+    </div>`;
+  }).join('');
+}
+
+/** One saboteur, so picking a second one replaces the first. */
+export function pickSaboteur(name) {
+  seasonConfig.bbSaboteurPlayer = seasonConfig.bbSaboteurPlayer === name ? '' : name;
+  updateSaboteurUI();
+  if (typeof saveConfig === 'function') saveConfig();
+}
+
 export function toggleMolePlayer(name) {
   if (!seasonConfig.molePlayers) seasonConfig.molePlayers = [];
   const idx = seasonConfig.molePlayers.indexOf(name);

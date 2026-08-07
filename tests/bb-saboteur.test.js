@@ -11,7 +11,8 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { installBBSaboteur, offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank,
-  saboteurEvicted, saboteurState, isSaboteur, audiencePayout } from '../js/bb/saboteur.js';
+  saboteurEvicted, saboteurState, isSaboteur, audiencePayout,
+  runSaboteurAccusation } from '../js/bb/saboteur.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
@@ -270,6 +271,91 @@ describe("rigging somebody else's competition", () => {
         vetoPlayers: [sab, 'B', 'C', 'D', 'E', 'F'] });
       if (brief) expect(brief.mission.id).not.toBe('throw');
     }
+  });
+});
+
+describe('the house naming somebody', () => {
+  // BB12 had no call-out button — Annie was suspected and simply evicted. BB27
+  // added the formal version, and got it wrong 11-5. This is BB27's rule: one
+  // accusation, said out loud, and it ends the second game whichever way it goes.
+  const convince = (name, byWho) => {
+    const state = saboteurState();
+    state.suspicion[name] = byWho;
+  };
+
+  it('says nothing until the house is actually certain, and agrees with itself', () => {
+    house();
+    installBBSaboteur(NAMES, { rng: Math.random });
+    const sab = saboteurState().player;
+    const other = NAMES.find(n => n !== sab);
+    // One person with a hunch is a hunch.
+    convince(sab, { [other]: 2.5 });
+    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
+    // Enough conviction, but only one voice.
+    convince(sab, { [other]: 6 });
+    expect(runSaboteurAccusation(aWeek(), { rng: Math.random })).toBeNull();
+  });
+
+  it('ends the twist with nothing banked when it is right', () => {
+    house();
+    installBBSaboteur(NAMES, { rng: Math.random });
+    const state = saboteurState();
+    const sab = state.player;
+    state.banked = 12000;
+    state.missions = [{ accepted: true, worked: true }, { accepted: true, worked: true }];
+    const [a, b] = NAMES.filter(n => n !== sab);
+    convince(sab, { [a]: 2.2, [b]: 1.5 });
+
+    const out = runSaboteurAccusation(aWeek(), { rng: Math.random });
+    expect(out).toBeTruthy();
+    expect(out.correct).toBe(true);
+    expect(out.named).toBe(sab);
+    expect(out.lost).toBe(12000);
+    expect(saboteurState().banked).toBe(0);
+    expect(saboteurState().caught).toBe(true);
+    // And no more work, ever.
+    expect(offerSaboteurMission(aWeek({ num: 5 }), { rng: Math.random })).toBeNull();
+  });
+
+  it('takes the heat off the real one when it is wrong', () => {
+    house();
+    installBBSaboteur(NAMES, { rng: Math.random });
+    const state = saboteurState();
+    const sab = state.player;
+    const [a, b, innocent] = NAMES.filter(n => n !== sab);
+    // The house is loudly certain about somebody who did nothing, and quietly
+    // suspicious of the person who did.
+    convince(innocent, { [a]: 2.4, [b]: 1.8 });
+    convince(sab, { [a]: 1.2, [b]: 0.8 });
+    const before = getBond(a, innocent);
+
+    const out = runSaboteurAccusation(aWeek(), { rng: Math.random });
+    expect(out).toBeTruthy();
+    expect(out.correct).toBe(false);
+    expect(out.named).toBe(innocent);
+    expect(out.reallyIs).toBe(sab);
+    // The twist survives...
+    expect(saboteurState().caught).toBe(false);
+    // ...the innocent wears it...
+    expect(getBond(a, innocent)).toBeLessThanOrEqual(before);
+    // ...and the house stops looking at the person who actually did it.
+    const onSab = saboteurState().suspicion[sab];
+    expect(onSab[a]).toBeLessThan(1.2);
+    expect(onSab[b]).toBeLessThan(0.8);
+  });
+
+  it('only ever names somebody still in the house', () => {
+    house();
+    installBBSaboteur(NAMES, { rng: Math.random });
+    const state = saboteurState();
+    const sab = state.player;
+    const gone = NAMES.filter(n => n !== sab)[0];
+    convince(gone, { [NAMES.filter(n => n !== sab && n !== gone)[0]]: 4,
+      [NAMES.filter(n => n !== sab && n !== gone)[1]]: 3 });
+    // Everybody is certain about somebody who left in week one. Nobody stands
+    // up at eviction night to accuse a photograph on the wall.
+    const shrunk = NAMES.filter(n => n !== gone);
+    expect(runSaboteurAccusation(aWeek({ houseAtStart: shrunk }), { rng: Math.random })).toBeNull();
   });
 });
 

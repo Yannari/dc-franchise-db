@@ -20,7 +20,8 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
-import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
+import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
+  rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
@@ -20720,6 +20721,10 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       // The season-long twist. Two screens, and both of them are the audience's
       // alone — the house is never told any of this, which is the format.
+      case 'saboteur-accusation':
+        screens.push({ id: id('bb-saboteur-call'), label: act.correct ? 'Caught' : 'The Wrong Name',
+          html: rpBuildBBSaboteurAccusation(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       case 'saboteur-brief':
         screens.push({ id: id('bb-saboteur-brief'), label: 'The Job',
           html: rpBuildBBSaboteurBrief(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });

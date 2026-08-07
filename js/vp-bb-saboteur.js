@@ -52,7 +52,7 @@ const STYLE = `<style>
 .bbsab .sb-fee b{font-family:var(--font-display);font-size:26px;color:#1b1712}
 .bbsab .sb-fee span{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:1.6px;color:#8a7f6b}
 
-.bbsab .sb-beats{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.bbsab .sb-beats{position:relative;z-index:2;margin-top:16px;display:flex;flex-direction:column;gap:8px}
 .bbsab .sb-beat{padding:11px 13px;border-radius:8px;font-size:13px;line-height:1.62;color:#d6dde5;
   background:linear-gradient(180deg,rgba(22,16,18,.92),rgba(12,10,12,.95));
   border:1px solid rgba(255,255,255,.07);border-left:3px solid rgba(139,148,158,.4)}
@@ -103,12 +103,38 @@ const STYLE = `<style>
 .bbsab .sb-tv-screen{position:relative;padding:26px 20px;text-align:center;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 3px),
     radial-gradient(70% 100% at 50% 40%,rgba(201,52,60,.22),#08080b)}
-.bbsab .sb-tv-sil{width:64px;height:64px;margin:0 auto 12px;border-radius:50% 50% 44% 44%;
-  background:#040406;box-shadow:0 0 0 2px rgba(255,255,255,.07),0 0 26px rgba(201,52,60,.35)}
+.bbsab .sb-tv-sil{width:120px;height:96px;margin:0 auto 10px;display:block;filter:drop-shadow(0 0 22px rgba(201,52,60,.45))}
+.bbsab .sb-tv-static{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:screen;
+  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 1px,transparent 1px 2px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);
+  animation:sbStatic .18s steps(2) infinite}
+@keyframes sbStatic{0%{transform:translateY(0)}100%{transform:translateY(2px)}}
+.bbsab .sb-tv-roll{position:absolute;left:0;right:0;height:26px;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.07),transparent);
+  animation:sbRoll 5.5s linear infinite}
+@keyframes sbRoll{from{top:-30px}to{top:100%}}
 .bbsab .sb-tv-line{font-size:15px;line-height:1.65;color:#efe9dc;font-style:italic}
 .bbsab .sb-tv-tag{margin-top:12px;font-family:ui-monospace,Consolas,monospace;font-size:8px;letter-spacing:2.4px;
   color:#8b949e}
-.bbsab .sb-verdict{margin:14px 0 0;padding:13px 15px;border-radius:9px;font-size:13.5px;line-height:1.6}
+.bbsab .sb-accuse{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;
+  gap:20px;flex-wrap:wrap;margin-top:16px}
+.bbsab .sb-face{margin:0;text-align:center;width:150px}
+.bbsab .sb-face span{display:block;width:96px;height:96px;margin:0 auto;border-radius:12px;overflow:hidden;
+  border:2px solid rgba(255,255,255,.16)}
+.bbsab .sb-face span .bb-av{width:96px!important;height:96px!important;border-radius:9px}
+.bbsab .sb-face b{display:block;font-family:var(--font-display);font-size:19px;color:#fff;margin-top:8px}
+.bbsab .sb-face i{display:block;font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:8px;
+  letter-spacing:1.8px;color:#8b949e;margin-top:3px}
+.bbsab .sb-face.is-guilty span{border-color:var(--sb-red);box-shadow:0 0 30px rgba(201,52,60,.5)}
+.bbsab .sb-face.is-guilty i{color:var(--sb-red)}
+.bbsab .sb-face.is-innocent span{border-color:#8b949e;filter:grayscale(.5)}
+.bbsab .sb-arrow{text-align:center}
+.bbsab .sb-arrow span{display:block;font-size:34px;line-height:1}
+.bbsab .sb-arrow em{display:block;font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:9px;
+  letter-spacing:2px;margin-top:4px}
+.bbsab .sb-arrow.is-right{color:var(--sb-gold)}
+.bbsab .sb-arrow.is-wrong{color:#8b949e}
+.bbsab .sb-verdict{position:relative;z-index:2;margin:14px 0 0;padding:13px 15px;border-radius:9px;font-size:13.5px;line-height:1.6}
 .bbsab .sb-verdict.is-yes{background:rgba(201,52,60,.12);border:1px solid rgba(201,52,60,.45);color:#ffd0cc}
 .bbsab .sb-verdict.is-no{background:rgba(139,148,158,.10);border:1px solid rgba(139,148,158,.35);color:#c9d1d9}
 .bbsab .sb-verdict b{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;
@@ -123,6 +149,39 @@ const STYLE = `<style>
   color:#c9d1d9;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
 @media(prefers-reduced-motion:reduce){.bbsab *{animation:none!important}}
 </style>`;
+
+/**
+ * The figure on the television.
+ *
+ * A black circle in a dark box reads as an avatar that failed to load, which is
+ * exactly what it looked like. This is a head and shoulders behind the static,
+ * lit from behind so the edge catches — the wiki's description of it is
+ * "disguised behind static and appeared only as a silhouette", and the point is
+ * that the house can see there is a PERSON there and nothing else about them.
+ */
+const SILHOUETTE = `<svg class="sb-tv-sil" viewBox="0 0 120 96" role="img"
+  aria-label="A silhouette on the living-room television">
+  <defs>
+    <radialGradient id="sbGlow" cx="50%" cy="34%" r="62%">
+      <stop offset="0%" stop-color="#c9343c" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#c9343c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sbRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff8b84" stop-opacity=".9"/>
+      <stop offset="55%" stop-color="#c9343c" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#c9343c" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="60" cy="42" rx="52" ry="40" fill="url(#sbGlow)"/>
+  <g>
+    <path d="M60 96c0-22 12-32 26-36 6-2 9-5 9-9 0 0 3 45 3 45z" fill="#050508" opacity=".95"/>
+    <path d="M60 96c0-22-12-32-26-36-6-2-9-5-9-9 0 0-3 45-3 45z" fill="#050508" opacity=".95"/>
+    <path d="M25 96c0-26 15-38 35-38s35 12 35 38z" fill="#050508"/>
+    <ellipse cx="60" cy="34" rx="21" ry="25" fill="#050508"/>
+    <path d="M39 34a21 25 0 0 1 21-25v50a21 25 0 0 1-21-25z" fill="url(#sbRim)" opacity=".5"/>
+    <path d="M25 96c0-26 15-38 35-38v38z" fill="url(#sbRim)" opacity=".28"/>
+  </g>
+</svg>`;
 
 /**
  * A week of the second game.
@@ -212,6 +271,59 @@ export function rpBuildBBSaboteur(ep, act, u = {}) {
   </div>`;
 }
 
+/**
+ * THE CALL-OUT — a house that has stopped guessing and said a name.
+ *
+ * Two faces, and the whole screen is which way the arrow between them points.
+ * Right, and the second game is over. Wrong, and the person who has been doing
+ * it is standing four feet away watching somebody else take it — so the screen
+ * shows the viewer the real name at the bottom, which is the one thing nobody
+ * in that room will ever be told.
+ */
+export function rpBuildBBSaboteurAccusation(ep, act, u = {}) {
+  if (!act) return '';
+  const esc = typeof u.esc === 'function' ? u.esc : v => String(v ?? '');
+  const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
+
+  return `<div class="rp-page bbsab">${STYLE}
+    <div class="sb-bg"></div>
+    <div class="sb-wrap">
+      <div class="sb-head">
+        <div class="sb-eyebrow">WEEK ${esc(act.week)} &middot; ONE ATTEMPT, AND THEY TAKE IT</div>
+        <div class="sb-title">${act.correct ? 'CAUGHT' : 'THE WRONG NAME'}</div>
+        <div class="sb-sub">${act.correct
+          ? 'The house asked the right question of the right person, in front of everybody.'
+          : 'The house has never been more certain, and has never been more wrong.'}</div>
+      </div>
+
+      <div class="sb-accuse">
+        <figure class="sb-face"><span>${avatar(act.accuser, 96)}</span><b>${esc(act.accuser)}</b>
+          <i>SAYS IT OUT LOUD</i></figure>
+        <div class="sb-arrow ${act.correct ? 'is-right' : 'is-wrong'}">
+          <span>&rarr;</span><em>${act.correct ? 'DEAD ON' : 'WRONG'}</em>
+        </div>
+        <figure class="sb-face ${act.correct ? 'is-guilty' : 'is-innocent'}">
+          <span>${avatar(act.named, 96)}</span><b>${esc(act.named)}</b>
+          <i>${act.correct ? 'WAS THE SABOTEUR' : 'DID NOTHING'}</i></figure>
+      </div>
+
+      <div class="sb-beats" style="max-width:760px;margin:16px auto 0">
+        ${(act.beats || []).map(b => `<div class="sb-beat ${b.badgeClass === 'gold' ? 'is-seen'
+          : b.badgeClass === 'red' ? 'is-act' : ''}"><b>${esc(b.badgeText || '')}</b>${b.text}</div>`).join('')}
+      </div>
+
+      <div class="sb-verdict ${act.correct ? 'is-yes' : 'is-no'}" style="max-width:760px;margin:14px auto 0">
+        <b>${act.correct ? 'THE SECOND GAME ENDS HERE' : 'AND ONLY YOU KNOW'}</b>
+        ${act.correct
+          ? `${esc(act.missions)} job${act.missions === 1 ? '' : 's'} landed and not one of them will be paid for. `
+            + `$${Number(act.lost || 0).toLocaleString()}, gone in a sentence.`
+          : `It is <strong>${esc(act.reallyIs)}</strong>. It has been ${esc(act.reallyIs)} since night one, `
+            + `and this house has just used up the only accusation it had.`}
+      </div>
+    </div>
+  </div>`;
+}
+
 /** The end of it, either way. */
 export function rpBuildBBSaboteurReveal(ep, act, u = {}) {
   if (!act) return '';
@@ -274,7 +386,8 @@ export function rpBuildBBSaboteurBrief(ep, act, u = {}) {
 
       <div class="sb-tv">
         <div class="sb-tv-screen">
-          <div class="sb-tv-sil"></div>
+          <div class="sb-tv-static"></div><div class="sb-tv-roll"></div>
+          ${SILHOUETTE}
           <div class="sb-tv-line">${esc(act.taunt || '')}</div>
           <div class="sb-tv-tag">LIVING ROOM &middot; SOURCE UNKNOWN &middot; VOICE ALTERED</div>
         </div>

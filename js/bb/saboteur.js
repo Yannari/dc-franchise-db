@@ -45,7 +45,7 @@
 // the saboteur did and what the house believes about it; the week's own systems
 // carry the consequences, because a second opinion about how a house thinks is
 // how a season ends up with two of everything.
-import { gs, players } from '../core.js';
+import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
@@ -661,6 +661,128 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
     paid, applause, applauseTotal: state.applause,
     banked: state.banked, prize: state.prize, bankWeek: state.bankWeek,
     exposure: round2(saboteurExposure()), notices, beats,
+  };
+}
+
+/**
+ * THE CALL-OUT — the house names who it thinks it is.
+ *
+ * BB12 had no such button: Annie was suspected and the house simply evicted
+ * her, which is what the suspicion in this engine already produces. BB27 added
+ * the formal version — the house identified a name, and a correct one would
+ * have evicted the Accomplice on the spot. (They got it wrong, 11-5.)
+ *
+ * This is the BB27 rule, and it is what turns a house that is uneasy into a
+ * house that is hunting: once somebody is certain enough to say a name in front
+ * of everybody, the second game stops. Right, and it stops with nothing banked.
+ * Wrong, and it stops being looked at for a while — which is the outcome the
+ * saboteur wants most and cannot ask for.
+ *
+ * The name is NOT chosen to be correct. It is the name the house has actually
+ * accumulated the most conviction about, which after a season of missions is
+ * frequently somebody who has done nothing.
+ */
+export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
+  const state = saboteurState();
+  if (!state || state.survived || state.caught || state.revealed) return null;
+  const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean);
+  if (house.length < 5) return null;
+  const sab = state.player;
+
+  // Who the house is most sure about, and how sure. Only counts people who are
+  // still in it — a season's certainty about somebody evicted in week two is
+  // not an accusation anybody is going to stand up and make.
+  const scores = Object.entries(state.suspicion)
+    .map(([name, byWho]) => ({
+      name,
+      total: Object.values(byWho).reduce((sum, v) => sum + v, 0),
+      loudest: Object.entries(byWho).sort((a, b) => b[1] - a[1])[0],
+    }))
+    .filter(x => house.includes(x.name) && x.loudest && house.includes(x.loudest[0]))
+    .sort((a, b) => b.total - a.total);
+  const top = scores[0];
+  // Certainty has to be shared. One person with a hunch is a hunch; a name three
+  // people keep arriving at independently is the house making a decision.
+  if (!top || top.total < 3 || Object.keys(state.suspicion[top.name] || {}).length < 2) return null;
+
+  const accuser = top.loudest[0];
+  const named = top.name;
+  const correct = named === sab;
+  const p = P(accuser);
+  const np = P(named);
+  const beats = [{
+    text: `${accuser} stops the room. "I want to say this in front of everybody, because I am `
+      + `only going to get to say it once." ${p.Sub} ${p.sub === 'they' ? 'name' : 'names'} ${named}.`,
+    players: [accuser, named], badgeText: 'THE HOUSE NAMES SOMEBODY', badgeClass: 'red',
+  }];
+
+  if (correct) {
+    state.caught = true;
+    state.revealed = true;
+    const lost = state.banked;
+    state.banked = 0;
+    beats.push({
+      text: `The wall confirms it. ${named} has been the saboteur since night one, and everything `
+        + `${np.sub} earned doing it is gone in the time it takes ${accuser} to be told ${p.sub} `
+        + `${p.sub === 'they' ? 'were' : 'was'} right.`,
+      players: [named, accuser], badgeText: 'CAUGHT', badgeClass: 'gold',
+    });
+    // The whole house turns, and the person who called it gets the credit for
+    // the only piece of detective work anybody has done all season.
+    for (const n of house.filter(x => x !== named)) {
+      try { addBond(n, named, -2.4); } catch { /* nothing left to spend */ }
+      try {
+        rememberStrategy(n, named, 'was-the-saboteur', Number(week?.num) || 0, 3,
+          { format: 'big-brother', twist: 'bb-saboteur', caught: true });
+      } catch { /* the grudge stands without the memory */ }
+    }
+    if (seasonConfig?.popularityEnabled !== false) {
+      gs.popularity ||= {};
+      gs.popularity[accuser] = round2((gs.popularity[accuser] || 0) + 4);
+    }
+    return {
+      type: 'saboteur-accusation', week: Number(week?.num) || 0, secret: false,
+      accuser, named, correct: true, lost, conviction: round2(top.total),
+      missions: state.missions.filter(m => m.worked).length, beats,
+    };
+  }
+
+  // Wrong. The worst thing that can happen to a house is being certain and
+  // being wrong in public: the accused wears it, the accuser wears having said
+  // it, and the one person in the room who knows the answer says nothing.
+  beats.push({
+    text: `${named} says "it isn't me" into a room that has already decided otherwise. `
+      + `It is not ${named}. The only person who can prove that is standing four feet away, `
+      + `enjoying it more than anything else that has happened this season.`,
+    players: [named, sab], badgeText: 'IT IS NOT THEM', badgeClass: 'red',
+  }, {
+    text: `Nobody looks at anybody else for a while after that. An accusation is worth one attempt `
+      + `in this house, and ${accuser} has spent ${p.posAdj}.`,
+    players: [accuser], badgeText: 'ONE ATTEMPT, SPENT', badgeClass: 'grey',
+  });
+  for (const n of house.filter(x => x !== named && x !== accuser)) {
+    try { addBond(n, named, -0.9); } catch { /* fine */ }
+    try { addBond(n, accuser, -0.5); } catch { /* fine */ }
+  }
+  // And the heat comes off the real one. The house asked its question, got an
+  // answer it believes, and stops looking — which is worth more to the saboteur
+  // than any single week's pay.
+  const onThem = state.suspicion[sab];
+  if (onThem) {
+    for (const observer of Object.keys(onThem)) {
+      onThem[observer] = round2(onThem[observer] * 0.35);
+    }
+  }
+  state.misfires = (state.misfires || 0) + 1;
+  if (seasonConfig?.popularityEnabled !== false) {
+    gs.popularity ||= {};
+    gs.popularity[named] = round2((gs.popularity[named] || 0) + 2);
+    gs.popularity[accuser] = round2((gs.popularity[accuser] || 0) - 1.5);
+  }
+  return {
+    type: 'saboteur-accusation', week: Number(week?.num) || 0, secret: false,
+    accuser, named, correct: false, conviction: round2(top.total),
+    reallyIs: sab, beats,
   };
 }
 

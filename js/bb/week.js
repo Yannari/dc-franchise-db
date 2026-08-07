@@ -63,7 +63,7 @@ import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
-  announceSaboteur, saboteurState } from './saboteur.js';
+  announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -3781,6 +3781,11 @@ export function simulateBBWeek(options = {}) {
   try {
     const sabAct = resolveSaboteurMission(week, { rng });
     if (sabAct) week.acts.push(sabAct);
+    // And then, if the house has become certain about somebody, it says so —
+    // in front of everybody, once. This is the only thing that can end the
+    // second game early, and it ends it whether or not the name is right.
+    const called = runSaboteurAccusation(week, { rng });
+    if (called) week.acts.push(called);
   } catch { /* the house has a normal week */ }
 
   // Eviction act; HOH breaks a tie.

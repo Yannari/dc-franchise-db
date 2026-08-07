@@ -4448,6 +4448,20 @@ export function generateBBSummaryText(ep) {
       // which is the format: the whole pleasure of a saboteur is watching a
       // room convict the wrong person while you know better. So it reaches the
       // page in full, including the names the house got wrong.
+      case 'saboteur-accusation': {
+        sec(act.correct ? 'THE HOUSE NAMES THE SABOTEUR' : 'THE HOUSE NAMES THE WRONG PERSON');
+        ln(`  ${act.accuser} says it out loud, and says ${act.named}.`);
+        ln('');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('');
+        ln(act.correct
+          ? `  Right. The twist ends here, ${act.missions} job${act.missions === 1 ? '' : 's'} in, `
+            + `with $${(act.lost || 0).toLocaleString()} unpaid.`
+          : `  Wrong. It is ${act.reallyIs}, it has always been ${act.reallyIs}, and this house `
+            + `has just stopped looking.`);
+        break;
+      }
+
       case 'saboteur-brief': {
         sec('THE SABOTEUR — THE JOB');
         ln(`  Week ${act.week}. The audience has written this week's mission.`);

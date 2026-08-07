@@ -1177,6 +1177,39 @@ export function updateMoleUI() {
   }
 }
 
+/** The Twin Twist's sub-options — same shape as the Saboteur's and the Mole's. */
+export function updateTwinsUI() {
+  const mode = document.getElementById('cfg-bb-twins')?.value || 'off';
+  const sub = document.getElementById('grp-bb-twins-sub');
+  const who = document.getElementById('grp-bb-twins-who');
+  if (sub) sub.style.display = mode === 'off' ? 'none' : 'block';
+  if (who) who.style.display = mode === 'choose' ? 'block' : 'none';
+  if (mode !== 'choose') return;
+
+  const container = document.getElementById('bb-twins-select');
+  if (!container || typeof players === 'undefined' || !players.length) return;
+  const chosen = seasonConfig.bbTwinsPlayer || '';
+  container.innerHTML = players.map(p => {
+    const sel = chosen === p.name;
+    const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const init = (p.name || '?')[0].toUpperCase();
+    return `<div onclick="pickTwin('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#a371f7' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2)">
+        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
+      </div>
+      <span style="font-size:9px;color:${sel ? '#a371f7' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
+    </div>`;
+  }).join('');
+}
+
+/** One twin identity, so picking a second replaces the first. */
+export function pickTwin(name) {
+  seasonConfig.bbTwinsPlayer = seasonConfig.bbTwinsPlayer === name ? '' : name;
+  updateTwinsUI();
+  if (typeof saveConfig === 'function') saveConfig();
+}
+
 /**
  * The Saboteur's own sub-options, shown only when the twist is on.
  *

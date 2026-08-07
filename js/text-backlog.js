@@ -4467,6 +4467,41 @@ export function generateBBSummaryText(ep) {
       // which is the format: the whole pleasure of a saboteur is watching a
       // room convict the wrong person while you know better. So it reaches the
       // page in full, including the names the house got wrong.
+      // The twin twist. The house is never told any of this; the audience is
+      // told all of it, which is what the page is for.
+      case 'twin-week': {
+        sec('TWO OF THEM');
+        if (act.swap) ln(`  ${act.swap.text}`);
+        const tells = act.tells?.beats || [];
+        if (tells.length) {
+          ln('');
+          tells.forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        } else {
+          ln('  Nobody noticed a thing all week.');
+        }
+        if (act.exposed) {
+          ln('');
+          (act.exposed.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        }
+        ln('');
+        ln(`  How close the house is: ${Math.round((act.exposureLevel || 0) * 100)}%.`);
+        break;
+      }
+
+      case 'twin-entry': {
+        sec('BOTH OF THEM');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('');
+        ln(`  ${act.other} is a houseguest from tonight, with ${act.other}'s own stats and own vote.`);
+        break;
+      }
+
+      case 'twin-out': {
+        sec('THERE WERE TWO');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        break;
+      }
+
       case 'saboteur-accusation': {
         sec(act.correct ? 'THE HOUSE NAMES THE SABOTEUR' : 'THE HOUSE NAMES THE WRONG PERSON');
         ln(`  ${act.accuser} says it out loud, and says ${act.named}.`);

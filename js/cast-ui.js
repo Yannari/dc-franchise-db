@@ -875,6 +875,9 @@ export function saveConfig() {
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     bbSaboteur: g('cfg-bb-saboteur')?.value || 'off',
+    bbTwins: g('cfg-bb-twins')?.value || 'off',
+    bbTwinsPlayer: seasonConfig.bbTwinsPlayer || '',
+    bbTwinsEnterWeek: Number(g('cfg-bb-twins-week')?.value) || 5,
     bbSaboteurPlayer: seasonConfig.bbSaboteurPlayer || '',
     bbSaboteurBankWeek: Number(g('cfg-bb-saboteur-bank')?.value) || 5,
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
@@ -1014,6 +1017,9 @@ export function renderConfig() {
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
+  set('cfg-bb-twins', seasonConfig.bbTwins || 'off');
+  set('cfg-bb-twins-week', seasonConfig.bbTwinsEnterWeek || 5);
+  if (typeof updateTwinsUI === 'function') updateTwinsUI();
   set('cfg-bb-saboteur', seasonConfig.bbSaboteur || 'off');
   if (typeof updateSaboteurUI === 'function') updateSaboteurUI();
   set('cfg-bb-saboteur-bank', seasonConfig.bbSaboteurBankWeek || 5);

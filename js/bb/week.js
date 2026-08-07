@@ -65,6 +65,8 @@ import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
 import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-eviction.js';
+import { swapTwins, twinTells, twinExposure_check, checkTwinEntry, twinEvicted, twinState,
+  twinExposure as twinExposureLevel } from './twin-twist.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1142,6 +1144,36 @@ export function simulateBBWeek(options = {}) {
   // during it: the reveal changes who this house is willing to sit next to, and
   // a house that finds out on eviction night has already made every decision of
   // the week without knowing.
+  // ── the other season twist ──
+  //
+  // No announcement, because the house is never told: BB5 and BB17 both ran
+  // this with the room having to work it out. The swap happens first so the
+  // whole week — competitions, plans, threat reads — is played against whichever
+  // of them is actually in the building.
+  try {
+    const entered = checkTwinEntry(week);
+    if (entered) week.acts.push({ type: 'twin-entry', ...entered });
+    else {
+      const swap = swapTwins(week, { rng });
+      const tells = twinTells(week, { rng });
+      const exposed = twinExposure_check(week, { rng });
+      if (swap || tells || exposed) {
+        const tw = twinState();
+        week.acts.push({
+          type: 'twin-week', secret: true, week: week.num,
+          front: tw?.front || null, swap, tells,
+          exposed: exposed || null,
+          // The two stat lines and how close the room is, for the screen the
+          // house will never see.
+          twins: tw ? { other: tw.other, active: tw.active,
+            statsA: { ...tw.statsA }, statsB: { ...tw.statsB } } : null,
+          exposureLevel: twinExposureLevel(),
+          beats: [...(tells?.beats || []), ...(exposed?.beats || [])],
+        });
+      }
+    }
+  } catch { /* the house plays a normal week */ }
+
   try {
     announceSaboteur(week);
     const banked = checkSaboteurBank(week);
@@ -3957,6 +3989,10 @@ export function simulateBBWeek(options = {}) {
   try {
     const blown = saboteurEvicted(evicted, week);
     if (blown) (week._sabHeld ||= []).push(blown);
+  } catch { /* the eviction stands either way */ }
+  try {
+    const twins = twinEvicted(evicted, week);
+    if (twins) (week._sabHeld ||= []).push({ type: 'twin-out', ...twins });
   } catch { /* the eviction stands either way */ }
   week.secondEvicted = secondEvicted;
   week.votes = votes;

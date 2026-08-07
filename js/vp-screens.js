@@ -22,6 +22,7 @@ import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
+import { rpBuildBBTwinWeek, rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
@@ -20759,6 +20760,20 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       // The season-long twist. Two screens, and both of them are the audience's
       // alone — the house is never told any of this, which is the format.
+      // The twin twist. Audience-only, every one of them — the house is never
+      // told there is anything to find.
+      case 'twin-week':
+        screens.push({ id: id('bb-twins'), label: 'Two Of Them',
+          html: rpBuildBBTwinWeek(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'twin-entry':
+        screens.push({ id: id('bb-twins-in'), label: 'Both Of Them',
+          html: rpBuildBBTwinEntry(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'twin-out':
+        screens.push({ id: id('bb-twins-out'), label: 'There Were Two',
+          html: rpBuildBBTwinOut(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       case 'saboteur-accusation':
         screens.push({ id: id('bb-saboteur-call'), label: act.correct ? 'Caught' : 'The Wrong Name',
           html: rpBuildBBSaboteurAccusation(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });

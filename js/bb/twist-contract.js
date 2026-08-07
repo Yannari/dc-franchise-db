@@ -72,6 +72,19 @@ export const POWER_ACQUISITION_CHANNELS = Object.freeze([
  * for powers, how they are acquired and who knows.
  */
 export const BB_TWIST_CONTRACTS = {
+  // ── the twist the house is never told about ──
+  //
+  // BB5 and BB17 both ran it with no announcement at all: the room had to work
+  // out on its own that the person it had been talking to was two people. So
+  // `secrecy: 'secret'` and no announcement block — the audience knows, the
+  // wall says nothing, and js/bb/twin-twist.js does the rest.
+  'bb-twin-twist': {
+    id: 'bb-twin-twist', layer: 'season', category: 'hidden-identity',
+    timing: 'season-opening', duration: { weeks: null },
+    rules: {},
+    acquisition: { channel: 'random-draw', secrecy: 'secret' },
+  },
+
   // ── the first season-long twist ──
   //
   // Every other entry here is `layer: 'scheduled'`: it arrives on a week,

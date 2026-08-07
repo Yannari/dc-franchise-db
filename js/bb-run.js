@@ -34,6 +34,7 @@ import { simulateBBFinale, finalCompChoices } from './bb-finale.js';
 import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
+import { installTwinTwist, twinState } from './bb/twin-twist.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -714,6 +715,18 @@ export function simulateBBEpisode() {
         rng: Math.random,
         // 'choose' means the user cast it themselves.
         pick: seasonConfig.bbSaboteur === 'choose' ? (seasonConfig.bbSaboteurPlayer || null) : null,
+      });
+    } catch { /* the season plays without one */ }
+  }
+
+  // The other season-layer twist, seated the same way and for the same reason:
+  // it is chosen on night one and there is no week to schedule it on.
+  if (seasonConfig.bbTwins && seasonConfig.bbTwins !== 'off' && !twinState()) {
+    try {
+      installTwinTwist(house, {
+        enterWeek: Number(seasonConfig.bbTwinsEnterWeek) || 5,
+        rng: Math.random,
+        pick: seasonConfig.bbTwins === 'choose' ? (seasonConfig.bbTwinsPlayer || null) : null,
       });
     } catch { /* the season plays without one */ }
   }

@@ -236,19 +236,30 @@ function goodbyeMessages(evictee, house, week, rng) {
     const close = bond(name, evictee) >= 3;
     const hidden = against && close;              // voted them out and was close
     const tone = hidden ? 'confession' : against ? 'unapologetic' : close ? 'warm' : 'polite';
+    const cameForMe = targetOf(evictee) === name;
+    const ranVote = plan?.organizer === name;
+
+    const unapologetic = [
+      `"I voted to evict you because keeping you gave me one more person I couldn't trust and one fewer path to the end. You were good at this game. That was the problem."`,
+      `"I didn't write your name down because you played badly. I wrote it down because another week with you in this house was worse for my game than a week without you."`,
+      `"We never found a way to work together, and eventually that stops being awkward and starts being dangerous. Tonight I chose my game over yours."`,
+      `"You made people change their plans around you. I wasn't giving you another week to make me change mine."`,
+      `"I'm not going to call it personal. I wanted a house where you had less influence, and voting you out was the cleanest way to get one."`,
+    ];
+    if (cameForMe) unapologetic.push(
+      `"You put my name into the game, took a shot and left me here to answer it. This vote was the answer."`,
+      `"You decided I was somebody you could come after and survive. I voted to make sure you were wrong about the second part."`,
+    );
+    if (ranVote) unapologetic.push(
+      `"I helped put this vote together. You were too connected, too difficult to control and too dangerous to leave for next week. I own all of it."`,
+      `"This wasn't a vote I followed. I wanted you out, I found the numbers, and I made sure they stayed there. You deserved the truth before I asked for your jury vote."`,
+    );
 
     const text = hidden ? pickFresh([
       `"I wrote your name down. I've been sitting on that for three days and I couldn't say it to your face, which probably tells you everything about how I'm playing this."`,
       `"You were my closest friend in here and I still did it, and I'd like to say I'm sorry but I think I'd do it again."`,
       `"If you're watching this you already know it was me. I hope you understand it eventually. I'd understand if you didn't."`,
-    ]) : against ? pickFresh([
-      `"It was me. It was always going to be me. You came for me first and you missed."`,
-      `"Nothing personal — but you were the biggest problem in here for my game, and now you're not."`,
-      `"You played hard. You just played hard at the wrong person."`,
-      `"I'd apologise but you'd have done exactly the same, and we both know it."`,
-      `"Somebody had to go, and my week went a lot smoother once it was you."`,
-      `"You'll be great on the outside. That's not a compliment about the inside."`,
-    ]) : close ? pickFresh([
+    ]) : against ? pickFresh(unapologetic) : close ? pickFresh([
       `"I fought for you. I lost. I'm sorry — genuinely, I'm sorry."`,
       `"This house is going to be a lot worse without you in it, and I mean that."`,
       `"I kept my word. For whatever it's worth in here, I kept it."`,

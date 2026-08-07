@@ -2,8 +2,8 @@
   "seasonNumber": 1,
   "format": "big-brother",
   "seasonId": "bb-1",
-  "title": "Big Brother 1: The House That Counted Back",
-  "subtitle": "A season of exposed deals, poisoned trust, and a winner who survived by making loyalty look like strategy.",
+  "title": "Big Brother Season 1: The House That Kept Receipts",
+  "subtitle": "A season of false counts, broken final twos, public apologies, and one winner who reached the end by surviving the exact weeks that should have exposed him.",
   "castSize": 18,
   "episodeCount": 15,
   "jurySize": 7,
@@ -12,9 +12,9 @@
     "playerSlug": "wayne",
     "vote": "Wayne 4 — Priya 3 — Zee 0",
     "runnerUp": "Priya & Zee",
-    "keyStats": "Wayne wins 4–3 over Priya, with Zee finishing third after the final HOH decision. He records 2 HOH wins, 1 veto win, is nominated only once, is saved off the block once, receives 0 eviction votes against, and earns 4 jury votes.",
-    "strategy": "Wayne’s game is built on emotional credit and selective honesty. He makes early promises to Raj, later expands into Priya, Damien, Caleb and Zee, and spends most of the season letting bigger targets absorb the heat while he stays useful in every room. When the endgame arrives, he makes the cut he has avoided all season: voting out Caleb at final four, then answering for it without trying to make it noble.",
-    "legacy": "Wayne becomes the season’s first champion by proving that Big Brother can reward an imperfect but readable game. He is not the cleanest strategist, not the biggest comp threat, and not the finalist with the flashiest résumé, but he reaches finale night with jurors who can name the weeks he mattered. His win is remembered as a loyalty game that survived just enough betrayal to become a winning game."
+    "keyStats": "Wayne wins Season 1 by a 4–3 jury vote over Priya, with 2 HOH wins, 1 veto win, only 1 nomination, 1 veto save, and zero eviction votes cast against him all season.",
+    "strategy": "Wayne’s game is built on trust that looks simple until it starts winning votes. He makes people feel protected, lets bigger targets take the heat, and repeatedly positions himself inside overlapping groups without becoming the face of them. When the endgame arrives, he cuts where he has to, owns just enough of it at finale, and benefits from a jury that values the way he handled people on their way out.",
+    "legacy": "Wayne becomes the season’s first champion by proving that a quiet social game can beat a louder strategic résumé. His win is narrow, emotional, and messy in all the right ways: a 4–3 verdict decided less by one big move than by months of jury management, small kindnesses, and carefully timed survival."
   },
   "finalists": [
     {
@@ -42,17 +42,17 @@
       "votesReceived": 0,
       "popularity": 116.84999999999997,
       "juryVotes": 4,
-      "notes": "Wayne turns sincerity into currency, survives the endgame without a vote against him, and wins 4–3 after owning the parts of his game that were least comfortable.",
-      "story": "Wayne enters the house promising he would rather lose as himself than win as somebody else, then spends the season testing exactly how much of that sentence can survive Big Brother. In week 2, he and Raj formalize the bond that defines the early game, and for weeks Wayne benefits from being the person people trust before they compare notes. His week 5 HOH puts Julia and Bowie on the block and begins his transition from comforting presence to active power broker. In the middle stretch, he is repeatedly tied to The Signal and The Guard, but he keeps enough distance that the blame rarely lands cleanly on him. The endgame forces him to choose: he nominates Hicks and Caleb in week 13, wins the final-four veto, and casts the lone vote to evict Caleb in week 15. At finale, the jury does not forgive everything, but they understand what he did. Wayne wins because the relationships he damaged still had enough respect left in them to vote for him.",
-      "gameplayStyle": "warm shield, late knife",
+      "notes": "Wayne wins by making loyalty feel real even when the game forces him to break it.",
+      "story": "Wayne enters as the sincere one, the player who says he would rather lose as himself than win as somebody else. For weeks, that honesty becomes a shield: Raj trusts him, Priya works with him, and even people who distrust his allies rarely treat Wayne as the immediate problem. His first HOH in Week 5 puts Julia and Bowie on the block and quietly builds the structure that carries him deep. In the endgame, he survives the collapse of old deals, wins the Week 13 HOH, wins the final Part One, and sits beside Priya because she believes his promise is the one worth honoring. At finale, he does not oversell the game; he admits where he followed, where he feared, and where surviving was the move. The jury rewards the person they felt least burned by, and Wayne wins 4–3.",
+      "gameplayStyle": "warm hands, hidden knives",
       "keyMoments": [
-        "Week 2: Shakes a final two with Raj, creating the emotional spine of his early game.",
-        "Week 5: Wins HOH and nominates Julia and Bowie, protecting his larger structure while calling it a quiet week.",
-        "Week 10: Votes to evict Caleb in the tie week but watches Priya break the tie against Emmah, keeping his hands partly clean.",
-        "Week 12: Votes out Raj, breaking the week 2 final two and sending his closest ally to jury.",
-        "Week 13: Wins HOH and nominates Hicks and Caleb together, exposing the pair before they can choose the endgame.",
-        "Week 15: Wins the final-four veto and casts the sole vote to evict Caleb.",
-        "Week 16: Wins Part One of the final HOH and then beats Priya 4–3 after a bruising jury questioning."
+        "Week 2: Locks in the final two with Raj, giving both players their first real structure.",
+        "Week 5: Wins HOH and nominates Julia and Bowie, beginning his visible power game.",
+        "Week 10: Votes to evict Caleb’s target Emmah, then watches Priya break the tie.",
+        "Week 12: Betrays Raj with his vote, ending the season’s defining loyalty deal.",
+        "Week 13: Wins HOH and nominates Hicks and Caleb together to break up a dangerous pair.",
+        "Week 15: Wins the veto and casts the sole vote to evict Caleb, the season’s comp giant.",
+        "Finale: Wins Part One, loses Part Three, then beats Priya 4–3 with jury respect and social capital."
       ],
       "bb": {
         "hohWins": 2,
@@ -71,17 +71,17 @@
       "votesReceived": 2,
       "popularity": 129.09,
       "juryVotes": 3,
-      "notes": "Priya plays the sharpest positioning game in the house, wins the final HOH, cuts Zee, and loses by one jury vote to Wayne.",
-      "story": "Priya begins as a visible competitor with a careful social touch, but her real strength is timing: she rarely takes a shot until the room is almost ready to call it reasonable. Her first major swing comes through veto power, especially in week 8 when she saves Damien and forces Bowie into the replacement seat. In week 10, she wins HOH, nominates Bowie and Emmah, watches Bowie save himself, and breaks a 3–3 tie to evict Emmah as the first juror. She survives her own block appearance in week 13 after Caleb saves himself and Wayne renominates her against Hicks. By week 15, she wins HOH at final four and puts Zee and Caleb together, revealing how far her relationships have split. In the finale, she wins the final HOH and chooses Wayne over Zee, making the season’s hardest personal cut. Her answers impress parts of the jury, but the people she outmaneuvered do not all want to reward the way she did it.",
-      "gameplayStyle": "precise cuts, controlled loyalty",
+      "notes": "Priya plays the cleanest strategic game on paper, but the jury makes her pay for the relationships she turned into moves.",
+      "story": "Priya spends the early game counting messes, votes, and relationships with the same terrifying precision. She survives two nominations, wins two HOHs and two vetoes, and repeatedly uses power to pull the season toward the endgame she wants. Her Week 10 HOH removes Emmah on a tie-breaker, and her veto saves Zee in Week 9, proving she will spend capital when the relationship matters. But the same controlled game that gets her to the final chair also leaves jurors questioning whether her loyalty was ever more than positioning. At Final Three, she wins the last HOH and cuts Zee, the decision that proves she is playing to win rather than to be loved. She loses 4–3 to Wayne, close enough to haunt the season, but strong enough that even Caleb votes for the game she played.",
+      "gameplayStyle": "precise, patient, surgical",
       "keyMoments": [
-        "Week 8: Wins veto and saves Damien, forcing Bowie onto the block.",
-        "Week 9: Wins veto and saves Zee, allowing MK to become the replacement nominee.",
-        "Week 10: Wins HOH, nominates Bowie and Emmah, and breaks the tie to evict Emmah.",
-        "Week 12: Votes out Raj, fracturing The Signal and proving she will cut structure for position.",
-        "Week 13: Survives the block against Hicks after Caleb uses the veto.",
-        "Week 15: Wins final-four HOH and nominates Zee and Caleb together.",
-        "Week 16: Wins the final HOH, evicts Zee, and loses the jury vote 4–3."
+        "Week 4: Publicly names the wrong saboteur and spends her one official accusation on Hicks.",
+        "Week 8: Wins veto and uses it on Damien, forcing Bowie into the replacement chair.",
+        "Week 9: Wins veto again and saves Zee, sending MK to the block instead.",
+        "Week 10: Wins HOH, nominates Bowie and Emmah, then breaks the tie to evict Emmah.",
+        "Week 13: Survives the block against Hicks after the house chooses to keep her threat level in play.",
+        "Week 15: Wins HOH at Final Four and nominates Zee and Caleb together.",
+        "Finale: Wins the final HOH, cuts Zee, and loses the jury vote 4–3."
       ],
       "bb": {
         "hohWins": 2,
@@ -90,7 +90,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 8.7
+      "strategicRank": 9.1
     },
     {
       "placement": 3,
@@ -100,17 +100,17 @@
       "votesReceived": 6,
       "popularity": 136.36999999999998,
       "juryVotes": 0,
-      "notes": "Zee survives four nominations, turns social flexibility into an endgame seat, and falls one decision short when Priya chooses Wayne over him.",
-      "story": "Zee’s season is a long exercise in finding his way back into the room after people decide he is outside it. He touches the block in week 2 against Brightly, stays over Millie, and learns quickly that campaigning is sometimes less useful than letting other people overplay. He builds overlapping bonds with Emmah, Priya, Caleb, Brightly and Wayne, but those deals begin colliding by the late game. In week 9, Priya’s veto saves him and deepens the Outwit Club, but it also paints the pair as one vote arriving twice. In week 12, he survives against Raj, benefiting from fractures inside The Signal. His week 14 HOH is his biggest swing: he nominates Wayne and Priya, then breaks the tie to evict Damien after Caleb uses the veto on Wayne. At final three, he pitches loyalty and jury respect, but Priya decides he is too dangerous to sit beside. Zee leaves as the last juror, still influential enough to help crown Wayne.",
-      "gameplayStyle": "social drift, survival math",
+      "notes": "Zee survives four nominations, two veto saves around him, and a collapsing web of deals before one final decision leaves him third.",
+      "story": "Zee starts as the friendly connective tissue of the house, then gradually becomes someone everyone realizes is connected to everyone else. He touches the block four times and keeps finding a way back into the room, often by letting others become the emergency. His relationships with Emmah, Priya, Caleb, Brightly, and later Wayne give him options, but those same overlapping promises become impossible to manage. In Week 14, he wins HOH and takes the shot that sends Damien to jury, but the decision exposes just how many final twos he has promised. At Final Three, he pitches Priya on loyalty and jury respect, but admits he would have taken Wayne himself. Priya cuts him, and he becomes the final juror with no votes at the end but a massive footprint on the season.",
+      "gameplayStyle": "social fog, late bite",
       "keyMoments": [
-        "Week 2: Survives the block against Millie after Brightly uses the veto.",
-        "Week 6: Votes with the house to evict Scary Girl, even while his alliance map keeps shifting.",
-        "Week 8: Loses Brightly in a 5–3 vote and begins rebuilding through Priya and Emmah’s remnants.",
-        "Week 9: Is saved by Priya’s veto, strengthening their final-two bond.",
-        "Week 12: Survives the block against Raj after Caleb uses the veto.",
-        "Week 14: Wins HOH, nominates Wayne and Priya, and breaks the tie to evict Damien.",
-        "Week 16: Loses Part Two of the final HOH and is evicted by Priya at final three."
+        "Week 2: Survives the block against Millie after a messy 9–5 vote.",
+        "Week 9: Priya uses the veto on him, proving their bond has real game value.",
+        "Week 12: Survives against Raj after Wayne and Priya help flip the vote.",
+        "Week 13: His relationship with Priya becomes public and increasingly dangerous.",
+        "Week 14: Wins HOH and nominates Wayne and Priya, then breaks the tie to evict Damien.",
+        "Week 15: Survives the sole vote when Wayne evicts Caleb instead.",
+        "Finale: Loses Part Two to Priya and is cut at Final Three."
       ],
       "bb": {
         "hohWins": 1,
@@ -119,7 +119,7 @@
         "timesOnBlock": 3,
         "timesSaved": 1
       },
-      "strategicRank": 7.4
+      "strategicRank": 7.3
     },
     {
       "placement": 4,
@@ -129,17 +129,17 @@
       "votesReceived": 4,
       "popularity": 133.79999999999995,
       "juryVotes": 0,
-      "notes": "Caleb is the season’s comp monster and America’s Favourite, winning 6 total comps before Wayne cuts him at final four.",
-      "story": "Caleb starts as an obvious physical threat and somehow becomes even more obvious without leaving the game. His week 3 veto win keeps Hicks’s nominations intact, and from there he turns vetoes into a weekly survival tool. He wins HOH in week 8 and nominates Brightly and Damien, a week that becomes more complicated when Priya saves Damien and Bowie replaces him. By the jury phase, Caleb is no longer just winning comps; he is the name every endgame conversation has to solve. He wins vetoes in weeks 11, 12, 13 and 14, repeatedly either saving himself or forcing the week to reorganize around him. At final four, he sits next to Zee and makes the obvious case: six competitions and a body of work nobody can ignore. Wayne ignores none of it; that is exactly why he evicts him. Caleb leaves stunned, beloved by the public, and furious enough to still vote for the game he respects.",
-      "gameplayStyle": "veto engine, exposed favorite",
+      "notes": "Caleb dominates veto competitions and becomes America’s Favourite, but his jury threat finally becomes too large to hide.",
+      "story": "Caleb is the season’s engine: visible, emotional, competitive, and constantly in motion. He wins five vetoes and one HOH, saving himself from the block three times and turning danger into spectacle. His Week 8 HOH targets Brightly and Damien, but his bigger story is the repeated scramble after being nominated five times. By the endgame, everyone knows the same truth: if Caleb reaches the final chairs, the jury may reward the fight. Wayne gets the only vote at Final Four and takes the shot, evicting Caleb 1–0 after Caleb pleads with the weight of six competition wins behind him. He leaves hurt, wrong about who made it happen, and then wins America’s Favourite Houseguest by a wide margin.",
+      "gameplayStyle": "veto furnace, open heart",
       "keyMoments": [
-        "Week 3: Wins veto in Cold Comfort and leaves Nichelle and MK on the block.",
-        "Week 8: Wins HOH and nominates Brightly and Damien.",
-        "Week 10: Survives the tie vote when Priya evicts Emmah instead of him.",
-        "Week 11: Wins veto but does not use it, allowing Bowie to leave over Raj.",
-        "Week 12: Wins veto, saves himself, and forces Raj into the replacement seat.",
-        "Week 13: Wins veto, saves himself, and watches Priya replace him before Hicks leaves.",
-        "Week 15: Loses the final-four vote when Wayne evicts him 1–0."
+        "Week 3: Wins his first veto in Cold Comfort and chooses not to use it.",
+        "Week 8: Wins HOH in Rollin' in the Dough and nominates Brightly and Damien.",
+        "Week 10: Survives the block when Priya breaks a tie against Emmah.",
+        "Week 11: Wins veto with his own game at risk and keeps nominations the same.",
+        "Week 12: Wins veto in The Black Box and saves himself, forcing Raj up.",
+        "Week 13: Wins the Final Six veto and saves himself again.",
+        "Week 15: Is evicted 1–0 by Wayne despite being the season’s biggest comp résumé."
       ],
       "bb": {
         "hohWins": 1,
@@ -148,7 +148,7 @@
         "timesOnBlock": 2,
         "timesSaved": 3
       },
-      "strategicRank": 8.1
+      "strategicRank": 8.2
     },
     {
       "placement": 5,
@@ -158,17 +158,17 @@
       "votesReceived": 1,
       "popularity": 89.39999999999995,
       "juryVotes": 0,
-      "notes": "Damien plays a subtle connection game, survives multiple crossfires, and exits at final five when Zee breaks a tie against him.",
-      "story": "Damien’s game is quiet enough to be underestimated and consistent enough to become dangerous. Early on he forms meaningful bonds with Emmah and Priya, often serving as the person people trust when the house gets loud. He benefits from Priya’s week 8 veto, coming off the block while Bowie becomes the replacement nominee. In week 12, Damien wins HOH and targets Caleb through a Caleb/Zee nomination set, but Caleb’s veto win forces Raj into the line of fire. That HOH gives Damien power, but it also exposes how many overlapping deals he has been carrying. At final five, he is the only possible replacement after Caleb saves Wayne, and his fate comes down to a 1–1 vote. Zee breaks the tie against him, cutting a player who had spent the season surviving by being useful and honest at the right times. In jury, Damien becomes one of Wayne’s decisive votes.",
-      "gameplayStyle": "quiet reads, patient bonds",
+      "notes": "Damien plays a perceptive, relationship-heavy game that reaches Final Five before one tie-breaker ends it.",
+      "story": "Damien spends much of the season as the person people trust in quiet rooms. He rarely needs power early, because his influence lives in late-night talks, calm reads, and the ability to make people feel heard. His Week 12 HOH is his one direct reign, and he uses it to nominate Caleb and Zee with Raj waiting as the replacement target. But his position depends on relationships that are also working against each other, especially with Priya, Zee, and Wayne. At Final Five, he lands on the block beside Priya after Caleb saves Wayne, and the vote splits 1–1. Zee breaks the tie against him, ending the run of a player who often knew the room was changing but waited one conversation too long.",
+      "gameplayStyle": "quiet reads, soft leverage",
       "keyMoments": [
-        "Week 2: Builds early trust with Priya during late-night conversations.",
-        "Week 8: Is saved by Priya’s veto, avoiding the Brightly/Bowie vote.",
-        "Week 10: Helps push the vote against Caleb, only for Priya to break the tie against Emmah.",
+        "Week 4: Builds trust with Priya after a private emotional moment.",
+        "Week 8: Is nominated by Caleb, then saved by Priya’s veto.",
+        "Week 10: Votes to keep Emmah in the 3–3 tie that Priya breaks.",
         "Week 12: Wins HOH and nominates Caleb and Zee.",
-        "Week 12: Renominates Raj after Caleb wins veto, leading to Raj’s eviction.",
-        "Week 14: Becomes the forced replacement nominee after Caleb uses veto on Wayne.",
-        "Week 14: Leaves 1–1 after Zee breaks the tie against him."
+        "Week 12: Renominates Raj after Caleb uses the veto, setting up Raj’s eviction.",
+        "Week 14: Is forced onto the block as the only replacement after Caleb uses the veto on Wayne.",
+        "Week 14: Is evicted on Zee’s tie-breaking vote against Priya."
       ],
       "bb": {
         "hohWins": 1,
@@ -177,7 +177,7 @@
         "timesOnBlock": 1,
         "timesSaved": 1
       },
-      "strategicRank": 7.2
+      "strategicRank": 7.6
     },
     {
       "placement": 6,
@@ -187,17 +187,17 @@
       "votesReceived": 6,
       "popularity": 80.85999999999997,
       "juryVotes": 0,
-      "notes": "Hicks is a strong social reader and alliance hub who loses control when Wayne’s endgame strike puts him beside Priya.",
-      "story": "Hicks spends the early season watching more than speaking, then turns that information into structure. His week 3 HOH nominates Nichelle and MK and keeps the developing Wildcard/Undertow web protected while the vote lands on Nichelle. He later becomes a hinge between The Shadow Pact, The Drama Duo and multiple broken majority rooms, often seeing the numbers before the people inside them do. His week 11 HOH puts Bowie and Raj on the block, and Bowie’s unanimous eviction looks like Hicks has regained command. But that same week exposes how dependent he is on bonds that are already fraying. In week 13, Wayne nominates Hicks beside Caleb, and Caleb’s veto win creates the worst possible replacement: Priya. Hicks campaigns with the logic that made him dangerous all season, but Zee and Damien keep Priya. He leaves fourth juror, still believing Wayne drove the vote, and carries that wound into finale night.",
+      "notes": "Hicks builds strong rooms and sharp reads, but his late-game safety disappears the moment Wayne turns power on him.",
+      "story": "Hicks is one of the house’s earliest information brokers, the player who watches more than he talks and usually knows which conversation mattered. He wins HOH in Week 3 and Week 11, both times using power to shape the board while keeping multiple alliances alive. His relationships with Brightly, Raj, Caleb, and Priya give him reach, but also make him a common suspect whenever numbers fail to add up. In Week 13, Wayne nominates Hicks beside Caleb to expose the Caleb-Hicks connection, and Caleb’s veto win leaves Hicks sitting next to Priya. Hicks campaigns with logic, but the house chooses to keep Priya’s endgame value over his network. He leaves in sixth, angry but respected, believing Wayne masterminded the week even as the vote came from elsewhere.",
       "gameplayStyle": "watchful broker, brittle trust",
       "keyMoments": [
-        "Week 2: Forms The Undertow with Ripper and later pulls Brightly into the structure.",
         "Week 3: Wins HOH and nominates Nichelle and MK.",
-        "Week 3: Watches Caleb win veto and leave his nominations intact.",
-        "Week 7: Survives the block against Chase by one vote after Emmah’s HOH week fractures the house.",
+        "Week 3: Keeps nominations intact after Caleb wins veto, leading to Nichelle’s eviction.",
+        "Week 7: Survives the block against Chase by a single vote.",
         "Week 11: Wins HOH and nominates Bowie and Raj.",
-        "Week 11: Sees Bowie evicted unanimously, boosting Hicks’s endgame credibility.",
-        "Week 13: Is nominated by Wayne beside Caleb, then evicted 2–1 against Priya."
+        "Week 11: Watches Bowie leave unanimously while Raj survives as the pawn.",
+        "Week 13: Is nominated by Wayne beside Caleb.",
+        "Week 13: Is evicted 2–1 against Priya after Caleb saves himself."
       ],
       "bb": {
         "hohWins": 2,
@@ -206,7 +206,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 7.6
+      "strategicRank": 8
     },
     {
       "placement": 7,
@@ -216,17 +216,17 @@
       "votesReceived": 4,
       "popularity": 44.28,
       "juryVotes": 0,
-      "notes": "Raj’s loyalty game carries him deep, but the same loyalty makes him predictable enough to cut at final seven.",
-      "story": "Raj enters promising to ride with his people, and for much of the season that is both his identity and his limitation. His week 2 HOH nominates Brightly and Zee, but Brightly’s veto forces Millie into the chair and creates early distrust around his decisions. He is repeatedly tied to Wayne, first as a final two and later as part of The Signal, making him protected and exposed at the same time. In week 6, he saves himself with the veto after Bowie blindsides him with a nomination. That survival keeps him alive, but it also marks him as a pawn people can use because they know where his votes are. In week 11, Hicks nominates him beside Bowie, and Raj survives only because the house agrees Bowie is the bigger threat. In week 12, Caleb saves himself and Damien renominates Raj against Zee. Wayne, Priya and Caleb all break promises, and Raj becomes the third juror with loyalty finally turned against him.",
-      "gameplayStyle": "loyal shield, visible pair",
+      "notes": "Raj’s loyalty makes him powerful, then predictable, and finally expendable.",
+      "story": "Raj begins with a simple promise: whoever he rides with, he rides the whole way. That promise becomes his season with Wayne, and for a long stretch it gives both players cover, certainty, and a clear endgame shape. He wins HOH in Week 2, wins veto in Week 6, and survives four nominations by leaning on trust more than campaigning. But as the house shrinks, everyone can see where Raj’s vote lives before he casts it. In Week 12, Damien uses Caleb and Zee as the opening nominees and Raj as the replacement, putting loyalty itself on trial. Wayne, Priya, and Caleb all break promises to vote him out, and Raj becomes the third juror with one of the season’s most painful exits.",
+      "gameplayStyle": "loyal shield, visible heart",
       "keyMoments": [
         "Week 2: Wins HOH and nominates Brightly and Zee.",
-        "Week 2: Names Millie as the replacement nominee after Brightly wins veto.",
-        "Week 5: Enters the Wayne/Raj/Priya final three structure.",
-        "Week 6: Is nominated by Bowie and blindsided by the move.",
-        "Week 6: Wins veto and removes himself from the block.",
+        "Week 2: Names Millie as replacement after Brightly uses the veto.",
+        "Week 5: Formalizes a final three with Wayne and Priya.",
+        "Week 6: Wins veto and saves himself from Bowie’s nominations.",
+        "Week 9: Survives against MK after Priya’s veto creates the replacement nomination.",
         "Week 11: Survives unanimously against Bowie as Hicks’s pawn.",
-        "Week 12: Is renominated after Caleb uses veto and is evicted 3–1."
+        "Week 12: Is renominated after Caleb wins veto and is evicted 3–1."
       ],
       "bb": {
         "hohWins": 1,
@@ -235,7 +235,7 @@
         "timesOnBlock": 3,
         "timesSaved": 1
       },
-      "strategicRank": 6.6
+      "strategicRank": 6.7
     },
     {
       "placement": 8,
@@ -245,16 +245,16 @@
       "votesReceived": 12,
       "popularity": 81.69999999999997,
       "juryVotes": 0,
-      "notes": "Bowie plays one of the season’s most active strategic games, winning 5 total comps before the house finally agrees he is too dangerous.",
-      "story": "Bowie arrives saying he only wants jury and the hot tub, then immediately starts counting conversations like currency. He wins HOH in weeks 4, 6 and 9, repeatedly turning social information into nominations and replacement plans. His week 4 backdoor of Ripper through Julia’s veto sets the tone: Bowie is willing to use other people’s power when it serves his plan. In week 6, he nominates Scary Girl and Raj, then watches Raj win veto and MK become the replacement. By week 9, his HOH targets Zee and Raj on paper, but the real maneuver is keeping MK vulnerable once Priya saves Zee. His comp record and exposed deals eventually become too much for the house to tolerate. In week 11, Hicks nominates Bowie next to Raj, Caleb leaves the veto unused, and every voter chooses Bowie. He exits convinced Zee did it, but his jury voice becomes one of Wayne’s strongest assets.",
-      "gameplayStyle": "visible schemer, comp pressure",
+      "notes": "Bowie is the season’s great tactician until his threat level finally becomes too obvious to protect.",
+      "story": "Bowie walks in pretending to want jury and a hot tub, then immediately starts counting the house better than most people count votes. He wins three HOHs and two vetoes, repeatedly making the week about other people’s mistakes while pushing his own targets forward. His Week 4 HOH backdoors Ripper, and his Week 6 HOH removes Scary Girl, but every win adds another layer to the target. Bowie survives five nominations, saves himself twice with veto power, and keeps inventing stories long enough for some of them to become useful. By Week 11, Hicks puts him up next to Raj, and the remaining players agree that Bowie has too many paths to the end. He leaves 5–0, becomes a sharp jury voice, and later helps shape Wayne’s winning coalition.",
+      "gameplayStyle": "smiling knife, vote architect",
       "keyMoments": [
         "Week 4: Wins HOH and nominates Caleb and Chase.",
-        "Week 4: Uses Julia’s veto result to backdoor Ripper, who leaves 10–2.",
-        "Week 6: Wins HOH again and nominates Scary Girl and Raj.",
-        "Week 7: Wins veto on Emmah’s HOH and saves himself, forcing Chase onto the block.",
-        "Week 9: Wins HOH and nominates Zee and Raj, then sees MK become the replacement.",
-        "Week 10: Wins veto and saves himself on Priya’s HOH.",
+        "Week 4: Uses Julia’s veto outcome to renom Ripper and send him out 10–2.",
+        "Week 6: Wins HOH and nominates Scary Girl and Raj.",
+        "Week 7: Wins veto while nominated and forces Chase into the replacement chair.",
+        "Week 9: Wins HOH and nominates Zee and Raj, with MK as the real backdoor target.",
+        "Week 10: Wins veto while on the block and forces Caleb into danger.",
         "Week 11: Is evicted 5–0 against Raj after Hicks’s HOH."
       ],
       "bb": {
@@ -264,7 +264,7 @@
         "timesOnBlock": 3,
         "timesSaved": 2
       },
-      "strategicRank": 8
+      "strategicRank": 8.6
     },
     {
       "placement": 9,
@@ -274,17 +274,17 @@
       "votesReceived": 5,
       "popularity": 26.840000000000003,
       "juryVotes": 0,
-      "notes": "Emmah plays fiercely, wins the wall, and becomes the first juror after Priya breaks a tie against her.",
-      "story": "Emmah’s season begins on the block in the instant eviction, where she survives 13–2 because Axel becomes the easier story to tell. From there she refuses to become passive, building bonds with Zee, Damien and Wayne while turning personal conflict into strategic momentum. Her week 7 wall win gives her the HOH room and the chance to take a shot at Hicks and Bowie, but the week becomes messy when Bowie wins veto and Chase becomes the replacement. Chase leaves by one vote, and Emmah’s power leaves behind more resentment than security. By week 10, Priya nominates Emmah beside Bowie, and Bowie’s veto win forces Caleb into the chair next to her. The house splits 3–3 between Emmah and Caleb, making Priya the deciding vote. Priya chooses to evict Emmah, sending her out as the first juror and giving the jury its first truly angry witness. Emmah’s vote for Wayne at the end reflects respect for the player who outlasted the chaos she helped create.",
-      "gameplayStyle": "direct fire, emotional leverage",
+      "notes": "Emmah plays loud, precise, and personal, becoming the first juror after Priya breaks a tie against her.",
+      "story": "Emmah begins the season on the Week 1 block and survives because the house decides Axel is the bigger problem. From there, she becomes one of the season’s emotional pressure points: direct, confrontational, and impossible to ignore. Her Week 7 HOH is the peak of her power and the start of her downfall, as she nominates Hicks and Bowie and makes the Hicks feud unmistakably personal. She stays protected through deals with Zee, Damien, and Wayne, but the web stops holding when Priya wins Week 10 HOH. After Bowie saves himself with the veto, Emmah sits beside Caleb and the house splits 3–3. Priya breaks the tie against her, making Emmah the first juror and the first major warning that endgame relationships will not save everyone.",
+      "gameplayStyle": "direct fire, personal precision",
       "keyMoments": [
         "Week 1: Survives the instant eviction against Axel by a 13–2 vote.",
-        "Week 4: Forms deeper endgame ties with Wayne and Damien while feuding with Hicks.",
-        "Week 7: Wins The Wall and becomes HOH.",
-        "Week 7: Nominates Hicks and Bowie, calling the shot at Hicks personal.",
-        "Week 7: Renominates Chase after Bowie wins veto, leading to Chase’s 5–4 eviction.",
+        "Week 2: Forms a final three with Damien and Zee.",
+        "Week 7: Wins the endurance HOH on The Wall.",
+        "Week 7: Nominates Hicks and Bowie and makes the week openly personal.",
         "Week 10: Is nominated by Priya beside Bowie.",
-        "Week 10: Loses the tie when Priya evicts her over Caleb."
+        "Week 10: Faces Caleb after Bowie’s veto and loses on Priya’s tie-breaker.",
+        "Week 10: Enters jury as its first member."
       ],
       "bb": {
         "hohWins": 1,
@@ -293,7 +293,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 7.1
+      "strategicRank": 7.2
     },
     {
       "placement": 10,
@@ -303,17 +303,17 @@
       "votesReceived": 11,
       "popularity": 48.660000000000004,
       "juryVotes": 0,
-      "notes": "MK gathers information everywhere, survives as a pawn, and is finally evicted once Priya and Zee agree she has too many paths.",
-      "story": "MK begins the season offering help in every room, which is also how she starts collecting leverage. Her early social reach pulls her into Chase, Bowie, Wildcard and Undertow structures, but that same reach makes people compare notes. In week 3, she sits on the block beside Nichelle and survives 10–3 because the house decides Nichelle is the more immediate obstacle. In week 5, she wins veto but refuses to use it, leaving Julia and Bowie exposed and preserving her own position. The Chase showmance gives her emotional cover and strategic heat, especially after Chase leaves and the house starts reassessing her. By week 9, Bowie nominates Zee and Raj, Priya saves Zee, and MK becomes the replacement nominee. She pitches, counts, and points at bigger structures, but the vote is already set. MK leaves 6–1 and reveals Priya and Damien’s deal on the way out, proving she still has information even when she has no votes.",
-      "gameplayStyle": "information web, sharp edges",
+      "notes": "MK gathers information everywhere, but her social web snaps after Chase leaves and Priya makes her the replacement target.",
+      "story": "MK spends the early weeks as a subtle collector of promises, rumors, and small obligations. She survives the block in Week 3, wins the Week 5 veto, and becomes central to several overlapping structures, including the Chase relationship that the house never stops watching. Her biggest strength is also her liability: people know she knows too much. After Chase is evicted, MK’s position becomes harder to defend, and her attempts to redirect the house start looking like damage control. In Week 9, Priya saves Zee with the veto and Bowie names MK as the replacement nominee. Against Raj, the house decides MK has more ways to damage them than protect them, and she leaves 6–1.",
+      "gameplayStyle": "quiet files, sharp corners",
       "keyMoments": [
-        "Week 3: Is nominated by Hicks beside Nichelle.",
-        "Week 3: Survives 10–3 after the vote flips heavily against Nichelle.",
-        "Week 5: Wins veto and leaves Wayne’s nominations unchanged.",
-        "Week 6: Becomes Bowie’s replacement nominee after Raj saves himself.",
-        "Week 6: Survives against Scary Girl by an 8–2 vote.",
+        "Week 3: Survives the block against Nichelle after a 10–3 vote.",
+        "Week 4: Helps the Ripper vote come together and owns it in goodbye messages.",
+        "Week 5: Wins the Tower of Hanoi veto and chooses not to use it.",
+        "Week 6: Survives as Bowie’s replacement nominee against Scary Girl.",
+        "Week 7: Votes out Chase despite their showmance, creating one of the season’s messiest emotional breaks.",
         "Week 9: Is renominated after Priya saves Zee with the veto.",
-        "Week 9: Is evicted 6–1 and exposes Priya and Damien’s final two at the door."
+        "Week 9: Is evicted 6–1 against Raj."
       ],
       "bb": {
         "hohWins": 0,
@@ -322,7 +322,7 @@
         "timesOnBlock": 3,
         "timesSaved": 0
       },
-      "strategicRank": 7
+      "strategicRank": 7.7
     },
     {
       "placement": 11,
@@ -332,17 +332,17 @@
       "votesReceived": 5,
       "popularity": -1.6199999999999983,
       "juryVotes": 0,
-      "notes": "Brightly reads the house early and often, but their overlapping deals collapse just before jury.",
-      "story": "Brightly enters claiming to be terrible at strategy while quietly solving the house faster than people expect. In week 2, Raj nominates Brightly beside Zee, and Brightly’s veto win saves their game and forces Millie into the replacement seat. That move pulls Brightly into multiple structures, including The Undertow, The Wildcard Pact and later The Shadow Pact. The problem is not that Brightly lacks information; it is that too many people eventually know they have it. By week 8, Caleb wins HOH and nominates Brightly beside Damien, setting up the first clean shot at a player many had been circling for weeks. Priya’s veto saves Damien, Bowie replaces him, and Brightly tries to make the smarter argument against Bowie’s comp record. The house chooses certainty over cleverness and evicts Brightly 5–3. Brightly leaves believing Zee sank the vote, missing how many players had independently grown tired of the same contradictions.",
-      "gameplayStyle": "early reader, overextended deals",
+      "notes": "Brightly sees the shape of the house early, but too many side deals make them impossible to keep.",
+      "story": "Brightly plays the first half like someone solving the season from inside the walls. They win the Week 2 veto when they need it, come off the block, and immediately become a player people both need and distrust. Their ties to Hicks, Caleb, Zee, Chase, and later Raj give them options, but the options begin contradicting one another in public. By Week 8, Caleb nominates Brightly beside Damien, and Priya’s veto saves Damien, leaving Bowie as the replacement. Brightly argues that Bowie is the bigger competition threat, but the house has grown tired of wondering which version of Brightly is true. They leave 5–3, one week before jury, with more correct reads than usable votes.",
+      "gameplayStyle": "early solver, overextended web",
       "keyMoments": [
-        "Week 1: Builds early groundwork with Zee and Hicks before power is even assigned.",
-        "Week 2: Is nominated by Raj beside Zee.",
-        "Week 2: Wins the Power of Veto and saves themselves.",
-        "Week 2: Votes out Millie after Millie becomes the replacement nominee.",
-        "Week 5: Survives the Julia/Bowie vote from outside the block while their deals multiply.",
+        "Week 2: Wins the Power of Veto and saves themselves from Raj’s nominations.",
+        "Week 2: Watches Millie become the replacement and leave 9–5.",
+        "Week 3: Becomes central to the Wildcard Pact and Undertow overlap.",
+        "Week 5: Survives Wayne’s HOH from off the block while Julia leaves.",
+        "Week 7: Votes out Chase despite their final three, breaking a major promise.",
         "Week 8: Is nominated by Caleb beside Damien.",
-        "Week 8: Is evicted 5–3 against Bowie after Priya saves Damien."
+        "Week 8: Is evicted 5–3 against Bowie."
       ],
       "bb": {
         "hohWins": 0,
@@ -351,7 +351,7 @@
         "timesOnBlock": 1,
         "timesSaved": 1
       },
-      "strategicRank": 6.5
+      "strategicRank": 7.1
     },
     {
       "placement": 12,
@@ -361,17 +361,17 @@
       "votesReceived": 7,
       "popularity": 51.75,
       "juryVotes": 0,
-      "notes": "Chase is the saboteur, a social connector, and a near-juror whose own relationships turn against him in a 5–4 vote.",
-      "story": "Chase’s season has two games running at once: the one the house can see and the one the saboteur twist pays him to play. He takes sabotage jobs early, fails some, lands others, and survives the reveal in week 5 with the uncomfortable knowledge that the house can stop looking for him. Socially, he is everywhere: The Dock Pact, The Merge Mob, The Wildcard Pact, and a showmance with MK all pull him in different directions. In week 4, Bowie nominates him beside Caleb, but Julia’s veto saves Caleb and Ripper becomes the target instead. That week teaches Chase how thin the pawn seat can be. In week 7, Emmah nominates Hicks and Bowie, Bowie wins veto, and Chase is chosen as the replacement because few people are willing to object. He campaigns from a position he misreads by one vote. Chase leaves 5–4, with MK and Brightly both voting him out and the jury beginning one week too late for him.",
-      "gameplayStyle": "saboteur charm, exposed pawn",
+      "notes": "Chase is the saboteur, the early social connector, and the pre-jury player whose secret war bends the season without saving him.",
+      "story": "Chase enters as a friendly improviser and secretly becomes the saboteur, taking missions that make the house distrust itself before it ever fully understands him. He helps build the Dock Pact, drifts into the Merge Mob, and develops a public relationship with MK that makes both of them easier to target. His sabotage succeeds twice, including the memory wall stunt and the campaign disruption that helps doom Ripper. But once the twist pays out in Week 5, his mystery value disappears and his social debts remain. In Week 7, Emmah’s HOH puts Hicks and Bowie up, Bowie saves himself, and Chase becomes the replacement nominee. He loses 5–4 to Hicks, one vote short of jury, leaving several houseguests to realize too late how much he shaped.",
+      "gameplayStyle": "smiling saboteur, soft chaos",
       "keyMoments": [
-        "Week 1: Takes the first saboteur job to rig the HOH competition, though it fails.",
-        "Week 3: Successfully wrecks the week by turning the memory wall photographs around.",
-        "Week 4: Is nominated by Bowie beside Caleb and survives when Ripper becomes the replacement target.",
-        "Week 5: Is revealed as the saboteur and banks $10,000 from the twist.",
-        "Week 6: Deepens the MK showmance while multiple alliances use him as a number.",
-        "Week 7: Is renominated by Emmah after Bowie saves himself with veto.",
-        "Week 7: Is evicted 5–4, one round before jury begins."
+        "Week 1: Accepts the first saboteur mission and is spotted by Zee.",
+        "Week 3: Successfully wrecks the week by flipping the memory wall photos.",
+        "Week 4: Breaks Ripper’s campaign by arriving in rooms before him.",
+        "Week 5: Is publicly revealed as the saboteur and banks $10,000.",
+        "Week 6: Survives as the social center of the MK showmance.",
+        "Week 7: Is renominated after Bowie uses veto on himself.",
+        "Week 7: Is evicted 5–4 against Hicks."
       ],
       "bb": {
         "hohWins": 0,
@@ -380,7 +380,7 @@
         "timesOnBlock": 2,
         "timesSaved": 0
       },
-      "strategicRank": 5.6
+      "strategicRank": 6.2
     },
     {
       "placement": 13,
@@ -390,17 +390,16 @@
       "votesReceived": 8,
       "popularity": 22.380000000000003,
       "juryVotes": 0,
-      "notes": "Scary Girl is feared, misread, and finally cut when Bowie’s HOH turns her into the safest consensus target.",
-      "story": "Scary Girl begins as a visible presence: athletic, unpredictable, and socially harder to place than anyone wants to admit. The Dock Pact pulls her in early, but she never feels fully inside the room, and that distance becomes part of her reputation. She throws comps, catches blame, and repeatedly becomes a name people can say without starting a full war. In week 6, Bowie wins HOH and nominates Scary Girl beside Raj, framing the move as a way to stabilize the house. Raj wins veto, MK becomes the replacement, and Scary Girl suddenly has to campaign against someone with more numbers than she realized. She makes a direct final plea, but the vote has hardened across multiple alliances. Scary Girl leaves 8–2, angry and convinced Bowie drove it all. Her exit marks the end of the pre-jury chaos characters and the start of a more calculated game.",
-      "gameplayStyle": "volatile outsider, misread threat",
+      "notes": "Scary Girl is underestimated as chaos until the house realizes chaos still counts as a vote.",
+      "story": "Scary Girl begins as an unpredictable presence, recruited into early groups but rarely made central to the plan. She survives the first waves by being useful enough, strange enough, and not quite dangerous enough to unite the house. Her Week 6 nomination beside Raj becomes the first time the room openly treats her as the problem rather than the accessory. Raj wins veto, MK goes up, and Scary Girl’s campaign cannot overcome the house’s desire for stability. She leaves 8–2, angry and convinced Bowie was the architect, when the deeper machinery was spread across several rooms.",
+      "gameplayStyle": "volatile pawn, hidden hurt",
       "keyMoments": [
-        "Week 1: Joins The Dock Pact after Chase and Ripper bring her in.",
-        "Week 3: Throws the HOH badly enough for the house to notice.",
-        "Week 4: Moves her vote after Julia’s final plea but still watches Julia leave.",
+        "Week 1: Joins The Dock Pact after being brought into the bedroom.",
+        "Week 4: Votes out Ripper after promising the move, helping end The Dock Pact era.",
+        "Week 5: Is moved by Julia’s final plea but still lands on the wrong side of the read.",
         "Week 6: Is nominated by Bowie beside Raj.",
-        "Week 6: Watches Raj win veto, making MK the replacement nominee.",
-        "Week 6: Campaigns against MK but cannot break the majority.",
-        "Week 6: Is evicted 8–2 before jury."
+        "Week 6: Watches Raj win veto and MK take the replacement chair.",
+        "Week 6: Is evicted 8–2 against MK."
       ],
       "bb": {
         "hohWins": 0,
@@ -409,7 +408,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 5.1
+      "strategicRank": 5.3
     },
     {
       "placement": 14,
@@ -419,17 +418,16 @@
       "votesReceived": 7,
       "popularity": 31.5,
       "juryVotes": 0,
-      "notes": "Julia plays loudly and inventively, but becomes too visible and leaves after Wayne’s HOH turns the house against her.",
-      "story": "Julia is one of the first people to speak in the house and one of the first to make everyone wonder what she is really doing. She gathers information, spreads useful versions of stories, and repeatedly finds herself near the center of conflict without always controlling the outcome. In week 4, she wins the Power of Veto and uses it on Caleb, a move that helps create Ripper’s backdoor and keeps her useful to several sides. But by week 5, Wayne’s HOH puts Julia on the block beside Bowie, and she has to campaign without the room fully trusting her. Her final plea moves Scary Girl live, but not enough. The vote lands 7–4 against Julia, and she exits with one last bomb: Priya and Wayne have a final two. The information is true, but the timing means it damages other people’s games more than it saves hers. Julia’s legacy is a player who saw angles everywhere and eventually made herself the angle everyone could agree to remove.",
-      "gameplayStyle": "loud angles, useful chaos",
+      "notes": "Julia plays openly, sharply, and too visibly, leaving after Wayne’s HOH turns her own momentum against her.",
+      "story": "Julia is one of the first people to speak after the twist and one of the first people to make the house nervous. She wins the Week 4 veto, saves Caleb, and accidentally helps create the opening that sends Ripper out instead. Her problem is never a lack of plan; it is that the Diary Room hears the plan before the house does. In Week 5, Wayne nominates Julia beside Bowie, and Julia spends the week trying to turn the vote into a referendum on bigger threats. Her final plea moves Scary Girl live, but it is not enough. She leaves 7–4, dropping true information about Priya and Wayne on the way out and changing how the house watches them afterward.",
+      "gameplayStyle": "open blade, exposed plans",
       "keyMoments": [
-        "Week 1: Breaks the silence after the saboteur twist and immediately frames suspicion.",
-        "Week 3: Pushes public arguments that raise her threat level with Priya and others.",
-        "Week 4: Wins veto and uses it on Caleb.",
-        "Week 4: Helps create the Ripper replacement scenario on Bowie’s HOH.",
+        "Week 1: Breaks the twist silence and immediately marks herself as fearless.",
+        "Week 4: Wins the Pure Chance veto.",
+        "Week 4: Uses the veto on Caleb, allowing Ripper to be renominated.",
         "Week 5: Is nominated by Wayne beside Bowie.",
-        "Week 5: Moves Scary Girl with her final plea but loses the vote 7–4.",
-        "Week 5: Exposes Priya and Wayne’s final two on her way out."
+        "Week 5: Moves Scary Girl with her final plea, but cannot flip the vote.",
+        "Week 5: Is evicted 7–4 and exposes the Priya-Wayne connection at the door."
       ],
       "bb": {
         "hohWins": 0,
@@ -438,7 +436,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 6
+      "strategicRank": 6.4
     },
     {
       "placement": 15,
@@ -448,17 +446,16 @@
       "votesReceived": 10,
       "popularity": 18.1,
       "juryVotes": 0,
-      "notes": "Ripper thinks silence means safety, then learns too late that the house has finished the conversation without him.",
-      "story": "Ripper enters with brute confidence and a strategy that sounds like not having one, which works only until people start counting him as a number. He helps form The Dock Pact with Chase, then slides into The Undertow with Hicks, but never becomes the center of either room. In week 4, Bowie nominates Caleb and Chase while quietly aiming at Ripper as the replacement. Julia’s veto saves Caleb, and Ripper takes the empty chair without being surprised enough to fight properly. The saboteur twist makes his campaign even harder, with Chase quietly breaking rooms before Ripper can enter them. He miscounts the vote and assumes the danger is larger than it is, which keeps him from asking the exact questions he needs. Ripper leaves 10–2, stunned by how normal everyone had sounded all week. His exit becomes the season’s first lesson in how deadly a completed consensus can be.",
-      "gameplayStyle": "blunt force, late awareness",
+      "notes": "Ripper thinks silence means safety until the entire house votes like the conversation already happened without him.",
+      "story": "Ripper starts loud, physical, and convinced that not having a strategy might somehow become one. He helps form The Dock Pact, then The Undertow, but quickly becomes the member people talk around instead of with. In Week 4, Bowie’s HOH sets up Caleb and Chase, Julia’s veto saves Caleb, and Ripper is the replacement target waiting in the plan. The saboteur quietly wrecks his campaign, arriving before him in rooms and leaving him wondering why every answer feels pre-decided. Ripper barely campaigns because he miscounts the danger, and the house evicts him 10–2. He leaves believing Bowie made it happen, which is only partly the story and not the secret that mattered.",
+      "gameplayStyle": "loud shield, bad radar",
       "keyMoments": [
         "Week 1: Forms The Dock Pact with Chase.",
-        "Week 2: Forms The Undertow with Hicks while drifting from the Dock Pact.",
-        "Week 3: Is pulled into Hicks’s HOH structure but never fully controls it.",
-        "Week 4: Is named as the replacement nominee after Julia saves Caleb.",
-        "Week 4: Fails to recognize that Chase’s sabotaged campaign work has already sealed rooms against him.",
-        "Week 4: Is evicted 10–2 against Chase.",
-        "Week 4: Leaves believing Bowie caused the vote, only partly seeing the larger house move."
+        "Week 2: Forms The Undertow with Hicks.",
+        "Week 3: Is pulled deeper into overlapping alliances that never fully protect him.",
+        "Week 4: Is renominated after Julia saves Caleb with the veto.",
+        "Week 4: Has his campaign quietly disrupted by Chase’s saboteur mission.",
+        "Week 4: Is evicted 10–2 against Chase."
       ],
       "bb": {
         "hohWins": 0,
@@ -467,7 +464,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 4.2
+      "strategicRank": 5
     },
     {
       "placement": 16,
@@ -477,17 +474,16 @@
       "votesReceived": 10,
       "popularity": 19.340000000000003,
       "juryVotes": 0,
-      "notes": "Nichelle’s social subtlety keeps her informed early, but she cannot reverse the week once Hicks puts her on the block.",
-      "story": "Nichelle comes in wanting to be barely noticed, and for a while that works in the way she intended. Her personal conversations with Zee, Damien and others become her information network, even when the house mistakes them for harmless bonding. By week 3, Hicks wins HOH and nominates Nichelle beside MK, putting her subtle game under a spotlight it was never built for. Nichelle campaigns by pointing at the groups forming around her, especially The Undertow, and her final plea is strong enough to move Chase live. But the majority has already decided she is more dangerous than MK because she is harder to control. Caleb wins the veto and leaves nominations the same, cutting off the last mechanical escape route. Nichelle leaves 10–3, feeling the house chose affection as camouflage over actual trust. Her postgame anger is justified by how much she saw, and how little of it she could convert into votes.",
-      "gameplayStyle": "soft reads, isolated pitch",
+      "notes": "Nichelle’s social subtlety keeps her alive early, but once she hits the block she cannot rebuild the vote fast enough.",
+      "story": "Nichelle enters trying not to be noticed, but her real game is in the personal conversations people mistake for downtime. She builds trust with Zee and finds herself close enough to the action to see patterns before others do. Hicks nominates her beside MK in Week 3, and Nichelle correctly argues that the vote says more about alliances than about nominees. Her final plea moves Chase live, proving she can still change minds under pressure. But the larger rooms have already decided, and the vote lands 10–3 against her. She leaves pre-jury convinced Brightly’s comfort gave the game away, and in many ways her read is better than her position.",
+      "gameplayStyle": "soft read, late alarm",
       "keyMoments": [
-        "Week 1: Builds early personal bonds with Damien and Zee.",
-        "Week 2: Nearly wins the Caged Eggs HOH, finishing just behind Raj and Julia’s pace.",
+        "Week 1: Builds an early connection with Damien and later Zee.",
+        "Week 2: Performs strongly in Caged Eggs but remains socially adrift.",
         "Week 3: Is nominated by Hicks beside MK.",
-        "Week 3: Exposes the danger of The Undertow in her campaign pitches.",
-        "Week 3: Watches Caleb win veto and leave nominations intact.",
-        "Week 3: Moves Chase with her final plea, but not enough.",
-        "Week 3: Is evicted 10–3 before jury."
+        "Week 3: Exposes how much of the house is moving without her.",
+        "Week 3: Moves Chase with her final plea in the living room.",
+        "Week 3: Is evicted 10–3 against MK."
       ],
       "bb": {
         "hohWins": 0,
@@ -496,7 +492,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 5.2
+      "strategicRank": 5.6
     },
     {
       "placement": 17,
@@ -506,17 +502,16 @@
       "votesReceived": 9,
       "popularity": 20.459999999999997,
       "juryVotes": 0,
-      "notes": "Millie wins the first HOH, survives only one week beyond it, and exits after her own alliance cannot save her.",
-      "story": "Millie’s game begins with sudden power in the most brutal format of the season: an instant eviction with no veto and no conversations. She wins the week 1 HOH, nominates Axel and Emmah from isolation, and watches Axel leave 13–2. The problem is that the house hears her thought process, and everyone remembers who she was willing to name. She forms The Wildcard Pact with Caleb, giving herself a partner but not enough insulation. In week 2, Raj nominates Brightly and Zee, then Brightly wins veto and Millie becomes the replacement nominee. Millie campaigns with sincerity and reminds people she has not written their names down, but the room has already chosen her as unfinished business from week 1. She leaves 9–5, believing Raj caused it, while the true fault line runs through broken votes and unreliable allies. Her story is the cost of early power before the house has had time to forgive anything.",
-      "gameplayStyle": "early power, exposed nerves",
+      "notes": "Millie wins the first HOH, makes the first irreversible move, and pays for it one week later.",
+      "story": "Millie’s season burns bright and short. She wins the instant Week 1 HOH, is locked away from the house, and nominates Axel and Emmah with no veto available and no time to soften the blow. Axel leaves, but everyone remembers that Millie’s power had no conversation attached to it. In Week 2, Raj nominates Brightly and Zee, Brightly wins veto, and Millie becomes the replacement nominee. Caleb tries to save her through the Wildcard Pact, but the vote fractures and comes back 9–5 against her. She exits warning people to compare notes, which becomes the season’s most useful advice far too late.",
+      "gameplayStyle": "early spark, exposed pawn",
       "keyMoments": [
-        "Week 1: Wins the first HOH on a tiebreaker.",
-        "Week 1: Nominates Axel and Emmah during the instant eviction.",
-        "Week 1: Forms The Wildcard Pact with Caleb after nominations.",
-        "Week 1: Watches Axel leave 13–2 and inherits the fallout.",
-        "Week 2: Becomes Raj’s replacement nominee after Brightly uses veto.",
-        "Week 2: Campaigns against Zee but cannot hold the Wildcard numbers.",
-        "Week 2: Is evicted 9–5 before jury."
+        "Week 1: Wins the first HOH in the instant eviction format.",
+        "Week 1: Nominates Axel and Emmah without any veto in play.",
+        "Week 1: Watches Axel leave 13–2 and inherits the consequences.",
+        "Week 2: Is renominated after Brightly saves themselves with veto.",
+        "Week 2: Loses the Wildcard Pact numbers she thought she had.",
+        "Week 2: Is evicted 9–5 against Zee."
       ],
       "bb": {
         "hohWins": 1,
@@ -525,7 +520,7 @@
         "timesOnBlock": 1,
         "timesSaved": 0
       },
-      "strategicRank": 5
+      "strategicRank": 5.8
     },
     {
       "placement": 18,
@@ -535,16 +530,15 @@
       "votesReceived": 13,
       "popularity": 4.2,
       "juryVotes": 0,
-      "notes": "Axel’s blunt honesty becomes the first story the house can agree on, and she is evicted in the instant week.",
-      "story": "Axel enters with the kind of directness that can become power later but becomes danger immediately in week 1. A food fight with Emmah turns into the defining image of her first days, and the house starts evaluating her by how it feels to live with her. When Millie wins the instant HOH, there is no veto and no time for Axel to repair the narrative. She hears Millie talk through the nominations on the living-room screen, making the target personal before the ceremony is even finished. Axel campaigns by promising she is the person who will say a name and take the heat, but the house wants less heat, not more. Only Bowie and Ripper vote to keep her opponent out. Axel leaves 13–2, angry and convinced Emmah ran the vote. In reality, Axel becomes the easy consensus because the house needs a first decision and her name is the least complicated one to say.",
-      "gameplayStyle": "blunt spark, early target",
+      "notes": "Axel’s bluntness makes her the first easy consensus target in a house desperate for one.",
+      "story": "Axel enters with force, honesty, and a short fuse that the house immediately understands how to use. The instant eviction twist gives her no veto and almost no time to reframe the story after early conflict with Emmah. Millie names Axel and Emmah from a locked HOH room, and the house hears the reasoning before Millie even returns downstairs. Axel campaigns with the argument that she is direct and useful, but the house decides direct danger is still danger. She is evicted 13–2, leaving angry and convinced Emmah did it to her. The season’s first exit becomes the template for weeks of people voting based on comfort as much as strategy.",
+      "gameplayStyle": "blunt force, no runway",
       "keyMoments": [
-        "Week 1: Clashes with Emmah over food, creating the first major house conflict.",
-        "Week 1: Is nominated by Millie beside Emmah in the instant eviction.",
-        "Week 1: Hears Millie’s private nomination reasoning broadcast to the house.",
-        "Week 1: Pitches herself as a direct player who will take shots openly.",
-        "Week 1: Fails to move MK and Chase in one-on-one campaigns.",
-        "Week 1: Is evicted 13–2, becoming the first houseguest out."
+        "Week 1: Clashes with Emmah over food and becomes the house’s first loud story.",
+        "Week 1: Is nominated by Millie during the instant eviction.",
+        "Week 1: Has no veto available and no full week to campaign.",
+        "Week 1: Pitches herself as direct danger the house can use.",
+        "Week 1: Is evicted 13–2 against Emmah."
       ],
       "bb": {
         "hohWins": 0,
@@ -866,195 +860,195 @@
       "evicted": "Caleb"
     }
   ],
-  "seasonNarrative": "Season 1 begins with suspicion before the first vote is even cast. The saboteur twist turns ordinary mistakes into accusations, and Chase’s hidden work poisons the early house so thoroughly that even after his reveal, the damage keeps moving. The pre-jury phase is defined by unstable alliances: The Dock Pact, The Undertow, The Wildcard Pact and The Merge Mob all form, fracture and expose one another before anyone reaches the jury. Bowie, Priya, Hicks and Caleb trade the most obvious strategic control, while Wayne sits inside the trust networks they all need. Once jury begins with Emmah’s eviction, the game compresses into competing pairs: Priya and Zee, Caleb and Hicks, Wayne and Raj, Wayne and Damien, and finally Wayne and Zee. Caleb’s veto streak threatens to overpower the endgame, but Wayne cuts him at final four and transforms from survivor into contender. Priya wins the final HOH and cuts Zee, choosing Wayne as the person she believes she can beat. The jury splits between respecting Priya’s precision and Wayne’s relational endurance, and Wayne wins 4–3 in a finale where nobody gets to pretend loyalty was simple.",
+  "seasonNarrative": "Season 1 is a house built on bad information. The saboteur twist poisons the early weeks, not because Chase earns the most money, but because everyone starts believing the wrong person at the wrong time. Early power swings are brutal: Millie wins an instant HOH and leaves the next week, Raj exposes his Wayne bond too soon, and Bowie becomes the season’s first true tactician by weaponizing rooms, rumors, and replacement nominations. The middle game is a maze of alliances with names that stop meaning what they used to mean: The Undertow, The Wildcard Pact, The Signal, The Guard, and The Outwit Club all protect people until the vote count says they do not. Caleb becomes the comp monster, Priya becomes the strategist, Zee becomes the social survivor, and Wayne becomes the player jurors keep forgiving. By the end, nearly every finalist has betrayed somebody on the jury, but Wayne’s betrayals feel less like contempt and more like survival. Priya wins the final HOH and cuts Zee, the most personal move of the season, only to lose 4–3 to Wayne. It is a season decided by one vote, but built by a hundred small conversations nobody thought mattered at the time.",
   "awards": {
     "bestStrategic": {
       "name": "Priya",
       "playerSlug": "priya",
-      "description": "Priya repeatedly positioned herself one move ahead of the room: saving Damien in week 8, saving Zee in week 9, breaking the week 10 tie against Emmah, surviving the week 13 block, and winning the final HOH. Her game lost by one vote, but strategically she shaped more endgame decisions than anyone else."
+      "description": "Priya repeatedly turned danger into position: saving Zee with veto, removing Emmah on a tie, cutting Zee at Final Three, and reaching the final two with one of the strongest strategic résumés in the house."
     },
     "bestSocial": {
       "name": "Wayne",
       "playerSlug": "wayne",
-      "description": "Wayne’s social game was not about being everyone’s closest ally; it was about being trusted enough that people kept explaining themselves to him. He reached the final two with zero eviction votes against and won because jurors still felt his relationships mattered, even after he broke some of them."
+      "description": "Wayne’s social game survived broken promises that should have ended him. Jurors kept finding reasons to respect him, forgive him, or at least believe he saw them as people before he saw them as votes."
     },
     "bestPhysical": {
       "name": "Caleb",
       "playerSlug": "caleb",
-      "description": "Caleb turned competitions into oxygen. With 1 HOH and 5 veto wins, he repeatedly kept himself alive and forced the house to solve him only when he finally could not vote or compete his way out.",
+      "description": "Caleb was the season’s defining competition force, especially in veto rounds where danger followed him and he kept winning anyway.",
       "wins": 6
     },
     "mostClutch": {
       "name": "Caleb",
       "playerSlug": "caleb",
-      "description": "When the block needed escaping, Caleb was the season’s answer. His late veto run, especially saving himself in weeks 12 and 13 and controlling the final-five veto outcome, made him the houseguest nobody wanted to face in a must-win spot."
+      "description": "When Caleb’s name hit the block, he repeatedly answered with veto wins, including the late-game saves in Weeks 12 and 13 that forced the house to find someone else."
     },
     "mostLoyal": {
-      "name": "Raj",
-      "playerSlug": "raj",
-      "description": "Raj’s loyalty to Wayne and his core deals defined his game, even when it made him predictable. He paid for that loyalty at final seven, but nobody could accuse him of not meaning the promises he made."
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Wayne did break promises, but the reason his game worked is that people experienced him as loyal long before they experienced him as dangerous. That perception won him Zee, Damien, Emmah, and Raj’s respect when it mattered."
     },
     "bestUnderdog": {
       "name": "Zee",
       "playerSlug": "zee",
-      "description": "Zee was nominated 4 times, survived repeated alliance collapses, and still reached the final three. His game was rarely clean, but he kept finding a way to remain useful when cleaner players were leaving."
+      "description": "Zee was nominated four times, misread by allies, exposed in multiple deals, and still reached Final Three by keeping himself socially useful after every collapse."
     },
     "biggestVillain": {
       "name": "Bowie",
       "playerSlug": "bowie",
-      "description": "Bowie drove rumors, set traps, exposed contradictions and treated HOH rooms like control centers. He was not malicious so much as relentless, and the house eventually evicted him because everyone could finally see the machinery."
+      "description": "Bowie lied cleanly, counted coldly, and turned rumors into weapons. Even when he apologized, the house could feel him measuring the next vote."
     },
     "mostChaotic": {
       "name": "Chase",
       "playerSlug": "chase",
-      "description": "As the saboteur, Chase gave the early season its paranoia engine. Failed notes, flipped suspicions, wrecked campaigns and the delayed reveal made him the source of chaos even in weeks where he looked calm."
+      "description": "Chase’s saboteur run made the whole house worse at trusting its own eyes, and his personal game added a showmance, broken alliances, and one of the season’s closest pre-jury votes."
     },
     "quietestThreat": {
       "name": "Damien",
       "playerSlug": "damien",
-      "description": "Damien spent most of the game as the person people trusted in private and underestimated in public. By the time he won HOH in week 12, the house realized his quiet connections had become an endgame path."
+      "description": "Damien rarely needed to be the loudest person in the room. His influence lived in private trust, careful timing, and the way people kept realizing too late that he had been in the room for everything."
     },
     "seasonMVP": {
       "name": "Wayne",
       "playerSlug": "wayne",
-      "description": "Wayne wins the title, survives the entire voting phase without a vote against him, makes the decisive final-four cut, and answers for his game well enough to flip or hold the jury votes he needs."
+      "description": "Wayne won the season by combining enough power, enough honesty, and enough jury goodwill to beat a sharper strategist in a one-vote finish."
     },
     "mostTragic": {
       "name": "Raj",
       "playerSlug": "raj",
-      "description": "Raj’s story is loyalty slowly becoming evidence against him. He survives as a pawn once, trusts the wrong structures, and is finally evicted by people who had promised him the end."
+      "description": "Raj’s whole identity was loyalty, and his eviction was caused by the exact people whose loyalty he trusted most: Wayne, Priya, and Caleb."
     },
     "mostUnlucky": {
       "name": "Bowie",
       "playerSlug": "bowie",
-      "description": "Bowie wins power, makes moves, and still watches his game become a house-wide target just before the deepest endgame. By week 11, even good arguments cannot overcome the fact that everyone sees him as the threat."
+      "description": "Bowie won plenty, but his timing was brutal: every successful move made him more obvious, and by Week 11 the whole house agreed his résumé could not be allowed to continue."
     },
     "ironPerson": {
       "name": "Caleb",
       "playerSlug": "caleb",
-      "description": "Caleb absorbs nominations, accusations, broken deals and five veto wins worth of pressure. The season keeps trying to remove him, and he keeps forcing it to try again."
+      "description": "Five nominations, five veto wins, three times saved off the block, and constant pressure made Caleb the season’s endurance story even outside the endurance comps."
     },
     "biggestMeltdown": {
       "name": "Emmah",
       "playerSlug": "emmah",
-      "description": "Emmah’s week 7 HOH turns personal fast: Hicks and Bowie go up, the house reacts to the tone, and her power week leaves as many fires as it puts out.",
+      "description": "Emmah’s Week 7 HOH speech made the Hicks nomination openly personal, and the room immediately recalculated her threat level.",
       "episode": 7
     },
     "playerOfSeason": {
       "gold": {
         "name": "Wayne",
         "playerSlug": "wayne",
-        "description": "The winner combined social capital, endgame timing and jury management into the season’s only complete winning case."
+        "description": "The winner, the jury manager, and the player whose endgame answers matched the season the jury lived through."
       },
       "silver": {
         "name": "Priya",
         "playerSlug": "priya",
-        "description": "Priya controlled huge parts of the endgame and won the final HOH, but her sharper edges cost her just enough jury goodwill."
+        "description": "The strategic runner-up whose decisions shaped the boot order, even if the final jury preferred Wayne’s relationships."
       }
     },
     "heroOfSeason": {
       "gold": {
         "name": "Wayne",
         "playerSlug": "wayne",
-        "description": "Wayne’s appeal came from being visibly human in a house built to punish sincerity. Even his betrayals hurt because people believed the bond first."
+        "description": "Wayne was the emotional center of the winning story: flawed, sincere, and still willing to admit the parts of his game that were not heroic."
       },
       "silver": {
-        "name": "Damien",
-        "playerSlug": "damien",
-        "description": "Damien played with restraint, empathy and quiet loyalty, becoming the person several jurors remembered as honest when honesty was expensive."
+        "name": "Caleb",
+        "playerSlug": "caleb",
+        "description": "Caleb’s fight from the block and his America’s Favourite win made him the audience’s most watchable hero, even when the house feared him."
       }
     },
     "villainOfSeason": {
       "gold": {
         "name": "Bowie",
         "playerSlug": "bowie",
-        "description": "Bowie’s fingerprints are on forged suspicion, exposed deals and several of the season’s dirtiest rooms. He made the game better and everyone more nervous."
+        "description": "Bowie made the most visible strategic messes: planted stories, public exposures, and HOH weeks designed to make other people own his moves."
       },
       "silver": {
         "name": "MK",
         "playerSlug": "mk",
-        "description": "MK weaponized information with a calm face, let wrong reads live when they helped, and left behind one last deal exposure on her way out."
+        "description": "MK’s information game and willingness to let others take the blame made her one of the season’s most dangerous social operators."
       }
     },
     "compBeast": {
       "gold": {
         "name": "Caleb",
         "playerSlug": "caleb",
-        "description": "Six total comp wins, including five vetoes, made Caleb the season’s defining competition threat."
+        "description": "Six total competition wins, including five vetoes, made Caleb the standard every late-game player measured their threat level against."
       },
       "silver": {
         "name": "Bowie",
         "playerSlug": "bowie",
-        "description": "Three HOHs and two vetoes gave Bowie enough power to shape the middle game and enough visibility to get evicted for it."
+        "description": "Three HOHs and two vetoes gave Bowie the second-most intimidating competition résumé and made his eviction feel inevitable."
       }
     },
     "socialQueenKing": {
       "gold": {
         "name": "Wayne",
         "playerSlug": "wayne",
-        "description": "Wayne’s social game held even after betrayal. Jurors could be hurt by him and still believe the relationship had been real."
+        "description": "Wayne won because jurors felt the relationship even after the betrayal. That is the social game in its hardest form."
       },
       "silver": {
         "name": "Zee",
         "playerSlug": "zee",
-        "description": "Zee survived on likability, humor and the ability to reenter rooms that had already counted him out."
+        "description": "Zee kept doors open with warmth, humor, and personal bonds long after his strategic position should have collapsed."
       }
     },
     "masterStrategist": {
       "gold": {
         "name": "Priya",
         "playerSlug": "priya",
-        "description": "Priya’s best weeks were about structure: she moved vetoes, ties and endgame pairs to keep multiple winning paths alive until the final night."
+        "description": "Priya’s path to the end was built through veto timing, tie-breaking, threat management, and a final cut that proved she understood win equity."
       },
       "silver": {
         "name": "Bowie",
         "playerSlug": "bowie",
-        "description": "Bowie saw the house faster than most and used HOH power aggressively, but his visibility eventually outran his cover."
+        "description": "Bowie’s best weeks were chessboards: nominees as decoys, replacements as targets, and rumors as leverage."
       }
     },
     "mostBrutalExit": {
       "gold": {
         "name": "Caleb",
         "playerSlug": "caleb",
-        "description": "At final four, Caleb has the résumé, the plea and the relationships, then Wayne casts the only vote and ends him 1–0."
+        "description": "Caleb survived the block all season with vetoes and charm, then left at Final Four on Wayne’s lone vote after believing that relationship was real."
       },
       "silver": {
         "name": "Raj",
         "playerSlug": "raj",
-        "description": "Raj is evicted by Wayne, Priya and Caleb after multiple endgame promises, turning loyalty into one of the season’s harshest exits."
+        "description": "Raj was evicted by Wayne, Priya, and Caleb after trusting all three, turning loyalty into the season’s most painful liability."
       }
     },
     "advantageKing": {
       "gold": {
         "name": "Chase",
         "playerSlug": "chase",
-        "description": "Chase is the saboteur, banks $10,000, and quietly warps the early house’s trust even when individual jobs fail."
+        "description": "Chase’s saboteur role warped the first month, earned money, and sent the house into false accusations that outlived the twist itself."
       },
       "silver": {
         "name": "Priya",
         "playerSlug": "priya",
-        "description": "Priya maximized veto power better than anyone, using it to save Damien, save Zee, and redirect entire weeks."
+        "description": "Priya’s best advantage was veto control: she used power at exactly the moments that protected her preferred endgame."
       }
     },
     "mostRobbedPlayer": {
       "gold": {
         "name": "Caleb",
         "playerSlug": "caleb",
-        "description": "Caleb’s six comp wins and central endgame presence look like a winning résumé, but he is cut one vote before finale night by the person he thought would protect him."
+        "description": "Caleb had the competition résumé, the audience support, and multiple jurors arguing his case, but one Final Four vote kept him out of the chairs."
       }
     },
     "ftcGame": {
       "gold": {
         "name": "Wayne",
         "playerSlug": "wayne",
-        "description": "Wayne’s finale answers do not pretend his game was cleaner than it was. That honesty lets jurors reward the game without needing to forgive every piece of it."
+        "description": "Wayne’s finale performance worked because he did not overclaim. He admitted fear, survival, and following when necessary, which made the jury believe the rest of his case."
       }
     },
     "mostRobbedFinalist": {
       "gold": {
         "name": "Priya",
         "playerSlug": "priya",
-        "description": "Priya wins the final HOH, makes the final cut, and gives a strong closing case, but loses 4–3 after one jury question and one changed vote swing the season away."
+        "description": "Priya lost by one vote after controlling several of the season’s most important turns, including Emmah’s eviction, Zee’s save, and the final cut."
       }
     },
     "messiestFeud": {
@@ -1062,24 +1056,24 @@
         "Emmah",
         "Hicks"
       ],
-      "description": "What begins as repeated arguments over space, jokes, pans and respect becomes a season-long strategic fault line. Their feud shapes nominations, votes and jury bitterness long after the original fights stop mattering."
+      "description": "What began as irritation over space, pans, and respect became one of the season’s longest strategic fault lines, with both players using the feud as proof the other had to go."
     },
     "biggestBetrayal": {
       "betrayer": "Wayne",
       "betrayed": "Caleb",
       "episode": 15,
-      "description": "Wayne promises Caleb the end, wins the final-four veto, leaves nominations the same, and casts the only vote to evict him. It is the move that makes Wayne a finalist and nearly costs him Caleb’s jury vote."
+      "description": "Wayne had a late final two with Caleb, won the only veto vote at Final Four, and evicted him anyway, cutting the season’s biggest comp threat one step from finale night."
     },
     "secondBiggestBetrayal": {
-      "betrayer": "Wayne",
+      "betrayer": "Priya",
       "betrayed": "Raj",
       "episode": 12,
-      "description": "Wayne’s week 2 final two with Raj is one of the season’s foundational relationships, but at final seven Wayne votes Raj out and sends his closest original ally to jury."
+      "description": "Priya had a final three with Raj, then voted him out when the numbers demanded it, helping destroy one of the season’s oldest loyalty structures."
     },
     "legacyMoment": {
-      "name": "Priya cuts Zee at final three",
+      "name": "Priya cuts Zee at Final Three",
       "episode": 16,
-      "description": "After winning the final HOH, Priya chooses Wayne over Zee, ending her most personal relationship in the game. The move defines her finalist case and gives Zee the final jury vote that crowns Wayne."
+      "description": "Priya wins the final HOH and chooses Wayne over Zee, ending her most personal relationship in the game and setting up the 4–3 jury verdict that defines the season."
     },
     "fanFavorite": {
       "name": "Caleb",

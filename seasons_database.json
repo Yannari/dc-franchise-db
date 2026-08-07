@@ -36,7 +36,9 @@
       "theme": "Classic island survival",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s1-cast.png",
-      "emoji": "🏝️"
+      "emoji": "🏝️",
+      "format": "total-drama",
+      "seasonId": "td-1"
     },
     {
       "seasonNumber": 2,
@@ -68,7 +70,9 @@
       "theme": "Only Returnees",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s2-cast.png",
-      "emoji": "🔁"
+      "emoji": "🔁",
+      "format": "total-drama",
+      "seasonId": "td-2"
     },
     {
       "seasonNumber": 3,
@@ -100,7 +104,9 @@
       "theme": "New generation rises",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s3-cast.png",
-      "emoji": "🌋"
+      "emoji": "🌋",
+      "format": "total-drama",
+      "seasonId": "td-3"
     },
     {
       "seasonNumber": 4,
@@ -132,7 +138,9 @@
       "theme": "All-Stars season",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s4-cast.png",
-      "emoji": "⭐"
+      "emoji": "⭐",
+      "format": "total-drama",
+      "seasonId": "td-4"
     },
     {
       "seasonNumber": 5,
@@ -164,7 +172,9 @@
       "theme": "Rescue Island with 3 tribes",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s5-cast.png",
-      "emoji": "🛟"
+      "emoji": "🛟",
+      "format": "total-drama",
+      "seasonId": "td-5"
     },
     {
       "seasonNumber": 6,
@@ -199,7 +209,9 @@
       "theme": "2 tribes + redemption island",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s6-cast.png",
-      "emoji": "🩸"
+      "emoji": "🩸",
+      "format": "total-drama",
+      "seasonId": "td-6"
     },
     {
       "seasonNumber": 7,
@@ -234,7 +246,9 @@
       "theme": "2 Tribes (10 Favorites and 10 Fans)",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s7-cast.png",
-      "emoji": "🤩"
+      "emoji": "🤩",
+      "format": "total-drama",
+      "seasonId": "td-7"
     },
     {
       "seasonNumber": 8,
@@ -271,7 +285,9 @@
       "theme": "The Best Heroes The Worst Villains and the Newbies",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s8-cast.png",
-      "emoji": "♦️"
+      "emoji": "♦️",
+      "format": "total-drama",
+      "seasonId": "td-8"
     },
     {
       "seasonNumber": 9,
@@ -306,7 +322,9 @@
       "theme": "18 newbies fight for the title of King of Power",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s9-cast.png",
-      "emoji": "🪬"
+      "emoji": "🪬",
+      "format": "total-drama",
+      "seasonId": "td-9"
     },
     {
       "seasonNumber": 10,
@@ -342,7 +360,9 @@
       "theme": "Season 10 begins as Champions vs Contenders and mutates into a war of information, loyalty, and public exposure. The pre-merge is defined by advantages, tribe swaps, Redemption Island, and Bowie's early rise as the season's architect, while Jasmine quietly collects tools, reads, and relationships. The merge detonates with Priya's return, Stephanie's ambassador elimination, Sanders's first fall, and The Oath becoming the dominant but unstable machine. From there, almost every vote exposes someone: Courtney exposes Cody and Bowie, Scott exposes Bowie, Priya exposes Bowie, and Bowie keeps surviving anyway. Redemption Island becomes its own mythology through Priya's early streak and Sanders's five-duel run. The endgame narrows around visible pairs — Jasmine and Brick, Ryan and Carrie, Bowie and whoever he can still convince — until the jury removes Brick and leaves Bowie and Jasmine in the final. In the end, the season's strategist reaches the finish line, but the season's survivor wins the race.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s10-cast.png",
-      "emoji": "⚔️"
+      "emoji": "⚔️",
+      "format": "total-drama",
+      "seasonId": "td-10"
     },
     {
       "seasonNumber": 11,
@@ -378,7 +398,9 @@
       "theme": "Cursed Island begins as a survival test and becomes a study in how trust breaks under pressure. The pre-merge is defined by sabotage, swaps, exposed idols, and tribes that never fully stabilize: Ashley is framed, Drew is discarded, Will is betrayed, Eureka is rocked out, Wix is exiled by emissary power, Grett detonates half the game on her way out, Nick exposes alliances, and Sterling falls to a fractured Teal endgame. At the merge, no alliance survives first contact with public voting, idol insurance, or personal grudges. Ellie weaponizes a Super Idol, Dan loses the one read he needed, Jake's heart becomes both shield and target, and Fiore's Second Life Amulet rewrites the final six. Through it all, Miriam and Thom build a bond so visible it should destroy them, but instead it carries them to the finale. The season ends not with a jury speech, but with a volcanic race where Miriam weaponizes that bond one final time and steals the million from the person who trusted her most.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s11-cast.png",
-      "emoji": ""
+      "emoji": "",
+      "format": "total-drama",
+      "seasonId": "td-11"
     },
     {
       "seasonNumber": 12,
@@ -414,7 +436,9 @@
       "theme": "Generations is a season about unstable power. The early game belongs to tribes that cannot keep their own alliances intact: The Camp Takeover fractures immediately, The Ride or Die collapses in betrayal, and nearly every bloc becomes a temporary shelter rather than a home. The pre-merge is defined by chaos mechanisms — swaps, journeys, Shot in the Dark saves, vote steals, vote blocks, and tiebreakers that turn simple votes into disasters. At the merge, the game becomes openly predatory: Jacques steals Ellie’s idol, Karol is removed in a public vote, Hunter and Jen are cut for their social danger, and James is eliminated only to fight his way back through the Aftermayhem. The endgame is a knife fight among players nobody fully trusts: Riya survives by force, Aiden by perception, Ally by social maneuvering, Jacques by advantage terror, and James by refusing to stay dead. By the finale, the jury rewards not the cleanest game, but the player who best explains the wreckage. James wins because he makes every betrayal sound like architecture.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s12-cast.png",
-      "emoji": ""
+      "emoji": "",
+      "format": "total-drama",
+      "seasonId": "td-12"
     },
     {
       "seasonNumber": 13,
@@ -450,7 +474,9 @@
       "theme": "Total Drama Doom Island begins as a three-tribe scramble and slowly becomes a referendum on what survives longer: control or connection. The pre-merge is dominated by unstable tribes, Rescue Island pressure, repeated revotes, and advantage chaos, with Julia, Fiore, Aiden, and Alec constantly trying to write the story before someone else can. The merge detonates every old alliance; returnees reshape the numbers, public bonds become liabilities, and the biggest threats fall in a brutal sequence of revotes, twists, and social betrayals. By the end, Julia has the cleaner strategic résumé and the bigger challenge count, but Wayne has the louder coalition of lived relationships. The season's final image is not a jury vote but a race: Julia sprinting with everything she engineered behind her, Wayne stumbling forward with everyone he cared for screaming him home.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s13-cast.png",
-      "emoji": ""
+      "emoji": "",
+      "format": "total-drama",
+      "seasonId": "td-13"
     },
     {
       "seasonNumber": 14,
@@ -486,7 +512,9 @@
       "theme": "Carnival of Chaos is a season where the midway never stops taking payment. The pre-merge is built on unstable shelters, food scarcity, Rescue Island pressure, and alliances that form quickly because nobody feels safe for long. Jade and Spencer begin as mutual respect and end as open hatred; Anastasia and Isabel turn Blue Team into a war zone; Benji, Ivy, Zaid, Hannah, and Marissa prove that showmances and ride-or-die bonds can be both shelter and target. The merge detonates the game: idols wipe votes, extra votes fail to control chaos, the Edge returns Ivy and Richard, and the jury starts tracking who it believes is really running each boot. By the endgame, shields become threats one by one — Richard, Ivy, Zaid, Marissa, Isabel, Spencer, Hannah, and Anastasia all fall as their stories become too visible. The finale strips away the jury vote and asks only who can finish the Carnival Rescue. Jade answers with the same thing that carried her all season: read the pattern, cut through the noise, and do not look back.",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s14-cast.png",
-      "emoji": ""
+      "emoji": "",
+      "format": "total-drama",
+      "seasonId": "td-14"
     }
   ]
 }

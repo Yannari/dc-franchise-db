@@ -4,6 +4,7 @@
 import { gs, players, seasonConfig } from './core.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
+import { seasonId, DEFAULT_FORMAT } from './shows.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -13,6 +14,69 @@ function _slug(name) {
 
 function _clean(val, fallback = '') {
   return (val && val !== '[AI_FILL]') ? val : fallback;
+}
+
+// ── Show tagging ─────────────────────────────────────────────────────
+// Every season record and every season detail says which show it came from.
+// The numeric `season` field stays exactly where it always was, alongside the
+// new `format`/`seasonId`, so a page that has not been updated yet still finds
+// the number it expects.
+
+/**
+ * Stamp `format` + `seasonId` onto a season detail.
+ *
+ * A `bb` stat block on a detail tagged `total-drama` is not an ambiguity to be
+ * resolved downstream — it is a split-brain row. The D1 sync reads `det.bb` as
+ * "this is Big Brother" whenever nothing contradicts it, so that detail writes
+ * an appearance tagged Total Drama with rows in BOTH `td_appearances` and
+ * `bb_appearances`: two homes, no owner, and career totals that double-count
+ * forever after. There is no season for which the combination is meaningful, so
+ * this throws rather than quietly picking a winner.
+ */
+function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
+  if (!detail) return detail;
+  if (format !== 'big-brother' && detail.bb) {
+    throw new Error(
+      `Season detail for season ${detail.season} carries a Big Brother stat block ` +
+      `but would be tagged "${format}" — refusing to write a split-brain appearance.`);
+  }
+  detail.format = format;
+  detail.seasonId = seasonId(format, detail.season);
+  return detail;
+}
+
+/**
+ * Recompute a player's per-show career totals from their season details.
+ *
+ * The universal facts (totalSeasons, wins, bestPlacement, avgPlacement, tier)
+ * stay top-level: they mean the same thing in every format, and six pages read
+ * them there. Challenge wins, idols, HOHs and vetoes do not survive the trip
+ * between shows, so those live under the show that produced them.
+ *
+ * Derived, never authored — recomputed wholesale on every merge, so a
+ * correction to a season detail can never leave a stale career total behind.
+ */
+function _rebuildByShow(player) {
+  const byShow = {};
+  for (const det of player.seasonDetails || []) {
+    const format = det.format || DEFAULT_FORMAT;
+    const bucket = (byShow[format] ||= { seasons: 0 });
+    bucket.seasons++;
+    if (format === 'big-brother') {
+      const bb = det.bb || {};
+      bucket.totalCompWins   = (bucket.totalCompWins   || 0) + (det.challengeWins || 0);
+      bucket.hohWins         = (bucket.hohWins         || 0) + (bb.hohWins        || 0);
+      bucket.vetoWins        = (bucket.vetoWins        || 0) + (bb.vetoWins       || 0);
+      bucket.timesNominated  = (bucket.timesNominated  || 0) + (bb.timesNominated || 0);
+    } else {
+      bucket.totalChallengeWins = (bucket.totalChallengeWins || 0) + (det.challengeWins || 0);
+      bucket.totalImmunityWins  = (bucket.totalImmunityWins  || 0) + (det.immunityWins  || 0);
+      bucket.totalRewardWins    = (bucket.totalRewardWins    || 0) + (det.rewardWins    || 0);
+      bucket.totalIdolsFound    = (bucket.totalIdolsFound    || 0) + (det.idolsFound    || 0);
+    }
+  }
+  player.byShow = byShow;
+  return player;
 }
 
 function _allPlayerNames() {
@@ -1325,6 +1389,10 @@ export function extractSeasonTemplate() {
 
   return {
     seasonNumber: rawStats.seasonNumber,
+    // Mirrors the `format` the Big Brother template carries, so every consumer
+    // of a season document reads the show off the same field either way.
+    format: DEFAULT_FORMAT,
+    seasonId: seasonId(DEFAULT_FORMAT, rawStats.seasonNumber),
     title: '[AI_FILL]',
     subtitle: '[AI_FILL]',
     castSize: rawStats.castSize,
@@ -1417,6 +1485,7 @@ function _mergeFranchiseDatabase(existing, rawStats, template) {
     const winnerPd = rawStats.players[rawStats.winner] || {};
     db.champions.push({
       season: seasonNum,
+      format: DEFAULT_FORMAT,
       seasonTitle: _clean(template.title, `Season ${seasonNum}`),
       emoji: _clean(template.emoji),
       winner: rawStats.winner,
@@ -1785,7 +1854,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
 
     // Add season detail with AI narratives
     if (!player.seasonDetails) player.seasonDetails = [];
-    player.seasonDetails.push({
+    player.seasonDetails.push(_tagSeasonDetail({
       season: seasonNum,
       placement: pd.placement,
       status: pd.phase,
@@ -1809,7 +1878,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       keyMoments: (filled.keyMoments && filled.keyMoments !== '[AI_FILL]') ? filled.keyMoments : [],
       alliances: pd.alliances.map(a => a.name || a),
       rivalries: pd.rivalries.map(r => r.player || r)
-    });
+    }, DEFAULT_FORMAT));
 
     // Append season story with separator (strip old version on re-export)
     if (_clean(filled.story)) {
@@ -1833,6 +1902,8 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       ? Math.round(allPlacements.reduce((s, v) => s + v, 0) / allPlacements.length * 100) / 100
       : null;
     player.bestPlacement = allPlacements.length ? Math.min(...allPlacements) : null;
+
+    _rebuildByShow(player);
 
     // Update badges
     if (pd.phase === 'Winner' && !player.badges?.includes(`S${seasonNum} Winner`)) {
@@ -1862,6 +1933,12 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
   const bestStr = aiAwards.bestStrategic || aiAwards.masterStrategist?.gold;
   db.seasons.push({
     seasonNumber: seasonNum,
+    // This merge is the Total Drama path — the house has its own (see
+    // mergeBigBrotherSeason). Tagged here so the season record and the season
+    // details land in the same show; the sync keys details off (format, number)
+    // and SILENTLY SKIPS any detail whose season record does not match.
+    format: DEFAULT_FORMAT,
+    seasonId: seasonId(DEFAULT_FORMAT, seasonNum),
     title: _clean(template.title, `Season ${seasonNum}`),
     subtitle: _clean(template.subtitle),
     castSize: rawStats.castSize,
@@ -2197,6 +2274,7 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
   return {
     seasonNumber: meta.seasonNumber ?? 0,
     format: 'big-brother',
+    seasonId: seasonId('big-brother', meta.seasonNumber ?? 0),
     title: '[AI_FILL]',
     subtitle: '[AI_FILL]',
     castSize: meta.castSize ?? cast.length,
@@ -2308,9 +2386,8 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     player.totalHohWins = (player.totalHohWins || 0) + (bb.hohWins || 0);
     player.totalVetoWins = (player.totalVetoWins || 0) + (bb.vetoWins || 0);
 
-    player.seasonDetails.push({
+    player.seasonDetails.push(_tagSeasonDetail({
       season: seasonNum,
-      format: 'big-brother',
       placement: entry.placement,
       status: entry.status,
       challengeWins: compWins,
@@ -2327,7 +2404,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       gameplayStyle: _clean(entry.gameplayStyle),
       keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
                 : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
-    });
+    }, 'big-brother'));
 
     // Recomputed across both shows on purpose — one career, several résumés.
     const places = player.seasonDetails.map(sd => sd.placement).filter(p => p && p < 99);
@@ -2335,6 +2412,8 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       ? Math.round(places.reduce((s, v) => s + v, 0) / places.length * 100) / 100
       : null;
     player.bestPlacement = places.length ? Math.min(...places) : null;
+
+    _rebuildByShow(player);
 
     if (entry.status === 'Winner') {
       player.badges = player.badges || [];

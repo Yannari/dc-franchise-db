@@ -913,27 +913,122 @@ git commit -m "The guard that says Total Drama did not notice any of this"
 
 **Files:** none — this is an operational task.
 
+> **Every `wrangler` command below carries `--config worker/wrangler.toml`.** The D1
+> binding lives in `worker/wrangler.toml`, not at the repo root. Without the flag every
+> command fails with `Couldn't find a D1 DB with the name or binding 'dc-franchise'`.
+> Run them from the repo root with the flag, not by `cd`-ing into `worker/`.
+
 - [ ] **Step 1: Ask before touching the live database**
 
 The remote D1 holds the real franchise. Confirm with the user before running anything with `--remote`, and confirm the local run in Task 2 succeeded twice.
 
-- [ ] **Step 2: Apply the migration remotely**
+- [ ] **Step 2: Take a backup — before anything else**
+
+The migration **drops and recreates five tables** holding the real franchise
+(`appearances`, `bonds`, `seasons`, `live_season`, `players`), and D1 executes a
+`--file` **statement by statement over HTTP, not in one transaction**. A failure
+partway through leaves the database half-migrated with no rollback. `DROP TABLE
+players` is irreversible for the four career-total columns this migration removes —
+they exist nowhere else once the statement lands.
+
+Do both of these. They fail differently, so having both matters.
 
 ```bash
-npx wrangler d1 execute dc-franchise --remote --file worker/multishow_schema.sql --yes
-npx wrangler d1 execute dc-franchise --remote --file worker/verify_multishow.sql
+# a) Full logical export to a file you keep until the site is verified good.
+npx wrangler d1 export dc-franchise --config worker/wrangler.toml --remote \
+  --output backups/dc-franchise-pre-multishow-$(date +%Y%m%d-%H%M).sql
+
+# b) Record a Time Travel bookmark — the point-in-time you can rewind to.
+npx wrangler d1 time-travel info dc-franchise --config worker/wrangler.toml
+# Write the returned bookmark down here before continuing: ____________________
+```
+
+Restore, if it goes wrong:
+
+```bash
+# Preferred: rewind the whole database to the bookmark from (b).
+npx wrangler d1 time-travel restore dc-franchise --config worker/wrangler.toml \
+  --bookmark <BOOKMARK-FROM-STEP-2b>
+
+# Fallback, if Time Travel is unavailable or the window has passed: replay the export.
+npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote \
+  --file backups/dc-franchise-pre-multishow-<STAMP>.sql --yes
+```
+
+Expected: the export file is non-empty and contains `CREATE TABLE appearances`, and
+you have a bookmark string written down.
+
+- [ ] **Step 3: Do it in this order — the ordering is the whole risk**
+
+Applying the migration while the OLD worker is still deployed breaks
+`/api/leaderboard`, `/api/relationships` and `/api/sync-seasons` **immediately** —
+the old queries reference `appearances.challenge_wins` and a bare
+`seasons.season_number`, both of which stop existing the moment the migration lands.
+The live site starts erroring before you get to the sync.
+
+The order, and why each step must precede the next:
+
+1. **Push the backfilled JSON to `main`.**
+   `/api/sync-seasons` fetches `players_database.json` **from GitHub** — it takes no
+   request body (see Step 5). If the format-tagged JSON is not on the branch GitHub
+   Pages serves before the sync runs, the sync re-imports the *old* untagged data.
+2. **Deploy the new worker.**
+   `npx wrangler deploy --config worker/wrangler.toml`
+   The new worker's queries read `td_appearances` and `(format, season_number)`.
+   Deployed *before* the migration, it is broken for the few minutes until step 3 —
+   which is the shorter and more recoverable outage of the two orderings, because
+   the alternative (old worker against new schema) breaks and *stays* broken until
+   you deploy anyway.
+3. **Apply the migration** (Step 4 below). Now the schema matches the deployed worker.
+4. **Run the sync** (Step 5 below) — it repopulates `td_appearances`, which the
+   migration creates empty of the per-season stat columns beyond the frozen snapshot.
+   Nothing before this step can run it, because the sync endpoint itself needs the
+   new schema.
+5. **Verify** (Step 6 below).
+
+Do not interleave. If you must pause, pause *between* numbered steps, not inside one.
+
+- [ ] **Step 4: Apply the migration remotely**
+
+```bash
+npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote \
+  --file worker/multishow_schema.sql --yes
+npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote \
+  --file worker/verify_multishow.sql
 ```
 Expected: the same counts as local — `appearances_columns.leaked` = 0, seasons all `total-drama`.
 
-- [ ] **Step 3: Re-sync the data**
+Read the re-run caveats in the header of `worker/multishow_schema.sql` first. They
+are not decorative — they describe three ways a *second* application of the file
+relabels or resurrects rows.
 
-Trigger `/api/sync-seasons` against the deployed worker with the backfilled `players_database.json`, then re-run the verification.
-Expected: `td_appearances` populated, `challenge_wins` non-zero.
+- [ ] **Step 5: Re-sync the data**
 
-- [ ] **Step 4: Check the deployed site**
+```bash
+curl -X POST https://<worker-host>/api/sync-seasons -H "Authorization: Bearer <STUDIO_TOKEN>"
+```
+
+**The header is `Authorization: Bearer`, not `X-Studio-Token`.** `worker-studio.js`
+reads `request.headers.get('Authorization')` and strips a `Bearer ` prefix; any
+other header name returns `401 unauthorized` — at the one step that repopulates
+`td_appearances`, which is the step you least want to fail silently past.
+
+**`/api/sync-seasons` takes NO request body.** It fetches `players_database.json`
+from GitHub itself, using `GITHUB_REPO`/`GITHUB_BRANCH` from `worker/wrangler.toml`.
+An earlier draft of this plan suggested
+`curl --data-binary @players_database.json` — **that does not work**; the body is
+ignored entirely. This is why step 1 of the ordering above (push the JSON) has to
+happen before the sync, not alongside it.
+
+Then re-run the verification from Step 4.
+Expected: `td_appearances` populated, `challenge_wins` non-zero, `skipped` = 0.
+
+- [ ] **Step 6: Check the deployed site**
 
 Load `leaderboards.html` and `player.html` on the live site and confirm the numbers match what the local run produced.
 Expected: identical leaderboards to before the migration.
+
+Only after this passes should the backup from Step 2 be considered no longer needed.
 
 ---
 

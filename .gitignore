@@ -23,3 +23,19 @@ node_modules/
 
 # Uncompressed audio — convert to .mp3 before committing (keeps the repo lean)
 assets/audio/*.wav
+
+# Local D1 state. `wrangler dev --local` and `d1 execute --local` write a whole
+# SQLite database in here; it is scratch, it is large, and committing it would put
+# a stale copy of the franchise into the repo.
+.wrangler/
+worker/.wrangler/
+
+# Subagent-driven development scratch: ledgers, briefs, reports, review packages.
+.superpowers/
+
+# Database backups. The production runbook tells an operator to `wrangler d1 export`
+# before migrating, which writes a full logical dump of the franchise into the
+# checkout — and the very next step tells them to push to main. Without this, one
+# routine `git add -A` publishes the entire database to a public repo, permanently.
+backups/
+*.dump.sql

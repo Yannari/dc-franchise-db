@@ -19,7 +19,8 @@
       "winner": "Lindsay",
       "playerSlug": "lindsay",
       "finalVote": "5-4",
-      "runnerUp": "Alejandro"
+      "runnerUp": "Alejandro",
+      "format": "total-drama"
     },
     {
       "season": 2,
@@ -28,7 +29,8 @@
       "winner": "Duncan",
       "playerSlug": "duncan",
       "finalVote": "5-3-1",
-      "runnerUp": "Alejandro & Lindsay"
+      "runnerUp": "Alejandro & Lindsay",
+      "format": "total-drama"
     },
     {
       "season": 3,
@@ -37,7 +39,8 @@
       "winner": "Emma",
       "playerSlug": "emma",
       "finalVote": "4-3-1",
-      "runnerUp": "Scott & Cameron"
+      "runnerUp": "Scott & Cameron",
+      "format": "total-drama"
     },
     {
       "season": 4,
@@ -46,7 +49,8 @@
       "winner": "Alejandro",
       "playerSlug": "alejandro",
       "finalVote": "7-6-1",
-      "runnerUp": "Zoey & Scott"
+      "runnerUp": "Zoey & Scott",
+      "format": "total-drama"
     },
     {
       "season": 5,
@@ -55,7 +59,8 @@
       "winner": "Mickey",
       "playerSlug": "mickey",
       "finalVote": "3-3-2 (tiebreak)",
-      "runnerUp": "Sky & Ryan"
+      "runnerUp": "Sky & Ryan",
+      "format": "total-drama"
     },
     {
       "season": 6,
@@ -67,7 +72,8 @@
       "runnerUp": "Mickey & Jay",
       "keyStats": "7-1-0 jury win; 4 individual immunities; 4 total challenge wins; only 2 votes against.",
       "strategy": "Kept target low while steering vote flows, exploiting pair cover and timely immunity wins to consolidate control.",
-      "legacy": "A crowned villain: precise, low-agro control culminating in a blowout FTC. Benchmarks a 'low-target, high-control' masterclass for this format."
+      "legacy": "A crowned villain: precise, low-agro control culminating in a blowout FTC. Benchmarks a 'low-target, high-control' masterclass for this format.",
+      "format": "total-drama"
     },
     {
       "season": 7,
@@ -79,7 +85,8 @@
       "runnerUp": "Cody & Carrie",
       "keyStats": "4 total challenge wins, 1 immunity, 1 idol found and timed perfectly, broad cross-tribe relationships; only 5 votes against all season.",
       "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
-      "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance."
+      "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance.",
+      "format": "total-drama"
     },
     {
       "season": 8,
@@ -92,7 +99,8 @@
       "runnerUp": "Sanders",
       "keyStats": "First dual winners in franchise history. Alejandro: 4 individual immunities, 7 total challenge wins, 4 jury votes. Cameron: 4 jury votes, survived MacArthur extreme hatred, lowest votes against of finalists.",
       "strategy": "Alejandro used shield management (Pete → Leshawna → Sanders) and physical dominance to reach the Final 2. Cameron survived as the indispensable 'useful brain' no one could afford to cut. Together they outlasted the Civilian Hegemony (Gerry/Jen/Sanders) that controlled 75% of the merge.",
-      "legacy": "The first co-winners in franchise history, produced by a historic 4-4 jury deadlock. Alejandro becomes the franchise's only two-time winner. Cameron wins his first title after reaching the finale in S3 as runner-up. MacArthur wins Fan Favorite."
+      "legacy": "The first co-winners in franchise history, produced by a historic 4-4 jury deadlock. Alejandro becomes the franchise's only two-time winner. Cameron wins his first title after reaching the finale in S3 as runner-up. MacArthur wins Fan Favorite.",
+      "format": "total-drama"
     },
     {
       "season": 9,
@@ -104,7 +112,8 @@
       "runnerUp": "Millie & Chase",
       "keyStats": "5–3–0 jury win; 1 individual immunity; 2 votes received; possessed 1 stolen idol, Knowledge is Power, and an Extra Vote; executed the Inheritance Heist.",
       "legacy": "Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
-      "votesAgainst": 2
+      "votesAgainst": 2,
+      "format": "total-drama"
     },
     {
       "season": 10,
@@ -117,7 +126,8 @@
       "keyStats": "Jasmine wins Season 10 after 3 challenge wins, 4 immunity moments, 6 votes against, and a dominant Rejected Olympic Relay performance in Episode 18.",
       "strategy": "Jasmine's game is built on pressure reads, loyal shields, and perfectly timed exits from danger. She begins as the human lie detector with Safety Without Power in her pocket, survives the fracture of the Chaos Crew, rebuilds through Brick and Priya, and keeps slipping through votes where bigger strategists think they have her cornered.",
       "legacy": "Her legacy is the champion who kept being underestimated as merely loyal or emotional, then proved in the finale that loyalty can be fuel. She beats Bowie not by outscheming him, but by outlasting his schemes and outrunning him when there is nowhere left to hide.",
-      "votesAgainst": 6
+      "votesAgainst": 6,
+      "format": "total-drama"
     },
     {
       "season": 11,
@@ -130,7 +140,8 @@
       "keyStats": "Miriam wins Cursed Island with 1 challenge win, 1 immunity, 8 votes against, and survival through repeated minority positions, idol scares, revotes, tie pressure, and an endgame where nearly every remaining player saw her as dangerous too late.",
       "strategy": "Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
       "legacy": "Miriam leaves as the season's definitive survivor: underestimated at the dock, painted as a target at merge, nearly cracked by paranoia, and still standing with the million when the volcano erupts. Her win is remembered less as a clean march and more as a stubborn, bruising refusal to be erased.",
-      "votesAgainst": 8
+      "votesAgainst": 8,
+      "format": "total-drama"
     },
     {
       "season": 12,
@@ -143,7 +154,8 @@
       "keyStats": "James wins 7-2 over Riya after surviving 9 votes against, winning 1 individual immunity, returning through the Aftermayhem, and claiming final immunity at the last possible moment.",
       "strategy": "James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
       "legacy": "James leaves as one of the season’s defining schemers: messy, polarizing, and frequently distrusted, but impossible for the jury to deny. His win becomes the signature case study for how a player can be voted out, fight back in, and still control the ending.",
-      "votesAgainst": 9
+      "votesAgainst": 9,
+      "format": "total-drama"
     },
     {
       "season": 13,
@@ -156,7 +168,8 @@
       "keyStats": "Wayne wins Season 13 after surviving 8 votes against, one individual immunity, multiple alliance fractures, and a finale decided on the course instead of by jury vote.",
       "strategy": "Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
       "legacy": "Wayne leaves Doom Island as the rare winner whose biggest weapon is sincerity. In a season dominated by schemers, idols, and revotes, he proves that loyalty can be messy, imperfect, and still strong enough to win.",
-      "votesAgainst": 8
+      "votesAgainst": 8,
+      "format": "total-drama"
     },
     {
       "season": 14,
@@ -169,7 +182,8 @@
       "keyStats": "Jade wins with 3 challenge wins, 3 immunities, 10 votes against, and a finale victory decided on the field rather than by jury ballot.",
       "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
       "legacy": "Her legacy is cold, controversial, and undeniable — a winner who survives public blowups, broken alliances, and jury hostility by making the last challenge her final argument.",
-      "votesAgainst": 10
+      "votesAgainst": 10,
+      "format": "total-drama"
     }
   ],
   "records": {

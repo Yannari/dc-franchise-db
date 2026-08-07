@@ -8,6 +8,38 @@ Run from the repo root:
 
 Install dependency if needed:
   pip install jsonschema
+
+-------------------------------------------------------------------------------
+CROSS-FORMAT AGGREGATE CONTRACT  (read this before "fixing" a number mismatch)
+-------------------------------------------------------------------------------
+The database now holds more than one show. Every season and every player season
+detail carries a `format` tag ("total-drama" or "big-brother"), and that tag is
+REQUIRED — a season with no show can never ship.
+
+Because of that, a player object holds numbers at two different altitudes, and
+they are NOT the same number:
+
+  * TOP-LEVEL career fields on a player (`totalChallengeWins`,
+    `totalImmunityWins`, `totalRewardWins`, `totalVotesAgainst`,
+    `totalIdolsFound`, `totalJuryVotes`, `wins`, `totalSeasons`,
+    `bestPlacement`, `avgPlacement`) are CROSS-FORMAT AGGREGATES. They span
+    every show the player has ever appeared in. `js/stats-export.js`
+    additionally folds Big Brother COMPETITION wins into top-level
+    `totalChallengeWins`.
+
+  * PER-SHOW numbers live in `byShow[<format>]`, and each bucket is SUMMED from
+    that show's season details only.
+
+Therefore, for any player who has played more than one show, top-level totals
+will legitimately EXCEED `byShow["total-drama"]`. That is correct data, not a
+bug. A page must pick one altitude and say which: use `byShow[fmt]` when the
+context is a single show, and the top-level fields when the context is the
+player's whole career.
+
+This validator deliberately does NOT assert that top-level == sum(byShow).
+Such a rule would be wrong by construction. (Separately, `tools/audit_data.py`
+tracks genuine top-level-vs-seasonDetails disagreements within a single show.)
+-------------------------------------------------------------------------------
 """
 
 import json
@@ -21,8 +53,7 @@ if sys.stdout.encoding != "utf-8":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 try:
-    import jsonschema
-    from jsonschema import validate, ValidationError
+    from jsonschema.validators import validator_for
 except ImportError:
     print("ERROR: jsonschema not installed.")
     print("Run: pip install jsonschema")
@@ -32,17 +63,71 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 errors_found = 0
 
 
+def _identify(node):
+    """Name a single record from whichever identifying keys it carries."""
+    strong = [k for k in ("seasonNumber", "season", "name", "title") if k in node]
+    weak = [k for k in ("playerSlug", "id") if k in node]
+    keys = strong[:2] or weak[:1]
+    bits = [f"{k}={node[k]!r}" for k in keys if isinstance(node[k], (str, int))]
+    return ", ".join(bits)
+
+
+def describe(data, path):
+    """Walk `data` along `path` and name the records it passes through, so a
+    failure reads "name='Alejandro' -> season=4" instead of a bare JSON path.
+
+    Both the OUTERMOST and the INNERMOST identifiable record are kept. Reporting
+    only the innermost would say `season=4` on a 152-player file without ever
+    saying which player — a real diagnostic gap.
+    """
+    node = data
+    labels = []
+    for part in path:
+        try:
+            node = node[part]
+        except (KeyError, IndexError, TypeError):
+            break
+        if isinstance(node, dict):
+            got = _identify(node)
+            if got:
+                labels.append(got)
+    if len(labels) > 2:
+        labels = [labels[0], labels[-1]]
+    return " -> ".join(labels)
+
+
 def check(label, data, schema):
+    """Report EVERY violation in the file, not just the first one.
+
+    The validator CLASS is selected from the schema rather than hardcoded:
+    pinning a dialect (e.g. Draft7Validator) would silently ignore any future
+    keyword outside that draft — `if`/`then`/`else`, `prefixItems`,
+    `dependentRequired` — and a validator that quietly stops validating is the
+    exact failure this file exists to prevent. With no `$schema` declared,
+    validator_for falls back to the library's latest, matching what the old
+    `validate()` call did.
+    """
     global errors_found
-    try:
-        validate(instance=data, schema=schema)
+    validator_cls = validator_for(schema)
+    validator_cls.check_schema(schema)
+    found = sorted(
+        validator_cls(schema).iter_errors(data),
+        key=lambda e: list(e.absolute_path),
+    )
+    if not found:
         print(f"  [OK] {label}")
-    except ValidationError as e:
+        return
+    print(f"  [FAIL] {label}  ({len(found)} violation(s))")
+    for e in found[:25]:
         errors_found += 1
         path = " -> ".join(str(p) for p in e.absolute_path) or "(root)"
-        print(f"  [FAIL] {label}")
-        print(f"         Path   : {path}")
+        who = describe(data, e.absolute_path)
+        print(f"         Path   : {path}" + (f"   [{who}]" if who else ""))
         print(f"         Error  : {e.message[:200]}")
+    if len(found) > 25:
+        extra = len(found) - 25
+        errors_found += extra
+        print(f"         ... and {extra} more violation(s) suppressed")
 
 
 def load(path):
@@ -62,6 +147,16 @@ PLAYER_REF = {
 }
 
 TIER_ENUM = {"type": "string", "enum": ["S+", "S", "A", "B", "C", "D", "Unranked"]}
+
+# Which show a season belongs to. Required on every season and every player
+# season detail — see the CROSS-FORMAT AGGREGATE CONTRACT in the module
+# docstring. The enum is closed on purpose: "bigbrother" or "Big Brother" must
+# fail loudly rather than pass as a new, silently-unhandled show.
+FORMAT_ENUM = {"type": "string", "enum": ["total-drama", "big-brother"]}
+
+# Stable cross-show season key: a lowercase show prefix, a hyphen, a number.
+# e.g. "td-14", "bb-1".
+SEASON_ID = {"type": "string", "pattern": r"^[a-z]+-[0-9]+$"}
 
 
 # ─── franchise_database.json ──────────────────────────────────────────────────
@@ -104,9 +199,11 @@ FRANCHISE_DB_SCHEMA = {
 
 SEASON_DETAIL_SCHEMA = {
     "type": "object",
-    "required": ["season", "placement", "status"],
+    "required": ["season", "placement", "status", "format"],
     "properties": {
         "season":          {"type": "integer", "minimum": 1},
+        "format":          FORMAT_ENUM,
+        "seasonId":        SEASON_ID,
         "placement":       {"type": "integer", "minimum": 1},
         "status":          {"type": "string", "enum": ["Winner", "Finalist", "Co-Winner", "Juror", "Pre-Juror", "Pre-Merge", "Medevac", "Quit", "Disqualified"]},
         "tribe":           {"type": "string"},
@@ -123,6 +220,29 @@ SEASON_DETAIL_SCHEMA = {
     },
 }
 
+# Per-show career bucket. SUMMED from that show's season details only.
+# The top-level career fields on PLAYER_SCHEMA below are cross-format
+# aggregates and may legitimately be LARGER than any single bucket here —
+# see the CROSS-FORMAT AGGREGATE CONTRACT in the module docstring. No rule in
+# this file asserts the two agree, because they are not required to.
+BY_SHOW_SCHEMA = {
+    "type": "object",
+    "propertyNames": FORMAT_ENUM,
+    "additionalProperties": {
+        "type": "object",
+        "properties": {
+            "seasons":            {"type": "integer", "minimum": 0},
+            "totalChallengeWins": {"type": "integer", "minimum": 0},
+            "totalImmunityWins":  {"type": "integer", "minimum": 0},
+            "totalRewardWins":    {"type": "integer", "minimum": 0},
+            "totalIdolsFound":    {"type": "integer", "minimum": 0},
+        },
+        "additionalProperties": True,
+    },
+}
+
+# NOTE: the total* / wins / avgPlacement fields below are CROSS-FORMAT career
+# aggregates spanning every show. Per-show numbers live in `byShow`.
 PLAYER_SCHEMA = {
     "type": "object",
     "required": ["id", "name", "seasons", "totalSeasons", "wins", "bestPlacement",
@@ -142,6 +262,7 @@ PLAYER_SCHEMA = {
         "totalJuryVotes":        {"type": "integer", "minimum": 0},
         "tier":                  TIER_ENUM,
         "badges":                {"type": "array", "items": {"type": "string"}},
+        "byShow":                BY_SHOW_SCHEMA,
         "seasonDetails":         {"type": "array", "items": SEASON_DETAIL_SCHEMA},
         "story":                 {"type": "string"},
         "seasonsPlayed":         {"type": "integer", "minimum": 0},
@@ -245,9 +366,11 @@ SEASONS_DB_SCHEMA = {
             "minItems": 1,
             "items": {
                 "type": "object",
-                "required": ["seasonNumber", "title", "castSize", "episodeCount", "winner"],
+                "required": ["seasonNumber", "title", "castSize", "episodeCount", "winner", "format"],
                 "properties": {
                     "seasonNumber":  {"type": "integer", "minimum": 1},
+                    "format":        FORMAT_ENUM,
+                    "seasonId":      SEASON_ID,
                     "title":         {"type": "string"},
                     "subtitle":      {"type": "string"},
                     "castSize":      {"type": "integer", "minimum": 2},

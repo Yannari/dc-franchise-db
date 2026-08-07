@@ -31,6 +31,98 @@ import { generateBBEvictionInterview } from './bb-aftermath.js';
 /** Everyone still playing, in roster order. */
 const houseNow = () => [...(gs.activePlayers || [])];
 
+const finalePick = (rng, lines) => lines[Math.floor(rng() * lines.length)];
+
+/** Turn the ordinary eviction interview shell into the much rawer final-three exit. */
+function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, rng) {
+  if (!base || !cut) return base;
+  const cp = pronouns(cut);
+  const hp = pronouns(finalHoh);
+  const bondToHoh = getBond(cut, finalHoh);
+  const bondToKept = getBond(cut, kept);
+  const stats = gs.bb?.stats?.[cut] || {};
+  const hohs = Number(stats.hohWins) || 0;
+  const vetos = Number(stats.vetoWins) || 0;
+  const blocks = Number(stats.timesOnTheBlock ?? stats.timesNominated) || 0;
+  const wouldTake = bondToHoh >= bondToKept ? finalHoh : kept;
+  const host = base.host || seasonConfig.host || 'Don';
+
+  const cutAnswer = betrayal
+    ? finalePick(rng, [
+      `"It cost ${finalHoh} my trust in real time. Whether it costs ${hp.obj} my vote depends on whether ${hp.sub} can own it without calling it loyalty."`,
+      `"I can respect the move and still hate that it was done to me. ${finalHoh} promised me that chair. Now ${hp.sub} gets to explain to the jury why the promise stopped mattering."`,
+      `"The cut is good if ${hp.sub} wins. If ${hp.sub} loses my vote doing it, then it was just dramatic."`,
+    ])
+    : honoured
+      ? finalePick(rng, [
+        `"I knew the promise mattered. I just spent all day hoping the money would matter more."`,
+        `"${finalHoh} kept ${hp.posAdj} word. Unfortunately, ${hp.posAdj} word was to somebody else."`,
+        `"I cannot call it dirty. I can call it devastating. Those are different things."`,
+      ])
+      : finalePick(rng, [
+        `"I knew it was possible. Knowing the knife is in the room does not make it hurt less when somebody uses it."`,
+        `"I thought my jury case made me valuable. Apparently it made me luggage."`,
+        `"It was the clean move. I hate that I understand it, because being furious would be much easier."`,
+      ]);
+
+  const voteAnswer = betrayal || bondToHoh <= -2
+    ? finalePick(rng, [
+      `"Not tonight. Ask me again after the questions. If ${finalHoh} wants my vote, ${hp.sub} can earn it in public."`,
+      `"I am not rewarding a speech that pretends this did not happen. If ${hp.sub} owns it and proves it was necessary, then we can talk."`,
+      `"I walked out angry, not stupid. I will vote for the better game. ${finalHoh} has made the burden of proof very expensive."`,
+    ])
+    : finalePick(rng, [
+      `"Yes. I do not have to like the decision to respect the game behind it."`,
+      `"If ${finalHoh} answers honestly and the résumé is there, yes. This vote is for the season, not the last five minutes."`,
+      `"I can. Cutting me may be the best move ${hp.sub} made. I would prefer not to admire it this soon."`,
+    ]);
+
+  const proud = finalePick(rng, [
+    `"I made final three with ${hohs} HOH win${hohs === 1 ? '' : 's'}, ${vetos} veto${vetos === 1 ? '' : 'es'}, and ${blocks} trip${blocks === 1 ? '' : 's'} to the block. Nobody carried me to that front door."`,
+    `"I kept finding a way back into the room. Wins, deals, ugly votes—whatever the week demanded. One decision ended me; the house could not do it before tonight."`,
+    `"People had to plan around me. Even tonight, the winning move was apparently making sure I never reached those two chairs. That is a painful compliment, but I will take it."`,
+  ]);
+
+  const hohGoodbye = betrayal
+    ? `"I made you a promise, and tonight I broke it. I am not going to insult you by dressing that up. I believed I could not beat you, so I chose the money over my word. You have every right to make me answer for it."`
+    : `"You deserved that chair. I also believed you could beat me in it. This was the hardest decision I made all season, and I made it because I came here to win—not to finish second beside somebody I love."`;
+  const keptGoodbye = finalePick(rng, [
+    `"There is no graceful way to celebrate while you are walking out. I am sorry it was you, and I am grateful it was not me. Both things are true."`,
+    `"You made this house harder, smarter, and considerably louder. I wanted the seat. I never wanted to watch you lose yours."`,
+    `"I owe you more than a goodbye message and less than my seat. That is an awful sentence, but finale night is full of them."`,
+  ]);
+
+  return {
+    ...base,
+    joinsJury: true,
+    juryNumber: (gs.jury?.length || 0) + 1,
+    hostLines: {
+      ...(base.hostLines || {}),
+      truth: `"There is no hidden vote to reveal. One person made this decision, and that person is still sitting inside."`,
+      goodbyes: `"Before you take the final seat on the jury, ${finalHoh} and ${kept} recorded messages for you."`,
+    },
+    questions: [
+      { q: `${cut}, you were one decision from the final two. What did ${finalHoh}'s decision cost?`, a: cutAnswer },
+      { q: `Be honest: if you had won Part Three, who would you have taken?`, a: `"${wouldTake}. That was my path. Maybe admitting it makes ${finalHoh}'s move look better; I am not going to rewrite my game because I lost it."` },
+      { q: `You are now the final juror. Can you still vote for the person who just evicted you?`, a: voteAnswer },
+      { q: `When the anger wears off, what are you proudest of?`, a: proud },
+    ],
+    goodbyes: [
+      { name: finalHoh, tone: betrayal ? 'confession' : 'unapologetic', against: true, text: hohGoodbye,
+        react: betrayal ? `${cut} laughs once at the phrase “chose the money.” There is no humour in it.` : `${cut} nods. It is the answer ${cp.sub} expected and still did not want.` },
+      { name: kept, tone: 'warm', against: false, text: keptGoodbye,
+        react: `${cut} looks down, smiles despite ${cp.obj}self, and tells the dark monitor, "You had better make it worth it."` },
+    ],
+    parting: finalePick(rng, [
+      `"I missed the final two by one question and one vote. Now I get one last vote of my own. That feels fair enough to be cruel."`,
+      `"They ended my game five minutes before the jury started asking questions. Convenient for them. I am still asking mine."`,
+      `"No confetti for me. I do get a front-row seat and a key, though, so neither finalist should relax yet."`,
+      `"Third place is first place with terrible timing. I will see them at the jury chairs."`,
+    ]),
+    host,
+  };
+}
+
 /**
  * Seat the jury from the people this season evicted.
  *
@@ -356,6 +448,8 @@ export function simulateBBFinale(rng = Math.random) {
         interview = generateBBEvictionInterview(
           { ...week, eliminated: cut, houseAtStart: house },
           { ...week, houseAtStart: house, evicted: cut }, rng, cut);
+        interview = finalThreeInterview(interview,
+          { cut, finalHoh, kept: keep, betrayal, honoured }, rng);
       } catch { interview = null; }
     }
   }

@@ -23707,7 +23707,20 @@ export function rpBuildBBFinalCut(ep) {
       case 'verdict':
         return `<div class="bbns-card is-final bbev-verdict">
           <div class="bbns-card-h">${_bbAvatar(host, 30)}${_bbAvatar(act.kept, 30)}<span class="bbns-pill red">THE DECISION</span></div>
-          <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen: "${_bbEsc(hoh)}, as the final Head of Household, it is time to cast the sole vote to evict." ${p.Sub} does not look at the person ${p.sub} is about to end. "I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>." <strong>${_bbEsc(act.kept)}</strong> goes to the end.</div></div>`;
+          <div class="bbns-card-b"><strong>${_bbEsc(host)}</strong>, on the living-room screen: "${_bbEsc(hoh)}, as the final Head of Household, it is time to cast the sole vote to evict." ${vvar(act.betrayal ? [
+            `${p.Sub} looks straight at <strong>${_bbEsc(act.cut || '')}</strong>. "I gave you my word, and I am breaking it. I think you beat me. I came too far to lose politely. I vote to evict you." Nobody mistakes it for an accident.`,
+            `"I have rehearsed a nicer version of this all day," ${_bbEsc(hoh)} says. "It would still be a lie. You are the person I cannot beat, so I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+            `${p.Sub} swallows. "You kept me safe when you did not have to. I am paying you back by ending your game, and that is ugly. It is also my best chance to win. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+          ] : act.honoured ? [
+            `"I made a promise in this house that I meant," ${_bbEsc(hoh)} says. "Tonight I am keeping it. ${_bbEsc(act.cut || '')}, I am sorry. I vote to evict you."`,
+            `${p.Sub} looks between them. "I could choose the safer chair. I am choosing the word I gave. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+            `"This may cost me the season," ${_bbEsc(hoh)} says, "but I know which decision I can defend after it. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+          ] : [
+            `"This is not personal, which is a terrible thing to say right before doing something deeply personal. You have the stronger jury. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+            `${p.Sub} finally looks up. "I love you. I respect your game. That is exactly why I cannot sit beside it. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+            `"One of you is easier to explain to the jury," ${_bbEsc(hoh)} says. "I need that person next to me. ${_bbEsc(act.cut || '')}, I vote to evict you."`,
+            `"I did not win the final HOH to make the brave choice," ${_bbEsc(hoh)} says. "I won it to make the winning one. I vote to evict <strong>${_bbEsc(act.cut || '')}</strong>."`,
+          ], 'verdict', act.cut)} <strong>${_bbEsc(act.kept)}</strong> goes to the end.</div></div>`;
       case 'door':
         return `<div class="bbns-card">
           <div class="bbns-card-h">${_bbAvatar(act.cut, 30)}<span class="bbns-pill grey">ONE NIGHT SHORT</span></div>
@@ -23715,6 +23728,10 @@ export function rpBuildBBFinalCut(ep) {
             `<strong>${_bbEsc(act.cut)}</strong> hugs both of them, and one of those hugs takes noticeably longer than the other. ${pv(act.cut).Sub} walks out of a house ${pv(act.cut).sub} was one night from winning and straight onto the jury — with a vote, and a very particular reason to use it.`,
             `Ninety-odd days for this: <strong>${_bbEsc(act.cut)}</strong> collects the bag by the door, says something short to ${_bbEsc(hoh)} that the microphones do not quite catch, and becomes the last member of the jury.`,
             `<strong>${_bbEsc(act.cut)}</strong> takes the walk everybody else took, except ${pv(act.cut).sub} takes it in a final-night dress with the confetti already loaded. The last seat on the jury is ${pv(act.cut).posAdj}, and so is the last vote to fill it.`,
+            `<strong>${_bbEsc(act.cut)}</strong> hugs ${_bbEsc(act.kept)}, turns to ${_bbEsc(hoh)} and says, "Good move." The pause before "good" does enough work to qualify for overtime.`,
+            `The audience is cheering because that is what finale audiences do. <strong>${_bbEsc(act.cut)}</strong> walks through it looking like somebody arrived at the wrong party with the right outfit.`,
+            `<strong>${_bbEsc(act.cut)}</strong> reaches the door, turns back and points once at ${_bbEsc(hoh)}. "You get about ten minutes to make that make sense." Then the last juror leaves.`,
+            `Two people stay under the studio lights. <strong>${_bbEsc(act.cut)}</strong> gets the dark hallway, the last jury chair, and enough fresh anger to make the questioning interesting.`,
           ], act.cut, 'door')}</div></div>`;
       default: return '';
     }

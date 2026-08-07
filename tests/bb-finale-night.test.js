@@ -149,6 +149,20 @@ describe('closing statements', () => {
       expect(Array.isArray(s.moved)).toBe(true);
     }
   });
+
+  it('uses the season résumé and varies across finale runs', () => {
+    const speeches = new Set();
+    for (let seed = 1; seed <= 24; seed++) {
+      seasonWithJury();
+      const out = runClosingStatements({ finalTwo: ['Wayne', 'Priya'], jury: JURY, week: 9, rng: seededRng(seed) });
+      for (const s of out.statements) {
+        expect(s.text).not.toMatch(/undefined|NaN|\[object|played hard at the wrong person/i);
+        expect(s.text.length).toBeGreaterThan(120);
+      }
+      speeches.add(out.statements.find(s => s.finalist === 'Wayne').text);
+    }
+    expect(speeches.size).toBeGreaterThan(3);
+  });
 });
 
 describe("America's Favourite", () => {
@@ -238,6 +252,20 @@ describe('the reunion', () => {
 });
 
 describe('the whole night', () => {
+  it('gives third place a finale-specific interview and the last jury vote', () => {
+    seasonWithJury();
+    const ep = simulateBBFinale(seededRng(21));
+    const iv = ep.evictionInterview;
+    expect(iv).toBeTruthy();
+    expect(iv.evictee).toBe(ep.cut);
+    expect(iv.joinsJury).toBe(true);
+    expect(iv.questions).toHaveLength(4);
+    expect(iv.questions.map(q => q.q).join(' ')).toMatch(/final two|Part Three|final juror/i);
+    expect(iv.goodbyes.map(g => g.name).sort()).toEqual(ep.finalTwo.slice().sort());
+    expect(iv.parting).toMatch(/vote|jury|final two/i);
+    expect(JSON.stringify(iv)).not.toMatch(/undefined|NaN|\[object/);
+  });
+
   it('plays in order and reaches every surface', () => {
     seasonWithJury();
     const ep = simulateBBFinale(seededRng(21));

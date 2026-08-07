@@ -9,6 +9,25 @@
 -- second run is a no-op that neither loses rows nor relabels them.
 --
 -- ─────────────────────────────────────────────────────────────────────────
+-- HOW OFTEN THIS FILE CAN BE RUN: re-runnable UNTIL crossover data exists,
+-- one-shot after that
+-- ─────────────────────────────────────────────────────────────────────────
+-- Apply it as many times as you like while no single player holds an
+-- appearance in two shows under the same season number. From the moment one
+-- does — the same person in Total Drama 5 and Big Brother 5, which is a normal
+-- thing for a multi-show franchise to record — this file becomes ONE-SHOT and
+-- will refuse to run at all, including against a restored backup.
+--
+-- The refusal is deliberate and is enforced by the named CHECK constraint
+-- `rerun_would_collapse_two_shows_rows` in the re-run guard below. Once the
+-- legacy `format`-less shape is gone, those two appearance rows are genuinely
+-- indistinguishable to every derivation in this file, so a rebuild would
+-- collapse them into one. Aborting the whole file with a constraint whose name
+-- says why is the least bad outcome; silently losing a row is the worst. If
+-- you hit it, you do not need this migration — the database is already in the
+-- target shape.
+--
+-- ─────────────────────────────────────────────────────────────────────────
 -- HOW `format` IS RECOVERED ON A RE-RUN, AND WHY IT IS NOT `COALESCE(format, …)`
 -- ─────────────────────────────────────────────────────────────────────────
 -- The obvious way to make each copy re-runnable is
@@ -52,18 +71,24 @@
 --   seasons     → read straight back off its own column, which bb_schema.sql
 --                 guarantees exists: COALESCE(format,'total-drama').
 --   bonds       → the format of the bonded player's appearance in that season.
---   live_season → the format of that player's appearance in that season.
+--   live_season → its SEASON's format, from `seasons` — NOT from `appearances`.
+--                 A live_season row exists precisely while a season is still
+--                 airing, and a season that is still airing has no
+--                 `appearances` rows at all: those are written when it ends
+--                 and is published. Deriving from `appearances` therefore
+--                 defaults every row of a live Big Brother season to Total
+--                 Drama — the exact silent relabel this file is meant to
+--                 prevent, in the one table named "live". `seasons` really
+--                 does carry the column (bb_schema.sql), and a live season has
+--                 a row there from the day it is created. The appearance-based
+--                 derivation is kept only as a second fallback, for the case
+--                 where two shows already share the season number and the
+--                 `seasons` lookup is therefore ambiguous.
 --
--- `appearances` is therefore rebuilt FIRST, and the other three read the
--- rebuilt (format-carrying) table. Every one of these SELECTs compiles on a
--- pristine database and on an already-migrated one, so the file is genuinely
--- idempotent and a re-run cannot silently relabel a second show's rows.
---
--- The one case no derivation can resolve is a player holding an appearance in
--- BOTH shows under the SAME season number: the two legacy rows are then
--- indistinguishable. The re-run guard below refuses the migration with a named
--- CHECK constraint rather than let it collapse them (it would otherwise abort
--- on a primary-key collision anyway, just with a far less useful message).
+-- `appearances` is therefore rebuilt FIRST (bonds read it), and `seasons`
+-- before `live_season`. Every one of these SELECTs compiles on a pristine
+-- database and on an already-migrated one, so no re-run can silently relabel a
+-- second show's rows.
 --
 -- ─────────────────────────────────────────────────────────────────────────
 -- DEVIATION FROM BRIEF (1): D1 (both local miniflare and remote) does not
@@ -116,9 +141,15 @@ CREATE TABLE IF NOT EXISTS live_season (
 -- instead: `ms_legacy_td_columns` is created on the first run only, while
 -- `appearances` still has tribe/challenge_wins/…, and short-circuits (SELECT
 -- never prepared) on every run after — which is what makes this re-runnable,
--- since on a second run those columns no longer exist to name. The staging
--- table is kept permanently and deliberately: it is also the only surviving
--- copy of the six columns this migration strips off `appearances`.
+-- since on a second run those columns no longer exist to name.
+--
+-- ⚠ DO NOT DROP `ms_legacy_td_columns`. It is a MIGRATION GUARD, not a backup.
+-- Its mere existence is what disarms the CTAS above; delete it and the next
+-- run re-arms that statement, which then fails to compile against the migrated
+-- `appearances` with "no such column: tribe" and aborts the whole file.
+-- It is also not a usable backup of the six stripped columns: it is a frozen
+-- snapshot taken at migration time and goes stale the moment anything edits
+-- `td_appearances`, which is the live table for that data from here on.
 DROP INDEX IF EXISTS idx_td_appearances_pk;
 CREATE TABLE IF NOT EXISTS td_appearances (
   player_id      TEXT    NOT NULL,
@@ -273,8 +304,19 @@ DROP TABLE seasons;
 ALTER TABLE seasons_new RENAME TO seasons;
 
 -- ── live_season: keyed now; its stat columns are sub-project E ────────
--- Format derived from the player's appearance in that season where one
--- exists; a season still airing may have none yet, hence the default.
+-- Format comes from the SEASON, not from the player's appearance. This table
+-- only ever holds rows for a season that is still airing, and such a season
+-- has no `appearances` rows yet — they are written when it ends and is
+-- published. An appearance-based derivation would therefore default every row
+-- of a live Big Brother season to Total Drama. `seasons` carries the column
+-- (bb_schema.sql) and has a row for a live season from the day it is created.
+--
+-- The `seasons` lookup is only trusted when it is unambiguous. Three steps, in
+-- order: the one show holding that season number; failing that, the one show
+-- whose season of that number is not yet Complete (a live_season row tracks an
+-- airing season by definition, so a finished Total Drama 14 is not the season
+-- this row belongs to); failing that, the player's appearance; then the
+-- default.
 DROP TABLE IF EXISTS live_season_new;
 CREATE TABLE live_season_new (
   format         TEXT    NOT NULL DEFAULT 'total-drama',
@@ -292,7 +334,17 @@ CREATE TABLE live_season_new (
 INSERT INTO live_season_new
   (format, season_number, player_name, player_id, status, exit_episode,
    immunity_wins, reward_wins, challenge_wins, votes_received)
-  SELECT COALESCE((SELECT a.format FROM appearances a
+  SELECT COALESCE((SELECT s.format FROM seasons s
+                    WHERE s.season_number = l.season_number
+                      AND (SELECT COUNT(*) FROM seasons s2
+                            WHERE s2.season_number = l.season_number) = 1),
+                  (SELECT s.format FROM seasons s
+                    WHERE s.season_number = l.season_number
+                      AND COALESCE(s.status,'') <> 'Complete'
+                      AND (SELECT COUNT(*) FROM seasons s2
+                            WHERE s2.season_number = l.season_number
+                              AND COALESCE(s2.status,'') <> 'Complete') = 1),
+                  (SELECT a.format FROM appearances a
                     WHERE a.player_id = l.player_id
                       AND a.season_number = l.season_number
                     LIMIT 1), 'total-drama'),

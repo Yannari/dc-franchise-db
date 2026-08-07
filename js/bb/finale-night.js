@@ -764,16 +764,33 @@ export function runAmericasFavourite({ finalTwo = [], rng = Math.random } = {}) 
   // gameplay and should not resolve like one.
   const weights = eligible.map(n => ({ name: n, w: Math.max(0.6, (Number(pop[n]) || 0) + 6) }));
   const total = weights.reduce((s, x) => s + x.w, 0);
-  let roll = rng() * total;
-  let winner = weights[0].name;
-  for (const entry of weights) {
-    roll -= entry.w;
-    if (roll <= 0) { winner = entry.name; break; }
+
+  // ── an actual count ──
+  //
+  // This used to draw the winner from the weights and then print the weights as
+  // the tally, which meant the screen could show one houseguest on 33% and
+  // crown somebody on 26% underneath it — a vote graphic that contradicts its
+  // own result. So the votes are counted instead: twenty-five blocks of
+  // audience, each drawn against popularity, and whoever holds the most blocks
+  // wins. Few enough blocks that the second-favourite can still take it, which
+  // is the upset the old roll was there to allow.
+  const BLOCKS = 25;
+  const counts = Object.fromEntries(eligible.map(n => [n, 0]));
+  for (let i = 0; i < BLOCKS; i++) {
+    let roll = rng() * total;
+    let landed = weights[0].name;
+    for (const entry of weights) {
+      roll -= entry.w;
+      if (roll <= 0) { landed = entry.name; break; }
+    }
+    counts[landed]++;
   }
+  const ranked = [...weights].sort((a, b) => (counts[b.name] - counts[a.name]) || (b.w - a.w));
+  const winner = ranked[0].name;
   const p = pronouns(winner);
-  const tally = weights
-    .map(x => ({ name: x.name, share: round2((x.w / total) * 100) }))
-    .sort((a, b) => b.share - a.share)
+  const tally = ranked
+    .map(x => ({ name: x.name, share: round2((counts[x.name] / BLOCKS) * 100) }))
+    .filter(x => x.share > 0)
     .slice(0, 5);
   return {
     winner, tally, prize: 5000,

@@ -22906,48 +22906,137 @@ export function rpBuildBBJuryQuestioning(ep) {
     </div>`;
   };
 
-  const scenes = (act.exchanges || []).map(x => {
-    const answers = (x.answers || []).map(a => `
-      <div style="margin-top:8px;padding:8px 10px;border-left:2px solid ${a.landed ? 'rgba(63,185,80,.55)' : 'rgba(248,81,73,.5)'};background:rgba(255,255,255,.02)">
-        <div style="font-size:11px;color:#c9d1d9"><strong>${a.finalist}</strong> ${a.text}</div>
-        <div style="font-size:10px;color:#8b949e;margin-top:4px">${a.reaction}</div>
-      </div>`).join('');
-    return {
-      text: `<div style="font-size:10px;letter-spacing:1px;color:#8b949e;text-transform:uppercase">${x.juror} → ${x.asked}</div>
-        <div style="margin:6px 0;font-size:12px;color:#e6edf3">${x.question}</div>${answers}`,
-      players: [x.juror, ...(x.answers || []).map(a => a.finalist)],
-      badgeText: (x.answers || []).some(a => a.immovable) ? 'MIND MADE UP'
-        : (x.answers || []).every(a => !a.landed) ? 'NOBODY LANDED IT' : 'THE CHAIRS',
-      badgeClass: (x.answers || []).some(a => a.landed) ? 'gold' : 'red',
-    };
-  });
-
-  // The rail is drawn at the state the reveal has reached, so it moves as the
-  // viewer clicks rather than arriving finished.
+  // ── the chamber ──
+  //
+  // The rail stays: it is the only place in the finale where the vote is
+  // visibly being made rather than reported. What changes is everything around
+  // it — an exchange is now the shape the moment actually has, which is one
+  // person asking and two people having to answer in front of each other.
   const stateKey = `bb_ftcq_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
-  const idx = _tvState[stateKey]?.idx ?? -1;
-  const board = `<div style="margin:10px 0 16px;padding:12px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.25)">
-    <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;margin-bottom:8px">
-      <span style="color:#58a6ff">${fa}</span><span style="color:var(--muted)">WHERE THE JURY IS</span><span style="color:#f85149">${fb}</span>
-    </div>
-    ${(act.jury || []).map(j => rail(j, idx)).join('')}
-  </div>`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const exchanges = act.exchanges || [];
+  const total = exchanges.length;
+  const done = state.idx >= total - 1;
+  const idx = state.idx;
 
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num} — finale`,
-    title: 'THE JURY QUESTIONS THE FINAL TWO',
-    subtitle: 'Seven people who were each removed from this game by one of them.',
-    accent: '#d29922', room: 'bb-live',
-    header: board,
-    stateKey, scenes,
-    footer: (act.swung || []).length
-      ? `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,.35);background:rgba(240,165,0,.07);text-align:center;font-size:11px;color:#f0a500">
-          ${act.swung.join(', ')} changed ${act.swung.length === 1 ? 'their mind' : 'their minds'} in that room.
-        </div>`
-      : `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid var(--border);text-align:center;font-size:11px;color:var(--muted)">
-          Nobody moved. Every vote in this room was decided before anybody sat down.
-        </div>`,
-  });
+  const bench = (act.jury || []).map((j, i) => `<div class="bbfq-seat ${
+    i <= idx ? 'is-asked' : ''} ${i === idx ? 'is-live' : ''}">
+      <figure>${_bbAvatar(j, 46)}</figure><span>${_bbEsc(j)}</span></div>`).join('');
+
+  const exchange = (x, i) => {
+    if (i > idx) return `<div class="bbfq-locked">THE NEXT ONE HAS NOT BEEN ASKED YET</div>`;
+    const answers = (x.answers || []).map(a => `
+      <div class="bbfq-ans ${a.landed ? 'is-land' : 'is-flub'} ${a.immovable ? 'is-stone' : ''}">
+        <div class="bbfq-ans-h">
+          <figure>${_bbAvatar(a.finalist, 34)}</figure>
+          <b>${_bbEsc(a.finalist)}</b>
+          <u>${a.immovable ? 'NOTHING WAS GOING TO WORK' : a.landed ? 'LANDS' : 'DOES NOT LAND'}</u>
+          <i>${a.delta > 0 ? '+' : ''}${a.delta}</i>
+        </div>
+        <p>${a.text}</p>
+        <div class="bbfq-react">${a.reaction}</div>
+      </div>`).join('');
+    return `<div class="bbfq-x">
+      <div class="bbfq-q">
+        <figure>${_bbAvatar(x.juror, 52)}</figure>
+        <div>
+          <div class="bbfq-q-h">${_bbEsc(x.juror)} <em>&rarr;</em> ${_bbEsc(x.asked)}
+            <span class="bbfq-val">CARES ABOUT ${_bbEsc(String(x.values || 'the game').toUpperCase())}</span></div>
+          <div class="bbfq-q-t">${x.question}</div>
+        </div>
+      </div>
+      <div class="bbfq-answers">${answers}</div>
+    </div>`;
+  };
+
+  const style = `<style>
+    .bbfq-bench{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 10px 10px;
+      border-radius:10px;margin-bottom:12px;
+      background:linear-gradient(180deg,rgba(210,153,34,.10),rgba(0,0,0,.42));
+      border:1px solid rgba(210,153,34,.26)}
+    .bbfq-seat{width:58px;text-align:center;opacity:.34;filter:grayscale(.7);transition:all .35s ease}
+    .bbfq-seat figure{width:46px;height:46px;margin:0 auto;border-radius:50%;overflow:hidden;
+      border:2px solid rgba(255,255,255,.14)}
+    .bbfq-seat figure .bb-av{width:46px!important;height:46px!important;border-radius:50%}
+    .bbfq-seat span{display:block;font-size:9.5px;color:#c9d1d9;margin-top:3px;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis}
+    .bbfq-seat.is-asked{opacity:.8;filter:none}
+    .bbfq-seat.is-live{opacity:1;filter:none;transform:translateY(-2px) scale(1.08)}
+    .bbfq-seat.is-live figure{border-color:#d29922;box-shadow:0 0 18px rgba(210,153,34,.5)}
+
+    .bbfq-rail{margin:0 0 16px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:10px;
+      background:rgba(0,0,0,.3)}
+    .bbfq-rail-h{display:flex;justify-content:space-between;font-family:ui-monospace,Consolas,monospace;
+      font-size:9px;letter-spacing:1.6px;margin-bottom:9px}
+
+    .bbfq-x{margin-bottom:16px;border-radius:10px;overflow:hidden;
+      background:linear-gradient(180deg,rgba(22,20,14,.92),rgba(12,11,9,.96));
+      border:1px solid rgba(210,153,34,.24);box-shadow:0 12px 30px rgba(0,0,0,.45);
+      animation:bbns-in .35s ease-out both}
+    .bbfq-q{display:flex;gap:12px;align-items:flex-start;padding:14px 15px;
+      background:linear-gradient(90deg,rgba(210,153,34,.14),transparent 70%);
+      border-bottom:1px solid rgba(210,153,34,.2)}
+    .bbfq-q figure{width:52px;height:52px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+      border:2px solid rgba(210,153,34,.55)}
+    .bbfq-q figure .bb-av{width:52px!important;height:52px!important;border-radius:50%}
+    .bbfq-q-h{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:1.8px;color:#d29922}
+    .bbfq-q-h em{font-style:normal;color:#6e7681;margin:0 3px}
+    .bbfq-val{margin-left:8px;color:#6e7681;letter-spacing:1.2px}
+    .bbfq-q-t{margin-top:6px;font-size:15.5px;line-height:1.6;color:#f2ead9}
+    .bbfq-answers{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.06)}
+    @media(max-width:760px){.bbfq-answers{grid-template-columns:1fr}}
+    .bbfq-ans{padding:12px 14px;background:rgba(12,14,18,.96)}
+    .bbfq-ans.is-land{box-shadow:inset 3px 0 0 #3fb950}
+    .bbfq-ans.is-flub{box-shadow:inset 3px 0 0 #f85149}
+    .bbfq-ans.is-stone{box-shadow:inset 3px 0 0 #6e7681}
+    .bbfq-ans-h{display:flex;align-items:center;gap:8px}
+    .bbfq-ans-h figure{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.18)}
+    .bbfq-ans-h figure .bb-av{width:34px!important;height:34px!important;border-radius:50%}
+    .bbfq-ans-h b{font-size:13px;color:#fff}
+    .bbfq-ans-h u{text-decoration:none;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
+      letter-spacing:1.4px;color:#8b949e}
+    .bbfq-ans.is-land .bbfq-ans-h u{color:#7ee787}
+    .bbfq-ans.is-flub .bbfq-ans-h u{color:#ff8b84}
+    .bbfq-ans-h i{margin-left:auto;font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:10px;
+      color:#8b949e}
+    .bbfq-ans p{margin:9px 0 0;font-size:13px;line-height:1.6;color:#d6dde5}
+    .bbfq-react{margin-top:8px;font-size:11px;color:#8b949e;line-height:1.55;font-style:italic}
+    .bbfq-locked{margin-bottom:16px;min-height:80px;border:1px dashed rgba(210,153,34,.2);border-radius:10px;
+      display:grid;place-items:center;font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:3px;
+      color:rgba(210,153,34,.28)}
+    .bbfq-foot{margin-top:14px;padding:13px;border-radius:10px;text-align:center;font-size:12px}
+    .bbfq-foot.is-swung{border:1px solid rgba(240,165,0,.4);background:rgba(240,165,0,.08);color:#f0a500}
+    .bbfq-foot.is-flat{border:1px solid rgba(255,255,255,.1);color:#8b949e}
+  </style>`;
+
+  const revealed = Math.min(total, Math.max(0, idx + 1));
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#d29922">THE JURY QUESTIONS THE FINAL TWO</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">
+      ${(act.jury || []).length} people who were each removed from this game by one of them.</div>
+    <div class="bbfq-bench">${bench}</div>
+    <div class="bbfq-rail">
+      <div class="bbfq-rail-h"><span style="color:#58a6ff">${_bbEsc(fa || '')}</span>
+        <span style="color:#8b949e">WHERE THE JURY IS</span>
+        <span style="color:#f85149">${_bbEsc(fb || '')}</span></div>
+      ${(act.jury || []).map(j => rail(j, idx)).join('')}
+    </div>
+    <div>${exchanges.map(exchange).join('')}</div>
+    ${done ? ((act.swung || []).length
+      ? `<div class="bbfq-foot is-swung">${act.swung.join(', ')} changed ${
+        act.swung.length === 1 ? 'their mind' : 'their minds'} in that room.</div>`
+      : `<div class="bbfq-foot is-flat">Nobody moved. Every vote in this room was decided before anybody sat down.</div>`) : ''}
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+      align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));
+      border-top:1px solid rgba(210,153,34,.3)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(idx + 1, total - 1))}">The next question</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">All of them</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /**
@@ -23236,34 +23325,125 @@ export function rpBuildBBClosingStatements(ep) {
   </div>`;
 }
 
-/** The only prize the house has no vote in. */
+/**
+ * The only prize the house has no vote in.
+ *
+ * Everything else tonight is decided by seven people in a room who each have a
+ * reason to be angry. This one is decided by everybody who watched, and the
+ * screen says so: a broadcast graphic rather than a scene list, with the count
+ * running as a bar race and the gap between what the audience thought and what
+ * the jury thought sitting underneath it.
+ */
 export function rpBuildBBAmericasFavourite(ep) {
   const act = (ep.acts || []).find(a => a.type === 'americas-favourite');
   if (!act) return '';
   const top = act.tally || [];
   const max = Math.max(1, ...top.map(t => t.share));
-  return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num} — finale`,
-    title: "AMERICA'S FAVOURITE HOUSEGUEST",
-    subtitle: 'The jury decided the winner. This one was never theirs to decide.',
-    accent: '#3fb950', room: 'bb-live',
-    stateKey: `bb_afh_${ep.num}`,
-    scenes: [
-      { text: 'Every houseguest voted out of that house is on this ballot. Neither of the two who made it to the end is.',
-        players: [], badgeText: 'THE VOTE AT HOME', badgeClass: 'grey' },
-      { text: `<div>${top.map(t => `
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <div style="width:90px;font-size:11px;color:#c9d1d9;text-align:right">${t.name}</div>
-            <div style="flex:1;height:10px;border-radius:5px;background:rgba(255,255,255,.05);overflow:hidden">
-              <div style="width:${(t.share / max) * 100}%;height:100%;background:linear-gradient(90deg,#3fb950,#58a6ff)"></div>
-            </div>
-            <div style="width:44px;font-size:10px;color:var(--muted)">${t.share}%</div>
-          </div>`).join('')}</div>`,
-        players: top.map(t => t.name), badgeText: 'THE COUNT', badgeClass: 'challenge' },
-      { text: `<strong>${act.winner}</strong> takes it — for ${act.reason}. $${(act.prize || 0).toLocaleString()}.`,
-        players: [act.winner], badgeText: "AMERICA'S FAVOURITE", badgeClass: 'gold' },
-    ],
-  });
+
+  const stateKey = `bb_afh_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  // Three beats: the ballot opens, the count comes in, the envelope opens.
+  const total = 3;
+  const done = state.idx >= total - 1;
+  const counting = state.idx >= 1;
+  const opened = state.idx >= 2;
+
+  const bars = top.map((t, i) => `<div class="bbaf-row ${opened && t.name === act.winner ? 'is-win' : ''}">
+    <figure>${_bbAvatar(t.name, 34)}</figure>
+    <span class="bbaf-n">${_bbEsc(t.name)}</span>
+    <span class="bbaf-track"><b style="width:${counting ? (t.share / max) * 100 : 0}%;
+      transition-delay:${i * 0.09}s"></b></span>
+    <em>${counting ? `${t.share}%` : '—'}</em>
+  </div>`).join('');
+
+  const style = `<style>
+    .bbaf-panel{padding:18px 16px 16px;border-radius:12px;margin-bottom:16px;
+      background:radial-gradient(80% 100% at 50% 0%,rgba(63,185,80,.16),transparent 62%),
+        linear-gradient(180deg,rgba(10,22,14,.96),rgba(6,10,8,.98));
+      border:1px solid rgba(63,185,80,.3);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+    .bbaf-live{display:flex;align-items:center;gap:7px;justify-content:center;
+      font-family:ui-monospace,Consolas,monospace;font-size:8.5px;letter-spacing:2.4px;color:#7ee787;
+      margin-bottom:12px}
+    .bbaf-live i{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:bbevBlink 1.4s ease-in-out infinite}
+    .bbaf-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+    .bbaf-row figure{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+      border:2px solid rgba(255,255,255,.12)}
+    .bbaf-row figure .bb-av{width:34px!important;height:34px!important;border-radius:50%}
+    .bbaf-n{width:88px;font-size:12px;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bbaf-track{flex:1;height:13px;border-radius:7px;background:rgba(255,255,255,.05);overflow:hidden;
+      border:1px solid rgba(255,255,255,.08)}
+    .bbaf-track b{display:block;height:100%;border-radius:6px;
+      background:linear-gradient(90deg,#3fb950,#58a6ff);transition:width .85s cubic-bezier(.2,.8,.2,1)}
+    .bbaf-row em{width:46px;text-align:right;font-style:normal;font-family:ui-monospace,Consolas,monospace;
+      font-size:10.5px;color:#8b949e}
+    .bbaf-row.is-win .bbaf-n{color:#7ee787}
+    .bbaf-row.is-win figure{border-color:#3fb950;box-shadow:0 0 16px rgba(63,185,80,.45)}
+    .bbaf-row.is-win .bbaf-track b{background:linear-gradient(90deg,#3fb950,#f0a500)}
+
+    .bbaf-env{position:relative;margin:0 auto;width:min(360px,86%);height:120px;perspective:800px}
+    .bbaf-env-b{position:absolute;inset:0;border-radius:6px;background:linear-gradient(180deg,#f2ead9,#d8cdb8);
+      box-shadow:0 12px 30px rgba(0,0,0,.5)}
+    .bbaf-env-f{position:absolute;left:0;right:0;top:0;height:62px;transform-origin:top;
+      background:linear-gradient(180deg,#e8dfc9,#cfc3aa);clip-path:polygon(0 0,100% 0,50% 100%);
+      transition:transform .7s ease}
+    .bbaf-env.is-open .bbaf-env-f{transform:rotateX(178deg);opacity:0;transition:transform .7s ease,opacity .4s ease .45s}
+    .bbaf-env-f{backface-visibility:hidden}
+    .bbaf-env-t{position:absolute;left:0;right:0;bottom:14px;text-align:center;
+      font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:2.4px;color:#4a3f2c}
+
+    .bbaf-win{margin-top:16px;padding:22px 18px;border-radius:12px;text-align:center;
+      background:radial-gradient(70% 110% at 50% 0%,rgba(63,185,80,.22),rgba(0,0,0,.5));
+      border:1px solid rgba(63,185,80,.5)}
+    .bbaf-win figure{width:112px;height:112px;margin:0 auto 10px;border-radius:12px;overflow:hidden;
+      border:3px solid #3fb950;box-shadow:0 0 38px rgba(63,185,80,.45)}
+    .bbaf-win figure .bb-av{width:112px!important;height:112px!important;border-radius:9px}
+    .bbaf-win h3{margin:0;font-family:var(--font-display);font-size:clamp(24px,5vw,40px);line-height:1;color:#fff}
+    .bbaf-for{margin:9px auto 0;max-width:520px;font-size:13px;line-height:1.6;color:#d6dde5}
+    .bbaf-prize{margin-top:10px;font-family:var(--font-display);font-size:22px;color:#f0a500}
+    .bbaf-gap{margin-top:12px;font-size:11px;color:#8b949e;line-height:1.6}
+  </style>`;
+
+  const revealed = Math.min(total, Math.max(0, state.idx + 1));
+  return `<div class="rp-page bb-room bb-live">${style}
+    <div class="rp-eyebrow">Week ${ep.num} — finale</div>
+    <div class="rp-title" style="color:#3fb950">AMERICA'S FAVOURITE HOUSEGUEST</div>
+    <div style="text-align:center;font-size:11px;color:#8b949e;margin:-6px 0 14px">
+      The jury decided the winner. This one was never theirs to decide.</div>
+
+    <div class="bbaf-panel">
+      <div class="bbaf-live"><i></i>THE VOTE AT HOME &middot; ${top.length} ON THE BALLOT</div>
+      ${state.idx >= 0
+        ? bars
+        : `<div style="text-align:center;font-size:12px;color:#8b949e;padding:14px 0">
+             Every houseguest voted out of that house is on this ballot. Neither of the two who made it
+             to the end is.</div>`}
+    </div>
+
+    <div class="bbaf-env ${opened ? 'is-open' : ''}">
+      <div class="bbaf-env-b"><div class="bbaf-env-t">${opened ? 'OPENED' : 'SEALED UNTIL THE END OF THE SHOW'}</div></div>
+      <div class="bbaf-env-f"></div>
+    </div>
+
+    ${opened ? `<div class="bbaf-win">
+      <figure>${_bbAvatar(act.winner, 112)}</figure>
+      <h3>${_bbEsc(act.winner || '')}</h3>
+      <div class="bbaf-for">For ${act.reason}.</div>
+      <div class="bbaf-prize">$${(act.prize || 0).toLocaleString()}</div>
+      ${Number.isFinite(Number(act.popularity)) ? `<div class="bbaf-gap">
+        Not one vote in that jury room was ${_bbEsc(act.winner || '')}'s to win. The audience had them at
+        ${act.popularity > 0 ? '+' : ''}${act.popularity} all season, and this is the only ballot that asked.</div>` : ''}
+    </div>` : ''}
+
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;gap:8px;justify-content:center;
+      align-items:center;padding:10px 12px;background:linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.8));
+      border-top:1px solid rgba(63,185,80,.3)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, Math.min(state.idx + 1, total - 1))}">${
+        state.idx < 0 ? 'Open the ballot' : state.idx < 1 ? 'Count the votes' : 'Open the envelope'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Just tell me</button>`}
+      <span style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:2px;color:#8b949e">${revealed} / ${total}</span>
+    </div>
+  </div>`;
 }
 
 /**

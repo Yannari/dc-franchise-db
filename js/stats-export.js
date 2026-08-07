@@ -2322,6 +2322,45 @@ export async function exportAndFillNarratives(onStatus) {
  * and the site all read one season-document format regardless of show.
  */
 /**
+ * Build the season document for the Big Brother season currently in memory.
+ *
+ * Split out from the export so the whole shape of a finished season can be
+ * checked without a network, a worker or a DOM — the export around it is the
+ * fetching and the file writing, and neither is testable.
+ *
+ * Throws with a message meant to be shown to whoever pressed the button.
+ */
+export function buildBigBrotherSeasonDocument(seasonNumber) {
+  const weeks = gs.bb?.weeks || [];
+  if (!weeks.length) throw new Error('No Big Brother weeks have been played yet.');
+
+  // Placements come from the finale, which is the only thing that knows who
+  // actually won — the week engine stops at a final three.
+  const finale = gs.bb?.finale;
+  if (!finale?.winner) {
+    throw new Error('This season has not crowned a winner yet — play the finale before exporting.');
+  }
+  const finalists = [finale.winner, finale.runnerUp, finale.cut].filter(Boolean);
+  const jury = finale.jury || [];
+
+  const doc = extractBigBrotherSeasonTemplate(weeks, finalists, {
+    seasonNumber,
+    jurySize: jury.length,
+  });
+
+  // The extractor writes juryVotes: 0 for everybody, because the WEEK engine
+  // holds no jury vote — which stopped being true when the finale landed. The
+  // real tally goes in here; without it every Big Brother winner publishes with
+  // a nothing-to-nothing win.
+  const votes = finale.votes || {};
+  for (const p of doc.placements) p.juryVotes = Number(votes[p.name]) || 0;
+  if (doc.winner) {
+    doc.winner.vote = finalists.map(n => `${n} ${Number(votes[n]) || 0}`).join(' — ');
+  }
+  return doc;
+}
+
+/**
  * Export whichever season is loaded, by its format.
  *
  * The export button used to call the Total Drama path directly, which is why a
@@ -2338,44 +2377,14 @@ export async function exportSeason(onStatus) {
 export async function exportAndFillBigBrotherSeason(onStatus) {
   const _status = onStatus || (() => {});
 
-  const weeks = gs.bb?.weeks || [];
-  if (!weeks.length) { alert('No Big Brother weeks have been played yet.'); return; }
-
-  // Placements come from the finale, which is the only thing that knows who
-  // actually won — the week engine stops at a final three.
-  const finale = gs.bb?.finale;
-  if (!finale?.winner) {
-    alert('This season has not crowned a winner yet — play the finale before exporting.');
-    return;
-  }
-  const finalists = [finale.winner, finale.runnerUp, finale.cut].filter(Boolean);
-  const jury = finale.jury || [];
-
   _status('Extracting the season...');
   const seasonNum = _getSeasonNumber();
   let template;
   try {
-    template = extractBigBrotherSeasonTemplate(weeks, finalists, {
-      seasonNumber: seasonNum,
-      jurySize: jury.length,
-    });
+    template = buildBigBrotherSeasonDocument(seasonNum);
   } catch (err) {
-    alert('Failed to build the Big Brother season document: ' + (err.message || err));
+    alert(err.message || String(err));
     return;
-  }
-
-  // The extractor writes juryVotes: 0 for everybody because the week engine
-  // does not hold a jury vote. The finale does, so the real tally goes in here —
-  // otherwise every Big Brother winner lands on the site with a 0-vote win.
-  const votes = finale.votes || {};
-  for (const p of template.placements) {
-    p.juryVotes = Number(votes[p.name]) || 0;
-  }
-  if (template.winner) {
-    const tally = finalists
-      .map(n => `${n} ${Number(votes[n]) || 0}`)
-      .join(' — ');
-    template.winner.vote = tally;
   }
 
   const workerUrl = _resolveWorkerUrl();

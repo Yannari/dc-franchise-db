@@ -515,6 +515,44 @@
       "emoji": "",
       "format": "total-drama",
       "seasonId": "td-14"
+    },
+    {
+      "seasonNumber": 1,
+      "format": "big-brother",
+      "seasonId": "bb-1",
+      "title": "Big Brother 1: The House That Counted Back",
+      "subtitle": "A season of exposed deals, poisoned trust, and a winner who survived by making loyalty look like strategy.",
+      "castSize": 18,
+      "episodeCount": 15,
+      "jurySize": 7,
+      "winner": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "vote": "Wayne 4 — Priya 3 — Zee 0",
+        "runnerUp": "Priya & Zee",
+        "keyStats": "Wayne wins 4–3 over Priya, with Zee finishing third after the final HOH decision. He records 2 HOH wins, 1 veto win, is nominated only once, is saved off the block once, receives 0 eviction votes against, and earns 4 jury votes.",
+        "strategy": "Wayne’s game is built on emotional credit and selective honesty. He makes early promises to Raj, later expands into Priya, Damien, Caleb and Zee, and spends most of the season letting bigger targets absorb the heat while he stays useful in every room. When the endgame arrives, he makes the cut he has avoided all season: voting out Caleb at final four, then answering for it without trying to make it noble.",
+        "legacy": "Wayne becomes the season’s first champion by proving that Big Brother can reward an imperfect but readable game. He is not the cleanest strategist, not the biggest comp threat, and not the finalist with the flashiest résumé, but he reaches finale night with jurors who can name the weeks he mattered. His win is remembered as a loyalty game that survived just enough betrayal to become a winning game."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Caleb",
+          "playerSlug": "caleb"
+        },
+        "bestStrategic": {
+          "name": "Priya",
+          "playerSlug": "priya"
+        },
+        "mostChallengeWins": {
+          "name": "Caleb",
+          "playerSlug": "caleb",
+          "detail": "6 comp wins"
+        }
+      },
+      "theme": "Season 1 begins with suspicion before the first vote is even cast. The saboteur twist turns ordinary mistakes into accusations, and Chase’s hidden work poisons the early house so thoroughly that even after his reveal, the damage keeps moving. The pre-jury phase is defined by unstable alliances: The Dock Pact, The Undertow, The Wildcard Pact and The Merge Mob all form, fracture and expose one another before anyone reaches the jury. Bowie, Priya, Hicks and Caleb trade the most obvious strategic control, while Wayne sits inside the trust networks they all need. Once jury begins with Emmah’s eviction, the game compresses into competing pairs: Priya and Zee, Caleb and Hicks, Wayne and Raj, Wayne and Damien, and finally Wayne and Zee. Caleb’s veto streak threatens to overpower the endgame, but Wayne cuts him at final four and transforms from survivor into contender. Priya wins the final HOH and cuts Zee, choosing Wayne as the person she believes she can beat. The jury splits between respecting Priya’s precision and Wayne’s relational endurance, and Wayne wins 4–3 in a finale where nobody gets to pretend loyalty was simple.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/bb-1-cast.png",
+      "emoji": ""
     }
   ]
 }

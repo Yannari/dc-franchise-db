@@ -26,6 +26,7 @@ import { simulateJuryVote, projectJuryVotes } from './finale.js';
 import { runBBCompetition } from './bb/comps.js';
 import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
+import { generateBBEvictionInterview } from './bb-aftermath.js';
 
 /** Everyone still playing, in roster order. */
 const houseNow = () => [...(gs.activePlayers || [])];
@@ -187,6 +188,7 @@ export function simulateBBFinale(rng = Math.random) {
   let finalTwo = [...house];
   let finalHoh = null;
   let cut = null;
+  let interview = null;
 
   // ── the days before any of it ──
   //
@@ -311,6 +313,17 @@ export function simulateBBFinale(rng = Math.random) {
       gs.activePlayers = house.filter(n => n !== cut);
       gs.eliminated ||= [];
       if (!gs.eliminated.includes(cut)) gs.eliminated.push(cut);
+      // The third-place houseguest gets the same walk every other evictee got.
+      //
+      // Being cut one night short is the most bitter exit in the format and it
+      // was the only one with no interview attached — the house generates one
+      // for everybody voted out and then said nothing to the person who missed
+      // the end by a single decision.
+      try {
+        interview = generateBBEvictionInterview(
+          { ...week, eliminated: cut, houseAtStart: house },
+          { ...week, houseAtStart: house, evicted: cut }, rng, cut);
+      } catch { interview = null; }
     }
   }
 
@@ -389,6 +402,8 @@ export function simulateBBFinale(rng = Math.random) {
     finalHoh, finalTwo, cut,
     jury, juryVotes: votes,
     winner, runnerUp, favourite,
+    // Read by the shared interview screen, the same field a weekly episode uses.
+    evictionInterview: interview,
     eliminated: cut || null,
     acts,
     // Total Drama's finale record shape, so anything reading a season winner

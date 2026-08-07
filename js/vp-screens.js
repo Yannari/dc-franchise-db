@@ -21121,22 +21121,45 @@ export function buildBBWeekScreens(ep) {
   // The finale's acts belong to no cycle and are rendered once, in order.
   for (const act of ep.acts || []) {
     if (act.type === 'finale-house') {
+      // THE HOUSE'S OWN SCREEN, not a second one written for the same night.
+      //
+      // `rpBuildBBHouseLife` already draws a stretch of house life — rooms,
+      // cameras, portraits, the status rail — and the last days before a finale
+      // are a stretch of house life. The bespoke version next to it rendered
+      // two grey cards and a column of locked rows.
+      const view = { ...ep, acts: [{ ...act, type: 'house', phase: act.phase || 'pre-hoh' }] };
       screens.push({ id: 'bb-finale-house', label: 'The Final Three',
-        html: rpBuildBBFinaleHouse(ep, act) });
+        html: rpBuildBBHouseLife(view, view.acts[0], 1) || rpBuildBBFinaleHouse(ep, act) });
     } else if (act.type === 'final-hoh-part') {
-      // One screen PER PART. They were merged into a single page by an id
-      // guard, which made sense when the parts were three lines each and stopped
-      // making sense the moment they became three different competitions: a
-      // wall that runs for hours, a skill run lost on a penalty, and a quiz
-      // about seven jurors do not belong on one scroll.
+      // THE REAL COMPETITION SCREEN, not a summary of one.
+      //
+      // Each part was drawn as a bare scene list — a title, a subtitle and a
+      // column of locked rows — while `rpBuildBBComp` sat in the same file
+      // holding every themed board in the library. A part of the final Head of
+      // Household is a competition like any other, so it is handed over as one:
+      // the act is re-labelled to the slot the board expects and given the
+      // results row it builds its podium from.
       const n = act.partNum || (screens.filter(x => /^bb-final-hoh-/.test(x.id)).length + 1);
+      const comp = act.competition || {};
+      const view = {
+        ...ep,
+        acts: [{
+          ...act,
+          type: 'hoh',
+          participants: act.participants || comp.participants || [],
+          results: (comp.placements || []).map(name => ({ name, score: comp.scores?.[name] })),
+        }],
+      };
       screens.push({
         id: `bb-final-hoh-${n}`,
         label: n === 1 ? 'Part 1 · Endurance' : n === 2 ? 'Part 2 · Skill' : 'Part 3 · The Jury Quiz',
-        html: rpBuildBBFinalHohPart(ep, act),
+        html: rpBuildBBComp(view, 'hoh') || rpBuildBBFinalHohPart(ep, act),
       });
     } else if (act.type === 'final-cut') {
       screens.push({ id: 'bb-final-cut', label: 'The Decision', html: rpBuildBBFinalCut(ep) });
+      // And the walk out, on the house's own interview screen.
+      const iv = ep.evictionInterview ? rpBuildBBEvictionInterview(ep) : '';
+      if (iv) screens.push({ id: 'bb-final-interview', label: 'Third Place', html: iv });
     } else if (act.type === 'jury-questioning') {
       screens.push({ id: 'bb-ftc-questions', label: 'The Questions', html: rpBuildBBJuryQuestioning(ep) });
     } else if (act.type === 'closing-statements') {

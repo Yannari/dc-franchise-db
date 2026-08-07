@@ -604,26 +604,32 @@ async function syncSeasons(env) {
   if (!players.length) throw new ValidationError('players_database.json has no players — refusing to wipe the tables');
   if (!seasons.length) throw new ValidationError('seasons_database.json has no seasons — refusing to wipe the tables');
 
-  const validSeasons = new Set(seasons.map(s => s.seasonNumber).filter(n => n != null));
+  // A season is identified by (format, number) now, not by number alone — two
+  // shows can both have a season 5. Anything without a format tag is Total
+  // Drama: every season that exists today predates the second show.
+  const fmtOf = v => (v === 'big-brother' ? 'big-brother' : 'total-drama');
+  const validSeasons = new Set(
+    seasons.filter(s => s.seasonNumber != null).map(s => `${fmtOf(s.format)}|${s.seasonNumber}`));
   const validSlugs = new Set(players.map(p => p.id).filter(Boolean));
   // unbreakableBonds records display NAMES, so map them back to slugs
   const nameToSlug = new Map();
   for (const p of players) if (p.name && p.id) nameToSlug.set(String(p.name).trim().toLowerCase(), p.id);
 
   const stmts = [];
-  const counts = { players: 0, seasons: 0, appearances: 0, bbAppearances: 0, bonds: 0, rankings: 0, skipped: 0 };
+  const counts = { players: 0, seasons: 0, appearances: 0, tdAppearances: 0,
+                   bbAppearances: 0, bonds: 0, rankings: 0, skipped: 0 };
 
   for (const p of players) {
     if (!p.id) { counts.skipped++; continue; }
     counts.players++;
+    // The four Total Drama career totals are NOT written: they are derived by
+    // SUMming td_appearances on read, and a stored copy is a second source of
+    // truth that drifts the first time a season is re-imported.
     stmts.push(d.prepare(
-      `INSERT INTO players (id,name,total_seasons,best_placement,wins,total_challenge_wins,
-        total_immunity_wins,total_reward_wins,total_votes_against,total_idols_found,
-        total_jury_votes,tier,avg_placement) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO players (id,name,total_seasons,best_placement,wins,
+        total_votes_against,total_jury_votes,tier,avg_placement) VALUES (?,?,?,?,?,?,?,?,?)`
     ).bind(p.id, p.name || p.id, asInt(p.totalSeasons), asInt(p.bestPlacement), asInt(p.wins),
-      asInt(p.totalChallengeWins), asInt(p.totalImmunityWins), asInt(p.totalRewardWins),
-      asInt(p.totalVotesAgainst), asInt(p.totalIdolsFound), asInt(p.totalJuryVotes),
-      p.tier || null, asNum(p.avgPlacement)));
+      asInt(p.totalVotesAgainst), asInt(p.totalJuryVotes), p.tier || null, asNum(p.avgPlacement)));
   }
 
   for (const s of seasons) {
@@ -631,7 +637,7 @@ async function syncSeasons(env) {
     counts.seasons++;
     const w = s.winner || {};
     // A season with no format is Total Drama — every season predates Big Brother.
-    const format = s.format === 'big-brother' ? 'big-brother' : 'total-drama';
+    const format = fmtOf(s.format);
     stmts.push(d.prepare(
       `INSERT INTO seasons (season_number,title,subtitle,cast_size,episode_count,winner_slug,theme,status,format)
        VALUES (?,?,?,?,?,?,?,?,?)`
@@ -644,19 +650,38 @@ async function syncSeasons(env) {
     if (!p.id) continue;
     for (const det of (p.seasonDetails || [])) {
       const sn = det.season;
-      if (!validSeasons.has(sn)) { counts.skipped++; continue; }
-      const key = `${p.id}|${sn}`;
+      // Which show this season belongs to. An explicit tag wins. With no tag,
+      // a detail carrying BB numbers is Big Brother — the same rule the schema
+      // migration used to derive `format` for existing rows, so the two agree.
+      // Everything else is Total Drama, because every season detail written so
+      // far predates the second show.
+      const fmt = det.format ? fmtOf(det.format) : (det.bb ? 'big-brother' : 'total-drama');
+      if (!validSeasons.has(`${fmt}|${sn}`)) { counts.skipped++; continue; }
+      // The key must carry the format, or one player's Total Drama season 5 and
+      // their Big Brother season 5 look like the same appearance and the second
+      // is silently dropped — the exact case this whole schema exists for.
+      const key = `${p.id}|${fmt}|${sn}`;
       if (seenApp.has(key)) continue;
       seenApp.add(key);
       counts.appearances++;
       stmts.push(d.prepare(
-        `INSERT INTO appearances (player_id,season_number,placement,status,tribe,challenge_wins,
-          immunity_wins,reward_wins,votes_received,idols_found,strategic_rank,jury_votes,final_vote)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(p.id, sn, asInt(det.placement), det.status || null, det.tribe || null,
-        asInt(det.challengeWins), asInt(det.immunityWins), asInt(det.rewardWins),
-        asInt(det.votesReceived), asInt(det.idolsFound), asInt(det.strategicRank),
-        asInt(det.juryVotes), det.finalVote || null));
+        `INSERT INTO appearances (player_id,format,season_number,placement,status,
+          votes_received,jury_votes,final_vote) VALUES (?,?,?,?,?,?,?,?)`
+      ).bind(p.id, fmt, sn, asInt(det.placement), det.status || null,
+        asInt(det.votesReceived), asInt(det.juryVotes), det.finalVote || null));
+
+      // The Total Drama half of an appearance, in its own table. Driven off the
+      // FORMAT, so a Big Brother season never writes a tribe. Every Total Drama
+      // appearance gets a row: the read path LEFT JOINs this table, so a
+      // missing row reads as zero challenge wins with no error anywhere.
+      if (fmt === 'total-drama') {
+        counts.tdAppearances++;
+        stmts.push(d.prepare(
+          `INSERT INTO td_appearances (player_id,season_number,tribe,challenge_wins,
+            immunity_wins,reward_wins,idols_found,strategic_rank) VALUES (?,?,?,?,?,?,?,?)`
+        ).bind(p.id, sn, det.tribe || null, asInt(det.challengeWins), asInt(det.immunityWins),
+          asInt(det.rewardWins), asInt(det.idolsFound), asInt(det.strategicRank)));
+      }
 
       // Big Brother seasons additionally carry HOH/veto/block counts. They live
       // in their own table rather than as columns on `appearances`, which would
@@ -675,12 +700,14 @@ async function syncSeasons(env) {
       for (const ally of (det.unbreakableBonds || [])) {
         const allySlug = nameToSlug.get(String(ally).trim().toLowerCase());
         if (!allySlug || !validSlugs.has(allySlug) || allySlug === p.id) continue;
-        const bkey = `${p.id}|${allySlug}|${sn}`;
+        // Format in the key too: the same pair can be allies in two shows'
+        // season 1, and `bonds` is keyed (player_id, ally_id, format, season).
+        const bkey = `${p.id}|${allySlug}|${fmt}|${sn}`;
         if (seenBond.has(bkey)) continue;
         seenBond.add(bkey);
         counts.bonds++;
-        stmts.push(d.prepare('INSERT INTO bonds (player_id,ally_id,season_number) VALUES (?,?,?)')
-          .bind(p.id, allySlug, sn));
+        stmts.push(d.prepare('INSERT INTO bonds (player_id,ally_id,format,season_number) VALUES (?,?,?,?)')
+          .bind(p.id, allySlug, fmt, sn));
       }
     }
   }
@@ -711,7 +738,8 @@ async function syncSeasons(env) {
     throw new ValidationError(
       `this sync would run ${stmts.length} statements, over the ${MAX_SYNC_STATEMENTS} ` +
       `safety limit (${counts.players} players, ${counts.appearances} appearances, ` +
-      `${counts.bonds} bonds, ${counts.bbAppearances} Big Brother rows, ` +
+      `${counts.bonds} bonds, ${counts.tdAppearances} Total Drama rows, ` +
+      `${counts.bbAppearances} Big Brother rows, ` +
       `${counts.rankings} rankings). Nothing was changed. ` +
       `The franchise has outgrown a single-request sync — it needs to be split ` +
       `into batches per season.`);
@@ -722,6 +750,8 @@ async function syncSeasons(env) {
   await runChunked(d, [
     d.prepare('DELETE FROM bonds'),
     d.prepare('DELETE FROM bb_appearances'),
+    // NOT ms_legacy_td_columns — that is the migration's re-run guard, not data.
+    d.prepare('DELETE FROM td_appearances'),
     d.prepare('DELETE FROM appearances'),
     d.prepare('DELETE FROM rankings'),
     d.prepare('DELETE FROM seasons'),

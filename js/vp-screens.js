@@ -35,6 +35,7 @@ import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigZingbot } from './vp-bb-sig/zingbot.js';
 import { rpBuildSigDrinkOrBluff } from './vp-bb-sig/drink-or-bluff.js';
 import { rpBuildSigWhoSaidIt } from './vp-bb-sig/who-said-it.js';
+import { rpBuildSigJuryStatements } from './vp-bb-sig/jury-statements.js';
 import { rpBuildSigDrunkSpeeches } from './vp-bb-sig/drunk-speeches.js';
 import { rpBuildSigPunchSlapKick } from './vp-bb-sig/punch-slap-kick.js';
 import { rpBuildSigBlackBox } from './vp-bb-sig/black-box.js';
@@ -17050,6 +17051,9 @@ const _BB_SIG_BUILDERS = {
   'zingbot': rpBuildSigZingbot,
   'drink-or-bluff': rpBuildSigDrinkOrBluff,
   'who-said-it': rpBuildSigWhoSaidIt,
+  // Part three of the final Head of Household — the only competition the jury
+  // plays, and the only one where the people being talked about are watching.
+  'jury-statements': rpBuildSigJuryStatements,
   'drunk-speeches': rpBuildSigDrunkSpeeches,
   'punch-slap-kick': rpBuildSigPunchSlapKick,
   'black-box': rpBuildSigBlackBox,

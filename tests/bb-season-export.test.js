@@ -13,14 +13,14 @@
 // What it cannot reach: the publish request, the worker and the D1 sync. Those
 // need a browser and a network. This covers everything up to the moment the
 // documents leave the page.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import { simulateBBFinale } from '../js/bb-finale.js';
 import { buildBigBrotherSeasonDocument, mergeBigBrotherSeason,
-  mergeBigBrotherSeasonsDatabase } from '../js/stats-export.js';
+  mergeBigBrotherSeasonsDatabase, publishingIsOff, setPublishMode } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -49,6 +49,25 @@ function playSeason(seed = 11) {
     simulateBBFinale();
   });
 }
+
+describe('the dry-run switch', () => {
+  // Only the flag itself is reachable from here — _publishSeasonToSite needs a
+  // network. What this pins is that the setting round-trips and that "off" is
+  // off by default, so an export nobody configured still publishes.
+  afterEach(() => setPublishMode('publish'));
+
+  it('publishes unless somebody says otherwise', () => {
+    setPublishMode('publish');
+    expect(publishingIsOff()).toBe(false);
+  });
+
+  it('holds the commit back, and can be turned straight back on', () => {
+    expect(setPublishMode('download')).toBe(false);
+    expect(publishingIsOff()).toBe(true);
+    expect(setPublishMode('publish')).toBe(true);
+    expect(publishingIsOff()).toBe(false);
+  });
+});
 
 describe('exporting a season that was actually played', () => {
   beforeEach(() => playSeason());

@@ -2,6 +2,43 @@
 // run-ui.js — Run tab, episode management, setup panels, twist catalog
 // ══════════════════════════════════════════════════════════════════════
 
+/**
+ * A dry-run switch for the export, sitting under the button that needs it.
+ *
+ * Publishing commits the season document and all three databases to the repo
+ * and refreshes D1, which is exactly right for a finished season and exactly
+ * wrong for a first look at one. The only way to hold it back used to be
+ * deleting the API token — a credential doubling as a feature flag, and one
+ * you have to remember to put back.
+ *
+ * Checked means download the files instead. The setting sticks, so it is also
+ * visible: an export that quietly stopped publishing would otherwise look
+ * identical to one where the network was down.
+ */
+function _addPublishToggle(exportBtn) {
+  if (document.getElementById('export-download-only')) return;
+  const wrap = document.createElement('label');
+  wrap.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:6px;'
+    + 'font-size:11px;opacity:0.75;cursor:pointer;user-select:none;';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.id = 'export-download-only';
+  box.style.cssText = 'cursor:pointer;margin:0;';
+  try { box.checked = !!window.publishingIsOff?.(); } catch { box.checked = false; }
+  const text = document.createElement('span');
+  const label = () => box.checked
+    ? 'Download only — nothing is committed'
+    : 'Publishes to the site when you export';
+  text.textContent = label();
+  box.onchange = () => {
+    window.setPublishMode?.(box.checked ? 'download' : 'publish');
+    text.textContent = label();
+  };
+  wrap.appendChild(box);
+  wrap.appendChild(text);
+  exportBtn.parentElement.insertBefore(wrap, exportBtn.nextSibling);
+}
+
 export let _spoilerFree = false;
 export function set_spoilerFree(v) { _spoilerFree = v; }
 
@@ -386,6 +423,7 @@ export function renderGameState() {
           }
         };
         btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
+        _addPublishToggle(exportBtn);
       }
       let narrBtn = document.getElementById('rankings-narration-btn');
       if (!narrBtn) {
@@ -499,6 +537,7 @@ export function renderGameState() {
         }
       };
       btn.parentElement.insertBefore(exportBtn, btn.nextSibling);
+      _addPublishToggle(exportBtn);
     }
     let narrBtn = document.getElementById('rankings-narration-btn');
     if (!narrBtn) {

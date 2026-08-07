@@ -2830,8 +2830,33 @@ export async function clearLiveSeason() {
  * the repo and then rebuilds the D1 tables. Returns a summary on success, or
  * null when there's no backend configured (caller then falls back to downloads).
  */
+/**
+ * Is publishing switched off?
+ *
+ * There was no way to dry-run an export: publishing was skipped only when the
+ * request failed, so the one way to look at the files first was to delete the
+ * API token and put it back afterwards — using a credential as a feature flag,
+ * with a real chance of not putting it back.
+ */
+export function publishingIsOff() {
+  try { return localStorage.getItem('studio_publish_mode') === 'download'; } catch { return false; }
+}
+
+/** Switch publishing on or off. `mode` is 'download' or 'publish'. */
+export function setPublishMode(mode) {
+  try {
+    if (mode === 'download') localStorage.setItem('studio_publish_mode', 'download');
+    else localStorage.removeItem('studio_publish_mode');
+  } catch { /* private browsing */ }
+  return !publishingIsOff();
+}
+
 async function _publishSeasonToSite(payload, onStatus) {
   const _status = onStatus || (() => {});
+  if (publishingIsOff()) {
+    _status('Download-only mode — nothing was committed.');
+    return null;                 // null falls through to the download path
+  }
   let base = '';
   let token = '';
   try {

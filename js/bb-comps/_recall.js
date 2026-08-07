@@ -241,3 +241,69 @@ export function attentionOf(name, statPick) {
     + (Number(s.intuition) || 0) / 10 * 0.30
     + present * 0.25));
 }
+
+
+/**
+ * Numbers a house can be asked for when a quiz ends level.
+ *
+ * The wiki's rule, and it is the same for every quiz in this format: when the
+ * questions run out and the top is tied, the competition goes to a number, and
+ * if every houseguest writes the SAME number the question is nullified and
+ * another one is asked. The examples given are "the number of seconds the
+ * houseguests have lived in the house" and "the weight in pounds of an object"
+ * — a quantity nobody can deduce and everybody can estimate.
+ *
+ * Counted off the real ledger, so the answer is checkable rather than invented.
+ */
+export const TIEBREAK_QUESTIONS = [
+  { text: 'How many days have the houseguests been living in this house?',
+    target: () => Math.max(1, (gs.bb?.weeks?.length || 1) * 7) },
+  { text: 'How many votes have been cast to evict, in total, all season?',
+    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.ballots || []).length, 0) || 1 },
+  { text: 'How many times has somebody been nominated in this house?',
+    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.nominees || []).length, 0) || 1 },
+];
+
+/**
+ * Break a tie at the top, the way the format does.
+ *
+ * Mutates `score` and pushes its own beats. Returns the tiebreak record for the
+ * screen. Sorting a tie away silently — which every quiz here used to do —
+ * hands the power to whoever happens to be first in the array.
+ *
+ * @param {object} io  { participants, score, rng, beats, beat, statOf }
+ */
+export function breakQuizTie({ participants, score, rng, beats, beat, statOf }) {
+  const out = [];
+  const top = () => Math.max(...participants.map(n => score[n] || 0));
+  let tied = participants.filter(n => (score[n] || 0) === top());
+  for (let attempt = 0; tied.length > 1 && attempt < 3; attempt++) {
+    const q = TIEBREAK_QUESTIONS[attempt % TIEBREAK_QUESTIONS.length];
+    const target = q.target();
+    const guesses = {};
+    for (const name of tied) {
+      const st = statOf(name) || {};
+      const grasp = (Number(st.mental) || 0) * 0.5 + (Number(st.strategic) || 0) * 0.5;
+      const drift = (rng() - 0.5) * 2 * Math.max(2, target * (0.5 - grasp * 0.035));
+      guesses[name] = Math.max(0, Math.round(target + drift));
+    }
+    if (new Set(Object.values(guesses)).size === 1) {
+      beats.push(beat(
+        `Tiebreaker: ${q.text} Every board says ${Object.values(guesses)[0]}. The question is thrown out and another one is asked.`,
+        [...tied], 'NULLIFIED', 'grey'));
+      out.push({ question: q.text, target, guesses: { ...guesses }, nullified: true });
+      continue;
+    }
+    const closest = [...tied].sort((a, b) =>
+      Math.abs(guesses[a] - target) - Math.abs(guesses[b] - target))[0];
+    beats.push(beat(
+      `${tied.length} houseguests are level, so it goes to a number. ${q.text} `
+      + tied.map(n => `${n} writes ${guesses[n]}.`).join(' ')
+      + ` It is ${target}, and ${closest} is closest.`,
+      [...tied], 'TIEBREAKER', 'red'));
+    out.push({ question: q.text, target, guesses: { ...guesses }, winner: closest, nullified: false });
+    score[closest] = (score[closest] || 0) + 0.5;
+    tied = [closest];
+  }
+  return out;
+}

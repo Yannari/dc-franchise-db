@@ -379,3 +379,56 @@ describe('the duress competitions', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// Properties every quiz in this family owes the viewer
+// ══════════════════════════════════════════════════════════════════════
+//
+// Three faults were reported one competition at a time — ties resolved by array
+// order, a whole round narrated by two houseguests, and a screen that says how
+// many got it right without saying who. They were never specific to one comp,
+// so this asserts them across the family instead of waiting for the next report.
+describe('every recall quiz', () => {
+  const QUIZZES = ['bb-recall-who-said-it', 'bb-recall-drunk-speeches', 'bb-social-zingbot'];
+
+  it('records the whole field per question, not just a headline count', () => {
+    for (const id of QUIZZES) {
+      season();
+      const result = run(id);
+      const rounds = result.detail?.rounds || [];
+      expect(rounds.length, `${id} asked nothing`).toBeGreaterThan(1);
+      for (const r of rounds) {
+        expect(Object.keys(r.answers || {}).length, `${id} did not record every answer`).toBe(r.field);
+        for (const [who, a] of Object.entries(r.answers)) {
+          expect(r.options[a.given], `${id}: ${who} has no readable answer`).toBeTruthy();
+          expect(a.right).toBe(a.given === r.truthIndex);
+        }
+        expect(r.correct).toBe(Object.values(r.answers).filter(a => a.right).length);
+      }
+    }
+  });
+
+  it('spreads the narration across the house', () => {
+    for (const id of QUIZZES) {
+      season();
+      const rounds = run(id).detail?.rounds || [];
+      const narrators = new Set(rounds.map(r => r.spotlight).filter(Boolean));
+      expect(narrators.size, `${id} narrated ${rounds.length} questions with ${narrators.size} people`)
+        .toBeGreaterThan(Math.min(2, rounds.length - 1));
+    }
+  });
+
+  it('never lets a tie stand', () => {
+    for (const id of QUIZZES) {
+      for (let seed = 1; seed <= 40; seed++) {
+        season();
+        const result = run(id, { rng: seededRng(seed) });
+        const rows = result.debug.scoreBreakdown;
+        const top = Math.max(...Object.values(rows).map(r => r.score));
+        const atTop = Object.entries(rows).filter(([, r]) => r.score === top);
+        expect(atTop.length, `${id} finished with a ${atTop.length}-way tie at the top`).toBe(1);
+        expect(atTop[0][0]).toBe(result.winner);
+      }
+    }
+  });
+});

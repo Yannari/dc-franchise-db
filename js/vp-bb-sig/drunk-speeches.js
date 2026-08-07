@@ -75,6 +75,19 @@ const _STYLE = `<style>
   font-size:10.5px;color:var(--dk-dim);border:1px solid rgba(255,255,255,.09)}
 .sigdrunk .dk-day.is-truth{color:#0f0a04;background:var(--dk-amber);border-color:var(--dk-amber);font-weight:700}
 .sigdrunk .dk-day.is-guess{color:#ffd7d3;border-color:#e0554f;box-shadow:0 0 0 1px rgba(224,85,79,.4) inset}
+/* The whole line's answers. A headline count hides the people it is about, and
+   those people are the only reason the log moves. */
+.sigdrunk .dk-field{margin-top:10px;padding:8px 10px;border-radius:5px;background:rgba(0,0,0,.28);
+  border:1px dashed rgba(255,182,72,.24)}
+.sigdrunk .dk-field-h{font-size:10.5px;color:var(--dk-dim);margin-bottom:6px}
+.sigdrunk .dk-field-h b{color:var(--dk-amber)}
+.sigdrunk .dk-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sigdrunk .dk-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:11px;
+  font-size:10.5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,182,72,.2);color:#f3e7d4}
+.sigdrunk .dk-chip i{width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:#7bd88f}
+.sigdrunk .dk-chip.is-no i{background:#e0554f}
+.sigdrunk .dk-chip.is-no{background:rgba(224,85,79,.1);border-color:rgba(224,85,79,.35)}
+.sigdrunk .dk-chip em{font-style:normal;font-size:9.5px;color:var(--dk-dim);font-family:'Share Tech Mono',monospace}
 .sigdrunk .dk-locked{margin-bottom:13px;min-height:58px;border-radius:6px;border:1px dashed rgba(243,231,212,.16);
   display:grid;place-items:center;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;
   color:rgba(243,231,212,.3)}
@@ -163,14 +176,31 @@ export function rpBuildSigDrunkSpeeches(ep, actType, u = {}) {
       <div class="dk-speech">${esc(speech)}</div>
       <div class="dk-said">${rest}</div>
       <div class="dk-days">${strip}</div>
+      ${round.answers ? `<div class="dk-field">
+        <div class="dk-field-h"><b>${round.correct}</b> of <b>${round.field}</b> dated it right · a point each</div>
+        <div class="dk-chips">${Object.entries(round.answers).map(([who, a]) => `
+          <span class="dk-chip ${a.right ? 'is-ok' : 'is-no'}"><i></i>${esc(who)}<em>D${esc(round.options[a.given])}</em></span>`).join('')}</div>
+      </div>` : ''}
     </div>`;
   });
 
-  const rows = (comp.placements || []).slice(0, 7).map((n, i) => {
-    const row = breakdown[n] || {};
-    return `<div class="dk-srow"><i>${i + 1}</i><span>${esc(n)}</span>
-      <b>${done ? `${row.correct || 0}/${asked}` : '—'}</b></div>`;
-  }).join('');
+  // Counted from the playbacks already heard, so the log is worth reading
+  // during the competition rather than only after it.
+  const heard = [];
+  beats.slice(0, state.idx + 1).forEach(b => {
+    const sp = (b.text.match(/"([^"]+)"/) || [])[1];
+    const r = sp ? rounds.find(x => b.text.includes(x.speech)) : null;
+    if (r) heard.push(r);
+  });
+  const running = {};
+  (act.participants || comp.placements || []).forEach(n => { running[n] = 0; });
+  heard.forEach(r => Object.entries(r.answers || {}).forEach(([n, a]) => {
+    if (a.right) running[n] = (running[n] || 0) + 1;
+  }));
+  const rows = Object.keys(running).sort((a, b) => running[b] - running[a]).slice(0, 8)
+    .map((n, i) => `<div class="dk-srow"><i>${i + 1}</i><span>${esc(n)}${
+  breakdown[n]?.wonTiebreak ? ' ⧗' : ''}</span>
+      <b>${heard.length ? `${running[n] || 0}/${heard.length}` : '—'}</b></div>`).join('');
 
   const vu = Array.from({ length: 26 }, (_, i) =>
     `<i style="left:${4 + i * 3.6}%;height:${30 + (i % 5) * 12}%;animation-delay:${(i * 0.06).toFixed(2)}s"></i>`).join('');

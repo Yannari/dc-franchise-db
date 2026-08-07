@@ -144,8 +144,19 @@ const _STYLE = `<style>
 .sigzing .zgb-quiz-b{font-size:13px;line-height:1.6;color:var(--zg-cream)}
 .sigzing .zgb-redacted{font-size:13px;line-height:1.7;color:#f7e6c4;padding:10px 12px;border-radius:6px;
   background:rgba(0,0,0,.35);border:1px dashed rgba(255,210,74,.28);margin-bottom:9px}
-.sigzing .zgb-redact{display:inline-block;width:74px;height:12px;border-radius:2px;background:#0a0705;
-  box-shadow:0 0 0 1px rgba(255,210,74,.3) inset;vertical-align:-1px;margin:0 2px}
+.sigzing .zgb-redact{display:inline-block;border-radius:2px;background:#0a0705;color:#0a0705;
+  box-shadow:0 0 0 1px rgba(255,210,74,.3) inset;padding:0 2px;letter-spacing:-1px;user-select:none}
+.sigzing .zgb-field{margin-top:10px;padding:8px 10px;border-radius:6px;background:rgba(0,0,0,.28);
+  border:1px dashed rgba(255,210,74,.24)}
+.sigzing .zgb-field-h{font-size:10.5px;color:#b9a68c;margin-bottom:6px}
+.sigzing .zgb-field-h b{color:var(--zg-gold)}
+.sigzing .zgb-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sigzing .zgb-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:11px;
+  font-size:10.5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,210,74,.2);color:#f0e0bf}
+.sigzing .zgb-chip i{width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:#7bd88f}
+.sigzing .zgb-chip.is-no i{background:var(--zg-red)}
+.sigzing .zgb-chip.is-no{background:rgba(224,51,47,.1);border-color:rgba(224,51,47,.35)}
+.sigzing .zgb-chip em{font-style:normal;font-size:9.5px;color:#b9a68c}
 .sigzing .zgb-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
 .sigzing .zgb-opt{font-family:'Bungee',cursive;font-size:10px;letter-spacing:.6px;padding:4px 9px;border-radius:3px;
   background:rgba(255,255,255,.06);border:1px solid rgba(255,210,74,.22);color:#e8d5ae}
@@ -253,8 +264,14 @@ export function rpBuildSigZingbot(ep, actType, u = {}) {
       // paragraph threw away the one visual the format hands you for free.
       const qn = Number(String(b.badgeText || '').match(/ZING (\d+)/)?.[1] || 0);
       const round = (detail.rounds || [])[qn - 1];
+      // The blank has to READ as a blank.
+      //
+      // An empty span left the sentence starting with nothing — `" and Caleb.
+      // Nothing says..."` — because every zing opens on the target's name.
+      // A filled bar keeps the shape of the sentence and survives being copied
+      // out of the page as text.
       const redacted = round
-        ? round.zing.split(round.target).join('<span class="zgb-redact"></span>')
+        ? round.zing.split(round.target).join('<span class="zgb-redact">█████</span>')
         : null;
       cards += `<div class="zgb-quiz">
         <div class="zgb-quiz-l">${esc(b.badgeText || 'THE ROAST')}</div>
@@ -262,6 +279,11 @@ export function rpBuildSigZingbot(ep, actType, u = {}) {
           <div class="zgb-opts">${round.options.map(o => `<span class="zgb-opt ${
     o === round.target ? 'is-truth' : ''}">${esc(o)}</span>`).join('')}</div>` : ''}
         <div class="zgb-quiz-b">${b.text}</div>
+        ${round?.answers ? `<div class="zgb-field">
+          <div class="zgb-field-h"><b>${round.correct}</b> of <b>${round.field}</b> matched it · a point each</div>
+          <div class="zgb-chips">${Object.entries(round.answers).map(([who, a]) => `
+            <span class="zgb-chip ${a.right ? 'is-ok' : 'is-no'}"><i></i>${esc(who)}<em>${esc(round.options[a.given] || '—')}</em></span>`).join('')}</div>
+        </div>` : ''}
       </div>`;
       if (i % 3 === 2 && i < beats.length - 1) {
         cards += `<div class="zgb-amb">${esc(_AMBIENT[i % _AMBIENT.length])}</div>`;
@@ -269,11 +291,24 @@ export function rpBuildSigZingbot(ep, actType, u = {}) {
     }
   });
 
-  const scoreRows = (comp.placements || []).slice(0, 6).map((n, i) => {
-    const row = breakdown[n] || {};
-    return `<div class="zgb-srow"><i>${i + 1}</i><span>${esc(n)}</span>
-      <b>${row.correct != null ? `${row.correct}/${row.asked}` : ''}</b></div>`;
-  }).join('');
+  // Counted from the questions the viewer has actually watched, so the panel is
+  // useful during the competition instead of only after it.
+  const seenQs = [];
+  beats.slice(0, state.idx + 1).forEach(b => {
+    const qn = Number(String(b.badgeText || '').match(/ZING (\d+)/)?.[1] || 0);
+    const round = (detail.rounds || [])[qn - 1];
+    if (round) seenQs.push(round);
+  });
+  const running = {};
+  (act.participants || comp.placements || []).forEach(n => { running[n] = 0; });
+  seenQs.forEach(q => Object.entries(q.answers || {}).forEach(([n, a]) => {
+    if (a.right) running[n] = (running[n] || 0) + 1;
+  }));
+  const scoreRows = Object.keys(running)
+    .sort((a, b) => running[b] - running[a]).slice(0, 8)
+    .map((n, i) => `<div class="zgb-srow"><i>${i + 1}</i><span>${esc(n)}${
+  breakdown[n]?.wonTiebreak ? ' ⧗' : ''}</span>
+      <b>${seenQs.length ? `${running[n] || 0}/${seenQs.length}` : '—'}</b></div>`).join('');
 
   const bulbs = Array.from({ length: 19 }, (_, i) =>
     `<span class="zgb-bulb${i === 12 ? ' is-dead' : ''}"></span>`).join('');
@@ -295,7 +330,7 @@ export function rpBuildSigZingbot(ep, actType, u = {}) {
           <div class="zgb-side-h">THE ROOM</div>
           <div class="zgb-side-s">Composure, and what a joke did to it.</div>
           ${roomRows || '<div class="zgb-side-s">Nobody has been zinged yet.</div>'}
-          ${done && scoreRows ? `<div class="zgb-score"><div class="zgb-side-h" style="margin-bottom:6px">ZINGS MATCHED</div>${scoreRows}</div>` : ''}
+          ${seenQs.length ? `<div class="zgb-score"><div class="zgb-side-h" style="margin-bottom:6px">ZINGS MATCHED</div>${scoreRows}</div>` : ''}
           ${done && winner ? `<div class="zgb-win">
             <div class="zgb-win-f">${avatar(winner, 64)}</div>
             <b>${esc(winner)}</b><span>knew whose was whose</span></div>` : ''}

@@ -20,7 +20,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { beat, choose, clamp, makePicker, toResult } from './_shared.js';
-import { attentionOf, castSeen, contextFacts, momentFacts, optionsFor, recallFacts } from './_recall.js';
+import { attentionOf, breakQuizTie, castSeen, contextFacts, momentFacts, optionsFor, recallFacts } from './_recall.js';
 
 /**
  * The floor, for a house with no past to be asked about.
@@ -82,23 +82,6 @@ function answer(name, options, truthIndex, rng, luck) {
     : (truthIndex + 1 + Math.floor(rng() * (options.length - 1))) % options.length;
   return { right, given, read: round2(read) };
 }
-
-/**
- * Numbers a house could be asked for.
- *
- * The wiki's examples are "the number of seconds the houseguests have lived in
- * the house" and "the weight in pounds of an object" — a quantity nobody can
- * deduce and everybody can estimate. These are counted off the real ledger so
- * the answer is checkable rather than invented.
- */
-const TIEBREAK_QUESTIONS = [
-  { text: 'How many days have the houseguests been living in this house?',
-    target: () => Math.max(1, (gs.bb?.weeks?.length || 1) * 7) },
-  { text: 'How many votes have been cast to evict, in total, all season?',
-    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.ballots || []).length, 0) || 1 },
-  { text: 'How many times has somebody been nominated in this house?',
-    target: () => (gs.bb?.weeks || []).reduce((n, w) => n + (w.nominees || []).length, 0) || 1 },
-];
 
 // ══════════════════════════════════════════════════════════════════════
 // Who Said It?
@@ -235,36 +218,7 @@ export const whoSaidIt = {
     // question is nullified and another one is asked. Sorting the tie away
     // silently — which is what this did — hands the Head of Household to
     // whoever happened to be first in the array.
-    const tiebreaks = [];
-    let tied = participants.filter(n => score[n] === Math.max(...participants.map(x => score[x])));
-    for (let attempt = 0; tied.length > 1 && attempt < 3; attempt++) {
-      const q = TIEBREAK_QUESTIONS[attempt % TIEBREAK_QUESTIONS.length];
-      const target = q.target();
-      const guesses = {};
-      for (const name of tied) {
-        const grasp = (Number(statOf(name).mental) || 0) * 0.5 + (Number(statOf(name).strategic) || 0) * 0.5;
-        const drift = (rng() - 0.5) * 2 * Math.max(2, target * (0.5 - grasp * 0.035));
-        guesses[name] = Math.max(0, Math.round(target + drift));
-      }
-      const distinct = new Set(Object.values(guesses));
-      if (distinct.size === 1) {
-        beats.push(beat(
-          `Tiebreaker: ${q.text} Every board says ${Object.values(guesses)[0]}. The question is thrown out and another one is asked.`,
-          [...tied], 'NULLIFIED', 'grey'));
-        tiebreaks.push({ question: q.text, target, guesses: { ...guesses }, nullified: true });
-        continue;
-      }
-      const closest = [...tied].sort((a, b) =>
-        Math.abs(guesses[a] - target) - Math.abs(guesses[b] - target))[0];
-      beats.push(beat(
-        `${tied.length} houseguests are level, so it goes to a number. ${q.text} `
-        + tied.map(n => `${n} writes ${guesses[n]}.`).join(' ')
-        + ` It is ${target}, and ${closest} is closest.`,
-        [...tied], 'TIEBREAKER', 'red'));
-      tiebreaks.push({ question: q.text, target, guesses: { ...guesses }, winner: closest, nullified: false });
-      score[closest] += 0.5;
-      tied = [closest];
-    }
+    const tiebreaks = breakQuizTie({ participants, score, rng, beats, beat, statOf });
 
     participants.forEach(name => {
       breakdown[name] = {
@@ -341,7 +295,10 @@ export const drunkSpeeches = {
     const allWeeks = [...new Set(moments.map(m => m.week))];
     const asked = [];
     const used = new Set();
-    const rounds = Math.min(5, moments.length);
+    // Rotated, not drawn — a randomly picked narrator means a five-round
+    // competition can be narrated entirely by two houseguests.
+    const spotOffset = Math.floor(rng() * participants.length);
+    const rounds = Math.min(6, moments.length);
 
     for (let r = 0; r < rounds; r++) {
       const fresh = moments.filter(m => !used.has(`${m.week}|${m.kind}`));
@@ -359,10 +316,14 @@ export const drunkSpeeches = {
         answers[name] = a;
         if (a.right) score[name]++;
       });
-      asked.push({ speech: moment.text, speaker: moment.speaker, options, truthIndex, answers, kind: moment.kind });
-
-      const spotlight = participants[Math.floor(rng() * participants.length)];
+      const spotlight = participants[(r + spotOffset) % participants.length];
       const a = answers[spotlight];
+      asked.push({
+        speech: moment.text, speaker: moment.speaker, options, truthIndex, answers, kind: moment.kind,
+        spotlight, given: a.given, right: a.right,
+        correct: participants.filter(n => answers[n].right).length,
+        field: participants.length,
+      });
       beats.push(beat(
         `${distort(DS_DISTORT)} ${moment.text} `
         + (a.right ? say(DS_RIGHT)(spotlight, options[truthIndex])
@@ -372,10 +333,13 @@ export const drunkSpeeches = {
 
     if (!asked.length) noSeasonYet(participants, beats, api, rng, luck, score);
 
+    const tiebreaks = breakQuizTie({ participants, score, rng, beats, beat, statOf });
+
     participants.forEach(name => {
       breakdown[name] = {
-        correct: score[name], asked: asked.length,
+        correct: Math.floor(score[name]), asked: asked.length,
         attention: round2(attentionOf(name, statOf)),
+        wonTiebreak: tiebreaks.some(t => t.winner === name),
         score: round2(score[name]), threw: false,
       };
     });
@@ -384,7 +348,7 @@ export const drunkSpeeches = {
     const winner = entries[0]?.name;
     if (winner) {
       beats.push(beat(
-        `${winner} dated ${score[winner]} of ${asked.length} and takes the Head of Household — off a recording of somebody who sounded nothing like themselves.`,
+        `${winner} dated ${Math.floor(score[winner])} of ${asked.length} and takes the Head of Household — off a recording of somebody who sounded nothing like themselves.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 1);
       api.record(winner, 'drunk-speeches-win', { correct: score[winner], asked: asked.length });
@@ -392,8 +356,8 @@ export const drunkSpeeches = {
 
     return toResult(entries, {
       luck, beats, breakdown, variant: 'drunk-speeches',
-      detail: { rounds: asked },
-      text: winner ? `${winner} correctly dates ${score[winner]} of ${asked.length} slowed-down speeches and wins Head of Household.` : '',
+      detail: { rounds: asked, tiebreaks },
+      text: winner ? `${winner} correctly dates ${Math.floor(score[winner])} of ${asked.length} slowed-down speeches and wins Head of Household.` : '',
     });
   },
 };

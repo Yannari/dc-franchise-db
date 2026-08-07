@@ -28,7 +28,7 @@ import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond } from '../bonds.js';
 import { beat, choose, clamp, makePicker, toResult, vb } from './_shared.js';
-import { optionsFor } from './_recall.js';
+import { breakQuizTie, optionsFor } from './_recall.js';
 import { endgameDealsOf, tierOf } from '../bb/deals.js';
 
 const round2 = v => Math.round(v * 100) / 100;
@@ -275,8 +275,11 @@ export const zingbot = {
 
     // ── the competition: whose zing was that? ──
     const asked = [];
-    const rounds = Math.min(5, zings.length);
+    const rounds = Math.min(7, zings.length);
     const used = new Set();
+    // Rotated, not drawn. A randomly chosen narrator meant a whole quiz could
+    // be — and was — narrated by two houseguests while eight were answering.
+    const spotOffset = Math.floor(rng() * participants.length);
     for (let r = 0; r < rounds; r++) {
       const fresh = zings.filter(z => !used.has(z.target));
       if (!fresh.length) break;
@@ -297,12 +300,23 @@ export const zingbot = {
         const roll = rng();
         luck[name] = round2((luck[name] || 0) + (chance - roll));
         const right = roll < chance;
-        answers[name] = { right, given: right ? truthIndex : (truthIndex + 1) % options.length };
+        answers[name] = {
+          right,
+          given: right ? truthIndex : (truthIndex + 1 + Math.floor(rng() * (options.length - 1))) % options.length,
+        };
         if (right) score[name]++;
       });
-      asked.push({ zing: zing.text, target: zing.target, options, truthIndex, answers });
-
-      const spotlight = participants[Math.floor(rng() * participants.length)];
+      // Never the person the zing was about: they are the one houseguest who
+      // cannot get it wrong, so narrating them is narrating a free point.
+      const eligible = participants.filter(n => n !== zing.target);
+      const pool = eligible.length ? eligible : participants;
+      const spotlight = pool[(r + spotOffset) % pool.length];
+      asked.push({
+        zing: zing.text, target: zing.target, options, truthIndex, answers,
+        spotlight, given: answers[spotlight].given, right: answers[spotlight].right,
+        correct: participants.filter(n => answers[n].right).length,
+        field: participants.length,
+      });
       beats.push(beat(
         `The zing goes back up with the name blanked out. ${spotlight} `
         + (spotlight === zing.target
@@ -313,8 +327,16 @@ export const zingbot = {
         [spotlight, zing.target], `ZING ${r + 1}`, 'challenge'));
     }
 
+    const tiebreaks = breakQuizTie({
+      participants, score, rng, beats, beat, statOf: n => pStats(n) || {},
+    });
+
     participants.forEach(name => {
-      breakdown[name] = { correct: score[name], asked: asked.length, score: round2(score[name]), threw: false };
+      breakdown[name] = {
+        correct: Math.floor(score[name]), asked: asked.length,
+        wonTiebreak: tiebreaks.some(t => t.winner === name),
+        score: round2(score[name]), threw: false,
+      };
     });
 
     const placements = [...participants].sort((a, b) => (score[b] || 0) - (score[a] || 0));
@@ -325,7 +347,7 @@ export const zingbot = {
     const winner = entries[0]?.name;
     if (winner) {
       beats.push(beat(
-        `${winner} matched ${score[winner]} of ${asked.length} and takes it. The Zingbot congratulates ${winner} on knowing exactly how bad everybody else's game is.`,
+        `${winner} matched ${Math.floor(score[winner])} of ${asked.length} and takes it. The Zingbot congratulates ${winner} on knowing exactly how bad everybody else's game is.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 1);
       api.record(winner, 'zingbot-win', { correct: score[winner] });
@@ -333,8 +355,8 @@ export const zingbot = {
 
     return toResult(entries, {
       luck, beats, breakdown, variant: 'zingbot',
-      detail: { zings, rounds: asked },
-      text: winner ? `${winner} matches ${score[winner]} of ${asked.length} zings to their targets and takes the power.` : '',
+      detail: { zings, rounds: asked, tiebreaks },
+      text: winner ? `${winner} matches ${Math.floor(score[winner])} of ${asked.length} zings to their targets and takes the power.` : '',
     });
   },
 };

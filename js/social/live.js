@@ -15,7 +15,8 @@
 // it backfills a season that was played before this feature existed.
 import { extractEvents } from './events.js';
 import { buildEpisodeFeed } from './feed.js';
-import { addEpisodePosts, hasEpisode, keepOnlyEpisodes, storeOf } from './store.js';
+import { addEpisodePosts, hasEpisode, keepOnlyEpisodes, storeOf, postsForEpisode } from './store.js';
+import { rewriteEpisode } from './writer.js';
 
 /**
  * Every episode of the loaded season, in the shape extractEvents reads.
@@ -104,4 +105,55 @@ export function ensureFeeds(gs, {
   }
 
   return { built, dropped, posts: storeOf(gs).posts.length };
+}
+
+/**
+ * The same reconciliation, with the writer switched on.
+ *
+ * Async, and a SIBLING of `ensureFeeds` rather than a replacement, because the
+ * synchronous path is the floor: everything that already calls it keeps working
+ * with no key, no network and no await. This one builds exactly the same feed
+ * and then asks the worker to improve the words on the moments that matter.
+ *
+ * Nothing is re-asked. `ensureFeeds` already skips an episode that has a feed,
+ * so a refresh does not re-roll what the audience said about a night somebody
+ * has already watched — which is also the reason this is safe to call on every
+ * refresh rather than behind a button.
+ */
+export async function ensureFeedsWritten(gs, opts = {}) {
+  const { format = 'total-drama', season = 0, endpoint = null, cast = null,
+    fetchImpl = null, maxEvents = 6 } = opts;
+  // Build first, always. If anything below fails the season already has a feed.
+  const result = ensureFeeds(gs, opts);
+  if (!endpoint || !result.built.length) return { ...result, written: 0 };
+
+  // Read off the state rather than imported from core.js: everything under
+  // this file is meant to be pure, this one is meant to know only what a game
+  // state looks like, and core.js reaches for localStorage at module load.
+  const roster = cast || [...new Set([
+    ...(gs.activePlayers || []), ...(gs.eliminated || []),
+    ...(gs.episodeHistory?.[0]?.houseAtStart || []),
+  ])].filter(Boolean);
+  let written = 0;
+  const rejected = [];
+
+  for (const episode of result.built) {
+    const rec = episodeRecords(gs, format).find(r => r.episode === episode);
+    if (!rec) continue;
+    const events = extractEvents(rec.record, { format, season, episode });
+    const posts = postsForEpisode(gs, episode);
+    if (!posts.length) continue;
+    try {
+      const out = await rewriteEpisode(posts, events, {
+        cast: roster, endpoint, fetchImpl, maxEvents,
+      });
+      written += out.written;
+      rejected.push(...out.rejected);
+      // Written in place on the stored objects, so nothing needs re-adding.
+    } catch (err) {
+      // One episode failing to be improved is not one episode lost.
+      console.warn(`social feed: could not write episode ${episode} —`, err?.message || err);
+    }
+  }
+  return { ...result, written, rejected };
 }

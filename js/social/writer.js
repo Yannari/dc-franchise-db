@@ -124,6 +124,69 @@ export async function requestPosts(packet, { endpoint, timeoutMs = 12000, fetchI
 }
 
 /**
+ * Rewrite an episode's posts, one moment at a time.
+ *
+ * The feed is BUILT first, synchronously and deterministically, exactly as it
+ * always was — ids, ordering, replies, engagement, who is holding each account.
+ * This pass only ever replaces `text`, and only where a written post survives
+ * validation. So the model contributes words and nothing else, the whole thing
+ * degrades post by post rather than all at once, and an episode with the worker
+ * switched off is byte-identical to one from before any of this existed.
+ *
+ * One request per moment, not per post: a crowd is a batch, and fifteen calls
+ * for fifteen reactions costs fifteen times as much and reads worse because the
+ * model cannot see what it already said.
+ */
+export async function rewriteEpisode(posts, events, {
+  cast = [], endpoint = null, fetchImpl = null, maxEvents = 6,
+} = {}) {
+  if (!endpoint || !posts?.length || !events?.length) {
+    return { posts, written: 0, rejected: [] };
+  }
+  const key = e => `${e.kind}|${e.subject || ''}`;
+  const byEvent = new Map();
+  for (const p of posts) byEvent.set(`${p.kind}|${p.subject || ''}`,
+    [...(byEvent.get(`${p.kind}|${p.subject || ''}`) || []), p]);
+
+  // The loudest moments first, and a cap. A night has a dozen events and the
+  // audience is only really arguing about two or three of them; rewriting the
+  // long tail is money spent on posts nobody scrolls to.
+  const ranked = [...events]
+    .filter(e => (e.receipts || []).length || e.kind === 'blindside' || e.kind === 'finale')
+    .sort((a, b) => (b.receipts?.length || 0) - (a.receipts?.length || 0))
+    .slice(0, maxEvents);
+
+  const approved = [];
+  const rejected = [];
+  let written = 0;
+
+  for (const ev of ranked) {
+    const group = byEvent.get(key(ev));
+    if (!group?.length) continue;
+    // Screams are not worth a round trip — they are four words and the
+    // templates already do them well.
+    const targets = group.filter(p => p.topic !== 'scream');
+    if (!targets.length) continue;
+
+    const packet = buildPacket(ev, { cast, stream: targets[0].stream, count: targets.length });
+    const out = await requestPosts(packet, { endpoint, fetchImpl });
+    if (!out?.length) continue;
+
+    const { kept, rejected: no } = acceptPosts(out, packet, { approved });
+    rejected.push(...no);
+    for (const [i, k] of kept.entries()) {
+      if (!targets[i]) break;
+      targets[i].text = k.text;
+      targets[i].written = true;
+      targets[i].cites = k.cites || [];
+      approved.push(k.text);
+      written++;
+    }
+  }
+  return { posts, written, rejected };
+}
+
+/**
  * A crowd reacting to one event, written by whichever source can.
  *
  * The template sampler runs FIRST and unconditionally, because its output is

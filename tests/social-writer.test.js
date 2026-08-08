@@ -272,6 +272,65 @@ describe('it never blocks a season', () => {
     expect(await requestPosts({ event: {} }, { endpoint: null })).toBeNull();
   });
 
+  it('improves the words and changes nothing else about the feed', async () => {
+    const { ensureFeeds, ensureFeedsWritten } = await import('../js/social/live.js');
+    const { postsForEpisode } = await import('../js/social/store.js');
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+
+    // ONE season, built twice. Two separate plays are two different seasons —
+    // different Heads of Household, different nominees — so the feeds would
+    // differ for reasons that have nothing to do with the writer.
+    house();
+    Object.assign(seasonConfig, { jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
+    seasonConfig.twistSchedule = [];
+    for (let w = 0; w < 3; w++) if (!simulateBBEpisode()) break;
+
+    ensureFeeds(gs, { format: 'big-brother', season: 1 });
+    const plain = postsForEpisode(gs, 1).map(p => ({ id: p.id, at: p.at, handle: p.handle,
+      topic: p.topic, likes: p.likes, text: p.text }));
+
+    const f = vi.fn().mockImplementation(async (_url, init) => {
+      const packet = JSON.parse(init.body);
+      const id = packet.receipts?.[0]?.id;
+      return { ok: true, json: async () => ({ posts: id
+        ? [{ text: 'she really did that to him and i am not ok about it', cites: [id] }] : [] }) };
+    });
+    const out = await ensureFeedsWritten(gs, { format: 'big-brother', season: 1,
+      endpoint: 'https://x.test', fetchImpl: f, rebuild: true });
+    const written = postsForEpisode(gs, 1);
+
+    expect(out.written, 'the worker was never asked, or nothing survived').toBeGreaterThan(0);
+    // Same posts, same order, same accounts, same engagement — only words move.
+    expect(written.length).toBe(plain.length);
+    for (const [i, p] of written.entries()) {
+      expect(p.id).toBe(plain[i].id);
+      expect(p.at).toBe(plain[i].at);
+      expect(p.handle).toBe(plain[i].handle);
+      expect(p.topic).toBe(plain[i].topic);
+      expect(p.likes).toBe(plain[i].likes);
+    }
+    expect(written.some(p => p.written)).toBe(true);
+    // And a scream is never worth a round trip.
+    expect(written.filter(p => p.topic === 'scream').every(p => !p.written)).toBe(true);
+  }, 120000);
+
+  it('is byte-identical to the old feed when the writer is off', async () => {
+    const { ensureFeeds, ensureFeedsWritten } = await import('../js/social/live.js');
+    const { postsForEpisode } = await import('../js/social/store.js');
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    house();
+    Object.assign(seasonConfig, { jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
+    seasonConfig.twistSchedule = [];
+    for (let w = 0; w < 3; w++) if (!simulateBBEpisode()) break;
+    ensureFeeds(gs, { format: 'big-brother', season: 1 });
+    const a = postsForEpisode(gs, 1).map(p => p.text);
+    // Rebuilt on the SAME season, so any difference is the writer's doing.
+    const out = await ensureFeedsWritten(gs, { format: 'big-brother', season: 1,
+      endpoint: null, rebuild: true });
+    expect(out.written).toBe(0);
+    expect(postsForEpisode(gs, 1).map(p => p.text)).toEqual(a);
+  }, 120000);
+
   it('is off unless somebody turns it on', () => {
     expect(writerEndpoint({})).toBeNull();
     expect(writerEndpoint({ socialWriterUrl: 'https://x.test' })).toBe('https://x.test');

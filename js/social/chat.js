@@ -16,6 +16,7 @@
 // Pure: events and host records in, message records out. Seeded, so a night
 // reads the same every time it is opened.
 import { eventLabel, words } from './adapter.js';
+import { pickRotating } from './freshness.js';
 
 /** Deterministic rng — the same night must not say different things on reload. */
 function seeded(seed) {
@@ -33,14 +34,16 @@ const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
  * render, with Jacques and Alejandro both opening "That nomination speech told
  * the whole camp more than it told…". Remembering the last few choices per pool
  * costs nothing and removes it.
+ *
+ * That memory is per-EPISODE, though, and the audit found what that costs: a
+ * night is near-perfect and a season is 55% distinct, because every episode
+ * begins having forgotten everything and walks into the same end of the same
+ * pool. `pickRotating` starts each episode somewhere else in it. See
+ * freshness.js — the salt is what stops every pool in the room shifting by the
+ * same amount on the same night.
  */
-function pickFresh(arr, rng, used) {
-  const fresh = arr.filter(x => !used.has(x));
-  const chosen = pick(fresh.length ? fresh : arr, rng);
-  used.add(chosen);
-  // Keep the memory shorter than the pool, or it empties and repeats anyway.
-  if (used.size > Math.max(1, arr.length - 2)) used.delete([...used][0]);
-  return chosen;
+function pickFresh(arr, rng, used, episode = 0, salt = 0) {
+  return pickRotating(arr, rng, used, { episode, salt });
 }
 const titleCase = s => String(s || '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
@@ -69,21 +72,80 @@ function credential(host, w) {
  * facts already on the eligible-host record and the canonical voice profile,
  * so a new alumnus acquires a lens without somebody editing this file.
  */
-function hostLens(host) {
+export function hostLens(host) {
+  return lensRanking(host)[0];
+}
+
+/**
+ * Every lens this alumnus could credibly speak from, best fit first.
+ *
+ * The old version returned the first match and stopped, which sounds harmless
+ * and was not. `competitions` expertise is the most common thing on a record —
+ * anybody with challenge wins has it — so it swallowed the panel: measured on
+ * the real database, EIGHT of twelve hosts came out `challenge-beast`, one was
+ * a strategist, three were villains, and `goat`, `underdog` and `social` were
+ * unreachable. Eight people sharing a pool of five sentences is not a room, and
+ * no amount of freshness memory fixes it, because there is nothing else in
+ * there to reach for.
+ *
+ * A ranking rather than an answer, so `assignLenses` can hand somebody their
+ * SECOND-best lens when their first is oversubscribed.
+ */
+export function lensRanking(host) {
   const voice = String(host.voice || '').toLowerCase();
-  if (/villain|cruel|ruthless|manipulat|cutthroat|mean-girl|sadistic|schem/.test(voice)) return 'villain';
-  if (host.expertise.includes('competitions')) return 'challenge-beast';
-  if (!host.wins && host.bestPlacement != null && host.bestPlacement <= 3) return 'goat';
-  if (host.expertise.includes('alliances') || host.expertise.includes('jury management')) return 'strategist';
-  if (host.expertise.includes('surviving votes')) return 'underdog';
-  return 'social';
+  const exp = host.expertise || [];
+  const scored = [
+    ['villain', /villain|cruel|ruthless|manipulat|cutthroat|mean-girl|sadistic|schem/.test(voice) ? 6 : 0],
+    ['goat', !host.wins && host.bestPlacement != null && host.bestPlacement <= 3 ? 5 : 0],
+    ['strategist', exp.includes('alliances') || exp.includes('jury management') ? 4 : 0],
+    ['challenge-beast', exp.includes('competitions') ? 3 : 0],
+    ['underdog', exp.includes('surviving votes') ? 2 : 0],
+    // Always available, always last: somebody with no distinguishing record
+    // talks about the people rather than the game, which is a real way to be.
+    ['social', 0.5],
+  ];
+  return scored.sort((a, b) => b[1] - a[1]).map(([name]) => name);
+}
+
+/**
+ * Who speaks from which angle, across the whole panel.
+ *
+ * Per-host assignment cannot see the collision, so it has to be done for the
+ * panel at once: each lens takes only as many hosts as it has words to support,
+ * and everybody else moves to their next-best angle. The take-less lenses
+ * (`strategist`, `underdog`, `social`) are not a demotion — a host on one of
+ * those draws from the general pool, which is four times bigger than any lens
+ * pool, so overflow lands somewhere MORE varied rather than less.
+ */
+export function assignLenses(speakers) {
+  const list = speakers || [];
+  const cap = new Map();
+  for (const [name, kinds] of Object.entries(LENS_TAKES)) {
+    const lines = Object.values(kinds).reduce((n, arr) => n + arr.length, 0);
+    // Roughly one host per six lines of material, and never nobody.
+    cap.set(name, Math.max(1, Math.round(lines / 6)));
+  }
+  const taken = new Map();
+  const out = new Map();
+  // Strongest claim first, so a genuine villain gets `villain` and the person
+  // who merely has no other trait is the one who moves.
+  const order = [...list].sort((a, b) =>
+    (LENS_TAKES[lensRanking(b)[0]] ? 1 : 0) - (LENS_TAKES[lensRanking(a)[0]] ? 1 : 0));
+  for (const host of order) {
+    const ranked = lensRanking(host);
+    const pick = ranked.find(l => !LENS_TAKES[l] || (taken.get(l) || 0) < cap.get(l))
+      || ranked[ranked.length - 1];
+    taken.set(pick, (taken.get(pick) || 0) + 1);
+    out.set(host.slug, pick);
+  }
+  return out;
 }
 
 /**
  * Complete opinions, not labels glued onto a generic sentence. Only kinds where
  * a lens genuinely changes the read are listed; everything else uses TAKES.
  */
-const LENS_TAKES = {
+export const LENS_TAKES = {
   villain: {
     eviction: [
       ({ s }) => `${s} is going to call that cruel. It was. It was also clean, and clean is what matters when you are the one staying.`,
@@ -180,7 +242,7 @@ function withCredential(line, fact, rng) {
  * DISAGREE with each other on purpose — fame is reach, not correctness, and a
  * panel that speaks with one voice reads as a press release.
  */
-const TAKES = {
+export const TAKES = {
   eviction: [
     ({ s, w }) => `${s} was gone the moment the ${w.home} stopped needing ${s.split(' ')[0]}. You can feel that shift days before the ${w.vote}.`,
     ({ s, w }) => `Everyone will say ${s} played too hard. ${s} played too visibly. Those are different mistakes and only one of them is fixable.`,
@@ -426,7 +488,7 @@ const TAKES = {
 };
 
 /** Anything with no written take gets an honest generic one rather than silence. */
-const GENERIC_TAKES = [
+export const GENERIC_TAKES = [
   ({ s, k }) => `The ${k.toLowerCase()} is the headline. What it does to the numbers is the actual story.`,
   ({ s, k }) => `People are going to talk about ${s || 'that'} all week and miss what it cost.`,
   ({ s, k }) => `I have seen this exact thing go both ways. It usually comes down to who talks first afterwards.`,
@@ -487,6 +549,11 @@ export function buildChatMessages(events, speakers, {
   // one still has the whole pool available.
   const usedByKind = new Map();
   const usedCreds = new Set();
+  // Decided once for the panel rather than per message: a lens is only worth
+  // having if the people who hold it are not all holding the same one.
+  const lensOf = assignLenses(speakers);
+  const sharers = new Map();
+  for (const l of lensOf.values()) sharers.set(l, (sharers.get(l) || 0) + 1);
 
   // The loudest moments get covered; a room does not discuss every nomination.
   const worth = events.filter(e => e.kind !== 'episode-aired' || events.length === 1);
@@ -502,20 +569,25 @@ export function buildChatMessages(events, speakers, {
       speakers[(start + i) % speakers.length]);
     for (const host of speaking) {
       const subject = ev.subject ? titleCase(ev.subject) : '';
-      const lens = hostLens(host);
+      const lens = lensOf.get(host.slug) || 'social';
       const lensPool = LENS_TAKES[lens]?.[ev.kind] || [];
-      const useLens = lensPool.length > 0 && rng() < 0.58;
+      // Lean on your own angle as far as its words can carry you, and no
+      // further. A flat 58% had eight hosts pulling from five sentences most of
+      // the time; dividing by how many people share the lens is the term that
+      // was missing, and the general pool it falls back to is four times bigger.
+      const share = lensPool.length / (2 * Math.max(1, sharers.get(lens) || 1));
+      const useLens = lensPool.length > 0 && rng() < Math.min(0.58, share);
       const pool = useLens ? lensPool : (TAKES[ev.kind] || GENERIC_TAKES);
       const poolKey = `${ev.kind}:${useLens ? lens : 'general'}`;
       if (!usedByKind.has(poolKey)) usedByKind.set(poolKey, new Set());
-      let line = pickFresh(pool, rng, usedByKind.get(poolKey))
+      let line = pickFresh(pool, rng, usedByKind.get(poolKey), episode, poolKey)
         ({ s: subject, w, k: eventLabel(ev.kind, format) });
 
       // Records should sharpen an occasional opinion, not introduce every post
       // like an alumni panelist reading their own biography.
       const creds = credential(host, w);
       if (creds.length && rng() < 0.14) {
-        line = withCredential(line, pickFresh(creds, rng, usedCreds), rng);
+        line = withCredential(line, pickFresh(creds, rng, usedCreds, episode, host.slug), rng);
       }
 
       out.push({
@@ -552,7 +624,7 @@ export function buildChatMessages(events, speakers, {
     m.comments = Array.from({ length: Math.min(2, count) }, (_, i) => ({
       id: `${m.id}-c${i}`,
       author: `member${1 + Math.floor(rng() * 900)}`,
-      text: pickFresh(COMMENTS, rng, usedComments),
+      text: pickFresh(COMMENTS, rng, usedComments, episode, m.kind || ''),
     }));
     // A host answering back is the room's highest signal, so it is rare.
     m.hostReplied = rng() < 0.22;

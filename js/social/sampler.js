@@ -37,6 +37,7 @@
 // e.g. "node js/social/read-sample.mjs 30 12". No build step, no test runner —
 // the premise of this library is that a person can sit and read the output.
 
+import { rotate, frontIndex } from './freshness.js';
 import { PERSONAS, feelingsToward } from './personas.js';
 import { topicsFor } from './topics.js';
 import { platformOf } from './platforms.js';
@@ -266,6 +267,13 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
       `sampler: topic "${topic.id}" has no shape with a ${stream} phrasing pool for this event `
       + `(declared shapes: ${(topic.shapes || []).join(', ') || 'none'}) — add phrasings in phrasings.js`);
   }
+  // The SHAPE is deliberately not rotated. It was, on the theory that rotating
+  // the sentence structure would spread the season's constructions — and
+  // measured, it cost both numbers: 88% distinct fell to 87% and 78% distinct
+  // shapes to 76%. Biasing which shape gets used narrows how many pools the
+  // episode reaches at all, and there are only two or three shapes per topic,
+  // so there is nothing to sweep through. Uniform reaches more.
+  const ep = event?.episode || 0;
   const shape = _pick(rng, shapes);
   const all = poolFor(topic.id, shape, stream, event);
 
@@ -277,16 +285,25 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   // a risk, it is the expected outcome — and it reads as one account posting
   // repeatedly rather than a room reacting. Templates already spent on THIS
   // event are set aside until the pool runs dry.
-  const fresh = used ? all.filter(t => !used.has(t)) : all;
-  const pool = fresh.length ? fresh : all;
+  //
+  // ── and not the same sentence next week ──
+  //
+  // That memory is per-EVENT, so every episode walked into the pool at the same
+  // end. The pool is rotated by episode number instead — see freshness.js. A
+  // busy crowd takes far more than three lines from one pool in a night, so the
+  // sweep steps six at a time or consecutive episodes overlap; the salt keeps
+  // each pool moving independently rather than the whole library in formation.
+  const order = rotate(all, ep, `${topic.id}:${shape}:${stream}`, 6);
+  const fresh = used ? order.filter(t => !used.has(t)) : order;
+  const pool = fresh.length ? fresh : order;
 
   // Length is a preference, not a filter: draw twice and usually keep whichever
   // sits closer to how long this fan writes. Proportional, and it keeps the
   // whole pool reachable.
   const target = (LENGTH_TARGET[stream] || LENGTH_TARGET.timeline)[persona.voice.length] || 120;
-  let template = pool.length ? _pick(rng, pool) : '';
+  let template = pool.length ? pool[frontIndex(rng, pool.length)] : '';
   if (pool.length > 1) {
-    const other = _pick(rng, pool);
+    const other = pool[frontIndex(rng, pool.length)];
     if (rng() < 0.7 && Math.abs(other.length - target) < Math.abs(template.length - target)) {
       template = other;
     }

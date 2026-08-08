@@ -1,11 +1,13 @@
 // Not a guard. An audit — npm run audit:social —: how much does the feed actually
 // repeat itself, across a whole season, in the output rather than in the pools.
 import { it } from 'vitest';
+import fs from 'node:fs';
 
 import { PHRASINGS } from '../js/social/phrasings.js';
 import { archiveEpisode } from '../js/social/archive.js';
-import { buildChatMessages } from '../js/social/chat.js';
-import { episodeSpeakers, seasonPanel } from '../js/social/hosts.js';
+import { GENERIC_TAKES, LENS_TAKES, TAKES, assignLenses, buildChatMessages }
+  from '../js/social/chat.js';
+import { eligibleHosts, episodeSpeakers, seasonPanel } from '../js/social/hosts.js';
 
 const EPS = 26;
 const doc = {
@@ -63,14 +65,20 @@ it('measures', () => {
 
   // ── realised output, whole season ──
   const timeline = []; const chat = []; const perEp = [];
-  const panel = seasonPanel([
-    { slug: 'a', name: 'Nadia', expertise: ['strategy'], influence: 900, fameScore: 900 },
-    { slug: 'b', name: 'Omar', expertise: ['social'], influence: 850, fameScore: 850 },
-    { slug: 'c', name: 'Rue', expertise: ['comps'], influence: 800, fameScore: 800 },
-    { slug: 'd', name: 'Sol', expertise: ['edit'], influence: 750, fameScore: 750 },
-    { slug: 'e', name: 'Ines', expertise: ['strategy'], influence: 700, fameScore: 700 },
-    { slug: 'f', name: 'Kai', expertise: ['social'], influence: 650, fameScore: 650 },
-  ], { format: 'total-drama' });
+  // ── the REAL panel ──
+  //
+  // Invented hosts came out with expertise strings the lens reader does not
+  // recognise, so every one of them landed on `social` and the audit could not
+  // see the thing it was built to measure. The alumni are read out of the same
+  // database the page reads.
+  const players = JSON.parse(fs.readFileSync('players_database.json', 'utf8'));
+  const seasons = JSON.parse(fs.readFileSync('seasons_database.json', 'utf8'));
+  const rankings = JSON.parse(fs.readFileSync('rankings_database.json', 'utf8'));
+  const vp = JSON.parse(fs.readFileSync('voice-profiles.json', 'utf8'));
+  const panel = seasonPanel(eligibleHosts({
+    players, seasons, rankings, voices: vp.profiles || vp,
+    format: 'total-drama', airingCast: [],
+  }), { format: 'total-drama' });
 
   for (let ep = 1; ep <= EPS; ep++) {
     const { events, posts } = archiveEpisode(doc, 'total-drama', 14, ep);
@@ -85,6 +93,34 @@ it('measures', () => {
 
   report('Birdie — whole season', timeline);
   report('ChatAlumni — whole season', chat);
+
+  // ── the ceiling ──
+  //
+  // The number that decides whether this is a selection problem or a writing
+  // one. Distinct output can never exceed the number of lines the season's
+  // events can actually REACH: every other pool in the library is unreachable
+  // for this cast on these nights. A stream sitting near its ceiling is short
+  // of words; a stream sitting well under it is short of a good rota, and
+  // writing more lines into it would change nothing.
+  const kinds = new Set();
+  for (let ep = 1; ep <= EPS; ep++) {
+    for (const e of archiveEpisode(doc, 'total-drama', 14, ep).events) kinds.add(e.kind);
+  }
+  const lensOf = assignLenses(panel);
+  const spread = new Map();
+  for (const l of lensOf.values()) spread.set(l, (spread.get(l) || 0) + 1);
+  const lenses = new Set(lensOf.values());
+  let roomCeiling = 0;
+  for (const k of kinds) {
+    roomCeiling += (TAKES[k] || GENERIC_TAKES).length;
+    for (const l of lenses) roomCeiling += (LENS_TAKES[l]?.[k] || []).length;
+  }
+  console.log(`\n── the ceiling ──`);
+  console.log(`  ${kinds.size} event kinds this season: ${[...kinds].join(', ')}`);
+  console.log(`  panel of ${panel.length}: ${
+    [...spread.entries()].map(([l, n]) => `${l} ${n}`).join(', ')}`);
+  console.log(`  room can reach ${roomCeiling} distinct takes; it printed ${
+    new Set(chat).size} (${Math.round(new Set(chat).size / roomCeiling * 100)}% of what exists)`);
 
   const worstNight = perEp.sort((a, b) => (a.tu / a.t) - (b.tu / b.t))[0];
   console.log(`\n  worst single night on Birdie: ep ${worstNight.ep}, `

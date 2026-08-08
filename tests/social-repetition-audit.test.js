@@ -8,7 +8,7 @@ import { archiveEpisode } from '../js/social/archive.js';
 import { GENERIC_TAKES, LENS_TAKES, TAKES, assignLenses, buildChatMessages }
   from '../js/social/chat.js';
 import { eligibleHosts, episodeSpeakers, seasonPanel } from '../js/social/hosts.js';
-import { assignTraits } from '../js/social/voices.js';
+import { assignTraits, traitRanking } from '../js/social/voices.js';
 
 const EPS = 26;
 const doc = {
@@ -126,16 +126,21 @@ it('measures', () => {
   const tspread = new Map();
   for (const t of traitOf.values()) tspread.set(t || 'none', (tspread.get(t || 'none') || 0) + 1);
   console.log(`  voices:  ${[...tspread.entries()].map(([t, n]) => `${t} ${n}`).join(', ')}`);
-  // Across ALL eligible alumni, not just tonight's twelve — a panel is a
-  // sample, and a deriver that only balances the sample is balancing nothing.
-  const allTraits = assignTraits(eligibleHosts({
-    players, seasons, rankings, voices: vp.profiles || vp,
-    format: 'total-drama', airingCast: [],
-  }));
-  const all = new Map();
-  for (const t of allTraits.values()) all.set(t || 'none', (all.get(t || 'none') || 0) + 1);
-  console.log(`  all ${allTraits.size} eligible: ${
-    [...all.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ${n}`).join(', ')}`);
+  // Coverage across the whole cast, which is a DERIVATION question rather than
+  // an assignment one. Running `assignTraits` over all 183 at once measures the
+  // caps, not the deriver — the caps exist to stop twelve people on a panel
+  // sharing a voice and are never asked to seat a hundred and eighty.
+  const profiles = Object.entries(vp.profiles || vp);
+  const voiced = new Map();
+  for (const [name, desc] of profiles) {
+    const t = traitRanking(desc, name)[0];
+    voiced.set(t || 'none', (voiced.get(t || 'none') || 0) + 1);
+  }
+  const none = voiced.get('none') || 0;
+  console.log(`  ${profiles.length - none} of ${profiles.length} profiles (${
+    Math.round((profiles.length - none) / profiles.length * 100)}%) describe a delivery:`);
+  console.log(`    ${[...voiced.entries()].filter(([t]) => t !== 'none')
+    .sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ${n}`).join(', ')}`);
   console.log(`  room can reach ${roomCeiling} distinct takes; it printed ${
     new Set(chat).size} (${Math.round(new Set(chat).size / roomCeiling * 100)}% of what exists)`);
 

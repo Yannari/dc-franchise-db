@@ -113,7 +113,12 @@ describe('the constructions are sentences, not decorations', () => {
           const text = fn({ s: 'Ted', w, k: kind });
           expect(typeof text, `${trait}/${kind} did not return a string`).toBe('string');
           expect(text, `${trait}/${kind} leaked a slot`).not.toMatch(/\{\w+\}/);
-          expect(text.trim().length).toBeGreaterThan(20);
+          // A floor, not a style rule. It exists to catch a construction that
+          // returned nothing usable; `streetwise` says "Earned. Next." and
+          // means it, and a terseness budget set by the longest voice would
+          // quietly forbid the shortest one from existing.
+          expect(text.trim().length, `${trait}/${kind} produced almost nothing`)
+            .toBeGreaterThan(10);
         }
       }
     }

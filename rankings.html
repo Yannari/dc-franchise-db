@@ -923,7 +923,10 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
     const rankingsData = await rankingsResponse.json();
     const playersData = await playersResponse.json();
 
-    console.log('✅ Loaded', rankingsData.rankings.length, 'rankings');
+    // One board or a list of them — the count must not assume the object form.
+    const loadedBoards = Array.isArray(rankingsData) ? rankingsData : [rankingsData];
+    console.log('✅ Loaded', loadedBoards.reduce((n, b) => n + ((b && b.rankings) || []).length, 0),
+      'rankings across', loadedBoards.length, 'board' + (loadedBoards.length === 1 ? '' : 's'));
     console.log('✅ Loaded', playersData.players.length, 'players');
 
     const playersMap = {};
@@ -975,6 +978,13 @@ const TIER_COLORS = {
    that read the cards the board just wrote. A show with no board has no cards,
    so the search/sort bar would be filtering nothing — it steps aside. */
 function renderRankingsPage(rankingsData, playersMap) {
+  /* The controls are static, so the previous run's listeners survive a render
+     while the cards they close over do not. They go unconditionally: a show
+     with no board draws no cards and never re-binds, which would otherwise
+     leave the old board's listeners live over detached nodes. */
+  if (window._rankControlsAbort) window._rankControlsAbort.abort();
+  window._rankControlsAbort = new AbortController();
+
   /* The global view holds cards moved out of the tiers. They belong to the
      board being replaced, so they go before the new one is drawn. */
   const globalResults = document.getElementById('globalResults');
@@ -1036,17 +1046,21 @@ function renderRankings(rankingsData, playersMap) {
     return;
   }
 
-  rankingsData = board;
+  /* Do NOT reassign rankingsData: the switcher's onChange closes over this
+     binding, so overwriting it with the selected board collapses `boards` to a
+     single entry on the next render and the switcher stops finding the others.
+     Invisible while only one board exists; broken the day a second ships. */
+  const active = board;
 
   const tierGroups = {};
   // Auto-sort rankings by score (descending)
-  rankingsData.rankings.sort((a, b) => {
+  active.rankings.sort((a, b) => {
     const scoreA = Number(a.score || 0);
     const scoreB = Number(b.score || 0);
     return scoreB - scoreA;
   });
 
-  rankingsData.rankings.forEach(function(ranking) {
+  active.rankings.forEach(function(ranking) {
     if (!tierGroups[ranking.tier]) tierGroups[ranking.tier] = [];
     tierGroups[ranking.tier].push(ranking);
   });
@@ -1057,7 +1071,9 @@ function renderRankings(rankingsData, playersMap) {
   tierOrder.forEach(function(tierKey) {
     if (!tierGroups[tierKey]) return;
 
-    const tierInfo = rankingsData.tiers[tierKey];
+    // A board authored elsewhere need not carry tier copy of its own.
+    const tierInfo = (active.tiers && active.tiers[tierKey])
+      || { name: 'Tier ' + tierKey, description: '' };
     const players = (tierGroups[tierKey] || []).slice().sort(function(a, b) {
     const sa = Number(a.score || 0);
     const sb = Number(b.score || 0);
@@ -1388,11 +1404,9 @@ function calculateAvgPlacement(player) {
   return count > 0 ? (total / count).toFixed(1) : 0;
 }
 function initRankControls(){
-  /* Switching show re-renders the board, so this runs again. The controls
-     themselves are static, so the previous run's listeners survive — and they
-     close over cards that have since been thrown away. Drop them first. */
-  if (window._rankControlsAbort) window._rankControlsAbort.abort();
-  window._rankControlsAbort = new AbortController();
+  /* renderRankingsPage drops the previous run's listeners before every render;
+     a standalone call still needs a signal of its own. */
+  if (!window._rankControlsAbort) window._rankControlsAbort = new AbortController();
   const once = { signal: window._rankControlsAbort.signal };
 
   const searchInput = document.getElementById('searchInput');

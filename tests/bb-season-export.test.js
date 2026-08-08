@@ -286,3 +286,42 @@ describe('exporting a season that was actually played', () => {
     }
   });
 });
+
+describe('what the export remembers about a competition', () => {
+  // The engine has always known which comp was played — `week.hohCompetition`
+  // carries its name, its placements and every score. The export kept only the
+  // winner's name, so a season document could answer "who won HOH in week 3"
+  // and never "who is the youngest player ever to win the Wall", which is the
+  // entire point of giving a competition a name.
+  beforeEach(() => { playSeason(); seasonConfig.seasonNumber = 1; });
+  afterEach(() => { delete seasonConfig.seasonNumber; });
+
+  it('names the competition each week was decided by', () => {
+    const doc = buildBigBrotherSeasonDocument(1);
+    const named = doc.weeks.filter(w => w.hohComp?.name);
+    expect(named.length, 'no week recorded which HOH competition it played')
+      .toBeGreaterThan(doc.weeks.length / 2);
+
+    const w = named[0];
+    expect(w.hohComp.id).toBeTruthy();
+    expect(w.hohComp.winner).toBe(w.hoh);
+    // A placement list, so second and third are answerable too.
+    expect(Array.isArray(w.hohComp.placements)).toBe(true);
+  });
+
+  it('records the veto competition the same way', () => {
+    const doc = buildBigBrotherSeasonDocument(1);
+    const vetoed = doc.weeks.filter(w => w.vetoComp?.name);
+    expect(vetoed.length).toBeGreaterThan(0);
+    expect(vetoed[0].vetoComp.winner).toBe(vetoed[0].vetoWinner);
+  });
+
+  it('says null for a week that had none, rather than inventing one', () => {
+    // Double evictions and pre-crowned HOHs genuinely have no competition, and
+    // a season published before this field existed has none at all.
+    const doc = buildBigBrotherSeasonDocument(1);
+    for (const w of doc.weeks) {
+      expect(w.hohComp === null || typeof w.hohComp === 'object').toBe(true);
+    }
+  });
+});

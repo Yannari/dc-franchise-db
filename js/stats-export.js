@@ -2689,10 +2689,38 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       voteChanges: w.voteChanges,
       tieBreak: w.tieBreak,
       evicted: w.evicted,
+      // WHICH COMPETITION IT WAS.
+      //
+      // The engine has always known — `week.hohCompetition` carries the name,
+      // the placements and every score — and the export dropped all of it,
+      // keeping only who won. So the house could be asked "who won HOH in week
+      // three" and never "who is the youngest player ever to win the Wall",
+      // which is the question a comp with a name exists to be asked.
+      //
+      // Names only. The scores belong to the week's own record; what a record
+      // needs is the identity of the event, and a placement list so second and
+      // third are answerable too.
+      hohComp: _compRef(w.hohCompetition),
+      vetoComp: _compRef(w.vetoCompetition),
     })),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]',
+  };
+}
+
+/**
+ * A competition, reduced to what a record needs: which one it was and who did
+ * best at it. Null when a week had none — a double eviction, a pre-crowned HOH
+ * or a season that predates this field.
+ */
+function _compRef(comp) {
+  if (!comp || !comp.name) return null;
+  return {
+    id: comp.id || _slug(comp.name),
+    name: comp.name,
+    winner: comp.winner || null,
+    placements: Array.isArray(comp.placements) ? comp.placements.slice(0, 5) : [],
   };
 }
 

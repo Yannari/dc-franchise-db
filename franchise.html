@@ -560,6 +560,7 @@
     <button class="tab-btn active" data-tab="overview" role="tab">📊 Overview</button>
     <button class="tab-btn" data-tab="champions" role="tab">👑 Champions</button>
     <button class="tab-btn" data-tab="records" role="tab">📋 Records</button>
+    <button class="tab-btn" data-tab="trivia" role="tab">💡 Trivia</button>
     <button class="tab-btn" data-tab="returnees" role="tab">🔄 Returnees</button>
     <button class="tab-btn" data-tab="history" role="tab">📈 History</button>
   </nav>
@@ -615,6 +616,14 @@
   </section>
 
   <!-- TAB: RETURNEES -->
+  <section class="tab-panel" id="tab-trivia">
+    <h2 class="section-title">💡 Trivia</h2>
+    <p style="opacity:.65;margin:0 0 14px;font-size:14px">
+      Firsts, extremes and onlys, computed from this show's own records. A fact
+      nobody has the data for is left out rather than guessed at.</p>
+    <div class="lb-card" id="trivia-list"></div>
+  </section>
+
   <section class="tab-panel" id="tab-returnees">
     <div id="returnees-content"><div style="opacity:.5;padding:32px;">Loading...</div></div>
   </section>
@@ -639,6 +648,20 @@
   </div>
 </footer>
 
+<!-- The switcher is mounted by the site header; the records engine derives the
+     per-show figures franchise_database.json never contained. Both handed to
+     the classic script below, which cannot import. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { currentShow, ALL } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  import { franchiseRecords } from './js/records.js';
+  window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  window.records = { franchiseRecords };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
 <script>
 // ── Tab switching ──────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -664,29 +687,63 @@ function rankIcon(i) {
   return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span style="font-size:13px;color:var(--muted)">${i+1}</span>`;
 }
 
+/* "S4" for Total Drama, "BB1" for anything else — a bare number stopped naming
+   a season the day a second show existed. */
+function seasonBadge(m) {
+  const fmt = m.format || 'total-drama';
+  if (fmt === 'total-drama') return 'S' + (m.seasonNumber || m.season);
+  const prefix = String(m.season || '').split('-')[0] || fmt;
+  return prefix.toUpperCase() + (m.seasonNumber || '');
+}
+
+/* Trivia names people; this finds their slug so the name can be a link. */
+let _slugIndex = new Map();
+function slugFor(name) { return _slugIndex.get(name) || ''; }
+
 // ── Load data ──────────────────────────────────────────────
 (async function() {
   try {
-    const [franchise, seasonsDb, playersDb] = await Promise.all([
+    const [franchise, seasonsDb, playersDb, rosterDb, voicesDb] = await Promise.all([
       fetch('franchise_database.json').then(r => r.json()),
       fetch('seasons_database.json').then(r => r.json()),
-      fetch('players_database.json').then(r => r.json())
+      fetch('players_database.json').then(r => r.json()),
+      fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
+      fetch('voice-profiles.json').then(r => r.json()).catch(() => ({ profiles: {} })),
     ]);
+    await window._showSwitcherReady;
+
+    /* EVERYTHING BELOW IS DERIVED PER SHOW.
+       franchise_database.json holds records, champions and milestones as
+       all-shows aggregates — the per-show figures were never in the file, so
+       this page could not be filtered, only recomputed. js/records.js does that
+       from the two documents that carry a format on every row. */
+    let view = null;
+    const rebuild = () => {
+      const sw = window.showSwitcher;
+      const show = sw ? sw.currentShow() : 'all';
+      view = window.records.franchiseRecords({
+        players: playersDb, seasonsDb, roster: rosterDb,
+        voices: voicesDb.profiles || {}, format: show,
+      });
+      draw();
+    };
 
     const fs = franchise.franchiseStats;
     const players = playersDb.players || [];
+    _slugIndex = new Map(players.map(p => [p.name, p.id]));
     const seasons = (seasonsDb.seasons || []).slice().sort((a,b) => a.seasonNumber - b.seasonNumber);
 
+    function draw() {
     // ── Stat counters ────────────────────────────────────
-    document.getElementById('sc-seasons').textContent = fs.totalSeasons;
-    document.getElementById('sc-episodes').textContent = fs.totalEpisodes;
-    document.getElementById('sc-players').textContent = fs.uniquePlayers;
-    document.getElementById('sc-appearances').textContent = fs.totalAppearances;
-    document.getElementById('hero-seasons').textContent = fs.totalSeasons;
+    document.getElementById('sc-seasons').textContent = view.stats.seasons;
+    document.getElementById('sc-episodes').textContent = view.stats.episodes;
+    document.getElementById('sc-players').textContent = view.stats.players;
+    document.getElementById('sc-appearances').textContent = view.stats.appearances;
+    document.getElementById('hero-seasons').textContent = view.stats.seasons;
 
     // ── Overview: season breakdown ───────────────────────
     const tbody = document.getElementById('overview-tbody');
-    tbody.innerHTML = seasons.map(s => {
+    tbody.innerHTML = view.seasons.map(s => {
       const fanFav = (franchise.fanFavorites || []).find(f => f.season === s.seasonNumber);
       const w = s.winner || {};
       return `<tr>
@@ -702,8 +759,8 @@ function rankIcon(i) {
 
     // ── Champions ────────────────────────────────────────
     const champGrid = document.getElementById('champions-grid');
-    champGrid.innerHTML = (franchise.champions || []).map(c => {
-      const s = seasons.find(x => x.seasonNumber === c.season) || {};
+    champGrid.innerHTML = view.champions.map(c => {
+      const s = view.seasons.find(x => x.seasonNumber === c.season) || {};
       return `<div class="champ-card">
         <div class="champ-season-badge">${c.emoji||s.emoji||'🏝️'} Season ${c.season}</div>
         <div class="champ-avatar-wrap">
@@ -736,41 +793,42 @@ function rankIcon(i) {
       return `<div class="lb-card"><div class="lb-header">${title}</div>${rows}</div>`;
     }
 
-    function sCnt(p) { return p.seasonsPlayed || (Array.isArray(p.seasons) ? p.seasons.length : (p.seasons||0)); }
-    const sorted = {
-      wins: [...players].sort((a,b) => (b.wins||0)-(a.wins||0)),
-      seasons: [...players].sort((a,b) => sCnt(b)-sCnt(a)),
-      chalWins: [...players].sort((a,b) => (b.totalChallengeWins||0)-(a.totalChallengeWins||0)),
-      immWins: [...players].sort((a,b) => (b.totalImmunityWins||0)-(a.totalImmunityWins||0)),
-      juryVotes: [...players].sort((a,b) => (b.totalJuryVotes||0)-(a.totalJuryVotes||0)),
-      votes: [...players].sort((a,b) => (b.totalVotesAgainst||0)-(a.totalVotesAgainst||0)),
-      idols: [...players].sort((a,b) => (b.totalIdolsFound||0)-(a.totalIdolsFound||0)),
-      avgPlace: [...players].filter(p => sCnt(p) >= 2).sort((a,b) => (a.avgPlacement||99)-(b.avgPlacement||99))
-    };
-
+    /* Boards are the show's own numbers, not the player's cross-format totals:
+       a Big Brother competition win is folded into `totalChallengeWins`, so
+       reading that field under a Total Drama filter reports seasons the filter
+       just excluded. js/records.js recomputes from seasonDetails. */
     const recordsGrid = document.getElementById('records-grid');
-    recordsGrid.innerHTML = [
-      buildLB('🏆 Most Wins', sorted.wins, p=>`${p.wins||0} wins`, p=>`${sCnt(p)} seasons`),
-      buildLB('🔄 Most Seasons', sorted.seasons, p=>`${sCnt(p)}`, p=>`${p.wins||0} wins`),
-      buildLB('💪 Most Challenge Wins', sorted.chalWins, p=>`${p.totalChallengeWins||0}`, p=>`${p.totalImmunityWins||0} immunity`),
-      buildLB('🛡️ Most Immunity Wins', sorted.immWins, p=>`${p.totalImmunityWins||0}`, p=>`${p.totalChallengeWins||0} total`),
-      buildLB('🗳️ Most Jury Votes', sorted.juryVotes, p=>`${p.totalJuryVotes||0}`, p=>`${sCnt(p)} seasons`),
-      buildLB('🎯 Most Votes Against', sorted.votes, p=>`${p.totalVotesAgainst||0}`, p=>`${sCnt(p)} seasons`),
-      buildLB('💎 Most Idols Found', sorted.idols, p=>`${p.totalIdolsFound||0}`, p=>`${sCnt(p)} seasons`),
-      buildLB('📊 Best Avg Placement (2+ seasons)', sorted.avgPlace, p=>`${(p.avgPlacement||0).toFixed(2)}`, p=>`${sCnt(p)} seasons`)
-    ].join('');
+    recordsGrid.innerHTML = view.boards
+      .map(b => buildLB(b.label, b.rows, r => {
+        const v = b.value(r);
+        return b.key === 'avgPlace' ? v.toFixed(2) : String(v);
+      }, b.sub))
+      .join('');
 
     // ── Milestones ───────────────────────────────────────
     const mTbody = document.getElementById('milestones-tbody');
-    mTbody.innerHTML = (franchise.milestones || []).map(m => `<tr>
+    mTbody.innerHTML = view.milestones.map(m => `<tr>
       <td><span class="milestone-cat">${m.category}</span></td>
       <td><div class="winner-cell">${avatar(m.playerSlug,28)}${pLink(m.holder, m.playerSlug)}</div></td>
       <td style="font-size:13px;color:var(--muted)">${m.stat}</td>
-      <td><span class="s-num-badge">S${m.season}</span></td>
-    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;opacity:.4;padding:24px;">No milestones data</td></tr>';
+      <td><span class="s-num-badge">${seasonBadge(m)}</span></td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;opacity:.4;padding:24px;">No milestones yet for this show.</td></tr>';
+
+    // ── Trivia ───────────────────────────────────────────
+    const trivEl = document.getElementById('trivia-list');
+    if (trivEl) {
+      trivEl.innerHTML = view.trivia.map(t => `<div class="lb-entry">
+        <div class="lb-name"><strong>${t.fact}</strong><div class="lb-sub">${t.detail || ''}</div></div>
+        <div class="lb-val">${pLink(t.holder, slugFor(t.holder))}</div>
+      </div>`).join('')
+        || '<p style="opacity:.6;padding:16px">Nothing to say about this show yet.</p>';
+    }
 
     // ── Returnees ────────────────────────────────────────
-    const multiPlayers = franchise.multiSeasonPlayers || [];
+    const multiPlayers = view.returnees.map(c => ({
+      name: c.name, playerSlug: c.id, seasonsPlayed: c.seasonsPlayed,
+      seasons: c.seasons, wins: c.wins,
+    }));
     const groups = [
       { label: '4+ Seasons', min: 4, players: multiPlayers.filter(p => p.seasonsPlayed >= 4) },
       { label: '3 Seasons', min: 3, players: multiPlayers.filter(p => p.seasonsPlayed === 3) },
@@ -823,6 +881,11 @@ function rankIcon(i) {
       trendCard('🌀 Major Twists', trends.majorTwists, null, t=>t.twist),
       trendCard('👥 Cast Composition', trends.castComposition, null, t=>t.composition)
     ].join('') || '<div style="opacity:.4">No trend data.</div>';
+    }   /* end draw() */
+
+    rebuild();
+    // The switcher lives in the site header, so the choice follows you here.
+    window.addEventListener('showchange', rebuild);
 
   } catch(err) {
     console.error('Franchise data error:', err);

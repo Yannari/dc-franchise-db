@@ -45,7 +45,12 @@ export function splitStory(story) {
   for (const [i, m] of heads.entries()) {
     const start = m.index + m[0].length;
     const end = i + 1 < heads.length ? heads[i + 1].index : text.length;
-    const body = text.slice(start, end).trim();
+    // Strip the rule the generator draws under a heading. Left in, a chapter
+    // opens with "—————— Bowie starts fast", which reads as a typo.
+    const body = text.slice(start, end)
+      // Box-drawing characters too: the rule is ─, not an em-dash.
+      .replace(/^[\s─-╿—–\-_=·•]+/, '')
+      .trim();
     if (!body) continue;                     // a repeated header with no prose
     const season = Number(m[1]);
     const last = parts[parts.length - 1];

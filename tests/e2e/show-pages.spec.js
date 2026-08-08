@@ -89,3 +89,44 @@ test('a one-show career is not made to look like two', async ({ page }) => {
   expect(await page.locator('.pp-showhead').count()).toBe(0);
   await expect(page.locator('.pp-meta')).toContainText('4 seasons');
 });
+
+test('the wiki is its own tab, and one article per show', async ({ page }) => {
+  // A character's Big Brother article and their Total Drama article are
+  // different articles. Stacked under one heading — which is how this first
+  // shipped — every section had to be read twice to work out which show it was
+  // about.
+  await page.goto('/player.html?player=bowie');
+  await page.waitForSelector('.pp-viewtab', { timeout: 15000 });
+  await expect(page.locator('#pp-view-wiki')).toBeHidden();
+
+  await page.click('#pv-wiki');
+  await expect(page.locator('.wk-article')).toBeVisible();
+  // Laid out like a fandom article: infobox, contents, sections.
+  await expect(page.locator('.wk-infobox')).toBeVisible();
+  await expect(page.locator('.wk-lead')).toContainText('Bowie');
+
+  const td = await page.locator('.wk-section h2').allTextContents();
+  expect(td.join(' ')).toContain('Season 9');
+  await expect(page.locator('.wk-ib-show')).toContainText('Total Drama');
+});
+
+test('the wiki follows the show switcher', async ({ page }) => {
+  await page.goto('/player.html?player=bowie&view=wiki&show=big-brother');
+  await page.waitForSelector('.wk-article', { timeout: 15000 });
+  await expect(page.locator('.wk-ib-show')).toContainText('Big Brother');
+
+  const heads = await page.locator('.wk-section h2').allTextContents();
+  expect(heads.join(' '), 'the Big Brother article is showing Total Drama seasons')
+    .not.toContain('Season 9');
+});
+
+test('a show they never played says so, with a way across', async ({ page }) => {
+  // Not an empty page with headings and nothing under them.
+  await page.goto('/player.html?player=alejandro&view=wiki&show=big-brother');
+  await page.waitForSelector('.wk-empty', { timeout: 15000 });
+  await expect(page.locator('.wk-empty h2')).toContainText('No Big Brother article');
+
+  await page.click('[data-wiki-show="total-drama"]');
+  await expect(page.locator('.wk-article')).toBeVisible();
+  await expect(page.locator('.wk-ib-show')).toContainText('Total Drama');
+});

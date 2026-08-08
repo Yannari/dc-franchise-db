@@ -601,6 +601,75 @@ function getSeasonTitle(n) {
   return t[n] || ('Season ' + n);
 }
 
+/**
+ * Profile | Wiki, and the article that lives behind the second one.
+ *
+ * The article is SCOPED TO ONE SHOW. A character's Big Brother article and
+ * their Total Drama article are different articles — stacking both under one
+ * heading was the confusion, because every section had to be read twice to work
+ * out which show it was about. The site's show switcher picks; a show they never
+ * played says so with an icon rather than rendering empty headings.
+ */
+let _wikiShow = null;
+
+function _wireViewTabs(player) {
+  const tabProfile = document.getElementById('pv-profile');
+  const tabWiki = document.getElementById('pv-wiki');
+  const viewProfile = document.getElementById('pp-view-profile');
+  const viewWiki = document.getElementById('pp-view-wiki');
+  if (!tabProfile || !tabWiki) return;
+
+  const show = (which) => {
+    const wiki = which === 'wiki';
+    tabProfile.setAttribute('aria-selected', String(!wiki));
+    tabWiki.setAttribute('aria-selected', String(wiki));
+    viewProfile.hidden = wiki;
+    viewWiki.hidden = !wiki;
+    if (wiki) _renderWiki(player);
+    try {
+      const u = new URL(location.href);
+      if (wiki) u.searchParams.set('view', 'wiki'); else u.searchParams.delete('view');
+      history.replaceState({}, '', u);
+    } catch {}
+  };
+
+  tabProfile.onclick = () => show('profile');
+  tabWiki.onclick = () => show('wiki');
+  // The article follows the site's show switcher, like every other page.
+  window.addEventListener('showchange', () => { _wikiShow = null; _renderWiki(player); });
+  // And a link straight to the wiki opens on it.
+  if (new URLSearchParams(location.search).get('view') === 'wiki') show('wiki');
+}
+
+function _renderWiki(player) {
+  const host = document.getElementById('pp-view-wiki');
+  if (!host || !window.wiki?.buildDossier || !window.wikiView?.renderArticle) return;
+
+  const dossier = window.wiki.buildDossier(player, {
+    voices: window.__voices || {},
+    roster: window.__roster || [],
+    seasonTitles: window.__seasonTitles || new Map(),
+    milestonesByShow: window.__milestones || {},
+  });
+  if (!dossier) return;
+
+  const played = (dossier.career || []).map(c => c.format);
+  const all = [...new Set([...played, 'total-drama', 'big-brother'])];
+  const chosen = window.showSwitcher?.currentShow?.();
+  /* "All shows" is not an article — an encyclopaedia entry is about one show.
+     Default to the one they played most, which is the article somebody landing
+     here almost always wants. */
+  const format = _wikiShow
+    || (chosen && chosen !== 'all' ? chosen : played[0] || 'total-drama');
+
+  host.innerHTML = window.wikiView.renderArticle(dossier, format, { root: '.', allShows: all });
+
+  // The empty state offers the other show; that button switches article.
+  host.querySelectorAll('[data-wiki-show]').forEach(b => {
+    b.onclick = () => { _wikiShow = b.dataset.wikiShow; _renderWiki(player); };
+  });
+}
+
 function renderPlayerProfile(player) {
   const container = document.getElementById('player-content');
   const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
@@ -1014,10 +1083,17 @@ function renderPlayerProfile(player) {
 
   // Mini chips for non-bar stats
   html += `<div class="pp-mini-chips pp-reveal">`;
-  /* The chip stays a single number — it is a number tile — but a two-show career
-     says which shows underneath rather than implying one franchise. */
-  html += `<div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">${
-    showCounts ? 'Seasons (' + showCounts.replace(/&nbsp;•&nbsp;/g, '+').replace(/\s+/g, ' ') + ')' : 'Seasons'}</div></div>`;
+  /* ONE CHIP PER SHOW when there is more than one. A single "3" with the
+     breakdown squeezed underneath is the merged number with a footnote — which
+     is what it looked like, because that is what it was. */
+  if (_multiShow) {
+    for (const fmt of _showList) {
+      html += `<div class="pp-chip"><div class="v">${_careers[fmt].seasonsPlayed}</div><div class="l">${
+        (SHOW_NAMES[fmt] || fmt).replace(' ', '<br>')}</div></div>`;
+    }
+  } else {
+    html += `<div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">Seasons</div></div>`;
+  }
   html += `<div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>`;
   html += `<div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>`;
   /* Win rate and average placement average across every show somebody played.
@@ -1025,90 +1101,6 @@ function renderPlayerProfile(player) {
      which it is rather than implying one franchise. */
   if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate${_multiShow ? ' (all shows)' : ''}</div></div>`;
   html += `</div>`;
-
-  // ── THE CHARACTER ─────────────────────────────────────────
-  //
-  // Everything in this section already existed and was shown nowhere: a
-  // per-season narrative for 150 of the 152 players, the personality prose the
-  // episode writer reads, the bonds a season recorded, the records they hold.
-  // The page was a stat sheet standing on top of all of it.
-  //
-  // Sections with no data are OMITTED rather than padded. Sixteen players have
-  // recorded bonds and no published season carries showmances yet, so a
-  // relationships block that invented something for everybody would be the
-  // most-read part of the page and the least true.
-  const dossier = window.wiki?.buildDossier
-    ? window.wiki.buildDossier(player, {
-        voices: window.__voices || {},
-        roster: window.__roster || [],
-        seasonTitles: window.__seasonTitles || new Map(),
-        milestonesByShow: window.__milestones || {},
-      })
-    : null;
-
-  if (dossier) {
-    html += `<div class="pp-section pp-reveal"><h2>The Character</h2>${
-      dossier.bioLine ? `<span class="pp-pill">${dossier.bioLine}</span>` : ''}</div>`;
-
-    if (dossier.personality) {
-      html += `<div class="pp-wiki pp-reveal"><p class="pp-wiki-lead">${dossier.personality}</p></div>`;
-    }
-
-    // Who they are with. Absent until a season exported since showmances were
-    // recorded — every published season predates that.
-    if (dossier.couple) {
-      const c = dossier.couple;
-      html += `<div class="pp-wiki pp-reveal"><h3>Relationship</h3><p>${
-        c.together
-          ? `With <strong>${c.partner}</strong> since season ${c.since}.`
-          : `Was with <strong>${c.partner}</strong> until season ${c.season}${c.endedBy ? ` — ended at the ${c.endedBy}` : ''}.`
-      }</p></div>`;
-    }
-
-    // The career, told per show and per season.
-    for (const show of dossier.career) {
-      const chapters = show.seasons.filter(x => x.story || x.keyMoments.length);
-      if (!chapters.length) continue;
-      html += `<div class="pp-wiki pp-reveal"><h3>${show.show}</h3>`;
-      for (const sn of chapters) {
-        const label = sn.title ? `Season ${sn.season} — ${sn.title}` : `Season ${sn.season}`;
-        html += `<div class="pp-wiki-season">
-          <div class="pp-wiki-shead">${label} <span class="pp-wiki-place">#${sn.placement}${sn.status ? ' · ' + sn.status : ''}</span></div>
-          ${sn.story ? `<p>${sn.story}</p>` : ''}
-          ${sn.keyMoments.length ? `<ul class="pp-wiki-moments">${
-            sn.keyMoments.map(m => `<li>${m}</li>`).join('')}</ul>` : ''}
-        </div>`;
-      }
-      html += `</div>`;
-    }
-
-    // Close bonds — the one relationship every published season has carried.
-    if (dossier.relationships.bonds.length) {
-      html += `<div class="pp-wiki pp-reveal"><h3>Closest to</h3><p>${
-        dossier.relationships.bonds.map(b =>
-          `<a href="player.html?player=${slugify(b.name)}">${b.name}</a>` +
-          (b.seasons.length > 1 ? ` (${b.seasons.length} seasons)` : '')
-        ).join(' &nbsp;·&nbsp; ')}</p></div>`;
-    }
-
-    if (dossier.relationships.rivalries.length) {
-      html += `<div class="pp-wiki pp-reveal"><h3>Rivalries</h3><p>${
-        dossier.relationships.rivalries.map(r => `${r.rival} (${r.show || 'Big Brother'} ${r.season})`).join(', ')}</p></div>`;
-    }
-
-    if (dossier.relationships.alliances.length) {
-      html += `<div class="pp-wiki pp-reveal"><h3>Alliances</h3><p>${
-        dossier.relationships.alliances.map(a =>
-          `<strong>${a.name}</strong> — ${(a.members || []).filter(m => m !== player.name).join(', ')}`
-        ).join('<br>')}</p></div>`;
-    }
-
-    // What they hold, from the same engine the Franchise page draws.
-    if (dossier.records.length) {
-      html += `<div class="pp-wiki pp-reveal"><h3>Records held</h3><ul class="pp-wiki-moments">${
-        dossier.records.map(r => `<li>${r.category} — ${r.stat} <span style="opacity:.6">(${r.show})</span></li>`).join('')}</ul></div>`;
-    }
-  }
 
   // ── SEASON HISTORY ────────────────────────────────────────
   html += `<div class="pp-section pp-reveal"><h2>Season History</h2></div>`;
@@ -1228,7 +1220,20 @@ function renderPlayerProfile(player) {
 
   // ppTab defined in outer scope below
 
-  container.innerHTML = html;
+  /* PROFILE | WIKI.
+     The character article is its own view rather than a slab bolted under the
+     stat sheet — that was the confusion: two different documents about the same
+     person, stacked, with no line between them. */
+  const _profileHtml = html;
+  container.innerHTML = `
+    <div class="pp-viewtabs" role="tablist" aria-label="Player views">
+      <button class="pp-viewtab" role="tab" id="pv-profile" aria-selected="true">Profile</button>
+      <button class="pp-viewtab" role="tab" id="pv-wiki" aria-selected="false">📖 Wiki</button>
+    </div>
+    <div id="pp-view-profile">${_profileHtml}</div>
+    <div id="pp-view-wiki" hidden></div>`;
+
+  _wireViewTabs(player);
 
   // ── 1. Score ring + counter animation ────────────────────
   requestAnimationFrame(() => {
@@ -1550,8 +1555,13 @@ document.addEventListener('keydown', e => {
   // pages cannot come to disagree about somebody's record.
   import { careersIn, franchiseRecords } from './js/records.js';
   import { buildDossier } from './js/wiki.js';
+  import { renderArticle, WIKI_CSS } from './js/wiki-view.js';
+  import { currentShow, ALL } from './js/show-switcher.js';
   window.records = { careersIn };
   window.wiki = { buildDossier };
+  window.wikiView = { renderArticle };
+  window.showSwitcher = window.showSwitcher || { currentShow, ALL };
+  document.head.appendChild(Object.assign(document.createElement('style'), { textContent: WIKI_CSS }));
 
   /* The character section reads three documents the stat sheet never needed:
      the voice profiles for personality, the roster for the bio fields, and the

@@ -211,11 +211,20 @@ describe('an archive of a finished season', () => {
     expect(kinds, 'season 9 read the prose array and lost its eviction').toContain('eviction');
   });
 
-  it('has nothing to say about a season that recorded nothing', () => {
-    // Honest silence. These five seasons are published and real; their documents
-    // simply do not say what happened in any given episode.
+  it('gives a season that recorded nothing exactly one night: its finale', () => {
+    // Seasons 1-5 predate votingHistory and say nothing about any single
+    // episode — but they DO name a winner, and that is a fact worth a feed. So
+    // they get the finale and nothing else, rather than either total silence or
+    // a set of invented nights.
     const s3 = j('data/seasons/season3-data.json');
-    expect(episodesOf(s3, 'total-drama')).toEqual([]);
+    expect(s3.votingHistory ?? []).toEqual([]);
+    const eps = episodesOf(s3, 'total-drama');
+    expect(eps.map(e => e.episode)).toEqual([s3.episodeCount]);
+
+    const { events, posts } = archiveEpisode(s3, 'total-drama', 3, s3.episodeCount);
+    expect(events.map(e => e.kind)).toContain('finale');
+    expect(posts.length).toBeGreaterThan(10);
+    // and no other night claims to have one
     expect(archiveEpisode(s3, 'total-drama', 3, 1).posts).toEqual([]);
   });
 
@@ -271,5 +280,39 @@ describe('an archive of a finished season', () => {
     expect(episodesOf(null, 'total-drama')).toEqual([]);
     expect(archiveEpisode(td14, 'total-drama', 14, 999).posts).toEqual([]);
     expect(audiencePulse([]).rising).toBe(null);
+  });
+});
+
+describe('the finale', () => {
+  it('lands on the night the finale actually aired', () => {
+    // votingHistory records tribal councils, and a Total Drama finale is decided
+    // by a challenge or a jury rather than a ballot — so the last recorded VOTE
+    // is not the last EPISODE. Season 14 runs to 26 and last votes on 24, which
+    // put the finale reaction on the wrong night and left the real finale with
+    // no page at all.
+    const eps = episodesOf(td14, 'total-drama');
+    expect(eps[eps.length - 1].episode).toBe(td14.episodeCount);
+
+    const onFinale = archiveEpisode(td14, 'total-drama', 14, td14.episodeCount)
+      .events.map(e => e.kind);
+    expect(onFinale).toContain('finale');
+
+    const onLastVote = archiveEpisode(td14, 'total-drama', 14, 24).events.map(e => e.kind);
+    expect(onLastVote, 'the last vote is still being called the finale')
+      .not.toContain('finale');
+  });
+
+  it('gives the finale night a feed of its own', () => {
+    const { posts } = archiveEpisode(td14, 'total-drama', 14, td14.episodeCount);
+    expect(posts.length).toBeGreaterThan(20);
+    expect(posts.some(p => p.subject === 'jade')).toBe(true);
+  });
+
+  it('does not invent one for a show whose finale IS a vote', () => {
+    // Big Brother's last week ends in a vote, so its finale is already the last
+    // entry. Appending another would leave a week that never happened.
+    const eps = episodesOf(bb1, 'big-brother');
+    expect(eps[eps.length - 1].episode).toBe(bb1.weeks[bb1.weeks.length - 1].week);
+    expect(eps.some(e => e.record?.isFinale)).toBe(false);
   });
 });

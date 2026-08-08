@@ -47,9 +47,28 @@ export function episodesOf(doc, format) {
       record, episode: Number(record?.episode ?? record?.num ?? i + 1),
     }));
   }
-  return (doc.votingHistory || []).map((v, i) => ({
+  const voted = (doc.votingHistory || []).map((v, i) => ({
     record: v, episode: Number(v?.episode ?? i + 1),
   }));
+
+  // THE FINALE IS NOT THE LAST VOTE.
+  //
+  // votingHistory records tribal councils, and a Total Drama finale is decided
+  // by a challenge or a jury rather than by a ballot — so the season's last
+  // recorded vote is several episodes before the end. Season 14 runs to episode
+  // 26 and its last vote is episode 24, which meant the finale reaction landed
+  // on the wrong night and the actual finale had no page at all.
+  //
+  // The finale gets its own entry, at the episode the season says it ran to.
+  const lastVote = voted.length ? voted[voted.length - 1].episode : 0;
+  const end = Number(doc.episodeCount) || 0;
+  if (doc.winner && end > lastVote) {
+    voted.push({
+      episode: end,
+      record: { episode: end, isFinale: true, winner: doc.winner },
+    });
+  }
+  return voted;
 }
 
 /**
@@ -125,9 +144,11 @@ export function archiveEpisode(doc, format, season, episode, { popularity = null
   const meta = { format, season, episode: found.episode };
   const events = extractEvents(found.record, meta);
   if (format !== 'big-brother') events.push(...tribalEvents(found.record, meta));
-  // The last night of a finished season is its finale, and the document says so
-  // by having no later one — no guessing involved.
-  if (found === all[all.length - 1] && doc?.winner) {
+  // The finale is whichever night the document calls the finale — either the
+  // entry synthesised above, or the last one for a show whose finale IS a vote.
+  const isFinale = found.record?.isFinale
+    || (found === all[all.length - 1] && format === 'big-brother');
+  if (isFinale && doc?.winner) {
     events.push(socialEvent('finale', { ...meta, subject: doc.winner.name || doc.winner }));
   }
   events.sort((a, b) => a.at - b.at);

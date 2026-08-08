@@ -8,6 +8,7 @@ import { archiveEpisode } from '../js/social/archive.js';
 import { GENERIC_TAKES, LENS_TAKES, TAKES, assignLenses, buildChatMessages }
   from '../js/social/chat.js';
 import { eligibleHosts, episodeSpeakers, seasonPanel } from '../js/social/hosts.js';
+import { assignTraits } from '../js/social/voices.js';
 
 const EPS = 26;
 const doc = {
@@ -64,7 +65,7 @@ it('measures', () => {
     + `smallest ${sizes[0]}, ${sizes.filter(n => n <= 2).length} pools of 1-2`);
 
   // ── realised output, whole season ──
-  const timeline = []; const chat = []; const perEp = [];
+  const timeline = []; const chat = []; const perEp = []; const allMsgs = [];
   // ── the REAL panel ──
   //
   // Invented hosts came out with expertise strings the lens reader does not
@@ -86,9 +87,11 @@ it('measures', () => {
     const speakers = episodeSpeakers(panel, events, {});
     const c = buildChatMessages(events, speakers, {
       format: 'total-drama', season: 14, episode: ep, seed: 14 * 977 + ep,
-    }).map(m => m.text);
-    timeline.push(...t); chat.push(...c);
-    perEp.push({ ep, t: t.length, tu: new Set(t).size, c: c.length, cu: new Set(c).size });
+    });
+    allMsgs.push(...c);
+    const cText = c.map(m => m.text);
+    timeline.push(...t); chat.push(...cText);
+    perEp.push({ ep, t: t.length, tu: new Set(t).size, c: cText.length, cu: new Set(cText).size });
   }
 
   report('Birdie — whole season', timeline);
@@ -119,8 +122,55 @@ it('measures', () => {
   console.log(`  ${kinds.size} event kinds this season: ${[...kinds].join(', ')}`);
   console.log(`  panel of ${panel.length}: ${
     [...spread.entries()].map(([l, n]) => `${l} ${n}`).join(', ')}`);
+  const traitOf = assignTraits(panel);
+  const tspread = new Map();
+  for (const t of traitOf.values()) tspread.set(t || 'none', (tspread.get(t || 'none') || 0) + 1);
+  console.log(`  voices:  ${[...tspread.entries()].map(([t, n]) => `${t} ${n}`).join(', ')}`);
+  // Across ALL eligible alumni, not just tonight's twelve — a panel is a
+  // sample, and a deriver that only balances the sample is balancing nothing.
+  const allTraits = assignTraits(eligibleHosts({
+    players, seasons, rankings, voices: vp.profiles || vp,
+    format: 'total-drama', airingCast: [],
+  }));
+  const all = new Map();
+  for (const t of allTraits.values()) all.set(t || 'none', (all.get(t || 'none') || 0) + 1);
+  console.log(`  all ${allTraits.size} eligible: ${
+    [...all.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t} ${n}`).join(', ')}`);
   console.log(`  room can reach ${roomCeiling} distinct takes; it printed ${
     new Set(chat).size} (${Math.round(new Set(chat).size / roomCeiling * 100)}% of what exists)`);
+
+  // ── could somebody else have said this? ──
+  //
+  // Distinctness cannot see the thing voices are FOR. A room can be 100%
+  // distinct and still read as one writer, because "no line repeats" and "these
+  // are different people" are different properties — the first is about the
+  // pool, the second is about who is allowed to reach into it.
+  //
+  // So: for every line, how many other hosts on tonight's panel could have
+  // produced it? A host drawing from the general pool shares it with everybody.
+  // A host with a voice shares only with the people who hold the same one.
+  const byHost = new Map();
+  for (const m of allMsgs) {
+    if (!byHost.has(m.text)) byHost.set(m.text, new Set());
+    byHost.get(m.text).add(m.authorSlug);
+  }
+  const poolOwners = new Map();
+  for (const m of allMsgs) {
+    const key = m.trait ? `t:${m.trait}` : m.lens ? `l:${m.lens}` : 'general';
+    if (!poolOwners.has(key)) poolOwners.set(key, new Set());
+    poolOwners.get(key).add(m.authorSlug);
+  }
+  const shared = allMsgs.map(m => {
+    const key = m.trait ? `t:${m.trait}` : m.lens ? `l:${m.lens}` : 'general';
+    return (poolOwners.get(key)?.size || 1) - 1;
+  });
+  const avgShared = shared.reduce((a, b) => a + b, 0) / (shared.length || 1);
+  const soleVoice = shared.filter(n => n === 0).length;
+  console.log(`
+── whose voice is it ──`);
+  console.log(`  a line could have come from ${avgShared.toFixed(1)} other hosts on average`);
+  console.log(`  ${soleVoice} of ${allMsgs.length} lines (${
+    Math.round(soleVoice / allMsgs.length * 100)}%) only ONE host on the panel could have said`);
 
   const worstNight = perEp.sort((a, b) => (a.tu / a.t) - (b.tu / b.t))[0];
   console.log(`\n  worst single night on Birdie: ep ${worstNight.ep}, `

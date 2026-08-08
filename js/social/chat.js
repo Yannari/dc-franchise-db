@@ -17,6 +17,7 @@
 // reads the same every time it is opened.
 import { eventLabel, words } from './adapter.js';
 import { pickRotating } from './freshness.js';
+import { TRAIT_TAKES, assignTraits } from './voices.js';
 
 /** Deterministic rng — the same night must not say different things on reload. */
 function seeded(seed) {
@@ -218,6 +219,86 @@ export const LENS_TAKES = {
       ({ s }) => `The jury already knows why somebody brought ${s}. It is waiting to hear what ${s} did with being underestimated.`,
       ({ s }) => `Surviving is part of a case, not the whole case. ${s} needs to name the moment survival became agency.`,
       ({ s }) => `If ${s} says “social game,” somebody on that jury will ask which vote changed because of it. Have the answer ready.`,
+    ],
+  },
+};
+
+/**
+ * Canon voice beats résumé archetype. These are complete thoughts for alumni
+ * who regularly make the panel, written from voice-profiles.json rather than
+ * by decorating the same analyst sentence with a catchphrase.
+ */
+const CHARACTER_TAKES = {
+  bowie: {
+    nomination: [
+      ({ s }) => `Oh, I hate this for ${s}. Everybody is smiling like it is a tiny favour and it is absolutely not a tiny favour.`,
+      ({ s }) => `Can we please stop calling ${s} a pawn like that makes the chair softer? You still put their game in everybody else's hands!`,
+      ({ s }) => `I want ${s} to stay calm. I also want ${s} to make it extremely awkward for every person pretending this was harmless.`,
+    ],
+    eviction: [
+      ({ s }) => `No, that goodbye hurt. ${s} was trying so hard to make everybody else feel okay about voting them out, and now I am upset.`,
+      ({ s }) => `I knew ${s} was leaving and somehow I still talked myself into hope. Terrible evening. Beautiful television. I need a minute.`,
+      ({ s }) => `The game reason makes sense. Emotionally, I reject it. Those two opinions can share a room.`,
+    ],
+  },
+  jacques: {
+    nomination: [
+      ({ s }) => `Putting ${s} on display without finishing the move? Amateur staging. Now the star of the show knows exactly where to aim.`,
+      ({ s }) => `Everyone rehearsed that calm little ceremony beautifully. Unfortunately, ${s} was the only one watching the judges.`,
+      ({ s }) => `A nomination should be decisive, elegant and devastating. This was nervous, obvious and somehow still smug.`,
+    ],
+    eviction: [
+      ({ s }) => `${s} mistook composure for control. I know the difference; one wins the performance and the other keeps you in it.`,
+      ({ s }) => `A dramatic exit cannot rescue poor technique, but I will admit ${s} sold the final pose.`,
+      ({ s }) => `They smiled, hugged ${s}, and executed the routine exactly as rehearsed. Cold. Precise. Finally, some professionalism.`,
+    ],
+  },
+  wayne: {
+    nomination: [
+      ({ s }) => `Okay, putting ${s} up as a “friend” is like passing your teammate the puck after the whistle. What are they supposed to do with that?`,
+      ({ s }) => `I would tell ${s} I have their back. Like, actually tell them—not nominate them and hope they understand friendship through clues.`,
+      ({ s }) => `Maybe this is secretly smart. It feels bad, though. My smart-move alarm and bad-friend alarm are both going off and one is way louder.`,
+    ],
+    eviction: [
+      ({ s }) => `Aw, man. ${s} knew, right? Everybody did the sad hug before the vote. That is basically lining up for handshakes before the game ends.`,
+      ({ s }) => `I am fine. Totally fine. I just think if you promise ${s} safety, you should mean it, and apparently that is controversial now.`,
+      ({ s }) => `${s} needed one teammate to take a penalty for them and everybody suddenly forgot they were on a team.`,
+    ],
+  },
+  cameron: {
+    nomination: [
+      ({ s }) => `Technically, ${s} has fewer choices now, which should make them easier to predict. Except panic changes behaviour, so—sorry—the nomination may have made the entire week less predictable.`,
+      ({ s }) => `Everyone is treating ${s} like a controlled variable. People are not controlled variables. I learned that somewhat catastrophically.`,
+      ({ s }) => `The probability that ${s} stays looks decent. The probability that ${s} still trusts any of these people afterward is, um, considerably lower.`,
+    ],
+    eviction: [
+      ({ s }) => `The vote looks sudden, but it is more like structural failure: one small crack, then another, and by tonight ${s} had nothing load-bearing left.`,
+      ({ s }) => `I counted three possible escapes for ${s}. Then everybody hugged, which eliminated all three. Social cues are horrible, but occasionally very efficient.`,
+      ({ s }) => `Statistically, ${s} was in trouble. Emotionally, I kept revising the model because I did not like the answer.`,
+    ],
+  },
+  macarthur: {
+    nomination: [
+      ({ s }) => `Listen up, genius: if you put ${s} on the block, you do not get to act shocked when ${s} starts naming names. You handed them the megaphone.`,
+      ({ s }) => `That was not a warning shot. That was missing from six feet away and asking everybody to admire the aim.`,
+      ({ s }) => `Either ${s} is the target or this plan is wasting everybody's time. Pick one, say it loudly, move!`,
+    ],
+    eviction: [
+      ({ s }) => `Case closed. ${s} kept interrogating the obvious liar and ignoring the quiet one holding the evidence.`,
+      ({ s }) => `Everybody says ${s} played too hard. Wrong! ${s} announced every move like a police siren and then wondered why people ran.`,
+      ({ s }) => `I hate a unanimous pile-on. Not because it is mean—because it is lazy. Somebody in that room just got away without showing their hand.`,
+    ],
+  },
+  alejandro: {
+    nomination: [
+      ({ s }) => `Poor ${s}. They were offered the word “pawn” and accepted it like a compliment. Such pretty wrapping on such an ugly little message.`,
+      ({ s }) => `Reassuring ${s} now would be cruel. Let the uncertainty work; frightened people reveal whom they truly trust.`,
+      ({ s }) => `The nomination is almost flattering. Somebody considers ${s} dangerous—just not dangerous enough to fear the consequences.`,
+    ],
+    eviction: [
+      ({ s }) => `${s} wanted honesty from people who benefited from the lie. Admirable, perhaps. Effective? No.`,
+      ({ s }) => `Everyone gave ${s} a beautiful goodbye. That is how you know the betrayal was settled long before tonight.`,
+      ({ s }) => `I would feel sorry for ${s}, but they made trust so inexpensive. Naturally, everybody bought some.`,
     ],
   },
 };
@@ -554,6 +635,12 @@ export function buildChatMessages(events, speakers, {
   const lensOf = assignLenses(speakers);
   const sharers = new Map();
   for (const l of lensOf.values()) sharers.set(l, (sharers.get(l) || 0) + 1);
+  // Derived from the canonical profile, capped like the lenses so one delivery
+  // cannot take the panel — the failure that put eight hosts on one lens is the
+  // same failure available here, and `warm` matches 82 of 183 descriptions.
+  const traitOf = assignTraits(speakers);
+  const traitSharers = new Map();
+  for (const t of traitOf.values()) traitSharers.set(t, (traitSharers.get(t) || 0) + 1);
 
   // The loudest moments get covered; a room does not discuss every nomination.
   const worth = events.filter(e => e.kind !== 'episode-aired' || events.length === 1);
@@ -570,15 +657,44 @@ export function buildChatMessages(events, speakers, {
     for (const host of speaking) {
       const subject = ev.subject ? titleCase(ev.subject) : '';
       const lens = lensOf.get(host.slug) || 'social';
+      const trait = traitOf.get(host.slug);
+      const characterPool = CHARACTER_TAKES[host.slug]?.[ev.kind] || [];
       const lensPool = LENS_TAKES[lens]?.[ev.kind] || [];
       // Lean on your own angle as far as its words can carry you, and no
       // further. A flat 58% had eight hosts pulling from five sentences most of
       // the time; dividing by how many people share the lens is the term that
       // was missing, and the general pool it falls back to is four times bigger.
       const share = lensPool.length / (2 * Math.max(1, sharers.get(lens) || 1));
-      const useLens = lensPool.length > 0 && rng() < Math.min(0.58, share);
-      const pool = useLens ? lensPool : (TAKES[ev.kind] || GENERIC_TAKES);
-      const poolKey = `${ev.kind}:${useLens ? lens : 'general'}`;
+      // If a canonical voice exists for this exact host and event, use it.
+      // Probability here reintroduced personality drift: one unlucky roll made
+      // Bowie or Cameron snap back into the same polished analyst as everyone.
+      const useCharacter = characterPool.length > 0;
+      // ── and everybody who is not one of the named few ──
+      //
+      // CHARACTER_TAKES above covers the handful whose whole appeal is how they
+      // talk. There are 183 canonical profiles and twelve on a panel, so the
+      // other 170 arrive with a description and no voice, and two strategists
+      // agreeing about a nomination still sound like one writer. A DELIVERY —
+      // blunt, deadpan, theatrical, formal — generalises where an opinion does
+      // not, and it is the part a reader actually hears. See voices.js.
+      //
+      // Below the character pool, above the lens, because a lens is a read on
+      // the game and a voice is a person.
+      const traitPool = (trait && TRAIT_TAKES[trait]?.[ev.kind]) || [];
+      // Same term the lens needed, for the same reason: a four-line pool leaned
+      // on by three hosts every week repeats, whatever it is called. Measured —
+      // a flat 62% took the room from 72% distinct DOWN to 67%, reproducing the
+      // exact bug in a nicer costume.
+      const tShare = traitPool.length / (2 * Math.max(1, traitSharers.get(trait) || 1));
+      const useTrait = !useCharacter && traitPool.length > 0 && rng() < Math.min(0.62, tShare);
+      const useLens = !useCharacter && !useTrait
+        && lensPool.length > 0 && rng() < Math.min(0.58, share);
+      const pool = useCharacter ? characterPool
+        : useTrait ? traitPool
+          : useLens ? lensPool
+            : (TAKES[ev.kind] || GENERIC_TAKES);
+      const poolKey = `${ev.kind}:${useCharacter ? host.slug
+        : useTrait ? trait : useLens ? lens : 'general'}`;
       if (!usedByKind.has(poolKey)) usedByKind.set(poolKey, new Set());
       let line = pickFresh(pool, rng, usedByKind.get(poolKey), episode, poolKey)
         ({ s: subject, w, k: eventLabel(ev.kind, format) });
@@ -586,7 +702,7 @@ export function buildChatMessages(events, speakers, {
       // Records should sharpen an occasional opinion, not introduce every post
       // like an alumni panelist reading their own biography.
       const creds = credential(host, w);
-      if (creds.length && rng() < 0.14) {
+      if (!useCharacter && !useTrait && creds.length && rng() < 0.14) {
         line = withCredential(line, pickFresh(creds, rng, usedCreds, episode, host.slug), rng);
       }
 
@@ -604,6 +720,7 @@ export function buildChatMessages(events, speakers, {
         subject: ev.subject || null,
         eventLabel: eventLabel(ev.kind, format),
         lens,
+        trait: useTrait ? trait : null,
         text: line,
         at: Math.max(0, ev.at + Math.round((rng() - 0.3) * 4 * 60 * 1000)),
         likes: 40 + Math.floor(rng() * 400) + host.stars * 60,

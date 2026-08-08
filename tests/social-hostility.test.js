@@ -18,6 +18,7 @@
 import { describe, expect, it } from 'vitest';
 import { PERSONAS } from '../js/social/personas.js';
 import { TOPICS } from '../js/social/topics.js';
+import { PLATFORMS } from '../js/social/platforms.js';
 
 /**
  * Terms that mark an attack on a protected characteristic.
@@ -56,6 +57,7 @@ function allStrings() {
   };
   walk(PERSONAS, 'personas');
   walk(TOPICS, 'topics');
+  walk(PLATFORMS, 'platforms');
   return out;
 }
 

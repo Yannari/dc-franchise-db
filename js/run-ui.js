@@ -2933,3 +2933,60 @@ export async function redoEpisodeSocial() {
     say(`Episode ${ep} could not be rebuilt — ${err?.message || err}`);
   }
 }
+
+/**
+ * Redo the whole season's audience.
+ *
+ * For when the generator itself changed rather than one night going wrong —
+ * new phrasings, a new sampler, a rota that spreads a season differently. Doing
+ * that one episode at a time through the prompt is twenty-six prompts, and
+ * nobody does it, so the improvement never reaches the season it was written
+ * for.
+ *
+ * ── what this touches, and what it cannot ──
+ *
+ * Only the TIMELINE. Birdie's posts are stored — generated once and kept, so
+ * engagement can accumulate and the feed you saw is the feed that exists — and
+ * stored is exactly why they do not pick up a change to the generator on their
+ * own. The alumni room is not stored at all; it is rebuilt from the episode's
+ * events every time somebody opens it, so it already reflects every change, on
+ * every season, with no button at all.
+ *
+ * It ASKS, because there is no undo: every post this season holds is thrown
+ * away, engagement included, and what comes back is new text with new counts.
+ */
+export async function rebuildSeasonSocial() {
+  const note = document.getElementById('redo-social-note');
+  const say = msg => { if (note) note.textContent = msg; };
+  if (!gs || !gs.initialized) { alert('Load a season first.'); return; }
+
+  const had = (gs.social?.posts || []).length;
+  const eps = (gs.social?.builtEpisodes || []).length;
+  const written = window.socialWriterOn?.();
+  const ok = confirm(
+    `Rebuild the whole season's timeline?\n\n`
+    + `${had} posts across ${eps} episode${eps === 1 ? '' : 's'} will be thrown away and `
+    + `made again, engagement counts included. There is no undo.\n\n`
+    + (written
+      ? `The AI writer is on, so this will also re-ask it for every episode.\n\n`
+      : '')
+    + `The alumni room is not affected — it is rebuilt from the episodes every `
+    + `time it is opened, so it is already up to date.`);
+  if (!ok) return;
+
+  say(written ? `Writing ${eps} episodes…` : `Rebuilding ${eps} episodes…`);
+  try {
+    // `rebuild` with no `only` is the whole season — the same call the per-night
+    // hatch makes, minus the narrowing.
+    const res = written
+      ? await window.refreshSocialFeedWritten?.({ rebuild: true })
+      : window.refreshSocialFeed?.({ rebuild: true });
+    const now = (gs.social?.posts || []).length;
+    const builtCount = (res?.built || []).length;
+    say(`Rebuilt ${builtCount} episode${builtCount === 1 ? '' : 's'}: `
+      + `${now} posts${res?.written ? `, ${res.written} written` : ''}. Sync to publish.`);
+    saveGameState();
+  } catch (err) {
+    say(`The season could not be rebuilt — ${err?.message || err}`);
+  }
+}

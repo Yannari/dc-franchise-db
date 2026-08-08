@@ -993,14 +993,25 @@
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Live to Site</div>
             <button class="btn btn-secondary btn-sm" id="live-sync-btn" onclick="syncEpisodeToSite()" style="margin-bottom:2px;width:100%" title="Push the current standings to the live site. No commit, no rebuild — visitors see it on their next page load.">🔴 Sync episode to site</button>
-            <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px"></div>
-            <!-- The refresh never rewrites a night that already has a feed. This
-                 is the escape hatch for when you want exactly that, for exactly
-                 one episode. -->
-            <button class="btn btn-secondary btn-sm" onclick="redoEpisodeSocial()" style="margin-bottom:2px;width:100%" title="Throw away one episode's posts and make them again — with the AI writer if it is switched on. Every other episode is left exactly as it is.">💬 Redo one episode's social</button>
-            <div id="redo-social-note" class="season-controls-note" style="margin-bottom:6px">Everything either side of it is untouched.</div>
+            <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px">Also catches the feed up on any night that has none.</div>
             <button class="btn btn-secondary btn-sm" id="season-sync-btn" onclick="syncSeasonDataFromRepo()" style="margin-bottom:2px;width:100%" title="Repair tool. Rebuilds the season and ranking tables from the JSON in the repo. Export Season already does this, so you only need it if an export fell back to downloading, or you committed database files by hand.">🔄 Re-sync season data</button>
             <div class="season-controls-note" style="margin-bottom:6px">Only needed if an export fell back to downloading files.</div>
+            <div class="divider" style="margin:8px 0"></div>
+            <!-- ── Social Hub ──────────────────────────────────────────────
+                 Sync already catches the feed up on any night that HAS no
+                 posts, which is the common case and needs no button. What it
+                 deliberately never does is rewrite a night that already has
+                 them: what the audience said about an episode somebody watched
+                 is not a thing to re-roll every time you press sync.
+
+                 So both of the rewriting controls live here, together, away
+                 from sync — because "fill in the gaps" and "throw away and
+                 start again" are different intentions and were sitting in the
+                 same column looking alike. -->
+            <div class="season-controls-label">Social Hub</div>
+            <button class="btn btn-secondary btn-sm" onclick="redoEpisodeSocial()" style="margin-bottom:2px;width:100%" title="Throw away one episode's posts and make them again — with the AI writer if it is switched on. Every other episode is left exactly as it is.">💬 Redo one episode</button>
+            <button class="btn btn-secondary btn-sm" onclick="rebuildSeasonSocial()" style="margin-bottom:2px;width:100%" title="Throw away every post this season has and build the whole feed again. Use it after the generator changes; it asks first, because there is no undo.">♻️ Rebuild the whole season</button>
+            <div id="redo-social-note" class="season-controls-note" style="margin-bottom:6px">The alumni room is rebuilt every time you open it. This is for the timeline, which is saved.</div>
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Season Save</div>
             <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>

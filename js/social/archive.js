@@ -167,10 +167,20 @@ export async function loadSeasonDoc(format, season, { root = '.' } = {}) {
  * feed that was actually played are indistinguishable in structure — and a
  * season later published with real posts drops in without the page changing.
  */
-export function archiveEpisode(doc, format, season, episode, { popularity = null } = {}) {
+/**
+ * What happened on one night, as events.
+ *
+ * Pulled out of `archiveEpisode` because the PUBLISHED path needs exactly the
+ * same list and was building a shorter one of its own — `extractEvents` and
+ * nothing else, no tribal council, no finale. Events are not decoration: the
+ * alumni room is built from them, so an episode that gained stored posts
+ * quietly lost the moments its chat is made of, and the room came out thin or
+ * empty on a night whose timeline was full.
+ */
+export function eventsForEpisode(doc, format, season, episode) {
   const all = episodesOf(doc, format);
   const found = all.find(e => e.episode === Number(episode));
-  if (!found) return { events: [], posts: [] };
+  if (!found) return [];
 
   const meta = { format, season, episode: found.episode };
   const events = extractEvents(found.record, meta);
@@ -188,11 +198,48 @@ export function archiveEpisode(doc, format, season, episode, { popularity = null
     if (existing) existing.subject = String(winner).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
     else events.push(socialEvent('finale', { ...meta, subject: winner }));
   }
-  events.sort((a, b) => a.at - b.at);
+  return events.sort((a, b) => a.at - b.at);
+}
+
+/**
+ * The night, read back off the posts about it.
+ *
+ * A last resort, for when there are stored posts for an episode the document
+ * cannot account for — a season played but not yet published, a document that
+ * failed to load, a feed synced ahead of the record. The posts themselves
+ * carry `kind`, `subject` and `at`, which is everything an event is, so the
+ * moments can be recovered from the reactions to them.
+ *
+ * Worth doing rather than shrugging: without it the timeline is full and the
+ * alumni room is empty, which reads as the room being broken rather than as
+ * the document being behind.
+ *
+ * Timing comes from the event's own kind, not from the posts. `socialEvent`
+ * places a nomination and an eviction where they belong in an episode, and a
+ * reaction is always LATER than the thing it reacts to — reading the clock off
+ * the earliest post would push every moment a few minutes past itself.
+ */
+export function eventsFromPosts(posts, { format, season, episode }) {
+  const seen = new Map();
+  for (const p of posts || []) {
+    if (!p?.kind) continue;
+    const key = `${p.kind}|${p.subject || ''}`;
+    if (!seen.has(key)) {
+      seen.set(key, socialEvent(p.kind, {
+        format, season, episode: Number(episode), subject: p.subject || null,
+      }));
+    }
+  }
+  return [...seen.values()].sort((a, b) => a.at - b.at);
+}
+
+export function archiveEpisode(doc, format, season, episode, { popularity = null } = {}) {
+  const events = eventsForEpisode(doc, format, season, episode);
+  if (!events.length) return { events: [], posts: [] };
 
   const posts = buildEpisodeFeed(events, {
     popularity: popularity || doc?.popularity || null,
-    seed: feedSeed(season, found.episode),
+    seed: feedSeed(season, Number(episode)),
     // An archive night should read as busy as a live one. The published
     // document records fewer moments than a played episode carries, so each
     // one draws proportionally more of the room.
@@ -212,11 +259,17 @@ export function archiveEpisode(doc, format, season, episode, { popularity = null
 export function episodeFeed({ doc, stored = [], format, season, episode, popularity = null }) {
   const mine = (stored || []).filter(p => Number(p.episode) === Number(episode));
   if (mine.length) {
-    const found = episodesOf(doc, format).find(e => e.episode === Number(episode));
-    const events = found
-      ? extractEvents(found.record, { format, season, episode: Number(episode) })
-      : [];
-    return { events, posts: mine, source: 'published' };
+    // The same events the archive path would build, not a shorter list of its
+    // own — and if the document cannot account for this night at all, read the
+    // night back off the posts rather than hand the page nothing. Empty events
+    // means an empty alumni room, which is not a thing stored posts should
+    // ever cause.
+    const events = eventsForEpisode(doc, format, season, episode);
+    return {
+      events: events.length ? events : eventsFromPosts(mine, { format, season, episode }),
+      posts: mine,
+      source: 'published',
+    };
   }
   return { ...archiveEpisode(doc, format, season, episode, { popularity }), source: 'archive' };
 }

@@ -186,6 +186,11 @@ async function loadEpisode() {
   S.speakers = episodeSpeakers(S.panel, S.feed.events, { players: S.db.players });
   S.messages = buildChatMessages(S.feed.events, S.speakers, {
     format, season, episode: S.episode || 0, seed: (season * 977) + (S.episode || 0),
+    // The room's members. The sampler has been writing them all along, in this
+    // room's register, about this episode — they were simply never handed over,
+    // so the comments under every host were 38 static strings that did not know
+    // what had happened.
+    crowd: S.feed.posts.filter(p => p.stream === 'chat'),
   });
 
   // Opening an episode shows all of it. Watch Live is something you start.

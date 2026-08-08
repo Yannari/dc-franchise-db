@@ -620,6 +620,11 @@ const COMMENTS = [
  */
 export function buildChatMessages(events, speakers, {
   format = 'total-drama', season = 0, episode = 0, seed = 1,
+  // The episode's `stream: 'chat'` posts — the members of this room, written by
+  // the sampler in the room's own register. Optional, and the room still works
+  // without them: an archive season, or a caller that has not been updated,
+  // falls back to the static pool rather than losing its comments.
+  crowd = [],
 } = {}) {
   if (!events?.length || !speakers?.length) return [];
   const rng = seeded(seed);
@@ -732,17 +737,54 @@ export function buildChatMessages(events, speakers, {
 
   out.sort((a, b) => a.at - b.at);
 
-  // Members answer underneath. Two previews is what the room shows; the count is
-  // the real number, so "42 comments" is not decoration.
+  // ── members answer underneath ──
+  //
+  // Two previews is what the room shows; the count is the real number, so
+  // "42 comments" is not decoration.
+  //
+  // WHO THE MEMBERS ARE was a hole this room has had since it was built.
+  // platforms.js describes the chat as "alumni host, members reply", and the
+  // sampler has been writing those member posts all along — in the room's own
+  // considered register, at 0.45 hostility, about the actual event, from named
+  // personas. Then `chat.js` arrived, built the HOSTS properly out of real
+  // records, and implemented the members as `COMMENTS`: 38 hardcoded strings
+  // that do not know who was evicted, who won, or what week it is.
+  //
+  // So the sampler kept producing about 32 chat posts an episode into a store
+  // nothing read, while the room underneath every host message said "ok legend"
+  // for the fourth time that season. They are the same feature, written twice,
+  // and only the worse half was plugged in.
+  //
+  // Indexed by kind so a comment under an eviction is about the eviction.
+  const crowdByKind = new Map();
+  for (const p of crowd || []) {
+    if (!p?.text) continue;
+    const k = p.kind || '';
+    if (!crowdByKind.has(k)) crowdByKind.set(k, []);
+    crowdByKind.get(k).push(p);
+  }
   const usedComments = new Set();
+  const usedCrowd = new Set();
   for (const m of out) {
     const count = 2 + Math.floor(rng() * 60);
     m.commentCount = count;
-    m.comments = Array.from({ length: Math.min(2, count) }, (_, i) => ({
-      id: `${m.id}-c${i}`,
-      author: `member${1 + Math.floor(rng() * 900)}`,
-      text: pickFresh(COMMENTS, rng, usedComments, episode, m.kind || ''),
-    }));
+    const pool = crowdByKind.get(m.kind) || [];
+    m.comments = Array.from({ length: Math.min(2, count) }, (_, i) => {
+      // A real member post when the episode has one about this moment; the
+      // static pool only when it does not, so a room never falls silent.
+      const fresh = pool.filter(p => !usedCrowd.has(p.id));
+      const from = fresh.length ? fresh : pool;
+      if (from.length) {
+        const p = from[Math.floor(rng() * from.length)];
+        usedCrowd.add(p.id);
+        return { id: `${m.id}-c${i}`, author: p.handle || p.name, text: p.text };
+      }
+      return {
+        id: `${m.id}-c${i}`,
+        author: `member${1 + Math.floor(rng() * 900)}`,
+        text: pickFresh(COMMENTS, rng, usedComments, episode, m.kind || ''),
+      };
+    });
     // A host answering back is the room's highest signal, so it is rare.
     m.hostReplied = rng() < 0.22;
   }

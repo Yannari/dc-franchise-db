@@ -137,3 +137,40 @@ describe('each room shows its own posts', () => {
     expect(fn).toMatch(/: S\.messages/);
   });
 });
+
+describe('the members of the room are real', () => {
+  // platforms.js describes the chat as "alumni host, members reply", and the
+  // sampler has been writing those member posts since it existed — in this
+  // room's considered register, at 0.45 hostility, about the actual event, from
+  // named personas. `chat.js` then built the HOSTS properly and implemented the
+  // members as 38 hardcoded strings that do not know who was evicted.
+  //
+  // Same feature, written twice, and only the worse half was plugged in.
+  const CHAT = fs.readFileSync('js/social/chat.js', 'utf8');
+  const PAGE = fs.readFileSync('js/social-page.js', 'utf8');
+
+  it("takes the episode's own chat posts", () => {
+    expect(CHAT).toMatch(/crowd = \[\],/);
+    expect(PAGE, 'the page still never hands them over')
+      .toMatch(/crowd: S\.feed\.posts\.filter\(p => p\.stream === 'chat'\)/);
+  });
+
+  it('answers the moment it is under', () => {
+    // A comment about the eviction, under the post about the eviction. Indexed
+    // by kind rather than drawn at random, or the room is a shuffle.
+    expect(CHAT).toMatch(/crowdByKind/);
+    expect(CHAT).toMatch(/crowdByKind\.get\(m\.kind\)/);
+  });
+
+  it("keeps the member's name", () => {
+    // `member417` is not a person. The sampler already decided who said it.
+    expect(CHAT).toMatch(/author: p\.handle \|\| p\.name/);
+  });
+
+  it('still has something to say when there is no crowd', () => {
+    // An archive season, or a caller that predates this: the room falls back to
+    // the static pool rather than losing its comments entirely.
+    expect(CHAT).toMatch(/pickFresh\(COMMENTS, rng, usedComments/);
+    expect(CHAT).toMatch(/if \(from\.length\)/);
+  });
+});

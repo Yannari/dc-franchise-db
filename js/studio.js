@@ -18,6 +18,8 @@
 const STAT_KEYS = ['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
 const STAT_ABBR = { physical:'PHY', endurance:'END', mental:'MEN', social:'SOC', strategic:'STR', loyalty:'LOY', boldness:'BLD', intuition:'INT', temperament:'TMP' };
 
+import { composeVoice, stripBioLead, parseBio, splitOrigin } from './bio.js';
+
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
 const ARCH_COLOR = {
@@ -115,7 +117,17 @@ const _esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&am
 function _slugify(name) { return String(name || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function _statHue(v) { v = Math.max(1, Math.min(10, v)); let h; if (v <= 5.5) h = 4 + ((v - 1) / 4.5) * 38; else h = 42 + ((v - 5.5) / 4.5) * 108; return `hsl(${h.toFixed(0)} 70% 50%)`; }
 function _avatarSrc(slug) { return (window.__studioAvatars && window.__studioAvatars[slug]) || `assets/avatars/${slug}.png`; }
-function _blankChar() { return { name:'', slug:'', age:'', gender:'nb', sexuality:'straight', archetype:'', origin:'', voice:'', avatarDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])) }; }
+function _blankChar() {
+  return {
+    name:'', slug:'', age:'', gender:'nb', sexuality:'straight', archetype:'',
+    // Three fields rather than one origin box. "Asian Canadian" is two facts,
+    // and a trivia question asking for one of them cannot use a column holding
+    // both. `descriptor` keeps anything that is neither — "Scouse" is worth
+    // knowing and belongs to no vocabulary.
+    ethnicity:'', nationality:'', descriptor:'',
+    voice:'', avatarDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
+  };
+}
 
 // image → square-cropped, downscaled PNG data URI. `size` is a ceiling, never a
 // target: upscaling a small source here would only soften it.
@@ -906,38 +918,22 @@ async function _existingVoice(name) {
   return _voiceCache[name] || '';
 }
 
-// The voice profile is the ONLY field the episode writer reads, so fold the
-// structured bio (age, origin/nationality, orientation) into a lead-in in front
-// of the personality prose. The raw prose is what's kept in the editor and the
-// Studio DB; this composed string is what gets written to voice-profiles.json.
-// A composed voice line starts with a bio lead-in: "24, Canada, gay." Editing a
-// character whose Studio draft is missing loads their voice back out of
-// voice-profiles.json, which already HAS that lead-in — so saving used to
-// prepend a second one, and every such edit added another ("24, Canadian. 24,
-// Canada. Scarred, half-blind loner…"). Strip an existing lead before adding.
-const _VOICE_LEAD_RE = /^\s*\d{1,3},[^.]{0,60}\.\s+/;
-
-function _stripVoiceLead(prose, lead) {
-  let out = String(prose || '').trim();
-  // Strip every stacked lead, not just one — text that already doubled needs to
-  // come out clean in a single save rather than shedding one layer at a time.
-  for (let i = 0; i < 6; i++) {
-    if (lead && out.startsWith(lead)) { out = out.slice(lead.length).trim(); continue; }
-    const m = out.match(_VOICE_LEAD_RE);
-    if (!m) break;
-    out = out.slice(m[0].length).trim();
-  }
-  return out;
-}
-
+// The voice profile is the ONLY field the episode writer reads, so the bio is
+// folded into a lead-in in front of the personality prose — "21, Asian Canadian,
+// lesbian." The editor and the database now hold those as FIELDS, and the
+// sentence is a rendering of them rather than the only place they live.
+//
+// The composed string is what gets written to voice-profiles.json. An existing
+// lead is always stripped before a new one is added: editing a character whose
+// Studio draft was missing loaded their voice back out of voice-profiles.json,
+// which already had one, so saving prepended a second and every edit added
+// another ("24, Canadian. 24, Canada. Scarred, half-blind loner…").
+// Composing and parsing the lead-in now lives in js/bio.js, because the same
+// two operations are needed by the backfill script and by anything reading a
+// published profile. A second copy here would be the third prefix map this
+// project has had to reconcile.
 function _composeVoice(d) {
-  const bits = [];
-  if (d.age) bits.push(String(d.age).trim());
-  if (d.origin) bits.push(String(d.origin).trim());
-  if (d.sexuality && d.sexuality !== 'straight') bits.push(d.sexuality);
-  const lead = bits.length ? bits.join(', ') + '.' : '';
-  const prose = _stripVoiceLead(d.voice, lead);
-  return (lead && prose) ? `${lead} ${prose}` : (lead || prose);
+  return composeVoice(d, stripBioLead(d.voice));
 }
 
 async function _editBySlug(slug) {
@@ -947,12 +943,35 @@ async function _editBySlug(slug) {
   // Studio record wins; otherwise fall back to the existing voice-profiles.json
   // entry so editing a canon/hand-added character shows their real voice.
   const voice = (rich && rich.voice) || await _existingVoice(base.name);
+
+  // WHERE THE BIO COMES FROM, in order of how much it can be trusted:
+  //
+  //   1. the roster row — real columns, once this character has been saved since
+  //      the fields existed;
+  //   2. the Studio draft in IndexedDB;
+  //   3. the lead-in at the front of their voice profile.
+  //
+  // Three matters: twenty-five characters have had an age and an origin since
+  // the day they were created, written into that sentence because it was the
+  // only field the episode writer read. Parsing it back means nobody retypes
+  // anything, and it fills in for every character published before the columns
+  // existed.
+  const parsed = parseBio(voice);
+  const legacy = splitOrigin((rich && rich.origin) || '');
+  const pick = (...xs) => xs.find(v => v !== undefined && v !== null && v !== '') ?? '';
+
   _draft = {
     name: base.name, slug: base.slug, gender: base.gender || 'nb',
-    sexuality: base.sexuality || (rich && rich.sexuality) || 'straight',
+    sexuality: pick(base.sexuality, rich && rich.sexuality, parsed.sexuality, 'straight'),
     archetype: base.archetype || '', stats: { ...Object.fromEntries(STAT_KEYS.map(k => [k, 5])), ...(base.stats || {}) },
-    age: (rich && rich.age) || '', origin: (rich && rich.origin) || '',
-    voice, avatarDataUri: (rich && rich.avatarDataUri) || '',
+    age: pick(base.age, rich && rich.age, parsed.age),
+    ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
+    nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
+    descriptor: pick(base.descriptor, rich && rich.descriptor, parsed.descriptor, legacy.descriptor),
+    // The prose alone. The lead-in is rebuilt from the fields on save, so
+    // keeping it here too would stack a second copy in front of the first.
+    voice: parsed.prose,
+    avatarDataUri: (rich && rich.avatarDataUri) || '',
   };
   renderStudio();
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1017,12 +1036,20 @@ function _renderEditor() {
         <div class="st-radar-wrap"><canvas id="st-radar" width="220" height="220"></canvas></div>
       </div>
 
-      <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — age & origin get added automatically</span>
+      <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>
         <textarea class="st-input st-area" id="st-f-voice" rows="3" placeholder="e.g. Minimal, calm and dry; lets people underestimate the pretty one…">${_esc(d.voice)}</textarea>
       </label>
-      <label class="st-l">Origin / nationality <span class="st-hint">folded into the voice profile the writer reads</span>
-        <input class="st-input" id="st-f-origin" value="${_esc(d.origin)}" placeholder="e.g. Nigerian international model">
-      </label>
+      <div class="st-row3">
+        <label class="st-l">Ethnicity <span class="st-hint">queryable</span>
+          <input class="st-input" id="st-f-ethnicity" value="${_esc(d.ethnicity)}" placeholder="e.g. Asian">
+        </label>
+        <label class="st-l">Nationality <span class="st-hint">queryable</span>
+          <input class="st-input" id="st-f-nationality" value="${_esc(d.nationality)}" placeholder="e.g. Canadian">
+        </label>
+        <label class="st-l">Anything else <span class="st-hint">kept as written</span>
+          <input class="st-input" id="st-f-descriptor" value="${_esc(d.descriptor)}" placeholder="e.g. Scouse">
+        </label>
+      </div>
 
       <div class="st-actions">
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
@@ -1050,7 +1077,9 @@ function _renderEditor() {
   ed.querySelector('#st-f-sex').addEventListener('change', e => d.sexuality = e.target.value);
   ed.querySelector('#st-f-arch').addEventListener('change', e => { d.archetype = e.target.value; _updateRead(); });
   ed.querySelector('#st-f-voice').addEventListener('input', e => d.voice = e.target.value);
-  ed.querySelector('#st-f-origin').addEventListener('input', e => d.origin = e.target.value);
+  ed.querySelector('#st-f-ethnicity').addEventListener('input', e => d.ethnicity = e.target.value);
+  ed.querySelector('#st-f-nationality').addEventListener('input', e => d.nationality = e.target.value);
+  ed.querySelector('#st-f-descriptor').addEventListener('input', e => d.descriptor = e.target.value);
   ed.querySelectorAll('#st-f-gender button').forEach(b => b.addEventListener('click', () => {
     d.gender = b.dataset.g; ed.querySelectorAll('#st-f-gender button').forEach(x => x.classList.toggle('active', x === b));
   }));
@@ -1481,7 +1510,10 @@ async function _save() {
   _persistRoster(arr);
 
   // 2) rich record (raw prose kept for editing) + avatar override
-  const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender, sexuality: d.sexuality, archetype: d.archetype, origin: d.origin, voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
+  const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender,
+    sexuality: d.sexuality, archetype: d.archetype,
+    ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
+    voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }
 
@@ -1859,6 +1891,8 @@ function _injectCSS() {
   .st-l{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-l-txt{font-size:12px;color:var(--muted,#9a9);font-weight:600}
   .st-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .st-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:720px){ .st-row3{grid-template-columns:1fr} }
   .st-hint{font-weight:400;font-style:italic;opacity:.8}
   .st-avatar-ctrls{display:flex;gap:8px;flex-wrap:wrap}
   .st-btn{white-space:nowrap}

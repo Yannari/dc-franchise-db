@@ -318,6 +318,13 @@ function rosterRowToJson(r) {
   if (r.archetype) out.archetype = r.archetype;
   if (Object.keys(stats).length) out.stats = stats;
   if (r.sexuality) out.sexuality = r.sexuality;
+  // The bio, as fields. Published alongside the rest so the static site can ask
+  // demographic questions without reaching for D1 — and so the answer on the
+  // site is the same one the database would give.
+  if (r.age != null) out.age = r.age;
+  if (r.ethnicity) out.ethnicity = r.ethnicity;
+  if (r.nationality) out.nationality = r.nationality;
+  if (r.descriptor) out.descriptor = r.descriptor;
   if (r.is_returnee) out.isReturnee = true;
   return out;
 }
@@ -366,24 +373,36 @@ async function rosterSave(env, payload) {
     return Number.isFinite(n) ? Math.max(0, Math.min(10, Math.round(n))) : null;
   });
 
+  // Age is a number or nothing. A blank box must clear the field rather than
+  // storing "" — an empty string sorts as a value and would put a character with
+  // no recorded age at the front of "youngest ever".
+  const ageNum = Number(payload.age);
+  const age = Number.isFinite(ageNum) && ageNum > 0 ? Math.round(ageNum) : null;
+  const text = v => (v == null || String(v).trim() === '') ? null : String(v).trim();
+
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
 
   await d.prepare(
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
-                         voice,is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,datetime('now'))
+                         voice,age,ethnicity,nationality,descriptor,
+                         is_returnee,retired,updated_at)
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
        ${STAT_KEYS.map(k => `${k}=excluded.${k}`).join(', ')},
-       voice=excluded.voice, is_returnee=excluded.is_returnee,
+       voice=excluded.voice,
+       age=excluded.age, ethnicity=excluded.ethnicity,
+       nationality=excluded.nationality, descriptor=excluded.descriptor,
+       is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
     slug, name,
     payload.gender || null, payload.sexuality || null, archetype,
     ...statVals,
     payload.voice ? String(payload.voice) : null,
+    age, text(payload.ethnicity), text(payload.nationality), text(payload.descriptor),
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

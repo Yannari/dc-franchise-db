@@ -1,0 +1,145 @@
+// Who a character is, as fields rather than prose.
+//
+// The Casting Studio has collected age and origin since it was built, and folded
+// them into a sentence at the front of the voice profile because that is the one
+// field the episode writer reads. This is the parser that turns those sentences
+// back into columns — so the answer to "who is the youngest winner" stops being
+// a question you cannot ask.
+//
+// The tests that matter most are the ones about NOT GUESSING. A database that
+// invents demographics about people is worse than one with empty fields.
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseBio, composeBioLead, composeVoice, stripBioLead, splitOrigin } from '../js/bio.js';
+
+const profiles = JSON.parse(
+  readFileSync(join(process.cwd(), 'voice-profiles.json'), 'utf8')).profiles;
+
+describe('reading a bio out of a voice profile', () => {
+  it('reads the real ones', () => {
+    // Jane's profile, verbatim from the shipped file.
+    const jane = parseBio(profiles.Jane);
+    expect(jane.age).toBe(21);
+    expect(jane.ethnicity).toBe('Asian');
+    expect(jane.nationality).toBe('Canadian');
+    expect(jane.sexuality).toBe('lesbian');
+    expect(jane.prose).toMatch(/^Twin Sister of Harriett/);
+  });
+
+  it('leaves the 158 characters who have no bio alone', () => {
+    // Most of the roster predates the age box. Their prose must come back
+    // untouched rather than half-eaten by a parser looking for a lead-in.
+    const alejandro = parseBio(profiles.Alejandro);
+    expect(alejandro.age).toBe(null);
+    expect(alejandro.prose).toBe(profiles.Alejandro.trim());
+  });
+
+  it('unstacks a lead-in that already doubled, in the shipped file', () => {
+    // Avani ships as "22. 22, straight. Soft, unhurried and spiritual…" — two
+    // lead-ins, from an older save that prepended one in front of another.
+    // Reading only the first takes her age and leaves "22, straight." at the
+    // front of her personality prose, where the episode writer reads it as
+    // character rather than metadata.
+    expect(profiles.Avani).toMatch(/^22\. 22, straight\./);
+    const avani = parseBio(profiles.Avani);
+    expect(avani.age).toBe(22);
+    expect(avani.sexuality).toBe('straight');
+    expect(avani.prose).toMatch(/^Soft, unhurried/);
+  });
+
+  it('parses every bio in the shipped file without losing anybody', () => {
+    const withBio = Object.values(profiles).filter(t => parseBio(t).age != null);
+    expect(withBio.length).toBe(28);
+    for (const text of withBio) {
+      const bio = parseBio(text);
+      expect(bio.age).toBeGreaterThan(0);
+      expect(bio.prose.length, 'the personality prose was eaten').toBeGreaterThan(10);
+    }
+  });
+});
+
+describe('what it refuses to guess', () => {
+  it('does not decide somebody\'s ethnicity from their nationality', () => {
+    // Obi is "25, Nigerian, gay." Nigerian is where he is from. Filling in an
+    // ethnicity from that is the software inventing a fact about a person, and
+    // the empty field is the honest answer.
+    const obi = parseBio(profiles.Obi);
+    expect(obi.nationality).toBe('Nigerian');
+    expect(obi.ethnicity).toBe('');
+  });
+
+  it('keeps what it cannot classify instead of dropping it', () => {
+    // Doug is "21, Scouse, straight." Scouse is neither an ethnicity nor a
+    // nationality, and it is still worth knowing.
+    const doug = parseBio(profiles.Doug);
+    expect(doug.descriptor).toBe('Scouse');
+    expect(doug.ethnicity).toBe('');
+    expect(doug.nationality).toBe('');
+  });
+
+  it('splits a phrase that genuinely holds both', () => {
+    expect(splitOrigin('Asian Canadian')).toMatchObject({ ethnicity: 'Asian', nationality: 'Canadian' });
+    expect(splitOrigin('Latino')).toMatchObject({ ethnicity: 'Latino', nationality: '' });
+    expect(splitOrigin('Japanese')).toMatchObject({ ethnicity: '', nationality: 'Japanese' });
+    expect(splitOrigin('')).toMatchObject({ ethnicity: '', nationality: '', descriptor: '' });
+  });
+
+  it('prefers the longer match, so "south asian" is not "asian"', () => {
+    expect(splitOrigin('South Asian').ethnicity).toBe('South Asian');
+  });
+});
+
+describe('writing the sentence back', () => {
+  it('renders the fields the way the writer has always seen them', () => {
+    expect(composeBioLead({ age: 21, ethnicity: 'Asian', nationality: 'Canadian', sexuality: 'lesbian' }))
+      .toBe('21, Asian Canadian, lesbian.');
+  });
+
+  it('leaves out what the writer would assume anyway', () => {
+    // `straight` has never appeared in a lead-in and should not start now.
+    expect(composeBioLead({ age: 24, sexuality: 'straight' })).toBe('24.');
+    expect(composeBioLead({})).toBe('');
+  });
+
+  it('survives a round trip', () => {
+    for (const name of ['Jane', 'Obi', 'Doug', 'Zella', 'Hina']) {
+      const bio = parseBio(profiles[name]);
+      const rebuilt = composeVoice(bio, bio.prose);
+      const again = parseBio(rebuilt);
+      expect(again.age, name).toBe(bio.age);
+      expect(again.ethnicity, name).toBe(bio.ethnicity);
+      expect(again.nationality, name).toBe(bio.nationality);
+      expect(again.prose, name).toBe(bio.prose);
+    }
+  });
+
+  it('never stacks a second lead in front of the first', () => {
+    // This has happened: editing a character whose Studio draft was missing
+    // loaded their voice back out of the published file, which already had a
+    // lead-in, and saving prepended another. Every edit added one more.
+    const doubled = '24, Canadian. 21, Asian Canadian, lesbian. Quiet and anxious.';
+    expect(stripBioLead(doubled)).toBe('Quiet and anxious.');
+    const once = composeVoice({ age: 21 }, stripBioLead(doubled));
+    expect(once).toBe('21. Quiet and anxious.');
+    expect(stripBioLead(once)).toBe('Quiet and anxious.');
+  });
+});
+
+describe('the backfill this makes possible', () => {
+  it('turns the shipped profiles into rows nobody has to retype', () => {
+    // What the generated SQL will contain. Asserted here so a parser change that
+    // silently stops filling a column is visible in a test rather than in a
+    // database three weeks later.
+    const rows = Object.entries(profiles)
+      .map(([name, text]) => ({ name, ...parseBio(text) }))
+      .filter(r => r.age != null);
+
+    expect(rows.length).toBe(28);
+    expect(rows.filter(r => r.ethnicity).length).toBeGreaterThan(3);
+    expect(rows.filter(r => r.nationality).length).toBeGreaterThan(8);
+    expect(rows.filter(r => r.sexuality).length).toBeGreaterThan(10);
+    expect(Math.min(...rows.map(r => r.age))).toBe(16);
+    expect(Math.max(...rows.map(r => r.age))).toBe(65);
+  });
+});

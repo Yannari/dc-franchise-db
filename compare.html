@@ -503,7 +503,24 @@
     <div class="footerSub">Static archive • <span id="footer-seasons-sub">9</span> seasons • <span id="footer-players-sub">102</span> players • Icons: name.png</div>
   </div>
 </footer>
-<!-- SITE FOOTER END -->
+<!-- The switcher is mounted by the site header on every page; this hands it,
+     and the shared per-show career engine, to the classic script below. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { currentShow, ALL } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  import { careersIn } from './js/records.js';
+  window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  window.records = { careersIn };
+  window._showSwitcherResolve(window.showSwitcher);
+  // A module script runs AFTER the classic one, so the first comparison is drawn
+  // with no switcher to ask and silently falls back to all-shows. Draw it again
+  // once there is one — the same race that had the Casting Studio showing a
+  // roster frozen in its source file.
+  try { window.renderComparison?.(); } catch {}
+</script>
 
 <script>
 // ── Tier config ────────────────────────────────────────────────
@@ -705,6 +722,16 @@ document.getElementById('shareBtn').addEventListener('click', function() {
 });
 
 // ── Comparison rendering ──────────────────────────────────────
+
+/* Redraw when the header switches shows. Registered once: renderComparison is
+   called from several places and a listener added per call would multiply. */
+if (!window.__cmpShowWired) {
+  window.__cmpShowWired = true;
+  window.addEventListener('showchange', () => {
+    try { renderComparison(); } catch { /* nothing selected yet */ }
+  });
+}
+
 function renderComparison() {
   const section = document.getElementById('cmp-section');
   const empty = document.getElementById('emptyHint');
@@ -735,6 +762,8 @@ function renderComparison() {
   renderStatsTable(players);
   renderSeasonGrid(players);
 }
+
+window.renderComparison = renderComparison;
 
 function renderPlayerCards(players) {
   const row = document.getElementById('cmpPlayersRow');
@@ -768,7 +797,59 @@ const STATS_DEF = [
   { key:'totalIdolsFound',    label:'Idols Found',      higher:true  },
 ];
 
-function renderStatsTable(players) {
+/**
+ * THE DISPLAY RULE, on the page where it matters most.
+ *
+ * Comparing two careers on `totalChallengeWins` compares cross-format sums — a
+ * Big Brother competition win is folded into that field by design. Under a show
+ * filter that counts seasons the filter excluded, and a side-by-side comparison
+ * is exactly where a number nobody can attribute does the most damage.
+ *
+ * Scoped, every stat is recomputed from that show's seasons by js/records.js —
+ * the same function franchise.html and player.html read. Unscoped, the career
+ * totals stand as they are, which is what they are for.
+ */
+function scopedStats(player) {
+  const show = window.showSwitcher?.currentShow?.() || 'all';
+  if (show === 'all' || !window.records?.careersIn) return player;
+  const c = window.records.careersIn({ players: [player] }, show)[0];
+  if (!c) return null;                       // never played this show
+  return {
+    ...player,
+    wins: c.wins,
+    bestPlacement: c.bestPlacement,
+    avgPlacement: c.avgPlacement,
+    totalSeasons: c.seasonsPlayed,
+    seasons: c.seasons,
+    totalChallengeWins: c.challengeWins,
+    totalImmunityWins: c.immunityWins,
+    totalVotesAgainst: c.votesAgainst,
+    totalJuryVotes: c.juryVotes,
+    totalIdolsFound: c.idolsFound,
+  };
+}
+
+const CMP_SHOW_LABEL = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+
+function renderStatsTable(playersIn) {
+  const show = window.showSwitcher?.currentShow?.() || 'all';
+  const scoped = playersIn.map(x => ({ player: x, stats: scopedStats(x) }));
+  const missing = scoped.filter(x => !x.stats).map(x => x.player.name);
+  const players = scoped.filter(x => x.stats).map(x => x.stats);
+
+  if (!players.length) {
+    // This function writes into #statsTable rather than returning markup, so
+    // the message has to go the same way — a returned string would be dropped
+    // on the floor and the old table would sit there looking current.
+    document.getElementById('statsTable').innerHTML =
+      '<tbody><tr><td style="opacity:.7;padding:22px 2px">'
+      + missing.join(' and ') + ' never played '
+      + (CMP_SHOW_LABEL[show] || show)
+      + ', so there is nothing to compare. Switch shows, or pick somebody who did.'
+      + '</td></tr></tbody>';
+    return;
+  }
+
   const n = players.length;
   const colClass = i => `col-p${i}`;
 
@@ -834,8 +915,18 @@ function renderStatsTable(players) {
     rows += `<tr><td class="stat-label-col">Ranking Score</td>${scoreCells}</tr>`;
   }
 
+  /* Say which numbers these are. Unscoped they are career totals across every
+     show — that is what they are for, and it is only confusing when unlabelled. */
+  const note = show === 'all'
+    ? '<tr><td class="stat-label-col" colspan="' + (n + 1) + '" '
+      + 'style="opacity:.55;font-size:12px;padding-top:10px">'
+      + 'Career totals across every show. Pick a show above to compare within one.</td></tr>'
+    : '<tr><td class="stat-label-col" colspan="' + (n + 1) + '" '
+      + 'style="opacity:.55;font-size:12px;padding-top:10px">'
+      + (CMP_SHOW_LABEL[show] || show) + ' only.</td></tr>';
+
   document.getElementById('statsTable').innerHTML =
-    `<thead><tr>${headerCols}</tr></thead><tbody>${rows}</tbody>`;
+    `<thead><tr>${headerCols}</tr></thead><tbody>${rows}${note}</tbody>`;
 }
 
 // ── Season-by-season grid ─────────────────────────────────────

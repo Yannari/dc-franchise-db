@@ -103,7 +103,7 @@ shared in TD 1 and BB 1 — indistinguishable in the output.
 
 ---
 
-## 3. Cross-format aggregates have no display rule
+## 3. Cross-format aggregates have no display rule — CLOSED 2026-08-08 (sub-project D)
 
 `byShow` is **summed from season details**. The top-level career totals are
 **their own numbers**, and `stats-export` folds Big Brother competition wins into
@@ -121,8 +121,26 @@ The cross-format aggregate contract is documented in the validator's module
 docstring, deliberately *without* an equality rule. What is still missing is a
 presentation rule.
 
-**Sub-project D inherits this.** It needs to decide, per page, whether the
-top-level cross-format total or the per-show figure is the one displayed.
+**Sub-project D decided it. THE RULE:**
+
+> Scoped to one show, a page shows only numbers that belong to that show. A
+> number that cannot be attributed is NOT shown — not as zero, and never as
+> another show's. Unscoped, cross-format totals are shown and SAID to be
+> cross-format.
+
+Applied: `player.html` (per-show sections, per-show chips, "Win Rate (all
+shows)"), `franchise.html` (everything derived per show by js/records.js),
+`compare.html` (every stat recomputed per show, with a footnote naming the
+scope), plus the timeline, players, leaderboards and rankings scoping done
+alongside.
+
+The awkward case, and the reason the rule needed writing down:
+`franchise_database.json` is a TOTAL DRAMA DOCUMENT. It predates the second show
+and carries no format anywhere — its `fanFavorites`, `evolution` and `trends` are
+keyed by bare season number, so read under a Big Brother scope they hand Big
+Brother 1 the fan favourite, the narrative and the trends of Total Drama season
+1. Those three are now shown only where they apply, and where they do not, the
+page says why rather than showing an empty panel that reads as missing data.
 
 ---
 

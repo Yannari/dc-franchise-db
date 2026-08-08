@@ -687,6 +687,29 @@ function rankIcon(i) {
   return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span style="font-size:13px;color:var(--muted)">${i+1}</span>`;
 }
 
+/* ── THE DISPLAY RULE ────────────────────────────────────────────────────
+   Scoped to one show, a page shows only numbers that belong to that show. A
+   number that cannot be attributed is NOT shown — not shown as zero, and never
+   shown as another show's.
+
+   franchise_database.json is a TOTAL DRAMA DOCUMENT. It predates the second
+   show and carries no format anywhere: its fanFavorites, evolution and trends
+   are keyed by bare season number, so read under a Big Brother scope they hand
+   Big Brother 1 the fan favourite, the narrative and the trends of Total Drama
+   season 1. Three different facts about a different show, under the right
+   heading.
+
+   Everything on this page that CAN be attributed is derived per show by
+   js/records.js instead. What is left below is what that file cannot answer. */
+const FRANCHISE_DOC_FORMAT = 'total-drama';
+const SHOW_LABEL = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+const showNameOf = f => SHOW_LABEL[f] || f || 'this show';
+
+/** Does the all-shows document apply to what is being looked at? */
+function legacyDocApplies(show) {
+  return show === 'all' || show === FRANCHISE_DOC_FORMAT;
+}
+
 /* "S4" for Total Drama, "BB1" for anything else — a bare number stopped naming
    a season the day a second show existed. */
 function seasonBadge(m) {
@@ -744,7 +767,12 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
     // ── Overview: season breakdown ───────────────────────
     const tbody = document.getElementById('overview-tbody');
     tbody.innerHTML = view.seasons.map(s => {
-      const fanFav = (franchise.fanFavorites || []).find(f => f.season === s.seasonNumber);
+      /* Only for the show this document is about. Matching on the bare number
+         gave a Big Brother season Total Drama's fan favourite. */
+      const sFmt = s.format || 'total-drama';
+      const fanFav = sFmt === FRANCHISE_DOC_FORMAT
+        ? (franchise.fanFavorites || []).find(f => f.season === s.seasonNumber)
+        : null;
       const w = s.winner || {};
       return `<tr>
         <td><div class="season-emoji-cell">${s.emoji||'🏝️'} <span class="s-num-badge">S${s.seasonNumber}</span></div></td>
@@ -854,7 +882,8 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
     document.getElementById('returnees-content').innerHTML = retHTML || '<p style="opacity:.5">No multi-season player data.</p>';
 
     // ── History: Evolution ───────────────────────────────
-    const evo = franchise.evolution || {};
+    const _docApplies = legacyDocApplies(view.format);
+    const evo = _docApplies ? (franchise.evolution || {}) : {};
     const evoList = document.getElementById('evolution-list');
     evoList.innerHTML = Object.keys(evo)
       .filter(k => k.startsWith('season'))
@@ -867,8 +896,17 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
         </div>`;
       }).join('') + (evo.message ? `<div class="tl-entry"><div class="tl-text" style="font-style:italic;color:#a78bfa">${evo.message}</div></div>` : '');
 
+    /* An empty panel invites the reader to assume the data is missing. It is
+       not missing — it is about a different show. */
+    if (!_docApplies) {
+      evoList.innerHTML = `<div class="tl-entry"><div class="tl-text" style="opacity:.7">
+        The season-by-season narrative was written for ${showNameOf(FRANCHISE_DOC_FORMAT)}
+        and is not recorded per show — none of it would be about
+        ${showNameOf(view.format)}.</div></div>`;
+    }
+
     // ── History: Trends ──────────────────────────────────
-    const trends = franchise.trends || {};
+    const trends = _docApplies ? (franchise.trends || {}) : {};
     const trendsGrid = document.getElementById('trends-grid');
     function trendCard(title, arr, keyFn, valFn) {
       if (!arr || !arr.length) return '';
@@ -880,7 +918,11 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
       trendCard('🗳️ Finale Vote Margins', trends.finaleVoteMargins, null, t=>`${t.vote} (${t.winner})`),
       trendCard('🌀 Major Twists', trends.majorTwists, null, t=>t.twist),
       trendCard('👥 Cast Composition', trends.castComposition, null, t=>t.composition)
-    ].join('') || '<div style="opacity:.4">No trend data.</div>';
+    ].join('') || `<div style="opacity:.55;padding:8px 2px">${
+      _docApplies
+        ? 'No trend data.'
+        : `Trends are recorded for ${showNameOf(FRANCHISE_DOC_FORMAT)} only — none of them would be ${showNameOf(view.format)}'s.`
+    }</div>`;
     }   /* end draw() */
 
     rebuild();

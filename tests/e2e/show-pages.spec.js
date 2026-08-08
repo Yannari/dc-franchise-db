@@ -159,3 +159,37 @@ test('a profile scoped to a show they DID play shows only that show', async ({ p
   const tabs = await page.locator('.pp-tab').allTextContents();
   expect(tabs.map(t => t.trim())).toEqual(['BB1']);
 });
+
+test('a comparison compares within one show, and says which', async ({ page }) => {
+  // Comparing on totalChallengeWins compares cross-format sums — a Big Brother
+  // competition win is folded into that field by design — so under a show
+  // filter the table counted seasons the filter excluded. A side-by-side is
+  // where an unattributable number does the most damage.
+  await page.goto('/compare.html?players=bowie,wayne&show=big-brother');
+  await expect(page.locator('#statsTable')).toContainText('Big Brother only', { timeout: 15000 });
+  await expect(page.locator('#statsTable')).not.toContainText('Career totals');
+
+  await page.goto('/compare.html?players=bowie,wayne&show=all');
+  await expect(page.locator('#statsTable')).toContainText('Career totals across every show', { timeout: 15000 });
+});
+
+test('comparing two people on a show neither played says so', async ({ page }) => {
+  await page.goto('/compare.html?players=alejandro,heather&show=big-brother');
+  await expect(page.locator('#statsTable')).toContainText('never played Big Brother', { timeout: 15000 });
+});
+
+test('the franchise page does not lend one show another show\'s narrative', async ({ page }) => {
+  // franchise_database.json predates the second show and carries no format:
+  // its evolution and trends are keyed by bare season number, so read under a
+  // Big Brother scope they hand Big Brother 1 Total Drama season 1's story.
+  await page.goto('/franchise.html?show=big-brother');
+  await page.waitForSelector('#sc-seasons', { timeout: 15000 });
+  await page.waitForTimeout(1200);
+
+  await expect(page.locator('#evolution-list')).toContainText('written for Total Drama');
+  await expect(page.locator('#trends-grid')).toContainText('recorded for Total Drama only');
+
+  await page.goto('/franchise.html?show=total-drama');
+  await page.waitForTimeout(1500);
+  await expect(page.locator('#evolution-list')).not.toContainText('written for Total Drama');
+});

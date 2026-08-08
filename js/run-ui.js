@@ -920,7 +920,19 @@ export function simulateNext() {
  * must never be able to break "next episode" — hence the guard and the catch.
  */
 function _refreshFeed(opts) {
-  try { window.refreshSocialFeed?.(opts); } catch { /* the episode is what matters */ }
+  try {
+    // The generated feed lands first and synchronously, so the screen is never
+    // waiting on somebody else's uptime between "next episode" and the result.
+    window.refreshSocialFeed?.(opts);
+    // Then, only if the season asked for it, the words are improved in the
+    // background. Nothing awaits this: it writes onto the stored posts in
+    // place, so a viewer who opens the feed before it lands sees the generated
+    // version and a viewer who opens it after sees the written one.
+    if (window.socialWriterOn?.()) {
+      Promise.resolve(window.refreshSocialFeedWritten?.(opts))
+        .catch(() => { /* the templates already ran */ });
+    }
+  } catch { /* the episode is what matters */ }
 }
 
 export function simulateMultipleEpisodes(count) {

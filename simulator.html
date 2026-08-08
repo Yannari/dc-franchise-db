@@ -597,6 +597,24 @@
             </div>
 
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
+            <!-- Off by default and explicitly switched on, because it is the one
+                 setting in this panel that costs money every time a season is
+                 played. -->
+            <div class="form-group">
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                <input type="checkbox" id="cfg-social-writer" style="width:14px;height:14px;margin-top:3px"
+                  onchange="saveConfig()">
+                <span>
+                  <span class="form-label" style="margin:0">Let AI write the audience</span>
+                  <span class="hint hint-tight" style="display:block">The feed is generated either way.
+                    With this on, the loudest few moments of each episode are sent to your Season Builder
+                    worker and written by a model from the facts the simulator recorded &mdash; who broke
+                    a deal with whom, who saved whom, which week. Anything naming a houseguest or a week
+                    that did not happen is thrown away and the generated post is kept. Costs an API call
+                    per moment; with no worker set up it does nothing at all.</span>
+                </span>
+              </label>
+            </div>
             <div class="slider-control">
               <label>Initial Teams: <strong id="teams-display">2</strong></label>
               <input type="range" min="1" max="6" value="2" id="cfg-teams" class="setup-slider" oninput="updateSlider('teams');saveConfig()">

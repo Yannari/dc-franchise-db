@@ -915,6 +915,9 @@ export function saveConfig() {
     bbHostStyle: g('cfg-bb-host-style')?.value || 'balanced',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
+    // Off unless explicitly switched on: the one setting here that costs
+    // money every time a season is played.
+    socialWriter: !!document.getElementById('cfg-social-writer')?.checked,
     // Season twists own their own keys — see `season` in
     // js/bb/twist-contract.js. Read generically so a new one is a contract
     // entry and not three more lines here, three in the load path and a slab
@@ -1057,6 +1060,8 @@ export function renderConfig() {
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
+  { const w = document.getElementById('cfg-social-writer');
+    if (w) w.checked = seasonConfig.socialWriter === true; }
   applySeasonTwistConfig(set);
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');

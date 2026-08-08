@@ -286,7 +286,11 @@ describe('it never blocks a season', () => {
     for (let w = 0; w < 3; w++) if (!simulateBBEpisode()) break;
 
     ensureFeeds(gs, { format: 'big-brother', season: 1 });
-    const plain = postsForEpisode(gs, 1).map(p => ({ id: p.id, at: p.at, handle: p.handle,
+    // Every episode, not just the first — week one has no weeks behind it, so
+    // it has no receipts and nothing to rewrite. Asserting there measured the
+    // one episode the writer is correct to leave alone.
+    const { storeOf } = await import('../js/social/store.js');
+    const plain = storeOf(gs).posts.map(p => ({ id: p.id, at: p.at, handle: p.handle,
       topic: p.topic, likes: p.likes, text: p.text }));
 
     const f = vi.fn().mockImplementation(async (_url, init) => {
@@ -297,7 +301,7 @@ describe('it never blocks a season', () => {
     });
     const out = await ensureFeedsWritten(gs, { format: 'big-brother', season: 1,
       endpoint: 'https://x.test', fetchImpl: f, rebuild: true });
-    const written = postsForEpisode(gs, 1);
+    const written = storeOf(gs).posts;
 
     expect(out.written, 'the worker was never asked, or nothing survived').toBeGreaterThan(0);
     // Same posts, same order, same accounts, same engagement — only words move.
@@ -330,6 +334,32 @@ describe('it never blocks a season', () => {
     expect(out.written).toBe(0);
     expect(postsForEpisode(gs, 1).map(p => p.text)).toEqual(a);
   }, 120000);
+
+  it('needs the season to ask AND a worker to exist', async () => {
+    const { socialWriterOn, refreshSocialFeedWritten } = await import('../js/social/session.js');
+    house();
+    // Costing somebody money because a default changed under them is not a
+    // thing a simulator should be able to do.
+    delete seasonConfig.socialWriter;
+    delete seasonConfig.socialWriterUrl;
+    expect(socialWriterOn()).toBe(false);
+
+    seasonConfig.socialWriter = true;
+    expect(socialWriterOn(), 'switched on with nowhere to send it').toBe(false);
+
+    seasonConfig.socialWriterUrl = 'https://x.test';
+    expect(socialWriterOn()).toBe(true);
+
+    seasonConfig.socialWriter = false;
+    expect(socialWriterOn(), 'a URL alone should not switch it on').toBe(false);
+
+    // And with it off, the written entry point is the synchronous one.
+    const res = await refreshSocialFeedWritten({});
+    expect(res).toBeTruthy();
+    expect(res.written).toBeUndefined();
+    delete seasonConfig.socialWriter;
+    delete seasonConfig.socialWriterUrl;
+  });
 
   it('is off unless somebody turns it on', () => {
     expect(writerEndpoint({})).toBeNull();

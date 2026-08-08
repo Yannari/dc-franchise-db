@@ -294,6 +294,15 @@ export function patchEpisodeHistory(ep) {
   if (ep.brokerExposure) h.brokerExposure = ep.brokerExposure;
   if (ep.showmanceBreakup) h.showmanceBreakup = ep.showmanceBreakup;
   if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
+  // ── the showmances that FORMED, which nothing kept ──
+  //
+  // romance.js writes `ep.newShowmances` in four places and not one episode
+  // history push carried it, so a season could pair six couples and the record
+  // remembered only the break-ups. The audience feed reads this record, which
+  // is why a played season could talk about idols and never once about who got
+  // together. Patched here rather than at the four push sites, because that is
+  // what this function is for and the fifth site would have missed it too.
+  if (ep.newShowmances?.length) h.newShowmances = ep.newShowmances;
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
   // Love triangle

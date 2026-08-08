@@ -294,6 +294,36 @@ function tdEvents(ep, meta) {
   const gone = ep.eliminated || ep.boot || null;
   if (gone) out.push(event('eviction', { ...meta, subject: gone }));
 
+  // Who got together. `ep.newShowmances` is `[{ a, b }]` and had never been
+  // read by anything, because until now it was never even saved.
+  for (const [i, sh] of (ep.newShowmances || []).entries()) {
+    const a = sh?.a, b = sh?.b;
+    if (!a || !b) continue;
+    const e = event('showmance-formed', { ...meta, subject: a, actor: b, jitter: (i % 4) * 0.015 });
+    e.receipt = `${a} and ${b} finally stopped pretending`;
+    out.push(e);
+  }
+
+  // And who joined what. A recruit is somebody choosing a side in public, which
+  // is the most legible strategic act the show has and the audience had no way
+  // to mention it.
+  // The shape is camp-events.js's: `{ player, toAlliance, fromAlliance,
+  // scenario }`. Read from the source rather than guessed — the first draft of
+  // this looked for `recruit` and `alliance` and would have found neither,
+  // producing an extractor that silently emitted nothing.
+  for (const [i, r] of (ep.allianceRecruits || []).entries()) {
+    const who = r?.player;
+    if (!who) continue;
+    const e = event('alliance-formed', { ...meta, subject: who, jitter: (i % 5) * 0.012 });
+    // Leaving one side for another is a different story from joining one, and
+    // it is the more interesting half.
+    e.receipt = r.fromAlliance
+      ? `${who} left ${r.fromAlliance} for ${r.toAlliance}`
+      : r.toAlliance ? `${who} joined ${r.toAlliance}` : null;
+    if (!e.receipt) delete e.receipt;
+    out.push(e);
+  }
+
   const split = ep.showmanceBreakup || ep.showmanceSeparation;
   if (split) {
     const pair = Array.isArray(split) ? split : [split.a, split.b].filter(Boolean);

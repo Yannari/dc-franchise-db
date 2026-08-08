@@ -195,3 +195,56 @@ describe('the played path knows the same things', () => {
     }
   });
 });
+
+describe('a played season can talk about people, not just advantages', () => {
+  // The played path got idols and ballots; romance and alliances were still
+  // missing, so a season could pair six couples and the feed never mentioned
+  // one of them.
+  it('says who got together', async () => {
+    const { extractEvents } = await import('../js/social/events.js');
+    const ev = extractEvents({
+      num: 7, eliminated: 'Jade', newShowmances: [{ a: 'Zaid', b: 'Ivy' }],
+    }, { format: 'total-drama', season: 14, episode: 7 });
+    const sh = ev.find(e => e.kind === 'showmance-formed');
+    expect(sh, 'a showmance formed and nobody said so').toBeTruthy();
+    expect(sh.subject).toBe('zaid');
+    expect(sh.actor).toBe('ivy');
+    expect(sh.receipt).toMatch(/Zaid and Ivy/);
+  });
+
+  it('tells joining a side from switching sides', async () => {
+    // Leaving one alliance for another is a different story from joining one,
+    // and it is the more interesting half.
+    const { extractEvents } = await import('../js/social/events.js');
+    const ev = extractEvents({
+      num: 7, eliminated: 'Jade',
+      allianceRecruits: [
+        { player: 'Benji', toAlliance: 'The Anchor', fromAlliance: null },
+        { player: 'Logan', toAlliance: 'The Movement', fromAlliance: 'The Triumvirate' },
+      ],
+    }, { format: 'total-drama', season: 14, episode: 7 });
+    const said = ev.filter(e => e.kind === 'alliance-formed').map(e => e.receipt);
+    expect(said).toContain('Benji joined The Anchor');
+    expect(said).toContain('Logan left The Triumvirate for The Movement');
+  });
+
+  it('reads the shape camp-events actually writes', async () => {
+    // `{ player, toAlliance, fromAlliance, scenario }`. The first draft looked
+    // for `recruit` and `alliance`, found neither, and would have shipped an
+    // extractor that silently emitted nothing — the failure mode this whole
+    // feature keeps producing.
+    const src = fs.readFileSync('js/camp-events.js', 'utf8');
+    expect(src).toMatch(/allianceRecruits\.push\(\{ player:/);
+    const ev = fs.readFileSync('js/social/events.js', 'utf8');
+    expect(ev).toMatch(/r\?\.player/);
+    expect(ev).toMatch(/r\.fromAlliance/);
+  });
+
+  it('keeps new showmances on the episode record at all', async () => {
+    // romance.js writes `ep.newShowmances` in four places and not one history
+    // push carried it, so the record remembered break-ups and never pairings.
+    const save = fs.readFileSync('js/savestate.js', 'utf8');
+    expect(save, 'new showmances are still dropped on save')
+      .toMatch(/if \(ep\.newShowmances\?\.length\) h\.newShowmances = ep\.newShowmances;/);
+  });
+});

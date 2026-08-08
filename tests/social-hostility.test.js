@@ -17,6 +17,7 @@
 // library; the test is the contract.
 import { describe, expect, it } from 'vitest';
 import { PERSONAS } from '../js/social/personas.js';
+import { TOPICS } from '../js/social/topics.js';
 
 /**
  * Terms that mark an attack on a protected characteristic.
@@ -54,6 +55,7 @@ function allStrings() {
     }
   };
   walk(PERSONAS, 'personas');
+  walk(TOPICS, 'topics');
   return out;
 }
 

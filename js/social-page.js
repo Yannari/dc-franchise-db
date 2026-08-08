@@ -23,6 +23,7 @@ import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crow
   from './social/archive.js';
 import { eligibleHosts, seasonPanel, episodeSpeakers, fameTerm } from './social/hosts.js';
 import { buildChatMessages } from './social/chat.js';
+import { personaByHandle } from './social/personas.js';
 import { EPISODE_MS } from './social/events.js';
 
 const API = 'https://dc-studio.yannari19.workers.dev/api/social';
@@ -39,6 +40,10 @@ const S = {
   live: false, clock: EPISODE_MS, speed: 1, timer: null, seen: 0,
   liked: new Set(), tomatoed: new Set(), following: new Set(),
   shown: 30,
+  // What the reader has opened: one player's timeline, one thread, one profile.
+  // Kept here rather than read back out of the DOM, so leaving for the other app
+  // and returning does not quietly drop you somewhere else.
+  subject: null, thread: null, persona: null,
 };
 
 const $ = id => document.getElementById(id);
@@ -271,10 +276,14 @@ const svgIcon = {
 // ── Birdie ────────────────────────────────────────────────────────────
 function birdiePosts() {
   const all = visible().slice(0, S.seen || undefined);
+  if (S.thread) {
+    const parent = stream().find(p => p.id === S.thread);
+    return parent ? [parent, ...stream().filter(p => p.replyTo === S.thread)] : [];
+  }
   const list = S.tab === 'following'
     ? all.filter(p => S.following.has(p.handle))
     : S.tab === 'players'
-      ? all.filter(p => p.subject)
+      ? all.filter(p => p.subject && (!S.subject || p.subject === S.subject))
       : all;
   // For You promotes the loudest moments modestly; Latest is strict event time.
   if (S.tab === 'for-you') {
@@ -316,6 +325,70 @@ function postRow(p, i) {
 
 const countReplies = id => stream().filter(p => p.replyTo === id).length;
 
+/**
+ * One chip per player the audience talked about tonight.
+ *
+ * Drawn from the FEED rather than from the cast list, so every chip opens on
+ * something. A name with no posts behind it is a dead end that reads as a bug.
+ * Order comes from the season's own placements, so the people still in are first.
+ */
+function playerChips() {
+  const talked = [...new Set(S.feed.posts.map(p => p.subject).filter(Boolean))];
+  if (!talked.length) return '';
+  const place = new Map((S.doc?.placements || [])
+    .map(p => [p.playerSlug || p.name, Number(p.placement) || 99]));
+  const sorted = talked.sort((a, b) => (place.get(a) ?? 99) - (place.get(b) ?? 99));
+  return `<div class="chips" role="group" aria-label="Players">
+    ${S.subject ? '<button type="button" class="chip" data-subject="">All players</button>' : ''}
+    ${sorted.map(sub => `<button type="button" class="chip" data-subject="${esc(sub)}"
+      aria-pressed="${S.subject === sub}">${esc(titleCase(sub))}</button>`).join('')}
+  </div>`;
+}
+
+/** The thread you opened, and the way back out of it. */
+function threadHeader() {
+  return `<div class="thread-head">
+    <button type="button" id="thread-back">&larr; Back to the timeline</button>
+    <span>Thread &middot; ${countReplies(S.thread)} replies</span>
+  </div>`;
+}
+
+/**
+ * A fan's profile.
+ *
+ * Their history is real: personas.js gives each of them a season they started
+ * watching and how they feel about specific players, and those feelings are what
+ * the sampler has been writing from all along. Follower counts are deliberately
+ * absent — invented, they would be the only number on this page meaning nothing.
+ */
+function personaCard() {
+  const p = personaByHandle(S.persona);
+  if (!p) return '';
+  const mine = S.feed.posts.filter(x => x.handle === p.handle);
+  const best = [...mine].sort((a, b) => (b.likes + b.tomatoes) - (a.likes + a.tomatoes))[0];
+  const feelings = Object.entries(p.feelings || {});
+  const loves = feelings.filter(([, f]) => (f.affection || 0) > 0.5).map(([n]) => titleCase(n));
+  const hates = feelings.filter(([, f]) => (f.affection || 0) < -0.5).map(([n]) => titleCase(n));
+  const following = S.following.has(p.handle);
+
+  return `<div class="persona-card">
+    <div class="persona-top">
+      <div>
+        <strong>${esc(p.name)}</strong> <span class="post-handle">${esc(p.handle)}</span>
+        <p class="post-ctx" style="margin:4px 0 0">${esc(p.archetype)} &middot; watching since season ${p.since}</p>
+      </div>
+      <button type="button" class="follow" data-follow="${esc(p.handle)}" aria-pressed="${following}">
+        ${following ? 'Following' : 'Follow'}</button>
+    </div>
+    <p style="margin:8px 0 0;font-size:14px">
+      ${mine.length} post${mine.length === 1 ? '' : 's'} this ${esc(words(S.format).episode)}${
+        loves.length ? ` &middot; loves ${esc(loves.slice(0, 2).join(' and '))}` : ''}${
+        hates.length ? ` &middot; cannot stand ${esc(hates.slice(0, 2).join(' and '))}` : ''}</p>
+    ${best ? `<p style="margin:6px 0 0;font-size:14px;opacity:.75">Most reacted to: &ldquo;${esc(best.text.slice(0, 110))}&rdquo;</p>` : ''}
+    <p style="margin:8px 0 0;font-size:12px;opacity:.6">Following is kept in this browser. There is no account behind it.</p>
+  </div>`;
+}
+
 function renderBirdie() {
   const posts = birdiePosts();
   const total = visible().slice(0, S.seen || undefined).length;
@@ -336,6 +409,9 @@ function renderBirdie() {
     ${clockBar()}
     <button class="newpill" id="newpill" hidden type="button"></button>
     <h2 class="sr-only">${esc(contextLabel(S.format, S.season, S.episode))} timeline</h2>
+    ${S.thread ? threadHeader() : ''}
+    ${!S.thread && S.tab === 'players' ? playerChips() : ''}
+    ${!S.thread && S.persona ? personaCard() : ''}
     <div id="birdie-feed" role="tabpanel" aria-labelledby="tab-${S.tab}">
       ${posts.length
         ? posts.map(postRow).join('')
@@ -614,10 +690,22 @@ function wire() {
   };
 
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-tab],[data-channel],[data-like],[data-tomato],[data-speed],#btn-live,#newpill,#loadmore,[data-goto-channel],[data-reply]');
+    const t = ev.target.closest('[data-tab],[data-channel],[data-like],[data-tomato],[data-speed],'
+      + '#btn-live,#newpill,#loadmore,[data-goto-channel],[data-reply],[data-subject],'
+      + '[data-persona],[data-follow],#thread-back');
     if (!t) return;
+    // The author link is a real anchor so it is keyboard-reachable and shows a
+    // target; opening the profile in place is what it actually does.
+    if (t.dataset.persona !== undefined || t.dataset.subject !== undefined) ev.preventDefault();
 
-    if (t.dataset.tab) { S.tab = t.dataset.tab; S.shown = 30; writeUrl(); render(); }
+    if (t.dataset.tab) { S.tab = t.dataset.tab; S.shown = 30; S.thread = null; writeUrl(); render(); }
+    else if (t.dataset.subject !== undefined) { S.subject = t.dataset.subject || null; S.shown = 30; render(); }
+    else if (t.dataset.persona !== undefined) {
+      S.persona = S.persona === t.dataset.persona ? null : t.dataset.persona;
+      render();
+    }
+    else if (t.dataset.follow) toggle(S.following, t.dataset.follow);
+    else if (t.id === 'thread-back') { S.thread = null; render(); }
     else if (t.dataset.channel) { S.channel = t.dataset.channel; S.shown = 30; writeUrl(); render(); }
     else if (t.dataset.gotoChannel) { S.app = 'chatalumni'; S.channel = t.dataset.gotoChannel; writeUrl(); render(); }
     else if (t.id === 'newpill') revealNew();
@@ -630,8 +718,13 @@ function wire() {
     else if (t.dataset.like) toggle(S.liked, t.dataset.like);
     else if (t.dataset.tomato) toggle(S.tomatoed, t.dataset.tomato);
     else if (t.dataset.reply) {
-      const el = document.getElementById(`post-${t.dataset.reply}`);
-      if (el) el.classList.toggle('is-focus');
+      // Open the thread rather than highlight the row: a reply count you cannot
+      // click is a number pretending to be a control.
+      const has = countReplies(t.dataset.reply);
+      S.thread = has ? t.dataset.reply : null;
+      S.persona = null;
+      render();
+      if (!has) announce('That post has no replies yet.');
     }
   });
 }

@@ -128,3 +128,49 @@ test('it fits a phone', async ({ page }) => {
   const scrollW = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollW, 'the page scrolls sideways on a phone').toBeLessThanOrEqual(321);
 });
+
+test('a reply count you can click opens the thread', async ({ page }) => {
+  // A count that is not a control is a number pretending to be one. Threads sit
+  // on the For You tab because replies answer the loudest posts, and strict
+  // event time puts those after the first page.
+  await page.goto(social('show=big-brother&season=1&app=birdie&tab=for-you'));
+  await ready(page);
+
+  const target = page.locator('.act[data-reply]').filter({ hasNotText: /^\s*0\s*$/ }).first();
+  await target.click();
+  await expect(page.locator('.thread-head')).toBeVisible();
+  // A thread is the parent plus its answers, and every answer says who it answers.
+  expect(await page.locator('.post').count()).toBeGreaterThan(1);
+  await expect(page.locator('.replying').first()).toContainText('Replying to');
+
+  await page.click('#thread-back');
+  await expect(page.locator('.thread-head')).toHaveCount(0);
+});
+
+test('the Players tab filters to one person', async ({ page }) => {
+  await page.goto(social('show=big-brother&season=1&app=birdie&tab=players'));
+  await ready(page);
+  expect(await page.locator('.chip').count()).toBeGreaterThan(1);
+
+  const name = (await page.locator('.chip').first().textContent()).trim();
+  await page.locator('.chip').first().click();
+  await page.waitForTimeout(200);
+  // Every post shown is now about that player.
+  const bodies = await page.locator('.post-body').allTextContents();
+  expect(bodies.length).toBeGreaterThan(0);
+  expect(bodies.some(t => t.includes(name))).toBe(true);
+});
+
+test('a fan has a profile, and following is honest about being local', async ({ page }) => {
+  await page.goto(social('show=big-brother&season=1&app=birdie'));
+  await ready(page);
+  await page.locator('.post-name').first().click();
+
+  const card = page.locator('.persona-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('watching since season');
+  await expect(card).toContainText('no account behind it');
+
+  await page.locator('.follow').click();
+  await expect(page.locator('.follow')).toHaveAttribute('aria-pressed', 'true');
+});

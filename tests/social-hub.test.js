@@ -205,3 +205,44 @@ describe('the publish button says what it sends', () => {
     expect(store).toMatch(/posts: store\.posts\.map/);
   });
 });
+
+describe('the writer switch explains itself in the right show', () => {
+  // ── read what is SHOWN, not the source around it ──
+  //
+  // Twice now a guard on user-facing copy has failed because the comment
+  // explaining the change quotes the wording it replaced, and a slice of raw
+  // source cannot tell an explanation from the thing it explains. Comments
+  // stripped, and the window is taken from the markup boundaries rather than a
+  // guessed character count — the first version stopped 1400 characters in,
+  // half a sentence before the text it was asserting on.
+  const strip = t => t.replace(/<!--[\s\S]*?-->/g, '');
+  const at = HTML.indexOf('id="cfg-social-writer"');
+  const opt = strip(HTML.slice(HTML.lastIndexOf('<div class="form-group">', at),
+    HTML.indexOf('</div>', HTML.indexOf('</label>', at))));
+
+  it('does not describe a Total Drama season in Big Brother words', () => {
+    // The same fault the alumni room had, on a settings screen that runs both
+    // shows: "Anything naming a houseguest or a week that did not happen".
+    expect(opt, 'the switch still says houseguest').not.toMatch(/houseguest/i);
+    expect(opt, 'the switch still counts in weeks').not.toMatch(/which week/i);
+  });
+
+  it('names the worker that actually serves it', () => {
+    // It said "your Season Builder worker". The social endpoint is
+    // dc-analytics, so anybody reading this to find out why nothing happened
+    // was being sent to look at the wrong deployment.
+    expect(opt).toMatch(/dc-analytics/);
+    expect(opt).not.toMatch(/Season Builder worker/);
+  });
+
+  it('says what it costs and what happens when it fails', () => {
+    expect(opt).toMatch(/six/i);
+    expect(opt, 'no mention of what a failure costs').toMatch(/nothing at all/);
+  });
+
+  it('is a checkbox somebody can actually tick', () => {
+    expect(opt).toMatch(/<input type="checkbox" id="cfg-social-writer"/);
+    // Wrapped in the label, so the sentence is the hit area rather than 14px.
+    expect(opt).toMatch(/<label[^>]*>\s*<input type="checkbox" id="cfg-social-writer"/);
+  });
+});

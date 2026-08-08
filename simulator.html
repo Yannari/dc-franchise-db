@@ -606,12 +606,20 @@
                   onchange="saveConfig()">
                 <span>
                   <span class="form-label" style="margin:0">Let AI write the audience</span>
-                  <span class="hint hint-tight" style="display:block">The feed is generated either way.
-                    With this on, the loudest few moments of each episode are sent to your Season Builder
-                    worker and written by a model from the facts the simulator recorded &mdash; who broke
-                    a deal with whom, who saved whom, which week. Anything naming a houseguest or a week
-                    that did not happen is thrown away and the generated post is kept. Costs an API call
-                    per moment; with no worker set up it does nothing at all.</span>
+                  <!-- The copy said "houseguest" and "which week" on a screen that
+                       runs both shows, which is the same fault the alumni room had:
+                       one show's vocabulary shown to the other. It also named "your
+                       Season Builder worker", which is not what serves this — the
+                       social endpoint is dc-analytics. Somebody reading it to work
+                       out why nothing happened was being sent to the wrong place. -->
+                  <span class="hint hint-tight" style="display:block">The feed is written either way.
+                    With this on, the six loudest moments of each episode go to the dc-analytics
+                    worker and are written by a model from the facts the simulator actually recorded
+                    &mdash; who played an idol for whom, who broke a deal, who saved somebody. The
+                    facts are a closed list: a post naming a player, a moment or an episode that did
+                    not happen is thrown away and the generated one is kept, so a bad answer costs
+                    nothing but the call. Six calls an episode. With no worker reachable it does
+                    nothing at all and the feed reads as it does now.</span>
                 </span>
               </label>
             </div>

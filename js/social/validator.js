@@ -122,17 +122,27 @@ export function validatePost(text, packet = {}, { approved = [], cites = null } 
 
   // ── did it say anything that is not true ──
   //
-  // The citation is the whole design. A post that points at a receipt id is
-  // making a claim somebody can check with a string comparison; a post that
-  // free-writes history is making one nobody can.
-  if (packet.requireCite) {
-    const ids = new Set(receipts.map(r => r.id));
-    const claimed = [].concat(cites || []);
-    if (!claimed.length) reasons.push('cites-nothing');
-    for (const c of claimed) {
-      if (!ids.has(c)) reasons.push(`cites-unknown:${c}`);
-    }
+  // A citation that names an id nothing supplied is a claim about a season
+  // that did not happen, and always fails.
+  //
+  // But requiring EVERY post to cite was wrong, and a live model showed it in
+  // one batch: "she broke his deal in week 2 and now she nominated him" cites
+  // a receipt, and "logan did not deserve this im actually sick" cites nothing
+  // and is a perfect post. Most of a timeline asserts no history at all —
+  // demanding a footnote for a scream threw away the register the whole thing
+  // exists to produce, and left a crowd of nought.
+  //
+  // What actually protects the record is narrower and does not care about
+  // citations: a post may not name somebody who does not exist, and may not
+  // name a week no receipt does. A post asserting nothing checkable is not a
+  // risk, it is a fan.
+  const ids = new Set(receipts.map(r => r.id));
+  for (const c of [].concat(cites || [])) {
+    if (!ids.has(c)) reasons.push(`cites-unknown:${c}`);
   }
+  // `strictCite` is left for a caller that genuinely wants every line
+  // footnoted — the hosted room, where a host IS making an argument.
+  if (packet.strictCite && !(cites || []).length) reasons.push('cites-nothing');
 
   // Every name it uses has to be somebody who exists.
   const cast = new Set((packet.cast || []).map(n => String(n).toLowerCase()));

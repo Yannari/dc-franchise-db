@@ -63,11 +63,15 @@ describe('it cannot say something that did not happen', () => {
     expect(v.ok).toBe(true);
   });
 
-  it('refuses a post that points at nothing', () => {
-    // The whole design in one assertion: a post that free-writes history is
-    // making a claim nobody can check.
-    expect(ok('this has been coming since the first week', { cites: [] }).reasons)
-      .toContain('cites-nothing');
+  it('lets a pure reaction through, because most of a timeline is one', () => {
+    // Requiring EVERY post to cite was wrong, and a live batch proved it:
+    // "logan did not deserve this im actually sick" cites nothing and is a
+    // perfect post. Demanding a footnote for a scream returned a crowd of
+    // nought.
+    expect(ok('logan did not deserve this im actually sick', { cites: [] }).ok).toBe(true);
+    // A room where somebody is making an ARGUMENT can still demand one.
+    expect(validatePost('this has been coming since the start',
+      { ...PACKET, strictCite: true }, { cites: [] }).reasons).toContain('cites-nothing');
   });
 
   it('refuses a receipt id that is not in the packet', () => {
@@ -345,10 +349,7 @@ describe('it never blocks a season', () => {
     expect(socialWriterOn()).toBe(false);
 
     seasonConfig.socialWriter = true;
-    expect(socialWriterOn(), 'switched on with nowhere to send it').toBe(false);
-
-    seasonConfig.socialWriterUrl = 'https://x.test';
-    expect(socialWriterOn()).toBe(true);
+    expect(socialWriterOn(), 'the checkbox is the switch').toBe(true);
 
     seasonConfig.socialWriter = false;
     expect(socialWriterOn(), 'a URL alone should not switch it on').toBe(false);
@@ -361,8 +362,12 @@ describe('it never blocks a season', () => {
     delete seasonConfig.socialWriterUrl;
   });
 
-  it('is off unless somebody turns it on', () => {
-    expect(writerEndpoint({})).toBeNull();
+  it('points at the worker that actually has the social mode', () => {
+    // Not the Season Builder: that is a different worker with a different
+    // script, and pointing at it fell through to its default branch and
+    // returned analytics — no error, no posts, and templates forever with
+    // nothing to explain why.
+    expect(writerEndpoint({})).toContain('dc-analytics');
     expect(writerEndpoint({ socialWriterUrl: 'https://x.test' })).toBe('https://x.test');
   });
 

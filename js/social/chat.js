@@ -53,12 +53,12 @@ const titleCase = s => String(s || '').split('-').map(w => w.charAt(0).toUpperCa
  */
 function credential(host, w) {
   const bits = [];
-  if (host.wins) bits.push(`I won one of these`);
-  if (host.bestPlacement === 2) bits.push(`I lost this at the end`);
-  if (host.expertise.includes('the jury')) bits.push(`I sat on a jury`);
-  if (host.expertise.includes('competitions')) bits.push(`I lived on ${w.challenge} wins`);
-  if (host.seasonsPlayed >= 3) bits.push(`I have played ${host.seasonsPlayed} of these`);
-  if (host.expertise.includes('surviving votes')) bits.push(`I had my name written down plenty`);
+  if (host.wins) bits.push(`won a season`);
+  if (host.bestPlacement === 2) bits.push(`finished runner-up`);
+  if (host.expertise.includes('the jury')) bits.push(`sat on a jury`);
+  if (host.expertise.includes('competitions')) bits.push(`relied on ${w.challenge} wins`);
+  if (host.seasonsPlayed >= 3) bits.push(`played ${host.seasonsPlayed} seasons`);
+  if (host.expertise.includes('surviving votes')) bits.push(`survived plenty of votes`);
   return bits;
 }
 
@@ -79,46 +79,98 @@ function hostLens(host) {
   return 'social';
 }
 
-/** A factual lens changes the register without replacing the event-specific take. */
-const LENS_FRAMES = {
-  villain: [
-    'Let me be unkind for a second. ', 'The polite version is not useful here. ',
-    'If I wanted that player gone, this is exactly what I would say. ',
-    'Somebody has to say the ugly part. ', 'I respect the nerve more than the excuse. ',
-    'This is where being nice makes the read worse. ',
-  ],
-  'challenge-beast': [
-    'A win can solve tonight, not the position. ', 'Look past the result and at the pressure. ',
-    'This is what the scoreboard does not show. ', 'Safety and control are not the same prize. ',
-    'The body can win the round; the relationships still decide the week. ',
-    'I always watch who performs when losing is real. ',
-  ],
-  goat: [
-    'The low-threat lane looks different from inside it. ', 'Being kept is not the same as being trusted. ',
-    'People tell the supposedly easy opponent more than they mean to. ',
-    'There is power in being underestimated, until there is not. ',
-    'I know what it looks like when stronger players stop hiding the plan from you. ',
-    'The person nobody fears still gets a vote and a memory. ',
-  ],
-  strategist: [
-    'Count the relationships before the votes. ', 'The move is clean; the structure under it is not. ',
-    'Information is the real competition here. ', 'The public plan and the actual plan separated days ago. ',
-    'Watch who benefits without taking credit. ', 'The jury consequence matters before the tactical one does. ',
-  ],
-  underdog: [
-    'The bottom always sees the crack before the majority admits it exists. ',
-    'When your name is available, every silence gets loud. ',
-    'Survival changes how you hear that conversation. ', 'The person in danger notices what comfortable players miss. ',
-    'There is a read you only get when nobody is protecting your feelings. ',
-    'The easy vote knows exactly how easy the room thinks it is. ',
-  ],
-  social: [
-    'Watch the person, not only the move. ', 'The relationship changed before the plan did. ',
-    'The room told us what happened before the vote did. ', 'Tone did more work than strategy there. ',
-    'People remember how a move felt longer than how it counted. ',
-    'The conversation after this matters more than the speech before it. ',
-  ],
+/**
+ * Complete opinions, not labels glued onto a generic sentence. Only kinds where
+ * a lens genuinely changes the read are listed; everything else uses TAKES.
+ */
+const LENS_TAKES = {
+  villain: {
+    eviction: [
+      ({ s }) => `${s} is going to call that cruel. It was. It was also clean, and clean is what matters when you are the one staying.`,
+      ({ s }) => `The room did not owe ${s} honesty after ${s} made honesty strategically stupid.`,
+      ({ s }) => `I like the person who smiled through that goodbye. Lying is easy; keeping the relationship warm after the vote is the skill.`,
+      ({ s }) => `${s} wanted loyalty without ever making betrayal expensive. Somebody finally noticed.`,
+      ({ s }) => `No speech saves ${s} there. The only useful move was making somebody else more irritating before the meeting.`,
+      ({ s }) => `Everyone is mourning ${s}'s game now. Half of them have been waiting weeks to enjoy this privately.`,
+    ],
+    nomination: [
+      ({ s }) => `If I put ${s} there, I would call them a pawn too. People sit still when you give the danger a polite name.`,
+      ({ s }) => `${s} is not the target yet. The smart play is making the room comfortable enough to decide they should be.`,
+      ({ s }) => `That speech was camouflage. The real message was to everybody who now knows ${s} can be touched.`,
+      ({ s }) => `You nominate ${s} when you want information. Watch who panics, who campaigns and who looks pleased.`,
+      ({ s }) => `I would stop reassuring ${s}. A nervous nominee burns more relationships than a calm one.`,
+      ({ s }) => `The move is cowardly. Cowardly moves work all the time; people just hate admitting it.`,
+    ],
+    betrayal: [
+      ({ s }) => `${s} trusted a promise more than the person making it. That is not loyalty; that is lazy risk assessment.`,
+      ({ s }) => `The betrayal is good. The apology is where they got greedy and tried to keep the jury vote too.`,
+      ({ s }) => `If you cut ${s}, look at ${s} and own it. Shame is only useful to the person you just betrayed.`,
+      ({ s }) => `${s} can be angry. The move still worked, and anger does not reverse a vote.`,
+    ],
+  },
+  'challenge-beast': {
+    eviction: [
+      ({ s, w }) => `${s} could have won one more ${w.challenge} and delayed this. That is not the same as having a path out.`,
+      ({ s }) => `People blame the last loss because it is visible. ${s} lost the room long before losing anything physical.`,
+      ({ s }) => `${s} kept waiting for a win to repair relationships. A win gives safety, not affection.`,
+      ({ s }) => `The strongest player leaving is not automatically a big move. Sometimes the obvious move is obvious because it is right.`,
+      ({ s }) => `${s} performed under pressure all season. The problem was needing to perform every single time.`,
+      ({ s }) => `That is what happens when your résumé becomes everybody else's reason to agree.`,
+    ],
+    nomination: [
+      ({ s, w }) => `Putting ${s} there only works if you can beat them in the next ${w.challenge}. Now you have made sure they know they need it.`,
+      ({ s }) => `${s} looks calm. Competitors love a problem with rules; the social part after the win is where this gets messy.`,
+      ({ s }) => `If the plan is to scare ${s}, congratulations. If the plan is to weaken them, this may do the opposite.`,
+      ({ s }) => `${s} has one clear job now while everybody else has six conversations to manage. I prefer the clear job.`,
+      ({ s }) => `The seat gives ${s} urgency and takes away any reason to hide. That can be a terrible trade.`,
+      ({ s }) => `Do not nominate a strong player for theatre. Either finish the move or leave them sleeping.`,
+    ],
+    'comp-win': [
+      ({ s, w }) => `${s} was behind early and never rushed. That is not luck; that is knowing the ${w.challenge} better than the people beside you.`,
+      ({ s }) => `The recovery was the impressive part. Anybody looks composed before the first mistake.`,
+      ({ s }) => `${s} won safety and advertised the exact skill set everybody has to remove. Fair trade tonight, expensive tomorrow.`,
+      ({ s }) => `People will say that looked easy. It looked easy because ${s} did the ugly part correctly.`,
+      ({ s }) => `That is a pressure win. I care about those more than padding a résumé while already safe.`,
+      ({ s }) => `${s} should celebrate for ten minutes and spend the rest of the night making the win feel less threatening.`,
+    ],
+  },
+  goat: {
+    eviction: [
+      ({ s }) => `${s} learned too late that being included in every plan can mean nobody considers you part of one.`,
+      ({ s }) => `The easy person to sit beside hears a lot. ${s} heard everything except how the room valued ${s}.`,
+      ({ s }) => `People kept ${s} comfortable because comfort was the only thing they needed from that relationship.`,
+      ({ s }) => `${s} was not betrayed by an alliance. ${s} was released by people who never expected resistance.`,
+      ({ s }) => `Low threat is useful until the room decides it no longer needs another available number.`,
+      ({ s }) => `${s} had access and mistook it for influence. Those feel identical right up to the vote.`,
+    ],
+    nomination: [
+      ({ s }) => `Calling ${s} a pawn tells you exactly how little the decision-maker thinks ${s} can change the week. I would take that personally.`,
+      ({ s }) => `${s} is being used because everybody expects gratitude for surviving. That expectation can be weaponised.`,
+      ({ s }) => `The room will talk freely around ${s} now. The question is whether ${s} finally uses what people volunteer.`,
+      ({ s }) => `A supposedly safe nominee has one advantage: nobody hides how disposable they think you are.`,
+      ({ s }) => `${s} does not need to look powerful. ${s} needs two people to realise this could be their chair next.`,
+      ({ s }) => `Being underestimated is only strategy if ${s} eventually does something with the information.`,
+    ],
+    finale: [
+      ({ s }) => `${s} cannot win by pretending the easy-opponent label never existed. Explain why the people using it were wrong.`,
+      ({ s }) => `The jury already knows why somebody brought ${s}. It is waiting to hear what ${s} did with being underestimated.`,
+      ({ s }) => `Surviving is part of a case, not the whole case. ${s} needs to name the moment survival became agency.`,
+      ({ s }) => `If ${s} says “social game,” somebody on that jury will ask which vote changed because of it. Have the answer ready.`,
+    ],
+  },
 };
+
+/** Put a real résumé fact into speech without turning it into “so hear me out.” */
+function withCredential(line, fact, rng) {
+  return pick([
+    () => `${line} I ${fact}; that is the part I recognise.`,
+    () => `Having ${fact}, I keep coming back to this: ${line}`,
+    () => `${line} Maybe I notice it because I ${fact}.`,
+    () => `I ${fact}. What stayed with me was this: ${line}`,
+    () => `${line} I learned that after I ${fact}.`,
+    () => `This may be my own history talking—I ${fact}—but ${line}`,
+  ], rng)();
+}
 
 /**
  * What a host says about one moment.
@@ -199,7 +251,7 @@ const TAKES = {
     ({ s }) => `Putting ${s} up is the safe read. Safe reads are how you get to fifth.`,
     ({ s }) => `${s} on the block is not the story. Who is not on it is the story.`,
     ({ s, w }) => `That nomination speech told the whole ${w.home} more than it told ${s}.`,
-    ({ s }) => `If ${s} survives this the whole season reshuffles, and I think ${s} survives it.`,
+    ({ s }) => `I think ${s} stays. And when that happens, everybody who promised this was a harmless nomination gets to explain why they volunteered ${s}'s name.`,
     ({ s }) => `This is a warning shot presented as a plan. ${s} should treat it as both.`,
     ({ s }) => `The nomination is safe because the decision-maker is scared of the conversation the real move requires.`,
     ({ s }) => `${s} is being told pawn. The room is hearing permission.`,
@@ -208,13 +260,13 @@ const TAKES = {
     ({ s }) => `${s} was nominated for being expendable. Surviving is how you make that assessment expensive.`,
     ({ s, w }) => `The ${w.home} did not react to ${s}. It reacted to the second name, and that is where the plan is.`,
     ({ s }) => `A pawn who knows they are a pawn is manageable. ${s} knows this is somebody else's rehearsal.`,
-    ({ s }) => `That choice keeps the peace for one night and starts three private wars by breakfast.`,
-    ({ s }) => `${s} needs to stop proving loyalty to people who just tested it without permission.`,
+    ({ s }) => `Nobody fought the nomination because nobody wanted to be the first person caught caring. Give it until breakfast. They will all care very loudly in private.`,
+    ({ s }) => `${s} keeps treating loyalty like homework. These people put you on the block, watched you say thank you, and learned they can do it again.`,
     ({ s }) => `The safest nomination is often the person whose revenge everybody has underestimated.`,
     ({ s }) => `Nobody looked surprised, which means this was agreed before the meeting we watched.`,
     ({ s }) => `${s} is not the target today. The block has a way of editing that sentence overnight.`,
     ({ s }) => `This nomination tells ${s} they are outside. What ${s} does with that information decides the season.`,
-    ({ s }) => `The speech said trust. The seat said hierarchy. Believe the seat.`,
+    ({ s }) => `That speech was basically, “I trust you enough to risk your game instead of mine.” If ${s} accepts that as a compliment, nominate them again next week.`,
     ({ s }) => `If the plan needs ${s} calm, putting them up was a spectacular way to lose the first requirement.`,
   ],
   'veto-used': [
@@ -384,12 +436,36 @@ const GENERIC_TAKES = [
 /** What a member says under a host's message. Members react; they do not analyse. */
 const COMMENTS = [
   'this is the only take i trust', 'ok but you would say that',
-  'screaming. you called it before it aired', 'respectfully no',
+  'wait you actually called it before the episode', 'respectfully no',
   'i have watched this three times and you are right',
   'nobody asked but go off', 'this is why you are still my favourite',
   'genuinely never thought of it that way', 'the way this aged in ten minutes',
   'not you calling it a decision', 'ok legend', 'hard disagree and i will not explain',
   'saying what we were all thinking', 'this comment section is not ready',
+  'wait because that is exactly what bothered me',
+  'you skipped one tiny detail and it changes everything',
+  'the confidence is almost convincing',
+  'bookmarking this for when it goes terribly wrong',
+  'no because now i need to rewatch the whole conversation',
+  'you make a strong point against your own argument',
+  'the silence from everyone else is LOUD',
+  'i disagree but unfortunately this is funny',
+  'this room loves hindsight dressed as prophecy',
+  'oh you came in here ready to fight tonight',
+  'somebody check on the group chat after this',
+  'that last sentence was unnecessarily lethal',
+  'finally somebody noticed the seating order',
+  'i know one former castmate just muted this room',
+  'this is either brilliant or cursed. no middle ground',
+  'please name the three private wars',
+  'the episode gave you evidence and you chose violence',
+  'i was with you until the last five words',
+  'put this take back in the oven',
+  'not the alumni revisionist history starting already',
+  'you can tell who is still holding a grudge in here',
+  'the producers could never air the real version of this take',
+  'okay now say who benefits',
+  'this feels personal because it absolutely is',
 ];
 
 /**
@@ -411,7 +487,6 @@ export function buildChatMessages(events, speakers, {
   // one still has the whole pool available.
   const usedByKind = new Map();
   const usedCreds = new Set();
-  const usedFramesByLens = new Map();
 
   // The loudest moments get covered; a room does not discuss every nomination.
   const worth = events.filter(e => e.kind !== 'episode-aired' || events.length === 1);
@@ -427,23 +502,21 @@ export function buildChatMessages(events, speakers, {
       speakers[(start + i) % speakers.length]);
     for (const host of speaking) {
       const subject = ev.subject ? titleCase(ev.subject) : '';
-      const pool = TAKES[ev.kind] || GENERIC_TAKES;
-      if (!usedByKind.has(ev.kind)) usedByKind.set(ev.kind, new Set());
-      const line = pickFresh(pool, rng, usedByKind.get(ev.kind))
+      const lens = hostLens(host);
+      const lensPool = LENS_TAKES[lens]?.[ev.kind] || [];
+      const useLens = lensPool.length > 0 && rng() < 0.58;
+      const pool = useLens ? lensPool : (TAKES[ev.kind] || GENERIC_TAKES);
+      const poolKey = `${ev.kind}:${useLens ? lens : 'general'}`;
+      if (!usedByKind.has(poolKey)) usedByKind.set(poolKey, new Set());
+      let line = pickFresh(pool, rng, usedByKind.get(poolKey))
         ({ s: subject, w, k: eventLabel(ev.kind, format) });
 
-      // The same event sounds different from somebody who won through comps,
-      // somebody who reached the end as the easy opponent, or somebody whose
-      // canonical voice is openly villainous. Frames are seeded and fresh too.
-      const lens = hostLens(host);
-      if (!usedFramesByLens.has(lens)) usedFramesByLens.set(lens, new Set());
-      const frame = rng() < 0.68
-        ? pickFresh(LENS_FRAMES[lens], rng, usedFramesByLens.get(lens)) : '';
-
-      // Roughly a third of messages lead with the credential that earns them.
+      // Records should sharpen an occasional opinion, not introduce every post
+      // like an alumni panelist reading their own biography.
       const creds = credential(host, w);
-      const lead = creds.length && rng() < 0.34
-        ? `${pickFresh(creds, rng, usedCreds)}, so hear me out. ` : '';
+      if (creds.length && rng() < 0.14) {
+        line = withCredential(line, pickFresh(creds, rng, usedCreds), rng);
+      }
 
       out.push({
         id: `c-${season}-${episode}-${String(n++).padStart(4, '0')}`,
@@ -459,7 +532,7 @@ export function buildChatMessages(events, speakers, {
         subject: ev.subject || null,
         eventLabel: eventLabel(ev.kind, format),
         lens,
-        text: lead + frame + line,
+        text: line,
         at: Math.max(0, ev.at + Math.round((rng() - 0.3) * 4 * 60 * 1000)),
         likes: 40 + Math.floor(rng() * 400) + host.stars * 60,
         comments: [],
@@ -472,13 +545,14 @@ export function buildChatMessages(events, speakers, {
 
   // Members answer underneath. Two previews is what the room shows; the count is
   // the real number, so "42 comments" is not decoration.
+  const usedComments = new Set();
   for (const m of out) {
     const count = 2 + Math.floor(rng() * 60);
     m.commentCount = count;
     m.comments = Array.from({ length: Math.min(2, count) }, (_, i) => ({
       id: `${m.id}-c${i}`,
       author: `member${1 + Math.floor(rng() * 900)}`,
-      text: pick(COMMENTS, rng),
+      text: pickFresh(COMMENTS, rng, usedComments),
     }));
     // A host answering back is the room's highest signal, so it is rare.
     m.hostReplied = rng() < 0.22;

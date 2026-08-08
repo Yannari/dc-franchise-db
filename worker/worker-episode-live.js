@@ -3047,11 +3047,12 @@ THE ONLY HISTORY THAT EXISTS
 ${receipts || '  (none — do not refer to anything that happened before tonight)'}
 
 RULES
-  1. Only these people exist: ${(packet.cast || []).map(displayName).join(', ')}. \
+  1. Only these people exist: ${(packet.cast || []).map(socialName).join(', ')}. \
 Naming anybody else is rejected.
   2. Only the weeks listed above exist. Naming any other week is rejected.
   3. ${packet.requireCite
-    ? 'Each post must be ABOUT one of the receipts above, and you must return which one you used.'
+    ? 'Some posts should be ABOUT one of the receipts above — when one is, return which. '
+      + 'Others are pure reaction and cite nothing, which is normal and correct.'
     : 'There is no history to draw on. React only to what just happened.'}
   4. Never invent a conversation, a promise, a vote or a week that is not listed.
   5. Maximum ${packet.maxLength} characters.${scream ? ' Maximum 45 — these are screams, not sentences.' : ''}
@@ -3114,10 +3115,12 @@ async function socialCrowd(packet, env) {
 /** The subset of the client's rules that can be checked without its imports. */
 function socialLocalCheck(post, packet) {
   const ids = new Set((packet.receipts || []).map(r => r.id));
-  if (packet.requireCite) {
-    if (!post.cites.length) return false;
-    if (post.cites.some(c => !ids.has(c))) return false;
-  }
+  // A citation naming an id nothing supplied always fails. Requiring EVERY
+  // post to carry one does not: most of a timeline asserts no history, and
+  // demanding a footnote for "logan did not deserve this" returned a crowd of
+  // nought on the first live batch.
+  if (post.cites.some(c => !ids.has(c))) return false;
+  if (packet.strictCite && !post.cites.length) return false;
   if (post.text.length > (packet.maxLength || 280)) return false;
   if (packet.register === 'scream' && post.text.length > 45) return false;
   if (/\{[a-z_]+\}/i.test(post.text)) return false;

@@ -36,15 +36,24 @@ import { acceptPosts } from './validator.js';
  * redeploying a worker that is already deployed. Never prompts: a feed that
  * stops a season to ask for a URL is worse than a feed written from templates.
  */
+export const SOCIAL_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev';
+
 export function writerEndpoint(config = {}) {
   if (config.socialWriterUrl) return config.socialWriterUrl;
   if (typeof globalThis !== 'undefined' && globalThis.SOCIAL_WRITER_URL) {
     return globalThis.SOCIAL_WRITER_URL;
   }
   try {
-    return (typeof localStorage !== 'undefined'
-      && localStorage.getItem('SEASON_BUILDER_WORKER_URL')) || null;
-  } catch { return null; }
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem('SOCIAL_WRITER_URL');
+      if (saved) return saved;
+    }
+  } catch { /* no storage, use the default */ }
+  // dc-analytics, which is where `mode: "social"` lives. NOT the Season
+  // Builder: that is a different worker with a different script, and pointing
+  // at it fell through to its default branch and returned analytics — no
+  // error, no posts, and templates forever with nothing to explain why.
+  return SOCIAL_WORKER_URL;
 }
 
 /**

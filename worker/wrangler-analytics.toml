@@ -1,0 +1,15 @@
+# The episode / analytics worker — dc-analytics.
+#
+# Its own config rather than the one beside it, because wrangler.toml belongs to
+# dc-studio and carries that worker's D1 binding and GitHub vars. Deploying this
+# script with `--name` alone would still read those and attach a database this
+# worker has no use for.
+#
+# Deploy:
+#   cd worker && wrangler deploy --config wrangler-analytics.toml
+#
+# Secrets (already set; listed so the next person knows what it needs):
+#   wrangler secret put ANTHROPIC_API_KEY --config wrangler-analytics.toml
+name = "dc-analytics"
+main = "worker-episode-live.js"
+compatibility_date = "2024-11-01"

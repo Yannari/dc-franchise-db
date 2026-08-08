@@ -688,6 +688,16 @@ window.addEventListener('DOMContentLoaded', () => {
         FRANCHISE_ROSTER = base;
         console.log(`Roster loaded from JSON: ${base.length} players`);
       }
+      // Anything already drawn from the roster is now out of date.
+      //
+      // js/cast-ui.js carries a hardcoded copy of the roster — 104 characters,
+      // frozen whenever it was last pasted in — as the no-JS fallback for this
+      // fetch. Open the Casting Studio in the second before the fetch lands and
+      // it renders that copy and never looks again, so the 78 characters added
+      // since were simply absent, with nothing on screen saying so. It reads
+      // exactly like "new characters do not appear in the Studio", which is how
+      // it was reported.
+      try { window.renderStudio?.(); } catch { /* the roster is loaded either way */ }
     })
     .catch(() => {}); // silent fallback to localStorage / embedded copy
 });

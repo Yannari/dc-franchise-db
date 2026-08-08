@@ -2990,9 +2990,31 @@ export async function syncLiveEpisode(onStatus) {
 
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const r = await fetch(base + '/api/live-season', { method: 'POST', headers, body: JSON.stringify(snap) });
-  const j = await r.json().catch(() => null);
-  if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
+  const post = body => fetch(base + '/api/live-season',
+    { method: 'POST', headers, body: JSON.stringify(body) }).then(async res => ({
+      ok: res.ok, json: await res.json().catch(() => null), status: res.status,
+    }));
+
+  let { ok, json: j, status } = await post(snap);
+
+  /* The worker refuses to put a FINISHED season back on the site as airing —
+     the two facts contradict each other and the page can only show one. That is
+     right, and it happens for a real reason: replaying a season you mean to
+     publish over. So the refusal is a question here rather than a dead end,
+     because telling somebody to "sync again with force" from a status line they
+     cannot act on is not an answer. */
+  if (!ok && /already published as a finished season/i.test(j?.error || '')) {
+    const again = confirm(`${j.error}
+
+Put it back on the site as airing anyway?`);
+    if (!again) {
+      _status('Left alone — the finished season stays finished.');
+      return { ok: true, skipped: true };
+    }
+    ({ ok, json: j, status } = await post({ ...snap, force: true }));
+  }
+
+  if (!ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${status}`);
 
   // The feed is written after the standings and can fail on its own — say so
   // rather than reporting a clean sync that half happened.

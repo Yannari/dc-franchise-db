@@ -830,6 +830,35 @@ async function liveSeasonPut(env, payload = {}) {
   if (!players.length) throw new ValidationError('no players in the snapshot — refusing to publish an empty season');
 
   const d = db(env);
+
+  /* A FINISHED SEASON CANNOT BE AIRING.
+     The live overlay exists for a season that is not yet in the permanent
+     history. Total Drama 14 has been published for weeks and kept coming back
+     to the site announcing "airing — episode 26, 2 of 18 still in", because
+     pressing Sync with that season still loaded in the simulator re-published
+     the overlay every time. Clearing it by hand fixed the symptom for exactly
+     as long as it took to press the button again.
+
+     Refused rather than warned, because the two facts contradict each other and
+     the site can only show one. `force` is there for the real case this blocks:
+     replaying a season you intend to publish over. */
+  // Inlined rather than borrowing the helper further down: that one is a local
+  // inside another function, and reaching for it here would be a scope bug that
+  // only fires on this path.
+  const fmt = SHOWS[payload.format] ? payload.format : DEFAULT_FORMAT;
+  if (!payload.force) {
+    const done = await d.prepare(
+      'SELECT title FROM seasons WHERE format = ? AND season_number = ?'
+    ).bind(fmt, season).first().catch(() => null);
+    if (done) {
+      throw new ValidationError(
+        `${SHOWS[fmt]?.name || fmt} ${season} is already published as a finished season`
+        + (done.title ? ` ("${done.title}")` : '')
+        + '. A finished season cannot also be airing — the site would show it both ways. '
+        + 'If you are replaying it, sync again with force to overlay it anyway.');
+    }
+  }
+
   const stmts = [
     d.prepare('DELETE FROM live_season'),
     d.prepare(

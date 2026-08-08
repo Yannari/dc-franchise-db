@@ -43,6 +43,10 @@ import { COIN_EVENTS } from './coin-of-destiny.js';
 import { CARE_PACKAGE_EVENTS } from './care-package.js';
 import { SAFETY_SUITE_EVENTS } from './safety-suite.js';
 import { PUNISHMENT_EVENTS } from './punishments.js';
+// The pairs who knew each other before the door. Only the Twin Twist and
+// Rivals ever read the kinship axis; outside them a declared estrangement or
+// marriage was two people with a number between them.
+import { KINSHIP_EVENTS } from './kinship.js';
 import { POWER_KNOWLEDGE_EVENTS } from './power-knowledge.js';
 import { PRIZE_EXCHANGE_EVENTS } from './prize-exchange.js';
 import { CAMP_EVENTS } from './camp-comeback.js';
@@ -86,6 +90,7 @@ export const HOUSE_EVENTS = [
   ...CARE_PACKAGE_EVENTS,
   ...SAFETY_SUITE_EVENTS,
   ...PUNISHMENT_EVENTS,
+  ...KINSHIP_EVENTS,
   ...POWER_KNOWLEDGE_EVENTS,
   ...PRIZE_EXCHANGE_EVENTS,
   ...CAMP_EVENTS,

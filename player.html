@@ -407,7 +407,25 @@ if (!playerId) {
     // Fetch season data files for any season missing keyMoments
     const seasonFetches = (player.seasonDetails || []).map(sd => {
       if (sd.keyMoments && sd.keyMoments.length) return Promise.resolve(null);
-      return fetch('data/seasons/season' + sd.season + '-data.json')
+      // The season NUMBER stopped identifying a season when the second show
+      // arrived, so building the path from it alone would fetch Total Drama's
+      // episode log for a Big Brother season and pull its key moments and story
+      // onto the wrong season of somebody's career.
+      //
+      // Not firing yet, and only by luck of two conditions that are both
+      // temporary: every season detail currently has keyMoments, so the guard
+      // above skips the fetch entirely, and no player yet holds the same season
+      // number in both shows. A season exported without narratives has no
+      // keyMoments — which is what the first Big Brother export produced — and
+      // Big Brother 2 collides with Total Drama 2.
+      //
+      // Total Drama keeps the bare filename its fourteen files already use;
+      // every other show is namespaced by seasonId, exactly as the publish path
+      // writes them.
+      const file = (!sd.format || sd.format === 'total-drama')
+        ? 'season' + sd.season + '-data.json'
+        : (sd.seasonId || sd.format + '-' + sd.season) + '-data.json';
+      return fetch('data/seasons/' + file)
         .then(r => r.ok ? r.json() : null)
         .then(sData => {
           if (!sData || !sData.placements) return;

@@ -19,7 +19,7 @@
 //      that reads as a broken page.
 import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './shows.js';
 import { words, eventLabel, contextLabel, pollQuestions } from './social/adapter.js';
-import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crowdFromRankings }
+import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crowdFromRankings, stillIn }
   from './social/archive.js';
 import { eligibleHosts, seasonPanel, episodeSpeakers, fameTerm } from './social/hosts.js';
 import { buildChatMessages } from './social/chat.js';
@@ -183,7 +183,11 @@ async function loadEpisode() {
     airingCast: airingCast(S.doc),
   });
   S.panel = seasonPanel(S.hosts, { format });
-  S.speakers = episodeSpeakers(S.panel, S.feed.events, { players: S.db.players });
+  // `episode` rotates the seats: without it the same four hosts covered every
+  // night of the season while the other eight sat on a list.
+  S.speakers = episodeSpeakers(S.panel, S.feed.events, {
+    players: S.db.players, episode: S.episode || 0,
+  });
   S.messages = buildChatMessages(S.feed.events, S.speakers, {
     format, season, episode: S.episode || 0, seed: (season * 977) + (S.episode || 0),
     // The room's members. The sampler has been writing them all along, in this
@@ -669,25 +673,74 @@ function renderHosts() {
       ? `<button class="loadmore" type="button" id="loadmore">Show more alumni (${S.hosts.length - S.shown} more)</button>` : ''}`;
 }
 
+/**
+ * What the room thinks is going to happen.
+ *
+ * ── it was the same four bars every week, and it was the answer ──
+ *
+ * The names came from `placements.slice(0, 6)` — PLACEMENT ORDER — so the first
+ * name under "who goes home tonight?" was the season's winner, in episode two,
+ * at a hardcoded 42%. Every question, every episode, every season: 42, 27, 19,
+ * 12, in finishing order. It did not predict anything and it spoiled
+ * everything.
+ *
+ * It is computed now, from the two things this page already has and already
+ * trusts elsewhere: who is still playing on this night, and how the audience
+ * feels about them. `audiencePulse` is the same reader the Pulse rail uses, so
+ * a name the room is turning on shows up here as a name the room expects to
+ * go — which is what a prediction market actually is.
+ */
+function predictionRows(question) {
+  const inPlay = stillIn(S.doc, S.format, S.episode);
+  if (!inPlay.length) return [];
+
+  const pulse = audiencePulse(visible());
+  const feeling = new Map(pulse.all.map(e => [e.subject, e]));
+  const crowd = crowdFromRankings(S.db.rankings);
+
+  // Each question reads the same feelings from a different end. Being talked
+  // about badly makes you a boot pick and a bad winner pick, and the same
+  // number cannot do both jobs unsigned.
+  const negative = question === 'boot' || question === 'evicted';
+  const scored = inPlay.map(p => {
+    const e = feeling.get(p.slug);
+    const talked = e ? e.posts : 0;
+    const warmth = e ? e.sentiment : 0;
+    const standing = (Number(crowd[p.slug]) || 50) / 50;
+    // Volume is what makes somebody a candidate at all — nobody predicts a boot
+    // for a player the room has not mentioned. Direction decides which way.
+    const heat = 1 + talked * 0.6;
+    const lean = negative ? -warmth : warmth;
+    return { ...p, weight: Math.max(0.4, heat * standing + lean * 0.02) };
+  }).sort((a, b) => b.weight - a.weight).slice(0, 4);
+
+  const total = scored.reduce((n, p) => n + p.weight, 0) || 1;
+  // Rounded to whole points, with the remainder given to the leader, so the
+  // column adds to 100 rather than to 99 or 101.
+  const rows = scored.map(p => ({ ...p, pct: Math.floor(p.weight / total * 100) }));
+  const short = 100 - rows.reduce((n, r) => n + r.pct, 0);
+  if (rows[0]) rows[0].pct += short;
+  return rows;
+}
+
 function renderPredictions() {
   const preseason = !S.doc;
   const qs = pollQuestions(S.format, { preseason });
-  const cast = (S.doc?.placements || []).slice(0, 6).map(p => p.name);
   return `
     <p class="divider">Predictions</p>
-    ${qs.map(q => `
+    ${qs.map(q => {
+    const rows = predictionRows(q.id);
+    return `
       <div style="padding:16px 20px;border-bottom:1px solid var(--linec)">
         <p style="font-size:17px;margin:0 0 10px">${esc(q.text)}</p>
-        ${cast.length ? cast.slice(0, 4).map((name, i) => {
-          const pct = [42, 27, 19, 12][i];
-          return `<div style="display:flex;gap:10px;align-items:center;margin:6px 0;font-family:system-ui,sans-serif;font-size:14px">
-            <span style="flex:1">${esc(name)}</span>
+        ${rows.length ? rows.map(r => `<div style="display:flex;gap:10px;align-items:center;margin:6px 0;font-family:system-ui,sans-serif;font-size:14px">
+            <span style="flex:1">${esc(r.name)}</span>
             <span style="width:120px;height:8px;background:rgba(0,0,0,.1);border-radius:4px;overflow:hidden">
-              <span style="display:block;height:100%;width:${pct}%;background:var(--bottle)"></span></span>
-            <span style="width:38px;text-align:right;font-variant-numeric:tabular-nums">${pct}%</span>
-          </div>`;
-        }).join('') : '<p style="opacity:.7">Opens when a cast is announced.</p>'}
-      </div>`).join('')}
+              <span style="display:block;height:100%;width:${r.pct}%;background:var(--bottle)"></span></span>
+            <span style="width:38px;text-align:right;font-variant-numeric:tabular-nums">${r.pct}%</span>
+          </div>`).join('') : '<p style="opacity:.7">Opens when a cast is announced.</p>'}
+      </div>`;
+  }).join('')}
     <p style="padding:14px 20px;font-size:13px;opacity:.7;font-family:system-ui,sans-serif">
       Simulated audience. These totals are generated from the season's own records —
       they are not votes cast by visitors, and real votes would be shown separately.</p>`;

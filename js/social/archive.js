@@ -275,6 +275,41 @@ export function episodeFeed({ doc, stored = [], format, season, episode, popular
 }
 
 /**
+ * Who is still in the game on a given night.
+ *
+ * The predictions panel was offering `placements.slice(0, 6)` — placement
+ * order — so the first name on "who goes home tonight?" was the WINNER, every
+ * week, at 42%. A prediction panel that lists the finishing order is not a
+ * prediction, it is the answer, and it was showing it in episode two.
+ *
+ * Elimination dates come from the ballots, which are the only record of WHEN
+ * somebody left. Anybody a ballot has not sent home yet is still playing.
+ */
+export function stillIn(doc, format, episode) {
+  const cast = (doc?.placements || []).map(p => ({
+    name: p.name, slug: p.playerSlug || _slugOf(p.name), placement: Number(p.placement) || 99,
+  })).filter(p => p.name);
+  if (!cast.length) return [];
+
+  const ep = Number(episode) || 0;
+  const gone = new Set();
+  for (const v of doc?.votingHistory || []) {
+    const when = Number(v?.episode) || 0;
+    const who = v?.eliminatedSlug || v?.eliminated;
+    if (who && when && when <= ep) gone.add(String(who).toLowerCase());
+  }
+  const left = cast.filter(p =>
+    !gone.has(p.slug.toLowerCase()) && !gone.has(p.name.toLowerCase()));
+
+  // A season with no ballots tells us nothing about who is out, and guessing
+  // from placement would leak the result. Better to offer the whole cast than
+  // an ordered one.
+  return left.length ? left : cast;
+}
+
+const _slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+/**
  * How the fandom feels about people, for a season that finished years ago.
  *
  * A played season carries `gs.popularity` — the running audience score the

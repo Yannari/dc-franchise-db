@@ -151,7 +151,7 @@ const KIND_EXPERTISE = {
  * is noise, and the room is meant to read like people who know each other.
  */
 export function episodeSpeakers(panel, events, {
-  players = null, max = 7, min = 4,
+  players = null, max = 7, min = 4, episode = 0,
 } = {}) {
   const kinds = new Set((events || []).map(e => e.kind));
   const subjects = new Set((events || []).map(e => e.subject).filter(Boolean));
@@ -179,5 +179,23 @@ export function episodeSpeakers(panel, events, {
     };
   }).sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name));
 
-  return scored.slice(0, Math.max(min, Math.min(max, scored.length)));
+  const take = Math.max(min, Math.min(max, scored.length));
+
+  // ── the same four people covered every night ──
+  //
+  // Relevance is deterministic and the panel does not change during a season,
+  // so `slice(0, take)` returned the same names in the same order for
+  // twenty-six episodes. Fame picked twelve hosts and then arithmetic quietly
+  // let four of them speak.
+  //
+  // The most relevant few still lead — somebody who shared a season with
+  // tonight's subject should be in the room — but the rest of the seats rotate
+  // through the panel by episode, so a twelve-host panel is twelve hosts across
+  // a season instead of a headline act and nine names on a list.
+  const anchors = Math.min(2, take);
+  const rest = scored.slice(anchors);
+  if (!rest.length) return scored.slice(0, take);
+  const start = (Math.abs(Math.trunc(Number(episode) || 0)) * 3) % rest.length;
+  const rotated = Array.from({ length: rest.length }, (_, i) => rest[(start + i) % rest.length]);
+  return [...scored.slice(0, anchors), ...rotated].slice(0, take);
 }

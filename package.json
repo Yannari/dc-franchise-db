@@ -14,6 +14,7 @@
     "audit:season": "vitest run --config vitest.audit.config.js tests/full-season-audit.test.js --reporter=verbose",
     "audit:continuity": "vitest run --config vitest.audit.config.js tests/season-continuity-audit.test.js --reporter=verbose",
     "audit:events": "vitest run --config vitest.audit.config.js tests/event-rates-audit.test.js --reporter=verbose",
+    "audit:social": "vitest run --config vitest.audit.config.js tests/social-repetition-audit.test.js --reporter=verbose",
     "audit:all": "vitest run --config vitest.audit.config.js --reporter=verbose",
     "test:e2e": "playwright test",
     "test:all": "vitest run && playwright test"

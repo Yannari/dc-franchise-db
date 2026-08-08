@@ -42,7 +42,8 @@
 // Binding (wrangler.toml [[d1_databases]]): DB -> the "dc-franchise" D1 database.
 
 import { SHOWS, formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
-import { leaderboardQuery, castmatesQuery, bondsQuery } from './queries.js';
+import { leaderboardQuery, castmatesQuery, bondsQuery,
+         socialDeleteSeasonQuery, socialInsertQuery, socialSelectQuery } from './queries.js';
 
 const ROSTER_PATH = 'franchise_roster.json';
 const VOICE_PATH = 'voice-profiles.json';
@@ -59,7 +60,8 @@ export default {
     // origin (including localhost during development). The studio write
     // endpoint keeps the strict ALLOWED_ORIGIN check.
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
-                          '/api/roster', '/api/roster/status', '/api/live-season'];
+                          '/api/roster', '/api/roster/status', '/api/live-season',
+                          '/api/social'];
     const isPublicRead = PUBLIC_READS.includes(url.pathname);
     const rcors = isPublicRead ? { ...cors, 'Access-Control-Allow-Origin': '*' } : cors;
 
@@ -110,6 +112,11 @@ export default {
         // Short cache: this changes only when you press sync, but a popular
         // page shouldn't hit D1 on every visit.
         return json(await liveSeasonGet(env), 200, rcors, 30);
+      }
+      if (request.method === 'GET' && url.pathname === '/api/social') {
+        // The feed page polls this while a season airs, so it is cached for the
+        // same short window as the standings it accompanies.
+        return json(await socialGet(env, url), 200, rcors, 30);
       }
       if (request.method === 'POST' && url.pathname.startsWith('/api/live-season')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
@@ -827,8 +834,18 @@ async function liveSeasonPut(env, payload = {}) {
       asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0));
   }
 
+  // The feed rides along with the standings so one press of sync puts the whole
+  // night on the site. It is optional: a season synced by an older simulator, or
+  // one with the feed switched off, still publishes its standings.
+  const social = socialStatements(d, payload.social);
+  stmts.push(...social);
+
   await runChunked(d, stmts);
-  return { ok: true, seasonNumber: season, episode: asInt(payload.episode), players: players.length };
+  return {
+    ok: true, seasonNumber: season, episode: asInt(payload.episode),
+    players: players.length,
+    posts: social.length ? social.length - 1 : 0,   // less the DELETE
+  };
 }
 
 async function liveSeasonClear(env) {
@@ -836,8 +853,68 @@ async function liveSeasonClear(env) {
   await d.batch([
     d.prepare('DELETE FROM live_season'),
     d.prepare('DELETE FROM live_meta'),
+    // The feed belongs to the airing season. Leaving it behind would have the
+    // site showing an audience arguing about a season that is no longer on.
+    d.prepare('DELETE FROM social_posts'),
   ]);
   return { ok: true, cleared: true };
+}
+
+/**
+ * The airing season's social feed, replaced whole.
+ *
+ * Written as delete-then-insert for the season rather than upserted row by row:
+ * the simulator rebuilds an episode's posts when it is replayed, so a merge
+ * would leave the reactions to the night that was replaced sitting alongside the
+ * new ones. Same reason the store in the simulator replaces rather than appends.
+ *
+ * Engagement counters come from the simulator, which owns them — a post ratioed
+ * in the simulator arrives here already ratioed.
+ */
+function socialStatements(d, payload) {
+  const posts = Array.isArray(payload?.posts) ? payload.posts : [];
+  if (!posts.length) return [];
+
+  const format = String(payload.format || 'total-drama');
+  const season = asInt(payload.season);
+  const stmts = [d.prepare(socialDeleteSeasonQuery()).bind(format, season)];
+
+  for (const p of posts) {
+    if (!p || !p.id || !p.text) continue;
+    stmts.push(d.prepare(socialInsertQuery()
+    ).bind(String(p.id), format, season, asInt(p.episode), String(p.stream || 'timeline'),
+      p.handle || null, p.name || null, p.topic || null, p.kind || null, p.subject || null,
+      String(p.text), asInt(p.at) || 0, p.replyTo || null,
+      asInt(p.likes) || 0, asInt(p.tomatoes) || 0));
+  }
+  return stmts;
+}
+
+/**
+ * The feed for one episode, or for the whole airing season.
+ *
+ * Ordered by arrival, because that is how the page replays it: a reaction to the
+ * vote must not appear before the vote.
+ */
+async function socialGet(env, url) {
+  const d = db(env);
+  const format = url.searchParams.get('format') || 'total-drama';
+  const season = asInt(url.searchParams.get('season'));
+  const episode = asInt(url.searchParams.get('episode'));
+  if (!season) throw new ValidationError('season is required');
+
+  const sql = socialSelectQuery({ episode: !!episode });
+  const bindings = episode ? [format, season, episode] : [format, season];
+  const res = await d.prepare(sql).bind(...bindings).all();
+
+  return {
+    ok: true, format, season, episode: episode || null,
+    posts: (res.results || []).map(r => ({
+      id: r.id, episode: r.episode, stream: r.stream, handle: r.handle, name: r.author,
+      topic: r.topic, kind: r.kind, subject: r.subject, text: r.body,
+      at: r.at_ms, replyTo: r.reply_to, likes: r.likes, tomatoes: r.tomatoes,
+    })),
+  };
 }
 
 /**

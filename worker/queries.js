@@ -82,3 +82,47 @@ export function bondsQuery() {
           WHERE b.player_id = ?1 OR b.ally_id = ?1
           ORDER BY b.format, b.season_number`;
 }
+
+// ── the airing season's social feed ──────────────────────────────────────
+
+/**
+ * Replace one season's feed.
+ *
+ * Scoped by (format, season) rather than a bare DELETE: two shows can be airing
+ * at once, and clearing the whole table to publish one of them would take the
+ * other's feed down with it.
+ *
+ * Binds: format, seasonNumber
+ */
+export function socialDeleteSeasonQuery() {
+  return 'DELETE FROM social_posts WHERE format = ? AND season_number = ?';
+}
+
+/**
+ * One post.
+ *
+ * Column order is the bind order — the fifteen values in socialStatements line
+ * up with this list and nothing else checks that they do, which is exactly why
+ * the string lives here where a test can run it.
+ */
+export function socialInsertQuery() {
+  return `INSERT INTO social_posts (id,format,season_number,episode,stream,handle,author,
+            topic,kind,subject,body,at_ms,reply_to,likes,tomatoes)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+}
+
+/**
+ * Read a feed back, in the order it arrived.
+ *
+ * `ORDER BY episode, at_ms` is load-bearing rather than tidy: the page replays
+ * posts in this order, so a reaction to the vote must not sort before the vote.
+ * `id` breaks ties so two posts written in the same millisecond keep a stable
+ * order across reloads.
+ *
+ * Binds: format, seasonNumber [, episode]
+ */
+export function socialSelectQuery({ episode = false } = {}) {
+  return 'SELECT * FROM social_posts WHERE format = ? AND season_number = ?'
+    + (episode ? ' AND episode = ?' : '')
+    + ' ORDER BY episode, at_ms, id';
+}

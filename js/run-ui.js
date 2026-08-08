@@ -884,6 +884,9 @@ export function simulateNext() {
       return;
     }
     if (seasonConfig.popularityEnabled !== false) { updatePopularity(bbEp); saveGameState(); }
+    // The audience reacts AFTER popularity is updated — that is the number the
+    // feed reads to decide who gets defended and who gets ratioed.
+    _refreshFeed();
     _autoRevealSpoiler(bbEp.num);
     viewingEpNum = bbEp.num;
     renderRunTab();
@@ -902,10 +905,22 @@ export function simulateNext() {
     }
   }
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  _refreshFeed();
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();
   document.getElementById('run-main').scrollTop = 0;
+}
+
+/**
+ * Let the audience react to the episode that just aired.
+ *
+ * Optional by design: the feed reconciles the whole season every time it runs,
+ * so a night it misses is picked up by the next call or by the sync button. It
+ * must never be able to break "next episode" — hence the guard and the catch.
+ */
+function _refreshFeed(opts) {
+  try { window.refreshSocialFeed?.(opts); } catch { /* the episode is what matters */ }
 }
 
 export function simulateMultipleEpisodes(count) {
@@ -992,6 +1007,9 @@ export function replayEpisode(epNum) {
     if (Number(k) > ep.num) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
   }
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  // A replayed episode kept its number but is a different night, so its feed is
+  // rewritten rather than left alone — and the episodes it replaced lose theirs.
+  _refreshFeed({ rebuild: true });
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;
   renderRunTab();

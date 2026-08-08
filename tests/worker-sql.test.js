@@ -14,7 +14,10 @@
 // with three prefix maps and two strip blocks.
 import { describe, expect, it, beforeAll } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
-import { leaderboardQuery, bondsQuery, castmatesQuery } from '../worker/queries.js';
+import { leaderboardQuery, bondsQuery, castmatesQuery,
+         socialInsertQuery, socialSelectQuery, socialDeleteSeasonQuery } from '../worker/queries.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 let db;
 
@@ -119,5 +122,89 @@ describe('bonds across two shows', () => {
     const rows = db.prepare(castmatesQuery()).all('wayne');
     const ann = rows.find(r => r.id === 'ann');
     expect(ann.seasons.split(',').sort()).toEqual(['big-brother-1', 'total-drama-9']);
+  });
+});
+
+// ── the airing season's social feed ──────────────────────────────────────
+//
+// Built from worker/social_schema.sql itself rather than a hand-copied CREATE
+// TABLE, so a column renamed in the schema and not in the query fails here. The
+// rest of this file already learned that lesson the expensive way: a fixture
+// that disagrees with the real schema goes green while the shipped query fails.
+describe('the social feed', () => {
+  const feedDb = () => {
+    const d = new DatabaseSync(':memory:');
+    d.exec(readFileSync(join(process.cwd(), 'worker/social_schema.sql'), 'utf8'));
+    return d;
+  };
+
+  /** Exactly the fifteen values, in exactly the order, the worker binds. */
+  const insert = (d, over = {}) => {
+    const p = {
+      id: 'p-1-1-0000', format: 'big-brother', season: 1, episode: 1,
+      stream: 'timeline', handle: '@x', name: 'X', topic: 'blindside-reaction',
+      kind: 'blindside', subject: 'heather', text: 'a post', at: 1000,
+      replyTo: null, likes: 3, tomatoes: 0, ...over,
+    };
+    d.prepare(socialInsertQuery()).run(p.id, p.format, p.season, p.episode, p.stream,
+      p.handle, p.name, p.topic, p.kind, p.subject, p.text, p.at, p.replyTo,
+      p.likes, p.tomatoes);
+    return p;
+  };
+
+  it('binds fifteen values into the fifteen columns the schema declares', () => {
+    // The bind list is positional and nothing else checks it lines up. A column
+    // added to the schema without a matching value lands every field one place
+    // to the left — a feed where the text is in the topic column.
+    const d = feedDb();
+    insert(d, { text: 'the vote was a bloodbath', likes: 42 });
+    const row = d.prepare(socialSelectQuery()).all('big-brother', 1)[0];
+    expect(row.body).toBe('the vote was a bloodbath');
+    expect(row.likes).toBe(42);
+    expect(row.subject).toBe('heather');
+    expect(row.at_ms).toBe(1000);
+  });
+
+  it('replays in the order the posts arrived, not the order they were written', () => {
+    // Load-bearing: a reaction to the vote sorting before the vote reads as a
+    // leak. The rows go in backwards on purpose.
+    const d = feedDb();
+    insert(d, { id: 'p-1-2-0001', episode: 2, at: 900 });
+    insert(d, { id: 'p-1-1-0002', episode: 1, at: 5000 });
+    insert(d, { id: 'p-1-1-0001', episode: 1, at: 100 });
+    expect(d.prepare(socialSelectQuery()).all('big-brother', 1).map(r => r.id))
+      .toEqual(['p-1-1-0001', 'p-1-1-0002', 'p-1-2-0001']);
+  });
+
+  it('reads one night on its own', () => {
+    const d = feedDb();
+    insert(d, { id: 'p-1-1-0001', episode: 1 });
+    insert(d, { id: 'p-1-2-0001', episode: 2 });
+    expect(d.prepare(socialSelectQuery({ episode: true })).all('big-brother', 1, 2)
+      .map(r => r.id)).toEqual(['p-1-2-0001']);
+  });
+
+  it('replaces one show\'s feed without touching the other\'s', () => {
+    // Two shows can be airing at once. A bare DELETE to republish one of them
+    // would take the other's audience down with it.
+    const d = feedDb();
+    insert(d, { id: 'bb-post', format: 'big-brother', season: 1 });
+    insert(d, { id: 'td-post', format: 'total-drama', season: 1 });
+    d.prepare(socialDeleteSeasonQuery()).run('big-brother', 1);
+    expect(d.prepare(socialSelectQuery()).all('big-brother', 1)).toHaveLength(0);
+    expect(d.prepare(socialSelectQuery()).all('total-drama', 1).map(r => r.id))
+      .toEqual(['td-post']);
+  });
+
+  it('rewrites a post rather than refusing it, when an episode is replayed', () => {
+    // Post ids are stable across rebuilds, so a republish without the DELETE
+    // would hit the primary key. The worker deletes the season first; this
+    // proves the id really is the collision it is designed around.
+    const d = feedDb();
+    insert(d, { text: 'first take' });
+    expect(() => insert(d, { text: 'second take' })).toThrow();
+    d.prepare(socialDeleteSeasonQuery()).run('big-brother', 1);
+    insert(d, { text: 'second take' });
+    expect(d.prepare(socialSelectQuery()).all('big-brother', 1)[0].body).toBe('second take');
   });
 });

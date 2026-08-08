@@ -134,6 +134,7 @@ import * as recapMod from './recap.js';
 import * as broadcastMod from './broadcast.js';
 import * as franchiseMetaMod from './franchise-meta.js';
 import * as franchiseUiMod from './franchise-ui.js';
+import * as socialSessionMod from './social/session.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -230,6 +231,7 @@ const extractedModules = [
   broadcastMod,
   franchiseMetaMod,
   franchiseUiMod,
+  socialSessionMod,
 ];
 
 for (const mod of extractedModules) {

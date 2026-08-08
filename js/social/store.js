@@ -61,6 +61,26 @@ export function addEpisodePosts(gs, episode, posts) {
   return store.posts.filter(p => Number(p.episode) === ep).length;
 }
 
+/**
+ * Drop every episode that is not in `episodes`.
+ *
+ * A season can LOSE an episode: replaying episode 6 rewinds the season and
+ * re-runs it, so episodes 7 and up stop existing. Their posts would otherwise
+ * survive as reactions to a night that was never aired — the audience
+ * remembering an eviction that did not happen.
+ *
+ * Returns the episode numbers removed.
+ */
+export function keepOnlyEpisodes(gs, episodes) {
+  const store = storeOf(gs);
+  const keep = new Set((episodes || []).map(Number));
+  const dropped = store.builtEpisodes.filter(ep => !keep.has(ep));
+  if (!dropped.length) return [];
+  store.posts = store.posts.filter(p => keep.has(Number(p.episode)));
+  store.builtEpisodes = store.builtEpisodes.filter(ep => keep.has(ep));
+  return dropped;
+}
+
 /** Every post for one episode, in the order it arrived. */
 export function postsForEpisode(gs, episode) {
   const ep = Number(episode);

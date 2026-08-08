@@ -6,6 +6,7 @@ import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -2881,7 +2882,14 @@ export async function syncLiveEpisode(onStatus) {
   } catch {}
   if (!base) throw new Error('No backend configured');
 
+  // Catch the feed up before reading it. Pressing sync is the moment the site
+  // learns about the season, and an episode played in a session where the
+  // refresh failed — or before this feature existed — must not go out silent.
+  refreshSocialFeed();
+
   const snap = extractLiveSeasonSnapshot();
+  const social = socialPublishPayload();
+  if (social) snap.social = social;
   _status(`Syncing episode ${snap.episode}…`);
 
   const headers = { 'Content-Type': 'application/json' };
@@ -2890,7 +2898,8 @@ export async function syncLiveEpisode(onStatus) {
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
 
-  _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.`);
+  const said = j.posts ? ` · ${j.posts} posts` : '';
+  _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.${said}`);
   return j;
 }
 

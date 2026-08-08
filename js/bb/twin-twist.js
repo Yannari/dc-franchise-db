@@ -111,7 +111,9 @@ function secondName(front) {
  *
  * @returns the state, or null when the house is too small to hide it in.
  */
-export function installTwinTwist(house = [], { quota = 4, rng = Math.random, pick = null } = {}) {
+export function installTwinTwist(house = [], {
+  weeks = 5, quota = 4, rng = Math.random, pick = null,
+} = {}) {
   const cast = house.filter(Boolean);
   if (cast.length < 6) return null;
 
@@ -191,13 +193,21 @@ export function installTwinTwist(house = [], { quota = 4, rng = Math.random, pic
     active: 'a',
     // ── what they have to do to both get in ──
     //
-    // Jobs finished, not weeks survived. A calendar is something that happens
-    // to you; a quota is something you play for, and it is the only version
-    // where a pair can be good at this or bad at it.
-    // Four, measured. At three the pair were through the door by week five —
-    // before the house had lived with them long enough to feel anything — and
-    // the twist ended by discovery in one season out of twenty. The extra job
-    // is the runway the room needs.
+    // SURVIVE. This is the rule the show actually plays, and the wiki states it
+    // plainly for Big Brother 5: Adria and Natalie "would swap places every few
+    // days, playing as Adria. If the two made it to week 5 without being
+    // discovered or evicted, they would both enter the game as individuals."
+    // Big Brother 17 ran it the same way.
+    //
+    // It used to be a QUOTA OF JOBS, on the theory that a pair should be able to
+    // be good at this. In play that theory lost: the missions are optional, the
+    // pair turned them down, and a real season finished "2 jobs out of 4" and
+    // went home as one houseguest having never both entered. A gate nobody
+    // reaches is not a challenge, it is a twist that does not happen.
+    //
+    // The jobs stay. They pay money and they risk exposure — which is what they
+    // were always good at — and they no longer decide whether the twist pays off.
+    weeks: Math.max(1, Number(weeks) || 5),
     quota: Math.max(1, Number(quota) || 4),
     completed: 0,
     attempted: 0,
@@ -316,9 +326,11 @@ export function openTwinTwist(week, { rng = Math.random } = {}) {
         + `and one of them at a time is in that house.`,
       `Nobody inside is told. There is no wall, no announcement and no rule anybody can break — `
         + `the room has to work out on its own that the person it has been talking to is two people.`,
-      `Every week they are given a job only two people sharing a name could finish. `
-        + `Finish ${st.quota} of them and both of them join the game as separate houseguests, `
-        + `with the money.`,
+      `Last ${st.weeks} weeks without being found out and without ${st.front} being evicted, `
+        + `and both of them join the game as separate houseguests.`,
+      `Every week they are also offered a job only two people sharing a name could finish. `
+        + `The jobs pay, and every one they take is another chance to be seen. `
+        + `They are worth money and they are not the way in.`,
       `Get found out, or get ${st.front} evicted, and it stops there. `
         + `The second one never plays and nothing is paid.`,
     ],
@@ -1291,10 +1303,21 @@ export function twinDiscovery(week, { rng = Math.random } = {}) {
  * is not a returnee. The second one arrives with the stat line the house has
  * been playing against half the time without ever knowing it.
  */
+/** How many weeks the pair has lasted, counting the week they were installed. */
+export function twinWeeksSurvived(week) {
+  const st = twinState();
+  if (!st) return 0;
+  const now = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
+  return Math.max(0, now - (st.installedWeek || 1) + 1);
+}
+
 export function checkTwinEntry(week) {
   const st = twinState();
   if (!st || over(st)) return null;
-  if ((st.completed || 0) < st.quota) return null;
+  // Made it to week N without being discovered or evicted. Not a quota — see
+  // the note on `weeks` in installTwinTwist.
+  if (st.exposed) return null;
+  if (twinWeeksSurvived(week) < st.weeks) return null;
   const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean);
   if (!house.includes(st.front)) return null;
   // There has to be a house left to walk into.

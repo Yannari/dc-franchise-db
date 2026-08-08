@@ -88,6 +88,17 @@ const STYLE = `<style>
   box-shadow:0 8px 22px rgba(0,0,0,.6)}
 .bbtw .tw-hand.is-blind b{color:var(--tw-bad)}
 
+.bbtw .tw-swapnow{position:relative;z-index:2;max-width:760px;margin:16px auto 0;padding:14px 16px;
+  border:1px solid rgba(163,113,247,.35);border-radius:12px;background:rgba(163,113,247,.08);}
+.bbtw .tw-swapnow-head{font-size:11px;letter-spacing:.12em;font-weight:800;opacity:.7;margin-bottom:10px;}
+.bbtw .tw-swapnow-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.bbtw .tw-swapnow-side{display:flex;align-items:center;gap:9px;flex:1;min-width:180px;}
+.bbtw .tw-swapnow-side b{display:block;font-size:15px;}
+.bbtw .tw-swapnow-side span{display:block;font-size:12px;opacity:.65;}
+.bbtw .tw-swapnow-side.is-out{opacity:.55;}
+.bbtw .tw-swapnow-arrow{font-size:22px;opacity:.5;}
+.bbtw .tw-swapnow-line{margin:10px 0 0;font-size:13.5px;line-height:1.55;opacity:.85;}
+.bbtw .tw-swapnow-brief{margin:4px 0 0;font-size:12.5px;opacity:.6;font-style:italic;}
 .bbtw .tw-swap{position:relative;z-index:2;max-width:760px;margin:14px auto 0;padding:12px 15px;
   border-radius:10px;font-size:13.5px;line-height:1.6;color:#d6dde5;
   background:rgba(255,255,255,.04);border-left:3px solid var(--tw-warn)}
@@ -292,6 +303,45 @@ export function rpBuildBBTwinBrief(ep, act, u = {}) {
 /**
  * THE WEEK — after eviction night. Did it come off, and who felt it.
  */
+/**
+ * WHO IS ACTUALLY IN THERE THIS WEEK.
+ *
+ * The swap has always been passed to this screen and never drawn. Ten
+ * changeovers in a real season produced no visible difference anywhere — same
+ * name, same portrait, week after week — so the twist read as doing nothing.
+ * The house is never told, but the audience is the whole point of a secret.
+ */
+function swapPanel(act, esc, avatar) {
+  const sw = act.swap;
+  if (!sw) return '';
+  const front = act.front || '';
+  const other = act.twins?.other || '';
+  // 'a' is the one the house met on night one, under the shared name.
+  const inNow = sw.active === 'a' ? front : other;
+  const outNow = sw.active === 'a' ? other : front;
+  const q = act.handoff?.quality;
+  const brief = q == null ? ''
+    : q >= 0.55 ? 'handed over a house'
+      : 'handed over three names and a shrug';
+
+  return `<div class="tw-swapnow">
+    <div class="tw-swapnow-head">THEY CHANGED OVER${sw.room ? ` &middot; ${esc(sw.room).toUpperCase()}` : ''}</div>
+    <div class="tw-swapnow-row">
+      <div class="tw-swapnow-side is-out">
+        ${avatar(outNow, 44)}
+        <div><b>${esc(outNow)}</b><span>walked out</span></div>
+      </div>
+      <div class="tw-swapnow-arrow">&rarr;</div>
+      <div class="tw-swapnow-side is-in">
+        ${avatar(inNow, 44)}
+        <div><b>${esc(inNow)}</b><span>is in the house as ${esc(front)}</span></div>
+      </div>
+    </div>
+    ${sw.text ? `<p class="tw-swapnow-line">${esc(sw.text)}</p>` : ''}
+    ${brief ? `<p class="tw-swapnow-brief">The one leaving ${brief}.</p>` : ''}
+  </div>`;
+}
+
 export function rpBuildBBTwinWeek(ep, act, u = {}) {
   if (!act) return '';
   const esc = typeof u.esc === 'function' ? u.esc : v => String(v ?? '');
@@ -313,6 +363,8 @@ export function rpBuildBBTwinWeek(ep, act, u = {}) {
       <div class="tw-sub">The job, and everybody who felt something this week without being able
         to name it.</div>
     </div>
+
+    ${swapPanel(act, esc, avatar)}
 
     ${verdict ? `<div class="tw-verdict ${verdict.cls}">
       <h3>${verdict.big}</h3><div class="tw-vsub">${verdict.sub}</div></div>` : ''}

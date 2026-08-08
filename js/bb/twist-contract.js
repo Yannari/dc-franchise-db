@@ -91,8 +91,8 @@ export const BB_TWIST_CONTRACTS = {
       key: 'bbTwins',
       accent: '163,113,247',
       hint: 'A season-long twist. One houseguest is secretly two people swapping places every week. '
-        + 'The house is never told — it has to work it out. They get a job each week that only two '
-        + 'people sharing a name could do; finish enough of them and both of them join the game.',
+        + 'The house is never told — it has to work it out. Last long enough without being found out '
+        + 'or evicted and both of them join the game as separate houseguests.',
       modes: [
         { value: 'off', label: 'Off' },
         { value: 'random', label: 'On — cast at random' },
@@ -107,10 +107,15 @@ export const BB_TWIST_CONTRACTS = {
             + 'says who their twin is — that person plays under their own name and their own stats, and '
             + 'if they were cast too they simply never walk through the door. Pick anybody else and a '
             + 'twin is invented for them.' },
-        { key: 'bbTwinsQuota', type: 'number', label: 'Jobs to finish', min: 1, max: 8, default: 3,
-          hint: 'Finish this many weekly jobs and both of them join the game as separate houseguests. '
-            + 'Get found out, or get the shared identity evicted, and it ends there — the second twin '
-            + 'never plays and the money is not paid.' },
+        { key: 'bbTwinsWeeks', type: 'number', label: 'Weeks to survive', min: 2, max: 10, default: 5,
+          hint: 'Last this many weeks without being found out and without the shared identity being '
+            + 'evicted, and both of them walk in as separate houseguests. Five is the rule the show '
+            + 'used. Get found out, or get evicted first, and it ends there — the second twin never '
+            + 'plays and the money is not paid.' },
+        { key: 'bbTwinsQuota', type: 'number', label: 'Jobs offered', min: 1, max: 8, default: 3,
+          hint: 'The weekly job only two people sharing a name could finish. Jobs pay money and every '
+            + 'one they take is another chance to be seen — they are worth taking and they are NOT '
+            + 'how the second twin gets in. That is the weeks above.' },
       ],
     },
   },

@@ -19,11 +19,12 @@ import { gs, players, seasonConfig, relationships, setRelationships,
   kinshipBetween, kinshipPairs, familyPairs, tensePairs } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
-import { simulateBBEpisode } from '../js/bb-run.js';
+import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import { installTwinTwist, openTwinTwist, swapTwins, twinTells, twinDiscovery, checkTwinEntry,
   twinEvicted, twinUnfinished, twinState, isTwinIdentity, twinExposure,
   offerTwinMission, resolveTwinMission } from '../js/bb/twin-twist.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
+import { withSeededRandom } from './helpers/rng.js';
 import { generateSummaryText } from '../js/text-backlog.js';
 import { buildVPScreens, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
@@ -87,14 +88,44 @@ describe('the twist itself', () => {
     expect(st.front).toBe('Kit');
   });
 
-  it('makes them earn the second door rather than wait for a date', () => {
-    const st = installTwinTwist(NAMES, { rng: Math.random, quota: 3 });
-    expect(st.quota).toBe(3);
-    expect(st.completed).toBe(0);
-    // No calendar anywhere in the state. Weeks survived buy nothing.
-    expect(st.enterWeek ?? null).toBeNull();
+  it('opens the second door on weeks survived, the way the show does', () => {
+    // THIS TEST USED TO ASSERT THE OPPOSITE — that only finished jobs could
+    // earn the door and "weeks survived buy nothing". It was a defensible
+    // theory and it lost in play: the jobs are optional, the pair declined
+    // them, and a real season ended "2 jobs out of 4", both twins going home
+    // as one houseguest having never entered. A gate nobody reaches is not a
+    // challenge, it is a twist that does not happen.
+    //
+    // The wiki is unambiguous about Big Brother 5: Adria and Natalie "would
+    // swap places every few days, playing as Adria. If the two made it to week
+    // 5 without being discovered or evicted, they would both enter the game as
+    // individuals."
+    const st = installTwinTwist(NAMES, { rng: Math.random, weeks: 5 });
+    expect(st.weeks).toBe(5);
     gs.activePlayers = [...NAMES];
-    expect(checkTwinEntry(aWeek({ num: 9 })), 'let them in on time served').toBeNull();
+
+    // Short of the mark, with every job in the world finished.
+    st.completed = 99;
+    expect(checkTwinEntry(aWeek({ num: 3 })), 'entered early on jobs alone').toBeNull();
+
+    // And in on time served, with none finished at all.
+    st.completed = 0;
+    expect(checkTwinEntry(aWeek({ num: 5 })), 'made week five and stayed outside').toBeTruthy();
+  });
+
+  it('counts the weeks from the one it was installed on', () => {
+    const st = installTwinTwist(NAMES, { rng: Math.random, weeks: 4 });
+    st.installedWeek = 3;
+    gs.activePlayers = [...NAMES];
+    expect(checkTwinEntry(aWeek({ num: 5 }))).toBeNull();     // three weeks in
+    expect(checkTwinEntry(aWeek({ num: 6 }))).toBeTruthy();   // four
+  });
+
+  it('never opens it for a pair who were found out', () => {
+    const st = installTwinTwist(NAMES, { rng: Math.random, weeks: 2 });
+    gs.activePlayers = [...NAMES];
+    st.exposed = true;
+    expect(checkTwinEntry(aWeek({ num: 9 })), 'a discovered pair walked in').toBeNull();
   });
 });
 
@@ -235,7 +266,7 @@ describe('night one', () => {
     expect(open.secret).toBe(true);
     expect(open.rules.length).toBeGreaterThan(3);
     // Both halves of the deal: what winning is, and what losing is.
-    expect(open.rules.join(' ')).toContain(String(st.quota));
+    expect(open.rules.join(' ')).toContain(String(st.weeks));
     expect(open.rules.join(' ')).toMatch(/found out|evicted/i);
     // And it happens once.
     expect(openTwinTwist(aWeek({ num: 2 }), { rng: Math.random })).toBeNull();
@@ -442,17 +473,15 @@ describe('the house noticing', () => {
 });
 
 describe('the four endings', () => {
-  it('lets them both in when the quota is met', () => {
+  it('lets them both in once they have lasted long enough', () => {
     house();
     const st = installTwinTwist(NAMES, { rng: Math.random });
     gs.activePlayers = [...NAMES];
     const before = gs.activePlayers.length;
 
-    st.completed = st.quota - 1;
-    expect(checkTwinEntry(aWeek({ num: 5 })), 'entered a job short').toBeNull();
-    st.completed = st.quota;
+    expect(checkTwinEntry(aWeek({ num: 2 })), 'entered weeks early').toBeNull();
     st.banked = 21000;
-    const entry = checkTwinEntry(aWeek({ num: 6 }));
+    const entry = checkTwinEntry(aWeek({ num: st.weeks }));
     expect(entry).toBeTruthy();
     expect(entry.type).toBe('twin-entry');
     expect(gs.activePlayers.length).toBe(before + 1);
@@ -622,5 +651,47 @@ describe('a season with one running', () => {
     const ep = simulateBBEpisode();
     expect(twinState()).toBeFalsy();
     expect((ep.acts || []).some(a => /^twin-/.test(a.type))).toBe(false);
+  });
+});
+
+describe('what the audience actually sees', () => {
+  // TWO BUGS FOUND BY PLAYING IT, not by reading it.
+  //
+  // The pair swapped ten times in a real season and NOTHING was ever shown:
+  // same name, same portrait, week after week, so the twist read as doing
+  // nothing at all. The changeover only got a screen when there was also a job
+  // debrief, a tell or a discovery — and a pair who declined the jobs and went
+  // unnoticed had none of those.
+  //
+  // And they finished "2 jobs out of 4" and went home as one houseguest, having
+  // never both entered, because the door was gated on finished jobs rather than
+  // on weeks survived.
+  it('gives every changeover a screen, and opens the door on time', () => {
+    const seen = { swaps: 0, entered: 0, seasons: 0 };
+
+    for (const seed of [3, 21]) {
+      house();
+      Object.assign(seasonConfig, { bbTwins: 'random', bbTwinsWeeks: 4 });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      seen.seasons++;
+
+      const acts = (gs.bb.weeks || []).flatMap(w => w.acts || []);
+      const swapScreens = acts.filter(a => a?.type === 'twin-week' && a.swap);
+      seen.swaps += swapScreens.length;
+      if (twinState()?.entered) seen.entered++;
+
+      // Each one names the room and carries the handoff, so the screen can say
+      // who walked out and who walked in.
+      for (const a of swapScreens) {
+        expect(a.swap.active, 'a changeover with no side').toMatch(/^[ab]$/);
+        expect(a.front, 'a changeover with nobody to be').toBeTruthy();
+      }
+    }
+
+    expect(seen.swaps, 'a season of swapping produced no screens').toBeGreaterThan(0);
+    expect(seen.entered, 'nobody ever got through the second door').toBeGreaterThan(0);
   });
 });

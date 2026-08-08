@@ -730,7 +730,10 @@ export function simulateBBEpisode() {
   if (seasonConfig.bbTwins && seasonConfig.bbTwins !== 'off' && !twinState()) {
     try {
       installTwinTwist(house, {
-        // Jobs finished, not weeks survived — the pair earn the second door.
+        // Weeks survived, as the show plays it: last this long without being
+        // found out or evicted and both of them are in. The jobs pay money and
+        // risk exposure; they are not the way in.
+        weeks: Number(seasonConfig.bbTwinsWeeks) || 5,
         quota: Number(seasonConfig.bbTwinsQuota) || 3,
         rng: Math.random,
         pick: seasonConfig.bbTwins === 'choose' ? (seasonConfig.bbTwinsPlayer || null) : null,

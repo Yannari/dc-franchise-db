@@ -4069,7 +4069,13 @@ export function simulateBBWeek(options = {}) {
       delete week._twinJobNoise;
       const found = twinDiscovery(week, { rng });
       const tw = twinState();
-      if (debrief || tells || found) {
+      /* A SWAP IS ALWAYS WORTH A SCREEN.
+         This used to fire only when there was a job debrief, a tell or a
+         discovery — so a pair who declined the jobs and went unnoticed swapped
+         ten times across a season with nothing ever shown. From outside it read
+         as a twist that did nothing: same name, same icon, week after week.
+         The changeover IS the mechanic; it gets its own week regardless. */
+      if (debrief || tells || found || week._twinSwap) {
         (week._sabHeld ||= []).push({
           type: 'twin-week', secret: true, week: week.num,
           front: tw?.front || null,

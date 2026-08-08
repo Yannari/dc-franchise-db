@@ -2898,7 +2898,10 @@ export async function syncLiveEpisode(onStatus) {
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || !j.ok) throw new Error((j && j.error) || `HTTP ${r.status}`);
 
-  const said = j.posts ? ` · ${j.posts} posts` : '';
+  // The feed is written after the standings and can fail on its own — say so
+  // rather than reporting a clean sync that half happened.
+  const said = j.socialError ? ` · the feed did not publish (${j.socialError})`
+    : j.posts ? ` · ${j.posts} posts` : '';
   _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.${said}`);
   return j;
 }

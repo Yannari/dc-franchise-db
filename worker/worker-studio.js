@@ -834,17 +834,32 @@ async function liveSeasonPut(env, payload = {}) {
       asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0));
   }
 
-  // The feed rides along with the standings so one press of sync puts the whole
-  // night on the site. It is optional: a season synced by an older simulator, or
-  // one with the feed switched off, still publishes its standings.
-  const social = socialStatements(d, payload.social);
-  stmts.push(...social);
-
   await runChunked(d, stmts);
+
+  // The feed rides along with the standings so one press of sync puts the whole
+  // night on the site — but it is written SEPARATELY and afterwards, and its
+  // failure is reported rather than thrown.
+  //
+  // In the same batch it would be a shared fate: a database where
+  // social_schema.sql has not been applied yet answers the first INSERT with
+  // "no such table: social_posts", and the standings — the thing sync exists to
+  // do, and which worked perfectly the day before — would go down with a
+  // feature the user may not even have noticed shipping.
+  let posts = 0, socialError = null;
+  const social = socialStatements(d, payload.social);
+  if (social.length) {
+    try {
+      await runChunked(d, social);
+      posts = social.length - 1;                    // less the DELETE
+    } catch (e) {
+      socialError = e.message || String(e);
+    }
+  }
+
   return {
     ok: true, seasonNumber: season, episode: asInt(payload.episode),
-    players: players.length,
-    posts: social.length ? social.length - 1 : 0,   // less the DELETE
+    players: players.length, posts,
+    ...(socialError ? { socialError } : {}),
   };
 }
 

@@ -538,6 +538,127 @@ export const PHRASINGS = {
     },
   },
 
+  'social-game-autopsy': {
+    'thread-opener': {
+      timeline: [
+        'thread on how {subject} managed to lose every relationship without noticing',
+        'the vote was the funeral. {subject} social game died three episodes ago',
+        'breaking down every person {subject} made feel disposable on the way out',
+        'a short history of {subject} confusing tolerance with loyalty',
+        '{subject} did not get betrayed by the house. the house finally compared notes',
+        'starting with the first apology {subject} never gave and ending with that vote',
+        'the social game autopsy is back and the cause of death is arrogance',
+        'eight episodes of taking people for granted, presented as a surprise ending',
+        '{subject} built a majority where nobody felt included. incredible engineering',
+        'receipts thread: every warning {subject} laughed off before tonight',
+      ],
+      chat: [
+        'The vote is the last page, not the story. {subject} lost this when people stopped bringing them bad news because every warning became an argument.',
+        'Social game autopsy: {subject} had relationships everywhere and trust nowhere. Those are not the same asset.',
+        'I want to trace this back three episodes. Watch who stops joking when {subject} enters the room; the vote follows from that.',
+        'The house did not suddenly turn. It slowly learned that every private promise from {subject} had a second audience.',
+        'Start with the people who voted against {subject}. Every one of them had tried to repair that relationship first.',
+        'This is what happens when being feared is mistaken for being respected. Fear organizes a vote very efficiently once it changes direction.',
+        'The strategic move was tonight. The social permission to make it was built by {subject} over the entire season.',
+        'Nobody betrayed a close relationship here. {subject} had already hollowed every close relationship out and kept the labels.',
+        'A good social player learns what each person needs. {subject} learned it and then made fun of them for needing it.',
+        'The room kept giving {subject} smaller warnings. By the time the message was five votes, there was nothing left to misunderstand.',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{subject} did not have allies. {subject} had people waiting for permission to leave',
+        'being loud in every room is not a social game it is an occupancy problem',
+        '{subject} knew everybody and understood nobody',
+        'the whole cast liked {subject} better from a voting booth',
+        'you cannot treat people like furniture and act shocked when the chairs move',
+        '{subject} social game was a customer service voice over active contempt',
+        'every bridge burned beautifully. shame about needing to cross one',
+        '{subject} made every ally feel temporary and finally got believed',
+        'charm gets you in the room. character decides whether anyone warns you',
+        'the fake smile had more screen time than the actual relationships',
+      ],
+      chat: [
+        '{subject} was socially busy and socially effective in completely different directions.',
+        'The mistake was believing access meant trust. Everybody spoke to {subject}; nobody risked anything for them.',
+        'A social game cannot be measured by how many conversations you enter. Measure how many people tell you the truth when it hurts.',
+        '{subject} spent the season collecting agreements and never noticed the people making them felt nothing.',
+        'There is a point where managing every relationship starts looking like valuing none of them. {subject} crossed it weeks ago.',
+        'People did not vote against {subject} because they were manipulated. They voted against the way {subject} made them feel expendable.',
+        'The read was always strong. The bedside manner was appalling, and eventually the patient gets a vote.',
+        'You can survive being disliked or being distrusted. {subject} tried both at once.',
+        'The jury will remember the strategy. They will also remember how small {subject} made them feel while explaining it.',
+        'Social capital is only real when you spend it for somebody else occasionally. {subject} kept every cent and lost the account.',
+      ],
+    },
+  },
+
+  'hypocrisy-watch': {
+    'quote-dunk': {
+      timeline: [
+        '"loyalty matters" says the person with three broken deals and a straight face',
+        '{actor} discovering morals exactly when betrayal stops benefiting them',
+        'not {actor} asking for grace after rationing it all season',
+        '"it is just a game" retired the second {actor} feelings got involved',
+        '{actor} gave the speech they mocked {subject} for giving last week',
+        'the standards have moved again and somehow {actor} is standing beside them',
+        'accountability for thee confessional excuses for me',
+        '{actor} called it strategy when they did it and cruelty when it came back',
+        'bookmarking this apology beside the clip where {actor} laughed at the same pain',
+        'the halo arrived overnight and does not remotely fit',
+      ],
+    },
+    'call-out': {
+      timeline: [
+        '{actor} spent a month rewarding disloyalty and now wants honour in the room',
+        'say you are scared. stop dressing it up as principle',
+        '{actor} does not hate lying. {actor} hates not controlling the lie',
+        'the outrage is fake the bruised ego is extremely real',
+        'funny how respect became important the week {actor} stopped receiving it',
+        '{actor} wants forgiveness without the humiliating part where you admit fault',
+        'do not cry about a line you personally erased three votes ago',
+        'the victim performance needs rehearsal because nobody is buying opening night',
+        '{actor} moral compass points directly toward whatever keeps them safe',
+        'if hypocrisy were immunity {actor} would never touch the block',
+      ],
+    },
+  },
+
+  'personal-roast': {
+    'dunk': {
+      timeline: [
+        '{subject} has the confidence of a mastermind and the résumé of a coat rack',
+        'that smug little victory walk for finishing fourth in a two person job',
+        '{subject} outfit is fighting harder than {subject} did in the challenge',
+        'all that posing and the camera still found a more interesting wall',
+        '{subject} hair has survived more adversity than {subject} game',
+        'a face made for reaction shots and not one correct reaction all season',
+        '{subject} entered the room like a winner and left the conversation as furniture',
+        'personality assembled entirely from mirrors and interrupted sentences',
+        '{subject} serves looks because strategy has stopped taking orders',
+        'the smirk of somebody who has misunderstood absolutely everything',
+        '{subject} brings pageant energy to decisions requiring basic arithmetic',
+        'if staring dramatically counted as gameplay {subject} would sweep the jury',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{subject} is not intimidating. everybody is just tired of waiting for the monologue to end',
+        'the charisma is mostly good lighting and other people being polite',
+        '{subject} acts exclusive because friendship would require listening',
+        'never seen somebody make being boring look this exhausting',
+        '{subject} mistakes eye contact for chemistry and volume for authority',
+        'the personality is beautiful packaging around an expired idea',
+        '{subject} would flirt with a mirror and still blame it for mixed signals',
+        'every entrance says icon every conversation says mandatory meeting',
+        '{subject} is what happens when a confessional learns to walk around',
+        'the ego needs its own bunk and has contributed the same amount to camp',
+        'pretty speech ugly logic no returns accepted',
+        '{subject} has never met a silence they could not make worse',
+      ],
+    },
+  },
+
   // ── romantic ──────────────────────────────────────────────────────────────
 
   'shipping': {
@@ -885,6 +1006,9 @@ export const TOPIC_AIM = {
   'edit-critique': { target: 'subject', stance: 0.7 },
   'kindness-noticed': { target: 'subject', stance: 0.9 },
   'personality-clash': { target: 'subject', stance: -0.7 },
+  'social-game-autopsy': { target: 'subject', stance: -0.65 },
+  'hypocrisy-watch': { target: 'actor', stance: -0.9 },
+  'personal-roast': { target: 'subject', stance: -1.0 },
   'shipping': { target: 'subject', stance: 0.8 },
   'thirst': { target: 'subject', stance: 0.8 },
   'showmance-hate': { target: 'subject', stance: -0.6 },
@@ -908,11 +1032,11 @@ export const TOPIC_AIM = {
  * multiplier, which is the topic that owns that shape.
  */
 export const ARCHETYPE_PULL = {
-  stan: { 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'pile-on': 0.4, 'fandom-infighting': 1.5 },
-  hater: { 'pile-on': 2.4, 'personality-clash': 2.0, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
-  analyst: { 'strategy-critique': 2.4, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5 },
+  stan: { 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
+  hater: { 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
+  analyst: { 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
   livefeeder: { 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
   casual: { 'blindside-reaction': 1.8, 'thirst': 1.6, 'favourite-declaration': 1.5, 'shipping': 1.4, 'strategy-critique': 0.4, 'comp-talk': 0.4 },
-  chaos: { 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'kindness-noticed': 0.4 },
+  chaos: { 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'personal-roast': 1.8, 'hypocrisy-watch': 1.5, 'kindness-noticed': 0.4 },
   shipper: { 'shipping': 2.6, 'breakup-reaction': 2.2, 'showmance-concern': 1.8, 'thirst': 1.6, 'showmance-hate': 0.4, 'strategy-critique': 0.3 },
 };

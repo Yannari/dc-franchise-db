@@ -89,6 +89,24 @@ export const TOPICS = [
     reads: ['campEvents', 'bonds'],
     shapes: ['hot-take', 'dunk'] },
 
+  { id: 'social-game-autopsy', stream: 'both', weight: 0.65,
+    triggers: ['eviction', 'betrayal', 'argument', 'ganging-up'],
+    reads: ['bonds', 'votes', 'campEvents', 'socialManipulation'],
+    shapes: ['thread-opener', 'hot-take'] },
+
+  { id: 'hypocrisy-watch', stream: 'timeline', weight: 0.65,
+    triggers: ['betrayal', 'argument', 'nomination', 'eviction'],
+    reads: ['votes', 'nominations', 'campEvents'],
+    shapes: ['quote-dunk', 'call-out'] },
+
+  // Cruelty has its own topic so it can be tested as a class rather than
+  // leaking accidentally into every supportive pool. Personal, never bigoted:
+  // ego, presentation, competence, personality and gameplay are fair targets.
+  { id: 'personal-roast', stream: 'timeline', weight: 0.55,
+    triggers: ['episode-aired', 'argument', 'comp-win', 'nomination', 'eviction'],
+    reads: ['roster', 'popularity', 'campEvents'],
+    shapes: ['dunk', 'hot-take'] },
+
   // ── romantic ────────────────────────────────────────────────────────────
   { id: 'shipping', stream: 'timeline', weight: 0.7,
     triggers: ['romantic-spark', 'episode-aired'],

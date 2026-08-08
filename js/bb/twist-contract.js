@@ -115,6 +115,59 @@ export const BB_TWIST_CONTRACTS = {
     },
   },
 
+  // ── three people who already knew somebody in there ──
+  //
+  // BB8, and a different kind of thing again: no clock, no weekly job, no
+  // hidden holder. It is a CAST twist — the season is seated with live grudges
+  // already in it, and the twist's own week is the first one. The wiki's two
+  // load-bearing rules are both about that week: "The Rivals could not compete
+  // nor could they be nominated during the first week", and at the end of the
+  // first competition "the Rivals were asked to determine the winner".
+  //
+  // Public, unlike the Twin Twist: the eleven who were already living there
+  // were INFORMED. The drama is not the secret; it is that the whole house now
+  // spends three days working out which of them it is about while three people
+  // already know.
+  'bb-rivals': {
+    id: 'bb-rivals', layer: 'season', category: 'cast-composition',
+    timing: 'season-opening', duration: { weeks: null },
+    rules: {},
+    acquisition: { channel: 'random-draw', secrecy: 'public' },
+    announcement: {
+      name: 'Rivals',
+      reactions: 'paranoia',
+      rule: 'You are not eleven. Three more of you are coming through that door tonight, and every one of them already knows somebody in this room — and does not like them. They cannot play for Head of Household this week and none of you can nominate them. At the end of tonight\'s competition, when it comes down to two of you, the three of them decide which one gets the house.',
+      sting: 'Three of you are about to find out this was never a fresh start.',
+    },
+    season: {
+      label: 'Rivals',
+      key: 'bbRivals',
+      accent: '224,123,57',
+      hint: 'A cast twist. Three houseguests arrive after the others, each carrying a grudge against '
+        + 'somebody already inside — an estranged relative, an ex, a friendship that ended. They cannot '
+        + 'play for the first Head of Household and cannot be nominated in week one, and at the end of '
+        + 'that competition they choose which of the last two gets the house.',
+      modes: [
+        { value: 'off', label: 'Off' },
+        { value: 'declared', label: 'On — only pairs I declared' },
+        { value: 'auto', label: 'On — fill the gaps from the worst relationships' },
+      ],
+      options: [
+        { key: 'bbRivalsCount', type: 'number', label: 'How many pairs', min: 1, max: 3, default: 3,
+          hint: 'Three is the original. Each pair is one houseguest who was already living there and '
+            + 'one who walks through the door afterwards, which are two completely different weeks.' },
+      ],
+      // The whole reason the options live on the contract. A dropdown cannot
+      // tell you this twist has nothing to build from.
+      requires: {
+        kinship: ['estranged', 'exes', 'ex-friends'], count: 1,
+        hint: 'No fallings-out declared. Set "How they know each other" to Estranged family, Exes or '
+          + 'Ex-best-friends on the Cast tab — otherwise this twist has to guess from whoever gets on '
+          + 'worst, and the grudges will not mean anything.',
+      },
+    },
+  },
+
   // ── the first season-long twist ──
   //
   // Every other entry here is `layer: 'scheduled'`: it arrives on a week,

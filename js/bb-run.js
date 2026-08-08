@@ -35,6 +35,7 @@ import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState } from './bb/twin-twist.js';
+import { installRivals, rivalsState } from './bb/rivals.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -738,6 +739,22 @@ export function simulateBBEpisode() {
     // Re-read, in case the second twin was one of the people standing here a
     // moment ago.
     house = (gs.activePlayers || []).filter(Boolean);
+  }
+
+  // The cast twist. Seated on night one like the other two, but it owns one
+  // WEEK rather than a season: the three who walk in late cannot play for the
+  // first crown, cannot be nominated, and hand the house to one of the last two
+  // standing. After that it is a season with three live grudges in it.
+  if (seasonConfig.bbRivals && seasonConfig.bbRivals !== 'off' && !rivalsState()) {
+    try {
+      installRivals(house, {
+        count: Number(seasonConfig.bbRivalsCount) || 3,
+        rng: Math.random,
+        // 'declared' means only use pairs the cast actually named; 'auto' lets
+        // it fill the gaps from whoever gets on worst.
+        allowGuess: seasonConfig.bbRivals === 'auto',
+      });
+    } catch { /* the season plays without one */ }
   }
 
   const weekNum = (gs.bb.weeks?.length || 0) + 1;

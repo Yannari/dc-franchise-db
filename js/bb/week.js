@@ -68,6 +68,8 @@ import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-evict
 import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinState,
   openTwinTwist, offerTwinMission, resolveTwinMission, twinUnfinished,
   twinExposure as twinExposureLevel } from './twin-twist.js';
+import { rivalsState, announceRivals, openRivals, rivalsSittingOut, rivalsImmune,
+  rivalsChooseHoh, rivalWeekEvents, rivalEvicted } from './rivals.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
@@ -1173,6 +1175,18 @@ export function simulateBBWeek(options = {}) {
     }
   } catch { /* the house plays a normal week */ }
 
+  // The three who walk in late. Announced like any other rule the house is
+  // handed — the wiki is explicit that the eleven already living there were
+  // INFORMED — and then they actually arrive, which is its own screen.
+  // Held rather than pushed, for the same reason the saboteur's briefing is:
+  // the announcement act has not been built yet on the install week, and three
+  // people walking through the door BEFORE the room is told anybody is coming
+  // is the season's first screen out of order.
+  try {
+    announceRivals(week);
+    week._rivalsOpen = openRivals(week, { rng });
+  } catch { /* the season plays without them */ }
+
   try {
     announceSaboteur(week);
     const banked = checkSaboteurBank(week);
@@ -1527,6 +1541,7 @@ export function simulateBBWeek(options = {}) {
     }
   }
   // After the wall has spoken, if it spoke this week.
+  if (week._rivalsOpen) { week.acts.push(week._rivalsOpen); delete week._rivalsOpen; }
   if (week._sabBrief) { week.acts.push(week._sabBrief); delete week._sabBrief; }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
@@ -1555,7 +1570,12 @@ export function simulateBBWeek(options = {}) {
     ? options.preCrownedHoh : null;
 
   // HOH act and the first scramble.
-  const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh);
+  //
+  // "The Rivals could not compete nor could they be nominated during the first
+  // week." They sit this one out and then decide it, which is the twist.
+  let rivalsOut = [];
+  try { rivalsOut = rivalsSittingOut(week); } catch { rivalsOut = []; }
+  const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh && !rivalsOut.includes(name));
   const hohCompetition = preCrowned ? null
     : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
       // The saboteur got to the yard first. Chosen at the briefing, before any
@@ -1572,6 +1592,20 @@ export function simulateBBWeek(options = {}) {
   let hoh = preCrowned
     || hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!preCrowned && !hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
+
+  // ── the only time power in this house is given rather than won ──
+  //
+  // The competition comes down to two and then stops. Three people who have
+  // been in the building for an hour, who cannot win it themselves and cannot
+  // be nominated, hand the crown to one of them — and the person who receives
+  // it spends the rest of the season knowing exactly who to thank.
+  let rivalHandover = null;
+  try {
+    if (!preCrowned && hohCompetition) {
+      rivalHandover = rivalsChooseHoh(week, hohCompetition, { rng });
+      if (rivalHandover) hoh = rivalHandover.winner;
+    }
+  } catch { /* the competition result stands */ }
 
   // ── two thrones ──
   //
@@ -1613,6 +1647,7 @@ export function simulateBBWeek(options = {}) {
   // Comp fear and strategic respect come from WATCHING somebody win. A
   // sealed result is watched by nobody, so the dimension writers stay quiet.
   if (!hohSecret && hohCompetition) recordCompDominance(hohCompetition, house, week.num);
+  if (rivalHandover) week.acts.push(rivalHandover);
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition,
     outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret,
     // Crowned before this cycle began, in a competition the other half of the
@@ -2011,8 +2046,14 @@ export function simulateBBWeek(options = {}) {
   // Super Safety and the Co-HOH key both protect for the whole WEEK, not for
   // one ceremony — which is the line between them and the Cloud sitting
   // directly above.
+  // The Rivals' other week-one rule, and the half that matters most: they have
+  // just handed somebody the house and cannot be punished for it. Only ever
+  // true in the week they arrive.
+  let rivalsSafe = [];
+  try { rivalsSafe = rivalsImmune(week); } catch { rivalsSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
-    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
+    carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
+    ...rivalsSafe].filter(Boolean);
   let nominees = [...new Set(plan.nominees)]
     .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   while (nominees.length < 2) {
@@ -3989,6 +4030,17 @@ export function simulateBBWeek(options = {}) {
     const blown = saboteurEvicted(evicted, week);
     if (blown) (week._sabHeld ||= []).push(blown);
   } catch { /* the eviction stands either way */ }
+  // ── living with somebody you already could not live with ──
+  //
+  // The twist has no clock and no weekly job. What it has is two people who
+  // cannot be in a room together and eleven who can watch, so every week the
+  // pairs still standing produce a flashpoint, a thaw, or somebody else
+  // noticing that a permanent grudge is a permanent tool.
+  try {
+    const grudges = rivalWeekEvents(week, { rng });
+    if (grudges) week.acts.push(grudges);
+  } catch { /* the house has a normal week */ }
+
   // ── the twins' week, resolved ──
   //
   // After the vote, and deliberately: no twin job changes a ballot, and one of
@@ -4032,6 +4084,10 @@ export function simulateBBWeek(options = {}) {
       }
     }
     delete week._twinSwap;
+    // One of a pair goes, and the other one walks back into a house that has
+    // spent weeks understanding them entirely through somebody else.
+    const rival = rivalEvicted(evicted, week);
+    if (rival) (week._sabHeld ||= []).push(rival);
     const twins = twinEvicted(evicted, week);
     if (twins) (week._sabHeld ||= []).push(twins);
     // The fourth ending: never caught, never got there. Once the house is down

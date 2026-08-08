@@ -383,6 +383,10 @@ const MISSIONS = [
     // week's until then — so the job can be handed over on Monday morning.
     can: ctx => !!ctx.power && ctx.power !== ctx.sab,
     run(ctx, rng) {
+      // Same trap as `tipoff`: the briefing could only see last week's power,
+      // and the saboteur may have won the room since. Stealing your own key is
+      // not sabotage, and it puts their name in the house feed.
+      if (!ctx.hoh || ctx.hoh === ctx.sab) return null;
       const gone = [
         { did: `${ctx.sab} lifts the Head of Household key off the side while ${ctx.hoh} is in the shower, and puts it somewhere nobody sensible would look.`,
           saw: `The Head of Household key is missing. ${ctx.hoh} turns the room over twice and it is not in the room.` },
@@ -439,6 +443,13 @@ const MISSIONS = [
     can: ctx => !!ctx.power && ctx.power !== ctx.sab && ctx.others.some(n => n !== ctx.power),
     run(ctx, rng) {
       const boss = ctx.hoh || ctx.power;
+      // `can()` runs at the briefing, where the only power it can see is LAST
+      // week's — so it cleared this job on somebody else holding the room and
+      // then the saboteur won it. Telling the target what you have been saying
+      // about them does not work when you are the one who said it, and the
+      // house feed ended up printing the saboteur's own name in the one place
+      // that must never carry it.
+      if (!boss || boss === ctx.sab) return null;
       const mark = ctx.nominees.filter(n => n !== ctx.sab && n !== boss)[0]
         || ctx.others.filter(n => n !== boss)
           .sort((a, b) => getBond(boss, a) - getBond(boss, b))[0];

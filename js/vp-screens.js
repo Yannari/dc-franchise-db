@@ -24,6 +24,8 @@ import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
 import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
   rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
+import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
+  rpBuildBBRivalsOut } from './vp-bb-rivals.js';
 import { rpBuildBBAmericasNominee } from './vp-bb-americas-nominee.js';
 import { rpBuildBBHidden } from './vp-bb-hidden.js';
 import { rpBuildBBSafetySuite } from './vp-bb-safety-suite.js';
@@ -20767,6 +20769,24 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // The twin twist. Audience-only, every one of them — the house is never
       // told there is anything to find. Two a week, at opposite ends of it: the
       // job on Monday and whether it came off after eviction night.
+      // The cast twist. Public, unlike the Twin Twist — the house is told —
+      // and its own week is the first one.
+      case 'rivals-open':
+        screens.push({ id: id('bb-rivals-open'), label: 'Rivals: Arrival',
+          html: rpBuildBBRivalsOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'rivals-hoh':
+        screens.push({ id: id('bb-rivals-hoh'), label: 'Rivals: The Handover',
+          html: rpBuildBBRivalsHoh(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'rivals-week':
+        screens.push({ id: id('bb-rivals-week'), label: 'Rivals: The Grudge',
+          html: rpBuildBBRivalsWeek(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'rivals-out':
+        screens.push({ id: id('bb-rivals-out'), label: 'Rivals: Outlasted',
+          html: rpBuildBBRivalsOut(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       // The house is never told this twist exists, so there is no gathering for
       // the announcement machinery to hang a screen on. Night one gets one
       // anyway, for the only people who are allowed to know: the rules, the two

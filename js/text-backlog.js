@@ -4473,6 +4473,59 @@ export function generateBBSummaryText(ep) {
       // reason: both season twists hand out a weekly job, and a bare "THE JOB"
       // on a page that also carries "THE SABOTEUR — THE JOB" is two headings
       // nobody can tell apart.
+      // ── the cast twist ──
+      //
+      // Public, unlike the twins: the house is told. What it never gets told is
+      // which of them it is about, which is the part the page can state plainly
+      // because the page is the audience's.
+      case 'rivals-open': {
+        sec('RIVALS — THE ARRIVAL');
+        ln(`  ${(act.pairs || []).length} of them come through that door, and every one is here for `
+          + `somebody already inside.${act.guessed
+            ? ' Some of these were inferred from who gets on worst rather than declared.' : ''}`);
+        ln('');
+        for (const p of act.pairs || []) {
+          ln(`  ${p.rival} (arrives late) — ${p.partner} (already inside): ${p.grudge}. `
+            + `[${p.label}${p.declared ? '' : ', inferred'}]`);
+        }
+        ln('');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        break;
+      }
+
+      case 'rivals-hoh': {
+        sec('RIVALS — THE HANDOVER');
+        ln(`  The competition comes down to ${(act.finalists || []).join(' and ')} and then stops.`);
+        ln('');
+        (act.ballots || []).forEach(b => ln(`  ${b.rival} writes ${b.choice}.`
+          + (b.protecting ? ` (${b.protecting} was the other one.)` : '')));
+        ln('');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        ln('');
+        ln(`  ${act.winner} is Head of Household. Nobody won it.`);
+        break;
+      }
+
+      case 'rivals-week': {
+        sec('RIVALS — STILL IN THE SAME HOUSE');
+        (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
+        ln('');
+        (act.pairs || []).forEach(p => ln(`  ${p.rival} and ${p.partner} — ${p.label}, `
+          + `bond ${p.bond > 0 ? '+' : ''}${p.bond}.`));
+        break;
+      }
+
+      case 'rivals-out': {
+        sec('RIVALS — ONE OF THEM OUTLASTED THE OTHER');
+        (act.beats || []).forEach(b => ln(`  ${b.text}`));
+        ln('');
+        ln(`  ${act.stays} stays, ${act.gone} goes. `
+          + `${act.rivalOutlasted ? 'The one who walked in late' : 'The one who was already here'} `
+          + `is the one still standing. ${act.remaining} `
+          + `${act.remaining === 1 ? 'pair is' : 'pairs are'} still intact.`);
+        break;
+      }
+
       case 'twin-open': {
         sec('THE TWINS — THE ANNOUNCEMENT');
         ln('  The house is never told any of this. Only the audience is.');

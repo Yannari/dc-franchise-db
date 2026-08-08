@@ -213,6 +213,30 @@ describe('it never blocks a season', () => {
     expect(out.posts.length).toBe(6);
   });
 
+  it('uses templates when the worker hangs instead of failing', async () => {
+    // The likeliest real failure and the only one that can actually hurt: a
+    // worker that never answers holds the request open rather than erroring,
+    // so without the abort the feed would wait on it forever.
+    const hang = vi.fn().mockImplementation((_url, init) => new Promise((_res, rej) => {
+      init.signal?.addEventListener('abort', () => rej(new Error('aborted')));
+    }));
+    const out = await writeCrowd(event(), { count: 5, cast: NAMES,
+      endpoint: 'https://x.test', fetchImpl: hang, timeoutMs: 40 });
+    expect(out.source).toBe('template');
+    expect(out.posts.length).toBe(5);
+  });
+
+  it('uses templates when the worker reports its own failure', async () => {
+    // What a real worker returns when the API key is missing or Anthropic is
+    // down: a 200 with an error field, never a status a caller has to parse.
+    const f = vi.fn().mockResolvedValue({ ok: true,
+      json: async () => ({ posts: [], error: 'no ANTHROPIC_API_KEY' }) });
+    const out = await writeCrowd(event(), { count: 6, cast: NAMES,
+      endpoint: 'https://x.test', fetchImpl: f });
+    expect(out.source).toBe('template');
+    expect(out.posts.length).toBe(6);
+  });
+
   it('uses templates when the worker answers with rubbish', async () => {
     for (const body of [{ posts: 'nope' }, {}, { posts: [] }]) {
       const f = vi.fn().mockResolvedValue({ ok: true, json: async () => body });

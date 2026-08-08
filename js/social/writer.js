@@ -147,7 +147,7 @@ export async function requestPosts(packet, { endpoint, timeoutMs = 12000, fetchI
  * model cannot see what it already said.
  */
 export async function rewriteEpisode(posts, events, {
-  cast = [], endpoint = null, fetchImpl = null, maxEvents = 6,
+  cast = [], endpoint = null, fetchImpl = null, maxEvents = 6, timeoutMs = 12000,
 } = {}) {
   if (!endpoint || !posts?.length || !events?.length) {
     return { posts, written: 0, rejected: [] };
@@ -178,7 +178,7 @@ export async function rewriteEpisode(posts, events, {
     if (!targets.length) continue;
 
     const packet = buildPacket(ev, { cast, stream: targets[0].stream, count: targets.length });
-    const out = await requestPosts(packet, { endpoint, fetchImpl });
+    const out = await requestPosts(packet, { endpoint, fetchImpl, timeoutMs });
     if (!out?.length) continue;
 
     const { kept, rejected: no } = acceptPosts(out, packet, { approved });
@@ -206,14 +206,14 @@ export async function rewriteEpisode(posts, events, {
  */
 export async function writeCrowd(event, {
   count = 8, stream = 'timeline', rng = Math.random, cast = [], crowd,
-  endpoint = null, approved = [], fetchImpl = null, register = 'post',
+  endpoint = null, approved = [], fetchImpl = null, register = 'post', timeoutMs = 12000,
 } = {}) {
   const base = samplePosts(event, { count, stream, rng, ...(crowd ? { crowd } : {}) });
   if (!base.length || !endpoint) return { posts: base, source: 'template', rejected: [] };
 
   const persona = PERSONAS.find(p => p.handle === base[0].handle) || null;
   const packet = buildPacket(event, { cast, stream, count, register, persona });
-  const written = await requestPosts(packet, { endpoint, fetchImpl });
+  const written = await requestPosts(packet, { endpoint, fetchImpl, timeoutMs });
   if (!written?.length) return { posts: base, source: 'template', rejected: [] };
 
   const { kept, rejected } = acceptPosts(written, packet, { approved });

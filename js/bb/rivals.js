@@ -371,6 +371,11 @@ export function seatRivals(week, house) {
   const st = rivalsState();
   if (!st || !(st.waiting || []).length) return [];
   const seated = [...st.waiting];
+  // Everything already on the week happened before they came through the door.
+  // Stamped rather than inferred, because "the House Life screens before the
+  // arrival" is a question only this moment can answer — after this, the
+  // roster is the roster and no later screen has to think about it.
+  for (const a of week?.acts || []) { if (a) a._preArrival = true; }
   for (const name of seated) {
     if (Array.isArray(house) && !house.includes(name)) house.push(name);
     if (Array.isArray(week?.houseAtStart) && !week.houseAtStart.includes(name)) {
@@ -423,8 +428,14 @@ const HANDOVERS_MANY = [
 export function rivalsChooseHoh(week, competition, { rng = Math.random } = {}) {
   const st = rivalsState();
   if (!st || st.chose || !openingWeek(week)) return null;
-  const rivals = st.pairs.map(p => p.rival).filter(n =>
-    (week?.houseAtStart || gs.activePlayers || []).includes(n));
+  // Whoever is still part of this — in the house already, or standing outside
+  // it waiting to come in. They decide the competition BEFORE they walk
+  // through the door, which is the whole point of the beat: three people
+  // nobody in that building has met hand the crown to one of them. Filtering
+  // on the house alone made the handover vanish the moment the arrival moved
+  // after the competition.
+  const inPlay = new Set([...(week?.houseAtStart || gs.activePlayers || []), ...(st.waiting || [])]);
+  const rivals = st.pairs.map(p => p.rival).filter(n => inPlay.has(n));
   if (!rivals.length) return null;
   const finalists = (competition?.placements || []).filter(n => !rivals.includes(n)).slice(0, 2);
   if (finalists.length < 2) return null;
@@ -450,20 +461,34 @@ export function rivalsChooseHoh(week, competition, { rng = Math.random } = {}) {
   const n = rivals.length;
   st.chose = { winner, loser, finalists: [...finalists], tally, ballots };
 
-  // Being handed the house by three strangers is a debt, and everybody watched
-  // it happen. The person who was NOT chosen watched it too.
-  for (const r of rivals) {
-    try { addBond(winner, r, 2.2); } catch { /* fine */ }
-    try { addBond(loser, r, -1.6); } catch { /* fine */ }
-    try {
-      rememberStrategy(winner, r, 'handed-me-the-house', Number(week?.num) || 1, 2,
-        { format: 'big-brother', twist: 'bb-rivals' });
-    } catch { /* the debt stands */ }
+  // ── the debt, itemised ──
+  //
+  // Per ballot, not per rival. Everybody in that room watched who wrote which
+  // name, so the person who put you in that chair is owed something the person
+  // who tried to keep you out of it is not — and crediting all three equally
+  // made the single most legible favour of the season into a flat bonus nobody
+  // could point at.
+  for (const b of ballots) {
+    const backed = b.choice === winner;
+    try { addBond(winner, b.rival, backed ? 3.2 : 0.5); } catch { /* fine */ }
+    // And the one who did not get it remembers the room the same way.
+    try { addBond(loser, b.rival, backed ? -2.2 : 1.4); } catch { /* fine */ }
+    if (backed) {
+      try {
+        rememberStrategy(winner, b.rival, 'handed-me-the-house', Number(week?.num) || 1, 3,
+          { format: 'big-brother', twist: 'bb-rivals' });
+      } catch { /* the debt stands */ }
+    }
   }
 
   return {
     type: 'rivals-hoh', week: Number(week?.num) || 1,
     winner, loser, finalists: [...finalists], rivals, ballots,
+    // The first time anybody sees them. The house has been told three people
+    // are coming and has spent an evening working out which of them it is
+    // about; this is the screen where they get faces, so it carries the same
+    // introduction every other houseguest got on move-in day.
+    introduce: st.pairs.map(p => ({ name: p.rival, partner: p.partner, label: p.label })),
     tally: Object.entries(tally).map(([name, votes]) => ({ name, votes })),
     beats: [{
       text: `The competition comes down to ${finalists.join(' and ')}, and then it stops. `

@@ -15927,8 +15927,13 @@ const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
  */
 function _bbBeforeArrivals(ep) {
   const house = ep?.houseAtStart || [];
-  const late = (ep?.acts || []).find(a => a?.type === 'rivals-open')?.arrived || [];
+  const late = _bbNotYetArrived(ep);
   return late.length ? house.filter(n => !late.includes(n)) : house;
+}
+
+/** Whoever this episode walked in partway through — empty on a normal week. */
+function _bbNotYetArrived(ep) {
+  return (ep?.acts || []).find(a => a?.type === 'rivals-open')?.arrived || [];
 }
 
 export function rpBuildBBColdOpen(ep) {
@@ -16498,7 +16503,10 @@ export function rpBuildBBHouseLife(ep, act, slot) {
   const phase = act?.phase || 'pre-hoh';
   const meta = _BB_PHASE_META[phase] || _BB_PHASE_META['pre-hoh'];
   const beats = act?.socialBeats || [];
-  const house = ep.houseAtStart || [];
+  // A House Life stretch that ran before the Rivals came through the door was
+  // showing them on the wall for an evening they were not in the building for.
+  // The act is stamped at the moment they are seated — see `seatRivals`.
+  const house = act?._preArrival ? _bbBeforeArrivals(ep) : (ep.houseAtStart || []);
   const status = _bbfStatus(ep, phase);
 
   const houseActs = (ep.acts || []).filter(a => a.type === 'house');
@@ -16525,7 +16533,7 @@ export function rpBuildBBHouseLife(ep, act, slot) {
         <span>WEEK ${ep.num}</span>
         <span class="bbf-hud-sp">${house.length} IN THE HOUSE</span>
       </div>
-      ${_bbMemoryWall(house, { status })}
+      ${_bbMemoryWall(house, { status, notYet: act?._preArrival ? _bbNotYetArrived(ep) : [] })}
       ${_bbPowerBand(ep)}`;
 
   if (beats.length) {
@@ -20795,8 +20803,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBRivalsOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'rivals-hoh':
+        // The introduction helpers go in as arguments rather than being
+        // imported, the way the reveal helpers do for Battle Back — this file
+        // owns them and vp-bb-rivals.js importing back into it would be a cycle.
         screens.push({ id: id('bb-rivals-hoh'), label: 'Rivals: The Handover',
-          html: rpBuildBBRivalsHoh(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+          html: rpBuildBBRivalsHoh(view, act, { esc: _bbEsc, avatar: _bbAvatar,
+            intro: _bbIntroQuote, firstRead: _bbFirstRead }) });
         break;
       case 'rivals-week':
         screens.push({ id: id('bb-rivals-week'), label: 'Rivals: The Grudge',
@@ -21428,8 +21440,15 @@ const _bbSlug = name => {
  * on the house status screen this week's evictee is still lit; on the aftermath,
  * where the eviction has already played, they have gone out.
  */
-function _bbMemoryWall(stillIn, { note = '', status = {} } = {}) {
-  const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn]);
+function _bbMemoryWall(stillIn, { note = '', status = {}, notYet = [] } = {}) {
+  // `notYet` is a third state the wall did not have. It draws every name in the
+  // cast and dims whoever is not in `stillIn`, which reads as "evicted" — and
+  // the Rivals' latecomers spent the first half of their own premiere on the
+  // wall looking like people who had already gone home. Somebody who has never
+  // walked through the door has no frame at all.
+  const skip = new Set(notYet);
+  const all = (typeof players !== 'undefined' ? players.map(p => p.name) : [...stillIn])
+    .filter(n => !skip.has(n));
   const live = new Set(stillIn);
   const label = { hoh: 'HOH', nom: 'NOM', veto: 'VETO' };
   const cells = all.map(name => {
@@ -21748,7 +21767,12 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   const opening = phase === 'opening';
   const state = (opening ? ep.openingState : ep.closingState) || null;
   const snap = state || ep.gsSnapshot || {};
-  const stillIn = ep.houseAtStart?.length ? ep.houseAtStart : (snap.activePlayers || gs.activePlayers || []);
+  // The opening picture is of the house WALKING IN, which on a Rivals week is
+  // not the house that finishes the night — the latecomers are pushed onto the
+  // roster the moment they arrive, and they had not arrived when this snapshot
+  // is supposed to be of.
+  const roster = opening ? _bbBeforeArrivals(ep) : (ep.houseAtStart || []);
+  const stillIn = roster.length ? roster : (snap.activePlayers || gs.activePlayers || []);
   if (!stillIn.length) return '';
 
   // Record as of the start of this week: only weeks that have already aired.
@@ -22163,6 +22187,9 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
       // week is over so every marker is safe; on the opening screen none of it
       // has happened yet.
       status: opening ? {} : _bbfStatus(ep, 'eviction'),
+      // Nobody who has not walked through the door yet gets a frame on the
+      // "before anything happens" wall.
+      notYet: opening ? _bbNotYetArrived(ep) : [],
     })}
     ${gazette}
     ${section('stand', 'WHERE EVERYBODY STANDS', '#f0a500', standingBody)}

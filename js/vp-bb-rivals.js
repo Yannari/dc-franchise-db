@@ -87,6 +87,46 @@ const STYLE = `<style>
   padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .bbrv .rv-row:last-child{border-bottom:0}
 .bbrv .rv-row em{font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:9px;color:#a09274}
+
+/* ── meeting them, at the moment they hand the house over ── */
+.bbrv .rv-intros{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.bbrv .rv-intro{display:grid;grid-template-columns:66px 1fr;gap:12px;align-items:start;
+  padding-top:12px;border-top:1px dashed rgba(43,36,21,.3)}
+.bbrv .rv-intro:first-child{border-top:0;padding-top:0}
+.bbrv .rv-intro figure{width:66px;height:66px;margin:0;border-radius:2px;overflow:hidden;
+  border:4px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35);transform:rotate(-1.2deg)}
+.bbrv .rv-intro figure .bb-av{width:66px!important;height:66px!important;border-radius:0}
+.bbrv .rv-intro b{display:block;font-family:var(--font-display);font-size:17px;color:var(--rv-ink)}
+.bbrv .rv-intro u{display:block;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
+  letter-spacing:1.6px;color:#8a7a52;text-decoration:none;margin-top:3px}
+.bbrv .rv-intro p{margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--rv-ink)}
+.bbrv .rv-read{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.bbrv .rv-read span{font-family:ui-monospace,Consolas,monospace;font-size:7.5px;letter-spacing:1.2px;
+  padding:3px 7px;border-radius:20px;background:rgba(43,36,21,.1);color:#4a3f24}
+
+/* ── the two it comes down to ── */
+.bbrv .rv-final{position:relative;z-index:2;max-width:780px;margin:16px auto 0;display:flex;
+  align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.bbrv .rv-fin{text-align:center;opacity:.5;transition:opacity .3s ease}
+.bbrv .rv-fin.is-won{opacity:1}
+.bbrv .rv-fin figure{width:82px;height:82px;margin:0 auto;border-radius:50%;overflow:hidden;
+  border:3px solid rgba(255,255,255,.14)}
+.bbrv .rv-fin.is-won figure{border-color:#e3b341;box-shadow:0 0 26px rgba(227,179,65,.45)}
+.bbrv .rv-fin figure .bb-av{width:82px!important;height:82px!important;border-radius:50%}
+.bbrv .rv-fin b{display:block;margin-top:7px;font-family:var(--font-display);font-size:16px;color:#fff}
+.bbrv .rv-fin u{display:block;font-family:ui-monospace,Consolas,monospace;font-size:7.5px;
+  letter-spacing:1.4px;color:#a09274;text-decoration:none;margin-top:2px}
+.bbrv .rv-vs{font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:2.4px;color:#6d6250}
+
+.bbrv .rv-ballot figure{width:40px;height:40px;margin:0 auto 6px;border-radius:50%;overflow:hidden;
+  border:2px solid rgba(43,36,21,.25)}
+.bbrv .rv-ballot figure .bb-av{width:40px!important;height:40px!important;border-radius:50%}
+.bbrv .rv-ballot.is-backed{box-shadow:0 6px 16px rgba(0,0,0,.4),0 0 0 2px #e3b341}
+.bbrv .rv-ballot .rv-not{color:#b3382f;margin-top:4px}
+.bbrv .rv-ballot s{display:block;margin-top:6px;padding-top:5px;text-decoration:none;
+  border-top:1px dashed rgba(43,36,21,.3);font-family:ui-monospace,Consolas,monospace;
+  font-size:7px;letter-spacing:1.4px;color:#8a7a52}
+.bbrv .rv-ballot.is-backed s{color:#7a5c12}
 </style>`;
 
 const shell = inner => `<div class="rp-page bbrv">${STYLE}
@@ -137,22 +177,61 @@ export function rpBuildBBRivalsHoh(ep, act, u = {}) {
   if (!act) return '';
   const esc = typeof u.esc === 'function' ? u.esc : v => String(v ?? '');
   const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
+  const quote = typeof u.intro === 'function' ? u.intro : () => '';
+  const reads = typeof u.firstRead === 'function' ? u.firstRead : () => [];
+  const n = (act.rivals || []).length;
+
+  // ── meeting them ──
+  //
+  // The house has been told three more are coming and has spent an evening
+  // working out which of them it is about. This is the screen where they get
+  // faces, so it carries the same introduction everybody else got on move-in
+  // day — they arrived after it and would otherwise be the only houseguests in
+  // the season who never had one.
+  const intros = (act.introduce || []).map(p => {
+    const said = quote(p.name);
+    const read = (reads(p.name) || []).slice(0, 3);
+    return `<div class="rv-intro">
+      <figure>${avatar(p.name, 66)}</figure>
+      <div>
+        <b>${esc(p.name)}</b>
+        <u>HERE FOR ${esc(String(p.partner || '').toUpperCase())} &middot; ${esc(String(p.label || '').toUpperCase())}</u>
+        ${said ? `<p>${said}</p>` : ''}
+        ${read.length ? `<div class="rv-read">${read.map(r => `<span>${esc(r)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
   return shell(`
     <div class="rv-head">
       <div class="rv-eyebrow">RIVALS &middot; WEEK ${esc(act.week)} &middot; NOT WON</div>
       <div class="rv-title">THEY DECIDE IT</div>
       <div class="rv-sub">The competition comes down to two and then stops. ${
-  (act.rivals || []).length === 1 ? 'One person' : `${(act.rivals || []).length} people`} who ${
-  (act.rivals || []).length === 1 ? 'has' : 'have'} been in this building for an hour, who could not
+  n === 1 ? 'One person' : `${n} people`} nobody in that building has met yet, who could not
         play and cannot be nominated, choose which of them gets the house.</div>
     </div>
+
+    ${intros ? `<div class="rv-file"><div class="rv-case">THE ${
+  n === 1 ? 'ONE' : String(n).toUpperCase()} NOBODY HAS MET</div>
+      <div class="rv-intros">${intros}</div></div>` : ''}
+
+    <div class="rv-final">
+      ${(act.finalists || []).map(name => `<div class="rv-fin ${name === act.winner ? 'is-won' : ''}">
+        <figure>${avatar(name, 82)}</figure>
+        <b>${esc(name)}</b>
+        <u>${name === act.winner ? 'HANDED THE HOUSE' : 'HANDED NOTHING'}</u>
+      </div>`).join('<div class="rv-vs">OR</div>')}
+    </div>
+
     <div class="rv-vote">
       <h3>${esc(act.winner)}</h3>
-      <div class="rv-vsub">over ${esc(act.loser)} &middot; handed the house by
-        ${esc((act.rivals || []).join(', '))}</div>
-      <div class="rv-ballots">${(act.ballots || []).map(b => `<div class="rv-ballot">
+      <div class="rv-vsub">${(act.tally || []).map(t => `${esc(t.name)} ${t.votes}`).join(' &middot; ')}</div>
+      <div class="rv-ballots">${(act.ballots || []).map(b => `<div class="rv-ballot ${
+  b.choice === act.winner ? 'is-backed' : ''}">
+        <figure>${avatar(b.rival, 40)}</figure>
         <u>${esc(b.rival)} WRITES</u><b>${esc(b.choice)}</b>${
-  b.protecting ? `<u style="color:#b3382f;margin-top:4px">NOT ${esc(b.protecting)}</u>` : ''}</div>`).join('')}</div>
+  b.protecting ? `<u class="rv-not">NOT ${esc(b.protecting)}</u>` : ''}
+        <s>${b.choice === act.winner ? 'IS OWED ONE' : 'IS NOT'}</s></div>`).join('')}</div>
     </div>
     ${beats(act.beats, esc)}
   `);

@@ -1178,14 +1178,9 @@ export function simulateBBWeek(options = {}) {
   // The three who walk in late. Announced like any other rule the house is
   // handed — the wiki is explicit that the eleven already living there were
   // INFORMED — and then they actually arrive, which is its own screen.
-  // Held rather than pushed, for the same reason the saboteur's briefing is:
-  // the announcement act has not been built yet on the install week, and three
-  // people walking through the door BEFORE the room is told anybody is coming
-  // is the season's first screen out of order.
-  try {
-    announceRivals(week);
-    week._rivalsOpen = openRivals(week, { rng });
-  } catch { /* the season plays without them */ }
+  // Only the RULE, here. They do not walk in until after the competition — see
+  // the arrival block below the crowning.
+  try { announceRivals(week); } catch { /* the season plays without them */ }
 
   try {
     announceSaboteur(week);
@@ -1540,15 +1535,7 @@ export function simulateBBWeek(options = {}) {
     week.acts.push({ type: 'twist-announcement', announced: group, secondCall: again, socialBeats: beats });
     }
   }
-  // After the wall has spoken, if it spoke this week. The latecomers are put
-  // into the room HERE and not when the act was built, or the announcement's
-  // own reactions come out of a house that already contains the people it is
-  // announcing.
-  if (week._rivalsOpen) {
-    try { seatRivals(week, house); } catch { /* they arrive anyway */ }
-    week.acts.push(week._rivalsOpen);
-    delete week._rivalsOpen;
-  }
+  // After the wall has spoken, if it spoke this week.
   if (week._sabBrief) { week.acts.push(week._sabBrief); delete week._sabBrief; }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.
@@ -1661,10 +1648,23 @@ export function simulateBBWeek(options = {}) {
     // instead of presenting a competition that is not there.
     preCrowned: !!preCrowned,
     coHoh: week.botbActive ? coHoh : null }));
-  // AFTER the competition screen, because that is the order it happens in: the
-  // yard plays, it comes down to two, and only then do the three people who
-  // could not compete decide which of them takes it.
+  // ── and only now do they come through the door ──
+  //
+  // The order the night actually runs in: the room is told three more are
+  // coming, the house spends its first evening together WITHOUT them, the
+  // competition plays, it comes down to two — and the three people nobody in
+  // that building has met yet decide which one gets it. Then they walk in.
+  //
+  // Arriving before any of that put them in the opening House Life, on the
+  // memory wall, and in a room reacting to an announcement about themselves.
   if (rivalHandover) week.acts.push(rivalHandover);
+  try {
+    const arrived = openRivals(week, { rng });
+    if (arrived) {
+      seatRivals(week, house);
+      week.acts.push(arrived);
+    }
+  } catch { /* the season plays without them */ }
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.
   revise('hoh', { hoh });

@@ -401,9 +401,11 @@ describe('a season with one running', () => {
       }
     }
 
-    // And nothing on the page names them before the door goes.
+    // And nothing on the page names them before the house first sees them,
+    // which is the handover — they decide the competition from outside the
+    // door and are introduced there, then they walk in.
     const text = generateSummaryText(ep) || '';
-    const before = text.slice(0, text.indexOf('RIVALS — THE ARRIVAL'));
+    const before = text.slice(0, text.indexOf('RIVALS — THE HANDOVER'));
     for (const line of before.split(String.fromCharCode(10))) {
       if (/have not walked in yet/.test(line)) continue;
       for (const n of late) {
@@ -437,7 +439,13 @@ describe('a season with one running', () => {
     Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
     const screens = buildVPScreens(ep) || [];
 
-    for (const s of screens.filter(x => /bb-cold|bb-twist/.test(x.id))) {
+    // NOTHING before the handover may name them — including the memory wall,
+    // which draws every name in the cast and dims whoever is not in the house.
+    // The latecomers spent the first half of their own premiere on that wall
+    // looking like people who had already been evicted.
+    const handoverAt = screens.findIndex(x => /bb-rivals-hoh/.test(x.id));
+    expect(handoverAt).toBeGreaterThan(0);
+    for (const s of screens.slice(0, handoverAt)) {
       for (const n of late) {
         expect(s.html, `${n} is on "${s.label}" before walking in`).not.toContain(n);
       }
@@ -446,13 +454,63 @@ describe('a season with one running', () => {
       if (sofas) expect(Number(sofas[1])).toBe(NAMES.length - late.length);
     }
 
-    // The handover happens at the END of the competition, so it reads after it.
+    // The night in the order it happens: the rule, the house's first evening
+    // without them, the competition, the handover, and only then the door.
     const labels = screens.map(x => x.label);
-    expect(labels.indexOf('Rivals: The Handover')).toBeGreaterThan(labels.indexOf('HOH'));
-    // And the arrival comes after the rule that announces it.
-    expect(labels.indexOf('Rivals: Arrival'))
-      .toBeGreaterThan(labels.indexOf('Rivals: Announcement'));
+    const at = l => labels.indexOf(l);
+    expect(at('Rivals: Announcement')).toBeGreaterThan(-1);
+    expect(at('House Life')).toBeGreaterThan(at('Rivals: Announcement'));
+    expect(at('HOH')).toBeGreaterThan(at('House Life'));
+    expect(at('Rivals: The Handover')).toBeGreaterThan(at('HOH'));
+    expect(at('Rivals: Arrival')).toBeGreaterThan(at('Rivals: The Handover'));
   }, 60000);
+
+  it('introduces them on the screen where the house first sees them', () => {
+    // They arrive after move-in day, so without this they are the only
+    // houseguests in a season who never get an introduction at all.
+    house({ bbRivals: 'declared', bbRivalsCount: 3 });
+    const ep = simulateBBEpisode();
+    const act = (ep.acts || []).find(a => a.type === 'rivals-hoh');
+    expect(act).toBeTruthy();
+    expect((act.introduce || []).length).toBe(3);
+    for (const p of act.introduce) {
+      expect(p.name).toBeTruthy();
+      expect(p.partner).toBeTruthy();
+      expect(p.label).toBeTruthy();
+    }
+    const text = generateSummaryText(ep) || '';
+    for (const p of act.introduce) {
+      expect(text).toContain(`${p.name} — here for ${p.partner}`);
+    }
+    gs.episodeHistory = [ep];
+    buildVPScreens(ep);
+    Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
+    const screen = (buildVPScreens(ep) || []).find(s => /bb-rivals-hoh/.test(s.id));
+    for (const p of act.introduce) expect(screen.html).toContain(p.name);
+    expect(screen.html).toMatch(/FIRST READ|rv-read/);
+  }, 60000);
+
+  it('owes the favour to whoever actually voted for them', () => {
+    // Crediting all three equally made the single most legible favour of the
+    // season into a flat bonus nobody could point at.
+    let split = 0;
+    for (let i = 0; i < 14 && split < 3; i++) {
+      house();
+      installRivals(NAMES, { rng: Math.random });
+      const act = rivalsChooseHoh(aWeek(), { placements: ['Gus', 'Hicks', 'Iris'], winner: 'Gus' },
+        { rng: Math.random });
+      if (!act) continue;
+      const backed = act.ballots.filter(b => b.choice === act.winner).map(b => b.rival);
+      const against = act.ballots.filter(b => b.choice !== act.winner).map(b => b.rival);
+      if (!backed.length || !against.length) continue;
+      split++;
+      const best = Math.min(...backed.map(n => getBond(act.winner, n)));
+      const worst = Math.max(...against.map(n => getBond(act.winner, n)));
+      expect(best, 'the rival who handed it over is owed no more than the one who did not')
+        .toBeGreaterThan(worst);
+    }
+    expect(split, 'the rivals never once disagreed').toBeGreaterThan(0);
+  });
 
   it('is told about before anybody walks through the door', () => {
     // Three people arriving BEFORE the room is told anybody is coming is the
@@ -464,8 +522,12 @@ describe('a season with one running', () => {
     const arrive = types.indexOf('rivals-open');
     expect(told).toBeGreaterThan(-1);
     expect(arrive).toBeGreaterThan(told);
-    // And the handover comes after both, because it happens at the comp.
-    expect(types.indexOf('rivals-hoh')).toBeGreaterThan(arrive);
+    // The house has its first evening WITHOUT them, then the competition, then
+    // they decide it from outside the door — and only then do they come in.
+    expect(types.indexOf('house')).toBeGreaterThan(told);
+    expect(types.indexOf('hoh')).toBeGreaterThan(types.indexOf('house'));
+    expect(types.indexOf('rivals-hoh')).toBeGreaterThan(types.indexOf('hoh'));
+    expect(arrive).toBeGreaterThan(types.indexOf('rivals-hoh'));
   }, 60000);
 
   it('actually decides the first Head of Household', () => {

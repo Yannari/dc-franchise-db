@@ -4511,9 +4511,23 @@ export function generateBBSummaryText(ep) {
       case 'rivals-hoh': {
         sec('RIVALS — THE HANDOVER');
         ln(`  The competition comes down to ${(act.finalists || []).join(' and ')} and then stops.`);
+        // The first time anybody sees them, so they get the introduction
+        // everybody else got on move-in day — they arrived after it.
+        if ((act.introduce || []).length) {
+          ln('');
+          for (const p of act.introduce) {
+            ln(`  ${p.name} — here for ${p.partner} (${p.label})`);
+            try { ln(`    ${_bbIntroQuote(p.name)}`); } catch { /* no line written for them */ }
+            try {
+              const reads = _bbFirstRead(p.name) || [];
+              if (reads.length) ln(`    First read: ${reads.join(' · ')}`);
+            } catch { /* the room said nothing */ }
+          }
+        }
         ln('');
         (act.ballots || []).forEach(b => ln(`  ${b.rival} writes ${b.choice}.`
-          + (b.protecting ? ` (${b.protecting} was the other one.)` : '')));
+          + (b.protecting ? ` (${b.protecting} was the other one.)` : '')
+          + (b.choice === act.winner ? ` ${act.winner} owes ${b.rival} one.` : '')));
         ln('');
         (act.beats || []).forEach(b => ln(`  [${b.badgeText}] ${b.text}`));
         ln('');

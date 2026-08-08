@@ -5,7 +5,7 @@
 // times in a week. The sampler is how the library gets judged: feed it an event,
 // read fifty posts, and see whether the fandom sounds like a fandom.
 import { describe, expect, it } from 'vitest';
-import { samplePosts, composePost, renderSample } from '../js/social/sampler.js';
+import { samplePosts, composePost, renderSample, PHRASINGS } from '../js/social/sampler.js';
 import { PERSONAS } from '../js/social/personas.js';
 import { TOPICS } from '../js/social/topics.js';
 import { PLATFORMS } from '../js/social/platforms.js';
@@ -46,6 +46,36 @@ describe('composing one post', () => {
       }
     }
   });
+
+  it('never leaves an unfilled slot in the hosted room either', () => {
+    // The chat was the untested room, which is exactly where a fault hides.
+    for (let i = 0; i < 60; i++) {
+      for (const p of samplePosts(BLINDSIDE, { count: 5, stream: 'chat', rng: seeded(i) })) {
+        expect(p.text, 'a template slot leaked into the chat').not.toMatch(/[{}]/);
+        expect(p.text).not.toMatch(/undefined|NaN|null/);
+      }
+    }
+  });
+
+  it('refuses a phrasing whose slot it does not recognise', () => {
+    // Blanking an unknown slot closes the seam invisibly: "{subjcet} was robbed"
+    // renders as "was robbed", which is grammatical, plausible and wrong, and
+    // the leaked-slot test above cannot see it. A typo in a thousand-line
+    // phrasing library has to fail at the first sample instead.
+    const bogus = {
+      id: 'bogus-topic', stream: 'timeline', weight: 1,
+      triggers: ['blindside'], reads: [], shapes: ['dunk'],
+    };
+    PHRASINGS['bogus-topic'] = { dunk: { timeline: ['{subjcet} was robbed'] } };
+    try {
+      expect(() => composePost({
+        persona: PERSONAS[0], topic: bogus, platform: PLATFORMS.timeline,
+        event: BLINDSIDE, rng: seeded(1),
+      })).toThrow(/unknown slot/);
+    } finally {
+      delete PHRASINGS['bogus-topic'];
+    }
+  });
 });
 
 describe('the feed sounds like a crowd', () => {
@@ -66,6 +96,26 @@ describe('the feed sounds like a crowd', () => {
   it('talks about more than one thing', () => {
     expect(new Set(posts.map(p => p.topic)).size,
       'fifty posts and one topic').toBeGreaterThanOrEqual(3);
+  });
+
+  it('does not repeat itself in the hosted room either', () => {
+    // The chat was held to no variety bar at all, so it quietly sat below the
+    // one the timeline passes. A thin room is still a room people read.
+    const chat = samplePosts(BLINDSIDE, { count: 50, stream: 'chat', rng: seeded(3) });
+    expect(new Set(chat.map(p => p.text)).size / chat.length,
+      'the chat keeps saying the same thing').toBeGreaterThan(0.8);
+  });
+
+  it('holds its variety across many seeds, in both rooms', () => {
+    // One passing seed is a coincidence. The bar has to hold on the worst one.
+    for (const stream of ['timeline', 'chat']) {
+      let worst = 1;
+      for (let s = 0; s < 60; s++) {
+        const ps = samplePosts(BLINDSIDE, { count: 50, stream, rng: seeded(s) });
+        worst = Math.min(worst, new Set(ps.map(p => p.text)).size / ps.length);
+      }
+      expect(worst, `${stream} repeats itself on its worst seed`).toBeGreaterThan(0.8);
+    }
   });
 });
 

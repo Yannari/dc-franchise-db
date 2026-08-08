@@ -68,6 +68,12 @@ export const PHRASINGS = {
         'Strategically this is the week the season turned, and I do not think {actor} understands that yet.',
         'If you are cutting {subject} on episode {episode} you had better already have the next three votes counted. They did not.',
         'Everyone is scoring this on whether it worked. Score it on whether it was the best available option, because it was not close.',
+        'The mistake was made two weeks ago. What we watched tonight was just the bill arriving.',
+        'Nobody in that house is playing the jury yet, and that is why one of them is going to lose a five to two vote in a month.',
+        'You can take the shot early or you can take it clean. {actor} tried to do both and got neither.',
+        'There were four ways to play episode {episode} and the house picked the third best one, which is somehow worse than picking the worst.',
+        'What nobody is saying: {subject} was the only person keeping three separate people honest, and all three of them just got harder to read.',
+        'Good move, bad week for it. Those are different criticisms and the room keeps merging them.',
       ],
     },
     'thread-opener': {
@@ -84,6 +90,8 @@ export const PHRASINGS = {
         'Going to walk through this vote properly. Start with who was actually at risk, not who the episode told you was at risk.',
         'Watch party notes. Three things happened before that vote that nobody is talking about this morning.',
         'I want to make the unpopular case here, so bear with me for a minute.',
+        'Before anybody else weighs in, I want to put the timeline of this week down in order, because half the arguments in here are about what happened when.',
+        'Long one, sorry. There is a version of episode {episode} where {subject} survives, and it is worth understanding why it did not happen.',
       ],
     },
     'quote-dunk': {
@@ -100,6 +108,8 @@ export const PHRASINGS = {
         'People keep saying {actor} controlled this. {actor} was handed this, and there is a difference worth naming.',
         'I have seen this take everywhere today and it does not survive a rewatch.',
         'That read works if you ignore the veto, which is a lot to ignore.',
+        'Every year somebody calls the loudest move the best move. They are almost never the same move.',
+        'I would love to agree with the room on this one and I have watched it three times now and I cannot.',
       ],
     },
   },
@@ -123,6 +133,10 @@ export const PHRASINGS = {
         'I was at the watch party for this and the room went silent. Nobody expected {actor} to have the numbers.',
         'Genuinely one of the cleanest I have seen. No leaks, no tell, and {subject} never got a whisper.',
         'The room noise on that vote reveal told you more than the confessionals did.',
+        'The hug before the vote is the part that will stay with me. Somebody in that circle knew, and hugged them anyway.',
+        'I have had that walk to the door. You do the maths on the way out and it never adds up until about three days later.',
+        'Rewind to the twenty second mark. {subject} looks for {actor} first, and {actor} is already looking somewhere else. That is the shot.',
+        'Nobody in that room could hold a face. You could read the entire vote off the people who were not voting.',
       ],
     },
     'dunk': {
@@ -141,6 +155,8 @@ export const PHRASINGS = {
         'There is no gentle way to say this. {subject} had every piece of information they needed and did nothing with any of it.',
         'You cannot talk that much and hear that little. That is the whole post-mortem.',
         'The arrogance is the story. {subject} believed the house because the house told them what they wanted.',
+        'I like {subject} personally and that was one of the least aware games I have watched in fifteen seasons.',
+        'Seven episodes of being told they were safe by people they never once checked on. That is not bad luck.',
       ],
     },
     'disbelief': {
@@ -158,6 +174,8 @@ export const PHRASINGS = {
         'Somebody talk me through it, because I had {subject} safe until the third vote was read.',
         'I called this wrong in the prediction thread and I want it on the record that I called it wrong.',
         'That is the first time in a long time this show has genuinely surprised me.',
+        'I am going to need the room to walk me through the middle ten minutes, because I lost the thread somewhere and never found it.',
+        'Fifteen seasons of this and I still got played by an edit. Genuinely delighted about it.',
       ],
     },
   },
@@ -190,6 +208,7 @@ export const PHRASINGS = {
         'For the record: {subject} is now four for six on the podium in season {season}, and none of it has bought them a single vote of safety.',
         'Pulled the numbers this morning. {subject} leads the season in comp scoring and sits bottom three in bond strength. That combination gets you fifth.',
         'Episode {episode} and the challenge record says the tribe carrying itself is the one everybody keeps calling weak.',
+        'Two numbers that matter this week: {subject} on the podium again, and the same {subject} named on three ballots. Comps do not buy you what people think they buy you.',
       ],
     },
   },
@@ -208,6 +227,7 @@ export const PHRASINGS = {
         'I do not enjoy saying it, but this season stopped being competitive around episode four and the edit is working very hard to hide that.',
         'A steamroll is only boring when nobody on the bottom tries. That is what is happening here.',
         'The problem is not that {actor} is good. The problem is that six people have collectively decided not to play.',
+        'A dominant run is only fun to watch when somebody is swinging at it. Nobody has swung since episode four.',
         'We are in the stretch where the season lives or dies on somebody on the bottom finding a spine. I am not optimistic.',
       ],
     },
@@ -223,6 +243,7 @@ export const PHRASINGS = {
         'I will keep watching because I always keep watching, but I stopped being surprised somewhere around episode {episode}.',
         'The rest of this is a formality unless the format intervenes, and I would rather it did not.',
         'It is a well played season and a badly watched one. Both things are true.',
+        'I have stopped predicting and started confirming, which is not why any of us signed up for the prediction game.',
       ],
     },
     'quote-dunk': {
@@ -236,6 +257,7 @@ export const PHRASINGS = {
         'People keep insisting this is still open. Count the votes and tell me which one is available.',
         'I understand the optimism and I do not share it. The numbers have not moved in five weeks.',
         'Calling this competitive is a kindness the tape does not support.',
+        'Every week somebody in here says the bottom is about to move. Show me the week where it moved.',
       ],
     },
   },
@@ -248,6 +270,10 @@ export const PHRASINGS = {
         'I will hedge slightly, but I have {actor} in the final three and {subject} on the jury being very loud about it.',
         'Episode {episode} is where I would put my marker down. If {actor} survives the next vote, they win.',
         'Prediction game, my entry: the person who wins this is somebody nobody in this chat has mentioned today.',
+        'Locking in my bracket now while I still feel clever about it. {actor} first, {subject} on the jury, and me eating this post in three weeks.',
+        'I have been wrong every week of season {season} so far, so take this as a reverse indicator: I think {actor} goes home next.',
+        'Final three call, and I want it timestamped: {actor}, plus two people currently being edited as furniture.',
+        'The winner of season {season} is somebody who has not had a confessional in three episodes. It usually is.',
       ],
     },
     'insider-read': {
@@ -257,6 +283,8 @@ export const PHRASINGS = {
         'The thing you learn out there is that the house always tells you a day early, and nobody ever listens.',
         'When somebody starts pre-writing their jury speech in confessional, they are done. {subject} started three episodes ago.',
         'That was not a slip. That was a message aimed at somebody who was not in the room, and {actor} heard it.',
+        'The washing-up is where the season gets decided. It is the only place two people can talk for ten minutes without it looking like a meeting.',
+        'You can hear it in how {actor} says the name. Full name means distance, and distance means a vote.',
       ],
     },
   },
@@ -275,6 +303,8 @@ export const PHRASINGS = {
         'People will overrate this in a month, the way they overrate everything recent, but it does belong in the conversation.',
         'The franchise has produced better games and it has not produced a better single episode.',
         'Ten years from now this is the clip they open the retrospective with.',
+        'I have been asked about my own season for years and nobody ever asks about the strategy. They ask about the one night everything went wrong. This is that night for {subject}.',
+        'Great seasons are made of two or three episodes like this one and a lot of Tuesdays. Season {season} just got one of the two or three.',
       ],
     },
     'ranking': {
@@ -288,6 +318,9 @@ export const PHRASINGS = {
         'If I am ranking the format honestly, season {season} is upper middle. Great moments, thin bottom half.',
         'I would put {subject} in my top fifteen players and nowhere near my top five games. Those lists are allowed to disagree.',
         'The all time list is going to have to make room for this one and something is going to have to come off it.',
+        'Recency does strange things to these lists. Ask me again in a year and I will either move {subject} up ten places or forget the season entirely.',
+        'Bottom half of my seasons list, top five of my episodes list. Season {season} is going to be remembered for one night and not much else.',
+        'I rank players on what they were up against, which is the only reason {subject} is anywhere near my top twenty.',
       ],
     },
   },
@@ -305,6 +338,7 @@ export const PHRASINGS = {
         'I have no problem with twists. I have a problem with twists that arrive the exact week the story needs them.',
         'The format should create pressure, not relieve it, and this one relieved it for precisely one person.',
         'Season {season} has intervened three times now and every intervention has pointed the same direction.',
+        'When I played, the twist was announced to everybody at once. Whatever this was, it was not that.',
       ],
     },
     'conspiracy': {
@@ -318,6 +352,8 @@ export const PHRASINGS = {
       chat: [
         'I do not think it is scripted. I do think the schedule and the twist timing are doing an enormous amount of work.',
         'Production does not need to script anything when it can choose when the twist lands.',
+        'Nobody is handing anybody a script. Somebody is absolutely deciding which conversation gets a camera on it, and that is enough.',
+        'I have been in that control room dynamic from the other side. They do not tell you what to say. They tell you when to say it.',
       ],
     },
   },
@@ -353,6 +389,7 @@ export const PHRASINGS = {
         'I am naming it plainly: that was bullying, and the fact that it happened inside a game does not change what it was.',
         'The people who stayed quiet in that room are as responsible as the ones who spoke, and they know it.',
         '{actor} set the tone and then stood back and let the room do the work. I have seen that play before.',
+        'Somebody in that house had the standing to stop it in one sentence and chose not to spend it. That is the part I cannot get past.',
       ],
     },
     'pile-on-against-the-house': {
@@ -366,6 +403,8 @@ export const PHRASINGS = {
       chat: [
         'That house has just handed {subject} the entire audience, and if any of them make the end they are going to find out what that costs.',
         'Watch what happens to the vote when this airs. They have made a hero out of the person they were trying to bury.',
+        'I came into this week with no particular feeling about {subject}. I am leaving it wanting every other person in that house to lose.',
+        'The house has just voted itself the villain of season {season} and none of them have worked it out yet.',
       ],
     },
   },
@@ -382,6 +421,8 @@ export const PHRASINGS = {
       chat: [
         'I have been on the wrong side of an edit. What is happening to {subject} is recognisable and it is not accidental.',
         'They have shown you {subject} reacting eleven times and initiating twice. That ratio is a choice.',
+        'The edit has decided {subject} is difficult, and once it decides that it will find footage of you being difficult every single week.',
+        'Ask anybody who has come off one of these seasons. The version of you that airs is the version they needed that Tuesday.',
       ],
     },
     'complaint': {
@@ -394,6 +435,8 @@ export const PHRASINGS = {
       chat: [
         'Episode {episode} and {subject} has had less screen time than the theme song. That is a story choice, not a coincidence.',
         'The edit has decided which four people this season is about and it decided in week one.',
+        "I would trade two of this week's montages for thirty seconds of anybody outside the main four actually talking.",
+        'There are people on this cast I could not describe to you in one sentence, and we are past the halfway point of season {season}.',
       ],
     },
   },
@@ -411,6 +454,7 @@ export const PHRASINGS = {
         'The small stuff is what you remember afterwards, not the votes. What {subject} did there is the kind of thing people thank you for years later.',
         'Nobody wins a game with that and everybody remembers it. Both of those are true and only one of them matters to me.',
         'That is the version of this show I actually like watching.',
+        'You are hungry, you have not slept, and you still go and sit with somebody who is having the worst night of their life. That is not nothing.',
       ],
     },
     'soft-take': {
@@ -418,10 +462,13 @@ export const PHRASINGS = {
         'ok {subject} being decent for thirty seconds has rearranged my whole allegiance',
         'genuinely did not expect that from {subject} and i am adjusting',
         'a bit of kindness in episode {episode} and i am fully invested now',
+        'i have spent six weeks being mean about {subject} and one scene has undone all of it',
       ],
       chat: [
         'I have been fairly harsh on {subject} and I want to be fair: that was a genuinely decent thing to do at a moment when it cost them.',
         'It does not change my read on the game. It does change how I feel about the person, and those are separate columns.',
+        'Nobody is going to put that in a jury speech and everybody in that house will remember it. Those are different currencies.',
+        'I want to log a correction on {subject}. I had them read as cold and I do not think that survives episode {episode}.',
       ],
     },
   },
@@ -482,6 +529,7 @@ export const PHRASINGS = {
         '{subject} could lose every comp and i would still be here weekly',
         'obsessed with {subject} in a way i am not going to examine',
         '{subject} smiled once in episode {episode} and i have not recovered',
+        'strategy is fine but have you considered {subject}',
       ],
     },
   },
@@ -517,6 +565,7 @@ export const PHRASINGS = {
         'I want to say this carefully. What we are watching is not a showmance, it is one person managing another, and the edit is selling it as romance.',
         'Out there you are exhausted and isolated and somebody paying attention to you feels enormous. That is exactly why this reads badly to me.',
         'I would like production to be watching this more closely than the audience is.',
+        'I am not calling it anything yet. I am saying I have watched {subject} check {actor} for permission before answering a question three times this week.',
       ],
     },
     'call-out': {
@@ -524,10 +573,13 @@ export const PHRASINGS = {
         '{actor} does not let {subject} finish a single sentence and we are calling it love',
         'stop framing that as sweet. it is not sweet',
         'that is control with a soundtrack over it',
+        'every single conversation {subject} has now happens with {actor} standing there. every one',
       ],
       chat: [
         'Naming it: {actor} has isolated {subject} from every other relationship in that house, and the show is scoring it with love music.',
         'I have seen this dynamic on a season I was on. It did not read well then either.',
+        'The thing that worries me is not the affection. It is that {subject} has stopped making decisions in rooms {actor} is not in.',
+        'I would rather be wrong and annoying about this than right and quiet about it.',
       ],
     },
   },
@@ -538,6 +590,7 @@ export const PHRASINGS = {
         'IT IS OVER. it is over and it happened on camera',
         'they broke up at the water tank. on television. in front of everyone',
         'episode {episode} and the showmance is gone. season {season} delivers',
+        'they are not speaking. they are actively not speaking and the cameras are RIGHT THERE',
       ],
     },
     'gloating': {
@@ -553,6 +606,7 @@ export const PHRASINGS = {
         'that was rough to watch. leave them both alone',
         '{subject} did not deserve to find out that way, in front of a camera',
         'crying at a reality show breakup. this is my life now',
+        'no winners here. two tired people on a beach and a camera crew',
       ],
     },
   },
@@ -575,6 +629,8 @@ export const PHRASINGS = {
         'This is the hardest kind of player to watch. Lovely person, and every week they hand somebody else the game.',
         'My affection for {subject} has gone up all season and my respect for their game has gone straight down. That is allowed.',
         'I would take {subject} to dinner and I would not take them to the end, and I mean both of those as compliments to the person.',
+        'Everybody wants these two numbers to be the same number and they are simply not. I adore {subject} and I would not trust them with a vote.',
+        'The affection is real and so is the frustration, and if you have never felt both about the same player you have not been watching very long.',
       ],
     },
     'soft-take': {
@@ -587,6 +643,8 @@ export const PHRASINGS = {
       chat: [
         'Some people are made for the social side and not the strategic one. {subject} is the clearest example this format has produced in years.',
         'I am not going to pretend they played well. I am also not going to pretend I did not enjoy every second they were on my screen.',
+        'There is a kind of player who makes the season better and their own game worse, every week, on purpose. {subject} is one of them.',
+        'If {subject} had been half as good at this as they are at being a person, we would be talking about a winner.',
       ],
     },
   },
@@ -606,6 +664,12 @@ export const PHRASINGS = {
         'Two columns again: personality, bottom of the season. Gameplay, top of the season. That combination is exactly how a dominant winner becomes a hated one.',
         'It is a lot easier to enjoy this if you separate the player from the person, and this week I could not manage it.',
         'I have been beaten by somebody like {actor}. You spend the jury weeks furious and then you vote for them anyway.',
+        'Nobody in here has to like {actor} to see it. Best game in the season, worst company in the house, and those are unrelated facts.',
+        'My respect for {actor} has gone up every single week and I would still walk past them in an airport. Both columns, independently.',
+        "I have spent all season looking for a hole in {actor}'s game so I would have permission to keep disliking them. There is not one.",
+        'The uncomfortable version: if {actor} were nicer, we would be calling this an all time great run instead of arguing about it.',
+        'That is the move I would have been too polite to make, and being too polite is why I finished sixth.',
+        'Clean, quiet, and aimed at the one person who could have stopped it. I have no notes and no goodwill.',
       ],
     },
     'grudging-respect': {
@@ -619,6 +683,7 @@ export const PHRASINGS = {
         'Credit where it is owed. {actor} controlled the information all week, and information is the whole game.',
         'I do not enjoy watching it and I cannot fault it. That was the correct move played at the correct time.',
         'The tell is that nobody saw it. You do not get that without doing the quiet work for three weeks first.',
+        'I will give {actor} this much and no more: the timing was perfect and I hate that it was.',
       ],
     },
   },
@@ -704,12 +769,15 @@ export const DECORATIONS = {
     timeline: ['ok but ', 'nah ', 'lmao ', "i'm sorry but ", 'genuinely ', 'listen ', 'hold on. ', 'no because '],
     // Chat openers terminate themselves, so the sentence after them keeps its
     // capital. "For what it is worth, i would put..." is the tell of a template.
-    chat: ['Honestly? ', 'Okay. ', 'Look. ', 'For what it is worth: ', 'Right. ', 'Two things. '],
+    chat: ['Honestly? ', 'Okay. ', 'Look. ', 'For what it is worth: ', 'Right. ', 'Two things. ',
+      'Quick one. ', 'Late to this, but. ', 'Rewatching now. ', 'Hosting tonight, so briefly: '],
   },
   /** Trailing tics. */
   tails: {
     timeline: [' anyway', ' bye', ' i said what i said', ' no notes', ' im done', ' and that is the post'],
-    chat: [' Thoughts?', ' Watch it back.', ' I could be wrong.', ' Anyway, that is my read.', ' Curious what the room thinks.'],
+    chat: [' Thoughts?', ' Watch it back.', ' I could be wrong.', ' Anyway, that is my read.',
+      ' Curious what the room thinks.', ' Happy to be argued with.', ' Tell me I am wrong.',
+      ' That is all I have got tonight.', ' Someone check my maths on that.', ' Open to the other read.'],
   },
   /** Emoji by posture, so a dunk never lands with a heart on it. */
   emoji: {
@@ -816,7 +884,19 @@ function kindsFor(event) {
   return [...set].filter(Boolean);
 }
 
-/** Fill {subject} {actor} {season} {episode}. Nothing may survive unfilled. */
+/** The only slot names a phrasing may use. Anything else is an authoring typo. */
+export const SLOT_NAMES = ['subject', 'actor', 'season', 'episode'];
+
+/**
+ * Fill {subject} {actor} {season} {episode}.
+ *
+ * THROWS on a slot name it does not recognise, and that is the whole point.
+ * Quietly substituting '' for `{subjcet}` closes the seam invisibly: the
+ * sentence stays grammatical ("not one person is defending right now"), the
+ * "no leaked slot" test still passes, and a typo in a thousand-line phrasing
+ * library ships as a subtly truncated post nobody can trace. A typo must fail
+ * at the first sample, loudly.
+ */
 function fillSlots(template, event) {
   const slots = {
     subject: displayName(event.subject),
@@ -825,7 +905,17 @@ function fillSlots(template, event) {
     episode: String(event.episode ?? ''),
   };
   return template
-    .replace(/\{(\w+)\}/g, (_, key) => (slots[key] != null ? slots[key] : ''))
+    .replace(/\{(\w+)\}/g, (_, key) => {
+      if (!Object.prototype.hasOwnProperty.call(slots, key)) {
+        throw new Error(
+          `sampler: unknown slot {${key}} in phrasing "${template}" — valid slots are ${SLOT_NAMES.join(', ')}`);
+      }
+      if (!slots[key]) {
+        throw new Error(
+          `sampler: slot {${key}} has no value on this event, and phrasing "${template}" needs one`);
+      }
+      return slots[key];
+    })
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -911,12 +1001,21 @@ function weightedPick(rng, items, weightOf) {
   return items[items.length - 1];
 }
 
-/** Templates this topic/shape has for this room, minus any that need a missing person. */
+/**
+ * Templates this topic/shape has for this room.
+ *
+ * Anything naming a slot this event cannot fill is dropped here rather than
+ * blanked later — an event with no `actor` simply does not reach the phrasings
+ * that need one. `fillSlots` then throws on anything that slips through, which
+ * can now only be a typo.
+ */
 function poolFor(topicId, shape, stream, event) {
   const byShape = PHRASINGS[topicId] || {};
   const byStream = byShape[shape] || {};
   const pool = byStream[stream] || byStream.timeline || [];
-  return pool.filter(t => (event.actor ? true : !t.includes('{actor}')));
+  const missing = SLOT_NAMES.filter(k => event[k] == null || event[k] === '');
+  if (!missing.length) return pool;
+  return pool.filter(t => !missing.some(k => t.includes(`{${k}}`)));
 }
 
 /** Every shape this topic can actually speak in this room. */
@@ -974,9 +1073,12 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
 
   const stance = (SHAPE_STANCE[shape] ?? 0);
   if (rng() < (persona.voice.emoji || 0) * roomVoice) {
-    const bag = stance > 0.25 ? DECORATIONS.emoji.supportive
-      : stance < -0.25 ? DECORATIONS.emoji.hostile
-        : DECORATIONS.emoji.neutral;
+    // The hosted room does not clown-emoji people it played the game with, so
+    // the hostile bag is a timeline instrument only.
+    const bag = stream === 'chat' ? DECORATIONS.emoji.neutral
+      : stance > 0.25 ? DECORATIONS.emoji.supportive
+        : stance < -0.25 ? DECORATIONS.emoji.hostile
+          : DECORATIONS.emoji.neutral;
     text = `${text} ${_pick(rng, bag)}`;
   }
 

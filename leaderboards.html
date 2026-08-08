@@ -265,6 +265,10 @@
   <div id="board" class="lbTable"><div class="lbNote">Loading leaderboard…</div></div>
 </main>
 
+<script type="module">
+  import { SHOWS } from './js/shows.js';
+  window.SHOWS = SHOWS;
+</script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
    Leaderboards — talks to the D1-backed Worker, falls back to the JSON files.
@@ -528,6 +532,22 @@ async function renderBoard(){
   }
 }
 
+/* A castmate's shared seasons, from either data path.
+   The worker returns "<format>-<number>" now that a season number alone cannot
+   identify a season — Total Drama 1 and Big Brother 1 both exist. The local
+   fallback still computes bare numbers, and both paths are live, so this reads
+   either. Total Drama keeps the bare "S9" the rest of the site uses; every other
+   show is prefixed with its short name. */
+function seasonLabel(entry){
+  if (typeof entry === 'number') return `S${entry}`;
+  const m = String(entry).match(/^(.*)-(\d+)$/);
+  if (!m) return `S${entry}`;
+  const [, format, number] = m;
+  if (format === 'total-drama') return `S${number}`;
+  const short = ((window.SHOWS || {})[format] || {}).short || format.toUpperCase();
+  return `${short}${number}`;
+}
+
 function detailHtml(d){
   const p = d.player;
   const seasons = (d.seasons || []).map(s => {
@@ -541,7 +561,7 @@ function detailHtml(d){
 
   const mates = (d.castmates || []).slice(0, 40).map(m => `
     <li><button class="mate" data-slug="${esc(m.id)}" style="display:flex;align-items:center;gap:9px;background:none;border:none;padding:0;">
-      <span class="grow">${esc(m.name)} <span class="meta">S${(m.seasons || []).join(', S')}</span></span>
+      <span class="grow">${esc(m.name)} <span class="meta">${(m.seasons || []).map(seasonLabel).join(', ')}</span></span>
       <span class="num">${m.sharedSeasons}×</span>
     </button></li>`).join('') || '<li class="meta">No shared seasons.</li>';
 

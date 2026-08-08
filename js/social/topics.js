@@ -94,8 +94,17 @@ export const TOPICS = [
   // Two registers on purpose: the timeline screams a fact at somebody, the
   // hosted room explains what the fact means. Same packet, and a good test of
   // whether the packet is rich enough for both.
+  //
+  // TRIGGERS ON ANY MOMENT THAT CARRIES A FACT. It used to fire on four kinds,
+  // which meant an idol found, an alliance formed or a rescue in the water —
+  // all of which the season document describes in its own words — had no topic
+  // able to quote them, and the room reacted to a night full of specifics by
+  // being vague at it. A receipt is only useless where there is no receipt, and
+  // `poolFor` already drops these templates for an event with none.
   { id: 'receipts-out', stream: 'both', weight: 1.3,
-    triggers: ['nomination', 'eviction', 'blindside', 'betrayal'],
+    triggers: ['nomination', 'eviction', 'blindside', 'betrayal', 'twist',
+      'alliance-formed', 'domination', 'argument', 'kindness', 'ganging-up',
+      'showmance-formed', 'showmance-broken', 'comp-win', 'finale'],
     reads: ['sideDeals', 'ballots', 'allianceChanges', 'strategyMemory', 'bondLean'],
     shapes: ['call-out', 'dunk', 'live-reaction', 'hot-take'] },
 

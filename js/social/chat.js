@@ -324,6 +324,64 @@ function withCredential(line, fact, rng) {
  * panel that speaks with one voice reads as a press release.
  */
 export const TAKES = {
+  // ── the kinds the moments produce ──
+  //
+  // `twist`, `kindness`, `domination`, `argument` and `ganging-up` had no takes
+  // of their own and fell through to GENERIC_TAKES, which holds four lines. It
+  // did not matter while a night was a ballot and a challenge result; the
+  // moment the season document's own account started arriving — idols, rescues,
+  // meltdowns, alliances — those four lines were carrying most of the episode
+  // and two hosts in a row said the same sentence.
+  twist: [
+    ({ s }) => `That changes the arithmetic for everybody, and ${s} is the only one who knows by how much.`,
+    ({ s }) => `${s} has just bought a week of safety and a month of suspicion. Both are real.`,
+    ({ s }) => `The people who needed to see that saw it. That is the whole problem with doing it in daylight.`,
+    ({ s }) => `I would not tell a soul. ${s} will tell somebody by Thursday, because holding it alone is heavier than people expect.`,
+    ({ s, w }) => `Every ${w.home} has one night where the game quietly stops being the same game. This is that night.`,
+    ({ s }) => `${s} thinks this is protection. It is leverage, and leverage expires.`,
+    ({ s }) => `Nobody reacts to that correctly in the moment. ${s} will get one chance to react to it correctly later.`,
+    ({ s }) => `The interesting part is who was standing close enough to notice and said nothing.`,
+  ],
+  kindness: [
+    ({ s }) => `${s} did the decent thing when the calculating thing was right there. I have never once regretted that, and I have regretted almost everything else.`,
+    ({ s }) => `That will be worth more at the end than any ${'result'} tonight. Juries remember who was human at 2am.`,
+    ({ s }) => `People call that naive. It is not naive, it is expensive, and ${s} paid it knowingly.`,
+    ({ s }) => `${s} just made somebody an ally for nothing. Nothing is the cheapest price there is.`,
+    ({ s }) => `I want to be cynical about this and I cannot. That was simply good of ${s}.`,
+    ({ s }) => `Watch who noticed. Kindness is only strategy if somebody was looking.`,
+    ({ s }) => `${s} will be told that cost the game. It might. It also made ${s} somebody people want to sit beside.`,
+    ({ s }) => `The room got warmer for a day. Those days are what people vote on months later.`,
+  ],
+  domination: [
+    ({ s }) => `That is control, and control is the loudest thing you can do in front of people deciding who to fear.`,
+    ({ s }) => `${s} did not just win the moment. ${s} showed everybody exactly how it was done, which is the expensive part.`,
+    ({ s }) => `Beautifully executed and completely unhideable. Now ${s} has to survive being admired.`,
+    ({ s }) => `I would have done it quieter. ${s} would say quieter does not work, and ${s} has the evidence.`,
+    ({ s }) => `Everybody clapping for ${s} has started counting how many of these ${s} has left.`,
+    ({ s }) => `That is the move you make when you have run out of ways to be underestimated.`,
+    ({ s }) => `${s} bought a fortnight and spent a season's worth of goodwill doing it. Sometimes that is the trade.`,
+    ({ s }) => `The people who were saved by that owe ${s}. Debts like that are the only currency in there.`,
+  ],
+  argument: [
+    ({ s }) => `Everybody is going to remember what ${s} said. Nobody is going to remember what started it.`,
+    ({ s }) => `That was not about tonight. That was three weeks of not saying something, arriving all at once.`,
+    ({ s }) => `${s} lost the room in ninety seconds and will spend a week buying it back.`,
+    ({ s }) => `Honestly? Good. A ${'camp'} that never argues is a ${'camp'} where somebody is being managed.`,
+    ({ s }) => `The tell is who did not join in. They are the ones with something to protect.`,
+    ({ s }) => `${s} was right and said it in the one way that guaranteed nobody would agree.`,
+    ({ s }) => `Tempers are information. Everybody in that room just learned what ${s} cares about.`,
+    ({ s }) => `That is going to be quoted back at ${s} at the end, out of context, and it will work.`,
+  ],
+  'ganging-up': [
+    ({ s }) => `A whole room agreeing that fast is not agreement. It is relief that somebody else said it first.`,
+    ({ s }) => `${s} is outnumbered and being told it is a conversation.`,
+    ({ s }) => `I hate this and I have done it. Everybody in there has done it.`,
+    ({ s }) => `The one who started it is the only one who will pay for it, eventually, and they know.`,
+    ({ s }) => `${s} should say less right now. Every answer gives them another thing to agree about.`,
+    ({ s }) => `Piling on feels like unity for about a day, and then everybody remembers how easy it was.`,
+    ({ s }) => `Watch the quiet one at the back. That is who ${s} needs by morning.`,
+    ({ s }) => `They are not angry at ${s}. They are relieved it is not them, and that is worse.`,
+  ],
   eviction: [
     ({ s, w }) => `${s} was gone the moment the ${w.home} stopped needing ${s.split(' ')[0]}. You can feel that shift days before the ${w.vote}.`,
     ({ s, w }) => `Everyone will say ${s} played too hard. ${s} played too visibly. Those are different mistakes and only one of them is fixable.`,
@@ -635,6 +693,8 @@ export function buildChatMessages(events, speakers, {
   // one still has the whole pool available.
   const usedByKind = new Map();
   const usedCreds = new Set();
+  // The last sentence said, so no two hosts in a row deliver it.
+  let lastTemplate = null;
   // Decided once for the panel rather than per message: a lens is only worth
   // having if the people who hold it are not all holding the same one.
   const lensOf = assignLenses(speakers);
@@ -701,8 +761,25 @@ export function buildChatMessages(events, speakers, {
       const poolKey = `${ev.kind}:${useCharacter ? host.slug
         : useTrait ? trait : useLens ? lens : 'general'}`;
       if (!usedByKind.has(poolKey)) usedByKind.set(poolKey, new Set());
-      let line = pickFresh(pool, rng, usedByKind.get(poolKey), episode, poolKey)
-        ({ s: subject, w, k: eventLabel(ev.kind, format) });
+      // ── never twice in a row, whatever the pool has left ──
+      //
+      // `used` stops a repeat until the pool runs dry, then trims itself and
+      // repeats are back. That was invisible while a night was a ballot and a
+      // challenge result, and stopped being invisible the moment the season
+      // document's own moments started arriving and one pool carried five
+      // events in an episode. Rather than chase pool sizes for ever, the
+      // invariant is enforced where it is stated.
+      //
+      // Compared as TEMPLATES rather than as finished text, because the same
+      // sentence about two different people is still the same sentence — which
+      // is exactly how a reader hears it, and how the guard measures it.
+      const draw = () => pickFresh(pool, rng, usedByKind.get(poolKey), episode, poolKey);
+      let template = draw();
+      // Three tries, then accept it: a room that falls silent is worse than a
+      // room that echoes once.
+      for (let tries = 0; tries < 3 && template === lastTemplate; tries++) template = draw();
+      lastTemplate = template;
+      let line = template({ s: subject, w, k: eventLabel(ev.kind, format) });
 
       // Records should sharpen an occasional opinion, not introduce every post
       // like an alumni panelist reading their own biography.
@@ -726,6 +803,8 @@ export function buildChatMessages(events, speakers, {
         eventLabel: eventLabel(ev.kind, format),
         lens,
         trait: useTrait ? trait : null,
+        // Kept for the post-sort de-duplication below, then removed.
+        _pool: pool, _poolKey: poolKey,
         text: line,
         at: Math.max(0, ev.at + Math.round((rng() - 0.3) * 4 * 60 * 1000)),
         likes: 40 + Math.floor(rng() * 400) + host.stars * 60,
@@ -736,6 +815,30 @@ export function buildChatMessages(events, speakers, {
   }
 
   out.sort((a, b) => a.at - b.at);
+
+  // ── the sort is what makes two lines adjacent ──
+  //
+  // Messages are generated per event and then ordered by CLOCK, so the pair a
+  // reader sees next to each other was never next to each other when it was
+  // written. Guarding during generation therefore guards the wrong adjacency —
+  // which is why the same twist line kept surfacing twice in a row however big
+  // the pool got.
+  //
+  // Compared with names stripped, because the same sentence about two different
+  // people is still the same sentence, and that is how it reads.
+  const shape = t => String(t).replace(/[A-Z][a-z]+/g, 'X');
+  for (let i = 1; i < out.length; i++) {
+    if (shape(out[i].text) !== shape(out[i - 1].text)) continue;
+    const w2 = words(format);
+    for (let tries = 0; tries < 4; tries++) {
+      const t = pickFresh(out[i]._pool, rng, usedByKind.get(out[i]._poolKey),
+        episode, out[i]._poolKey);
+      const next = t({ s: out[i].subject ? titleCase(out[i].subject) : '', w: w2,
+        k: eventLabel(out[i].kind, format) });
+      if (shape(next) !== shape(out[i - 1].text)) { out[i].text = next; break; }
+    }
+  }
+  for (const m of out) { delete m._pool; delete m._poolKey; }
 
   // ── members answer underneath ──
   //

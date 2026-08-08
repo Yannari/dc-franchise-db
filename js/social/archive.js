@@ -185,6 +185,8 @@ export function eventsForEpisode(doc, format, season, episode) {
   const meta = { format, season, episode: found.episode };
   const events = extractEvents(found.record, meta);
   if (format !== 'big-brother') events.push(...tribalEvents(found.record, meta));
+  // The document's own account of the night, which nothing had ever read.
+  events.push(...momentEvents(doc, format, season, found.episode));
   // The finale is whichever night the document calls the finale — either the
   // entry synthesised above, or the last one for a show whose finale IS a vote.
   const isFinale = found.record?.isFinale
@@ -198,6 +200,7 @@ export function eventsForEpisode(doc, format, season, episode) {
     if (existing) existing.subject = String(winner).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
     else events.push(socialEvent('finale', { ...meta, subject: winner }));
   }
+  events.push(...awardEvents(doc, format, season, found.episode, { isFinale }));
   return events.sort((a, b) => a.at - b.at);
 }
 
@@ -308,6 +311,169 @@ export function stillIn(doc, format, episode) {
 }
 
 const _slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+/**
+ * A fact, shaped to drop into the middle of somebody's sentence.
+ *
+ * Trailing full stop off, because it is not the end of the sentence it lands
+ * in. The name goes on the front when the source implies it — these are
+ * written as "Found the Red Team idol", subject understood — since without it
+ * the quote reads as a verb with nobody attached to it.
+ */
+function _clause(name, text) {
+  let t = String(text || '').trim().replace(/\.$/, '');
+  if (!t) return '';
+  if (!name) return t.charAt(0).toLowerCase() + t.slice(1);
+  // Already names somebody: leave the sentence alone apart from the stop.
+  // Compared with a plain lowercase prefix rather than a built regex — escaping
+  // a name into a pattern is how a stray character in somebody's name becomes a
+  // syntax error at module load.
+  if (t.toLowerCase().startsWith(String(name).toLowerCase())) return t;
+  return `${name} ${t.charAt(0).toLowerCase()}${t.slice(1)}`;
+}
+
+/**
+ * The specifics, which were in the document the whole time.
+ *
+ * The feed was vague because it had nothing to be specific about: a Total Drama
+ * archive night produced six event kinds — aired, comp win, votes taken,
+ * elimination, blindside, finale — so nobody could mention an idol, an
+ * alliance, a meltdown or a betrayal, because none of those had ever been
+ * extracted. The audience was reacting to a ballot and a challenge result and
+ * being asked to sound like it had watched an episode.
+ *
+ * Meanwhile every published season carries `placements[].keyMoments`, and they
+ * are EPISODE-TAGGED PROSE:
+ *
+ *   "Episode 6: Found the Red Team idol and quietly became the best-protected
+ *    player on her tribe."
+ *   "Episode 14: Played her idol and negated four votes in the biggest
+ *    advantage play of the season."
+ *
+ * That is the whole missing feed. This reads them, dates them, works out what
+ * KIND of moment each one is from its own words, and hands the sentence
+ * through as a `receipt` — the slot the phrasings already use for "the one fact
+ * that makes this event THIS event". A template that says "{receipt} and we are
+ * all supposed to move on" stops being a shrug and starts being a post about
+ * something that happened.
+ *
+ * Deliberately conservative about classification. A moment it cannot read
+ * becomes a `twist` — something changed tonight — rather than being forced into
+ * a kind it does not fit, because a confidently wrong label reads worse than a
+ * vague true one.
+ */
+const MOMENT_KINDS = [
+  // Order matters: the first pattern that matches wins, so the specific ones
+  // come before the general.
+  [/\bplayed (an|her|his|their|the) (idol|advantage)|used (an|her|his|their) idol|negat\w+ \w+ votes/i, 'domination'],
+  [/\bfound (an|a|the|her|his|their)[^.]*\b(idol|advantage)|idol was found|\bwins? an advantage/i, 'twist'],
+  [/\bblindside|never saw it coming|had no idea/i, 'blindside'],
+  [/\bbetray|flipped (on|off|against)|turned on|backstab|broke (her|his|their) word/i, 'betrayal'],
+  // `\bformed` missed "helped FORM The Triumvirate", which then fell through to
+  // `kindness` on the word "helped" — an alliance filed as a nice gesture.
+  [/\bform(ed|ing|s)?\b|alliance|joined (the|a) \w+|final (two|three)\b/i, 'alliance-formed'],
+  [/\bmelt(ed)? down|blew up|screaming|argu|fought with|explod/i, 'argument'],
+  [/\bshowmance|kiss|fell for|romance|couple\b/i, 'showmance-formed'],
+  [/\bimmunity|won the challenge|won \w+ challenge|challenge win/i, 'comp-win'],
+  [/\bsaved|rescu|revived|protected|stood up for|helped|carried|gave (her|his|their)/i, 'kindness'],
+  [/\bvoted out|eliminat|sent home|torch/i, 'eviction'],
+];
+
+/** "Episode 6: Found the Red Team idol…" → { episode: 6, text: "Found the…" } */
+function readMoment(line) {
+  const m = /^\s*(?:episode|ep\.?|week)\s*(\d+)\s*[:\-–—]\s*(.+)$/i.exec(String(line || ''));
+  if (!m) return null;
+  const text = m[2].trim();
+  if (!text) return null;
+  return { episode: Number(m[1]), text };
+}
+
+/** What kind of moment a sentence describes. `twist` when it cannot tell. */
+export function momentKind(text) {
+  for (const [re, kind] of MOMENT_KINDS) if (re.test(text)) return kind;
+  return 'twist';
+}
+
+/**
+ * Everything the document says happened on this night, per player.
+ *
+ * The moment's own sentence rides along as `receipt`, trimmed of its full stop
+ * so it drops into the middle of something somebody typed on a phone.
+ */
+export function momentEvents(doc, format, season, episode) {
+  const ep = Number(episode) || 0;
+  const out = [];
+  let n = 0;
+  for (const p of doc?.placements || []) {
+    const who = p.playerSlug || _slugOf(p.name);
+    for (const line of p.keyMoments || []) {
+      const read = readMoment(line);
+      if (!read || read.episode !== ep) continue;
+      const kind = momentKind(read.text);
+      const e = socialEvent(kind, {
+        format, season, episode: ep, subject: who,
+        // Spread them through the hour rather than stacking every moment on the
+        // same second, which would make the replay arrive in one lump.
+        jitter: ((n++ % 8) - 4) * 0.02,
+      });
+      // ── the receipt needs its subject ──
+      //
+      // The document writes these with the player implied — "Found the Red Team
+      // idol and quietly became the best-protected player on her tribe" — and a
+      // receipt lands MID-SENTENCE, so dropping it in as-is produced "I say
+      // that knowing nearly drowned in the treasure dive". A dangling verb.
+      // The name goes back on the front, which is what makes it a clause.
+      e.receipt = _clause(p.name || who, read.text);
+      e.moment = read.text;
+      out.push(e);
+    }
+  }
+  return out;
+}
+
+/**
+ * The season's own verdicts, on the night they belong to.
+ *
+ * `awards` holds thirty of these and not one was ever read. Most are
+ * season-level and belong to the finale — the fan favourite, the player of the
+ * season, the legacy moment — but several name their own episode, and a
+ * betrayal the document calls the biggest of the season should be the loudest
+ * post of the night it happened rather than a footnote at the end.
+ */
+export function awardEvents(doc, format, season, episode, { isFinale = false } = {}) {
+  const a = doc?.awards;
+  if (!a || typeof a !== 'object') return [];
+  const ep = Number(episode) || 0;
+  const out = [];
+
+  const add = (kind, who, text, jitter = 0) => {
+    if (!who) return;
+    const e = socialEvent(kind, { format, season, episode: ep, subject: who, jitter });
+    if (text) e.receipt = _clause('', text);
+    out.push(e);
+  };
+
+  // Dated awards land on their own night.
+  for (const [key, kind] of [['biggestBetrayal', 'betrayal'],
+    ['secondBiggestBetrayal', 'betrayal'], ['mostBrutalExit', 'blindside'],
+    ['legacyMoment', 'twist'], ['messiestFeud', 'argument']]) {
+    const aw = a[key];
+    if (!aw || Number(aw.episode) !== ep) continue;
+    add(kind, aw.betrayedSlug || _slugOf(aw.betrayed) || aw.playerSlug || _slugOf(aw.name),
+      aw.description, 0.03);
+  }
+
+  // Season verdicts belong to the last night, where the audience argues them.
+  if (isFinale) {
+    for (const [key, jitter] of [['fanFavorite', -0.02], ['playerOfSeason', 0.01],
+      ['mostRobbedPlayer', 0.02], ['villainOfSeason', 0.03]]) {
+      const aw = a[key];
+      if (!aw) continue;
+      add('twist', aw.playerSlug || _slugOf(aw.name), aw.description, jitter);
+    }
+  }
+  return out;
+}
 
 /**
  * How the fandom feels about people, for a season that finished years ago.

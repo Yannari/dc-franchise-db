@@ -122,11 +122,40 @@ test('the wiki follows the show switcher', async ({ page }) => {
 
 test('a show they never played says so, with a way across', async ({ page }) => {
   // Not an empty page with headings and nothing under them.
+  //
+  // Scoped in on the WIKI view: the profile has its own empty state for the
+  // same situation ("No Big Brother career"), so a bare .wk-empty now matches
+  // two elements, one of them in the hidden tab.
   await page.goto('/player.html?player=alejandro&view=wiki&show=big-brother');
-  await page.waitForSelector('.wk-empty', { timeout: 15000 });
-  await expect(page.locator('.wk-empty h2')).toContainText('No Big Brother article');
+  const wiki = page.locator('#pp-view-wiki');
+  await expect(wiki.locator('.wk-empty h2')).toContainText('No Big Brother article');
 
-  await page.click('[data-wiki-show="total-drama"]');
+  await wiki.locator('[data-wiki-show="total-drama"]').click();
   await expect(page.locator('.wk-article')).toBeVisible();
   await expect(page.locator('.wk-ib-show')).toContainText('Total Drama');
+});
+
+test('a profile scoped to a show they never played is empty, not their other career', async ({ page }) => {
+  // The page ignoring the question: switch the site to Big Brother, open
+  // somebody who has only played Total Drama, and read their Total Drama stats
+  // under a Big Brother heading.
+  await page.goto('/player.html?player=alejandro&show=big-brother');
+  await page.waitForSelector('.pp-viewtab', { timeout: 15000 });
+
+  await expect(page.locator('.wk-empty h2')).toContainText('No Big Brother career');
+  expect(await page.locator('.pp-statbars').count(), 'a career was drawn anyway').toBe(0);
+  expect(await page.locator('.pp-tab').count()).toBe(0);
+  // and it offers the career that does exist
+  await expect(page.locator('[data-goto-show="total-drama"]')).toBeVisible();
+});
+
+test('a profile scoped to a show they DID play shows only that show', async ({ page }) => {
+  await page.goto('/player.html?player=bowie&show=big-brother');
+  await page.waitForSelector('.pp-meta', { timeout: 15000 });
+
+  // One Big Brother season, and his best finish there — not the Total Drama win.
+  await expect(page.locator('.pp-meta')).toContainText('1 season');
+  await expect(page.locator('.pp-meta')).toContainText('#8');
+  const tabs = await page.locator('.pp-tab').allTextContents();
+  expect(tabs.map(t => t.trim())).toEqual(['BB1']);
 });

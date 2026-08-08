@@ -670,8 +670,95 @@ function _renderWiki(player) {
   });
 }
 
-function renderPlayerProfile(player) {
+/**
+ * The player, as seen from ONE SHOW.
+ *
+ * Switching the site to Big Brother and reading somebody's Total Drama stats is
+ * the page ignoring the question. Everything below renders from
+ * `player.seasonDetails`, so scoping is a matter of handing it a player whose
+ * details are only that show's — the bars, the chips, the season tabs and the
+ * career sections then all narrow together, rather than each needing its own
+ * filter to forget.
+ *
+ * Totals are recomputed rather than carried over: `wins` and `bestPlacement` are
+ * cross-format by design, and a Big Brother page reporting a Total Drama win
+ * would be the same bug wearing a different hat.
+ */
+function _scopeToShow(player, show) {
+  if (!show || show === 'all') return player;
+  const details = (player.seasonDetails || []).filter(d => (d.format || 'total-drama') === show);
+  if (!details.length) return null;                 // never played it
+
+  const places = details.map(d => Number(d.placement) || 99);
+  const sum = k => details.reduce((n, d) => n + (Number(d[k]) || 0), 0);
+  return {
+    ...player,
+    seasonDetails: details,
+    seasons: details.map(d => Number(d.season)),
+    totalSeasons: details.length,
+    seasonsPlayed: details.length,
+    wins: details.filter(d => Number(d.placement) === 1).length,
+    bestPlacement: Math.min(...places),
+    avgPlacement: Math.round((places.reduce((a, b) => a + b, 0) / places.length) * 100) / 100,
+    totalChallengeWins: sum('challengeWins'),
+    totalImmunityWins: sum('immunityWins'),
+    totalRewardWins: sum('rewardWins'),
+    totalIdolsFound: sum('idolsFound'),
+    totalVotesAgainst: sum('votesReceived'),
+    totalJuryVotes: sum('juryVotes'),
+    byShow: { [show]: (player.byShow || {})[show] || {} },
+    winRate: null,      // a rate across one show of one or two seasons is noise
+  };
+}
+
+/** A show this player has never been on. Said, rather than quietly ignored. */
+function _neverPlayedHtml(player, show) {
+  const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+  const ICONS = { 'total-drama': '🎬', 'big-brother': '📹' };
+  const name = NAMES[show] || show;
+  const played = [...new Set((player.seasonDetails || []).map(d => d.format || 'total-drama'))];
+  return `<div class="wk-empty">
+    <div class="wk-empty-icon">${ICONS[show] || '📺'}</div>
+    <h2>No ${name} career</h2>
+    <p>${player.name} has never played ${name}. This page fills itself in the
+       moment they do.</p>
+    <div class="wk-empty-actions">
+      ${played.map(f => `<button type="button" class="wk-btn" data-goto-show="${f}">${
+        ICONS[f] || '📺'} See their ${NAMES[f] || f} career</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+let _fullPlayer = null;
+
+function renderPlayerProfile(fullPlayer) {
+  _fullPlayer = fullPlayer;
   const container = document.getElementById('player-content');
+  const _show = window.showSwitcher?.currentShow?.() || 'all';
+  const player = _scopeToShow(fullPlayer, _show);
+
+  if (!player) {
+    // Scoped to a show they never played. The tabs still draw, because the wiki
+    // has its own version of this and both should be reachable.
+    container.innerHTML = `
+      <div class="pp-viewtabs" role="tablist" aria-label="Player views">
+        <button class="pp-viewtab" role="tab" id="pv-profile" aria-selected="true">Profile</button>
+        <button class="pp-viewtab" role="tab" id="pv-wiki" aria-selected="false">📖 Wiki</button>
+      </div>
+      <div id="pp-view-profile">${_neverPlayedHtml(fullPlayer, _show)}</div>
+      <div id="pp-view-wiki" hidden></div>`;
+    _wireViewTabs(fullPlayer);
+    container.querySelectorAll('[data-goto-show]').forEach(b => {
+      b.onclick = () => {
+        try { window.showSwitcher?.rememberShow?.(b.dataset.gotoShow); } catch {}
+        const u = new URL(location.href);
+        u.searchParams.set('show', b.dataset.gotoShow);
+        location.href = u.toString();
+      };
+    });
+    return;
+  }
+
   const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
 
   /**
@@ -1235,6 +1322,13 @@ function renderPlayerProfile(player) {
 
   _wireViewTabs(player);
 
+  /* Redraw when the show changes. Registered once — the handler re-enters this
+     function, and a listener added on every pass would multiply. */
+  if (!window.__ppShowWired) {
+    window.__ppShowWired = true;
+    window.addEventListener('showchange', () => renderPlayerProfile(_fullPlayer));
+  }
+
   // ── 1. Score ring + counter animation ────────────────────
   requestAnimationFrame(() => {
     const ring = document.getElementById('pp-ring-fill');
@@ -1556,11 +1650,11 @@ document.addEventListener('keydown', e => {
   import { careersIn, franchiseRecords } from './js/records.js';
   import { buildDossier } from './js/wiki.js';
   import { renderArticle, WIKI_CSS } from './js/wiki-view.js';
-  import { currentShow, ALL } from './js/show-switcher.js';
+  import { currentShow, ALL, rememberShow } from './js/show-switcher.js';
   window.records = { careersIn };
   window.wiki = { buildDossier };
   window.wikiView = { renderArticle };
-  window.showSwitcher = window.showSwitcher || { currentShow, ALL };
+  window.showSwitcher = window.showSwitcher || { currentShow, ALL, rememberShow };
   document.head.appendChild(Object.assign(document.createElement('style'), { textContent: WIKI_CSS }));
 
   /* The character section reads three documents the stat sheet never needed:

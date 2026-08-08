@@ -325,3 +325,59 @@ describe('what the export remembers about a competition', () => {
     }
   });
 });
+
+describe('the relationships a season produced', () => {
+  // These existed only while a season was being played. gs.showmances and
+  // gs.namedAlliances are written every episode and were never exported, so a
+  // finished season's document mentioned showmances in its narrative prose and
+  // never once said who with whom. "Are they in a couple" had no answer that
+  // did not involve reading paragraphs.
+  beforeEach(() => { playSeason(); seasonConfig.seasonNumber = 1; });
+  afterEach(() => { delete seasonConfig.seasonNumber; });
+
+  it('records couples as pairs, not as prose', () => {
+    gs.showmances = [
+      { players: ['A', 'B'], phase: 'showmance', sparkEp: 3, episodesActive: 4 },
+      { players: ['C', 'D'], phase: 'showmance', sparkEp: 2, breakupEp: 6,
+        broken: true, breakupType: 'vote' },
+    ];
+    const doc = buildBigBrotherSeasonDocument(1);
+    expect(doc.showmances).toHaveLength(2);
+    expect(doc.showmances[0]).toMatchObject({ players: ['A', 'B'], phase: 'showmance', startEpisode: 3 });
+    // A breakup says when and how — a split at a vote is a different story from
+    // one at camp, and the character page will want to say which.
+    expect(doc.showmances[1]).toMatchObject({ phase: 'broken', endEpisode: 6, endedBy: 'vote' });
+    // Slugs, because every other cross-reference on the site joins on them.
+    expect(doc.showmances[0].playerSlugs).toEqual(['a', 'b']);
+  });
+
+  it('records alliances with their members', () => {
+    gs.namedAlliances = [
+      { name: 'The Cartel', members: ['A', 'B', 'C'], formed: 2, active: true, betrayals: [] },
+    ];
+    const doc = buildBigBrotherSeasonDocument(1);
+    expect(doc.alliances).toHaveLength(1);
+    expect(doc.alliances[0]).toMatchObject({ name: 'The Cartel', formedEpisode: 2, active: true });
+    expect(doc.alliances[0].members).toEqual(['A', 'B', 'C']);
+  });
+
+  it('records the rivalry the Rivals twist created', () => {
+    gs.bb.rivals = { pairs: [{ player: 'A', rival: 'B' }], startWeek: 1 };
+    const doc = buildBigBrotherSeasonDocument(1);
+    expect(doc.rivalries).toHaveLength(1);
+    expect(doc.rivalries[0].players).toEqual(['A', 'B']);
+    expect(doc.rivalries[0].source).toBe('rivals-twist');
+  });
+
+  it('writes empty lists rather than omitting them', () => {
+    // A season with no showmances must say so. An absent key is
+    // indistinguishable from a season exported before the field existed, and
+    // the character page has to tell those apart.
+    gs.showmances = [];
+    gs.namedAlliances = [];
+    const doc = buildBigBrotherSeasonDocument(1);
+    expect(Array.isArray(doc.showmances)).toBe(true);
+    expect(Array.isArray(doc.alliances)).toBe(true);
+    expect(Array.isArray(doc.rivalries)).toBe(true);
+  });
+});

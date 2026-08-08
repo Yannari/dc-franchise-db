@@ -1513,11 +1513,72 @@ export function extractSeasonTemplate() {
     finalists: finalistTemplate,
     placements: sortedPlacements,
     votingHistory: _extractVotingHistory(),
+    showmances: _extractShowmances(),
+    alliances: _extractAlliances(),
     finalTribalCouncil: _extractFinalTribalCouncil(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
   };
+}
+
+
+// ── relationships, for both shows ─────────────────────────────────────
+//
+// THESE EXISTED ONLY WHILE A SEASON WAS BEING PLAYED. `gs.showmances` and
+// `gs.namedAlliances` are written every episode and were never exported, so a
+// finished season's document mentioned showmances in its narrative prose —
+// "broken showmances", "showmance fallout" — and never once said WHO. A
+// character page cannot report who somebody was with from a sentence like that,
+// and neither can anything else.
+//
+// Recorded as pairs and member lists, so the question "are they in a couple" has
+// an answer that does not involve reading paragraphs.
+
+/** Every couple the season produced, together or not by the end. */
+function _extractShowmances() {
+  return (gs.showmances || []).map(sh => ({
+    players: (sh.players || []).slice(0, 2),
+    playerSlugs: (sh.players || []).slice(0, 2).map(n => _slug(n)),
+    // `phase` is where it got to: spark, showmance, or broken.
+    phase: sh.broken ? 'broken' : (sh.phase || 'showmance'),
+    startEpisode: sh.sparkEp ?? sh.firstMoveEp ?? null,
+    endEpisode: sh.breakupEp ?? null,
+    // Ended how, when it ended — a breakup at a vote is a different story from
+    // one at camp, and the character page will want to say which.
+    endedBy: sh.breakupType || null,
+    origin: sh.origin || null,
+    episodesActive: sh.episodesActive ?? null,
+  })).filter(sh => sh.players.length === 2);
+}
+
+/** Named alliances, with who was in them and who broke them. */
+function _extractAlliances() {
+  return (gs.namedAlliances || []).map(a => ({
+    name: a.name,
+    members: [...(a.members || [])],
+    memberSlugs: (a.members || []).map(n => _slug(n)),
+    formedEpisode: a.formed ?? null,
+    active: a.active !== false,
+    betrayals: (a.betrayals || []).map(b => (typeof b === 'string' ? b : b?.by || null)).filter(Boolean),
+  }));
+}
+
+/**
+ * Rivalries.
+ *
+ * Big Brother's Rivals twist locks two people who cannot stand each other into
+ * the house together, and that pairing is the most consequential relationship
+ * in the season it appears in. It lived in `gs.bb.rivals` and went nowhere.
+ */
+function _extractRivalries() {
+  const pairs = gs.bb?.rivals?.pairs || [];
+  return pairs.map(p => ({
+    players: [p.player || p.a, p.rival || p.b].filter(Boolean),
+    playerSlugs: [p.player || p.a, p.rival || p.b].filter(Boolean).map(n => _slug(n)),
+    source: 'rivals-twist',
+    startWeek: gs.bb?.rivals?.startWeek ?? null,
+  })).filter(r => r.players.length === 2);
 }
 
 // Per-episode vote breakdown for the Vote History tab + Voting Analytics page.
@@ -2703,6 +2764,9 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       hohComp: _compRef(w.hohCompetition),
       vetoComp: _compRef(w.vetoCompetition),
     })),
+    showmances: _extractShowmances(),
+    alliances: _extractAlliances(),
+    rivalries: _extractRivalries(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]',

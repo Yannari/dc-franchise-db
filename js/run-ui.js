@@ -2900,6 +2900,33 @@ export function renderResultsTab() {
 
 
 /**
+ * What the writer did, said in a way that can be acted on.
+ *
+ * `written: 0` and "the writer never ran" printed the identical line — just the
+ * post count — so a run where the switch was off and a run where the worker
+ * refused every post were indistinguishable, from the outside and from the
+ * inside. There was nothing to do with that message except ask somebody.
+ *
+ * Three states, three sentences: not asked, asked and answered, asked and got
+ * nothing. The last one is the only one worth investigating, and now it says so
+ * rather than looking like success.
+ */
+function _writerNote(wasOn, res) {
+  if (!wasOn) return ' — the AI writer is off, so these are the generated ones';
+  const n = Number(res?.written) || 0;
+  if (n > 0) {
+    // `rejected` is the list of what was thrown out, not a count — reading it as
+    // a number gave NaN, which falls to 0, which quietly never mentions any of
+    // them. The rejections are the interesting half: they are the posts that
+    // named somebody who was not there.
+    const no = Array.isArray(res?.rejected) ? res.rejected.length : Number(res?.rejected) || 0;
+    return `, ${n} written by the model${no ? ` (${no} rejected as invented)` : ''}`;
+  }
+  return ' — the writer was on and returned nothing usable, so the generated '
+    + 'ones were kept. Check the worker is reachable';
+}
+
+/**
  * Redo one episode's audience, and only that one.
  *
  * `refreshSocialFeed` deliberately never rewrites a night that already has a
@@ -2921,14 +2948,12 @@ export async function redoEpisodeSocial() {
   const ep = Number(asked);
   if (!Number.isFinite(ep) || ep < 1 || ep > highest) { say(`No episode ${asked}.`); return; }
 
-  const written = window.socialWriterOn?.();
+  const written = window.socialWriterOn?.() === true;
   say(written ? `Writing episode ${ep}…` : `Rebuilding episode ${ep}…`);
   try {
     const res = await window.rebuildEpisodeFeed?.(ep);
     const posts = (gs.social?.posts || []).filter(p => Number(p.episode) === ep).length;
-    say(res?.written
-      ? `Episode ${ep}: ${posts} posts, ${res.written} written. Sync to publish.`
-      : `Episode ${ep}: ${posts} posts. Sync to publish.`);
+    say(`Episode ${ep}: ${posts} posts${_writerNote(written, res)}. Publish to site.`);
   } catch (err) {
     say(`Episode ${ep} could not be rebuilt — ${err?.message || err}`);
   }
@@ -2962,7 +2987,7 @@ export async function rebuildSeasonSocial() {
 
   const had = (gs.social?.posts || []).length;
   const eps = (gs.social?.builtEpisodes || []).length;
-  const written = window.socialWriterOn?.();
+  const written = window.socialWriterOn?.() === true;
   const ok = confirm(
     `Rebuild the whole season's timeline?\n\n`
     + `${had} posts across ${eps} episode${eps === 1 ? '' : 's'} will be thrown away and `
@@ -2984,7 +3009,7 @@ export async function rebuildSeasonSocial() {
     const now = (gs.social?.posts || []).length;
     const builtCount = (res?.built || []).length;
     say(`Rebuilt ${builtCount} episode${builtCount === 1 ? '' : 's'}: `
-      + `${now} posts${res?.written ? `, ${res.written} written` : ''}. Sync to publish.`);
+      + `${now} posts${_writerNote(written, res)}. Publish to site.`);
     saveGameState();
   } catch (err) {
     say(`The season could not be rebuilt — ${err?.message || err}`);

@@ -246,3 +246,44 @@ describe('the writer switch explains itself in the right show', () => {
     expect(opt).toMatch(/<label[^>]*>\s*<input type="checkbox" id="cfg-social-writer"/);
   });
 });
+
+describe('the writer says which of three things happened', () => {
+  const fn = RUN.slice(RUN.indexOf('function _writerNote'),
+    RUN.indexOf('function _writerNote') + 1200);
+
+  it('exists at all', () => {
+    expect(fn, '_writerNote was never written').not.toBe('');
+  });
+
+  it('tells "switch was off" from "returned nothing"', () => {
+    // These printed the identical line — just a post count — so a run with the
+    // switch off and a run where the worker refused every post were
+    // indistinguishable. There was nothing to do with that message except ask
+    // somebody, which is what happened.
+    expect(fn).toMatch(/the AI writer is off/);
+    expect(fn).toMatch(/returned nothing usable/);
+    expect(fn, 'a failed run does not say where to look').toMatch(/worker is reachable/);
+  });
+
+  it('counts rejections as a list, not as a number', () => {
+    // `rejected` is the array of what was thrown out. Reading it with Number()
+    // gives NaN, which falls to 0, which silently never mentions any of them —
+    // and the rejections are the interesting half.
+    expect(fn).toMatch(/Array\.isArray\(res\?\.rejected\)/);
+    expect(fn).toMatch(/res\.rejected\.length/);
+  });
+
+  it('is used by both buttons', () => {
+    const uses = RUN.match(/_writerNote\(written, res\)/g) || [];
+    expect(uses.length, 'one of the two buttons still reports the old way')
+      .toBe(2);
+  });
+
+  it('reads the switch as a real boolean', () => {
+    // `window.socialWriterOn?.()` is undefined when the module is not exposed,
+    // which is falsy and would have reported "the writer is off" for a wiring
+    // fault. Comparing to true keeps the three states honest.
+    const calls = RUN.match(/window\.socialWriterOn\?\.\(\) === true/g) || [];
+    expect(calls.length).toBe(2);
+  });
+});

@@ -34,7 +34,8 @@ Copied from the spec. Every task's requirements implicitly include these.
 | `js/shows.js` (modify) | Gains `careerStats` per show; becomes the sole registry. |
 | `js/fame.js` (modify) | Deletes its private `PREFIX`; imports `formatPrefix`. |
 | `js/stats-export.js` (modify) | `_rebuildByShow` reads stat fields from the registry instead of branching. |
-| `worker/worker-studio.js` (modify) | Deletes `SEASON_FILE_PREFIX`; `format` on the leaderboard and the bonds query. |
+| `worker/queries.js` (create) | The SQL for the leaderboard, castmates and bonds, as pure functions. Imported by the worker AND by the tests, so the tested strings are the shipped strings. |
+| `worker/worker-studio.js` (modify) | Deletes `SEASON_FILE_PREFIX`; imports its SQL from `worker/queries.js`. |
 | `seasons.html`, `awards.html`, `rankings.html` (modify) | Mount the switcher, group by show, render badges. Rankings also gets fame stars and the empty state. |
 | `tests/show-switcher.test.js` (create) | The module's URL and state behaviour. |
 | `tests/shows-registry.test.js` (create) | The guard: no second prefix map, no second format list. |
@@ -509,12 +510,15 @@ EOF
 ### Task 3: The leaderboard learns which show you mean
 
 **Files:**
+- Create: `worker/queries.js`
 - Modify: `worker/worker-studio.js` (`leaderboard`, ~line 199)
 - Test: `tests/worker-sql.test.js`
 
 **Interfaces:**
-- Consumes: nothing from earlier tasks.
-- Produces: `/api/leaderboard?format=<format>` restricts the appearances counted. Response gains `format` echoing what was applied (`'all'` when unfiltered).
+- Consumes: `SHOWS` from `js/shows.js`.
+- Produces: `leaderboardQuery({ expr, dir, format }) → string` in `worker/queries.js`; `/api/leaderboard?format=<format>` restricts the appearances counted. Response gains `format` echoing what was applied (`'all'` when unfiltered).
+
+**Why a separate module.** The worker builds its SQL as inline template strings, so a test cannot import them — it can only re-declare them, and a re-declared copy silently stops matching the code it claims to test. This project has already been bitten three times by exactly that (three prefix maps, two strip blocks). The queries move into `worker/queries.js` as pure functions taking no `env`, so the worker and the tests run **the same strings**.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -529,8 +533,13 @@ EOF
 //
 // node:sqlite ships with Node 24, so the queries can run against a real database
 // built from the real schema. D1 is SQLite, so the dialect matches.
+//
+// The queries are IMPORTED, not re-declared here. A re-declared copy silently
+// stops matching the code it claims to test, which is how this project ended up
+// with three prefix maps and two strip blocks.
 import { describe, expect, it, beforeAll } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
+import { leaderboardQuery, bondsQuery, castmatesQuery } from '../worker/queries.js';
 
 let db;
 
@@ -570,28 +579,11 @@ function makeDb() {
   return d;
 }
 
-/** Mirrors the leaderboard SQL in worker/worker-studio.js. */
-function leaderboardSql({ expr, dir, format }) {
-  const where = format ? `WHERE a.format = ?` : '';
-  return `
-    SELECT p.id, p.name, p.tier, ${expr} AS value, COUNT(*) AS seasonsPlayed
-    FROM appearances a
-    JOIN players p ON p.id = a.player_id
-    LEFT JOIN td_appearances td
-           ON td.player_id = a.player_id AND td.season_number = a.season_number
-          AND a.format = 'total-drama'
-    ${where}
-    GROUP BY p.id, p.name, p.tier
-    HAVING COUNT(*) >= ?
-    ORDER BY value ${dir}, seasonsPlayed DESC, p.name ASC
-    LIMIT ?`;
-}
-
 beforeAll(() => { db = makeDb(); });
 
 describe('the leaderboard, filtered by show', () => {
   const run = (format) => {
-    const sql = leaderboardSql({ expr: 'COUNT(*)', dir: 'DESC', format });
+    const sql = leaderboardQuery({ expr: 'COUNT(*)', dir: 'DESC', format });
     const args = format ? [format, 1, 20] : [1, 20];
     return db.prepare(sql).all(...args);
   };
@@ -618,7 +610,7 @@ describe('the leaderboard, filtered by show', () => {
   it('keeps Total Drama stats out of a Big Brother board', () => {
     // challenge_wins lives in td_appearances and must contribute 0 under a
     // Big Brother filter rather than leaking across.
-    const sql = leaderboardSql({ expr: 'COALESCE(SUM(td.challenge_wins),0)', dir: 'DESC', format: 'big-brother' });
+    const sql = leaderboardQuery({ expr: 'COALESCE(SUM(td.challenge_wins),0)', dir: 'DESC', format: 'big-brother' });
     expect(db.prepare(sql).all('big-brother', 1, 20).find(r => r.id === 'wayne').value).toBe(0);
   });
 });
@@ -628,28 +620,134 @@ describe('bonds across two shows', () => {
     // The collapse: SELECT DISTINCT without format returned ONE row for a pair
     // bonded in Total Drama 1 AND Big Brother 1 — a relationship gone from the
     // response entirely, not merely ambiguous.
-    const sql = `SELECT DISTINCT
-                   CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END AS id,
-                   p.name, b.format AS format, b.season_number AS season
-                 FROM bonds b
-                 JOIN players p ON p.id = CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END
-                 WHERE b.player_id = ?1 OR b.ally_id = ?1
-                 ORDER BY b.format, b.season_number`;
-    const rows = db.prepare(sql).all('wayne');
+    const rows = db.prepare(bondsQuery()).all('wayne');
     expect(rows, 'the two shows collapsed into one bond').toHaveLength(2);
     expect(rows.map(r => r.format).sort()).toEqual(['big-brother', 'total-drama']);
+  });
+
+  it('tells two shows apart in a castmate\'s shared seasons', () => {
+    // GROUP_CONCAT(season_number) yielded "1,1" for a castmate shared in Total
+    // Drama 1 and Big Brother 1 — indistinguishable in the output.
+    const rows = db.prepare(castmatesQuery()).all('wayne');
+    const ann = rows.find(r => r.id === 'ann');
+    expect(ann.seasons.split(',').sort()).toEqual(['big-brother-1', 'total-drama-9']);
   });
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it passes for bonds and fails nowhere yet**
+- [ ] **Step 2: Run the test to verify it fails**
 
 Run: `node node_modules/vitest/vitest.mjs run tests/worker-sql.test.js`
-Expected: PASS, 5 tests. This file pins the SQL *shapes* the worker must produce; Steps 3–4 make the worker produce them.
+Expected: FAIL — cannot resolve `../worker/queries.js`.
 
-- [ ] **Step 3: Add the filter to the worker's leaderboard**
+- [ ] **Step 3: Create `worker/queries.js`**
 
-In `worker/worker-studio.js`, in `leaderboard` (~line 199), after `minSeasons` is read:
+Move the SQL out of the worker so the tests can run the real strings. Copy the
+existing queries verbatim from `worker/worker-studio.js` (leaderboard ~line 209,
+castmates ~line 262, bonds ~line 278), then apply the changes noted in the
+comments:
+
+```js
+// worker/queries.js
+// The SQL, as pure functions.
+//
+// Split out of worker-studio.js so the tests can run THE SAME STRINGS the worker
+// runs. They were inline template strings, which a test can only re-declare —
+// and a re-declared copy silently stops matching the code it claims to test.
+// This project has been bitten by that three times.
+//
+// These take no `env` and touch no network: they build SQL and nothing else.
+
+/**
+ * The leaderboard.
+ *
+ * `expr` and `dir` come from the caller's own whitelist, never from a user.
+ * `format` restricts which show's appearances are counted; null counts every
+ * show, which is the DEFAULT and must stay that way — a Big Brother appearance
+ * must never drop a player off a Total Drama board.
+ *
+ * Binds: [format?] , minSeasons, limit
+ */
+export function leaderboardQuery({ expr, dir, format = null }) {
+  return `
+    SELECT p.id, p.name, p.tier,
+           ${expr} AS value,
+           COUNT(*) AS seasonsPlayed
+    FROM appearances a
+    JOIN players p ON p.id = a.player_id
+    LEFT JOIN td_appearances td
+           ON td.player_id = a.player_id AND td.season_number = a.season_number
+          AND a.format = 'total-drama'
+    ${format ? 'WHERE a.format = ?' : ''}
+    GROUP BY p.id, p.name, p.tier
+    HAVING COUNT(*) >= ?
+    ORDER BY value ${dir}, seasonsPlayed DESC, p.name ASC
+    LIMIT ?`;
+}
+
+/**
+ * Everybody who played a season with this player.
+ *
+ * "Same season" means same FORMAT and same number — without the format clause,
+ * Total Drama 1 and Big Brother 1 would report each other's casts.
+ *
+ * The shared seasons carry their show: GROUP_CONCAT of the number alone yielded
+ * "1,1" for a castmate shared across both shows, which cannot be told apart.
+ *
+ * Binds: playerId
+ */
+export function castmatesQuery() {
+  return `SELECT p.id, p.name, p.tier,
+                 COUNT(*) AS sharedSeasons,
+                 GROUP_CONCAT(them.format || '-' || them.season_number) AS seasons
+          FROM appearances me
+          JOIN appearances them ON them.season_number = me.season_number
+                               AND them.format = me.format
+                               AND them.player_id <> me.player_id
+          JOIN players p ON p.id = them.player_id
+          WHERE me.player_id = ?
+          GROUP BY p.id, p.name, p.tier
+          ORDER BY sharedSeasons DESC, p.name ASC
+          LIMIT 100`;
+}
+
+/**
+ * Bonds, looked at from both sides.
+ *
+ * Many pairs are recorded from BOTH sides (a->b and b->a), hence DISTINCT or
+ * allies show up twice.
+ *
+ * FORMAT is part of the identity. Without it, a pair bonded in Total Drama 1 AND
+ * Big Brother 1 collapsed to a single row — one of the two relationships gone
+ * from the response entirely, which is data loss rather than ambiguity.
+ *
+ * Binds: playerId (as ?1)
+ */
+export function bondsQuery() {
+  return `SELECT DISTINCT
+                 CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END AS id,
+                 p.name, b.format AS format, b.season_number AS season
+          FROM bonds b
+          JOIN players p ON p.id = CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END
+          WHERE b.player_id = ?1 OR b.ally_id = ?1
+          ORDER BY b.format, b.season_number`;
+}
+```
+
+- [ ] **Step 4: Run the tests to verify they pass**
+
+Run: `node node_modules/vitest/vitest.mjs run tests/worker-sql.test.js`
+Expected: PASS, 6 tests.
+
+- [ ] **Step 5: Point the worker at the shared queries**
+
+In `worker/worker-studio.js`, import them and delete the inline copies:
+
+```js
+import { leaderboardQuery, castmatesQuery, bondsQuery } from './queries.js';
+```
+
+In `leaderboard` (~line 199), after `minSeasons` is read:
 
 ```js
   // Which show's appearances to count. The DEFAULT IS EVERY SHOW, deliberately:
@@ -664,13 +762,11 @@ In `worker/worker-studio.js`, in `leaderboard` (~line 199), after `minSeasons` i
   }
 ```
 
-Then add the clause to the SQL and the binding:
+Replace the inline `const sql = ...` template with the imported builder, and bind
+the format when there is one:
 
 ```js
-    ${format ? 'WHERE a.format = ?' : ''}
-```
-
-```js
+  const sql = leaderboardQuery({ expr: stat.expr, dir: stat.dir, format });
   const binds = format ? [format, minSeasons, limit] : [minSeasons, limit];
   const { results } = await db(env).prepare(sql).bind(...binds).all();
 ```
@@ -681,17 +777,18 @@ And echo it in the response object beside `stat`:
     format: format || 'all',
 ```
 
-- [ ] **Step 4: Verify against the live database**
+`SHOWS` must be imported at the top of `worker/worker-studio.js` from
+`'../js/shows.js'` — Task 2 already adds that import for `formatPrefix`, so
+extend it rather than adding a second import line.
 
-```bash
-node node_modules/wrangler/bin/wrangler.js deploy --config worker/wrangler.toml
-curl -s "https://dc-studio.yannari19.workers.dev/api/leaderboard?stat=seasons&format=big-brother&limit=3"
-curl -s "https://dc-studio.yannari19.workers.dev/api/leaderboard?stat=seasons&limit=3"
-```
+- [ ] **Step 6: Verify the worker still bundles**
 
-Expected: with `format=big-brother`, Wayne shows 1 season; without it, 3. The unfiltered call must be byte-identical to today's output apart from the new `format:"all"` field.
+Run: `node node_modules/wrangler/bin/wrangler.js deploy --config worker/wrangler.toml --dry-run`
+Expected: builds with no unresolved import.
 
-- [ ] **Step 5: Commit**
+**Do not deploy.** The controller holds all deploys for human review.
+
+- [ ] **Step 7: Commit**
 
 ```bash
 git commit -F - -- worker/worker-studio.js tests/worker-sql.test.js <<'EOF'
@@ -708,45 +805,40 @@ EOF
 
 ---
 
-### Task 4: Bonds stop collapsing two shows into one
+### Task 4: `/api/relationships` uses the shared queries
 
 **Files:**
-- Modify: `worker/worker-studio.js` (bonds query ~line 278, castmates `GROUP_CONCAT` ~line 262)
-- Test: `tests/worker-sql.test.js` (already written in Task 3)
+- Modify: `worker/worker-studio.js` (castmates ~line 262, bonds ~line 278, and the mapping ~line 296)
+- Test: `tests/worker-sql.test.js` (written and passing in Task 3)
 
 **Interfaces:**
-- Consumes: the SQL shapes pinned by Task 3's bonds test.
-- Produces: `/api/relationships` bonds rows gain `format`; castmate `seasons` become season IDs.
+- Consumes: `castmatesQuery()`, `bondsQuery()` from `worker/queries.js` (Task 3).
+- Produces: `/api/relationships` bonds rows carry `format`; castmate `seasons` are `"<format>-<number>"` strings.
 
-- [ ] **Step 1: Add `format` to the bonds query**
+The SQL itself already exists and is tested — Task 3 built it. This task is the
+swap, plus the one consumer that has to change with it.
 
-In `worker/worker-studio.js` (~line 278), replace the bonds prepare with:
+- [ ] **Step 1: Replace both inline queries with the imported builders**
 
-```js
-    // Bonds are stored per-record, so look both ways. Many pairs are recorded
-    // from BOTH sides (a->b and b->a), hence DISTINCT or allies show up twice.
-    //
-    // FORMAT is part of the identity. Without it, a pair bonded in Total Drama 1
-    // AND Big Brother 1 collapsed to a single row — one of the two relationships
-    // gone from the response entirely, which is data loss rather than ambiguity.
-    d.prepare(`SELECT DISTINCT
-                      CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END AS id,
-                      p.name, b.format AS format, b.season_number AS season
-               FROM bonds b
-               JOIN players p ON p.id = CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END
-               WHERE b.player_id = ?1 OR b.ally_id = ?1
-               ORDER BY b.format, b.season_number`).bind(slug),
-```
-
-- [ ] **Step 2: Make castmate seasons distinguishable**
-
-In the castmates query (~line 262), `GROUP_CONCAT(them.season_number)` yields `"1,1"` for a castmate shared in Total Drama 1 and Big Brother 1. Replace it so each entry carries its show:
+In `worker/worker-studio.js`, the castmates prepare (~line 262) and the bonds
+prepare (~line 278) become:
 
 ```js
-                      GROUP_CONCAT(them.format || '-' || them.season_number) AS seasons
+    d.prepare(castmatesQuery()).bind(slug),
 ```
 
-Then update the mapping below (~line 296), which currently parses numbers:
+```js
+    d.prepare(bondsQuery()).bind(slug),
+```
+
+Delete the inline SQL and its comments — the comments moved to `worker/queries.js`
+with the queries, and leaving a copy behind recreates the drift this split exists
+to prevent.
+
+- [ ] **Step 2: Fix the consumer that parses the seasons**
+
+The mapping below (~line 296) parses the concatenated seasons as numbers, which
+is no longer what they are:
 
 ```js
     castmates: (mates.results || []).map(m => ({
@@ -757,29 +849,35 @@ Then update the mapping below (~line 296), which currently parses numbers:
     })),
 ```
 
+This is a response-shape change: `seasons` was `number[]`, it is now `string[]`.
+Nothing in this plan consumes it, and `leaderboards.html` is out of scope — note
+it in the report so the final review can confirm no page breaks on it.
+
 - [ ] **Step 3: Run the SQL tests**
 
 Run: `node node_modules/vitest/vitest.mjs run tests/worker-sql.test.js`
-Expected: PASS, 5 tests — the bonds test now matches what the worker actually runs.
+Expected: PASS, 6 tests — unchanged from Task 3, because the queries did not
+change. What this proves is that the worker now runs the tested strings.
 
-- [ ] **Step 4: Verify against the live database**
+- [ ] **Step 4: Verify the worker still bundles**
 
-```bash
-node node_modules/wrangler/bin/wrangler.js deploy --config worker/wrangler.toml
-curl -s "https://dc-studio.yannari19.workers.dev/api/relationships?player=wayne" | head -c 600
-```
+Run: `node node_modules/wrangler/bin/wrangler.js deploy --config worker/wrangler.toml --dry-run`
+Expected: builds with no unresolved import.
 
-Expected: `castmates[].seasons` entries look like `"big-brother-1"`, and any pair bonded in both shows appears twice with different `format` values.
+**Do not deploy.** The controller holds all deploys for human review.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git commit -F - -- worker/worker-studio.js <<'EOF'
-A pair bonded in two shows is two relationships
+The relationships endpoint runs the tested queries
 
-SELECT DISTINCT ignored bonds.format, so a pair bonded in Total Drama 1 and Big
-Brother 1 returned one row — one relationship gone from the response, not merely
-ambiguous. Castmate seasons carry their show too; "1,1" could not tell them apart.
+A pair bonded in Total Drama 1 and Big Brother 1 returned one row, because
+SELECT DISTINCT ignored bonds.format — one relationship gone from the response,
+not merely ambiguous. Castmate seasons carry their show too; "1,1" could not tell
+them apart.
+
+The SQL now lives in worker/queries.js, so what the tests run is what ships.
 EOF
 ```
 

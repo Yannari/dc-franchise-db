@@ -1654,7 +1654,6 @@ export function simulateBBWeek(options = {}) {
   // Comp fear and strategic respect come from WATCHING somebody win. A
   // sealed result is watched by nobody, so the dimension writers stay quiet.
   if (!hohSecret && hohCompetition) recordCompDominance(hohCompetition, house, week.num);
-  if (rivalHandover) week.acts.push(rivalHandover);
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition,
     outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret,
     // Crowned before this cycle began, in a competition the other half of the
@@ -1662,6 +1661,10 @@ export function simulateBBWeek(options = {}) {
     // instead of presenting a competition that is not there.
     preCrowned: !!preCrowned,
     coHoh: week.botbActive ? coHoh : null }));
+  // AFTER the competition screen, because that is the order it happens in: the
+  // yard plays, it comes down to two, and only then do the three people who
+  // could not compete decide which of them takes it.
+  if (rivalHandover) week.acts.push(rivalHandover);
   // The most disruptive moment of the week. One person can no longer be
   // evicted, so for seven days everybody else's plan bends around theirs.
   revise('hoh', { hoh });

@@ -15915,8 +15915,24 @@ const _bbArrivalLine = (name, slot = 0, seasonKey = '') => {
  * Arrival prose lives in bb-writing.js and belongs to the editorial pass — this
  * function only decides where it goes.
  */
+/**
+ * The house as it stood before the twist walked anybody in.
+ *
+ * `houseAtStart` is the working roster for the whole week and Rivals pushes its
+ * latecomers onto it the moment they arrive — which is correct for every
+ * competition, vote and camp event after that point, and wrong for the two
+ * screens that happen BEFORE it. Move-in day was introducing three people who
+ * had not come through the door, and the announcement about their arrival was
+ * being read to a room that already contained them.
+ */
+function _bbBeforeArrivals(ep) {
+  const house = ep?.houseAtStart || [];
+  const late = (ep?.acts || []).find(a => a?.type === 'rivals-open')?.arrived || [];
+  return late.length ? house.filter(n => !late.includes(n)) : house;
+}
+
 export function rpBuildBBColdOpen(ep) {
-  const house = ep.houseAtStart || [];
+  const house = _bbBeforeArrivals(ep);
   const stateKey = `bb_co_${ep.num}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
@@ -18686,7 +18702,10 @@ function _bbSpeechProfile(ep, name, counterpart = null) {
 export function rpBuildBBTwistAnnouncement(ep, act) {
   const announced = act?.announced || [];
   const beats = act?.socialBeats || [];
-  const house = ep.houseAtStart || [];
+  // The room the rule is being read to. On a Rivals week the latecomers are on
+  // the working roster by the time this renders, and they were standing in the
+  // living room listening to an announcement about themselves.
+  const house = _bbBeforeArrivals(ep);
   const stateKey = `bb_twa_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];

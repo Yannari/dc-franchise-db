@@ -420,6 +420,40 @@ describe('a season with one running', () => {
     }
   }, 60000);
 
+  it('keeps them off the screens that happen before they arrive', () => {
+    // The transcript was fixed first and the SCREENS were not, so move-in day
+    // still dealt three of them a card each and the announcement about their
+    // arrival was still read to a living room they were sitting in — with the
+    // full house counted on the sofas.
+    house({ bbRivals: 'declared', bbRivalsCount: 3 });
+    // A second twist the same night, so the second-gathering copy fires too.
+    seasonConfig.twistSchedule = [{ episode: 1, type: 'bb-instant-eviction' }];
+    const ep = simulateBBEpisode();
+    const late = (ep.acts || []).find(a => a.type === 'rivals-open')?.arrived || [];
+    expect(late.length).toBe(3);
+
+    gs.episodeHistory = [ep];
+    buildVPScreens(ep);
+    Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
+    const screens = buildVPScreens(ep) || [];
+
+    for (const s of screens.filter(x => /bb-cold|bb-twist/.test(x.id))) {
+      for (const n of late) {
+        expect(s.html, `${n} is on "${s.label}" before walking in`).not.toContain(n);
+      }
+      // And the room is counted as the room that is actually in it.
+      const sofas = s.html.match(/(\d+) people come back to the sofas/);
+      if (sofas) expect(Number(sofas[1])).toBe(NAMES.length - late.length);
+    }
+
+    // The handover happens at the END of the competition, so it reads after it.
+    const labels = screens.map(x => x.label);
+    expect(labels.indexOf('Rivals: The Handover')).toBeGreaterThan(labels.indexOf('HOH'));
+    // And the arrival comes after the rule that announces it.
+    expect(labels.indexOf('Rivals: Arrival'))
+      .toBeGreaterThan(labels.indexOf('Rivals: Announcement'));
+  }, 60000);
+
   it('is told about before anybody walks through the door', () => {
     // Three people arriving BEFORE the room is told anybody is coming is the
     // season's first screen out of order.

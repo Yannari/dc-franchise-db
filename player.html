@@ -377,6 +377,11 @@ const urlParams = new URLSearchParams(window.location.search);
    finished first — present on one load, absent on the next. */
 window._recordsReady = new Promise(resolve => { window._recordsResolve = resolve; });
 
+/* Bonds are recorded by NAME; every link on the site joins on slug. */
+function slugify(n) {
+  return String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 const playerId = urlParams.get('player');
 
 if (!playerId) {
@@ -1021,6 +1026,90 @@ function renderPlayerProfile(player) {
   if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate${_multiShow ? ' (all shows)' : ''}</div></div>`;
   html += `</div>`;
 
+  // ── THE CHARACTER ─────────────────────────────────────────
+  //
+  // Everything in this section already existed and was shown nowhere: a
+  // per-season narrative for 150 of the 152 players, the personality prose the
+  // episode writer reads, the bonds a season recorded, the records they hold.
+  // The page was a stat sheet standing on top of all of it.
+  //
+  // Sections with no data are OMITTED rather than padded. Sixteen players have
+  // recorded bonds and no published season carries showmances yet, so a
+  // relationships block that invented something for everybody would be the
+  // most-read part of the page and the least true.
+  const dossier = window.wiki?.buildDossier
+    ? window.wiki.buildDossier(player, {
+        voices: window.__voices || {},
+        roster: window.__roster || [],
+        seasonTitles: window.__seasonTitles || new Map(),
+        milestonesByShow: window.__milestones || {},
+      })
+    : null;
+
+  if (dossier) {
+    html += `<div class="pp-section pp-reveal"><h2>The Character</h2>${
+      dossier.bioLine ? `<span class="pp-pill">${dossier.bioLine}</span>` : ''}</div>`;
+
+    if (dossier.personality) {
+      html += `<div class="pp-wiki pp-reveal"><p class="pp-wiki-lead">${dossier.personality}</p></div>`;
+    }
+
+    // Who they are with. Absent until a season exported since showmances were
+    // recorded — every published season predates that.
+    if (dossier.couple) {
+      const c = dossier.couple;
+      html += `<div class="pp-wiki pp-reveal"><h3>Relationship</h3><p>${
+        c.together
+          ? `With <strong>${c.partner}</strong> since season ${c.since}.`
+          : `Was with <strong>${c.partner}</strong> until season ${c.season}${c.endedBy ? ` — ended at the ${c.endedBy}` : ''}.`
+      }</p></div>`;
+    }
+
+    // The career, told per show and per season.
+    for (const show of dossier.career) {
+      const chapters = show.seasons.filter(x => x.story || x.keyMoments.length);
+      if (!chapters.length) continue;
+      html += `<div class="pp-wiki pp-reveal"><h3>${show.show}</h3>`;
+      for (const sn of chapters) {
+        const label = sn.title ? `Season ${sn.season} — ${sn.title}` : `Season ${sn.season}`;
+        html += `<div class="pp-wiki-season">
+          <div class="pp-wiki-shead">${label} <span class="pp-wiki-place">#${sn.placement}${sn.status ? ' · ' + sn.status : ''}</span></div>
+          ${sn.story ? `<p>${sn.story}</p>` : ''}
+          ${sn.keyMoments.length ? `<ul class="pp-wiki-moments">${
+            sn.keyMoments.map(m => `<li>${m}</li>`).join('')}</ul>` : ''}
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    // Close bonds — the one relationship every published season has carried.
+    if (dossier.relationships.bonds.length) {
+      html += `<div class="pp-wiki pp-reveal"><h3>Closest to</h3><p>${
+        dossier.relationships.bonds.map(b =>
+          `<a href="player.html?player=${slugify(b.name)}">${b.name}</a>` +
+          (b.seasons.length > 1 ? ` (${b.seasons.length} seasons)` : '')
+        ).join(' &nbsp;·&nbsp; ')}</p></div>`;
+    }
+
+    if (dossier.relationships.rivalries.length) {
+      html += `<div class="pp-wiki pp-reveal"><h3>Rivalries</h3><p>${
+        dossier.relationships.rivalries.map(r => `${r.rival} (${r.show || 'Big Brother'} ${r.season})`).join(', ')}</p></div>`;
+    }
+
+    if (dossier.relationships.alliances.length) {
+      html += `<div class="pp-wiki pp-reveal"><h3>Alliances</h3><p>${
+        dossier.relationships.alliances.map(a =>
+          `<strong>${a.name}</strong> — ${(a.members || []).filter(m => m !== player.name).join(', ')}`
+        ).join('<br>')}</p></div>`;
+    }
+
+    // What they hold, from the same engine the Franchise page draws.
+    if (dossier.records.length) {
+      html += `<div class="pp-wiki pp-reveal"><h3>Records held</h3><ul class="pp-wiki-moments">${
+        dossier.records.map(r => `<li>${r.category} — ${r.stat} <span style="opacity:.6">(${r.show})</span></li>`).join('')}</ul></div>`;
+    }
+  }
+
   // ── SEASON HISTORY ────────────────────────────────────────
   html += `<div class="pp-section pp-reveal"><h2>Season History</h2></div>`;
   html += `<div class="pp-season-nav pp-reveal">
@@ -1459,8 +1548,33 @@ document.addEventListener('keydown', e => {
   import { computeFame } from './js/fame.js';
   // The same engine franchise.html draws its per-show boards from, so the two
   // pages cannot come to disagree about somebody's record.
-  import { careersIn } from './js/records.js';
+  import { careersIn, franchiseRecords } from './js/records.js';
+  import { buildDossier } from './js/wiki.js';
   window.records = { careersIn };
+  window.wiki = { buildDossier };
+
+  /* The character section reads three documents the stat sheet never needed:
+     the voice profiles for personality, the roster for the bio fields, and the
+     season titles so a chapter can say which season it is about. Failure is
+     silent and the section simply does not draw — a profile that will not load
+     because a personality file 404'd would be a poor trade. */
+  try {
+    const [voices, roster, seasonsDb, playersDb] = await Promise.all([
+      fetch('voice-profiles.json').then(r => r.json()).catch(() => ({ profiles: {} })),
+      fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
+      fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
+      fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
+    ]);
+    window.__voices = voices.profiles || {};
+    window.__roster = roster;
+    window.__seasonTitles = new Map([
+      ...(seasonsDb.seasons || []).map(x => [x.seasonId, x.title]),
+      ...(seasonsDb.seasons || []).map(x => [x.seasonNumber, x.title]),
+    ]);
+    window.__milestones = Object.fromEntries(['total-drama', 'big-brother'].map(f =>
+      [f, franchiseRecords({ players: playersDb, seasonsDb, format: f }).milestones]));
+  } catch { /* the section is optional; the profile is not */ }
+
   window._recordsResolve?.();
   import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
 
@@ -1471,7 +1585,20 @@ document.addEventListener('keydown', e => {
       display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
       margin:20px 0 8px; font-weight:800; font-size:16px;
     }
-    .pp-showsub{ font-weight:600; font-size:13px; opacity:.6; }`;
+    .pp-showsub{ font-weight:600; font-size:13px; opacity:.6; }
+    .pp-wiki{
+      background:var(--panel,rgba(255,255,255,.04)); border:1px solid var(--stroke,rgba(255,255,255,.1));
+      border-radius:14px; padding:16px 18px; margin:0 0 12px; line-height:1.6;
+    }
+    .pp-wiki h3{ margin:0 0 10px; font-size:14px; letter-spacing:.06em; text-transform:uppercase; opacity:.75; }
+    .pp-wiki p{ margin:0 0 8px; }
+    .pp-wiki-lead{ font-size:16px; }
+    .pp-wiki-season{ padding:10px 0; border-top:1px solid var(--stroke,rgba(255,255,255,.08)); }
+    .pp-wiki-season:first-of-type{ border-top:0; padding-top:0; }
+    .pp-wiki-shead{ font-weight:800; margin-bottom:6px; }
+    .pp-wiki-place{ font-weight:600; opacity:.6; font-size:13px; }
+    .pp-wiki-moments{ margin:6px 0 0; padding-left:18px; }
+    .pp-wiki-moments li{ margin:4px 0; opacity:.85; }`;
   document.head.appendChild(style);
 
   window.renderPlayerFame = async (playerId, mountEl) => {

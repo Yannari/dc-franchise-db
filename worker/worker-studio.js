@@ -268,32 +268,9 @@ async function relationships(env, params) {
                WHERE a.player_id = ?
                ORDER BY a.format, a.season_number`).bind(slug),
 
-    // The self-join: same season, different person. This is the query the
-    // static JSON cannot answer without downloading and looping over everyone.
-    // "Same season" means same FORMAT and same number — without the format
-    // clause, Total Drama 1 and Big Brother 1 would report each other's casts.
-    d.prepare(`SELECT p.id, p.name, p.tier,
-                      COUNT(*) AS sharedSeasons,
-                      GROUP_CONCAT(them.season_number) AS seasons
-               FROM appearances me
-               JOIN appearances them ON them.season_number = me.season_number
-                                    AND them.format = me.format
-                                    AND them.player_id <> me.player_id
-               JOIN players p ON p.id = them.player_id
-               WHERE me.player_id = ?
-               GROUP BY p.id, p.name, p.tier
-               ORDER BY sharedSeasons DESC, p.name ASC
-               LIMIT 100`).bind(slug),
+    d.prepare(castmatesQuery()).bind(slug),
 
-    // Bonds are stored per-record, so look both ways. Many pairs are recorded
-    // from BOTH sides (a->b and b->a), hence DISTINCT or allies show up twice.
-    d.prepare(`SELECT DISTINCT
-                      CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END AS id,
-                      p.name, b.season_number AS season
-               FROM bonds b
-               JOIN players p ON p.id = CASE WHEN b.player_id = ?1 THEN b.ally_id ELSE b.player_id END
-               WHERE b.player_id = ?1 OR b.ally_id = ?1
-               ORDER BY b.season_number`).bind(slug),
+    d.prepare(bondsQuery()).bind(slug),
   ]);
 
   const player = (who.results || [])[0];
@@ -305,7 +282,9 @@ async function relationships(env, params) {
     seasons: runs.results || [],
     castmates: (mates.results || []).map(m => ({
       ...m,
-      seasons: String(m.seasons || '').split(',').filter(Boolean).map(Number).sort((a, b) => a - b),
+      // "total-drama-9,big-brother-1" — a season is a (format, number) pair now,
+      // and "1,1" could not tell two shows apart.
+      seasons: String(m.seasons || '').split(',').filter(Boolean),
     })),
     bonds: bonds.results || [],
   };

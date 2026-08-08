@@ -21,12 +21,17 @@ let db;
 /** The subset of the schema these queries touch, matching multishow_schema.sql. */
 function makeDb() {
   const d = new DatabaseSync(':memory:');
+  // Column names track worker/multishow_schema.sql exactly. A fixture that
+  // disagrees with the real schema can go green while the shipped query fails,
+  // which is the failure this whole file exists to catch — the column below is
+  // votes_received, not votes_against, however much the stat is called
+  // "votesAgainst" in the API.
   d.exec(`
     CREATE TABLE players (id TEXT PRIMARY KEY, name TEXT, tier TEXT);
     CREATE TABLE appearances (
       player_id TEXT, format TEXT, season_number INTEGER,
       placement INTEGER, status TEXT, jury_votes INTEGER DEFAULT 0,
-      votes_against INTEGER DEFAULT 0,
+      votes_received INTEGER DEFAULT 0,
       PRIMARY KEY (player_id, format, season_number));
     CREATE TABLE td_appearances (
       player_id TEXT, season_number INTEGER,
@@ -87,6 +92,14 @@ describe('the leaderboard, filtered by show', () => {
     // Big Brother filter rather than leaking across.
     const sql = leaderboardQuery({ expr: 'COALESCE(SUM(td.challenge_wins),0)', dir: 'DESC', format: 'big-brother' });
     expect(db.prepare(sql).all('big-brother', 1, 20).find(r => r.id === 'wayne').value).toBe(0);
+  });
+
+  it('runs the votes-against stat the API actually ships', () => {
+    // The stat is named votesAgainst; the column is votes_received. If the
+    // fixture and the schema ever drift apart, this is what fails.
+    const sql = leaderboardQuery({ expr: 'SUM(COALESCE(a.votes_received,0))', dir: 'DESC' });
+    const rows = db.prepare(sql).all(1, 20);
+    expect(rows.find(r => r.id === 'wayne').value).toBe(11);   // 2 + 6 + 3
   });
 });
 

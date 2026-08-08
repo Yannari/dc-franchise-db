@@ -24,6 +24,17 @@ const GENERIC = {
   home: 'camp',
   vote: 'vote',
   comps: ['challenge'],
+  danger: 'the crosshairs',
+  Danger: 'The crosshairs',
+  onDanger: 'in the crosshairs',
+  nominated: 'took votes',
+  Pawn: 'A spare vote',
+  Ceremony: 'The ceremony',
+  nominee: 'the one taking votes',
+  pawn: 'a spare vote',
+  ceremony: 'the ceremony',
+  jury: 'the jury',
+  safe: 'safe',
 };
 
 const SHOW_WORDS = {
@@ -39,6 +50,24 @@ const SHOW_WORDS = {
     home: 'camp',
     vote: 'vote',
     comps: ['challenge', 'immunity challenge', 'reward challenge'],
+    // ── the danger vocabulary ──
+    //
+    // The alumni room was written in Big Brother and shown to both shows, so a
+    // Total Drama night read "Alessio is on the block. Fight or do not." There
+    // is no block on this show. There is no nomination ceremony, no pawn, no
+    // veto — a `nomination` event here is somebody who TOOK VOTES at a
+    // ceremony and stayed, which is a different fact needing different words.
+    danger: 'the crosshairs',
+    Danger: 'The crosshairs',
+    onDanger: 'in the crosshairs',
+    nominated: 'took votes',
+    Pawn: 'A spare vote',
+    Ceremony: 'The ceremony',
+    nominee: 'the one taking votes',
+    pawn: 'a spare vote',
+    ceremony: 'the ceremony',
+    jury: 'the jury',
+    safe: 'safe',
   },
   'big-brother': {
     name: 'Big Brother',
@@ -52,6 +81,17 @@ const SHOW_WORDS = {
     home: 'house',
     vote: 'eviction vote',
     comps: ['competition', 'HOH', 'veto'],
+    danger: 'the block',
+    Danger: 'The block',
+    onDanger: 'on the block',
+    nominated: 'was nominated',
+    Pawn: 'A pawn',
+    Ceremony: 'Nominations',
+    nominee: 'the nominee',
+    pawn: 'a pawn',
+    ceremony: 'the nomination ceremony',
+    jury: 'the jury',
+    safe: 'safe',
   },
 };
 

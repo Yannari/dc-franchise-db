@@ -101,7 +101,10 @@ function readUrl() {
   if (ep > 0) S.episode = ep;
   if (q.get('app') === 'chatalumni') S.app = 'chatalumni';
   if (q.get('tab')) S.tab = q.get('tab');
-  if (q.get('channel')) S.channel = q.get('channel');
+  // `watch-party` was removed for being a duplicate of the main stage; an old
+  // link to it lands where it always meant to.
+  const ch = q.get('channel');
+  if (ch) S.channel = ch === 'watch-party' ? 'main-stage' : ch;
 }
 
 function writeUrl(replace = true) {
@@ -609,7 +612,12 @@ function messageRow(m, i, prev) {
 }
 
 function renderChat() {
-  const tabs = [['main-stage', 'Main Stage'], ['watch-party', 'Watch Party'],
+  // "Watch Party" was a fourth tab that fell into the same branch as Main Stage
+  // and rendered the identical list — the Main Stage IS the watch party, and it
+  // says so on the pinned message at the top of it. A tab that shows what the
+  // tab beside it shows is not a feature with a thin implementation, it is a
+  // promise the page cannot keep.
+  const tabs = [['main-stage', 'Main Stage'],
     ['predictions', 'Predictions'], ['hosts', 'Hosts']];
   const head = `
     <div class="chat-head">
@@ -698,20 +706,63 @@ function predictionRows(question) {
   const feeling = new Map(pulse.all.map(e => [e.subject, e]));
   const crowd = crowdFromRankings(S.db.rankings);
 
-  // Each question reads the same feelings from a different end. Being talked
-  // about badly makes you a boot pick and a bad winner pick, and the same
-  // number cannot do both jobs unsigned.
-  const negative = question === 'boot' || question === 'evicted';
+  // ── five questions, five readers ──
+  //
+  // Signing the sentiment was not enough: every question that was not a boot
+  // question ran the identical formula, so "who wins the next challenge", "who
+  // makes the merge", "who wins the season" and "who are you rooting for" all
+  // printed the same four names at the same four percentages. A panel of five
+  // questions with one answer is one question wearing five hats.
+  //
+  // They are different questions about different things, and the page already
+  // holds the data to tell them apart: what the room FEELS (audiencePulse),
+  // where the franchise RATES somebody (rankings), and what their record says
+  // they are GOOD at (players_database). A challenge question should read the
+  // challenge record. A rooting question should read affection and nothing
+  // else — it is the one question where being good is irrelevant.
+  const rec = new Map((S.db.players?.players || []).map(p => [p.id, p]));
   const scored = inPlay.map(p => {
     const e = feeling.get(p.slug);
     const talked = e ? e.posts : 0;
     const warmth = e ? e.sentiment : 0;
     const standing = (Number(crowd[p.slug]) || 50) / 50;
-    // Volume is what makes somebody a candidate at all — nobody predicts a boot
-    // for a player the room has not mentioned. Direction decides which way.
+    const r = rec.get(p.slug) || {};
+    const byShow = r.byShow?.[S.format] || {};
+    // Career facts, normalised into small multipliers rather than used raw —
+    // a four-season veteran should be a favourite, not a certainty.
+    const comps = 1 + (Number(byShow.challengeWins || byShow.compWins) || 0) * 0.08;
+    const deep = 1 + (r.bestPlacement && r.bestPlacement <= 5 ? 0.35 : 0)
+      + (Number(r.wins) || 0) * 0.3;
+    // Being talked about is what makes somebody a candidate at all — nobody
+    // predicts anything for a player the room has not mentioned.
     const heat = 1 + talked * 0.6;
-    const lean = negative ? -warmth : warmth;
-    return { ...p, weight: Math.max(0.4, heat * standing + lean * 0.02) };
+
+    let weight;
+    switch (question) {
+      // Loud and disliked. The room predicts the boot it wants.
+      case 'boot': case 'evicted':
+        weight = heat * (1.6 - Math.min(1.2, standing)) - warmth * 0.03;
+        break;
+      // Who is good at these, not who is popular.
+      case 'immunity': case 'hoh': case 'veto':
+        weight = comps * standing * (1 + talked * 0.15);
+        break;
+      // Who lasts. Record of going deep, and NOT being the loudest target.
+      case 'merge':
+        weight = deep * standing * (1.3 - Math.min(0.8, talked * 0.12));
+        break;
+      // Standing plus warmth: a jury argument, not a popularity contest.
+      case 'winner':
+        weight = deep * standing * (1 + warmth * 0.02) * (1 + talked * 0.1);
+        break;
+      // Pure affection. Being good at the game is not the question.
+      case 'favourite':
+        weight = 1 + Math.max(0, warmth) * 0.05 + talked * 0.25;
+        break;
+      default:
+        weight = heat * standing;
+    }
+    return { ...p, weight: Math.max(0.4, weight) };
   }).sort((a, b) => b.weight - a.weight).slice(0, 4);
 
   const total = scored.reduce((n, p) => n + p.weight, 0) || 1;
@@ -849,7 +900,7 @@ function renderRail() {
 function renderNav() {
   const items = S.app === 'birdie'
     ? [['for-you', 'For You'], ['latest', 'Latest'], ['following', 'Following'], ['players', 'Players']]
-    : [['main-stage', 'Main Stage'], ['watch-party', 'Watch Party'], ['predictions', 'Predictions'], ['hosts', 'Hosts']];
+    : [['main-stage', 'Main Stage'], ['predictions', 'Predictions'], ['hosts', 'Hosts']];
   const current = S.app === 'birdie' ? S.tab : S.channel;
   return items.map(([id, label]) => `<button type="button" data-${S.app === 'birdie' ? 'tab' : 'channel'}="${id}"
     aria-current="${current === id ? 'page' : 'false'}">${label}</button>`).join('');

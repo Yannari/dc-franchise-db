@@ -65,14 +65,37 @@ describe('a prediction cannot be the result', () => {
     expect(PAGE).toMatch(/audiencePulse\(visible\(\)\)/);
   });
 
-  it('reads a boot question from the opposite end to a winner question', () => {
-    // The same number cannot answer "who goes home" and "who wins" unsigned:
-    // being talked about badly makes you a boot pick and a bad winner pick.
+  it('answers each question with its own reader', () => {
+    // Signing the sentiment was not enough, and this test asserted that weaker
+    // version and passed while the panel printed the same four names five
+    // times: "who wins the next challenge", "who makes the merge", "who wins
+    // the season" and "who are you rooting for" all ran one formula.
+    //
+    // They are questions about different things. A challenge question reads the
+    // challenge record; a rooting question reads affection and nothing else,
+    // because being good at the game is not what is being asked.
     const PAGE = fs.readFileSync('js/social-page.js', 'utf8');
     const fn = PAGE.slice(PAGE.indexOf('function predictionRows'),
       PAGE.indexOf('function renderPredictions'));
-    expect(fn).toMatch(/negative = question === 'boot' \|\| question === 'evicted'/);
-    expect(fn).toMatch(/negative \? -warmth : warmth/);
+    for (const q of ['boot', 'evicted', 'immunity', 'hoh', 'veto', 'merge',
+      'winner', 'favourite']) {
+      expect(fn, `"${q}" has no reader of its own`).toMatch(new RegExp(`case '${q}':`));
+    }
+    // And they must genuinely read different things, not different constants.
+    expect(fn, 'nothing reads the challenge record').toMatch(/challengeWins/);
+    expect(fn, 'nothing reads how deep they have gone').toMatch(/bestPlacement/);
+    expect(fn, 'nothing reads pure affection').toMatch(/Math\.max\(0, warmth\)/);
+  });
+
+  it('does not let one formula serve every question', () => {
+    const PAGE = fs.readFileSync('js/social-page.js', 'utf8');
+    const fn = PAGE.slice(PAGE.indexOf('function predictionRows'),
+      PAGE.indexOf('function renderPredictions'));
+    // Five questions, five distinct weight expressions.
+    const weights = [...fn.matchAll(/weight = ([^;]+);/g)].map(m => m[1].trim());
+    expect(weights.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(weights).size, 'two questions share a formula')
+      .toBe(weights.length);
   });
 
   it('adds up to a hundred', () => {

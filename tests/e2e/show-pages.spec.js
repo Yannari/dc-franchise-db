@@ -58,3 +58,34 @@ test('the social feed follows the show you picked', async ({ page }) => {
   await page.waitForSelector('.post, .msg, .state-card', { timeout: 15000 });
   await expect(page.locator('#ctx-chip')).toContainText('Big Brother');
 });
+
+test('a two-show career is described as two careers', async ({ page }) => {
+  // "3 seasons" is true and useless for somebody who played two of one show and
+  // one of another: it reads as a three-season veteran of one franchise, which
+  // is a different career.
+  await page.goto('/player.html?player=bowie');
+  await page.waitForSelector('.pp-showhead', { timeout: 15000 });
+
+  await expect(page.locator('.pp-meta')).toContainText('2 Total Drama');
+  await expect(page.locator('.pp-meta')).toContainText('1 Big Brother');
+
+  // Each show gets its own heading and its own bars, because the career totals
+  // are cross-format sums — one "Challenge Wins" bar belongs to neither show.
+  const heads = await page.locator('.pp-showhead').allTextContents();
+  expect(heads).toHaveLength(2);
+  expect(await page.locator('.pp-statbars').count()).toBe(2);
+
+  // Big Brother keeps counters Total Drama has no equivalent for, and they were
+  // computed into byShow and displayed nowhere at all.
+  const chips = await page.locator('.pp-chip .l').allTextContents();
+  expect(chips).toContain('HOH');
+  expect(chips).toContain('Vetoes');
+  expect(chips).toContain('Times Nominated');
+});
+
+test('a one-show career is not made to look like two', async ({ page }) => {
+  await page.goto('/player.html?player=alejandro');
+  await page.waitForSelector('.pp-statbars', { timeout: 15000 });
+  expect(await page.locator('.pp-showhead').count()).toBe(0);
+  await expect(page.locator('.pp-meta')).toContainText('4 seasons');
+});

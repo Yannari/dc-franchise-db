@@ -371,6 +371,12 @@ function formatPlayerStory(storyText, player) {
 
 // Get player ID from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
+/* A module script runs AFTER this classic one, so `window.records` does not
+   exist yet when the profile first renders. Rendering anyway produced a page
+   whose per-show career sections appeared or did not depending on which
+   finished first — present on one load, absent on the next. */
+window._recordsReady = new Promise(resolve => { window._recordsResolve = resolve; });
+
 const playerId = urlParams.get('player');
 
 if (!playerId) {
@@ -380,7 +386,8 @@ if (!playerId) {
   // Load player DB + rankings in parallel, then fetch season data for keyMoments
   Promise.all([
     loadPlayerDatabase(),
-    loadRankingsDatabase()
+    loadRankingsDatabase(),
+    window._recordsReady
   ]).then(([data, rankingsData]) => {
     const player = data.players.find(p => p.id === playerId);
     
@@ -604,6 +611,24 @@ function renderPlayerProfile(player) {
    * Falls back to the flat count for anybody with one show, where the breakdown
    * would just be the same number said twice.
    */
+  /* Per-show careers, from js/records.js — the same function franchise.html
+     draws its boards from. A second copy of this arithmetic living on the
+     player page is how two pages come to disagree about somebody's record. */
+  const _careers = (() => {
+    const R = window.records;
+    if (!R?.careersIn) return {};
+    const out = {};
+    for (const fmt of Object.keys(player.byShow || {})) {
+      const c = R.careersIn({ players: [player] }, fmt)[0];
+      if (c) out[fmt] = c;
+    }
+    return out;
+  })();
+  const _showList = Object.keys(_careers);
+  const _multiShow = _showList.length > 1;
+  const SHOW_NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+  const showName = f => SHOW_NAMES[f] || f;
+
   const showCounts = (() => {
     const by = player.byShow || {};
     const rows = Object.entries(by)
@@ -917,25 +942,70 @@ function renderPlayerProfile(player) {
   // ── CAREER STATS ─────────────────────────────────────────
   html += `<div class="pp-section pp-reveal"><h2>Career at a Glance</h2><span class="pp-pill">${seasonsLabel}</span></div>`;
 
-  // Bar stats with relative maximums
-  const _bars = [
-    { label:'Challenge Wins', val: player.totalChallengeWins||0, max:20, color:'' },
-    { label:'Immunity Wins',  val: player.totalImmunityWins||0,  max:12, color:'' },
-    { label:'Advantages',     val: advantagesPlayed,             max:6,  color:'' },
-    { label:'Jury Votes',     val: player.totalJuryVotes||0,     max:10, color:'' },
-    { label:'Votes Against',  val: player.totalVotesAgainst||0,  max:30, color:'danger', invert:true },
-  ];
-  html += `<div class="pp-statbars pp-reveal">`;
-  _bars.forEach(b => {
-    if (b.val == null) return;
-    const pct = Math.min(b.val / b.max, 1) * 100;
-    html += `<div class="pp-statrow">
-      <span class="pp-statlbl">${b.label}</span>
-      <div class="pp-stattrack"><div class="pp-statfill ${b.color||''}" data-pct="${pct.toFixed(1)}"></div></div>
-      <span class="pp-statval">${b.val}</span>
-    </div>`;
-  });
-  html += `</div>`;
+  /* THE BARS ARE PER SHOW when somebody has played more than one.
+     `totalChallengeWins` and friends are cross-format sums by design — a Big
+     Brother competition win is folded in — so one bar labelled "Challenge Wins"
+     on a two-show career is a number belonging to neither show. */
+  function barsFor(c) {
+    return [
+      { label: 'Challenge Wins', val: c.challengeWins, max: 20 },
+      { label: 'Immunity Wins',  val: c.immunityWins,  max: 12 },
+      { label: 'Jury Votes',     val: c.juryVotes,     max: 10 },
+      { label: 'Votes Against',  val: c.votesAgainst,  max: 30, color: 'danger' },
+    ];
+  }
+  function drawBars(bars) {
+    let out = `<div class="pp-statbars pp-reveal">`;
+    bars.forEach(b => {
+      if (b.val == null) return;
+      const pct = Math.min(b.val / b.max, 1) * 100;
+      out += `<div class="pp-statrow">
+        <span class="pp-statlbl">${b.label}</span>
+        <div class="pp-stattrack"><div class="pp-statfill ${b.color||''}" data-pct="${pct.toFixed(1)}"></div></div>
+        <span class="pp-statval">${b.val}</span>
+      </div>`;
+    });
+    return out + `</div>`;
+  }
+
+  if (_multiShow) {
+    for (const fmt of _showList) {
+      const c = _careers[fmt];
+      const bb = player.byShow?.[fmt] || {};
+      html += `<div class="pp-showhead pp-reveal">${showName(fmt)}
+        <span class="pp-showsub">${c.seasonsPlayed} season${c.seasonsPlayed===1?'':'s'} &nbsp;•&nbsp;
+        ${c.wins} win${c.wins===1?'':'s'} &nbsp;•&nbsp; best #${c.bestPlacement}</span></div>`;
+      html += drawBars(barsFor(c));
+      /* Big Brother keeps counters Total Drama has no equivalent for, and they
+         were computed into byShow and then displayed nowhere at all. */
+      if (bb.hohWins != null || bb.vetoWins != null || bb.timesNominated != null) {
+        html += `<div class="pp-mini-chips pp-reveal">
+          ${bb.totalCompWins != null ? `<div class="pp-chip"><div class="v">${bb.totalCompWins}</div><div class="l">Comp Wins</div></div>` : ''}
+          ${bb.hohWins != null ? `<div class="pp-chip"><div class="v">${bb.hohWins}</div><div class="l">HOH</div></div>` : ''}
+          ${bb.vetoWins != null ? `<div class="pp-chip"><div class="v">${bb.vetoWins}</div><div class="l">Vetoes</div></div>` : ''}
+          ${bb.timesNominated != null ? `<div class="pp-chip"><div class="v">${bb.timesNominated}</div><div class="l">Times Nominated</div></div>` : ''}
+        </div>`;
+      }
+    }
+  } else {
+    const only = _careers[_showList[0]];
+    html += drawBars(only ? [...barsFor(only),
+      { label: 'Advantages', val: advantagesPlayed, max: 6 }] : [
+      { label:'Challenge Wins', val: player.totalChallengeWins||0, max:20 },
+      { label:'Immunity Wins',  val: player.totalImmunityWins||0,  max:12 },
+      { label:'Advantages',     val: advantagesPlayed,             max:6  },
+      { label:'Jury Votes',     val: player.totalJuryVotes||0,     max:10 },
+      { label:'Votes Against',  val: player.totalVotesAgainst||0,  max:30, color:'danger' },
+    ]);
+    const bb = player.byShow?.[_showList[0]] || {};
+    if (bb.hohWins != null || bb.vetoWins != null) {
+      html += `<div class="pp-mini-chips pp-reveal">
+        ${bb.hohWins != null ? `<div class="pp-chip"><div class="v">${bb.hohWins}</div><div class="l">HOH</div></div>` : ''}
+        ${bb.vetoWins != null ? `<div class="pp-chip"><div class="v">${bb.vetoWins}</div><div class="l">Vetoes</div></div>` : ''}
+        ${bb.timesNominated != null ? `<div class="pp-chip"><div class="v">${bb.timesNominated}</div><div class="l">Times Nominated</div></div>` : ''}
+      </div>`;
+    }
+  }
 
   // Mini chips for non-bar stats
   html += `<div class="pp-mini-chips pp-reveal">`;
@@ -945,7 +1015,10 @@ function renderPlayerProfile(player) {
     showCounts ? 'Seasons (' + showCounts.replace(/&nbsp;•&nbsp;/g, '+').replace(/\s+/g, ' ') + ')' : 'Seasons'}</div></div>`;
   html += `<div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>`;
   html += `<div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>`;
-  if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate</div></div>`;
+  /* Win rate and average placement average across every show somebody played.
+     That is a real number and a confusing one on a two-show career, so it says
+     which it is rather than implying one franchise. */
+  if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate${_multiShow ? ' (all shows)' : ''}</div></div>`;
   html += `</div>`;
 
   // ── SEASON HISTORY ────────────────────────────────────────
@@ -1384,11 +1457,21 @@ document.addEventListener('keydown', e => {
   // databases — nothing stores a fame field, because decay makes it a function
   // of when you ask rather than of the player's own record.
   import { computeFame } from './js/fame.js';
+  // The same engine franchise.html draws its per-show boards from, so the two
+  // pages cannot come to disagree about somebody's record.
+  import { careersIn } from './js/records.js';
+  window.records = { careersIn };
+  window._recordsResolve?.();
   import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
 
   const style = document.createElement('style');
   style.textContent = FAME_STAR_CSS + `
-    .pp-fame{margin:2px 0 6px;}`;
+    .pp-fame{margin:2px 0 6px;}
+    .pp-showhead{
+      display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+      margin:20px 0 8px; font-weight:800; font-size:16px;
+    }
+    .pp-showsub{ font-weight:600; font-size:13px; opacity:.6; }`;
   document.head.appendChild(style);
 
   window.renderPlayerFame = async (playerId, mountEl) => {

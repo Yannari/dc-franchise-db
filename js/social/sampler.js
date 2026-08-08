@@ -142,8 +142,20 @@ function fit(text, max) {
   return (sp > max * 0.6 ? cut.slice(0, sp) : cut).trim();
 }
 
-/** How the room as a whole feels about this player. Feelings, not a roll. */
-function crowdAffection(slug) {
+/**
+ * How the room as a whole feels about this player. Feelings, not a roll.
+ *
+ * THIS IS A STAND-IN, and a documented one. It averages the persona cast's
+ * affection, because this module is pure and cannot reach `gs.popularity`. The
+ * cast holds feelings about a handful of slugs, so for everybody else the crowd
+ * reads 0 — tomatoes flatten to zero and likes go flat. `tests/social-sampler`
+ * pins that with a `bridgette` fixture precisely so the limitation cannot hide.
+ *
+ * Callers with real audience data pass their own `crowd` function instead; the
+ * feed builder does exactly that. When it does, the bridgette test is EXPECTED
+ * to fail — that is the signal that real popularity arrived, not a regression.
+ */
+function defaultCrowd(slug) {
   if (!slug) return 0;
   const vals = PERSONAS
     .map(p => (p.feelings || {})[slug])
@@ -232,7 +244,8 @@ function shapesFor(topic, stream, event) {
  * @param {function} o.rng       injected so a failure is reproducible
  * @returns {{handle:string,name:string,stream:string,topic:string,text:string,likes:number,tomatoes:number}}
  */
-export function composePost({ persona, topic, platform, event, rng = Math.random }) {
+export function composePost({ persona, topic, platform, event, rng = Math.random,
+  crowd = defaultCrowd }) {
   const stream = platform.id;
   const shapes = shapesFor(topic, stream, event);
   // THROWS rather than falling back, for the same reason fillSlots does. The old
@@ -295,8 +308,8 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   // agreement > 0: the post agrees with how the room feels, and collects likes.
   // agreement < 0: it does not, and the tomatoes come out.
   const effStance = stance < 0 ? stance * platform.hostility : stance;
-  const crowd = crowdAffection(targetOf(topic, event));
-  const agreement = Math.max(-1, Math.min(1, effStance * crowd));
+  const crowdFeeling = crowd(targetOf(topic, event));
+  const agreement = Math.max(-1, Math.min(1, effStance * crowdFeeling));
   const spread = 1 + (text.length % 41) / 40;
 
   const likes = Math.round(90 * (1 + topic.weight) * (1 + 1.6 * _pos(agreement))
@@ -323,7 +336,8 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
  * @param {object} o      { count, stream, rng }
  * @returns {object[]} posts
  */
-export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math.random } = {}) {
+export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math.random,
+  crowd = defaultCrowd } = {}) {
   const platform = platformOf(stream);
   const kinds = kindsFor(event);
 
@@ -345,7 +359,7 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
   for (let i = 0; i < count; i++) {
     const persona = voices[Math.floor(rng() * voices.length) % voices.length];
     const topic = weightedPick(rng, candidates, t => topicWeight(persona, t, event, platform));
-    posts.push(composePost({ persona, topic, platform, event, rng }));
+    posts.push(composePost({ persona, topic, platform, event, rng, crowd }));
   }
   return posts;
 }

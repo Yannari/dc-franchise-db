@@ -212,6 +212,71 @@ export const PHRASINGS = {
     },
   },
 
+  // ── the receipt ─────────────────────────────────────────────────────────
+  //
+  // Every line here spends `{receipt}` — the one fact from js/social/receipts.js
+  // that makes this event THIS event. A template without it would be a post
+  // about a nomination in general, which is the thing this topic exists to
+  // stop, so `poolFor` drops the whole topic when an event has no history.
+  //
+  // The timeline shouts the fact at somebody. The hosted room says what it
+  // means. Same packet, two registers.
+  'receipts-out': {
+    'call-out': {
+      timeline: [
+        'reminder that {receipt} 💀',
+        'everyone acting shocked when {receipt}',
+        'people forget {receipt}. i do not forget',
+        'not one of you is going to mention that {receipt}',
+        '{receipt}. thats the whole post',
+        'putting this here for the people with no memory: {receipt}',
+      ],
+      chat: [
+        'Worth remembering that {receipt}. It changes how you read tonight.',
+        'People are treating this as out of nowhere. {receipt}, so it is not.',
+        'The context nobody is mentioning: {receipt}.',
+      ],
+    },
+    dunk: {
+      timeline: [
+        'GET HIM {actor}. {receipt}',
+        'lmao {receipt} and now this. couldnt be me',
+        '{subject} deserves this actually. {receipt}',
+        'good. {receipt} 🍅',
+        'the karma of it all when {receipt}',
+      ],
+      chat: [
+        'Hard to feel much for {subject} here. {receipt}.',
+        'This is the bill coming due. {receipt}.',
+      ],
+    },
+    'live-reaction': {
+      timeline: [
+        'NO BECAUSE {receipt} 😭',
+        'i cant believe {actor} would do that to {subject} when {receipt}',
+        'wait {receipt}?? and she still did it??',
+        'im actually heartbroken. {receipt}',
+        'crying. {receipt} and this is the thanks',
+        'somebody get {subject} out of there. {receipt} 😭',
+      ],
+      chat: [
+        'I did not expect that, and I say that knowing {receipt}.',
+        'The room went quiet. Everybody in there was doing the same arithmetic: {receipt}.',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        'this is the correct move and {receipt} is exactly why',
+        '{actor} had to. {receipt}. next question',
+        'anyone saying this is personal has forgotten that {receipt}',
+      ],
+      chat: [
+        '{receipt}, so this is the only nomination that made sense once you look at the week properly.',
+        'Not a betrayal so much as a price. {receipt}, and that had to be paid for eventually.',
+      ],
+    },
+  },
+
   'blindside-reaction': {
     'live-reaction': {
       timeline: [
@@ -1149,10 +1214,10 @@ export const TOPIC_AIM = {
  * multiplier, which is the topic that owns that shape.
  */
 export const ARCHETYPE_PULL = {
-  stan: { 'crowned': 2.6, 'robbed': 2.2, 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
-  hater: { 'robbed': 2.0, 'jury-verdict': 1.6, 'crowned': 0.5, 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
-  analyst: { 'jury-verdict': 2.4, 'crowned': 1.6, 'robbed': 1.8, 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
-  livefeeder: { 'crowned': 1.8, 'jury-verdict': 1.6, 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
+  stan: { 'receipts-out': 1.9, 'crowned': 2.6, 'robbed': 2.2, 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
+  hater: { 'receipts-out': 2.5, 'robbed': 2.0, 'jury-verdict': 1.6, 'crowned': 0.5, 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
+  analyst: { 'receipts-out': 2.2, 'jury-verdict': 2.4, 'crowned': 1.6, 'robbed': 1.8, 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
+  livefeeder: { 'receipts-out': 2.0, 'crowned': 1.8, 'jury-verdict': 1.6, 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
   casual: { 'blindside-reaction': 1.8, 'thirst': 1.6, 'favourite-declaration': 1.5, 'shipping': 1.4, 'strategy-critique': 0.4, 'comp-talk': 0.4 },
   chaos: { 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'personal-roast': 1.8, 'hypocrisy-watch': 1.5, 'kindness-noticed': 0.4 },
   shipper: { 'shipping': 2.6, 'breakup-reaction': 2.2, 'showmance-concern': 1.8, 'thirst': 1.6, 'showmance-hate': 0.4, 'strategy-critique': 0.3 },

@@ -19,6 +19,7 @@
 // "one taxonomy, two consumers". This is the third, and it is still one taxonomy.
 import { EVENT_KINDS } from './topics.js';
 import { classifyEventTone } from '../tone.js';
+import { withReceipts } from './receipts.js';
 
 /** A nominal episode runtime, in ms. Posts are stamped across it. */
 export const EPISODE_MS = 42 * 60 * 1000;
@@ -113,7 +114,13 @@ function bbEvents(week, meta) {
   if (week.hoh) out.push(event('comp-win', { ...meta, subject: week.hoh }));
 
   for (const [i, name] of (week.initialNominees || []).entries()) {
-    out.push(event('nomination', { ...meta, subject: name, actor: week.hoh, jitter: i * 0.01 }));
+    // The first kind to carry its own history. A nomination with only two
+    // names on it produces a post about A nomination; the receipts are what
+    // make it about THIS one — the deal they shook on, the vote that saved
+    // them, the week one of them already did this.
+    out.push(withReceipts(
+      event('nomination', { ...meta, subject: name, actor: week.hoh, jitter: i * 0.01 }),
+      { upTo: meta.episode }));
   }
 
   if (week.vetoWinner) {

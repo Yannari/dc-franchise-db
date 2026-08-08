@@ -63,6 +63,21 @@ export const TOPICS = [
     reads: ['careerTotals', 'franchiseRecords'],
     shapes: ['hot-take', 'ranking'] },
 
+  // ── the receipt ─────────────────────────────────────────────────────────
+  //
+  // The first topic that requires history. Every phrasing under it uses
+  // `{receipt}`, so `poolFor` drops the whole topic for an event with nothing
+  // behind it — a nomination between two people who have never interacted
+  // simply cannot draw this, which is the correct outcome and not a gap.
+  //
+  // Two registers on purpose: the timeline screams a fact at somebody, the
+  // hosted room explains what the fact means. Same packet, and a good test of
+  // whether the packet is rich enough for both.
+  { id: 'receipts-out', stream: 'both', weight: 1.3,
+    triggers: ['nomination', 'eviction', 'blindside', 'betrayal'],
+    reads: ['sideDeals', 'ballots', 'allianceChanges', 'strategyMemory', 'bondLean'],
+    shapes: ['call-out', 'dunk', 'live-reaction', 'hot-take'] },
+
   // ── the last night ──────────────────────────────────────────────────────
   //
   // Only `prediction` and `legacy-take` fired on a finale, and neither is about

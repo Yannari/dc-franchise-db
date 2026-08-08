@@ -82,7 +82,12 @@ function kindsFor(event) {
 }
 
 /** The only slot names a phrasing may use. Anything else is an authoring typo. */
-export const SLOT_NAMES = ['subject', 'actor', 'season', 'episode'];
+// `receipt` is the one fact that makes this event THIS event rather than one
+// of its kind — the deal they shook on, the vote that saved them, the week one
+// of them already did exactly this. Supplied by js/social/receipts.js, and
+// absent on events that have no history behind them, which is why `poolFor`
+// filters templates by the slots an event can actually fill.
+export const SLOT_NAMES = ['subject', 'actor', 'season', 'episode', 'receipt'];
 
 /**
  * Fill {subject} {actor} {season} {episode}.
@@ -100,6 +105,9 @@ function fillSlots(template, event) {
     actor: displayName(event.actor),
     season: String(event.season ?? ''),
     episode: String(event.episode ?? ''),
+    // Set by js/social/receipts.js, already trimmed of its full stop so it
+    // drops into the middle of a sentence somebody typed on a phone.
+    receipt: String(event.receipt || event.headline?.text || '').replace(/\.$/, ''),
   };
   return template
     .replace(/\{(\w+)\}/g, (_, key) => {
@@ -245,7 +253,7 @@ function shapesFor(topic, stream, event) {
  * @returns {{handle:string,name:string,stream:string,topic:string,text:string,likes:number,tomatoes:number}}
  */
 export function composePost({ persona, topic, platform, event, rng = Math.random,
-  crowd = defaultCrowd }) {
+  crowd = defaultCrowd, used = null }) {
   const stream = platform.id;
   const shapes = shapesFor(topic, stream, event);
   // THROWS rather than falling back, for the same reason fillSlots does. The old
@@ -259,7 +267,18 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
       + `(declared shapes: ${(topic.shapes || []).join(', ') || 'none'}) — add phrasings in phrasings.js`);
   }
   const shape = _pick(rng, shapes);
-  const pool = poolFor(topic.id, shape, stream, event);
+  const all = poolFor(topic.id, shape, stream, event);
+
+  // ── not the same sentence nine times ──
+  //
+  // A crowd is sampled by drawing a persona and a topic per post and composing
+  // each one independently, so nothing stopped nine people reaching into the
+  // same pool and pulling the same line. With a five-template pool that is not
+  // a risk, it is the expected outcome — and it reads as one account posting
+  // repeatedly rather than a room reacting. Templates already spent on THIS
+  // event are set aside until the pool runs dry.
+  const fresh = used ? all.filter(t => !used.has(t)) : all;
+  const pool = fresh.length ? fresh : all;
 
   // Length is a preference, not a filter: draw twice and usually keep whichever
   // sits closer to how long this fan writes. Proportional, and it keeps the
@@ -272,6 +291,7 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
       template = other;
     }
   }
+  if (used && template) used.add(template);
 
   let text = fillSlots(template, event);
 
@@ -362,10 +382,13 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
   if (!voices.length) return [];
 
   const posts = [];
+  // Shared across the whole crowd reacting to ONE event, so the room does not
+  // say the same sentence nine times in a row.
+  const used = new Set();
   for (let i = 0; i < count; i++) {
     const persona = voices[Math.floor(rng() * voices.length) % voices.length];
     const topic = weightedPick(rng, candidates, t => topicWeight(persona, t, event, platform));
-    posts.push(composePost({ persona, topic, platform, event, rng, crowd }));
+    posts.push(composePost({ persona, topic, platform, event, rng, crowd, used }));
   }
   return posts;
 }

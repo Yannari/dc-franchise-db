@@ -276,4 +276,16 @@ describe('it never blocks a season', () => {
     expect(writerEndpoint({})).toBeNull();
     expect(writerEndpoint({ socialWriterUrl: 'https://x.test' })).toBe('https://x.test');
   });
+
+  it('reuses the worker the Season Builder already talks to', async () => {
+    // A fourth Cloudflare worker would be another hand-deploy and another
+    // secret for a separation nothing needs: that one already holds
+    // ANTHROPIC_API_KEY and already dispatches creative writing by mode.
+    const f = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ posts: [] }) });
+    await requestPosts({ event: { kind: 'nomination' } }, { endpoint: 'https://x.test', fetchImpl: f });
+    const body = JSON.parse(f.mock.calls[0][1].body);
+    expect(body.mode, 'the worker dispatches on mode and would fall through to analytics')
+      .toBe('social');
+    expect(body.event).toBeTruthy();
+  });
 });

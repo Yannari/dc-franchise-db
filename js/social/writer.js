@@ -27,11 +27,24 @@ import { platformOf } from './platforms.js';
 import { samplePosts } from './sampler.js';
 import { acceptPosts } from './validator.js';
 
-/** Where the worker lives. Absent means templates, silently and by design. */
+/**
+ * Where the worker lives. Absent means templates, silently and by design.
+ *
+ * The SAME worker the Season Builder uses — it already holds
+ * ANTHROPIC_API_KEY, already dispatches creative writing by `mode`, and its
+ * URL is already remembered here, so switching this on costs nothing beyond
+ * redeploying a worker that is already deployed. Never prompts: a feed that
+ * stops a season to ask for a URL is worse than a feed written from templates.
+ */
 export function writerEndpoint(config = {}) {
-  return config.socialWriterUrl
-    || (typeof globalThis !== 'undefined' && globalThis.SOCIAL_WRITER_URL)
-    || null;
+  if (config.socialWriterUrl) return config.socialWriterUrl;
+  if (typeof globalThis !== 'undefined' && globalThis.SOCIAL_WRITER_URL) {
+    return globalThis.SOCIAL_WRITER_URL;
+  }
+  try {
+    return (typeof localStorage !== 'undefined'
+      && localStorage.getItem('SEASON_BUILDER_WORKER_URL')) || null;
+  } catch { return null; }
 }
 
 /**
@@ -92,7 +105,8 @@ export async function requestPosts(packet, { endpoint, timeoutMs = 12000, fetchI
     const res = await doFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(packet),
+      // The worker dispatches on `mode`; everything else is the packet.
+      body: JSON.stringify({ mode: 'social', ...packet }),
       signal: controller?.signal,
     });
     if (!res?.ok) return null;

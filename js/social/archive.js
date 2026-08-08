@@ -36,39 +36,70 @@ export function episodesOf(doc, format) {
       record, episode: Number(record?.week ?? record?.num ?? i + 1),
     }));
   }
-  // An `episodes` array is only worth reading if it records what HAPPENED.
-  // Season 9 publishes one whose entries are the prose prompts the episode
-  // writer was given — no boot, no winner, nothing extractable. Preferring it
-  // because it existed cost that season every eviction it had, and the feed came
-  // back full of "episode aired" and nothing else.
-  const structured = (doc.episodes || []).filter(e => e && (e.eliminated || e.immunityWinner));
-  if (structured.length) {
-    return structured.map((record, i) => ({
-      record, episode: Number(record?.episode ?? record?.num ?? i + 1),
-    }));
+
+  // ── every night the season aired, not only the ones with a ballot ──
+  //
+  // The sources here are both PARTIAL. `votingHistory` records tribal councils,
+  // so a reward night, a non-elimination week or an episode whose record never
+  // carried a boot is simply not in it. `episodes` is only trustworthy where it
+  // says what HAPPENED — season 9 publishes one whose entries are the prose
+  // prompts the writer was given, no boot, no winner, nothing extractable.
+  //
+  // Reading either one as THE list left holes in the episode selector, and a
+  // gap in a numbered list reads as the feature failing rather than as a source
+  // that only ever recorded votes. So both are merged by episode number and the
+  // run is filled in: a night nothing is known about still gets an entry,
+  // because `extractEvents` always emits `episode-aired` and the topics that
+  // fire on it — the edit critique, the favourite declaration, the thirst — are
+  // exactly the ones that need no big moment.
+  const known = new Map();
+  const put = (n, record, useful) => {
+    if (!Number.isFinite(n) || n < 1) return;
+    const had = known.get(n);
+    // A record that says something beats one that does not, whichever arrived
+    // first.
+    if (!had || (useful && !had._useful)) known.set(n, Object.assign(record, { _useful: useful }));
+  };
+  for (const [i, v] of (doc.votingHistory || []).entries()) {
+    put(Number(v?.episode ?? i + 1), { ...v }, true);
   }
-  const voted = (doc.votingHistory || []).map((v, i) => ({
-    record: v, episode: Number(v?.episode ?? i + 1),
-  }));
+  for (const [i, e] of (doc.episodes || []).entries()) {
+    put(Number(e?.episode ?? e?.num ?? i + 1), { ...e }, !!(e?.eliminated || e?.immunityWinner));
+  }
+
+  // ── but a season that recorded NOTHING gets one night, not a whole run ──
+  //
+  // Seasons 1 to 5 predate votingHistory and say nothing about any individual
+  // episode. Filling a run there is not filling gaps between known nights, it
+  // is inventing thirteen of them — every one a page of chatter about an
+  // episode nobody has a single fact for. They do name a winner, and that is
+  // worth a feed, so they get the finale and only the finale.
+  const end = Number(doc.episodeCount) || 0;
+  const out = [];
+  if (!known.size) {
+    if (doc.winner && end) out.push({ episode: end, record: { episode: end } });
+  } else {
+    const total = Math.max(end, Math.max(...known.keys()));
+    for (let n = 1; n <= total; n++) {
+      const record = known.get(n) || { episode: n };
+      delete record._useful;
+      out.push({ episode: n, record });
+    }
+  }
 
   // THE FINALE IS NOT THE LAST VOTE.
   //
-  // votingHistory records tribal councils, and a Total Drama finale is decided
-  // by a challenge or a jury rather than by a ballot — so the season's last
-  // recorded vote is several episodes before the end. Season 14 runs to episode
-  // 26 and its last vote is episode 24, which meant the finale reaction landed
-  // on the wrong night and the actual finale had no page at all.
-  //
-  // The finale gets its own entry, at the episode the season says it ran to.
-  const lastVote = voted.length ? voted[voted.length - 1].episode : 0;
-  const end = Number(doc.episodeCount) || 0;
-  if (doc.winner && end > lastVote) {
-    voted.push({
-      episode: end,
-      record: { episode: end, isFinale: true, winner: doc.winner },
-    });
+  // A Total Drama finale is decided by a challenge or a jury rather than by a
+  // ballot, so the season's last recorded vote is several episodes before the
+  // end. Season 14 runs to episode 26 and its last vote is episode 24 — the
+  // finale reaction used to land on the wrong night and the actual finale had
+  // no page at all. It is in the run now; this is what makes it the finale.
+  const last = out[out.length - 1];
+  if (doc.winner && last) {
+    last.record.isFinale = true;
+    last.record.winner = last.record.winner || doc.winner;
   }
-  return voted;
+  return out;
 }
 
 /**

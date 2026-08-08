@@ -19,11 +19,13 @@ import { describe, expect, it } from 'vitest';
 import { PERSONAS } from '../js/social/personas.js';
 import { TOPICS } from '../js/social/topics.js';
 import { PLATFORMS } from '../js/social/platforms.js';
-// The phrasings live in sampler.js, not topics.js — topics declare which SHAPES
-// they can take, the sampler holds the words. Walking personas/topics/platforms
-// alone would be a guard passing over an almost empty set, which is worse than
-// no guard: every actual post string is in PHRASINGS and DECORATIONS.
-import { PHRASINGS, DECORATIONS } from '../js/social/sampler.js';
+// The phrasings live in phrasings.js — not topics.js, which declares only which
+// SHAPES a topic can take, and no longer sampler.js, which is the composer.
+// Walking personas/topics/platforms alone would be a guard passing over an almost
+// empty set, which is worse than no guard: every actual post string this library
+// can emit is in PHRASINGS and DECORATIONS, and this walk has to follow them
+// wherever they live.
+import { PHRASINGS, DECORATIONS } from '../js/social/phrasings.js';
 
 /**
  * Terms that mark an attack on a protected characteristic.
@@ -63,8 +65,8 @@ function allStrings() {
   walk(PERSONAS, 'personas');
   walk(TOPICS, 'topics');
   walk(PLATFORMS, 'platforms');
-  walk(PHRASINGS, 'sampler.phrasings');
-  walk(DECORATIONS, 'sampler.decorations');
+  walk(PHRASINGS, 'phrasings.PHRASINGS');
+  walk(DECORATIONS, 'phrasings.DECORATIONS');
   return out;
 }
 

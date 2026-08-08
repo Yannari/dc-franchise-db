@@ -8,6 +8,7 @@
 // distinct from "showmance hate". Neither would have been invented from a chair.
 import { describe, expect, it } from 'vitest';
 import { TOPICS, EVENT_KINDS, topicsFor } from '../js/social/topics.js';
+import { PHRASINGS } from '../js/social/phrasings.js';
 
 describe('the taxonomy', () => {
   it('covers social ground, not just gameplay', () => {
@@ -43,6 +44,33 @@ describe('the taxonomy', () => {
     for (const t of TOPICS) {
       expect(t.triggers.length, `${t.id} can never fire`).toBeGreaterThan(0);
     }
+  });
+
+  it('gives every topic words to say, in every room it claims', () => {
+    // `triggers.length > 0` above says a topic COULD fire. It does not say the
+    // topic can produce a post, and those are different claims: the shapes a
+    // topic declares are looked up in PHRASINGS, per stream, and a missing pool
+    // is not an error the composer can see coming.
+    //
+    // The failure this catches is quiet and specific. A topic declaring
+    // `stream: 'both'` with only timeline phrasings falls through poolFor's
+    // `byStream[stream] || byStream.timeline` and posts lowercase stadium
+    // fragments into the hosted alumni room — right register, wrong room,
+    // nothing thrown, nothing red. No topic does that today, which is luck
+    // rather than a guard, and Codex is about to add topics.
+    const gaps = [];
+    for (const t of TOPICS) {
+      const streams = t.stream === 'both' ? ['timeline', 'chat'] : [t.stream];
+      for (const stream of streams) {
+        for (const shape of t.shapes) {
+          const pool = ((PHRASINGS[t.id] || {})[shape] || {})[stream];
+          if (!Array.isArray(pool) || pool.length === 0) {
+            gaps.push(`${t.id}/${shape} has no ${stream} phrasings`);
+          }
+        }
+      }
+    }
+    expect(gaps, 'a topic would post in the wrong register, or not at all').toEqual([]);
   });
 
   it('gives every event kind at least one topic', () => {

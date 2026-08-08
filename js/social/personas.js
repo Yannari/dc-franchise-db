@@ -33,6 +33,16 @@ export function feelingsToward(persona, slug) {
   };
 }
 
+/**
+ * Where affection turns into a standing position.
+ *
+ * These are the ONLY thresholds in this library and they are narrative, not
+ * gameplay: they answer "would this account describe itself as a fan of / done
+ * with this player", which is a yes or no question. Everything that affects a
+ * post — topic weight, posture, engagement — reads the raw -1..1 affection
+ * proportionally instead. Symmetric on purpose, so loyalty and a grudge cost the
+ * same distance from indifference.
+ */
 const LOYAL_AT = 0.5;
 const GRUDGE_AT = -0.5;
 
@@ -66,8 +76,18 @@ export function grudgesOf(persona) {
  * `voice.length` 'short' | 'medium' | 'long'
  * `voice.punctuation` 'none' | 'normal' | 'heavy'
  * `platforms`  'timeline' (public, hostile) and/or 'chat' (hosted, insider)
- * `volatility` 0..1, how fast their opinion turns when something happens
- * `feelings`   slug -> { affection, gameRespect }, both -1..1
+ * `volatility` 0..1, how LOUD this account is when something happens. Today its
+ *              only effect is a likes multiplier in the sampler: a volatile
+ *              account posts the reaction everybody else is feeling, so it
+ *              collects engagement. It does NOT currently turn any opinion —
+ *              nothing in this library mutates `feelings`, so a persona's post
+ *              about their favourite reads identically before and after that
+ *              favourite is evicted. Stance-turning is PROJECT 2's: it needs real
+ *              episode data (who did what to whom) to move affection and
+ *              gameRespect, and this field is the rate that mutation will use
+ *              when it exists. Do not go looking for the behaviour here.
+ * `feelings`   slug -> { affection, gameRespect }, both -1..1. Static in this
+ *              project — see `volatility` above.
  */
 export const PERSONAS = [
   {

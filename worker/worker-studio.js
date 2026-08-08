@@ -42,6 +42,7 @@
 // Binding (wrangler.toml [[d1_databases]]): DB -> the "dc-franchise" D1 database.
 
 import { SHOWS, formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
+import { leaderboardQuery, castmatesQuery, bondsQuery } from './queries.js';
 
 const ROSTER_PATH = 'franchise_roster.json';
 const VOICE_PATH = 'voice-profiles.json';
@@ -207,21 +208,21 @@ async function leaderboard(env, params) {
   const limit = clampInt(params.get('limit'), 20, 1, 200);
   const minSeasons = clampInt(params.get('minSeasons'), 1, 1, 20);
 
+  // Which show's appearances to count. The DEFAULT IS EVERY SHOW, deliberately:
+  // sub-project A's constraint is that a Big Brother appearance must never drop
+  // a player off a Total Drama board, and changing the default would do exactly
+  // that to every existing caller.
+  const formatParam = params.get('format') || '';
+  const format = SHOWS[formatParam] ? formatParam : null;
+  if (formatParam && !format) {
+    throw new ValidationError(
+      `unknown format "${formatParam}" — valid: ${Object.keys(SHOWS).join(', ')}`);
+  }
+
   // stat.expr / stat.dir come from our own whitelist above, never from the user.
-  const sql = `
-    SELECT p.id, p.name, p.tier,
-           ${stat.expr} AS value,
-           COUNT(*)     AS seasonsPlayed
-    FROM appearances a
-    JOIN players p ON p.id = a.player_id
-    LEFT JOIN td_appearances td
-           ON td.player_id = a.player_id AND td.season_number = a.season_number
-          AND a.format = 'total-drama'
-    GROUP BY p.id, p.name, p.tier
-    HAVING COUNT(*) >= ?
-    ORDER BY value ${stat.dir}, seasonsPlayed DESC, p.name ASC
-    LIMIT ?`;
-  const { results } = await db(env).prepare(sql).bind(minSeasons, limit).all();
+  const sql = leaderboardQuery({ expr: stat.expr, dir: stat.dir, format });
+  const binds = format ? [format, minSeasons, limit] : [minSeasons, limit];
+  const { results } = await db(env).prepare(sql).bind(...binds).all();
 
   // Competition ranking: ties share a rank (1,2,2,4) so the page can show medals.
   let lastValue = null, lastRank = 0;
@@ -230,7 +231,16 @@ async function leaderboard(env, params) {
     lastValue = r.value; lastRank = rank;
     return { rank, ...r };
   });
-  return { ok: true, stat: statKey, label: stat.label, better: stat.dir === 'ASC' ? 'lower' : 'higher', minSeasons, count: rows.length, rows };
+  return {
+    ok: true,
+    stat: statKey,
+    format: format || 'all',
+    label: stat.label,
+    better: stat.dir === 'ASC' ? 'lower' : 'higher',
+    minSeasons,
+    count: rows.length,
+    rows,
+  };
 }
 
 async function relationships(env, params) {

@@ -136,6 +136,7 @@ export async function ensureFeedsWritten(gs, opts = {}) {
   ])].filter(Boolean);
   let written = 0;
   const rejected = [];
+  const reasons = [];
 
   for (const episode of result.built) {
     const rec = episodeRecords(gs, format).find(r => r.episode === episode);
@@ -149,11 +150,15 @@ export async function ensureFeedsWritten(gs, opts = {}) {
       });
       written += out.written;
       rejected.push(...out.rejected);
+      if (out.reason) reasons.push(out.reason);
       // Written in place on the stored objects, so nothing needs re-adding.
     } catch (err) {
       // One episode failing to be improved is not one episode lost.
       console.warn(`social feed: could not write episode ${episode} —`, err?.message || err);
     }
   }
-  return { ...result, written, rejected };
+  // The first failing reason wins: they are all the same story per episode, and
+  // a list of four identical strings tells nobody anything.
+  const reason = written ? null : (reasons.find(Boolean) || null);
+  return { ...result, written, rejected, reason };
 }

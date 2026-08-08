@@ -2922,8 +2922,19 @@ function _writerNote(wasOn, res) {
     const no = Array.isArray(res?.rejected) ? res.rejected.length : Number(res?.rejected) || 0;
     return `, ${n} written by the model${no ? ` (${no} rejected as invented)` : ''}`;
   }
-  return ' — the writer was on and returned nothing usable, so the generated '
-    + 'ones were kept. Check the worker is reachable';
+  // Four different situations wore one sentence, and it blamed the network for
+  // all of them — which sent somebody to check a worker that was answering
+  // fine, twice. The reason comes from the place that knows.
+  const why = {
+    'no-facts': 'nothing in this episode carried a fact worth writing from, so '
+      + 'no call was made. Advantages, alliances and key moments are what it '
+      + 'writes from; a night that only has a vote has nothing to add',
+    'nothing-to-write': 'there was nothing to send',
+    'no-answer': 'the worker did not answer. Check it is deployed and reachable',
+    'all-rejected': 'every post the model returned was rejected — it named '
+      + 'somebody or something that did not happen',
+  }[res?.reason] || 'the writer returned nothing usable';
+  return ` — ${why}. The generated posts were kept`;
 }
 
 /**

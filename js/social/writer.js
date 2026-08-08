@@ -179,7 +179,7 @@ export async function rewriteEpisode(posts, events, {
   cast = [], endpoint = null, fetchImpl = null, maxEvents = 6, timeoutMs = 12000,
 } = {}) {
   if (!endpoint || !posts?.length || !events?.length) {
-    return { posts, written: 0, rejected: [] };
+    return { posts, written: 0, rejected: [], reason: 'nothing-to-write' };
   }
   const key = e => `${e.kind}|${e.subject || ''}`;
   const byEvent = new Map();
@@ -208,6 +208,13 @@ export async function rewriteEpisode(posts, events, {
   const approved = [];
   const rejected = [];
   let written = 0;
+  // ── say WHICH failure ──
+  //
+  // "Returned nothing usable" covered four different situations and pointed at
+  // the network for all of them, which sent me to check a worker that was
+  // answering fine, twice. Counted here, where the difference is known.
+  let asked = 0;
+  let answered = 0;
 
   for (const ev of ranked) {
     const group = byEvent.get(key(ev));
@@ -218,8 +225,10 @@ export async function rewriteEpisode(posts, events, {
     if (!targets.length) continue;
 
     const packet = buildPacket(ev, { cast, stream: targets[0].stream, count: targets.length });
+    asked += 1;
     const out = await requestPosts(packet, { endpoint, fetchImpl, timeoutMs });
     if (!out?.length) continue;
+    answered += 1;
 
     const { kept, rejected: no } = acceptPosts(out, packet, { approved });
     rejected.push(...no);
@@ -232,7 +241,12 @@ export async function rewriteEpisode(posts, events, {
       written++;
     }
   }
-  return { posts, written, rejected };
+  const reason = written ? null
+    : !ranked.length ? 'no-facts'
+      : !asked ? 'nothing-to-write'
+        : !answered ? 'no-answer'
+          : 'all-rejected';
+  return { posts, written, rejected, reason, asked, answered, candidates: ranked.length };
 }
 
 /**

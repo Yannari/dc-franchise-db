@@ -568,3 +568,57 @@ describe('choosing which moments are worth writing', () => {
     expect(res.written).toBe(0);
   });
 });
+
+describe('the writer names its own failure', () => {
+  // One sentence covered four situations and blamed the network for all of
+  // them, which sent somebody to check a worker that was answering fine, twice.
+  const run = async (events, posts, fetchImpl, opts = {}) => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    return rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl, ...opts });
+  };
+  const ev = (over = {}) => ({ kind: 'twist', subject: 'jade', season: 1, episode: 1, ...over });
+  const po = (over = {}) => ({ kind: 'twist', subject: 'jade', stream: 'timeline', text: 't', ...over });
+
+  it('says when no call was worth making', async () => {
+    const res = await run([ev()], [po()], async () => { throw new Error('should not be called'); });
+    expect(res.reason).toBe('no-facts');
+    expect(res.asked).toBe(0);
+  });
+
+  it('says when the worker did not answer', async () => {
+    const res = await run([ev({ receipt: 'did a thing' })], [po()],
+      async () => ({ ok: false, status: 500, json: async () => ({}) }));
+    expect(res.reason).toBe('no-answer');
+    expect(res.asked).toBe(1);
+    expect(res.answered).toBe(0);
+  });
+
+  it('says when everything came back invented', async () => {
+    // Two things this test got wrong before it passed, both worth keeping.
+    //
+    // The cast has to be PASSED for an invented name to be invented — an empty
+    // list refutes nothing, which is a fair description of the validator rather
+    // than a flaw in it.
+    //
+    // And the name has to be mid-sentence. `claimedNames` skips index 0,
+    // because a capitalised first word is usually sentence case, so a post
+    // OPENING with an invented name passes. That is a real gap and it is not
+    // closed here: NOT_A_NAME holds about sixty words, so checking position
+    // zero would flag "Everybody", "Honestly" and "Somebody" and throw away
+    // good posts to catch a rare bad one. Closing it properly needs a word
+    // list, not a rule change.
+    const res = await run([ev({ receipt: 'did a thing' })], [po()],
+      async () => ({ ok: true, json: async () => ({ posts: [{ text: 'no because Somebodywhoisnotreal was robbed', cites: [] }] }) }),
+      { cast: ['jade', 'zaid'] });
+    expect(res.reason).toBe('all-rejected');
+    expect(res.answered).toBe(1);
+    expect(res.rejected.length).toBeGreaterThan(0);
+  });
+
+  it('says nothing at all when it worked', async () => {
+    const res = await run([ev({ receipt: 'did a thing' })], [po()],
+      async () => ({ ok: true, json: async () => ({ posts: [{ text: 'jade really did that huh', cites: [] }] }) }));
+    expect(res.written).toBe(1);
+    expect(res.reason).toBe(null);
+  });
+});

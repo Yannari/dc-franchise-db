@@ -16,9 +16,19 @@ const HTML = fs.readFileSync('simulator.html', 'utf8');
 const RUN = fs.readFileSync('js/run-ui.js', 'utf8');
 const LIVE = fs.readFileSync('js/social/live.js', 'utf8');
 
-const fnBody = (src, name, len = 2400) => {
+/**
+ * A whole function, from its declaration to the `}` that closes it.
+ *
+ * Fixed-length windows were the bug in three separate guards in this file: a
+ * slice stops mid-function, the assertion looks for text that is four
+ * characters past the cut, and the failure says the code is wrong when the
+ * READER is. Reading to the closing brace cannot be off by a tuning constant.
+ */
+const fnBody = (src, name) => {
   const at = src.indexOf(`function ${name}(`);
-  return at === -1 ? '' : src.slice(at, at + len);
+  if (at === -1) return '';
+  const end = src.indexOf(`${'\n'}}`, at);
+  return end === -1 ? src.slice(at) : src.slice(at, end + 2);
 };
 
 describe('sync fills gaps and does not overwrite', () => {
@@ -248,8 +258,7 @@ describe('the writer switch explains itself in the right show', () => {
 });
 
 describe('the writer says which of three things happened', () => {
-  const fn = RUN.slice(RUN.indexOf('function _writerNote'),
-    RUN.indexOf('function _writerNote') + 1200);
+  const fn = fnBody(RUN, '_writerNote');
 
   it('exists at all', () => {
     expect(fn, '_writerNote was never written').not.toBe('');
@@ -261,8 +270,13 @@ describe('the writer says which of three things happened', () => {
     // indistinguishable. There was nothing to do with that message except ask
     // somebody, which is what happened.
     expect(fn).toMatch(/the AI writer is off/);
-    expect(fn).toMatch(/returned nothing usable/);
-    expect(fn, 'a failed run does not say where to look').toMatch(/worker is reachable/);
+    // And a failure says WHICH failure. One sentence used to cover four
+    // situations and blame the network for all of them.
+    for (const reason of ['no-facts', 'no-answer', 'all-rejected']) {
+      expect(fn, `nothing explains ${reason}`).toMatch(new RegExp(`'${reason}'`));
+    }
+    expect(fn, 'a network failure does not say where to look')
+      .toMatch(/deployed and reachable/);
   });
 
   it('counts rejections as a list, not as a number', () => {

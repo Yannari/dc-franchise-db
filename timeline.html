@@ -310,6 +310,7 @@ const TIER_COLORS = { 'S+':'#f59e0b','S':'#a78bfa','A':'#34d399','B':'#60a5fa','
 let allPlayers = [];
 let allRankings = [];
 let allSeasonNums = [];
+let rankingsFormat = 'total-drama';
 // Built once from every player, so filtering by show can ask what somebody
 // played without rebuilding the map on each keystroke.
 let lookupAll = {};
@@ -339,15 +340,31 @@ async function loadData() {
 
   try {
     const rr = await fetch('rankings_database.json');
-    if (rr.ok) { const rd = await rr.json(); allRankings = rd.rankings || []; }
+    if (rr.ok) {
+      const rd = await rr.json();
+      allRankings = rd.rankings || [];
+      // A BOARD BELONGS TO THE SHOW IT RANKS, and this one says which:
+      // metadata.format is "total-drama". Applied everywhere, every Big Brother
+      // player wore a Total Drama tier — colouring the dot, driving the S/S+
+      // filters and the sort — on a page scoped to Big Brother, where no board
+      // exists at all.
+      rankingsFormat = rd.metadata?.format || 'total-drama';
+    }
   } catch (_) {}
 
-  // Merge ranking data
+  applyRankings();
+}
+
+/** Attach tiers when the board covers the show being looked at, and not otherwise. */
+function applyRankings() {
+  const show = activeShow();
+  const applies = show === 'all' || show === rankingsFormat;
   const rankMap = {};
   allRankings.forEach(r => { if (r.playerId) rankMap[r.playerId] = r; });
   allPlayers.forEach(p => {
-    p._rank = rankMap[p.id] || null;
-    // Use rankings_database tier as canonical (players_database tiers are not reliably set)
+    p._rank = applies ? (rankMap[p.id] || null) : null;
+    // rankings_database is canonical for tier; players_database tiers are not
+    // reliably set.
     p._tier = p._rank ? p._rank.tier : null;
   });
 
@@ -593,7 +610,7 @@ document.getElementById('tlSortToggle').addEventListener('click', function(e) {
   await Promise.all([loadData(), loadCastSizes(), window._showSwitcherReady]);
   // Re-draw when the header's switcher changes shows. Without this the control
   // is mounted on the page, looks operable, and does nothing.
-  window.addEventListener('showchange', renderGrid);
+  window.addEventListener('showchange', () => { applyRankings(); renderGrid(); });
   renderGrid();
 })();
 </script>

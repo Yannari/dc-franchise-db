@@ -324,7 +324,15 @@ function avatarHtml(id, name){
          `<img loading="lazy" alt="" src="assets/avatars/${esc(id)}.png" ` +
          `onerror="this.classList.add('gone')"></span>`;
 }
+/* The ranking board is Total Drama's — metadata.format says so. Under any other
+   show its tiers are a different competition's verdict, so no chip is drawn. */
+function tierApplies(){
+  const show = activeShow();
+  return show === 'all' || show === (window.__rankingsFormat || 'total-drama');
+}
+
 function tierChip(tier){
+  if (!tierApplies()) return '';
   if (!tier || tier === 'Unranked') return '';
   return `<span class="tierChip" data-tier="${esc(tier)}">${esc(tier)}</span>`;
 }

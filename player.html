@@ -402,19 +402,14 @@ if (!playerId) {
       return;
     }
     
-    // Merge rankings data into player object
-    if (rankingsData && rankingsData.rankings) {
-      const rankEntry = rankingsData.rankings.find(r => 
-        r.playerId === playerId || r.name === player.name
-      );
-      if (rankEntry) {
-        player.tier      = rankEntry.tier;
-        player.score     = rankEntry.score;
-        player.rank      = rankEntry.rank;
-        player.reasoning = rankEntry.reasoning;
-        player.totalRanked = rankingsData.rankings.length;
-      }
-    }
+    /* A RANKING BELONGS TO THE SHOW IT RANKS.
+       rankings_database.json is one board and says so — metadata.format is
+       "total-drama". Attached without checking, every Big Brother player wore a
+       Total Drama tier, rank and score, on a page scoped to Big Brother. There
+       is no Big Brother board yet; the honest answer is none, not somebody
+       else's. */
+    window.__rankBoard = rankingsData || null;
+    window.__rankFormat = rankingsData?.metadata?.format || 'total-drama';
     
     // Fetch season data files for any season missing keyMoments
     const seasonFetches = (player.seasonDetails || []).map(sd => {
@@ -592,7 +587,12 @@ const TIER_CFG = {
   'C':  { color:'#fbbf24', glow:'rgba(251,191,36,0.28)',  label:'C Tier',  icon:'🟡' },
   'D':  { color:'#9ca3af', glow:'rgba(156,163,175,0.20)', label:'D Tier',  icon:'⚪' },
 };
-function getTierInfo(t) { return TIER_CFG[t] || TIER_CFG['D']; }
+const TIER_UNRANKED = { icon: '—', label: 'Unranked', color: '#8b93a7', glow: 'rgba(139,147,167,.18)' };
+
+/* An unknown tier is UNRANKED, not a D. There is no Big Brother board yet, and
+   defaulting told every Big Brother player they had been rated badly by a board
+   that has never rated them. */
+function getTierInfo(t) { return t ? (TIER_CFG[t] || TIER_CFG['D']) : TIER_UNRANKED; }
 
 function getSeasonTitle(n) {
   const t = {1:'Cullhouse',2:'Return',3:'Revenge of the Island',4:'Edge of Extinction',
@@ -735,6 +735,24 @@ function renderPlayerProfile(fullPlayer) {
   _fullPlayer = fullPlayer;
   const container = document.getElementById('player-content');
   const _show = window.showSwitcher?.currentShow?.() || 'all';
+
+  /* The board applies when you are looking at its show, or at everything.
+     Looking at Big Brother, a Total Drama ranking is not this player's standing
+     — it is a different competition's. */
+  const _board = window.__rankBoard;
+  const _boardFormat = window.__rankFormat || 'total-drama';
+  const _boardApplies = !!_board && (_show === 'all' || _show === _boardFormat);
+  const _entry = _boardApplies
+    ? (_board.rankings || []).find(r => r.playerId === fullPlayer.id || r.name === fullPlayer.name)
+    : null;
+  for (const k of ['tier', 'score', 'rank', 'reasoning', 'totalRanked']) delete fullPlayer[k];
+  if (_entry) {
+    fullPlayer.tier = _entry.tier;
+    fullPlayer.score = _entry.score;
+    fullPlayer.rank = _entry.rank;
+    fullPlayer.reasoning = _entry.reasoning;
+    fullPlayer.totalRanked = (_board.rankings || []).length;
+  }
   const player = _scopeToShow(fullPlayer, _show);
 
   if (!player) {
@@ -842,9 +860,11 @@ function renderPlayerProfile(fullPlayer) {
     const tracked = (sd.advPlayed != null) || (sd.advHeld != null);
     return sum + (tracked ? ((sd.advPlayed || 0) + (sd.advHeld || 0)) : (sd.idolsFound || 0));
   }, 0);
-  const tier = player.tier || 'D';
+  /* Unranked is a state, not a D. Defaulting to the bottom tier told every Big
+     Brother player they were rated badly by a board that has never rated them. */
+  const tier = player.tier || null;
   const tc = getTierInfo(tier);
-  const score = player.score != null ? player.score : '—';
+  const score = player.score != null ? player.score : null;
   const rankStr = player.rank ? `#${player.rank} / ${player.totalRanked||'?'}` : '';
 
   let html = `<style>
@@ -1054,6 +1074,10 @@ function renderPlayerProfile(fullPlayer) {
   // ── HERO ─────────────────────────────────────────────────
   const _ringR = 46, _ringC = +(2 * Math.PI * _ringR).toFixed(2);
   const _scoreNum = typeof score === 'number' ? score : 0;
+  /* Named, so the gap explains itself: "No Big Brother ranking yet" rather than
+     an empty dial somebody has to work out. */
+  const _boardShowName = _show === 'big-brother' ? 'Big Brother'
+    : _show === 'total-drama' ? 'Total Drama' : '';
   const _dashOffset = +(_ringC * (1 - _scoreNum / 100)).toFixed(2);
 
   html += `<div class="pp-hero" id="pp-hero">
@@ -1078,6 +1102,12 @@ function renderPlayerProfile(fullPlayer) {
     html += `<span class="pp-badge ${c}">${b}</span>`;
   });
   html += `</div><a class="pp-back" href="devotees.html">← All Players</a> <a class="pp-back" href="compare.html?players=${player.id}" style="margin-left:6px;">⚔️ Compare</a></div>
+  ${score == null ? `
+  <div class="pp-ring-wrap" style="margin-left:auto;text-align:center;opacity:.6">
+    <div style="font-size:13px;line-height:1.5;max-width:130px">
+      No ${_boardShowName} ranking yet
+    </div>
+  </div>` : `
   <div class="pp-ring-wrap" style="margin-left:auto;">
     <svg class="pp-ring-svg" viewBox="0 0 110 110">
       <circle class="pp-ring-track" cx="55" cy="55" r="${_ringR}"/>
@@ -1091,7 +1121,7 @@ function renderPlayerProfile(fullPlayer) {
       <div class="pp-score-num" id="pp-score-num">0</div>
       <div class="pp-score-sub">/ 100</div>
     </div>
-  </div>
+  </div>`}
   ${rankStr ? `<div class="pp-rank-badge" style="position:absolute;bottom:16px;right:20px;">${rankStr}</div>` : ''}
   </div></div>`;
 

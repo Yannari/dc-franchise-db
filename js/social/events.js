@@ -194,6 +194,98 @@ function bbFinaleEvents(ep, meta) {
   return out;
 }
 
+/**
+ * What the advantages did tonight.
+ *
+ * ── the third path ──
+ *
+ * A season being PLAYED and a season being READ went through different code:
+ * `ensureFeeds` builds from `gs.episodeHistory` and calls `extractEvents` and
+ * nothing else, while the archive path also reads ballots, key moments and
+ * awards. So the feed was at its vaguest on the night you actually played, and
+ * pressing "redo this episode" rebuilt it with FEWER events than the site would
+ * have generated for the same night from the published document.
+ *
+ * The played record does not carry `keyMoments` — those are authored at export
+ * time — but it carries the material they were written from, and carries it
+ * structured rather than as prose: `idolFinds` with a finder and a type,
+ * `idolPlays` with who played what for whom and how many votes it wiped. That
+ * is better than parsing a sentence, and it is available the moment the episode
+ * ends rather than after somebody exports the season.
+ *
+ * The fact rides along as `receipt`, the same slot the archive moments use, so
+ * a template that quotes one does not care which path built the event.
+ */
+function advantageEvents(ep, meta) {
+  const out = [];
+  const label = t => ({
+    idol: 'a hidden immunity idol', legacy: 'the legacy advantage',
+    amulet: 'an amulet', voteSteal: 'a vote steal', voteBlock: 'a vote block',
+    extraVote: 'an extra vote', teamSwap: 'a team swap',
+    safetyNoPower: 'safety without power', soleVote: 'the sole vote',
+    kip: 'a steal',
+  }[t] || 'an advantage');
+
+  let n = 0;
+  for (const find of ep?.idolFinds || []) {
+    if (!find?.finder) continue;
+    const e = event('twist', { ...meta, subject: find.finder, jitter: (n++ % 6) * 0.012 });
+    e.receipt = `${find.finder} found ${label(find.type)} and said nothing about it`;
+    out.push(e);
+  }
+
+  for (const play of ep?.idolPlays || []) {
+    if (!play?.player) continue;
+    const negated = Number(play.votesNegated) || 0;
+    // A misplay is a different story from a play, and the room tells it
+    // differently: one is control, the other is the season's best comedy.
+    const kind = play.misplay || play.failed ? 'argument' : negated > 0 ? 'domination' : 'twist';
+    const e = event(kind, { ...meta, subject: play.player, jitter: (n++ % 6) * 0.012 });
+    if (play.misplay || play.failed) {
+      e.receipt = `${play.player} played ${label(play.type)} and it did nothing at all`;
+    } else if (play.stolenFrom) {
+      e.receipt = `${play.player} took ${label(play.stolenType || 'idol')} straight out of ${play.stolenFrom}'s hands`;
+    } else if (play.playedFor && play.playedFor !== play.player) {
+      e.receipt = `${play.player} played ${label(play.type)} for ${play.playedFor}`
+        + (negated ? `, wiping ${negated} vote${negated === 1 ? '' : 's'}` : '');
+    } else {
+      e.receipt = `${play.player} played ${label(play.type)}`
+        + (negated ? ` and negated ${negated} vote${negated === 1 ? '' : 's'}` : '');
+    }
+    out.push(e);
+  }
+  return out;
+}
+
+/**
+ * The ballot, read the same way whichever shape it arrives in.
+ *
+ * A played episode records votes as `{ voter: target }`; a published document
+ * records them as a list of `{ voter, target }`. Same fact, two shapes, and the
+ * archive path had a reader for one of them while the played path had none — so
+ * a blindside was only ever a blindside after export.
+ */
+export function ballotEvents(ep, meta) {
+  const raw = ep?.votes;
+  const pairs = Array.isArray(raw)
+    ? raw.map(v => [v.voterSlug || v.voter, v.targetSlug || v.target])
+    : Object.entries(raw || {});
+  const ballots = pairs.filter(([a, b]) => a && b);
+  const boot = ep?.eliminated || ep?.boot;
+  if (ballots.length < 3 || !boot) return [];
+
+  const against = ballots.filter(([, t]) => t === boot).length;
+  const bootVote = ballots.find(([v]) => v === boot);
+  const targets = new Set(ballots.map(([, t]) => t));
+
+  const out = [];
+  if (targets.size === 1) out.push(event('ganging-up', { ...meta, subject: boot }));
+  else if (against === ballots.length - 1 && bootVote && bootVote[1] !== boot && targets.size === 2) {
+    out.push(event('blindside', { ...meta, subject: boot }));
+  }
+  return out;
+}
+
 /** Total Drama: the challenge winner, the boot, and a broken showmance. */
 function tdEvents(ep, meta) {
   const out = [];
@@ -270,6 +362,10 @@ export function extractEvents(ep, { format, season, episode } = {}) {
   if (isFinale && meta.format === 'big-brother') out.push(...bbFinaleEvents(ep, meta));
   else out.push(...(meta.format === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
   out.push(...campEvents(ep, meta));
+  // Whatever the advantages did, and what the ballot says about the vote —
+  // both available on a played record and both previously read by nobody.
+  out.push(...advantageEvents(ep, meta));
+  out.push(...ballotEvents(ep, meta));
 
   // Total Drama's finale still gets the bare marker; its winner is read off the
   // published document by the archive path.

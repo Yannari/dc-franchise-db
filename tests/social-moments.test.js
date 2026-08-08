@@ -113,3 +113,85 @@ describe('and the feed says something', () => {
     expect(new Set(spec.map(p => p.stream)).size).toBe(2);
   });
 });
+
+describe('the played path knows the same things', () => {
+  // A season being PLAYED and a season being READ went through different code:
+  // `ensureFeeds` called `extractEvents` and nothing else, while the archive
+  // path also read ballots, moments and awards. So the feed was at its vaguest
+  // on the night you actually played it, and "redo this episode" rebuilt it
+  // with FEWER events than the site would have generated for the same night.
+  it('reads what the advantages did', async () => {
+    const { extractEvents } = await import('../js/social/events.js');
+    const ep = {
+      num: 4, immunityWinner: 'Ted', eliminated: 'Jade',
+      idolFinds: [{ finder: 'Anastasia', type: 'idol', tribe: 'Blue' }],
+      idolPlays: [{ player: 'Anastasia', playedFor: 'Zaid', type: 'idol', votesNegated: 4 }],
+    };
+    const events = extractEvents(ep, { format: 'total-drama', season: 14, episode: 4 });
+    const find = events.find(e => /found/i.test(e.receipt || ''));
+    const play = events.find(e => /played/i.test(e.receipt || ''));
+    expect(find, 'an idol was found and nobody mentioned it').toBeTruthy();
+    expect(find.subject).toBe('anastasia');
+    expect(play, 'an idol was played and nobody mentioned it').toBeTruthy();
+    expect(play.receipt).toMatch(/wiping 4 votes/);
+    expect(play.kind).toBe('domination');
+  });
+
+  it('tells a misplay from a play', () => {
+    // One is control. The other is the season's best comedy, and filing them as
+    // the same event gets the room's reaction exactly backwards.
+    return import('../js/social/events.js').then(({ extractEvents }) => {
+      const ev = extractEvents({
+        num: 5, eliminated: 'Jade',
+        idolPlays: [{ player: 'Logan', type: 'idol', votesNegated: 0, misplay: true }],
+      }, { format: 'total-drama', season: 14, episode: 5 });
+      const flop = ev.find(e => /did nothing at all/.test(e.receipt || ''));
+      expect(flop).toBeTruthy();
+      expect(flop.kind).toBe('argument');
+    });
+  });
+
+  it('reads a ballot in either shape', async () => {
+    const { ballotEvents } = await import('../js/social/events.js');
+    const meta = { format: 'total-drama', season: 14, episode: 3 };
+    // The played record: an object of voter -> target.
+    const played = ballotEvents({
+      eliminated: 'jade',
+      votes: { logan: 'jade', benji: 'jade', anastasia: 'jade', jade: 'logan' },
+    }, meta);
+    // The published document: a list of pairs. Same night, same verdict.
+    const doc2 = ballotEvents({
+      eliminated: 'jade',
+      votes: [{ voter: 'logan', target: 'jade' }, { voter: 'benji', target: 'jade' },
+        { voter: 'anastasia', target: 'jade' }, { voter: 'jade', target: 'logan' }],
+    }, meta);
+    expect(played.map(e => e.kind)).toEqual(['blindside']);
+    expect(doc2.map(e => e.kind)).toEqual(played.map(e => e.kind));
+  });
+
+  it('does not report the same fact twice', async () => {
+    // The ballot says Ted was eliminated; the document's moment says Ted was
+    // eliminated 5-3 after identifying the wrong threat. Both true, both an
+    // eviction about Ted, and the feed reacted to it twice — once with the
+    // detail and once without, which reads as the audience stuttering.
+    // The invariant is one event per (kind, PERSON) — not one per kind. Two
+    // eliminations in a night is a double elimination, which episode 8 has and
+    // which the first draft of this test called a bug.
+    const { archiveEpisode } = await import('../js/social/archive.js');
+    for (let ep = 1; ep <= 26; ep++) {
+      const { events } = archiveEpisode(doc, 'total-drama', 14, ep);
+      const seen = new Map();
+      for (const e of events) {
+        // Two DETAILED events about one person are two things that happened;
+        // the rule is only that a bare one may not shadow a detailed one.
+        if (e.receipt) continue;
+        const key = `${e.kind}|${e.subject}`;
+        seen.set(key, (seen.get(key) || 0) + 1);
+        expect(seen.get(key), `episode ${ep} repeats ${key} with no detail`)
+          .toBeLessThanOrEqual(1);
+        expect(events.some(o => o !== e && o.receipt && `${o.kind}|${o.subject}` === key),
+          `episode ${ep}: a bare ${key} survived next to a detailed one`).toBe(false);
+      }
+    }
+  });
+});

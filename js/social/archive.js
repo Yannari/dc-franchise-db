@@ -131,12 +131,15 @@ function tribalEvents(vote, meta) {
   const bootVotedElsewhere = bootBallot
     && (bootBallot.targetSlug || bootBallot.target) !== bootKey;
 
+  // ── the verdicts moved, and must not be read twice ──
+  //
+  // The pile-on and the blindside used to be worked out here. They are read by
+  // `ballotEvents` in events.js now, which handles both shapes of ballot — the
+  // played `{ voter: target }` object and this document's list — so the played
+  // path finally gets them too. Emitting them here as well would put two
+  // blindsides on every archive night, which is the kind of duplicate that
+  // looks like the audience being emphatic rather than like a bug.
   const out = [];
-  if (targets.size === 1) {
-    out.push(socialEvent('ganging-up', { ...meta, subject: vote.eliminated }));
-  } else if (against === ballots.length - 1 && bootVotedElsewhere && targets.size === 2) {
-    out.push(socialEvent('blindside', { ...meta, subject: vote.eliminated }));
-  }
 
   // Somebody who took votes and stayed. That IS the show putting a name up, and
   // it is the only way a Total Drama archive gets a second subject in a night —
@@ -201,7 +204,21 @@ export function eventsForEpisode(doc, format, season, episode) {
     else events.push(socialEvent('finale', { ...meta, subject: winner }));
   }
   events.push(...awardEvents(doc, format, season, found.episode, { isFinale }));
-  return events.sort((a, b) => a.at - b.at);
+
+  // ── the same fact, twice, one of them vaguer ──
+  //
+  // The ballot says Ted was eliminated. The document's own moment says "Ted was
+  // eliminated 5-3 after identifying the wrong threat". Both are true, both are
+  // an `eviction` about Ted, and the feed reacted to the elimination twice —
+  // once with the detail and once without, which reads as the audience
+  // stuttering rather than as two things happening.
+  //
+  // A bare event loses to a detailed one about the same moment. Two DETAILED
+  // events of a kind survive together, because two idols found on one night are
+  // genuinely two things.
+  const detailed = new Set(events.filter(e => e.receipt).map(e => `${e.kind}|${e.subject}`));
+  const deduped = events.filter(e => e.receipt || !detailed.has(`${e.kind}|${e.subject}`));
+  return deduped.sort((a, b) => a.at - b.at);
 }
 
 /**

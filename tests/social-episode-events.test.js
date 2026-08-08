@@ -75,10 +75,14 @@ describe('a published episode keeps the moments it had', () => {
     // the room, it narrows the whole night down to one person.
     expect(kinds).toContain('blindside');
     expect(kinds).toContain('nomination');
+    // `extractEvents` reads the ballot itself now — that was the whole point of
+    // giving the played path the same reader — so the thing this used to prove
+    // by ITS absence is proved by the nomination instead, which only the
+    // document's own reader produces.
     const bare = extractEvents(doc().votingHistory[0],
       { format: 'total-drama', season: 14, episode: 3 }).map(e => e.kind);
     expect(bare, 'the short list already had these, so this proves nothing')
-      .not.toContain('blindside');
+      .not.toContain('nomination');
     expect(kinds.length).toBeGreaterThan(bare.length);
   });
 

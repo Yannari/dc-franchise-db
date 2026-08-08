@@ -167,6 +167,62 @@ export const PERSONAS = [
     feelings: { beth: { affection: -0.55, gameRespect: -0.7 },
                 gwen: { affection: 0.6, gameRespect: 0.3 } },
   },
+  {
+    handle: '@juryforeperson', name: 'imani', since: 1, archetype: 'analyst',
+    voice: { caps: 0.02, emoji: 0.05, length: 'long', punctuation: 'normal' },
+    platforms: ['chat'], volatility: 0.12,
+    feelings: { leshawna: { affection: 0.75, gameRespect: 0.65 },
+                duncan: { affection: -0.55, gameRespect: 0.45 } },
+  },
+  {
+    handle: '@greenroomgrace', name: 'celeste', since: 5, archetype: 'stan',
+    voice: { caps: 0.08, emoji: 0.35, length: 'medium', punctuation: 'normal' },
+    platforms: ['chat'], volatility: 0.28,
+    feelings: { jasmine: { affection: 0.9, gameRespect: 0.55 },
+                sugar: { affection: -0.7, gameRespect: -0.2 } },
+  },
+  {
+    handle: '@thirdplacetruth', name: 'dev', since: 2, archetype: 'hater',
+    voice: { caps: 0.18, emoji: 0.08, length: 'medium', punctuation: 'heavy' },
+    platforms: ['chat'], volatility: 0.32,
+    feelings: { courtney: { affection: -0.65, gameRespect: 0.7 },
+                harold: { affection: 0.6, gameRespect: 0.15 } },
+  },
+  {
+    handle: '@aftershowreceipts', name: 'mina', since: 6, archetype: 'livefeeder',
+    voice: { caps: 0.12, emoji: 0.12, length: 'long', punctuation: 'normal' },
+    platforms: ['timeline', 'chat'], volatility: 0.38,
+    feelings: { scott: { affection: -0.75, gameRespect: 0.8 },
+                dawn: { affection: 0.8, gameRespect: -0.1 } },
+  },
+  {
+    handle: '@couchsidecoach', name: 'omar', since: 8, archetype: 'analyst',
+    voice: { caps: 0.03, emoji: 0.03, length: 'long', punctuation: 'normal' },
+    platforms: ['chat'], volatility: 0.18,
+    feelings: { bowie: { affection: 0.35, gameRespect: 0.92 },
+                ripper: { affection: -0.8, gameRespect: -0.45 } },
+  },
+  {
+    handle: '@snacksandshade', name: 'liv', since: 10, archetype: 'casual',
+    voice: { caps: 0.22, emoji: 0.55, length: 'short', punctuation: 'normal' },
+    platforms: ['timeline', 'chat'], volatility: 0.68,
+    feelings: { zee: { affection: 0.85, gameRespect: -0.35 },
+                julia: { affection: -0.6, gameRespect: 0.85 } },
+  },
+  {
+    handle: '@messmanagement', name: 'rhea', since: 4, archetype: 'chaos',
+    voice: { caps: 0.4, emoji: 0.28, length: 'medium', punctuation: 'heavy' },
+    platforms: ['chat'], volatility: 0.82,
+    feelings: { izzy: { affection: 0.9, gameRespect: -0.25 },
+                blaineley: { affection: -0.85, gameRespect: 0.1 } },
+  },
+  {
+    handle: '@showmancemedic', name: 'andie', since: 7, archetype: 'shipper',
+    voice: { caps: 0.1, emoji: 0.48, length: 'medium', punctuation: 'normal' },
+    platforms: ['chat'], volatility: 0.42,
+    feelings: { carrie: { affection: 0.8, gameRespect: 0.2 },
+                chase: { affection: -0.9, gameRespect: -0.65 } },
+  },
 ];
 
 /** One regular, by handle. Null rather than undefined, so a miss is obvious. */

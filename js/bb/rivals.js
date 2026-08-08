@@ -136,9 +136,19 @@ export function installRivals(house = [], { count = 3, rng = Math.random, allowG
   }
   if (!pairs.length) return null;
 
+  // ── they are not in the house yet ──
+  //
+  // The whole premise is that the room is already a room when they walk in, so
+  // they are taken out of the active roster here and put back by `openRivals`
+  // after the rule has been read out. Without it the season opened with all of
+  // them on the memory wall, reacting to an announcement about their own
+  // arrival, and the transcript counted a house that had not happened yet.
+  gs.activePlayers = (gs.activePlayers || []).filter(n => !pairs.some(p => p.rival === n));
+
   gs.bb ||= {};
   gs.bb.rivals = {
     pairs,
+    waiting: pairs.map(p => p.rival),
     startWeek: (gs.bb.weeks?.length || 0) + 1,
     announced: false,
     chose: null,
@@ -209,10 +219,11 @@ export function rivalsRuleText(week) {
   const st = rivalsState();
   if (!st) return {};
   const n = st.pairs.length;
-  const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean).length;
-  // Everybody who was already living there — which is the number the room
-  // currently believes is the whole cast.
-  const inside = Math.max(1, house - n);
+  // The room this is being read to. They have not walked in yet — `install`
+  // takes them out of the roster and `openRivals` puts them back — so this is
+  // already the number the house currently believes is the whole cast.
+  const inside = Math.max(1, (week?.houseAtStart || gs.activePlayers || [])
+    .filter(Boolean).filter(x => !(st.waiting || []).includes(x)).length);
   const word = numberWord(n);
   const them = n === 1 ? 'that one person decides' : `the ${word} of them decide`;
   return {
@@ -302,6 +313,11 @@ export function openRivals(week, { rng = Math.random } = {}) {
   st.opened = true;
   const fresh = freshLine(st, rng);
 
+  // Who was living here before the door went — the room the announcement was
+  // read to, which is not the room that exists ninety seconds later.
+  const before = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean)
+    .filter(n => !st.waiting.includes(n));
+
   const beats = [];
   for (const p of st.pairs) {
     beats.push({
@@ -317,7 +333,7 @@ export function openRivals(week, { rng = Math.random } = {}) {
     // reasons: the room closes round the person having the worst evening of
     // their life, and it is also fascinated by the stranger who caused it.
     // Only crediting the partner was a thumb on the scale that ran all season.
-    for (const n of (week?.houseAtStart || gs.activePlayers || [])) {
+    for (const n of before) {
       if (n === p.rival || n === p.partner) continue;
       try { addBond(n, p.partner, 0.35); } catch { /* fine */ }
       try { addBond(n, p.rival, 0.3); } catch { /* fine */ }
@@ -328,6 +344,8 @@ export function openRivals(week, { rng = Math.random } = {}) {
     type: 'rivals-open', week: Number(week?.num) || 1,
     pairs: st.pairs.map(p => ({ ...p })),
     guessed: st.pairs.some(p => !p.declared),
+    // The room the rule was read to, and the room that exists afterwards.
+    before, arrived: st.pairs.map(p => p.rival),
     beats,
   };
 }
@@ -335,6 +353,44 @@ export function openRivals(week, { rng = Math.random } = {}) {
 // Written for any number of arrivals, because a season can be configured with
 // one pair and the room was being told that "the three of them" had gone into
 // the storeroom to decide it.
+/**
+ * Put them in the room — and not a moment earlier.
+ *
+ * Separate from `openRivals` because of WHEN it has to happen. The arrival act
+ * is built at the top of the week but held back until after the announcement
+ * has been read out, and seating them at build time meant the announcement's
+ * own reactions were drawn from a house that already contained them: the
+ * latecomers stood in the living room ruling each other out as suspects for a
+ * twist that was about themselves, and the room counted thirteen other people
+ * when there were ten.
+ *
+ * `house` is the same array as `week.houseAtStart`, so pushing here puts them
+ * into every competition, vote and camp event from this point on.
+ */
+export function seatRivals(week, house) {
+  const st = rivalsState();
+  if (!st || !(st.waiting || []).length) return [];
+  const seated = [...st.waiting];
+  for (const name of seated) {
+    if (Array.isArray(house) && !house.includes(name)) house.push(name);
+    if (Array.isArray(week?.houseAtStart) && !week.houseAtStart.includes(name)) {
+      week.houseAtStart.push(name);
+    }
+    if (!(gs.activePlayers || []).includes(name)) {
+      gs.activePlayers = [...(gs.activePlayers || []), name];
+    }
+    // A houseguest who was not in the room when the week's books were opened
+    // still has to have books. Without this the first veto one of them wins
+    // reads off an undefined record and takes the season down with it.
+    gs.bb ||= {};
+    gs.bb.stats ||= {};
+    gs.bb.stats[name] ||= { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
+      timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
+  }
+  st.waiting = [];
+  return seated;
+}
+
 const HANDOVERS = [
   (winner, loser, n) => `${n === 1 ? 'They go' : `The ${numberWord(n)} of them go`} into the storeroom `
     + `and come out ninety seconds later. "${winner}." No explanation is offered and none is asked `

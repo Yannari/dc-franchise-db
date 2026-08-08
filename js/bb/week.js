@@ -68,7 +68,7 @@ import { sequesterHoh, leakDeliberation, sequesterRegret } from './instant-evict
 import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinState,
   openTwinTwist, offerTwinMission, resolveTwinMission, twinUnfinished,
   twinExposure as twinExposureLevel } from './twin-twist.js';
-import { rivalsState, announceRivals, openRivals, rivalsSittingOut, rivalsImmune,
+import { rivalsState, announceRivals, openRivals, seatRivals, rivalsSittingOut, rivalsImmune,
   rivalsChooseHoh, rivalWeekEvents, rivalEvicted } from './rivals.js';
 import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
 
@@ -1540,8 +1540,15 @@ export function simulateBBWeek(options = {}) {
     week.acts.push({ type: 'twist-announcement', announced: group, secondCall: again, socialBeats: beats });
     }
   }
-  // After the wall has spoken, if it spoke this week.
-  if (week._rivalsOpen) { week.acts.push(week._rivalsOpen); delete week._rivalsOpen; }
+  // After the wall has spoken, if it spoke this week. The latecomers are put
+  // into the room HERE and not when the act was built, or the announcement's
+  // own reactions come out of a house that already contains the people it is
+  // announcing.
+  if (week._rivalsOpen) {
+    try { seatRivals(week, house); } catch { /* they arrive anyway */ }
+    week.acts.push(week._rivalsOpen);
+    delete week._rivalsOpen;
+  }
   if (week._sabBrief) { week.acts.push(week._sabBrief); delete week._sabBrief; }
 
   // Before anybody has power. No HOH, no nominees, nothing decided.

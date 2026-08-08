@@ -755,6 +755,10 @@ export function simulateBBEpisode() {
         allowGuess: seasonConfig.bbRivals === 'auto',
       });
     } catch { /* the season plays without one */ }
+    // They are not in the house yet — the premise is that the room is already a
+    // room when they walk in, so seating the twist takes them off the roster
+    // and `openRivals` puts them back once the rule has been read out.
+    house = (gs.activePlayers || []).filter(Boolean);
   }
 
   const weekNum = (gs.bb.weeks?.length || 0) + 1;

@@ -376,6 +376,50 @@ describe('a season with one running', () => {
     expect(sawWeek, 'the grudges never came up').toBe(true);
   }, 90000);
 
+  it('keeps the latecomers out of the house until they walk in', () => {
+    // The premise is that the room is already a room. They were on the memory
+    // wall from night one instead: introduced on Move-In Day hours before the
+    // twist that brings them in, counted in the roster header, and standing in
+    // the living room reacting to an announcement about their own arrival —
+    // one of them ruling another out as a suspect.
+    house({ bbRivals: 'declared', bbRivalsCount: 3 });
+    const ep = simulateBBEpisode();
+    const open = (ep.acts || []).find(a => a.type === 'rivals-open');
+    expect(open).toBeTruthy();
+    const late = open.arrived;
+    expect(late.length).toBe(3);
+
+    // The room the rule was read to does not contain them.
+    expect(open.before.length).toBe(NAMES.length - 3);
+    for (const n of late) expect(open.before).not.toContain(n);
+
+    const ann = (ep.acts || []).find(a => a.type === 'twist-announcement');
+    for (const b of ann.socialBeats || []) {
+      for (const n of late) {
+        expect(b.text, `${n} reacted to the announcement about ${n}`).not.toContain(n);
+        expect(b.players || []).not.toContain(n);
+      }
+    }
+
+    // And nothing on the page names them before the door goes.
+    const text = generateSummaryText(ep) || '';
+    const before = text.slice(0, text.indexOf('RIVALS — THE ARRIVAL'));
+    for (const line of before.split(String.fromCharCode(10))) {
+      if (/have not walked in yet/.test(line)) continue;
+      for (const n of late) {
+        expect(line, `${n} appears before arriving: ${line.trim().slice(0, 80)}`).not.toContain(n);
+      }
+    }
+
+    // Once they are in, they are properly in — including a competition record,
+    // without which the first veto one of them wins reads off nothing.
+    for (const n of late) {
+      expect(gs.activePlayers).toContain(n);
+      expect(ep.houseAtStart).toContain(n);
+      expect(gs.bb.stats[n]).toBeTruthy();
+    }
+  }, 60000);
+
   it('is told about before anybody walks through the door', () => {
     // Three people arriving BEFORE the room is told anybody is coming is the
     // season's first screen out of order.

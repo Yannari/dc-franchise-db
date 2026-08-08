@@ -4217,7 +4217,17 @@ export function generateBBSummaryText(ep) {
   ln(`WEEK ${ep.num}`);
   ln('═'.repeat(46));
   if ((ep.houseAtStart || []).length) {
-    ln(`${ep.houseAtStart.length} houseguests: ${ep.houseAtStart.join(', ')}`);
+    // A Rivals week does not start with everybody in it. The three who walk in
+    // late are pushed onto the roster when they arrive, so listing the finished
+    // array put them on the wall before the announcement about their own
+    // arrival had been read out.
+    const arrivals = (ep.acts || []).find(a => a.type === 'rivals-open');
+    const late = arrivals?.arrived || [];
+    const seated = ep.houseAtStart.filter(n => !late.includes(n));
+    ln(`${seated.length} houseguests: ${seated.join(', ')}`);
+    if (late.length) {
+      ln(`  ${late.join(', ')} ${late.length === 1 ? 'has' : 'have'} not walked in yet.`);
+    }
   }
 
   // MOVE-IN DAY.
@@ -4230,7 +4240,12 @@ export function generateBBSummaryText(ep) {
   if (ep.num === 1 && (ep.houseAtStart || []).length) {
     sec('MOVE-IN DAY');
     ln('  The front door opens one houseguest at a time.');
-    for (const name of ep.houseAtStart) {
+    // Except for the ones it does not open for yet. Rivals arrive after the
+    // house is already a house, so introducing them here handed the room three
+    // strangers hours before the twist that brings them in — and they get a
+    // considerably better entrance of their own a few screens later.
+    const late = ((ep.acts || []).find(a => a.type === 'rivals-open')?.arrived) || [];
+    for (const name of ep.houseAtStart.filter(n => !late.includes(n))) {
       ln('');
       ln(`  ${name}`);
       try { ln(`    ${_bbIntroQuote(name)}`); } catch { /* no line written for them */ }

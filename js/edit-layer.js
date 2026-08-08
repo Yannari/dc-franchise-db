@@ -46,24 +46,11 @@ function _ensureEdit() {
 
 // ── Tone classification: keyword map over event type + badge text.
 // Unknown content degrades to neutral — never throws on new event types.
-const TONE_RULES = [
-  // Reaction events (exposing/catching a scheme) are heroic — checked before the
-  // villainous net so "exposeSchemer" doesn't credit the CATCHER with villainy.
-  ['heroic',     /expos/i],
-  ['villainous', /sabot|scheme|lie|liar|betray|steal|blindside|villain|frame|forge|manipul|taunt|threat|ambush|rat\b|snake|plot|mole|trap|undermine|backstab|sneak/i],
-  ['heroic',     /help|comfort|bond|encourag|hero|rescue|protect|praise|carr|defend|loyal|generous|share|provider/i],
-  ['emotional',  /romance|spark|showmance|kiss|date|breakup|cry|homesick|miss|heart|jealous|love/i],
-  ['comic',      /prank|joke|funny|chaos|slacker|clumsy|fail|food|eat|vomit|silly|goof|blooper|panic/i],
-  ['strategic',  /alliance|vote|plan|strategy|strateg|intel|whisper|pitch|deal|target|numbers|swing|idol|advantage|confessional/i],
-];
-function _tone(ev) {
-  const hay = `${ev?.type || ''} ${ev?.eventId || ''} ${ev?.badgeText || ''} ${ev?.badgeClass || ''}`;
-  for (const [tone, re] of TONE_RULES) if (re.test(hay)) return tone;
-  return 'neutral';
-}
-// The popularity engine classifies aired events with the same rules the edit
-// does — one taxonomy, two consumers.
-export const classifyEventTone = _tone;
+// The tone taxonomy moved to js/tone.js so the social feed could read it
+// without importing this file — and therefore js/core.js, and therefore
+// localStorage. Re-exported here because callers already import it from here.
+export { classifyEventTone } from './tone.js';
+import { classifyEventTone as _tone } from './tone.js';
 
 function _blank() { return { units: 0, tones: Object.fromEntries(TONES.map(t => [t, 0])) }; }
 

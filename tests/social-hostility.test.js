@@ -38,8 +38,9 @@ const FORBIDDEN = [
   // religion
   'terrorist', 'jihad', 'christ killer', 'raghead',
   // disability / neurodivergence
-  'retard', 'retarded', 'spastic', 'cripple', 'psycho ward', 'is autistic',
-  'so autistic', 'acting autistic',
+  'retard', 'retarded', 'spastic', 'cripple', 'crippled', 'crippling',
+  'psycho ward', 'is autistic', 'so autistic', 'acting autistic',
+  "'s autistic",
 ];
 
 /** Every string the library holds, with a label saying where it came from. */
@@ -60,7 +61,14 @@ function allStrings() {
 export function crossesTheLine(text) {
   const lower = String(text).toLowerCase();
   for (const term of FORBIDDEN) {
-    const pattern = new RegExp(`(^|[^a-z])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:s|es)?([^a-z]|$)`);
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Terms starting with a letter need a non-letter (or start-of-string)
+    // boundary before them. Terms that start with punctuation — the
+    // contraction "'s autistic" — already carry their own boundary and a
+    // leading [^a-z] check would reject the letter right before the
+    // apostrophe (the "e" in "she's").
+    const leadBoundary = /^[a-z]/i.test(term) ? '(^|[^a-z])' : '';
+    const pattern = new RegExp(`${leadBoundary}${escaped}(?:s)?([^a-z]|$)`);
     if (pattern.test(lower)) return term;
   }
   return null;
@@ -85,6 +93,8 @@ describe('the line the library must not cross', () => {
     expect(crossesTheLine('go back to where you came from')).toBe('go back to');
     expect(crossesTheLine('a house full of thugs')).toBe('thug');
     expect(crossesTheLine('they are all retards')).toBe('retard');
+    expect(crossesTheLine('what a crippled excuse for a player')).toBe('crippled');
+    expect(crossesTheLine("she's autistic i swear")).toBe("'s autistic");
   });
 
   it('still allows fandom to be vicious', () => {
@@ -96,6 +106,7 @@ describe('the line the library must not cross', () => {
       'that was the dumbest move i have seen in fifteen seasons',
       'ugly personality, uglier gameplay',
       'that read was savage and she deserved every word of it',
+      'he cannot cook and he used every spice in the kitchen',
     ]) {
       expect(crossesTheLine(line), `the guard blocked legitimate fandom: "${line}"`).toBe(null);
     }

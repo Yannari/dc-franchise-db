@@ -505,3 +505,66 @@ describe('the writer is told what happened', () => {
     }
   });
 });
+
+describe('choosing which moments are worth writing', () => {
+  // `rewriteEpisode` ranked events by `e.receipts` — the array — which is only
+  // ONE of the two ways a fact arrives. The moment readers set the flat
+  // `e.receipt`, so an idol played, a rescue and the season's biggest betrayal
+  // all scored zero, the list came out empty, and the loop never ran.
+  //
+  // The writer then reported "returned nothing usable" WITHOUT HAVING MADE A
+  // SINGLE CALL, which is the worst version of this bug: a message pointing at
+  // the network for a fault in a filter.
+  const doc = () => JSON.parse(fs.readFileSync('data/seasons/season14-data.json', 'utf8'));
+
+  it('sends the events that carry a fact', async () => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    const { archiveEpisode } = await import('../js/social/archive.js');
+    const { events, posts } = archiveEpisode(doc(), 'total-drama', 14, 14);
+
+    let calls = 0;
+    const fetchImpl = async () => {
+      calls += 1;
+      return {
+        ok: true,
+        // Distinct per call: identical text is correctly rejected as a
+        // duplicate, and a fake that repeats itself measures the de-duplicator
+        // rather than the thing under test.
+        json: async () => ({ posts: [{ text: `a written reaction number ${calls}`, cites: [] }] }),
+      };
+    };
+    const res = await rewriteEpisode(posts, events, {
+      cast: ['jade', 'zaid', 'marissa'], endpoint: 'http://worker', fetchImpl,
+    });
+    expect(calls, 'the writer made no calls at all').toBeGreaterThan(0);
+    expect(res.written, 'nothing was written despite the worker answering')
+      .toBeGreaterThan(0);
+  });
+
+  it('ranks by how much there is to say', async () => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    const seen = [];
+    const fetchImpl = async (url, opts) => {
+      seen.push(JSON.parse(opts.body).event.subject);
+      return { ok: true, json: async () => ({ posts: [{ text: `x${seen.length}`, cites: [] }] }) };
+    };
+    const events = [
+      { kind: 'twist', subject: 'quiet', season: 1, episode: 1 },
+      { kind: 'domination', subject: 'loud', season: 1, episode: 1, receipt: 'played an idol' },
+    ];
+    const posts = events.map(e => ({ kind: e.kind, subject: e.subject, stream: 'timeline', text: 't' }));
+    await rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl, maxEvents: 1 });
+    expect(seen, 'the event with a fact was not the one sent').toEqual(['loud']);
+  });
+
+  it('still spends nothing on an episode with nothing to say', async () => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    let calls = 0;
+    const fetchImpl = async () => { calls += 1; return { ok: true, json: async () => ({ posts: [] }) }; };
+    const events = [{ kind: 'episode-aired', subject: null, season: 1, episode: 1 }];
+    const posts = [{ kind: 'episode-aired', subject: null, stream: 'timeline', text: 't' }];
+    const res = await rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl });
+    expect(calls, 'a nothing night still cost an API call').toBe(0);
+    expect(res.written).toBe(0);
+  });
+});

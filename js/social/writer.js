@@ -189,9 +189,20 @@ export async function rewriteEpisode(posts, events, {
   // The loudest moments first, and a cap. A night has a dozen events and the
   // audience is only really arguing about two or three of them; rewriting the
   // long tail is money spent on posts nobody scrolls to.
+  //
+  // RANKED BY WHAT CAN BE CITED, not by `e.receipts`. That field is only one of
+  // the two ways a fact arrives — the moment readers set the flat
+  // `e.receipt` — so filtering on it selected almost nothing: an idol played, a
+  // rescue, the season's biggest betrayal all scored zero and the loop never
+  // ran. The writer reported "returned nothing usable" while never having made
+  // a single call. Exactly the fault that had already been fixed one function
+  // away in `buildPacket`, left here because the fix was aimed at the packet
+  // rather than at the field.
   const ranked = [...events]
-    .filter(e => (e.receipts || []).length || e.kind === 'blindside' || e.kind === 'finale')
-    .sort((a, b) => (b.receipts?.length || 0) - (a.receipts?.length || 0))
+    .map(e => ({ e, facts: citableFacts(e).length }))
+    .filter(x => x.facts || x.e.kind === 'blindside' || x.e.kind === 'finale')
+    .sort((a, b) => b.facts - a.facts)
+    .map(x => x.e)
     .slice(0, maxEvents);
 
   const approved = [];

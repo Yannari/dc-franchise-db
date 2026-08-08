@@ -41,7 +41,7 @@
 // on this repo only), STUDIO_TOKEN (a long random string the frontend sends).
 // Binding (wrangler.toml [[d1_databases]]): DB -> the "dc-franchise" D1 database.
 
-import { formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
+import { SHOWS, formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
 
 const ROSTER_PATH = 'franchise_roster.json';
 const VOICE_PATH = 'voice-profiles.json';
@@ -875,8 +875,16 @@ async function publishSeason(env, payload = {}) {
     // namespaced. The name is the season's `seasonId` — the same "bb-1" string
     // seasons_database.json already carries — so a reader holding a season
     // record can derive its episode log without a second lookup table.
-    const format = payload.format || 'total-drama';
-    if (!/^[a-z0-9-]+$/.test(format)) throw new ValidationError(`unknown season format: ${format}`);
+    // A format the registry does not know cannot be given a filename: formatPrefix
+    // falls back to the DEFAULT show's prefix, so two unregistered shows would both
+    // write td-N-data.json and overwrite each other. Refuse instead of guessing —
+    // adding a show is a one-line registry edit, and this is the error that says so.
+    const format = payload.format || DEFAULT_FORMAT;
+    if (!SHOWS[format]) {
+      throw new ValidationError(
+        `unknown season format "${format}" — add it to SHOWS in js/shows.js first `
+        + `(known: ${Object.keys(SHOWS).join(', ')})`);
+    }
     const file = format === DEFAULT_FORMAT
       ? `season${n}-data.json`
       : `${formatPrefix(format)}-${n}-data.json`;

@@ -29,6 +29,18 @@ describe('the registry', () => {
       .toBe(prefixes.length);
   });
 
+  it('silently prefixes an unregistered format as the default — which is why callers must guard', () => {
+    // formatPrefix falls back to the DEFAULT show rather than throwing, so an
+    // unregistered format does not get a distinct prefix — it gets Total Drama's.
+    // Two unknown shows would therefore both resolve to td-N-data.json and
+    // overwrite each other, the very collision this registry exists to prevent.
+    // Anything that turns a format into a FILENAME must reject unknown formats up
+    // front; worker-studio.js's publishSeason checks SHOWS[format] for this reason.
+    expect(SHOWS.wrestling).toBeUndefined();
+    expect(formatPrefix('wrestling')).toBe(SHOWS['total-drama'].prefix);
+    expect(Object.keys(SHOWS).length).toBeGreaterThan(0);
+  });
+
   it('builds season IDs from it', () => {
     expect(seasonId('total-drama', 4)).toBe('td-4');
     expect(seasonId('big-brother', 1)).toBe('bb-1');

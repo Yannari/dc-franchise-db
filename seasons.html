@@ -334,7 +334,6 @@
   </div>
 </div>
 
-<div id="show-switcher" style="margin:0 0 16px;"></div>
 
 <div class="seasons-controls">
   <input type="search" id="season-search" placeholder="🔍 Search seasons, winners, themes…" autocomplete="off"/>
@@ -371,12 +370,12 @@
 window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
 </script>
 <script type="module">
-  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { mountShowSwitcher, orderFormats, currentShow, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   const style = document.createElement('style');
   style.textContent = SHOW_SWITCHER_CSS;
   document.head.appendChild(style);
-  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window.showSwitcher = { mountShowSwitcher, orderFormats, currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window._showSwitcherResolve(window.showSwitcher);
 </script>
 
@@ -405,7 +404,7 @@ function renderSeasons(seasons) {
   const sw = window.showSwitcher || null;
   const ALL = sw ? sw.ALL : 'all';
 
-  const show = (sw && window._sw) ? window._sw.current() : ALL;
+  const show = sw ? sw.currentShow() : ALL;
   const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
 
   // "Latest" is per show now — season 14 of one show says nothing about another.
@@ -582,10 +581,10 @@ function applyFilters() {
     // Formats come from the data, never from a list written here.
     if (window.showSwitcher) {
       const { mountShowSwitcher, orderFormats, DEFAULT_FORMAT } = window.showSwitcher;
-      window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
-        formats: orderFormats(allSeasons.map(s => s.format || DEFAULT_FORMAT)),
-        onChange: applyFilters
-      });
+      // The switcher lives in the site header now, so the choice follows you
+      // between pages instead of dying on navigation. This page just listens.
+      window.addEventListener('showchange', applyFilters);
+      window._sw = true;
     } else {
       console.warn('Show switcher unavailable — listing every season ungrouped.');
     }
@@ -603,5 +602,6 @@ function applyFilters() {
 })();
 </script>
 
+  <script type="module" src="js/site-header.js"></script>
 </body>
 </html>

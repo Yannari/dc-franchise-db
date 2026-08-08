@@ -318,7 +318,6 @@
     <span class="hero-stat-pill">🏅 <span id="total-seasons-count">9</span> Seasons of Awards</span>
   </div>
 
-  <div id="show-switcher" style="margin:0 0 16px;"></div>
 
   <!-- SEASON FILTER -->
   <div class="season-filter" id="season-filter">
@@ -349,12 +348,12 @@
 window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
 </script>
 <script type="module">
-  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { mountShowSwitcher, orderFormats, currentShow, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   const style = document.createElement('style');
   style.textContent = SHOW_SWITCHER_CSS;
   document.head.appendChild(style);
-  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window.showSwitcher = { mountShowSwitcher, orderFormats, currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window._showSwitcherResolve(window.showSwitcher);
 </script>
 
@@ -491,7 +490,7 @@ function awardItem(icon, label, name, slug, detail) {
     };
 
     function renderAwards() {
-      const show = (sw && window._sw) ? window._sw.current() : ALL;
+      const show = sw ? sw.currentShow() : ALL;
       const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
       buildFilterButtons(visible);
 
@@ -519,10 +518,10 @@ function awardItem(icon, label, name, slug, detail) {
     }
 
     if (sw) {
-      window._sw = sw.mountShowSwitcher(document.getElementById('show-switcher'), {
-        formats: allFormats,
-        onChange: renderAwards
-      });
+      // The switcher lives in the site header now, so the choice follows you
+      // between pages instead of dying on navigation. This page just listens.
+      window.addEventListener('showchange', renderAwards);
+      window._sw = true;
     } else {
       console.warn('Show switcher unavailable — listing every season ungrouped.');
     }
@@ -534,5 +533,6 @@ function awardItem(icon, label, name, slug, detail) {
   }
 })();
 </script>
+  <script type="module" src="js/site-header.js"></script>
 </body>
 </html>

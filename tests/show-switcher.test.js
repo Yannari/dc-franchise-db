@@ -3,7 +3,8 @@
 // list of shows — the formats come from whatever data the page loaded, so a
 // third show appears without editing this module.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ALL, currentShow, mountShowSwitcher, orderFormats } from '../js/show-switcher.js';
+import { ALL, currentShow, mountShowSwitcher, orderFormats,
+  rememberShow, rememberedShow } from '../js/show-switcher.js';
 
 function setUrl(search) {
   window.history.replaceState({}, '', '/seasons.html' + search);
@@ -94,5 +95,63 @@ describe('the control', () => {
     setUrl('?show=total-drama');
     window.dispatchEvent(new PopStateEvent('popstate'));
     expect(onChange).toHaveBeenCalledWith('total-drama');
+  });
+});
+
+describe('remembering the show across pages', () => {
+  beforeEach(() => { setUrl(''); window.sessionStorage.clear(); });
+  afterEach(() => window.sessionStorage.clear());
+
+  it('starts on everything, however many times you visit', () => {
+    // sessionStorage, not localStorage, on purpose: a chosen show follows you
+    // for the tab, then a fresh visit starts at All. Persisting forever would
+    // mean somebody who set it last week returns to a site with half the
+    // franchise missing and no memory of hiding it.
+    expect(currentShow()).toBe(ALL);
+  });
+
+  it('carries a choice to a page with no ?show= in its URL', () => {
+    rememberShow('big-brother');
+    setUrl('');                                  // navigated to a bare page
+    expect(currentShow()).toBe('big-brother');
+  });
+
+  it('lets the URL beat the memory, so shared links show what the sender saw', () => {
+    rememberShow('big-brother');
+    setUrl('?show=total-drama');
+    expect(currentShow()).toBe('total-drama');
+  });
+
+  it('treats ?show=all as an explicit choice, not an absent one', () => {
+    // Without this you could never get back to every show without closing the
+    // tab: the memory would keep answering for a URL that says "all".
+    rememberShow('big-brother');
+    setUrl('?show=all');
+    expect(currentShow()).toBe(ALL);
+  });
+
+  it('forgets when you go back to all shows', () => {
+    rememberShow('big-brother');
+    rememberShow(ALL);
+    expect(rememberedShow()).toBe(null);
+    setUrl('');
+    expect(currentShow()).toBe(ALL);
+  });
+
+  it('ignores a remembered show the registry does not recognise', () => {
+    window.sessionStorage.setItem('dc_show', 'wrestling');
+    expect(rememberedShow()).toBe(null);
+    expect(currentShow()).toBe(ALL);
+  });
+
+  it('records the choice when the control is used', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const sw = mountShowSwitcher(el, { formats: ['total-drama', 'big-brother'], onChange: () => {} });
+    sw.set('big-brother');
+    expect(rememberedShow()).toBe('big-brother');
+    sw.set(ALL);
+    expect(rememberedShow()).toBe(null);
+    el.remove();
   });
 });

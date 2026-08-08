@@ -788,7 +788,6 @@ background: rgba(0, 0, 0, 0.2);
 <div class="callout">
       Rankings based on placement, win rate, challenge performance, social game, and strategic impact.
     </div>
-<div id="show-switcher" style="margin:0 0 16px;"></div>
 <div class="rank-controls">
 <div class="rank-controls-left">
 <div class="control">
@@ -895,14 +894,14 @@ background: rgba(0, 0, 0, 0.2);
 window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
 </script>
 <script type="module">
-  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { mountShowSwitcher, orderFormats, currentShow, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   import { computeFame } from './js/fame.js';
   import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
   const style = document.createElement('style');
   style.textContent = SHOW_SWITCHER_CSS + FAME_STAR_CSS;
   document.head.appendChild(style);
-  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window.showSwitcher = { mountShowSwitcher, orderFormats, currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window.fame = { computeFame, renderStars };
   window._showSwitcherResolve(window.showSwitcher);
 </script>
@@ -1029,16 +1028,13 @@ function renderRankings(rankingsData, playersMap) {
   const formatOfBoard = b => (b && b.metadata && b.metadata.format) || DEFAULT_FORMAT;
 
   if (sw && !window._sw) {
-    window._sw = sw.mountShowSwitcher(document.getElementById('show-switcher'), {
-      formats: sw.orderFormats([
-        ...boards.map(formatOfBoard),
-        ...(window._allFormats || []),
-      ]),
-      onChange: () => renderRankingsPage(rankingsData, playersMap)
-    });
+    // The switcher lives in the site header now, so the choice follows you
+    // between pages instead of dying on navigation. This page just listens.
+    window.addEventListener('showchange', () => renderRankingsPage(rankingsData, playersMap));
+    window._sw = true;
   }
 
-  const show = window._sw ? window._sw.current() : ALL;
+  const show = sw ? sw.currentShow() : ALL;
 
   /* "All shows" means all of them. Showing only the default show's board would
      hide a Big Brother board the day one ships — the same silent omission the
@@ -1707,5 +1703,6 @@ function initCardEffects(){
 
 </script>
 
+  <script type="module" src="js/site-header.js"></script>
 </body>
 </html>

@@ -13,11 +13,49 @@ import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 
 export const ALL = 'all';
 
-/** The show the URL is asking for. Anything unrecognised means everything. */
+const MEMORY_KEY = 'dc_show';
+
+/**
+ * The show chosen earlier in this tab, if any.
+ *
+ * sessionStorage, not localStorage, and that is the whole design of the memory:
+ * a chosen show follows you across pages for as long as the tab is open, then a
+ * fresh visit starts on everything again. Persisting it forever would mean
+ * somebody who set it last week returns to a site with half the franchise
+ * missing and no memory of hiding it.
+ */
+export function rememberedShow() {
+  try {
+    const value = window.sessionStorage.getItem(MEMORY_KEY) || '';
+    return SHOWS[value] ? value : null;
+  } catch { return null; }           // storage can be blocked or absent
+}
+
+/** Remember a show for the rest of this tab. `ALL` clears the memory. */
+export function rememberShow(format) {
+  try {
+    if (SHOWS[format]) window.sessionStorage.setItem(MEMORY_KEY, format);
+    else window.sessionStorage.removeItem(MEMORY_KEY);
+  } catch { /* storage can be blocked */ }
+  return format;
+}
+
+/**
+ * Which show to show.
+ *
+ * The URL WINS over the memory, always. An explicit `?show=` is somebody
+ * following a shared or bookmarked link, and they should see what the sender
+ * saw — which is the entire reason this state went into the URL. The memory
+ * only answers when the URL says nothing.
+ */
 export function currentShow() {
   let value = '';
   try { value = new URLSearchParams(window.location.search).get('show') || ''; } catch { return ALL; }
-  return SHOWS[value] ? value : ALL;
+  if (SHOWS[value]) return value;
+  // `?show=all` is an explicit "everything" and must not be overridden by the
+  // memory, or you could never get back to all shows without closing the tab.
+  if (value === ALL) return ALL;
+  return rememberedShow() || ALL;
 }
 
 /** Default format first, everything else in the order given. */
@@ -69,6 +107,10 @@ export function mountShowSwitcher(mountEl, { formats, onChange } = {}) {
       if (next === ALL) url.searchParams.delete('show');
       else url.searchParams.set('show', next);
       window.history.pushState({}, '', url);
+      // Remembered for the rest of the tab, so the choice survives navigating to
+      // another page. Choosing "all shows" clears it rather than storing "all",
+      // so the memory only ever holds a deliberate narrowing.
+      rememberShow(next);
       draw();
       fire();
     },

@@ -611,7 +611,9 @@ async function syncSeasons(env) {
   // A season is identified by (format, number) now, not by number alone — two
   // shows can both have a season 5. Anything without a format tag is Total
   // Drama: every season that exists today predates the second show.
-  const fmtOf = v => (v === 'big-brother' ? 'big-brother' : 'total-drama');
+  // Any registered show keeps its own format; anything unknown is Total Drama,
+  // because every season that predates the second show carries no format tag.
+  const fmtOf = v => (SHOWS[v] ? v : DEFAULT_FORMAT);
   const validSeasons = new Set(
     seasons.filter(s => s.seasonNumber != null).map(s => `${fmtOf(s.format)}|${s.seasonNumber}`));
   const validSlugs = new Set(players.map(p => p.id).filter(Boolean));

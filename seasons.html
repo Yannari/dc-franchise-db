@@ -300,6 +300,24 @@
     margin-top: 2px;
   }
 
+  /* Which show a card belongs to — and the heading it sits under. */
+  .season-show-badge {
+    background: rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.14);
+    letter-spacing: .06em;
+  }
+  .show-group-heading {
+    grid-column: 1 / -1;
+    margin: 18px 0 4px;
+    font-size: 15px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .65;
+  }
+  .show-group-heading:first-child { margin-top: 0; }
+  .show-group-heading .show-group-n { opacity: .6; font-weight: 400; }
+
   @media (max-width: 600px) {
     .seasons-grid { grid-template-columns: 1fr; }
     .seasons-controls { flex-direction: column; }
@@ -315,6 +333,8 @@
     <div class="seasons-hero-stat">📺 <span id="stat-episodes">—</span> Episodes</div>
   </div>
 </div>
+
+<div id="show-switcher" style="margin:0 0 16px;"></div>
 
 <div class="seasons-controls">
   <input type="search" id="season-search" placeholder="🔍 Search seasons, winners, themes…" autocomplete="off"/>
@@ -343,6 +363,23 @@
   </div>
 </footer>
 
+<!-- The page script below is a classic script, so it cannot import. This pair
+     hands it the switcher: the promise is created here (classic, runs during
+     parse) and settled by the deferred module, so the loader can await it
+     instead of hoping the module won the race. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  const style = document.createElement('style');
+  style.textContent = SHOW_SWITCHER_CSS;
+  document.head.appendChild(style);
+  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
+
 <script>
 // Palette — cycles through if more seasons are added
 const SEASON_COLORS = [
@@ -357,18 +394,36 @@ function getSeasonColor(num) {
 
 let allSeasons = [];
 
+function formatOf(season) {
+  return season.format || window.showSwitcher.DEFAULT_FORMAT;
+}
+
 function renderSeasons(seasons) {
   const grid = document.getElementById('seasons-grid');
-  const mostRecent = Math.max(...seasons.map(s => s.seasonNumber));
+  const { orderFormats, ALL, SHOWS } = window.showSwitcher;
 
-  if (!seasons.length) {
+  const show = window._sw ? window._sw.current() : ALL;
+  const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
+
+  // "Latest" is per show now — season 14 of one show says nothing about another.
+  const mostRecent = {};
+  visible.forEach(s => {
+    const f = formatOf(s);
+    mostRecent[f] = Math.max(mostRecent[f] || 0, s.seasonNumber);
+  });
+
+  if (!visible.length) {
     grid.innerHTML = '<div style="text-align:center;padding:60px;opacity:.5;grid-column:1/-1">No seasons found</div>';
+    document.getElementById('seasons-count').innerHTML =
+      `Showing <strong>0</strong> of <strong>${allSeasons.length}</strong> seasons`;
     return;
   }
 
-  grid.innerHTML = seasons.map((season, idx) => {
+  const card = (season, idx) => {
+    const fmt = formatOf(season);
+    const showShort = (SHOWS[fmt] || {}).short || '';
     const sc = getSeasonColor(season.seasonNumber);
-    const isMR = season.seasonNumber === mostRecent;
+    const isMR = season.seasonNumber === mostRecent[fmt];
     const slug = (season.winner?.playerSlug || season.winner?.name || '').toLowerCase().replace(/[^a-z0-9]/g,'-');
     const winnerName = season.winner?.name || '—';
     const vote = season.winner?.vote || '';
@@ -382,6 +437,7 @@ function renderSeasons(seasons) {
     return `
 <a class="scard${isMR ? ' most-recent' : ''}" href="season_ref.html?season=${season.seasonNumber}"
    style="--sc:${sc}; animation-delay:${Math.min(idx * 50, 400)}ms"
+   data-season-format="${fmt}"
    data-title="${title.toLowerCase()} season ${season.seasonNumber} ${winnerName.toLowerCase()} ${(subtitle||'').toLowerCase()}">
 
   <img class="scard-photo"
@@ -398,6 +454,7 @@ function renderSeasons(seasons) {
         ${subtitle ? `<div class="scard-subtitle">${subtitle}</div>` : ''}
       </div>
       <div class="scard-badges">
+        ${showShort ? `<span class="scard-badge season-show-badge">${showShort}</span>` : ''}
         ${isMR ? '<span class="scard-badge recent">⭐ Latest</span>' : ''}
         ${status === 'Complete' ? '<span class="scard-badge complete">✓</span>' : ''}
       </div>
@@ -431,10 +488,25 @@ function renderSeasons(seasons) {
     </div>
   </div>
 </a>`;
-  }).join('');
+  };
+
+  if (show !== ALL) {
+    grid.innerHTML = visible.map(card).join('');
+  } else {
+    // Real headings, so one Big Brother season reads as deliberate rather than lost.
+    const groups = orderFormats(visible.map(formatOf));
+    grid.innerHTML = groups.map(f => {
+      const mine = visible.filter(s => formatOf(s) === f);
+      const meta = SHOWS[f] || {};
+      return `<h2 class="show-group-heading" data-show-group="${f}">`
+           + `${meta.emoji || ''} ${meta.name || f}`
+           + `<span class="show-group-n"> · ${mine.length}</span></h2>`
+           + mine.map(card).join('');
+    }).join('');
+  }
 
   document.getElementById('seasons-count').innerHTML =
-    `Showing <strong>${seasons.length}</strong> of <strong>${allSeasons.length}</strong> seasons`;
+    `Showing <strong>${visible.length}</strong> of <strong>${allSeasons.length}</strong> seasons`;
 }
 
 function applyFilters() {
@@ -460,6 +532,7 @@ function applyFilters() {
 
 (async function() {
   try {
+    await window._showSwitcherReady;
     const [seasonsRes, franchiseRes] = await Promise.all([
       fetch('seasons_database.json'),
       fetch('franchise_database.json').catch(() => null)
@@ -485,6 +558,13 @@ function applyFilters() {
         s.winner?.name, s.winner?.playerSlug
       ].filter(Boolean).join(' ').toLowerCase()
     }));
+
+    // Formats come from the data, never from a list written here.
+    const { mountShowSwitcher, orderFormats, DEFAULT_FORMAT } = window.showSwitcher;
+    window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
+      formats: orderFormats(allSeasons.map(s => s.format || DEFAULT_FORMAT)),
+      onChange: applyFilters
+    });
 
     document.getElementById('season-search').addEventListener('input', applyFilters);
     document.getElementById('season-sort').addEventListener('change', applyFilters);

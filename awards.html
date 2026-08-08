@@ -137,6 +137,31 @@
   color: var(--accent2);
   margin-bottom: 10px;
 }
+/* Which show this season's awards belong to. */
+.season-show-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin: 0 0 10px 6px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.75);
+}
+.show-group-heading {
+  grid-column: 1 / -1;
+  margin: 18px 0 4px;
+  font-size: 15px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .65;
+}
+.show-group-heading:first-child { margin-top: 0; }
+.show-group-heading .show-group-n { opacity: .6; font-weight: 400; }
+
 .award-header h3 {
   margin: 0;
   font-size: 1.15rem;
@@ -293,6 +318,8 @@
     <span class="hero-stat-pill">🏅 <span id="total-seasons-count">9</span> Seasons of Awards</span>
   </div>
 
+  <div id="show-switcher" style="margin:0 0 16px;"></div>
+
   <!-- SEASON FILTER -->
   <div class="season-filter" id="season-filter">
     <span class="filter-label">Jump to:</span>
@@ -313,6 +340,23 @@
     <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players</div>
   </div>
 </footer>
+
+<!-- The awards script below is a classic script, so it cannot import. This pair
+     hands it the switcher: the promise is created here (classic, runs during
+     parse) and settled by the deferred module, so the loader can await it
+     instead of hoping the module won the race. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  const style = document.createElement('style');
+  style.textContent = SHOW_SWITCHER_CSS;
+  document.head.appendChild(style);
+  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
 
 <script>
 function avatar(slug, size) {
@@ -338,6 +382,7 @@ function awardItem(icon, label, name, slug, detail) {
 
 (async function() {
   try {
+    await window._showSwitcherReady;
     const data = await fetch('seasons_database.json').then(r => r.json());
     if (!data.seasons || !data.seasons.length) {
       document.getElementById('awards-grid').innerHTML = '<div style="text-align:center;padding:48px;opacity:.5;grid-column:1/-1;">No season data found.</div>';
@@ -349,15 +394,29 @@ function awardItem(icon, label, name, slug, detail) {
 
     const seasons = [...data.seasons].sort((a,b) => a.seasonNumber - b.seasonNumber);
 
-    // Build season filter buttons
+    const { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT } = window.showSwitcher;
+    const formatOf = s => s.format || DEFAULT_FORMAT;
+    // Formats come from the data, never from a list written here.
+    const allFormats = orderFormats(seasons.map(formatOf));
+
     const filterBar = document.getElementById('season-filter');
-    seasons.forEach(s => {
-      const btn = document.createElement('button');
-      btn.className = 'filter-btn';
-      btn.dataset.filter = 's' + s.seasonNumber;
-      btn.textContent = `${s.emoji || '🏝️'} S${s.seasonNumber}`;
-      filterBar.appendChild(btn);
-    });
+
+    // Build season filter buttons for whichever seasons are on screen. Two shows
+    // both have a season 1, so the jump buttons say which show they mean.
+    function buildFilterButtons(visible) {
+      filterBar.querySelectorAll('.filter-btn:not([data-filter="all"])').forEach(b => b.remove());
+      const allBtn = filterBar.querySelector('.filter-btn[data-filter="all"]');
+      if (allBtn) { filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); allBtn.classList.add('active'); }
+      visible.forEach(s => {
+        const short = (SHOWS[formatOf(s)] || {}).short || '';
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.filter = 's' + s.seasonNumber;
+        btn.dataset.format = formatOf(s);
+        btn.textContent = `${s.emoji || '🏝️'} ${allFormats.length > 1 && short ? short + ' ' : ''}S${s.seasonNumber}`;
+        filterBar.appendChild(btn);
+      });
+    }
 
     // Filter logic
     filterBar.addEventListener('click', e => {
@@ -366,30 +425,38 @@ function awardItem(icon, label, name, slug, detail) {
       filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const filter = btn.dataset.filter;
+      // Both shows have a season 1, so the show has to match too.
+      const wantFormat = btn.dataset.format;
+      const matches = card => card.dataset.season === filter
+        && (!wantFormat || card.dataset.seasonFormat === wantFormat);
+      let first = null;
       document.querySelectorAll('.award-card').forEach(card => {
-        if (filter === 'all' || card.dataset.season === filter) {
+        if (filter === 'all' || matches(card)) {
           card.style.display = '';
-          card.scrollIntoView && filter !== 'all' && card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          if (!first && filter !== 'all') first = card;
         } else {
           card.style.display = 'none';
         }
       });
-      if (filter !== 'all') {
-        const firstVisible = document.querySelector(`.award-card[data-season="${filter}"]`);
-        if (firstVisible) firstVisible.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      document.querySelectorAll('.show-group-heading').forEach(h => {
+        h.style.display = (filter === 'all' || h.dataset.showGroup === wantFormat) ? '' : 'none';
+      });
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
     // Build cards
     const grid = document.getElementById('awards-grid');
-    grid.innerHTML = seasons.map((season, idx) => {
+
+    const card = (season, idx) => {
+      const fmt = formatOf(season);
+      const showShort = (SHOWS[fmt] || {}).short || '';
       const awards = season.awards || {};
       const w = season.winner || {};
       const delay = (idx * 0.08).toFixed(2);
 
-      return `<div class="award-card" data-season="s${season.seasonNumber}" style="animation-delay:${delay}s" onclick="window.location.href='season-awards_ref.html?season=${season.seasonNumber}'">
+      return `<div class="award-card" data-season="s${season.seasonNumber}" data-season-format="${fmt}" style="animation-delay:${delay}s" onclick="window.location.href='season-awards_ref.html?season=${season.seasonNumber}'">
         <div class="award-header">
-          <div class="season-badge">${season.emoji||'🏝️'} Season ${season.seasonNumber}</div>
+          <div class="season-badge">${season.emoji||'🏝️'} Season ${season.seasonNumber}</div>${showShort ? `<span class="season-show-badge">${showShort}</span>` : ''}
           <h3><a href="season-awards_ref.html?season=${season.seasonNumber}">${season.title}</a></h3>
           ${season.subtitle ? `<p style="margin:6px 0 0;font-size:12px;color:var(--muted)">${season.subtitle}</p>` : ''}
         </div>
@@ -403,7 +470,39 @@ function awardItem(icon, label, name, slug, detail) {
           <a class="view-btn" href="season-awards_ref.html?season=${season.seasonNumber}">View All Awards →</a>
         </div>
       </div>`;
-    }).join('');
+    };
+
+    function renderAwards() {
+      const show = window._sw ? window._sw.current() : ALL;
+      const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
+      buildFilterButtons(visible);
+
+      if (!visible.length) {
+        grid.innerHTML = '<div style="text-align:center;padding:48px;opacity:.5;grid-column:1/-1;">No season awards found.</div>';
+        return;
+      }
+
+      if (show !== ALL) {
+        grid.innerHTML = visible.map(card).join('');
+      } else {
+        // Real headings, so one Big Brother season reads as deliberate rather than lost.
+        const groups = orderFormats(visible.map(formatOf));
+        grid.innerHTML = groups.map(f => {
+          const mine = visible.filter(s => formatOf(s) === f);
+          const meta = SHOWS[f] || {};
+          return `<h2 class="show-group-heading" data-show-group="${f}">`
+               + `${meta.emoji || ''} ${meta.name || f}`
+               + `<span class="show-group-n"> · ${mine.length}</span></h2>`
+               + mine.map(card).join('');
+        }).join('');
+      }
+    }
+
+    window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
+      formats: allFormats,
+      onChange: renderAwards
+    });
+    renderAwards();
 
   } catch (err) {
     console.error('Awards load error:', err);

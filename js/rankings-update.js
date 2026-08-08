@@ -109,8 +109,8 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
                 <tr style="opacity: 0.65; border-bottom: 1px solid rgba(255,255,255,0.12); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.03);">
                   <th style="padding: 6px 6px; text-align: left; min-width: 120px;">Player</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px;" title="Final placement (1 = winner)">Place</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="+0.8 per individual immunity win">Imm</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="+0.3 per reward win">Rew</th>
+                  <th id="ru-th-comp1" style="padding: 6px 5px; text-align: center; width: 44px; color:#60a5fa;" title="+0.8 per individual immunity win">Imm</th>
+                  <th id="ru-th-comp2" style="padding: 6px 5px; text-align: center; width: 44px; color:#60a5fa;" title="+0.3 per reward win">Rew</th>
                   <th style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Total idols/advantages FOUND · +0.4 each (credit for locating them)">Found</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED EFFECTIVELY (negated votes / worked) · +1.2 each on top of the found bonus">Played</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols/advantages PLAYED but WASTED (misfired / negated 0 votes / failed) · −1.2 each">Wasted</th>
@@ -212,6 +212,12 @@ export function renderRankingsUpdate(host) {
   ruInit();
   document.getElementById('ru-use-current-btn')?.addEventListener('click', _ruUseCurrentSeason);
   document.getElementById('ru-reset-btn')?.addEventListener('click', _ruReset);
+
+  // The two competition columns are named after the show being ranked. Done on
+  // render as well as on load, because the tool is usually opened with a season
+  // already in the simulator — and a header reading "Imm" over a column of Head
+  // of Household wins is the sort of thing that gets typed into wrong.
+  _ruRelabelColumns();
 
   // Any edit anywhere in the card is worth saving.
   host.addEventListener('input', _ruSaveSoon);
@@ -323,6 +329,7 @@ function _ruUseCurrentSeason() {
     }
 
     const vote = (tmpl.winner && tmpl.winner.vote) || '';
+    _ruRelabelColumns();
     say('Loaded from the simulator — ' + filled.join(' · ') + (vote ? ' · final vote ' + vote : ''));
     _ruSave();                       // filled programmatically — no input event fires
   } catch (e) {
@@ -335,6 +342,79 @@ let rankingsDB     = null;
 let pendingUpdated = null;
 let rowCount       = 0;
 
+// ── Which show this board is for ─────────────────────────
+//
+// The formula below was written when there was one show, and two of its terms
+// name Total Drama's furniture. `Imm` and `Rew` are its two competitions;
+// Big Brother's are Head of Household and the Veto, and they are not the same
+// shape — a veto SAVES you, which is what immunity does, while an HOH hands you
+// power and a target in the same breath.
+//
+// Everything else transfers unchanged: placement, wins, finals, advantages,
+// alliances, strategic score, jury votes, votes against, fan favourite, quit.
+//
+// THE WEIGHTS BELOW ARE A STARTING POINT, not a claim. They are yours to tune
+// in one place, which is the actual point of them being here rather than
+// implied by a column called "Imm".
+const RU_SHOW = {
+  'total-drama': {
+    comp1: { label: 'Imm',  weight: 0.8, title: '+0.8 per individual immunity win' },
+    comp2: { label: 'Rew',  weight: 0.3, title: '+0.3 per reward win' },
+  },
+  'big-brother': {
+    comp1: { label: 'HOH',  weight: 0.6, title: '+0.6 per Head of Household — power, and a target' },
+    comp2: { label: 'Veto', weight: 0.8, title: '+0.8 per veto — the competition that saves you' },
+  },
+};
+
+/**
+ * Relabel the two competition columns for the show being ranked.
+ *
+ * Called wherever the season is loaded. Without it the header says "Imm" over a
+ * column of Head of Household wins, which is the sort of thing that gets typed
+ * into wrong and never noticed.
+ */
+function _ruRelabelColumns() {
+  const rub = _ruRubric();
+  for (const [id, spec] of [['ru-th-comp1', rub.comp1], ['ru-th-comp2', rub.comp2]]) {
+    const th = document.getElementById(id);
+    if (!th) continue;
+    th.textContent = spec.label;
+    th.title = spec.title;
+  }
+}
+
+/**
+ * The format of the season being ranked.
+ *
+ * The LOADED DOCUMENT wins. Uploading a Big Brother season while the simulator
+ * happens to hold a Total Drama one must rank the thing you uploaded, and the
+ * document says which show it is.
+ */
+let _ruLoadedFormat = null;
+function _ruShowFormat() {
+  if (_ruLoadedFormat) return _ruLoadedFormat;
+  try {
+    const el = document.getElementById('ru-format');
+    if (el && el.value) return el.value;
+    if (typeof seasonConfig !== 'undefined' && seasonConfig?.format) return seasonConfig.format;
+  } catch {}
+  return 'total-drama';
+}
+
+/** What show a season document is from, however it arrived. */
+function _ruFormatOfDoc(json) {
+  if (json?.format) return json.format;
+  if (typeof json?.seasonId === 'string' && json.seasonId.startsWith('bb-')) return 'big-brother';
+  // A document with weeks and no episodes is a house, whatever it forgot to say.
+  if (Array.isArray(json?.weeks) && json.weeks.length) return 'big-brother';
+  return 'total-drama';
+}
+
+function _ruRubric(format) {
+  return RU_SHOW[format || _ruShowFormat()] || RU_SHOW['total-drama'];
+}
+
 // ── Scoring formula ──────────────────────────────────────
 function placementPct(placement, castSize) {
   return (castSize - placement) / (castSize - 1) * 100;
@@ -346,6 +426,8 @@ function careerPct(seasonPcts) {
   const w = weights[Math.min(sorted.length - 1, 3)];
   return sorted.reduce((sum, pct, i) => sum + pct * (w[i] || 0), 0);
 }
+
+const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
 function computeScore(p) {
   const cp   = careerPct(p.allPcts);
@@ -363,8 +445,15 @@ function computeScore(p) {
   const finBonus = p.wins > 0 ? finCap * 2.5 : finCap * 4.5;
   const multiBonus = (p.numSeasons - 1) * 3;
 
-  // PHYSICAL
-  const physBonus = (p.immWins * 0.8) + (p.rewWins * 0.3);
+  // COMPETITIONS — whichever two the show runs.
+  //
+  // This read `immWins * 0.8 + rewWins * 0.3` unconditionally. Under Big Brother
+  // that scored a veto — the competition that takes you off the block — as a
+  // reward challenge, at less than half the weight of the thing it is actually
+  // equivalent to.
+  const _rub = _ruRubric(p.format);
+  const physBonus = (num(p.immWins) * _rub.comp1.weight)
+                  + (num(p.rewWins) * _rub.comp2.weight);
 
   // STRATEGIC — advantages scored by lifecycle: found (located it) < played effectively,
   // while wasting or dying with one costs you. Plus a strategic-gameplay term.
@@ -537,6 +626,7 @@ function buildPreview() {
 
     const newScore = computeScore({
       allPcts, wins:totalWins, nonWinFinals, numSeasons, coWin:isCoWin,
+      format:_ruShowFormat(),
       immWins:row.immWins, rewWins:row.rewWins,
       advFound:row.advFound, advPlayed:row.advPlayed, advWasted:row.advWasted, advHeld:row.advHeld,
       strategicScore:row.strategicScore,
@@ -866,6 +956,12 @@ function loadSeasonData(json) {
   // it to a normalized name so we can tick the FANFAV box for that player.
   const ffRaw = json.awards?.fanFavorite;
   const fanFavKey = ffRaw ? norm(typeof ffRaw === 'string' ? ffRaw : ffRaw.name) : null;
+  /* Remember what kind of season this is BEFORE filling anything: it decides
+     which competition each of the two columns holds, and what they are called. */
+  _ruLoadedFormat = _ruFormatOfDoc(json);
+  const isHouse = _ruLoadedFormat === 'big-brother';
+  _ruRelabelColumns();
+
   const sorted=[...placements].sort((a,b)=>(a.placement||99)-(b.placement||99));
   sorted.forEach(p=>{
     const name=p.name||p.playerName||'';
@@ -883,8 +979,17 @@ function loadSeasonData(json) {
       advWasted:   p.advWasted ?? 0,                  // played but wasted
       advHeld:     p.advHeld ?? 0,                    // held & never used
       strategicScore: p.strategicScore ?? 0,
-      imm:         p.immunityWins||p.imm||0,
-      rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),
+      /* THE TWO COMPETITION COLUMNS, per show.
+         A Big Brother placement carries its own tallies in `bb` — hohWins,
+         vetoWins, timesNominated — and this read immunityWins and rewardWins,
+         which a house does not have. Every Big Brother player auto-filled as
+         zero and zero, so the two competition terms scored nothing for
+         everybody and the board came out ranked on placement alone. */
+      imm:         isHouse ? (p.bb?.hohWins ?? p.hohWins ?? 0)
+                           : (p.immunityWins||p.imm||0),
+      rew:         isHouse ? (p.bb?.vetoWins ?? p.vetoWins ?? 0)
+                           : (p.rewardWins!=null ? p.rewardWins
+                              : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0)))),
       alliances:   allianceCount,
       fanFav:      !!fanFavKey && norm(name) === fanFavKey,
       quit:        p.eliminated==='quit'||p.quit||false,

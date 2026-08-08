@@ -29,9 +29,29 @@ export function episodeRecords(gs, format) {
   const list = format === 'big-brother'
     ? (gs?.bb?.weeks || [])
     : (gs?.episodeHistory || []);
-  return list
+  const out = list
     .map((record, i) => ({ record, episode: Number(record?.num ?? record?.week ?? i + 1) }))
     .filter(r => r.record && Number.isFinite(r.episode));
+
+  // ── and the night the season actually ends on ──
+  //
+  // A Big Brother finale is not a week. `simulateBBFinale` pushes it straight
+  // to `gs.episodeHistory` and never writes it to `gs.bb.weeks`, so reading
+  // only the week ledger meant the one episode everybody watches for — the
+  // jury vote, the winner, the half-million — was the single episode the
+  // audience had no reaction to at all.
+  if (format === 'big-brother') {
+    const seen = new Set(out.map(r => r.episode));
+    for (const [i, record] of (gs?.episodeHistory || []).entries()) {
+      if (!record?.isFinale && !record?.finale) continue;
+      const episode = Number(record.num ?? i + 1);
+      if (!Number.isFinite(episode) || seen.has(episode)) continue;
+      seen.add(episode);
+      out.push({ record, episode });
+    }
+    out.sort((a, b) => a.episode - b.episode);
+  }
+  return out;
 }
 
 /**

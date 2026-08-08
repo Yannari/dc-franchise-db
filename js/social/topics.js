@@ -63,6 +63,28 @@ export const TOPICS = [
     reads: ['careerTotals', 'franchiseRecords'],
     shapes: ['hot-take', 'ranking'] },
 
+  // ── the last night ──────────────────────────────────────────────────────
+  //
+  // Only `prediction` and `legacy-take` fired on a finale, and neither is about
+  // anybody WINNING — so the biggest episode of the season produced a feed
+  // arguing about where it ranked and who might take it, on the night it had
+  // already been taken. These three name the winner, the person who lost by a
+  // vote, and the vote itself.
+  { id: 'crowned', stream: 'both', weight: 1.2,
+    triggers: ['finale'],
+    reads: ['winner', 'juryVotes'],
+    shapes: ['live-reaction', 'hot-take', 'defence'] },
+
+  { id: 'robbed', stream: 'both', weight: 1.0,
+    triggers: ['finale'],
+    reads: ['runnerUp', 'juryVotes'],
+    shapes: ['complaint', 'dunk', 'hot-take'] },
+
+  { id: 'jury-verdict', stream: 'both', weight: 0.9,
+    triggers: ['finale', 'domination'],
+    reads: ['juryVotes', 'jury'],
+    shapes: ['hot-take', 'stat-drop', 'quote-dunk'] },
+
   { id: 'production-critique', stream: 'timeline', weight: 0.5,
     triggers: ['twist', 'episode-aired'],
     reads: ['twists'],

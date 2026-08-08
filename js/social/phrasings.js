@@ -95,6 +95,123 @@ export const PHRASINGS = {
     },
   },
 
+  // ── the last night ──────────────────────────────────────────────────────
+  //
+  // A finale used to draw only `prediction` and `legacy-take`, so the night
+  // somebody won half a million produced a feed arguing about where the season
+  // ranked. `{subject}` is the winner and `{actor}` is whoever lost by a vote.
+  'crowned': {
+    'live-reaction': {
+      timeline: [
+        '{subject} WON. i am not okay. i have not been okay since the vote read',
+        'THEY GAVE IT TO {subject}. genuinely screaming in a kitchen at 1am',
+        'not {subject} winning after being on the block that many times 😭',
+        '{subject} played that from the bottom and i will not be taking questions',
+        'the second key. THE SECOND KEY. {subject} you absolute menace',
+        'i have watched {subject} lie to every single person on that jury and they still voted for it',
+        'confetti on {subject} and {actor} standing there like a statue. brutal',
+        'winner {subject}. put it on my headstone',
+      ],
+      chat: [
+        'That is a deserved win. {subject} is the only person in that house who made a decision that cost them something and still got the votes for it.',
+        'I have sat on a jury. Voting for the person who cut you is the hardest thing you do in this game, and enough of them did it for {subject}.',
+        'Watch the final vote read again. {subject} knows before the fourth key.',
+        '{subject} over {actor} is the right result and it is not close for me.',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{subject} is a top five winner of this franchise and it is not up for debate',
+        'people are going to spend a year pretending {subject} was carried. rewatch week four',
+        'the {subject} win ages well. bookmark this',
+        'winning that from that position is harder than anything {actor} did all season',
+      ],
+      chat: [
+        'The case for {subject} was made in the weeks nobody was watching them. That is the whole game.',
+        'A jury rewarding the person who ran the house is rarer than people think. Credit where it is due.',
+      ],
+    },
+    'defence': {
+      timeline: [
+        'say what you like about {subject}, they sat in that chair and answered for all of it',
+        'the {subject} slander starting already. they won. it is over. log off',
+        'imagine watching {subject} play that and calling it a floater game',
+      ],
+      chat: [
+        'I do not think {subject} gets enough credit for how much of that was deliberate.',
+      ],
+    },
+  },
+
+  'robbed': {
+    complaint: {
+      timeline: [
+        '{actor} did not lose that. the jury lost it for them',
+        'genuinely how does {actor} not win that. explain the votes to me like i am five',
+        'bitter jury. that is all that was. {actor} deserved better',
+        '{actor} played the better game and got punished for playing it in front of people',
+        'one vote. ONE. i am going to think about {actor} for a year',
+      ],
+      chat: [
+        'I have {actor} winning that on any other jury. The timing of when they made their moves was the only thing against them.',
+        'That is a jury voting with the part of themselves that was still in the house. It happens, and {actor} paid for it.',
+      ],
+    },
+    dunk: {
+      timeline: [
+        'not the jury rewarding {subject} for doing nothing while {actor} did the work',
+        '{actor} robbed. {subject} coasted. i said what i said',
+        'the {subject} win is a jury management win and nothing else',
+      ],
+      chat: [
+        'Rewarding {subject} over {actor} tells you exactly what that jury valued, and it was not the game.',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{actor} is the best player to never win this and it is week one of that conversation',
+        'losing to {subject} does not touch what {actor} did in there',
+      ],
+      chat: [
+        'The runner-up conversation is more interesting than the winner one this season, which is not something I say often.',
+      ],
+    },
+  },
+
+  'jury-verdict': {
+    'hot-take': {
+      timeline: [
+        'that jury voted with their feelings and i respect the honesty at least',
+        'a jury has never once rewarded the answer somebody gave. it rewards the week they got cut',
+        'every single one of those votes was decided before the questions started',
+        'the jury questions did nothing. they never do. it is theatre and i love it',
+      ],
+      chat: [
+        'Juries decide in the house, not in the chairs. Everything after the last eviction is confirmation.',
+        'The questions moved one vote at most, and I would like to know which one.',
+      ],
+    },
+    'stat-drop': {
+      timeline: [
+        'that is the widest final vote this franchise has had in a while',
+        'nobody has won this thing from the block that many times before',
+        'the vote split exactly along who got cut by whom. every single time',
+      ],
+      chat: [
+        'Worth noting how cleanly that vote split by eviction order. It usually does.',
+      ],
+    },
+    'quote-dunk': {
+      timeline: [
+        '"i voted for the best game" ok so why did you vote for the person who never touched the block',
+        'the juror who said they would vote on gameplay and then did not. we saw you',
+      ],
+      chat: [
+        'Somebody on that jury said they would vote on the game and did not, and everyone in the room knew which one.',
+      ],
+    },
+  },
+
   'blindside-reaction': {
     'live-reaction': {
       timeline: [
@@ -1032,10 +1149,10 @@ export const TOPIC_AIM = {
  * multiplier, which is the topic that owns that shape.
  */
 export const ARCHETYPE_PULL = {
-  stan: { 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
-  hater: { 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
-  analyst: { 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
-  livefeeder: { 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
+  stan: { 'crowned': 2.6, 'robbed': 2.2, 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
+  hater: { 'robbed': 2.0, 'jury-verdict': 1.6, 'crowned': 0.5, 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
+  analyst: { 'jury-verdict': 2.4, 'crowned': 1.6, 'robbed': 1.8, 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
+  livefeeder: { 'crowned': 1.8, 'jury-verdict': 1.6, 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
   casual: { 'blindside-reaction': 1.8, 'thirst': 1.6, 'favourite-declaration': 1.5, 'shipping': 1.4, 'strategy-critique': 0.4, 'comp-talk': 0.4 },
   chaos: { 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'personal-roast': 1.8, 'hypocrisy-watch': 1.5, 'kindness-noticed': 0.4 },
   shipper: { 'shipping': 2.6, 'breakup-reaction': 2.2, 'showmance-concern': 1.8, 'thirst': 1.6, 'showmance-hate': 0.4, 'strategy-critique': 0.3 },

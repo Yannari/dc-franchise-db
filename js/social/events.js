@@ -135,6 +135,50 @@ function bbEvents(week, meta) {
   return out;
 }
 
+/**
+ * The last night, with names on it.
+ *
+ * `extractEvents` used to emit a bare `finale` for a record flagged as one —
+ * no subject, because a weekly episode record does not name a winner. The
+ * archive reader patched a winner onto it from the published document, which
+ * meant a FINISHED season had a finale the audience could talk about and a
+ * season you were actually playing did not.
+ *
+ * Everything here is on the record `simulateBBFinale` writes. The order is the
+ * order the night runs in — the last competition, the cut at three, then the
+ * vote — because the feed replays in timestamp order and a reaction to the
+ * winner arriving before the jury has voted reads as a leak.
+ */
+function bbFinaleEvents(ep, meta) {
+  const out = [];
+  if (ep.finalHoh) {
+    out.push(event('comp-win', { ...meta, subject: ep.finalHoh, jitter: -0.05 }));
+  }
+  // The cruellest seat in the show, and it happens well before the vote.
+  const cut = ep.cut || ep.eliminated;
+  if (cut) out.push(event('eviction', { ...meta, subject: cut, actor: ep.finalHoh, jitter: -0.35 }));
+
+  if (ep.winner) {
+    out.push(event('finale', { ...meta, subject: ep.winner, actor: ep.runnerUp || null }));
+    // A sweep is a different conversation from a one-vote win, and the room
+    // has a word for it.
+    const votes = ep.juryVotes || {};
+    const forWinner = Number(votes[ep.winner]) || 0;
+    const total = Object.values(votes).reduce((s, v) => s + (Number(v) || 0), 0);
+    if (total >= 5 && forWinner >= total - 1) {
+      out.push(event('domination', { ...meta, subject: ep.winner, jitter: 0.18 }));
+    }
+  }
+  // The one prize the house has no vote in. Recorded as the whole result —
+  // winner, tally, prize and the reason — not as a name, so reading the field
+  // directly stamped a post about somebody called "[object Object]".
+  const fav = ep.favourite?.winner || (typeof ep.favourite === 'string' ? ep.favourite : null);
+  if (fav && fav !== ep.winner) {
+    out.push(event('kindness', { ...meta, subject: fav, jitter: 0.55 }));
+  }
+  return out;
+}
+
 /** Total Drama: the challenge winner, the boot, and a broken showmance. */
 function tdEvents(ep, meta) {
   const out = [];
@@ -204,10 +248,17 @@ export function extractEvents(ep, { format, season, episode } = {}) {
   };
 
   const out = [event('episode-aired', meta)];
-  out.push(...(meta.format === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
+  const isFinale = !!(ep.isFinale || ep.finale);
+  // A Big Brother finale is not a week — no Head of Household, no nominees, no
+  // eviction vote — so running the weekly reader over it produces nothing and
+  // then a nameless `finale`. It has its own shape and its own reader.
+  if (isFinale && meta.format === 'big-brother') out.push(...bbFinaleEvents(ep, meta));
+  else out.push(...(meta.format === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
   out.push(...campEvents(ep, meta));
 
-  if (ep.isFinale || ep.finale) out.push(event('finale', meta));
+  // Total Drama's finale still gets the bare marker; its winner is read off the
+  // published document by the archive path.
+  if (isFinale && !out.some(e => e.kind === 'finale')) out.push(event('finale', meta));
 
   // A kind the topics do not know is a post nothing can be written for.
   const known = out.filter(e => EVENT_KINDS.includes(e.kind));

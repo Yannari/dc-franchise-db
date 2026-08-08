@@ -202,6 +202,29 @@ export function eventsForEpisode(doc, format, season, episode) {
     const winner = doc.winner.name || doc.winner;
     if (existing) existing.subject = String(winner).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
     else events.push(socialEvent('finale', { ...meta, subject: winner }));
+
+    /* HOW THE SEASON WAS ACTUALLY DECIDED.
+       Season 14 ended on a challenge — its document says so outright:
+       `finalTribalCouncil: { votes: [], note: "No jury — winner decided by the
+       final challenge." }` — and the feed still posted "that is the widest final
+       vote this franchise has had in a while". Nobody voted. The line is not
+       badly written; it is about a thing that did not happen.
+       Carried on the event so the feed can refuse posts that contradict it. */
+    const ftc = doc.finalTribalCouncil || {};
+    const tally = String(doc.winner.vote || '').trim();
+    /* A tally is not always "4-3". Big Brother 1 records it as
+       "Wayne 4 — Priya 3 — Zee 0", so a pattern expecting two numbers either
+       side of a dash read a real jury vote as a challenge finish — the same
+       class of mistake, in the code meant to catch it. Two numbers anywhere is
+       the honest test. */
+    const jury = (ftc.votes || []).length > 0
+      || (tally.match(/\d+/g) || []).length >= 2;
+    const fin = events.find(e => e.kind === 'finale');
+    if (fin) {
+      fin.decidedBy = jury ? 'jury' : 'challenge';
+      if (tally) fin.tally = tally;
+      if (ftc.note) fin.note = ftc.note;
+    }
   }
   events.push(...awardEvents(doc, format, season, found.episode, { isFinale }));
 

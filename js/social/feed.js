@@ -71,6 +71,52 @@ export function crowdFromPopularity(popularity) {
   return slug => (slug && map.has(slug)) ? map.get(slug) : 0;
 }
 
+/**
+ * Does this post claim something the episode did not have?
+ *
+ * THE POST THAT PROVED THIS NECESSARY: "that is the widest final vote this
+ * franchise has had in a while", under a season whose own document reads
+ * `finalTribalCouncil: { votes: [], note: "No jury — winner decided by the final
+ * challenge." }`. Nobody voted. The line is not badly written; it is about an
+ * event that did not happen.
+ *
+ * The sampler cannot know — it is handed a kind and a subject, not the shape of
+ * the night — so the check belongs here, where the event and the finished text
+ * are both in hand. Narrow on purpose: it only rejects a post that names the
+ * DECIDING MECHANIC wrongly. "Nobody ever wrote his name down" is still fine on
+ * a challenge finale, because it is about the season rather than the last night.
+ *
+ * Widening this into general fact-checking would start throwing away good posts;
+ * the durable fix is for phrasings to declare what they assume, which is a
+ * change in the voice library rather than here.
+ */
+
+// Plain phrases rather than a pattern. These are all multi-word, so a substring
+// match is exactly as precise as a word-boundary one and cannot be broken by an
+// escaping mistake — this very line shipped once containing a literal backspace
+// character where a word boundary was meant. It matched nothing, and it looked
+// perfectly correct in the editor.
+const VOTE_CLAIMS = [
+  'final vote', 'jury vote', 'jury voted', 'final tally',
+  'votes to win', 'vote to win', 'voted her the win', 'voted him the win',
+];
+const COMP_CLAIMS = [
+  'final challenge', 'fire-making', 'fire making', 'last challenge',
+  'won it in the end', 'won it in the final',
+];
+const says = (text, phrases) => {
+  const t = String(text || '').toLowerCase();
+  return phrases.some(x => t.includes(x));
+};
+
+export function contradictsEvent(text, event) {
+  const decided = event?.decidedBy;
+  if (!decided || event.kind !== 'finale') return false;
+  if (decided === 'challenge' && says(text, VOTE_CLAIMS)) return true;
+  if (decided === 'jury' && says(text, COMP_CLAIMS)) return true;
+  return false;
+}
+
 /** Deterministic per-episode rng, so a rebuild reproduces the same feed. */
 function seeded(seed) {
   let s = (seed >>> 0) || 1;
@@ -136,6 +182,10 @@ export function buildEpisodeFeed(events, {
       }
 
       for (const p of made) {
+        // A post about a mechanic this night did not have is dropped rather
+        // than shown. There are dozens more about the same moment; losing one
+        // costs nothing, and printing it costs the reader's trust in all of them.
+        if (contradictsEvent(p.text, ev)) continue;
         // Spread posts through the minutes AROUND the moment, so a feed replays
         // as a wave rather than a spike: reactions land over a few minutes, the
         // way people actually type.

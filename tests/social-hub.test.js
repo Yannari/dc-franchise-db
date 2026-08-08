@@ -174,3 +174,29 @@ describe('the members of the room are real', () => {
     expect(CHAT).toMatch(/if \(from\.length\)/);
   });
 });
+
+describe('the publish button says what it sends', () => {
+  it('does not call a whole-season publish an episode', () => {
+    // `socialPublishPayload` sends `store.posts` — every night the season has —
+    // while the label said "Sync episode to site". The word "episode" is true
+    // of the STANDINGS riding along with it and false of the feed, and the gap
+    // is why somebody has to ask whether their rebuild actually went out.
+    expect(HTML).toMatch(/🔴 Publish to site/);
+    expect(HTML, 'the label still promises one episode')
+      .not.toMatch(/Sync episode to site/);
+    expect(HTML).toMatch(/every post the season has/i);
+  });
+
+  it('counts what it published', () => {
+    const src = fs.readFileSync('js/stats-export.js', 'utf8');
+    expect(src).toMatch(/Publishing episode \$\{snap\.episode\}/);
+    expect(src, 'the status line still hides the feed').toMatch(/_postCount/);
+  });
+
+  it('still sends the whole store, which is the point', () => {
+    const src = fs.readFileSync('js/social/session.js', 'utf8');
+    expect(src).toMatch(/toPublishPayload\(gs, \{/);
+    const store = fs.readFileSync('js/social/store.js', 'utf8');
+    expect(store).toMatch(/posts: store\.posts\.map/);
+  });
+});

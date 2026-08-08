@@ -2982,7 +2982,11 @@ export async function syncLiveEpisode(onStatus) {
   const snap = extractLiveSeasonSnapshot();
   const social = socialPublishPayload();
   if (social) snap.social = social;
-  _status(`Syncing episode ${snap.episode}…`);
+  // Says what it is actually sending. The standings are for this episode; the
+  // feed is the whole season, and a status line that mentions only the episode
+  // is why somebody has to ask whether their rebuild went out.
+  const _postCount = social ? (social.posts || []).length : 0;
+  _status(`Publishing episode ${snap.episode}${_postCount ? ` and ${_postCount} posts` : ''}…`);
 
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;

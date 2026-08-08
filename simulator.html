@@ -992,8 +992,14 @@
             <div class="season-controls-note">Reset clears episode history but keeps the cast and setup.</div>
             <div class="divider" style="margin:8px 0"></div>
             <div class="season-controls-label">Live to Site</div>
-            <button class="btn btn-secondary btn-sm" id="live-sync-btn" onclick="syncEpisodeToSite()" style="margin-bottom:2px;width:100%" title="Push the current standings to the live site. No commit, no rebuild — visitors see it on their next page load.">🔴 Sync episode to site</button>
-            <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px">Also catches the feed up on any night that has none.</div>
+            <!-- Named for the STANDINGS, which are what is per-episode about it: the site
+                 learns the season has reached episode 14 and two of eighteen are still
+                 in. The social feed riding along with it has never been per-episode —
+                 `socialPublishPayload` sends the whole store — and the old label said
+                 "Sync episode to site" over a button that publishes all twenty-six
+                 nights, which is a question somebody has to ask before they trust it. -->
+            <button class="btn btn-secondary btn-sm" id="live-sync-btn" onclick="syncEpisodeToSite()" style="margin-bottom:2px;width:100%" title="Push the season's current standings AND its whole social feed to the live site. No commit, no rebuild — visitors see it on their next page load.">🔴 Publish to site</button>
+            <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px">Standings for this episode, and every post the season has.</div>
             <button class="btn btn-secondary btn-sm" id="season-sync-btn" onclick="syncSeasonDataFromRepo()" style="margin-bottom:2px;width:100%" title="Repair tool. Rebuilds the season and ranking tables from the JSON in the repo. Export Season already does this, so you only need it if an export fell back to downloading, or you committed database files by hand.">🔄 Re-sync season data</button>
             <div class="season-controls-note" style="margin-bottom:6px">Only needed if an export fell back to downloading files.</div>
             <div class="divider" style="margin:8px 0"></div>

@@ -5,7 +5,7 @@ import { gs, players, seasonConfig } from './core.js';
 import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
-import { seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -164,17 +164,10 @@ function _rebuildByShow(player) {
     const format = det.format || DEFAULT_FORMAT;
     const bucket = (byShow[format] ||= { seasons: 0 });
     bucket.seasons++;
-    if (format === 'big-brother') {
-      const bb = det.bb || {};
-      bucket.totalCompWins   = (bucket.totalCompWins   || 0) + (det.challengeWins || 0);
-      bucket.hohWins         = (bucket.hohWins         || 0) + (bb.hohWins        || 0);
-      bucket.vetoWins        = (bucket.vetoWins        || 0) + (bb.vetoWins       || 0);
-      bucket.timesNominated  = (bucket.timesNominated  || 0) + (bb.timesNominated || 0);
-    } else {
-      bucket.totalChallengeWins = (bucket.totalChallengeWins || 0) + (det.challengeWins || 0);
-      bucket.totalImmunityWins  = (bucket.totalImmunityWins  || 0) + (det.immunityWins  || 0);
-      bucket.totalRewardWins    = (bucket.totalRewardWins    || 0) + (det.rewardWins    || 0);
-      bucket.totalIdolsFound    = (bucket.totalIdolsFound    || 0) + (det.idolsFound    || 0);
+    // A show declares which fields it contributes; see SHOWS in js/shows.js.
+    for (const [from, to] of (SHOWS[format]?.careerStats || [])) {
+      const value = from.startsWith('bb.') ? (det.bb || {})[from.slice(3)] : det[from];
+      bucket[to] = (bucket[to] || 0) + (value || 0);
     }
   }
   player.byShow = byShow;

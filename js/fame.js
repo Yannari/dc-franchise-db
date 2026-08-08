@@ -20,6 +20,8 @@
 // has no side effects — which is what lets the site use it now and the simulator
 // use it later. Markup lives in js/fame-stars.js.
 
+import { formatPrefix, DEFAULT_FORMAT } from './shows.js';
+
 /** Score at which each half-star is reached. Ascending; below the first is 0. */
 export const STAR_THRESHOLDS = [
   [5, 0.5], [12, 1], [20, 1.5], [30, 2], [40, 2.5],
@@ -99,8 +101,6 @@ export function showRankMultiplier(playerId, format, rankings) {
   return 1;
 }
 
-const PREFIX = { 'total-drama': 'td', 'big-brother': 'bb' };
-
 /**
  * Every season the franchise has produced, in the order it produced them.
  *
@@ -112,7 +112,7 @@ export function seasonChronology(seasonsDb) {
   return (seasonsDb?.seasons || []).map(s => {
     const format = s.format || 'total-drama';
     return {
-      seasonId: s.seasonId || `${PREFIX[format] || format}-${s.seasonNumber}`,
+      seasonId: s.seasonId || `${formatPrefix(format)}-${s.seasonNumber}`,
       format,
       seasonNumber: s.seasonNumber,
       awards: s.awards || {},
@@ -249,7 +249,8 @@ export function recordsHeld(playerId, franchiseDb) {
   return held;
 }
 
-const detailKey = d => d.seasonId || `${PREFIX[d.format || 'total-drama'] || d.format}-${d.season}`;
+const detailKey = d => d.seasonId
+  || `${formatPrefix(d.format || DEFAULT_FORMAT)}-${d.season}`;
 
 /**
  * Fame for every player, walked season by season.

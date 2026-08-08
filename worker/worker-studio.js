@@ -41,6 +41,8 @@
 // on this repo only), STUDIO_TOKEN (a long random string the frontend sends).
 // Binding (wrangler.toml [[d1_databases]]): DB -> the "dc-franchise" D1 database.
 
+import { formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
+
 const ROSTER_PATH = 'franchise_roster.json';
 const VOICE_PATH = 'voice-profiles.json';
 const AVATAR_DIR = 'assets/avatars';
@@ -541,10 +543,6 @@ async function rosterPublish(env, payload = {}) {
 // tables straight from the repo, which is why the export never had to change.
 
 const SEASON_DIR       = 'data/seasons';   // per-season episode logs live here
-// Season-file prefixes, kept in step with formatPrefix() in js/shows.js. Total
-// Drama is absent on purpose: it predates the second show and keeps the bare
-// `seasonN-data.json` name its existing files and readers already use.
-const SEASON_FILE_PREFIX = { 'big-brother': 'bb' };
 const PLAYERS_DB_PATH  = 'players_database.json';
 const SEASONS_DB_PATH  = 'seasons_database.json';
 const RANKINGS_DB_PATH = 'rankings_database.json';
@@ -879,9 +877,9 @@ async function publishSeason(env, payload = {}) {
     // record can derive its episode log without a second lookup table.
     const format = payload.format || 'total-drama';
     if (!/^[a-z0-9-]+$/.test(format)) throw new ValidationError(`unknown season format: ${format}`);
-    const file = format === 'total-drama'
+    const file = format === DEFAULT_FORMAT
       ? `season${n}-data.json`
-      : `${SEASON_FILE_PREFIX[format] || format}-${n}-data.json`;
+      : `${formatPrefix(format)}-${n}-data.json`;
     docs.push([`${SEASON_DIR}/${file}`, payload.season]);
   }
   if (payload.players)   docs.push([PLAYERS_DB_PATH, payload.players]);

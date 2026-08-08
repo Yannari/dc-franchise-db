@@ -12,8 +12,27 @@
 // every place a format was assumed.
 
 export const SHOWS = {
-  'total-drama': { prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬' },
-  'big-brother': { prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹' },
+  'total-drama': {
+    prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬',
+    // Season-detail fields this show contributes to a career, and the byShow
+    // key each lands under. A show declares its own shape here rather than
+    // _rebuildByShow branching on the format.
+    careerStats: [
+      ['challengeWins', 'totalChallengeWins'],
+      ['immunityWins', 'totalImmunityWins'],
+      ['rewardWins', 'totalRewardWins'],
+      ['idolsFound', 'totalIdolsFound'],
+    ],
+  },
+  'big-brother': {
+    prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹',
+    careerStats: [
+      ['challengeWins', 'totalCompWins'],
+      ['bb.hohWins', 'hohWins'],
+      ['bb.vetoWins', 'vetoWins'],
+      ['bb.timesNominated', 'timesNominated'],
+    ],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */

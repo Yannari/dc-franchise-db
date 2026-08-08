@@ -882,16 +882,28 @@ async function liveSeasonPut(env, payload = {}) {
   };
 }
 
-async function liveSeasonClear(env) {
+/**
+ * Take the airing season off the site.
+ *
+ * `keepFeed` is the difference between the two callers, and it matters:
+ *
+ *   the button      you are abandoning or restarting a run, so the feed of the
+ *                   run that did not happen goes with it
+ *   publishing      the season FINISHED. Its posts carry engagement that
+ *                   accumulated while it aired, and /api/social is keyed by
+ *                   (format, season), so keeping them means an archived season
+ *                   shows the feed it really had rather than one regenerated
+ *                   from its own records.
+ */
+async function liveSeasonClear(env, { keepFeed = false } = {}) {
   const d = db(env);
-  await d.batch([
+  const stmts = [
     d.prepare('DELETE FROM live_season'),
     d.prepare('DELETE FROM live_meta'),
-    // The feed belongs to the airing season. Leaving it behind would have the
-    // site showing an audience arguing about a season that is no longer on.
-    d.prepare('DELETE FROM social_posts'),
-  ]);
-  return { ok: true, cleared: true };
+  ];
+  if (!keepFeed) stmts.push(d.prepare('DELETE FROM social_posts'));
+  await d.batch(stmts);
+  return { ok: true, cleared: true, keptFeed: keepFeed };
 }
 
 /**
@@ -1029,7 +1041,33 @@ async function publishSeason(env, payload = {}) {
              warning: `Files committed, but the database sync failed: ${e.message}. Press "Sync season data" to retry.` };
   }
 
-  return { ok: true, wrote, synced };
+  // PUBLISHING A SEASON ENDS ITS RUN.
+  //
+  // The live overlay exists for a season that is NOT yet in the permanent
+  // history — it is what the site shows while one is airing. Publishing puts it
+  // in that history, so the overlay is describing the same season twice, once
+  // as finished and once as still going.
+  //
+  // Nothing used to clear it, so Total Drama 14 sat on the site announcing
+  // "airing — episode 26, 2 of 18 still in" for a fortnight after its finale.
+  // Asking somebody to remember a second button is how that happens.
+  //
+  // Cleared only when the live row IS this season: a Big Brother publish must
+  // not take an airing Total Drama season off the site.
+  let endedRun = null;
+  try {
+    const live = await db(env).prepare('SELECT season_number FROM live_meta WHERE id = 1').first();
+    if (live && n && asInt(live.season_number) === n) {
+      await liveSeasonClear(env, { keepFeed: true });
+      endedRun = n;
+    }
+  } catch { /* the season is published either way; this is tidying */ }
+
+  // The feed is deliberately NOT cleared. Its posts carry engagement that
+  // accumulated while the season aired, and /api/social is keyed by
+  // (format, season) — so an archived season keeps the feed it actually had
+  // rather than falling back to one regenerated from its own records.
+  return { ok: true, wrote, synced, endedRun };
 }
 
 // ══ standalone avatar management ═══════════════════════════════════════════

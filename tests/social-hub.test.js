@@ -111,3 +111,29 @@ describe('rebuilding the season', () => {
     expect(fn).toMatch(/could not be rebuilt/);
   });
 });
+
+describe('each room shows its own posts', () => {
+  const PAGE = fs.readFileSync('js/social-page.js', 'utf8');
+
+  it('keeps the group-chat register off the timeline', () => {
+    // `buildEpisodeFeed` samples BOTH streams into one store — about 112
+    // timeline posts an episode and 32 chat ones. Birdie rendered the store
+    // unfiltered, so a fifth of the timeline was written in the other room's
+    // voice: full sentences, insider vocabulary, the exact thing the two-room
+    // split exists to prevent.
+    const fn = PAGE.slice(PAGE.indexOf('const stream = () =>'),
+      PAGE.indexOf('const stream = () =>') + 200);
+    expect(fn, 'Birdie is still rendering the chat stream')
+      .toMatch(/filter\(p => p\.stream !== 'chat'\)/);
+  });
+
+  it('leaves the alumni room reading its own builder', () => {
+    // ChatAlumni does not read stored posts at all — it is built from the
+    // episode's events every time it is opened, which is why no rebuild button
+    // applies to it.
+    expect(PAGE).toMatch(/S\.messages = buildChatMessages\(/);
+    const fn = PAGE.slice(PAGE.indexOf('const stream = () =>'),
+      PAGE.indexOf('const stream = () =>') + 200);
+    expect(fn).toMatch(/: S\.messages/);
+  });
+});

@@ -194,7 +194,26 @@ async function loadEpisode() {
 }
 
 // ── the live clock ────────────────────────────────────────────────────
-const stream = () => S.app === 'birdie' ? S.feed.posts : S.messages;
+/**
+ * The posts for whichever room is open.
+ *
+ * ── Birdie was showing the other room's posts ──
+ *
+ * `buildEpisodeFeed` samples BOTH streams and stores both, about 112 timeline
+ * posts and 32 chat ones an episode. Birdie was rendering the store unfiltered,
+ * so roughly a fifth of the timeline was written in the group-chat register —
+ * full sentences, insider vocabulary, the exact voice the two-room split exists
+ * to keep OFF a timeline. "I would rather watch this beautiful mess than
+ * another efficient stranger" is not a thing anybody types on a stadium feed.
+ *
+ * The alumni room does not read these at all: it is built from the episode's
+ * events by chat.js, from alumni who played, which is a different thing again.
+ * So the sampler's chat stream is currently written, stored and displayed in
+ * the one room it was not written for.
+ */
+const stream = () => S.app === 'birdie'
+  ? S.feed.posts.filter(p => p.stream !== 'chat')
+  : S.messages;
 /** Everything released so far. Away from the live edge, the rest waits. */
 const visible = () => stream().filter(p => p.at <= S.clock);
 

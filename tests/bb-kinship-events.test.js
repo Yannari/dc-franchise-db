@@ -83,6 +83,94 @@ describe('the family is registered', () => {
   });
 });
 
+describe('every one of them does something', () => {
+  it('changes the world rather than describing it', () => {
+    // A scene with no consequence is set dressing. Each event is fired against
+    // a recording api and has to have moved at least one real thing — a bond,
+    // popularity, suspicion, a target, a showmance, or the lean itself.
+    house([
+      { id: 'r1', a: 'Gus', b: 'Iris', type: 'ally', bond: 5, kin: 'exes' },
+      { id: 'r2', a: 'Millie', b: 'Caleb', type: 'ally', bond: 4, kin: 'married' },
+      { id: 'r3', a: 'Bowie', b: 'Kit', type: 'ally', bond: 5, kin: 'siblings' },
+      { id: 'r4', a: 'Eli', b: 'Fern', type: 'nemesis', bond: -4, kin: 'estranged' },
+      { id: 'r5', a: 'Axel', b: 'Zee', type: 'neutral', bond: 1, kin: 'old-friends' },
+      { id: 'r6', a: 'Wayne', b: 'Raj', type: 'neutral', bond: 1, kin: 'ex-friends' },
+    ], [['Caleb', 'Millie', -8]]);
+    setBond('Gus', 'Iris', 5); setBond('Millie', 'Caleb', 4); setBond('Bowie', 'Kit', 5);
+    setBond('Eli', 'Fern', -4); setBond('Axel', 'Zee', 1); setBond('Wayne', 'Raj', 1);
+
+    let checked = 0;
+    for (const e of KINSHIP_EVENTS) {
+      if (!e.weight(NAMES, ctx(5))) continue;
+      checked++;
+      const api = stubApi();
+      const leanBefore = JSON.stringify(gs.bondLean);
+      e.fire(NAMES, ctx(5), api, () => 0.5);
+      const movedLean = JSON.stringify(gs.bondLean) !== leanBefore;
+      expect(api.log.length || movedLean, `${e.id} is set dressing`).toBeTruthy();
+    }
+    expect(checked, 'no event was eligible to check').toBeGreaterThan(6);
+  });
+});
+
+describe('where they turn up', () => {
+  it('reaches the House Life screens and the transcript', async () => {
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    const { generateSummaryText } = await import('../js/text-backlog.js');
+    const { buildVPScreens, _tvState } = await import('../js/vp-screens.js');
+    house([
+      { id: 'r1', a: 'Gus', b: 'Iris', type: 'rival', bond: -3, kin: 'exes', leanA: 8 },
+      { id: 'r2', a: 'Eli', b: 'Fern', type: 'nemesis', bond: -5, kin: 'estranged' },
+      { id: 'r3', a: 'Millie', b: 'Caleb', type: 'ally', bond: 4, kin: 'married' },
+    ], [['Gus', 'Iris', 8]]);
+    Object.assign(seasonConfig, { jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
+    seasonConfig.twistSchedule = [];
+
+    let found = 0;
+    for (let w = 0; w < 3 && found < 2; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const beats = (ep.acts || []).flatMap(a => (a.socialBeats || [])
+        .filter(b => /^kin-/.test(b.eventId || '')));
+      if (!beats.length) continue;
+      const text = generateSummaryText(ep) || '';
+      gs.episodeHistory = [ep];
+      buildVPScreens(ep);
+      Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
+      const screens = buildVPScreens(ep) || [];
+      for (const b of beats) {
+        const stub = b.text.slice(0, 40);
+        expect(text, 'a kinship beat the transcript never wrote down').toContain(stub);
+        const on = screens.find(s => s.html.includes(stub));
+        expect(on, `a kinship beat with no screen: ${stub}`).toBeTruthy();
+        expect(on.label).toBe('House Life');
+        found++;
+      }
+    }
+    expect(found, 'nothing ever fired in a real season').toBeGreaterThan(0);
+  }, 120000);
+
+  it('gives a pair with no declared relation nothing at all', async () => {
+    // The trap worth guarding: every relationship authored before the kinship
+    // axis existed has no `kin`, so a season full of rivalries and friendships
+    // produces zero of these and looks broken rather than undeclared.
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+    house([
+      { id: 'r1', a: 'Gus', b: 'Iris', type: 'rival', bond: -3 },
+      { id: 'r2', a: 'Millie', b: 'Caleb', type: 'ally', bond: 4 },
+    ]);
+    Object.assign(seasonConfig, { jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
+    seasonConfig.twistSchedule = [];
+    for (let w = 0; w < 3; w++) {
+      const ep = simulateBBEpisode();
+      if (!ep) break;
+      const beats = (ep.acts || []).flatMap(a => (a.socialBeats || [])
+        .filter(b => /^kin-/.test(b.eventId || '')));
+      expect(beats.length, 'a scene fired for a relation nobody declared').toBe(0);
+    }
+  }, 120000);
+});
+
 describe('the same bond, a different evening', () => {
   const BOND = 4;
   it('gives exes, siblings and colleagues different scenes at identical bonds', () => {

@@ -286,6 +286,51 @@
   .clock .time{ font-variant-numeric:tabular-nums; font-weight:800; font-size:15px; }
   .clock progress{ flex:1; min-width:120px; height:8px; }
 
+  /* ── the scrubber ──
+     A <progress> looks like this and cannot be touched, so the bar showed
+     where the episode was and gave no way to go anywhere else. A range input
+     is the same picture with a handle on it. Full width on its own row, and a
+     target big enough for a thumb. */
+  .clock .clock-scrub{
+    order:99; flex:1 1 100%; width:100%; margin:2px 0 0; height:26px;
+    -webkit-appearance:none; appearance:none; background:none; cursor:pointer;
+  }
+  .clock .clock-scrub::-webkit-slider-runnable-track{
+    height:8px; border-radius:99px; background:rgba(127,127,127,.35);
+  }
+  .clock .clock-scrub::-moz-range-track{
+    height:8px; border-radius:99px; background:rgba(127,127,127,.35);
+  }
+  .clock .clock-scrub::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:20px; height:20px; margin-top:-6px;
+    border-radius:50%; background:currentColor; border:2px solid rgba(255,255,255,.85);
+    box-shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+  .clock .clock-scrub::-moz-range-thumb{
+    width:20px; height:20px; border-radius:50%; background:currentColor;
+    border:2px solid rgba(255,255,255,.85); box-shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+  .birdie .clock .clock-scrub{ color:var(--sky); }
+  .chat .clock .clock-scrub{ color:var(--bottle); }
+  .clock .clock-scrub:focus-visible{ outline:2px solid currentColor; outline-offset:4px; }
+
+  /* ── what a reply is answering ──
+     "Replying to @somebody" was dead text, so a reply named a post the reader
+     had no way to reach. The handle is a link now and the parent is quoted
+     under it, short enough that the reply stays the card you are reading. */
+  .replying a{ color:inherit; font-weight:700; text-decoration:none; border-bottom:1px solid currentColor; }
+  .replying a:hover{ opacity:.75; }
+  .quoted{
+    display:block; margin:2px 0 8px; padding:8px 11px; cursor:pointer;
+    border:1px solid rgba(127,127,127,.35); border-radius:12px;
+    background:rgba(127,127,127,.06); font-size:13px; line-height:1.45;
+  }
+  .quoted:hover{ background:rgba(127,127,127,.12); }
+  .quoted:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+  .quoted-who{ display:block; font-weight:700; margin-bottom:2px; }
+  .quoted-who i{ font-style:normal; font-weight:400; opacity:.7; }
+  .quoted-text{ display:block; opacity:.85; }
+
   .state-card{ padding:36px 26px; text-align:center; }
   .state-card h2{ font-size:24px; margin:0 0 10px; letter-spacing:-.01em; text-transform:none; color:inherit; }
   .state-card p{ margin:0 auto 14px; max-width:46ch; line-height:1.55; opacity:.85; }

@@ -55,6 +55,18 @@ const titleCase = s => String(s || '').split('-')
 const mmss = ms => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
 /** "2m" — how long into the episode, the way a timeline shows it. */
+/**
+ * Enough of a post to recognise it, and no more.
+ *
+ * The quote above a reply is there to say WHAT is being answered, not to make
+ * the reader read it twice — a full-length parent above every reply turns a
+ * timeline into the same post printed in pairs.
+ */
+const snippet = (text, max = 96) => {
+  const t = String(text || '').trim();
+  return t.length <= max ? t : `${t.slice(0, max).replace(/\s+\S*$/, '')}…`;
+};
+
 const stamp = at => at < 60000 ? `${Math.max(1, Math.round(at / 1000))}s` : `${Math.round(at / 60000)}m`;
 
 function announce(msg) {
@@ -186,6 +198,27 @@ function startLive(fromZero = true) {
   }, 1000);
 }
 
+/**
+ * Move the night to a point somebody picked.
+ *
+ * Everything before the new time counts as ALREADY READ — `S.seen` is what
+ * separates "released" from "waiting behind the new-posts pill", and dragging
+ * to twenty minutes in to see what happened there, only to be told there are
+ * four hundred new posts, is not what the handle means.
+ *
+ * And it PAUSES. Somebody who takes hold of the handle has stopped watching
+ * and started looking; leaving the clock running means the thing they dragged
+ * to has already moved on by the time they let go. Play picks up from wherever
+ * they left it.
+ */
+function seekTo(ms) {
+  const to = Math.max(0, Math.min(EPISODE_MS, Number(ms) || 0));
+  stopLive();
+  S.clock = to;
+  S.seen = visible().length;
+  render();
+}
+
 function stopLive() {
   if (S.timer) clearInterval(S.timer);
   S.timer = null;
@@ -203,7 +236,11 @@ function paintLive() {
   const clockEl = $('clock-time');
   if (clockEl) clockEl.textContent = `${mmss(S.clock)} / ${mmss(EPISODE_MS)}`;
   const bar = $('clock-bar');
-  if (bar) bar.value = S.clock;
+  // Not while somebody has hold of it. The tick writes the handle back every
+  // second, so a drag during playback would be dragged straight back out of
+  // the reader's hand — the handle jittering under the cursor instead of
+  // following it.
+  if (bar && document.activeElement !== bar && !bar.matches(':active')) bar.value = S.clock;
 
   const waiting = visible().length - S.seen;
   const pill = $('newpill');
@@ -320,7 +357,13 @@ function postRow(p, i) {
         <span class="post-time">· ${stamp(p.at)}</span>
         ${p.source === 'ai-featured' ? '<span class="featured">Featured</span>' : ''}
       </div>
-      ${parent ? `<p class="replying">Replying to ${esc(parent.handle)}</p>` : ''}
+      ${parent ? `<p class="replying">Replying to <a href="#" data-thread="${esc(parent.id)}"
+        >${esc(parent.handle)}</a></p>
+      <blockquote class="quoted" data-thread="${esc(parent.id)}" tabindex="0"
+        role="link" aria-label="Show the post ${esc(p.name)} is replying to">
+        <span class="quoted-who">${esc(parent.name)} <i>${esc(parent.handle)}</i></span>
+        <span class="quoted-text">${esc(snippet(parent.text))}</span>
+      </blockquote>` : ''}
       <p class="post-body">${linkMentions(p.text, p.subject)}</p>
       <p class="post-ctx">${esc(contextLabel(S.format, S.season, S.episode))} · ${esc(eventLabel(p.kind, S.format))}</p>
       <div class="acts">
@@ -571,8 +614,9 @@ function clockBar() {
   <div class="clock">
     <button type="button" id="btn-live" aria-pressed="${S.live}">${S.live ? '⏸ Pause' : '▶ Watch Live'}</button>
     <span class="time" id="clock-time">${mmss(S.clock)} / ${mmss(EPISODE_MS)}</span>
-    <label class="sr-only" for="clock-bar">Episode progress</label>
-    <progress id="clock-bar" max="${EPISODE_MS}" value="${S.clock}"></progress>
+    <label class="sr-only" for="clock-bar">Episode progress — drag to move through the night</label>
+    <input type="range" id="clock-bar" class="clock-scrub" min="0" max="${EPISODE_MS}"
+      step="1000" value="${S.clock}" aria-valuetext="${mmss(S.clock)} of ${mmss(EPISODE_MS)}">
     ${[1, 2, 5].map(x => `<button type="button" data-speed="${x}"
       aria-pressed="${S.live && S.speed === x}">${x}×</button>`).join('')}
     <button type="button" data-speed="instant" aria-pressed="${S.clock >= EPISODE_MS && !S.live}">Instant</button>
@@ -702,16 +746,34 @@ function wire() {
     await reload();
   };
 
+  // A range input reports through `input`, so the delegated click handler never
+  // sees it. Live so it works for the keyboard too: arrow keys on the handle
+  // move the episode exactly as dragging does.
+  document.addEventListener('input', ev => {
+    if (ev.target?.id === 'clock-bar') seekTo(ev.target.value);
+  });
+
   document.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-tab],[data-channel],[data-like],[data-tomato],[data-speed],'
+    const t = ev.target.closest('[data-tab],[data-channel],[data-like],[data-tomato],[data-speed],[data-thread],'
       + '#btn-live,#newpill,#loadmore,[data-goto-channel],[data-reply],[data-subject],'
       + '[data-persona],[data-follow],#thread-back');
     if (!t) return;
     // The author link is a real anchor so it is keyboard-reachable and shows a
     // target; opening the profile in place is what it actually does.
-    if (t.dataset.persona !== undefined || t.dataset.subject !== undefined) ev.preventDefault();
+    if (t.dataset.persona !== undefined || t.dataset.subject !== undefined
+      || t.dataset.thread !== undefined) ev.preventDefault();
 
-    if (t.dataset.tab) { S.tab = t.dataset.tab; S.shown = 30; S.thread = null; writeUrl(); render(); }
+    if (t.dataset.thread) {
+      // "Replying to @somebody" used to be dead text, so a reply named a post
+      // the reader had no way to reach — the one thing every timeline gives
+      // you. Opens the conversation at the post being answered.
+      S.thread = t.dataset.thread;
+      S.persona = null; S.subject = null; S.shown = 30;
+      render();
+      const el = document.getElementById(`post-${t.dataset.thread}`);
+      if (el) el.scrollIntoView({ block: 'start' });
+    }
+    else if (t.dataset.tab) { S.tab = t.dataset.tab; S.shown = 30; S.thread = null; writeUrl(); render(); }
     else if (t.dataset.subject !== undefined) { S.subject = t.dataset.subject || null; S.shown = 30; render(); }
     else if (t.dataset.persona !== undefined) {
       S.persona = S.persona === t.dataset.persona ? null : t.dataset.persona;
@@ -723,10 +785,22 @@ function wire() {
     else if (t.dataset.gotoChannel) { S.app = 'chatalumni'; S.channel = t.dataset.gotoChannel; writeUrl(); render(); }
     else if (t.id === 'newpill') revealNew();
     else if (t.id === 'loadmore') { S.shown += 30; render(); }
-    else if (t.id === 'btn-live') { S.live ? (stopLive(), render()) : startLive(true); }
+    else if (t.id === 'btn-live') {
+      // Pause and play again picks up where it stopped. It used to pass
+      // `fromZero: true` unconditionally, so pausing to read something threw
+      // away the episode and started it over — the one thing a pause button
+      // must never do. Only a finished episode restarts.
+      if (S.live) { stopLive(); render(); } else startLive(S.clock >= EPISODE_MS);
+    }
     else if (t.dataset.speed) {
       if (t.dataset.speed === 'instant') { stopLive(); S.clock = EPISODE_MS; S.seen = visible().length; render(); }
-      else { S.speed = Number(t.dataset.speed); render(); if (!S.live) startLive(false); }
+      else {
+        // Setting a speed does not un-pause. A paused player whose transport
+        // controls restart it is a player you cannot set up before watching —
+        // press play when you want it, at the speed you picked.
+        S.speed = Number(t.dataset.speed);
+        render();
+      }
     }
     else if (t.dataset.like) toggle(S.liked, t.dataset.like);
     else if (t.dataset.tomato) toggle(S.tomatoed, t.dataset.tomato);

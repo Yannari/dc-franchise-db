@@ -136,12 +136,20 @@ test('a reply count you can click opens the thread', async ({ page }) => {
   await page.goto(social('show=big-brother&season=1&app=birdie&tab=for-you'));
   await ready(page);
 
+  // In the timeline a reply says what it is answering, because the post it
+  // answers is somewhere else entirely.
+  await expect(page.locator('.post.is-reply').first()).toBeVisible();
+
   const target = page.locator('.act[data-reply]').filter({ hasNotText: /^\s*0\s*$/ }).first();
   await target.click();
   await expect(page.locator('.thread-head')).toBeVisible();
-  // A thread is the parent plus its answers, and every answer says who it answers.
+  // A thread is the parent plus its answers.
   expect(await page.locator('.post').count()).toBeGreaterThan(1);
-  await expect(page.locator('.replying').first()).toContainText('Replying to');
+  // And INSIDE the thread that label is gone: the post being answered is the
+  // first row, so repeating it above every reply prints it nine times down a
+  // thread of nine.
+  expect(await page.locator('.replying').count(),
+    'the thread repeats what each reply is answering').toBe(0);
 
   await page.click('#thread-back');
   await expect(page.locator('.thread-head')).toHaveCount(0);

@@ -336,10 +336,58 @@ async function loadData() {
     p._tier = p._rank ? p._rank.tier : null;
   });
 
-  // Collect all season numbers
-  const sns = new Set();
-  allPlayers.forEach(p => (p.seasons || []).forEach(s => sns.add(s)));
-  allSeasonNums = Array.from(sns).sort((a, b) => a - b);
+  // Collect every season anybody played, AS A REFERENCE rather than a number.
+  //
+  // `p.seasons` is a flat list of numbers, and a number stopped identifying a
+  // season the moment a second show existed: Total Drama 1 and Big Brother 1
+  // are both `1`. Keyed that way, one player's two first seasons collapse into
+  // one column and one of the placements is simply lost — the grid would show
+  // Wayne's Big Brother win in the column labelled S1 and quietly drop whichever
+  // record was written second.
+  //
+  // seasonDetails carries `format` and `seasonId`, so it is the source. The
+  // `p.seasons` fallback is kept for records written before those fields
+  // existed, and reads as Total Drama, which is what a bare number has always
+  // meant on this site.
+  const byKey = new Map();
+  allPlayers.forEach(p => {
+    (p.seasonDetails || []).forEach(sd => {
+      const ref = seasonRefOf(sd);
+      if (!byKey.has(ref.key)) byKey.set(ref.key, ref);
+    });
+    // The flat list is a FALLBACK, and only for numbers seasonDetails does not
+    // already account for. Used blindly it invents appearances: Axel's `seasons`
+    // holds [9, 1] because Big Brother 1 is a season 1, and reading that 1 as
+    // Total Drama gave him a phantom TD1 row next to his real Big Brother one.
+    const detailed = new Set((p.seasonDetails || []).map(d => Number(d.season)));
+    (p.seasons || []).forEach(n => {
+      if (detailed.has(Number(n))) return;
+      const ref = seasonRefOf({ season: n });
+      if (!byKey.has(ref.key)) byKey.set(ref.key, ref);
+    });
+  });
+  allSeasonNums = Array.from(byKey.values())
+    .sort((a, b) => a.format.localeCompare(b.format) || a.number - b.number);
+}
+
+/**
+ * One season, in the three forms this page needs.
+ *
+ * `key` identifies it (and is what the lookup is keyed on), `href` links to it,
+ * and `label` is what a column header says. Total Drama keeps the bare "S7" it
+ * has always shown; every other show is named, because "S1" on a Big Brother
+ * column is the page claiming to be about a season it is not.
+ */
+function seasonRefOf(sd) {
+  const number = Number(sd.season ?? sd.seasonNumber ?? 0);
+  const format = sd.format || 'total-drama';
+  const key = sd.seasonId || (format === 'total-drama' ? `td-${number}` : `${format}-${number}`);
+  const prefix = key.split('-')[0];
+  return {
+    key, number, format,
+    href: format === 'total-drama' ? String(number) : key,
+    label: format === 'total-drama' ? `S${number}` : `${prefix.toUpperCase()}${number}`,
+  };
 }
 
 // ── Build lookup: player -> season -> placement ───────────────
@@ -348,11 +396,16 @@ function buildLookup(players) {
   players.forEach(p => {
     lookup[p.id] = {};
     (p.seasonDetails || []).forEach(sd => {
-      lookup[p.id][sd.season] = sd.placement;
+      lookup[p.id][seasonRefOf(sd).key] = sd.placement;
     });
-    // Fallback from seasons array (no placement data)
+    // Fallback from seasons array — same rule as above: only numbers that
+    // seasonDetails has nothing to say about, or a Big Brother season becomes a
+    // Total Drama appearance nobody ever played.
+    const detailed = new Set((p.seasonDetails || []).map(d => Number(d.season)));
     (p.seasons || []).forEach(sn => {
-      if (!lookup[p.id][sn]) lookup[p.id][sn] = null; // played but no detail
+      if (detailed.has(Number(sn))) return;
+      const key = seasonRefOf({ season: sn }).key;
+      if (!lookup[p.id][key]) lookup[p.id][key] = null; // played but no detail
     });
   });
   return lookup;
@@ -393,7 +446,12 @@ async function loadCastSizes() {
   try {
     const r = await fetch('seasons_database.json');
     const sdb = await r.json();
-    (sdb.seasons || []).forEach(s => { castSizes[s.seasonNumber] = s.castSize; });
+    // Keyed by reference for the same reason the grid is: two shows' season 1
+    // would otherwise share one cast size, and the colour of every cell in a
+    // column is computed from it.
+    (sdb.seasons || []).forEach(s => {
+      castSizes[seasonRefOf({ season: s.seasonNumber, format: s.format, seasonId: s.seasonId }).key] = s.castSize;
+    });
   } catch (_) {}
 }
 
@@ -416,26 +474,26 @@ function renderGrid() {
   const lookup = buildLookup(players);
 
   // Header
-  const seasonHeaders = allSeasonNums.map(sn =>
-    `<th class="season-col"><a href="season_ref.html?season=${sn}" style="color:var(--muted);text-decoration:none;font-size:10px;">S${sn}</a></th>`
+  const seasonHeaders = allSeasonNums.map(ref =>
+    `<th class="season-col"><a href="season_ref.html?season=${ref.href}" style="color:var(--muted);text-decoration:none;font-size:10px;">${ref.label}</a></th>`
   ).join('');
 
   // Rows
   const rows = players.map(p => {
     const tierColor = TIER_COLORS[p._tier] || '#94a3b8';
     const tierLabel = p._tier || '—';
-    const cells = allSeasonNums.map(sn => {
-      const placement = lookup[p.id] ? lookup[p.id][sn] : undefined;
+    const cells = allSeasonNums.map(ref => {
+      const placement = lookup[p.id] ? lookup[p.id][ref.key] : undefined;
       if (placement === undefined) {
         return `<td><div class="tl-cell absent">—</div></td>`;
       }
       if (placement === null) {
-        return `<td><div class="tl-cell pmid" title="${p.name} S${sn}">S${sn}</div></td>`;
+        return `<td><div class="tl-cell pmid" title="${p.name} ${ref.label}">${ref.label}</div></td>`;
       }
-      const cs = castSizes[sn] || 20;
+      const cs = castSizes[ref.key] || 20;
       const cls = cellClass(placement, cs);
       const suffix = placement===1?'st':placement===2?'nd':placement===3?'rd':'th';
-      return `<td><a class="tl-cell ${cls}" href="player.html?player=${p.id}" title="${p.name} — S${sn}: ${placement}${suffix}">${placement}</a></td>`;
+      return `<td><a class="tl-cell ${cls}" href="player.html?player=${p.id}" title="${p.name} — ${ref.label}: ${placement}${suffix}">${placement}</a></td>`;
     }).join('');
 
     return `<tr>

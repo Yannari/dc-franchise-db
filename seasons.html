@@ -391,6 +391,31 @@ function getSeasonColor(num) {
   return SEASON_COLORS[(num - 1) % SEASON_COLORS.length];
 }
 
+/**
+ * What to call a season, and which cast photo belongs to it.
+ *
+ * Both used to be built from the season NUMBER alone, which was fine while
+ * there was one show and wrong the moment there were two: Big Brother 1 was
+ * captioned "Season 1" and served `s1-cast.png` — Total Drama's premiere cast
+ * photograph, on a Big Brother card.
+ *
+ * Total Drama keeps the bare filename its fourteen images already use; every
+ * other show is namespaced, matching how its season document is named. A show
+ * with no photo yet falls back to the card's emoji, which the img already does
+ * on error, so a missing file is a tidy card rather than a broken one.
+ */
+function showLabel(fmt, num) {
+  const shows = window.showSwitcher?.SHOWS || {};
+  const isDefault = !fmt || fmt === (window.showSwitcher?.DEFAULT_FORMAT || 'total-drama');
+  return isDefault ? `Season ${num}` : `${shows[fmt]?.name || fmt} ${num}`;
+}
+
+function castArt(fmt, num) {
+  const shows = window.showSwitcher?.SHOWS || {};
+  const isDefault = !fmt || fmt === (window.showSwitcher?.DEFAULT_FORMAT || 'total-drama');
+  return isDefault ? `s${num}-cast.png` : `${shows[fmt]?.prefix || fmt}-${num}-cast.png`;
+}
+
 let allSeasons = [];
 
 function formatOf(season) {
@@ -449,15 +474,15 @@ function renderSeasons(seasons) {
    data-title="${title.toLowerCase()} season ${season.seasonNumber} ${winnerName.toLowerCase()} ${(subtitle||'').toLowerCase()}">
 
   <img class="scard-photo"
-       src="assets/cast/s${season.seasonNumber}-cast.png"
-       alt="Season ${season.seasonNumber} cast"
+       src="assets/cast/${castArt(fmt, season.seasonNumber)}"
+       alt="${showLabel(fmt, season.seasonNumber)} cast"
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
   <div class="scard-photo-fallback" style="display:none">${emoji}</div>
 
   <div class="scard-body">
     <div class="scard-header">
       <div>
-        <div class="scard-num">Season ${season.seasonNumber} ${emoji}</div>
+        <div class="scard-num">${showLabel(fmt, season.seasonNumber)} ${emoji}</div>
         <div class="scard-title">${title.replace(/^Total Drama[:\s]*/i,'')}</div>
         ${subtitle ? `<div class="scard-subtitle">${subtitle}</div>` : ''}
       </div>

@@ -592,6 +592,23 @@ function getSeasonTitle(n) {
 function renderPlayerProfile(player) {
   const container = document.getElementById('player-content');
   const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
+
+  /**
+   * A season detail, as the three things a link needs.
+   *
+   * A bare season number stopped identifying a season when a second show
+   * arrived — Total Drama 1 and Big Brother 1 are both `1`, and `?season=1`
+   * resolves to Total Drama permanently. The detail already carries `format`
+   * and `seasonId`; this is the fifth and last page to start reading them.
+   */
+  const refOf = sd => {
+    const format = sd.format || 'total-drama';
+    const key = sd.seasonId || (format === 'total-drama' ? `td-${sd.season}` : `${format}-${sd.season}`);
+    return {
+      href: format === 'total-drama' ? String(sd.season) : key,
+      label: format === 'total-drama' ? `S${sd.season}` : `${key.split('-')[0].toUpperCase()}${sd.season}`,
+    };
+  };
   const isWinner = player.wins > 0;
   const winSeason = isWinner ? (player.seasonDetails.find(s => s.placement===1)||{}).season : null;
   // Advantages = idols + non-idol advantages (extra vote, vote steal, amulet, etc.)
@@ -897,12 +914,12 @@ function renderPlayerProfile(player) {
     <div class="pp-tabs">`;
   sorted.forEach((s,i) => {
     const win = s.placement===1;
-    html += `<div class="pp-tab${i===0?' on':''}" onclick="ppTab(${s.season})" id="ppt-${s.season}">${win?'🏆 ':''}S${s.season}</div>`;
+    html += `<div class="pp-tab${i===0?' on':''}" onclick="ppTab(${s.season})" id="ppt-${s.season}">${win?'🏆 ':''}${refOf(s).label}</div>`;
   });
   html += `</div>
     <div class="pp-season-links">`;
   sorted.forEach(s => {
-    html += `<a class="pp-slink" href="season_ref.html?season=${s.season}">S${s.season} Page →</a>`;
+    html += `<a class="pp-slink" href="season_ref.html?season=${refOf(s).href}">${refOf(s).label} Page →</a>`;
   });
   html += `</div></div>`;
 

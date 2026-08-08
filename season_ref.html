@@ -238,6 +238,9 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 </script>
 
 <script>
+/* The registry is handed to this classic script as a narrow surface; these are
+   the display names it needs and nothing more. */
+const SHOW_NAMES={'total-drama':'Total Drama','big-brother':'Big Brother'};
 const SEASON_COLORS=['#60a5fa','#a78bfa','#34d399','#f59e0b','#fb923c','#f472b6','#38bdf8','#fbbf24','#e879f9'];
 
 function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9]/g,'-');}
@@ -328,7 +331,14 @@ function buildRecords(season){
     if(!resp.ok)throw new Error('Season '+sn+' data not found');
     const s=await resp.json();
 
-    document.title='S'+sn+' — '+s.title;
+    /* What this season is CALLED. A bare "S1" titles Big Brother 1 as though it
+       were Total Drama's premiere — the same number naming two different
+       seasons, on the page whose whole job is to be about one of them. Total
+       Drama keeps the bare form every bookmark and heading already uses. */
+    const isDefaultShow = !ref.format || ref.format === shows.DEFAULT_FORMAT;
+    const showPrefix = isDefaultShow ? 'S' : shows.seasonId(ref.format, sn).split('-')[0].toUpperCase();
+    const seasonLabel = isDefaultShow ? `Season ${sn}` : `${SHOW_NAMES[ref.format] || ref.format} ${sn}`;
+    document.title = showPrefix + sn + ' — ' + s.title;
     document.getElementById('footer-sub').textContent=s.title+' • '+s.castSize+' players';
 
     const sc=SEASON_COLORS[(sn-1)%SEASON_COLORS.length];
@@ -340,7 +350,7 @@ function buildRecords(season){
       <div class="sr-hero-photo" id="sr-hero-photo"></div>
       <div class="sr-hero-overlay"></div>
       <div class="sr-hero-body">
-        <div class="sr-hero-snum">${s.emoji||'📺'} &nbsp; Season ${s.seasonNumber} <span style="opacity:.4">•</span> <span style="opacity:.6">${s.status||'Complete'}</span></div>
+        <div class="sr-hero-snum">${s.emoji||'📺'} &nbsp; ${seasonLabel} <span style="opacity:.4">•</span> <span style="opacity:.6">${s.status||'Complete'}</span></div>
         <h1 class="sr-hero-title">${s.title}</h1>
         <p class="sr-hero-sub">${s.subtitle||''}</p>
         <div class="sr-hero-pills">
@@ -555,8 +565,13 @@ function buildRecords(season){
     // Post-render: cast photo
     const photoEl=document.getElementById('sr-hero-photo');
     const probe=new Image();
-    probe.onload=()=>{if(photoEl){photoEl.style.backgroundImage=`url('assets/cast/s${sn}-cast.png')`;setTimeout(()=>{photoEl.style.opacity='.2';},50);}};
-    probe.src=`assets/cast/s${sn}-cast.png`;
+    /* Namespaced for every show but Total Drama, which keeps the filenames its
+       fourteen images already use. Without this a Big Brother season loaded
+       Total Drama's cast photograph for the same number. The probe means a show
+       with no photo yet simply keeps its plain hero. */
+    const castArt = isDefaultShow ? `s${sn}-cast.png` : `${shows.seasonId(ref.format, sn)}-cast.png`;
+    probe.onload=()=>{if(photoEl){photoEl.style.backgroundImage=`url('assets/cast/${castArt}')`;setTimeout(()=>{photoEl.style.opacity='.2';},50);}};
+    probe.src=`assets/cast/${castArt}`;
 
     // Finalist bars
     setTimeout(()=>{document.querySelectorAll('.sr-finalist-bar[data-pct]').forEach(el=>{el.style.width=el.dataset.pct+'%';});},120);

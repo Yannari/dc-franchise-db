@@ -73,6 +73,7 @@ This is enforced by a test, not by good intentions. See Testing.
 ## What this project delivers
 
 - `js/social/personas.js` — the recurring cast of fan accounts
+- `js/social/topics.js` — what they post about, and which simulator data each reads
 - `js/social/platforms.js` — the grammar of the timeline and the group chat
 - `js/social/sampler.js` — given a fake event, produce N posts to read
 
@@ -111,6 +112,32 @@ All persona stats are used **proportionally** — `caps: 0.3` scales how often a
 post shouts, never a threshold that flips at 0.5. This matches the simulator's
 existing rule that stats multiply rather than gate.
 
+### A fan holds two opinions of you, not one
+
+`loyalties` and `grudges` above are the coarse version. The real model is two
+independent axes per player:
+
+```js
+feelings: {
+  heather: { affection: 0.8, gameRespect: -0.4 },   // love her, hate her game
+  scott:   { affection: -0.6, gameRespect: 0.9 },   // can't stand him, he's playing a blinder
+}
+```
+
+**This is the axis fandom actually runs on.** "I adore her but she is playing the
+worst game I have ever seen" and "he is insufferable and he is going to win this"
+are both extremely common posts, and neither is expressible with a single
+like/dislike number. Collapsing them would make every fan a stan or a hater and
+lose most of what a real audience sounds like.
+
+The two axes move independently and from different causes. A brilliant blindside
+raises `gameRespect` and may lower `affection`. Being kind to somebody having a
+bad night raises `affection` and does nothing to `gameRespect`. Steamrolling the
+season can raise `gameRespect` while draining `affection` from everyone watching,
+which is exactly how a dominant winner becomes hated.
+
+`loyalties` and `grudges` are derived from the extremes rather than stored twice.
+
 ## The two platforms
 
 ### The timeline
@@ -141,6 +168,68 @@ Alumni as hosts, fans as members, as ChatBCC actually works.
 **The same event must read differently in each room.** If it does not, the
 library has failed, and a test says so rather than a reader noticing.
 
+## What they post about
+
+A fan feed that only discusses strategy is a podcast, not a fandom. The topics
+below are taken from observed discourse in real reality-TV fandom, not invented —
+see Research method for how they were gathered and what may be copied from them.
+
+**Gameplay**
+- strategy critique — that move made no sense, why would you take her to the end
+- comp performance, and who is carrying whom
+- blindside reaction
+- prediction and bracket talk
+- legacy takes — best winner, worst winner, where this ranks all-time
+- **steamroll fatigue** — one side is running the season and it has stopped being
+  a competition. Observed repeatedly when veterans hold early advantages.
+- production critique — the twist is unfair, this is scripted, the game is rigged
+
+**Social**
+- **harassment defence** — the house is ganging up on somebody and the audience
+  turns on the house. This is one of the strongest forces in real fandom.
+- **edit critique** — production is framing somebody unfairly. Fans defended
+  Taylor Hale on exactly this in Big Brother 24.
+- bullying call-outs, and defending the target
+- kindness noticed and rewarded
+- personality-clash takes — these two were never going to work
+
+**Romantic**
+- shipping — two people who are not together and should be
+- thirst — plain attraction, stated plainly
+- showmance hate — get a room, she is carrying him, this is costing them the game
+- **showmance concern** — when a pairing reads as coercive rather than romantic,
+  fandom raises alarm rather than swooning. Observed in Big Brother 27 over
+  love-bombing behaviour.
+
+**Character**
+- **love the person, hate their game** — and its mirror. The two-axis feelings
+  model exists to produce these.
+- meme-ing and comic relief appreciation
+- favourite declarations, and the fights they start
+
+**Meta**
+- pile-on participation, ratios
+- fandom infighting — stans against haters, one account against another
+
+Each topic declares which simulator data it reads — showmances and romantic
+sparks for the romantic topics, camp events and social manipulation for
+harassment and bullying, `chalMemberScores` for comp talk, popularity for the
+meta topics. A topic with no data source behind it is a topic that will never
+fire, which is the failure this codebase has shipped repeatedly.
+
+## Research method
+
+The taxonomy above, the post shapes, and the register of each platform are drawn
+from studying real fan and alumni posting: public reality-TV fandom on social
+media, and ChatBCC's hosted-alumni format.
+
+**Patterns are studied; text is not copied.** No real person's post is reproduced
+in the library. What is taken is structure and register — how long a dunk runs,
+where the caps land, how a defence is phrased, how a prediction is hedged — and
+the strings are then written fresh. Lifting real posts would put real people's
+words in the mouths of fictional accounts, and would make the library a copy
+rather than a voice.
+
 ## Engagement numbers
 
 Derived from `gs.popularity`, never rolled:
@@ -151,6 +240,26 @@ Derived from `gs.popularity`, never rolled:
 
 This is what finally makes popularity legible. It has been written every episode
 and read only by career fame, which shows it to nobody.
+
+## Built to be extended by somebody else
+
+This library is meant to keep growing, and not only by whoever wrote it — Codex
+is expected to add to it after this ships. That is a design constraint, not a
+footnote:
+
+- **Data, not code.** A persona, a topic and a post shape are plain objects.
+  Adding a fan, a topic or a phrasing must never require touching the composer.
+- **One file per concern**, so two contributors adding different things do not
+  collide: `personas.js`, `platforms.js`, `topics.js`.
+- **Every field documented where it is defined**, with its range and what it
+  does. `volatility: 0.7` means nothing to a contributor who has to infer it from
+  a call site.
+- **The tests are the contract.** Persona integrity, the hostility denylist and
+  the variety check all run over whatever is in the library, so a contribution
+  that breaks the rules fails immediately rather than being caught in review —
+  or not caught at all.
+- **Additions are append-only by shape.** A new topic declares its data source
+  and its post shapes; nothing existing has to change to accommodate it.
 
 ## Testing
 
@@ -164,6 +273,14 @@ and read only by career fame, which shows it to nobody.
   happen to have been written.
 - **Variety** — 50 posts from one event: no duplicates, and more than one
   archetype represented.
+- **Topic coverage** — every topic in the taxonomy can actually fire. A topic
+  whose data source never produces a post is dead weight that reads as breadth
+  in the file and appears nowhere on screen, which is the failure this codebase
+  has shipped repeatedly: an export path with no caller, a viewer announcement
+  that never fired, a `STEAL_LIMIT` that lived only in comments.
+- **Both feelings axes are exercised** — the library can produce a "love them,
+  hate their game" post and its mirror. If it cannot, the two-axis model is
+  costing complexity and buying nothing.
 - **Voice separation** — a timeline post and a chat post about the same event
   differ measurably in length and register.
 - **History changes stance** — a persona's post about their favourite differs

@@ -27,9 +27,10 @@ import { PERSONAS } from '../js/social/personas.js';
  */
 const FORBIDDEN = [
   // race / ethnicity / nationality
-  'racist', 'racial', 'ghetto', 'thug', 'savage', 'exotic', 'go back to',
-  'your people', 'articulate for', 'ching', 'chink', 'spic', 'wetback',
-  'illegal alien', 'colored', 'oriental',
+  'racist', 'racial', 'ghetto', 'thug', 'a savage', 'savages', 'so exotic',
+  'exotic looking', 'go back to', 'your people', 'articulate for', 'ching',
+  'chink', 'spic', 'wetback', 'illegal alien', 'colored people', 'a colored',
+  'oriental',
   // sexuality / gender identity
   'faggot', 'fag', 'dyke', 'tranny', 'shemale', 'homo', 'gay agenda',
   'not a real man', 'not a real woman', 'it/its', 'confused about her gender',
@@ -37,7 +38,8 @@ const FORBIDDEN = [
   // religion
   'terrorist', 'jihad', 'christ killer', 'raghead',
   // disability / neurodivergence
-  'retard', 'retarded', 'spastic', 'cripple', 'psycho ward', 'autistic as an insult',
+  'retard', 'retarded', 'spastic', 'cripple', 'psycho ward', 'is autistic',
+  'so autistic', 'acting autistic',
 ];
 
 /** Every string the library holds, with a label saying where it came from. */
@@ -58,7 +60,7 @@ function allStrings() {
 export function crossesTheLine(text) {
   const lower = String(text).toLowerCase();
   for (const term of FORBIDDEN) {
-    const pattern = new RegExp(`(^|[^a-z])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z]|$)`);
+    const pattern = new RegExp(`(^|[^a-z])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:s|es)?([^a-z]|$)`);
     if (pattern.test(lower)) return term;
   }
   return null;
@@ -81,6 +83,8 @@ describe('the line the library must not cross', () => {
     expect(crossesTheLine('she is such a retard')).toBe('retard');
     expect(crossesTheLine('typical THUG behaviour')).toBe('thug');
     expect(crossesTheLine('go back to where you came from')).toBe('go back to');
+    expect(crossesTheLine('a house full of thugs')).toBe('thug');
+    expect(crossesTheLine('they are all retards')).toBe('retard');
   });
 
   it('still allows fandom to be vicious', () => {
@@ -91,6 +95,7 @@ describe('the line the library must not cross', () => {
       'he is a coward and a floater and he will be in the final two anyway',
       'that was the dumbest move i have seen in fifteen seasons',
       'ugly personality, uglier gameplay',
+      'that read was savage and she deserved every word of it',
     ]) {
       expect(crossesTheLine(line), `the guard blocked legitimate fandom: "${line}"`).toBe(null);
     }

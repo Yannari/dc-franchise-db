@@ -778,6 +778,7 @@ background: rgba(0, 0, 0, 0.2);
 <div class="callout">
       Rankings based on placement, win rate, challenge performance, social game, and strategic impact.
     </div>
+<div id="show-switcher" style="margin:0 0 16px;"></div>
 <div class="rank-controls">
 <div class="rank-controls-left">
 <div class="control">
@@ -876,35 +877,84 @@ background: rgba(0, 0, 0, 0.2);
 })();
 </script>
 
+<!-- The page script below is a classic script, so it cannot import. This pair
+     hands it the switcher and the fame helpers: the promise is created here
+     (classic, runs during parse) and settled by the deferred module, so the
+     loader can await it instead of hoping the module won the race. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { mountShowSwitcher, orderFormats, ALL, SHOW_SWITCHER_CSS } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  import { computeFame } from './js/fame.js';
+  import { renderStars, FAME_STAR_CSS } from './js/fame-stars.js';
+  const style = document.createElement('style');
+  style.textContent = SHOW_SWITCHER_CSS + FAME_STAR_CSS;
+  document.head.appendChild(style);
+  window.showSwitcher = { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT };
+  window.fame = { computeFame, renderStars };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
+
 <script>
 (async function() {
   try {
     console.log('Loading rankings data...');
-    
+
+    /* The switcher and the stars are enhancements, not dependencies. If the
+       modules never arrive — a 404, a throw, or file:// where browsers block ES
+       modules — the board must still render. Waiting forever turns a missing
+       nicety into a page that never loads. */
+    const switcherReady = Promise.race([
+      window._showSwitcherReady,
+      new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+    ]);
+    await switcherReady;
+
     const [rankingsResponse, playersResponse] = await Promise.all([
       fetch('rankings_database.json'),
       fetch('players_database.json')
     ]);
-    
+
     if (!rankingsResponse.ok) throw new Error('Failed to load rankings_database.json');
     if (!playersResponse.ok) throw new Error('Failed to load players_database.json');
-    
+
     const rankingsData = await rankingsResponse.json();
     const playersData = await playersResponse.json();
-    
+
     console.log('✅ Loaded', rankingsData.rankings.length, 'rankings');
     console.log('✅ Loaded', playersData.players.length, 'players');
-    
+
     const playersMap = {};
     playersData.players.forEach(function(p) {
       playersMap[p.id] = p;
     });
-    
-    renderRankings(rankingsData, playersMap);
-    initRankControls();
-    
-  
-    initCardEffects();
+
+    /* Every show the franchise has played, not only the ones with a ranking
+       board — otherwise a show could never be selected to discover that it has
+       no rankings yet. */
+    window._allFormats = [...new Set((playersData.players || [])
+      .flatMap(p => (p.seasonDetails || []).map(d => d.format || 'total-drama')))];
+
+    // Fame is decoration on the rows. If it cannot be computed, the rows stay.
+    try {
+      if (window.fame) {
+        const [seasonsDb, franchiseDb] = await Promise.all([
+          fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
+          fetch('franchise_database.json').then(r => r.json()).catch(() => ({})),
+        ]);
+        window._fame = window.fame.computeFame({
+          players: playersData, rankings: rankingsData, seasons: seasonsDb, franchise: franchiseDb,
+        });
+      } else {
+        console.warn('Fame module unavailable — rankings render without stars.');
+      }
+    } catch (err) {
+      console.warn('Fame could not be computed — rankings render without stars.', err);
+    }
+
+    renderRankingsPage(rankingsData, playersMap);
 } catch (error) {
     console.error('Error:', error);
     document.getElementById('rankings-container').innerHTML = 
@@ -921,8 +971,72 @@ const TIER_COLORS = {
   'B': '#60a5fa', 'C': '#fb923c', 'D': '#94a3b8'
 };
 
+/* One render pass for the page: the board, then the controls and card effects
+   that read the cards the board just wrote. A show with no board has no cards,
+   so the search/sort bar would be filtering nothing — it steps aside. */
+function renderRankingsPage(rankingsData, playersMap) {
+  /* The global view holds cards moved out of the tiers. They belong to the
+     board being replaced, so they go before the new one is drawn. */
+  const globalResults = document.getElementById('globalResults');
+  const globalList = document.getElementById('globalList');
+  if (globalList) globalList.innerHTML = '';
+  if (globalResults) globalResults.style.display = 'none';
+
+  renderRankings(rankingsData, playersMap);
+
+  const hasCards = !!document.querySelector('.player-card, a.mini-card');
+  const controls = document.querySelector('.rank-controls');
+  if (controls) controls.style.display = hasCards ? '' : 'none';
+
+  if (hasCards) {
+    initRankControls();
+    initCardEffects();
+  } else {
+    const status = document.getElementById('rankStatus');
+    if (status) status.textContent = '';
+  }
+}
+
 function renderRankings(rankingsData, playersMap) {
   const container = document.getElementById('rankings-container');
+
+  // The switcher is optional; without it the page shows the default show's board.
+  const sw = window.showSwitcher || null;
+  const ALL = sw ? sw.ALL : 'all';
+  const DEFAULT_FORMAT = (sw && sw.DEFAULT_FORMAT) || 'total-drama';
+
+  const boards = Array.isArray(rankingsData) ? rankingsData : [rankingsData];
+  const formatOfBoard = b => (b && b.metadata && b.metadata.format) || DEFAULT_FORMAT;
+
+  if (sw && !window._sw) {
+    window._sw = sw.mountShowSwitcher(document.getElementById('show-switcher'), {
+      formats: sw.orderFormats([
+        ...boards.map(formatOfBoard),
+        ...(window._allFormats || []),
+      ]),
+      onChange: () => renderRankingsPage(rankingsData, playersMap)
+    });
+  }
+
+  const show = window._sw ? window._sw.current() : ALL;
+  const board = show === ALL
+    ? (boards.find(b => formatOfBoard(b) === DEFAULT_FORMAT) || boards[0])
+    : boards.find(b => formatOfBoard(b) === show);
+
+  if (!board) {
+    const meta = (sw && sw.SHOWS && sw.SHOWS[show]) || {};
+    const name = meta.name || show;
+    container.innerHTML =
+      '<div style="text-align:center;padding:64px 24px;opacity:.75;">'
+      + '<div style="font-size:34px;margin-bottom:10px;">' + (meta.emoji || '📋') + '</div>'
+      + '<h2 style="margin:0 0 8px;font-size:19px;">No ' + name + ' rankings yet</h2>'
+      + '<p style="margin:0 auto;opacity:.7;max-width:420px;line-height:1.55;">'
+      + 'Rankings are generated from <strong>current-season.html</strong> once a season is finished. '
+      + name + ' seasons are already recorded — the board just has not been built.</p></div>';
+    return;
+  }
+
+  rankingsData = board;
 
   const tierGroups = {};
   // Auto-sort rankings by score (descending)
@@ -1049,6 +1163,10 @@ function renderPlayerCard(ranking, player) {
   }
   const bestLabel = best ? ((best.season ? 'S'+best.season+': ' : '')+'#'+best.placement) : '—';
 
+  // Career fame, if it could be computed — an empty string when it could not.
+  const fame = window._fame ? window._fame.get(ranking.playerId) : null;
+  const stars = (fame && window.fame) ? window.fame.renderStars(fame) : '';
+
   // Tier color + ring
   const tc = TIER_COLORS[ranking.tier] || '#a78bfa';
   const ringR = 36, ringC = +(2 * Math.PI * ringR).toFixed(2);
@@ -1084,6 +1202,7 @@ function renderPlayerCard(ranking, player) {
   html +=         '<a class="player-name" href="player.html?player=' + player.id + '" style="color:' + tc + '">';
   html +=           (ranking.emoji || '') + ' ' + player.name;
   html +=         '</a>';
+  html +=         stars;
   html +=       '</div>';
   html +=       '<div class="player-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + ' • ' + player.wins + ' win' + (player.wins !== 1 ? 's' : '') + '</div>';
   html +=       '<div class="player-badges">';
@@ -1200,7 +1319,10 @@ function renderMiniCard(ranking, player) {
   html +=     '</div>';
   html +=   '</div>';
 
-  html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
+  const miniFame = window._fame ? window._fame.get(ranking.playerId) : null;
+  const miniStars = (miniFame && window.fame) ? window.fame.renderStars(miniFame) : '';
+  html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel
+          + (miniStars ? ' ' + miniStars : '') + '</div>';
 
   // mini stat pills
   html +=   '<div class="stat-mini-grid">';
@@ -1266,6 +1388,13 @@ function calculateAvgPlacement(player) {
   return count > 0 ? (total / count).toFixed(1) : 0;
 }
 function initRankControls(){
+  /* Switching show re-renders the board, so this runs again. The controls
+     themselves are static, so the previous run's listeners survive — and they
+     close over cards that have since been thrown away. Drop them first. */
+  if (window._rankControlsAbort) window._rankControlsAbort.abort();
+  window._rankControlsAbort = new AbortController();
+  const once = { signal: window._rankControlsAbort.signal };
+
   const searchInput = document.getElementById('searchInput');
   const tierFilter  = document.getElementById('tierFilter');
   const sortBy      = document.getElementById('sortBy');
@@ -1405,12 +1534,12 @@ function initRankControls(){
   toggleCompact?.addEventListener('click', () => {
     const isOn = document.body.classList.toggle('compact');
     toggleCompact.setAttribute('aria-pressed', isOn ? 'true' : 'false');
-  });
+  }, once);
 
-  searchInput?.addEventListener('input', () => { restoreLayout(); applyFilters(); applySort(); });
-  tierFilter?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
-  sortBy?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
-  sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
+  searchInput?.addEventListener('input', () => { restoreLayout(); applyFilters(); applySort(); }, once);
+  tierFilter?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); }, once);
+  sortBy?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); }, once);
+  sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); }, once);
 
   applyFilters();
   applySort(); 

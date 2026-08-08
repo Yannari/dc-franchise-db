@@ -83,6 +83,36 @@ export const BB_TWIST_CONTRACTS = {
     timing: 'season-opening', duration: { weeks: null },
     rules: {},
     acquisition: { channel: 'random-draw', secrecy: 'secret' },
+    // ── what the Format Designer shows for it ──
+    //
+    // See `season` in the Saboteur below for why this lives on the contract.
+    season: {
+      label: 'The Twin Twist',
+      key: 'bbTwins',
+      accent: '163,113,247',
+      hint: 'A season-long twist. One houseguest is secretly two people swapping places every week. '
+        + 'The house is never told — it has to work it out. They get a job each week that only two '
+        + 'people sharing a name could do; finish enough of them and both of them join the game.',
+      modes: [
+        { value: 'off', label: 'Off' },
+        { value: 'random', label: 'On — cast at random' },
+        { value: 'choose', label: 'On — I pick who it is' },
+      ],
+      options: [
+        { key: 'bbTwinsPlayer', type: 'houseguest', label: 'Who it is', when: 'choose',
+          // Marks anybody the cast has already declared a twin for, so it is
+          // possible to see which of the two things you are choosing.
+          mark: { kinship: 'twins', title: 'Has a declared twin in Relationships' },
+          hint: 'Pick the one the house meets on night one. A coloured dot means Relationships already '
+            + 'says who their twin is — that person plays under their own name and their own stats, and '
+            + 'if they were cast too they simply never walk through the door. Pick anybody else and a '
+            + 'twin is invented for them.' },
+        { key: 'bbTwinsQuota', type: 'number', label: 'Jobs to finish', min: 1, max: 8, default: 3,
+          hint: 'Finish this many weekly jobs and both of them join the game as separate houseguests. '
+            + 'Get found out, or get the shared identity evicted, and it ends there — the second twin '
+            + 'never plays and the money is not paid.' },
+      ],
+    },
   },
 
   // ── the first season-long twist ──
@@ -114,6 +144,33 @@ export const BB_TWIST_CONTRACTS = {
       reactions: 'paranoia',
       rule: 'One of you is being paid to wreck this season. Every week they are given a job, and every job they finish is money in their pocket. You are not going to be told who it is — but you are allowed to work it out. Name them out loud, in front of the house, and if you are right they leave with nothing. Get it wrong and that is the only guess you had.',
       sting: 'Somebody in this room is working for the other side. Find them.',
+    },
+    // ── what the Format Designer shows for it ──
+    //
+    // On the contract, not in the page. Two season twists shipped as two
+    // near-identical hand-written blocks — three seasonConfig keys each, three
+    // lines in the save path, three in the load path, a slab of HTML and a
+    // player picker — and the third one would have been a third copy. A twist
+    // that describes its own options here gets the whole panel for free, and
+    // `requires` is how the UI can say "this has nothing to work with" BEFORE
+    // the season starts, which a bare dropdown can never do.
+    season: {
+      label: 'The Saboteur',
+      key: 'bbSaboteur',
+      accent: '201,52,60',
+      hint: 'A season-long twist. One houseguest takes a job from the audience every week; the house '
+        + 'is told a saboteur exists and never told who.',
+      modes: [
+        { value: 'off', label: 'Off' },
+        { value: 'random', label: 'On — cast at random' },
+        { value: 'choose', label: 'On — I pick who it is' },
+      ],
+      options: [
+        { key: 'bbSaboteurPlayer', type: 'houseguest', label: 'Who it is', when: 'choose' },
+        { key: 'bbSaboteurBankWeek', type: 'number', label: 'Bank date (week)', min: 2, max: 12, default: 5,
+          hint: 'Survive to this week and the audience decides what the season of sabotage was worth — '
+            + 'and the house is told who it was.' },
+      ],
     },
   },
   'bb-double-eviction': {
@@ -556,4 +613,26 @@ export function resolveWeekTwistState(twistIds = []) {
     }
   }
   return { rules, active, applied, announcements };
+}
+
+/**
+ * Every season twist that describes its own Format Designer panel.
+ *
+ * The one list the UI, the save path and the load path all read, so adding a
+ * season twist is a contract entry and nothing else. Order is the order they
+ * appear on screen.
+ */
+export const BB_SEASON_TWISTS = Object.values(BB_TWIST_CONTRACTS)
+  .filter(c => c?.layer === 'season' && c.season);
+
+/** Every seasonConfig key a season twist owns, with its default. */
+export function seasonTwistDefaults() {
+  const out = {};
+  for (const c of BB_SEASON_TWISTS) {
+    out[c.season.key] = 'off';
+    for (const opt of c.season.options || []) {
+      out[opt.key] = opt.type === 'number' ? (opt.default ?? 0) : '';
+    }
+  }
+  return out;
 }

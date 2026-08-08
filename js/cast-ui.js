@@ -818,6 +818,47 @@ export function updateFormatNote() {
     : `The ${formatName(fmt)} engine is not connected to Run yet — the season will still simulate Total Drama.`;
 }
 
+/**
+ * Every season twist's settings, read off the page in one pass.
+ *
+ * The twists describe their own controls (see `season` in
+ * js/bb/twist-contract.js), so this walks that schema rather than naming keys.
+ * Houseguest pickers write straight to `seasonConfig` when clicked and have no
+ * input to read back, which is why they come from there rather than the DOM.
+ */
+function readSeasonTwistConfig(g) {
+  const out = {};
+  const list = typeof BB_SEASON_TWISTS !== 'undefined' ? BB_SEASON_TWISTS : [];
+  for (const c of list) {
+    const s = c.season;
+    out[s.key] = g(`cfg-${s.key}`)?.value || 'off';
+    for (const opt of s.options || []) {
+      if (opt.type === 'number') {
+        out[opt.key] = Number(g(`cfg-${opt.key}`)?.value) || (opt.default ?? 1);
+      } else {
+        out[opt.key] = seasonConfig[opt.key] || '';
+      }
+    }
+  }
+  return out;
+}
+
+/** Put a loaded config back on the page, and repaint the pickers. */
+function applySeasonTwistConfig(set) {
+  const list = typeof BB_SEASON_TWISTS !== 'undefined' ? BB_SEASON_TWISTS : [];
+  // The panel is built from the contracts, so it has to exist before anything
+  // can be set on it.
+  if (typeof renderSeasonTwists === 'function') renderSeasonTwists();
+  for (const c of list) {
+    const s = c.season;
+    set(`cfg-${s.key}`, seasonConfig[s.key] || 'off');
+    for (const opt of s.options || []) {
+      if (opt.type === 'number') set(`cfg-${opt.key}`, seasonConfig[opt.key] || opt.default || 1);
+    }
+    if (typeof updateSeasonTwistUI === 'function') updateSeasonTwistUI(c.id);
+  }
+}
+
 export function saveConfig() {
   const g = id => document.getElementById(id);
   seasonConfig = {
@@ -874,12 +915,11 @@ export function saveConfig() {
     bbHostStyle: g('cfg-bb-host-style')?.value || 'balanced',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
-    bbSaboteur: g('cfg-bb-saboteur')?.value || 'off',
-    bbTwins: g('cfg-bb-twins')?.value || 'off',
-    bbTwinsPlayer: seasonConfig.bbTwinsPlayer || '',
-    bbTwinsQuota: Number(g('cfg-bb-twins-quota')?.value) || 3,
-    bbSaboteurPlayer: seasonConfig.bbSaboteurPlayer || '',
-    bbSaboteurBankWeek: Number(g('cfg-bb-saboteur-bank')?.value) || 5,
+    // Season twists own their own keys — see `season` in
+    // js/bb/twist-contract.js. Read generically so a new one is a contract
+    // entry and not three more lines here, three in the load path and a slab
+    // of hand-written HTML.
+    ...readSeasonTwistConfig(g),
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
     bbDepartures: g('cfg-bb-departures')?.value || 'off',
@@ -1017,12 +1057,7 @@ export function renderConfig() {
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
-  set('cfg-bb-twins', seasonConfig.bbTwins || 'off');
-  set('cfg-bb-twins-quota', seasonConfig.bbTwinsQuota || 3);
-  if (typeof updateTwinsUI === 'function') updateTwinsUI();
-  set('cfg-bb-saboteur', seasonConfig.bbSaboteur || 'off');
-  if (typeof updateSaboteurUI === 'function') updateSaboteurUI();
-  set('cfg-bb-saboteur-bank', seasonConfig.bbSaboteurBankWeek || 5);
+  applySeasonTwistConfig(set);
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');
   set('cfg-bb-departures', seasonConfig.bbDepartures || 'off');

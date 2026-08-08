@@ -121,6 +121,7 @@ import * as castRoomMod from './cast-room.js';
 import * as studioMod from './studio.js';
 import * as quickSetupMod from './quick-setup.js';
 import * as bbRunMod from './bb-run.js';
+import * as twistContractMod from './bb/twist-contract.js';
 import * as runUiMod from './run-ui.js';
 import * as vpScreensMod from './vp-screens.js';
 import * as vpFinaleMod from './vp-finale.js';
@@ -244,6 +245,10 @@ window._tvState = vpScreensMod._tvState;
 window._ftcState = vpUiMod._ftcState;
 window.audio = audioMod.audio;          // audio engine singleton (object, not a function)
 window.CUE_CATALOG = audioMod.CUE_CATALOG;
+// Season twists describe their own Format Designer panel; run-ui builds it
+// from this list, and cast-ui saves and loads the keys it names.
+window.BB_SEASON_TWISTS = twistContractMod.BB_SEASON_TWISTS;
+window.seasonTwistDefaults = twistContractMod.seasonTwistDefaults;
 window.BB_POWER_DEFINITIONS = bbRunMod.BB_POWER_DEFINITIONS;  // power inventory — Format Designer stocks the box/shelf from it
 window.CARE_PACKAGES = bbRunMod.CARE_PACKAGES;                // the care package shelf — same job, same reason
 window.BED_CATALOG = audioMod.BED_CATALOG;

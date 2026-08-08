@@ -1177,87 +1177,144 @@ export function updateMoleUI() {
   }
 }
 
-/** The Twin Twist's sub-options — same shape as the Saboteur's and the Mole's. */
-export function updateTwinsUI() {
-  const mode = document.getElementById('cfg-bb-twins')?.value || 'off';
-  const sub = document.getElementById('grp-bb-twins-sub');
-  const who = document.getElementById('grp-bb-twins-who');
-  if (sub) sub.style.display = mode === 'off' ? 'none' : 'block';
-  if (who) who.style.display = mode === 'choose' ? 'block' : 'none';
-  if (mode !== 'choose') return;
+// ══════════════════════════════════════════════════════════════════════
+// The season twists, built from their own contracts
+// ══════════════════════════════════════════════════════════════════════
+//
+// Two of them shipped as two near-identical hand-written blocks — a slab of
+// HTML each, three seasonConfig keys, three lines in the save path, three in
+// the load path and a bespoke player picker — and every new one was going to be
+// another copy. A twist that describes its own options in
+// js/bb/twist-contract.js gets all of this for free, which is also the only way
+// the panel can warn that a twist has nothing to work with before the season
+// starts.
 
-  const container = document.getElementById('bb-twins-select');
-  if (!container || typeof players === 'undefined' || !players.length) return;
-  const chosen = seasonConfig.bbTwinsPlayer || '';
-  // Who the CAST has already said has a twin. You only ever pick one name here
-  // — the one the house meets on night one — so the only question the picker
-  // cannot answer on its own is who the other one is. A player declared as a
-  // twin in Relationships brings their real name and real stat line; anybody
-  // else gets a stranger generated for them, and it is worth being able to see
-  // which of the two you are choosing.
-  const declared = new Set();
+const _twists = () => (typeof BB_SEASON_TWISTS !== 'undefined' ? BB_SEASON_TWISTS : []);
+const _q = s => String(s ?? '').replace(/'/g, "\\'");
+
+/** Whichever declared kinships an option wants marked in its picker. */
+function _markedNames(mark) {
+  const out = new Set();
+  if (!mark?.kinship) return out;
   for (const r of (typeof relationships !== 'undefined' ? relationships : []) || []) {
-    if (r?.kin === 'twins') { declared.add(r.a); declared.add(r.b); }
+    if (r?.kin === mark.kinship) { out.add(r.a); out.add(r.b); }
   }
-  container.innerHTML = players.map(p => {
-    const sel = chosen === p.name;
-    const kin = declared.has(p.name);
-    const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const init = (p.name || '?')[0].toUpperCase();
-    return `<div onclick="pickTwin('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
-      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#a371f7' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2)">
-        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
-      </div>
-      <span style="font-size:9px;color:${sel ? '#a371f7' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}${
-  kin ? ' <b style="color:#a371f7" title="Has a declared twin in Relationships">&#9679;</b>' : ''}</span>
-    </div>`;
-  }).join('');
-}
-
-/** One twin identity, so picking a second replaces the first. */
-export function pickTwin(name) {
-  seasonConfig.bbTwinsPlayer = seasonConfig.bbTwinsPlayer === name ? '' : name;
-  updateTwinsUI();
-  if (typeof saveConfig === 'function') saveConfig();
+  return out;
 }
 
 /**
- * The Saboteur's own sub-options, shown only when the twist is on.
+ * Whether a twist has the cast it needs.
  *
- * Same shape as the Mole's picker, because it is the same decision: a season
- * twist you cannot point at a specific houseguest is a twist you cannot tell a
- * story with, and the Mole has let a user cast it by hand since it shipped.
+ * The whole reason the options live on the contract: a dropdown cannot tell you
+ * that Rivals has no declared rivalries to build from, so it runs, quietly
+ * seats nothing, and looks like a bug. This says so on the panel, next to the
+ * switch, before the season starts.
  */
-export function updateSaboteurUI() {
-  const mode = document.getElementById('cfg-bb-saboteur')?.value || 'off';
-  const sub = document.getElementById('grp-bb-saboteur-sub');
-  const who = document.getElementById('grp-bb-saboteur-who');
-  if (sub) sub.style.display = mode === 'off' ? 'none' : 'block';
-  if (who) who.style.display = mode === 'choose' ? 'block' : 'none';
-  if (mode !== 'choose') return;
-
-  const container = document.getElementById('bb-saboteur-select');
-  if (!container || typeof players === 'undefined' || !players.length) return;
-  const chosen = seasonConfig.bbSaboteurPlayer || '';
-  container.innerHTML = players.map(p => {
-    const sel = chosen === p.name;
-    const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    const init = (p.name || '?')[0].toUpperCase();
-    return `<div onclick="pickSaboteur('${p.name.replace(/'/g, "\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
-      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#c9343c' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color .15s">
-        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter .15s,opacity .15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
-      </div>
-      <span style="font-size:9px;color:${sel ? '#c9343c' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
-    </div>`;
-  }).join('');
+export function seasonTwistWarning(contract) {
+  const need = contract?.season?.requires;
+  if (!need?.kinship) return null;
+  const kinds = [].concat(need.kinship);
+  let found = 0;
+  for (const r of (typeof relationships !== 'undefined' ? relationships : []) || []) {
+    if (r?.kin && kinds.includes(r.kin)) found++;
+  }
+  if (found >= (need.count || 1)) return null;
+  return need.hint || `Needs ${need.count || 1} declared in Relationships; found ${found}.`;
 }
 
-/** One saboteur, so picking a second one replaces the first. */
-export function pickSaboteur(name) {
-  seasonConfig.bbSaboteurPlayer = seasonConfig.bbSaboteurPlayer === name ? '' : name;
-  updateSaboteurUI();
+/** The whole Format Designer panel for every season twist, in one pass. */
+export function renderSeasonTwists() {
+  const host = document.getElementById('bb-season-twists');
+  if (!host) return;
+  host.innerHTML = _twists().map(c => {
+    const s = c.season;
+    const rgb = s.accent || '163,113,247';
+    const subs = (s.options || []).map(opt => {
+      const hint = opt.hint ? `<div class="hint hint-tight">${opt.hint}</div>` : '';
+      if (opt.type === 'houseguest') {
+        return `<div class="form-group" id="grp-${opt.key}" style="display:none">
+          <label class="form-label">${opt.label}</label>
+          <div id="pick-${opt.key}" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
+          ${hint}</div>`;
+      }
+      return `<div class="form-group" style="margin-bottom:0">
+        <label class="form-label">${opt.label}</label>
+        <input type="number" id="cfg-${opt.key}" class="form-input" min="${opt.min ?? 1}"
+          max="${opt.max ?? 20}" value="${opt.default ?? 1}" onchange="saveConfig()">
+        ${hint}</div>`;
+    }).join('');
+    return `<div class="form-group">
+        <label class="form-label">${s.label}</label>
+        <select id="cfg-${s.key}" onchange="updateSeasonTwistUI('${_q(c.id)}');saveConfig()" class="form-input">
+          ${(s.modes || []).map(m => `<option value="${m.value}">${m.label}</option>`).join('')}
+        </select>
+        <div class="hint hint-tight">${s.hint || ''}</div>
+        <div id="warn-${s.key}" class="hint hint-tight" style="display:none;color:#e3b341"></div>
+      </div>
+      <div id="sub-${s.key}" style="display:none;margin:-4px 0 14px 0;padding:10px 12px;
+        border-left:2px solid rgba(${rgb},.45);background:rgba(${rgb},.05);border-radius:0 6px 6px 0">
+        ${subs}
+      </div>`;
+  }).join('');
+  for (const c of _twists()) updateSeasonTwistUI(c.id);
+}
+
+/**
+ * Show the sub-options belonging to one twist, and paint its pickers.
+ *
+ * Called on every mode change and after a config load. Safe to call for a twist
+ * whose controls are not on the page yet.
+ */
+export function updateSeasonTwistUI(id) {
+  const c = _twists().find(x => x.id === id);
+  if (!c) return;
+  const s = c.season;
+  const mode = document.getElementById(`cfg-${s.key}`)?.value || 'off';
+  const sub = document.getElementById(`sub-${s.key}`);
+  if (sub) sub.style.display = mode === 'off' ? 'none' : 'block';
+
+  const warnEl = document.getElementById(`warn-${s.key}`);
+  if (warnEl) {
+    const warn = mode === 'off' ? null : seasonTwistWarning(c);
+    warnEl.style.display = warn ? 'block' : 'none';
+    warnEl.textContent = warn || '';
+  }
+  if (mode === 'off') return;
+
+  for (const opt of s.options || []) {
+    if (opt.type !== 'houseguest') continue;
+    const group = document.getElementById(`grp-${opt.key}`);
+    // `when` gates an option on the mode — a picker only means anything when
+    // the user asked to choose.
+    const shown = !opt.when || opt.when === mode;
+    if (group) group.style.display = shown ? 'block' : 'none';
+    if (!shown) continue;
+    const host = document.getElementById(`pick-${opt.key}`);
+    if (!host || typeof players === 'undefined' || !players.length) continue;
+    const chosen = seasonConfig[opt.key] || '';
+    const marked = _markedNames(opt.mark);
+    const accent = `rgb(${s.accent || '163,113,247'})`;
+    host.innerHTML = players.map(p => {
+      const sel = chosen === p.name;
+      const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const init = (p.name || '?')[0].toUpperCase();
+      return `<div onclick="pickSeasonTwistPlayer('${_q(opt.key)}','${_q(c.id)}','${_q(p.name)}')"
+        style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+        <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? accent : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color .15s">
+          <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter .15s,opacity .15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
+        </div>
+        <span style="font-size:9px;color:${sel ? accent : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}${
+        marked.has(p.name) ? ` <b style="color:${accent}" title="${opt.mark?.title || ''}">&#9679;</b>` : ''}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+/** One holder per twist, so picking a second replaces the first. */
+export function pickSeasonTwistPlayer(key, id, name) {
+  seasonConfig[key] = seasonConfig[key] === name ? '' : name;
+  updateSeasonTwistUI(id);
   if (typeof saveConfig === 'function') saveConfig();
 }
 

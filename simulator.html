@@ -546,55 +546,11 @@
               </select>
               <div class="hint hint-tight">Three on the block; one wins their way off before the vote.</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">The Twin Twist</label>
-              <select id="cfg-bb-twins" onchange="updateTwinsUI();saveConfig()" class="form-input">
-                <option value="off">Off</option>
-                <option value="random">On &mdash; cast at random</option>
-                <option value="choose">On &mdash; I pick who it is</option>
-              </select>
-              <div class="hint hint-tight">A season-long twist. One houseguest is secretly two people swapping places every week. The house is never told &mdash; it has to work it out. They get a job each week that only two people sharing a name could do; finish enough of them and both of them join the game.</div>
-            </div>
-            <div id="grp-bb-twins-sub" style="display:none;margin:-4px 0 14px 0;padding:10px 12px;
-                 border-left:2px solid rgba(163,113,247,.45);background:rgba(163,113,247,.05);border-radius:0 6px 6px 0">
-              <div class="form-group" id="grp-bb-twins-who" style="display:none">
-                <label class="form-label">Who it is</label>
-                <div id="bb-twins-select" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
-                <div class="hint hint-tight">Pick the one the house meets on night one. A purple dot means
-                  Relationships already says who their twin is &mdash; that person plays under their own name
-                  and their own stats, and if they were cast too they simply never walk through the door.
-                  Pick anybody else and a twin is invented for them.</div>
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label">Jobs to finish</label>
-                <input type="number" id="cfg-bb-twins-quota" class="form-input" min="1" max="8" value="3" onchange="saveConfig()">
-                <div class="hint hint-tight">Finish this many weekly jobs and both of them join the game as separate houseguests. Get found out, or get the shared identity evicted, and it ends there &mdash; the second twin never plays and the money is not paid.</div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">The Saboteur</label>
-              <select id="cfg-bb-saboteur" onchange="updateSaboteurUI();saveConfig()" class="form-input">
-                <option value="off">Off</option>
-                <option value="random">On &mdash; cast at random</option>
-                <option value="choose">On &mdash; I pick who it is</option>
-              </select>
-              <div class="hint hint-tight">A season-long twist. One houseguest takes a job from the audience every week; the house is told a saboteur exists and never told who.</div>
-            </div>
-            <!-- The sub-options of the twist above, indented so they read as
-                 belonging to it. Two unrelated-looking dropdowns in a column was
-                 how the bank date ended up looking like a season setting. -->
-            <div id="grp-bb-saboteur-sub" style="display:none;margin:-4px 0 14px 0;padding:10px 12px;
-                 border-left:2px solid rgba(201,52,60,.45);background:rgba(201,52,60,.05);border-radius:0 6px 6px 0">
-              <div class="form-group" id="grp-bb-saboteur-who" style="display:none">
-                <label class="form-label">Who it is</label>
-                <div id="bb-saboteur-select" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
-              </div>
-              <div class="form-group" style="margin-bottom:0">
-                <label class="form-label">Bank date (week)</label>
-                <input type="number" id="cfg-bb-saboteur-bank" class="form-input" min="2" max="12" value="5" onchange="saveConfig()">
-                <div class="hint hint-tight">Survive to this week and the audience decides what the season of sabotage was worth &mdash; and the house is told who it was.</div>
-              </div>
-            </div>
+            <!-- Every season twist, built from its own contract in
+                 js/bb/twist-contract.js. Two of them used to live here as two
+                 near-identical hand-written slabs; a third would have been a
+                 third copy. -->
+            <div id="bb-season-twists"></div>
             <div class="form-group" id="grp-bb-safety-stops">
               <label class="form-label">Stops with this many left</label>
               <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">

@@ -41,6 +41,12 @@ const S = {
   live: false, clock: EPISODE_MS, speed: 1, timer: null, seen: 0,
   liked: new Set(), tomatoed: new Set(), following: new Set(),
   shown: 30,
+  // The batch the new-posts pill just let through. Held by id rather than by a
+  // count, because the count only locates them if the order never changes — and
+  // For You sorts by reaction, so a "posts 30 to 44 are the new ones" rule put
+  // them everywhere except together. Cleared the moment the reader goes
+  // somewhere else, since "new" means new since you last looked at THIS.
+  newIds: new Set(),
   // What the reader has opened: one player's timeline, one thread, one profile.
   // Kept here rather than read back out of the DOM, so leaving for the other app
   // and returning does not quietly drop you somewhere else.
@@ -58,7 +64,7 @@ const mmss = ms => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${String(
 /**
  * Enough of a post to recognise it, and no more.
  *
- * The quote above a reply is there to say WHAT is being answered, not to make
+ * The parent above a reply is there to say WHAT is being answered, not to make
  * the reader read it twice — a full-length parent above every reply turns a
  * timeline into the same post printed in pairs.
  */
@@ -190,6 +196,7 @@ function startLive(fromZero = true) {
   stopLive();
   S.live = true;
   if (fromZero) { S.clock = 0; S.seen = 0; }
+  clearNew();
   render();
   S.timer = setInterval(() => {
     S.clock = Math.min(EPISODE_MS, S.clock + 1000 * S.speed);
@@ -216,6 +223,7 @@ function seekTo(ms) {
   stopLive();
   S.clock = to;
   S.seen = visible().length;
+  clearNew();
   render();
 }
 
@@ -257,19 +265,32 @@ function paintLive() {
   setConn();
 }
 
+/**
+ * Let the waiting posts through, and put them where they can be found.
+ *
+ * The pill used to reveal them and leave them wherever the sort dropped them —
+ * which in For You is by reaction, so pressing "14 new posts" scattered
+ * fourteen posts down a timeline of two hundred and told you nothing about
+ * which ones they were. They arrive as a marked block at the top now, the way
+ * every timeline does it, and stay marked until you go somewhere else.
+ */
 function revealNew() {
-  const before = S.seen;
+  const before = new Set(visible().slice(0, S.seen).map(p => p.id));
   S.seen = visible().length;
+  S.newIds = new Set(visible().filter(p => !before.has(p.id)).map(p => p.id));
   render();
-  // Focus lands on the first new row, so a keyboard reader is not dropped at
-  // the top of a list they were halfway down.
-  const first = document.querySelector(`[data-idx="${before}"]`);
+  // Focus lands on the first of them, so a keyboard reader is taken to the
+  // arrivals rather than told about them.
+  const first = document.querySelector('[data-idx="0"]');
   if (first) {
     first.setAttribute('tabindex', '-1');
     first.focus({ preventScroll: true });
-    first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    first.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
+
+/** Going anywhere else ends the batch — nothing is "new since you looked" now. */
+function clearNew() { S.newIds = new Set(); }
 
 function setConn() {
   const el = $('conn'), t = $('conn-text');
@@ -323,30 +344,59 @@ function birdiePosts() {
     : S.tab === 'players'
       ? all.filter(p => p.subject && (!S.subject || p.subject === S.subject))
       : all;
-  // For You promotes the loudest moments modestly; Latest is strict event time.
+  // For You promotes the loudest moments modestly; Latest is newest first.
   //
   // Reach is part of "loudest" now, because that is what a following DOES: the
   // accounts you recognise sit near the top night after night, and the strangers
   // are found by scrolling. Weighted rather than sorted by, so a stranger with a
   // genuinely huge reaction still surfaces above a big account's throwaway.
-  if (S.tab === 'for-you') {
+  //
+  // ── LATEST WAS THE SAME THIRTY POSTS ALL NIGHT ──
+  //
+  // It was event time ASCENDING and then cut to the first thirty, so the top of
+  // the page was minute nought to minute three and stayed there however long
+  // you watched: everything arriving arrived off the bottom of the cut. Latest
+  // means most recent first — that is the whole name — and reversing it is also
+  // what makes arrivals visible without any marking at all, because the newest
+  // post in the episode is the first one on the page.
+  const ordered = S.tab === 'for-you'
     // No extra thumb on the scale for recurring accounts: reach already gives
     // them one through engagement, and stacking a second on top swept the whole
     // first page — thirty posts, twenty accounts, which is the exact complaint
     // the crowd was built to answer.
-    const weight = p => p.likes + p.tomatoes;
-    return [...list].sort((a, b) => weight(b) - weight(a) || a.at - b.at).slice(0, S.shown);
-  }
-  return list.slice(0, S.shown);
+    ? [...list].sort((a, b) => (b.likes + b.tomatoes) - (a.likes + a.tomatoes) || b.at - a.at)
+    : [...list].sort((a, b) => b.at - a.at);
+
+  // Whatever the sort, the batch the pill just released sits at the top of it.
+  if (!S.newIds.size) return ordered.slice(0, S.shown);
+  const fresh = ordered.filter(p => S.newIds.has(p.id));
+  const rest = ordered.filter(p => !S.newIds.has(p.id));
+  return [...fresh, ...rest].slice(0, Math.max(S.shown, fresh.length));
 }
 
+/** How many of the rendered posts are the batch pinned to the top. */
+const freshCount = posts => posts.filter(p => S.newIds.has(p.id)).length;
+
 function postRow(p, i) {
-  const parent = p.replyTo ? stream().find(x => x.id === p.replyTo) : null;
+  // Not inside the conversation itself: the post being answered is already the
+  // first row there, and drawing it again above every reply prints it nine
+  // times down a thread of nine.
+  const parent = p.replyTo && p.replyTo !== S.thread
+    ? stream().find(x => x.id === p.replyTo) : null;
   const liked = S.liked.has(p.id), tom = S.tomatoed.has(p.id);
   const likes = (p.likes || 0) + (liked ? 1 : 0);
   const toms = (p.tomatoes || 0) + (tom ? 1 : 0);
   return `
-  <article class="post${p.replyTo ? ' is-reply' : ''}" data-idx="${i}" id="post-${esc(p.id)}">
+  <article class="post${p.replyTo ? ' is-reply' : ''}${S.newIds.has(p.id) ? ' is-new' : ''}"
+    data-idx="${i}" id="post-${esc(p.id)}">
+    ${parent ? `<div class="parent" data-thread="${esc(parent.id)}" tabindex="0" role="link"
+      aria-label="Show the post ${esc(p.name)} is answering">
+      ${avatar(null, parent.name, 'avatar sm')}
+      <div>
+        <span class="parent-who">${esc(parent.name)} <i>${esc(parent.handle)}</i></span>
+        <span class="parent-text">${esc(snippet(parent.text))}</span>
+      </div>
+    </div>` : ''}
     ${avatar(null, p.name)}
     <div>
       <div class="post-head">
@@ -358,12 +408,7 @@ function postRow(p, i) {
         ${p.source === 'ai-featured' ? '<span class="featured">Featured</span>' : ''}
       </div>
       ${parent ? `<p class="replying">Replying to <a href="#" data-thread="${esc(parent.id)}"
-        >${esc(parent.handle)}</a></p>
-      <blockquote class="quoted" data-thread="${esc(parent.id)}" tabindex="0"
-        role="link" aria-label="Show the post ${esc(p.name)} is replying to">
-        <span class="quoted-who">${esc(parent.name)} <i>${esc(parent.handle)}</i></span>
-        <span class="quoted-text">${esc(snippet(parent.text))}</span>
-      </blockquote>` : ''}
+        >${esc(parent.handle)}</a></p>` : ''}
       <p class="post-body">${linkMentions(p.text, p.subject)}</p>
       <p class="post-ctx">${esc(contextLabel(S.format, S.season, S.episode))} · ${esc(eventLabel(p.kind, S.format))}</p>
       <div class="acts">
@@ -432,8 +477,15 @@ function personaCard() {
         <strong>${esc(p.name)}</strong> <span class="post-handle">${esc(p.handle)}</span>
         <p class="post-ctx" style="margin:4px 0 0">${esc(p.archetype)} &middot; watching since season ${p.since}</p>
       </div>
-      <button type="button" class="follow" data-follow="${esc(p.handle)}" aria-pressed="${following}">
-        ${following ? 'Following' : 'Follow'}</button>
+      <div class="persona-btns">
+        <button type="button" class="follow" data-follow="${esc(p.handle)}" aria-pressed="${following}">
+          ${following ? 'Following' : 'Follow'}</button>
+        <!-- Opened by clicking a name; there was no way back out except finding
+             that same name again and clicking it a second time, which is not a
+             thing anybody guesses. Escape closes it too. -->
+        <button type="button" class="pclose" id="persona-close" aria-label="Close this profile"
+          title="Close">&times;</button>
+      </div>
     </div>
     <p style="margin:8px 0 0;font-size:14px">
       <strong>${esc(formatFollowers(followersOfPersona(p, { currentSeason: S.season })))}</strong> followers &middot;
@@ -447,6 +499,7 @@ function personaCard() {
 
 function renderBirdie() {
   const posts = birdiePosts();
+  const fresh = freshCount(posts);
   const total = visible().slice(0, S.seen || undefined).length;
   const tabs = [['for-you', 'For You'], ['latest', 'Latest'], ['following', 'Following'], ['players', 'Players']];
 
@@ -470,8 +523,11 @@ function renderBirdie() {
     ${!S.thread && S.persona ? personaCard() : ''}
     <div id="birdie-feed" role="tabpanel" aria-labelledby="tab-${S.tab}">
       ${posts.length
-        ? posts.map(postRow).join('')
-        : emptyFeed()}
+    // A line under the batch, so "which ones are the new ones" is answered by
+    // looking rather than by remembering what the pill said.
+    ? posts.map((p, i) => (i === fresh && fresh
+      ? `<p class="newmark">Everything below was already here</p>` : '') + postRow(p, i)).join('')
+    : emptyFeed()}
     </div>
     ${posts.length < total
       ? `<button class="loadmore" type="button" id="loadmore">Load earlier posts (${total - posts.length} more)</button>`
@@ -753,10 +809,27 @@ function wire() {
     if (ev.target?.id === 'clock-bar') seekTo(ev.target.value);
   });
 
+  // Escape backs out of whatever is open, innermost first — the thread you
+  // opened from a profile should not close the profile as well.
+  document.addEventListener('keydown', ev => {
+    // A div with role="link" is focusable but does not fire a click on Enter,
+    // so the parent card was reachable by keyboard and did nothing there.
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      const card = ev.target.closest?.('.parent[data-thread]');
+      if (card) { ev.preventDefault(); card.click(); return; }
+    }
+    if (ev.key !== 'Escape') return;
+    if (S.thread) S.thread = null;
+    else if (S.persona) S.persona = null;
+    else if (S.subject) S.subject = null;
+    else return;
+    render();
+  });
+
   document.addEventListener('click', ev => {
     const t = ev.target.closest('[data-tab],[data-channel],[data-like],[data-tomato],[data-speed],[data-thread],'
       + '#btn-live,#newpill,#loadmore,[data-goto-channel],[data-reply],[data-subject],'
-      + '[data-persona],[data-follow],#thread-back');
+      + '[data-persona],[data-follow],#thread-back,#persona-close');
     if (!t) return;
     // The author link is a real anchor so it is keyboard-reachable and shows a
     // target; opening the profile in place is what it actually does.
@@ -769,17 +842,21 @@ function wire() {
       // you. Opens the conversation at the post being answered.
       S.thread = t.dataset.thread;
       S.persona = null; S.subject = null; S.shown = 30;
+      clearNew();
       render();
       const el = document.getElementById(`post-${t.dataset.thread}`);
       if (el) el.scrollIntoView({ block: 'start' });
     }
-    else if (t.dataset.tab) { S.tab = t.dataset.tab; S.shown = 30; S.thread = null; writeUrl(); render(); }
+    else if (t.dataset.tab) {
+      S.tab = t.dataset.tab; S.shown = 30; S.thread = null; clearNew(); writeUrl(); render();
+    }
     else if (t.dataset.subject !== undefined) { S.subject = t.dataset.subject || null; S.shown = 30; render(); }
     else if (t.dataset.persona !== undefined) {
       S.persona = S.persona === t.dataset.persona ? null : t.dataset.persona;
       render();
     }
     else if (t.dataset.follow) toggle(S.following, t.dataset.follow);
+    else if (t.id === 'persona-close') { S.persona = null; render(); }
     else if (t.id === 'thread-back') { S.thread = null; render(); }
     else if (t.dataset.channel) { S.channel = t.dataset.channel; S.shown = 30; writeUrl(); render(); }
     else if (t.dataset.gotoChannel) { S.app = 'chatalumni'; S.channel = t.dataset.gotoChannel; writeUrl(); render(); }

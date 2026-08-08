@@ -137,20 +137,35 @@ describe('the transport works while paused', () => {
 });
 
 describe('a reply says what it is answering', () => {
-  it('makes the handle a link to the post being replied to', () => {
+  it('names the account it is answering, as a link', () => {
     // "Replying to @somebody" was dead text, so a reply named a post the
     // reader had no way to reach — the one thing every timeline gives you.
-    const row = fnBody('postRow', 1600);
+    const row = fnBody('postRow', 2000);
     expect(row).toMatch(/Replying to <a href="#" data-thread="\$\{esc\(parent\.id\)\}"/);
   });
 
-  it('quotes enough of the parent to recognise it', () => {
-    const row = fnBody('postRow', 1600);
-    expect(row).toMatch(/class="quoted"/);
+  it('draws the post being answered ABOVE the reply, not below it', () => {
+    // A card BELOW the body is how a timeline draws a QUOTE. A reply draws the
+    // post it answers above, with a line joining them. Both were being drawn
+    // the same way, so neither read as itself.
+    const row = fnBody('postRow', 2000);
+    const parentAt = row.indexOf('class="parent"');
+    const bodyAt = row.indexOf('class="post-body"');
+    expect(parentAt, 'no parent card').toBeGreaterThan(-1);
+    expect(parentAt, 'the parent is drawn below the reply body').toBeLessThan(bodyAt);
     expect(row).toMatch(/snippet\(parent\.text\)/);
-    // Reachable by keyboard, and announced as what it is.
+    // Reachable by keyboard, announced as what it is, and it carries an avatar
+    // so it reads as a post rather than as a pull-quote.
     expect(row).toMatch(/tabindex="0"/);
     expect(row).toMatch(/role="link"/);
+    expect(row).toMatch(/avatar\(null, parent\.name, 'avatar sm'\)/);
+  });
+
+  it('spans the whole card, so the two posts line up', () => {
+    // `.post` is a two-column grid; a parent left in the text column would sit
+    // indented under the reply's own avatar.
+    expect(HTML).toMatch(/\.parent\{[^}]*grid-column:1 \/ -1/);
+    expect(HTML, 'nothing joins the two posts').toMatch(/\.parent::after\{/);
   });
 
   it('keeps the quote short, so the reply stays the card you are reading', () => {
@@ -163,7 +178,7 @@ describe('a reply says what it is answering', () => {
     expect(PAGE).toMatch(/\[data-thread\]/);
     const at = PAGE.indexOf('if (t.dataset.thread)');
     expect(at, 'nothing handles the link').toBeGreaterThan(-1);
-    const handler = PAGE.slice(at, at + 420);
+    const handler = PAGE.slice(at, at + 460);
     expect(handler).toMatch(/S\.thread = t\.dataset\.thread/);
     // Opening a conversation is not the moment to still be filtered to one
     // account or one houseguest.
@@ -171,9 +186,100 @@ describe('a reply says what it is answering', () => {
     expect(handler).toMatch(/S\.subject = null/);
   });
 
+  it('opens on Enter as well as on a click', () => {
+    // A div with role="link" is focusable and does NOT fire a click on Enter,
+    // so it was reachable by keyboard and inert once you got there.
+    expect(PAGE).toMatch(/\.parent\[data-thread\]/);
+  });
+
   it('is styled as something you can press', () => {
-    expect(HTML).toMatch(/\.quoted\{[^}]*cursor:pointer/);
-    expect(HTML).toMatch(/\.quoted:focus-visible/);
+    expect(HTML).toMatch(/\.parent\{[^}]*cursor:pointer/);
+    expect(HTML).toMatch(/\.parent:focus-visible/);
     expect(HTML).toMatch(/\.replying a\{/);
+  });
+});
+
+describe('Latest means latest', () => {
+  it('puts the most recent post first', () => {
+    // It was event time ASCENDING cut to the first thirty, so the top of the
+    // page was the first three minutes of the episode and stayed there all
+    // night — everything arriving arrived off the bottom of the cut, and the
+    // tab looked frozen while the clock ran.
+    const fn = fnBody('birdiePosts', 2400);
+    expect(fn, 'still oldest-first').toMatch(/sort\(\(a, b\) => b\.at - a\.at\)/);
+    expect(fn).not.toMatch(/return list\.slice\(0, S\.shown\)/);
+  });
+
+  it('still ranks For You by reaction', () => {
+    expect(fnBody('birdiePosts', 2400)).toMatch(/b\.likes \+ b\.tomatoes/);
+  });
+});
+
+describe('the new posts arrive somewhere you can find them', () => {
+  it('remembers WHICH posts arrived, not how many', () => {
+    // A count only locates them if the order never changes, and For You sorts
+    // by reaction — so "posts 30 to 44 are the new ones" put them everywhere
+    // except together.
+    expect(PAGE).toMatch(/newIds: new Set\(\)/);
+    const fn = fnBody('revealNew', 700);
+    expect(fn).toMatch(/S\.newIds = new Set\(/);
+    expect(fn, 'the batch is derived from S.seen, not from ids').toMatch(/!before\.has\(p\.id\)/);
+  });
+
+  it('pins that batch to the top of whatever the sort is', () => {
+    const fn = fnBody('birdiePosts', 2400);
+    expect(fn).toMatch(/S\.newIds\.has\(p\.id\)/);
+    expect(fn, 'the batch is not put first').toMatch(/\[\.\.\.fresh, \.\.\.rest\]/);
+    // And the cut must not be able to drop the very posts it just announced.
+    expect(fn).toMatch(/Math\.max\(S\.shown, fresh\.length\)/);
+  });
+
+  it('marks them, and marks where they stop', () => {
+    expect(fnBody('postRow', 2000)).toMatch(/S\.newIds\.has\(p\.id\) \? ' is-new'/);
+    expect(PAGE).toMatch(/class="newmark"/);
+    expect(HTML).toMatch(/\.post\.is-new\{[^}]*border-left/);
+  });
+
+  it('takes the reader to them', () => {
+    const fn = fnBody('revealNew', 700);
+    expect(fn).toMatch(/data-idx="0"/);
+    expect(fn).toMatch(/block: 'start'/);
+  });
+
+  it('stops calling them new once you have gone somewhere else', () => {
+    // "New" means new since you last looked at THIS. Changing tab, opening a
+    // thread, scrubbing or restarting all make the batch meaningless.
+    expect(PAGE).toMatch(/function clearNew\(\)/);
+    expect(fnBody('seekTo', 700), 'scrubbing leaves a stale batch').toMatch(/clearNew\(\)/);
+    expect(fnBody('startLive', 700), 'restarting leaves a stale batch').toMatch(/clearNew\(\)/);
+    const tabAt = PAGE.indexOf('t.dataset.tab) {');
+    expect(PAGE.slice(tabAt, tabAt + 220), 'changing tab leaves a stale batch')
+      .toMatch(/clearNew\(\)/);
+  });
+});
+
+describe('a profile can be closed', () => {
+  it('has a close button', () => {
+    // It opened by clicking a name, and the only way out was finding that same
+    // name again and clicking it a second time — not a thing anybody guesses.
+    expect(fnBody('personaCard', 2400)).toMatch(/id="persona-close"/);
+    expect(PAGE, 'the button is not in the delegated selector').toMatch(/#persona-close/);
+    const at = PAGE.indexOf("t.id === 'persona-close'");
+    expect(at, 'nothing handles it').toBeGreaterThan(-1);
+    expect(PAGE.slice(at, at + 120)).toMatch(/S\.persona = null/);
+  });
+
+  it('closes on Escape, innermost thing first', () => {
+    const at = PAGE.indexOf("ev.key !== 'Escape'");
+    expect(at, 'Escape does nothing').toBeGreaterThan(-1);
+    const fn = PAGE.slice(at, at + 320);
+    // A thread opened from a profile must not close the profile as well.
+    expect(fn.indexOf('S.thread = null')).toBeLessThan(fn.indexOf('S.persona = null'));
+    expect(fn).toMatch(/S\.subject = null/);
+  });
+
+  it('is labelled for anybody who cannot see an x', () => {
+    expect(fnBody('personaCard', 2400)).toMatch(/aria-label="Close this profile"/);
+    expect(HTML).toMatch(/\.pclose\{/);
   });
 });

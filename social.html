@@ -316,20 +316,49 @@
 
   /* ── what a reply is answering ──
      "Replying to @somebody" was dead text, so a reply named a post the reader
-     had no way to reach. The handle is a link now and the parent is quoted
-     under it, short enough that the reply stays the card you are reading. */
+     had no way to reach. The handle is a link now, and the post being answered
+     is drawn above the reply, short enough that the reply stays the card you
+     are reading. */
   .replying a{ color:inherit; font-weight:700; text-decoration:none; border-bottom:1px solid currentColor; }
   .replying a:hover{ opacity:.75; }
-  .quoted{
-    display:block; margin:2px 0 8px; padding:8px 11px; cursor:pointer;
-    border:1px solid rgba(127,127,127,.35); border-radius:12px;
-    background:rgba(127,127,127,.06); font-size:13px; line-height:1.45;
+  /* THE PARENT SITS ABOVE THE REPLY, which is how a timeline shows a
+     conversation: the post being answered, a line joining the two, then the
+     answer. It had been a card BELOW the handle, which is where a QUOTE goes —
+     two different relationships drawn the same way, so neither read as itself.
+     Spans both grid columns and comes first in the source, so the reading order
+     and the visual order are the same one. */
+  .parent{
+    grid-column:1 / -1; display:grid; grid-template-columns:32px minmax(0,1fr); gap:10px;
+    align-items:start; margin:-2px 0 10px; padding:8px 10px; cursor:pointer;
+    border:1px solid rgba(127,127,127,.3); border-radius:12px;
+    background:rgba(127,127,127,.05); font-size:13px; line-height:1.45; position:relative;
   }
-  .quoted:hover{ background:rgba(127,127,127,.12); }
-  .quoted:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
-  .quoted-who{ display:block; font-weight:700; margin-bottom:2px; }
-  .quoted-who i{ font-style:normal; font-weight:400; opacity:.7; }
-  .quoted-text{ display:block; opacity:.85; }
+  /* The thread line. Short, and it stops at the reply's avatar. */
+  .parent::after{
+    content:''; position:absolute; left:26px; top:100%; width:2px; height:10px;
+    background:rgba(127,127,127,.35);
+  }
+  .parent:hover{ background:rgba(127,127,127,.11); }
+  .parent:focus-visible{ outline:2px solid currentColor; outline-offset:2px; }
+  .avatar.sm{ width:32px; height:32px; font-size:13px; }
+  .parent-who{ display:block; font-weight:700; margin-bottom:2px; }
+  .parent-who i{ font-style:normal; font-weight:400; opacity:.7; }
+  .parent-text{ display:block; opacity:.85; }
+
+  /* Where the batch the pill released stops. */
+  .newmark{
+    margin:0; padding:8px 18px; font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--quiet); background:rgba(127,127,127,.06);
+    border-bottom:1px solid var(--line); border-top:1px solid var(--line);
+  }
+  .post.is-new{ border-left:3px solid var(--sky); }
+
+  .persona-btns{ display:flex; gap:8px; align-items:center; }
+  .pclose{
+    min-height:40px; min-width:40px; border-radius:999px; cursor:pointer; font:inherit;
+    font-size:22px; line-height:1; border:1px solid var(--line); background:none; color:var(--quiet);
+  }
+  .pclose:hover{ color:var(--ink); background:rgba(127,127,127,.12); }
 
   .state-card{ padding:36px 26px; text-align:center; }
   .state-card h2{ font-size:24px; margin:0 0 10px; letter-spacing:-.01em; text-transform:none; color:inherit; }

@@ -23,6 +23,11 @@ export const PLATFORMS = {
     ratios: true,
     /** Lowercase, fragments, no full stops — how the room actually sounds. */
     register: 'casual',
+    /**
+     * 0..1 dial the sampler multiplies a topic's aggression by — proportional,
+     * not a threshold that flips. The public room gets the full dose: the same
+     * dunk lands harder in the stadium than it does in a hosted room.
+     */
     hostility: 1.0,
   },
   chat: {
@@ -36,6 +41,12 @@ export const PLATFORMS = {
     ratios: false,
     /** Full sentences. Insider vocabulary. Warmer surface, shadier content. */
     register: 'considered',
+    /**
+     * 0..1 dial the sampler multiplies a topic's aggression by — proportional,
+     * not a threshold that flips. Under half strength: hosts have played the
+     * game with these people, so the same dunk gets throttled, not silenced,
+     * on the way into a room they're running rather than a stadium.
+     */
     hostility: 0.45,
   },
 };

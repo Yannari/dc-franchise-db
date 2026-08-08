@@ -19,6 +19,11 @@ import { describe, expect, it } from 'vitest';
 import { PERSONAS } from '../js/social/personas.js';
 import { TOPICS } from '../js/social/topics.js';
 import { PLATFORMS } from '../js/social/platforms.js';
+// The phrasings live in sampler.js, not topics.js — topics declare which SHAPES
+// they can take, the sampler holds the words. Walking personas/topics/platforms
+// alone would be a guard passing over an almost empty set, which is worse than
+// no guard: every actual post string is in PHRASINGS and DECORATIONS.
+import { PHRASINGS, DECORATIONS } from '../js/social/sampler.js';
 
 /**
  * Terms that mark an attack on a protected characteristic.
@@ -58,6 +63,8 @@ function allStrings() {
   walk(PERSONAS, 'personas');
   walk(TOPICS, 'topics');
   walk(PLATFORMS, 'platforms');
+  walk(PHRASINGS, 'sampler.phrasings');
+  walk(DECORATIONS, 'sampler.decorations');
   return out;
 }
 
@@ -80,6 +87,11 @@ export function crossesTheLine(text) {
 
 describe('the line the library must not cross', () => {
   it('holds no attack on a protected characteristic', () => {
+    // A guard that passes because it is looking at nothing is worse than no
+    // guard. If the phrasing library moves and this walk stops reaching it, the
+    // count collapses and this line fails before the denylist gets a chance to.
+    expect(allStrings().length,
+      'the guard is walking an almost empty library').toBeGreaterThan(300);
     const offences = allStrings()
       .map(s => ({ ...s, term: crossesTheLine(s.text) }))
       .filter(s => s.term);

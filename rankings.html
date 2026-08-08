@@ -6,6 +6,16 @@
 <title>Player Rankings — DC Franchise</title>
 <link href="styles.css" rel="stylesheet"/>
 <style>
+    /* Matches seasons.html and awards.html — one show heading, one look. */
+    .show-group-heading {
+      margin: 34px 0 4px;
+      font-size: 15px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .65;
+    }
+    .show-group-heading:first-child { margin-top: 0; }
+    .show-group-heading .show-group-n { opacity: .6; font-weight: 400; }
     .tier-section { margin: 30px 0; }
     .tier-header {
       background: linear-gradient(135deg, rgba(165, 95, 255, 0.2), rgba(165, 95, 255, 0.05));
@@ -1029,11 +1039,18 @@ function renderRankings(rankingsData, playersMap) {
   }
 
   const show = window._sw ? window._sw.current() : ALL;
-  const board = show === ALL
-    ? (boards.find(b => formatOfBoard(b) === DEFAULT_FORMAT) || boards[0])
-    : boards.find(b => formatOfBoard(b) === show);
 
-  if (!board) {
+  /* "All shows" means all of them. Showing only the default show's board would
+     hide a Big Brother board the day one ships — the same silent omission the
+     headings on seasons.html and awards.html exist to prevent. */
+  const selected = show === ALL
+    ? sw ? sw.orderFormats(boards.map(formatOfBoard)).map(f => boards.find(b => formatOfBoard(b) === f))
+         : boards.slice()
+    : boards.filter(b => formatOfBoard(b) === show);
+
+  if (!selected.length) {
+    // Only reachable for a SPECIFIC show: "all" with at least one board never
+    // lands here, and a page with no boards at all has nothing to say either way.
     const meta = (sw && sw.SHOWS && sw.SHOWS[show]) || {};
     const name = meta.name || show;
     container.innerHTML =
@@ -1046,12 +1063,31 @@ function renderRankings(rankingsData, playersMap) {
     return;
   }
 
+  /* Headings only when more than one board is on screen — a single board needs
+     no label, and the switcher already says which show it is. */
+  const heading = board => {
+    if (selected.length < 2) return '';
+    const f = formatOfBoard(board);
+    const meta = (sw && sw.SHOWS && sw.SHOWS[f]) || {};
+    const n = (board.rankings || []).length;
+    return '<h2 class="show-group-heading" data-show-group="' + f + '">'
+      + (meta.emoji || '') + ' ' + (meta.name || f)
+      + '<span class="show-group-n"> · ' + n + ' player' + (n !== 1 ? 's' : '') + '</span></h2>';
+  };
+
   /* Do NOT reassign rankingsData: the switcher's onChange closes over this
      binding, so overwriting it with the selected board collapses `boards` to a
-     single entry on the next render and the switcher stops finding the others.
-     Invisible while only one board exists; broken the day a second ships. */
-  const active = board;
+     single entry on the next render and the switcher stops finding the others. */
+  container.innerHTML = selected
+    .map((b, i) => heading(b) + boardHtml(b, playersMap, i === 0))
+    .join('');
+}
 
+/* One board's tier sections. Kept separate from the selection above so "all
+   shows" can render several, one after another. Only the first board carries
+   the tier IDs — the #tier-s chips at the top of the page are one set, so a
+   second board repeating those IDs would just be a duplicate nothing links to. */
+function boardHtml(active, playersMap, withIds) {
   const tierGroups = {};
   // Auto-sort rankings by score (descending)
   active.rankings.sort((a, b) => {
@@ -1091,7 +1127,7 @@ function renderRankings(rankingsData, playersMap) {
     // IDs must match your controls/anchors: tier-splus, tier-s, tier-a, ...
     const tierId = tierKey.toLowerCase().replace('+', 'plus');
 
-    html += '<div class="tier-section" id="tier-' + tierId + '" data-tier="' + tierKey + '">';
+    html += '<div class="tier-section"' + (withIds ? ' id="tier-' + tierId + '"' : '') + ' data-tier="' + tierKey + '">';
     html +=   '<div class="tier-header">';
     html +=     '<div><h2>' + (tierInfo.icon || '🏅') + ' ' + tierInfo.name + '</h2>';
     html +=     '<span class="tier-desc">' + tierInfo.description + '</span></div>';
@@ -1125,7 +1161,7 @@ function renderRankings(rankingsData, playersMap) {
     html += '</div>';
   });
 
-  container.innerHTML = html;
+  return html;
 }
 
 function getWinnerKeys(player){

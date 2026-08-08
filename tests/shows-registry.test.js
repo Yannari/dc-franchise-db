@@ -60,6 +60,13 @@ describe('nothing else keeps its own copy', () => {
       }
     };
     walk('js'); walk('worker');
+    /* The pages count too. Every format literal this branch introduced lives in
+       an .html file, and player.html was already deriving a filename prefix
+       from a format there — precisely the shape this guard exists to catch —
+       while sitting outside the fence. */
+    for (const entry of readdirSync(process.cwd(), { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith('.html')) out.push(entry.name);
+    }
     return out.filter(f => f !== 'js/shows.js');
   };
 
@@ -80,8 +87,13 @@ describe('nothing else keeps its own copy', () => {
         const shapes = [
           ['forward map', new RegExp(`${f}\\s*:\\s*${p}`)],
           ['inverse map', new RegExp(`['"\`]?${show.prefix}['"\`]?\\s*:\\s*${f}`)],
-          // A conditional on one line that names both the format and its prefix.
-          ['ternary', new RegExp(`^.*${f}.*\\?.*${p}.*$`, 'm')],
+          /* A conditional that names both the format and its prefix. Not
+             anchored to a line any more: a prettier-width ternary breaks after
+             the `?`, and player.html's format-to-filename branch is spread over
+             three lines — a rule a line break can step over is not a rule. The
+             window is bounded so an unrelated 'td' further down the file cannot
+             be pulled in. */
+          ['ternary', new RegExp(`${f}[\\s\\S]{0,160}?\\?[\\s\\S]{0,160}?${p}`)],
         ];
         for (const [shape, pattern] of shapes) {
           if (pattern.test(src)) offenders.push(`${file} (${format}, ${shape})`);

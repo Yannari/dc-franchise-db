@@ -565,8 +565,11 @@ function detailHtml(d){
       <span class="num">${m.sharedSeasons}×</span>
     </button></li>`).join('') || '<li class="meta">No shared seasons.</li>';
 
+  /* A pair bonded in both shows comes back as two rows now, and "Season 1"
+     twice distinguishes them by nothing. The row carries its format, so label
+     it the same way castmate seasons are labelled. */
   const bonds = (d.bonds || []).map(b => `
-    <li><span class="grow">🤝 ${esc(b.name)}</span><span class="meta">Season ${b.season}</span></li>`
+    <li><span class="grow">🤝 ${esc(b.name)}</span><span class="meta">${esc(seasonLabel(b.format ? b.format + '-' + b.season : b.season))}</span></li>`
   ).join('') || '<li class="meta">No unbreakable bonds recorded.</li>';
 
   return `<div class="lbDetail">

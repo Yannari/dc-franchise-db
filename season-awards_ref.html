@@ -451,6 +451,18 @@
   </div>
 </footer>
 
+<!-- The page script below is a classic script, so it cannot import. This pair
+     hands it js/shows.js — the sole registry — rather than letting it grow a
+     second idea of what a season reference means. -->
+<script>
+window._showsReady = new Promise(resolve => { window._showsResolve = resolve; });
+</script>
+<script type="module">
+  import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
+  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  window._showsResolve(window.shows);
+</script>
+
 <script>
 // ── Helpers ────────────────────────────────────────────────
 function pLink(name, slug) {
@@ -558,10 +570,24 @@ function statLbCard(title, rows) {
 (async function() {
   const main = document.getElementById('main-content');
   const urlParams = new URLSearchParams(window.location.search);
-  const seasonNum = parseInt(urlParams.get('season'), 10);
   const TOTAL_SEASONS = 9;
 
-  if (!seasonNum) {
+  /* The registry is an enhancement, not a dependency: on file://, or if the
+     module 404s, browsers never run it and waiting forever would turn a missing
+     nicety into a page that never loads. Without it only bare numbers resolve —
+     which is Total Drama, which is what every bookmarked link already means. */
+  await Promise.race([
+    window._showsReady,
+    new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+  ]);
+
+  const raw = urlParams.get('season');
+  const shows = window.shows || null;
+  const ref = shows
+    ? shows.parseSeasonRef(raw)
+    : (/^\d+$/.test(String(raw || '').trim()) && Number(raw) > 0 ? { format: null, number: Number(raw) } : null);
+
+  if (!ref) {
     main.innerHTML = `<div class="no-season">
       <h2>⚠️ No Season Specified</h2>
       <p>Please provide a season number in the URL: <code>season-awards_ref.html?season=1</code></p>
@@ -570,8 +596,15 @@ function statLbCard(title, rows) {
     return;
   }
 
+  const seasonNum = ref.number;
+  /* Total Drama keeps the bare filename its fourteen files already use; every
+     other show is namespaced by seasonId, as the publish path writes them. */
+  const isDefault = !shows || ref.format === shows.DEFAULT_FORMAT;
+  const file = isDefault ? `season${seasonNum}-data.json` : `${shows.seasonId(ref.format, seasonNum)}-data.json`;
+  const seasonRef = isDefault ? String(seasonNum) : shows.seasonId(ref.format, seasonNum);
+
   try {
-    const res = await fetch(`data/seasons/season${seasonNum}-data.json`);
+    const res = await fetch(`data/seasons/${file}`);
     if (!res.ok) throw new Error(`Season ${seasonNum} data not found (HTTP ${res.status})`);
     const season = await res.json();
 
@@ -584,6 +617,10 @@ function statLbCard(title, rows) {
 
     // Prev/Next nav helper
     function navBtn(dir, num) {
+      /* TOTAL_SEASONS counts Total Drama. Another show's run length is not
+         known here, so rather than offer a neighbour that may not exist, a
+         non-default show simply gets no prev/next. */
+      if (!isDefault) return '';
       if (num < 1 || num > TOTAL_SEASONS) return '';
       const arrow = dir === 'prev' ? '←' : '→';
       const label = dir === 'prev' ? `S${num} Awards` : `S${num} Awards`;
@@ -729,7 +766,7 @@ function statLbCard(title, rows) {
       ${navBtn('prev', seasonNum - 1)}
       <div class="snav-center">
         <a class="snav-btn primary" href="awards.html">🏅 All Awards</a>
-        <a class="snav-btn" href="season_ref.html?season=${seasonNum}">📋 Season Overview</a>
+        <a class="snav-btn" href="season_ref.html?season=${seasonRef}">📋 Season Overview</a>
       </div>
       ${navBtn('next', seasonNum + 1)}
     </div>`;

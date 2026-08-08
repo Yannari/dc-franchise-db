@@ -436,9 +436,15 @@ function renderSeasons(seasons) {
     const eps = season.episodeCount || '—';
     const cast = season.castSize || '—';
     const status = season.status || '';
+    /* A season number alone stopped identifying a season the day a second show
+       arrived — Total Drama 1 and Big Brother 1 both exist. Link by seasonId so
+       the detail page fetches the right show's data; a record from before
+       seasonIds were written still links by its bare number, which the detail
+       page reads as Total Drama, permanently. */
+    const ref = season.seasonId || season.seasonNumber;
 
     return `
-<a class="scard${isMR ? ' most-recent' : ''}" href="season_ref.html?season=${season.seasonNumber}"
+<a class="scard${isMR ? ' most-recent' : ''}" href="season_ref.html?season=${ref}"
    style="--sc:${sc}; animation-delay:${Math.min(idx * 50, 400)}ms"
    data-season-format="${fmt}"
    data-title="${title.toLowerCase()} season ${season.seasonNumber} ${winnerName.toLowerCase()} ${(subtitle||'').toLowerCase()}">

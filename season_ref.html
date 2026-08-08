@@ -225,6 +225,18 @@
   </div>
 </footer>
 
+<!-- The page script below is a classic script, so it cannot import. This pair
+     hands it js/shows.js — the sole registry — rather than letting it grow a
+     second idea of what a season reference means. -->
+<script>
+window._showsReady = new Promise(resolve => { window._showsResolve = resolve; });
+</script>
+<script type="module">
+  import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
+  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  window._showsResolve(window.shows);
+</script>
+
 <script>
 const SEASON_COLORS=['#60a5fa','#a78bfa','#34d399','#f59e0b','#fb923c','#f472b6','#38bdf8','#fbbf24','#e879f9'];
 
@@ -286,10 +298,33 @@ function buildRecords(season){
 
 (async function(){
   try{
-    const sn=parseInt(new URLSearchParams(window.location.search).get('season'),10);
-    if(!sn){document.getElementById('season-content').innerHTML='<div class="hero"><h1>⚠️ No Season Specified</h1><p><a href="seasons.html">← Back to Seasons</a></p></div>';return;}
+    /* The registry is an enhancement, not a dependency: on file://, or if the
+       module 404s, browsers never run it and waiting forever would turn a
+       missing nicety into a page that never loads. Without it only bare
+       numbers resolve — which is Total Drama, which is what every bookmarked
+       link on this site already means. */
+    await Promise.race([
+      window._showsReady,
+      new Promise(resolve=>setTimeout(()=>resolve(null),3000)),
+    ]);
 
-    const resp=await fetch('data/seasons/season'+sn+'-data.json');
+    const raw=new URLSearchParams(window.location.search).get('season');
+    const shows=window.shows||null;
+    const ref=shows
+      ? shows.parseSeasonRef(raw)
+      : (/^\d+$/.test(String(raw||'').trim()) && Number(raw)>0 ? {format:null,number:Number(raw)} : null);
+    if(!ref){document.getElementById('season-content').innerHTML='<div class="hero"><h1>⚠️ No Season Specified</h1><p><a href="seasons.html">← Back to Seasons</a></p></div>';return;}
+
+    const sn=ref.number;
+    /* Total Drama keeps the bare filename its fourteen files already use;
+       every other show is namespaced by seasonId, exactly as the publish path
+       writes them. */
+    const isDefault=!shows||ref.format===shows.DEFAULT_FORMAT;
+    const file=isDefault?'season'+sn+'-data.json':shows.seasonId(ref.format,sn)+'-data.json';
+    /* Links onward carry the same reference they arrived on. */
+    const seasonRef=isDefault?String(sn):shows.seasonId(ref.format,sn);
+
+    const resp=await fetch('data/seasons/'+file);
     if(!resp.ok)throw new Error('Season '+sn+' data not found');
     const s=await resp.json();
 
@@ -491,7 +526,7 @@ function buildRecords(season){
         <!-- Nav footer -->
         <div class="sr-nav-footer">
           <a href="seasons.html" class="sr-nav-btn">← All Seasons</a>
-          <a href="season-awards_ref.html?season=${sn}" class="sr-nav-btn accent">🏅 Season Awards →</a>
+          <a href="season-awards_ref.html?season=${seasonRef}" class="sr-nav-btn accent">🏅 Season Awards →</a>
           <a href="devotees.html" class="sr-nav-btn">👥 All Players →</a>
         </div>
       </div>

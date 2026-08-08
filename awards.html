@@ -466,11 +466,16 @@ function awardItem(icon, label, name, slug, detail) {
       const awards = season.awards || {};
       const w = season.winner || {};
       const delay = (idx * 0.08).toFixed(2);
+      /* Link by seasonId: both shows have a season 1, so a bare number sent
+         every Big Brother card to Total Drama's awards. A record written before
+         seasonIds existed keeps its bare number, which the detail page reads as
+         Total Drama, permanently. */
+      const ref = season.seasonId || season.seasonNumber;
 
-      return `<div class="award-card" data-season="s${season.seasonNumber}" data-season-format="${fmt}" style="animation-delay:${delay}s" onclick="window.location.href='season-awards_ref.html?season=${season.seasonNumber}'">
+      return `<div class="award-card" data-season="s${season.seasonNumber}" data-season-format="${fmt}" style="animation-delay:${delay}s" onclick="window.location.href='season-awards_ref.html?season=${ref}'">
         <div class="award-header">
           <div class="season-badge">${season.emoji||'🏝️'} Season ${season.seasonNumber}</div>${showShort ? `<span class="season-show-badge">${showShort}</span>` : ''}
-          <h3><a href="season-awards_ref.html?season=${season.seasonNumber}">${season.title}</a></h3>
+          <h3><a href="season-awards_ref.html?season=${ref}">${season.title}</a></h3>
           ${season.subtitle ? `<p style="margin:6px 0 0;font-size:12px;color:var(--muted)">${season.subtitle}</p>` : ''}
         </div>
         <div class="award-body">
@@ -480,7 +485,7 @@ function awardItem(icon, label, name, slug, detail) {
           ${awardItem('💪', 'Most Challenge Wins', awards.mostChallengeWins?.name, awards.mostChallengeWins?.playerSlug, awards.mostChallengeWins?.detail)}
         </div>
         <div class="award-footer">
-          <a class="view-btn" href="season-awards_ref.html?season=${season.seasonNumber}">View All Awards →</a>
+          <a class="view-btn" href="season-awards_ref.html?season=${ref}">View All Awards →</a>
         </div>
       </div>`;
     };

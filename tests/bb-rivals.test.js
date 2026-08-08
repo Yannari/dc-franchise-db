@@ -21,7 +21,7 @@ import { gs, players, seasonConfig, relationships, setRelationships } from '../j
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { installRivals, rivalsState, isRival, rivalPartner, openRivals,
+import { installRivals, rivalsState, isRival, rivalPartner, openRivals, announceRivals,
   rivalsSittingOut, rivalsImmune, rivalsChooseHoh, rivalWeekEvents,
   rivalEvicted, rivalsLedger } from '../js/bb/rivals.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
@@ -121,6 +121,52 @@ describe('the week they arrive', () => {
     expect(contract.announcement).toBeTruthy();
     expect(contract.announcement.rule).toMatch(/cannot play|cannot be nominated|nominate them/i);
     expect(contract.announcement.rule).toMatch(/decide|choose/i);
+  });
+
+  it('counts the arrivals instead of asserting three of them', () => {
+    // The contract carries the original three-pair wording. A season set to one
+    // pair was being read a rule saying three more people were coming through
+    // the door, that the three of them would decide the competition, and that
+    // three of the room were about to find out — and then one person walked in.
+    for (const count of [1, 2, 3]) {
+      house();
+      installRivals(NAMES, { rng: Math.random, count });
+      const week = aWeek({ twistState: { announcements: [] } });
+      expect(announceRivals(week)).toBe(true);
+      const said = week.twistState.announcements.find(a => a.twist === 'bb-rivals');
+      const text = `${said.rule} ${said.sting}`;
+      const word = ['', 'One', 'Two', 'Three'][count];
+      expect(text, `${count} pair(s) announced wrong`).toContain(`${word} more of you`);
+      expect(text).toContain(`${word} of you`);
+      // And the house it names is the house that is actually standing there.
+      expect(said.rule).toContain(`You are not ${
+        ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+          'eleven', 'twelve'][NAMES.length - count]}`);
+      // Nothing left over from the three-pair version.
+      if (count !== 3) expect(text).not.toMatch(/\bthree\b/i);
+      expect(text).not.toMatch(/undefined|NaN|\[object/);
+    }
+  });
+
+  it('counts the arrivals in the handover too', () => {
+    const comp = { placements: ['Gus', 'Hicks', 'Iris'], winner: 'Gus' };
+    for (const count of [1, 2, 3]) {
+      for (let i = 0; i < 10; i++) {
+        house();
+        installRivals(NAMES, { rng: Math.random, count });
+        const act = rivalsChooseHoh(aWeek(), comp, { rng: Math.random });
+        const text = (act.beats || []).map(b => b.text).join(' ');
+        expect(text).not.toMatch(/undefined|NaN|\[object/);
+        if (count !== 3) {
+          expect(text, `${count} rival(s) still described as three`).not.toMatch(/\bthree\b/i);
+        }
+        if (count === 1) {
+          // Nobody disagrees with themselves.
+          expect(text).not.toMatch(/the last one|one of them/i);
+          expect(act.beats.some(b => b.badgeText === 'THE RIVAL DECIDES')).toBe(true);
+        }
+      }
+    }
   });
 
   it('keeps them out of the first competition and off the block', () => {

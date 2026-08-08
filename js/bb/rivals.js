@@ -180,11 +180,52 @@ export function announceRivals(week) {
   const contract = BB_TWIST_CONTRACTS['bb-rivals'];
   if (!contract?.announcement || !week?.twistState) return false;
   week.twistState.announcements = [
-    { twist: 'bb-rivals', ...contract.announcement },
+    { twist: 'bb-rivals', ...contract.announcement, ...rivalsRuleText(week) },
     ...(week.twistState.announcements || []),
   ];
   st.announced = true;
   return true;
+}
+
+// Far enough to cover a house as well as a handful of arrivals — "You are not
+// 11" is a number on a card, and this is somebody reading a rule out loud.
+const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen',
+  'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const numberWord = n => COUNT_WORD[n] || String(n);
+const capitalise = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * The rule, counted rather than asserted.
+ *
+ * The contract carries the original three-pair wording, which is what the
+ * registry and the compatibility guards read. What the HOUSE is told has to
+ * match the season it is standing in: a season configured with one pair was
+ * being told that three more people were coming through the door, that the
+ * three of them would decide the competition, and that three of the room were
+ * about to find out this was never a fresh start. One person walked in.
+ */
+export function rivalsRuleText(week) {
+  const st = rivalsState();
+  if (!st) return {};
+  const n = st.pairs.length;
+  const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean).length;
+  // Everybody who was already living there — which is the number the room
+  // currently believes is the whole cast.
+  const inside = Math.max(1, house - n);
+  const word = numberWord(n);
+  const them = n === 1 ? 'that one person decides' : `the ${word} of them decide`;
+  return {
+    rule: `You are not ${numberWord(inside)}. ${capitalise(word)} more of you `
+      + `${n === 1 ? 'is' : 'are'} coming through that door tonight, and `
+      + `${n === 1 ? 'they already know somebody in this room — and do not like them'
+        : 'every one of them already knows somebody in this room — and does not like them'}. `
+      + `They cannot play for Head of Household this week and none of you can nominate them. `
+      + `At the end of tonight's competition, when it comes down to two of you, ${them} `
+      + `which one gets the house.`,
+    sting: `${capitalise(word)} of you ${n === 1 ? 'is' : 'are'} about to find out this was `
+      + `never a fresh start.`,
+  };
 }
 
 /** Is this the week the twist owns? */
@@ -291,15 +332,27 @@ export function openRivals(week, { rng = Math.random } = {}) {
   };
 }
 
+// Written for any number of arrivals, because a season can be configured with
+// one pair and the room was being told that "the three of them" had gone into
+// the storeroom to decide it.
 const HANDOVERS = [
-  (winner, loser, why) => `The three of them go into the storeroom and come out ninety seconds later. `
-    + `"${winner}." No explanation is offered and none is asked for, out loud.`,
-  (winner, loser, why) => `They do not agree immediately. Two of them want ${loser} and the third one `
-    + `will not have it, and the third one is the one who talks. ${winner} takes the room.`,
-  (winner, loser, why) => `"We have been in this house for two hours," one of them says, `
-    + `"so we are going to do this on gut." The gut says ${winner}.`,
-  (winner, loser, why) => `${loser} works out from the length of the pause that it is not going to be ${loser}, `
-    + `and has the face arranged by the time they say ${winner}.`,
+  (winner, loser, n) => `${n === 1 ? 'They go' : `The ${numberWord(n)} of them go`} into the storeroom `
+    + `and come out ninety seconds later. "${winner}." No explanation is offered and none is asked `
+    + `for, out loud.`,
+  (winner, loser, n) => `"We have been in this house for two hours," ${n === 1 ? 'the new arrival says'
+    : 'one of them says'}, "so we are going to do this on gut." The gut says ${winner}.`,
+  (winner, loser, n) => `${loser} works out from the length of the pause that it is not going to be `
+    + `${loser}, and has the face arranged by the time ${n === 1 ? 'the name comes' : 'they say '
+      + winner}.`,
+];
+
+// Only true when there are enough of them to disagree.
+const HANDOVERS_MANY = [
+  (winner, loser, n) => `They do not agree immediately. ${n === 2 ? 'One of them wants'
+    : `${capitalise(numberWord(n - 1))} of them want`} ${loser} and the last one will not have it, `
+    + `and the last one is the one who talks. ${winner} takes the room.`,
+  (winner, loser, n) => `It takes them four minutes and one of them is still not happy about it. `
+    + `${winner} takes the room anyway.`,
 ];
 
 /**
@@ -338,6 +391,7 @@ export function rivalsChooseHoh(week, competition, { rng = Math.random } = {}) {
   const winner = Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0];
   const loser = finalists.find(n => n !== winner) || finalists[1];
 
+  const n = rivals.length;
   st.chose = { winner, loser, finalists: [...finalists], tally, ballots };
 
   // Being handed the house by three strangers is a debt, and everybody watched
@@ -357,15 +411,20 @@ export function rivalsChooseHoh(week, competition, { rng = Math.random } = {}) {
     tally: Object.entries(tally).map(([name, votes]) => ({ name, votes })),
     beats: [{
       text: `The competition comes down to ${finalists.join(' and ')}, and then it stops. `
-        + `Neither of them has won anything. The three people who walked in tonight are asked `
-        + `to decide which of them is Head of Household.`,
+        + `Neither of them has won anything. The ${n === 1 ? 'person' : `${numberWord(n)} people`} `
+        + `who walked in tonight ${n === 1 ? 'is' : 'are'} asked to decide which of them is `
+        + `Head of Household.`,
       players: [...finalists], badgeText: 'NOT WON — GIVEN', badgeClass: 'gold',
     }, {
-      text: HANDOVERS[Math.floor(rng() * HANDOVERS.length)](winner, loser),
-      players: rivals, badgeText: 'THE RIVALS DECIDE', badgeClass: 'red',
+      text: (() => {
+        const pool = n > 1 ? [...HANDOVERS, ...HANDOVERS_MANY] : HANDOVERS;
+        return pool[Math.floor(rng() * pool.length)](winner, loser, n);
+      })(),
+      players: rivals, badgeText: n === 1 ? 'THE RIVAL DECIDES' : 'THE RIVALS DECIDE', badgeClass: 'red',
     }, {
-      text: `${winner} has the room, the key, and a debt to three people who have been in this house `
-        + `for two hours. ${loser} has nothing, and watched exactly who took it away.`,
+      text: `${winner} has the room, the key, and a debt to ${n === 1 ? 'somebody'
+        : `${numberWord(n)} people`} who ${n === 1 ? 'has' : 'have'} been in this house for two hours. `
+        + `${loser} has nothing, and watched exactly who took it away.`,
       players: [winner, loser], badgeText: 'A DEBT, NOT A WIN', badgeClass: 'grey',
     }],
   };

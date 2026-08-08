@@ -141,9 +141,10 @@ export function rpBuildBBRivalsHoh(ep, act, u = {}) {
     <div class="rv-head">
       <div class="rv-eyebrow">RIVALS &middot; WEEK ${esc(act.week)} &middot; NOT WON</div>
       <div class="rv-title">THEY DECIDE IT</div>
-      <div class="rv-sub">The competition comes down to two and then stops. Three people who have been
-        in this building for an hour, who could not play and cannot be nominated, choose which of them
-        gets the house.</div>
+      <div class="rv-sub">The competition comes down to two and then stops. ${
+  (act.rivals || []).length === 1 ? 'One person' : `${(act.rivals || []).length} people`} who ${
+  (act.rivals || []).length === 1 ? 'has' : 'have'} been in this building for an hour, who could not
+        play and cannot be nominated, choose which of them gets the house.</div>
     </div>
     <div class="rv-vote">
       <h3>${esc(act.winner)}</h3>

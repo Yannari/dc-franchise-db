@@ -154,6 +154,13 @@
   .act.tom:hover, .act.tom[aria-pressed="true"]{ color:var(--tomato); }
   .act.like[aria-pressed="true"]{ color:var(--sky); }
   .act svg{ width:17px; height:17px; }
+  /* A recurring account wears its reach. Strangers show nothing — an account
+     with 40 followers announcing them is not what a small account looks like. */
+  .reach{
+    font-size:11.5px; font-weight:800; letter-spacing:.02em; padding:1px 7px;
+    border-radius:999px; background:var(--chip); color:var(--quiet);
+    border:1px solid var(--line); font-variant-numeric:tabular-nums;
+  }
   .chips{ display:flex; gap:8px; flex-wrap:wrap; padding:12px 18px; border-bottom:1px solid var(--line); }
   .chip{
     min-height:38px; padding:8px 14px; border-radius:999px; cursor:pointer; font:inherit;

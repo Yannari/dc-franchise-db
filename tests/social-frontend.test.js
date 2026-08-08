@@ -316,3 +316,52 @@ describe('the finale', () => {
     expect(eps.some(e => e.record?.isFinale)).toBe(false);
   });
 });
+
+describe('the audience pulse', () => {
+  // THE BUG THIS EXISTS FOR. The rail summed likes and subtracted tomatoes per
+  // player and called the top one "rising". That reads engagement as sentiment,
+  // and the two point opposite ways: a ratio punishes the TAKE, so the people
+  // attacking a beloved player get tomatoed and the people dunking on a hated
+  // one get liked. Measured across the real Big Brother season, the rail named
+  // the right player as rising in ZERO of fifteen weeks.
+  const pulseOver = (weekIdx, pop) => {
+    const w = bb1.weeks[weekIdx];
+    const events = archiveEpisode(bb1, 'big-brother', 1, w.week).events;
+    return audiencePulse(buildFeed(events, pop));
+  };
+  let buildFeed;
+  beforeAll(async () => {
+    const { buildEpisodeFeed } = await import('../js/social/feed.js');
+    buildFeed = (events, popularity) => buildEpisodeFeed(events, { seed: 5, popularity });
+  });
+
+  it('names the player the room likes, across a whole real season', () => {
+    let right = 0, weeks = 0;
+    for (const [i, w] of bb1.weeks.entries()) {
+      const events = archiveEpisode(bb1, 'big-brother', 1, w.week).events;
+      const subs = [...new Set(events.map(e => e.subject).filter(Boolean))];
+      if (subs.length < 2) continue;
+      const pop = {};
+      subs.forEach((s, k) => { pop[s] = k === 0 ? 100 : k === subs.length - 1 ? -100 : 0; });
+      weeks++;
+      if (pulseOver(i, pop).rising?.subject === subs[0]) right++;
+    }
+    expect(weeks).toBeGreaterThan(10);
+    expect(right, `the pulse was right in only ${right} of ${weeks} weeks`).toBe(weeks);
+  });
+
+  it('keeps loudness and warmth as separate questions', () => {
+    // `net` is raw engagement — how loud somebody was — and the divided reading
+    // genuinely wants that. Sentiment is which way the room leaned. Collapsing
+    // them is what caused the inversion.
+    const events = archiveEpisode(bb1, 'big-brother', 1, bb1.weeks[3].week).events;
+    const subs = [...new Set(events.map(e => e.subject).filter(Boolean))];
+    const pop = Object.fromEntries(subs.map((s, i) => [s, i === 0 ? 100 : -100]));
+    const pulse = audiencePulse(buildFeed(events, pop));
+    for (const e of pulse.all) {
+      expect(Number.isFinite(e.sentiment)).toBe(true);
+      expect(Number.isFinite(e.net)).toBe(true);
+    }
+    expect(pulse.divided).toBeTruthy();
+  });
+});

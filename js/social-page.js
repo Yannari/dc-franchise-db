@@ -24,6 +24,7 @@ import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crow
 import { eligibleHosts, seasonPanel, episodeSpeakers, fameTerm } from './social/hosts.js';
 import { buildChatMessages } from './social/chat.js';
 import { personaByHandle } from './social/personas.js';
+import { formatFollowers, followersOfPersona } from './social/crowd.js';
 import { EPISODE_MS } from './social/events.js';
 
 const API = 'https://dc-studio.yannari19.workers.dev/api/social';
@@ -286,9 +287,18 @@ function birdiePosts() {
       ? all.filter(p => p.subject && (!S.subject || p.subject === S.subject))
       : all;
   // For You promotes the loudest moments modestly; Latest is strict event time.
+  //
+  // Reach is part of "loudest" now, because that is what a following DOES: the
+  // accounts you recognise sit near the top night after night, and the strangers
+  // are found by scrolling. Weighted rather than sorted by, so a stranger with a
+  // genuinely huge reaction still surfaces above a big account's throwaway.
   if (S.tab === 'for-you') {
-    return [...list].sort((a, b) =>
-      (b.likes + b.tomatoes) - (a.likes + a.tomatoes) || a.at - b.at).slice(0, S.shown);
+    // No extra thumb on the scale for recurring accounts: reach already gives
+    // them one through engagement, and stacking a second on top swept the whole
+    // first page — thirty posts, twenty accounts, which is the exact complaint
+    // the crowd was built to answer.
+    const weight = p => p.likes + p.tomatoes;
+    return [...list].sort((a, b) => weight(b) - weight(a) || a.at - b.at).slice(0, S.shown);
   }
   return list.slice(0, S.shown);
 }
@@ -305,6 +315,8 @@ function postRow(p, i) {
       <div class="post-head">
         <a class="post-name" href="#" data-persona="${esc(p.handle)}">${esc(p.name)}</a>
         <span class="post-handle">${esc(p.handle)}</span>
+        ${p.recurring ? `<span class="reach" title="${p.followers} followers"
+          >${esc(formatFollowers(p.followers))}</span>` : ''}
         <span class="post-time">· ${stamp(p.at)}</span>
         ${p.source === 'ai-featured' ? '<span class="featured">Featured</span>' : ''}
       </div>
@@ -381,6 +393,7 @@ function personaCard() {
         ${following ? 'Following' : 'Follow'}</button>
     </div>
     <p style="margin:8px 0 0;font-size:14px">
+      <strong>${esc(formatFollowers(followersOfPersona(p, { currentSeason: S.season })))}</strong> followers &middot;
       ${mine.length} post${mine.length === 1 ? '' : 's'} this ${esc(words(S.format).episode)}${
         loves.length ? ` &middot; loves ${esc(loves.slice(0, 2).join(' and '))}` : ''}${
         hates.length ? ` &middot; cannot stand ${esc(hates.slice(0, 2).join(' and '))}` : ''}</p>

@@ -149,7 +149,13 @@ export function archiveEpisode(doc, format, season, episode, { popularity = null
   const isFinale = found.record?.isFinale
     || (found === all[all.length - 1] && format === 'big-brother');
   if (isFinale && doc?.winner) {
-    events.push(socialEvent('finale', { ...meta, subject: doc.winner.name || doc.winner }));
+    // extractEvents already emits a finale for a record flagged as one — but
+    // without a subject, because a live episode record does not name a winner.
+    // Pushing a second was two Finale rows in the rail, one of them nameless.
+    const existing = events.find(e => e.kind === 'finale');
+    const winner = doc.winner.name || doc.winner;
+    if (existing) existing.subject = String(winner).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    else events.push(socialEvent('finale', { ...meta, subject: winner }));
   }
   events.sort((a, b) => a.at - b.at);
 
@@ -242,10 +248,24 @@ export function audiencePulse(posts) {
   const by = new Map();
   for (const p of posts || []) {
     if (!p.subject) continue;
-    const e = by.get(p.subject) || { subject: p.subject, likes: 0, tomatoes: 0, posts: 0 };
+    const e = by.get(p.subject)
+      || { subject: p.subject, likes: 0, tomatoes: 0, posts: 0, sentiment: 0 };
     e.likes += p.likes || 0;
     e.tomatoes += p.tomatoes || 0;
     e.posts += 1;
+    // WHICH SIDE THE ROOM TOOK, not how loud it was.
+    //
+    // Summing likes and subtracting tomatoes gets this exactly backwards, and it
+    // shipped that way: a ratio punishes the TAKE, not its target, so the people
+    // attacking a beloved player get tomatoed and the people dunking on a hated
+    // one get liked. Read as raw engagement, the rail then named the most
+    // despised player in the house as "rising" — measured across a real season,
+    // it got the answer wrong in fifteen weeks out of fifteen.
+    //
+    // Weighing by stance fixes the direction: a well-received post that DEFENDS
+    // somebody is warmth toward them, and a well-received post attacking them is
+    // not.
+    e.sentiment += (p.stance ?? 0) * ((p.likes || 0) - (p.tomatoes || 0));
     by.set(p.subject, e);
   }
   const all = [...by.values()];
@@ -253,11 +273,14 @@ export function audiencePulse(posts) {
 
   for (const e of all) {
     const total = e.likes + e.tomatoes;
+    // `net` stays as raw engagement — it is how LOUD a player was, which the
+    // division measure below genuinely wants. Sentiment is the separate question
+    // of which way the room leaned, and rising/falling read that one.
     e.net = e.likes - e.tomatoes;
     // Divided needs both volume and balance; a quiet player is not divisive.
     e.division = total ? (1 - Math.abs(e.net) / total) * Math.log10(1 + total) : 0;
   }
-  const byNet = [...all].sort((a, b) => b.net - a.net);
+  const byNet = [...all].sort((a, b) => b.sentiment - a.sentiment);
   const byDivision = [...all].sort((a, b) => b.division - a.division);
   return {
     rising: byNet[0] || null,

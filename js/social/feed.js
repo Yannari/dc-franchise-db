@@ -12,6 +12,8 @@
 // Pure: no DOM, no network, no gs. The caller supplies popularity and an rng, so
 // a season's feed is reproducible from a seed.
 import { samplePosts } from './sampler.js';
+import { PERSONAS } from './personas.js';
+import { assignCrowd } from './crowd.js';
 import { EPISODE_MS } from './events.js';
 
 /**
@@ -106,7 +108,7 @@ function pickParent(post, earlier, rng) {
  * persona-cast stand-in, which flattens for anybody the cast has no opinion about.
  */
 export function buildEpisodeFeed(events, {
-  popularity = null, seed = 1, scale = 1,
+  popularity = null, seed = 1, scale = 1, crowd: useCrowd = true,
 } = {}) {
   if (!events || !events.length) return [];
 
@@ -150,6 +152,7 @@ export function buildEpisodeFeed(events, {
           kind: ev.kind,
           subject: ev.subject || null,
           text: p.text,
+          stance: p.stance ?? 0,
           at,
           replyTo: null,
           likes: p.likes,
@@ -166,5 +169,14 @@ export function buildEpisodeFeed(events, {
     }
   }
 
-  return posts.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+  posts.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+
+  // Decide WHO said each of these. The sampler wrote them in one of twenty
+  // persona voices, which on a hundred-and-thirty-post night meant every account
+  // posting six or seven times — a group chat wearing a timeline's clothes. The
+  // crowd keeps the loudest posts with the recurring cast and hands the rest to
+  // accounts invented for tonight. See crowd.js.
+  return useCrowd
+    ? assignCrowd(posts, { rng, personas: PERSONAS, currentSeason: season })
+    : posts;
 }

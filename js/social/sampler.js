@@ -326,6 +326,12 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
     text,
     likes,
     tomatoes,
+    // Whether this post is FOR or AGAINST the person it names. Exported because
+    // engagement alone cannot be read as sentiment about the subject: a ratio
+    // punishes the take, not the target, so a beloved player collects tomatoes
+    // from the people attacking them. Anything summarising the room's feeling
+    // has to weigh each post by which side it took.
+    stance,
   };
 }
 

@@ -126,9 +126,19 @@ describe('real popularity reaching the page', () => {
   const events = weekEvents(0);
   const subject = events.find(e => e.subject)?.subject;
 
-  it('turns a hated player into tomatoes and a loved one into likes', () => {
-    // THE POINT OF THE WHOLE FEATURE. gs.popularity has been written every
-    // episode since this simulator existed and shown to nobody.
+  it('ratios the take, not its target', () => {
+    // THE POINT OF THE WHOLE FEATURE, stated correctly. gs.popularity has been
+    // written every episode since this simulator existed and shown to nobody.
+    //
+    // This test used to claim that hating a player produces more tomatoes about
+    // them, and asserted it on one subject of one week, where it happened to
+    // hold. Measured across a whole real season it is false in 36 cases out of
+    // 59 — because that is NOT what the engine does, and what it does is better:
+    // a ratio punishes the person posting. Defend somebody the room has turned
+    // on and you get buried; dunk on them and you get liked.
+    //
+    // So the correct claim is about stance. A post that AGREES with how the room
+    // feels collects likes; one that argues with it collects tomatoes.
     expect(subject).toBeTruthy();
     const others = { someone: 0, another: 5 };
 
@@ -136,11 +146,22 @@ describe('real popularity reaching the page', () => {
       .filter(p => p.subject === subject);
     const hated = buildEpisodeFeed(events, { seed: 11, popularity: { ...others, [subject]: -100 } })
       .filter(p => p.subject === subject);
-
-    const sum = (xs, k) => xs.reduce((n, p) => n + p[k], 0);
     expect(loved.length).toBeGreaterThan(0);
-    expect(sum(hated, 'tomatoes'), 'hating a player produced no tomatoes')
-      .toBeGreaterThan(sum(loved, 'tomatoes'));
+
+    // Supportive posts about a beloved player do well. The same supportive posts
+    // about a despised one get ratioed.
+    const kind = xs => xs.filter(p => (p.stance ?? 0) > 0.25);
+    const toms = xs => kind(xs).reduce((n, p) => n + p.tomatoes, 0);
+    expect(toms(hated), 'defending a hated player cost nothing')
+      .toBeGreaterThan(toms(loved));
+
+    // And attacking posts are the mirror image.
+    const mean = xs => xs.filter(p => (p.stance ?? 0) < -0.25);
+    const meanToms = xs => mean(xs).reduce((n, p) => n + p.tomatoes, 0);
+    if (mean(loved).length && mean(hated).length) {
+      expect(meanToms(loved), 'attacking a beloved player cost nothing')
+        .toBeGreaterThan(meanToms(hated));
+    }
   });
 
   it('changes the feed when the audience changes its mind', () => {

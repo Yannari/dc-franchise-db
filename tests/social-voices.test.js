@@ -150,3 +150,59 @@ describe('the markers stay honest', () => {
     }
   });
 });
+
+describe('alumni who talk rather than write', () => {
+  // Measured across all 890 lines the room can produce: 73% were two or more
+  // sentences, 39% opened with a declarative "The/That/It/Nobody", and FIVE PER
+  // CENT used a contraction. That last figure is the whole register in one
+  // number — "it is not naive, it is expensive" is written English and nobody
+  // types it into a chat.
+  //
+  // Fixed in the SOURCE, not at render. A post-processing humaniser was tried
+  // on the episode writer and rejected, correctly: it makes one voice wearing
+  // tics rather than different people, and the file stops saying what the room
+  // says.
+  const w = { challenge: 'challenge', vote: 'vote', home: 'camp',
+    onDanger: 'in the crosshairs', danger: 'the crosshairs', Danger: 'The crosshairs',
+    nominated: 'took votes', nominee: 'the one taking votes', pawn: 'a spare vote',
+    Pawn: 'A spare vote', ceremony: 'the ceremony', Ceremony: 'The ceremony',
+    jury: 'the jury', safe: 'safe' };
+  const CONTRACTED = /['’](s|t|re|ve|ll|m|d)\b/;
+  const STIFF_ON_PURPOSE = ['formal', 'boastful', 'sarcastic'];
+  const linesOf = trait => Object.values(TRAIT_TAKES[trait])
+    .flat().map(fn => fn({ s: 'Ted', w, k: 'x' }));
+  const rate = trait => {
+    const l = linesOf(trait);
+    return l.filter(x => CONTRACTED.test(x)).length / l.length;
+  };
+
+  it('speaks in contractions almost everywhere', () => {
+    for (const trait of Object.keys(TRAIT_TAKES)) {
+      if (STIFF_ON_PURPOSE.includes(trait)) continue;
+      expect(rate(trait), `${trait} still writes like an essay`).toBeGreaterThan(0.2);
+    }
+  });
+
+  it('keeps the voices that should stay buttoned up', () => {
+    // Characterisation, not an oversight. `formal` builds a case and would say
+    // "I would resist the word betrayal". `boastful` is performing, and
+    // performance is uncontracted. `sarcastic` measured 17% and I nearly
+    // "fixed" it — then read the lines: "A stunning turn of events, if you had
+    // somehow avoided watching any of the previous three episodes." The full
+    // forms ARE the joke. Loosening that voice would flatten it.
+    for (const trait of STIFF_ON_PURPOSE) {
+      expect(rate(trait), `${trait} loosened`).toBeLessThan(0.25);
+    }
+  });
+
+  it('does not use the literary possessive', () => {
+    // "I've watched it three times" is perfect aspect and right. "I've nothing
+    // kind to say" is a novel, and the contraction pass produced four of them.
+    for (const trait of Object.keys(TRAIT_TAKES)) {
+      for (const line of linesOf(trait)) {
+        expect(line, `${trait}: ${line}`)
+          .not.toMatch(/I've (nothing|opinions|goosebumps|their|a |an |the )/);
+      }
+    }
+  });
+});

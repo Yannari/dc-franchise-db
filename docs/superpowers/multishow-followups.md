@@ -54,7 +54,12 @@ unnoticed, but it does *not* mean it is fixed.
 
 **Owner:** whichever task ships Big Brother season export.
 
-### 1b. The leaderboard is format-blind
+### 1b. The leaderboard is format-blind — FIXED 2026-08-07 (sub-project B)
+
+`/api/leaderboard` takes an optional `format`, validated against the registry.
+The default stays all-shows, so no player drops off an existing board.
+Original finding follows.
+
 
 `/api/leaderboard` filters by format for exactly nothing. Six stats blend shows
 the moment BB data lands:
@@ -76,7 +81,11 @@ It must not ship without one, or the boards silently mix two shows.
 
 ---
 
-## 2. The bonds `SELECT DISTINCT` collapse
+## 2. The bonds `SELECT DISTINCT` collapse — FIXED 2026-08-07 (sub-project B)
+
+`bonds.format` is part of the query's identity now, so a pair bonded in both
+shows returns two rows. `GROUP_CONCAT` carries the format too. Original follows.
+
 
 In `worker/worker-studio.js`, the bonds query ignores `bonds.format`. Once BB
 bonds exist, a pair bonded in **TD s1 and again in BB s1** collapses to a single
@@ -142,7 +151,13 @@ tighten the schema in a separate ticket.
 
 ---
 
-## 5. Test gap: nothing covers the worker SQL or the migration file
+## 5. Test gap: nothing covers the worker SQL — CLOSED 2026-08-07 (sub-project B)
+
+The queries moved to `worker/queries.js` as pure functions, imported by both the
+worker and `tests/worker-sql.test.js`, which runs them against a real SQLite
+database via `node:sqlite`. The tested strings are the shipped strings.
+`worker/multishow_schema.sql` itself is still unexercised. Original follows.
+
 
 There is **no test** exercising:
 
@@ -217,3 +232,51 @@ npx wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote \
 
 The export file is gitignored on purpose — it is a full copy of the franchise and the
 repo is public. Keep it somewhere off the checkout until the site is verified good.
+
+---
+
+## Carried forward from sub-project B (show-aware list pages), 2026-08-07
+
+Sub-project B shipped: `seasons`, `awards` and `rankings` group by show and honour
+`?show=`; `js/shows.js` is the sole registry; `/api/leaderboard` takes a `format`;
+the bonds query stopped collapsing two shows into one. These were found during it
+and deliberately left.
+
+### The wrong-show link, on two more pages
+
+A season number alone stopped identifying a season when the second show arrived.
+Five places built a link or a filename from the bare number. **Three are now
+fixed** — `player.html`'s season-data fetch, `seasons.html` → `season_ref.html`,
+and `awards.html` → `season-awards_ref.html`. **Two remain:**
+
+- `player.html:905` links `?season=${s.season}` from a season detail that already
+  carries `.format` and `.seasonId`. Same bug, third page.
+- `timeline.html:420` likewise. Total Drama only today, so latent.
+
+The fix pattern is settled and applies verbatim: link
+`?season=${seasonId || seasonNumber}`, and parse with `parseSeasonRef` at the
+other end. Total Drama's bare `?season=7` must keep resolving — `parseSeasonRef`
+returns the default format for a bare integer, which is what makes bookmarks safe.
+
+### Smaller items
+
+- **`orderFormats` dedupes via a `Set`**, so two ranking boards sharing one format
+  would silently drop one from the "all shows" view. Impossible today (one board
+  per format), and it would be a data error rather than a code one.
+- **The registry guard's 160-character window can false-positive**: a format
+  default, an unrelated ternary and a prefix constant within 160 characters of
+  each other would flag. Nothing in the repo trips it. It is also narrower than
+  the old rule for two literals >160 characters apart on one line.
+- **Big Brother cards still use `assets/cast/s1-cast.png`** and `season_ref.html`
+  titles Big Brother 1 as "S1". Cosmetic, pre-existing, and squarely
+  sub-project C's territory.
+- **The worker is verified by bundle and by SQL tests against a real SQLite
+  database, never against live D1.** `/api/leaderboard?format=` and the two-row
+  bonds response are unproven end to end until the worker is deployed. The
+  `castmates[].seasons` response shape changed from `number[]` to `string[]`;
+  `leaderboards.html` reads both, because its local-JSON fallback still yields
+  numbers.
+- **`js/core.js` keeps its own `SEASON_FORMATS` list** and cannot import the
+  registry — CLAUDE.md requires it to stay a leaf. A drift guard in
+  `tests/shows-registry.test.js` asserts the two agree, so they cannot silently
+  diverge.

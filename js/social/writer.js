@@ -63,6 +63,35 @@ export function writerEndpoint(config = {}) {
  * it — not because the model is asked nicely, but because `validatePost`
  * rejects names and weeks that are not in this object.
  */
+/**
+ * Everything this event lets a post claim, as a closed set with ids.
+ *
+ * Two producers write facts and they do not agree on a shape. `withReceipts`
+ * builds `event.receipts`, an array from the bond and ballot history. The
+ * moment readers — key moments, advantages, awards — set the flat
+ * `event.receipt`, because that is the slot the phrasings interpolate.
+ *
+ * The packet only ever read the first, so the writer was handed nothing for
+ * exactly the events worth writing about: an idol played, a rescue, the
+ * season's biggest betrayal. It got "kind: domination, subject: anastasia" and
+ * was asked to be specific about it.
+ *
+ * Folded here rather than at each producer, so a new source of facts is citable
+ * the moment it sets either field.
+ */
+export function citableFacts(event) {
+  const out = (event?.receipts || [])
+    .map(r => ({ id: r.id, text: r.text, week: r.week ?? null }))
+    .filter(r => r.id && r.text);
+  const flat = event?.receipt || event?.moment;
+  if (flat && !out.some(r => r.text === flat)) {
+    // A stable id, because the validator rejects a citation it cannot find and
+    // "moment" is what the model will be told this fact is called.
+    out.push({ id: 'moment', text: String(flat), week: event?.episode ?? null });
+  }
+  return out;
+}
+
 export function buildPacket(event, {
   cast = [], stream = 'timeline', count = 8, register = 'post', persona = null,
 } = {}) {
@@ -76,13 +105,13 @@ export function buildPacket(event, {
       episode: event.episode ?? null,
     },
     // The closed set. Ids are what a post cites; text is what it may say.
-    receipts: (event.receipts || []).map(r => ({ id: r.id, text: r.text, week: r.week ?? null })),
+    receipts: citableFacts(event),
     cast: [...cast],
     stream,
     register,
     count,
     maxLength: platform?.maxLength || 280,
-    requireCite: !!(event.receipts || []).length,
+    requireCite: citableFacts(event).length > 0,
     // Who is talking, so the model writes one account rather than an average.
     voice: persona ? {
       handle: persona.handle,

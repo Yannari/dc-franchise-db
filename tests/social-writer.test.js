@@ -12,6 +12,7 @@
 // a degraded mode, they are the floor: no key, no network, a timeout, a refusal
 // or a batch that fails validation all produce the feed the simulator produced
 // yesterday.
+import fs from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gs, players, seasonConfig, relationships, setRelationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
@@ -446,5 +447,61 @@ describe('it never blocks a season', () => {
     expect(body.mode, 'the worker dispatches on mode and would fall through to analytics')
       .toBe('social');
     expect(body.event).toBeTruthy();
+  });
+});
+
+describe('the writer is told what happened', () => {
+  // Two producers write facts and they do not agree on a shape. `withReceipts`
+  // builds `event.receipts` from bond and ballot history; the moment readers —
+  // key moments, advantages, awards — set the flat `event.receipt`, because
+  // that is the slot the phrasings interpolate.
+  //
+  // `buildPacket` only ever read the first, so the writer was handed nothing
+  // for exactly the events worth writing about: an idol played, a rescue, the
+  // season's biggest betrayal. It got "kind: domination, subject: anastasia"
+  // and was asked to be specific about it.
+  it('cites a flat receipt as well as a built one', async () => {
+    const { citableFacts } = await import('../js/social/writer.js');
+    expect(citableFacts({ receipt: 'Anastasia played an idol for Zaid, wiping 4 votes' }))
+      .toEqual([{ id: 'moment', text: 'Anastasia played an idol for Zaid, wiping 4 votes', week: null }]);
+    // And still reads the built ones.
+    const both = citableFacts({
+      receipt: 'a moment',
+      receipts: [{ id: 'r1', text: 'a ballot fact', week: 3 }],
+    });
+    expect(both.map(r => r.id)).toEqual(['r1', 'moment']);
+  });
+
+  it('does not offer the same fact twice under two ids', async () => {
+    const { citableFacts } = await import('../js/social/writer.js');
+    expect(citableFacts({
+      receipt: 'same words', receipts: [{ id: 'r1', text: 'same words' }],
+    })).toHaveLength(1);
+  });
+
+  it('drops a fact with no id or no words', async () => {
+    const { citableFacts } = await import('../js/social/writer.js');
+    expect(citableFacts({ receipts: [{ id: 'r1' }, { text: 'orphan' }] })).toEqual([]);
+    expect(citableFacts({})).toEqual([]);
+  });
+
+  it('asks for a citation exactly when there is something to cite', async () => {
+    const { buildPacket } = await import('../js/social/writer.js');
+    expect(buildPacket({ kind: 'domination', subject: 'x' }).requireCite).toBe(false);
+    expect(buildPacket({ kind: 'domination', subject: 'x', receipt: 'did a thing' })
+      .requireCite).toBe(true);
+  });
+
+  it('reaches a real episode\'s events', async () => {
+    const { buildPacket } = await import('../js/social/writer.js');
+    const { archiveEpisode } = await import('../js/social/archive.js');
+    const doc = JSON.parse(fs.readFileSync('data/seasons/season14-data.json', 'utf8'));
+    const { events } = archiveEpisode(doc, 'total-drama', 14, 14);
+    const facts = events.filter(e => e.receipt);
+    expect(facts.length, 'the night has no facts to write from').toBeGreaterThan(3);
+    for (const e of facts) {
+      expect(buildPacket(e, { cast: [] }).receipts.length,
+        `"${e.receipt}" reached the writer as nothing`).toBeGreaterThan(0);
+    }
   });
 });

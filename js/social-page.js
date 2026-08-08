@@ -24,6 +24,7 @@ import { loadSeasonDoc, episodeFeed, episodesOf, trendsFrom, audiencePulse, crow
 import { eligibleHosts, seasonPanel, episodeSpeakers, fameTerm } from './social/hosts.js';
 import { buildChatMessages } from './social/chat.js';
 import { personaByHandle } from './social/personas.js';
+import { currentShow, ALL } from './show-switcher.js';
 import { formatFollowers, followersOfPersona } from './social/crowd.js';
 import { EPISODE_MS } from './social/events.js';
 
@@ -83,6 +84,11 @@ function announce(msg) {
 // ── URL ───────────────────────────────────────────────────────────────
 function readUrl() {
   const q = new URLSearchParams(location.search);
+  // The header's switcher decides which show you are looking at everywhere else
+  // on the site; without this it was mounted on this page and inert, and the
+  // feed always opened on whatever it opened on last.
+  const remembered = currentShow();
+  if (remembered && remembered !== ALL) S.format = remembered;
   const showRef = q.get('show');
   if (showRef) {
     const ref = parseSeasonRef(showRef) || null;
@@ -963,4 +969,17 @@ function fillPickers() {
   wire();
   await reload();
   window.addEventListener('popstate', () => { readUrl(); render(); });
+
+  // Changing shows in the header moves the feed to that show's newest season,
+  // because an episode number means nothing across a change of show.
+  window.addEventListener('showchange', async e => {
+    const show = e?.detail?.show;
+    if (!show || show === ALL || show === S.format) return;
+    S.format = show;
+    const opts = seasonOptions(S.db).filter(o => o.format === show);
+    S.season = opts.length ? opts[0].number : 1;
+    S.episode = null;
+    stopLive();
+    await reload();
+  });
 })();

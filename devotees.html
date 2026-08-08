@@ -563,6 +563,17 @@
 </footer>
 <!-- SITE FOOTER END -->
 
+<!-- The switcher is mounted by the site header; this hands it to the classic
+     script below, which is what actually filters the roster. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { currentShow, ALL } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
 <script>
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');
@@ -863,7 +874,12 @@ Promise.all([
 
     populateArchetypeFilter();
     renderPlayers(allPlayers);
+    // Re-filter when the header switches shows.
+    window.addEventListener('showchange', updateDisplay);
+    // The module glue resolves after this classic script runs, so a first paint
+    // that did not wait had no switcher to ask and always showed every show.
     updateDisplay();
+    window._showSwitcherReady?.then(() => updateDisplay());
     updateHeaderStats();
 
     console.log('🔄 Player data loaded successfully');
@@ -975,7 +991,16 @@ function updateDisplay() {
   const typedCount = query.match(/^(\d+)\s*seasons?$/);
 
   // ✅ Always filter from the original data (not from DOM cards)
+  /* Scope to the show the header's switcher is on. The control was mounted on
+     this page and inert, so "show me Big Brother" answered with all 152
+     players, 134 of whom have never been in that house. */
+  const _sw = window.showSwitcher;
+  const _show = _sw ? _sw.currentShow() : 'all';
+  const _inShow = p => _show === 'all'
+    || (p.seasonDetails || []).some(d => (d.format || 'total-drama') === _show);
+
   let filteredPlayers = allPlayers.filter(p => {
+    if (!_inShow(p)) return false;
     const totalSeasons = Number(p.totalSeasons ?? 0);
 
     // Name search filter — OR season-count when the query is "N season(s)"

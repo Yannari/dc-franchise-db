@@ -265,9 +265,17 @@
   <div id="board" class="lbTable"><div class="lbNote">Loading leaderboard…</div></div>
 </main>
 
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
 <script type="module">
-  import { SHOWS } from './js/shows.js';
+  // The switcher is mounted by the site header on every page; this hands it to
+  // the classic script below, which is what actually filters the board.
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  import { currentShow, ALL } from './js/show-switcher.js';
   window.SHOWS = SHOWS;
+  window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  window._showSwitcherResolve(window.showSwitcher);
 </script>
 <script>
 /* ══════════════════════════════════════════════════════════════════════════
@@ -372,9 +380,15 @@ async function loadLocal(){
     const list = [];
     const seen = new Set();
     for (const d of (p.seasonDetails || [])){
-      if (d.season == null || seen.has(d.season)) continue;
-      seen.add(d.season);
+      // KEYED BY SHOW AND NUMBER. Deduping on the number alone dropped a
+      // player's Big Brother 1 when they also had a Total Drama 1 — the second
+      // record read as a repeat of the first and never entered the board.
+      const fmt = d.format || 'total-drama';
+      const key = `${fmt}-${d.season}`;
+      if (d.season == null || seen.has(key)) continue;
+      seen.add(key);
       list.push({
+        format: fmt,
         season: d.season, seasonTitle: seasonTitle.get(d.season) || null,
         placement: d.placement, status: d.status, tribe: d.tribe,
         challengeWins: d.challengeWins, immunityWins: d.immunityWins,
@@ -392,11 +406,21 @@ async function loadLocal(){
   return localData;
 }
 
+/** The show being looked at, or 'all'. Mounted by the header on every page. */
+function activeShow(){
+  const sw = window.showSwitcher;
+  return sw ? sw.currentShow() : 'all';
+}
+
 async function localLeaderboard(statKey, limit, minSeasons){
   const d = await loadLocal();
   const stat = STATS[statKey];
+  const show = activeShow();
   const rows = [];
-  for (const [slug, list] of d.apps){
+  for (const [slug, all] of d.apps){
+    // Same scoping as the worker's `format` predicate, so the two paths cannot
+    // disagree about who is on a board.
+    const list = show === 'all' ? all : all.filter(a => (a.format || 'total-drama') === show);
     if (list.length < minSeasons) continue;
     const vals = list.map(stat.pick).filter(v => typeof v === 'number' && !Number.isNaN(v));
     if (!vals.length) continue;
@@ -473,7 +497,11 @@ async function localRelationships(slug){
 async function getLeaderboard(statKey, limit, minSeasons){
   if (source !== 'local'){
     try {
-      const r = await apiGet(`/api/leaderboard?stat=${encodeURIComponent(statKey)}&limit=${limit}&minSeasons=${minSeasons}`);
+      // The endpoint has taken a format since sub-project B; the page just
+      // never sent one, so every board was all-shows however the switcher read.
+      const show = activeShow();
+      const scope = show === 'all' ? '' : `&format=${encodeURIComponent(show)}`;
+      const r = await apiGet(`/api/leaderboard?stat=${encodeURIComponent(statKey)}&limit=${limit}&minSeasons=${minSeasons}${scope}`);
       setSource('worker', '');
       return r;
     } catch (e){
@@ -645,6 +673,8 @@ document.getElementById('board').addEventListener('click', async ev => {
       Object.entries(STATS).map(([k,v]) => `<option value="${k}">${esc(v.label)}</option>`).join('');
     setSource('local', 'Live database unreachable — showing results computed from the local data files instead. Everything still works; numbers may lag the newest season.');
   }
+  await window._showSwitcherReady;
+  window.addEventListener('showchange', renderBoard);
   renderBoard();
 })();
 </script>

@@ -290,6 +290,18 @@
   </div>
 </footer>
 
+<!-- The show switcher lives in the site header, so the choice follows you
+     between pages. A classic script cannot import, so this pair hands it over —
+     the same shape seasons.html and rankings.html already use. -->
+<script>
+window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve = resolve; });
+</script>
+<script type="module">
+  import { currentShow, ALL } from './js/show-switcher.js';
+  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
+  window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
+  window._showSwitcherResolve(window.showSwitcher);
+</script>
 <script>
 // ── State ──────────────────────────────────────────────────────
 const TIER_ORDER = { 'S+': 0, 'S': 1, 'A': 2, 'B': 3, 'C': 4, 'D': 5, null: 6, undefined: 6 };
@@ -298,6 +310,9 @@ const TIER_COLORS = { 'S+':'#f59e0b','S':'#a78bfa','A':'#34d399','B':'#60a5fa','
 let allPlayers = [];
 let allRankings = [];
 let allSeasonNums = [];
+// Built once from every player, so filtering by show can ask what somebody
+// played without rebuilding the map on each keystroke.
+let lookupAll = {};
 let sortMode = 'tier'; // 'tier' | 'name' | 'seasons' | 'best'
 let filterMode = 'all';
 let filterText = '';
@@ -368,6 +383,7 @@ async function loadData() {
   });
   allSeasonNums = Array.from(byKey.values())
     .sort((a, b) => a.format.localeCompare(b.format) || a.number - b.number);
+  lookupAll = buildLookup(allPlayers);
 }
 
 /**
@@ -456,8 +472,35 @@ async function loadCastSizes() {
 }
 
 // ── Render ────────────────────────────────────────────────────
+/**
+ * The show being looked at, or ALL.
+ *
+ * The switcher is mounted on every page by the site header, so it has been
+ * sitting on this one looking operable and changing nothing. A control that
+ * appears to work is worse than no control.
+ */
+function activeShow() {
+  const sw = window.showSwitcher;
+  return sw ? sw.currentShow() : 'all';
+}
+
+/** The seasons this page is currently about. */
+function shownSeasons() {
+  const show = activeShow();
+  return show === 'all' ? allSeasonNums : allSeasonNums.filter(r => r.format === show);
+}
+
 function renderGrid() {
   let players = allPlayers.slice();
+
+  // Scope to the chosen show: its columns, and only the people who were in them.
+  // Leaving every player in place would answer "show me Big Brother" with a grid
+  // mostly full of dashes.
+  const seasons = shownSeasons();
+  if (activeShow() !== 'all') {
+    const keys = new Set(seasons.map(r => r.key));
+    players = players.filter(p => Object.keys(lookupAll[p.id] || {}).some(k => keys.has(k)));
+  }
 
   // Filter
   if (filterText) {
@@ -471,10 +514,10 @@ function renderGrid() {
   if (filterMode === 'a')  players = players.filter(p => p._tier === 'A');
 
   players = sortPlayers(players);
-  const lookup = buildLookup(players);
+  const lookup = lookupAll;
 
   // Header
-  const seasonHeaders = allSeasonNums.map(ref =>
+  const seasonHeaders = seasons.map(ref =>
     `<th class="season-col"><a href="season_ref.html?season=${ref.href}" style="color:var(--muted);text-decoration:none;font-size:10px;">${ref.label}</a></th>`
   ).join('');
 
@@ -482,7 +525,7 @@ function renderGrid() {
   const rows = players.map(p => {
     const tierColor = TIER_COLORS[p._tier] || '#94a3b8';
     const tierLabel = p._tier || '—';
-    const cells = allSeasonNums.map(ref => {
+    const cells = seasons.map(ref => {
       const placement = lookup[p.id] ? lookup[p.id][ref.key] : undefined;
       if (placement === undefined) {
         return `<td><div class="tl-cell absent">—</div></td>`;
@@ -547,7 +590,10 @@ document.getElementById('tlSortToggle').addEventListener('click', function(e) {
 
 // ── Init ──────────────────────────────────────────────────────
 (async function() {
-  await Promise.all([loadData(), loadCastSizes()]);
+  await Promise.all([loadData(), loadCastSizes(), window._showSwitcherReady]);
+  // Re-draw when the header's switcher changes shows. Without this the control
+  // is mounted on the page, looks operable, and does nothing.
+  window.addEventListener('showchange', renderGrid);
   renderGrid();
 })();
 </script>

@@ -994,6 +994,11 @@
             <div class="season-controls-label">Live to Site</div>
             <button class="btn btn-secondary btn-sm" id="live-sync-btn" onclick="syncEpisodeToSite()" style="margin-bottom:2px;width:100%" title="Push the current standings to the live site. No commit, no rebuild — visitors see it on their next page load.">🔴 Sync episode to site</button>
             <div id="live-sync-note" class="season-controls-note" style="margin-bottom:6px"></div>
+            <!-- The refresh never rewrites a night that already has a feed. This
+                 is the escape hatch for when you want exactly that, for exactly
+                 one episode. -->
+            <button class="btn btn-secondary btn-sm" onclick="redoEpisodeSocial()" style="margin-bottom:2px;width:100%" title="Throw away one episode's posts and make them again — with the AI writer if it is switched on. Every other episode is left exactly as it is.">💬 Redo one episode's social</button>
+            <div id="redo-social-note" class="season-controls-note" style="margin-bottom:6px">Everything either side of it is untouched.</div>
             <button class="btn btn-secondary btn-sm" id="season-sync-btn" onclick="syncSeasonDataFromRepo()" style="margin-bottom:2px;width:100%" title="Repair tool. Rebuilds the season and ranking tables from the JSON in the repo. Export Season already does this, so you only need it if an export fell back to downloading, or you committed database files by hand.">🔄 Re-sync season data</button>
             <div class="season-controls-note" style="margin-bottom:6px">Only needed if an export fell back to downloading files.</div>
             <div class="divider" style="margin:8px 0"></div>

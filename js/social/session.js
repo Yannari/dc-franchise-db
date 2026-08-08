@@ -75,13 +75,48 @@ export async function refreshSocialFeedWritten({ rebuild = false } = {}) {
   }
 }
 
-export function refreshSocialFeed({ rebuild = false } = {}) {
+/**
+ * Throw away one episode's reactions and make them again.
+ *
+ * The refresh deliberately never rewrites an episode that already has a feed —
+ * what the audience said about a night somebody watched is not a thing to
+ * re-roll. This is the escape hatch for when you actually want it: one night,
+ * named, and every other night untouched.
+ *
+ * `addEpisodePosts` replaces that episode's rows rather than appending, and
+ * publishing sends the whole store, so the episodes either side go up exactly
+ * as they already were.
+ */
+export async function rebuildEpisodeFeed(episode) {
+  const ep = Number(episode);
+  if (!Number.isFinite(ep) || ep < 1) return { built: [], error: 'not an episode number' };
+  const opts = { rebuild: true, only: ep };
+  if (!socialWriterOn()) return refreshSocialFeed(opts);
+  try {
+    return await ensureFeedsWritten(gs, {
+      format: currentFormat(),
+      season: currentSeasonNumber(),
+      popularity: gs?.popularity || null,
+      endpoint: writerEndpoint(seasonConfig),
+      ...opts,
+    });
+  } catch (err) {
+    console.warn('social feed: could not rebuild —', err?.message || err);
+    return refreshSocialFeed(opts);
+  }
+}
+
+export function refreshSocialFeed({ rebuild = false, only = null } = {}) {
   try {
     return ensureFeeds(gs, {
       format: currentFormat(),
       season: currentSeasonNumber(),
       popularity: gs?.popularity || null,
       rebuild,
+      // Forwarded, or a request to redo ONE night quietly redid nothing —
+      // `rebuild` without `only` is the whole season, and dropping `only` on
+      // the floor turned the narrowest operation into the widest one.
+      only,
     });
   } catch (err) {
     console.warn('social feed: could not update —', err?.message || err);

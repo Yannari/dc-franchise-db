@@ -3080,36 +3080,80 @@ RETURN
 }
 
 async function socialCrowd(packet, env) {
-  const key = env?.ANTHROPIC_API_KEY;
-  if (!key) throw new Error('no ANTHROPIC_API_KEY');
+  const prompt = buildSocialPrompt(packet);
+  // OpenAI first, Anthropic second. Two providers is not belt and braces here —
+  // this is the one path in the worker that runs on EVERY episode of every
+  // season, so a provider having a bad hour is a feed that quietly goes back to
+  // templates for a whole run. Whichever answers first with usable posts wins,
+  // and if neither does the client falls back on its own.
+  const attempts = [];
+  if (env.OPENAI_API_KEY) attempts.push(() => socialViaOpenAI(prompt, env));
+  if (env.ANTHROPIC_API_KEY) attempts.push(() => socialViaAnthropic(prompt, packet, env));
+  if (!attempts.length) throw new Error("no OPENAI_API_KEY or ANTHROPIC_API_KEY");
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
+  let lastErr = null;
+  for (const attempt of attempts) {
+    try {
+      const posts = socialUsable(await attempt(), packet);
+      if (posts.length) return posts;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return [];
+}
+
+/** Raw model text in, validated posts out. Shared by both providers. */
+function socialUsable(text, packet) {
+  const parsed = parseSocialJson(text || "");
+  const posts = Array.isArray(parsed?.posts) ? parsed.posts : [];
+  // Validated here as well as on the client. See the section header.
+  return posts
+    .map(p => ({ text: String(p?.text || "").trim(), cites: [].concat(p?.cites || []) }))
+    .filter(p => p.text && socialLocalCheck(p, packet));
+}
+
+async function socialViaOpenAI(prompt, env) {
+  const res = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+    body: JSON.stringify({
+      // A crowd of one-line posts is a cheap job. The expensive models write
+      // better essays, which is exactly what is not wanted here.
+      model: "gpt-5.5-mini",
+      instructions: prompt,
+      input: "Write the posts.",
+      text: { format: { type: "json_object" } },
+    }),
+  });
+  if (!res.ok) throw new Error(`openai ${res.status}`);
+  const data = await res.json();
+  if (typeof data?.output_text === "string" && data.output_text.trim()) return data.output_text;
+  if (Array.isArray(data?.output)) {
+    return data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("");
+  }
+  return "";
+}
+
+async function socialViaAnthropic(prompt, packet, env) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      // A crowd of one-line posts is a cheap-model job. The expensive model
-      // writes better essays, which is precisely what is not wanted.
-      model: packet.register === 'scream' ? MODELS.fast : MODELS.creative,
+      model: packet.register === "scream" ? MODELS.fast : MODELS.creative,
       max_tokens: 1400,
       temperature: 1,
-      messages: [{ role: 'user', content: buildSocialPrompt(packet) }],
+      messages: [{ role: "user", content: prompt }],
     }),
   });
   if (!res.ok) throw new Error(`anthropic ${res.status}`);
-
   const data = await res.json();
-  const text = data?.content?.[0]?.text || '';
-  const parsed = parseSocialJson(text);
-  const posts = Array.isArray(parsed?.posts) ? parsed.posts : [];
-
-  // Validated here as well as on the client. See the file header.
-  return posts
-    .map(p => ({ text: String(p?.text || '').trim(), cites: [].concat(p?.cites || []) }))
-    .filter(p => p.text && socialLocalCheck(p, packet));
+  return data?.content?.[0]?.text || "";
 }
 
 /** The subset of the client's rules that can be checked without its imports. */

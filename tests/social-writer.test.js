@@ -346,6 +346,47 @@ describe('it never blocks a season', () => {
     expect(written.filter(p => p.topic === 'scream').every(p => !p.written)).toBe(true);
   }, 120000);
 
+  it('redoes one episode and leaves the others exactly as they were', async () => {
+    const { ensureFeeds } = await import('../js/social/live.js');
+    const { rebuildEpisodeFeed } = await import('../js/social/session.js');
+    const { postsForEpisode } = await import('../js/social/store.js');
+    const { simulateBBEpisode } = await import('../js/bb-run.js');
+
+    house();
+    Object.assign(seasonConfig, { jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off',
+      seasonNumber: 1, format: 'big-brother' });
+    seasonConfig.twistSchedule = [];
+    for (let w = 0; w < 4; w++) if (!simulateBBEpisode()) break;
+    ensureFeeds(gs, { format: 'big-brother', season: 1 });
+
+    const before = {};
+    for (const ep of [1, 2, 3]) before[ep] = postsForEpisode(gs, ep).map(p => p.text);
+    expect(before[2].length).toBeGreaterThan(0);
+
+    // Writer off, so this is the plain rebuild — the operation has to be
+    // narrow whether or not a model is involved.
+    delete seasonConfig.socialWriter;
+    await rebuildEpisodeFeed(2);
+
+    // The named night was made again...
+    expect(postsForEpisode(gs, 2).length).toBeGreaterThan(0);
+    // ...and its neighbours were not touched, which is the whole request.
+    expect(postsForEpisode(gs, 1).map(p => p.text)).toEqual(before[1]);
+    expect(postsForEpisode(gs, 3).map(p => p.text)).toEqual(before[3]);
+    // Nor duplicated: the store replaces an episode rather than appending.
+    const ids = postsForEpisode(gs, 2).map(p => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  }, 120000);
+
+  it('refuses to redo a night that is not an episode', async () => {
+    const { rebuildEpisodeFeed } = await import('../js/social/session.js');
+    house();
+    for (const bad of [0, -1, 'x', null, undefined]) {
+      const res = await rebuildEpisodeFeed(bad);
+      expect(res.error, `accepted ${bad}`).toBeTruthy();
+    }
+  });
+
   it('is byte-identical to the old feed when the writer is off', async () => {
     const { ensureFeeds, ensureFeedsWritten } = await import('../js/social/live.js');
     const { postsForEpisode } = await import('../js/social/store.js');

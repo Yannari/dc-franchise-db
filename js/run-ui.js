@@ -2888,3 +2888,38 @@ export function renderResultsTab() {
   renderSeasonRetrospective();
 }
 
+
+/**
+ * Redo one episode's audience, and only that one.
+ *
+ * `refreshSocialFeed` deliberately never rewrites a night that already has a
+ * feed — what the audience said about an episode somebody watched is not a
+ * thing to re-roll on every refresh. This is the hatch for when you do want it:
+ * name the episode, and every other night is left exactly as it is.
+ */
+export async function redoEpisodeSocial() {
+  const note = document.getElementById('redo-social-note');
+  const say = msg => { if (note) note.textContent = msg; };
+  if (!gs || !gs.initialized) { alert('Load a season first.'); return; }
+
+  const highest = Math.max(
+    (gs.episodeHistory || []).length,
+    ...(gs.bb?.weeks || []).map(w => Number(w?.num) || 0), 0);
+  const asked = prompt(`Which episode's social should be made again? (1–${highest})`,
+    String(highest));
+  if (!asked) return;
+  const ep = Number(asked);
+  if (!Number.isFinite(ep) || ep < 1 || ep > highest) { say(`No episode ${asked}.`); return; }
+
+  const written = window.socialWriterOn?.();
+  say(written ? `Writing episode ${ep}…` : `Rebuilding episode ${ep}…`);
+  try {
+    const res = await window.rebuildEpisodeFeed?.(ep);
+    const posts = (gs.social?.posts || []).filter(p => Number(p.episode) === ep).length;
+    say(res?.written
+      ? `Episode ${ep}: ${posts} posts, ${res.written} written. Sync to publish.`
+      : `Episode ${ep}: ${posts} posts. Sync to publish.`);
+  } catch (err) {
+    say(`Episode ${ep} could not be rebuilt — ${err?.message || err}`);
+  }
+}

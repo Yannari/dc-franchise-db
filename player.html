@@ -594,6 +594,32 @@ function renderPlayerProfile(player) {
   const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
 
   /**
+   * Seasons, BROKEN DOWN BY SHOW.
+   *
+   * "3 seasons" is true and useless for somebody who played two of one show and
+   * one of another — it reads as a three-season veteran of a single franchise,
+   * which is a different career. players_database has carried the breakdown in
+   * `byShow` since the multi-show migration; this page had simply never shown it.
+   *
+   * Falls back to the flat count for anybody with one show, where the breakdown
+   * would just be the same number said twice.
+   */
+  const showCounts = (() => {
+    const by = player.byShow || {};
+    const rows = Object.entries(by)
+      .map(([fmt, v]) => ({ fmt, n: Number(v?.seasons) || 0 }))
+      .filter(r => r.n > 0);
+    if (rows.length < 2) return null;
+    const NAMES = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+    return rows
+      .sort((a, b) => b.n - a.n)
+      .map(r => `${r.n} ${NAMES[r.fmt] || r.fmt}`)
+      .join(' &nbsp;•&nbsp; ');
+  })();
+  const seasonsLabel = showCounts
+    || `${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}`;
+
+  /**
    * A season detail, as the three things a link needs.
    *
    * A bare season number stopped identifying a season when a second show
@@ -610,7 +636,18 @@ function renderPlayerProfile(player) {
     };
   };
   const isWinner = player.wins > 0;
-  const winSeason = isWinner ? (player.seasonDetails.find(s => s.placement===1)||{}).season : null;
+  const winDetail = isWinner ? (player.seasonDetails.find(s => s.placement===1) || null) : null;
+  const winSeason = winDetail ? winDetail.season : null;
+  /* "(S9 Winner)" is right for Total Drama and wrong for everything else — a
+     Big Brother champion was being credited with winning a Total Drama season
+     of the same number. */
+  const winLabel = (() => {
+    if (!winDetail) return '';
+    const fmt = winDetail.format || 'total-drama';
+    if (fmt === 'total-drama') return ` (S${winDetail.season} Winner)`;
+    const prefix = String(winDetail.seasonId || fmt).split('-')[0].toUpperCase();
+    return ` (${prefix}${winDetail.season} Winner)`;
+  })();
   // Advantages = idols + non-idol advantages (extra vote, vote steal, amulet, etc.)
   // Per season: prefer advPlayed+advHeld when tracked (advPlayed already counts idol
   // plays, so don't add idolsFound on top); fall back to idolsFound for older seasons
@@ -846,7 +883,7 @@ function renderPlayerProfile(player) {
     <div class="pp-tier-pill">${tc.icon} ${tc.label}</div>
     <div class="pp-name">${player.name}${isWinner?' 👑':''}</div>
     <div class="pp-fame" id="player-fame"></div>
-    <div class="pp-meta">${player.totalSeasons} season${player.totalSeasons>1?'s':''} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winSeason?' (S'+winSeason+' Winner)':''}</div>
+    <div class="pp-meta">${seasonsLabel} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winLabel}</div>
     <div class="pp-badges">`;
   (player.badges||[]).forEach(b => {
     let c = b.includes('Winner')||b.includes('WINNER') ? 'gold'
@@ -878,7 +915,7 @@ function renderPlayerProfile(player) {
   }
 
   // ── CAREER STATS ─────────────────────────────────────────
-  html += `<div class="pp-section pp-reveal"><h2>Career at a Glance</h2><span class="pp-pill">${player.totalSeasons} season${player.totalSeasons>1?'s':''}</span></div>`;
+  html += `<div class="pp-section pp-reveal"><h2>Career at a Glance</h2><span class="pp-pill">${seasonsLabel}</span></div>`;
 
   // Bar stats with relative maximums
   const _bars = [
@@ -902,7 +939,10 @@ function renderPlayerProfile(player) {
 
   // Mini chips for non-bar stats
   html += `<div class="pp-mini-chips pp-reveal">`;
-  html += `<div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">Seasons</div></div>`;
+  /* The chip stays a single number — it is a number tile — but a two-show career
+     says which shows underneath rather than implying one franchise. */
+  html += `<div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">${
+    showCounts ? 'Seasons (' + showCounts.replace(/&nbsp;•&nbsp;/g, '+').replace(/\s+/g, ' ') + ')' : 'Seasons'}</div></div>`;
   html += `<div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>`;
   html += `<div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>`;
   if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate</div></div>`;

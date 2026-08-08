@@ -280,3 +280,74 @@ returns the default format for a bare integer, which is what makes bookmarks saf
   registry — CLAUDE.md requires it to stay a leaf. A drift guard in
   `tests/shows-registry.test.js` asserts the two agree, so they cannot silently
   diverge.
+
+---
+
+## Carried forward 2026-08-08 — the character page becomes a wiki
+
+Three requests from the same conversation, recorded together because they are
+one arc: the player page stops being a stat sheet and becomes the character's
+page, which is the foundation the per-character social profiles sit on.
+
+### 1. Career totals must separate the shows — PARTLY DONE 2026-08-08
+
+A player with two Total Drama seasons and one Big Brother season was described
+as having played **3 seasons**. True, and useless: it reads as a three-season
+veteran of one franchise, which is a different career.
+
+`players_database.json` has carried the breakdown in `byShow` since the
+multi-show migration — `{total-drama:{seasons:2}, big-brother:{seasons:1}}` —
+and the page had never rendered it. The header, the Career at a Glance pill and
+the Seasons chip now read "2 Total Drama • 1 Big Brother", and a single-show
+career still reads "4 seasons" rather than saying the same number twice.
+
+**Still merged on that page**, and each needs the same treatment:
+
+- the stat bars and mini chips (`totalChallengeWins`, `totalImmunityWins`,
+  `totalIdolsFound`, `totalVotesAgainst`) are cross-format sums. `byShow` holds
+  Big Brother's own counters — `totalCompWins`, `hohWins`, `vetoWins`,
+  `timesNominated` — which have no Total Drama equivalent and are currently
+  displayed nowhere at all.
+- `winRate` and `avgPlacement` average across both shows.
+- the winner badge names ONE win. Wayne has two, in different shows, and the
+  header credits him with whichever season detail comes first.
+- `js/records.js` already recomputes per-show careers correctly
+  (`careersIn(players, format)`); the player page should read that rather than
+  growing its own second version.
+
+### 2. A wiki section on the character page
+
+An in-depth write-up per character, in the shape a fandom wiki uses: the whole
+career across every show, personality, relationships and whether they are in a
+couple, notable moments, running gags.
+
+What already exists to build it from, none of it currently on the page:
+
+- `voice-profiles.json` — the personality prose, and now a structured bio
+  (age, ethnicity, nationality) via `js/bio.js`.
+- `seasonDetails[].keyMoments` / `notes` / `story` — per-season narrative
+  already written by the export's AI pass.
+- `unbreakableBonds` per season — who they were close to.
+- `gs.showmances` at play time; nothing survives export yet, so **couples are
+  the one piece with no published source**. Recording showmances into the
+  season document is a prerequisite, in the same way comp names were for
+  competition records.
+- `js/fame.js` for standing, `js/records.js` for what they hold.
+
+### 3. Per-character social profiles
+
+The stated objective the other two serve: every character with their own social
+page — not everybody posting constantly, but the more famous you are the more
+followers you gain. Followers are the metric that continues past five stars
+("you are famous, and you can still aim higher"), and posts range over their
+life rather than only the show: a new baby, a wedding, an opinion about
+somebody else's season.
+
+`js/social/crowd.js` already models followers for the fan personas and derives
+them from tenure and volatility; the same currency extends to alumni. The
+feed's `chat` stream already writes in an alumnus's voice from their real
+record.
+
+Sequence: career separation (1) gives the page honest numbers, the wiki
+section (2) gives it prose, and the social profile (3) is that page with a
+timeline attached. The user's own ordering: this one comes last.

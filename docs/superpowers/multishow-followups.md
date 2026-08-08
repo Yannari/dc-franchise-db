@@ -351,3 +351,66 @@ record.
 Sequence: career separation (1) gives the page honest numbers, the wiki
 section (2) gives it prose, and the social profile (3) is that page with a
 timeline attached. The user's own ordering: this one comes last.
+
+---
+
+## The AI bio writer — designed 2026-08-08, deliberately NOT built
+
+Recorded because the reason to wait is a fact about the data, not a preference,
+and it will stop being true after one season.
+
+**The point.** A bio is not a personality profile plus a list of placements. The
+Character section on `player.html` assembles facts; the prose it deserves has to
+be written, and rewritten as a career grows.
+
+**What is already in place:**
+
+- `js/wiki.js` → `buildDossier()` assembles everything known about a character.
+- `dossierFacts(dossier)` reduces it to a flat, small bundle for a prompt — the
+  same "facts, not mutable state" contract `docs/superpowers/specs/2026-08-08-social-live-feed-frontend-design.md`
+  defines for the feed's featured posts. Anything the model states that is not
+  in the bundle is an invention, which is what makes it checkable.
+- `dossierHash(dossier)` fingerprints those facts.
+
+**What the hash is for, and it is the whole economics.** A character page is
+read far more often than a career changes. Prose is written when a season is
+published or a record changes hands — never per view. Store against
+`(playerId, hash)`; regenerate only on a mismatch.
+
+**What is still needed:**
+
+1. an endpoint beside `worker/worker-episode-live.js` (hand-deployed — see the
+   worker-writing memory before touching it),
+2. storage for the prose keyed by player and hash. D1, alongside `roster`,
+3. a trigger: `publishSeason` already knows a season just landed, and already
+   ends the live run there. Same place.
+
+**Why it waits.** Every published season predates showmances, alliances,
+rivalries and competition names. A writer run today would describe careers with
+no couples, no alliances and no comp history, then need re-running the moment
+the first real season lands. One season from now it has all of it.
+
+**The social evolution folds in for free.** The feed already records what the
+audience said about a player; "how they were received" becomes another fact in
+the bundle rather than another system.
+
+## Before the first real Big Brother season — what the export now captures
+
+The pattern that keeps repeating: the ENGINE knows something, the EXPORT drops
+it, and by the time anybody notices the season is finished and the data is gone.
+Fixed so far, all landing in the first season exported after 2026-08-08:
+
+- `hohComp` / `vetoComp` per week — id, name, winner, top five. Without it
+  "youngest to ever win the Wall" is unanswerable.
+- `showmances` — the pair, when it started, when it ended, and how.
+- `alliances` — name, members, when formed, who broke it.
+- `rivalries` — the Rivals twist pairing.
+
+**Big Brother 1 as published has none of these**, and cannot get them without
+being re-exported from its save. It is a placeholder, so the first real season
+is the first fully-recorded one either way.
+
+**Still dropped, if anybody wants them later:** per-week competition SCORES (the
+document keeps placements only), the have-not history, and per-week alliance
+membership changes. None of these have a consumer yet, which is the honest
+reason they are not exported.

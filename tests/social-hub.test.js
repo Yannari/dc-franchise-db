@@ -181,9 +181,14 @@ describe('the publish button says what it sends', () => {
     // while the label said "Sync episode to site". The word "episode" is true
     // of the STANDINGS riding along with it and false of the feed, and the gap
     // is why somebody has to ask whether their rebuild actually went out.
-    expect(HTML).toMatch(/🔴 Publish to site/);
-    expect(HTML, 'the label still promises one episode')
-      .not.toMatch(/Sync episode to site/);
+    // Scoped to the button, not the file: the comment above it QUOTES the old
+    // label to explain why it changed, and a whole-file search matched the
+    // explanation and failed on the fix.
+    const btn = HTML.slice(HTML.indexOf('id="live-sync-btn"'),
+      HTML.indexOf('id="live-sync-btn"') + 400);
+    expect(btn).toMatch(/🔴 Publish to site/);
+    expect(btn, 'the label still promises one episode')
+      .not.toMatch(/Sync episode to site<\/button>/);
     expect(HTML).toMatch(/every post the season has/i);
   });
 

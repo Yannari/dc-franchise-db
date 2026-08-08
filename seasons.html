@@ -395,14 +395,17 @@ function getSeasonColor(num) {
 let allSeasons = [];
 
 function formatOf(season) {
-  return season.format || window.showSwitcher.DEFAULT_FORMAT;
+  // Without the registry there is nothing to name the format with, and nothing
+  // reads it either — the ungrouped fallback neither groups nor filters.
+  return season.format || (window.showSwitcher || {}).DEFAULT_FORMAT || '';
 }
 
 function renderSeasons(seasons) {
   const grid = document.getElementById('seasons-grid');
-  const { orderFormats, ALL, SHOWS } = window.showSwitcher;
+  const sw = window.showSwitcher || null;
+  const ALL = sw ? sw.ALL : 'all';
 
-  const show = window._sw ? window._sw.current() : ALL;
+  const show = (sw && window._sw) ? window._sw.current() : ALL;
   const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
 
   // "Latest" is per show now — season 14 of one show says nothing about another.
@@ -421,7 +424,7 @@ function renderSeasons(seasons) {
 
   const card = (season, idx) => {
     const fmt = formatOf(season);
-    const showShort = (SHOWS[fmt] || {}).short || '';
+    const showShort = sw ? ((sw.SHOWS[fmt] || {}).short || '') : '';
     const sc = getSeasonColor(season.seasonNumber);
     const isMR = season.seasonNumber === mostRecent[fmt];
     const slug = (season.winner?.playerSlug || season.winner?.name || '').toLowerCase().replace(/[^a-z0-9]/g,'-');
@@ -490,14 +493,16 @@ function renderSeasons(seasons) {
 </a>`;
   };
 
-  if (show !== ALL) {
+  if (!sw || show !== ALL) {
+    // No switcher means no headings to group under — every season, plain, the
+    // way this page read before it knew about shows.
     grid.innerHTML = visible.map(card).join('');
   } else {
     // Real headings, so one Big Brother season reads as deliberate rather than lost.
-    const groups = orderFormats(visible.map(formatOf));
+    const groups = sw.orderFormats(visible.map(formatOf));
     grid.innerHTML = groups.map(f => {
       const mine = visible.filter(s => formatOf(s) === f);
-      const meta = SHOWS[f] || {};
+      const meta = sw.SHOWS[f] || {};
       return `<h2 class="show-group-heading" data-show-group="${f}">`
            + `${meta.emoji || ''} ${meta.name || f}`
            + `<span class="show-group-n"> · ${mine.length}</span></h2>`
@@ -532,7 +537,16 @@ function applyFilters() {
 
 (async function() {
   try {
-    await window._showSwitcherReady;
+    /* The switcher is an enhancement, not a dependency. If the module never
+       arrives — a 404, a throw, or file:// where browsers block ES modules —
+       the page must still list every season. Waiting forever turns a missing
+       nicety into a page that never loads. */
+    const switcherReady = Promise.race([
+      window._showSwitcherReady,
+      new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+    ]);
+    await switcherReady;
+
     const [seasonsRes, franchiseRes] = await Promise.all([
       fetch('seasons_database.json'),
       fetch('franchise_database.json').catch(() => null)
@@ -560,11 +574,15 @@ function applyFilters() {
     }));
 
     // Formats come from the data, never from a list written here.
-    const { mountShowSwitcher, orderFormats, DEFAULT_FORMAT } = window.showSwitcher;
-    window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
-      formats: orderFormats(allSeasons.map(s => s.format || DEFAULT_FORMAT)),
-      onChange: applyFilters
-    });
+    if (window.showSwitcher) {
+      const { mountShowSwitcher, orderFormats, DEFAULT_FORMAT } = window.showSwitcher;
+      window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
+        formats: orderFormats(allSeasons.map(s => s.format || DEFAULT_FORMAT)),
+        onChange: applyFilters
+      });
+    } else {
+      console.warn('Show switcher unavailable — listing every season ungrouped.');
+    }
 
     document.getElementById('season-search').addEventListener('input', applyFilters);
     document.getElementById('season-sort').addEventListener('change', applyFilters);

@@ -382,7 +382,16 @@ function awardItem(icon, label, name, slug, detail) {
 
 (async function() {
   try {
-    await window._showSwitcherReady;
+    /* The switcher is an enhancement, not a dependency. If the module never
+       arrives — a 404, a throw, or file:// where browsers block ES modules —
+       the page must still list every season. Waiting forever turns a missing
+       nicety into a page that never loads. */
+    const switcherReady = Promise.race([
+      window._showSwitcherReady,
+      new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+    ]);
+    await switcherReady;
+
     const data = await fetch('seasons_database.json').then(r => r.json());
     if (!data.seasons || !data.seasons.length) {
       document.getElementById('awards-grid').innerHTML = '<div style="text-align:center;padding:48px;opacity:.5;grid-column:1/-1;">No season data found.</div>';
@@ -394,10 +403,14 @@ function awardItem(icon, label, name, slug, detail) {
 
     const seasons = [...data.seasons].sort((a,b) => a.seasonNumber - b.seasonNumber);
 
-    const { mountShowSwitcher, orderFormats, ALL, SHOWS, DEFAULT_FORMAT } = window.showSwitcher;
-    const formatOf = s => s.format || DEFAULT_FORMAT;
+    const sw = window.showSwitcher || null;
+    const ALL = sw ? sw.ALL : 'all';
+    const SHOWS = sw ? sw.SHOWS : {};
+    // Without the registry there is nothing to name the format with, and nothing
+    // reads it either — the ungrouped fallback neither groups nor filters.
+    const formatOf = s => s.format || (sw ? sw.DEFAULT_FORMAT : '') || '';
     // Formats come from the data, never from a list written here.
-    const allFormats = orderFormats(seasons.map(formatOf));
+    const allFormats = sw ? sw.orderFormats(seasons.map(formatOf)) : [];
 
     const filterBar = document.getElementById('season-filter');
 
@@ -473,7 +486,7 @@ function awardItem(icon, label, name, slug, detail) {
     };
 
     function renderAwards() {
-      const show = window._sw ? window._sw.current() : ALL;
+      const show = (sw && window._sw) ? window._sw.current() : ALL;
       const visible = show === ALL ? seasons : seasons.filter(s => formatOf(s) === show);
       buildFilterButtons(visible);
 
@@ -482,11 +495,13 @@ function awardItem(icon, label, name, slug, detail) {
         return;
       }
 
-      if (show !== ALL) {
+      if (!sw || show !== ALL) {
+        // No switcher means no headings to group under — every season, plain, the
+        // way this page read before it knew about shows.
         grid.innerHTML = visible.map(card).join('');
       } else {
         // Real headings, so one Big Brother season reads as deliberate rather than lost.
-        const groups = orderFormats(visible.map(formatOf));
+        const groups = sw.orderFormats(visible.map(formatOf));
         grid.innerHTML = groups.map(f => {
           const mine = visible.filter(s => formatOf(s) === f);
           const meta = SHOWS[f] || {};
@@ -498,10 +513,14 @@ function awardItem(icon, label, name, slug, detail) {
       }
     }
 
-    window._sw = mountShowSwitcher(document.getElementById('show-switcher'), {
-      formats: allFormats,
-      onChange: renderAwards
-    });
+    if (sw) {
+      window._sw = sw.mountShowSwitcher(document.getElementById('show-switcher'), {
+        formats: allFormats,
+        onChange: renderAwards
+      });
+    } else {
+      console.warn('Show switcher unavailable — listing every season ungrouped.');
+    }
     renderAwards();
 
   } catch (err) {

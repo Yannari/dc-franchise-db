@@ -212,6 +212,66 @@ export const PHRASINGS = {
     },
   },
 
+  // ── the scream ──────────────────────────────────────────────────────────
+  //
+  // Nothing here is a sentence about a game. Every line is under forty
+  // characters, most are about a person rather than a move, and none of them
+  // would survive being pasted onto a different night — not because they carry
+  // history, but because they carry a NAME and no argument. Timeline only: a
+  // hosted room does not do this.
+  scream: {
+    'live-reaction': {
+      timeline: [
+        'NOT {subject} 😭',
+        'IM SCREAMING',
+        'NO NO NO NO',
+        'not {subject} 💔',
+        'im actually heartbroken',
+        '{subject} NO',
+        'i cannot do this again',
+        'WHAT',
+        'nah im done',
+        'i am on the FLOOR',
+        'not like this man',
+        '{subject} deserved better',
+        'im so sad rn',
+        'crying at 1am over {subject}',
+      ],
+    },
+    dunk: {
+      timeline: [
+        'GET HIM {actor}',
+        'GET THEM {actor}',
+        'GOOD',
+        'finally',
+        '{subject} had that coming',
+        'lmaooo {subject}',
+        'not {subject} crying about it',
+        'byeeee {subject}',
+        '{actor} you snake 😭',
+        'about time',
+        'couldnt be me',
+        '{subject} is so annoying',
+      ],
+    },
+    defence: {
+      timeline: [
+        '{subject} is the GOAT',
+        'LEAVE {subject} ALONE',
+        'protect {subject} at all costs',
+        'if {subject} goes i stop watching',
+        '{subject} did nothing wrong',
+        'my baby {subject} 🥺',
+        '{subject} carried this season',
+        'justice for {subject}',
+        '{actor} is such a b*tch to {subject} OMG',
+        'not {actor} doing that to {subject}',
+        '{subject} deserves the world',
+        'stop it. {subject} is right',
+      ],
+    },
+  },
+
   // ── the receipt ─────────────────────────────────────────────────────────
   //
   // Every line here spends `{receipt}` — the one fact from js/social/receipts.js
@@ -1214,11 +1274,11 @@ export const TOPIC_AIM = {
  * multiplier, which is the topic that owns that shape.
  */
 export const ARCHETYPE_PULL = {
-  stan: { 'receipts-out': 1.9, 'crowned': 2.6, 'robbed': 2.2, 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
-  hater: { 'receipts-out': 2.5, 'robbed': 2.0, 'jury-verdict': 1.6, 'crowned': 0.5, 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
-  analyst: { 'receipts-out': 2.2, 'jury-verdict': 2.4, 'crowned': 1.6, 'robbed': 1.8, 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
-  livefeeder: { 'receipts-out': 2.0, 'crowned': 1.8, 'jury-verdict': 1.6, 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
-  casual: { 'blindside-reaction': 1.8, 'thirst': 1.6, 'favourite-declaration': 1.5, 'shipping': 1.4, 'strategy-critique': 0.4, 'comp-talk': 0.4 },
-  chaos: { 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'personal-roast': 1.8, 'hypocrisy-watch': 1.5, 'kindness-noticed': 0.4 },
-  shipper: { 'shipping': 2.6, 'breakup-reaction': 2.2, 'showmance-concern': 1.8, 'thirst': 1.6, 'showmance-hate': 0.4, 'strategy-critique': 0.3 },
+  stan: { 'scream': 2.3, 'receipts-out': 1.9, 'crowned': 2.6, 'robbed': 2.2, 'harassment-defence': 2.4, 'favourite-declaration': 2.2, 'edit-critique': 1.8, 'love-them-hate-their-game': 1.6, 'hypocrisy-watch': 1.3, 'pile-on': 0.4, 'personal-roast': 0.35, 'fandom-infighting': 1.5 },
+  hater: { 'scream': 2.1, 'receipts-out': 2.5, 'robbed': 2.0, 'jury-verdict': 1.6, 'crowned': 0.5, 'pile-on': 2.4, 'personal-roast': 2.3, 'hypocrisy-watch': 2.0, 'personality-clash': 2.0, 'social-game-autopsy': 1.7, 'hate-them-rate-their-game': 1.8, 'showmance-hate': 1.6, 'harassment-defence': 0.3, 'favourite-declaration': 0.3 },
+  analyst: { 'scream': 0.15, 'receipts-out': 2.2, 'jury-verdict': 2.4, 'crowned': 1.6, 'robbed': 1.8, 'strategy-critique': 2.4, 'social-game-autopsy': 2.2, 'prediction': 2.2, 'comp-talk': 1.8, 'legacy-take': 1.6, 'hypocrisy-watch': 1.2, 'thirst': 0.2, 'shipping': 0.3, 'pile-on': 0.5, 'personal-roast': 0.35 },
+  livefeeder: { 'scream': 1.2, 'receipts-out': 2.0, 'crowned': 1.8, 'jury-verdict': 1.6, 'blindside-reaction': 2.0, 'comp-talk': 1.6, 'edit-critique': 1.5, 'steamroll-fatigue': 1.4, 'legacy-take': 0.6 },
+  casual: { 'scream': 2.6, 'blindside-reaction': 1.8, 'thirst': 1.6, 'favourite-declaration': 1.5, 'shipping': 1.4, 'strategy-critique': 0.4, 'comp-talk': 0.4 },
+  chaos: { 'scream': 2.2, 'fandom-infighting': 2.4, 'production-critique': 2.0, 'pile-on': 1.8, 'personal-roast': 1.8, 'hypocrisy-watch': 1.5, 'kindness-noticed': 0.4 },
+  shipper: { 'scream': 1.9, 'shipping': 2.6, 'breakup-reaction': 2.2, 'showmance-concern': 1.8, 'thirst': 1.6, 'showmance-hate': 0.4, 'strategy-critique': 0.3 },
 };

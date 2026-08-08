@@ -299,17 +299,36 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   const roomVoice = stream === 'chat' ? 0.35 : 1;
   const openers = DECORATIONS.openers[stream] || DECORATIONS.openers.timeline;
   const tails = DECORATIONS.tails[stream] || DECORATIONS.tails.timeline;
-  if (rng() < 0.3 * roomVoice + (stream === 'chat' ? 0.12 : 0)) {
+  // ── some posts are not sentences ──
+  //
+  // A `bare` topic is one where the whole effect is that nothing was composed:
+  // gluing "hold on." to the front of GET HIM ANASTASIA turns a scream back
+  // into a remark, which is exactly the register the scream exists to escape.
+  // It still SHOUTS — that is the opposite of decoration — and it still gets an
+  // emoji, because people do that.
+  const bare = !!topic.bare;
+  if (!bare && rng() < 0.3 * roomVoice + (stream === 'chat' ? 0.12 : 0)) {
     text = _pick(rng, openers) + text;
   }
-  if (rng() < (stream === 'chat' ? 0.3 : 0.25)) text = punctuate(text, 'normal', rng) + _pick(rng, tails);
+  if (!bare && rng() < (stream === 'chat' ? 0.3 : 0.25)) {
+    text = punctuate(text, 'normal', rng) + _pick(rng, tails);
+  }
 
-  text = shout(text, (persona.voice.caps || 0) * roomVoice, rng);
+  // `shout` capitalises a RUN of one to three words, which is right for a
+  // sentence somebody got worked up in the middle of and wrong for a scream:
+  // it produced "i AM on the FLOOR". Nobody half-shouts four words. A bare post
+  // is all of it or none of it.
+  if (bare) {
+    if (rng() < 0.45) text = text.toUpperCase();
+  } else {
+    text = shout(text, (persona.voice.caps || 0) * roomVoice, rng);
+  }
   // The hosted room sands the tics off. Somebody who types "!!!" on the timeline
   // mostly does not in a chat they are hosting — proportionally, not always.
   let punct = persona.voice.punctuation || 'normal';
   if (stream === 'chat' && punct !== 'normal' && rng() > roomVoice) punct = 'normal';
-  text = punctuate(text, punct, rng);
+  // Nobody punctuates a scream properly. Leaving it alone is the point.
+  if (!bare) text = punctuate(text, punct, rng);
 
   const stance = (SHAPE_STANCE[shape] ?? 0);
   if (rng() < (persona.voice.emoji || 0) * roomVoice) {

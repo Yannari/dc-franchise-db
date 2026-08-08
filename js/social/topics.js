@@ -63,6 +63,27 @@ export const TOPICS = [
     reads: ['careerTotals', 'franchiseRecords'],
     shapes: ['hot-take', 'ranking'] },
 
+  // ── the scream ──────────────────────────────────────────────────────────
+  //
+  // Timeline targets were 70 / 120 / 190 characters, so there was no register
+  // in the system for "GET HIM ANASTASIA" — everything came out as a SENTENCE,
+  // which is why a feed of otherwise decent posts read like commentary rather
+  // than a fandom. A real timeline is mostly this: short, partisan, personal,
+  // barely punctuated, and about a person rather than about a game.
+  //
+  // Its own topic rather than short lines inside the others, because the
+  // length preference draws twice and keeps whichever sits closer to how long
+  // this fan writes — a fifteen-character line in a pool of seventy-character
+  // ones loses every time. A pool where everything is short cannot lose.
+  //
+  // `bare` stops the decoration pipeline gluing "hold on." to the front of a
+  // scream, which is the one thing that would kill it.
+  { id: 'scream', stream: 'timeline', weight: 1.4, bare: true,
+    triggers: ['blindside', 'eviction', 'nomination', 'finale', 'comp-win',
+      'showmance-broken', 'ganging-up', 'betrayal'],
+    reads: ['popularity'],
+    shapes: ['live-reaction', 'dunk', 'defence'] },
+
   // ── the receipt ─────────────────────────────────────────────────────────
   //
   // The first topic that requires history. Every phrasing under it uses

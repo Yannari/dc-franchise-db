@@ -134,9 +134,17 @@ function bbEvents(week, meta) {
   }
 
   if (week.evicted) {
-    out.push(event('eviction', { ...meta, subject: week.evicted }));
+    // The Head of Household as the actor. The house votes, but the block is
+    // the reason there was a vote — and without an actor an eviction cannot
+    // draw a single phrasing that names two people, which is most of the ones
+    // worth reading.
+    out.push(withReceipts(
+      event('eviction', { ...meta, subject: week.evicted, actor: week.hoh || null }),
+      { upTo: meta.episode }));
     if (isBlindside(week)) {
-      out.push(event('blindside', { ...meta, subject: week.evicted, actor: week.hoh }));
+      out.push(withReceipts(
+        event('blindside', { ...meta, subject: week.evicted, actor: week.hoh }),
+        { upTo: meta.episode }));
     }
   }
   return out;

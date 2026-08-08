@@ -242,7 +242,7 @@ Sub-project B shipped: `seasons`, `awards` and `rankings` group by show and hono
 the bonds query stopped collapsing two shows into one. These were found during it
 and deliberately left.
 
-### The wrong-show link, on two more pages
+### The wrong-show link, on two more pages — CLOSED 2026-08-08 (sub-project C)
 
 A season number alone stopped identifying a season when the second show arrived.
 Five places built a link or a filename from the bare number. **Three are now
@@ -289,7 +289,7 @@ Three requests from the same conversation, recorded together because they are
 one arc: the player page stops being a stat sheet and becomes the character's
 page, which is the foundation the per-character social profiles sit on.
 
-### 1. Career totals must separate the shows — PARTLY DONE 2026-08-08
+### 1. Career totals must separate the shows — DONE 2026-08-08
 
 A player with two Total Drama seasons and one Big Brother season was described
 as having played **3 seasons**. True, and useless: it reads as a three-season
@@ -315,7 +315,7 @@ career still reads "4 seasons" rather than saying the same number twice.
   (`careersIn(players, format)`); the player page should read that rather than
   growing its own second version.
 
-### 2. A wiki section on the character page
+### 2. A wiki section on the character page — DONE 2026-08-08
 
 An in-depth write-up per character, in the shape a fandom wiki uses: the whole
 career across every show, personality, relationships and whether they are in a
@@ -414,3 +414,48 @@ is the first fully-recorded one either way.
 document keeps placements only), the have-not history, and per-week alliance
 membership changes. None of these have a consumer yet, which is the honest
 reason they are not exported.
+
+---
+
+## Where the project actually stands — 2026-08-08
+
+Written because the plan had outrun the document again, and the next person to
+read this will not have been here.
+
+**Done and shipped**
+
+- **Sub-project C** — Big Brother stops wearing Total Drama's clothes: cast art
+  namespaced, `season_ref` titles it BB1, the timeline keyed on the season
+  REFERENCE (it was one column for two shows), and the last two bare-number links.
+- **Show scoping everywhere** — the switcher was mounted on every page and read
+  by two. Timeline, players, leaderboards, franchise, the social feed and both
+  player-page tabs now answer it, and a player's profile scoped to a show they
+  never played says so instead of showing the other one.
+- **`js/records.js`** — per-show records, milestones, trivia and `compRecords`,
+  replacing franchise_database's all-shows aggregates on the Franchise page.
+- **The character wiki** (`js/wiki.js` + `js/wiki-view.js`) — its own tab,
+  laid out like a fandom article: infobox, lead, Personality, one section per
+  season, Appearances, Trivia. One article per show.
+- **Rankings honesty** — a Total Drama board is not a Big Brother player's
+  standing. Unranked is a state, not a D.
+- **The ranking BUILDER speaks Big Brother** — its two competition columns were
+  Imm/Rew and its auto-fill read `immunityWins`, which a house does not have, so
+  every Big Brother player filled as zero and the board would have ranked on
+  placement alone. HOH/Veto now, filled from `placements[].bb`.
+
+**Sub-project E — the Big Brother ranking board — IS THE NEXT ONE, and it is
+blocked on you, not on code.** A board is generated from a FINISHED season. Big
+Brother 1 is a placeholder. The builder is ready; it needs a real season.
+
+**Everything else worth doing is downstream of that same season**, which is the
+honest reason this document ends here rather than listing more work:
+
+- competition records (`compRecords`) have nothing to draw until a season
+  exports with comp names — first season after 2026-08-08 does
+- the AI bio writer wants a career with couples, alliances and comp history in it
+- per-character social profiles (item 3 above) sit on top of both
+
+**Sub-project D** — the cross-format display rule — is the one piece NOT waiting
+on a season. Most of it landed by accident while scoping pages; what is left is
+franchise_database's own aggregates and a written rule for which number wins
+where. Small, and worth doing while a season plays.

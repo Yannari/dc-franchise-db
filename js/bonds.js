@@ -8,6 +8,64 @@ export function bKey(a, b)         { return [a,b].sort().join('||'); }
 
 export function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
 
+// ══════════════════════════════════════════════════════════════════════
+// The lean — how one of them feels about it, which is not always the same
+// ══════════════════════════════════════════════════════════════════════
+//
+// `bKey` sorts the two names, so `gs.bonds` holds exactly ONE number per pair.
+// That makes every relationship in this simulator mutual by construction, and
+// there was no way to say the most ordinary thing about people: that one of
+// them is still in love with somebody who cannot stand them.
+//
+// Making bonds directional would mean rewriting the single most-read function
+// in the codebase. So the bond stays as it is — what the relationship IS,
+// shared — and the lean is a per-direction offset on top of it: what this one
+// person feels about that. `gs.bondLean['A→B']` is how much warmer (or colder)
+// A is about it than the relationship itself would suggest.
+//
+//   bond -4, lean A→B +7   he is not over her, and she is done
+//   bond +6, lean B→A -5   she is being carried by a friendship she has left
+//
+// Everything that asks "how does A feel about B" goes through `feelsFor` or
+// `getPerceivedBond`. Everything that asks "what is the state of this pair"
+// keeps using `getBond` and is untouched.
+
+const leanKey = (a, b) => `${a}→${b}`;
+const clamp10 = v => Math.max(-10, Math.min(10, v));
+
+/** How much A privately differs from the shared bond, -10..10. */
+export function getLean(a, b) { return Number(gs?.bondLean?.[leanKey(a, b)]) || 0; }
+
+export function setLean(a, b, val) {
+  if (!gs) return;
+  gs.bondLean ||= {};
+  const next = clamp10(Number(val) || 0);
+  if (!next) delete gs.bondLean[leanKey(a, b)];
+  else gs.bondLean[leanKey(a, b)] = Math.round(next * 100) / 100;
+}
+
+export function addLean(a, b, delta) { setLean(a, b, getLean(a, b) + (Number(delta) || 0)); }
+
+/** Drop every private feeling involving somebody who has left. */
+export function removeLeansFor(name) {
+  if (!gs?.bondLean) return;
+  for (const k of Object.keys(gs.bondLean)) {
+    if (k.startsWith(`${name}→`) || k.endsWith(`→${name}`)) delete gs.bondLean[k];
+  }
+}
+
+/**
+ * What A actually feels about B — the shared bond plus A's own lean on it.
+ *
+ * This is the one to use for anything a single person decides: who they write
+ * down, who they protect, who they fall for, who they vote to win. `getBond`
+ * remains the right call for the state of the pair itself.
+ */
+export function feelsFor(a, b) { return clamp10(getBond(a, b) + getLean(a, b)); }
+
+/** Is this pair pulling in different directions, and by how much? */
+export function leanGap(a, b) { return Math.abs(feelsFor(a, b) - feelsFor(b, a)); }
+
 export function setBond(a, b, val) {
   if (!gs) return;
   const next = Math.max(-10, Math.min(10, val));
@@ -90,13 +148,28 @@ export function addBond(a, b, d) {
   gs.bonds[bKey(a,b)] = next;
 }
 
+/**
+ * What A goes into a decision believing about A and B.
+ *
+ * Two layers, and they are different things. `perceivedBonds` is A being
+ * WRONG — a misread that decays back toward the truth as they pay attention.
+ * The lean is A being right about their own feelings and out of step with the
+ * other person, which never corrects itself because there is nothing to
+ * correct.
+ *
+ * Both apply. Every vote, alliance and heat decision in the house reads this
+ * function, which is why the lean goes in here rather than in a hundred call
+ * sites: a houseguest who is still in love with the person writing their name
+ * down now behaves like one.
+ */
 export function getPerceivedBond(a, b) {
   const key = a + '→' + b;
   const entry = gs?.perceivedBonds?.[key];
+  const lean = getLean(a, b);
   if (entry && Math.abs(entry.perceived - getBond(a, b)) >= 0.3) {
-    return entry.perceived;
+    return clamp10(entry.perceived + lean);
   }
-  return getBond(a, b);
+  return clamp10(getBond(a, b) + lean);
 }
 
 export function addPerceivedBond(a, b, perceived, reason) {

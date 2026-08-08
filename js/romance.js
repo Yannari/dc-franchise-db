@@ -1,7 +1,20 @@
 // js/romance.js - Romance sparks, showmances, love triangles, affairs
 import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, romanticCompat, threatScore } from './players.js';
-import { getBond, addBond } from './bonds.js';
+import { getBond, addBond, feelsFor } from './bonds.js';
+
+// ── it takes two ──
+//
+// Romance is the one system where the direction of a feeling is the whole
+// story, and it was reading the single shared bond — so an ex who was still in
+// love and an ex who was completely finished came out as one lukewarm number
+// and behaved identically to two people who were mildly fond of each other.
+//
+// A spark needs BOTH of them, so it is gated on the weaker side; how fast it
+// grows is what the two of them together are putting in. One-sided is now a
+// thing that can happen and then quietly fail, which is what it does.
+const bothWant = (a, b) => Math.min(feelsFor(a, b), feelsFor(b, a));
+const mutualPull = (a, b) => (feelsFor(a, b) + feelsFor(b, a)) / 2;
 import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
 import { recordAttractionSpark } from './relationship-events.js';
 
@@ -24,7 +37,9 @@ export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScore
   // spark here (that's the whole point of these events); an existing bond just raises
   // the odds. Rare enough to feel special, but no longer literally impossible pre-merge.
   const base = isShowmancer ? 0.30 : 0.17;
-  const sparkChance = Math.min(0.62, base + Math.max(0, bond) * 0.04);
+  // Gated on the WEAKER side: a spark neither of them is reaching for is not
+  // a spark, it is one person having a moment on their own.
+  const sparkChance = Math.min(0.62, base + Math.max(0, bothWant(a, b)) * 0.04);
   if (Math.random() >= sparkChance) return false;
 
   // SPARK! Create a romantic spark — not a showmance yet (slow burn)
@@ -75,7 +90,8 @@ export function updateRomanticSparks(ep) {
     const [a, b] = spark.players;
     if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) return;
 
-    const bond = getBond(a, b);
+    // What the two of them together are putting into it.
+    const bond = mutualPull(a, b);
 
     // Passive growth if bond above threshold
     const aArch = players.find(p => p.name === a)?.archetype || '';
@@ -100,7 +116,9 @@ export function updateRomanticSparks(ep) {
   gs.romanticSparks = gs.romanticSparks.filter(spark => {
     const [a, b] = spark.players;
     if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) return false;
-    if (getBond(a, b) < 2.0) return false;
+    // If either of them has cooled below it, it dies — which is exactly how a
+    // one-sided spark is supposed to end.
+    if (bothWant(a, b) < 2.0) return false;
     if (spark.intensity < 0) return false;
     return true;
   });

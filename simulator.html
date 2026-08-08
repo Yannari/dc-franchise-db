@@ -873,6 +873,29 @@
               </select>
               <div class="hint hint-tight">Separate from how they feel about each other. Twists read this &mdash; the Twin Twist looks for a declared twin, and a Rivals cast is built from exes, ex-best-friends and estranged family.</div>
             </div>
+            <!-- The relationship above is what it IS, shared. These two are
+                 what each of them privately makes of it, which is not always
+                 the same thing and never was expressible before. -->
+            <div class="form-group">
+              <label class="form-label">And how each of them feels about it <span class="hint">(optional)</span></label>
+              <div style="display:flex;gap:10px">
+                <label style="flex:1;font-size:11px;color:var(--muted)">
+                  <span id="rel-lean-a-label">A</span>
+                  <input type="range" id="rel-lean-a" min="-10" max="10" step="1" value="0"
+                    style="width:100%" oninput="updateRelLeanLabels()">
+                </label>
+                <label style="flex:1;font-size:11px;color:var(--muted)">
+                  <span id="rel-lean-b-label">B</span>
+                  <input type="range" id="rel-lean-b" min="-10" max="10" step="1" value="0"
+                    style="width:100%" oninput="updateRelLeanLabels()">
+                </label>
+              </div>
+              <div class="hint hint-tight">Leave both at zero and they feel the same way about each other, which is
+                how it has always worked. Push one up and that person is warmer about this than the relationship
+                is &mdash; still in love with an ex who is finished, loyal to a friend who has moved on. Push one
+                down and they are quietly done with somebody who has not noticed. Votes, alliances, targeting and
+                romance all read it.</div>
+            </div>
             <div class="form-group">
               <label class="form-label">Note <span class="hint">(optional — shown to AI)</span></label>
               <input type="text" id="rel-note" class="form-input" placeholder="e.g. Bowie betrayed Priya at F7 in S9">

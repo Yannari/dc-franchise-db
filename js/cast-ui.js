@@ -1176,6 +1176,29 @@ export function updateRelAvatars() {
   const bEl = document.getElementById('rel-b-avatar');
   if (aEl && a) aEl.innerHTML = miniAvatar(a, 32);
   if (bEl && b) bEl.innerHTML = miniAvatar(b, 32);
+  updateRelLeanLabels();
+}
+
+/**
+ * The two private-feeling sliders, said in words.
+ *
+ * A number between -10 and 10 is not a thing anybody can author with. What the
+ * user is actually deciding is "is this person warmer or colder about this than
+ * the relationship is", so the label says that, with their name on it.
+ */
+export function updateRelLeanLabels() {
+  const a = document.getElementById('rel-a')?.value || 'A';
+  const b = document.getElementById('rel-b')?.value || 'B';
+  const word = v => (v >= 7 ? 'far warmer about it' : v >= 3 ? 'warmer about it'
+    : v > 0 ? 'a little warmer' : v === 0 ? 'feels what it says'
+      : v > -3 ? 'a little colder' : v > -7 ? 'colder about it' : 'far colder about it');
+  for (const [id, name] of [['a', a], ['b', b]]) {
+    const slider = document.getElementById(`rel-lean-${id}`);
+    const label = document.getElementById(`rel-lean-${id}-label`);
+    if (!slider || !label) continue;
+    const v = Number(slider.value) || 0;
+    label.textContent = `${name} — ${word(v)}`;
+  }
 }
 export function openRelForm(id) {
   editingRelId = id; const form = document.getElementById('rel-form'); form.style.display='flex';
@@ -1185,12 +1208,18 @@ export function openRelForm(id) {
     document.getElementById('rel-a').value = r.a; document.getElementById('rel-b').value = r.b;
     document.getElementById('rel-note').value = r.note||'';
     { const k=document.getElementById('rel-kin'); if(k) k.value = r.kin || 'none'; }
+    { const la=document.getElementById('rel-lean-a'); if(la) la.value = Number(r.leanA)||0; }
+    { const lb=document.getElementById('rel-lean-b'); if(lb) lb.value = Number(r.leanB)||0; }
+    if (typeof updateRelLeanLabels === 'function') updateRelLeanLabels();
     setRelType(r.type);
     document.getElementById('rel-form-title').textContent = 'Edit Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Update';
   } else {
     document.getElementById('rel-note').value='';
     { const k=document.getElementById('rel-kin'); if(k) k.value='none'; }
+    { const la=document.getElementById('rel-lean-a'); if(la) la.value=0; }
+    { const lb=document.getElementById('rel-lean-b'); if(lb) lb.value=0; }
+    if (typeof updateRelLeanLabels === 'function') updateRelLeanLabels();
     setRelType('neutral');
     document.getElementById('rel-form-title').textContent = 'Add Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Add';
@@ -1220,6 +1249,9 @@ export function submitRel() {
   const rel = { id: editingRelId||Date.now().toString(36)+Math.random().toString(36).slice(2,4), a, b,
     type: activeRelType, bond: REL_TYPES[activeRelType]?.bond??0,
     kin: document.getElementById('rel-kin')?.value || 'none',
+    // What each of them privately makes of it, on top of the shared bond.
+    leanA: Number(document.getElementById('rel-lean-a')?.value) || 0,
+    leanB: Number(document.getElementById('rel-lean-b')?.value) || 0,
     note: document.getElementById('rel-note').value.trim() };
   if (editingRelId) { const i=relationships.findIndex(r=>r.id===editingRelId); if(i!==-1) relationships[i]=rel; }
   else relationships.push(rel);

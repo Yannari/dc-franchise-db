@@ -602,6 +602,17 @@ export function initGameState() {
   const bonds = {};
   // Pre-game relationship bonds
   relationships.forEach(r => { bonds[bKey(r.a,r.b)] = r.bond; });
+  // ── and how each of them privately feels about it ──
+  //
+  // The bond is the relationship; the lean is one person's own position on it.
+  // Authored on the relationship as `leanA` / `leanB` so a season can open with
+  // somebody still in love with an ex who is completely finished with them —
+  // which the single shared number could never say.
+  const bondLean = {};
+  relationships.forEach(r => {
+    if (Number(r.leanA)) bondLean[`${r.a}→${r.b}`] = Number(r.leanA);
+    if (Number(r.leanB)) bondLean[`${r.b}→${r.a}`] = Number(r.leanB);
+  });
   // Small same-tribe bonus (+0.5)
   const tribeMap = {};
   players.forEach(p => { if(!p.tribe) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
@@ -669,7 +680,7 @@ export function initGameState() {
     tribes: tribeList,
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
     riArrivalEp: {}, riQuits: [], riAlliancesFormed: [],
-    eliminated: [], bonds, relationshipDimensions: {}, perceivedBonds: {}, knowledge: {},
+    eliminated: [], bonds, bondLean, relationshipDimensions: {}, perceivedBonds: {}, knowledge: {},
     _knowledgeSpreadRounds: [], sideDeals: [], loyaltyTests: [], alliances: [], episodeHistory: [],
     advantages: [],      // [{ holder, type, foundEp, fromBeware? }]
     idolSlots,           // { tribeName: bool }

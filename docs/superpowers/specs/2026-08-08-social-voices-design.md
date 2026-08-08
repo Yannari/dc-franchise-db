@@ -304,3 +304,54 @@ Deliberately left for projects 2 and 3:
 publish through is Total-Drama-shaped. Project 3 inherits that, and it overlaps
 with sub-project E, which makes `current-season.html` format-aware. Whichever
 runs first should generalise the overlay rather than both working around it.
+
+---
+
+## Carried into project 2 (recorded 2026-08-08, after project 1 shipped)
+
+Project 1 is complete: `js/social/{personas,topics,platforms,phrasings,sampler}.js`
+with `read-sample.mjs`, 32 tests across four files. What follows was found during
+it and deliberately left, because it needs real episode data.
+
+### Known-and-pinned, not broken
+
+- **Engagement is inert for most players.** `crowdAffection` in `sampler.js`
+  proxies crowd sentiment using the persona cast, because `gs.popularity` is
+  unreachable from a pure module. The cast holds feelings about seven slugs; for
+  every other player the crowd reads 0, so tomatoes are always 0 and likes are
+  flat. **This is asserted by a test using `bridgette`**, together with a second
+  test proving no persona holds a feeling about her — so the limitation cannot go
+  vacuous. Swapping `crowdAffection` for real `gs.popularity` is project 2's job,
+  and **that first test is expected to fail when you do it.** That is the signal,
+  not a regression.
+
+- **`volatility` turns no opinions.** It documents itself honestly now: it is a
+  likes multiplier, nothing in project 1 mutates `feelings`, and a persona's post
+  about a favourite reads identically before and after that favourite is evicted.
+  The spec's "history changes stance" belongs to project 2, which has the episode
+  data to move feelings with.
+
+- **`IMPLIED_KINDS`** in the sampler is a workaround for an event kind a topic
+  does not declare. The cleaner fix is adding `blindside` to that topic's
+  `triggers` in `topics.js`.
+
+### Real gaps, cheap to close
+
+- **Only 4 of 12 personas post in the hosted chat**, which is the true ceiling on
+  that room's variety — chat uniqueness sits at 0.86 against the timeline's 0.94.
+  Adding chat-eligible personas is the highest-value contribution available and
+  needs no code.
+
+- **Pronoun agreement.** Some phrasings say "themselves" for every player
+  ("Alejandro talked themselves into this"). The project has `pronouns(name)` in
+  `js/players.js`; project 2 has the player data to use it.
+
+- **The topic-coverage guard ignores slot filtering.** It proves a pool exists for
+  every topic × shape × stream, but a pool whose every template needs a slot the
+  event lacks would still pass and then produce nothing.
+
+- **`composePost`'s empty-shapes throw is unreachable from `samplePosts`**, which
+  pre-filters. It guards direct callers only — correct scope, worth knowing.
+
+- **The committed variety test sweeps 60 seeds**; the 0.94/0.86 figures came from
+  a 300-seed sweep. CI-reasonable, but the committed guarantee is the weaker one.

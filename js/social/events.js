@@ -62,6 +62,19 @@ const TONE_TO_KIND = {
 
 const slug = name => String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
+/**
+ * One canonical event, stamped where it belongs in the episode.
+ *
+ * Exported because the archive reader needs to build events the played path
+ * never produces — a finished season's document records a vote tally rather than
+ * a week object, and the events it implies still have to land at the right time.
+ * Sharing this keeps ONE definition of when a blindside happens relative to the
+ * vote; two would drift and the feed would replay out of order.
+ */
+export function socialEvent(kind, meta) {
+  return event(kind, meta);
+}
+
 function event(kind, { subject, actor, season, episode, format, jitter = 0 }) {
   return {
     kind,

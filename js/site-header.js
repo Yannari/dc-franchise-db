@@ -30,6 +30,7 @@ import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from 
 export const NAV_LINKS = [
   { href: 'index.html',            icon: '🏠',  label: 'Home' },
   { href: 'current-season.html',   icon: '📊',  label: 'Current Season' },
+  { href: 'social.html',           icon: '💬',  label: 'Social' },
   { href: 'voting-analytics.html', icon: '🧾',  label: 'Voting Analytics' },
   { href: 'franchise.html',        icon: '🏛️', label: 'Franchise' },
   { href: 'rankings.html',         icon: '🏆',  label: 'Rankings' },

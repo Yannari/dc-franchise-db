@@ -5496,6 +5496,17 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      // The antagonist, interrupting. `themeBeat` builds this act with a single
+      // `line` and no beats of its own — but the week can hang house life on it
+      // afterwards (see the note on the same case in vp-screens.js), so it ends
+      // in `beats(act)` like every case around it rather than relying on the
+      // safety net after the switch to notice.
+      case 'theme-beat':
+        sec(String(act.speaker || '').toUpperCase());
+        ln(`  "${act.line}"`);
+        beats(act);
+        break;
+
       case 'twist-announcement':
         sec('TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');

@@ -37,6 +37,7 @@ import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState } from './bb/twin-twist.js';
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
+import { installTheme } from './bb/themes.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -65,6 +66,11 @@ export function prepareHouse() {
   gs.bb.outgoingHoh ??= null;
   gs.bb.weeks ||= [];
   gs.bb.stats ||= {};
+  // The season's theme, installed once. It books its arc onto the twist
+  // schedule the first time the house is prepared, which is before any week
+  // has run and after the cast is known — the arc needs the house size to
+  // know where the endgame is.
+  try { installTheme((gs.activePlayers || []).length); } catch { /* the season plays unthemed */ }
   return gs.activePlayers || [];
 }
 
@@ -1525,6 +1531,14 @@ export function summariseWeek(week) {
         if ((act.eliminatedForGood || []).length) line(`  Eliminated for good: ${act.eliminatedForGood.join(', ')}.`);
         break;
       }
+      // The antagonist. One sentence, attributed, with no beats under it —
+      // `themeBeat` pushes this act raw onto the week rather than through
+      // `addBeats`, so there is nothing here but the speaker and the line.
+      case 'theme-beat':
+        line('');
+        line(`${String(act.speaker || '').toUpperCase()}`);
+        line(`  "${act.line}"`);
+        break;
       case 'twist-announcement':
         line('');
         line('TWIST ANNOUNCEMENT');

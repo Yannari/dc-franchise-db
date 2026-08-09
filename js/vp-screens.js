@@ -18922,6 +18922,49 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
 }
 
 /**
+ * The antagonist, saying one thing.
+ *
+ * Deliberately a single card rather than a sequence: the voice interrupts a
+ * week that is already busy, and a full screen of reveals for one taunt would
+ * cost more attention than the taunt is worth. The framing is
+ * `rpBuildBBTwistAnnouncement`'s — the same room, the same wall screen — so a
+ * themed season reads as one show rather than two.
+ *
+ * The colour comes from the SEASON, not from this function. Task 5 put
+ * `--theme-accent` and `--theme-glow` on the reader root as `.rp-theme-<id>`,
+ * and this screen renders inside it, so `var()` picks the running theme up for
+ * free: a hostile beat burns in the theme's own hot tone instead of every
+ * theme inheriting Summer of Temptation's red. The literals are only the
+ * unthemed fallback, which in practice nothing reaches — a theme-beat act
+ * cannot exist without a theme.
+ */
+export function rpBuildBBThemeBeat(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  return `<div class="rp-page bb-room bb-block bbth${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .bbth{--bbth-eye:var(--theme-accent,#c02040)}
+      .bbth.is-hostile{--bbth-eye:var(--theme-glow,#ff2d55)}
+      .bbth-wall{max-width:1100px;margin:0 auto;padding:48px 24px;text-align:center}
+      .bbth-eye{width:96px;height:96px;margin:0 auto 24px;border-radius:50%;
+        background:radial-gradient(circle at 50% 50%, var(--bbth-eye) 0%, rgba(0,0,0,.9) 70%);
+        box-shadow:0 0 48px var(--bbth-eye);animation:bbth-pulse 3.2s ease-in-out infinite}
+      @keyframes bbth-pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.06);opacity:1}}
+      @media(prefers-reduced-motion:reduce){.bbth-eye{animation:none}}
+      .bbth-who{font-size:13px;letter-spacing:.32em;text-transform:uppercase;opacity:.7;margin-bottom:16px;
+        color:var(--bbth-eye)}
+      .bbth-line{font-size:30px;line-height:1.4;max-width:760px;margin:0 auto;font-style:italic}
+    </style>
+    ${week === '' ? '' : `<div class="rp-eyebrow">Week ${_bbEsc(String(week))}</div>`}
+    <div class="bbth-wall">
+      <div class="bbth-eye" aria-hidden="true"></div>
+      <div class="bbth-who">${_bbEsc(act?.speaker || '')}</div>
+      <div class="bbth-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</div>
+    </div>
+  </div>`;
+}
+
+/**
  * Dynamic Duos, announced.
  *
  * SAME SCREEN AS EVERY OTHER TWIST, deliberately. The first version of this
@@ -21245,6 +21288,27 @@ function _bbCycleScreens(view, screens, suffix = '') {
       }
       case 'have-nots':
         screens.push({ id: id('bb-havenots'), label: 'Have-Nots', html: rpBuildBBHaveNots(view) });
+        break;
+      // One screen per thing the antagonist says. The hook is in the id
+      // because a week can hear from it four times — open, noms, veto, vote —
+      // and four screens sharing an id is four tabs the navigation cannot tell
+      // apart. Fewer than four is normal and needs nothing here: an undeclared
+      // hook, a sealed HOH, or a night nobody left simply emits no act.
+      case 'theme-beat':
+        screens.push({
+          id: id(`bb-theme-${act.hook || 'beat'}`),
+          label: act.speaker || 'The Voice',
+          html: rpBuildBBThemeBeat(view, act),
+        });
+        // The act can end up HOSTING house life it has nothing to do with.
+        // `_attachRomance` hangs its beats on the last 'house' act and falls
+        // back to the last act on the week; a compressed cycle has no house
+        // acts at all, and the antagonist's vote line is pushed before romance
+        // is attached — so in the back half of a double eviction this act is
+        // the host. The screen is one card by design and has nowhere to draw
+        // them, so they go where every other displaced beat goes: folded into
+        // the next House Life stretch, or the flush at the end of the cycle.
+        if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
       case 'twist-announcement':
         // One screen per gathering. Two rules read out in the same week are two

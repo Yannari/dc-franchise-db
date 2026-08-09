@@ -34,12 +34,19 @@ const CAST = NAMES.map((name, i) => ({
   archetype: ARCH[i] === 'strategist' ? 'mastermind' : ARCH[i],
 }));
 
-function house(twists = []) {
+// `theme` is explicit — and defaults to 'none' — because this helper is the
+// guard's whole view of the game. It never set the field at all, so the season
+// ran unthemed, `theme-beat` never entered the `seen` set, and the guard passed
+// OVER the act rather than proving it was handled. This project has shipped
+// allowlist-shaped guards that were green about things they never looked at
+// (five twists drew nothing under the VP allowlist); a helper that silently
+// omits a season option is the same failure wearing different clothes.
+function house(twists = [], { theme = 'none' } = {}) {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
-    bbHaveNots: 'off', bbSafetyMode: 'off' });
+    bbHaveNots: 'off', bbSafetyMode: 'off', theme });
   seasonConfig.twistSchedule = twists.map(type => ({ episode: 1, type }));
 }
 
@@ -98,6 +105,21 @@ describe('every act the engine emits reaches both transcripts', () => {
       const ep = withSeededRandom(seed * 31, () => simulateBBEpisode());
       for (const act of ep.acts || []) if (act?.type) seen.add(act.type);
     }
+
+    // ── and a THEMED week ──
+    //
+    // A theme books its own twists and its antagonist emits an act type no
+    // unthemed season can ever produce. Without this pass the season above ran
+    // with no theme, `theme-beat` never reached `seen`, and this guard was
+    // green about an act it had never once looked at — the same shape of hole
+    // the VP allowlist had. Asserted by name rather than left to the loop,
+    // because a pass that silently stops emitting proves nothing.
+    for (let seed = 1; seed <= 3; seed++) {
+      house([], { theme: 'summer-of-temptation' });
+      const ep = withSeededRandom(seed * 23, () => simulateBBEpisode());
+      for (const act of ep.acts || []) if (act?.type) seen.add(act.type);
+    }
+    expect([...seen], 'the themed pass emitted no antagonist act').toContain('theme-beat');
 
     expect(seen.size, 'no acts were collected — the harness is broken').toBeGreaterThan(8);
 

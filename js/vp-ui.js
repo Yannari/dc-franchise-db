@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { audio, cueFromElement } from './audio.js';
+import { currentTheme } from './bb/themes.js';
 
 const VP_VIEW_MODES = new Set(['watch', 'quick', 'deep']);
 let _vpViewMode = 'watch';
@@ -694,6 +695,20 @@ export function bedForScreen(id, explicitBed) {
   return null;
 }
 
+/**
+ * The reader's class list, with the season's theme on it.
+ *
+ * Exported rather than inlined so the rule is testable without standing up a
+ * DOM: strip any previous theme class, add this season's, leave the venue
+ * class alone. The two skins stack — a Summer of Temptation season is still
+ * in the house.
+ */
+export function applyThemeClass(className) {
+  const base = String(className || '').replace(/\brp-theme-[\w-]+/g, '').replace(/\s+/g, ' ').trim();
+  const theme = currentTheme();
+  return theme ? `${base} rp-theme-${theme.id}`.trim() : base;
+}
+
 export function renderVPScreen() {
   const content  = document.getElementById('vp-screen-content');
   const prevBtn  = document.getElementById('vp-prev-btn');
@@ -741,13 +756,16 @@ export function renderVPScreen() {
   // Content — innerHTML is fully rebuilt each navigation, so any in-progress
   // vote reveal state is now stale. Clear it so reveals start fresh.
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
-  // Per-setting skin: retint accent + venue motif on the reader (scoped to .rp-page).
+  // Per-setting skin: retint accent + venue motif on the reader (scoped to
+  // .rp-page). The season's theme skin stacks on top of it — same scope, so a
+  // twist screen with its own identity is still left alone by both.
   try {
     // A Big Brother season is not at any of the Total Drama venues, so it takes
     // its own skin rather than having a camp or a film lot painted over it.
     const _bb = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother');
     const _set = _bb ? 'bb-house' : (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
-    content.className = (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`;
+    content.className = applyThemeClass(
+      (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`);
   } catch (e) {}
   content.innerHTML = '<div class="vp-stage-cue" aria-hidden="true"><span>' + curPhase.icon + '</span>' + curPhase.label + '</div>' + cur.html;
   // Ambience: explicit data-ambient on the screen root wins; otherwise fall back

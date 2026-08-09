@@ -106,6 +106,14 @@ describe('format-scoped setup screen', () => {
     expect(td.sections).not.toContain('bb-options-body');
   });
 
+  // The scope table is the ONLY thing that hides the theme picker when the show
+  // is switched live: the config-restore path never runs on that switch, so
+  // without this entry a Total Drama season is offered a house theme.
+  it('offers a season theme to a house and to nothing else', () => {
+    expect(configScopeFor('big-brother').fields).toContain('cfg-theme');
+    expect(configScopeFor('total-drama').fields).not.toContain('cfg-theme');
+  });
+
   it('leaves the Total Drama machinery alone', () => {
     const td = configScopeFor('total-drama');
     for (const kept of ['tiebreaker', 'ri', 'sid', 'idol', 'mole', 'survival']) {

@@ -74,6 +74,7 @@ import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
+import { advanceThemeArc, installTheme, themeBeat } from './themes.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -1096,6 +1097,49 @@ function _attachRomance(week, rng) {
   if (host) (host.socialBeats ||= []).push(...beats);
 }
 
+/**
+ * Push the antagonist's line for this point in the week, if it has one.
+ *
+ * `house` is the week's OWN roster, not `gs.activePlayers`. On a Split House
+ * cycle the two are not the same object and only one of them is the house the
+ * antagonist is talking about; handing over the wrong one refuses legitimate
+ * lines silently, which reads as bad writing rather than as a bug.
+ */
+function _themeSay(week, hook, ctx) {
+  // `themeWeek` is the CALENDAR week, which is not `week.num` on a Split House
+  // cycle — see the note where it is computed. `side` keeps the two halves of
+  // one night from drawing the identical taunt out of the same seed.
+  const beat = themeBeat(hook, { week: week.themeWeek ?? week.num,
+    house: week.houseAtStart, side: week.splitSide || null, ...ctx });
+  if (beat) week.acts.push(beat);
+}
+
+/**
+ * The last act that is a SCENE, skipping anything the antagonist said.
+ *
+ * Four places in this file reach for `week.acts[week.acts.length - 1]` to hang
+ * a consequence on the ceremony they just pushed — the bloc shield, the
+ * Invisible HOH's guesses, the renomination reaction and every plan revision.
+ * That idiom held for as long as nothing else pushed in between, and the theme
+ * engine broke it: the antagonist speaks at nominations and at the veto, right
+ * after those ceremonies, so the last act became a `theme-beat`. It crashed
+ * outright at the renomination reaction (a theme beat has no `socialBeats`) and
+ * failed silently everywhere else — the bloc-shield narration and the HOH
+ * guesses rendered on the Den's card instead of the ceremony they belong to.
+ *
+ * A commentary line is not a scene the house can act in, so it is never a host
+ * for one. The one deliberate exception is `_attachRomance`, which falls back
+ * to the last act on purpose when a compressed cycle has no `house` act at all,
+ * and keeps its own behaviour.
+ */
+function _lastStagedAct(week) {
+  const acts = week.acts || [];
+  for (let i = acts.length - 1; i >= 0; i--) {
+    if (acts[i] && acts[i].type !== 'theme-beat') return acts[i];
+  }
+  return null;
+}
+
 export function simulateBBWeek(options = {}) {
   const rng = options.rng || Math.random;
   const hooks = options.hooks || {};
@@ -1151,6 +1195,49 @@ export function simulateBBWeek(options = {}) {
   // the pre-contract twists (instant/double eviction, have-nots) keep their
   // existing paths and are merely recorded here.
   week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
+
+  // Where the endgame is, counted from HERE: a house loses one a week and ends
+  // at three. Computed rather than stored because a season can gain weeks it
+  // did not plan for — a battle-back puts somebody back in the building — and
+  // an arc act pinned to `fromEnd` should move with the real endgame rather
+  // than with the one the premiere predicted.
+  //
+  // MINUS FOUR, not three, and the difference is a whole week. `installTheme`
+  // counts `houseSize - 3` from the PREMIERE house; this counts from the house
+  // standing in front of us, which has already lost `week.num - 1` people. The
+  // two must agree or `fromEnd` names one week when the arc books a twist and a
+  // different week when it turns the antagonist. Twelve houseguests in week
+  // one: 1 + 12 - 4 = 9, which is what installTheme says. The brief's `- 3`
+  // said 10 for every week of the same season, and it went unnoticed only
+  // because nothing read a `fromEnd` mood yet.
+  //
+  // ── AND NEITHER INPUT IS WHAT IT LOOKS LIKE ON A SPLIT HOUSE ──
+  //
+  // `house` is `options.house`, which on a split cycle is HALF the roster, and
+  // `week.num` is `gs.bb.weeks.length + 1`, which the two halves increment in
+  // turn — both sides push a week record, so side B thinks it is a week later
+  // than side A even though they are the same Thursday. Left alone the
+  // antagonist printed two different week numbers for one week and measured the
+  // endgame at roughly half its true distance, so a `fromEnd` mood could turn
+  // many weeks early and stop agreeing with the bookings `installTheme` made
+  // off the premiere house — exactly the disagreement the `- 4` above exists to
+  // close.
+  //
+  // So the theme is told the calendar: the week the audience is watching, and
+  // the whole house, wall or no wall. `gs.episode` is guarded against the same
+  // double-increment a few hundred lines below, which is the precedent.
+  //
+  // Gated on `splitSide` rather than on `segment`, because a double eviction's
+  // second cycle also carries `segment: 2` and genuinely IS a second week
+  // record with its own number.
+  const _splitB = week.splitSide === 'B';
+  const _themeWeek = Math.max(1, week.num - (_splitB ? 1 : 0));
+  const _wholeHouse = house.length + (week.splitSide ? (week.splitOther || []).length : 0);
+  week.themeWeek = _themeWeek;
+  const _totalWeeks = _themeWeek + Math.max(0, _wholeHouse - 4);
+  advanceThemeArc(_themeWeek, _totalWeeks);
+
+  _themeSay(week, 'open', {});
 
   // ── the second game, if one is running ──
   //
@@ -1427,7 +1514,7 @@ export function simulateBBWeek(options = {}) {
         week, trigger, ...extra });
     } catch { changes = []; }
     week.planChanges.push(...changes.map(c => ({ ...c, trigger })));
-    const act = week.acts[week.acts.length - 1];
+    const act = _lastStagedAct(week);
     if (act && changes.length) act.planChanges = changes;
     return changes;
   };
@@ -2666,6 +2753,19 @@ export function simulateBBWeek(options = {}) {
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
+  // `week.nominees` is NOT the block — it is written only by the cancelled-
+  // eviction branch, which sets it to []. The block as the ceremony left it is
+  // `initialNominees`, assigned a few hundred lines above this and rewritten by
+  // the Hacker below. Passing the field the brief named would have handed the
+  // antagonist an empty list and silenced every `{nominees}` line it owns.
+  // `cursed` is the third chair a Den curse seated, and it is the whole reason
+  // a Temptation antagonist has anything to say at a nomination ceremony: the
+  // person on the block is not the person who accepted anything. It is null in
+  // any week nobody took an offer, and every line that names it is walked past.
+  _themeSay(week, 'noms', { hoh: week.hohSecret ? null : week.hoh,
+    nominees: week.initialNominees || week.nominees || [],
+    cursed: week.temptationChair || null });
+
   // ══════════════════════════════════════════════════════════════════
   // THE HACKER
   // ══════════════════════════════════════════════════════════════════
@@ -3032,7 +3132,7 @@ export function simulateBBWeek(options = {}) {
       .filter(a => a.inHouse.length >= 3)
       .sort((a, b) => b.inHouse.length - a.inHouse.length)[0];
     if (hohBloc && !nominees.some(n => hohBloc.inHouse.includes(n))) {
-      const nomAct = week.acts[week.acts.length - 1];
+      const nomAct = _lastStagedAct(week) || {};
       const shielded = hohBloc.inHouse.filter(m => m !== hoh);
       shielded.forEach(m => _cappedBondWindow(() => addBond(hoh, m, 0.15)));
       (nomAct.socialBeats ||= []).push({
@@ -3047,7 +3147,7 @@ export function simulateBBWeek(options = {}) {
   }
 
   if (hohSecret) {
-    const nomAct = week.acts[week.acts.length - 1];
+    const nomAct = _lastStagedAct(week) || {};
     for (const nom of nominees) {
       const guess = _invisibleGuess(nom);
       const entry = week.hohGuesses.find(g => g.who === nom);
@@ -3745,6 +3845,10 @@ export function simulateBBWeek(options = {}) {
     week.acts.push(vetoCeremonyAct);
     revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
       saved: vetoDecision.save || null });
+
+    _themeSay(week, 'veto', { hoh: week.hohSecret ? null : week.hoh,
+      nominees: week.finalNominees || week.nominees || [],
+      veto: vetoWinner || null, cursed: week.temptationChair || null });
     // ── AFTER the ceremony, because it happens after the ceremony ──
     //
     // Pushed where it was computed, it rendered BEFORE the veto meeting it
@@ -3993,8 +4097,9 @@ export function simulateBBWeek(options = {}) {
       // said their name. On an invisible week nobody's voice said it, so the
       // grievance lands on the replacement's own guess — right or wrong.
       const namer = (hohSecret && !diamond) ? _invisibleGuess(replacement) : chairAuthority;
-      const ceremonyAct = week.acts[week.acts.length - 1];
-      const mentioned = (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
+      const ceremonyAct = _lastStagedAct(week);
+      const mentioned = !ceremonyAct
+        || (ceremonyAct.socialBeats || []).some(b => (b.players || []).includes(replacement));
       if (!mentioned) {
         const temper = pStats(replacement).temperament;
         const bondHit = -(0.8 + (10 - temper) * 0.08);
@@ -5033,6 +5138,32 @@ export function simulateBBWeek(options = {}) {
     } catch { week.haltingHex = null; }
   }
 
+  // AFTER the Hex, not after the eviction act. The Hex un-evicts somebody the
+  // house has already voted out and nulls `week.evicted`, so a line placed at
+  // the act would announce a departure that the very next card cancels.
+  // No `cursed` here on purpose. `houseAtStart` still contains whoever just
+  // left, so a `{cursed}` line at the count could name the very person the
+  // eviction removed — and the curse's victim is by far the likeliest person to
+  // be that. `{evicted}` is the only name this hook needs.
+  // The shape of the count, "5-2", read off the ballots that were actually
+  // cast. Null when nobody left, which is the same night the hook goes silent.
+  // `week.votes` is a TALLY — nominee to count — not a ballot list of voter to
+  // target. Read as ballots it counted one entry per nominee and reported every
+  // eviction as "0-1", a line that is worse than no line because it is
+  // confidently wrong. The evictee's own count against everything else on the
+  // block is the number the house would recognise.
+  let _margin = null;
+  if (week.evicted) {
+    const tally = week.votes || {};
+    const against = Number(tally[week.evicted] || 0);
+    const rest = Object.entries(tally)
+      .filter(([n]) => n !== week.evicted)
+      .reduce((sum, [, v]) => sum + Number(v || 0), 0);
+    if (against > 0) _margin = `${against}-${rest}`;
+  }
+  _themeSay(week, 'vote', { evicted: week.evicted || null, margin: _margin,
+    hoh: week.hohSecret ? null : week.hoh });
+
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
   if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
@@ -5207,6 +5338,12 @@ export function simulateBBWeek(options = {}) {
 export function simulateBBSeason(options = {}) {
   const weeks = [];
   const finaleSize = options.finaleSize || 3;
+  // Headless and audit seasons come in here without ever calling
+  // `prepareHouse()`, so a theme installed only on the played path would leave
+  // this one silently running unthemed — the played-vs-headless divergence this
+  // codebase has been bitten by before. The install is idempotent, so both
+  // paths calling it is free.
+  try { installTheme((gs.activePlayers || []).length); } catch { /* the season plays unthemed */ }
   while ((gs.activePlayers || []).length > finaleSize) {
     weeks.push(simulateBBWeek(options));
   }

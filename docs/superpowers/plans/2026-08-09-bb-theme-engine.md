@@ -81,9 +81,13 @@ describe('theme registry', () => {
     seasonConfig.theme = 'none';
   });
 
+  // THEME_LIST is a snapshot of the ids at module load. Later describes in
+  // this file push test-only descriptors straight into BB_THEMES, so assert
+  // what the list must CONTAIN rather than that it equals the live object.
   it('lists every registered theme', () => {
     expect(THEME_LIST.length).toBeGreaterThan(0);
-    expect(THEME_LIST).toEqual(Object.keys(BB_THEMES));
+    expect(THEME_LIST).toContain('summer-of-temptation');
+    for (const id of THEME_LIST) expect(BB_THEMES[id]).toBeTruthy();
   });
 
   it('binds every theme to a house the format actually has', () => {
@@ -174,29 +178,28 @@ import { seasonConfig } from '../core.js';
 /** The accent the reader uses when a season has no theme. */
 export const DEFAULT_ACCENT = '#f0c040';
 
+// Each theme is a plain descriptor in its own file, imported here.
+//
+// NOT a `registerTheme()` call from inside the theme file: that is a circular
+// import, and ES modules hoist imports, so the theme module would run before
+// this one's body and hit `BB_THEMES` in the temporal dead zone —
+// a ReferenceError on the very first import. The dependency points one way
+// only: theme files know nothing about the registry, the registry collects
+// them.
+import TEMPTATION from './themes-temptation.js';
+
 /**
  * Every theme, by id.
  *
  * Themes are authored in code and picked in config; there is deliberately no
- * theme editor. Add one by adding a descriptor here (or importing one from its
- * own file, once it is big enough to want one) and an `.rp-theme-<id>` CSS
- * block in simulator.html.
+ * theme editor. Add one by writing its descriptor file, importing it above,
+ * listing it here, and adding an `.rp-theme-<id>` CSS block in simulator.html.
  */
-export const BB_THEMES = {};
+export const BB_THEMES = {
+  [TEMPTATION.id]: TEMPTATION,
+};
 
-/** Register a theme descriptor. Called by each theme's own module. */
-export function registerTheme(descriptor) {
-  BB_THEMES[descriptor.id] = descriptor;
-  return descriptor;
-}
-
-export const THEME_LIST = [];
-
-/** Rebuild the id list. Called after each registration. */
-function refreshList() {
-  THEME_LIST.length = 0;
-  THEME_LIST.push(...Object.keys(BB_THEMES));
-}
+export const THEME_LIST = Object.keys(BB_THEMES);
 
 export function themeById(id) {
   return (id && BB_THEMES[id]) || null;
@@ -218,10 +221,6 @@ export function themeAccent() {
   return currentTheme()?.palette?.accent || DEFAULT_ACCENT;
 }
 
-// ── the first theme ───────────────────────────────────────────────────
-// Imported for side effect: each theme module calls registerTheme.
-import './themes-temptation.js';
-refreshList();
 ```
 
 Create `js/bb/themes-temptation.js` with a minimal descriptor (the arc is filled in Task 7):
@@ -232,9 +231,10 @@ Create `js/bb/themes-temptation.js` with a minimal descriptor (the arc is filled
 // The house is offered things all summer and the offer is free, which is what
 // makes accepting a decision rather than a trade. The season's own cruelty is
 // that the consequence does not land on the person who accepted it.
-import { registerTheme } from './themes.js';
-
-export default registerTheme({
+//
+// A plain descriptor with no import back to themes.js — see the note there on
+// why registration must not be circular.
+export default {
   id: 'summer-of-temptation',
   name: 'Summer of Temptation',
   tagline: 'Every week, an offer. Somebody else pays for it.',
@@ -250,7 +250,7 @@ export default registerTheme({
   weights: {},
   bans: [],
   exclusive: [],
-});
+};
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1172,8 +1172,8 @@ git commit -m "What the antagonist said now survives into the transcript and the
 - Test: `tests/bb-theme-temptation.test.js` (create)
 
 **Interfaces:**
-- Consumes: `registerTheme` from Task 1; the arc/voice contract from Tasks 2 and 3.
-- Produces: a complete descriptor registered under `'summer-of-temptation'`.
+- Consumes: the descriptor contract from Task 1 (the file default-exports a plain object; `themes.js` imports and registers it); the arc/voice contract from Tasks 2 and 3.
+- Produces: a complete descriptor default-exported from `js/bb/themes-temptation.js` and collected into `BB_THEMES` under `'summer-of-temptation'`.
 
 Catalog ids this arc books, all verified present in `TWIST_CATALOG`:
 `bb-den-of-temptation`, `bb-have-nots`, `bb-pandoras-box`, `bb-double-eviction`.
@@ -1293,9 +1293,10 @@ Replace the body of `js/bb/themes-temptation.js`:
 // the powers shelf and the Halting Hex are already built, so the arc is
 // composition. If the engine cannot assemble a season out of parts we own,
 // this is the cheapest week to discover it.
-import { registerTheme } from './themes.js';
-
-export default registerTheme({
+//
+// A plain descriptor with no import back to themes.js — the registry collects
+// theme files, never the other way round.
+export default {
   id: 'summer-of-temptation',
   name: 'Summer of Temptation',
   tagline: 'Every week, an offer. Somebody else pays for it.',
@@ -1379,7 +1380,7 @@ export default registerTheme({
   weights: { 'bb-pandoras-box': 1.6, 'bb-prizes-and-punishments': 1.4 },
   bans: [],
   exclusive: [],
-});
+};
 ```
 
 - [ ] **Step 4: Teach the arc to change mood**

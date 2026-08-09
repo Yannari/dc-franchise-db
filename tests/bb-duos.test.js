@@ -424,3 +424,107 @@ describe('a pairs-only season, played', () => {
     expect(repairs, 'nobody was ever re-paired').toBeGreaterThan(0);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The ceremony, which is where the twist is either real or decorative
+// ══════════════════════════════════════════════════════════════════════
+//
+// Both of these are regressions from a played season. `duoNominees` was handed
+// a target and returned their partner with no idea who was protected, so the
+// moment either half was untouchable the pair collapsed to ONE name and the
+// week topped the block up with a stranger — producing a ceremony that read out
+// a Head of Household nominating their own duo, and "paired" nominations that
+// were one person plus somebody unrelated.
+import { duoBlock, duoSafeWith } from '../js/bb/duos.js';
+
+describe('nominating a duo', () => {
+  it('never puts up the pair the Head of Household is in', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const hoh = 'A';
+    const partner = partnerOf(hoh, NAMES);
+    // Even when the plan wants them: the HOH cannot go up, so their duo cannot.
+    const block = duoBlock({ plan: { target: partner, nominees: [partner] },
+      house: NAMES, protectedNames: [hoh], hoh });
+    expect(block, 'the Head of Household nominated their own duo').not.toContain(hoh);
+    expect(block, 'the crown did not protect the partner').not.toContain(partner);
+  });
+
+  it('says who the crown protects besides the person wearing it', () => {
+    installDuos(NAMES, { rng: Math.random });
+    expect(duoSafeWith('A', NAMES)).toEqual([partnerOf('A', NAMES)]);
+  });
+
+  it('always returns a WHOLE pair, never half of one', () => {
+    // The exact failure: half a duo on the block beside a stranger.
+    installDuos(NAMES, { rng: Math.random });
+    for (const hoh of NAMES) {
+      const block = duoBlock({ plan: {}, house: NAMES, protectedNames: [hoh], hoh });
+      if (!block) continue;
+      expect(block).toHaveLength(2);
+      expect(partnerOf(block[0], NAMES), `${block[0]} went up without their partner`).toBe(block[1]);
+    }
+  });
+
+  it('picks a different duo rather than half-nominating a protected one', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const hoh = 'A';
+    const [c, d] = duoState().pairs.find(p => !p.includes(hoh) && !p.includes(partnerOf(hoh, NAMES)));
+    // d is safe this week — so the whole c/d duo is off the table, and the
+    // block has to be some OTHER pair rather than c on their own.
+    const block = duoBlock({ plan: { target: c, nominees: [c] }, house: NAMES,
+      protectedNames: [hoh, d], hoh });
+    expect(block).toHaveLength(2);
+    expect(block, 'nominated half of a protected duo').not.toContain(c);
+    expect(block).not.toContain(d);
+  });
+
+  it('gives up cleanly when no whole duo can go up', () => {
+    // Everybody left is an orphan, so the ceremony has to fall back to an
+    // ordinary two-name block instead of inventing a pair.
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const survivors = duoState().pairs.map(p => p[0]);   // one of each duo
+    expect(duoBlock({ plan: {}, house: survivors, protectedNames: [], hoh: survivors[0] })).toBe(null);
+  });
+});
+
+describe('a played season nominates in pairs', () => {
+  it('puts two people who came in together on that block, every week', () => {
+    // The report that started this: "the nominations are not done as a duo,
+    // they just nominate 1 person."
+    let checked = 0;
+    let paired = 0;
+    for (const seed of [5, 17, 41]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 10 });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      for (const w of gs.bb.weeks || []) {
+        // The CEREMONY, not the final block: the veto saves one name and the
+        // Head of Household replaces one name, exactly as BB13 played it, so a
+        // post-veto block is legitimately half a duo beside a replacement.
+        const cer = (w.acts || []).find(a => a.type === 'nominations');
+        const noms = cer?.nominees || [];
+        if (noms.length !== 2 || !w.hoh) continue;
+        checked++;
+        expect(noms, 'the Head of Household nominated themselves').not.toContain(w.hoh);
+        if (w.duoNomination) {
+          paired++;
+          expect(w.duoNomination).toHaveLength(2);
+          expect(noms.slice().sort()).toEqual(w.duoNomination.slice().sort());
+          expect((gs.bb.duos?.pairs || []).some(p =>
+            p.includes(noms[0]) && p.includes(noms[1])),
+          `${noms[0]} and ${noms[1]} went up as a duo and are not one`).toBe(true);
+        }
+      }
+    }
+    expect(checked, 'no ordinary nomination week was ever played').toBeGreaterThan(3);
+    // AND IT HAS TO ACTUALLY HAPPEN. Every assertion above is inside an
+    // `if (w.duoNomination)`, so a season that never once nominated a pair —
+    // which is precisely the bug being fixed — would sail through all of them.
+    expect(paired, 'not one nomination was ever made as a duo').toBeGreaterThan(3);
+    expect(paired / checked, 'paired nominations were the exception, not the rule')
+      .toBeGreaterThan(0.5);
+  });
+});

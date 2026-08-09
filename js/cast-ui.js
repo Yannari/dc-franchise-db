@@ -1178,7 +1178,35 @@ export function populateRelDropdowns() {
   const opts  = names.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('rel-a').innerHTML = opts;
   document.getElementById('rel-b').innerHTML = opts;
+  buildKinshipSelect();
   updateRelAvatars();
+}
+
+/**
+ * The kinship picker, built from REL_KINSHIP rather than typed twice.
+ *
+ * It was a hand-written <select> in simulator.html, which is fine until the
+ * constant grows — and the moment it did, the twists that CAST off this axis
+ * (Dynamic Duos needs declared pairs, Rivals needs history, the Twin Twist
+ * needs a declared twin) could read relations the page gave nobody a way to
+ * set. Grouped, because "Family" and "History" are the two halves that decide
+ * which twists a cast can run.
+ */
+export function buildKinshipSelect() {
+  const sel = document.getElementById('rel-kin');
+  if (!sel || typeof REL_KINSHIP === 'undefined') return;
+  const keep = sel.value;
+  const groups = new Map();
+  let none = '';
+  for (const [key, def] of Object.entries(REL_KINSHIP)) {
+    const opt = `<option value="${key}">${def.label}</option>`;
+    if (!def.group) { none += opt; continue; }
+    if (!groups.has(def.group)) groups.set(def.group, []);
+    groups.get(def.group).push(opt);
+  }
+  sel.innerHTML = none + [...groups.entries()]
+    .map(([g, list]) => `<optgroup label="${g}">${list.join('')}</optgroup>`).join('');
+  if (keep && REL_KINSHIP[keep]) sel.value = keep;
 }
 export function updateRelAvatars() {
   const a = document.getElementById('rel-a')?.value;

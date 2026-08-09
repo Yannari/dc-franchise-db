@@ -888,25 +888,48 @@
             </div>
             <div class="form-group">
               <label class="form-label">How they know each other <span class="hint">(optional)</span></label>
+              <!-- Rebuilt from REL_KINSHIP by buildKinshipSelect() on open, so this
+                   list is only what shows before the modules load. Add relations
+                   in js/core.js, never here. -->
               <select id="rel-kin" class="form-input">
                 <option value="none">No connection</option>
-                <option value="twins">Twins</option>
-                <option value="siblings">Siblings</option>
-                <option value="parent-child">Parent &amp; child</option>
-                <option value="cousins">Cousins</option>
-                <option value="married">Married</option>
-                <option value="partners">Partners</option>
-                <option value="estranged">Estranged family</option>
-                <option value="exes">Exes</option>
-                <option value="ex-friends">Ex-best-friends</option>
-                <option value="old-friends">Friends from before</option>
-                <option value="colleagues">Worked together</option>
+                <optgroup label="Family">
+                  <option value="twins">Twins</option>
+                  <option value="siblings">Siblings</option>
+                  <option value="step-siblings">Step-siblings</option>
+                  <option value="parent-child">Parent &amp; child</option>
+                  <option value="grandparent">Grandparent &amp; grandchild</option>
+                  <option value="aunt-uncle">Aunt/uncle &amp; niece/nephew</option>
+                  <option value="cousins">Cousins</option>
+                  <option value="in-laws">In-laws</option>
+                </optgroup>
+                <optgroup label="Together">
+                  <option value="married">Married</option>
+                  <option value="engaged">Engaged</option>
+                  <option value="partners">Partners</option>
+                  <option value="dating">Dating</option>
+                </optgroup>
+                <optgroup label="Friends">
+                  <option value="best-friends">Best friends</option>
+                  <option value="childhood-friends">Grew up together</option>
+                  <option value="old-friends">Friends from before</option>
+                  <option value="roommates">Lived together</option>
+                  <option value="colleagues">Worked together</option>
+                  <option value="teammates">Same team</option>
+                </optgroup>
+                <optgroup label="History">
+                  <option value="estranged">Estranged family</option>
+                  <option value="exes">Exes</option>
+                  <option value="ex-friends">Ex-best-friends</option>
+                </optgroup>
               </select>
               <div class="hint hint-tight"><b>Leave this on "No connection" and the pair get no scenes of their own.</b>
                 It is what the house plays off: exes relapse or stop speaking, estranged family try once,
-                a married couple get counted as one vote and can end it in the bedroom, siblings shield
-                each other and get compared. Twists read it too &mdash; the Twin Twist looks for a declared
-                twin, and a Rivals cast is built from exes, ex-best-friends and estranged family.</div>
+                a married couple get counted as one vote and can end it in the bedroom, a parent and child
+                get asked which of them is really playing, best friends get told to prove it.
+                <b>Three twists are CAST off this list</b> &mdash; the Twin Twist looks for a declared twin,
+                a Rivals season is built from the History group only, and Dynamic Duos needs at least two
+                declared pairs of any kind or it will not run at all.</div>
             </div>
             <!-- The relationship above is what it IS, shared. These two are
                  what each of them privately makes of it, which is not always

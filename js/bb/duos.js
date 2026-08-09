@@ -253,6 +253,7 @@ export function announceDuos(week) {
     goldenKey: !!st.goldenKey,
     pairs: st.pairs.map(p => [...p]),
     kin: st.pairs.map(([a, b]) => duoKinLabel(a, b)),
+    kinKeys: st.pairs.map(([a, b]) => duoKin(a, b)),
     singles: [...(st.singles || [])],
     keyAt: st.keyAt,
     rules,
@@ -284,6 +285,59 @@ export function duoNominees(target, house = gs.activePlayers || [], fallback = n
   if (!partner) return null;                    // solo, orphaned, or already broken
   if (hasKey(partner) || hasKey(target)) return null;
   return [target, partner];
+}
+
+/**
+ * The duo that can actually go up.
+ *
+ * WHY THIS REPLACED `duoNominees` AT THE CEREMONY. That function was handed a
+ * target and returned their partner, and it had no idea who was protected — so
+ * the moment either half was untouchable the pair collapsed to ONE name and
+ * week.js topped the block up with an unrelated stranger. Two bugs fell out of
+ * that and both were reported from a real season: a ceremony that read out a
+ * Head of Household nominating their own duo, and a "paired" nomination that
+ * was one person plus somebody who had nothing to do with them.
+ *
+ * YOU CANNOT NOMINATE YOUR OWN DUO. The Head of Household cannot be nominated,
+ * so the pair they are half of cannot go up — which makes their partner safe
+ * for the week. That is not a special case bolted on, it is what nominating in
+ * pairs MEANS, and it is the strategic centre of the twist: winning the
+ * competition saves two people.
+ *
+ * Returns null when no whole duo is nominatable — everybody left is protected,
+ * or the survivors are all orphans — and the ceremony falls back to an ordinary
+ * two-name block, which is the honest thing to do with a rule that has run out
+ * of pairs.
+ */
+export function duoBlock({ plan = {}, house = gs.activePlayers || [], protectedNames = [],
+  hoh = null, rng = Math.random } = {}) {
+  const st = duoState();
+  if (!st || st.over) return null;
+
+  const blocked = new Set([...protectedNames, hoh, partnerOf(hoh, house)].filter(Boolean));
+  const eligible = (st.pairs || []).filter(p => p.length === 2
+    && p.every(n => house.includes(n) && !blocked.has(n) && !hasKey(n)));
+  if (!eligible.length) return null;
+
+  // Whoever the Head of Household actually wanted, if they are half of a duo
+  // that can go up whole.
+  const wanted = [plan.target, ...(plan.nominees || []), plan.backdoorTarget].filter(Boolean);
+  for (const name of wanted) {
+    const pair = eligible.find(p => p.includes(name));
+    if (pair) return [...pair];
+  }
+  // Nobody on the plan is in a nominatable pair, so it is the ordinary read:
+  // the duo this Head of Household is least close to.
+  return [...eligible
+    .map(p => ({ p, score: p.reduce((s, n) => s + getPerceivedBond(hoh, n), 0) + (rng() * 2 - 1) }))
+    .sort((a, b) => a.score - b.score)[0].p];
+}
+
+/** Who the Head of Household's crown protects besides the Head of Household. */
+export function duoSafeWith(hoh, house = gs.activePlayers || []) {
+  if (!duosActive() || !hoh) return [];
+  const partner = partnerOf(hoh, house);
+  return partner ? [partner] : [];
 }
 
 const KEY_LINES = [
@@ -346,8 +400,16 @@ export function expireKeys({ week, house = gs.activePlayers || [] } = {}) {
   if (house.length > st.keyAt) return null;
 
   const held = keyHolders().filter(n => house.includes(n));
+  /* THE KEYS END. THE PAIRING DOES NOT.
+     This used to set `over` as well, which switched the entire twist off — and
+     since the default expiry is ten, a twelve-person cast stopped nominating
+     in pairs after WEEK TWO while four intact duos were still sitting there.
+     Reported as "the nominations are not done as a duo", and it was not the
+     ceremony: the ceremony was being told the season had finished.
+     `over` means there are no pairs left to nominate, which duoBlock works out
+     on its own by returning null. Expiring keys means exactly one thing —
+     everybody holding one is back in the game. */
   st.keysExpired = true;
-  st.over = true;
   if (!held.length) return null;
 
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;

@@ -13,7 +13,7 @@ import { gs, players, seasonConfig, setRelationships } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
-import { buildVPScreens } from '../js/vp-screens.js';
+import { buildVPScreens, _tvState } from '../js/vp-screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -60,8 +60,20 @@ beforeAll(() => {
 
   // Render every episode the season produced and index the screens by label.
   for (const [i, ep] of (gs.episodeHistory || []).entries()) {
+    // Twist screens are click-to-reveal and every one starts at idx -1, so a
+    // freshly built screen is a stack of "?" placeholders with none of its
+    // prose in it. Build once to populate _tvState, wind every counter to the
+    // end, build again -- that is the HTML a viewer actually sees, and the only
+    // version worth asserting about.
     let built = [];
-    try { built = buildVPScreens(ep, i + 1) || []; } catch { built = []; }
+    try {
+      buildVPScreens(ep, i + 1);
+      for (const k of Object.keys(_tvState)) {
+        const st = _tvState[k];
+        if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+      }
+      built = buildVPScreens(ep, i + 1) || [];
+    } catch { built = []; }
     for (const sc of built) {
       if (!sc?.label) continue;
       if (!screensByLabel.has(sc.label)) screensByLabel.set(sc.label, []);
@@ -83,15 +95,18 @@ describe('the season produced the acts', () => {
 });
 
 describe('and every one of them reached a screen', () => {
-  it('draws the pairing as a move-in, with the pairs on the wall', () => {
+  it('draws the pairing on the house announcement screen', () => {
     const [screen] = screensFor('Duos: Announcement');
     expect(screen, 'the announcement never became a screen').toBeTruthy();
     expect(screen.html).toContain('DYNAMIC DUOS');
-    // The house's own furniture, because this is a night of television rather
-    // than a settings page: the front-door feed and the wall of frames.
-    expect(screen.html, 'the announcement is not built as a move-in').toContain('bbf-feed');
-    expect(screen.html).toContain('FRONT DOOR');
-    expect(screen.html, 'the chain between two frames is the whole idea').toContain('bbdn-link');
+    // THE HOUSE'S OWN ANNOUNCEMENT SCREEN. Same wall, same eye, same sofas as
+    // every other public rule — a twist that announces itself differently from
+    // every other twist reads as a different programme.
+    expect(screen.html, 'not built as the standard announcement').toContain('bbta-wall');
+    expect(screen.html, 'the wall screen has no eye on it').toContain('bbta-screenframe');
+    expect(screen.html).toContain('THE ANNOUNCEMENT');
+    expect(screen.html).toContain('THE VOICE OF BIG BROTHER');
+    expect(screen.html, 'the chain between two duo halves is the one new mark').toContain('bbduo-chain');
 
     const open = acts.find(a => a.type === 'duos-open');
     for (const [a, b] of open.pairs.slice(0, 3)) {
@@ -107,7 +122,8 @@ describe('and every one of them reached a screen', () => {
     const open = acts.find(a => a.type === 'duos-open');
     expect(open.kin, 'the announcement carries no relation labels').toBeTruthy();
     expect(open.kin.some(k => /sibling|exes|married|cousin|friend|worked/i.test(k))).toBe(true);
-    expect(screen.html).toContain(open.kin[0]);
+    // Drawn on the pill in caps, the way every other announcement pill is.
+    expect(screen.html.toUpperCase()).toContain(open.kin[0].toUpperCase());
   });
 
   it('draws the key, naming the holder and the partner who went', () => {
@@ -159,8 +175,20 @@ describe('a pairs-only season', () => {
 
     pairActs = (gs.bb.weeks || []).flatMap(w => w.acts || []).filter(Boolean);
     for (const [i, ep] of (gs.episodeHistory || []).entries()) {
+      // Twist screens are click-to-reveal and every one starts at idx -1, so a
+      // freshly built screen is a stack of "?" placeholders with none of its
+      // prose in it. Build once to populate _tvState, wind every counter to the
+      // end, build again -- that is the HTML a viewer actually sees, and the only
+      // version worth asserting about.
       let built = [];
-      try { built = buildVPScreens(ep, i + 1) || []; } catch { built = []; }
+      try {
+        buildVPScreens(ep, i + 1);
+        for (const k of Object.keys(_tvState)) {
+          const st = _tvState[k];
+          if (st && typeof st === 'object' && 'idx' in st) st.idx = 9999;
+        }
+        built = buildVPScreens(ep, i + 1) || [];
+      } catch { built = []; }
       for (const sc of built) {
         if (!sc?.label) continue;
         if (!byLabel.has(sc.label)) byLabel.set(sc.label, []);

@@ -75,18 +75,42 @@ export const REL_TYPES = {
  * and two ex-best-friends.
  */
 export const REL_KINSHIP = {
-  none:        { label: 'No connection',   family: false, tense: false },
-  twins:       { label: 'Twins',           family: true,  tense: false },
-  siblings:    { label: 'Siblings',        family: true,  tense: false },
-  'parent-child': { label: 'Parent & child', family: true, tense: false },
-  cousins:     { label: 'Cousins',         family: true,  tense: false },
-  married:     { label: 'Married',         family: true,  tense: false },
-  partners:    { label: 'Partners',        family: true,  tense: false },
-  estranged:   { label: 'Estranged family', family: true, tense: true },
-  exes:        { label: 'Exes',            family: false, tense: true },
-  'ex-friends':{ label: 'Ex-best-friends', family: false, tense: true },
-  'old-friends': { label: 'Friends from before', family: false, tense: false },
-  colleagues:  { label: 'Worked together', family: false, tense: false },
+  none:        { label: 'No connection',   family: false, tense: false, group: '' },
+
+  // ── family, and nothing has gone wrong with it ──
+  //
+  // The list used to be four warm family entries and one bitter one, which
+  // quietly made "related" mean "estranged" — you could cast a Rivals season
+  // off this axis and could not cast a mother and son. A parent and child is
+  // also not one relation: a father and son in a house is a different
+  // programme from a mother and daughter, and the screens say so.
+  twins:       { label: 'Twins',           family: true,  tense: false, group: 'Family' },
+  siblings:    { label: 'Siblings',        family: true,  tense: false, group: 'Family' },
+  'step-siblings': { label: 'Step-siblings', family: true, tense: false, group: 'Family' },
+  'parent-child': { label: 'Parent & child', family: true, tense: false, group: 'Family' },
+  grandparent: { label: 'Grandparent & grandchild', family: true, tense: false, group: 'Family' },
+  'aunt-uncle': { label: 'Aunt/uncle & niece/nephew', family: true, tense: false, group: 'Family' },
+  cousins:     { label: 'Cousins',         family: true,  tense: false, group: 'Family' },
+  'in-laws':   { label: 'In-laws',         family: true,  tense: false, group: 'Family' },
+
+  // ── together ──
+  married:     { label: 'Married',         family: true,  tense: false, group: 'Together' },
+  engaged:     { label: 'Engaged',         family: true,  tense: false, group: 'Together' },
+  partners:    { label: 'Partners',        family: true,  tense: false, group: 'Together' },
+  dating:      { label: 'Dating',          family: false, tense: false, group: 'Together' },
+
+  // ── people who chose each other ──
+  'best-friends':      { label: 'Best friends',      family: false, tense: false, group: 'Friends' },
+  'childhood-friends': { label: 'Grew up together',  family: false, tense: false, group: 'Friends' },
+  'old-friends': { label: 'Friends from before', family: false, tense: false, group: 'Friends' },
+  roommates:   { label: 'Lived together',  family: false, tense: false, group: 'Friends' },
+  colleagues:  { label: 'Worked together', family: false, tense: false, group: 'Friends' },
+  teammates:   { label: 'Same team',       family: false, tense: false, group: 'Friends' },
+
+  // ── history, which is what Rivals is cast from and nothing else is ──
+  estranged:   { label: 'Estranged family', family: true, tense: true, group: 'History' },
+  exes:        { label: 'Exes',            family: false, tense: true, group: 'History' },
+  'ex-friends':{ label: 'Ex-best-friends', family: false, tense: true, group: 'History' },
 };
 
 /** The declared relation between two houseguests, or 'none'. */

@@ -23,8 +23,8 @@ import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSecretPowerComp } from './vp-bb-secret-power.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
-import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire,
-  rpBuildBBDuosRepair, rpBuildBBDuosWeek } from './vp-bb-duos.js';
+import { rpBuildBBDuosKey, rpBuildBBDuosExpire, rpBuildBBDuosRepair,
+  rpBuildBBDuosWeek, duoArrivalLine } from './vp-bb-duos.js';
 import { rpBuildBBDuoWeekOpen, rpBuildBBDuoWeekEvents,
   rpBuildBBDuoWeekEviction } from './vp-bb-duo-week.js';
 import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
@@ -18793,6 +18793,148 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
 }
 
 /**
+ * Dynamic Duos, announced.
+ *
+ * SAME SCREEN AS EVERY OTHER TWIST, deliberately. The first version of this
+ * invented its own layout — a front-door feed with a wall of paired frames —
+ * and however nice it looked on its own it was the only public rule in the
+ * game that did not arrive the way public rules arrive: the room summoned, the
+ * wall screen waking up, the eye, the voice, one card at a time. A twist that
+ * announces itself differently from every other twist reads as a different
+ * programme.
+ *
+ * So this is `rpBuildBBTwistAnnouncement`'s chrome — the same shell classes,
+ * the same eye, the same sofas, the same sticky controls — with the duos
+ * themselves as the reveal steps. The pairs walk out of the wall screen one at
+ * a time, each one carrying what the cast said they are to each other, because
+ * "these two are siblings" is the entire reason this twist can be announced at
+ * all.
+ */
+export function rpBuildBBDuosAnnouncement(ep, act) {
+  if (!act) return '';
+  const pairs = (act.pairs || []).map(p => [...p]);
+  const kin = act.kin || [];
+  const kinKeys = act.kinKeys || [];
+  const singles = act.singles || [];
+  const rules = act.rules || [];
+  const house = _bbBeforeArrivals(ep);
+
+  const stateKey = `bb_duos_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const steps = [
+    { kind: 'summons' },
+    { kind: 'rule' },
+    { kind: 'consequence' },
+    ...pairs.map((p, i) => ({ kind: 'duo', p, i })),
+    ...(singles.length ? [{ kind: 'alone' }] : []),
+  ];
+  const total = steps.length;
+  const done = state.idx >= total - 1;
+  const lit = state.idx >= 1;
+
+  // The show's eye, drawn — the same one the announcement always uses, in the
+  // twist's own gold.
+  const EYE = `<svg viewBox="0 0 120 64" aria-hidden="true">
+      <defs>
+        <radialGradient id="bbduo-iris" cx="50%" cy="50%">
+          <stop offset="0%" stop-color="#ffe9a8"/>
+          <stop offset="45%" stop-color="#f0a500"/>
+          <stop offset="100%" stop-color="#7a3b00"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="60" cy="32" rx="52" ry="26" fill="none" stroke="#f0a500" stroke-width="2.4" opacity=".85"/>
+      <ellipse cx="60" cy="32" rx="38" ry="18" fill="none" stroke="#e3b341" stroke-width="1.6" opacity=".6"/>
+      <circle cx="60" cy="32" r="12" fill="url(#bbduo-iris)"/>
+      <circle cx="60" cy="32" r="4.6" fill="#05070d"/>
+      <circle cx="64" cy="28" r="1.8" fill="#ffffff" opacity=".9"/>
+    </svg>`;
+
+  const sofaRow = house.map(n => rpPortrait(n, 'sm')).join('');
+
+  const card = (step, i) => {
+    if (i > state.idx) return `<div class="bbns-card is-hidden"><span>?</span></div>`;
+
+    if (step.kind === 'summons') {
+      return `<div class="bbns-card is-open bbta-voice">
+        <div class="bbns-card-h"><span class="bbns-pill grey">THE VOICE OF BIG BROTHER</span></div>
+        <div class="bbns-card-b">"Houseguests. Please gather in the living room."
+          ${house.length} people who have not finished unpacking arrive at the sofas, and every one
+          of them has already worked out that they were cast in twos.</div></div>`;
+    }
+
+    if (step.kind === 'rule') {
+      return `<div class="bbns-card is-final bbta-reveal">
+        <div class="bbns-card-h"><span class="bbns-pill gold">DYNAMIC DUOS</span></div>
+        <div class="bbns-card-b">"${_bbEsc(rules[0] || '')}"
+          <span class="bbta-sting">Look at the person beside you. Whatever happens to them this
+            week happens to you.</span></div></div>`;
+    }
+
+    if (step.kind === 'consequence') {
+      return `<div class="bbns-card is-final bbta-reveal">
+        <div class="bbns-card-h"><span class="bbns-pill ${act.goldenKey === false ? 'red' : 'gold'}">
+          ${act.goldenKey === false ? 'AND IF YOU LOSE THEM' : 'THE GOLDEN KEY'}</span></div>
+        <div class="bbns-card-b">"${rules.slice(1).map(r => _bbEsc(r)).join(' ')}"</div></div>`;
+    }
+
+    if (step.kind === 'alone') {
+      return `<div class="bbns-card">
+        <div class="bbns-card-h">${singles.slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+          <span class="bbns-pill red">CAME IN ALONE</span></div>
+        <div class="bbns-card-b">${singles.map(n => `<b>${_bbEsc(n)}</b>`).join(', ')}
+          ${singles.length === 1 ? 'was' : 'were'} cast without anybody.
+          ${singles.length === 1 ? 'There is' : 'There are'} nobody to be nominated beside, which
+          makes ${singles.length === 1 ? 'them the cheapest name' : 'them the cheapest names'} on
+          that wall${act.goldenKey === false
+    ? ' — a Head of Household can put them up and it costs nobody else.'
+    : ', and no partner to lose means no Golden Key to win.'}</div></div>`;
+    }
+
+    // ── a duo, stepping out of the wall screen ──
+    const [a, b] = step.p;
+    const label = kin[step.i] || 'Came in together';
+    return `<div class="bbns-card bbduo-card">
+      <div class="bbns-card-h">
+        ${_bbAvatar(a, 30)}<span class="bbduo-chain" aria-hidden="true"></span>${_bbAvatar(b, 30)}
+        <span class="bbns-pill gold">${_bbEsc(label).toUpperCase()}</span>
+      </div>
+      <div class="bbns-card-b"><b>${_bbEsc(a)}</b> and <b>${_bbEsc(b)}</b>.
+        ${_bbEsc(duoArrivalLine(a, b, label, step.i, kinKeys[step.i]))}</div></div>`;
+  };
+
+  const CSS = `<style>
+    .bbta .bbduo-chain{position:relative;display:inline-block;width:26px;height:12px;
+      margin:0 2px;vertical-align:middle;}
+    .bbta .bbduo-chain::before,.bbta .bbduo-chain::after{content:'';position:absolute;top:0;
+      width:14px;height:12px;border:2px solid rgba(240,165,0,.8);border-radius:6px;}
+    .bbta .bbduo-chain::before{left:0;}
+    .bbta .bbduo-chain::after{right:0;}
+    .bbta .bbduo-card .bbns-card-h{align-items:center;}
+  </style>`;
+
+  return `${CSS}<div class="rp-page bb-room bb-block bbns bbta">
+    <div class="rp-eyebrow">Week ${ep.num}</div>
+    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px rgba(240,165,0,.25);margin-bottom:4px">THE ANNOUNCEMENT</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">The wall screen has something to say before this season begins.</div>
+    <div class="bbta-wall ${lit ? 'is-lit' : ''}">
+      <div class="bbta-screenframe">${EYE}<div class="bbta-scan"></div></div>
+      <div class="bbta-sofas">${sofaRow}</div>
+    </div>
+    <div class="bbns-cards">${steps.map(card).join('')}</div>
+    <div class="rp-reveal-controls" style="position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;padding:10px 0;background:linear-gradient(transparent, rgba(5,7,13,.92) 40%)">
+      ${done ? '' : `<button class="rp-btn" onclick="${_bbReveal(ep, stateKey, state.idx + 1)}">${
+  state.idx < 0 ? 'The voice speaks'
+    : steps[state.idx + 1]?.kind === 'duo' ? 'The next duo'
+      : steps[state.idx + 1]?.kind === 'rule' ? 'The twist' : 'Reveal next'}</button>`}
+      ${done ? '' : `<button class="rp-btn rp-btn-ghost" onclick="${_bbReveal(ep, stateKey, total - 1)}">Reveal all</button>`}
+      <span style="align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px">${Math.min(total, Math.max(0, state.idx + 1))} / ${total}</span>
+    </div>
+  </div>`;
+}
+
+/**
  * Pandora's Box.
  *
  * The door, the choice, and the public version of what happened. The prize
@@ -20843,12 +20985,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // rather than after it, because the Twin Twist shipped with its swap
       // passed to a screen that never drew it.
       case 'duos-open':
-        // The move-in's furniture, because this IS a move-in: the intro quote
-        // and the room's first read are what makes a face on that wall a
-        // person, and a duos night that skipped them was a settings page.
+        // The house's own announcement screen — same wall, same eye, same
+        // sofas as every other public rule. A twist that announces itself
+        // differently from every other twist reads as a different programme.
         screens.push({ id: id('bb-duos-open'), label: 'Duos: Announcement',
-          html: rpBuildBBDuosOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar,
-            slug: _bbSlug, quote: _bbIntroQuote, reads: _bbFirstRead }) });
+          html: rpBuildBBDuosAnnouncement(view, act) });
         break;
       case 'duos-key':
         screens.push({ id: id('bb-duos-key'), label: 'Duos: Golden Key',

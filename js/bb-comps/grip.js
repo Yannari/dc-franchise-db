@@ -132,17 +132,17 @@ function willingnessOf(name, mix) {
 // ══════════════════════════════════════════════════════════════════════
 
 const GRIP_HOLD = [
-  (n, p) => `${n} has stopped shifting and started breathing on a count, which is what people do when they have decided to be here a while.`,
-  (n, p) => `${n} keeps changing which hand carries it. Everybody down there can see the arithmetic being done.`,
-  (n, p) => `Nobody is talking to ${n} any more, and ${p.sub} ${vb(p, 'seems', 'seem')} relieved about it.`,
-  (n, p) => `${n} has found a way to hang that uses bone instead of muscle. It will not last, but it is lasting.`,
+  (n, p) => `${n} settles into a steady breathing rhythm and stops reacting to the people below.`,
+  (n, p) => `${n} switches hands again, flexes the free one twice, and locks back onto the pole.`,
+  (n, p) => `The conversation dies out around ${n}. ${p.sub === 'they' ? 'They are' : p.sub === 'he' ? 'He is' : 'She is'} too focused to restart it.`,
+  (n, p) => `${n} drops lower on the pole and hooks an elbow around it, taking some pressure off ${p.posAdj} hands.`,
 ];
 
 const GRIP_GO = [
-  (n, p) => `${n}'s fingers open. Not a slip — they simply stop being closed, and ${p.sub} ${vb(p, 'is', 'are')} on the mat before ${p.sub} ${vb(p, 'has', 'have')} decided to be.`,
-  (n, p) => `${n} says "okay" to nobody and lets go. There is no drama in it at all, which somehow makes it worse to watch.`,
-  (n, p) => `${n} tries one more grip change and does not complete it.`,
-  (n, p) => `${n} holds on well past the point of it being useful and comes down shaking out an arm that will not straighten.`,
+  (n, p) => `${n}'s right hand slips. The left holds for half a second longer before ${n} drops to the mat.`,
+  (n, p) => `${n} exhales, gives the pole one last squeeze, and lets go.`,
+  (n, p) => `${n} reaches to change grips, misses the pole on the way back, and is out.`,
+  (n, p) => `${n} finally drops and immediately starts stretching a cramped forearm.`,
 ];
 
 export const getAGrip = {
@@ -150,7 +150,7 @@ export const getAGrip = {
   name: 'Get A Grip',
   category: 'endurance',
   types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Every houseguest takes hold of their own pole and holds on. That is the entire competition: nothing swings at them, nothing tilts and nothing sprays, and the pole does not move. They may change grip and rest whichever arm they like, but letting go ends their night on the spot and there is no way back into it. The last houseguest still holding their pole wins, which by the end is usually settled by a conversation between the final two rather than by an arm giving out.',
+  desc: 'Every houseguest takes hold of their own pole and holds on. Nothing swings, tilts or sprays, and the pole never moves. They may change grips or rest one arm at a time, but once both hands leave the pole they are eliminated. The last houseguest still holding on wins.',
   // The purest hold in the library, so endurance carries most of it. Physical
   // is grip strength rather than size; boldness is the willingness to keep
   // hanging after it has started to hurt.
@@ -165,7 +165,14 @@ export const getAGrip = {
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 2.3, context, rng,
+      /* WIDER THAN THE OTHER HOLDS, BECAUSE WILLINGNESS COMPOUNDS.
+         Capacity and willingness are multiplied, not added, so an all-rounder
+         gets both and the advantages stack — measured over 120 runs at luck
+         2.3 this was the tightest of the six at four distinct winners and 51%
+         for the top one, which is a competition close to being owned. The
+         noise widens to pay for the compounding rather than the multiplier
+         being softened, because the multiplier is the interesting part. */
+      mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 3.1, context, rng,
     });
     /* THE ARM SETS THE CEILING; THE PERSON DECIDES WHAT TO SPEND OF IT.
        Applied after the field is scored and before it is ranked, so a
@@ -184,8 +191,8 @@ export const getAGrip = {
     entries.sort((a, b) => b.score - a.score);
     const say = makePicker(rng);
     const beats = [beat(
-      'Nothing about this one is clever. Everybody is holding a pole, and everybody is going to stop.',
-      participants.slice(0, 3), 'FEET UP')];
+      'Each houseguest takes a pole. Once both hands leave it, the competition is over.',
+      participants.slice(0, 3), 'TAKE YOUR POLE')];
 
     /* EVERY HOUSEGUEST IS RESOLVED BY A SPECIFIC CARD, AND THE SCREEN NEEDS TO
        KNOW WHICH ONE. Without this the poles and the board can only be gated
@@ -214,7 +221,7 @@ export const getAGrip = {
       beats.push(beat(say(GRIP_HOLD)(runnerUp.name, p), [runnerUp.name, winner.name], 'THE LAST TWO', 'gold'));
       revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
-        `${runnerUp.name} comes down. Whether that was an arm giving out or a deal being taken is the only question anybody in this house will ask about it.`,
+        `${runnerUp.name} lets go, leaving ${winner.name} as the last person on a pole. The house immediately starts debating whether exhaustion or a deal ended it.`,
         [runnerUp.name, winner.name], 'AND DOWN', 'gold'));
     }
     // The winner is only known once everybody else is off.
@@ -243,16 +250,16 @@ export const getAGrip = {
 // ══════════════════════════════════════════════════════════════════════
 
 const ROPE_FALL = [
-  (n, p) => `${n} gets two thirds of the way and the rope decides otherwise. Back to the platform, back to the beginning.`,
-  (n, p) => `${n} looks down once. That is all it takes, and the whole crossing is gone.`,
-  (n, p) => `${n} tries to hurry the last stretch and lands in the net still reaching for the far post.`,
-  (n, p) => `A wobble ${n} has recovered from four times already stops being recoverable.`,
+  (n, p) => `${n} makes it two-thirds across before a foot rolls off the rope. It is back to the starting platform.`,
+  (n, p) => `${n} glances down, loses balance, and lands in the net.`,
+  (n, p) => `${n} rushes the final few steps and falls just short of the far platform.`,
+  (n, p) => `${n} fights through one wobble, overcorrects on the next, and drops into the net.`,
 ];
 
 const ROPE_GOOD = [
-  (n, p) => `${n} has worked out that the rope is calmer if ${p.sub} ${vb(p, 'is', 'are')} slower, which is the opposite of what every instinct is saying.`,
-  (n, p) => `${n} crosses with both arms out and both eyes on the far post, and does not look at ${p.posAdj} feet once.`,
-  (n, p) => `${n} makes it look boring, which in this competition is the highest praise available.`,
+  (n, p) => `${n} slows down, waits for the rope to settle after every step, and starts making real progress.`,
+  (n, p) => `${n} keeps both arms wide and ${p.posAdj} eyes fixed on the far platform.`,
+  (n, p) => `${n} crosses without rushing, barely giving the rope time to swing.`,
 ];
 
 export const tightrope = {
@@ -260,7 +267,7 @@ export const tightrope = {
   name: 'Tightrope',
   category: 'balance',
   types: ['hoh', 'arena', 'tiebreaker'],
-  desc: 'A single rope is strung between two platforms above a net, and each houseguest has to get from one end of it to the other without falling. There is nothing to hold and nothing to lean on, and no way across but along the rope. A fall costs the whole trip rather than a few seconds: anybody who touches the net climbs back to the platform they started from and begins the crossing again from nothing. The first houseguest to reach the far platform wins, which is why hurrying is the most expensive thing anybody does out there.',
+  desc: 'The houseguests must cross a tightrope suspended above a safety net. If they fall, they return to the starting platform and lose all of their progress. The first person to reach the other side wins.',
   // Balance under nerve. Intuition is the constant micro-correction, boldness
   // is being willing to commit to a step at all, and temperament is what stops
   // a wobble becoming a fall.
@@ -281,7 +288,7 @@ export const tightrope = {
     });
     const say = makePicker(rng);
     const beats = [beat(
-      'The rope is thinner than it looked from the sofas, and the net underneath it is a long way down for something that is only there to be humiliating.',
+      'A tightrope connects the two platforms above a safety net. Falling means returning to the start and trying the entire crossing again.',
       participants.slice(0, 3), 'ONE ROPE')];
 
     // Crossings, read off the finishing order so the narration and the result
@@ -303,7 +310,7 @@ export const tightrope = {
       api.popDelta(runnerUp.name, 1);
     }
     beats.push(beat(
-      `${winner.name} finishes a crossing nobody else was close to finishing, and steps off the platform to a room that has gone quiet.`,
+      `${winner.name} plants both feet on the far platform and wins the competition.`,
       [winner.name], 'ACROSS', 'gold'));
     /* ONE CROSSING, NOT A LAP COUNT.
        The wiki rule is "reach one end of a tightrope to another without
@@ -330,21 +337,43 @@ export const tightrope = {
   },
 };
 
+/**
+ * How hard somebody pulls when a knot will not come.
+ *
+ * The mirror of willingnessOf, pointed at the opposite behaviour. In a hold,
+ * nerve buys you time; on a rope it costs you the rope. The wiki rule is only
+ * "untie a series of knots", but the trap is in the material: force tightens a
+ * knot instead of opening it, so the houseguest who gets angry at one is
+ * actively making it harder than it was handed to them.
+ *
+ * That makes temperament THE stat here rather than a spread term — the thing a
+ * viewer can point at and say why it decided the competition. A level
+ * houseguest works the knot; a volatile one fights it and loses to a rope.
+ */
+function patienceOf(name, mix) {
+  const t = aptitude(name, mix);
+  return {
+    patience: Math.round(t * 100) / 100,
+    // Up to about a third of the run lost to pulling, at the bottom of the scale.
+    cost: 1 - ((10 - t) / 10) * 0.34,
+  };
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // Feeling Knotty
 // ══════════════════════════════════════════════════════════════════════
 
 const KNOT_TIGHTEN = [
-  (n, p) => `${n} pulls the strand that looked loose and turns a knot ${p.sub} nearly had into one ${p.sub} ${vb(p, 'does', 'do')} not.`,
-  (n, p) => `${n} is working fast, and every fast thing ${p.sub} ${vb(p, 'does', 'do')} is making the next one harder.`,
-  (n, p) => `${n} gets frustrated and yanks. The rope answers by getting smaller.`,
-  (n, p) => `${n} has been on the same knot long enough that people have stopped watching, which is somehow the worst part.`,
+  (n, p) => `${n} pulls the wrong end and cinches the knot tighter.`,
+  (n, p) => `${n} rushes through the loose strands, tangles two together, and has to undo the extra mess first.`,
+  (n, p) => `${n} loses patience and yanks the rope. The knot tightens immediately.`,
+  (n, p) => `${n} is still working on the same knot while the stations on either side move ahead.`,
 ];
 
 const KNOT_GOOD = [
-  (n, p) => `${n} stops pulling entirely and starts pushing slack INTO the knot, which is the only thing that has ever worked on one.`,
-  (n, p) => `${n} finds the strand that is doing the holding and everything after it comes apart in about four seconds.`,
-  (n, p) => `${n} works with two fingers and no force at all, and the rope keeps agreeing to it.`,
+  (n, p) => `${n} pushes slack into the knot, loosens the centre, and pulls the strand free.`,
+  (n, p) => `${n} finds the strand holding the knot together and opens it in seconds.`,
+  (n, p) => `${n} works slowly with both thumbs, loosening each knot before pulling anything through.`,
 ];
 
 export const feelingKnotty = {
@@ -352,13 +381,17 @@ export const feelingKnotty = {
   name: 'Feeling Knotty',
   category: 'precision',
   types: ['veto', 'arena', 'tiebreaker'],
-  desc: 'Each houseguest is given a length of rope with a series of knots tied into it and has to untie every one of them by hand. There are no tools and nothing to cut with. The trap is that force works against them: pulling on the wrong strand tightens a knot instead of opening it, so a houseguest who hurries ends up holding something harder than they were handed. The first houseguest to untie every knot on their rope wins, and most of the field is beaten by their own hands rather than by the clock.',
+  desc: 'Each houseguest receives a rope tied with six knots. They must untie every knot by hand without tools, and pulling the wrong strand can tighten the rope further. The first person to free all six knots wins.',
   // Patience with fingers. Temperament is the whole trap of this one — the
   // person who gets angry at a knot makes it worse — and mental is reading
   // which strand is load-bearing before touching anything.
-  stats: { temperament: 0.32, intuition: 0.28, mental: 0.24, physical: 0.16 },
+  // Temperament leads because it is the TRAP, not because a knot cares how calm
+  // you are: force tightens it, so the volatile houseguest spends the
+  // competition making their own rope worse. See patienceOf.
+  stats: { temperament: 0.34, intuition: 0.28, mental: 0.24, physical: 0.14 },
   roles: {
-    hands: { intuition: 0.34, mental: 0.29, physical: 0.19, temperament: 0.18 },
+    // Reading which strand is load-bearing, and the fingers to work it.
+    hands: { intuition: 0.42, mental: 0.36, physical: 0.22 },
     patience: { temperament: 1 },
   },
   weight: () => 1,
@@ -366,42 +399,80 @@ export const feelingKnotty = {
     const { entries, breakdown } = scoreField(participants, {
       mix: this.roles.hands, swingBy: this.roles.patience, luck: 2.6, context, rng,
     });
+    /* THE ROPE ANSWERS FORCE WITH FORCE.
+       Applied after the hands are scored and before the field is ranked, so a
+       calm pair of average hands genuinely beats a clever pair of angry ones —
+       which is the competition the wiki describes, and was not the one being
+       simulated while temperament was only widening a spread. */
+    for (const e of entries) {
+      const { patience, cost } = patienceOf(e.name, this.roles.patience);
+      const worked = e.score * cost;
+      breakdown[e.name].patience = patience;
+      breakdown[e.name].forceCost = Math.round(cost * 100) / 100;
+      breakdown[e.name].ceiling = Math.round(e.score * 100) / 100;
+      breakdown[e.name].score = Math.round(worked * 100) / 100;
+      e.score = worked;
+    }
+    entries.sort((a, b) => b.score - a.score);
+
     const say = makePicker(rng);
     const beats = [beat(
-      'Six knots each, and the houseguests are told the only rule that matters: nothing sharp, nothing skipped.',
+      'Six knots each, and one rule: nothing sharp. The ropes are the same length and tied the same way, which is the last thing about this competition that is going to be fair.',
       participants.slice(0, 3), 'SIX KNOTS')];
 
+    /* Every houseguest is resolved by a specific card, so the ropes on screen
+       open in step with the log instead of all at once at the end. Walked from
+       the WORST up, because this competition is watched through the people it
+       is beating. */
+    const revealAt = {};
     const worst = [...entries].reverse();
-    worst.slice(0, Math.min(3, Math.max(1, worst.length - 2))).forEach(e => {
+    const CARDED = Math.min(4, Math.max(1, worst.length - 2));
+    worst.forEach((e, i) => {
       const p = pronouns(e.name);
       if (e.threw) {
+        revealAt[e.name] = beats.length;
         beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
         return;
       }
-      beats.push(beat(say(KNOT_TIGHTEN)(e.name, p), [e.name], 'TIGHTER', 'red'));
+      // Only the back of the field gets a card of its own, or the log is
+      // twenty cards of rope. Everybody else resolves against the last one.
+      if (i < CARDED) {
+        revealAt[e.name] = beats.length;
+        beats.push(beat(say(KNOT_TIGHTEN)(e.name, p), [e.name], 'TIGHTER', 'red'));
+      } else {
+        revealAt[e.name] = Math.max(0, beats.length - 1);
+      }
     });
 
     const [winner, runnerUp] = entries;
-    beats.push(beat(say(KNOT_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IT OPENS', 'gold'));
     if (runnerUp) {
+      revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
-        `${runnerUp.name} is one knot behind when it ends, which in this competition is a very long way behind.`,
+        `${runnerUp.name} is loosening the final knot when ${winner.name} finishes.`,
         [runnerUp.name], 'ONE SHORT', 'blue'));
     }
+    revealAt[winner.name] = beats.length;
+    beats.push(beat(say(KNOT_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IT OPENS', 'gold'));
     // Six knots each: how many opened, and how many were pulled tighter on
     // the way. The screen draws the rope, so it needs both.
     const KNOTS = 6;
     const opened = quantise(entries, { top: KNOTS, floor: 0, jitter: 0.7, rng });
-    const tightened = quantise([...entries].reverse(), { top: 5, floor: 0, jitter: 0.9, rng });
     return toResult(entries, { beats, breakdown, variant: 'feeling-knotty',
       detail: {
         knots: KNOTS,
-        runs: entries.map(e => ({
-          name: e.name,
-          opened: Math.min(KNOTS, Math.round(opened[e.name])),
-          tightened: Math.round(tightened[e.name]),
-          threw: e.threw,
-        })),
+        runs: entries.map((e, i) => {
+          // Only the winner clears the rope. Everybody else stopped on a knot.
+          const clear = i === 0 ? KNOTS : Math.min(KNOTS - 1, Math.round(opened[e.name]));
+          const pat = breakdown[e.name]?.patience ?? 5;
+          // Knots pulled tighter comes off temperament rather than out of a
+          // second roll, so the screen and the maths agree: the houseguest the
+          // rope beat is the one who fought it.
+          const fought = Math.max(0, Math.min(KNOTS - clear, Math.round((10 - pat) / 2.2)));
+          return {
+            name: e.name, opened: clear, tightened: fought, threw: e.threw,
+            patience: pat, revealAt: revealAt[e.name] ?? 0,
+          };
+        }),
       } });
   },
 };
@@ -411,16 +482,16 @@ export const feelingKnotty = {
 // ══════════════════════════════════════════════════════════════════════
 
 const DIP_BAD = [
-  (n, p) => `${n} surfaces with a piece, looks at the board, and realises it belongs about four weeks earlier than where ${p.sub} ${vb(p, 'was', 'were')} going to put it.`,
-  (n, p) => `${n} runs out of air halfway down and comes up with nothing but a very good idea of where it was.`,
-  (n, p) => `${n} can remember the week perfectly and cannot reach the tile that proves it.`,
-  (n, p) => `${n} takes two pieces at once to save a dive, drops one on the ladder, and loses more than the dive was worth.`,
+  (n, p) => `${n} surfaces with a tile, checks the board, and realizes it belongs four spots earlier.`,
+  (n, p) => `${n} turns back before reaching the bottom and comes up empty-handed.`,
+  (n, p) => `${n} points to the correct space on the board, then dives into the wrong section of the tank.`,
+  (n, p) => `${n} tries to carry two tiles up at once and drops one halfway to the surface.`,
 ];
 
 const DIP_GOOD = [
-  (n, p) => `${n} goes down knowing exactly which tile ${p.sub} ${vb(p, 'wants', 'want')}, which turns a lungful of air into one piece instead of a search.`,
-  (n, p) => `${n} sets the board out backwards, from the most recent eviction, and stops having to think about it at all.`,
-  (n, p) => `${n} surfaces, places it without hesitating, and is back in the water before the splash has settled.`,
+  (n, p) => `${n} studies the empty space before diving and comes back with the exact tile ${p.sub} ${vb(p, 'needs', 'need')}.`,
+  (n, p) => `${n} builds backward from the most recent eviction and quickly fills the final spaces.`,
+  (n, p) => `${n} places the tile immediately, takes one breath, and dives for the next.`,
 ];
 
 export const memoryDip = {
@@ -428,7 +499,7 @@ export const memoryDip = {
   name: 'Memory Dip',
   category: 'memory',
   types: ['hoh', 'veto'],
-  desc: 'A row of water tanks holds puzzle tiles at the bottom, one houseguest to a tank, and every tile carries the face of somebody who has already left this house. They dive, bring up one tile at a time, and lay them out on the board at the side of the tank in the exact order those houseguests were evicted. Air is the whole problem: a dive spent on the wrong tile is a dive nobody gets back, and a tile placed in the wrong slot has to be lifted and re-laid before anything after it counts. The first houseguest to finish their board in the correct order wins.',
+  desc: 'Tiles showing evicted houseguests are scattered along the bottom of each water tank. Players retrieve one tile per dive and arrange the faces in eviction order on a board beside the tank. The first correct board wins.',
   // The only competition in the library where the body and the memory compete
   // for the same lungful of air, so both carry real weight.
   stats: { mental: 0.38, endurance: 0.26, physical: 0.20, intuition: 0.16 },
@@ -444,7 +515,7 @@ export const memoryDip = {
     const say = makePicker(rng);
     const gone = (context.house || []).length;
     const beats = [beat(
-      `Faces at the bottom of the water, in an order this house made itself over ${gone ? 'the last few weeks' : 'the season'}. Everybody looks at the tanks for a second longer than they need to.`,
+      `Eviction tiles sit at the bottom of each tank. The houseguests must retrieve them one at a time and arrange them in the correct order.`,
       participants.slice(0, 3), 'INTO THE WATER')];
 
     const worst = [...entries].reverse();
@@ -461,7 +532,7 @@ export const memoryDip = {
     beats.push(beat(say(DIP_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IN ORDER', 'gold'));
     if (runnerUp) {
       beats.push(beat(
-        `${runnerUp.name} finishes the board a tile later and spends the rest of the night working out which dive it was.`,
+        `${runnerUp.name} returns with the final tile just after ${winner.name} completes the board.`,
         [runnerUp.name], 'ONE DIVE SHORT', 'blue'));
       api.popDelta(runnerUp.name, 1);
     }
@@ -487,16 +558,16 @@ export const memoryDip = {
 // ══════════════════════════════════════════════════════════════════════
 
 const SHIP_GO = [
-  (n, p) => `${n} takes one box too many and the whole armful goes at once, in about a second and a half.`,
-  (n, p) => `${n} is holding the stack with a chin, a knee and a great deal of hope, and two of those give up together.`,
-  (n, p) => `${n} gets a box to the top of the pile, cannot see past it, and steps somewhere that is not there.`,
-  (n, p) => `${n} manages the weight fine and loses the balance instead, which is the part nobody trains for.`,
+  (n, p) => `${n} accepts another box, shifts the stack too far left, and loses the entire load.`,
+  (n, p) => `${n} pins the boxes between a knee and ${p.posAdj} chin until the bottom one slides free.`,
+  (n, p) => `${n} adds a box above eye level, takes a blind step, and sends the stack onto the deck.`,
+  (n, p) => `${n}'s arms hold, but the stack tilts forward and cannot be recovered.`,
 ];
 
 const SHIP_HOLD = [
-  (n, p) => `${n} has stopped adding height and started adding width, which is the first sensible decision anybody has made out here.`,
-  (n, p) => `${n} is carrying a stack taller than ${p.sub} ${vb(p, 'is', 'are')} and has not moved ${p.posAdj} feet in four minutes.`,
-  (n, p) => `Whatever ${n} is doing with ${p.posAdj} shoulders is not in the rules and is absolutely working.`,
+  (n, p) => `${n} spreads the next boxes across ${p.posAdj} forearms instead of making the stack any taller.`,
+  (n, p) => `${n} braces the stack against ${p.posAdj} chest and keeps both feet planted.`,
+  (n, p) => `${n} wedges the bottom box between ${p.posAdj} forearms and uses ${p.posAdj} shoulder to steady the top.`,
 ];
 
 export const shipTilYouDrop = {
@@ -504,7 +575,7 @@ export const shipTilYouDrop = {
   name: 'Ship Til You Drop',
   category: 'endurance',
   types: ['hoh', 'tiebreaker'],
-  desc: 'The houseguests stand on the deck holding a box against their body, and then another, and then another, added at a steady rate that never slows down for anybody. They may balance them any way they can manage — arms, chin, shoulder, hip — but the boxes have to be held by the body, and the ground cannot take any of the weight. The moment a box drops, that houseguest is finished. Whoever is still standing under their stack when everybody else has lost theirs wins, and the load is built to beat every single person eventually.',
+  desc: 'Houseguests balance a growing stack of boxes against their bodies while a new box is added at every signal. They may use their arms, shoulders, chin or knees, but no box may touch the deck. Dropping any box eliminates them; the last player holding a complete stack wins.',
   // A hold that gets heavier. Physical carries more here than in the other
   // endurance comps because the load genuinely grows; endurance is how long
   // the arms answer once it has.
@@ -520,7 +591,7 @@ export const shipTilYouDrop = {
     });
     const say = makePicker(rng);
     const beats = [beat(
-      'The first three boxes are nothing and everybody says so out loud. Nobody says anything at all about the ninth.',
+      'The houseguests begin with one box. Another is added at every signal, and dropping any part of the stack means elimination.',
       participants.slice(0, 3), 'STACK UP')];
 
     const order = [...entries].reverse();
@@ -540,7 +611,7 @@ export const shipTilYouDrop = {
       api.popDelta(runnerUp.name, 1);
     }
     beats.push(beat(
-      `${winner.name} is still holding everything ${pronouns(winner.name).sub} ${vb(pronouns(winner.name), 'was', 'were')} given when the deck is otherwise empty.`,
+      `${winner.name} keeps the full stack off the deck after everyone else has dropped theirs.`,
       [winner.name], 'STILL STANDING', 'gold'));
     // Boxes still against the body when the stack went. The screen draws the
     // stack, so this is the whole picture: a number and a shape at once.
@@ -557,16 +628,16 @@ export const shipTilYouDrop = {
 // ══════════════════════════════════════════════════════════════════════
 
 const DOM_GO = [
-  (n, p) => `${n} catches the second-to-last tile with a knuckle and takes about ninety of them down in one long clean wave.`,
-  (n, p) => `${n} kneels on the mat, which moves the mat, which moves everything on it.`,
-  (n, p) => `${n} breathes out on a corner and the corner goes, and then the rest of it goes, and ${p.sub} ${vb(p, 'does', 'do')} not say a word.`,
-  (n, p) => `${n} has built it beautifully and set it off with an elbow ${p.sub} ${vb(p, 'was', 'were')} not using for anything.`,
+  (n, p) => `${n}'s knuckle clips a tile near the end of the route, knocking down most of the pattern.`,
+  (n, p) => `${n} kneels on the edge of the mat. The surface shifts, and an entire row falls.`,
+  (n, p) => `${n} reaches across a finished section, brushes one tile with a sleeve, and has to rebuild it.`,
+  (n, p) => `${n} turns too quickly and catches the route with an elbow. The collapse runs through both corners.`,
 ];
 
 const DOM_GOOD = [
-  (n, p) => `${n} builds in short blocks with gaps between them, so a mistake can only ever cost part of it.`,
-  (n, p) => `${n} sets the last tile, sits back on ${p.posAdj} heels and looks at it for a long moment before touching anything.`,
-  (n, p) => `${n} works slower than everybody and has rebuilt nothing, which by the end is a very large lead.`,
+  (n, p) => `${n} leaves safety gaps between sections, limiting each mistake to a few tiles.`,
+  (n, p) => `${n} places the final tile, checks both turns, and carefully moves clear of the mat.`,
+  (n, p) => `${n} builds at a steady pace and reaches the end without triggering a collapse.`,
 ];
 
 export const dominoEffect = {
@@ -574,7 +645,7 @@ export const dominoEffect = {
   name: 'Domino Effect',
   category: 'precision',
   types: ['veto', 'arena'],
-  desc: 'Each houseguest gets a mat, a crate of dominoes and the pattern they have been told to build, and they stand every tile themselves. Nothing may be propped, glued or blocked. The cruelty is that the run only counts once it is set off deliberately at the end: a tile knocked early takes everything after it down too, and all of those have to be stood back up before another one can be added. The first houseguest to finish their pattern and topple it in one clean run wins.',
+  desc: 'Each houseguest must recreate a displayed pattern with dominoes. Any section knocked over early must be rebuilt. Once the pattern is complete, they tip the first domino; the first player whose full chain falls cleanly wins.',
   // Hands and nerve, with mental reading the route before building it. Nothing
   // physical about it beyond keeping still, which is temperament's job here.
   stats: { intuition: 0.34, temperament: 0.30, mental: 0.24, physical: 0.12 },
@@ -589,7 +660,7 @@ export const dominoEffect = {
     });
     const say = makePicker(rng);
     const beats = [beat(
-      'Nobody in the yard is talking above a murmur, which tells you everything about how this competition is going to be lost.',
+      'Each houseguest must copy the displayed domino pattern. An early collapse has to be rebuilt before they can continue.',
       participants.slice(0, 3), 'THE ROUTE')];
 
     const worst = [...entries].reverse();
@@ -605,11 +676,11 @@ export const dominoEffect = {
     const [winner, runnerUp] = entries;
     beats.push(beat(say(DOM_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'BUILT', 'blue'));
     beats.push(beat(
-      `${winner.name} tips the first tile and the whole route runs, round both turns, up the ramp and through the gate.`,
+      `${winner.name} tips the first domino. The chain continues through the full pattern and knocks down the final tile.`,
       [winner.name], 'CLEAN RUN', 'gold'));
     if (runnerUp) {
       beats.push(beat(
-        `${runnerUp.name} is three tiles from the gate and has to stand there watching somebody else's finish.`,
+        `${runnerUp.name} has three tiles left to place when ${winner.name}'s final marker falls.`,
         [runnerUp.name], 'THREE SHORT', 'blue'));
     }
     // Tiles standing at the end and how many times the run went early. A

@@ -273,6 +273,28 @@ export const BB_TWIST_CONTRACTS = {
       ],
     },
   },
+  // ══ You Go, They Go ══
+  //
+  // One week, four nominees, two evictions — and a shape neither of the
+  // existing doubles has. `bb-double-eviction` runs a whole second cycle;
+  // `deStyle: 'double-vote'` splits one vote across three chairs. This holds a
+  // single ordinary vote and lets it take somebody it never named.
+  //
+  // `nomineeCount: 4` is the only rule it declares, because that is the only
+  // rule the shared week shape needs to know. The pairing, the paired veto and
+  // the second walk-out all live at seams in js/bb/duo-week.js.
+  'bb-duo-week': {
+    id: 'bb-duo-week', layer: 'scheduled', category: 'week-structure',
+    timing: 'week', duration: { weeks: 1 },
+    rules: { nomineeCount: 4 },
+    acquisition: { channel: 'production', secrecy: 'public' },
+    announcement: {
+      name: 'You Go, They Go',
+      reactions: 'dread',
+      rule: 'For this week only you are playing in pairs. The Head of Household will nominate TWO DUOS \u2014 four of you on that block \u2014 and naming one of you names the person you are chained to. The veto takes a whole pair down and puts a whole pair up. Then you vote the way you always vote, one name each, and whoever takes the most votes is evicted AND SO IS THEIR PARTNER. It will not matter how many votes the partner got. It will not matter if it was none.',
+      sting: 'Two of you are leaving on Thursday and only one of you is going to have been chosen.',
+    },
+  },
   'bb-double-eviction': {
     id: 'bb-double-eviction', layer: 'scheduled', category: 'week-structure',
     timing: 'week', duration: { weeks: 1 },

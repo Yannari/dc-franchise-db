@@ -23,6 +23,8 @@ import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
 import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire } from './vp-bb-duos.js';
+import { rpBuildBBDuoWeekOpen, rpBuildBBDuoWeekEvents,
+  rpBuildBBDuoWeekEviction } from './vp-bb-duo-week.js';
 import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
   rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
 import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
@@ -20834,6 +20836,20 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'duos-key':
         screens.push({ id: id('bb-duos-key'), label: 'Duos: Golden Key',
           html: rpBuildBBDuosKey(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      // You Go, They Go. The pairing, the week it produces, and the second
+      // name at the door that nobody voted for.
+      case 'duo-week-open':
+        screens.push({ id: id('bb-duo-week-open'), label: 'You Go, They Go: The Pairing',
+          html: rpBuildBBDuoWeekOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'duo-week-events':
+        screens.push({ id: id('bb-duo-week-events'), label: 'You Go, They Go: Chained',
+          html: rpBuildBBDuoWeekEvents(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'duo-week-eviction':
+        screens.push({ id: id('bb-duo-week-out'), label: 'You Go, They Go: And Their Partner',
+          html: rpBuildBBDuoWeekEviction(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       case 'duos-keys-expire':
         screens.push({ id: id('bb-duos-expire'), label: 'Duos: Keys Expire',

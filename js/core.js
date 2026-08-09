@@ -497,6 +497,11 @@ export const TWIST_CATALOG = [
   // Scoped by `format`, so none of these ever appear in a Total Drama season
   // and none of the above ever appear in a house. A twist here changes the
   // SHAPE of the week — what happens, in what order, and how many people leave.
+  { id:'bb-duo-week', emoji:'\u26d3\ufe0f', name:'You Go, They Go', format:'big-brother',
+    category:'elim', phase:'any',
+    desc:'For one week the house plays in pairs. The Head of Household nominates two DUOS rather than two houseguests \u2014 four keys on the wall \u2014 and the veto pulls a whole pair down and puts a whole pair up. The house then votes normally, one name each, and whoever takes the most votes is evicted along with their partner, however few votes that partner got. Two people leave and only one of them was chosen.',
+    engineType:'bb-duo-week',
+    incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-split-house', 'bb-battle-of-the-block'] },
   { id:'bb-double-eviction', emoji:'⏩', name:'Double Eviction', format:'big-brother',
     category:'elim', phase:'any',
     desc:'Two evictions in one night. The week plays normally, and the moment the first houseguest walks out the house runs a second, compressed cycle live: new Head of Household, nominations, veto and vote with no time to campaign properly. Two people leave.',

@@ -113,7 +113,8 @@ export function houseStructure(config = {}, castSize = 0) {
   // not counted here, so a season with one scheduled ran a week longer on the
   // projection than it does in play.
   const twoAtOnce = (config.twistSchedule || [])
-    .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'));
+    .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'
+      || t.type === 'bb-duo-week'));
   const doubles = twoAtOnce.length;
   const splits = twoAtOnce.filter(t => t.type === 'bb-split-house').length;
   const weeks = Math.max(0, evictions - Math.min(doubles, Math.max(0, evictions - 1)));
@@ -289,7 +290,7 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto']);
+export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto', 'bb-duo-week']);
 
 /**
  * Which twists are scheduled for the week about to be played.

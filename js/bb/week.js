@@ -23,6 +23,9 @@ import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders } from './duos.js';
+import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
+  duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
+  DUO_WEEK_MIN_HOUSE } from './duo-week.js';
 import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
@@ -1701,6 +1704,18 @@ export function simulateBBWeek(options = {}) {
   //
   // Arriving before any of that put them in the opening House Life, on the
   // memory wall, and in a room reacting to an announcement about themselves.
+  /* ── YOU GO, THEY GO: the pairing ──
+     After the crowning and before anything in the week reads a nomination
+     plan, because from here on every target drags a second name with it. The
+     Head of Household is deliberately left out of the pairing: they cannot be
+     nominated, so pairing them would hand somebody a free week nobody chose. */
+  if (!compressed && twists.has('bb-duo-week') && house.length >= DUO_WEEK_MIN_HOUSE) {
+    try {
+      const paired = openDuoWeek(week, { house, hoh, rng });
+      if (paired) week.acts.push(addBeats(paired, { players: paired.pairs.flat() }));
+    } catch { /* the house plays an ordinary week */ }
+  }
+
   if (rivalHandover) week.acts.push(rivalHandover);
   try {
     const arrived = openRivals(week, { rng });
@@ -2121,10 +2136,27 @@ export function simulateBBWeek(options = {}) {
   let duoPair = null;
   try { duoPair = duoNominees(plan.nominees?.[0] || plan.target, house); } catch { duoPair = null; }
 
-  let nominees = duoPair
-    ? duoPair.filter(name => house.includes(name) && !untouchable.includes(name))
-    : [...new Set(plan.nominees)]
-      .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+  /* TWO DUOS, FOUR KEYS.
+     Read before the ordinary plan because it replaces the block wholesale
+     rather than adjusting it. Returns null when the house cannot field two
+     clean pairs — everybody left is protected, or the pairs have been eaten
+     into — and the week falls back to an ordinary two-chair block, which is
+     the only honest thing to do with a rule that has run out of people. */
+  let duoWeekNoms = null;
+  if (duoWeekActive(week)) {
+    try {
+      duoWeekNoms = duoWeekNominees(week, { plan, house,
+        untouchable: [...untouchable, ...duoWeekSafe(week)], hoh, rng });
+    } catch { duoWeekNoms = null; }
+    if (!duoWeekNoms) week.duoWeekCollapsed = true;
+  }
+
+  let nominees = duoWeekNoms ? [...duoWeekNoms]
+    : duoPair
+      ? duoPair.filter(name => house.includes(name) && !untouchable.includes(name))
+      : [...new Set(plan.nominees)]
+        .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+  if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
   if (duoPair && nominees.length === 2) week.duoNomination = [...nominees];
   while (nominees.length < 2) {
     const extra = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
@@ -3076,6 +3108,28 @@ export function simulateBBWeek(options = {}) {
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
+      /* YOU GO, THEY GO: you cannot half-save a duo.
+         Saving one of them takes the other one down too — a lone nominee this
+         week would be playing a different game from the three beside them — so
+         the chair's owner names a whole replacement PAIR. Runs after the
+         ordinary swap so the replacement the week already reasoned about is
+         one half of the new duo wherever the pairing allows it. */
+      if (duoWeekActive(week)) {
+        try {
+          const swapped = duoWeekAfterVeto(week, { nominees, saved: vetoDecision.save,
+            house, protectedNames: [...protectedNames, replacement], rng });
+          if (swapped) {
+            nominees = [...swapped.nominees];
+            week.duoWeekVeto = { down: swapped.down, up: swapped.up };
+            for (const name of swapped.down) {
+              if (name !== vetoDecision.save) gs.bb.stats[name].timesSaved++;
+            }
+            for (const name of swapped.up) {
+              if (name !== replacement) gs.bb.stats[name].timesNominated++;
+            }
+          }
+        } catch { /* the block stands as the ordinary ceremony left it */ }
+      }
       // Being pulled off the block is the clearest debt the game can create,
       // and the writer for it existed unused — obligation was empty across
       // entire seasons while the veto decision was busy READING it. Saving
@@ -4035,6 +4089,19 @@ export function simulateBBWeek(options = {}) {
     }
   } catch { /* the house has a normal week */ }
 
+  /* ── YOU GO, THEY GO: strategy for two ──
+     Fired once the block is settled and before the votes are read, because
+     every one of these is a thing somebody does about a block they can see.
+     Bonds, popularity and one very public betrayal, all of which outlive the
+     week the twist is scheduled on. */
+  if (duoWeekActive(week)) {
+    try {
+      const duoEvents = duoWeekEvents(week, { house, nominees, rng });
+      if (duoEvents) week.acts.push(addBeats(duoEvents,
+        { players: [...new Set((duoEvents.events || []).flatMap(e => e.players))] }));
+    } catch { /* the week plays without them */ }
+  }
+
   // Eviction act; HOH breaks a tie.
   const votes = tally(ballots, nominees);
   let evicted;
@@ -4087,6 +4154,22 @@ export function simulateBBWeek(options = {}) {
     }
   }
   week.evicted = evicted;
+  /* ── AND THEIR PARTNER ──
+     The whole twist, in three lines. Whoever took the most votes is evicted
+     and the person they were chained to is evicted beside them — on zero
+     votes, if that is what the room wrote down. `secondEvicted` is the same
+     channel the double eviction's second walk already uses, so the roster, the
+     jury, the deal-breaks and the eviction screen all handle it without
+     knowing why there are two names tonight. */
+  if (duoWeekActive(week) && evicted) {
+    try {
+      const taken = duoWeekSecondEvictee(week, evicted, house);
+      if (taken) {
+        secondEvicted = taken;
+        week.duoWeekTaken = { evicted, taken };
+      }
+    } catch { /* one name tonight */ }
+  }
   // The twist's other ending. Somebody walks out of that door with weeks of
   // banked money and nothing to show for it, and the house is told at the door
   // what it has just done.
@@ -4213,6 +4296,14 @@ export function simulateBBWeek(options = {}) {
       secondEvicted, doubleVote },
     { nominees: [...nominees], evicted, votes, ballots }));
 
+  // The second name, read out after the votes, which nobody cast for.
+  if (week.duoWeekTaken) {
+    try {
+      const act = duoWeekEviction(week, { evicted, taken: week.duoWeekTaken.taken, votes });
+      if (act) week.acts.push(addBeats(act, { players: [evicted, week.duoWeekTaken.taken] }));
+    } catch { /* the eviction act already named them both */ }
+  }
+
   // Held from before the vote — see the comment where they are produced. After
   // the door, before the interview.
   if (week._sabHeld?.length) {
@@ -4258,6 +4349,8 @@ export function simulateBBWeek(options = {}) {
         week.evictionCancelled = true;
         week.evicted = null;
         evicted = null;
+        // Nobody was removed, so nobody was chained to a removal either.
+        if (week.duoWeekTaken) { secondEvicted = null; week.duoWeekTaken = null; }
       }
     } catch { week.haltingHex = null; }
   }

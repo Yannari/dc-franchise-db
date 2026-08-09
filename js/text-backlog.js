@@ -4987,6 +4987,37 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // ── YOU GO, THEY GO ──
+      //
+      // Three acts, and the last one is the only place a reader finds out that
+      // the second name at the door was never voted for. `beats(act)` carries
+      // the prose in all three; what is added around it is the structure the
+      // prose assumes you can see — the pairs, and the arithmetic of the vote.
+      case 'duo-week-open': {
+        sec('YOU GO, THEY GO');
+        (act.rules || []).forEach(r => ln(`  ${r}`));
+        ln('');
+        for (const [a, b] of (act.pairs || [])) ln(`  ${a} \u2014 ${b}`);
+        if (act.solo) ln(`  ${act.solo} has no partner, and cannot be nominated this week.`);
+        ln('');
+        beats(act);
+        break;
+      }
+
+      case 'duo-week-events': {
+        sec('CHAINED');
+        beats(act);
+        break;
+      }
+
+      case 'duo-week-eviction': {
+        sec('AND THEIR PARTNER');
+        ln(`  ${act.evicted} is evicted. ${act.taken} is evicted with `
+          + `${act.gotNothing ? 'no votes at all' : `${act.votesAgainstTaken} vote${act.votesAgainstTaken === 1 ? '' : 's'}`}.`);
+        beats(act);
+        break;
+      }
+
       case 'camp-comeback': {
         sec('CAMP COMEBACK');
         ln(`  ${act.arrival} is voted out, and stays.`);

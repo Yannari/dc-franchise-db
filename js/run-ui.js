@@ -1484,6 +1484,11 @@ export function buildEpisodeMap() {
     // three of its styles, and a Split House evicts one houseguest from each
     // side on the same night.
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
+    // You Go, They Go takes two as well — one voted out and one chained to
+    // them. The guard mirrors the engine's: four nominees, a Head of Household
+    // and a room left to vote need eight houseguests, and below that the week
+    // stands down to an ordinary one rather than running badly.
+    if (_allTypes.includes('bb-duo-week') && active >= 8) elims = Math.max(elims, 2);
     // The Split House stands down rather than running badly, and the projection
     // has to stand down with it or it is wrong in the other direction — the
     // guard here mirrors `splitPossible` in bb-run.js exactly: ten houseguests

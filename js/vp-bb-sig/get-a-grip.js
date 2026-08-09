@@ -209,18 +209,32 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
      either a spoiler or a wall of dashes.
      `spend` is the interesting number and the only place it is visible: a
      houseguest under about 0.9 stepped down with real time still in the arm. */
-  const board = runs.map((r, i) => {
-    const shown = at >= (Number(r.revealAt) ?? 0);
-    if (!shown) {
-      return `<div class="gp-srow is-waiting"><span>${esc(r.name)}</span><em>on the pole</em></div>`;
-    }
-    const soft = Number(r.spend) > 0 && Number(r.spend) < 0.9;
-    return `<div class="gp-srow ${r.threw ? 'is-out' : ''}">
-      <span>${i + 1}. ${esc(r.name)}${soft ? ' <u>had more</u>' : ''}</span>
-      <em>${Number(r.minutes).toFixed(0)}m</em>
-    </div>`;
-  }).join('');
-  const downCount = runs.filter(r => at >= (Number(r.revealAt) ?? 0)).length;
+  /* ORDER IS A SPOILER TOO, AND GATING THE NUMBERS DID NOT FIX IT.
+     `runs` is in finishing order, so a board built by walking it hands the
+     viewer the entire ranking before a single card turns — the times were
+     hidden and the placement was not, which is most of the answer.
+     Two lists instead. Whoever is already down, in the order they came down,
+     because that genuinely has happened. Everybody still up, alphabetically,
+     because nothing about them is known yet. The final placement numbers only
+     appear once the log is finished and the order is public anyway. */
+  const isDown = r => at >= (Number(r.revealAt) ?? 0);
+  const rankOf = new Map(runs.map((r, i) => [r.name, i + 1]));
+  const down = runs.filter(isDown)
+    .sort((a, b) => (a.revealAt ?? 0) - (b.revealAt ?? 0) || rankOf.get(b.name) - rankOf.get(a.name));
+  const stillUp = runs.filter(r => !isDown(r)).sort((a, b) => a.name.localeCompare(b.name));
+
+  const board = [
+    ...down.map(r => {
+      const soft = Number(r.spend) > 0 && Number(r.spend) < 0.9;
+      return `<div class="gp-srow ${r.threw ? 'is-out' : ''}">
+        <span>${done ? `${rankOf.get(r.name)}. ` : ''}${esc(r.name)}${soft ? ' <u>had more</u>' : ''}</span>
+        <em>${Number(r.minutes).toFixed(0)}m</em>
+      </div>`;
+    }),
+    ...stillUp.map(r =>
+      `<div class="gp-srow is-waiting"><span>${esc(r.name)}</span><em>on the pole</em></div>`),
+  ].join('');
+  const downCount = down.length;
 
   const winner = runs[0];
   return `${_STYLE}<div class="rp-page siggrip">

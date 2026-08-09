@@ -180,15 +180,27 @@ export function rpBuildSigFeelingKnotty(ep, actType, u = {}) {
         <div class="kn-body">${esc(b.text)}</div>
       </div>`).join('');
 
-  const cleared = runs.filter(r => at >= (Number(r.revealAt) ?? 0)).length;
-  const board = runs.map((r, i) => {
-    const shown = at >= (Number(r.revealAt) ?? 0);
-    if (!shown) return `<div class="kn-srow is-waiting"><span>${esc(r.name)}</span><em>working</em></div>`;
-    return `<div class="kn-srow">
-      <span>${i + 1}. ${esc(r.name)}</span>
+  /* SAME SPOILER AS THE POLES HAD: the order was the answer.
+     `runs` is in finishing order, so listing it — even with every number
+     hidden — told the viewer who had won before the first card. Resolved ropes
+     are listed in the order they resolved, which has actually happened;
+     everybody still working is alphabetical, because nothing about them is
+     known. Placement numbers wait for the end. */
+  const isDone = r => at >= (Number(r.revealAt) ?? 0);
+  const rankOf = new Map(runs.map((r, i) => [r.name, i + 1]));
+  const finished = runs.filter(isDone)
+    .sort((a, b) => (a.revealAt ?? 0) - (b.revealAt ?? 0) || rankOf.get(b.name) - rankOf.get(a.name));
+  const working = runs.filter(r => !isDone(r)).sort((a, b) => a.name.localeCompare(b.name));
+  const cleared = finished.length;
+
+  const board = [
+    ...finished.map(r => `<div class="kn-srow">
+      <span>${done ? `${rankOf.get(r.name)}. ` : ''}${esc(r.name)}</span>
       <em>${r.opened}/${KNOTS}${r.tightened ? ` &middot; ${r.tightened}&uarr;` : ''}</em>
-    </div>`;
-  }).join('');
+    </div>`),
+    ...working.map(r =>
+      `<div class="kn-srow is-waiting"><span>${esc(r.name)}</span><em>working</em></div>`),
+  ].join('');
 
   // The weights, with temperament marked as the TRAP rather than a stat you
   // are simply good at — which is the whole difference in this competition.

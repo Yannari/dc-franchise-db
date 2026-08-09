@@ -429,7 +429,13 @@ export const feelingKnotty = {
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.hands, swingBy: this.roles.patience, luck: 2.6, context, rng,
+      /* WIDER, FOR THE SAME REASON GET A GRIP IS.
+         Patience MULTIPLIES the hands score rather than adding to it, so a
+         houseguest who reads rope well and stays calm collects both and the
+         advantages compound — measured at 63% for the top houseguest against a
+         ceiling of 62%, which is one player owning a competition. The noise
+         pays for the compounding; the multiplier is the point and stays. */
+      mix: this.roles.hands, swingBy: this.roles.patience, luck: 3.3, context, rng,
     });
     /* THE ROPE ANSWERS FORCE WITH FORCE.
        Applied after the hands are scored and before the field is ranked, so a

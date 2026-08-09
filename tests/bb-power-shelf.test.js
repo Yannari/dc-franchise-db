@@ -149,6 +149,46 @@ describe("The Coup d'Etat", () => {
     expect(proved, "the Coup never fired in any seeded week").toBeGreaterThan(0);
   });
 
+  it('looks at who is standing on the block before emptying it', () => {
+    // There was no decision here at all — `if (coup)` and then straight to
+    // `usePower`. The loudest power in the game fired the first legal minute it
+    // existed, on whatever block happened to be sitting there, so a fortnight
+    // window was always spent in week one and a holder whose alliance was
+    // nowhere near the block detonated it anyway: two new enemies, a dethroned
+    // Head of Household, and nothing bought. The tension the two-week window
+    // was written for never happened once.
+    //
+    // Bucketed by the block AS IT STOOD when the holder had to decide, which is
+    // `removed` when it fired and the final block when it did not. An earlier
+    // version of this compared against a control run without the power and
+    // measured nothing: granting a power shifts the rng stream, so the control
+    // is a different week with a different block.
+    const buckets = { on: [0, 0], off: [0, 0] };
+    for (let i = 0; i < 50; i++) {
+      const seed = 1000 + i * 37;
+      house();
+      const holder = NAMES[5];
+      const mate = NAMES[8];
+      const ep = withSeededRandom(seed, () => {
+        gs.namedAlliances = [{ name: 'The Committee', members: [holder, mate], active: true }];
+        grantPower('coup-d-etat', holder, { week: 1, visibility: 'secret', source: 'test' });
+        return simulateBBEpisode();
+      });
+      if (ep.hoh === holder) continue;
+      const act = (ep.acts || []).find(a => a.powerId === 'coup-d-etat');
+      const before = act ? (act.removed || []) : (ep.finalNominees || []);
+      const key = before.includes(mate) || before.includes(holder) ? 'on' : 'off';
+      buckets[key][1]++;
+      if ((gs.bb?.powers || []).find(p => p.powerId === 'coup-d-etat' && p.used)) buckets[key][0]++;
+    }
+    const rate = ([f, n]) => (n ? f / n : 0);
+    expect(buckets.on[1], 'no seeded week put the holder or their ally up').toBeGreaterThan(5);
+    expect(rate(buckets.on), 'it sat on the coup while its own alliance was on the block')
+      .toBeGreaterThan(0.6);
+    expect(rate(buckets.on) - rate(buckets.off),
+      'who was on the block made no difference to whether it fired').toBeGreaterThan(0.25);
+  }, 240000);
+
   it('costs the Head of Household something for being overruled in public', () => {
     for (const seed of [2026, 77, 4242, 31, 909, 1301, 58]) {
       house();

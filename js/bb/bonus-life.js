@@ -35,6 +35,7 @@ import { getPerceivedBond } from '../bonds.js';
 import { aptitude, makePicker, clamp } from '../bb-comps/_shared.js';
 import { applyReturn } from './battle-back.js';
 import { BB_POWER_DEFINITIONS, activePowersAt, usePower } from './powers.js';
+import { allyStake } from './shared-strategy.js';
 
 /** What the re-entry competition asks of somebody. Broad on purpose. */
 const REENTRY_MIX = Object.freeze({ endurance: 0.32, mental: 0.26, physical: 0.22, temperament: 0.2 });
@@ -104,8 +105,13 @@ function spendRead(instance, evicted, week, rng) {
   const bond = getPerceivedBond(holder, evicted);
   const lastChance = week >= instance.expiresAfterWeek;
 
-  // A power you cannot keep is a power you may as well point at somebody.
-  const pull = Math.max(0, bond) * 0.075
+  // `bond * 0.075` and nothing else, so an alliance the holder had sworn to
+  // bought its members no chance at all: the Life went to whoever the holder
+  // happened to like, and the group they had built their game on was worth the
+  // same as a pleasant stranger. allyStake counts the alliance, and counts it
+  // biggest.
+  const stake = (() => { try { return allyStake(holder, evicted); } catch { return 0; } })();
+  const pull = stake
     + hst.loyalty * 0.018
     + hst.boldness * 0.012
     + (lastChance ? 0.22 : 0)

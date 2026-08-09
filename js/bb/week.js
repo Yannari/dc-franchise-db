@@ -3524,7 +3524,28 @@ export function simulateBBWeek(options = {}) {
     if (coup) {
       const protectedNow = [hoh, vetoWinner, coup.holder, carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite)].filter(Boolean);
       const eligible = house.filter(n => !protectedNow.includes(n));
-      if (eligible.length >= 2) {
+      // ── whether, before who ──
+      //
+      // This had no decision in it whatsoever: `if (coup)` and then straight to
+      // `usePower`. The loudest power in the game fired the first legal minute
+      // it existed, on whatever block happened to be sitting there — so a
+      // fortnight-long window was always spent on week one, and a holder whose
+      // own alliance was nowhere near the block detonated it anyway and bought
+      // themselves two new enemies and a dethroned Head of Household for
+      // nothing. The whole tension the two-week window was written for (the
+      // house knowing it exists and not knowing who has it) never happened once.
+      //
+      // The one power on the shelf that can empty a block ought to ask who is
+      // standing on it.
+      const cst = pStats(coup.holder) || {};
+      const coupNeed = nominees.includes(coup.holder) ? 0.98
+        : Math.max(0, ...nominees.map(n => {
+          try { return allyStake(coup.holder, n); } catch { return 0; }
+        }), 0);
+      const coupPull = spendPull({ need: coupNeed,
+        weeksLeft: Math.max(0, coup.expiresAfterWeek - week.num),
+        nerve: (cst.boldness || 5) / 10 });
+      if (eligible.length >= 2 && rng() < coupPull) {
         usePower(coup, week.num);
         const coupPlan = chooseNominationPlan(coup.holder, eligible, rng);
         const named = [...new Set(coupPlan.nominees)]

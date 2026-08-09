@@ -30,6 +30,7 @@ import { gs } from '../core.js';
 import { pronouns, pStats } from '../players.js';
 import { addBond, getPerceivedBond } from '../bonds.js';
 import { activePowerAt, usePower } from './powers.js';
+import { allyStake } from './shared-strategy.js';
 
 /** What the week does to the field, and who is holding it. */
 export function resolveVetoDrawRules(week) {
@@ -65,7 +66,11 @@ const _pop = (name, delta) => {
  */
 function _threatToHolder(name, { holder, nominees, hoh }) {
   if (name === holder) return -99;
-  const bondToMe = getPerceivedBond(holder, name);
+  // What they are worth to the holder — the alliance included. On a raw bond
+  // alone the redraw seated whoever the holder LIKED, which is not the same
+  // question: the person you are sworn to is the person you want holding a
+  // veto, and being sworn to them counted for nothing here.
+  const bondToMe = getPerceivedBond(holder, name) + allyStake(holder, name) * 8;
   const bondToBlock = Math.max(0, ...nominees.map(n => getPerceivedBond(name, n)), 0);
   const bondToHoh = hoh ? Math.max(0, getPerceivedBond(name, hoh)) : 0;
   const st = pStats(name);

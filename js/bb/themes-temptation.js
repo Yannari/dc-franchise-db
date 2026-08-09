@@ -26,7 +26,11 @@ export default {
   name: 'Summer of Temptation',
   tagline: 'Every week, an offer. Somebody else pays for it.',
   house: 'bb-house',
-  palette: { accent: '#c02040', ink: '#f3e8ea', paper: '#1a0a0e', glow: '#ff4d6d' },
+  // Brass, not red. The season is a warm room you are invited into for five
+  // weeks; red is what the escalation brings, and a theme that is red from the
+  // premiere has spent its only signal on wallpaper. The reader carries the
+  // escalated palette under `.is-mood-hostile`.
+  palette: { accent: '#c6a05c', ink: '#f0e6d8', paper: '#120a0c', glow: '#e0a848' },
   fonts: { display: '"Cinzel", Georgia, serif', body: '"Inter", system-ui, sans-serif' },
 
   // ── the voice ──

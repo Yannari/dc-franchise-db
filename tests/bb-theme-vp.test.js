@@ -255,3 +255,35 @@ describe('a mood is visible, not just audible', () => {
     expect(css).toContain('.rp-theme-summer-of-temptation.is-mood-hostile');
   });
 });
+
+// The mood belongs to the WEEK, not to the save file.
+//
+// Found by playing a season in the browser and opening episode 2 after the Den
+// had already escalated: the reader wore the escalated room, so the turn looked
+// like it had happened four weeks before it did. Nothing in the suite could see
+// it, because every test built one episode at one mood.
+describe('replaying an early week shows the room as it was', () => {
+  beforeEach(() => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    setGs({ bb: { weeks: [], theme: { id: 'summer-of-temptation', mood: 'hostile', booked: [], said: [] } } });
+  });
+
+  it('dresses a calm episode calmly even when the season has since turned', () => {
+    expect(applyThemeClass('rp-set-bb-house', 'neutral')).not.toContain('is-mood');
+  });
+
+  it('dresses the escalated episode as escalated', () => {
+    expect(applyThemeClass('rp-set-bb-house', 'hostile')).toContain('is-mood-hostile');
+  });
+
+  it('falls back to live state for an episode saved before the mood was recorded', () => {
+    expect(applyThemeClass('rp-set-bb-house')).toContain('is-mood-hostile');
+  });
+
+  it('records the mood on the episode so the reader has something to read', async () => {
+    const { weekToEpisode } = await import('../js/bb-run.js');
+    const ep = weekToEpisode({ num: 2, acts: [], themeMood: 'neutral' });
+    expect(ep.themeMood).toBe('neutral');
+  });
+});

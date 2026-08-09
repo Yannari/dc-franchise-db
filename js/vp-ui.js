@@ -703,7 +703,7 @@ export function bedForScreen(id, explicitBed) {
  * class alone. The two skins stack — a Summer of Temptation season is still
  * in the house.
  */
-export function applyThemeClass(className) {
+export function applyThemeClass(className, moodIn) {
   const base = String(className || '')
     .replace(/\brp-theme-[\w-]+/g, '')
     .replace(/\bis-mood-[\w-]+/g, '')
@@ -712,12 +712,16 @@ export function applyThemeClass(className) {
   if (!theme) return base;
   // The MOOD rides on the reader too, not just in the antagonist's word pool.
   //
-  // A heel turn is the loudest thing a theme does and it was invisible: the
-  // Den escalates in week 6 and the only evidence was that the taunts got
-  // nastier. Putting the mood on the root lets the whole week change with it
-  // — the room light, the gilt, the saturation of every portrait — off the
-  // state that already exists and already survives into saved seasons.
-  const mood = themeState()?.mood;
+  // A heel turn is the loudest thing a theme does and it was invisible: the Den
+  // escalates in week 6 and the only evidence was that the taunts got nastier.
+  // On the root, the whole week changes with it — room light, gilt, and the
+  // saturation of every portrait.
+  //
+  // The mood comes from the EPISODE BEING READ, not from live state. Reading
+  // live state meant that once a season had escalated, replaying week 2 showed
+  // the escalated room, so the turn looked like it happened before it did. The
+  // live mood is only a fallback for an episode saved before it was recorded.
+  const mood = moodIn !== undefined ? moodIn : themeState()?.mood;
   const moodCls = mood && mood !== 'neutral' ? ` is-mood-${mood}` : '';
   return `${base} rp-theme-${theme.id}${moodCls}`.trim();
 }
@@ -777,8 +781,11 @@ export function renderVPScreen() {
     // its own skin rather than having a camp or a film lot painted over it.
     const _bb = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother');
     const _set = _bb ? 'bb-house' : (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
+    // The mood of the episode on screen, not the mood the season ended in.
+    const _ep = (gs?.episodeHistory || [])[(Number(window.vpEpNum) || 0) - 1];
     content.className = applyThemeClass(
-      (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`);
+      (content.className || '').replace(/\brp-set-[\w-]+/g, '').trim() + ` rp-set-${_set}`,
+      _ep ? (_ep.themeMood || 'neutral') : undefined);
   } catch (e) {}
   content.innerHTML = '<div class="vp-stage-cue" aria-hidden="true"><span>' + curPhase.icon + '</span>' + curPhase.label + '</div>' + cur.html;
   // Ambience: explicit data-ambient on the screen root wins; otherwise fall back

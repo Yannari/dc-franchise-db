@@ -77,6 +77,16 @@
       --bbx-faint:       #39424e;      /* screen numbering, dead labels     */
       --bbx-glyph:       #232c37;      /* the mark a screen shows before it reveals */
       --bbx-display:     var(--font-display);
+      /* Colour forms of the triplets above. The stylesheet mostly wants the
+         triplet (so it can derive washes), but the SCREEN BUILDERS paint
+         inline — `style="color:…"` — and an inline style can only use a
+         finished colour. Same source of truth either way. */
+      --bbx-danger:      rgb(var(--bbx-danger-rgb));
+      --bbx-note:        rgb(var(--bbx-note-rgb));
+      --bbx-key:         rgb(var(--bbx-key-rgb));
+      --bbx-good:        rgb(var(--bbx-good-rgb));
+      --bbx-info:        rgb(var(--bbx-info-rgb));
+      --bbx-dim:         rgb(var(--bbx-dim-rgb));
     }
 
     /* ── Strategy grammar components (reusable across every strategic VP surface) ── */
@@ -2891,7 +2901,8 @@
        `@media (prefers-reduced-motion: reduce)` block. Put the motif on
        `::after` and it is handled for you; go outside it and you are on your
        own. */
-    .rp-theme-summer-of-temptation { --theme-accent:#c02040; --theme-glow:#ff4d6d; }
+    .rp-theme-summer-of-temptation { --theme-accent:#c6a05c; --theme-glow:#e0a848; }
+    .rp-theme-summer-of-temptation.is-mood-hostile { --theme-accent:#ff2d40; --theme-glow:#ff6b78; }
     /* retint the reader accent to the season accent, and own a stacking context */
     [class*="rp-theme-"] .rp-page {
       --accent-gold: var(--theme-accent, #f0c040);
@@ -2901,14 +2912,14 @@
       background-size:cover; }
     /* 🍒 summer of temptation — a red offer bleeding in from the corners */
     .rp-theme-summer-of-temptation .rp-page::after {
-      opacity:.10;
+      opacity:.16;
       background:
-        radial-gradient(circle at 12% 0%, rgba(192,32,64,.45), transparent 42%),
-        radial-gradient(circle at 88% 100%, rgba(255,77,109,.32), transparent 46%);
+        radial-gradient(58% 34% at 50% 104%, rgba(224,168,72,.34), transparent 66%),
+        radial-gradient(40% 26% at 8% -4%, rgba(198,160,92,.18), transparent 70%);
       animation: rpThemeTemptPulse 9s ease-in-out infinite; }
     .rp-theme-summer-of-temptation .rp-page h1,
     .rp-theme-summer-of-temptation .rp-page h2 { letter-spacing:.04em; }
-    @keyframes rpThemeTemptPulse { 0%,100% { opacity:.10; } 50% { opacity:.17; } }
+    @keyframes rpThemeTemptPulse { 0%,100% { opacity:.16; } 50% { opacity:.23; } }
 
     /* ── The Den, at rest ────────────────────────────────────────────────
        The whole week — nominations, veto meeting, eviction, competitions,
@@ -2926,13 +2937,13 @@
       --bbx-good-rgb:    122,138,92;   /* olive, not the default green      */
       --bbx-info-rgb:    150,132,172;  /* muted amethyst                    */
       --bbx-dim-rgb:     160,141,124;  /* warm grey, never blue             */
-      --bbx-stage-rgb:   36,18,22;     --bbx-stage2-rgb:  18,10,12;
-      --bbx-screen-rgb:  40,20,25;     --bbx-screen2-rgb: 14,7,9;
-      --bbx-card-rgb:    38,19,24;     --bbx-card2-rgb:   20,11,14;
+      --bbx-stage-rgb:   44,29,21;     --bbx-stage2-rgb:  24,16,12;
+      --bbx-screen-rgb:  48,32,23;     --bbx-screen2-rgb: 20,13,10;
+      --bbx-card-rgb:    46,30,22;     --bbx-card2-rgb:   26,17,13;
       --bbx-ink:         #f0e6d8;
       --bbx-ink-quiet:   #f6ead2;
-      --bbx-faint:       #6b4d46;
-      --bbx-glyph:       #4a2b30; }
+      --bbx-faint:       #7d5f42;
+      --bbx-glyph:       #5c4030; }
 
     /* ── The Den, with the lights up ─────────────────────────────────────
        The same room, escalated. Only the tokens the escalation should touch
@@ -2944,16 +2955,16 @@
       --bbx-note-rgb:    255,154,114;
       --bbx-key-rgb:     232,185,74;
       --bbx-dim-rgb:     201,138,134;
-      --bbx-stage-rgb:   58,8,16;      --bbx-stage2-rgb:  26,5,8;
-      --bbx-screen-rgb:  62,10,18;     --bbx-screen2-rgb: 20,4,7;
-      --bbx-card-rgb:    58,8,16;      --bbx-card2-rgb:   26,5,8;
+      --bbx-stage-rgb:   74,8,18;      --bbx-stage2-rgb:  30,4,8;
+      --bbx-screen-rgb:  80,10,20;     --bbx-screen2-rgb: 24,3,6;
+      --bbx-card-rgb:    74,8,18;      --bbx-card2-rgb:   30,4,8;
       --bbx-ink:         #ffe8e6;
       --bbx-faint:       #8c4a49;
       --bbx-glyph:       #6b1220; }
     /* The room light itself, and the colour draining back INTO the portraits
        rather than out of them — the house looks lit by the twist. */
     .rp-theme-summer-of-temptation.is-mood-hostile .rp-page::after {
-      opacity:.20;
+      opacity:.30;
       background:
         radial-gradient(60% 40% at 50% -8%, rgba(255,45,64,.42), transparent 66%),
         radial-gradient(60% 40% at 50% 108%, rgba(255,45,64,.34), transparent 66%); }

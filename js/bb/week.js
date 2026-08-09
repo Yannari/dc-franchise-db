@@ -74,7 +74,7 @@ import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
-import { advanceThemeArc, installTheme, themeBeat } from './themes.js';
+import { advanceThemeArc, installTheme, themeBeat, themeState } from './themes.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -1236,6 +1236,13 @@ export function simulateBBWeek(options = {}) {
   week.themeWeek = _themeWeek;
   const _totalWeeks = _themeWeek + Math.max(0, _wholeHouse - 4);
   advanceThemeArc(_themeWeek, _totalWeeks);
+  // The mood AS IT WAS THIS WEEK, kept on the record.
+  //
+  // The reader dressed every episode in the theme's CURRENT mood, so once a
+  // season escalated, replaying week 2 showed the escalated room and the turn
+  // appeared to have happened before it did. A mood is a fact about a week, not
+  // about the save file.
+  week.themeMood = themeState()?.mood || null;
 
   _themeSay(week, 'open', {});
 

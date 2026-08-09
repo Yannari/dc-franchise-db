@@ -190,6 +190,7 @@ export function weekToEpisode(week) {
     // The resolved twist contract — which twist changed which rule — so the
     // Debug panel can show hook mutations on replay, not just live.
     twistState: week.twistState || null,
+    themeMood: week.themeMood || null,
     // The alliance board as it stood this week — who is in what, how firmly,
     // and which member is the crack.
     allianceBoard: (week.allianceBoard || []).map(b => ({ ...b, members: (b.members || []).map(m => ({ ...m })) })),

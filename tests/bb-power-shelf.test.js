@@ -485,6 +485,31 @@ describe('The Mystery Competitor', () => {
     expect(alumniPool({ exclude: ['Heather'] }).map(a => a.name)).not.toContain('Heather');
   });
 
+  it("calls this show's own alumni before the other show's", async () => {
+    // `seasonDetails[].format` is on every appearance in the record and the
+    // pool ignored it, so once a franchise had run one Big Brother season its
+    // own alumni were drawn from the same hat as a hundred and fifty Total
+    // Drama players and were essentially never called.
+    const { alumniPool } = await import('../js/alumni.js');
+    setAlumniDatabase(JSON.parse(
+      require('node:fs').readFileSync('players_database.json', 'utf8')));
+
+    const bb = alumniPool({ format: 'big-brother' });
+    expect(bb.length, 'no Big Brother alumni in the record at all').toBeGreaterThan(5);
+    expect(bb.every(a => a.native), 'a Total Drama player was drawn while houseguests were available')
+      .toBe(true);
+
+    // And on a season with no houseguests to call — a first season, which is
+    // the whole reason the other show is worth having — it falls through, and
+    // every one of them is FLAGGED so nothing calls them a returning
+    // houseguest of a show they have never played.
+    const firstSeason = alumniPool({ format: 'big-brother', exclude: bb.map(a => a.name) });
+    expect(firstSeason.length).toBeGreaterThan(50);
+    expect(firstSeason.some(a => a.native === false)).toBe(true);
+    // Their season label names the show they actually played.
+    expect(firstSeason.find(a => !a.native)?.seasonName).toMatch(/Total Drama/);
+  });
+
   it('has nobody to call when the franchise has no record at all', () => {
     // The honest answer, and the one the roster fallback was papering over.
     setAlumniDatabase(null);

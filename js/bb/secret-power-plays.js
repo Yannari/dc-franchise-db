@@ -469,12 +469,19 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   const displaced = drawn.length ? drawn[Math.floor(rng() * drawn.length)] : null;
 
   const compName = comp0?.name || 'the veto';
+  // A crossover is not a returning houseguest, and saying so is the difference
+  // between a cameo and a lie. Somebody out of the other show has never played
+  // THIS game, and the narration used to call them a veteran of it.
+  const visiting = pick && pick.native === false;
   const beats = [beat(
     'The veto draw stops. There is a name in the bag that does not belong to anybody in this '
-      + `house, and the door opens for somebody who has played this game before: ${guest}`
+      + `house, and the door opens for ${visiting
+        ? 'somebody this house has only ever watched on television'
+        : 'somebody who has played this game before'}: ${guest}`
       + `${pick?.seasonName ? `, out of ${pick.seasonName}` : ''}`
+      + `${visiting ? ' — a different show, a different set of rules, and not one night spent in here' : ''}`
       + `${pick?.winner ? ', who won it' : pick?.finalist ? ', who sat at the end of it' : ''}.`,
-    [guest, inst.holder], 'A NAME NOBODY EXPECTED', 'gold')];
+    [guest, inst.holder], visiting ? 'NOT EVEN FROM THIS SHOW' : 'A NAME NOBODY EXPECTED', 'gold')];
   // ── THEY ARE A PERSON, NOT A DIE ROLL ──
   //
   // The whole scene was: a name comes out of the bag, somebody is bumped, a
@@ -505,6 +512,7 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
 
   return {
     type: 'mystery-competitor', holder: inst.holder, guest, displaced,
+    visiting: !!visiting, guestShows: pick?.shows || [],
     // Filled in by `mysteryCompetitorResult` once the REAL competition has run.
     competition: null, won: null, vetoTo: null,
     ...shown(inst, 'veto-ceremony',

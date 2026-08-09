@@ -3149,7 +3149,12 @@ export function simulateBBWeek(options = {}) {
           }
         } catch { /* a franchise with no history has no alumni, and no twist */ }
         if (!alumni.length) {
-          try { alumni = alumniPool({ exclude: house }); } catch { alumni = []; }
+          // This show's own alumni first. A returning houseguest is a
+          // houseguest; somebody out of Total Drama is a crossover, and the two
+          // are not the same event. On a first season there are no houseguests
+          // to call, which is exactly when the other show is worth having.
+          try { alumni = alumniPool({ exclude: house, format: 'big-brother' }); }
+          catch { alumni = []; }
         }
         mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni,
           library: competitionLibrary, hoh, house, rng });

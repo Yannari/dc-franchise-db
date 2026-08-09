@@ -40,33 +40,70 @@ export function alumniDatabase() {
 }
 
 /**
- * Everybody eligible to walk back through the door.
+ * Everybody eligible to walk back through the door, this show's own first.
  *
+ * `seasonDetails[].format` is on every appearance in the record, and the pool
+ * ignored it — so once a franchise had run one Big Brother season its own
+ * alumni were drawn from the same hat as a hundred and fifty Total Drama
+ * players and were essentially never called. A returning houseguest is a
+ * houseguest; somebody from the other show is a crossover, and the two are not
+ * the same event.
+ *
+ * So: NATIVE FIRST. The other show is a fallback for a franchise that has not
+ * run one of these yet, which is exactly the situation a first season is in,
+ * and the flag travels with them so the narration can say "visiting" instead of
+ * calling somebody a veteran of a show they have never played.
+ *
+ * @param format the show being played, e.g. 'big-brother'
  * @param exclude names currently in the house — they cannot be their own cameo
- * @returns [{name, seasonName, winner, finalist, chalWins, seasons}]
+ * @param minNative how many of this show's own alumni make a pool worth having
+ * @returns [{name, seasonName, native, shows, winner, finalist, chalWins}]
  */
-export function alumniPool({ exclude = [] } = {}) {
+export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) {
   const db = alumniDatabase();
   if (!db) return [];
-  const out = [];
   const barred = new Set(exclude);
+  const all = [];
   for (const p of db) {
     if (!p?.name || barred.has(p.name)) continue;
+    const details = Array.isArray(p.seasonDetails) ? p.seasonDetails : [];
     const seasons = Array.isArray(p.seasons) ? p.seasons
-      : (p.seasonDetails || []).map(d => Number(d.season)).filter(Boolean);
+      : details.map(d => Number(d.season)).filter(Boolean);
     // No season, no cameo. This is the whole point of the file.
     if (!seasons.length && !Number(p.totalSeasons)) continue;
-    const best = Number(p.bestPlacement);
-    out.push({
+    const shows = [...new Set(details.map(d => d.format).filter(Boolean))];
+    const mine = format ? details.filter(d => d.format === format) : details;
+    const native = !format || mine.length > 0;
+    // Their record ON THIS SHOW when they have one, because a Total Drama
+    // challenge record is not a Big Brother competition record.
+    const scoped = mine.length ? mine : details;
+    const best = scoped.length
+      ? Math.min(...scoped.map(d => Number(d.placement) || 99))
+      : Number(p.bestPlacement);
+    const lastSeason = scoped.length
+      ? Math.max(...scoped.map(d => Number(d.season) || 0))
+      : (seasons.length ? Math.max(...seasons) : null);
+    all.push({
       name: p.name,
-      // "out of Season 4" reads better than a bare number and is all the screen
-      // needs; the ledger's own season names are not reachable from here.
-      seasonName: seasons.length ? `Season ${Math.max(...seasons)}` : null,
-      winner: Number(p.wins) > 0 || best === 1,
+      native,
+      shows,
+      seasonName: lastSeason ? `${_showName(native && format ? format : shows[0])} ${lastSeason}` : null,
+      winner: best === 1,
       finalist: Number.isFinite(best) && best <= 3,
-      chalWins: Number(p.totalChallengeWins) || 0,
+      chalWins: scoped.reduce((n, d) => n + (Number(d.challengeWins) || 0), 0),
       seasons,
     });
   }
-  return out;
+  if (!format) return all;
+  const native = all.filter(a => a.native);
+  // Enough of this show's own people to draw from: nobody else is needed.
+  if (native.length >= minNative) return native;
+  // Otherwise its own first, topped up from the other show — and every one of
+  // those is flagged, so nothing pretends they are a returning houseguest.
+  return [...native, ...all.filter(a => !a.native)];
+}
+
+const _SHOW_NAMES = { 'big-brother': 'Big Brother', 'total-drama': 'Total Drama' };
+function _showName(format) {
+  return _SHOW_NAMES[format] || 'Season';
 }

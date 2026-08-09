@@ -65,25 +65,25 @@ function rankByExit(order, tiebreaks = {}) {
 // ══════════════════════════════════════════════════════════════════════
 
 const DD_SWEEPS = [
-  'The arm comes round at shoulder height and takes everybody in the same order it did last time.',
-  'The discs speed up first and the arm arrives second, which is the wrong way round for anybody trying to brace.',
-  'The arm swings low. Everybody sees it coming and it makes no difference whatsoever.',
-  'A gap in the rhythm, then two sweeps back to back with nothing between them.',
-  'The padding on the arm has stopped being convincing and the sound has changed.',
+  'The padded arm sweeps across the discs at shoulder height.',
+  'The discs speed up, then the arm completes another pass.',
+  'The arm drops lower on the next rotation, forcing everyone to adjust.',
+  'After a longer pause, the arm makes two quick passes.',
+  'The arm speeds up again and hits with more force than the previous round.',
 ];
 
 const DD_HOLD = [
-  (n, p) => `${n} takes it across the middle, folds around the rope, and is still there when the disc comes back round.`,
-  (n, p) => `${n} gets both hands above the knot and stops trying to look dignified about any of it.`,
-  (n, p) => `${n} rides the sweep instead of fighting it, which is the only technique that has ever worked here.`,
-  (n, p) => `${n} is laughing, spinning and holding on, and only two of those are voluntary.`,
+  (n, p) => `${n} takes the hit across the waist, swings around the rope, and regains ${p.posAdj} footing.`,
+  (n, p) => `${n} slides both hands above the knot and pulls closer to the rope.`,
+  (n, p) => `${n} turns with the impact instead of bracing against it and stays on the disc.`,
+  (n, p) => `${n} spins through the hit, stumbles once, and recovers before the next pass.`,
 ];
 
 const DD_OUT = [
-  (n, p) => `${n} takes the arm square on and goes off the disc sideways, still holding a rope attached to nothing.`,
-  (n, p) => `${n} loses the rope before the arm even arrives — the spinning did it, not the hit.`,
-  (n, p) => `${n} hangs on through the sweep and then simply runs out of hands.`,
-  (n, p) => `${n} steps off ${p.posAdj} own disc to be sick, which counts as stepping off ${p.posAdj} own disc.`,
+  (n, p) => `${n} takes the arm squarely at the waist and is knocked sideways off the disc.`,
+  (n, p) => `${n} loses ${p.posAdj} grip as the disc accelerates and slides off before the arm arrives.`,
+  (n, p) => `${n} survives the hit but cannot recover ${p.posAdj} grip before dropping from the rope.`,
+  (n, p) => `${n} steps off the disc while trying to regain balance and is eliminated.`,
 ];
 
 export const dizzyDiscs = {
@@ -93,7 +93,7 @@ export const dizzyDiscs = {
   types: ['hoh', 'veto', 'tiebreaker', 'return'],
   variant: 'dizzy-discs',
   weight: () => 1,
-  desc: 'Every houseguest stands on their own motorised disc holding a rope hanging from the rig above them, and once the horn goes the discs spin continuously while a long padded arm sweeps around the yard at body height. They have to keep hold of the rope and stay on the disc through every pass of the arm, which comes round faster and lower as the competition goes on, and the spinning makes bracing for it almost impossible. Anybody who lets go of the rope or steps off their disc is out and cannot get back on. The last houseguest still spinning and still holding wins.',
+  desc: 'Each houseguest stands on a rotating disc while holding a rope overhead. A padded arm repeatedly sweeps across the course, changing speed and height as the competition continues. Letting go of the rope or stepping off the disc causes elimination; the last player remaining wins.',
   // Temperament is the spread, not a weight — see `nerve()`. Declaring it at
   // 0.22 told the screen that calm houseguests are better at being knocked off
   // a spinning disc, which is neither what the code does nor true.
@@ -117,7 +117,7 @@ export const dizzyDiscs = {
     let round = 0;
 
     beats.push(beat(
-      `${participants.length} discs, ${participants.length} ropes, and one arm that does not get tired.`,
+      `${participants.length} houseguests take their discs and grip the overhead ropes. The padded arm begins its first rotation.`,
       participants.slice(0, 4), 'THE DISCS START', 'challenge'));
 
     while (field.length > 1 && round < 14) {
@@ -163,7 +163,7 @@ export const dizzyDiscs = {
     if (winner) {
       const wp = pronouns(winner);
       beats.push(beat(
-        `${winner} is the last one still turning. ${wp.Sub} ${vb(wp, 'steps', 'step')} off after ${clock(round * 1.5)} and ${vb(wp, 'needs', 'need')} a moment and a wall.`,
+        `${winner} survives the final sweep and remains alone on a disc after ${clock(round * 1.5)}.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 2);
       api.record(winner, 'dizzy-discs-win', { rounds: round });
@@ -182,15 +182,15 @@ export const dizzyDiscs = {
 // ══════════════════════════════════════════════════════════════════════
 
 const LR_FALL = [
-  (n, p) => `${n} loses the log — one foot goes, then the rest of ${p.obj} — and lands flat in the water.`,
-  (n, p) => `${n} over-corrects, walks backwards up the log for about a metre, and runs out of log.`,
-  (n, p) => `${n} is fine, fine, fine, and then extremely not fine, all inside a second.`,
+  (n, p) => `${n}'s right foot slips behind the turning log, and ${n} falls into the water.`,
+  (n, p) => `${n} overcorrects, takes several quick steps backward, and falls off the end of the log.`,
+  (n, p) => `${n} misses one step as the log accelerates and drops into the pool.`,
 ];
 
 const LR_DROP = [
   (n, p) => `${n} watches ${p.posAdj} feet for one second too long and the weight on the end of the string touches down.`,
-  (n, p) => `${n} keeps the log and loses the string — the lantern dips, taps the deck, and that is the whole competition gone.`,
-  (n, p) => `${n} has both hands busy and nothing left to give the string with.`,
+  (n, p) => `${n} stays on the log, but the hanging weight taps the platform and ends ${p.posAdj} run.`,
+  (n, p) => `${n} grabs for balance with the string hand, lowering the weight onto the platform.`,
 ];
 
 export const logRoll = {
@@ -200,7 +200,7 @@ export const logRoll = {
   types: ['hoh', 'tiebreaker'],
   variant: 'log-roll',
   weight: () => 1,
-  desc: 'Each houseguest stands on a floating log over the water holding a length of string, and on the end of that string hangs a weight that must never touch anything. The logs turn continuously and get faster as the competition runs, so staying upright takes constant small corrections with the feet — and every one of those corrections travels straight down the arm into the string. A houseguest is out the moment they fall off the log OR the moment the weight on their string touches down, whichever happens first, and the two are pulling against each other the whole time. Whoever stays up longest wins Head of Household.',
+  desc: 'Houseguests balance on rotating logs while holding strings attached to hanging weights. They are eliminated if they fall into the water or allow their weight to touch the platform. The logs gradually accelerate, and the last player remaining wins Head of Household.',
   stats: { endurance: 0.34, temperament: 0.28, physical: 0.22, intuition: 0.16 },
   simulate(participants, context, api, rng) {
     const luck = {};
@@ -210,7 +210,7 @@ export const logRoll = {
     participants.forEach(n => { luck[n] = 0; });
 
     beats.push(beat(
-      'Logs in the water, strings in the hand, and a weight on the end of every one of them that is not allowed to touch the world.',
+      'The logs begin turning. Each houseguest must stay upright while keeping the weight on their string above the platform.',
       participants.slice(0, 4), 'THE LOGS TURN', 'challenge'));
 
     // Two clocks per houseguest — one for the feet, one for the hand — and the
@@ -251,8 +251,8 @@ export const logRoll = {
       const wp = pronouns(winner);
       const fellCount = participants.filter(n => cause[n] === 'fell').length;
       beats.push(beat(
-        `${winner} is still up at ${clock(survived[winner])}, weight swinging and never once touching down. `
-        + `${fellCount} went in the water and ${participants.length - fellCount - 1} lost the string instead.`,
+        `${winner} remains on the log at ${clock(survived[winner])} with the hanging weight still clear. `
+        + `${fellCount} houseguest${fellCount === 1 ? '' : 's'} fell into the water; ${participants.length - fellCount - 1} let the weight touch down.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 2);
       api.record(winner, 'log-roll-win', { minutes: round2(survived[winner]) });
@@ -271,17 +271,17 @@ export const logRoll = {
 // ══════════════════════════════════════════════════════════════════════
 
 const HU_QUIET = [
-  (n, p) => `${n} has found an angle that works and is refusing to move any part of ${p.obj} at all.`,
-  (n, p) => `${n} is breathing in a very deliberate pattern and has stopped answering anybody.`,
-  (n, p) => `${n} shifts ${p.posAdj} grip by about a centimetre, which at the far end of the pole is a foot.`,
-  (n, p) => `${n} has gone somewhere else entirely behind the eyes. The pole has not moved.`,
+  (n, p) => `${n} locks the pole at a stable angle and keeps ${p.posAdj} hands still.`,
+  (n, p) => `${n} matches each breath to a small adjustment in ${p.posAdj} grip.`,
+  (n, p) => `${n} shifts ${p.posAdj} lower hand slightly and steadies the plaque before it slips.`,
+  (n, p) => `${n} keeps ${p.posAdj} eyes on the plaque and ignores the conversation around ${p.obj}.`,
 ];
 
 const HU_GO = [
-  (n, p) => `${n}'s pole starts a wobble at the tip that travels back down the whole length, and the plaque comes away.`,
-  (n, p) => `${n} tries to fix the angle, makes it worse in one movement, and loses it.`,
-  (n, p) => `${n}'s arms go before ${p.posAdj} nerve does. The plaque slides down the wall almost gently.`,
-  (n, p) => `${n} sneezes. That is all it takes and everybody in the yard knows it.`,
+  (n, p) => `The tip of ${n}'s pole begins to shake, and the plaque pulls away from the wall.`,
+  (n, p) => `${n} raises the pole to correct the angle, overcorrects, and loses contact with the plaque.`,
+  (n, p) => `${n}'s arms drop several inches, allowing the plaque to slide down the wall.`,
+  (n, p) => `${n} sneezes, the pole jerks sideways, and the plaque falls.`,
 ];
 
 export const holdUp = {
@@ -291,7 +291,7 @@ export const holdUp = {
   types: ['hoh', 'tiebreaker'],
   variant: 'hold-up',
   weight: () => 1,
-  desc: 'Each houseguest is given a long flexible pole and has to use the far end of it to press a plaque flat against the wall in front of them, standing well back with nothing to lean on. Nothing is thrown at them and nothing spins — the competition is entirely the weight of their own arms, and the length of the pole means the smallest tremor at the hand becomes a wide swing at the plaque. The moment a plaque comes away from the wall that houseguest is finished and their time is recorded. The last houseguest still holding their plaque up wins Head of Household.',
+  desc: 'Each houseguest uses a long flexible pole to hold a plaque against a wall. If the pole shifts and the plaque loses contact, that player is eliminated. The last houseguest still holding a plaque in place wins Head of Household.',
   // Steadiness OVER strength, and the declared profile has to say so — the
   // first version declared endurance as the top stat while the prose promised
   // the stillest houseguest wins, and a two-player test of a strong-but-rattled
@@ -306,7 +306,7 @@ export const holdUp = {
     participants.forEach(n => { luck[n] = 0; });
 
     beats.push(beat(
-      'Poles up, plaques on the wall, and then nothing happens for a very long time — which is the competition.',
+      'The houseguests raise their poles and press the plaques against the wall. Losing contact means elimination.',
       participants.slice(0, 4), 'PLAQUES UP', 'challenge'));
 
     const held = {};
@@ -357,7 +357,7 @@ export const holdUp = {
     const winner = entries[0]?.name;
     if (winner) {
       beats.push(beat(
-        `${winner} holds for ${clock(held[winner])} and puts the pole down only when told to. Nothing was thrown, nothing spun, and it was still the hardest thing anybody did this week.`,
+        `${winner} keeps the plaque against the wall for ${clock(held[winner])} and lowers the pole after everyone else is out.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 2);
       api.record(winner, 'hold-up-win', { minutes: round2(held[winner]) });

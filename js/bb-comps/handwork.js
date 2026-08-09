@@ -45,17 +45,17 @@ function rankByTime(times) {
 // ══════════════════════════════════════════════════════════════════════
 
 const CE_GOOD = [
-  (n, p) => `${n} works two fingers through the mesh, walks an egg along the rail and sets it down like it is made of something worse than eggshell.`,
-  (n, p) => `${n} has found a grip that uses the fence instead of fighting it and is not hurrying about any of it.`,
+  (n, p) => `${n} reaches two fingers through the mesh and carefully rolls an egg along the ledge into the cradle.`,
+  (n, p) => `${n} braces one finger against the fence and uses the other to guide the egg without squeezing it.`,
   (n, p) => `${n} gets a fingertip under the egg and rolls it the last few inches rather than lifting it at all.`,
-  (n, p) => `${n} does not look at the clock once, which is the only reason ${p.posAdj} hands are still steady.`,
+  (n, p) => `${n} ignores the clock and keeps the same slow pace from one egg to the next.`,
 ];
 
 const CE_BREAK = [
-  (n, p) => `${n} rushes one and it goes through the wire in two pieces and a lot of yolk.`,
-  (n, p) => `${n} gets an egg most of the way and then closes ${p.posAdj} fingers about a millimetre too far.`,
-  (n, p) => `An egg goes down the fence, off ${n}'s knee, and onto the deck. ${p.Sub} ${vb(p, 'says', 'say')} nothing at all.`,
-  (n, p) => `${n} has yolk to the wrist now and it is affecting everything ${p.sub} ${vb(p, 'touches', 'touch')}.`,
+  (n, p) => `${n} pushes too quickly and cracks an egg against the wire.`,
+  (n, p) => `${n} gets an egg halfway across, squeezes too hard, and has to start again with a replacement.`,
+  (n, p) => `An egg slips from ${n}'s fingers, bounces off the fence, and breaks on the deck.`,
+  (n, p) => `${n} breaks one egg and has to wipe ${p.posAdj} hand before touching the replacement.`,
 ];
 
 export const cagedEggs = {
@@ -65,7 +65,7 @@ export const cagedEggs = {
   types: ['hoh', 'veto', 'tiebreaker'],
   variant: 'caged-eggs',
   weight: () => 1,
-  desc: 'A row of raw eggs sits on a ledge on the far side of a wire fence, and each houseguest has to move all of them to a cradle at the other end of that ledge using nothing but the fingers they can push through the mesh. They cannot reach round the fence, they cannot use anything as a tool, and they can only move one egg at a time. Any egg that breaks is gone for good and has to be replaced from the start of the ledge, which costs far more time than moving it slowly would have. The first houseguest to land every egg in the cradle wins the power.',
+  desc: 'Houseguests move six raw eggs along a ledge behind a wire fence using only their fingers through the mesh. They may move one egg at a time, and every broken egg must be replaced at the starting end. The first person to place all six eggs in the cradle wins.',
   // One of the few places temperament genuinely IS the skill, which the library
   // names explicitly: a steady hand on a delicate thing, where somebody who
   // rushes breaks the egg. Mental was declared and never read; now it is.
@@ -112,8 +112,8 @@ export const cagedEggs = {
         // a messy run still finishes — it just costs, and the line should say
         // that rather than reporting both halves as if they were the same fact.
         + ` ${broken
-    ? `${broken} broken and replaced along the way, and the last one finally lands at ${clock(times[name])}.`
-    : `Not one broken, and all ${EGGS} in the cradle at ${clock(times[name])}.`}`,
+    ? `${broken} broken and replaced. The final egg reaches the cradle at ${clock(times[name])}.`
+    : `All ${EGGS} reach the cradle unbroken in ${clock(times[name])}.`}`,
         [name], broken === 0 ? 'CLEAN RUN' : `${broken} BROKEN`, broken === 0 ? 'challenge' : 'grey'));
     }
 
@@ -121,7 +121,7 @@ export const cagedEggs = {
     const winner = entries[0]?.name;
     if (winner) {
       beats.push(beat(
-        `${winner} lands the last egg at ${clock(times[winner])}${breakdown[winner].broken === 0 ? ' without breaking a single one' : ''} and takes it.`,
+        `${winner} places the sixth egg in the cradle at ${clock(times[winner])}${breakdown[winner].broken === 0 ? ' without breaking one' : ''} and wins.`,
         [winner], 'WINS IT', 'gold'));
       api.popDelta(winner, 1);
       api.record(winner, 'caged-eggs-win', { seconds: times[winner], broken: breakdown[winner].broken });
@@ -140,17 +140,17 @@ export const cagedEggs = {
 // ══════════════════════════════════════════════════════════════════════
 
 const LM_CLEAN = [
-  (n, p) => `${n} goes under the low pair on ${p.posAdj} back with the case balanced on ${p.posAdj} chest, and does not touch a thing.`,
-  (n, p) => `${n} reads the grid from outside it for a full ten seconds and then walks it like a corridor.`,
-  (n, p) => `${n} threads the case through a gap that looks smaller than the case is.`,
-  (n, p) => `${n} takes the slow line and gives away nothing to the beams.`,
+  (n, p) => `${n} lies back beneath the lowest beams and balances the case against ${p.posAdj} chest.`,
+  (n, p) => `${n} studies the grid before entering and follows the widest route through it.`,
+  (n, p) => `${n} turns the case sideways and guides it cleanly through a narrow gap.`,
+  (n, p) => `${n} moves slowly through the section without touching a beam.`,
 ];
 
 const LM_HIT = [
-  (n, p) => `${n} clips a beam with the corner of the case — not with ${p.obj}, with the thing ${p.sub} ${vb(p, 'is', 'are')} carrying — and the horn sends ${p.obj} back.`,
-  (n, p) => `${n} gets almost all the way and stands up half a second early. The whole grid lights red.`,
+  (n, p) => `${n} clears the beam but clips it with the corner of the case. The horn sends ${p.obj} back to the section start.`,
+  (n, p) => `${n} stands up before clearing the final beam and triggers the alarm.`,
   (n, p) => `${n} tries the fast line, breaks two beams on the way through, and has to start the section again.`,
-  (n, p) => `${n} is watching the beams and stops watching ${p.posAdj} own elbow. The elbow does it.`,
+  (n, p) => `${n} watches the case and catches a beam with ${p.posAdj} elbow.`,
 ];
 
 export const laserMaze = {
@@ -160,7 +160,7 @@ export const laserMaze = {
   types: ['veto', 'tiebreaker'],
   variant: 'laser-maze',
   weight: () => 1,
-  desc: 'The yard is strung with a grid of laser beams at every height from ankle to shoulder, and each houseguest has to carry a case from one end of it to the other and set it down on the plinth at the far side. They can go over, under or around any beam they like but they cannot touch one, and that applies to the case as much as to them — a corner clipped by the thing they are carrying trips the horn exactly as a knee would. Every beam broken sends them back to the start of that section with the clock still running. The fastest completed run wins the Power of Veto.',
+  desc: 'Houseguests carry a case through four sections of laser beams and place it on a plinth at the finish. Touching a beam with either their body or the case sends them back to the start of that section while the clock continues. The fastest completed run wins.',
   stats: { intuition: 0.32, temperament: 0.28, physical: 0.24, mental: 0.16 },
   simulate(participants, context, api, rng) {
     const luck = {};
@@ -198,7 +198,7 @@ export const laserMaze = {
     const winner = entries[0]?.name;
     if (winner) {
       beats.push(beat(
-        `${winner} sets the case on the plinth at ${clock(times[winner])} and takes the veto out of a room full of light.`,
+        `${winner} places the case on the final plinth in ${clock(times[winner])} and wins the veto.`,
         [winner], 'VETO', 'gold'));
       api.popDelta(winner, 1);
       api.record(winner, 'laser-maze-win', { seconds: times[winner] });
@@ -217,17 +217,17 @@ export const laserMaze = {
 // ══════════════════════════════════════════════════════════════════════
 
 const WR_SWIM = [
-  (n, p) => `${n} goes in flat and fast and has the first two dummies on the deck before most people are wet.`,
-  (n, p) => `${n} swims one at a time and refuses to be talked into carrying two.`,
+  (n, p) => `${n} dives in quickly and brings the first two dummies back on consecutive trips.`,
+  (n, p) => `${n} carries one dummy at a time and keeps a steady pace across the pool.`,
   (n, p) => `${n} tries to carry three, loses one halfway back, and goes again for it.`,
-  (n, p) => `${n} is not a swimmer and is doing this on pure willingness, which is slower and much better to watch.`,
+  (n, p) => `${n} struggles through each return trip but keeps every dummy above water.`,
 ];
 
 const WR_PUZZLE = [
-  (n, p) => `${n} has the board done almost before sitting down — the whole thing was a swimming competition for ${p.obj}.`,
-  (n, p) => `${n} arrives at the puzzle first and is still sitting there when two other people finish theirs.`,
-  (n, p) => `${n} builds it from the edges in, calmly, dripping all over it.`,
-  (n, p) => `${n} gets the last two pieces the wrong way round three separate times.`,
+  (n, p) => `${n} sorts the edge pieces first and assembles the surfboard quickly.`,
+  (n, p) => `${n} reaches the puzzle early but loses time rotating the centre pieces.`,
+  (n, p) => `${n} builds the outside edge first, then fills in the middle.`,
+  (n, p) => `${n} swaps the final two pieces twice before they fit.`,
 ];
 
 export const waterRescue = {
@@ -237,7 +237,7 @@ export const waterRescue = {
   types: ['hoh', 'veto', 'tiebreaker'],
   variant: 'water-rescue',
   weight: () => 1,
-  desc: 'Six weighted dummies in team colours are floating at the far end of the pool, and every houseguest has to swim out and bring all of their own colour back to the deck one or two at a time before they are allowed to touch the second half. Waiting on the deck is a surfboard cut into puzzle pieces, and the competition is not over until that board is assembled face up with every piece flush. A dummy dropped on the way back has to be gone after again, and the puzzle cannot be started early. The first houseguest with all their dummies out of the water and a finished board wins the power.',
+  desc: 'Houseguests retrieve six coloured dummies from the pool, then assemble a surfboard puzzle on the deck. A dropped dummy must be recovered before they can begin the puzzle. The first person to complete both stages wins.',
   stats: { physical: 0.34, endurance: 0.24, mental: 0.26, intuition: 0.16 },
   simulate(participants, context, api, rng) {
     const luck = {};
@@ -282,8 +282,8 @@ export const waterRescue = {
       const stolen = outFirst !== winner;
       beats.push(beat(
         stolen
-          ? `${winner} was not first out of the water — ${outFirst} was, by ${Math.round(breakdown[winner].swimSeconds - breakdown[outFirst].swimSeconds)} seconds — and it did not matter, because the board was where this was decided.`
-          : `${winner} led it out of the water and never gave it back.`,
+          ? `${outFirst} leaves the pool ${Math.round(breakdown[winner].swimSeconds - breakdown[outFirst].swimSeconds)} seconds before ${winner}, but ${winner} makes up the time on the puzzle and finishes first.`
+          : `${winner} leaves the pool first and keeps the lead through the puzzle.`,
         [winner, outFirst], 'WINS IT', 'gold'));
       api.popDelta(winner, 2);
       api.record(winner, 'water-rescue-win', { seconds: times[winner], ledSwim: !stolen });

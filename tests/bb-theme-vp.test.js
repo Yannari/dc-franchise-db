@@ -6,7 +6,7 @@
 // season palette painted over it.
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { seasonConfig } from '../js/core.js';
+import { gs, seasonConfig, setGs } from '../js/core.js';
 import { THEME_LIST, BB_THEMES, themeAccent } from '../js/bb/themes.js';
 
 // Mirrors the class computation in renderVPScreen so it can be tested without
@@ -57,7 +57,12 @@ function cssRules(src) {
       else if (src[j] === '}') depth--;
       j++;
     }
-    const body = src.slice(open + 1, j - 1);
+    // Comments come out of the BODY too, not just the prelude. A commented
+    // declaration list splits on `;` into chunks that begin with `/*`, and a
+    // caller asking "does this rule declare anything but custom properties?"
+    // would count the comment as a painting declaration — which is how a
+    // token-only block gets wrongly flagged as painting outside .rp-page.
+    const body = src.slice(open + 1, j - 1).replace(/\/\*[\s\S]*?\*\//g, '');
     if (prelude.startsWith('@')) out.push(...cssRules(body));
     else out.push({ selector: prelude, body });
     i = j;
@@ -149,5 +154,104 @@ describe('theme skin', () => {
 
   it('reports the theme accent for the reader to use', () => {
     expect(themeAccent()).toBe(BB_THEMES['summer-of-temptation'].palette.accent);
+  });
+});
+
+// ── the token layer ────────────────────────────────────────────────────
+//
+// The weekly screens used to hard-code every colour, so a theme could not
+// reach them and "themed season" meant one accent and a narrator card. They
+// are drawn in `--bbx-*` tokens now, which is what lets a theme repaint the
+// nomination ceremony, the veto meeting and the eviction without a single
+// builder change.
+//
+// The failure mode this guards is quiet: a mistyped custom property is not an
+// error, it just does nothing, and the screen keeps the default palette while
+// the theme looks like it was applied.
+describe('the weekly screens are drawn in tokens', () => {
+  const css = fs.readFileSync('css/simulator.css', 'utf8');
+  const declared = new Set(
+    [...css.matchAll(/(--bbx-[a-z0-9-]+)\s*:/g)].map(m => m[1]));
+  const rootBlock = css.slice(0, css.indexOf('}', css.indexOf(':root')));
+  const rootTokens = new Set(
+    [...rootBlock.matchAll(/(--bbx-[a-z0-9-]+)\s*:/g)].map(m => m[1]));
+
+  it('gives every token a default, so an unthemed season is never undressed', () => {
+    expect(rootTokens.size).toBeGreaterThan(10);
+    for (const t of declared) expect(rootTokens, `${t} has a :root default`).toContain(t);
+  });
+
+  it('never references a token that was never declared', () => {
+    const used = new Set([...css.matchAll(/var\((--bbx-[a-z0-9-]+)/g)].map(m => m[1]));
+    expect(used.size).toBeGreaterThan(10);
+    for (const t of used) expect(declared, `${t} is declared`).toContain(t);
+  });
+
+  it('leaves no hard-coded accent behind in the weekly families', () => {
+    // The six values the tokens replaced. A raw one reappearing means an edit
+    // put a colour somewhere a theme cannot reach.
+    const GONE = ['#f85149', '#f0a500', '#e3b341', '#3fb950', '#58a6ff', '#8b949e'];
+    const offenders = [];
+    for (const line of css.split('\n')) {
+      if (!/\.(bbns|bbvc|bbev|bbct|bbop)\b/.test(line)) continue;
+      for (const hex of GONE) {
+        if (line.toLowerCase().includes(hex)) offenders.push(`${hex} in ${line.trim().slice(0, 60)}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('overrides only real tokens in the theme block, so no typo is silent', () => {
+    const block = css.slice(css.indexOf('--- The Den, at rest'.replace('--- ','')) >= 0
+      ? css.indexOf('.rp-theme-summer-of-temptation {', css.indexOf('The Den, at rest'))
+      : css.indexOf('.rp-theme-summer-of-temptation {'));
+    const set = [...block.slice(0, block.indexOf('}')).matchAll(/(--bbx-[a-z0-9-]+)\s*:/g)].map(m => m[1]);
+    expect(set.length).toBeGreaterThan(8);
+    for (const t of set) expect(rootTokens, `${t} is a real token`).toContain(t);
+  });
+});
+
+describe('a mood is visible, not just audible', () => {
+  beforeEach(() => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    setGs({ bb: { weeks: [], theme: { id: 'summer-of-temptation', mood: 'neutral', booked: [], said: [] } } });
+  });
+
+  it('says nothing on the root while the season is still calm', () => {
+    expect(applyThemeClass('rp-set-bb-house')).not.toContain('is-mood');
+  });
+
+  it('marks the reader when the theme turns', () => {
+    gs.bb.theme.mood = 'hostile';
+    expect(applyThemeClass('rp-set-bb-house')).toContain('is-mood-hostile');
+  });
+
+  it('swaps the mood rather than stacking two of them', () => {
+    gs.bb.theme.mood = 'hostile';
+    const applied = applyThemeClass('rp-set-bb-house is-mood-neutral');
+    expect(applied).toContain('is-mood-hostile');
+    expect(applied).not.toContain('is-mood-neutral');
+  });
+
+  // Both halves have to go, and the INSTALLED theme is the one that decides.
+  // Pointing the picker at 'none' mid-season is deliberately a no-op — the
+  // season keeps what it installed — so the reader is only undressed once the
+  // installed state is gone too.
+  it('keeps dressing a season whose picker changed but whose install did not', () => {
+    seasonConfig.theme = 'none';
+    gs.bb.theme.mood = 'hostile';
+    expect(applyThemeClass('rp-set-bb-house')).toContain('rp-theme-summer-of-temptation');
+  });
+
+  it('drops the mood with the theme once nothing is installed', () => {
+    seasonConfig.theme = 'none';
+    setGs({ bb: { weeks: [] } });
+    expect(applyThemeClass('rp-set-bb-house is-mood-hostile')).toBe('rp-set-bb-house');
+  });
+
+  it('has a stylesheet block behind the class, not just a class', () => {
+    const css = fs.readFileSync('css/simulator.css', 'utf8');
+    expect(css).toContain('.rp-theme-summer-of-temptation.is-mood-hostile');
   });
 });

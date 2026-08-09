@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { audio, cueFromElement } from './audio.js';
-import { currentTheme } from './bb/themes.js';
+import { currentTheme, themeState } from './bb/themes.js';
 
 const VP_VIEW_MODES = new Set(['watch', 'quick', 'deep']);
 let _vpViewMode = 'watch';
@@ -704,9 +704,22 @@ export function bedForScreen(id, explicitBed) {
  * in the house.
  */
 export function applyThemeClass(className) {
-  const base = String(className || '').replace(/\brp-theme-[\w-]+/g, '').replace(/\s+/g, ' ').trim();
+  const base = String(className || '')
+    .replace(/\brp-theme-[\w-]+/g, '')
+    .replace(/\bis-mood-[\w-]+/g, '')
+    .replace(/\s+/g, ' ').trim();
   const theme = currentTheme();
-  return theme ? `${base} rp-theme-${theme.id}`.trim() : base;
+  if (!theme) return base;
+  // The MOOD rides on the reader too, not just in the antagonist's word pool.
+  //
+  // A heel turn is the loudest thing a theme does and it was invisible: the
+  // Den escalates in week 6 and the only evidence was that the taunts got
+  // nastier. Putting the mood on the root lets the whole week change with it
+  // — the room light, the gilt, the saturation of every portrait — off the
+  // state that already exists and already survives into saved seasons.
+  const mood = themeState()?.mood;
+  const moodCls = mood && mood !== 'neutral' ? ` is-mood-${mood}` : '';
+  return `${base} rp-theme-${theme.id}${moodCls}`.trim();
 }
 
 export function renderVPScreen() {

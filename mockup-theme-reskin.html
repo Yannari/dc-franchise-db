@@ -1,0 +1,385 @@
+<title>Summer of Temptation — the Den</title>
+<style>
+  :root{
+    --ink:#e9e4d8; --dim:#8b8577; --faint:#5a5449;
+    --ground:#0b0d0a; --rule:rgba(233,228,216,.11);
+    --mono:ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1300px;margin:0 auto;padding:44px 22px 90px}
+
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 12px}
+  h1{font-family:var(--serif);font-size:clamp(28px,4vw,44px);line-height:1.1;margin:0 0 16px;
+    letter-spacing:-.015em;text-wrap:balance;font-weight:600}
+  .lede{max-width:66ch;color:#bdb7a8;margin:0 0 10px}
+  .lede strong{color:var(--ink);font-weight:600}
+  .quote{max-width:64ch;margin:22px 0;padding:2px 0 2px 18px;border-left:2px solid #7a6a2e;
+    font-family:var(--serif);font-size:16.5px;line-height:1.55;color:#d8d0bd}
+  .quote cite{display:block;margin-top:7px;font:400 11px/1 var(--mono);letter-spacing:.14em;
+    text-transform:uppercase;color:var(--faint);font-style:normal}
+  hr.rule{border:0;border-top:1px solid var(--rule);margin:40px 0}
+  h2{font-family:var(--serif);font-size:23px;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
+  .sub{color:var(--dim);font-size:13.5px;margin:0 0 22px;max-width:72ch}
+  code{font-family:var(--mono);font-size:12px;color:#cfc8b8;
+    background:rgba(233,228,216,.06);padding:1px 5px;border-radius:3px}
+
+  /* ── specimens ─────────────────────────────────────────────── */
+  .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  @media(max-width:1080px){.trio{grid-template-columns:1fr}}
+  .spec{border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+  .spec-cap{display:flex;align-items:baseline;gap:8px;padding:9px 12px;
+    border-bottom:1px solid var(--rule);background:rgba(233,228,216,.025)}
+  .spec-cap b{font-size:12.5px;font-weight:640}
+  .spec-cap span{font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--faint);margin-left:auto}
+
+  /* ══ ONE DOM. THREE DRESSES. Everything below is a token. ══ */
+  .bb{
+    --g-back:#0d1117; --g-panel:#161b22; --g-edge:rgba(240,246,252,.12);
+    --g-text:#d6dde5; --g-dim:#8b949e;
+    --g-key:#e3b341; --g-mark:#f85149; --g-note:#f0a500;
+    --g-display:600 14px/1 var(--sans); --g-radius:9px;
+    --g-canopy:none; --g-glyph-o:0; --g-arch:0;
+    --g-fruit:#8b949e; --g-fruit-leaf:#8b949e; --g-sat:1;
+    background:var(--g-back);color:var(--g-text);padding:13px;position:relative;overflow:hidden}
+  .bb::before{content:"";position:absolute;inset:0;pointer-events:none;background:var(--g-canopy)}
+  .bb>*{position:relative}
+
+  .bb-screens{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+  .bb-screen{position:relative;aspect-ratio:3/4;border-radius:var(--g-radius);
+    border:1px solid var(--g-edge);background:var(--g-panel);overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border-top-left-radius:calc(46% * var(--g-arch) + var(--g-radius) * (1 - var(--g-arch)))
+      calc(30% * var(--g-arch) + var(--g-radius) * (1 - var(--g-arch)));
+    border-top-right-radius:calc(46% * var(--g-arch) + var(--g-radius) * (1 - var(--g-arch)))
+      calc(30% * var(--g-arch) + var(--g-radius) * (1 - var(--g-arch)))}
+  .bb-screen.is-on{border-color:var(--g-mark);
+    box-shadow:0 0 0 1px var(--g-mark),0 0 22px -6px var(--g-mark)}
+  .bb-num{position:absolute;top:5px;left:6px;font-family:var(--mono);font-size:7.5px;
+    letter-spacing:.1em;color:var(--g-dim)}
+  .bb-q{font:var(--g-display);font-size:38px;color:#232c37;line-height:1;position:relative}
+  .bb-q::after{content:"?";opacity:calc(1 - var(--g-glyph-o))}
+  .bb-q .fruit{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    opacity:var(--g-glyph-o)}
+  .bb-q .fruit svg{width:40px;height:40px}
+  .bb-wait{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--g-dim);text-align:center;padding:0 4px}
+  .bb-av{width:44px;height:44px;border-radius:calc(var(--g-radius) - 3px);
+    background:linear-gradient(150deg,#3b4654,#222a34);border:1px solid var(--g-edge);
+    display:flex;align-items:center;justify-content:center;font:var(--g-display);
+    font-size:17px;color:var(--g-dim);filter:saturate(var(--g-sat))}
+  .bb-name{font:var(--g-display);letter-spacing:.06em;color:#fff;text-transform:uppercase}
+  .bb-tag{font-family:var(--mono);font-size:7px;font-weight:800;letter-spacing:.13em;
+    padding:2px 6px;border-radius:3px;background:var(--g-mark);color:#150404}
+
+  .bb-wall{border:1px solid var(--g-edge);border-radius:var(--g-radius);
+    background:var(--g-panel);padding:8px;margin-bottom:10px}
+  .bb-wall-h{font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--g-dim);text-align:center;margin-bottom:7px}
+  .bb-wall-grid{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+  .bb-cell{width:24px;height:24px;border-radius:calc(var(--g-radius) - 5px);
+    background:linear-gradient(150deg,#3b4654,#222a34);border:1px solid var(--g-edge);
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);
+    font-size:8.5px;color:#9aa4b0;filter:saturate(var(--g-sat))}
+  .bb-cell.is-out{filter:grayscale(1) brightness(.4)}
+  .bb-cell.is-nom{box-shadow:0 0 0 2px var(--g-mark),0 0 11px -2px var(--g-mark)}
+  .bb-keys{display:flex;gap:6px;justify-content:center;margin-top:9px;align-items:center}
+  .bb-kh{width:12px;height:12px;display:flex;align-items:center;justify-content:center}
+  .bb-kh .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.06);
+    border:1px solid var(--g-edge)}
+  .bb-kh.is-turned .dot{background:var(--g-key);border-color:var(--g-key);
+    box-shadow:0 0 9px -1px var(--g-key)}
+  .bb-kh svg{width:12px;height:12px;display:none}
+  .bb-kc{font-family:var(--mono);font-size:7px;letter-spacing:.12em;color:var(--g-dim)}
+
+  .bb-feed{display:flex;flex-direction:column;gap:7px}
+  .bb-card{border:1px solid var(--g-edge);border-left:3px solid var(--g-dim);
+    border-radius:var(--g-radius);background:var(--g-panel);padding:9px 11px}
+  .bb-card.is-key{border-left-color:var(--g-mark)}
+  .bb-card.is-reason{border-left-color:var(--g-note)}
+  .bb-card-h{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .bb-who{font:var(--g-display);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
+  .bb-pill{margin-left:auto;font-family:var(--mono);font-size:7px;font-weight:800;
+    letter-spacing:.11em;padding:2px 6px;border-radius:3px}
+  .bb-pill.red{background:var(--g-mark);color:#150404}
+  .bb-pill.gold{background:var(--g-note);color:#171006}
+  .bb-card-b{font-size:12px;line-height:1.58;color:var(--g-text)}
+  .bb-card.is-reason .bb-card-b{font-style:italic;color:#f2e7cf}
+
+  /* ── DRESS 1 · THE DEN AT REST (mood: neutral, weeks 1-5) ─── */
+  .bb.eden{
+    --g-back:#120a0c; --g-panel:#241216; --g-edge:rgba(198,160,92,.34);
+    --g-text:#f0e6d8; --g-dim:#a08d7c;
+    --g-key:#c6a05c; --g-mark:#9e1b28; --g-note:#d8b96a;
+    --g-display:600 14px/1 var(--serif); --g-radius:2px;
+    --g-glyph-o:1; --g-arch:0; --g-fruit:#c6a05c; --g-fruit-leaf:#3a1d22;
+    --g-canopy:
+      radial-gradient(52% 34% at 50% 112%,rgba(224,168,72,.20),transparent 68%),
+      repeating-linear-gradient(90deg,rgba(0,0,0,.24) 0 9px,transparent 9px 22px),
+      radial-gradient(120% 88% at 50% 46%,transparent 34%,rgba(0,0,0,.62) 100%)}
+  .bb.eden .bb-screen{background:
+    linear-gradient(180deg,rgba(198,160,92,.10),transparent 40%),var(--g-panel);
+    box-shadow:inset 0 0 0 1px rgba(198,160,92,.5),inset 0 0 0 5px #180b0e,
+      inset 0 0 0 6px rgba(198,160,92,.28)}
+  .bb.eden .bb-av,.bb.eden .bb-cell{background:linear-gradient(150deg,#48222a,#220f14)}
+  .bb.eden .bb-kh .dot{display:none}
+  .bb.eden .bb-kh svg{display:block}
+  .bb.eden .bb-wall{background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.030) 0 1px,transparent 1px 13px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,.26) 0 1px,transparent 1px 13px),var(--g-panel);
+    box-shadow:inset 0 0 0 1px rgba(198,160,92,.30)}
+
+  /* ── DRESS 2 · LIGHTS RED (mood: hostile, week 6 on) ───────── */
+  .bb.fall{
+    --g-back:#1a0508; --g-panel:#3a0810; --g-edge:rgba(255,74,84,.38);
+    --g-text:#ffe8e6; --g-dim:#c98a86;
+    --g-key:#e8b94a; --g-mark:#ff2d40; --g-note:#ff9a72;
+    --g-display:600 14px/1 var(--serif); --g-radius:2px;
+    --g-glyph-o:1; --g-arch:0; --g-fruit:#ff5a68; --g-fruit-leaf:#4a0810; --g-sat:1.35;
+    --g-canopy:
+      radial-gradient(60% 40% at 50% -8%,rgba(255,45,64,.42),transparent 66%),
+      radial-gradient(60% 40% at 50% 108%,rgba(255,45,64,.34),transparent 66%),
+      repeating-linear-gradient(90deg,rgba(0,0,0,.20) 0 9px,transparent 9px 22px),
+      radial-gradient(120% 88% at 50% 46%,transparent 20%,rgba(80,0,8,.60) 100%)}
+  .bb.fall .bb-screen{background:
+    linear-gradient(180deg,rgba(255,74,84,.14),transparent 40%),var(--g-panel);
+    box-shadow:inset 0 0 0 1px rgba(255,74,84,.55),inset 0 0 0 5px #2a040a,
+      inset 0 0 0 6px rgba(255,74,84,.30)}
+  .bb.fall .bb-av,.bb.fall .bb-cell{background:linear-gradient(150deg,#6b1220,#3a060e)}
+  .bb.fall .bb-kh .dot{display:none}
+  .bb.fall .bb-kh svg{display:block}
+  .bb.fall .bb-wall{background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.045) 0 1px,transparent 1px 13px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,.30) 0 1px,transparent 1px 13px),var(--g-panel);
+    box-shadow:inset 0 0 0 1px rgba(255,74,84,.34)}
+  .bb.fall .bb-name,.bb.fall .bb-who{color:#fff}
+
+  /* ── notes ─────────────────────────────────────────────────── */
+  .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+  .note{border:1px solid var(--rule);border-radius:8px;padding:14px 15px;
+    background:rgba(233,228,216,.018)}
+  .note h3{margin:0 0 6px;font-size:12.5px;font-weight:660;letter-spacing:.01em}
+  .note p{margin:0;font-size:12.5px;color:#a8a294;line-height:1.6}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tbl th,.tbl td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--rule);vertical-align:top}
+  .tbl th{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--dim);font-weight:600}
+  .tbl td:first-child{font-family:var(--mono);font-size:11.5px;color:#cfc8b8;white-space:nowrap}
+  .tblwrap{overflow-x:auto}
+  .sw{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .sw i{width:11px;height:11px;border-radius:2px;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+  .flag{border-left:2px solid #7a6a2e;padding-left:16px;margin:26px 0 0;color:#bdb7a8;font-size:13.5px}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="fruit" viewBox="0 0 24 24">
+    <rect x="4.5" y="1.8" width="15" height="20.4" rx="7.5"
+      fill="none" stroke="var(--g-fruit)" stroke-width="1.4"/>
+    <circle cx="12" cy="9.6" r="3.1" fill="var(--g-fruit)"/>
+    <path d="M10.5 12.2h3l1.5 6.4h-6l1.5-6.4Z" fill="var(--g-fruit)"/>
+  </symbol>
+</defs></svg>
+
+<div class="wrap">
+
+  <p class="eyebrow">Mockup v2 · not yet built</p>
+  <h1>The Den, and the night it turns red</h1>
+  <p class="lede">Back to the BB19 room, done properly. The problem with the first pass was not the
+    direction — it was that red was <em>wallpaper</em>. Everything was red all the time, so red meant
+    nothing.</p>
+
+  <blockquote class="quote">There are 5 apples, and before nominations, a HouseGuest can pick one… when the
+    lights on the Tree turn red. If an apple is chosen, they will either get a prize or a punishment.
+    <cite>Big Brother 19 · Tree of Temptation</cite></blockquote>
+
+  <p class="lede">Read that line again: <strong>the lights turn red when an offer is live.</strong> Red is
+    the show's signal, not its decor. So the Den at rest is mahogany, gilt and candlelight — and red is what
+    arrives when the season turns on the house.</p>
+  <p class="lede">The gilt frames, the tufted velvet wall, the lamp glow from below and the deep vignette
+    are the furniture the first pass never had. The middle column is the room you sit in for five weeks. The
+    right-hand one is the same room with the lights up.</p>
+
+  <hr class="rule">
+
+  <h2>One ceremony, before and after</h2>
+  <p class="sub">The nomination ceremony, week 4 and week 8. Same markup, same reveal logic, same builder —
+    the room floods when the mood turns at week 6. Placeholder cast; the left column is the real
+    <code>bbns-*</code> palette shipping today.</p>
+
+  <div class="trio">
+
+    <!-- TODAY -->
+    <div class="spec">
+      <div class="spec-cap"><b>Today</b><span>untouched</span></div>
+      <div class="bb">
+        <div class="bb-screens">
+          <div class="bb-screen is-on"><div class="bb-num">01</div>
+            <div class="bb-av">R</div><div class="bb-name">Ripper</div>
+            <div class="bb-tag">Nominated</div></div>
+          <div class="bb-screen"><div class="bb-num">02</div>
+            <div class="bb-q"><span class="fruit"><svg><use href="#fruit"/></svg></span></div>
+            <div class="bb-wait">Awaiting key</div></div>
+        </div>
+        <div class="bb-wall"><div class="bb-wall-h">Memory Wall</div>
+          <div class="bb-wall-grid">
+            <div class="bb-cell is-nom">R</div><div class="bb-cell">B</div><div class="bb-cell">C</div>
+            <div class="bb-cell is-out">S</div><div class="bb-cell">N</div><div class="bb-cell">A</div>
+            <div class="bb-cell">Z</div><div class="bb-cell is-out">E</div></div>
+          <div class="bb-keys"><span class="bb-kh is-turned"><span class="dot"></span>
+            <svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kc">1 / 3</span></div></div>
+        <div class="bb-feed">
+          <div class="bb-card is-key"><div class="bb-card-h"><span class="bb-who">Ripper</span>
+            <span class="bb-pill red">Key turned</span></div>
+            <div class="bb-card-b">Bowie turns the first key and does not look up while it happens.</div></div>
+          <div class="bb-card is-reason"><div class="bb-card-h"><span class="bb-who">Reason</span>
+            <span class="bb-pill gold">Spoken</span></div>
+            <div class="bb-card-b">“You came after me in week two and you have not stopped telling
+              people it was somebody else.”</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE GARDEN -->
+    <div class="spec">
+      <div class="spec-cap"><b>The Den</b><span>weeks 1–5</span></div>
+      <div class="bb eden">
+        <div class="bb-screens">
+          <div class="bb-screen is-on"><div class="bb-num">01</div>
+            <div class="bb-av">R</div><div class="bb-name">Ripper</div>
+            <div class="bb-tag">Nominated</div></div>
+          <div class="bb-screen"><div class="bb-num">02</div>
+            <div class="bb-q"><span class="fruit"><svg><use href="#fruit"/></svg></span></div>
+            <div class="bb-wait">Awaiting key</div></div>
+        </div>
+        <div class="bb-wall"><div class="bb-wall-h">Memory Wall</div>
+          <div class="bb-wall-grid">
+            <div class="bb-cell is-nom">R</div><div class="bb-cell">B</div><div class="bb-cell">C</div>
+            <div class="bb-cell is-out">S</div><div class="bb-cell">N</div><div class="bb-cell">A</div>
+            <div class="bb-cell">Z</div><div class="bb-cell is-out">E</div></div>
+          <div class="bb-keys"><span class="bb-kh is-turned"><span class="dot"></span>
+            <svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kc">1 / 3</span></div></div>
+        <div class="bb-feed">
+          <div class="bb-card is-key"><div class="bb-card-h"><span class="bb-who">Ripper</span>
+            <span class="bb-pill red">Key turned</span></div>
+            <div class="bb-card-b">Bowie turns the first key and does not look up while it happens.</div></div>
+          <div class="bb-card is-reason"><div class="bb-card-h"><span class="bb-who">Reason</span>
+            <span class="bb-pill gold">Spoken</span></div>
+            <div class="bb-card-b">“You came after me in week two and you have not stopped telling
+              people it was somebody else.”</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE FALL -->
+    <div class="spec">
+      <div class="spec-cap"><b>Lights red</b><span>week 6 on</span></div>
+      <div class="bb fall">
+        <div class="bb-screens">
+          <div class="bb-screen is-on"><div class="bb-num">01</div>
+            <div class="bb-av">R</div><div class="bb-name">Ripper</div>
+            <div class="bb-tag">Nominated</div></div>
+          <div class="bb-screen"><div class="bb-num">02</div>
+            <div class="bb-q"><span class="fruit"><svg><use href="#fruit"/></svg></span></div>
+            <div class="bb-wait">The Den is open</div></div>
+        </div>
+        <div class="bb-wall"><div class="bb-wall-h">Memory Wall</div>
+          <div class="bb-wall-grid">
+            <div class="bb-cell is-nom">R</div><div class="bb-cell">B</div><div class="bb-cell">C</div>
+            <div class="bb-cell is-out">S</div><div class="bb-cell">N</div><div class="bb-cell">A</div>
+            <div class="bb-cell">Z</div><div class="bb-cell is-out">E</div></div>
+          <div class="bb-keys"><span class="bb-kh is-turned"><span class="dot"></span>
+            <svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kh"><span class="dot"></span><svg><use href="#fruit"/></svg></span>
+            <span class="bb-kc">1 / 3</span></div></div>
+        <div class="bb-feed">
+          <div class="bb-card is-key"><div class="bb-card-h"><span class="bb-who">Ripper</span>
+            <span class="bb-pill red">Key turned</span></div>
+            <div class="bb-card-b">Bowie turns the first key and does not look up while it happens.</div></div>
+          <div class="bb-card is-reason"><div class="bb-card-h"><span class="bb-who">Reason</span>
+            <span class="bb-pill gold">Spoken</span></div>
+            <div class="bb-card-b">“You came after me in week two and you have not stopped telling
+              people it was somebody else.”</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="flag">The two right-hand columns are <strong>the same theme</strong>. Nothing in the arc, the
+    schedule or the voice changed between them — only <code>mood</code>, which already flips at week 6 and
+    until now did nothing but swap a word pool. Because the Den is warm for five weeks, the night it goes
+    red actually lands.</p>
+
+  <hr class="rule">
+
+  <h2>What a mood is worth, in tokens</h2>
+  <p class="sub">The theme sets the tokens; the mood re-sets a subset. Both columns below are Summer of
+    Temptation — the difference is only what <code>is-hostile</code> overrides.</p>
+
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Token</th><th>Dresses</th><th>The Den</th><th>Lights red</th></tr></thead>
+    <tbody>
+      <tr><td>--g-back</td><td>Ground behind the ceremony</td>
+        <td><span class="sw"><i style="background:#120a0c"></i>near-black, red bias</span></td>
+        <td><span class="sw"><i style="background:#1a0508"></i>flooded</span></td></tr>
+      <tr><td>--g-panel</td><td>Frames, wall, feed cards</td>
+        <td><span class="sw"><i style="background:#241216"></i>mahogany</span></td>
+        <td><span class="sw"><i style="background:#3a0810"></i>lit oxblood</span></td></tr>
+      <tr><td>--g-canopy</td><td>Room light</td><td>lamp glow from below, heavy vignette</td>
+        <td>red from above <em>and</em> below</td></tr>
+      <tr><td>--g-edge</td><td>Gilt on every frame</td>
+        <td><span class="sw"><i style="background:#c6a05c"></i>brass</span></td>
+        <td><span class="sw"><i style="background:#ff4a54"></i>hot</span></td></tr>
+      <tr><td>--g-mark</td><td>On the block</td>
+        <td><span class="sw"><i style="background:#9e1b28"></i>deep crimson</span></td>
+        <td><span class="sw"><i style="background:#ff2d40"></i>alarm</span></td></tr>
+      <tr><td>--g-key</td><td>Turned keys</td>
+        <td><span class="sw"><i style="background:#c6a05c"></i>candlelit gold</span></td>
+        <td><span class="sw"><i style="background:#e8b94a"></i>brighter</span></td></tr>
+      <tr><td>--g-sat</td><td>Saturation of every portrait</td><td>1 — as shot</td>
+        <td>1.35 — the room pushes it</td></tr>
+      <tr><td>--g-radius</td><td>Corner language</td><td colspan="2">2px in both — the joinery is the season, not the mood</td></tr>
+      <tr><td>--g-display</td><td>Names and headings</td><td colspan="2">high-contrast serif in both</td></tr>
+    </tbody>
+  </table></div>
+
+  <hr class="rule">
+
+  <h2>Scope, honestly</h2>
+  <div class="notes">
+    <div class="note"><h3>Built once, used by every theme</h3>
+      <p>The token layer is the real work: <code>bbns</code>, <code>bbvc</code>, <code>bbev</code>,
+        <code>bbct</code>, <code>bbop</code> currently hard-code their colours. Tokenising them is mechanical
+        — and afterwards BBAI or the Multiverse is a palette and a handful of rules.</p></div>
+    <div class="note"><h3>Mood becomes a visual system</h3>
+      <p><code>setThemeMood('hostile')</code> already fires at week 6 and already survives into saved
+        seasons. Today it swaps a line pool. Putting it on the reader root as a class is a few lines, and
+        every theme with a heel turn inherits it — AINSLEY's week-10 turn gets this for free.</p></div>
+    <div class="note"><h3>Needs more than CSS</h3>
+      <p>Two hooks, not three: the SVG on an unrevealed screen, and a per-mood room wash. Keeping the wall
+        called <em>Memory Wall</em> means no vocab hook is needed for this theme — BB19 never renamed it
+        either.</p></div>
+    <div class="note"><h3>Still not a bespoke set</h3>
+      <p>This dresses shared screens beautifully. It does not build Temptation its own ceremony the way Get a
+        Clue has one — no Den you actually walk into, no door in the wall. That is a further piece, worth
+        doing and worth scoping on its own.</p></div>
+  </div>
+
+  <p class="flag" style="border-left-color:#9e1b28">Decisions I need: does the Den read rich enough now,
+    and do you want the token layer first (every theme after this gets cheap) or Temptation's own bespoke
+    ceremony first (only this theme benefits)? One loose end either way — the antagonist is still called
+    <strong>The Den</strong>, which is also the id of the twist the arc books. Same word, two things.</p>
+

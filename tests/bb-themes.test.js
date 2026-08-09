@@ -75,3 +75,114 @@ describe('theme registry', () => {
     expect(themeById('not-a-theme')).toBeNull();
   });
 });
+
+import { gs, setGs, resolveTwistSchedule } from '../js/core.js';
+import { themeScheduleEntries, installTheme, themeState } from '../js/bb/themes.js';
+
+const FIXTURE = {
+  id: 'fixture', name: 'Fixture', tagline: 't', house: 'bb-house',
+  palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+  antagonist: { name: 'Nobody', voice: {} },
+  arc: [
+    { at: { week: 2 }, book: 'bb-have-nots' },
+    { at: { week: 4 }, book: 'bb-pandoras-box', options: { prize: 'diamond-veto' } },
+    { at: { fromEnd: 1 }, book: 'bb-double-eviction' },
+    { at: { week: 99 }, book: 'bb-roadkill' },
+  ],
+};
+
+describe('theme arc scheduler', () => {
+  // `gs` starts as null in core.js — a real season only has one after the cast
+  // is built. The install tests need somewhere for the theme to live, so stand
+  // up the bare minimum a prepared house would have.
+  beforeEach(() => { setGs({ bb: { weeks: [] } }); });
+
+  it('lays booked twists onto the weeks the arc names', () => {
+    const out = themeScheduleEntries(FIXTURE, { weeks: 9, existing: [] });
+    expect(out.map(e => [e.episode, e.type])).toEqual([
+      [2, 'bb-have-nots'],
+      [4, 'bb-pandoras-box'],
+      [9, 'bb-double-eviction'],
+    ]);
+  });
+
+  it('drops acts that fall outside the season', () => {
+    const out = themeScheduleEntries(FIXTURE, { weeks: 3, existing: [] });
+    expect(out.map(e => e.type)).not.toContain('bb-roadkill');
+    expect(out.map(e => e.type)).not.toContain('bb-pandoras-box');
+  });
+
+  it('carries the act options onto the entry', () => {
+    const box = themeScheduleEntries(FIXTURE, { weeks: 9, existing: [] })
+      .find(e => e.type === 'bb-pandoras-box');
+    expect(box.prize).toBe('diamond-veto');
+  });
+
+  it('tags every entry so a theme booking is distinguishable from yours', () => {
+    for (const e of themeScheduleEntries(FIXTURE, { weeks: 9, existing: [] })) {
+      expect(e.source).toBe('theme');
+      expect(e.id).toBeTruthy();
+    }
+  });
+
+  it('leaves a week you booked yourself alone', () => {
+    const existing = [{ id: 'mine', episode: 2, type: 'bb-roadkill' }];
+    const out = themeScheduleEntries(FIXTURE, { weeks: 9, existing });
+    expect(out.some(e => e.episode === 2)).toBe(false);
+    expect(out.some(e => e.episode === 4)).toBe(true);
+  });
+
+  it('emits nothing that the incompatibility resolver would throw away', () => {
+    const cfg = { format: 'big-brother' };
+    const out = themeScheduleEntries(FIXTURE, { weeks: 9, existing: [] });
+    for (const e of out) {
+      expect(resolveTwistSchedule([e.type], cfg)).toEqual([e.type]);
+    }
+  });
+
+  it('installs once and is idempotent', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = THEME_LIST[0];
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    const first = installTheme(12);
+    const count = seasonConfig.twistSchedule.length;
+    const second = installTheme(12);
+    expect(second).toBe(first);
+    expect(seasonConfig.twistSchedule.length).toBe(count);
+    expect(themeState().id).toBe(THEME_LIST[0]);
+  });
+
+  it('never changes the venue — the house is the default and the user picks it', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = THEME_LIST[0];
+    seasonConfig.setting = 'bb-house';
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    installTheme(12);
+    expect(seasonConfig.setting).toBe('bb-house');
+  });
+
+  it('leaves a venue the user chose alone, even one the theme was not written for', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = THEME_LIST[0];
+    seasonConfig.setting = 'bb-manor';
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    installTheme(12);
+    expect(seasonConfig.setting).toBe('bb-manor');
+  });
+
+  it('keeps the house as the format default', async () => {
+    const { defaultSettingFor } = await import('../js/settings.js');
+    expect(defaultSettingFor('big-brother')).toBe('bb-house');
+  });
+
+  it('installs nothing on an unthemed season', () => {
+    seasonConfig.theme = 'none';
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    expect(installTheme(12)).toBeNull();
+    expect(seasonConfig.twistSchedule).toEqual([]);
+  });
+});

@@ -66,3 +66,78 @@ export function currentTheme() {
 export function themeAccent() {
   return currentTheme()?.palette?.accent || DEFAULT_ACCENT;
 }
+
+import { gs } from '../core.js';
+
+/**
+ * The weeks a theme's arc lands on.
+ *
+ * Pure, because the interesting cases are all about what it REFUSES to emit:
+ * an act past the end of a short season, and any week you booked yourself.
+ * A week you booked is yours — the arc fills the gaps, it does not argue.
+ *
+ * `at` is either `{week: n}` counted from the premiere or `{fromEnd: n}`
+ * counted back from the finale, because an endgame act belongs at the endgame
+ * whether the house cast twelve or sixteen.
+ */
+export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) {
+  if (!theme) return [];
+  const booked = (existing || []).filter(Boolean);
+  const yours = new Set(booked.map(t => Number(t.episode)));
+  const seen = new Set();
+  const out = [];
+  for (const act of theme.arc || []) {
+    if (!act || !act.book) continue;
+    // `fromEnd` counts back from the finale and is 1-indexed like `week` is:
+    // `fromEnd: 1` IS the last week, `fromEnd: 2` the one before it.
+    const ep = act.at?.week != null
+      ? Number(act.at.week)
+      : weeks - Number(act.at?.fromEnd ?? 1) + 1;
+    if (!Number.isFinite(ep) || ep < 1 || ep > weeks) continue;
+    if (yours.has(ep)) continue;
+    const key = `${ep}:${act.book}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      id: `th-${theme.id}-${ep}-${act.book}`,
+      episode: ep,
+      type: act.book,
+      source: 'theme',
+      ...(act.options || {}),
+    });
+  }
+  return out;
+}
+
+/**
+ * Install the season's theme, once.
+ *
+ * Writes real schedule entries rather than intercepting the twist lookup,
+ * because a twist's OPTIONS are read off its scheduled entry in a dozen places
+ * (`boxEntry`, `deEntry`, the App Store shelf) and an intercept would have to
+ * reimplement all of them. Everything downstream — `bbTwistsForWeek`,
+ * `resolveTwistSchedule`, the Format Designer — keeps working untouched.
+ */
+export function installTheme(houseSize) {
+  const theme = currentTheme();
+  if (!theme) return null;
+  if (!gs.bb) return null;
+  if (gs.bb.theme) return gs.bb.theme;
+  // A house loses one a week and ends at three.
+  const weeks = Math.max(1, Number(houseSize || 0) - 3);
+  const entries = themeScheduleEntries(theme, {
+    weeks, existing: seasonConfig.twistSchedule || [],
+  });
+  seasonConfig.twistSchedule = [...(seasonConfig.twistSchedule || []), ...entries];
+  gs.bb.theme = {
+    id: theme.id,
+    mood: theme.antagonist?.mood || 'neutral',
+    booked: entries.map(e => e.type),
+    said: [],
+  };
+  return gs.bb.theme;
+}
+
+export function themeState() {
+  return gs?.bb?.theme || null;
+}

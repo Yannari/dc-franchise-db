@@ -30,6 +30,7 @@ import { SOCIAL_COMPS } from './social.js';
 import { DURESS_COMPS } from './duress.js';
 import { STAMINA_COMPS } from './stamina.js';
 import { HANDWORK_COMPS } from './handwork.js';
+import { GRIP_COMPS } from './grip.js';
 
 /**
  * How strongly a written competition outranks a fallback.
@@ -90,6 +91,7 @@ export const BB_COMPETITIONS = [
   // knocked off, dropped, broken, clipped, or lost on the second half.
   ...STAMINA_COMPS,
   ...HANDWORK_COMPS,
+  ...GRIP_COMPS,
 ].map(production);
 
 export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) => {
@@ -100,5 +102,5 @@ export const BB_COMPETITIONS_BY_CATEGORY = BB_COMPETITIONS.reduce((acc, comp) =>
 /** Which competitions can serve a given slot — the dispatcher's own filter. */
 export const competitionsFor = type => BB_COMPETITIONS.filter(c => c.types.includes(type));
 
-export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS, JURY_QUIZ_COMPS, RECALL_COMPS, SOCIAL_COMPS, DURESS_COMPS, STAMINA_COMPS, HANDWORK_COMPS };
+export { ENDURANCE_COMPS, MENTAL_COMPS, PHYSICAL_COMPS, LUCK_COMPS, ARENA_COMPETITIONS, SIGNATURE_COMPS, PAIR_COMPS, CLASSIC_COMPS, ARENA_CLASSIC_COMPS, FINAL_HOH_COMPS, JURY_QUIZ_COMPS, RECALL_COMPS, SOCIAL_COMPS, DURESS_COMPS, STAMINA_COMPS, HANDWORK_COMPS, GRIP_COMPS };
 export default BB_COMPETITIONS;

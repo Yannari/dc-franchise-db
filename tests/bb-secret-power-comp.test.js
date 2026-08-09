@@ -333,8 +333,19 @@ describe('the screen', () => {
       { name: 'Scary', score: 371 }, { name: 'Axel', score: 344 }, { name: 'Zee', score: 330 }],
     house: ['Ripper', 'Nichelle', 'Scary', 'Axel', 'Zee', 'Brightly'],
     outgoingHoh: 'Zee',
-    beats: [{ text: 'The yard is not what it looks like.', players: ['Ripper'],
-      badgeText: 'SOMETHING ELSE', badgeClass: 'gold' }],
+    // Door-tagged, because a door now opens on its own card — a beat with no
+    // door opens nothing, which is what the first version of these tests was
+    // silently asserting about.
+    beats: [
+      { text: 'The yard is not what it looks like.', players: ['Ripper'],
+        badgeText: 'SOMETHING ELSE', badgeClass: 'gold' },
+      { text: 'Ripper took it.', players: ['Ripper'], badgeText: 'A PRIVATE WIN',
+        badgeClass: 'gold', door: 'hoh-interrogation' },
+      { text: 'Zee took it.', players: ['Zee'], badgeText: 'A PRIVATE WIN',
+        badgeClass: 'gold', door: 'mystery-veto' },
+      { text: 'Nobody took the third.', players: [], badgeText: 'UNCLAIMED',
+        badgeClass: 'grey', door: 'mystery-competitor' },
+    ],
   };
   const render = idx => {
     const tv = {};
@@ -349,7 +360,8 @@ describe('the screen', () => {
 
   it('opens sealed, so the screen is a competition and not its answer', () => {
     const html = render(null);
-    expect(html).toContain('Sealed until');
+    // Every door shut, and no stamp anywhere, until something is revealed.
+    expect((html.match(/class="bbsp-door is-sealed"/g) || []).length).toBe(3);
     expect(html, 'the doors were open before anybody revealed anything')
       .not.toContain('Void when');
   });
@@ -555,5 +567,94 @@ describe('the night runs in the order it happened', () => {
     const { resolveWeekTwistState } = await import('../js/bb/twist-contract.js');
     const state = resolveWeekTwistState(['bb-secret-power-comp']);
     expect(state.announcements.map(a => a.twist)).toContain('bb-secret-power-comp');
+  });
+});
+
+describe('the doors open one at a time', () => {
+  // The whole right-hand column used to arrive on the LAST card, so there was
+  // nothing to watch: reveal, reveal, reveal, and then the answer lands in one
+  // block. Each door beat carries the door it belongs to, so a door opens on
+  // its own card and the board fills in as you go.
+  const ACT = {
+    type: 'secret-power-comp', week: 2, doors: ['a', 'b', 'c'],
+    rooms: [
+      { power: 'a', name: 'The Interrogation', entrants: ['Priya'], winner: 'Priya' },
+      { power: 'b', name: 'The Mystery Competitor', entrants: ['MK', 'Zee'], winner: 'MK' },
+      { power: 'c', name: 'The Mystery Veto', entrants: [], winner: null },
+    ],
+    winner: 'Raj',
+    granted: [{ name: 'Priya', power: 'a' }, { name: 'MK', power: 'b' }],
+    chased: [{ name: 'Priya', power: 'a' }, { name: 'MK', power: 'b' }, { name: 'Zee', power: 'b' }],
+    results: [{ name: 'Raj', score: 74 }, { name: 'MK', score: 57 },
+      { name: 'Zee', score: 50 }, { name: 'Priya', score: 29 }],
+    house: ['Raj', 'MK', 'Zee', 'Priya'], outgoingHoh: null,
+    beats: [
+      { text: 'The yard is not what it looks like.', players: [], badgeText: 'X', badgeClass: 'gold' },
+      { text: 'Priya won door a.', players: ['Priya'], badgeText: 'A PRIVATE WIN', badgeClass: 'gold', door: 'a' },
+      { text: 'MK won door b.', players: ['MK'], badgeText: 'A PRIVATE WIN', badgeClass: 'gold', door: 'b' },
+      { text: 'Nobody took door c.', players: [], badgeText: 'UNCLAIMED', badgeClass: 'grey', door: 'c' },
+    ],
+  };
+  const at = idx => {
+    const tv = {};
+    const deps = { tvState: tv, reveal: () => 'x', esc: v => String(v ?? ''),
+      avatar: n => `<img data-n="${n}">` };
+    const { rpBuildBBSecretPowerComp } = require('../js/vp-bb-secret-power.js');
+    rpBuildBBSecretPowerComp({ num: 2 }, ACT, deps);
+    tv['bb_spc_2'].idx = idx;
+    return rpBuildBBSecretPowerComp({ num: 2 }, ACT, deps);
+  };
+  // Counted on the ELEMENT, not the string: the stylesheet mentions the class
+  // three times and a naive count reports three sealed doors on a screen with
+  // none.
+  const sealed = html => (html.match(/class="bbsp-door is-sealed"/g) || []).length;
+
+  it('starts with every door shut', () => expect(sealed(at(0))).toBe(3));
+  it('opens them as their cards are revealed', () => {
+    expect(sealed(at(1))).toBe(3);
+    expect(sealed(at(2)), 'the first door did not open on its own card').toBe(2);
+    expect(sealed(at(3))).toBe(1);
+    expect(sealed(at(9))).toBe(0);
+  });
+
+  it('strikes a name the moment its door opens, not at the end', () => {
+    // Counted on the ELEMENT again. `.bbsp-row.is-elsewhere` is in the
+    // stylesheet, so a substring search finds it on a screen with nothing
+    // struck — the same trap as the sealed doors, two tests apart.
+    const struck = html => (html.match(/class="bbsp-row is-elsewhere"/g) || []).length;
+    expect(struck(at(1)), 'struck before the door opened').toBe(0);
+    expect(struck(at(2)), 'the board did not answer the door').toBeGreaterThan(0);
+  });
+
+  it('does not print the same sentence on all three doors', () => {
+    const html = at(9);
+    const lines = [...html.matchAll(/class="bbsp-took">(.*?)<\/div>/g)].map(m => m[1]);
+    expect(lines.length).toBeGreaterThan(1);
+    expect(new Set(lines).size, 'every door says the same thing').toBe(lines.length);
+  });
+
+  it('does not print the same beat three times either', async () => {
+    // Three doors open on one night, so a single line in the engine printed
+    // three near-identical paragraphs with only the name changed — the most
+    // obvious tell a room is generated.
+    const { runSecretPowerComp } = await import('../js/bb/secret-power.js');
+    const flat = Object.fromEntries(['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'].map(k => [k, 5]));
+    setPlayers(HOUSE.map(name => ({ name, archetype: 'floater', gender: 'f', stats: { ...flat } })));
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    seasonConfig.jurySize = 2;
+    const out = runSecretPowerComp({
+      week: { num: 2 }, house: HOUSE, results: HOUSE.map((n, i) => ({ name: n, score: 90 - i })),
+      offered: ['hoh-interrogation', 'mystery-competitor', 'mystery-veto'],
+      // A VARYING rng. A constant one gives every chaser the same door-appeal
+      // roll, so the whole yard walks to the same door and exactly one power is
+      // won — which measures nothing about repeated sentences.
+      rng: (seed => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; })(9),
+    });
+    const wins = (out?.beats || []).filter(b => b.badgeText === 'A PRIVATE WIN')
+      .map(b => b.text);
+    expect(wins.length, 'no doors were won, so this proves nothing').toBeGreaterThan(1);
+    expect(new Set(wins).size, 'the same sentence, more than once, with the name changed')
+      .toBe(wins.length);
   });
 });

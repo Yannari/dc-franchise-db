@@ -58,7 +58,7 @@ const SP_CSS = `
    score and the badge, which reads as a rendering fault rather than as a point
    being made. */
 .bbsp-row.is-elsewhere .bbsp-nm{color:#8b8271;text-decoration:line-through;text-decoration-thickness:1px}
-.bbsp-nm{white-space:nowrap}
+.bbsp-nm{white-space:nowrap;margin-right:2px}
 .bbsp-tag{font-family:var(--font-mono);font-size:8px;letter-spacing:1.4px;text-transform:uppercase;border:1px solid currentColor;border-radius:2px;padding:2px 5px}
 .bbsp-tag.gold{color:#e8b866}.bbsp-tag.red{color:#d4705c}.bbsp-tag.blue{color:#7fb0cc}
 
@@ -75,6 +75,9 @@ const SP_CSS = `
 .bbsp-took{font-size:13px;line-height:1.45}
 .bbsp-took b{font-weight:700}
 .bbsp-entered{margin-top:6px;font-size:11.5px;color:#7a7263;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.bbsp-door.is-sealed{background:rgba(240,233,220,.03);color:#6d6559;box-shadow:none;border:1px dashed rgba(240,233,220,.16);padding-left:14px;min-height:44px}
+.bbsp-door.is-sealed::before{background:none}
+.bbsp-door.is-sealed .bbsp-dname{color:#6d6559;font-size:14px;margin:2px 0 0}
 .bbsp-door.is-unclaimed{background:rgba(240,233,220,.045);color:#8b8271;box-shadow:none;border:1px dashed rgba(240,233,220,.2);padding-left:14px}
 .bbsp-door.is-unclaimed::before{background:none}
 .bbsp-door.is-unclaimed .bbsp-dname{color:#8b8271}
@@ -117,6 +120,18 @@ export function rpBuildBBSecretPowerComp(ep, act, deps) {
   const AV = (n, px) => (typeof deps.avatar === 'function' ? deps.avatar(n, px) : '');
   const face = n => `<span class="bbsp-face">${AV(n, 22)}</span>`;
 
+  // ── which doors are open YET ──
+  //
+  // The whole right-hand column used to appear at once, on the last card, so
+  // there was nothing to watch: reveal, reveal, reveal, and then the answer
+  // arrives in one block. Each door beat carries the door it belongs to, so a
+  // door opens on its own card and the board fills in as you go.
+  const openDoors = new Set();
+  for (let i = 0; i <= state.idx && i < steps.length; i++) {
+    const st = steps[i];
+    if (st.kind === 'beat' && st.b?.door) openDoors.add(st.b.door);
+  }
+
   const chasing = new Map((act.chased || []).map(c => [c.name, c.power]));
   const holders = new Set((act.granted || []).map(g => g.name));
   const results = act.results || [];
@@ -131,8 +146,12 @@ export function rpBuildBBSecretPowerComp(ep, act, deps) {
     const crown = name === act.winner;
     // The strike is only honest AFTER the doors open — before that, the
     // audience is looking at what the house looked at.
-    const cls = !opened ? '' : crown ? 'is-crown' : elsewhere ? 'is-elsewhere' : '';
-    const tag = !opened ? ''
+    // A name is struck the moment the door it walked to has opened — so the
+    // left column answers the right one card at a time instead of both
+    // resolving together at the end.
+    const shown = elsewhere ? openDoors.has(chasing.get(name)) : opened;
+    const cls = !shown ? '' : crown ? 'is-crown' : elsewhere ? 'is-elsewhere' : '';
+    const tag = !shown ? ''
       : crown ? '<span class="bbsp-tag gold">HOH</span>'
         : name === act.outgoingHoh ? '<span class="bbsp-tag blue">barred</span>'
           : elsewhere ? '<span class="bbsp-tag red">not running</span>' : '';
@@ -145,10 +164,15 @@ export function rpBuildBBSecretPowerComp(ep, act, deps) {
   }).join('')) || '<div class="bbsp-h">The yard has not run yet.</div>';
 
   // ── what was actually on the line ──
-  const doors = !opened
-    ? '<div class="bbsp-h">Sealed until the competition is over.</div>'
-    : (act.rooms || []).map((room, i) => {
-      const no = ['Door One', 'Door Two', 'Door Three'][i] || `Door ${i + 1}`;
+  const doors = (act.rooms || []).map((room, i) => {
+    const no = ['Door One', 'Door Two', 'Door Three'][i] || `Door ${i + 1}`;
+    if (!openDoors.has(room.power)) {
+      return `<div class="bbsp-door is-sealed">
+        <div class="bbsp-no">${esc(no)}</div>
+        <div class="bbsp-dname">Sealed</div>
+      </div>`;
+    }
+    return (() => {
       if (!room.winner) {
         return `<div class="bbsp-door is-unclaimed">
           <div class="bbsp-no">${esc(no)}</div>
@@ -158,17 +182,25 @@ export function rpBuildBBSecretPowerComp(ep, act, deps) {
         </div>`;
       }
       const others = (room.entrants || []).filter(n => n !== room.winner);
+      // Three doors on one night, so one sentence printed three times with the
+      // name swapped. Varied by position, and the second line carries the fact
+      // that actually differs: who else was standing there.
+      const took = [
+        `<b>${esc(room.winner)}</b> has it, and nobody watched them get it.`,
+        `Opened by <b>${esc(room.winner)}</b>, alone, and closed again.`,
+        `<b>${esc(room.winner)}</b> walks out with it and says nothing to anybody.`,
+      ][i % 3];
       return `<div class="bbsp-door">
         <div class="bbsp-no">${esc(no)}</div>
         <div class="bbsp-dname">${esc(room.name)}</div>
-        <div class="bbsp-took">Taken by <b>${esc(room.winner)}</b> &mdash; told alone,
-          told nothing else.</div>
+        <div class="bbsp-took">${took}</div>
         <div class="bbsp-entered">${face(room.winner)}${
-  others.length ? `${others.map(face).join('')} ${esc(others.join(', '))} walked here too, and got nothing.`
-    : 'Walked here alone.'}</div>
+  others.length ? `${others.map(face).join('')} beaten here by ${esc(others.join(', '))}`
+    : 'Nobody else chose this one.'}</div>
         <div class="bbsp-stamp">Void when<br>the jury opens</div>
       </div>`;
-    }).join('');
+    })();
+  }).join('');
 
   // ── who knows ──
   //

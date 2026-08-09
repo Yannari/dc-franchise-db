@@ -1772,6 +1772,29 @@ export function simulateBBWeek(options = {}) {
     try { sequesterHoh(week, house, rng); } catch { /* they nominate normally */ }
   }
 
+  // ── somebody takes the crown that was just handed out ──
+  //
+  // After the Head of Household exists and BEFORE THE NOMINATION PLAN, which is
+  // the part that took a second look: run after the plan, the week was planned
+  // by the old Head of Household and `untouchable` still protected them — so
+  // the new HOH was nominatable and turned up as their own nominee, drawn
+  // twice in the same card header. Everything downstream reads `hoh`, so this
+  // has to be the first thing that happens after the crown.
+  if (!compressed) {
+    try {
+      const usurp = playInterrogation({ week, house, hoh, rng });
+      if (usurp) {
+        week.interrogation = usurp;
+        week.acts.push(addBeats(usurp, { players: [usurp.deposed, usurp.holder] }));
+        if (!usurp.caught) {
+          hoh = usurp.hoh;
+          week.hoh = hoh;
+          gs.bb.hoh = hoh;
+        }
+      }
+    } catch { /* the crown stands */ }
+  }
+
   let plan = chooseNominationPlan(hoh, house, rng);
   // The pawn ask only happens when the chosen structure actually seats a
   // pawn. Two real targets, a split pair, a couple of expendables — none of
@@ -2153,26 +2176,6 @@ export function simulateBBWeek(options = {}) {
      clean pairs — everybody left is protected, or the pairs have been eaten
      into — and the week falls back to an ordinary two-chair block, which is
      the only honest thing to do with a rule that has run out of people. */
-  // ── somebody takes the crown that was just handed out ──
-  //
-  // After the Head of Household exists and before anybody is nominated, which
-  // is the only window where taking it is worth anything. The deposed HOH then
-  // gets to hunt for whoever did it, and `week.hoh` is whatever survives that.
-  if (!compressed) {
-    try {
-      const usurp = playInterrogation({ week, house, hoh, rng });
-      if (usurp) {
-        week.interrogation = usurp;
-        week.acts.push(addBeats(usurp, { players: [usurp.deposed, usurp.holder] }));
-        if (!usurp.caught) {
-          hoh = usurp.hoh;
-          week.hoh = hoh;
-          gs.bb.hoh = hoh;
-        }
-      }
-    } catch { /* the crown stands */ }
-  }
-
   // ── the week where nobody goes home ──
   //
   // `cancelEviction` has been in BASE_WEEK_RULES since the contract was

@@ -22,13 +22,17 @@
 // change. What is behind each door is the schedule's decision, not this
 // module's.
 import { gs } from '../core.js';
-import { pStats } from '../players.js';
+import { pStats, pronouns } from '../players.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
 /** How many doors the competition can hide. The show ran three. */
 export const SECRET_POWER_DOORS = 3;
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+/** Capitalised subject pronoun, so a variant can start a sentence with one. */
+const p2 = name => {
+  try { return pronouns(name).Sub; } catch { return 'They'; }
+};
 const beat = (text, players, badgeText, badgeClass) =>
   ({ text, players: [...(players || [])], badgeText, badgeClass });
 
@@ -151,16 +155,43 @@ export function runSecretPowerComp({
       // well would have been the second of five callers each remembering
       // separately, which is how four of them come to forget.
       if (instance) granted.push({ name: room.winner, power: id });
-      beats.push(beat(
-        `${room.winner} was never running for Head of Household. ${room.winner} was running for `
-          + `something the rest of them have not been told exists, and it is now in ${room.winner}'s `
-          + 'possession with an expiry date on it.',
-        [room.winner], 'A PRIVATE WIN', 'gold'));
+      // ── not the same sentence three times ──
+      //
+      // Three doors open on one night, so a single line here printed three
+      // near-identical paragraphs in a row with only the name changed, which is
+      // the most obvious tell a room is generated. The pool is drawn by
+      // POSITION rather than at random so a night never repeats itself, and the
+      // lines say different things: what they gave up, what they now hold, what
+      // the room saw.
+      const won = [
+        () => `${room.winner} was never running for Head of Household. ${room.winner} was running `
+          + `for this, and has it, and has an expiry date on it.`,
+        () => `Nobody watched ${room.winner} lose that competition, because ${room.winner} did not `
+          + `enter it. ${p2(room.winner)} entered a different one, alone, and won.`,
+        () => `${room.winner} gave up the best week in this house for an envelope. Whether that was `
+          + 'clever is a question with an answer, and the answer arrives later.',
+        () => `The door closes on ${room.winner} holding something nobody else in this building `
+          + 'knows exists. That is worth more tonight than it will be in a month.',
+        () => `${room.winner} walks out with it. No announcement, no name on a wall — just a `
+          + 'houseguest who is now playing a slightly different game to everybody else.',
+      ][rooms.length % 5];
+      const b = beat(won(), [room.winner], 'A PRIVATE WIN', 'gold');
+      // Tagged so the screen can open THIS door on THIS card rather than
+      // holding all three until the end.
+      b.door = id;
+      beats.push(b);
     } else {
-      beats.push(beat(
-        `Nobody went for one of them. It goes back in the box, and the house will finish this `
-          + 'season without ever knowing what it was.',
-        [], 'UNCLAIMED', 'grey'));
+      const nobody = [
+        () => 'Nobody went for that one. It goes back in the box and the house finishes this '
+          + 'season without ever learning what was in it.',
+        () => 'One of the three had no takers at all. Somewhere a producer is disappointed and '
+          + 'nobody in this building will ever know why.',
+        () => 'That door does not open. Everybody who might have wanted it wanted the crown more, '
+          + 'which is its own kind of answer.',
+      ][rooms.length % 3];
+      const b = beat(nobody(), [], 'UNCLAIMED', 'grey');
+      b.door = id;
+      beats.push(b);
     }
     rooms.push(room);
   }

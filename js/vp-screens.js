@@ -20938,11 +20938,26 @@ function _bbCycleScreens(view, screens, suffix = '') {
           html: rpBuildBBSecretPowerComp(view, act, spDeps) });
         break;
       }
-      case 'no-eviction':
-        // No screen of its own: the act carries two beats and nothing to draw.
-        // A page that says "nothing happened" in a frame is worse than the
-        // beats appearing where every other week's beats appear.
+      case 'no-eviction': {
+        // It DOES need one. The first version skipped it on the theory that a
+        // page saying "nothing happened" is worse than no page — but the beats
+        // are written and pushed either way, so skipping the screen did not
+        // remove them, it removed the only place they could be read. The
+        // render-completeness guard called it: an act narrating something no
+        // screen ever shows.
+        //
+        // Rendered through the shared power screen, which already draws a card
+        // and its beats, with the week's own framing supplied here.
+        const neDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        const ne = rpBuildBBPowerPlayed(view, {
+          ...act, powerId: 'the-cloud', holder: view.hoh || act.beats?.[1]?.players?.[0] || '—',
+          name: 'No Eviction', timing: 'nominations', visibility: 'public', secret: false,
+          detail: 'No nomination ceremony, no veto and no vote. The house is the same size on '
+            + 'Thursday as it was on Sunday.',
+        }, neDeps);
+        if (ne) screens.push({ id: id('bb-no-eviction'), label: 'No Eviction', html: ne });
         break;
+      }
       case 'whacktivity':
         screens.push({ id: id('bb-whacktivity'), label: 'Whacktivity', html: rpBuildBBWhacktivity(view, act) });
         break;

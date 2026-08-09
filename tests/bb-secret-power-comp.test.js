@@ -486,3 +486,74 @@ describe('the powers actually fire', () => {
     });
   }
 });
+
+describe('a scheduled twist actually reaches the week', () => {
+  // `BB_TWIST_IDS` was a hand-maintained Set, and `bbTwistsForWeek` filters the
+  // schedule through it. A twist missing from that list is dropped with no
+  // error, no warning and no twist: you schedule it, play the week, and
+  // nothing happens — no screen, no power, no line in the transcript, and
+  // nothing anywhere saying why.
+  //
+  // Both twists added this week were invisible for exactly that reason. The
+  // set is derived from the catalogue now, which already declares `format`.
+  it('lists every Big Brother twist the catalogue has', async () => {
+    const { BB_TWIST_IDS } = await import('../js/bb-run.js');
+    const { TWIST_CATALOG } = await import('../js/core.js');
+    const catalogue = TWIST_CATALOG.filter(c => c?.format === 'big-brother').map(c => c.id);
+    expect(catalogue.length).toBeGreaterThan(20);
+    for (const id of catalogue) {
+      expect(BB_TWIST_IDS.has(id), `${id} is in the catalogue and cannot be scheduled`)
+        .toBe(true);
+    }
+  });
+
+  it('survives being scheduled, which is the thing that was broken', async () => {
+    const { bbTwistsForWeek } = await import('../js/bb-run.js');
+    seasonConfig.twistSchedule = [
+      { id: 'a', episode: 2, type: 'bb-secret-power-comp' },
+      { id: 'b', episode: 2, type: 'bb-no-eviction' },
+    ];
+    seasonConfig.bbHaveNots = 'off';
+    const twists = bbTwistsForWeek(2);
+    expect(twists).toContain('bb-secret-power-comp');
+    expect(twists).toContain('bb-no-eviction');
+    seasonConfig.twistSchedule = [];
+  });
+});
+
+describe('the night runs in the order it happened', () => {
+  const fs = require('node:fs');
+  const src = fs.readFileSync('js/bb/week.js', 'utf8');
+
+  it('shows the crown before what was hiding inside it', () => {
+    // Acts render in push order, and this was pushed where it was COMPUTED —
+    // so the powers went on screen before the Head of Household competition
+    // that hid them, and a viewer watched people win doors in a competition
+    // they had not been shown yet. The coup has a comment about this exact
+    // mistake three thousand lines down; it is easy to make and invisible
+    // until somebody watches it.
+    const crown = src.indexOf("type: 'hoh', winner: hoh");
+    const powers = src.indexOf('addBeats(secretPowers');
+    expect(crown).toBeGreaterThan(-1);
+    expect(powers, 'the powers are still shown before the crown').toBeGreaterThan(crown);
+  });
+
+  it('tells the house there are powers in the competition', () => {
+    // They have to be told, or nobody could choose which one they were playing
+    // for. `secret` suppressed the announcement entirely and the twist ran with
+    // the house apparently picking doors nobody had mentioned.
+    const contract = fs.readFileSync('js/bb/twist-contract.js', 'utf8');
+    const at = contract.indexOf("'bb-secret-power-comp'");
+    const block = contract.slice(at, at + 1400);
+    expect(block).toMatch(/secrecy: 'holder-secret'/);
+    expect(block, 'there is no announcement to read out').toMatch(/announcement: \{/);
+  });
+
+  it('is announced, since holder-secret twists are', async () => {
+    // The rule the resolver applies: public and holder-secret are announced,
+    // fully secret ones are not.
+    const { resolveWeekTwistState } = await import('../js/bb/twist-contract.js');
+    const state = resolveWeekTwistState(['bb-secret-power-comp']);
+    expect(state.announcements.map(a => a.twist)).toContain('bb-secret-power-comp');
+  });
+});

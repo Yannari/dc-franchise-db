@@ -22,7 +22,8 @@ import { applyVetoDrawTwist } from './veto-draw.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
-  announceDuos, keyHolders, repairOrphans, duosWeekLife } from './duos.js';
+  announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
+  duoSafeWith } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -1621,11 +1622,13 @@ export function simulateBBWeek(options = {}) {
       });
     } catch { secretPowers = null; }
   }
-  if (secretPowers) {
-    week.secretPowerComp = secretPowers;
-    week.acts.push(addBeats(secretPowers,
-      { players: secretPowers.granted.map(g => g.name).slice(0, 3) }));
-  }
+  // BUILT HERE, PUSHED AFTER THE CROWN. Acts render in the order they are
+  // pushed, and pushing this one where it is computed put the powers on screen
+  // BEFORE the Head of Household competition that was hiding them — a viewer
+  // watching somebody win a door in a competition they had not been shown yet.
+  // The coup has a comment about this exact mistake three thousand lines down;
+  // it is easy to make and invisible until somebody watches it.
+  if (secretPowers) week.secretPowerComp = secretPowers;
 
   let hoh = preCrowned
     // The crown is whoever won it among the people who were running for it. A
@@ -1696,6 +1699,13 @@ export function simulateBBWeek(options = {}) {
     // instead of presenting a competition that is not there.
     preCrowned: !!preCrowned,
     coHoh: week.botbActive ? coHoh : null }));
+  // AFTER the crown, because the crown is what the yard looked like and this is
+  // what it actually was. Shown before it, the audience watched people win
+  // doors in a competition they had not been shown yet.
+  if (secretPowers) {
+    week.acts.push(addBeats(secretPowers,
+      { players: secretPowers.granted.map(g => g.name).slice(0, 3) }));
+  }
   // ── and only now do they come through the door ──
   //
   // The order the night actually runs in: the room is told three more are
@@ -2125,17 +2135,17 @@ export function simulateBBWeek(options = {}) {
   // down to the size the twist named.
   let keySafe = [];
   try { keySafe = keyHolders(); } catch { keySafe = []; }
+  /* YOU CANNOT NOMINATE YOUR OWN DUO.
+     The Head of Household cannot go up, so the pair they are half of cannot go
+     up either — which makes their partner safe for the week, at this ceremony
+     and at the veto replacement after it. Winning the competition saves two
+     people, and that is the strategic centre of the twist rather than a
+     technicality. */
+  let duoCrownSafe = [];
+  try { duoCrownSafe = duoSafeWith(hoh, house); } catch { duoCrownSafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
     carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
-    ...rivalsSafe, ...keySafe].filter(Boolean);
-  /* THE DUOS TWIST NAMES A PAIR.
-     The Head of Household still decides who they want gone; what changes is
-     that naming one of a duo names both. When the target has no partner left —
-     the solo player, or a duo already broken — this returns null and the
-     ordinary two-name plan runs, which is what the show did once the pairs
-     started coming apart. */
-  let duoPair = null;
-  try { duoPair = duoNominees(plan.nominees?.[0] || plan.target, house); } catch { duoPair = null; }
+    ...rivalsSafe, ...keySafe, ...duoCrownSafe].filter(Boolean);
 
   /* TWO DUOS, FOUR KEYS.
      Read before the ordinary plan because it replaces the block wholesale
@@ -2196,6 +2206,19 @@ export function simulateBBWeek(options = {}) {
     return week;
   }
 
+  /* THE DUOS TWIST NAMES A PAIR.
+     Computed HERE rather than up with the ceremony's other inputs because the
+     crown can still change hands above this line, and a block chosen for the
+     wrong Head of Household is chosen against the wrong reads. Naming one of a
+     duo names both; when no whole duo can go up this returns null and the
+     ordinary two-name plan runs. */
+  let duoPair = null;
+  if (duosActive()) {
+    try {
+      duoPair = duoBlock({ plan, house, protectedNames: untouchable, hoh, rng });
+    } catch { duoPair = null; }
+  }
+
   let duoWeekNoms = null;
   if (duoWeekActive(week)) {
     try {
@@ -2205,9 +2228,11 @@ export function simulateBBWeek(options = {}) {
     if (!duoWeekNoms) week.duoWeekCollapsed = true;
   }
 
+  // `duoBlock` already guarantees both halves are in the house and neither is
+  // protected, so this no longer re-filters the pair — that filter is exactly
+  // what used to leave half a duo on the block beside a stranger.
   let nominees = duoWeekNoms ? [...duoWeekNoms]
-    : duoPair
-      ? duoPair.filter(name => house.includes(name) && !untouchable.includes(name))
+    : duoPair ? [...duoPair]
       : [...new Set(plan.nominees)]
         .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];

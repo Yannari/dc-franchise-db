@@ -416,7 +416,13 @@ export const BB_TWIST_CONTRACTS = {
     // of the people in the Head of Household competition were playing FOR, and
     // the crown still goes to the best score among those who wanted it.
     rules: {},
-    acquisition: { channel: 'hoh-competition', secrecy: 'secret' },
+    // `holder-secret`, not `secret`: the house is TOLD there are powers in this
+    // competition — they have to be, or nobody could choose which one they were
+    // playing for — and is never told who won them. That is exactly what this
+    // secrecy level means, and setting it to `secret` suppressed the
+    // announcement entirely, so the twist ran with the house apparently
+    // choosing doors nobody had mentioned.
+    acquisition: { channel: 'hoh-competition', secrecy: 'holder-secret' },
     announcement: {
       name: 'The Secret Power Competition',
       rule: "Three powers are hidden inside this week's Head of Household competition. Before you play you will choose, in private, whether you are competing for the Head of Household or for one of them — not both. The outgoing Head of Household may only play for a power. Winners will be told alone, this house will be told nothing, and every one of these powers dies the moment the jury begins.",

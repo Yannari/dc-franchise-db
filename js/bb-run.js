@@ -14,7 +14,7 @@
 // `js/episode.js` is not touched and not called. Total Drama's rules are not
 // involved in a Big Brother week.
 
-import { gs, seasonConfig, seasonFormat, resolveTwistSchedule } from './core.js';
+import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG } from './core.js';
 import { simulateBBWeek } from './bb/week.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
 import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
@@ -290,7 +290,23 @@ export function weekToEpisode(week) {
  * null when the house has nobody left to evict.
  */
 /** The twists this format has, so a Total Drama entry can never reach the house. */
-export const BB_TWIST_IDS = new Set(['bb-double-eviction', 'bb-have-nots', 'bb-instant-eviction', 'bb-diamond-veto', 'bb-pandoras-box', 'bb-invisible-hoh', 'bb-battle-back', 'bb-battle-of-the-block', 'bb-split-house', 'bb-roadkill', 'bb-app-store', 'bb-den-of-temptation', 'bb-hacker', 'bb-whacktivity', 'bb-hidden-power', 'bb-americas-nominee', 'bb-coin-of-destiny', 'bb-care-package', 'bb-safety-suite', 'bb-prizes-and-punishments', 'bb-camp-comeback', 'bb-team-america', 'bb-double-veto', 'bb-forced-veto', 'bb-duo-week']);
+/**
+ * Which twists this format can schedule.
+ *
+ * DERIVED, not listed. It was a hand-maintained Set, and a hand-maintained
+ * allowlist fails silently in the one direction that matters: a twist missing
+ * from it is dropped out of `bbTwistsForWeek` with no error, no warning and no
+ * twist — you schedule it, play the week, and nothing happens. Both twists
+ * added this week were invisible for exactly that reason, and there was
+ * nothing on screen to say why.
+ *
+ * The catalogue already declares `format`, so this is the same question asked
+ * once instead of twice. Checked before replacing it: the old list held every
+ * catalogue twist and nothing else — the only two it was missing were the two
+ * added this week, which is precisely the failure being removed.
+ */
+export const BB_TWIST_IDS = new Set(
+  TWIST_CATALOG.filter(c => c?.format === 'big-brother' && c.id).map(c => c.id));
 
 /**
  * Which twists are scheduled for the week about to be played.

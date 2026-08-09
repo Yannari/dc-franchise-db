@@ -23,7 +23,7 @@ import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
-  duoSafeWith } from './duos.js';
+  duoSafeWith, duoReplacementBlock } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -3217,6 +3217,36 @@ export function simulateBBWeek(options = {}) {
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
+      /* A DUOS SEASON: THE VETO SAVES THE PAIR.
+         The wiki's rule, which this used to cancel every time somebody won the
+         veto — one nominee saved, one stranger seated, and a block that stopped
+         being a duo halfway through the week. Runs after the ordinary swap so
+         the replacement the week already reasoned about is the first name
+         considered for the new pair. */
+      if (duosActive() && !duoWeekActive(week)) {
+        try {
+          const swapped = duoReplacementBlock({ nominees, saved: vetoDecision.save, house, plan, hoh, rng,
+            protectedNames: [...protectedNames, replacement] });
+          if (swapped) {
+            nominees = [...swapped.nominees];
+            week.duoVetoSwap = { down: swapped.down, up: swapped.up };
+            // The other half was saved too, by the rule rather than by the medallion.
+            for (const name of swapped.down) {
+              if (name !== vetoDecision.save) gs.bb.stats[name].timesSaved++;
+            }
+            // The single replacement the ordinary ceremony seated never made it
+            // onto the wall, so it does not keep the nomination it was credited.
+            if (replacement && !swapped.up.includes(replacement)) {
+              gs.bb.stats[replacement].timesNominated =
+                Math.max(0, (gs.bb.stats[replacement].timesNominated || 1) - 1);
+            }
+            for (const name of swapped.up) {
+              if (name !== replacement) gs.bb.stats[name].timesNominated++;
+            }
+          }
+        } catch { /* the block stands as the ordinary ceremony left it */ }
+      }
+
       /* YOU GO, THEY GO: you cannot half-save a duo.
          Saving one of them takes the other one down too — a lone nominee this
          week would be playing a different game from the three beside them — so

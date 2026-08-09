@@ -528,3 +528,88 @@ describe('a played season nominates in pairs', () => {
       .toBeGreaterThan(0.5);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The veto, which was quietly cancelling the twist once a week
+// ══════════════════════════════════════════════════════════════════════
+//
+// The BB13 wiki: the veto competition allowed "both members of a nominated duo
+// to potentially save themselves from eviction, FORCING THE HOH TO NOMINATE A
+// REPLACEMENT DUO." What shipped saved one nominee and seated a single
+// stranger, so the block stopped being a pair halfway through every week
+// somebody won the veto — the twist's one rule, cancelled by its own ceremony.
+import { duoReplacementBlock } from '../js/bb/duos.js';
+
+describe('the veto in a Duos season', () => {
+  it('takes both of them down and puts a whole duo up', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const hoh = 'A';
+    const block = duoBlock({ plan: {}, house: NAMES, protectedNames: [hoh], hoh });
+
+    const swap = duoReplacementBlock({ nominees: block, saved: block[0], house: NAMES,
+      protectedNames: [hoh], hoh });
+
+    expect(swap, 'the veto left half a duo on the block').toBeTruthy();
+    expect(swap.down.sort()).toEqual([...block].sort());
+    expect(swap.nominees, 'the replacement block is not a pair').toHaveLength(2);
+    // Both saved, not one.
+    for (const name of block) expect(swap.nominees).not.toContain(name);
+    // And what went up is a real duo.
+    expect(partnerOf(swap.up[0], NAMES)).toBe(swap.up[1]);
+  });
+
+  it('never seats the Head of Household or their partner as the replacement', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const hoh = 'A';
+    const partner = partnerOf(hoh, NAMES);
+    const block = duoBlock({ plan: {}, house: NAMES, protectedNames: [hoh], hoh });
+    const swap = duoReplacementBlock({ nominees: block, saved: block[1], house: NAMES,
+      protectedNames: [hoh], hoh });
+    expect(swap.nominees).not.toContain(hoh);
+    expect(swap.nominees).not.toContain(partner);
+  });
+
+  it('leaves a mixed block alone rather than making it stranger', () => {
+    // Once the pairs have been eaten into, the block is already outside the
+    // rule. Dropping a duo into it would not restore the rule, it would just
+    // seat three people.
+    installDuos(NAMES, { rng: Math.random });
+    const [a] = duoState().pairs[0];
+    const [c] = duoState().pairs[1];
+    expect(duoReplacementBlock({ nominees: [a, c], saved: a, house: NAMES, hoh: 'E' })).toBe(null);
+  });
+
+  it('stands down when there is no other duo to seat', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const hoh = 'A';
+    const block = duoBlock({ plan: {}, house: NAMES, protectedNames: [hoh], hoh });
+    const everyoneElse = NAMES.filter(n => !block.includes(n));
+    expect(duoReplacementBlock({ nominees: block, saved: block[0], house: NAMES,
+      protectedNames: everyoneElse, hoh })).toBe(null);
+  });
+});
+
+describe('a played season keeps the block a pair all week', () => {
+  it('replaces a vetoed duo with another duo, not with a stranger', () => {
+    let swaps = 0;
+    for (const seed of [5, 17, 41]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 10 });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      for (const w of gs.bb.weeks || []) {
+        if (!w.duoVetoSwap) continue;
+        swaps++;
+        const final = w.finalNominees || [];
+        expect(final, 'the replacement duo did not end up on the block').toHaveLength(2);
+        for (const n of w.duoVetoSwap.down) {
+          expect(final, `${n} was saved and is still on the block`).not.toContain(n);
+        }
+        expect(final.slice().sort()).toEqual(w.duoVetoSwap.up.slice().sort());
+      }
+    }
+    expect(swaps, 'no veto ever swapped a duo across three seasons').toBeGreaterThan(0);
+  });
+});

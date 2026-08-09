@@ -340,6 +340,49 @@ export function duoSafeWith(hoh, house = gs.activePlayers || []) {
   return partner ? [partner] : [];
 }
 
+/**
+ * The veto takes a pair down and puts a pair up.
+ *
+ * THE WIKI IS EXPLICIT AND THIS WAS WRONG. BB13: the veto competition allowed
+ * "both members of a nominated duo to potentially save themselves from
+ * eviction, forcing the HOH to nominate a replacement duo." What was built
+ * instead saved one nominee and seated a single replacement, so the block
+ * stopped being a pair halfway through the week — the twist's one rule,
+ * quietly cancelled every time somebody won the veto.
+ *
+ * You cannot half-save a duo. Both come down and a whole new duo goes up, and
+ * the replacement is chosen by whoever owns the chair with the same read they
+ * would have used for one name.
+ *
+ * Returns null when the block is not a clean duo, or when no other duo can be
+ * seated — in which case the ordinary single-replacement ceremony stands,
+ * which is the honest thing to do with a rule that has run out of pairs.
+ */
+export function duoReplacementBlock({ nominees = [], saved = null, house = gs.activePlayers || [],
+  protectedNames = [], hoh = null, plan = {}, rng = Math.random } = {}) {
+  const st = duoState();
+  if (!st || st.over || !saved) return null;
+
+  const down = duoOf(saved);
+  if (!down || down.length !== 2) return null;
+  /* CHECK THE HALF THAT IS STILL UP, NOT THE ONE THAT WAS SAVED.
+     This runs AFTER the ordinary ceremony has already swapped the saved name
+     out for a single replacement, so `nominees` no longer contains the person
+     the veto was used on — asking whether the whole duo is on the block was
+     asking a question that is false by construction, and the swap never once
+     fired in a played season while passing every unit test around it. */
+  const other = down.find(n => n !== saved);
+  if (!other || !nominees.includes(other)) return null;
+
+  const up = duoBlock({
+    plan, house, hoh, rng,
+    protectedNames: [...protectedNames, ...down, ...nominees],
+  });
+  if (!up) return null;
+
+  return { nominees: [...up], down: [...down], up: [...up] };
+}
+
 const KEY_LINES = [
   (n, p) => `${n} watches ${p} walk out of the door and is handed a key on the way back to the sofa. `
     + `Safe, and out of the game at the same time.`,

@@ -33,10 +33,13 @@ const _STYLE = `<style>
 .siggrip .gp-sub{font-size:12.5px;color:#b9c9d6;max-width:460px;margin:0 auto}
 
 /* ── the row of poles ── */
-.siggrip .gp-yard{display:flex;gap:10px;justify-content:center;align-items:flex-end;
-  margin:18px auto 6px;padding:0 6px;flex-wrap:wrap;max-width:1000px}
-.siggrip .gp-lane{width:96px;display:flex;flex-direction:column;align-items:center}
-.siggrip .gp-pole{position:relative;width:100%;height:230px;border-radius:8px;
+.siggrip .gp-yard{display:flex;gap:7px 6px;justify-content:center;align-items:flex-end;
+  margin:16px auto 6px;padding:0 6px;flex-wrap:wrap;max-width:1040px}
+.siggrip .gp-lane{width:68px;display:flex;flex-direction:column;align-items:center}
+.siggrip .gp-srow.is-waiting{opacity:.42}
+.siggrip .gp-srow.is-waiting em{color:var(--gp-dim);font-size:9.5px;letter-spacing:.6px}
+.siggrip .gp-srow u{text-decoration:none;font-size:9px;letter-spacing:1px;color:#ff9d7a;opacity:.9}
+.siggrip .gp-pole{position:relative;width:100%;height:186px;border-radius:8px;
   background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.25));
   border:1px solid rgba(255,255,255,.07);overflow:hidden}
 /* the pole itself */
@@ -56,11 +59,11 @@ const _STYLE = `<style>
 .siggrip .gp-lane.is-hidden .gp-hand{display:none}
 .siggrip .gp-mat{width:100%;height:9px;border-radius:0 0 8px 8px;background:linear-gradient(180deg,#2a333d,#171d23)}
 .siggrip .gp-tag{margin-top:7px;text-align:center;width:100%}
-.siggrip .gp-face{width:32px;height:32px;border-radius:50%;overflow:hidden;margin:0 auto 3px;
+.siggrip .gp-face{width:28px;height:28px;border-radius:50%;overflow:hidden;margin:0 auto 3px;
   border:1px solid rgba(255,255,255,.2)}
 .siggrip .gp-face img{width:100%;height:100%;object-fit:cover}
-.siggrip .gp-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.siggrip .gp-min{font-family:'Barlow Condensed',sans-serif;font-size:15px;color:var(--gp-lit);
+.siggrip .gp-name{font-size:10.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.siggrip .gp-min{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--gp-lit);
   font-variant-numeric:tabular-nums;letter-spacing:.5px}
 .siggrip .gp-lane.is-hidden .gp-min,.siggrip .gp-lane.is-hidden .gp-name{opacity:.25}
 .siggrip .gp-lane.is-hidden .gp-face{filter:grayscale(1);opacity:.3}
@@ -157,23 +160,19 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
   const done = at >= total - 1;
   const longest = Math.max(...runs.map(r => Number(r.minutes) || 0), 1);
 
-  /* THE YARD IS THE LAST EIGHT POLES, NOT ALL EIGHTEEN.
-     A full house draws eighteen lanes, which is a wall of thumbnails nobody can
-     read and a row so wide the shape of it — the whole point of the screen —
-     stops being visible. The eight who lasted longest is the picture; everybody
-     else is in the log and the board. */
-  const LANES = 8;
-  const shownRuns = runs.slice(0, LANES);
-
+  /* EVERY HOUSEGUEST GETS A POLE.
+     Eight lanes was the wrong fix for a row that was too wide — a competition
+     seventeen people played that draws eight of them is not a picture of it.
+     The poles are narrower and the row wraps instead, so a full house fits and
+     the shape of the yard emptying is still the thing you see first. */
   // Poles are drawn in the order they came DOWN — first out on the left — so
   // the row reads left to right as the competition actually emptied.
-  const lanes = [...shownRuns].reverse().map((r, i) => {
-    // Nothing on this screen resolves before the log does. A pole carrying its
-    // minutes while the cards still say STILL HANGING is the screen spoiling
-    // its own competition.
-    const shown = done;
+  const lanes = [...runs].reverse().map((r) => {
+    // Resolved by the card that put them on the mat, not by the end of the log,
+    // so the yard empties in front of the viewer one hand at a time.
+    const shown = at >= (Number(r.revealAt) ?? 0);
     const pct = Math.max(6, Math.min(96, ((Number(r.minutes) || 0) / longest) * 92));
-    const isWin = r.name === runs[0].name && done;
+    const isWin = r.name === runs[0].name && shown;
     return `<div class="gp-lane ${isWin && shown ? 'is-win' : ''} ${r.threw ? 'is-thrown' : ''} ${shown ? '' : 'is-hidden'}">
       <div class="gp-pole">
         <div class="gp-bar"></div><div class="gp-ticks"></div>
@@ -181,7 +180,7 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
       </div>
       <div class="gp-mat"></div>
       <div class="gp-tag">
-        <div class="gp-face">${avatar(r.name, 32)}</div>
+        <div class="gp-face">${avatar(r.name, 28)}</div>
         <div class="gp-name">${esc(r.name)}</div>
         <div class="gp-min">${shown ? `${Number(r.minutes).toFixed(0)}m` : '—'}</div>
       </div>
@@ -202,13 +201,26 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
      arrival and the reveal was decoration. The order is the answer here, so
      until the log is finished this shows the field alphabetically with no
      times against it, and only then becomes the result. */
-  const board = (done
-    ? runs.slice(0, 10).map((r, i) => `<div class="gp-srow ${r.threw ? 'is-out' : ''}">
-        <span>${i + 1}. ${esc(r.name)}</span><em>${Number(r.minutes).toFixed(0)}m</em>
-      </div>`)
-    : [...runs].map(r => r.name).sort().slice(0, 10).map(n =>
-      `<div class="gp-srow"><span>${esc(n)}</span><em>&mdash;</em></div>`)
-  ).join('');
+  /* THE BOARD FILLS AS THE YARD EMPTIES.
+     It printed the whole finishing order at once, which spoiled the reveal;
+     then it printed nothing until the end, which meant it never moved. Both
+     were wrong. Each houseguest's line resolves on the card that resolves
+     them, so the board is a live record of who is already down rather than
+     either a spoiler or a wall of dashes.
+     `spend` is the interesting number and the only place it is visible: a
+     houseguest under about 0.9 stepped down with real time still in the arm. */
+  const board = runs.map((r, i) => {
+    const shown = at >= (Number(r.revealAt) ?? 0);
+    if (!shown) {
+      return `<div class="gp-srow is-waiting"><span>${esc(r.name)}</span><em>on the pole</em></div>`;
+    }
+    const soft = Number(r.spend) > 0 && Number(r.spend) < 0.9;
+    return `<div class="gp-srow ${r.threw ? 'is-out' : ''}">
+      <span>${i + 1}. ${esc(r.name)}${soft ? ' <u>had more</u>' : ''}</span>
+      <em>${Number(r.minutes).toFixed(0)}m</em>
+    </div>`;
+  }).join('');
+  const downCount = runs.filter(r => at >= (Number(r.revealAt) ?? 0)).length;
 
   const winner = runs[0];
   return `${_STYLE}<div class="rp-page siggrip">
@@ -217,7 +229,9 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
       <div class="gp-head">
         <div class="gp-eyebrow">Week ${esc(ep?.num || '')} &middot; ${actType === 'hoh' ? 'Head of Household' : 'Power of Veto'}</div>
         <div class="gp-title">Get A Grip</div>
-        <div class="gp-sub">Poles, hands, and nothing at all happening to any of them.</div>
+        <div class="gp-sub">Poles, hands, and nothing at all happening to any of them. The last hand
+          still closed takes it.</div>
+        ${comp.desc ? `<div class="gp-rules">${esc(comp.desc)}</div>` : ''}
         ${(() => {
           /* THE FORMULA, ON THE PAGE.
              Every other signature screen prints what the competition actually
@@ -244,10 +258,10 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
       <div class="gp-grid2">
         <div>${cards}</div>
         <div class="gp-side">
-          <div class="gp-side-h">${done ? 'TIME OFF THE FLOOR' : 'ON THE POLES'}</div>
+          <div class="gp-side-h">${done ? 'TIME OFF THE FLOOR' : 'THE YARD'}</div>
           <div class="gp-side-s">${done
     ? 'Nobody was knocked down. Every one of these is a hand that opened.'
-    : 'Nobody has been knocked down. They are all just holding on.'}</div>
+    : `${downCount} of ${runs.length} down. Nobody is being knocked off — they are letting go.`}</div>
           ${board}
           ${done ? `<div class="gp-win">
             <div class="gp-win-f">${avatar(winner.name, 50)}</div>
@@ -257,7 +271,6 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
         </div>
       </div>
 
-      <div class="gp-rules">${esc(comp.desc || '')}</div>
     </div>
     ${reveal ? `<div class="gp-ctl">
       ${done ? '' : `<button class="rp-btn" onclick="${reveal(ep, key, at + 1)}">Next to drop</button>`}

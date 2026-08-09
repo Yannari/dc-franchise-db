@@ -66,7 +66,7 @@
 // simulate() means the bars on the screen and the maths behind them describe
 // different competitions.
 import { pronouns } from '../players.js';
-import { beat, makePicker, scoreField, toResult, vb, THROW_LINES } from './_shared.js';
+import { aptitude, beat, makePicker, scoreField, toResult, vb, THROW_LINES } from './_shared.js';
 
 /**
  * A readable quantity per houseguest, in the order they actually finished.
@@ -103,6 +103,30 @@ function quantise(entries, { top, floor, jitter = 0, rng = null }) {
   return out;
 }
 
+/**
+ * How much of the body's limit a houseguest actually spends.
+ *
+ * THE PROBLEM THIS SOLVES. In a pure hold, endurance and physical say how long
+ * somebody CAN hang there — and that was the whole competition, which left
+ * boldness and temperament sitting on the bars at 13% and 9% doing nothing a
+ * viewer could point at. "Why does boldness matter here" had no answer.
+ *
+ * It matters because a hold is not lost when the arm fails. It is lost when
+ * somebody DECIDES the arm is going to fail, and those are minutes apart. So
+ * capacity is the ceiling and willingness is the fraction of it they are
+ * prepared to spend: a bold, level houseguest rides theirs out and a little
+ * past it; a timid or volatile one steps down with real time left in the arm,
+ * which everybody watching can see and nobody can prove.
+ *
+ * Returns a multiplier around 1, so it re-orders the field without ever
+ * replacing it — the strongest arms still tend to win, and now they can be
+ * beaten by somebody who wanted it more.
+ */
+function willingnessOf(name, mix) {
+  const w = aptitude(name, mix);
+  return { willing: Math.round(w * 100) / 100, spend: 0.74 + (w / 10) * 0.40 };
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // Get A Grip
 // ══════════════════════════════════════════════════════════════════════
@@ -132,7 +156,10 @@ export const getAGrip = {
   // hanging after it has started to hurt.
   stats: { endurance: 0.52, physical: 0.26, boldness: 0.13, temperament: 0.09 },
   roles: {
-    capacity: { endurance: 0.58, physical: 0.29, boldness: 0.13 },
+    // What the arm can do.
+    capacity: { endurance: 0.68, physical: 0.32 },
+    // Whether they spend it. See willingnessOf.
+    willingness: { boldness: 0.58, temperament: 0.42 },
     steadiness: { temperament: 1 },
   },
   weight: () => 1,
@@ -140,18 +167,42 @@ export const getAGrip = {
     const { entries, breakdown } = scoreField(participants, {
       mix: this.roles.capacity, swingBy: this.roles.steadiness, luck: 2.3, context, rng,
     });
+    /* THE ARM SETS THE CEILING; THE PERSON DECIDES WHAT TO SPEND OF IT.
+       Applied after the field is scored and before it is ranked, so a
+       houseguest who wanted it more can genuinely beat a stronger one — and
+       the Debug tab gets both numbers, because "had more in them" is the most
+       interesting thing this competition produces and it was invisible. */
+    for (const e of entries) {
+      const { willing, spend } = willingnessOf(e.name, this.roles.willingness);
+      const held = e.score * spend;
+      breakdown[e.name].willingness = willing;
+      breakdown[e.name].spend = Math.round(spend * 100) / 100;
+      breakdown[e.name].ceiling = Math.round(e.score * 100) / 100;
+      breakdown[e.name].score = Math.round(held * 100) / 100;
+      e.score = held;
+    }
+    entries.sort((a, b) => b.score - a.score);
     const say = makePicker(rng);
     const beats = [beat(
       'Nothing about this one is clever. Everybody is holding a pole, and everybody is going to stop.',
       participants.slice(0, 3), 'FEET UP')];
 
+    /* EVERY HOUSEGUEST IS RESOLVED BY A SPECIFIC CARD, AND THE SCREEN NEEDS TO
+       KNOW WHICH ONE. Without this the poles and the board can only be gated
+       all-or-nothing — which is what shipped: a wall of dashes that stayed a
+       wall of dashes until the last card, then filled in at once. Recording the
+       beat index that puts each person on the mat lets the yard empty in front
+       of the viewer, one hand at a time, exactly as the log reads. */
+    const revealAt = {};
     const order = [...entries].reverse();
     order.slice(0, Math.max(1, order.length - 2)).forEach((e, i) => {
       const p = pronouns(e.name);
       if (e.threw) {
+        revealAt[e.name] = beats.length;
         beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
         return;
       }
+      revealAt[e.name] = beats.length;
       beats.push(beat(say(GRIP_GO)(e.name, p), [e.name], i === 0 ? 'FIRST DOWN' : 'DROPS'));
       // Hanging on long past comfort buys nothing but the room's respect.
       if (i > order.length - 5) api.popDelta(e.name, 1);
@@ -161,16 +212,28 @@ export const getAGrip = {
     if (runnerUp) {
       const p = pronouns(runnerUp.name);
       beats.push(beat(say(GRIP_HOLD)(runnerUp.name, p), [runnerUp.name, winner.name], 'THE LAST TWO', 'gold'));
+      revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
         `${runnerUp.name} comes down. Whether that was an arm giving out or a deal being taken is the only question anybody in this house will ask about it.`,
         [runnerUp.name, winner.name], 'AND DOWN', 'gold'));
     }
+    // The winner is only known once everybody else is off.
+    revealAt[winner.name] = beats.length - 1;
     // Minutes on the pole, longest first — what the screen draws as a hand
     // sliding down a pole rather than as a number in a column.
     const held = quantise(entries, { top: 74, floor: 6, jitter: 3, rng });
     return toResult(entries, { beats, breakdown, variant: 'get-a-grip',
       detail: {
-        runs: entries.map(e => ({ name: e.name, minutes: held[e.name], threw: e.threw })),
+        runs: entries.map(e => ({
+          name: e.name, minutes: held[e.name], threw: e.threw,
+          // The card that puts them on the mat, so the yard empties in step
+          // with the log instead of resolving all at once at the end.
+          revealAt: revealAt[e.name] ?? 0,
+          // What the arm could have done against what they spent of it. A gap
+          // here is the houseguest who stepped down with time left.
+          willing: breakdown[e.name]?.willingness ?? null,
+          spend: breakdown[e.name]?.spend ?? null,
+        })),
       } });
   },
 };

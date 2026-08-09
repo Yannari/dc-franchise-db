@@ -193,6 +193,14 @@ export function setThemeMood(mood) {
  * Seeded on theme + hook + week, so the same season replays with the same
  * taunts and an extra unrelated die roll earlier in the week cannot change
  * them.
+ *
+ * The season's own salt is in the key as well. Without it the seed is a pure
+ * function of the DESCRIPTOR, so every season anybody ever runs on this theme
+ * opens week 4 with the same sentence — the theme would have a script rather
+ * than a voice. The salt is drawn once per season from the season's dice
+ * (week.js, `gs.bb.seasonSalt`) and is therefore itself stable under replay,
+ * which is the same trade `bbThreatProfile`'s quirk term makes. A season that
+ * has not drawn one yet falls back to 0 and simply speaks unsalted.
  */
 export function themeVoice(hook, ctx = {}) {
   const theme = currentTheme();
@@ -203,7 +211,8 @@ export function themeVoice(hook, ctx = {}) {
   if (!byMood) return null;
   const pool = byMood[st.mood] || byMood.neutral;
   if (!pool || !pool.length) return null;
-  const rng = stableRng('theme-voice', theme.id, hook, st.mood, ctx.week || 0);
+  const rng = stableRng('theme-voice', gs?.bb?.seasonSalt || 0, theme.id, hook, st.mood,
+    ctx.week || 0);
   // Walk the pool from a seeded start so a refused line falls through to the
   // next candidate instead of silencing the hook.
   const start = Math.floor(rng() * pool.length);

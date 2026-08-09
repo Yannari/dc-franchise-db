@@ -305,6 +305,25 @@ describe('the antagonist', () => {
     expect(said).toBeNull();
   });
 
+  // THE ONE THAT MATTERS. An Invisible HOH week hands the hook a null name on
+  // purpose, and the antagonist is the last thing in the building that could
+  // still read the sealed winner out loud. The week engine's guard is only half
+  // the fix; this is the other half, and it is pinned here rather than in
+  // bb-invisible-hoh.test.js because that file never builds a themed season and
+  // so cannot see this code at all.
+  it('will not name a Head of Household the game has sealed', () => {
+    expect(themeVoice('noms', { week: 3, hoh: null, nominees: ['Chase', 'Ripper'] })).toBeNull();
+  });
+
+  it('refuses a block containing somebody who is not in the house', () => {
+    expect(themeVoice('noms', { week: 3, hoh: 'Bowie', nominees: ['Chase', 'Ghost'] })).toBeNull();
+  });
+
+  it('announces no departure on a night nobody left', () => {
+    expect(themeVoice('vote', { week: 3, evicted: null })).toBeNull();
+    expect(themeVoice('vote', { week: 3 })).toBeNull();
+  });
+
   it('says nothing at a hook the theme did not declare', () => {
     expect(themeVoice('nonsense', { week: 1 })).toBeNull();
   });
@@ -334,11 +353,116 @@ describe('the antagonist', () => {
     expect(themeVoice('noms', ctx).line).toBe(themeVoice('noms', ctx).line);
   });
 
+  // Every field asserted, because the handoff to Task 6 tells the transcripts
+  // and the VP screen to read exactly these — `line` rather than `text`, an
+  // always-empty `players`, and `themeId`/`mood` as the styling handles. A test
+  // that checks half of them lets the other half be renamed.
   it('wraps a line into an act the transcripts can read', () => {
     const act = themeBeat('open', { week: 2 });
     expect(act.type).toBe('theme-beat');
     expect(act.hook).toBe('open');
     expect(act.speaker).toBe('The Voice');
+    expect(act.line).toBe('Week 2. Begin.');
+    expect(act.mood).toBe('neutral');
+    expect(act.themeId).toBe('voiced');
     expect(act.players).toEqual([]);
+    expect(act.badgeText).toBe('The Voice');
+    expect(act.badgeClass).toBe('badge-twist');
+  });
+
+  it('wraps nothing when there was nothing to say', () => {
+    expect(themeBeat('noms', { week: 2, hoh: null, nominees: ['Chase'] })).toBeNull();
+  });
+
+  it('carries the mood it was speaking in onto the act', () => {
+    setThemeMood('hostile');
+    expect(themeBeat('open', { week: 2 }).mood).toBe('hostile');
+  });
+});
+
+// The fixture above gives every hook exactly ONE line, which makes it useless
+// for the only non-trivial thing `themeVoice` does: pick from a pool, and walk
+// past what it cannot say. Those tests pass against `Math.random()`, against
+// `pool[0]`, and against a stub. This fixture has pools worth drawing from.
+const CHATTY = {
+  id: 'chatty', name: 'Chatty', tagline: 't', house: 'bb-house',
+  palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+  antagonist: {
+    name: 'The Chorus',
+    mood: 'neutral',
+    voice: {
+      open: { neutral: ['One.', 'Two.', 'Three.', 'Four.', 'Five.', 'Six.'] },
+      // Five of the six need a Head of Household by name. On a sealed week the
+      // walk has to step over whichever ones it lands on to reach the sixth,
+      // from any starting point in the pool.
+      noms: { neutral: [
+        '{hoh} went first.', '{hoh} went second.', '{hoh} went third.',
+        '{hoh} went fourth.', '{hoh} went fifth.',
+        'Two chairs are filled and nobody will say by whom.',
+      ] },
+    },
+  },
+  arc: [], books: [], weights: {}, bans: [], exclusive: [],
+};
+
+describe('the antagonist picking what to say', () => {
+  beforeEach(() => {
+    BB_THEMES.chatty = CHATTY;
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'chatty';
+    gs.bb = { weeks: [], seasonSalt: 1234,
+      theme: { id: 'chatty', mood: 'neutral', booked: [], said: [] } };
+    gs.activePlayers = ['Bowie', 'Chase', 'Ripper'];
+  });
+  afterEach(() => { delete BB_THEMES.chatty; });
+
+  it('draws from the whole pool rather than always opening with the same line', () => {
+    const lines = new Set();
+    for (let w = 1; w <= 12; w++) lines.add(themeVoice('open', { week: w }).line);
+    expect(lines.size).toBeGreaterThan(1);
+  });
+
+  // The property `stableRng` exists to deliver, and the one a bare
+  // `Math.random()` would fail: whether the antagonist says a particular thing
+  // must not depend on how many unrelated dice were rolled before it.
+  it('says the same thing however many other dice were rolled in between', () => {
+    const first = themeVoice('open', { week: 4 }).line;
+    for (let i = 0; i < 50; i++) Math.random();
+    expect(themeVoice('open', { week: 4 }).line).toBe(first);
+    for (let i = 0; i < 50; i++) Math.random();
+    expect(themeVoice('open', { week: 4 }).line).toBe(first);
+  });
+
+  it('keys the draw to the week and the mood, not to the call', () => {
+    const w4 = themeVoice('open', { week: 4 }).line;
+    themeVoice('open', { week: 9 });
+    themeVoice('noms', { week: 4, hoh: 'Bowie', nominees: ['Chase'] });
+    expect(themeVoice('open', { week: 4 }).line).toBe(w4);
+  });
+
+  // The pool walk. Whichever line the seed lands on, five of the six are
+  // unsayable on a sealed week and the sixth must still be found — from every
+  // starting point, not just the lucky one.
+  it('walks past the lines it cannot fill instead of going silent', () => {
+    for (let week = 1; week <= 12; week++) {
+      const said = themeVoice('noms', { week, hoh: null, nominees: ['Chase', 'Ripper'] });
+      expect(said, `week ${week}`).not.toBeNull();
+      expect(said.line, `week ${week}`).toBe('Two chairs are filled and nobody will say by whom.');
+    }
+  });
+
+  // The salt is what stops a theme having a script instead of a voice: two
+  // seasons of the same theme should not open week 4 with the same sentence.
+  it('gives two seasons of the same theme different lines', () => {
+    const sweep = () => Array.from({ length: 12 }, (_, i) => themeVoice('open', { week: i + 1 }).line);
+    gs.bb.seasonSalt = 1;
+    const first = sweep();
+    gs.bb.seasonSalt = 2;
+    expect(sweep()).not.toEqual(first);
+  });
+
+  it('still speaks on a season that has not drawn a salt yet', () => {
+    delete gs.bb.seasonSalt;
+    expect(themeVoice('open', { week: 1 })).not.toBeNull();
   });
 });

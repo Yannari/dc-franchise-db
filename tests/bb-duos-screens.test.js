@@ -215,14 +215,26 @@ describe('a pairs-only season', () => {
     }
   });
 
-  it('keeps saying something about the pairs in the weeks between', () => {
+  it('keeps saying something about the pairs, in House Life with the rest of it', () => {
     // The failure this exists for: a season twist that fires at nominations
     // and is invisible for the other six days reads as a twist doing nothing.
-    const life = pairActs.filter(a => a.type === 'duos-week');
-    expect(life.length, 'the twist went quiet for the whole season').toBeGreaterThan(1);
-    const drawn = html('Duos: Playing in Twos');
-    expect(drawn).toContain('PLAYING IN TWOS');
-    expect(drawn).toContain(life[0].events[0].badgeText);
+    //
+    // But it does NOT get its own stop in the viewing party. Three lines about
+    // who is carrying whom are the same kind of texture as every other camp
+    // beat, and putting them in a separate room — under a printed roster of
+    // every pair in the house — fragmented the week. They go in the feed.
+    const weeks = (gs.bb.weeks || []).filter(w => w.duosLife);
+    expect(weeks.length, 'the twist went quiet for the whole season').toBeGreaterThan(1);
+
+    const folded = weeks.filter(w => (w.acts || []).some(a =>
+      a.type === 'house' && (a.socialBeats || []).some(b =>
+        (w.duosLife.beats || []).some(d => d.text === b.text))));
+    expect(folded.length, 'the duo beats never reached House Life').toBeGreaterThan(1);
+
+    // And they are on the page, wherever House Life renders.
+    const anyText = weeks[0].duosLife.beats[0].text;
+    const allHtml = [...byLabel.values()].flat().map(sc => sc.html).join(' ');
+    expect(allHtml, 'a duo beat was written and never drawn').toContain(anyText.slice(0, 40));
   });
 
   it('tells the house on night one that there are no keys', () => {
@@ -253,5 +265,22 @@ describe('the twist looks like the rest of the programme', () => {
     expect(key, 'no key screen to check').toBeTruthy();
     expect(key.html).toContain('bbns-card');
     expect(key.html, 'the chain is the one mark that belongs to this twist').toContain('bbduo-chain');
+  });
+});
+
+describe('the ceremony knows it nominated a duo', () => {
+  it('says it is nominating a DUO, not two people', () => {
+    const cer = (screensByLabel.get('Nomination Ceremony') || []).map(x => x.html).join('');
+    expect(cer.length, 'no nomination ceremony was drawn').toBeGreaterThan(0);
+    expect(cer, 'the ceremony read as an ordinary one').toMatch(/nominate a DUO/);
+  });
+
+  it('does not invent a grievance against the half nobody chose', () => {
+    // The most twist-erasing line on the screen: the Head of Household gave
+    // TWO separate personal reasons for a block they only decided once,
+    // presenting a forced nomination as a decision, every week, all season.
+    const cer = (screensByLabel.get('Nomination Ceremony') || []).map(x => x.html).join('');
+    expect(cer).toContain('NOT A DECISION');
+    expect(cer).toMatch(/is who I came for, and/);
   });
 });

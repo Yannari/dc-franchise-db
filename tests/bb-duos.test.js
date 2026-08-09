@@ -613,3 +613,64 @@ describe('a played season keeps the block a pair all week', () => {
     expect(swaps, 'no veto ever swapped a duo across three seasons').toBeGreaterThan(0);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A Golden Key is safety from EVICTION, not from one ceremony
+// ══════════════════════════════════════════════════════════════════════
+//
+// The wiki: a key "guaranteed this houseguest a spot in the top ten and
+// immunity from all challenges and eviction." Reported from a real season: a
+// houseguest was handed a key when their partner was evicted and went out the
+// following week. The nomination ceremony honoured the key because it reads
+// `untouchable` — the VETO REPLACEMENT builds its own protected list and did
+// not carry it, so the key holder was seated in the empty chair and voted out.
+//
+// This walks whole seasons and checks the property across every path onto the
+// block, rather than testing the one function that was already correct.
+describe('a Golden Key holds all the way to the door', () => {
+  it('is never nominated, replaced onto the block, or evicted while holding', () => {
+    let keyWeeks = 0;
+    for (const seed of [5, 17, 41, 63]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 6 });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+
+      // Replay the season's own record: who held a key when each week ran.
+      const grants = new Map();   // name -> week they got it
+      for (const w of gs.bb.weeks || []) {
+        if (w.goldenKey?.holder) grants.set(w.goldenKey.holder, w.num);
+      }
+      const expiredAt = (gs.bb.weeks || []).find(w => w.keysExpired)?.num ?? Infinity;
+
+      for (const w of gs.bb.weeks || []) {
+        const holding = [...grants.entries()]
+          .filter(([, got]) => got < w.num && w.num <= expiredAt)
+          .map(([name]) => name);
+        if (!holding.length) continue;
+        keyWeeks++;
+
+        const cer = (w.acts || []).find(a => a.type === 'nominations')?.nominees || [];
+        for (const name of holding) {
+          expect(cer, `${name} was nominated in week ${w.num} holding a key`).not.toContain(name);
+          expect(w.finalNominees || [], `${name} was put on the block by the veto ceremony in week ${w.num}`)
+            .not.toContain(name);
+          expect(w.evicted, `${name} was evicted in week ${w.num} holding a key`).not.toBe(name);
+          expect(w.secondEvicted, `${name} was the second eviction in week ${w.num} holding a key`)
+            .not.toBe(name);
+        }
+      }
+    }
+    expect(keyWeeks, 'no week was ever played with a key in the house').toBeGreaterThan(3);
+  });
+
+  it('and does not compete for anything while it holds', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    grantGoldenKey({ week: aWeek({ num: 2 }), evicted: b, house: gs.activePlayers });
+    expect(duosSittingOut()).toContain(a);
+  });
+});

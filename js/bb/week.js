@@ -1586,8 +1586,19 @@ export function simulateBBWeek(options = {}) {
   // yard, and nothing downstream has to know why.
   let keysOut = [];
   try { keysOut = duosSittingOut(); } catch { keysOut = []; }
-  const sittingOut = [...rivalsOut, ...keysOut];
-  const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh && !sittingOut.includes(name));
+  /* THE YARD CANNOT BE EMPTIED BY PEOPLE WHO ARE NOT PLAYING.
+     Key holders sit out, and with an early expiry threshold enough of them
+     accumulate that the competition had nobody left to run — the engine threw
+     "requires at least two unique participants" and took the season with it.
+     A key is a rule about that houseguest, not a rule that can cancel the
+     week, so when honouring it would leave fewer than two in the yard the
+     keys give way and their holders play. Rivals sitting out is the harder
+     rule and gives way second. */
+  let sittingOut = [...rivalsOut, ...keysOut];
+  const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
+  if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
+  if (yard(sittingOut).length < 2) sittingOut = [];
+  const hohPlayers = yard(sittingOut);
   const hohCompetition = preCrowned ? null
     : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
       // The saboteur got to the yard first. Chosen at the briefing, before any
@@ -3235,6 +3246,24 @@ export function simulateBBWeek(options = {}) {
       // and the veto winner are immune, so late in a season this can be a pool
       // of one — which the reasoning says out loud rather than pretending to a
       // decision that was not available.
+      /* NOBODY ELIGIBLE MEANS NOBODY ELIGIBLE.
+         There is a guard above for the empty chair, but it only counts the
+         Head of Household, the veto winner and the current nominees — every
+         other week-long protection (a Golden Key, the crown's cover for a
+         partner, Super Safety, a care package) is invisible to it, so a house
+         where all of those overlap returned no replacement at all and the next
+         line read `timesNominated` off undefined. Crashed a real season the
+         moment key holders became genuinely untouchable.
+         The rule is the one the ceremony already has for this: if the chair
+         cannot be filled, the veto is not used and the block stands. */
+      if (!replacement || !gs.bb.stats[replacement]) {
+        vetoDecision = { use: false, save: null, reason: 'no-replacement',
+          why: `${vetoWinner} could take ${vetoDecision.save} down, but every houseguest left is `
+            + `protected this week and there is nobody to put in the empty chair. The rules make `
+            + `the decision: the medallion stays in the box.` };
+        replacement = null;
+        replacementWhy = '';
+      } else {
       replacementWhy = explainReplacement(chairAuthority, replacement,
         house.filter(n => !protectedNames.includes(n)), chooserPlan, nominees);
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
@@ -3296,8 +3325,9 @@ export function simulateBBWeek(options = {}) {
       // and the writer for it existed unused — obligation was empty across
       // entire seasons while the veto decision was busy READING it. Saving
       // yourself creates no debt to anybody.
-      if (vetoDecision.save !== vetoWinner) {
+      if (vetoDecision.save && vetoDecision.save !== vetoWinner) {
         try { recordProtection(vetoWinner, vetoDecision.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
+      }
       }
     }
     week.finalNominees = [...nominees];

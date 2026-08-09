@@ -17553,13 +17553,28 @@ export function rpBuildBBNominations(ep, only = null) {
     </div>
   </div>`;
 
+  /* ── nominated as a duo ──
+     One decision, two keys. The Head of Household picked a target and the
+     person beside them came up automatically, so exactly ONE of these two
+     names gets a reason and the other gets the truth: they are there because
+     of who they arrived with. */
+  const duoNom = act?.duo?.pair?.length === 2 ? act.duo : null;
+  const duoTarget = duoNom
+    ? (duoNom.pair.includes(act.target) ? act.target : duoNom.pair[0]) : null;
+  const duoCollateral = duoNom ? duoNom.pair.find(n => n !== duoTarget) : null;
+
   // ── the words ──
   const openLine = anon
     ? `The house is called to the sofas and the chair at the head of the table stays empty. The wall screen lights up: "This is the nomination ceremony. This week's Head of Household is invisible. Big Brother will now turn ${WORD} keys on their behalf."`
-    : `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
-    + ` It is my responsibility as Head of Household to nominate ${WORD} people for eviction.`
-    + ` In my nomination box are the keys of the houseguests I am nominating.`
-    + ` I will turn ${WORD} keys to lock in my nominations, and their faces will appear on the memory wall."`;
+    : duoNom
+      ? `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
+      + ` It is my responsibility as Head of Household to nominate a DUO for eviction — not two`
+      + ` houseguests, two houseguests who walked into this house together. In my nomination box`
+      + ` are their two keys, and I only had one decision to make."`
+      : `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
+      + ` It is my responsibility as Head of Household to nominate ${WORD} people for eviction.`
+      + ` In my nomination box are the keys of the houseguests I am nominating.`
+      + ` I will turn ${WORD} keys to lock in my nominations, and their faces will appear on the memory wall."`;
 
   const KEY_LINES = anon ? [
     (n, i) => `The ${['first', 'second', 'third', 'fourth'][i] || `${i + 1}th`} key turns with nobody's hand on it. The screen goes from a question mark to <strong>${n}</strong>, and the whole room checks the whole room's face at once.`,
@@ -17621,6 +17636,20 @@ export function rpBuildBBNominations(ep, only = null) {
           <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill grey">NO REASON GIVEN</span></div>
           <div class="bbns-card-b">No speech. No reasons. ${_bbEsc(step.name)} gets a chair and a silence to interpret, which is somehow worse — a reason can be argued with.</div></div>`;
       }
+      // The half nobody chose. Giving them an invented personal grievance was
+      // the single most twist-erasing line on this screen: it presented a
+      // forced nomination as a decision, every week, for the whole season.
+      if (duoNom && step.name === duoCollateral) {
+        const kin = duoNom.kin && duoNom.kin !== 'Came in together'
+          ? ` You are ${_bbEsc(duoNom.kin).toLowerCase()}.` : '';
+        return `<div class="bbns-card is-reason">
+          <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill">NOT A DECISION</span></div>
+          <div class="bbns-card-b">"${_bbEsc(step.name)}, I have nothing against you and I am not
+            going to stand here and invent something. ${_bbEsc(duoTarget)} is who I came for, and
+            you are who ${_bbEsc(duoTarget)} walked in with.${kin}"
+            <span class="bbh-why">${_bbEsc(step.name)} is on that block because of somebody else's
+            week, and the whole room heard it said out loud.</span></div></div>`;
+      }
       return `<div class="bbns-card is-reason">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill gold">WHY ${_bbEsc(step.name).toUpperCase()}</span></div>
         <div class="bbns-card-b">${_bbNomReason(hoh, step.name, step.role, ep)}${askLine}</div>
@@ -17649,7 +17678,10 @@ export function rpBuildBBNominations(ep, only = null) {
         <div class="bbns-card-h">${anon || !hoh ? '' : _bbAvatar(hoh, 30)}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
         <div class="bbns-card-b">${anon
           ? `"${noms.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete." The wall screen goes dark, and the room stays exactly as quiet as a room where everybody suspects everybody.`
-          : `"${spokenNoms.join(', ')} — I have nominated you for eviction because that is my
+          : duoNom
+            ? `"${spokenNoms.join(', ')} — I have nominated the two of you for eviction, because in
+            this house you are one nomination. This is the nomination ceremony. Nominations are complete."`
+            : `"${spokenNoms.join(', ')} — I have nominated you for eviction because that is my
           responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`}${
           spokenNoms.length !== noms.length
             ? ` <em>The block is ${_bbEsc(noms.join(', '))}. Only ${spokenNoms.length} of those names belong to ${anon ? 'whoever turned those keys' : _bbEsc(hoh)}, and everybody in the room can count.</em>`

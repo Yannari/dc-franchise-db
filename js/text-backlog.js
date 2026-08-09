@@ -4787,6 +4787,12 @@ export function generateBBSummaryText(ep) {
         const ownNames = (act.hohNominees && act.hohNominees.length)
           ? act.hohNominees.filter(Boolean) : nomNames;
         const ownWord = ['two', 'three', 'four', 'five'][Math.max(0, ownNames.length - 2)] || `${ownNames.length}`;
+        if (act.duo?.pair?.length === 2) {
+          ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
+          ln('    Household to nominate a DUO for eviction — not two houseguests, two houseguests');
+          ln('    who walked into this house together. I only had one decision to make."');
+          ln(`    ${act.duo.pair.join(' and ')}${act.duo.kin ? ` — ${act.duo.kin.toLowerCase()}` : ''}.`);
+        } else
         ln(`  ${nomHoh}: "This is the nomination ceremony. It is my responsibility as Head of`);
         ln(`  Household to nominate ${ownWord} people for eviction. In my nomination box are the keys`);
         ln(`  of the houseguests I am nominating. I will turn ${ownWord} keys to lock in my`);

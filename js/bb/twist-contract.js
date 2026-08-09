@@ -366,6 +366,20 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Everybody is about to watch everybody else choose a door.',
     },
   },
+  'bb-secret-power-comp': {
+    id: 'bb-secret-power-comp', layer: 'scheduled', category: 'distribution',
+    timing: 'hoh', duration: { weeks: 1 },
+    // No rules delta — the week's shape is untouched. What changes is what some
+    // of the people in the Head of Household competition were playing FOR, and
+    // the crown still goes to the best score among those who wanted it.
+    rules: {},
+    acquisition: { channel: 'hoh-competition', secrecy: 'secret' },
+    announcement: {
+      name: 'The Secret Power Competition',
+      rule: "Three powers are hidden inside this week's Head of Household competition. Before you play you will choose, in private, whether you are competing for the Head of Household or for one of them — not both. The outgoing Head of Household may only play for a power. Winners will be told alone, this house will be told nothing, and every one of these powers dies the moment the jury begins.",
+      sting: 'One of them is about to throw away the best week in this house for a secret.',
+    },
+  },
   'bb-hidden-power': {
     id: 'bb-hidden-power', layer: 'scheduled', category: 'distribution',
     timing: 'week-opening', duration: { weeks: 4 },

@@ -15,6 +15,7 @@
 // disposal. Instances live on gs.bb.powers so they save, load and replay
 // with the season.
 import { gs } from '../core.js';
+import { juryOpensAt } from './jury.js';
 
 /**
  * The definitions. Rules only — no acquisition, no narration.
@@ -186,6 +187,64 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'A veto ceremony, after it has been adjourned.',
   },
 
+
+  // ── BB27's secret power competition ──────────────────────────────────────
+  //
+  // Three powers hidden inside the week's Head of Household competition, and
+  // every one of them dead the moment the jury opens. That expiry is the whole
+  // reason they can be this strong: a power that rewrites an HOH is fine in
+  // week three and would decide a season in week ten, so it is written to be
+  // unusable by then rather than balanced down to nothing.
+  //
+  // `windowUntil: 'jury'` is a second expiry axis alongside `windowWeeks`. The
+  // week count answers "how long may the holder sit on it"; this answers "and
+  // never past here", and a power carrying both dies at whichever comes first.
+
+  // The only power in the shelf that the person it is used against can TAKE
+  // BACK. Everything else is a windfall; this is a bet.
+  'hoh-interrogation': {
+    id: 'hoh-interrogation',
+    name: 'The Interrogation',
+    rules: { usurpHoh: true, contested: 'interrogation' },
+    useTiming: 'post-hoh',
+    windowWeeks: 6,
+    windowUntil: 'jury',
+    blurb: 'Takes over somebody else\'s Head of Household — but the deposed HOH then questions the whole house, and if they name the person who did it, they keep their week and the power is spent for nothing.',
+    catch: 'It is the only power that can be REFUSED. Using it puts the holder in a room with somebody who is looking for exactly them, and a bad liar loses the power and the alibi in the same afternoon.',
+    moment: 'After the Head of Household is crowned, before nominations — and then a day of questions.',
+  },
+
+  // The alumni are already in this codebase: eligibleHosts() reads
+  // players_database for everybody who has finished a season. The cameo is
+  // drawn from there rather than invented, so the person who walks in is
+  // somebody the franchise actually has.
+  'mystery-competitor': {
+    id: 'mystery-competitor',
+    name: 'The Mystery Competitor',
+    rules: { vetoProxy: true },
+    useTiming: 'veto-draw',
+    windowWeeks: 6,
+    windowUntil: 'jury',
+    blurb: 'Only usable on the block: a former houseguest walks back into this house and takes one of the drawn veto spots, and if they win it, the veto belongs to the holder.',
+    catch: 'It buys a second body in the draw, not a win — the alumnus has to actually beat the room, and everybody watches a stranger arrive knowing somebody paid for it.',
+    moment: 'The veto draw, when a name nobody expected comes out of the bag.',
+  },
+
+  // Distinct from `secret-veto`, which is a veto the holder already HAS. This
+  // one is a competition the holder is granted, alone, after the real one is
+  // over — so it can save a nominee the real veto did not, and it can also
+  // simply be lost.
+  'mystery-veto': {
+    id: 'mystery-veto',
+    name: 'The Mystery Veto',
+    rules: { soloVetoComp: true },
+    useTiming: 'post-veto',
+    windowWeeks: 6,
+    windowUntil: 'jury',
+    blurb: 'Calls a second veto competition at the end of the week with exactly one player in it: the holder. Win it and there is a real veto to use after the ceremony everybody already watched.',
+    catch: 'A competition is a competition. Nobody is standing in the way and it can still be lost, and the house finds out it existed either way.',
+    moment: 'After the veto ceremony, when the week was supposed to be settled.',
+  },
 };
 
 function store() {
@@ -202,13 +261,46 @@ function store() {
  * fires). `source` is the distributor's id — provenance for the Debug panel
  * and the aftermath, never consulted by the rules.
  */
+/**
+ * The last week a power may fire.
+ *
+ * `windowWeeks` answers "how long may the holder sit on it". `windowUntil` is a
+ * second axis answering "and never past HERE", and a power carrying both dies
+ * at whichever comes first.
+ *
+ * Only one value so far: `'jury'`. BB27's secret powers all expired the moment
+ * the jury opened, and that expiry is the reason they were allowed to be that
+ * strong — a power that rewrites a Head of Household is a fun week in week
+ * three and decides a season in week ten. Written to be unusable by then rather
+ * than balanced down to nothing.
+ *
+ * Counted in HOUSE SIZE rather than in weeks, because that is what the jury
+ * rule is: `juryOpensAt` returns the number still playing when the first juror
+ * is seated, and a double eviction gets there a week early.
+ */
+export function expiryFor(def, week) {
+  const byWeeks = week + (def.windowWeeks || 1) - 1;
+  if (def.windowUntil !== 'jury') return byWeeks;
+  let opensAt = 0;
+  try { opensAt = juryOpensAt(); } catch { opensAt = 0; }
+  const house = (gs.activePlayers || []).length;
+  // No jury configured, or the season is already past the line: the week count
+  // is all there is, and a power granted after the jury opened is already dead.
+  if (!opensAt || !house) return byWeeks;
+  // How many evictions between now and the jury opening, one a week — the
+  // projection is deliberately simple, and a double eviction inside the window
+  // only ever makes the real expiry EARLIER than promised, never later.
+  const weeksLeft = Math.max(0, house - opensAt);
+  return Math.min(byWeeks, week + weeksLeft - 1);
+}
+
 export function grantPower(powerId, holder, { week = 1, visibility = 'public', source = 'unknown' } = {}) {
   const def = BB_POWER_DEFINITIONS[powerId];
   if (!def || !holder) return null;
   const instance = {
     powerId, holder, visibility, source,
     acquiredWeek: week,
-    expiresAfterWeek: week + (def.windowWeeks || 1) - 1,
+    expiresAfterWeek: expiryFor(def, week),
     used: false, usedWeek: null,
     disposed: false, disposedReason: null,
   };

@@ -822,6 +822,8 @@ export function simulateBBEpisode() {
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-americas-nominee');
   const whackEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-whacktivity');
+  const spcEntry = (seasonConfig.twistSchedule || [])
+    .find(t => t && Number(t.episode) === epNum && t.type === 'bb-secret-power-comp');
   const denEntry = (seasonConfig.twistSchedule || [])
     .find(t => t && Number(t.episode) === epNum && t.type === 'bb-den-of-temptation');
   // The audience channel: which shape it runs, and what it is stocked with.
@@ -866,6 +868,8 @@ export function simulateBBEpisode() {
     americasNomineeStyle: anEntry?.anStyle === 'mvp' ? 'mvp' : 'direct',
     hiddenPowerId: hpEntry?.hidden || 'the-cloud',
     whacktivityDoors: whackEntry?.doors || 'auto',
+    // The secret power competition authors its doors the same way.
+    secretPowerDoors: spcEntry?.doors || 'auto',
     // Which package the audience is voting over. 'auto' runs the show's
     // rotation; a package id books that one onto this week, which is the whole
     // point of the twist being a distributor rather than a fixed schedule.

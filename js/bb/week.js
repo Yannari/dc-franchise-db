@@ -26,6 +26,7 @@ import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
 import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
+import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
@@ -1595,7 +1596,38 @@ export function simulateBBWeek(options = {}) {
   const hohResults = hohCompetition
     ? hohCompetition.placements.map(name => ({ name, score:hohCompetition.scores[name], threw:!!hohCompetition.debug.scoreBreakdown[name]?.threw }))
     : [];
+  // ── the competition that is secretly three competitions ──
+  //
+  // BB27. This does not replace the Head of Household competition, it replaces
+  // what some of the people in it were playing FOR — so it runs off the board
+  // that already exists, and the crown goes to the best finisher who actually
+  // wanted it. Somebody chasing a door can hand the week to a player who would
+  // otherwise have lost it, which is the entire point and the only way the
+  // gamble costs anything.
+  let secretPowers = null;
+  if (!compressed && !preCrowned && twists.has('bb-secret-power-comp')) {
+    try {
+      const wanted = options.secretPowerDoors;
+      const doors = Array.isArray(wanted) && wanted.length
+        ? wanted.slice(0, SECRET_POWER_DOORS)
+        : ['hoh-interrogation', 'mystery-competitor', 'mystery-veto'];
+      secretPowers = runSecretPowerComp({
+        week, house: hohPlayers, outgoingHoh: gs.bb.outgoingHoh,
+        results: hohResults, offered: doors, rng,
+      });
+    } catch { secretPowers = null; }
+  }
+  if (secretPowers) {
+    week.secretPowerComp = secretPowers;
+    week.acts.push(addBeats(secretPowers,
+      { players: secretPowers.granted.map(g => g.name).slice(0, 3) }));
+  }
+
   let hoh = preCrowned
+    // The crown is whoever won it among the people who were running for it. A
+    // week where everybody chased a door has no winner from this, and falls
+    // back to the board rather than crowning nobody.
+    || (secretPowers?.winner)
     || hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!preCrowned && !hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
 

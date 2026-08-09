@@ -1832,7 +1832,11 @@ export function renderTimeline() {
         prizeHtml += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
-      if (t.type === 'bb-whacktivity') {
+      // Two channels, one door control. The Whacktivity's three rooms and the
+      // secret power competition's three hiding places are the same authoring
+      // question — which powers are on offer — and giving the second one its
+      // own slightly different dropdown is how two channels drift apart.
+      if (t.type === 'bb-whacktivity' || t.type === 'bb-secret-power-comp') {
         // One dropdown per door. The previous control listed every distinct
         // TRIO as a single option, which is four choices at four powers and
         // four hundred and fifty-five at fifteen — the registry is meant to
@@ -1842,9 +1846,14 @@ export function renderTimeline() {
         // weeks are authorable instead of being a shape nobody can express.
         const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
         const ids = Object.keys(defs);
+        // Its own three by default, because they were written for it and
+        // expire with it; the Whacktivity keeps taking the head of the shelf.
+        const stock = t.type === 'bb-secret-power-comp'
+          ? ['hoh-interrogation', 'mystery-competitor', 'mystery-veto'].filter(id => defs[id])
+          : ids.slice(0, 3);
         const doors = Array.isArray(t.doors) && t.doors.length
           ? [...t.doors, '', '', ''].slice(0, 3)
-          : ids.slice(0, 3);
+          : stock;
         const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:3px";
         let h = '';
         doors.forEach((chosen, idx) => {
@@ -2252,7 +2261,7 @@ export function assignTwist(twistId) {
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-den-of-temptation') entry.offer = 'random';
-    if (twistId === 'bb-whacktivity') entry.doors = 'auto';
+    if (twistId === 'bb-whacktivity' || twistId === 'bb-secret-power-comp') entry.doors = 'auto';
     if (twistId === 'bb-americas-nominee') entry.anStyle = 'direct';
     if (twistId === 'bb-double-eviction') entry.deStyle = 'fast-forward';
     if (twistId === 'bb-battle-back') { entry.bbStyle = 'gauntlet'; entry.bbComp = ''; }

@@ -2714,7 +2714,8 @@
         "intuition": 8,
         "temperament": 3
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "age": 22
     },
     {
       "name": "Zachary",
@@ -2732,7 +2733,9 @@
         "intuition": 4,
         "temperament": 5
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 23,
+      "ethnicity": "Latino"
     },
     {
       "name": "Obi",
@@ -2750,7 +2753,9 @@
         "intuition": 8,
         "temperament": 4
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "age": 25,
+      "nationality": "Nigerian"
     },
     {
       "name": "Arlo",
@@ -2767,7 +2772,8 @@
         "boldness": 10,
         "intuition": 3,
         "temperament": 9
-      }
+      },
+      "age": 19
     },
     {
       "name": "Doug",
@@ -2785,7 +2791,9 @@
         "intuition": 4,
         "temperament": 7
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 21,
+      "descriptor": "Scouse"
     },
     {
       "name": "Jeremiah",
@@ -2802,7 +2810,8 @@
         "boldness": 7,
         "intuition": 5,
         "temperament": 5
-      }
+      },
+      "age": 32
     },
     {
       "name": "Avani",
@@ -2820,7 +2829,8 @@
         "intuition": 8,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 22
     },
     {
       "name": "Dameira",
@@ -2838,7 +2848,8 @@
         "intuition": 9,
         "temperament": 6
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 65
     },
     {
       "name": "Nessa",
@@ -2856,7 +2867,8 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "age": 27
     },
     {
       "name": "Drea",
@@ -2874,7 +2886,8 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "age": 20
     },
     {
       "name": "Hina",
@@ -2892,7 +2905,9 @@
         "intuition": 9,
         "temperament": 10
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "age": 16,
+      "nationality": "Japanese"
     },
     {
       "name": "Natasha",
@@ -2910,7 +2925,8 @@
         "intuition": 6,
         "temperament": 7
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "age": 23
     },
     {
       "name": "Aaron",
@@ -2928,7 +2944,9 @@
         "intuition": 5,
         "temperament": 5
       },
-      "sexuality": "asexual"
+      "sexuality": "asexual",
+      "age": 24,
+      "nationality": "Canadian"
     },
     {
       "name": "Amberly",
@@ -2946,7 +2964,9 @@
         "intuition": 6,
         "temperament": 2
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 18,
+      "nationality": "American"
     },
     {
       "name": "Dylon",
@@ -2964,7 +2984,9 @@
         "intuition": 9,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 27,
+      "nationality": "British"
     },
     {
       "name": "Felipe",
@@ -2982,7 +3004,9 @@
         "intuition": 7,
         "temperament": 5
       },
-      "sexuality": "gay"
+      "sexuality": "gay",
+      "age": 35,
+      "nationality": "Brazilian"
     },
     {
       "name": "Gyselle",
@@ -3000,7 +3024,8 @@
         "intuition": 7,
         "temperament": 7
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 24
     },
     {
       "name": "Harriett",
@@ -3018,7 +3043,10 @@
         "intuition": 4,
         "temperament": 3
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 21,
+      "ethnicity": "Asian",
+      "nationality": "Canadian"
     },
     {
       "name": "Jane",
@@ -3036,7 +3064,10 @@
         "intuition": 9,
         "temperament": 9
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "age": 21,
+      "ethnicity": "Asian",
+      "nationality": "Canadian"
     },
     {
       "name": "Hasan",
@@ -3054,7 +3085,9 @@
         "intuition": 4,
         "temperament": 8
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 25,
+      "ethnicity": "Arab"
     },
     {
       "name": "Ireland",
@@ -3072,7 +3105,8 @@
         "intuition": 8,
         "temperament": 3
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "age": 26
     },
     {
       "name": "Joel",
@@ -3090,7 +3124,9 @@
         "intuition": 3,
         "temperament": 5
       },
-      "sexuality": "bi"
+      "sexuality": "bi",
+      "age": 26,
+      "nationality": "American"
     },
     {
       "name": "Jules",
@@ -3126,7 +3162,9 @@
         "intuition": 6,
         "temperament": 4
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 23,
+      "nationality": "American"
     },
     {
       "name": "Nico",
@@ -3144,7 +3182,10 @@
         "intuition": 7,
         "temperament": 9
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 34,
+      "nationality": "American",
+      "descriptor": "Italian"
     },
     {
       "name": "Stella",
@@ -3162,7 +3203,9 @@
         "intuition": 4,
         "temperament": 7
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 29,
+      "nationality": "American"
     },
     {
       "name": "Tobias",
@@ -3180,7 +3223,8 @@
         "intuition": 4,
         "temperament": 7
       },
-      "sexuality": "straight"
+      "sexuality": "straight",
+      "age": 19
     },
     {
       "name": "Zella",
@@ -3198,7 +3242,11 @@
         "intuition": 6,
         "temperament": 2
       },
-      "sexuality": "lesbian"
+      "sexuality": "lesbian",
+      "age": 20,
+      "ethnicity": "Mixed",
+      "nationality": "Canadian",
+      "descriptor": "Mexican"
     }
   ]
 }

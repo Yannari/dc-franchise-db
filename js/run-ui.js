@@ -1404,7 +1404,19 @@ export function buildEpisodeMap() {
   const cast    = players.length || 18;
   const finale  = seasonConfig.finaleSize || 3;
   const mergeAt = seasonConfig.mergeAt || 12;
-  const riActive = seasonConfig.ri;
+  // ── Total Drama's returns are Total Drama's ──
+  //
+  // The fan vote, the Aftermayhem winner and Rescue Island are camp mechanics.
+  // No Big Brother module implements any of them — the house returns people
+  // through the Battle Back and Camp Comeback and nothing else. But this
+  // projection read them straight off `seasonConfig`, and those keys SURVIVE a
+  // format change, so a house season inherited whatever the last camp season
+  // was set to and projected returns that will never happen. A run with a fan
+  // vote and an Aftermayhem carried over showed two houseguests walking back in
+  // on the same night, out of nowhere, and the count was wrong from there on.
+  const _isBB = (typeof seasonFormat === 'function'
+    ? seasonFormat(seasonConfig.format) : seasonConfig.format) === 'big-brother';
+  const riActive = seasonConfig.ri && !_isBB;
 
   // Build ep→engineTypes lookup from the twist schedule (ALL twists per episode)
   const twistMap = {};
@@ -1523,11 +1535,11 @@ export function buildEpisodeMap() {
     const _rpTwist = (seasonConfig.twistSchedule||[]).filter(t => t && Number(t.episode) === ep).find(t => t.type === 'returning-player');
     if (_rpTwist) returns += (_rpTwist.returnCount || 1);
     // Fan vote return: pending return from live game adds +1 this episode
-    if (gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn) && !_fvReturnApplied) {
+    if (!_isBB && gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn) && !_fvReturnApplied) {
       returns++; _fvReturnApplied = true;
     }
     // Fan vote prediction: ONCE after X total eliminations, someone comes back NEXT episode
-    const _fvThresholdCfg = parseInt(seasonConfig.fanVoteFrequency) || 0;
+    const _fvThresholdCfg = _isBB ? 0 : (parseInt(seasonConfig.fanVoteFrequency) || 0);
     if (_fvThresholdCfg && !_lastFVReturn && _totalElimsToHere >= _fvThresholdCfg) {
       _lastFVReturn = _totalElimsToHere;
     }
@@ -1536,7 +1548,7 @@ export function buildEpisodeMap() {
       returns++; _fvReturnApplied = true;
     }
     // Aftermayhem prediction: ONCE after X total eliminations, winner comes back NEXT episode
-    const _amThresholdCfg = parseInt(seasonConfig.aftermayhemReturn) || 0;
+    const _amThresholdCfg = _isBB ? 0 : (parseInt(seasonConfig.aftermayhemReturn) || 0);
     if (_amThresholdCfg && !_lastAMReturn && _totalElimsToHere >= _amThresholdCfg) {
       _lastAMReturn = _totalElimsToHere;
     }

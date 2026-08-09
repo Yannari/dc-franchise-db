@@ -131,3 +131,42 @@ describe('the eviction side still works', () => {
     expect(dbl.length).toBe(plain.length - 1);
   });
 });
+
+describe("the camp's returns stay in the camp", () => {
+  // The fan vote, the Aftermayhem winner and Rescue Island are Total Drama
+  // mechanics. No Big Brother module implements one — the house returns people
+  // through the Battle Back and Camp Comeback and nothing else.
+  //
+  // But the projection read them straight off `seasonConfig`, and those keys
+  // SURVIVE a format change. So a house season inherited whatever the last camp
+  // season was set to and projected returns that will never happen: a run with
+  // a fan vote and an Aftermayhem carried over showed two houseguests walking
+  // back in on the same night, from nowhere, and the count was wrong for the
+  // rest of the season.
+  const carriedOver = { fanVoteFrequency: 4, aftermayhemReturn: 6, ri: true };
+
+  it('ignores a fan vote left over from a camp season', () => {
+    const clean = timeline([]);
+    Object.assign(seasonConfig, carriedOver);
+    const dirty = timeline([]);
+    expect(dirty.map(e => e.active)).toEqual(clean.map(e => e.active));
+  });
+
+  it('ignores Rescue Island on a house season', () => {
+    const clean = timeline([]);
+    Object.assign(seasonConfig, { ri: true, riReentryAt: 8, riFormat: 'rescue', riReturnPerEvent: 2 });
+    const dirty = timeline([]);
+    expect(dirty.length, 'Rescue Island lengthened a Big Brother season').toBe(clean.length);
+  });
+
+  it('still gives a camp its own returns', () => {
+    // The gate is on FORMAT, not on the mechanic — a Total Drama season must
+    // keep every one of these.
+    const before = timeline([]);
+    Object.assign(seasonConfig, { format: 'total-drama', fanVoteFrequency: 4 });
+    const after = buildEpisodeMap();
+    expect(after.length, 'the camp lost its fan vote return')
+      .toBeGreaterThan(before.length);
+    Object.assign(seasonConfig, { format: 'big-brother', fanVoteFrequency: 0 });
+  });
+});

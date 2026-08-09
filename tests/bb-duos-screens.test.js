@@ -231,3 +231,27 @@ describe('a pairs-only season', () => {
     expect(html('Duos: Announcement')).toMatch(/no Golden Keys/i);
   });
 });
+
+describe('the twist looks like the rest of the programme', () => {
+  it('draws every duos screen in the house column', () => {
+    // The regression this exists for: a bespoke shell with its own background
+    // and no max-width, running edge to edge while every other screen in the
+    // viewing party sits in a 760px '.rp-page' column. It read as a different
+    // product, and nothing in the suite noticed.
+    const labels = [...screensByLabel.keys()].filter(l => l.startsWith('Duos:'));
+    expect(labels.length, 'no duos screens were drawn at all').toBeGreaterThan(2);
+    for (const label of labels) {
+      for (const sc of screensByLabel.get(label)) {
+        expect(sc.html, `${label} is not drawn in the house column`).toContain('rp-page');
+        expect(sc.html, `${label} invented its own shell`).not.toContain('class="bbduo"');
+      }
+    }
+  });
+
+  it('uses the house card for anything the house is told', () => {
+    const key = (screensByLabel.get('Duos: Golden Key') || [])[0];
+    expect(key, 'no key screen to check').toBeTruthy();
+    expect(key.html).toContain('bbns-card');
+    expect(key.html, 'the chain is the one mark that belongs to this twist').toContain('bbduo-chain');
+  });
+});

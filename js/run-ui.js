@@ -2344,7 +2344,7 @@ export function assignTwist(twistId) {
  */
 function _fdThemeMark(t, html) {
   if (!t || t.source !== 'theme' || typeof html !== 'string') return html;
-  const badge = '<span title="Placed by the season's theme — edit or delete it like any other card"'
+  const badge = '<span title="Placed by the theme — edit or delete it like any other card"'
     + ' style="font-size:8px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;'
     + 'border:1px solid currentColor;border-radius:2px;padding:0 3px;margin-right:3px">theme</span>';
   return html.replace(/^(<span[^>]*>)/, '$1' + badge);

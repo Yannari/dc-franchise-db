@@ -265,10 +265,16 @@
             </div>
             <div class="form-group" id="theme-group">
               <label class="form-label">Season Theme</label>
-              <select id="cfg-theme" onchange="saveConfig()" class="form-input">
+              <select id="cfg-theme" onchange="onThemeChange()" class="form-input">
                 <option value="none">— No theme (twists only) —</option>
                 <option value="summer-of-temptation">🍎 Summer of Temptation (an offer a week, somebody else pays)</option>
               </select>
+              <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">
+                The theme's twists are placed on the Season Timeline, where you can edit,
+                move or delete them like any other card.
+                <a href="#" onclick="event.preventDefault();resetThemeSchedule()"
+                   style="color:var(--accent-gold);text-decoration:underline">Reset to the theme's own schedule</a>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Game Mode</label>

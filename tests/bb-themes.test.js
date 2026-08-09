@@ -77,7 +77,7 @@ describe('theme registry', () => {
 });
 
 import { gs, setGs, resolveTwistSchedule } from '../js/core.js';
-import { themeScheduleEntries, installTheme, themeState } from '../js/bb/themes.js';
+import { themeScheduleEntries, installTheme, themeState, stampThemeArc } from '../js/bb/themes.js';
 
 const FIXTURE = {
   id: 'fixture', name: 'Fixture', tagline: 't', house: 'bb-house',
@@ -644,5 +644,104 @@ describe('theme config', () => {
     // And the check discriminates: an id nobody registered has no option, so a
     // green run above means the markup really was searched.
     expect(select[0]).not.toContain('value="not-a-theme"');
+  });
+});
+
+// ── stamping: the arc as an editable starting point ────────────────────
+//
+// The arc used to materialise on episode one, so the Format Designer had
+// nothing to show and a theme's twists were a black box until the season had
+// already started. They were always REAL schedule entries — that is why the
+// arc writes entries instead of intercepting the twist lookup — so the only
+// thing between them and the designer was when they got written.
+//
+// Stamped at authoring time they are ordinary cards. The property that has to
+// hold from then on is that nothing re-books them behind your back.
+describe('stamping the arc for editing', () => {
+  const ARC = {
+    id: 'stampable', name: 'Stampable', tagline: 't', house: 'bb-house',
+    palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+    antagonist: { name: 'Nobody', voice: {} },
+    arc: [
+      { at: { week: 2 }, book: 'bb-have-nots' },
+      { at: { week: 4 }, book: 'bb-pandoras-box', options: { prize: 'diamond-veto' } },
+      { at: { fromEnd: 1 }, book: 'bb-double-eviction' },
+    ],
+    books: [], weights: {}, bans: [], exclusive: [],
+  };
+
+  beforeEach(() => {
+    BB_THEMES.stampable = ARC;
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'stampable';
+    seasonConfig.themeArcStamped = '';
+    seasonConfig.twistSchedule = [];
+    setGs({ bb: { weeks: [] } });
+  });
+  afterEach(() => { delete BB_THEMES.stampable; });
+
+  it('puts the arc on the schedule the moment a theme is picked', () => {
+    const added = stampThemeArc(12);
+    expect(added.length).toBe(3);
+    expect(seasonConfig.twistSchedule.map(t => t.type))
+      .toEqual(['bb-have-nots', 'bb-pandoras-box', 'bb-double-eviction']);
+    expect(seasonConfig.themeArcStamped).toBe('stampable');
+  });
+
+  it('marks them so the designer can tell them from yours', () => {
+    stampThemeArc(12);
+    expect(seasonConfig.twistSchedule.every(t => t.source === 'theme')).toBe(true);
+  });
+
+  it('adds nothing without a cast, because the arc needs a season length', () => {
+    expect(stampThemeArc(0)).toEqual([]);
+    expect(seasonConfig.twistSchedule).toEqual([]);
+    expect(seasonConfig.themeArcStamped).toBe('');
+  });
+
+  it('sweeps the old theme when you switch, and keeps what you booked', () => {
+    stampThemeArc(12);
+    seasonConfig.twistSchedule.push({ id: 'mine', episode: 6, type: 'bb-roadkill' });
+    seasonConfig.theme = 'none';
+    stampThemeArc(12);
+    expect(seasonConfig.twistSchedule.map(t => t.id)).toEqual(['mine']);
+    expect(seasonConfig.themeArcStamped).toBe('');
+  });
+
+  // The reason stamping needed a rule change rather than just earlier timing.
+  it('does not re-book over your edits when the season starts', () => {
+    stampThemeArc(12);
+    // delete one, move one, change what is in the box
+    seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(t => t.type !== 'bb-have-nots');
+    const box = seasonConfig.twistSchedule.find(t => t.type === 'bb-pandoras-box');
+    box.episode = 7; box.prize = 'halting-hex';
+    const authored = JSON.parse(JSON.stringify(seasonConfig.twistSchedule));
+
+    installTheme(12);
+
+    expect(seasonConfig.twistSchedule).toEqual(authored);
+    expect(themeState().id).toBe('stampable');
+  });
+
+  it('still tells the antagonist what is booked after your edits', () => {
+    stampThemeArc(12);
+    seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(t => t.type !== 'bb-have-nots');
+    installTheme(12);
+    expect(themeState().booked).toEqual(['bb-pandoras-box', 'bb-double-eviction']);
+  });
+
+  it('books the arc itself for a season that never went near the designer', () => {
+    installTheme(12);
+    expect(seasonConfig.twistSchedule.map(t => t.type))
+      .toEqual(['bb-have-nots', 'bb-pandoras-box', 'bb-double-eviction']);
+  });
+
+  it('lays the theme default back down on reset', () => {
+    stampThemeArc(12);
+    seasonConfig.twistSchedule = [];
+    seasonConfig.themeArcStamped = '';
+    stampThemeArc(12);
+    expect(seasonConfig.twistSchedule.map(t => t.type))
+      .toEqual(['bb-have-nots', 'bb-pandoras-box', 'bb-double-eviction']);
   });
 });

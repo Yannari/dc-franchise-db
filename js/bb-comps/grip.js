@@ -150,7 +150,7 @@ export const getAGrip = {
   name: 'Get A Grip',
   category: 'endurance',
   types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Every houseguest takes hold of their own pole and holds on. Nothing swings, tilts or sprays, and the pole never moves. They may change grips or rest one arm at a time, but once both hands leave the pole they are eliminated. The last houseguest still holding on wins.',
+  desc: 'Every houseguest takes hold of their own pole and holds on. That is the entire competition: nothing swings at them, nothing tilts and nothing sprays, and the pole does not move. They may change grip and rest whichever arm they like, but letting go ends their night on the spot and there is no way back into it. The last houseguest still holding their pole wins, which by the end is usually settled by a conversation between the final two rather than by an arm giving out.',
   // The purest hold in the library, so endurance carries most of it. Physical
   // is grip strength rather than size; boldness is the willingness to keep
   // hanging after it has started to hurt.
@@ -267,7 +267,7 @@ export const tightrope = {
   name: 'Tightrope',
   category: 'balance',
   types: ['hoh', 'arena', 'tiebreaker'],
-  desc: 'A single rope is strung between two platforms above a safety net, and each houseguest has to cross it. There is nothing to hold and nothing to lean on, and no way over but along the rope itself. A fall costs the whole trip rather than a few seconds: anybody who touches the net climbs back to the platform they started from and begins the crossing again from nothing. The first houseguest to reach the far side wins, which is why hurrying is the most expensive thing anybody does out there.',
+  desc: 'A single rope is strung between two platforms above a net, and each houseguest has to get from one end of it to the other without falling. There is nothing to hold and nothing to lean on, and no way across but along the rope. A fall costs the whole trip rather than a few seconds: anybody who touches the net climbs back to the platform they started from and begins the crossing again from nothing. The first houseguest to reach the far platform wins, which is why hurrying is the most expensive thing anybody does out there.',
   // Balance under nerve. Intuition is the constant micro-correction, boldness
   // is being willing to commit to a step at all, and temperament is what stops
   // a wobble becoming a fall.
@@ -413,7 +413,7 @@ export const feelingKnotty = {
   name: 'Feeling Knotty',
   category: 'precision',
   types: ['veto', 'arena', 'tiebreaker'],
-  desc: 'Each houseguest receives a rope tied with six knots. They must untie every knot by hand without tools, and pulling the wrong strand can tighten the rope further. The first person to free all six knots wins.',
+  desc: 'Each houseguest is given a length of rope with a series of knots tied into it and has to untie every one of them by hand. There are no tools and nothing to cut with. The trap is that force works against them: pulling on the wrong strand tightens a knot instead of opening it, so a houseguest who hurries ends up holding something harder than they were handed. The first houseguest to untie every knot on their rope wins, and most of the field is beaten by their own hands rather than by the clock.',
   // Patience with fingers. Temperament is the whole trap of this one — the
   // person who gets angry at a knot makes it worse — and mental is reading
   // which strand is load-bearing before touching anything.
@@ -586,6 +586,38 @@ export const feelingKnotty = {
 // Memory Dip
 // ══════════════════════════════════════════════════════════════════════
 
+const DIP_FIRST = [
+  (n, p) => `${n} is in the water before the sentence finishes and comes up with a tile nobody else had thought to look for yet.`,
+  (n, p) => `The first tile on any board belongs to ${n}, who does not stop to enjoy it.`,
+  (n, p) => `${n} goes down knowing what ${p.sub} ${vb(p, 'wants', 'want')}, which is the difference between a dive and a search.`,
+];
+
+const DIP_PROGRESS = [
+  (n, p) => `${n} surfaces, places it without checking the board twice, and is back under before the water has settled.`,
+  (n, p) => `Another one for ${n}. ${p.Sub} ${vb(p, 'has', 'have')} stopped coming up for anything except air.`,
+  (n, p) => `${n} has worked out the order backwards, from the most recent eviction, and has stopped having to think about it at all.`,
+  (n, p) => `${n} is taking longer under than anybody and coming up with exactly the tile ${p.sub} went for.`,
+];
+
+const DIP_BREATH = [
+  (n, p) => `${n} is spending more of every dive getting back to the surface than getting to the bottom.`,
+  (n, p) => `${n} hangs on the ladder for a long moment before going again. The arithmetic of that is not good.`,
+  (n, p) => `${n} knows exactly which tile it is and cannot stay down long enough to reach it, which is the cruellest version of this competition.`,
+];
+
+const DIP_ROOM = [
+  () => `Somebody laughs at the wrong moment and it carries across the water further than they meant it to.`,
+  () => `The tanks are the only thing making noise in the yard. Everybody has stopped narrating their own board.`,
+  () => `A tile goes back into the water somewhere down the row and three people flinch.`,
+  () => `Every board in the yard is somebody's own season, laid out wrong.`,
+];
+
+const DIP_LEAD = [
+  (a, b) => `${a} places one that ${b} is still in the water looking for, and the boards stop being level.`,
+  (a, b) => `${b} has been ahead since the first dive. ${a} has not been faster, only wrong less often, and that is now the whole gap.`,
+  (a, b) => `The lead goes to ${a}. ${b} surfaces, sees the board, and goes straight back down without saying anything.`,
+];
+
 const DIP_BAD = [
   (n, p) => `${n} surfaces with a tile, checks the board, and realizes it belongs four spots earlier.`,
   (n, p) => `${n} turns back before reaching the bottom and comes up empty-handed.`,
@@ -604,55 +636,146 @@ export const memoryDip = {
   name: 'Memory Dip',
   category: 'memory',
   types: ['hoh', 'veto'],
-  desc: 'Tiles showing evicted houseguests are scattered along the bottom of each water tank. Players retrieve one tile per dive and arrange the faces in eviction order on a board beside the tank. The first correct board wins.',
+  desc: 'A row of water tanks holds puzzle tiles at the bottom, one houseguest to a tank, and every tile carries the face of somebody who has already left this house. They dive, bring up one tile at a time, and lay them out on the board at the side of the tank in the exact order those houseguests were evicted. Air is the whole problem: a dive spent on the wrong tile is a dive nobody gets back, and a tile placed in the wrong slot has to be lifted and re-laid before anything after it counts. The first houseguest to finish their board in the correct order wins.',
   // The only competition in the library where the body and the memory compete
   // for the same lungful of air, so both carry real weight.
-  stats: { mental: 0.38, endurance: 0.26, physical: 0.20, intuition: 0.16 },
+  // Two separate jobs competing for one lungful of air, so they are two
+  // separate mixes: knowing WHICH tile, and being able to get to it. Kept
+  // additive rather than multiplied — see the note in simulate.
+  stats: { mental: 0.34, intuition: 0.28, endurance: 0.22, physical: 0.16 },
   roles: {
-    recall: { mental: 0.40, endurance: 0.27, physical: 0.21, intuition: 0.12 },
-    breath: { endurance: 1 },
+    // Which tile, and where in the order it goes.
+    recall: { mental: 0.55, intuition: 0.45 },
+    // How many dives there are to spend at all.
+    breath: { endurance: 0.58, physical: 0.42 },
   },
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.recall, swingBy: this.roles.breath, luck: 2.7, context, rng,
+      mix: this.roles.recall, luck: 2.7, context, rng,
     });
+    /* AIR IS ADDED, NOT MULTIPLIED, AND THAT IS DELIBERATE.
+       Two competitions here have already had to be widened because a second
+       stat was applied as a MULTIPLIER: capacity times willingness on the
+       poles, hands times patience on the rope. A multiplier compounds, so
+       whoever is good at both collects both and drifts toward owning the
+       competition. Breath is a flat swing of about plus or minus three
+       instead, which is the difference between a strong swimmer getting more
+       dives and a strong swimmer winning by default — and it keeps the two
+       halves of this competition genuinely in tension rather than stacked. */
+    for (const e of entries) {
+      const air = aptitude(e.name, this.roles.breath);
+      const recall = aptitude(e.name, this.roles.recall);
+      const bonus = (air - 5) * 0.55;
+      breakdown[e.name].air = Math.round(air * 100) / 100;
+      breakdown[e.name].recall = Math.round(recall * 100) / 100;
+      breakdown[e.name].airBonus = Math.round(bonus * 100) / 100;
+      breakdown[e.name].score = Math.round((e.score + bonus) * 100) / 100;
+      e.score += bonus;
+    }
+    entries.sort((a, b) => b.score - a.score);
+
     const say = makePicker(rng);
     const gone = (context.house || []).length;
     const beats = [beat(
-      `Eviction tiles sit at the bottom of each tank. The houseguests must retrieve them one at a time and arrange them in the correct order.`,
+      `Faces at the bottom of the water, in an order this house made itself over ${gone ? 'the last few weeks' : 'the season'}. Everybody looks at the tanks for a second longer than they need to.`,
       participants.slice(0, 3), 'INTO THE WATER')];
 
+    /* The same arc the rope has, for the same reason: a competition narrated
+       through three failures and a winner is a summary of one. Every card that
+       names somebody resolves their board too, so the tanks fill in step with
+       the log. */
+    const [winner, runnerUp] = entries;
+    const revealAt = {};
+    const field = entries.length;
     const worst = [...entries].reverse();
-    worst.slice(0, Math.min(3, Math.max(1, worst.length - 2))).forEach(e => {
+    const strugglers = worst.filter(e => e.name !== winner.name && e.name !== runnerUp?.name);
+
+    const early = entries[Math.min(1, field - 1)] || winner;
+    beats.push(beat(say(DIP_FIRST)(early.name, pronouns(early.name)), [early.name], 'FIRST TILE', 'blue'));
+
+    // Throwers are capped at two — see the note on the rope. The rest of the
+    // back of the field is people the water beat.
+    const CARDED = Math.max(2, Math.min(6, Math.round(field * 0.35)));
+    const threw = strugglers.filter(e => e.threw);
+    const tried = strugglers.filter(e => !e.threw);
+    const carded = [...threw.slice(0, 2), ...tried.slice(0, Math.max(0, CARDED - Math.min(2, threw.length)))]
+      .sort((a, b) => strugglers.indexOf(a) - strugglers.indexOf(b));
+
+    carded.forEach((e, i) => {
       const p = pronouns(e.name);
+      revealAt[e.name] = beats.length;
       if (e.threw) {
         beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
-        return;
+      } else {
+        // Out of air or out of memory — the two ways to lose this, told apart
+        // by which of the two this houseguest actually had.
+        const shortOfAir = (breakdown[e.name]?.air ?? 5) < (breakdown[e.name]?.recall ?? 5);
+        beats.push(shortOfAir
+          ? beat(say(DIP_BREATH)(e.name, p), [e.name], 'OUT OF AIR', 'red')
+          : beat(say(DIP_BAD)(e.name, p), [e.name], 'WRONG TILE', 'red'));
       }
-      beats.push(beat(say(DIP_BAD)(e.name, p), [e.name], 'WRONG TILE', 'red'));
+      if (i === 0 || i === Math.floor(CARDED / 2)) {
+        beats.push(beat(say(DIP_ROOM)(), participants.slice(0, 3), 'THE ROW', 'grey'));
+      }
+      const mover = entries[Math.min(2 + i, Math.max(0, field - 1))];
+      if (mover && mover.name !== e.name && mover.name !== winner.name) {
+        revealAt[mover.name] = beats.length;
+        beats.push(beat(say(DIP_PROGRESS)(mover.name, pronouns(mover.name)), [mover.name], 'PLACED', 'blue'));
+      }
     });
 
-    const [winner, runnerUp] = entries;
-    beats.push(beat(say(DIP_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IN ORDER', 'gold'));
+    const used = new Set(carded.map(e => e.name));
+    const stalled = entries.slice(Math.floor(field / 2)).find(e =>
+      !used.has(e.name) && e.name !== winner.name && e.name !== runnerUp?.name);
+    if (stalled) {
+      revealAt[stalled.name] = beats.length;
+      beats.push(beat(say(DIP_BREATH)(stalled.name, pronouns(stalled.name)),
+        [stalled.name], 'ON THE LADDER', 'grey'));
+    }
+
     if (runnerUp) {
+      beats.push(beat(say(DIP_LEAD)(winner.name, runnerUp.name),
+        [winner.name, runnerUp.name], 'THE LEAD', 'gold'));
+      api.popDelta(winner.name, 1);
+    }
+
+    for (const e of entries) {
+      if (revealAt[e.name] == null && e.name !== winner.name && e.name !== runnerUp?.name) {
+        revealAt[e.name] = beats.length;
+      }
+    }
+
+    if (runnerUp) {
+      revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
-        `${runnerUp.name} returns with the final tile just after ${winner.name} completes the board.`,
+        `${runnerUp.name} finishes the board a tile later and spends the rest of the night working out which dive it was.`,
         [runnerUp.name], 'ONE DIVE SHORT', 'blue'));
       api.popDelta(runnerUp.name, 1);
     }
+    revealAt[winner.name] = beats.length;
+    beats.push(beat(say(DIP_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IN ORDER', 'gold'));
     // Tiles laid in the right order, dives spent getting them, and the ones
     // brought up wrong. Dives always exceed tiles — that is the competition.
     const TILES = 8;
     const placed = quantise(entries, { top: TILES, floor: 0, jitter: 0.7, rng });
-    const wrong = quantise([...entries].reverse(), { top: 5, floor: 0, jitter: 0.8, rng });
     return toResult(entries, { beats, breakdown, variant: 'memory-dip',
       detail: {
         tiles: TILES,
-        runs: entries.map(e => {
-          const good = Math.min(TILES, Math.round(placed[e.name]));
-          const bad = Math.round(wrong[e.name]);
-          return { name: e.name, placed: good, wrong: bad, dives: good + bad, threw: e.threw };
+        runs: entries.map((e, i) => {
+          // Only the winner finishes the board.
+          const good = i === 0 ? TILES : Math.min(TILES - 1, Math.round(placed[e.name]));
+          const rec = breakdown[e.name]?.recall ?? 5;
+          const air = breakdown[e.name]?.air ?? 5;
+          // Wasted dives come off RECALL and nothing else, so the screen and
+          // the maths say the same thing: the houseguest who did not know
+          // which tile it was is the one who spent air finding out.
+          const bad = Math.max(0, Math.min(5, Math.round((10 - rec) / 2.1)));
+          return {
+            name: e.name, placed: good, wrong: bad, dives: good + bad, threw: e.threw,
+            air: Math.round(air * 10) / 10, recall: Math.round(rec * 10) / 10,
+            revealAt: revealAt[e.name] ?? 0,
+          };
         }),
       } });
   },
@@ -680,7 +803,7 @@ export const shipTilYouDrop = {
   name: 'Ship Til You Drop',
   category: 'endurance',
   types: ['hoh', 'tiebreaker'],
-  desc: 'Houseguests balance a growing stack of boxes against their bodies while a new box is added at every signal. They may use their arms, shoulders, chin or knees, but no box may touch the deck. Dropping any box eliminates them; the last player holding a complete stack wins.',
+  desc: 'The houseguests stand on the deck holding a box against their body, and then another, and then another, added at a steady rate that never slows down for anybody. They may balance them any way they can manage — arms, chin, shoulder, hip — but the boxes have to be held by the body, and the ground cannot take any of the weight. The moment a box drops, that houseguest is finished. Whoever is still standing under their stack when everybody else has lost theirs wins, and the load is built to beat every single person eventually.',
   // A hold that gets heavier. Physical carries more here than in the other
   // endurance comps because the load genuinely grows; endurance is how long
   // the arms answer once it has.
@@ -750,7 +873,7 @@ export const dominoEffect = {
   name: 'Domino Effect',
   category: 'precision',
   types: ['veto', 'arena'],
-  desc: 'Each houseguest must recreate a displayed pattern with dominoes. Any section knocked over early must be rebuilt. Once the pattern is complete, they tip the first domino; the first player whose full chain falls cleanly wins.',
+  desc: 'Each houseguest gets a mat, a crate of dominoes and the pattern they have been told to build, and they stand every tile themselves. Nothing may be propped, glued or blocked. The cruelty is that the run only counts once it is set off deliberately at the end: a tile knocked early takes everything after it down too, and all of those have to be stood back up before another one can be added. The first houseguest to finish their pattern and topple it in one clean run wins.',
   // Hands and nerve, with mental reading the route before building it. Nothing
   // physical about it beyond keeping still, which is temperament's job here.
   stats: { intuition: 0.34, temperament: 0.30, mental: 0.24, physical: 0.12 },

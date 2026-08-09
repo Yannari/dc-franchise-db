@@ -18935,7 +18935,7 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
 export function rpBuildBBThemeBeat(ep, act) {
   const week = ep?.num ?? ep?.episode ?? '';
   const hostile = act?.mood === 'hostile';
-  return `<div class="rp-page bb-room bb-block bbth${hostile ? ' is-hostile' : ''}" data-ambient="tension">
+  return `<div class="rp-page bb-room bb-block bbth${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
     <style>
       .bbth{--bbth-eye:var(--theme-accent,#c02040)}
       .bbth.is-hostile{--bbth-eye:var(--theme-glow,#ff2d55)}
@@ -21294,6 +21294,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
           label: act.speaker || 'The Voice',
           html: rpBuildBBThemeBeat(view, act),
         });
+        // The act can end up HOSTING house life it has nothing to do with.
+        // `_attachRomance` hangs its beats on the last 'house' act and falls
+        // back to the last act on the week; a compressed cycle has no house
+        // acts at all, and the antagonist's vote line is pushed before romance
+        // is attached — so in the back half of a double eviction this act is
+        // the host. The screen is one card by design and has nowhere to draw
+        // them, so they go where every other displaced beat goes: folded into
+        // the next House Life stretch, or the flush at the end of the cycle.
+        if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
       case 'twist-announcement':
         // One screen per gathering. Two rules read out in the same week are two

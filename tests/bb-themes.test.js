@@ -504,6 +504,7 @@ describe('the antagonist picking what to say', () => {
 
 import { summariseWeek } from '../js/bb-run.js';
 import { rpBuildBBThemeBeat } from '../js/vp-screens.js';
+import { BED_CATALOG } from '../js/audio.js';
 
 describe('theme acts reach the audience', () => {
   const week = {
@@ -530,6 +531,87 @@ describe('theme acts reach the audience', () => {
     expect(html).toContain('The Voice');
     expect(html).toContain('Week 3. Begin.');
     expect(html).toContain('rp-page');
+  });
+
+  // `bedForScreen` passes an explicit `data-ambient` through verbatim, and
+  // `resolveBed` returns null for a name the catalogue does not have — at which
+  // point `_applyAmbient` stops whatever was playing and leaves the screen in
+  // silence. A misspelt bed is therefore WORSE than no bed at all, and it
+  // cannot be seen by looking at the screen.
+  it('asks for a bed the audio catalogue actually has', () => {
+    const html = rpBuildBBThemeBeat({ num: 3 }, week.acts[0]);
+    const bed = (html.match(/data-ambient="([^"]+)"/) || [])[1];
+    expect(bed, 'the screen names no bed at all').toBeTruthy();
+    expect(Object.keys(BED_CATALOG)).toContain(bed);
+  });
+});
+
+import { players, relationships } from '../js/core.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
+import { buildVPScreens } from '../js/vp-screens.js';
+import { generateSummaryText } from '../js/text-backlog.js';
+import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
+
+// The three integration points, exercised through the doors a user actually
+// arrives on rather than by calling the builder directly. Calling
+// `rpBuildBBThemeBeat` proves the function works; it does not prove anything
+// ever calls it, and `buildVPScreens`/`generateSummaryText` are where a
+// forgotten `case` goes silent. Deleting either case turns this red.
+describe('the antagonist reaches the reader and the backlog', () => {
+  const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
+    'Hicks', 'Emmah', 'Millie', 'Caleb'];
+  const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater',
+    'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard'];
+  const CAST = NAMES.map((name, i) => ({
+    name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
+  }));
+
+  // House life beats can end up ON this act. `_attachRomance` hosts them on the
+  // last `'house'` act, and a compressed cycle — the back half of a double
+  // eviction — has none, so it falls back to the last act on the week. The
+  // antagonist's vote line is pushed before romance is attached, which makes it
+  // exactly that act. Whichever writer drops them, drops a showmance forming.
+  const BEAT = { badgeText: 'SHOWMANCE', badgeClass: 'badge-romance',
+    text: 'Bowie and Chase sat up talking long after the lights went out.' };
+  const themeAct = () => ({
+    type: 'theme-beat', hook: 'open', speaker: 'The Voice',
+    line: 'Week 3. Begin.', mood: 'hostile', themeId: 'voiced',
+    players: [], badgeText: 'The Voice', badgeClass: 'badge-twist',
+    socialBeats: [{ ...BEAT }],
+  });
+
+  /** A real played week, so the writers get an episode with everything on it. */
+  function playedWeek() {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
+      ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
+      bbHaveNots: 'off', bbSafetyMode: 'off', twistSchedule: [] });
+    const ep = withSeededRandom(17, () => simulateBBEpisode());
+    ep.acts.unshift(themeAct());
+    return ep;
+  }
+
+  it('draws a screen for it in the viewing party', () => {
+    const screens = buildVPScreens(playedWeek()) || [];
+    expect(screens.some(s => s.label === 'The Voice'), 'no screen for the voice').toBe(true);
+    const html = screens.map(s => s.html || '').join('');
+    expect(html).toContain('Week 3. Begin.');
+  });
+
+  it('does not lose the house life the week hung on that act', () => {
+    const html = (buildVPScreens(playedWeek()) || []).map(s => s.html || '').join('');
+    expect(html, 'the beats hosted on the theme act were dropped').toContain(BEAT.text);
+  });
+
+  it('writes it into the in-app backlog', () => {
+    const text = generateSummaryText(playedWeek());
+    expect(text).toMatch(/the voice/i);
+    expect(text).toContain('Week 3. Begin.');
+    expect(text, 'the beats hosted on the theme act were dropped').toContain(BEAT.text);
   });
 });
 

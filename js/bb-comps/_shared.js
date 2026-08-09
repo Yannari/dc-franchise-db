@@ -16,7 +16,7 @@
 // it freely for both outcome and text. Reproducibility comes from the seed.
 
 import { pStats } from '../players.js';
-import { shouldThrowHoh, gunningFor } from '../bb/strategy.js';
+import { shouldThrowHoh, shouldThrowVeto, gunningFor } from '../bb/strategy.js';
 
 export const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -56,12 +56,12 @@ export function makePicker(rng) {
  * the same variety everywhere.
  */
 export const THROW_LINES = [
-  n => `${n} bows out at a point that would be embarrassing if it were an accident. It is not an accident.`,
-  n => `${n} goes early, shrugs, and does not meet anyone's eye on the way past.`,
-  n => `${n} makes a show of trying for about a minute and then stops making a show of it.`,
-  n => `${n} could have stayed in that a lot longer. Everybody watching knows it, and ${n} knows they know.`,
-  n => `${n} throws it, badly, in the way of someone who has never had to pretend before.`,
-  n => `${n} steps out with the timing of a person who worked out days ago that winning this would be the worst thing that could happen to ${n}.`,
+  n => `${n} ends the attempt early and does not bother selling it as a mistake.`,
+  n => `${n} is out almost immediately. The shrug afterward makes the choice look deliberate.`,
+  n => `${n} gives it a token effort, then quits before the competition has properly settled in.`,
+  n => `${n} stops while there is clearly more left in the tank. Nobody watching buys it as an accident.`,
+  n => `${n} makes one careless move, checks who noticed, and walks away from the competition.`,
+  n => `${n} takes the quick exit. Whatever the plan was tonight, winning was not part of it.`,
 ];
 
 /**
@@ -91,7 +91,21 @@ export function aptitude(name, mix) {
  * power than by letting somebody else hold it.
  */
 export function throwRead(name, context, rng) {
-  if (context.type !== 'hoh' || context.allowThrowing === false) return { threw: false, chance: 0 };
+  if (context.allowThrowing === false) return { threw: false, chance: 0 };
+  // ── AND THE VETO, WHICH THIS REFUSED TO CONSIDER ──
+  //
+  // `shouldThrowVeto` has existed in strategy.js the whole time, with exactly
+  // the right motive on it: a houseguest ducks the veto because they do not
+  // want to be the one holding a decision that makes somebody an enemy either
+  // way. js/bb/comps.js honours it. This function — which is what every
+  // THEMED competition scores through — returned `{threw:false}` for anything
+  // that was not an HOH comp, so the whole motive quietly did not exist on any
+  // week whose veto had a set built for it. Two engines, one of them deaf.
+  if (context.type === 'veto') {
+    const read = shouldThrowVeto(name, context);
+    return { threw: rng() < read.throwChance, chance: read.throwChance };
+  }
+  if (context.type !== 'hoh') return { threw: false, chance: 0 };
   const read = shouldThrowHoh(name, context.house || []);
   return { threw: rng() < read.throwChance, chance: read.throwChance };
 }

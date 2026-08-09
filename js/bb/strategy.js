@@ -827,6 +827,48 @@ export function campaignAttempt(nominee, voter, opponent, rng = Math.random) {
   return { nominee, voter, success, strength: clamp((persuasion - resistance) / 3, -2, 2), archetype: archetype(nominee) };
 }
 
+/**
+ * Can this houseguest even see the reason to throw?
+ *
+ * Throwing is not a mood, it is a read: you have to be able to work out that
+ * holding the power costs you more than it buys, which is a piece of game
+ * analysis. A challenge beast with no strategic sense does not sandbag a
+ * competition to stay small — they win it because winning is what they do, and
+ * then deal with the consequences afterwards. That is the correct behaviour for
+ * that player and the model was letting them duck comps like a veteran.
+ *
+ * The curve matters as much as the idea. Squaring the read was the first
+ * attempt and it was wrong in a way this file has been burned by before — it
+ * quartered the rate for an ORDINARY houseguest and would have quietly deleted
+ * throwing from the game rather than gating it, the same way a 3.2 slop
+ * deterrent once drove every throw chance to a flat zero.
+ *
+ * So it collapses at the bottom and not in the middle: a challenge beast on
+ * strategic 2 / mental 2 / intuition 3 never throws anything, an ordinary
+ * houseguest keeps about half, and a genuine reader keeps all of it.
+ */
+export function throwLiteracy(name) {
+  const s = pStats(name) || {};
+  const read = ((s.strategic || 5) * 0.55 + (s.mental || 5) * 0.25 + (s.intuition || 5) * 0.20) / 10;
+  return clamp((read - 0.28) / 0.42, 0, 1);
+}
+
+/**
+ * And how much of the game is left to be clever with.
+ *
+ * Nobody puts their game in jeopardy when it is not necessary, and the later it
+ * gets the less necessary it ever is: at eleven players a thrown competition
+ * costs you a week of being small, at six it can cost you the season. So the
+ * whole idea gets rarer as the house shrinks, and around the final handful it
+ * is close to gone — by then every competition is survival and there is no such
+ * thing as a week worth sitting out.
+ */
+export function throwPressure(house = []) {
+  const left = (house || []).length || (gs.activePlayers || []).length || 8;
+  // 1.0 with a full house, falling away as the field tightens, ~0 at final 5.
+  return clamp((left - 5) / 7, 0, 1);
+}
+
 export function shouldThrowHoh(name, house, context = {}) {
   const stats = pStats(name);
   const enemies = house.filter(other => other !== name && getPerceivedBond(name, other) <= -3).length;
@@ -855,9 +897,14 @@ export function shouldThrowHoh(name, house, context = {}) {
   const slopLive = seasonConfig.bbHaveNots !== 'off' && (context.type || 'hoh') === 'hoh';
   const slopRisk = slopLive ? 0.9 + enemies * 0.3 : 0;
 
+  // Reading the game, and how much game is left to read. See throwLiteracy and
+  // throwPressure: a clueless challenge beast never throws anything, and
+  // nobody throws at final six.
+  const literacy = throwLiteracy(name);
+  const pressure = throwPressure(house);
   return {
-    throwChance: clamp((liability - slopRisk) / 16, 0, 0.62),
-    enemies, safety, liability, slopRisk,
+    throwChance: clamp((liability - slopRisk) / 16, 0, 0.62) * literacy * pressure,
+    enemies, safety, liability, slopRisk, literacy, pressure,
   };
 }
 
@@ -921,10 +968,18 @@ export function shouldThrowVeto(name, context = {}) {
   // Somebody with a target of their own wants the week to stay pointed at it.
   if (plan?.targets?.length && !nominees.includes(plan.targets[0])) blood += 0.06;
 
-  const reason = blood > 0.34
+  // Same two brakes as the crown. Ducking the veto is a more sophisticated read
+  // than ducking the Head of Household — you are reasoning about a decision you
+  // have not been handed yet — so it needs the analysis even more, and it needs
+  // the same late-game silence: at final six there is no such thing as a veto
+  // worth not holding.
+  const literacy = throwLiteracy(name);
+  const pressure = throwPressure(context.house || []);
+  const throwChance = clamp(blood, 0, 0.5) * literacy * pressure;
+  const reason = throwChance > 0.12
     ? 'would rather not be the one holding the decision'
     : 'wants it';
-  return { throwChance: clamp(blood, 0, 0.5), reason, nerve };
+  return { throwChance, reason, nerve, literacy, pressure };
 }
 
 /**

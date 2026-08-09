@@ -152,17 +152,42 @@ describe('Big Brother competition library', () => {
       .toBeGreaterThan(winnersOver(skill, seeds));
   });
 
-  it('lets houseguests throw the Head of Household, but not the veto', () => {
-    // Throwing an HOH is signature Big Brother; throwing a veto you are playing
-    // to save yourself is not a thing the engine should invent.
+  it('lets houseguests throw either one, and never a nominee', () => {
+    // This used to assert the veto could not be thrown at all, on the grounds
+    // that "throwing a veto you are playing to save yourself is not a thing the
+    // engine should invent" — which is the NOMINEE case, and `shouldThrowVeto`
+    // has always returned a flat zero for anybody on the block.
+    //
+    // What it was really pinning was a deafness. js/bb/comps.js honoured
+    // `shouldThrowVeto`; the shared scorer that every THEMED competition runs
+    // through returned `{threw:false}` for anything that was not an HOH comp,
+    // so ducking the veto quietly did not exist on any week whose competition
+    // had a set built for it. Two engines, one of them not listening, and a
+    // test that had frozen the wrong one.
+    //
+    // A non-nominee ducking the veto is signature Big Brother: you do not want
+    // to be the one holding a decision that makes somebody an enemy either way.
     const anyThrew = res => Object.values(res.debug.scoreBreakdown || {}).some(b => b.threw);
+    const threwNames = res => Object.entries(res.debug.scoreBreakdown || {})
+      .filter(([, b]) => b.threw).map(([n]) => n);
     const hohSeeds = [1, 3, 5, 7, 9, 11, 13, 15].map(s => runBBCompetition({
       type: 'hoh', participants: HOUSE.slice(0, 8), house: HOUSE, library: BB_COMPETITIONS,
       forcedId: 'bb-endurance-wall', rng: seededRng(s), week: { num: 3 },
     }));
     expect(hohSeeds.some(anyThrew)).toBe(true);
-    const veto = run(BB_COMPETITIONS.find(c => c.types.includes('veto')), 'veto');
-    expect(anyThrew(veto)).toBe(false);
+
+    // The rule that actually holds: whoever is on that block plays for it.
+    const nominees = [HOUSE[0], HOUSE[1]];
+    const vetoSeeds = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19].map(s => runBBCompetition({
+      type: 'veto', participants: HOUSE.slice(0, 6), house: HOUSE, library: BB_COMPETITIONS,
+      forcedId: 'bb-endurance-wall', nominees, hoh: HOUSE[7],
+      rng: seededRng(s), week: { num: 3 },
+    }));
+    for (const res of vetoSeeds) {
+      for (const name of threwNames(res)) {
+        expect(nominees, `${name} threw the one competition that saves them`).not.toContain(name);
+      }
+    }
   });
 
   // The bug class that has bitten this project repeatedly: written, wired,
@@ -176,13 +201,20 @@ describe('Big Brother competition library', () => {
     // Laser Maze — undrawn on this seed set. A library that grows needs a sweep
     // that grows with it, and more draws is still cheaper and more honest than
     // relaxing what the sweep asserts.
-    for (const seed of [11, 23, 37, 44, 58, 63, 71, 88, 94, 101, 117, 129, 136, 149, 158, 167]) {
+    // Twenty seasons, not sixteen. Same reason as the two bumps before it and
+    // the same remedy: the sweep re-rolls whenever any code consumes the rng
+    // differently, and giving throwing a literacy gate did exactly that —
+    // one healthy competition dropped out of the sample without becoming
+    // any less reachable. More seasons is the fix; a shorter list of
+    // required competitions would be the test quietly giving up.
+    for (const seed of [11, 23, 37, 44, 58, 63, 71, 88, 94, 101, 117, 129, 136, 149, 158, 167,
+      173, 181, 194, 203]) {
       reset();
       // Five of the eight seasons run the Block Buster, because the arena has
       // games of its own now and a sweep that never opens the arena reports
       // thirteen live competitions as dead code. The HEADLESS engine takes the
       // mode as an option — seasonConfig is the played path's knob.
-      const arenaSeason = [11, 23, 44, 63, 88, 101, 129, 149, 167].includes(seed);
+      const arenaSeason = [11, 23, 44, 63, 88, 101, 129, 149, 167, 181, 203].includes(seed);
       const { weeks } = simulateBBSeason({
         rng: seededRng(seed), finaleSize: 3,
         houseEvents: HOUSE_EVENTS, competitions: BB_COMPETITIONS,

@@ -34,6 +34,7 @@ import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
 import { playInterrogation, playMysteryCompetitor, playMysteryVeto } from './secret-power-plays.js';
 import { activeSeasons } from '../franchise-meta.js';
+import { applyVetoFallout } from './veto-fallout.js';
 import { DEFAULT_ROSTER } from '../roster-data.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
@@ -3356,6 +3357,10 @@ export function simulateBBWeek(options = {}) {
       vetoPlayers: [...vetoPlayers], house, hoh, rng,
     });
     const diamond = isDiamond(week.vetoRules);
+    // The block as it stood BEFORE the medallion moved anybody, which the
+    // fallout needs: who was already sitting there is a different grievance
+    // from who got seated because of it.
+    const preCeremonyBlock = [...nominees];
     let vetoDecision = shouldUseVeto(vetoWinner, nominees, plan, rng, { hoh, house, diamond, hohSecret });
     // A veto that MUST be used stops being a decision about whether and starts
     // being a decision about who — and the holder cannot decline it just
@@ -3512,9 +3517,8 @@ export function simulateBBWeek(options = {}) {
       // and the writer for it existed unused — obligation was empty across
       // entire seasons while the veto decision was busy READING it. Saving
       // yourself creates no debt to anybody.
-      if (vetoDecision.save && vetoDecision.save !== vetoWinner) {
-        try { recordProtection(vetoWinner, vetoDecision.save, { strength: 1.6, ep: week.num }); } catch { /* texture */ }
-      }
+      // Moved into applyVetoFallout with everything else the ceremony costs —
+      // it used to be the ONLY consequence in the whole ceremony.
       }
     }
     week.finalNominees = [...nominees];
@@ -3652,7 +3656,21 @@ export function simulateBBWeek(options = {}) {
       }
     }
 
-    week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
+    // ── WHAT IT COST ──
+    //
+    // One line lived here before: a debt recorded when somebody was saved. Not
+    // using it cost nothing, being seated as the replacement cost nothing, and
+    // a Head of Household could watch their target walk off the block with no
+    // consequence at all. See veto-fallout.js.
+    let vetoFallout = { beats: [], damage: 0, resented: [] };
+    try {
+      vetoFallout = applyVetoFallout({ week, holder: vetoWinner, decision: vetoDecision,
+        priorBlock: preCeremonyBlock, nominees: [...nominees], replacement,
+        hoh, plan, house, rng });
+    } catch { /* the ceremony stands whatever the fallout does */ }
+    week.vetoFallout = { damage: vetoFallout.damage, resented: [...vetoFallout.resented] };
+
+    const vetoCeremonyAct = addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
       // A DUOS VETO TAKES TWO OFF AND PUTS TWO ON. Without these the ceremony
       // screen stamped one face and drew one replacement for a decision that
       // moved four people, so the twist's own rule was invisible at the
@@ -3679,7 +3697,15 @@ export function simulateBBWeek(options = {}) {
       // event on this act that needs to know who came down was reading null,
       // and veto-saved-gratitude could never fire.
       { nominees: [...blockAfterCeremony], vetoWinner,
-        saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
+        saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use });
+    // AFTER addBeats, never inside it. `addBeats` ASSIGNS `act.socialBeats`
+    // from the ambient event library — it does not merge — so handing the
+    // fallout in on the object literal wrote it and then threw it away one line
+    // later, which is the same written-and-unreachable shape as the rest of
+    // this week's bugs. The ceremony's own consequences go first; the ambient
+    // house beats follow them.
+    vetoCeremonyAct.socialBeats = [...vetoFallout.beats, ...(vetoCeremonyAct.socialBeats || [])];
+    week.acts.push(vetoCeremonyAct);
     revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
       saved: vetoDecision.save || null });
     // ── AFTER the ceremony, because it happens after the ceremony ──

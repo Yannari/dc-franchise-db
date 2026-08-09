@@ -183,6 +183,32 @@ export function refreshReturneeAvatars(list = players) {
   });
 }
 
+/**
+ * Does this character have a returnee portrait, right now, synchronously?
+ *
+ * The whole returnee-art system was invisible from the outside: the variant
+ * quietly appeared on the card of somebody flagged as returning and there was
+ * no way to tell, before flagging them, whether one even existed. So a cast
+ * builder could not say "this one has returnee art and that one does not",
+ * which is the only question anybody actually asks about it.
+ *
+ * Returns false until the manifest has loaded — and kicks that load off — so a
+ * caller can render immediately and repaint when it resolves.
+ */
+export function hasReturneeArt(playerOrSlug) {
+  const base = typeof playerOrSlug === 'string'
+    ? playerOrSlug.replace(/-returnee$/, '')
+    : baseAvatarSlug(playerOrSlug);
+  if (!base) return false;
+  if (!_returneeManifest) { _loadReturneeManifest(); return false; }
+  return _returneeManifest.has(base);
+}
+
+/** Resolves once the returnee list is known, for callers that want to repaint. */
+export function whenReturneeArtKnown() {
+  return _loadReturneeManifest();
+}
+
 function _afterAvatarChange() {
   // Re-render the cast + persist, via the window hooks (avoids a circular import).
   if (typeof window !== 'undefined') {

@@ -7,7 +7,8 @@ import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
 import { seasonFormat, formatIsRunnable, formatName } from './core.js';
-import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug } from './players.js';
+import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug,
+  hasReturneeArt, whenReturneeArtKnown } from './players.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
 import { persistFranchiseLedger } from './savestate.js';
@@ -180,6 +181,7 @@ export function editPlayer(id) {
   document.getElementById('f-archetype').value = p.archetype||'';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc||'';
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = p.isReturnee || false;
+  _updateReturneeArtHint();
   putStats(p.stats);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
   document.getElementById('submit-btn').textContent = 'Update Player';
@@ -229,7 +231,8 @@ export function filterRoster(query) {
   dd.innerHTML = matches.map((p, i) =>
     `<div class="roster-item" data-i="${i}" onmousedown="fillFromRoster(${JSON.stringify(p).replace(/"/g,'&quot;')})"
       style="padding:7px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span>${p.name}</span>
+      <span>${p.name}${hasReturneeArt(p)
+    ? ' <span title="Has a returnee portrait" style="font-size:9px;letter-spacing:.5px;color:#a78bfa">RET</span>' : ''}</span>
       <span style="font-size:10px;color:var(--muted)">${p.archetype||''}</span>
     </div>`
   ).join('');
@@ -262,6 +265,7 @@ export function fillFromRoster(p) {
   if (p.stats) putStats(p.stats);
   // Always default to non-returnee when adding from roster — set per-season in cast builder
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
+  _updateReturneeArtHint();
 }
 
 // Close dropdown when clicking outside
@@ -678,7 +682,40 @@ export async function renderSeasonSaveList() {
 // CAST RENDER
 // ══════════════════════════════════════════════════════════════════════
 
+/**
+ * Repaint once the returnee list is known.
+ *
+ * `hasReturneeArt` answers false until the manifest resolves, and the existing
+ * refresh only repaints when a SLUG changes — which never happens for somebody
+ * who is not flagged as returning. So the "returnee art available" marker would
+ * have been missing on first paint and never appeared.
+ */
+let _retArtRepainted = false;
+function _repaintWhenReturneeArtKnown() {
+  if (_retArtRepainted) return;
+  _retArtRepainted = true;
+  try { whenReturneeArtKnown().then(() => { try { renderCast(); _updateReturneeArtHint(); } catch {} }); } catch {}
+}
+
+/** Says whether the character in the form has returnee art, before you tick it. */
+export function _updateReturneeArtHint() {
+  const el = document.getElementById('f-returnee-art');
+  if (!el) return;
+  const name = document.getElementById('f-name')?.value?.trim();
+  if (!name) { el.textContent = ''; return; }
+  const entry = FRANCHISE_ROSTER.find(r => r.name === name);
+  const slug = entry ? baseAvatarSlug(entry) : name.toLowerCase().replace(/\s+/g, '-');
+  if (hasReturneeArt(slug)) {
+    el.textContent = '· returnee portrait available';
+    el.style.color = '#a78bfa';
+  } else {
+    el.textContent = '· no returnee art — the normal portrait is used';
+    el.style.color = 'var(--muted)';
+  }
+}
+
 export function renderCast() {
+  _repaintWhenReturneeArtKnown();
   const grid = document.getElementById('cast-grid');
   if (!players.length) {
     grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div><p>No players yet. Add one or click <strong>S9 Cast</strong> / <strong>S10 Cast</strong>.</p></div>`;
@@ -702,6 +739,11 @@ export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
   const ovPct=((ov-1)/9*100).toFixed(0), isEd=editingId===p.id;
   const avatar=`<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
+  // Which portrait is actually on screen. The variant used to appear silently
+  // on a returnee's card and there was no way to tell it had — or to tell, for
+  // anybody else, that one existed at all.
+  const retArt = hasReturneeArt(p);
+  const showingRet = retArt && p.isReturnee && p._returneeAvatarOk;
   const statBars=STATS.map(s=>`<div class="sbar-row"><span class="sbar-key" style="color:${s.color}">${s.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${p.stats[s.key]/10*100}%;background:${s.color}"></div></div><span class="sbar-val">${p.stats[s.key]}</span></div>`).join('');
   return `<div class="player-card ${isEd?'editing':''}" id="card-${p.id}">
     <div class="card-tribe-bar" style="background:${tc}"></div>
@@ -714,6 +756,11 @@ export function renderCard(p) {
             ? `<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>` : ''}
           <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
+          ${showingRet
+    ? '<span class="archetype-tag" title="Drawn with this character&apos;s returnee portrait" style="background:rgba(139,92,246,0.16);color:#a78bfa">Returnee art</span>'
+    : retArt && !p.isReturnee
+      ? '<span class="archetype-tag" title="A returnee portrait exists — tick Returning to use it" style="background:rgba(139,92,246,0.08);color:#7c6aa8">Returnee art available</span>'
+      : ''}
         </div>
       </div>
     </div>

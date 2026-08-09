@@ -267,7 +267,7 @@ export const tightrope = {
   name: 'Tightrope',
   category: 'balance',
   types: ['hoh', 'arena', 'tiebreaker'],
-  desc: 'The houseguests must cross a tightrope suspended above a safety net. If they fall, they return to the starting platform and lose all of their progress. The first person to reach the other side wins.',
+  desc: 'A single rope is strung between two platforms above a safety net, and each houseguest has to cross it. There is nothing to hold and nothing to lean on, and no way over but along the rope itself. A fall costs the whole trip rather than a few seconds: anybody who touches the net climbs back to the platform they started from and begins the crossing again from nothing. The first houseguest to reach the far side wins, which is why hurrying is the most expensive thing anybody does out there.',
   // Balance under nerve. Intuition is the constant micro-correction, boldness
   // is being willing to commit to a step at all, and temperament is what stops
   // a wobble becoming a fall.
@@ -467,7 +467,14 @@ export const feelingKnotty = {
           // Knots pulled tighter comes off temperament rather than out of a
           // second roll, so the screen and the maths agree: the houseguest the
           // rope beat is the one who fought it.
-          const fought = Math.max(0, Math.min(KNOTS - clear, Math.round((10 - pat) / 2.2)));
+          /* NOT CAPPED BY WHAT IS LEFT ON THE ROPE.
+             It was min(KNOTS - clear, ...), which collapsed the whole range:
+             anybody one knot short reported exactly one tightened whatever
+             their temperament, so a patient houseguest and a furious one drew
+             identically and the stat the competition is built on became
+             invisible at the only place it is shown. A knot you pulled tighter
+             is damage you did whether or not you later got it open. */
+          const fought = Math.max(0, Math.min(4, Math.round((10 - pat) / 2.2)));
           return {
             name: e.name, opened: clear, tightened: fought, threw: e.threw,
             patience: pat, revealAt: revealAt[e.name] ?? 0,

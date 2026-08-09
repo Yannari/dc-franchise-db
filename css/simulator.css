@@ -77,16 +77,6 @@
       --bbx-faint:       #39424e;      /* screen numbering, dead labels     */
       --bbx-glyph:       #232c37;      /* the mark a screen shows before it reveals */
       --bbx-display:     var(--font-display);
-      /* Colour forms of the triplets above. The stylesheet mostly wants the
-         triplet (so it can derive washes), but the SCREEN BUILDERS paint
-         inline — `style="color:…"` — and an inline style can only use a
-         finished colour. Same source of truth either way. */
-      --bbx-danger:      rgb(var(--bbx-danger-rgb));
-      --bbx-note:        rgb(var(--bbx-note-rgb));
-      --bbx-key:         rgb(var(--bbx-key-rgb));
-      --bbx-good:        rgb(var(--bbx-good-rgb));
-      --bbx-info:        rgb(var(--bbx-info-rgb));
-      --bbx-dim:         rgb(var(--bbx-dim-rgb));
     }
 
     /* ── Strategy grammar components (reusable across every strategic VP surface) ── */
@@ -2874,6 +2864,28 @@
     .rp-set-hosted-camp .rp-page::before {
       opacity:.07;
       background: repeating-linear-gradient(135deg, rgba(240,192,64,.25) 0 2px, transparent 2px 20px); }
+
+    /* ── Colour forms of the weekly tokens ──────────────────────────────
+       The stylesheet mostly wants the RGB triplet, because it derives washes
+       from it. The screen BUILDERS paint inline — `style="color:…"` — and an
+       inline style can only take a finished colour, so each triplet needs a
+       colour twin.
+
+       Declared on `.rp-page`, NOT on `:root`, and that is the whole point. A
+       custom property's value is computed where it is DECLARED: put
+       `--bbx-danger: rgb(var(--bbx-danger-rgb))` on `:root` and the inner var
+       resolves against `:root` immediately, baking in the default before a
+       theme on `#vp-screen-content` ever gets a say. The theme would retint
+       every stylesheet rule and leave every inline colour on the old palette.
+       Declared here, below where the theme class sits, they resolve in the
+       theme's context and follow it — including into a mood. */
+    .rp-page {
+      --bbx-danger: rgb(var(--bbx-danger-rgb));
+      --bbx-note:   rgb(var(--bbx-note-rgb));
+      --bbx-key:    rgb(var(--bbx-key-rgb));
+      --bbx-good:   rgb(var(--bbx-good-rgb));
+      --bbx-info:   rgb(var(--bbx-info-rgb));
+      --bbx-dim:    rgb(var(--bbx-dim-rgb)); }
 
     /* ── VP: per-SEASON theme skin (applied to #vp-screen-content as .rp-theme-<x>) ──
        Stacked ON TOP of the venue skin above rather than replacing it: a themed

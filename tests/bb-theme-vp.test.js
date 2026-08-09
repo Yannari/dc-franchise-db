@@ -176,9 +176,18 @@ describe('the weekly screens are drawn in tokens', () => {
   const rootTokens = new Set(
     [...rootBlock.matchAll(/(--bbx-[a-z0-9-]+)\s*:/g)].map(m => m[1]));
 
+  // Two legitimate declaration sites, and the difference matters — see the
+  // colour-form describe at the end of this file. What must hold is that every
+  // token has a default OUTSIDE a theme block, so an unthemed reader is never
+  // left undressed.
   it('gives every token a default, so an unthemed season is never undressed', () => {
+    const formBlock = css.slice(css.indexOf('.rp-page {', css.indexOf('Colour forms of the weekly tokens')));
+    const formTokens = new Set(
+      [...formBlock.slice(0, formBlock.indexOf('}')).matchAll(/(--bbx-[a-z0-9-]+)\s*:/g)].map(m => m[1]));
     expect(rootTokens.size).toBeGreaterThan(10);
-    for (const t of declared) expect(rootTokens, `${t} has a :root default`).toContain(t);
+    for (const t of declared) {
+      expect(rootTokens.has(t) || formTokens.has(t), `${t} has a default outside a theme`).toBe(true);
+    }
   });
 
   it('never references a token that was never declared', () => {
@@ -285,5 +294,40 @@ describe('replaying an early week shows the room as it was', () => {
     const { weekToEpisode } = await import('../js/bb-run.js');
     const ep = weekToEpisode({ num: 2, acts: [], themeMood: 'neutral' });
     expect(ep.themeMood).toBe('neutral');
+  });
+});
+
+// Where a token is DECLARED decides whether a theme can move it.
+//
+// `--bbx-danger: rgb(var(--bbx-danger-rgb))` looks like it belongs beside the
+// triplets in :root. Put it there and it silently stops working: a custom
+// property's value is computed where it is declared, so the inner var()
+// resolves against :root and bakes in the default before a theme on
+// #vp-screen-content is ever consulted. The stylesheet would retint and every
+// inline `style="color:…"` in the builders would stay on the old palette —
+// which is exactly the bug this test was written after.
+describe('the colour-form tokens are declared where a theme can reach them', () => {
+  const css = fs.readFileSync(CSS_PATH, 'utf8');
+  const COLOUR_FORMS = ['--bbx-danger', '--bbx-note', '--bbx-key', '--bbx-good', '--bbx-info', '--bbx-dim'];
+  const rootBlock = css.slice(css.indexOf(':root'), css.indexOf('}', css.indexOf(':root')));
+
+  it('never declares a colour form in :root, where it would bake in the default', () => {
+    for (const t of COLOUR_FORMS) {
+      expect(rootBlock, `${t} must not be declared in :root`).not.toContain(`${t}:`);
+    }
+  });
+
+  it('declares every colour form below the theme class, on .rp-page', () => {
+    const block = css.slice(css.indexOf('.rp-page {', css.indexOf('Colour forms of the weekly tokens')));
+    const body = block.slice(0, block.indexOf('}'));
+    for (const t of COLOUR_FORMS) {
+      expect(body, `${t} is declared on .rp-page`).toContain(`${t}:`);
+    }
+  });
+
+  it('keeps every triplet in :root, so an unthemed reader still has a palette', () => {
+    for (const t of COLOUR_FORMS) {
+      expect(rootBlock, `${t}-rgb has a :root default`).toContain(`${t}-rgb:`);
+    }
   });
 });

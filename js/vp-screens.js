@@ -15684,7 +15684,7 @@ function _bbScene(scene) {
  * A screen of scenes with click-to-reveal, dimming what has not happened yet —
  * lifted from the Total Drama scouting screen so the pacing feels identical.
  */
-function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stateKey, scenes, header = '', footer = '', room = 'bb-power' }) {
+function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = 'var(--bbx-note)', stateKey, scenes, header = '', footer = '', room = 'bb-power' }) {
   // A double eviction plays the same acts twice in one episode, so every
   // reveal state has to be told which half it belongs to — otherwise the
   // second HOH shares a click-state with the first and they reveal together.
@@ -15698,8 +15698,8 @@ function _bbSceneScreen(ep, { eyebrow, title, subtitle, accent = '#f0a500', stat
   // once two chairs are occupied, studio red on eviction night.
   let html = `<div class="rp-page bb-room ${room}">
     <div class="rp-eyebrow">${eyebrow}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:${accent};text-shadow:0 0 20px ${accent}33;margin-bottom:6px">${title}</div>
-    ${subtitle ? `<div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:18px">${subtitle}</div>` : ''}
+    <div style="font-family:var(--bbx-display);font-size:26px;letter-spacing:2px;text-align:center;color:${accent};text-shadow:0 0 20px color-mix(in srgb, ${accent} 20%, transparent);margin-bottom:6px">${title}</div>
+    ${subtitle ? `<div style="text-align:center;font-size:12px;color:var(--bbx-dim);margin-bottom:18px">${subtitle}</div>` : ''}
     ${header}`;
 
   scenes.forEach((scene, i) => {
@@ -16128,17 +16128,17 @@ const _BB_LOAD = new Set(['deals', 'ceremonies', 'phases']);
 const _BBF_ROOM_ORDER = ['hoh-room', 'living-room', 'kitchen', 'backyard',
                          'bedroom', 'pantry', 'washroom', 'diary-room'];
 const _BBF_ROOM_META = {
-  'hoh-room':    { label: 'HOH ROOM',    accent: '#f0a500' },
+  'hoh-room':    { label: 'HOH ROOM',    accent: 'var(--bbx-note)' },
   'living-room': { label: 'LIVING ROOM', accent: '#c9343c' },
-  kitchen:       { label: 'KITCHEN',     accent: '#3fb950' },
-  backyard:      { label: 'BACKYARD',    accent: '#58a6ff' },
+  kitchen:       { label: 'KITCHEN',     accent: 'var(--bbx-good)' },
+  backyard:      { label: 'BACKYARD',    accent: 'var(--bbx-info)' },
   bedroom:       { label: 'BEDROOM',     accent: '#a371f7' },
   pantry:        { label: 'PANTRY',      accent: '#d29922' },
-  washroom:      { label: 'WASHROOM',    accent: '#8b949e' },
+  washroom:      { label: 'WASHROOM',    accent: 'var(--bbx-dim)' },
   'diary-room':  { label: 'DIARY ROOM',  accent: '#ff7b72' },
 };
 const _bbfRoom = key => _BBF_ROOM_META[key]
-  || { label: String(key || 'HOUSE').replace(/-/g, ' ').toUpperCase(), accent: '#8b949e' };
+  || { label: String(key || 'HOUSE').replace(/-/g, ' ').toUpperCase(), accent: 'var(--bbx-dim)' };
 
 /** Drawn, not emoji — each room gets a mark that reads at 14 pixels. */
 function _bbfRoomIcon(key, accent) {
@@ -16902,16 +16902,16 @@ function _bbfPanels(ep, house, opening, act = null, houseActs = []) {
 
 /** What kind of competition this is, and what it looks like. */
 const _BBC_CATEGORY = {
-  endurance: { label: 'ENDURANCE', accent: '#58a6ff', blurb: 'Last one still standing.' },
-  physical:  { label: 'PHYSICAL',  accent: '#f85149', blurb: 'Fastest through it.' },
+  endurance: { label: 'ENDURANCE', accent: 'var(--bbx-info)', blurb: 'Last one still standing.' },
+  physical:  { label: 'PHYSICAL',  accent: 'var(--bbx-danger)', blurb: 'Fastest through it.' },
   puzzle:    { label: 'PUZZLE',    accent: '#a371f7', blurb: 'First to solve it.' },
-  quiz:      { label: 'QUIZ',      accent: '#3fb950', blurb: 'Who was paying attention.' },
+  quiz:      { label: 'QUIZ',      accent: 'var(--bbx-good)', blurb: 'Who was paying attention.' },
   precision: { label: 'PRECISION', accent: '#d29922', blurb: 'Steadiest hands.' },
   luck:      { label: 'LUCK',      accent: '#ff7b72', blurb: 'Nobody can train for this one.' },
-  social:    { label: 'SOCIAL',    accent: '#f0a500', blurb: 'Won on people, not on hands.' },
+  social:    { label: 'SOCIAL',    accent: 'var(--bbx-note)', blurb: 'Won on people, not on hands.' },
   memory:    { label: 'MEMORY',    accent: '#8b5cf6', blurb: 'Who was watching, and who remembers.' },
 };
-const _bbcCat = c => _BBC_CATEGORY[c] || { label: String(c || 'COMPETITION').toUpperCase(), accent: '#f0a500', blurb: '' };
+const _bbcCat = c => _BBC_CATEGORY[c] || { label: String(c || 'COMPETITION').toUpperCase(), accent: 'var(--bbx-note)', blurb: '' };
 
 /**
  * The competition, as a scoreboard that fills in.
@@ -17075,7 +17075,7 @@ export function rpBuildBBVetoDraw(ep) {
 
   return `<div class="rp-page bb-room bb-block bbns">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">THE VETO DRAW</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-good);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-good) 20%, transparent);margin-bottom:4px">THE VETO DRAW</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Six play. Three of them find out here.</div>
     ${stage}
     <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
@@ -17797,7 +17797,7 @@ export function rpBuildBBNominations(ep, only = null) {
   </style>` : '';
   return `${DUO_CSS}<div class="rp-page bb-room bb-block bbns">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">NOMINATION CEREMONY</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-danger);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-danger) 20%, transparent);margin-bottom:4px">NOMINATION CEREMONY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${
       anon ? `Big Brother turns ${WORD} keys. The hand behind them stays hidden.` : hoh ? `${hoh} turns ${WORD} keys.` : ''}</div>
 
@@ -18765,7 +18765,7 @@ export function rpBuildBBSafety(ep) {
 
   return `<div class="rp-page bb-room bb-live bbar">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px #f0a50033;margin-bottom:4px">THE BLOCK BUSTER</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-note);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-note) 20%, transparent);margin-bottom:4px">THE BLOCK BUSTER</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">Three on the block. One walks off it. The vote is tonight.</div>
     <div class="bbns-card is-key" style="margin-bottom:14px">
       <div class="bbns-card-h"><span class="bbns-pill gold">HOW TO PLAY</span><strong>${_bbEsc(comp?.name || 'Block Buster')}</strong></div>
@@ -20132,7 +20132,7 @@ export function rpBuildBBCeremony(ep) {
 
   return `<div class="rp-page bb-room bb-block bbns bbvc${isDiamond ? ' bbvc-dmd' : ''}">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#3fb950;text-shadow:0 0 20px #3fb95033;margin-bottom:4px">${isDiamond ? 'DIAMOND VETO CEREMONY' : 'VETO CEREMONY'}</div>
+    <div class="bbvc-title" style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-good);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-good) 20%, transparent);margin-bottom:4px">${isDiamond ? 'DIAMOND VETO CEREMONY' : 'VETO CEREMONY'}</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${isDiamond
       ? `${_bbEsc(holder || '')} holds a veto that keeps the empty chair.`
       : `${_bbEsc(holder || '')} holds the only power left this week.`}</div>
@@ -20169,7 +20169,7 @@ export function rpBuildBBCampaign(ep) {
   </div>` : '';
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'THE CAMPAIGN',
-    subtitle: 'Every conversation can move a vote.', accent: '#58a6ff', header, room: 'bb-block',
+    subtitle: 'Every conversation can move a vote.', accent: 'var(--bbx-info)', header, room: 'bb-block',
     stateKey: `bb_camp_${ep.num}`, scenes,
   });
 }
@@ -20373,7 +20373,7 @@ export function rpBuildBBVotingPlans(ep) {
   const nominees = (act?.nominees || []).filter(Boolean);
   return `<div class="rp-page bb-room bb-block">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#58a6ff;text-shadow:0 0 20px #58a6ff33;margin-bottom:4px">VOTING PLANS</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-info);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-info) 20%, transparent);margin-bottom:4px">VOTING PLANS</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">The week's vote, built room by room — before the Diary Room asks.</div>
     ${_bbopAlliancePlans(op)}
     ${_bbopRecruitment(op)}
@@ -21073,7 +21073,7 @@ export function rpBuildBBEviction(ep) {
 
   return `<div class="rp-page bb-room bb-live bbns bbev">
     <div class="rp-eyebrow">Week ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">EVICTION NIGHT</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:var(--bbx-danger);text-shadow:0 0 20px color-mix(in srgb, var(--bbx-danger) 20%, transparent);margin-bottom:4px">EVICTION NIGHT</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">One houseguest leaves tonight.</div>
     ${stage}
     <div class="bbns-feed">${steps.map((step, i) => card(step, i)).join('')}</div>
@@ -21109,7 +21109,7 @@ export function rpBuildBBHaveNots(ep) {
   return _bbSceneScreen(ep, {
     eyebrow: `Week ${ep.num}`, title: 'HAVE-NOTS',
     subtitle: 'The bottom of the competition goes on slop.',
-    accent: '#58a6ff', room: 'bb-block',
+    accent: 'var(--bbx-info)', room: 'bb-block',
     stateKey: `bb_hn_${ep.num}`,
     header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${names.map(n => rpPortrait(n, 'lg')).join('')}</div>`,
     scenes: [
@@ -21156,7 +21156,7 @@ export function rpBuildBBDeparture(ep) {
     eyebrow: `Week ${ep.num}`,
     title: expelled ? 'EXPULSION' : 'A HOUSEGUEST WALKS',
     subtitle: expelled ? 'Removed from the house.' : 'Nobody voted. Nobody had to.',
-    accent: '#f85149', room: 'bb-live',
+    accent: 'var(--bbx-danger)', room: 'bb-live',
     stateKey: `bb_dep_${ep.num}`,
     header: `<div class="rp-portrait-row" style="justify-content:center;margin-bottom:14px">${rpPortrait(act.name, 'xl')}</div>`,
     scenes: expelled ? [
@@ -21201,7 +21201,7 @@ export function rpBuildBBInstantEviction(ep) {
   </div>` : '';
 
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'INSTANT EVICTION', accent: '#f85149', room: 'bb-live',
+    eyebrow: `Week ${ep.num}`, title: 'INSTANT EVICTION', accent: 'var(--bbx-danger)', room: 'bb-live',
     subtitle: seq
       ? 'The Head of Household nominates alone, behind a locked door, and cannot take it back.'
       : 'No veto. No ceremony. The block is already final.',
@@ -21231,7 +21231,7 @@ export function rpBuildBBInstantEviction(ep) {
 function _bbDoubleBreak(ep) {
   const d = ep.doubleEviction || {};
   return _bbSceneScreen(ep, {
-    eyebrow: `Week ${ep.num}`, title: 'AND WE ARE NOT DONE', accent: '#f0a500', room: 'bb-live',
+    eyebrow: `Week ${ep.num}`, title: 'AND WE ARE NOT DONE', accent: 'var(--bbx-note)', room: 'bb-live',
     subtitle: 'The front door has not finished closing.',
     stateKey: `bb_dbl_${ep.num}`,
     scenes: [
@@ -23639,7 +23639,7 @@ export function rpBuildBBFinaleHouse(ep, act) {
     eyebrow: `Week ${ep.num} — the final three`,
     title: 'THE LAST QUIET DAYS',
     subtitle: 'Three people, a wall of photographs, and a quiz to revise for.',
-    accent: '#58a6ff', room: 'bb-room',
+    accent: 'var(--bbx-info)', room: 'bb-room',
     stateKey: `bb_fhouse_${ep.num}`, scenes,
   });
 }
@@ -23656,12 +23656,12 @@ export function rpBuildBBFinalHohPart(ep, act) {
   const n = act.partNum || 1;
   const meta = n === 1
     ? { title: 'PART ONE', sub: 'Everybody plays. The winner sits out Part Two and waits.',
-      accent: '#58a6ff', room: 'bb-room' }
+      accent: 'var(--bbx-info)', room: 'bb-room' }
     : n === 2
       ? { title: 'PART TWO', sub: 'The two who lost Part One. The winner meets the waiting one.',
-        accent: '#f0a500', room: 'bb-power' }
+        accent: 'var(--bbx-note)', room: 'bb-power' }
       : { title: 'PART THREE', sub: 'Two finalists, seven jurors, and the last power in the house.',
-        accent: '#f85149', room: 'bb-power' };
+        accent: 'var(--bbx-danger)', room: 'bb-power' };
   const scenes = [
     { text: `${act.participants.join(', ')} play ${act.competition?.name
       ? `<em>${_bbEsc(act.competition.name)}</em>` : 'for the last power in the house'}.`,
@@ -23703,7 +23703,7 @@ export function rpBuildBBFinalHoh(ep) {
     eyebrow: `Week ${ep.num} — finale`,
     title: 'THE FINAL HEAD OF HOUSEHOLD',
     subtitle: 'Three parts. One of them ends up choosing who sits at the end.',
-    accent: '#f0a500', room: 'bb-power',
+    accent: 'var(--bbx-note)', room: 'bb-power',
     stateKey: `bb_fhoh_${ep.num}`, scenes,
   });
 }

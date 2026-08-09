@@ -102,6 +102,95 @@ export const servesSlot = (comp, type) => (type === 'final'
   ? FINAL_SLOT_TYPES.some(t => (comp.types || []).includes(t))
   : (comp.types || []).includes(type));
 
+/**
+ * What kind of season this is, in competitions.
+ *
+ * Every comp declares which stats decide it — `{ mental:.48, intuition:.27, … }`
+ * — and until now nothing read those at selection time, so which stats mattered
+ * in a season was whatever the draw happened to produce. A run could go eight
+ * weeks without an endurance comp and the wall-sitters would simply never get a
+ * night, with nothing in the setup to say that had happened or to ask for
+ * otherwise.
+ *
+ * `balanced` is not "no bias" — it is an ACTIVE one. It looks at which stats
+ * have already decided competitions this season and favours the comps that
+ * serve whatever has been idle, so a full season uses the whole cast's range.
+ * Leaving it alone would be uniform selection, which is not the same thing: a
+ * fair coin lands on one side four times in a row often enough to flatten a
+ * season.
+ *
+ * The leans tilt rather than exclude. `physical` on a mostly-mental library
+ * should still run mental comps — a season with one kind of night in it is a
+ * worse season, not a more physical one.
+ */
+export const BB_COMP_MIXES = Object.freeze({
+  balanced:  { label: 'Balanced — every stat gets a night', lean: null },
+  physical:  { label: 'More physical', lean: ['physical', 'endurance'] },
+  mental:    { label: 'More mental', lean: ['mental', 'intuition'] },
+  endurance: { label: 'More endurance', lean: ['endurance', 'temperament'] },
+  social:    { label: 'More social', lean: ['social', 'strategic'] },
+});
+
+/** The season's setting, defaulting to balanced rather than to no rule at all. */
+export function bbCompMix(config = seasonConfig) {
+  const asked = config?.bbCompMix;
+  return BB_COMP_MIXES[asked] ? asked : 'balanced';
+}
+
+/**
+ * How much of each stat this season's competitions have already asked for.
+ *
+ * Accumulated from the comp's own weights, so a comp that is 48% mental counts
+ * as 0.48 of a mental night rather than one. The alternative — counting only
+ * the dominant stat — throws away everything a comp does second, and most of
+ * them are decided by two or three.
+ */
+function statsSpent() {
+  const spent = {};
+  for (const stat of VALID_STATS) spent[stat] = 0;
+  for (const entry of gs.bb?.competitionHistory || []) {
+    for (const [stat, weight] of Object.entries(entry.stats || {})) {
+      if (stat in spent) spent[stat] += Number(weight) || 0;
+    }
+  }
+  return spent;
+}
+
+/**
+ * The mix's multiplier for one competition.
+ *
+ * Bounded on both sides deliberately. A season that has never run an endurance
+ * comp should make the next one likely, not certain — the draw is still a draw,
+ * and a scheduler that guarantees the gap gets filled produces a rota rather
+ * than a season.
+ */
+function mixWeight(comp, mix) {
+  const stats = comp?.stats || {};
+  const setting = BB_COMP_MIXES[mix] || BB_COMP_MIXES.balanced;
+
+  if (setting.lean) {
+    // How much of this competition is decided by the stats being asked for.
+    const share = setting.lean.reduce((n, stat) => n + (Number(stats[stat]) || 0), 0);
+    // 0 share is not 0 weight: a mental comp in a physical season still airs.
+    return 0.5 + share * 2.2;
+  }
+
+  const spent = statsSpent();
+  const total = Object.values(spent).reduce((a, b) => a + b, 0);
+  // Nothing has run yet — every comp is equally new.
+  if (total <= 0) return 1;
+  const average = total / Object.keys(spent).length;
+  // A comp is worth more the more it serves stats this season has neglected.
+  let score = 0;
+  for (const [stat, weight] of Object.entries(stats)) {
+    const w = Number(weight) || 0;
+    if (!w) continue;
+    const hunger = average > 0 ? (average - (spent[stat] || 0)) / average : 0;
+    score += w * hunger;
+  }
+  return clamp(1 + score * 1.4, 0.35, 2.6);
+}
+
 function selectionWeight(comp, type, ctx) {
   if (!servesSlot(comp, type)) return 0;
   const recent = gs.bb?.recentCompetitionCategories || [];
@@ -115,7 +204,10 @@ function selectionWeight(comp, type, ctx) {
   const used = (gs.bb?.competitionHistory || []).some(h => h.id === comp.id);
   const freshness = used ? 0.15 : 1;
   const custom = typeof comp.weight === 'function' ? Math.max(0, Number(comp.weight(ctx)) || 0) : 1;
-  return cooldown * freshness * custom;
+  // What kind of season this is. See BB_COMP_MIXES — `balanced` actively
+  // favours the stats that have been idle, rather than meaning "no rule".
+  const mix = mixWeight(comp, bbCompMix());
+  return cooldown * freshness * custom * mix;
 }
 
 function chooseCompetition(library, type, ctx, rng, forcedId) {
@@ -336,6 +428,11 @@ export function runBBCompetition(options = {}) {
   gs.bb ||= {};
   gs.bb.recentCompetitionCategories = [...(gs.bb.recentCompetitionCategories || []), comp.category].slice(-3);
   gs.bb.competitionHistory ||= [];
-  gs.bb.competitionHistory.push({ week:context.week?.num || 0, type, id:comp.id, winner:result.winner, category:comp.category });
+  // `stats` rides along because the balanced mix reads what a season has
+  // already asked of the cast, and the history is the only record of it. Copied
+  // rather than referenced: the library object is shared across every season in
+  // the process.
+  gs.bb.competitionHistory.push({ week:context.week?.num || 0, type, id:comp.id,
+    winner:result.winner, category:comp.category, stats:{ ...(comp.stats || {}) } });
   return result;
 }

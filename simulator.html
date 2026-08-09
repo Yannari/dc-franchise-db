@@ -538,6 +538,24 @@
               <span class="bbopt-fixed-k">Endgame</span>
               <span>Always a final three: a three-part Head of Household, then the jury votes.</span>
             </div>
+            <!-- Every competition declares which stats decide it, and nothing read
+                 those when choosing one, so which stats mattered in a season was
+                 whatever the draw happened to produce — eight weeks with no
+                 endurance night and the wall-sitters never got one. -->
+            <div class="form-group" id="grp-bb-comp-mix">
+              <label class="form-label">Competition mix</label>
+              <select id="cfg-bb-comp-mix" onchange="saveConfig()" class="form-input">
+                <option value="balanced">Balanced &mdash; every stat gets a night</option>
+                <option value="physical">More physical</option>
+                <option value="mental">More mental</option>
+                <option value="endurance">More endurance</option>
+                <option value="social">More social</option>
+              </select>
+              <div class="hint hint-tight">Balanced is an active rule, not the absence of one: it
+                favours whatever the season has not asked for yet, so the whole cast's range decides
+                something. The leans tilt without excluding &mdash; a mental comp still airs in a
+                physical season.</div>
+            </div>
             <div class="form-group" id="grp-bb-safety">
               <label class="form-label">BB Block Buster</label>
               <select id="cfg-bb-safety" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">

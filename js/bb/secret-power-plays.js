@@ -27,6 +27,20 @@ const beat = (text, players, badgeText, badgeClass) =>
   ({ text, players: [...(players || [])], badgeText, badgeClass });
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
+/** Weighted pick, so the door opens on somebody worth opening it for. */
+function weighted(items, weightOf, rng) {
+  const list = (items || []).filter(Boolean);
+  if (!list.length) return null;
+  const ws = list.map(i => Math.max(0.01, weightOf(i)));
+  const total = ws.reduce((a, b) => a + b, 0);
+  let roll = rng() * total;
+  for (const [i, item] of list.entries()) {
+    roll -= ws[i];
+    if (roll <= 0) return item;
+  }
+  return list[list.length - 1];
+}
+
 /** The one live instance of a power whose rule flag matches, or null. */
 function livePower(rule, week) {
   for (const inst of gs.bb?.powers || []) {
@@ -279,7 +293,7 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
  * should not learn it.
  */
 export function playMysteryCompetitor({ week, nominees = [], players = [], alumni = [],
-  rng = Math.random } = {}) {
+  library = [], hoh = null, rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('vetoProxy', weekNum);
   if (!inst) return null;
@@ -288,18 +302,85 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   if (!players.length || !alumni.length) return null;
 
   usePower(inst, weekNum);
-  const guest = alumni[Math.floor(rng() * alumni.length)];
-  // Somebody drawn has to give up their spot, and it is not the holder — the
-  // point is a SECOND body in the draw.
-  const displaced = players.filter(n => n !== inst.holder)[
-    Math.floor(rng() * Math.max(1, players.filter(n => n !== inst.holder).length))] || null;
 
-  // The alumnus is good, not certain. A competition is still a competition.
-  const won = rng() < 0.44;
+  // The competition is drawn FIRST, because the guest is chosen to suit it —
+  // you do not summon a wall-sitter to a puzzle.
+  const eligible = (library || []).filter(c => c?.stats && (c.types || []).includes('veto'));
+  const comp0 = eligible.length
+    ? eligible[Math.floor(rng() * eligible.length)]
+    : { id: 'proxy-veto', name: 'the yard', stats: { physical: .4, mental: .3, endurance: .3 } };
+
+  // ── who walks through the door ──
+  //
+  // `alumni` are people from FINISHED seasons, handed in by the caller. The
+  // first version filtered the current cast for anybody not in the house, which
+  // is not an alumnus — it is somebody this season evicted three weeks ago, who
+  // is sitting in the jury and cannot walk back in for an afternoon.
+  //
+  // Weighted toward the ones worth putting on television: a winner is a bigger
+  // moment than a mid-placer, and the door opening on somebody who went out
+  // ninth in season four is not the same scene.
+  // Chosen for THIS competition, not for fame. `pStats` returns flat defaults
+  // for anybody outside the current cast, so the only honest signal about an
+  // alumnus is their record — and `chalWins` is a competition record, which is
+  // exactly the question being asked. Somebody who won five is a better call
+  // for a veto than somebody who won a season on social game.
+  //
+  // Weighted rather than a hard best-pick: the house is summoning who it wants,
+  // and the best available player is not always the one somebody thinks of.
+  const pick = weighted(alumni, a => {
+    // If they happen to be in the current cast — a returnee — their real stats
+    // are known and beat any proxy.
+    const st = pStats(a.name);
+    const fit = Object.entries(comp0.stats || {})
+      .reduce((sum, [stat, w]) => sum + (st[stat] || 0) * w, 0);
+    return 1 + Math.max(0, (a.chalWins || 0)) * 0.9 + (a.winner ? 1.1 : 0)
+      + (a.finalist ? 0.5 : 0) + fit * 0.35;
+  }, rng);
+  const guest = pick?.name || String(pick || alumni[0]?.name || alumni[0]);
+
+  // ── one of the randomly drawn spots ──
+  //
+  // The wiki is specific: the guest takes "one of the two randomly selected
+  // Veto spots". So the person bumped is a DRAWN player — never the Head of
+  // Household and never a nominee, who are in that yard by right and cannot be
+  // sent out of it by somebody else's power.
+  const drawn = players.filter(n => n !== inst.holder && n !== hoh && !nominees.includes(n));
+  const displaced = drawn.length ? drawn[Math.floor(rng() * drawn.length)] : null;
+
+  const comp = comp0;
+  const scoreOf = name => {
+    const st = pStats(name) || {};
+    return Object.entries(comp.stats || {})
+      .reduce((sum, [stat, weight]) => sum + (st[stat] || 0) * weight, 0);
+  };
+  // ── two chances, which is the point of the power ──
+  //
+  // The wiki: it "doubles their chances at winning POV". The holder is still in
+  // this competition and can win it themselves in the ordinary way — this is a
+  // SECOND route, not a replacement for the first. So the number the guest has
+  // to beat is the rest of the yard, and the holder's own run is decided by the
+  // real competition exactly as it would have been.
+  const field = players.filter(n => n !== displaced && n !== inst.holder);
+  const best = field.length ? Math.max(...field.map(scoreOf)) : 5;
+  // The guest's own form, from their record rather than invented: a winner
+  // plays like a winner. Plus the same swing everybody else gets.
+  // Their form on THIS competition: the record they were picked for, plus real
+  // stats when the franchise actually has them.
+  const guestStats = pStats(guest);
+  const guestFit = Object.entries(comp.stats || {})
+    .reduce((sum, [stat, w]) => sum + (guestStats[stat] || 0) * w, 0);
+  const form = guestFit + (pick?.winner ? 1.4 : 0) + (pick?.finalist ? 0.6 : 0)
+    + Math.min(2.2, (pick?.chalWins || 0) * 0.45);
+  const posted = Math.round((form + (rng() * 3 - 1.4)) * 10) / 10;
+  const bar = Math.round(best * 10) / 10;
+  const won = posted >= bar;
 
   const beats = [beat(
     'The veto draw stops. There is a name in the bag that does not belong to anybody in this '
-      + `house, and the door opens for somebody who has played this game before: ${guest}.`,
+      + `house, and the door opens for somebody who has played this game before: ${guest}`
+      + `${pick?.seasonName ? `, out of ${pick.seasonName}` : ''}`
+      + `${pick?.winner ? ', who won it' : pick?.finalist ? ', who sat at the end of it' : ''}.`,
     [inst.holder], 'A NAME NOBODY EXPECTED', 'gold')];
   if (displaced) {
     beats.push(beat(
@@ -307,20 +388,27 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
         + 'will be able to explain to them.',
       [displaced], 'BUMPED', 'red'));
   }
+  beats.push(beat(
+    `${guest} plays ${comp.name} against the best of them. The number to beat is ${bar.toFixed(1)}.`,
+    [inst.holder], 'A STRANGER IN THE YARD', 'blue'));
   beats.push(won
-    ? beat(`${guest} wins it, and hands it straight to ${inst.holder}, who has been on the block `
-      + 'all week and is now not going anywhere. Somebody paid for that, weeks ago, in private.',
-    [inst.holder], 'PLAYED FOR, AND WON', 'gold')
-    : beat(`${guest} loses. ${inst.holder} bought a body in the draw and not a veto, and the whole `
-      + 'house just watched a stranger arrive for nothing.',
-    [inst.holder], 'FOR NOTHING', 'red'));
+    ? beat(`${posted.toFixed(1)}. ${guest} wins it and hands it straight to ${inst.holder}, who has `
+      + 'been on the block all week and is now not going anywhere. Somebody paid for that, weeks '
+      + 'ago, in private.',
+    [inst.holder], `${posted.toFixed(1)} v ${bar.toFixed(1)}`, 'gold')
+    : beat(`${posted.toFixed(1)}, against ${bar.toFixed(1)}. ${guest} loses, goes home again, and `
+      + `${inst.holder} has bought a body in the draw and nothing else.`,
+    [inst.holder], `${posted.toFixed(1)} v ${bar.toFixed(1)}`, 'red'));
 
-  return { type: 'mystery-competitor', holder: inst.holder, guest, displaced,
+  return {
+    type: 'mystery-competitor', holder: inst.holder, guest, displaced,
+    competition: { id: comp.id, name: comp.name, posted, bar },
     won, vetoTo: won ? inst.holder : null,
     ...shown(inst, 'veto-ceremony', won
-      ? `${guest} won the veto on ${inst.holder}'s behalf.`
-      : `${guest} played for ${inst.holder} and lost.`),
-    beats };
+      ? `${guest} won the veto on ${inst.holder}'s behalf, ${posted.toFixed(1)} against ${bar.toFixed(1)}.`
+      : `${guest} played for ${inst.holder} and lost it, ${posted.toFixed(1)} against ${bar.toFixed(1)}.`),
+    beats,
+  };
 }
 
 /**

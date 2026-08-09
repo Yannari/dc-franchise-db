@@ -32,6 +32,7 @@ import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
 import { playInterrogation, playMysteryCompetitor, playMysteryVeto } from './secret-power-plays.js';
+import { activeSeasons } from '../franchise-meta.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
@@ -3000,10 +3001,26 @@ export function simulateBBWeek(options = {}) {
     let mysteryGuest = null;
     if (!compressed) {
       try {
-        const alumni = (players || [])
-          .filter(p => p?.name && !house.includes(p.name))
-          .map(p => p.name);
-        mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni, rng });
+        // ── from FINISHED seasons, not from this one ──
+        //
+        // The first version filtered the current cast for anybody not in the
+        // house, which is not an alumnus: it is somebody this season evicted
+        // three weeks ago, sitting in the jury, who cannot walk back in for an
+        // afternoon. The franchise ledger is the record of who has actually
+        // played and finished, so the door opens on a real one — with their
+        // placement, so the screen can say who it is.
+        const alumni = [];
+        try {
+          for (const [num, rec] of Object.entries(activeSeasons() || {})) {
+            for (const [name, r] of Object.entries(rec?.players || {})) {
+              if (house.includes(name)) continue;
+              alumni.push({ name, seasonName: rec.seasonName || `Season ${num}`,
+                winner: !!r?.winner, finalist: !!r?.finalist, chalWins: r?.chalWins || 0 });
+            }
+          }
+        } catch { /* a franchise with no history has no alumni, and no twist */ }
+        mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni,
+          library: competitionLibrary, hoh, rng });
         if (mysteryGuest) {
           week.mysteryCompetitor = mysteryGuest;
           week.acts.push(addBeats(mysteryGuest, { players: [mysteryGuest.holder] }));

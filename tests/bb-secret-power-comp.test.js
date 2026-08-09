@@ -827,3 +827,87 @@ describe('the second veto is an actual competition', () => {
     expect(src).toMatch(/library: competitionLibrary \}\);/);
   });
 });
+
+describe('the mystery competitor is a real alumnus, in a real draw', () => {
+  const H = ['ana', 'ben', 'cleo', 'dev', 'eli', 'fay'];
+  const LIB = [{ id: 'w', name: 'The Wall', types: ['veto'],
+    stats: { endurance: 0.6, physical: 0.4 } }];
+  const ALUMNI = [
+    { name: 'Alejandro', seasonName: 'TD 4', winner: true, finalist: true, chalWins: 5 },
+    { name: 'Quiet', seasonName: 'TD 2', winner: false, finalist: false, chalWins: 0 },
+  ];
+  const seeded = seed => () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const run = async (over = {}, seed = 21) => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { playMysteryCompetitor } = await import('../js/bb/secret-power-plays.js');
+    setPlayers(H.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      stats: { physical: 6, endurance: 6, mental: 6, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 5 } })));
+    seasonConfig.jurySize = 2;
+    setGs({ bb: { powers: [], weeks: [], stats: {} }, activePlayers: [...H], bonds: {} });
+    grantPower('mystery-competitor', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+    return playMysteryCompetitor({
+      week: { num: 3 }, nominees: ['ben', 'eli'],
+      players: ['ana', 'ben', 'eli', 'cleo', 'dev'],
+      alumni: ALUMNI, library: LIB, hoh: 'ana', rng: seeded(seed), ...over,
+    });
+  };
+
+  it('takes one of the DRAWN spots, never the HOH or a nominee', async () => {
+    // The wiki is specific: "one of the two randomly selected Veto spots".
+    // The Head of Household and the nominees are in that yard by right and
+    // cannot be sent out of it by somebody else's power.
+    for (const seed of [3, 21, 77, 404]) {
+      const out = await run({}, seed);
+      if (!out?.displaced) continue;
+      expect(out.displaced, 'the Head of Household was bumped').not.toBe('ana');
+      expect(['ben', 'eli'], 'a nominee was bumped').not.toContain(out.displaced);
+    }
+  });
+
+  it('leaves the holder in the competition, which is the second chance', async () => {
+    // "Doubles their chances at winning POV" — the holder still plays and can
+    // win it themselves. This is a SECOND route, not a replacement.
+    const out = await run();
+    expect(out.displaced, 'the power bumped the person who paid for it').not.toBe('ben');
+    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
+    expect(src).toMatch(/const field = players\.filter\(n => n !== displaced && n !== inst\.holder\)/);
+  });
+
+  it('actually competes instead of flipping a coin', async () => {
+    const out = await run();
+    expect(out.competition, 'no competition behind the result').toBeTruthy();
+    expect(out.competition.name).toBe('The Wall');
+    expect(out.won).toBe(out.competition.posted >= out.competition.bar);
+    const text = out.beats.map(b => b.text).join(' ');
+    expect(text).toContain(out.competition.bar.toFixed(1));
+  });
+
+  it('picks for the competition, not for fame', async () => {
+    // `pStats` returns flat defaults for anybody outside the cast, so the only
+    // honest signal about an alumnus is their record — and `chalWins` is a
+    // competition record, which is the question being asked.
+    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
+    expect(src).toMatch(/const comp0 =/);
+    expect(src, 'the guest is chosen before the competition they are chosen for')
+      .toMatch(/comp0\.stats/);
+    expect(src).toMatch(/Math\.max\(0, \(a\.chalWins \|\| 0\)\) \* 0\.9/);
+  });
+
+  it('names where they came from', async () => {
+    const out = await run();
+    expect(out.beats[0].text).toMatch(/TD \d/);
+  });
+
+  it('draws from finished seasons, not from this one', () => {
+    // The first version filtered the current cast for anybody not in the house
+    // — which is not an alumnus, it is somebody this season evicted three weeks
+    // ago, sitting in the jury, who cannot walk back in for an afternoon.
+    const week = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
+    expect(week, 'still reading the current cast').not.toMatch(/alumni = \(players \|\| \[\]\)/);
+    expect(week, 'the franchise ledger is not consulted').toMatch(/activeSeasons\(\)/);
+  });
+});

@@ -36,7 +36,7 @@ import { playInterrogation, playMysteryCompetitor, playMysteryVeto,
   mysteryCompetitorResult } from './secret-power-plays.js';
 import { activeSeasons } from '../franchise-meta.js';
 import { applyVetoFallout } from './veto-fallout.js';
-import { DEFAULT_ROSTER } from '../roster-data.js';
+import { alumniPool } from '../alumni.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
@@ -3126,7 +3126,19 @@ export function simulateBBWeek(options = {}) {
         // afternoon. The franchise ledger is the record of who has actually
         // played and finished, so the door opens on a real one — with their
         // placement, so the screen can say who it is.
-        const alumni = [];
+        // ── WHO HAS ACTUALLY PLAYED A SEASON ──
+        //
+        // The franchise ledger first, and players_database.json — the real
+        // record — behind it. NOT the roster, which is a cast list rather than
+        // a career: everybody in the franchise is on it, including hosts who
+        // have never competed and characters scheduled for a season that has
+        // not aired, so the door opened on Chef Hatchet and then on somebody
+        // whose debut is still ahead of them.
+        //
+        // An empty pool means the twist does not fire, which is the correct
+        // answer to "who has played a season" in a franchise with no record of
+        // anybody having played one.
+        let alumni = [];
         try {
           for (const [num, rec] of Object.entries(activeSeasons() || {})) {
             for (const [name, r] of Object.entries(rec?.players || {})) {
@@ -3136,37 +3148,8 @@ export function simulateBBWeek(options = {}) {
             }
           }
         } catch { /* a franchise with no history has no alumni, and no twist */ }
-        // ── AND THE FALLBACK, WITHOUT WHICH THIS POWER CANNOT FIRE AT ALL ──
-        //
-        // `activeSeasons()` is the franchise ledger, and it is empty until a
-        // season has been recorded into it — which for a first Big Brother
-        // season is always. So `alumni` was always `[]`, and the very first
-        // line of the play is `if (!alumni.length) return null`. The power was
-        // granted, tracked, expired, and could not fire under any circumstance:
-        // measured over fifty seeded weeks it fired zero times, and the block
-        // rule everybody blamed only accounts for the other 86%.
-        //
-        // The roster is the show's own cast list and everybody on it has
-        // finished a season somewhere, which is the whole qualification. It
-        // carries real stats too, so the door opens on somebody who can
-        // actually play the competition rather than a name with a placement.
         if (!alumni.length) {
-          try {
-            // The live roster when the page has one — the user can import
-            // their own — and the shipped cast list otherwise, so this works
-            // headless and in a season that has recorded nothing yet.
-            const roster = globalThis.FRANCHISE_ROSTER || DEFAULT_ROSTER || [];
-            for (const r of roster) {
-              if (!r?.name || house.includes(r.name)) continue;
-              // Chris and Chef have never played a season in their lives. They
-              // are on the roster because the cast builder needs their sheets,
-              // not because they are alumni of anything, and the door opened on
-              // Chef Hatchet as "somebody who has played this game before".
-              if (r.host) continue;
-              alumni.push({ name: r.name, seasonName: null, stats: r.stats || null,
-                winner: false, finalist: false, chalWins: 0 });
-            }
-          } catch { /* no roster on this page either */ }
+          try { alumni = alumniPool({ exclude: house }); } catch { alumni = []; }
         }
         mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni,
           library: competitionLibrary, hoh, house, rng });
@@ -3263,6 +3246,10 @@ export function simulateBBWeek(options = {}) {
     // order-setter rather than a veto-awarder.
     let vetoOrderOnly = null;
     let pendingExchangeAct = null;
+    // Held back for the veto act, which does not exist yet — the guest's run
+    // belongs on the screen that shows the competition, not on the arrival
+    // card at the ceremony.
+    let pendingGuestBeats = null;
     vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
     // The guest is the one legal exception. This line exists to stop a hook
     // seating somebody who has been evicted, and it was also throwing out the
@@ -3270,7 +3257,7 @@ export function simulateBBWeek(options = {}) {
     // players and the competition ran five, every time.
     vetoPlayers = [...new Set(vetoPlayers)]
       .filter(name => house.includes(name) || name === mysteryGuest?.guest);
-    const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
+    const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, guest: mysteryGuest?.guest || null, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
     const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
     let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
     if (!vetoPlayers.includes(vetoWinner)) vetoWinner = vetoCompetition.winner;
@@ -3324,6 +3311,11 @@ export function simulateBBWeek(options = {}) {
         mysteryCompetitorResult({ act: mysteryGuest, competition: vetoCompetition,
           winner: vetoWinner });
       } catch { /* the competition stands */ }
+      // The run, and the goodbye, on the VETO act — where the competition is
+      // actually shown. See mysteryCompetitorResult.
+      if (mysteryGuest.resultBeats?.length) {
+        pendingGuestBeats = mysteryGuest.resultBeats;
+      }
       if (mysteryGuest.vetoTo && house.includes(mysteryGuest.vetoTo)) {
         vetoWinner = mysteryGuest.vetoTo;
       } else if (vetoWinner === mysteryGuest.guest) {
@@ -3337,7 +3329,7 @@ export function simulateBBWeek(options = {}) {
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
     week.vetoCompetition = vetoCompetition;
     recordCompDominance(vetoCompetition, house, week.num);
-    week.acts.push(addBeats({ type: 'veto', participants: vetoPlayers,
+    const vetoAct = addBeats({ type: 'veto', participants: vetoPlayers,
       // On a Prizes and Punishments week the competition's winner is NOT the
       // veto holder, and the act says so rather than quietly relabelling one
       // as the other. `vetoHolder` is who walks away with it.
@@ -3353,7 +3345,16 @@ export function simulateBBWeek(options = {}) {
       // The stranger who took one of the drawn seats, so the draw screen can
       // show the swap it was silently not showing.
       guest: vetoDraw.guest || null,
-      automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
+      automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner });
+    // After addBeats, which ASSIGNS socialBeats rather than merging. The
+    // alumnus's run and their goodbye go here, on the screen that shows the
+    // competition, instead of on the arrival card that is drawn at the ceremony
+    // — which was opening by telling you the result of a competition you had
+    // not watched yet.
+    if (pendingGuestBeats) {
+      vetoAct.socialBeats = [...pendingGuestBeats, ...(vetoAct.socialBeats || [])];
+    }
+    week.acts.push(vetoAct);
 
     // ...and the boxes come out after the competition that set the order.
     if (pendingExchangeAct) {

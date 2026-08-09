@@ -405,6 +405,10 @@ export function runBBCompetition(options = {}) {
     // Who is on slop this week. Custom competitions can read it; the generic
     // scorer applies it directly.
     haveNots:[...(options.haveNots || [])],
+    // A summoned alumnus playing one competition on somebody's behalf. They are
+    // in the field like anybody else and are scored like anybody else — but
+    // they have no game to protect, so nothing about throwing applies to them.
+    guest: options.guest || null,
     // One name, handicapped on the finished board by a saboteur who got there
     // first. See normalizeResult.
     sabotaged: options.sabotaged || null,

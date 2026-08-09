@@ -999,7 +999,15 @@ describe('the mystery competitor is a real alumnus, in a real draw', () => {
     expect(out.vetoTo).toBe('ben');
     expect(out.competition.name).toBe('The Wall');
     expect(out.competition.posted).toBe(8.2);
-    expect(out.beats.map(b => b.text).join(' ')).toContain('8.2');
+    // ON THE VETO SCREEN, NOT THE ARRIVAL ONE. The result beats used to be
+    // appended to the Mystery Competitor act, which is drawn at the veto
+    // ceremony — so the twist's own screen opened by announcing the outcome of
+    // a competition the viewer had not watched yet.
+    expect(out.resultBeats.map(b => b.text).join(' ')).toContain('8.2');
+    expect(out.beats.map(b => b.text).join(' '),
+      'the arrival card gives the result away').not.toContain('8.2');
+    // And they leave from the yard, which is where they actually leave from.
+    expect(out.resultBeats.map(b => b.badgeText)).toContain('AND THEN THEY GO');
   });
 
   it('loses it to the room like anybody else', async () => {
@@ -1009,18 +1017,39 @@ describe('the mystery competitor is a real alumnus, in a real draw', () => {
       competition: { id: 'the-wall', name: 'The Wall', scores: { [out.guest]: 3.1, ben: 6.1, cleo: 9.9 } } });
     expect(out.won).toBe(false);
     expect(out.vetoTo).toBeNull();
-    expect(out.beats.map(b => b.text).join(' ')).toContain('9.9');
+    expect(out.resultBeats.map(b => b.text).join(' ')).toContain('9.9');
+    expect(out.beats.map(b => b.text).join(' ')).not.toContain('9.9');
   });
 
-  it('picks for the competition, not for fame', async () => {
-    // `pStats` returns flat defaults for anybody outside the cast, so the only
-    // honest signal about an alumnus is their record — and `chalWins` is a
-    // competition record, which is the question being asked.
-    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
-    expect(src).toMatch(/const comp0 =/);
-    expect(src, 'the guest is chosen before the competition they are chosen for')
-      .toMatch(/comp0\.stats/);
-    expect(src).toMatch(/Math\.max\(0, \(a\.chalWins \|\| 0\)\) \* 0\.9/);
+  it('calls somebody who can actually win the competition standing in the yard', async () => {
+    // Reported from a real season: a competitor was summoned into a veto and
+    // finished LAST in it. A soft weight spread across a hundred and fifty
+    // alumni barely concentrates at all, and nobody spends the biggest thing in
+    // their pocket on a name they like the sound of.
+    //
+    // This used to grep the source for `chalWins || 0) * 0.9`, which pinned one
+    // coefficient of the weight and said nothing whatsoever about who gets
+    // called — it passed happily through the season that produced the report.
+    const strong = { name: 'Ringer', seasonName: 'TD 1', chalWins: 0,
+      stats: { physical: 10, endurance: 10, mental: 10, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 5 } };
+    const weak = { name: 'Passenger', seasonName: 'TD 2', chalWins: 0,
+      stats: { physical: 2, endurance: 2, mental: 2, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 5 } };
+    // Fifteen filler alumni, so the shortlist has to do real work.
+    const filler = Array.from({ length: 15 }, (_, i) => ({
+      name: `Mid${i}`, seasonName: 'TD 3', chalWins: 0,
+      stats: { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 5 } }));
+
+    let ringer = 0; let passenger = 0;
+    for (let sd = 1; sd <= 40; sd++) {
+      const out = await run({ alumni: [weak, ...filler, strong] }, sd * 13);
+      if (out?.guest === 'Ringer') ringer++;
+      if (out?.guest === 'Passenger') passenger++;
+    }
+    expect(ringer, 'the best player available was almost never called').toBeGreaterThan(6);
+    expect(passenger, 'the worst player available kept getting the call').toBe(0);
   });
 
   it('names where they came from', async () => {

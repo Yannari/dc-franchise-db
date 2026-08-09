@@ -950,6 +950,11 @@ export function shouldThrowHoh(name, house, context = {}) {
 export function shouldThrowVeto(name, context = {}) {
   const nominees = context.nominees || [];
   if (nominees.includes(name)) return { throwChance: 0, reason: 'on the block' };
+  // A summoned alumnus has no game to protect and no reason to duck a decision
+  // they will not be in the house for — they were flown in for one afternoon to
+  // win one competition. They threw it, and posted a NEGATIVE score doing so,
+  // because the throw model only ever asked about houseguests.
+  if (context.guest && name === context.guest) return { throwChance: 0, reason: 'here to play' };
 
   const hoh = context.hoh || null;
   const s = pStats(name);

@@ -434,17 +434,28 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   // Weighted rather than a hard best-pick: the house is summoning who it wants,
   // and the best available player is not always the one somebody thinks of.
   const statsOf = a => (a && typeof a === 'object' && a.stats) || pStats(a?.name) || {};
-  const pick = weighted(alumni, a => {
+  const fitOf = a => Object.entries(comp0.stats || {})
+    .reduce((sum, [stat, w]) => sum + (statsOf(a)[stat] || 0) * w, 0);
+  // ── YOU CALL SOMEBODY WHO CAN WIN THIS ONE ──
+  //
+  // A soft weight across a hundred and fifty alumni barely concentrates at all,
+  // which is how a competitor got summoned into a veto and finished LAST in it.
+  // Nobody spends the biggest thing in their pocket on a name they like the
+  // sound of: they pick for the competition that is standing in the yard.
+  //
+  // So the field is cut to the people who are actually good at THIS one, and
+  // the draw happens inside that shortlist — still a draw, because the best
+  // available player is not always the one somebody thinks of, but a draw from
+  // twelve contenders rather than from everybody who has ever played.
+  const shortlist = [...alumni].sort((a, b) => fitOf(b) - fitOf(a)).slice(0, 12);
+  const pick = weighted(shortlist, a => {
     // Real stats when the caller has them — the roster fallback carries the
     // whole cast sheet — and `pStats` otherwise, which returns flat defaults
     // for anybody outside the current cast and makes `fit` a constant. That is
     // why the roster is worth passing: without it this weight was fame alone
     // dressed up as a competition read.
-    const st = statsOf(a);
-    const fit = Object.entries(comp0.stats || {})
-      .reduce((sum, [stat, w]) => sum + (st[stat] || 0) * w, 0);
-    return 1 + Math.max(0, (a.chalWins || 0)) * 0.9 + (a.winner ? 1.1 : 0)
-      + (a.finalist ? 0.5 : 0) + fit * 0.35;
+    return 1 + Math.max(0, (a.chalWins || 0)) * 0.5 + (a.winner ? 0.8 : 0)
+      + (a.finalist ? 0.4 : 0) + Math.max(0, fitOf(a) - 4) * 1.2;
   }, rng);
   const guest = pick?.name || String(pick || alumni[0]?.name || alumni[0]);
 
@@ -532,10 +543,20 @@ export function mysteryCompetitorResult({ act, competition, winner } = {}) {
     bar: best || null };
   act.won = won;
   act.vetoTo = won ? holder : null;
-  act.detail = won
+  // NOT act.detail — that is the arrival card's subtitle, and it was printing
+  // "won the veto on Bowie's behalf" at the top of the screen that exists to
+  // show them walking through the door.
+  act.resultDetail = won
     ? `${guest} won the veto on ${holder}'s behalf, ${score} against ${bar}.`
     : `${guest} played for ${holder} and lost it, ${score} against ${bar}.`;
 
+  // ── AND IT DOES NOT GO ON THE ARRIVAL SCREEN ──
+  //
+  // These used to be appended to the Mystery Competitor act, which is drawn at
+  // the veto ceremony — so the twist's own screen opened by announcing the
+  // result of a competition the viewer had not watched yet. The arrival is the
+  // arrival. What happened in the yard belongs to the yard, and the goodbye
+  // belongs there too, because that is where they actually leave from.
   const beats = [beat(
     `${guest} plays ${name} against the whole room, and is scored like anybody else out there.`,
     [guest, holder], 'A STRANGER IN THE YARD', 'blue')];
@@ -543,12 +564,27 @@ export function mysteryCompetitorResult({ act, competition, winner } = {}) {
     ? beat(`${score}. ${guest} wins it and hands it straight to ${holder}, who has been on the `
       + 'block all week and is now not going anywhere. Somebody paid for that, weeks ago, in private.',
     [guest, holder], `${score} v ${bar}`, 'gold')
-    : beat(`${score}, against ${bar}. ${guest} loses, goes home again, and ${holder} has bought a `
-      + 'body in the draw and nothing else.',
+    : beat(`${score}, against ${bar}. ${guest} loses, and ${holder} has bought a body in the draw `
+      + 'and nothing else.',
     [guest, holder], `${score} v ${bar}`, 'red'));
-  act.beats = [...(act.beats || []), ...beats];
+  beats.push(beat(pickFrom(GOODBYE, () => (Number.isFinite(mine) ? Math.abs(mine % 1) : 0.5))(guest, holder, won),
+    [guest, holder], 'AND THEN THEY GO', 'grey'));
+  act.resultBeats = beats;
   return act;
 }
+
+const GOODBYE = [
+  (g, h, won) => `${g} is walked back out through the same door, an hour and a half after coming `
+    + `through it. ${won ? `Whatever happens to ${h} now, ${g} will read about it.` : 'No goodbyes '
+      + 'from anybody who was not already awake, and the house is quieter for the rest of the night.'}`,
+  (g, h, won) => `${g} hands the microphone back, says "good luck, seriously" to a room that is `
+    + `already arguing about something else, and is gone. ${won ? 'The medallion stays.' : 'Nothing stays.'}`,
+  (g, h, won) => `The front door goes for the second time today and does not open again. ${g} does `
+    + `not live here${won ? ', and left something behind anyway' : ' and did not manage to change that'}.`,
+  (g, h) => `${g} is out of the house before the yard lights are off. Two houseguests will spend `
+    + `the next week arguing about whether ${g} was ever really there, which is what happens when `
+    + 'somebody arrives and leaves inside one afternoon.',
+];
 
 /**
  * The Mystery Veto.

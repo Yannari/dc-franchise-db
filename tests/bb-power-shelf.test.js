@@ -24,6 +24,7 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
+import { setAlumniDatabase, alumniPool as alumniPoolSync } from '../js/alumni.js';
 import { BB_POWER_DEFINITIONS, grantPower, heldPowers, spendPull, powerLedgerFor,
   usePower, expirePowers } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
@@ -443,6 +444,12 @@ describe('The Mystery Competitor', () => {
     // return null`. Granted, tracked, expired, and unable to fire under any
     // circumstance. The roster is the fallback, and it is the show's own cast
     // list: everybody on it has finished a season somewhere.
+    // The record of who has played, which the app fetches at startup. Without
+    // it the pool is empty and the twist correctly does not fire — the roster
+    // used to stand in here, and a roster is a cast list rather than a career,
+    // which is how a host and then an undebuted character got called.
+    setAlumniDatabase(JSON.parse(
+      require('node:fs').readFileSync('players_database.json', 'utf8')));
     let onBlock = 0; let fired = 0;
     for (let i = 0; i < 40; i++) {
       house();
@@ -459,4 +466,28 @@ describe('The Mystery Competitor', () => {
     // week that clears it should open the door.
     expect(fired, 'the door never opened once').toBeGreaterThanOrEqual(onBlock);
   }, 240000);
+
+  it('only calls people who have actually played a season', async () => {
+    // Reported twice from real seasons: the door opened on Chef Hatchet, who
+    // has never competed in his life, and then on somebody whose debut season
+    // had not aired yet. The pool was the ROSTER — a cast list, not a career —
+    // and everybody in the franchise is on it.
+    const { alumniPool } = await import('../js/alumni.js');
+    setAlumniDatabase(JSON.parse(
+      require('node:fs').readFileSync('players_database.json', 'utf8')));
+    const pool = alumniPool({ exclude: [] }).map(a => a.name);
+    expect(pool.length).toBeGreaterThan(50);
+    for (const who of ['Chef Hatchet', 'Chris McLean', 'Nico']) {
+      expect(pool, `${who} has never played a season and was eligible for a cameo`)
+        .not.toContain(who);
+    }
+    // And nobody currently in the house can be their own cameo.
+    expect(alumniPool({ exclude: ['Heather'] }).map(a => a.name)).not.toContain('Heather');
+  });
+
+  it('has nobody to call when the franchise has no record at all', () => {
+    // The honest answer, and the one the roster fallback was papering over.
+    setAlumniDatabase(null);
+    expect(alumniPoolSync()).toEqual([]);
+  });
 });

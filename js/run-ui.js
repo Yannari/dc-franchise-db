@@ -678,6 +678,13 @@ window.addEventListener('DOMContentLoaded', () => {
     try { const p = JSON.parse(_savedRoster); if (Array.isArray(p) && p.length) _lsRoster = p; } catch(e) {}
   }
   if (_lsRoster) FRANCHISE_ROSTER = _lsRoster;   // show cached edits immediately while the fetch resolves
+  // The record of who has actually played, for anything that needs to know —
+  // the Mystery Competitor's door, above all. Silent on failure: an empty pool
+  // means the twist does not fire, which is the honest answer.
+  fetch('players_database.json')
+    .then(r => r.json())
+    .then(data => { try { setAlumniDatabase(data); } catch { /* no record, no cameos */ } })
+    .catch(() => {});
   fetch('franchise_roster.json')
     .then(r => r.json())
     .then(data => {

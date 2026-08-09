@@ -27,7 +27,13 @@ export function rpBuildBBPowerPlayed(ep, act, u = {}) {
   const def = BB_POWER_DEFINITIONS[act.powerId] || {};
   const name = act.name || def.name || act.powerId;
   const removed = (act.removed || []).filter(Boolean);
-  const seated = (act.nominees || []).filter(Boolean);
+  /* WHAT WAS SEATED, NOT WHAT IS ON THE WALL.
+     This read `act.nominees`, which is the whole final block — so a power that
+     moved one person drew "NAMED INSTEAD: Chase & Emmah & Raj & Julia" beside
+     an empty "OFF THE BLOCK", and the panel that exists to show a swap showed
+     neither half of one. Acts that know what they moved say so; the rest fall
+     back to the block, which is the best guess available for them. */
+  const seated = (act.seated?.length ? act.seated : act.nominees || []).filter(Boolean);
 
   // Three different things, and the house lived through a different week in
   // each: a power nobody knew existed, one everybody knew existed without

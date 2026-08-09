@@ -19030,6 +19030,92 @@ export function rpBuildBBDuosAnnouncement(ep, act) {
 }
 
 /**
+ * The second veto, on the ceremony's own stage.
+ *
+ * It had a screen — the generic power-played card — and that screen could not
+ * show the one thing this play IS: a block being rewritten. It printed the
+ * whole final wall under "NAMED INSTEAD" beside an empty "OFF THE BLOCK", so a
+ * power whose entire substance is a swap drew neither half of one.
+ *
+ * The right answer is not a third layout. This is a veto ceremony — a shorter,
+ * meaner one that happens after everybody has gone to bed — so it gets the veto
+ * ceremony's stage: the same slots, the same VETO stamps, the same replacement
+ * chairs, the same chain when a duo comes down together. What it does NOT get
+ * is the meeting around it, because there was no meeting: no speeches, no
+ * pleading, no adjournment. Three cards and the wall.
+ */
+export function rpBuildBBSecondVeto(ep, act) {
+  if (!act) return '';
+  const holder = act.holder;
+  const removed = (act.removed || [act.saved]).filter(Boolean);
+  const seated = (act.seated?.length ? act.seated : (act.replacement ? [act.replacement] : []))
+    .filter(Boolean);
+  const finalNoms = (act.nominees || []).filter(Boolean);
+  const stayed = finalNoms.filter(n => !seated.includes(n));
+  const duoDown = (act.duoDown || []).filter(Boolean);
+
+  /* NO CLICK-TO-REVEAL HERE, AND THAT IS THE POINT.
+     Every other ceremony earns a reveal because it is a MEETING — speeches,
+     pleading, a decision the room waits for. This is four sentences at one in
+     the morning after everybody has gone to bed. Staging it cost more than it
+     paid: reveal state is wiped on every paint, so the scene was blank for any
+     reader who did not click and for every guard that renders it, and a
+     three-card scene has nothing to withhold anyway. It arrives whole. */
+
+  const cell = (who, cls, tag, stamp = '') => `<div class="bbns-screen is-on bbvc-slot ${cls}">
+      <span class="bbns-num">${cls === 'is-repl' ? 'RE' : 'NM'}</span>
+      <div class="bbns-inner">
+        <div class="bbns-shot">${_bbAvatar(who, 108)}</div>
+        <div class="bbns-name">${_bbEsc(who)}</div>
+        <div class="bbns-tag">${tag}</div>
+        ${stamp}
+      </div>
+    </div>`;
+
+  const slots = [
+    ...stayed.map(n => cell(n, 'is-nom', 'STILL NOMINATED')),
+    ...removed.map(n => cell(n, 'is-saved',
+      duoDown.length && n !== act.saved ? 'DOWN WITH THEM · SAFE' : 'VETOED · SAFE',
+      '<div class="bbvc-stamp">VETO</div>')),
+    ...seated.map(n =>
+      cell(n, 'is-repl', seated.length > 1 ? 'REPLACEMENT DUO' : 'REPLACEMENT NOMINEE')),
+  ].join('');
+
+  const DUO_CSS = duoDown.length ? `<style>
+    .bbns .bbduo-chain{position:relative;display:inline-block;width:22px;height:10px;margin:0 2px;}
+    .bbns .bbduo-chain::before,.bbns .bbduo-chain::after{content:'';position:absolute;top:0;
+      width:12px;height:10px;border:2px solid rgba(240,165,0,.75);border-radius:5px;}
+    .bbns .bbduo-chain::before{left:0;}
+    .bbns .bbduo-chain::after{right:0;}
+  </style>` : '';
+
+  const beats = act.beats || [];
+  const total = beats.length;
+
+  const card = (b, i) => `<div class="bbns-card ${i === total - 1 ? 'is-final' : 'is-open'}">
+      <div class="bbns-card-h">${(b.players || []).slice(0, 2).map(n => _bbAvatar(n, 30)).join('')}
+        <span class="bbns-pill ${b.badgeClass || 'gold'}">${_bbEsc(b.badgeText || '')}</span></div>
+      <div class="bbns-card-b">${_bbEsc(b.text)}</div></div>`;
+
+  return `${DUO_CSS}<div class="rp-page bb-room bb-block bbns">
+    <div class="rp-eyebrow">Week ${ep.num} &middot; After the meeting</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px rgba(240,165,0,.25);margin-bottom:4px">THE SECOND VETO</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${
+  _bbEsc(holder || '')} is holding a veto nobody knew existed.</div>
+
+    <div class="bbns-stage bbvc-stage is-used">
+      <div class="bbns-screens" data-n="${stayed.length + removed.length + seated.length}">${slots}</div>
+      <div class="bbvc-medalbox is-lit">
+        <span class="bbvc-medal-t">VETO USED</span>
+        <span class="bbvc-medal-s">on ${_bbEsc(removed.join(' and '))}</span>
+      </div>
+    </div>
+
+    <div class="bbns-cards">${beats.map(card).join('')}</div>
+  </div>`;
+}
+
+/**
  * Pandora's Box.
  *
  * The door, the choice, and the public version of what happened. The prize
@@ -21435,7 +21521,13 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // replayed the entire meeting — speeches, pleading, adjournment — for a
       // scene that is three beats long and happens after everybody had gone to
       // bed. The viewer got the same ceremony twice.
+      // A veto ceremony, so it gets the veto ceremony's stage — the slots, the
+      // stamps, the replacement chairs — without the meeting around it, because
+      // there was no meeting. See rpBuildBBSecondVeto.
       case 'second-veto-ceremony':
+        screens.push({ id: id('bb-veto2'), label: 'The Second Veto',
+          html: rpBuildBBSecondVeto(view, act) });
+        break;
       case 'power-played': {
         // The Coup d'État and the Cloud used to fire into nothing at all: the
         // act was emitted and no surface read it, so a week could be rewritten

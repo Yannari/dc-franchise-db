@@ -80,7 +80,7 @@ import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinS
   twinExposure as twinExposureLevel } from './twin-twist.js';
 import { rivalsState, announceRivals, openRivals, seatRivals, rivalsSittingOut, rivalsImmune,
   rivalsChooseHoh, rivalWeekEvents, rivalEvicted } from './rivals.js';
-import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, BB_POWER_DEFINITIONS } from './powers.js';
+import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, spendPull, BB_POWER_DEFINITIONS } from './powers.js';
 
 /**
  * A competition win, seen by the whole house, becomes strategic respect and a
@@ -2139,13 +2139,22 @@ export function simulateBBWeek(options = {}) {
   if (cloud && house.includes(cloud.holder) && cloud.holder !== hoh) {
     const st = pStats(cloud.holder);
     const aimedAt = (plan.nominees || []).includes(cloud.holder);
-    const read = 0.30 + (st.intuition || 5) * 0.062;   // how well they sense it
     const comfort = Math.max(0, (() => {
       try { return getPerceivedBond(cloud.holder, hoh); } catch { return 0; }
-    })()) * 0.045;
-    const lastChance = week.num >= cloud.expiresAfterWeek ? 0.5 : 0;
-    const pull = 0.06 + (aimedAt ? read : 0) + lastChance - comfort;
-    cloudPlayed = rng() < Math.min(0.94, pull);
+    })()) * 0.02;
+    // If your name is on the plan you are going up, and the only question left
+    // is whether you can tell. Intuition shaves a little off being sure and
+    // warmth with the Head of Household shaves a little more — but neither of
+    // them is allowed to talk somebody out of a power written for exactly this
+    // ceremony, which is what a 0.30 floor and a 0.062-per-point read were
+    // doing to one holder in five.
+    const need = aimedAt
+      ? Math.max(0.5, 0.99 - (10 - (st.intuition || 5)) * 0.014 - comfort)
+      : 0.05;
+    const pull = spendPull({ need,
+      weeksLeft: Math.max(0, cloud.expiresAfterWeek - week.num),
+      nerve: (st.boldness || 5) / 10 });
+    cloudPlayed = rng() < pull;
   }
   if (cloudPlayed) {
     usePower(cloud, week.num);
@@ -3615,17 +3624,57 @@ export function simulateBBWeek(options = {}) {
       week.mysteryVeto = solo;
       week.acts.push(addBeats(solo, { players: [solo.holder] }));
       if (solo.won && solo.saves && nominees.includes(solo.saves)) {
-        nominees = nominees.filter(n => n !== solo.saves);
+        /* THE SECOND VETO OBEYS THE SAME RULES AS THE FIRST.
+           The chair was filled with `pool[Math.floor(rng() * pool.length)]` — a
+           name out of a hat, from a pool that knew about the Head of Household
+           and the holder and NOTHING else. Not the nomination plan, not Super
+           Safety, not a care package, not a Golden Key, not the crown's cover
+           for a partner. So a power that fires after everybody has gone to bed
+           could seat somebody the ceremony three hours earlier was forbidden
+           from seating, and the name it produced looked random because it was.
+           It uses `chooseReplacement` against the week's real protections now,
+           exactly like every other chair in the format. */
+        const takenDown = [solo.saves];
+        // And in a Duos season it takes the pair, because that is what a veto
+        // does to a duo — the same rule the first ceremony already follows.
+        let duoPartnerDown = null;
+        try {
+          if (duosActive()) {
+            const p = partnerOf(solo.saves, house);
+            if (p && nominees.includes(p)) { duoPartnerDown = p; takenDown.push(p); }
+          }
+        } catch { duoPartnerDown = null; }
+
+        nominees = nominees.filter(n => !takenDown.includes(n));
         week.mysteryVetoSaved = solo.saves;
-        // The chair does not stay empty. Same authority as any other veto: the
-        // Head of Household names who sits in it.
-        const pool = house.filter(n => n !== hoh && n !== solo.holder
-          && !nominees.includes(n) && n !== solo.saves);
-        let replacement2 = null;
-        if (pool.length) {
-          replacement2 = pool[Math.floor(rng() * pool.length)];
-          nominees = [...nominees, replacement2];
+        if (duoPartnerDown) week.mysteryVetoDuoDown = [...takenDown];
+
+        const protectedNames2 = [hoh, solo.holder, ...takenDown, ...nominees,
+          ...untouchable].filter(Boolean);
+        let seated2 = [];
+        try {
+          if (duoPartnerDown) {
+            // A whole duo came down, so a whole duo goes up.
+            const up = duoBlock({ plan, house, hoh, rng, protectedNames: protectedNames2 });
+            if (up) seated2 = [...up];
+          }
+          if (!seated2.length) {
+            const one = chooseReplacement(hoh, house, protectedNames2, plan, rng);
+            if (one && house.includes(one) && !protectedNames2.includes(one)) seated2 = [one];
+          }
+        } catch { seated2 = []; }
+
+        const replacement2 = seated2[0] || null;
+        if (seated2.length) {
+          nominees = [...nominees, ...seated2];
           week.mysteryVetoReplacement = replacement2;
+          week.mysteryVetoSeated = [...seated2];
+          for (const n of seated2) {
+            try { gs.bb.stats[n].timesNominated++; } catch { /* record only */ }
+          }
+        }
+        for (const n of takenDown) {
+          try { gs.bb.stats[n].timesSaved++; } catch { /* record only */ }
         }
         // Its OWN act, not a second `veto-ceremony`. Reusing that type replayed
         // the whole meeting — the speeches, the pleading, the adjournment —
@@ -3634,6 +3683,12 @@ export function simulateBBWeek(options = {}) {
         week.acts.push(addBeats({
           type: 'second-veto-ceremony', holder: solo.holder, saved: solo.saves,
           replacement: replacement2, nominees: [...nominees],
+          // What MOVED, which is not the same as the block. The power screen
+          // was reading `nominees` as "named instead" and printing the whole
+          // wall, and `removed` was never set at all, so it drew a dash.
+          removed: [...takenDown], seated: [...seated2],
+          duoDown: duoPartnerDown ? [...takenDown] : null,
+          duoUp: duoPartnerDown && seated2.length === 2 ? [...seated2] : null,
           powerId: 'mystery-veto', name: 'The Mystery Veto',
           timing: 'veto-ceremony', visibility: 'secret', secret: true,
           detail: `${solo.holder} used a veto nobody knew existed, after the meeting had ended.`,
@@ -3641,17 +3696,27 @@ export function simulateBBWeek(options = {}) {
             { text: 'The house is called back into the living room. Nobody has been told why, and '
                 + 'the veto meeting finished hours ago.',
               players: [...house].slice(0, 5), badgeText: 'CALLED BACK', badgeClass: 'gold' },
-            { text: `${solo.holder} is holding a second veto. ${solo.saves} comes off a block the `
-                + 'whole house had already accepted, and every plan made since the last meeting '
-                + 'was made about a block that no longer exists.',
-              players: [solo.holder, solo.saves], badgeText: 'USED AGAIN', badgeClass: 'gold' },
-            ...(replacement2 ? [{
-              text: `${hoh} has to fill a chair that was settled an hour ago. "${replacement2}, `
-                + 'take a seat."',
-              players: [hoh, replacement2], badgeText: 'AND ONE MORE', badgeClass: 'red',
+            { text: `${solo.holder} is holding a second veto. ${takenDown.join(' and ')} `
+                + `${takenDown.length > 1 ? 'come' : 'comes'} off a block the whole house had `
+                + 'already accepted, and every plan made since the last meeting was made about a '
+                + 'block that no longer exists.',
+              players: [solo.holder, ...takenDown], badgeText: 'USED AGAIN', badgeClass: 'gold' },
+            ...(duoPartnerDown ? [{
+              text: `${duoPartnerDown} was never the point. The rule takes the pair, and it takes `
+                + 'it at one in the morning with nobody in the room expecting it.',
+              players: [duoPartnerDown], badgeText: 'THE PAIR GOES TOO', badgeClass: 'blue',
             }] : []),
+            ...(seated2.length ? [{
+              text: `${hoh} has to fill ${seated2.length > 1 ? 'two chairs that were' : 'a chair that was'} `
+                + `settled an hour ago. "${seated2.join(', ')} — take a seat."`,
+              players: [hoh, ...seated2], badgeText: 'AND ONE MORE', badgeClass: 'red',
+            }] : [{
+              text: `Nobody in this house is eligible to fill the chair, so it stays empty and the `
+                + 'block is simply smaller than it was an hour ago.',
+              players: [hoh], badgeText: 'AN EMPTY CHAIR', badgeClass: 'red',
+            }]),
           ],
-        }, { players: [solo.holder, solo.saves, replacement2].filter(Boolean) }));
+        }, { players: [solo.holder, ...takenDown, ...seated2].filter(Boolean) }));
       }
     }
 
@@ -4241,15 +4306,19 @@ export function simulateBBWeek(options = {}) {
       } else {
         const ally = [...nominees].sort((a, b) =>
           getPerceivedBond(holder, b) - getPerceivedBond(holder, a))[0];
-        const allyWorth = Math.max(0, getPerceivedBond(holder, ally)) * 0.09;
         // Saving an ally, or spending expiry pressure on a move: both scale
         // with how strategically the holder thinks, never a hard gate.
         const targetSeatable = myTarget && myTarget !== hoh && myTarget !== holder
           && !nominees.includes(myTarget);
-        const pull = allyWorth
-          + (lastWindowWeek ? 0.18 : 0)
-          + (targetSeatable ? hst.strategic * 0.035 : 0);
-        if (rng() < Math.min(0.85, pull)) save = ally;
+        const need = Math.min(1, Math.max(0, getPerceivedBond(holder, ally)) * 0.1
+          + (targetSeatable ? (hst.strategic || 5) * 0.04 : 0));
+        // `lastWindowWeek` was worth +0.18 here. It is the whole decision on
+        // the last night — see spendPull — because a Diamond nobody detonated
+        // is a Diamond that was never in the season.
+        const pull = spendPull({ need,
+          weeksLeft: lastWindowWeek ? 0 : Math.max(1, inst.expiresAfterWeek - week.num),
+          nerve: (hst.boldness || 5) / 10 });
+        if (rng() < pull) save = ally;
       }
       if (save) {
         const other = nominees.find(n => n !== save);

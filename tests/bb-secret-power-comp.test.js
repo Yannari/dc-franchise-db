@@ -502,8 +502,14 @@ describe('the powers actually fire', () => {
     // And the results are acted on, not just narrated.
     expect(src, 'the usurper never actually becomes HOH').toMatch(/hoh = usurp\.hoh/);
     expect(src, 'the alumnus wins and the veto goes nowhere').toMatch(/mysteryGuest\?\.vetoTo/);
+    // Was pinned to the exact filter expression, which broke the moment the
+    // second veto learned to take a whole duo down instead of one name. The
+    // record it writes is the stabler contract: it is only ever set on the
+    // line after the block actually changes.
     expect(src, 'the second veto never takes anybody off the block')
-      .toMatch(/nominees = nominees\.filter\(n => n !== solo\.saves\)/);
+      .toMatch(/week\.mysteryVetoSaved = solo\.saves/);
+    expect(src, 'the second veto still fills its chair out of a hat')
+      .toMatch(/chooseReplacement\(hoh, house, protectedNames2/);
   });
 
   for (const act of ['interrogation', 'mystery-competitor', 'mystery-veto']) {

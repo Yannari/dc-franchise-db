@@ -1104,7 +1104,11 @@ function _attachRomance(week, rng) {
  * lines silently, which reads as bad writing rather than as a bug.
  */
 function _themeSay(week, hook, ctx) {
-  const beat = themeBeat(hook, { week: week.num, house: week.houseAtStart, ...ctx });
+  // `themeWeek` is the CALENDAR week, which is not `week.num` on a Split House
+  // cycle — see the note where it is computed. `side` keeps the two halves of
+  // one night from drawing the identical taunt out of the same seed.
+  const beat = themeBeat(hook, { week: week.themeWeek ?? week.num,
+    house: week.houseAtStart, side: week.splitSide || null, ...ctx });
   if (beat) week.acts.push(beat);
 }
 
@@ -1204,8 +1208,32 @@ export function simulateBBWeek(options = {}) {
   // one: 1 + 12 - 4 = 9, which is what installTheme says. The brief's `- 3`
   // said 10 for every week of the same season, and it went unnoticed only
   // because nothing read a `fromEnd` mood yet.
-  const _totalWeeks = week.num + Math.max(0, house.length - 4);
-  advanceThemeArc(week.num, _totalWeeks);
+  //
+  // ── AND NEITHER INPUT IS WHAT IT LOOKS LIKE ON A SPLIT HOUSE ──
+  //
+  // `house` is `options.house`, which on a split cycle is HALF the roster, and
+  // `week.num` is `gs.bb.weeks.length + 1`, which the two halves increment in
+  // turn — both sides push a week record, so side B thinks it is a week later
+  // than side A even though they are the same Thursday. Left alone the
+  // antagonist printed two different week numbers for one week and measured the
+  // endgame at roughly half its true distance, so a `fromEnd` mood could turn
+  // many weeks early and stop agreeing with the bookings `installTheme` made
+  // off the premiere house — exactly the disagreement the `- 4` above exists to
+  // close.
+  //
+  // So the theme is told the calendar: the week the audience is watching, and
+  // the whole house, wall or no wall. `gs.episode` is guarded against the same
+  // double-increment a few hundred lines below, which is the precedent.
+  //
+  // Gated on `splitSide` rather than on `segment`, because a double eviction's
+  // second cycle also carries `segment: 2` and genuinely IS a second week
+  // record with its own number.
+  const _splitB = week.splitSide === 'B';
+  const _themeWeek = Math.max(1, week.num - (_splitB ? 1 : 0));
+  const _wholeHouse = house.length + (week.splitSide ? (week.splitOther || []).length : 0);
+  week.themeWeek = _themeWeek;
+  const _totalWeeks = _themeWeek + Math.max(0, _wholeHouse - 4);
+  advanceThemeArc(_themeWeek, _totalWeeks);
 
   _themeSay(week, 'open', {});
 

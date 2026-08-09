@@ -4,13 +4,13 @@
 // Halting Hex are all built — which is exactly why it is the first one. If the
 // engine cannot assemble a season out of parts we already own, that is the
 // cheapest possible week to find out.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { themeState, themeVoice, advanceThemeArc, themeScheduleEntries,
-  BB_THEMES } from '../js/bb/themes.js';
+  currentTheme, themeAccent, BB_THEMES } from '../js/bb/themes.js';
 import { simulateBBWeek } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -225,6 +225,83 @@ describe('the arc holds its shape at every cast size', () => {
       const out = themeScheduleEntries(THEME(), { weeks, existing: one });
       expect(out.some(e => Number(e.episode) === 3), `cast ${size}`).toBe(false);
     }
+  });
+});
+
+// ── the picker is not the season ──
+//
+// `cfg-theme` saves on change and `prepareHouse` reinstalls every episode, so
+// switching themes in week five was live-reachable. `installTheme` asked "is a
+// theme installed?" when it meant "is THIS theme installed?", so the house got
+// the new theme's voice, moods, act stamps and reader skin sitting on top of
+// the old theme's state and the old theme's bookings — and `advanceThemeArc`
+// walked one arc while mutating the other's mood. Nothing threw.
+describe('a season keeps the theme it started', () => {
+  const OTHER = {
+    id: 'other-theme', name: 'Other', tagline: 't', house: 'bb-house',
+    palette: { accent: '#00ff00' }, fonts: { display: 'x', body: 'y' },
+    antagonist: { name: 'Something Else', mood: 'neutral',
+      voice: { open: { neutral: ['Not the Den at all.'] } } },
+    arc: [{ at: { week: 1 }, book: 'bb-roadkill' }, { at: { week: 1 }, mood: 'furious' }],
+    books: [], weights: {}, bans: [], exclusive: [],
+  };
+
+  beforeEach(() => { house(); BB_THEMES[OTHER.id] = OTHER; });
+  afterEach(() => { delete BB_THEMES[OTHER.id]; });
+
+  it('ignores a mid-season switch to another theme', () => {
+    play();
+    const before = JSON.parse(JSON.stringify(seasonConfig.twistSchedule));
+    seasonConfig.theme = OTHER.id;                 // the user flips the picker
+
+    const ep = play(1212);
+    expect(themeState().id, 'the other theme moved into this season\'s state')
+      .toBe('summer-of-temptation');
+    expect(seasonConfig.twistSchedule, 'the other theme booked over the arc').toEqual(before);
+    for (const a of (ep.acts || []).filter(a => a.type === 'theme-beat')) {
+      expect(a.speaker, 'the other theme is speaking in this house').toBe('The Den');
+      expect(a.themeId).toBe('summer-of-temptation');
+    }
+    // And the reader is still wearing the season it started in.
+    expect(themeAccent()).toBe(BB_THEMES['summer-of-temptation'].palette.accent);
+  });
+
+  it('does not let another theme\'s arc move this one\'s mood', () => {
+    play();
+    seasonConfig.theme = OTHER.id;
+    // OTHER's arc sets 'furious' in week 1. If currentTheme() read the picker,
+    // this would walk that arc and stamp it onto the Den's state.
+    advanceThemeArc(1, 9);
+    expect(themeState().mood).toBe('neutral');
+  });
+
+  // A save made before the theme engine existed has `gs.bb` but no `.theme`.
+  // Picking a theme then installed it MID-SEASON, booking week 2 and week 3
+  // onto a season already in week nine.
+  it('refuses to install into a season already under way', () => {
+    house({ theme: 'none' });
+    play();                                        // week 1, unthemed
+    play();                                        // week 2, unthemed
+    expect(gs.bb.weeks.length).toBeGreaterThan(1);
+    expect(themeState()).toBeNull();
+
+    seasonConfig.theme = 'summer-of-temptation';   // the user picks one now
+    const ep = play(88);
+
+    expect(themeState(), 'a theme installed itself into an aired season').toBeNull();
+    expect(seasonConfig.twistSchedule.some(t => t?.source === 'theme')).toBe(false);
+    expect((ep.acts || []).some(a => a.type === 'theme-beat')).toBe(false);
+    expect(currentTheme()).toBeNull();
+  });
+
+  it('still installs on the season after that one', () => {
+    house({ theme: 'none' });
+    play();
+    seasonConfig.theme = 'summer-of-temptation';
+    house();                                       // a fresh house, same config
+    play();
+    expect(themeState().id).toBe('summer-of-temptation');
+    expect(themeState().booked.length).toBeGreaterThan(0);
   });
 });
 
@@ -450,6 +527,51 @@ describe('the Den knows which house it is talking about', () => {
     expect(named.length,
       'the Den named nobody on its own side — _themeSay stopped passing the week roster')
       .toBeGreaterThan(0);
+  });
+
+  // ── one Thursday, two half-houses, one week number ──
+  //
+  // Both sides of a Split House run the whole week engine and both push a week
+  // record, so side B's `week.num` is one higher than side A's for the same
+  // night — and `options.house` is half the roster. The antagonist printed two
+  // different week numbers for one week, and measured the endgame at roughly
+  // half its real distance, which is the same disagreement between bookings and
+  // moods that `_totalWeeks` exists to prevent.
+  it('calls both halves of a split week the same week', () => {
+    const full = [...gs.activePlayers];
+    const a = full.slice(0, Math.ceil(full.length / 2));
+    const b = full.slice(Math.ceil(full.length / 2));
+    const play1 = (side, other, segment, splitSide) => withSeededRandom(2 + segment, () => {
+      const before = [...gs.activePlayers];
+      gs.activePlayers = [...side];
+      try {
+        return simulateBBWeek({ house: [...side], segment, splitSide,
+          splitOther: [...other], skipOpeningHouse: true });
+      } finally { gs.activePlayers = before; }
+    });
+    const wkA = play1(a, b, 1, 'A');
+    const wkB = play1(b, a, 2, 'B');
+
+    // The raw records really do disagree — that is the condition being handled,
+    // not an assumption about it.
+    expect(wkB.num).toBe(wkA.num + 1);
+    // What the audience is told does not.
+    expect(wkB.themeWeek).toBe(wkA.themeWeek);
+
+    const num = w => (w.acts || []).filter(x => x.type === 'theme-beat')
+      .map(x => (x.line.match(/\b[Ww]eek (\d+)/) || [])[1]).filter(Boolean);
+    for (const n of [...num(wkA), ...num(wkB)]) {
+      expect(Number(n), 'a half-week announced its own week number').toBe(wkA.themeWeek);
+    }
+
+    // And the two halves are not handed the identical script. Seeding on
+    // (theme, hook, mood, week) alone made that a certainty the moment both
+    // sides agreed on the week.
+    const line = (w, hook) => (w.acts || [])
+      .find(x => x.type === 'theme-beat' && x.hook === hook)?.line;
+    const shared = ['open', 'noms', 'veto', 'vote']
+      .filter(h => line(wkA, h) && line(wkA, h) === line(wkB, h));
+    expect(shared, `both sides heard the same line at: ${shared.join(', ')}`).toEqual([]);
   });
 
   it('never names a houseguest who left in an earlier week', () => {

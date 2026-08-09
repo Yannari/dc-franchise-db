@@ -62,6 +62,27 @@ export function themeById(id) {
  */
 export function currentTheme() {
   if (seasonConfig?.format !== 'big-brother') return null;
+  // ── A SEASON IN PROGRESS IS THE THEME IT INSTALLED, NOT THE ONE IN THE BOX ──
+  //
+  // `seasonConfig.theme` is a PICKER; `gs.bb.theme` is what is actually running.
+  // Reading the picker here made them two sources of truth for one fact, and
+  // the config select saves on change while `prepareHouse` reinstalls every
+  // episode — so switching from theme A to theme B in week five gave the house
+  // B's voice pools, B's arc moods, B's id stamped on every act and B's reader
+  // skin, all sitting on top of A's `gs.bb.theme` (A's id, A's mood, A's
+  // bookings) with A's twists still on the schedule. `advanceThemeArc` walked
+  // B's arc and mutated A's state. Nothing threw, and nothing anywhere asserted
+  // that the two agreed.
+  //
+  // The installed theme wins, so the two cannot disagree. Changing the picker
+  // mid-season now does what changing the venue mid-season does: nothing, until
+  // the next season.
+  const bb = gs?.bb;
+  if (bb?.theme?.id) return themeById(bb.theme.id);
+  // A season already under way that never installed a theme stays unthemed —
+  // the case a pre-feature save lands in. Booking an arc onto weeks that have
+  // already aired is not a theme, it is a rewrite of the season so far.
+  if ((bb?.weeks?.length || 0) > 0) return null;
   return themeById(seasonConfig?.theme);
 }
 
@@ -80,6 +101,16 @@ export function themeAccent() {
  * counted back from the finale, because an endgame act belongs at the endgame
  * whether the house cast twelve or sixteen.
  */
+// Once per act per process. `themeScheduleEntries` is pure and gets called for
+// every install and by every size-sweeping test, so an unguarded warn would
+// bury its own message under thirteen copies of itself.
+const _warned = new Set();
+function _warnOnce(key, message) {
+  if (_warned.has(key)) return;
+  _warned.add(key);
+  try { console.warn(message); } catch { /* no console, no warning, no harm */ }
+}
+
 export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) {
   if (!theme) return [];
   const booked = (existing || []).filter(Boolean);
@@ -120,7 +151,20 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
     // it would not run. A season too short for the whole arc gets the front of
     // it, in order, and is missing the tail, which is legible. A season with
     // the tail on backwards is not.
-    if (ep <= lastEp) continue;
+    if (ep <= lastEp) {
+      // Say so. Dropping a colliding act is the right behaviour on a season too
+      // short for the whole arc, but it is the WRONG behaviour to be silent
+      // about when the arc itself is misordered — list `{fromEnd: 1}` above
+      // `{week: 2}` and every fixed-week act below it disappears, on every cast
+      // size, with no symptom to notice. The whole point of this engine is that
+      // somebody else writes the themes.
+      _warnOnce(`${theme.id}:${act.book}`,
+        `theme "${theme.id}": the act booking ${act.book} resolved to week ${ep}, `
+        + `at or before the act before it (week ${lastEp}), and was dropped. `
+        + 'The arc is a running order — list acts in the order they should air. '
+        + 'On a short season this is expected; on every cast size it is an authoring bug.');
+      continue;
+    }
     lastEp = ep;
     out.push({
       id: `th-${theme.id}-${ep}-${act.book}`,
@@ -169,7 +213,15 @@ export function installTheme(houseSize) {
     return null;
   }
   if (!gs.bb) return null;
+  // Whatever is installed IS the season's theme — `currentTheme()` reads the
+  // same field, so this can no longer be a DIFFERENT theme's descriptor asking
+  // to move in on top of it.
   if (gs.bb.theme) return gs.bb.theme;
+  // Never install into a season that has already played. `currentTheme()`
+  // refuses this case too, so this is belt as well as braces; it is spelled out
+  // because the failure it prevents is invisible — an arc quietly booking week
+  // 2 and week 3 of a season currently in week 9.
+  if ((gs.bb.weeks?.length || 0) > 0) return null;
   // A house loses one a week and ends at three.
   const weeks = Math.max(1, Number(houseSize || 0) - 3);
   // The surrounding UI persists `seasonConfig.twistSchedule` between runs, so a
@@ -184,11 +236,14 @@ export function installTheme(houseSize) {
   const yours = (seasonConfig.twistSchedule || []).filter(t => t?.source !== 'theme');
   const entries = themeScheduleEntries(theme, { weeks, existing: yours });
   seasonConfig.twistSchedule = [...yours, ...entries];
+  // No `said: []`. It was carried from the original sketch of the antagonist as
+  // something that remembered its own lines, nothing ever appended to it, and
+  // an always-empty array on the season state is worse than no array — the next
+  // theme author reads it as a transcript they can use.
   gs.bb.theme = {
     id: theme.id,
     mood: theme.antagonist?.mood || 'neutral',
     booked: entries.map(e => e.type),
-    said: [],
   };
   return gs.bb.theme;
 }
@@ -320,8 +375,17 @@ export function themeVoice(hook, ctx = {}) {
   if (!byMood) return null;
   const pool = byMood[st.mood] || byMood.neutral;
   if (!pool || !pool.length) return null;
-  const rng = stableRng('theme-voice', gs?.bb?.seasonSalt || 0, theme.id, hook, st.mood,
-    ctx.week || 0);
+  // A Split House runs two half-weeks that are the same CALENDAR week, and both
+  // of them now correctly say so — which means without a discriminator the seed
+  // is identical on both sides and the antagonist says exactly the same sentence
+  // to two halves of the house on the same night. The side is only mixed in when
+  // there IS one, so every unsplit week keeps the seed it already had and a
+  // seeded season still replays byte for byte.
+  const rng = ctx.side
+    ? stableRng('theme-voice', gs?.bb?.seasonSalt || 0, theme.id, hook, st.mood,
+      ctx.week || 0, ctx.side)
+    : stableRng('theme-voice', gs?.bb?.seasonSalt || 0, theme.id, hook, st.mood,
+      ctx.week || 0);
   // Walk the pool from a seeded start so a refused line falls through to the
   // next candidate instead of silencing the hook.
   const start = Math.floor(rng() * pool.length);

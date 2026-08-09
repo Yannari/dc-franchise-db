@@ -2847,7 +2847,15 @@
        at the END of the section (the natural place, and after the @media
        block) cannot leave your motif animating for a reader who asked for no
        motion. Order decides the accent; it must not decide the accessibility
-       rule. */
+       rule.
+
+       That guarantee covers `.rp-page::after` and nothing else, because that is
+       the only selector the override names. A theme that animates anything
+       ELSE — a pseudo-element on a child, a keyframed border, a moving
+       background on `.rp-page` itself — owns its own
+       `@media (prefers-reduced-motion: reduce)` block. Put the motif on
+       `::after` and it is handled for you; go outside it and you are on your
+       own. */
     .rp-theme-summer-of-temptation { --theme-accent:#c02040; --theme-glow:#ff4d6d; }
     /* retint the reader accent to the season accent, and own a stacking context */
     [class*="rp-theme-"] .rp-page {

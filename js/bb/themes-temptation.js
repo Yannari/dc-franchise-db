@@ -163,9 +163,14 @@ export default {
   // `themeScheduleEntries` now refuses any act that would land on or before the
   // act meant to precede it, so a season too short for all of this gets the
   // front of the arc in order and is simply missing the tail. Measured across
-  // casts of six to eighteen: nine and up run the whole thing, six to eight
-  // keep the two Dens' opening and drop the endgame, and the order never once
-  // inverts.
+  // every cast from six to eighteen, and the order never once inverts:
+  //
+  //   6-8   the opening Den and the Have-Nots. No endgame — a five-week season
+  //         has no room for one, and at six there is only ever one Den.
+  //   9     + the double eviction. Pandora and the second Den are squeezed out.
+  //   10    + Pandora. The second Den is still squeezed out.
+  //   11+   the whole arc: two Dens, the Have-Nots, Pandora, the double
+  //         eviction, in that order.
   //
   // `fromEnd` is 1-indexed — `fromEnd: 1` IS the final eviction week — and the
   // double eviction sits at 3 deliberately. The engine refuses one below a

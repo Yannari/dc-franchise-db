@@ -506,16 +506,22 @@ describe('a played season nominates in pairs', () => {
         // post-veto block is legitimately half a duo beside a replacement.
         const cer = (w.acts || []).find(a => a.type === 'nominations');
         const noms = cer?.nominees || [];
-        if (noms.length !== 2 || !w.hoh) continue;
+        // Two OR four: a Duos season seats two pairs while it can field them
+        // and falls back to one as the pairs get eaten into.
+        if (!noms.length || !w.hoh) continue;
         checked++;
         expect(noms, 'the Head of Household nominated themselves').not.toContain(w.hoh);
         if (w.duoNomination) {
           paired++;
-          expect(w.duoNomination).toHaveLength(2);
           expect(noms.slice().sort()).toEqual(w.duoNomination.slice().sort());
-          expect((gs.bb.duos?.pairs || []).some(p =>
-            p.includes(noms[0]) && p.includes(noms[1])),
-          `${noms[0]} and ${noms[1]} went up as a duo and are not one`).toBe(true);
+          // Every name on that wall went up beside the person they came in
+          // with — whether the block is one pair or two.
+          const blocks = w.duoBlocks || [w.duoNomination];
+          expect(blocks.flat().slice().sort()).toEqual(w.duoNomination.slice().sort());
+          for (const [x, y] of blocks) {
+            expect((gs.bb.duos?.pairs || []).some(p => p.includes(x) && p.includes(y)),
+              `${x} and ${y} went up as a duo and are not one`).toBe(true);
+          }
         }
       }
     }
@@ -603,11 +609,14 @@ describe('a played season keeps the block a pair all week', () => {
         if (!w.duoVetoSwap) continue;
         swaps++;
         const final = w.finalNominees || [];
-        expect(final, 'the replacement duo did not end up on the block').toHaveLength(2);
+        // Two duos or one, the block is still whole pairs after the ceremony.
+        expect(final.length % 2, 'the block came out of the veto an odd size').toBe(0);
         for (const n of w.duoVetoSwap.down) {
           expect(final, `${n} was saved and is still on the block`).not.toContain(n);
         }
-        expect(final.slice().sort()).toEqual(w.duoVetoSwap.up.slice().sort());
+        for (const n of w.duoVetoSwap.up) {
+          expect(final, `${n} was named as a replacement and is not on the block`).toContain(n);
+        }
       }
     }
     expect(swaps, 'no veto ever swapped a duo across three seasons').toBeGreaterThan(0);
@@ -672,5 +681,127 @@ describe('a Golden Key holds all the way to the door', () => {
     gs.activePlayers = NAMES.filter(n => n !== b);
     grantGoldenKey({ week: aWeek({ num: 2 }), evicted: b, house: gs.activePlayers });
     expect(duosSittingOut()).toContain(a);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Two duos, and a vote that chooses between relationships
+// ══════════════════════════════════════════════════════════════════════
+//
+// BB13 seated ONE duo, which makes the pairing matter for exactly one decision
+// — the Head of Household's. By eviction night both halves are up, one of them
+// is leaving, and the vote is an ordinary vote between two people who happen to
+// know each other. The pairing has nothing left to do.
+//
+// Two duos on that wall turns the vote into a choice between two
+// RELATIONSHIPS: the room decides whose side loses somebody, then which half.
+import { duoDoubleBlock, duoVoteResult, twoDuoBlock } from '../js/bb/duos.js';
+
+describe('two duos on the block', () => {
+  it('seats four, in two whole pairs', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const dbl = duoDoubleBlock({ plan: {}, house: NAMES, protectedNames: ['A'], hoh: 'A' });
+    expect(dbl.nominees).toHaveLength(4);
+    expect(new Set(dbl.nominees).size, 'somebody was seated twice').toBe(4);
+    for (const [x, y] of dbl.pairs) expect(partnerOf(x, NAMES)).toBe(y);
+    expect(dbl.nominees).not.toContain('A');
+    expect(dbl.nominees, 'the crown did not cover the partner').not.toContain(partnerOf('A', NAMES));
+  });
+
+  it('falls back to one duo when a second clean pair does not exist', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    const small = [...duoState().pairs[1], a, b, 'E'];
+    // Only two duos alive, and the Head of Household is in one of them.
+    expect(duoDoubleBlock({ plan: {}, house: small, protectedNames: [a], hoh: a })).toBe(null);
+  });
+});
+
+describe('the vote, totalled by duo', () => {
+  const blocks = [['C', 'D'], ['G', 'H']];
+
+  it('sends home the loudest half of the duo the room wrote down most', () => {
+    installDuos(NAMES, { rng: Math.random });
+    duoState().nominatedPairs = blocks;
+    const res = duoVoteResult({ nominees: ['C', 'D', 'G', 'H'],
+      votes: { C: 1, D: 4, G: 2, H: 2 }, pairs: blocks });
+    expect(res.losing.sort()).toEqual(['C', 'D']);   // 5 against 4
+    expect(res.evicted).toBe('D');
+    expect(res.survivor).toBe('C');
+  });
+
+  it('can evict on fewer votes than somebody in the other chairs', () => {
+    // THE WHOLE REASON TO SEAT TWO. G has three votes and stays; C has two and
+    // goes, because C's partner dragged their side of the wall down.
+    installDuos(NAMES, { rng: Math.random });
+    const res = duoVoteResult({ nominees: ['C', 'D', 'G', 'H'],
+      votes: { C: 2, D: 3, G: 4, H: 0 }, pairs: blocks });
+    expect(res.losing.sort()).toEqual(['C', 'D']);   // 5 against 4
+    // D goes home on THREE. G had four and is still in the house.
+    expect(res.evicted).toBe('D');
+    expect(res.evicted, 'the loudest name in the room went home').not.toBe('G');
+  });
+
+  it('hands a split inside the losing duo back to be broken', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const res = duoVoteResult({ nominees: ['C', 'D', 'G', 'H'],
+      votes: { C: 3, D: 3, G: 1, H: 0 }, pairs: blocks });
+    expect(res.losing.sort()).toEqual(['C', 'D']);
+    expect(res.tied).toBe(true);
+    expect(res.evicted).toBe(null);
+  });
+
+  it('breaks a dead heat between the two sides with the loudest single vote', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const res = duoVoteResult({ nominees: ['C', 'D', 'G', 'H'],
+      votes: { C: 1, D: 2, G: 3, H: 0 }, pairs: blocks });
+    expect(res.perPair[0].total).toBe(res.perPair[1].total);
+    expect(res.losing.sort(), 'the side carrying the loudest vote survived a tie').toEqual(['G', 'H']);
+    expect(res.evicted).toBe('G');
+  });
+});
+
+describe('a played season with two duos up', () => {
+  it('seats four and lets the duo tally decide the night', () => {
+    let fours = 0;
+    let duoDecided = 0;
+    for (const seed of [5, 17, 41]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 10, bbDuosBlock: 'two' });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      // Asserted after the season, because the duos are not seated until the
+      // first night and `twoDuoBlock` reads the installed state, not the config.
+      expect(twoDuoBlock(), 'the season is not running two-duo blocks').toBe(true);
+      for (const w of gs.bb.weeks || []) {
+        const noms = (w.acts || []).find(a => a.type === 'nominations')?.nominees || [];
+        if (noms.length === 4) fours++;
+        if (!w.duoVote) continue;
+        duoDecided++;
+        expect(w.duoVote.perPair).toHaveLength(2);
+        expect(w.duoVote.losing).toContain(w.evicted);
+        // The survivor of the losing duo is still in the house.
+        expect(w.duoVote.survivor).not.toBe(w.evicted);
+      }
+    }
+    expect(fours, 'no week ever seated four nominees').toBeGreaterThan(2);
+    expect(duoDecided, 'the duo tally never decided an eviction').toBeGreaterThan(2);
+  });
+
+  it('still plays BB13 when the setting says one duo', () => {
+    house();
+    Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 10, bbDuosBlock: 'one' });
+    expect(twoDuoBlock()).toBe(false);
+    withSeededRandom(5, () => {
+      let guard = 0;
+      while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+    });
+    for (const w of gs.bb.weeks || []) {
+      const noms = (w.acts || []).find(a => a.type === 'nominations')?.nominees || [];
+      expect(noms.length, 'a one-duo season seated four').toBeLessThan(3);
+      expect(w.duoVote, 'a one-duo season counted votes by duo').toBeFalsy();
+    }
   });
 });

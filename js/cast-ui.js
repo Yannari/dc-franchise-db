@@ -835,6 +835,8 @@ function readSeasonTwistConfig(g) {
     for (const opt of s.options || []) {
       if (opt.type === 'number') {
         out[opt.key] = Number(g(`cfg-${opt.key}`)?.value) || (opt.default ?? 1);
+      } else if (opt.type === 'select') {
+        out[opt.key] = g(`cfg-${opt.key}`)?.value || opt.default || '';
       } else {
         out[opt.key] = seasonConfig[opt.key] || '';
       }
@@ -854,6 +856,7 @@ function applySeasonTwistConfig(set) {
     set(`cfg-${s.key}`, seasonConfig[s.key] || 'off');
     for (const opt of s.options || []) {
       if (opt.type === 'number') set(`cfg-${opt.key}`, seasonConfig[opt.key] || opt.default || 1);
+      if (opt.type === 'select') set(`cfg-${opt.key}`, seasonConfig[opt.key] || opt.default || '');
     }
     if (typeof updateSeasonTwistUI === 'function') updateSeasonTwistUI(c.id);
   }

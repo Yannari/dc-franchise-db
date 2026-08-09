@@ -5602,6 +5602,29 @@ export function generateBBSummaryText(ep) {
           wrong.forEach(pl => ln(`    ${pl.voter} counted ${pl.believed} for evicting ${pl.target}; there were ${pl.truth}.`));
         }
         beats(act);
+        /* THE COUNT THAT DECIDES WHICH RELATIONSHIP BREAKS.
+           Four names on the wall and a result the ballot list does not explain:
+           the votes are added BY DUO, the pair the room wrote down most loses
+           somebody, and it is the loudest half of that pair. Without these
+           lines a reader watches somebody leave on fewer votes than a
+           houseguest still sitting there and reads it as a mistake. */
+        if (act.duoVote?.perPair?.length === 2) {
+          ln('');
+          ln('  COUNTED BY DUO — the house voted for a side, not a houseguest.');
+          for (const p of act.duoVote.perPair) {
+            const each = p.names.map(n => `${n} ${act.votes?.[n] || 0}`).join(' + ');
+            ln(`    ${p.names.join(' and ')}: ${each} = ${p.total}`);
+          }
+          if (act.duoVote.evicted) {
+            ln(`    ${act.duoVote.losing.join(' and ')} lose the count, and ${act.duoVote.evicted} goes.`);
+            const out = act.votes?.[act.duoVote.evicted] || 0;
+            const luckier = (act.nominees || []).filter(n =>
+              !act.duoVote.losing.includes(n) && (act.votes?.[n] || 0) >= out);
+            if (luckier.length) {
+              ln(`    ${luckier.join(' and ')} took as many or more and are still in this house.`);
+            }
+          }
+        }
         if (act.doubleVote && act.secondEvicted) {
           ln('  DOUBLE EVICTION — one vote, two walks.');
           ln(`  ${act.evicted} and ${act.secondEvicted} are both evicted from the Big Brother house.`);

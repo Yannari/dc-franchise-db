@@ -359,7 +359,7 @@ export function duoSafeWith(hoh, house = gs.activePlayers || []) {
  * which is the honest thing to do with a rule that has run out of pairs.
  */
 export function duoReplacementBlock({ nominees = [], saved = null, house = gs.activePlayers || [],
-  protectedNames = [], hoh = null, plan = {}, rng = Math.random } = {}) {
+  protectedNames = [], hoh = null, plan = {}, replacement = null, rng = Math.random } = {}) {
   const st = duoState();
   if (!st || st.over || !saved) return null;
 
@@ -380,7 +380,96 @@ export function duoReplacementBlock({ nominees = [], saved = null, house = gs.ac
   });
   if (!up) return null;
 
-  return { nominees: [...up], down: [...down], up: [...up] };
+  /* KEEP THE DUO THE VETO NEVER TOUCHED.
+     On a two-duo block only ONE of the pairs was saved. Returning just the
+     replacement threw the other one off the wall as well — a four-name block
+     collapsed to two, and on the week that happened twice it collapsed to a
+     single nominee and the vote engine was handed one name to choose between.
+     What comes off is the saved duo and the single stand-in the ordinary
+     ceremony had already seated; everybody else stays exactly where they were. */
+  const kept = nominees.filter(n => !down.includes(n) && n !== replacement);
+  return { nominees: [...kept, ...up], down: [...down], up: [...up] };
+}
+
+/** Is this season putting TWO duos on the block instead of one? */
+export function twoDuoBlock() {
+  return duosActive() && seasonConfig?.bbDuosBlock !== 'one';
+}
+
+/**
+ * Two duos, four keys.
+ *
+ * WHY THIS EXISTS. BB13 nominated one duo, and a one-duo block makes the pair
+ * matter for exactly one decision — the Head of Household's. By eviction night
+ * both halves are up, one of them is leaving, and the vote is an ordinary vote
+ * between two people who happen to know each other. The pairing has nothing
+ * left to do.
+ *
+ * With two duos on that wall the vote is a choice between two RELATIONSHIPS.
+ * The house is not deciding who goes, it is deciding whose side loses somebody
+ * — and then which half. That is not the show; it is the answer to the thing
+ * the show's version leaves flat.
+ *
+ * Returns null when the house cannot field two clean duos, and the ordinary
+ * one-duo block runs instead — which is what happens naturally late in a
+ * season as the pairs get eaten into.
+ */
+export function duoDoubleBlock({ plan = {}, house = gs.activePlayers || [], protectedNames = [],
+  hoh = null, rng = Math.random } = {}) {
+  const first = duoBlock({ plan, house, protectedNames, hoh, rng });
+  if (!first) return null;
+  const second = duoBlock({
+    plan, house, hoh, rng,
+    protectedNames: [...protectedNames, ...first],
+  });
+  if (!second) return null;
+  return { nominees: [...first, ...second], pairs: [[...first], [...second]] };
+}
+
+/**
+ * Which duo the house voted against, and which half of it goes.
+ *
+ * Votes are cast the way they are always cast — one name each — and then
+ * TOTALLED BY DUO. The pair the room wrote down most loses somebody, and it is
+ * the half of that pair with the most votes of their own.
+ *
+ * So you can go home on fewer votes than somebody sitting in the other chairs,
+ * because your partner dragged your side of the wall down. That is the whole
+ * point of seating two of them: the house has to decide which relationship it
+ * is willing to break before it decides who it is willing to lose.
+ *
+ * `tied` is the within-pair tie, which the caller breaks the way it breaks any
+ * tied vote — with the Head of Household's preference.
+ */
+export function duoVoteResult({ nominees = [], votes = {}, pairs = null } = {}) {
+  const st = duoState();
+  const blocks = (pairs || st?.nominatedPairs || [])
+    .filter(p => p.length === 2 && p.every(n => nominees.includes(n)));
+  if (blocks.length !== 2) return null;
+
+  const scored = blocks.map(p => ({
+    names: [...p],
+    total: p.reduce((s, n) => s + (votes[n] || 0), 0),
+  })).sort((a, b) => b.total - a.total);
+
+  // A dead heat between the two sides is the room refusing to choose, and the
+  // side carrying the single loudest vote loses it.
+  let losing = scored[0];
+  if (scored[0].total === scored[1].total) {
+    const loudest = ([...nominees].sort((a, b) => (votes[b] || 0) - (votes[a] || 0)))[0];
+    losing = scored.find(s => s.names.includes(loudest)) || scored[0];
+  }
+
+  const [x, y] = losing.names;
+  const tied = (votes[x] || 0) === (votes[y] || 0);
+  const evicted = tied ? null : ((votes[x] || 0) > (votes[y] || 0) ? x : y);
+
+  return {
+    perPair: scored.map(s => ({ names: [...s.names], total: s.total })),
+    losing: [...losing.names],
+    survivor: evicted ? losing.names.find(n => n !== evicted) : null,
+    evicted, tied,
+  };
 }
 
 const KEY_LINES = [
@@ -440,9 +529,20 @@ export function grantGoldenKey({ week, evicted, house = gs.activePlayers || [] }
 export function expireKeys({ week, house = gs.activePlayers || [] } = {}) {
   const st = duoState();
   if (!st || st.keysExpired || st.goldenKey === false) return null;
-  if (house.length > st.keyAt) return null;
 
   const held = keyHolders().filter(n => house.includes(n));
+  /* THE KEYS CANNOT MAKE THE WEEK UNPLAYABLE.
+     Two ways they end. The named threshold is the show's — ten houseguests,
+     and everybody holding one is back in the game. The second is arithmetic:
+     a Head of Household plus two nominees is the smallest week this format
+     has, so when the untouchable outnumber the available the ceremony has
+     nobody left it is allowed to seat. The engine's own floor said so out
+     loud — "a Big Brother campaign requires at least two nominees" — after a
+     block of one reached the vote in a house where five of seven were safe.
+     Safety that cancels the eviction is not safety, it is the end of the
+     season, so the keys go instead. */
+  const nominatable = house.length - held.length - 1;
+  if (house.length > st.keyAt && nominatable >= 2) return null;
   /* THE KEYS END. THE PAIRING DOES NOT.
      This used to set `over` as well, which switched the entire twist off — and
      since the default expiry is ten, a twelve-person cast stopped nominating

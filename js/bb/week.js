@@ -23,7 +23,8 @@ import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
-  duoSafeWith, duoReplacementBlock, duoKinLabel } from './duos.js';
+  duoSafeWith, duoReplacementBlock, duoKinLabel, duoDoubleBlock, duoVoteResult,
+  twoDuoBlock } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -2228,10 +2229,21 @@ export function simulateBBWeek(options = {}) {
      duo names both; when no whole duo can go up this returns null and the
      ordinary two-name plan runs. */
   let duoPair = null;
+  let duoPairs = null;
   if (duosActive()) {
+    /* TWO DUOS WHERE THE HOUSE CAN FIELD THEM.
+       Four on the block turns eviction night into a choice between two
+       relationships rather than between two people who happen to know each
+       other — see duoVoteResult. Falls back to one duo the moment the pairs
+       have been eaten into far enough that a second clean one does not exist,
+       which is most of the back half of a season. */
     try {
-      duoPair = duoBlock({ plan, house, protectedNames: untouchable, hoh, rng });
-    } catch { duoPair = null; }
+      if (twoDuoBlock() && house.length >= 8) {
+        const dbl = duoDoubleBlock({ plan, house, protectedNames: untouchable, hoh, rng });
+        if (dbl) { duoPair = dbl.nominees; duoPairs = dbl.pairs; }
+      }
+      if (!duoPair) duoPair = duoBlock({ plan, house, protectedNames: untouchable, hoh, rng });
+    } catch { duoPair = null; duoPairs = null; }
   }
 
   let duoWeekNoms = null;
@@ -2251,7 +2263,10 @@ export function simulateBBWeek(options = {}) {
       : [...new Set(plan.nominees)]
         .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
-  if (duoPair && nominees.length === 2) week.duoNomination = [...nominees];
+  if (duoPair && nominees.length === duoPair.length) {
+    week.duoNomination = [...nominees];
+    if (duoPairs) week.duoBlocks = duoPairs.map(p => [...p]);
+  }
   while (nominees.length < 2) {
     const extra = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
@@ -3295,10 +3310,17 @@ export function simulateBBWeek(options = {}) {
       if (duosActive() && !duoWeekActive(week)) {
         try {
           const swapped = duoReplacementBlock({ nominees, saved: vetoDecision.save, house, plan, hoh, rng,
-            protectedNames: [...protectedNames, replacement] });
+            replacement, protectedNames: [...protectedNames, replacement] });
           if (swapped) {
             nominees = [...swapped.nominees];
             week.duoVetoSwap = { down: swapped.down, up: swapped.up };
+            // The vote is counted against THESE pairs, so the record follows
+            // the wall rather than remembering the ceremony.
+            if (week.duoBlocks) {
+              week.duoBlocksFinal = week.duoBlocks
+                .filter(p => !p.some(n => swapped.down.includes(n)))
+                .concat([[...swapped.up]]);
+            }
             // The other half was saved too, by the rule rather than by the medallion.
             for (const name of swapped.down) {
               if (name !== vetoDecision.save) gs.bb.stats[name].timesSaved++;
@@ -4413,6 +4435,38 @@ export function simulateBBWeek(options = {}) {
       tieBreak = { voter: hoh, evict: secondEvicted, slot: 2, anonymous: hohSecret };
     }
   } else {
+    /* ── TOTALLED BY DUO ──
+       Four on the block and the votes are counted by PAIR: the duo the room
+       wrote down most loses somebody, and it is the half of that pair with the
+       most votes of their own. So a houseguest can go home on fewer votes than
+       people sitting in the other chairs, because their partner dragged their
+       side of the wall down — which is the reason to seat two duos at all. */
+    // The wall as it stands on eviction night, which is not the wall the
+    // ceremony built if the veto moved a whole duo off it.
+    const voteBlocks = week.duoBlocksFinal || week.duoBlocks;
+    let duoVote = null;
+    if (voteBlocks?.length === 2) {
+      try {
+        duoVote = duoVoteResult({ nominees, votes, pairs: voteBlocks });
+      } catch { duoVote = null; }
+    }
+    if (duoVote) {
+      week.duoVote = duoVote;
+      if (duoVote.evicted) evicted = duoVote.evicted;
+      else {
+        // The losing duo split its own votes evenly, so the Head of Household
+        // says which half of it goes — the same tie the format always breaks.
+        // Two names, or there is nothing to break — a losing "pair" of one is
+        // not a tie, it is the only answer.
+        const preference = duoVote.losing.length === 2
+          ? initialVotePreference(hoh, duoVote.losing, rng)
+          : { evict: duoVote.losing[0] };
+        evicted = preference.evict;
+        week.duoVote.evicted = evicted;
+        week.duoVote.survivor = duoVote.losing.find(n => n !== evicted);
+        tieBreak = { voter: hoh, evict: evicted, anonymous: hohSecret };
+      }
+    } else {
     // WHOEVER HAS THE MOST VOTES LEAVES — over every chair, not the first two.
     //
     // This compared nominees[0] against nominees[1] and nothing else, which is
@@ -4436,6 +4490,7 @@ export function simulateBBWeek(options = {}) {
       tieBreak = { voter: hoh, evict: evicted, anonymous: hohSecret };
     } else {
       evicted = ranked[0];
+    }
     }
   }
   if (!doubleVote) {
@@ -4585,7 +4640,11 @@ export function simulateBBWeek(options = {}) {
   // through so events can be about the person actually leaving.
   week.acts.push(addBeats(
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
-      secondEvicted, doubleVote },
+      secondEvicted, doubleVote,
+      // Four on the block and a result nobody can reconstruct from the ballots
+      // alone: the reader has to be shown the two sides added up, or the night
+      // reads as the wrong name being called.
+      duoVote: week.duoVote || null },
     { nominees: [...nominees], evicted, votes, ballots }));
 
   // The second name, read out after the votes, which nobody cast for.

@@ -284,3 +284,16 @@ describe('the ceremony knows it nominated a duo', () => {
     expect(cer).toMatch(/is who I came for, and/);
   });
 });
+
+describe('eviction night explains the duo count', () => {
+  it('draws the two sides added up, on the night it decides', () => {
+    // A houseguest leaving on fewer votes than somebody still sitting in the
+    // other chairs is the POINT of seating two duos — and it reads as a bug
+    // unless the screen shows the arithmetic that produced it.
+    const weeks = (gs.bb.weeks || []).filter(w => w.duoVote);
+    if (!weeks.length) return;   // one-duo season; covered in the mechanics file
+    const html = (screensByLabel.get('Eviction Night') || []).map(sc => sc.html).join('');
+    expect(html, 'the duo count never became a card').toContain('COUNTED BY DUO');
+    expect(html).toContain('voted for a side');
+  });
+});

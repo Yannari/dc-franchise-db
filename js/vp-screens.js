@@ -20439,6 +20439,11 @@ export function rpBuildBBEviction(ep) {
     ...noms.map(name => ({ kind: 'plea', name })),
     { kind: 'tovote' },
     ...ballots.map(b => ({ kind: 'ballot', b })),
+    // Before the verdict, because it IS the verdict's reasoning: with two duos
+    // up, the votes are added by pair and the loudest half of the losing pair
+    // goes. Without this the right name is called for reasons the screen never
+    // shows, which reads as a bug.
+    ...(act?.duoVote ? [{ kind: 'duotally' }] : []),
     ...(act?.tieBreak ? [{ kind: 'tie' }] : []),
     { kind: 'verdict' },
     { kind: 'goodbyes' },
@@ -20550,6 +20555,58 @@ export function rpBuildBBEviction(ep) {
             : b.recruitedBy ? 'SIGNED ON THIS WEEK' : b.bandwagon ? 'JOINS THE WINNING SIDE'
             : c?.promised ? 'KEEPS A PROMISE' : b.assignment ? 'VOTES WITH THE ROOM' : 'THE DIARY ROOM'}</span></div>
           <div class="bbns-card-b">${ballotScene(b, c, broke || lied)}${chain}</div></div>`;
+      }
+      case 'duotally': {
+        /* THE COUNT THAT DECIDES WHICH RELATIONSHIP BREAKS.
+           Four names on that wall and the ballots do not explain the result on
+           their own: the votes are added BY DUO, the pair the room wrote down
+           most loses somebody, and it is the half of that pair with the most
+           votes of their own. Without this card the right name is called for
+           reasons the screen never shows, and a houseguest going home on fewer
+           votes than somebody still sitting there reads as a bug. */
+        const dv = act.duoVote;
+        const rows = (dv.perPair || []).map(p => {
+          const losing = p.names.every(n => (dv.losing || []).includes(n));
+          return `<div class="bbev-duorow ${losing ? 'is-losing' : ''}">
+            <span class="bbev-duonames">${p.names.map(n =>
+    `${_bbAvatar(n, 24)}<b>${_bbEsc(n)}</b> <i>${act.votes?.[n] || 0}</i>`).join('<span class="bbduo-chain"></span>')}</span>
+            <span class="bbev-duototal">${p.total}</span>
+          </div>`;
+        }).join('');
+        const gone = dv.evicted;
+        const stayed = dv.survivor;
+        const outVotes = act.votes?.[gone] || 0;
+        // Somebody in the other chairs took more votes and is still here.
+        const luckier = (act.nominees || []).filter(n =>
+          !(dv.losing || []).includes(n) && (act.votes?.[n] || 0) >= outVotes);
+        return `<div class="bbns-card is-final bbev-duotally">
+          <style>
+            .bbev-duotally .bbev-duorow{display:flex;align-items:center;gap:10px;padding:7px 10px;
+              border-radius:7px;border:1px solid rgba(139,148,158,.18);margin-bottom:6px;}
+            .bbev-duotally .bbev-duorow.is-losing{border-color:rgba(248,81,73,.55);
+              background:rgba(248,81,73,.08);}
+            .bbev-duotally .bbev-duonames{display:flex;align-items:center;gap:5px;flex:1;
+              font-size:12.5px;}
+            .bbev-duotally .bbev-duonames i{font-style:normal;color:#8b949e;font-family:ui-monospace,Consolas,monospace;}
+            .bbev-duotally .bbev-duototal{font-family:var(--font-display);font-size:19px;color:#f0f6fc;}
+            .bbev-duotally .bbduo-chain{position:relative;display:inline-block;width:20px;height:9px;margin:0 3px;}
+            .bbev-duotally .bbduo-chain::before,.bbev-duotally .bbduo-chain::after{content:'';
+              position:absolute;top:0;width:11px;height:9px;border:1.5px solid rgba(240,165,0,.7);border-radius:5px;}
+            .bbev-duotally .bbduo-chain::before{left:0;}
+            .bbev-duotally .bbduo-chain::after{right:0;}
+          </style>
+          <div class="bbns-card-h"><span class="bbns-pill red">COUNTED BY DUO</span></div>
+          <div class="bbns-card-b">
+            The house did not vote for a houseguest tonight. It voted for a side.
+            ${rows}
+            ${gone ? `<div style="margin-top:8px">${_bbEsc(dv.losing.join(' and '))} lose the count,
+              and it is <strong>${_bbEsc(gone)}</strong> who goes${stayed
+    ? ` — ${_bbEsc(stayed)} stays, on the strength of a vote that was never about ${_bbEsc(stayed)}` : ''}.</div>` : ''}
+            ${gone && luckier.length ? `<div class="bbh-why">${_bbEsc(luckier.join(' and '))}
+              ${luckier.length === 1 ? 'took' : 'took'} ${luckier.length === 1
+    ? `${act.votes?.[luckier[0]] || 0} and is` : 'more and are'} still in this house.
+              ${_bbEsc(gone)} is leaving on ${outVotes}, because of who ${_bbEsc(gone)} came in with.</div>` : ''}
+          </div></div>`;
       }
       case 'tie':
         return `<div class="bbns-card is-final bbev-tie">

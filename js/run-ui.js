@@ -1277,6 +1277,20 @@ export function renderSeasonTwists() {
           <div id="pick-${opt.key}" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
           ${hint}</div>`;
       }
+      // A twist option that is a CHOICE rather than a number. Everything here
+      // fell through to a number input, so a contract could declare a select
+      // and the page would draw a spinner for it — which is how a season
+      // setting can exist in the contract, be read by the engine, and be
+      // unreachable from the only screen that sets it.
+      if (opt.type === 'select') {
+        return `<div class="form-group" style="margin-bottom:0">
+          <label class="form-label">${opt.label}</label>
+          <select id="cfg-${opt.key}" class="form-input" onchange="saveConfig()">
+            ${(opt.choices || []).map(ch =>
+    `<option value="${_q(ch.value)}">${ch.label}</option>`).join('')}
+          </select>
+          ${hint}</div>`;
+      }
       return `<div class="form-group" style="margin-bottom:0">
         <label class="form-label">${opt.label}</label>
         <input type="number" id="cfg-${opt.key}" class="form-input" min="${opt.min ?? 1}"

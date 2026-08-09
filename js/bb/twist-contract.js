@@ -174,6 +174,17 @@ export const BB_TWIST_CONTRACTS = {
         { value: 'pairs', label: 'Pairs only — no key, orphans get re-paired' },
       ],
       options: [
+        { key: 'bbDuosBlock', type: 'select', label: 'Nominations', default: 'two',
+          hint: 'TWO DUOS puts four on the block and totals the votes BY DUO: the pair the room '
+            + 'wrote down most loses somebody, and it is the half of that pair with the most votes '
+            + 'of their own — so you can go home on fewer votes than the people in the other chairs '
+            + 'because your partner dragged your side down. ONE DUO is what BB13 actually did, and '
+            + 'leaves eviction night an ordinary vote between two people who happen to know each '
+            + 'other.',
+          choices: [
+            { value: 'two', label: 'Two duos — four nominees' },
+            { value: 'one', label: 'One duo — two nominees (BB13)' },
+          ] },
         { key: 'bbDuosKeyAt', type: 'number', label: 'Keys expire at', min: 4, max: 14, default: 10,
           hint: 'Golden Key mode only. The house size at which every key stops working at once, and '
             + 'everybody holding one is nominatable again — after weeks of not competing. Ten is '

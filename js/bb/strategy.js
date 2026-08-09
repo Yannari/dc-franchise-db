@@ -553,6 +553,16 @@ export function shouldUseVeto(holder, nominees, plan, rng = Math.random, context
     return { name, keep, cost, net: keep - cost + diamondPull + noise(rng, 0.9) };
   }).sort((a, b) => b.net - a.net);
   const best = options[0];
+  /* NOTHING ON THE BLOCK IS NOT A DECISION.
+     Every line below reads `best`, and `options` is built from the nominees —
+     so a week that reached the veto ceremony with an empty block threw on
+     `best.net` and took the season with it. Reachable whenever week-long
+     protections (Golden Keys, a crowned partner, Super Safety) leave the
+     ceremony with nobody it is allowed to seat. */
+  if (!best) {
+    return { use: false, save: null, reason: 'nobody-up',
+      why: `There is nobody on that block for ${holder} to take off it.` };
+  }
 
   // ── the Head of Household holding their own veto ──
   if (holder === hoh) {
@@ -730,6 +740,15 @@ export function initialVotePreference(voter, nominees, rng = Math.random) {
       + noise(rng, 1);
   };
   const scores = nominees.map(name => ({ name, keepScore: score(name) })).sort((a, b) => a.keepScore - b.keepScore);
+  /* A BLOCK OF ONE IS A LEGITIMATE BLOCK.
+     `scores[1]` was read unconditionally, so any week that reached a vote with
+     a single nominee crashed on `.keepScore` of undefined — and that is a state
+     the house can genuinely arrive at once week-long protections stack up
+     (Golden Keys, the crown covering a partner, Super Safety), leaving the
+     ceremony with one seat it was allowed to fill. There is nothing to weigh:
+     the only name on the wall is the answer, with no margin. */
+  if (!scores.length) return { evict: null, margin: 0 };
+  if (scores.length === 1) return { evict: scores[0].name, margin: 0 };
   return { evict: scores[0].name, margin: scores[1].keepScore - scores[0].keepScore };
 }
 

@@ -1429,6 +1429,10 @@ export function buildEpisodeMap() {
   let _fvReturnApplied = false;
   let _lastAMReturn = 0;
   let _amReturnApplied = false;
+  // Camp Comeback fills by evictions, not by weeks. See the returns block.
+  let _campStartElims = null;
+  let _campStartEp = 0;
+  let _campReturnUsed = false;
 
   while (active > finale && ep <= 100) {
     const etype = twistMap[ep] || null;
@@ -1484,6 +1488,38 @@ export function buildEpisodeMap() {
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;
     let returns = _allTypes.includes('second-chance') ? 1 : 0;
+
+    // ── Big Brother sends people back too ──
+    //
+    // The BB block above only ever ADDS evictions, so both of the twists whose
+    // whole point is a returning houseguest were invisible to the projection.
+    // A Battle Back week showed 12 left going to 11 when the eviction and the
+    // re-entry cancel out, and every week after it was off by one for the rest
+    // of the season — the same fault the Split House had, in the other
+    // direction.
+    //
+    // Battle Back: the eviction still happens and then one evictee walks back
+    // in at the close of the same week. Net zero.
+    if (_allTypes.includes('bb-battle-back')) returns += 1;
+
+    // Camp Comeback: the campers are the NEXT FOUR evicted, counted from this
+    // week inclusive, and the return runs on the night the fourth arrives —
+    // not on the week the twist was scheduled. So it is counted in evictions
+    // rather than in weeks, which is what makes it survive a double eviction
+    // filling the camp early.
+    if (_allTypes.includes('bb-camp-comeback') && _campStartElims === null) {
+      _campStartElims = _totalElimsToHere - elims;
+      _campStartEp = ep;
+    }
+    if (_campStartElims !== null && !_campReturnUsed
+        && _totalElimsToHere - _campStartElims >= 4
+        // The twist runs for four weeks. A camp that never fills inside its
+        // window returns nobody, and projecting a return anyway would be wrong
+        // in exactly the way this is fixing.
+        && ep <= _campStartEp + 3) {
+      returns += 1;
+      _campReturnUsed = true;
+    }
     const _rpTwist = (seasonConfig.twistSchedule||[]).filter(t => t && Number(t.episode) === ep).find(t => t.type === 'returning-player');
     if (_rpTwist) returns += (_rpTwist.returnCount || 1);
     // Fan vote return: pending return from live game adds +1 this episode

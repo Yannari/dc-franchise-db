@@ -186,6 +186,12 @@ export function runSecretPowerComp({
     type: 'secret-power-comp', week: weekNum,
     doors, rooms, winner, granted,
     chased: [...chasing.entries()].map(([name, power]) => ({ name, power })),
+    // The screen draws the board the house watched and strikes through
+    // everybody who was never running for the crown, so it needs the finished
+    // order and who was barred — not just who won what.
+    results: (results || []).map(r => ({ name: r?.name, score: r?.score })).filter(r => r.name),
+    house: [...field],
+    outgoingHoh: outgoingHoh || null,
     beats,
   };
 }

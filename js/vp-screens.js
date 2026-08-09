@@ -20,6 +20,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
+import { rpBuildBBSecretPowerComp } from './vp-bb-secret-power.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
 import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire,
@@ -20788,6 +20789,17 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       case 'diamond-detonation':
         screens.push({ id: id('bb-detonation'), label: 'The Detonation', html: rpBuildBBDiamondDetonation(view, act) });
+        break;
+      case 'secret-power-comp': {
+        const spDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-secret-power'), label: 'Secret Powers',
+          html: rpBuildBBSecretPowerComp(view, act, spDeps) });
+        break;
+      }
+      case 'no-eviction':
+        // No screen of its own: the act carries two beats and nothing to draw.
+        // A page that says "nothing happened" in a frame is worse than the
+        // beats appearing where every other week's beats appear.
         break;
       case 'whacktivity':
         screens.push({ id: id('bb-whacktivity'), label: 'Whacktivity', html: rpBuildBBWhacktivity(view, act) });

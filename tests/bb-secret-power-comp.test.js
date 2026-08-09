@@ -311,3 +311,82 @@ describe('who knows who is holding what', () => {
     expect(src).toMatch(/try \{ recordBBPower\(/);
   });
 });
+
+describe('the screen', () => {
+  // Rendered with real data rather than asserted about, because a VP builder
+  // that throws produces an empty screen and every structural test still
+  // passes. Built to mockup-secret-power.html, which stays in the repo as the
+  // visual target.
+  const ACT = {
+    type: 'secret-power-comp', week: 2,
+    doors: ['hoh-interrogation', 'mystery-veto', 'mystery-competitor'],
+    rooms: [
+      { power: 'hoh-interrogation', name: 'The Interrogation', entrants: ['Ripper', 'Scary'], winner: 'Ripper' },
+      { power: 'mystery-veto', name: 'The Mystery Veto', entrants: ['Zee'], winner: 'Zee' },
+      { power: 'mystery-competitor', name: 'The Mystery Competitor', entrants: [], winner: null },
+    ],
+    winner: 'Nichelle',
+    granted: [{ name: 'Ripper', power: 'hoh-interrogation' }, { name: 'Zee', power: 'mystery-veto' }],
+    chased: [{ name: 'Ripper', power: 'hoh-interrogation' },
+      { name: 'Scary', power: 'hoh-interrogation' }, { name: 'Zee', power: 'mystery-veto' }],
+    results: [{ name: 'Ripper', score: 412 }, { name: 'Nichelle', score: 388 },
+      { name: 'Scary', score: 371 }, { name: 'Axel', score: 344 }, { name: 'Zee', score: 330 }],
+    house: ['Ripper', 'Nichelle', 'Scary', 'Axel', 'Zee', 'Brightly'],
+    outgoingHoh: 'Zee',
+    beats: [{ text: 'The yard is not what it looks like.', players: ['Ripper'],
+      badgeText: 'SOMETHING ELSE', badgeClass: 'gold' }],
+  };
+  const render = idx => {
+    const tv = {};
+    const deps = { tvState: tv, reveal: () => 'x', esc: v => String(v ?? ''),
+      avatar: (n, px) => `<img alt="" data-n="${n}" width="${px}">` };
+    const { rpBuildBBSecretPowerComp } = require('../js/vp-bb-secret-power.js');
+    const first = rpBuildBBSecretPowerComp({ num: 2 }, ACT, deps);
+    if (idx == null) return first;
+    tv['bb_spc_2'].idx = idx;
+    return rpBuildBBSecretPowerComp({ num: 2 }, ACT, deps);
+  };
+
+  it('opens sealed, so the screen is a competition and not its answer', () => {
+    const html = render(null);
+    expect(html).toContain('Sealed until');
+    expect(html, 'the doors were open before anybody revealed anything')
+      .not.toContain('Void when');
+  });
+
+  it('strikes through everybody who was never running for the crown', () => {
+    // The twist in one visual: the best afternoon in the yard, and not the
+    // Head of Household.
+    const html = render(99);
+    expect(html).toContain('is-elsewhere');
+    expect(html).toContain('not running');
+  });
+
+  it('stamps the expiry on the documents', () => {
+    expect(render(99)).toContain('Void when');
+  });
+
+  it('shows the door nobody walked to', () => {
+    const html = render(99);
+    expect(html).toContain('is-unclaimed');
+    expect(html).toMatch(/without ever knowing it was out there/);
+  });
+
+  it('says who knows and who only walked past', () => {
+    const html = render(99);
+    expect(html).toContain('Holds');
+    expect(html, 'a suspicion is drawn the same as knowledge')
+      .toContain('Walked a door');
+  });
+
+  it('puts faces on it', () => {
+    // Asked for directly, and the reason `avatar` is threaded through deps.
+    expect((render(99).match(/<img/g) || []).length).toBeGreaterThan(8);
+  });
+
+  it('is registered, or it renders nowhere', () => {
+    const src = require('node:fs').readFileSync('js/vp-screens.js', 'utf8');
+    expect(src).toMatch(/case 'secret-power-comp':/);
+    expect(src).toMatch(/rpBuildBBSecretPowerComp\(view, act, spDeps\)/);
+  });
+});

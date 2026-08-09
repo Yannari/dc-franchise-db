@@ -21377,6 +21377,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'interrogation':
       case 'mystery-competitor':
       case 'mystery-veto':
+      // Its own act rather than a second `veto-ceremony`: reusing that type
+      // replayed the entire meeting — speeches, pleading, adjournment — for a
+      // scene that is three beats long and happens after everybody had gone to
+      // bed. The viewer got the same ceremony twice.
+      case 'second-veto-ceremony':
       case 'power-played': {
         // The Coup d'État and the Cloud used to fire into nothing at all: the
         // act was emitted and no surface read it, so a week could be rewritten

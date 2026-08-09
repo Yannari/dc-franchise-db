@@ -1383,6 +1383,13 @@ export function summariseWeek(week) {
           : `  ${act.guest} lost. ${act.holder} bought a body in the draw and nothing else.`);
         break;
       }
+      case 'second-veto-ceremony': {
+        line('');
+        line('THE SECOND VETO MEETING');
+        line(`  ${act.holder} used a veto nobody knew existed. ${act.saved} comes off the block.`);
+        if (act.replacement) line(`  Replacement: ${act.replacement}.`);
+        break;
+      }
       case 'mystery-veto': {
         line('');
         line('THE MYSTERY VETO');

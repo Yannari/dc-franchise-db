@@ -813,13 +813,29 @@ describe('the second veto is an actual competition', () => {
   it('holds a second ceremony when it is won', () => {
     // A veto that is won has to be USED somewhere, in front of everybody, or it
     // is a rule change announced by caption.
+    //
+    // With its OWN act type. It was a second `veto-ceremony`, which replayed
+    // the entire meeting — speeches, pleading, adjournment — for a scene that
+    // is three beats long and happens after everybody had gone to bed, so the
+    // viewer got the same ceremony twice.
     const src = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
-    const at = src.indexOf('playMysteryVeto({');
-    const block = src.slice(at, at + 2400);
-    expect(block, 'nothing is shown to the house').toMatch(/type: 'veto-ceremony'/);
-    expect(block, 'the second ceremony is not marked as one').toMatch(/second: true/);
-    // Rendered by the same screen as the first, because it IS a veto meeting.
-    expect(block).toMatch(/holder: solo\.holder/);
+    expect(src).toMatch(/type: 'second-veto-ceremony'/);
+    const vp = require('node:fs').readFileSync('js/vp-screens.js', 'utf8');
+    expect(vp, 'the second meeting has no screen').toMatch(/case 'second-veto-ceremony':/);
+  });
+
+  it('shows it AFTER the meeting it comes after', () => {
+    // Pushed where it was computed, it rendered before the veto meeting it
+    // follows. Third time this file has taught the same lesson: acts render in
+    // push order, and where a thing is decided is not where it happened.
+    const src = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
+    const ceremony = src.indexOf("type: 'veto-ceremony', used: !!vetoDecision.use");
+    const mystery = src.indexOf('week.acts.push(addBeats(solo,');
+    const second = src.indexOf("type: 'second-veto-ceremony'");
+    expect(ceremony).toBeGreaterThan(-1);
+    expect(mystery, 'the mystery veto still shows before the ceremony')
+      .toBeGreaterThan(ceremony);
+    expect(second).toBeGreaterThan(mystery);
   });
 
   it('is handed the week\'s own competition library', () => {

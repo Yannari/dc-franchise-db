@@ -5296,6 +5296,16 @@ export function generateBBSummaryText(ep) {
           : `  ${act.guest} lost. ${act.holder} paid for a body in the draw and got exactly that.`);
         break;
 
+      case 'second-veto-ceremony':
+        sec('THE SECOND VETO MEETING');
+        ln('  The house is called back in hours after the first meeting ended, and nobody has been');
+        ln(`  told why. ${act.holder} is holding a second veto, and ${act.saved} comes off a block`);
+        ln('  the whole house had already accepted.');
+        if (act.replacement) {
+          ln(`  ${act.replacement} takes the empty chair, which was settled an hour ago.`);
+        }
+        break;
+
       case 'mystery-veto':
         sec('THE MYSTERY VETO');
         ln('  The ceremony was over and the week was supposed to be settled. It was not: a second');

@@ -3413,54 +3413,18 @@ export function simulateBBWeek(options = {}) {
 
     // ── a second veto, with one player in it ──
     //
-    // Fires here for the same reason the coup does: the house has just watched
-    // the week settle, and then it does not settle. Usable whether or not the
-    // holder is a nominee, per the show, which is what makes it more than a
-    // self-save — it can take somebody else off a block everybody had stopped
-    // thinking about.
+    // Decided here, where the block has just settled, and SHOWN after the
+    // ceremony — see below. Usable whether or not the holder is a nominee, per
+    // the show, which is what makes it more than a self-save: it can take
+    // somebody off a block everybody had stopped thinking about.
+    let solo = null;
     if (!compressed) {
       try {
-        const solo = playMysteryVeto({ week, nominees, house, rng,
+        solo = playMysteryVeto({ week, nominees, house, rng,
           // The same library the week's own competitions come from, so what
           // gets played alone is a competition this season actually has.
           library: competitionLibrary });
-        if (solo) {
-          week.mysteryVeto = solo;
-          week.acts.push(addBeats(solo, { players: [solo.holder] }));
-          if (solo.won && solo.saves && nominees.includes(solo.saves)) {
-            nominees = nominees.filter(n => n !== solo.saves);
-            week.mysteryVetoSaved = solo.saves;
-            // The chair does not stay empty. Same authority as any other veto:
-            // the Head of Household names who sits in it.
-            const pool = house.filter(n => n !== hoh && n !== solo.holder
-              && !nominees.includes(n) && n !== solo.saves);
-            let replacement = null;
-            if (pool.length) {
-              replacement = pool[Math.floor(rng() * pool.length)];
-              nominees = [...nominees, replacement];
-              week.mysteryVetoReplacement = replacement;
-            }
-            // ── AND A SECOND CEREMONY ──
-            //
-            // A veto that is won has to be USED somewhere, in front of
-            // everybody, or it is a rule change announced by caption. The house
-            // is called back in and watches the block it had already accepted
-            // come apart — rendered by the same screen as the first ceremony,
-            // because that is exactly what it is: a veto meeting, held twice.
-            week.acts.push(addBeats({
-              type: 'veto-ceremony', used: true, saved: solo.saves, replacement,
-              holder: solo.holder, diamond: false, chairAuthority: 'hoh',
-              anonymous: false, second: true,
-              reason: 'a veto nobody knew existed until it was used',
-              why: `${solo.holder} won a second veto competition alone, after this ceremony had `
-                + 'already happened once.',
-              replacementWhy: replacement
-                ? `${hoh} has to fill a chair that was settled an hour ago.` : '',
-              nominees: [...nominees],
-            }, { players: [solo.holder, solo.saves, replacement].filter(Boolean) }));
-          }
-        }
-      } catch { week.mysteryVeto = null; }
+      } catch { solo = null; }
     }
 
     let coupAct = null;
@@ -3546,6 +3510,58 @@ export function simulateBBWeek(options = {}) {
         saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
     revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
       saved: vetoDecision.save || null });
+    // ── AFTER the ceremony, because it happens after the ceremony ──
+    //
+    // Pushed where it was computed, it rendered BEFORE the veto meeting it
+    // comes after — and its second ceremony rendered as a full `veto-ceremony`
+    // act, so the viewer got the same meeting twice, speeches and all, before
+    // the first one had been shown. Third time this file has taught the same
+    // lesson: acts render in push order, and where a thing is decided is not
+    // where it happened.
+    if (solo) {
+      week.mysteryVeto = solo;
+      week.acts.push(addBeats(solo, { players: [solo.holder] }));
+      if (solo.won && solo.saves && nominees.includes(solo.saves)) {
+        nominees = nominees.filter(n => n !== solo.saves);
+        week.mysteryVetoSaved = solo.saves;
+        // The chair does not stay empty. Same authority as any other veto: the
+        // Head of Household names who sits in it.
+        const pool = house.filter(n => n !== hoh && n !== solo.holder
+          && !nominees.includes(n) && n !== solo.saves);
+        let replacement2 = null;
+        if (pool.length) {
+          replacement2 = pool[Math.floor(rng() * pool.length)];
+          nominees = [...nominees, replacement2];
+          week.mysteryVetoReplacement = replacement2;
+        }
+        // Its OWN act, not a second `veto-ceremony`. Reusing that type replayed
+        // the whole meeting — the speeches, the pleading, the adjournment —
+        // for a scene that is four sentences long and happens after everybody
+        // has already gone to bed.
+        week.acts.push(addBeats({
+          type: 'second-veto-ceremony', holder: solo.holder, saved: solo.saves,
+          replacement: replacement2, nominees: [...nominees],
+          powerId: 'mystery-veto', name: 'The Mystery Veto',
+          timing: 'veto-ceremony', visibility: 'secret', secret: true,
+          detail: `${solo.holder} used a veto nobody knew existed, after the meeting had ended.`,
+          beats: [
+            { text: 'The house is called back into the living room. Nobody has been told why, and '
+                + 'the veto meeting finished hours ago.',
+              players: [...house].slice(0, 5), badgeText: 'CALLED BACK', badgeClass: 'gold' },
+            { text: `${solo.holder} is holding a second veto. ${solo.saves} comes off a block the `
+                + 'whole house had already accepted, and every plan made since the last meeting '
+                + 'was made about a block that no longer exists.',
+              players: [solo.holder, solo.saves], badgeText: 'USED AGAIN', badgeClass: 'gold' },
+            ...(replacement2 ? [{
+              text: `${hoh} has to fill a chair that was settled an hour ago. "${replacement2}, `
+                + 'take a seat."',
+              players: [hoh, replacement2], badgeText: 'AND ONE MORE', badgeClass: 'red',
+            }] : []),
+          ],
+        }, { players: [solo.holder, solo.saves, replacement2].filter(Boolean) }));
+      }
+    }
+
 
     // ...and NOW the coup, standing up on a block the house has just watched
     // settle. Everything downstream — campaigning, the vote, the plans — reads

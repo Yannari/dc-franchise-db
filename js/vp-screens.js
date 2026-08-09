@@ -55,6 +55,7 @@ import { rpBuildSigLogRoll } from './vp-bb-sig/log-roll.js';
 import { rpBuildSigHoldUp } from './vp-bb-sig/hold-up.js';
 import { rpBuildSigCagedEggs } from './vp-bb-sig/caged-eggs.js';
 import { rpBuildSigGetAGrip } from './vp-bb-sig/get-a-grip.js';
+import { rpBuildSigTightrope } from './vp-bb-sig/tightrope.js';
 import { rpBuildSigLaserMaze } from './vp-bb-sig/laser-maze.js';
 import { rpBuildSigWaterRescue } from './vp-bb-sig/water-rescue.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
@@ -17128,6 +17129,7 @@ const _BB_SIG_BUILDERS = {
   'before-or-after': rpBuildSigBeforeOrAfter,
   // Batch three.
   'get-a-grip': rpBuildSigGetAGrip,
+  'tightrope': rpBuildSigTightrope,
   // The deepened recurring competitions keep their original variant tags, so a
   // season saved before they were rewritten still resolves here — and each
   // builder declines when the new per-round data is absent, dropping that old

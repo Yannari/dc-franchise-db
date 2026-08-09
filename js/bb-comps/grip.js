@@ -40,6 +40,27 @@
 //   can go at once, from a knee, a breath, a nudge, and the closer you are to
 //   done the more there is to lose.
 //
+//
+// ── ON THE DESCRIPTIONS ──
+//
+// The wiki documents these six in one line each and nothing more: the pages
+// carry an infobox, a season table and a photo. That one line is the RULE, and
+// it is the part a description is not allowed to improvise around — a comp
+// whose stated win condition was invented is a comp the viewer is being lied
+// to about.
+//
+// So the wiki sentence governs, verbatim in substance, and everything else in
+// the description is staging that follows from it: what is in the yard, what a
+// houseguest is physically doing, and what going wrong looks like. Where the
+// wiki is silent on scoring, the description says the simplest thing the rule
+// implies rather than inventing a points system.
+//
+// Two of these were wrong on the first pass and are corrected here. Tightrope
+// is "reach one end of a tightrope to another without falling" — one crossing,
+// not a lap count, and the falling is the whole competition. Domino Effect is
+// "set up dominos in a certain way in order to achieve a certain task" — a
+// pattern to match, not a route with ramps and gates that nobody documented.
+//
 // Stat mixes are declared once in `stats` and read through scoreField, which is
 // what the profile-drift guard is for: a hand-written second mix inside
 // simulate() means the bars on the screen and the maths behind them describe
@@ -105,7 +126,7 @@ export const getAGrip = {
   name: 'Get A Grip',
   category: 'endurance',
   types: ['hoh', 'veto', 'tiebreaker'],
-  desc: 'Every houseguest takes hold of their own smooth vertical pole, lifts their feet clear of the ground and hangs there. Nothing swings at them, nothing tilts and nothing sprays — the pole does not move at all, and neither does anything else. They may change grip as often as they like and rest whichever arm they like, but the moment any part of them touches the ground they are finished and they stay finished. The last houseguest still off the floor wins, and by the end it is usually a conversation between the final two rather than a fall.',
+  desc: 'Every houseguest takes hold of their own pole and holds on. That is the entire competition: nothing swings at them, nothing tilts and nothing sprays, and the pole does not move. They may change grip and rest whichever arm they like, but letting go ends their night on the spot and there is no way back into it. The last houseguest still holding their pole wins, which by the end is usually settled by a conversation between the final two rather than by an arm giving out.',
   // The purest hold in the library, so endurance carries most of it. Physical
   // is grip strength rather than size; boldness is the willingness to keep
   // hanging after it has started to hurt.
@@ -176,7 +197,7 @@ export const tightrope = {
   name: 'Tightrope',
   category: 'balance',
   types: ['hoh', 'arena', 'tiebreaker'],
-  desc: 'A single rope is strung between two platforms above a net, and each houseguest has to get from one end of it to the other and back, as many times as they can before the clock runs out. There is nothing to hold and nothing to lean on. A fall does not cost a second or a point — it costs the entire crossing, because anybody who touches the net climbs back to the platform they started from and begins that trip again. The houseguest who completes the most full crossings wins, which is why hurrying is the most expensive thing anybody does out there.',
+  desc: 'A single rope is strung between two platforms above a net, and each houseguest has to get from one end of it to the other without falling. There is nothing to hold and nothing to lean on, and no way across but along the rope. A fall costs the whole trip rather than a few seconds: anybody who touches the net climbs back to the platform they started from and begins the crossing again from nothing. The first houseguest to reach the far platform wins, which is why hurrying is the most expensive thing anybody does out there.',
   // Balance under nerve. Intuition is the constant micro-correction, boldness
   // is being willing to commit to a step at all, and temperament is what stops
   // a wobble becoming a fall.
@@ -221,16 +242,24 @@ export const tightrope = {
     beats.push(beat(
       `${winner.name} finishes a crossing nobody else was close to finishing, and steps off the platform to a room that has gone quiet.`,
       [winner.name], 'ACROSS', 'gold'));
-    // Crossings completed and falls taken. Falls run the other way to
-    // crossings on purpose: the whole competition is that hurrying costs you
-    // the trip, so the field's worst crosser is usually its busiest faller.
-    const crossings = quantise(entries, { top: 9, floor: 0, jitter: 0.8, rng });
+    /* ONE CROSSING, NOT A LAP COUNT.
+       The wiki rule is "reach one end of a tightrope to another without
+       falling", so what this publishes is how far along the rope each
+       houseguest got on their best attempt and how many times they went in the
+       net getting there — not a score. The winner is the one who reached the
+       far platform; everybody else has a distance and a fall count, which is
+       exactly what the screen needs to draw a rope with people strung along it. */
+    const LENGTH = 12;
+    const reach = quantise(entries, { top: LENGTH, floor: 1, jitter: 0.7, rng });
     const falls = quantise([...entries].reverse(), { top: 6, floor: 0, jitter: 0.8, rng });
     return toResult(entries, { beats, breakdown, variant: 'tightrope',
       detail: {
-        runs: entries.map(e => ({
+        length: LENGTH,
+        runs: entries.map((e, i) => ({
           name: e.name,
-          crossings: Math.round(crossings[e.name]),
+          // Only the winner is across. Everybody else stopped where they stopped.
+          metres: i === 0 ? LENGTH : Math.min(LENGTH - 1, Math.round(reach[e.name])),
+          across: i === 0,
           falls: Math.round(falls[e.name]),
           threw: e.threw,
         })),
@@ -260,7 +289,7 @@ export const feelingKnotty = {
   name: 'Feeling Knotty',
   category: 'precision',
   types: ['veto', 'arena', 'tiebreaker'],
-  desc: 'Each houseguest is given a length of rope running through a frame with a series of knots tied into it, and they have to undo every one, in order, from the near end to the far end. No tools, no cutting, and a knot cannot be skipped and come back to. The trap is that force works against them: pulling on the wrong strand tightens the knot instead of opening it, so a houseguest who hurries ends up with something harder than they were given. The first houseguest to clear their whole rope wins, and most of the field is beaten by their own hands rather than by the clock.',
+  desc: 'Each houseguest is given a length of rope with a series of knots tied into it and has to untie every one of them by hand. There are no tools and nothing to cut with. The trap is that force works against them: pulling on the wrong strand tightens a knot instead of opening it, so a houseguest who hurries ends up holding something harder than they were handed. The first houseguest to untie every knot on their rope wins, and most of the field is beaten by their own hands rather than by the clock.',
   // Patience with fingers. Temperament is the whole trap of this one — the
   // person who gets angry at a knot makes it worse — and mental is reading
   // which strand is load-bearing before touching anything.
@@ -412,7 +441,7 @@ export const shipTilYouDrop = {
   name: 'Ship Til You Drop',
   category: 'endurance',
   types: ['hoh', 'tiebreaker'],
-  desc: 'The houseguests stand in a marked square on the deck and are handed a cardboard box to hold against their body, and then another, and then another, at a steady rate that never slows down for anybody. They can hold them any way they can manage — arms, chin, shoulder, a knee against the wall — but they cannot set one down, they cannot leave the square and they cannot use the ground to take any of the weight. The moment a box hits the deck that houseguest is out. Whoever is still standing with their stack when everybody else has dropped theirs wins, and the load is designed to beat every single person eventually.',
+  desc: 'The houseguests stand on the deck holding a box against their body, and then another, and then another, added at a steady rate that never slows down for anybody. They may balance them any way they can manage — arms, chin, shoulder, hip — but the boxes have to be held by the body, and the ground cannot take any of the weight. The moment a box drops, that houseguest is finished. Whoever is still standing under their stack when everybody else has lost theirs wins, and the load is built to beat every single person eventually.',
   // A hold that gets heavier. Physical carries more here than in the other
   // endurance comps because the load genuinely grows; endurance is how long
   // the arms answer once it has.
@@ -482,7 +511,7 @@ export const dominoEffect = {
   name: 'Domino Effect',
   category: 'precision',
   types: ['veto', 'arena'],
-  desc: 'Each houseguest gets a mat, a crate of dominoes and a printed route the run has to follow — round two turns, up a ramp and through a gate at the far end. They stand every tile themselves and nothing may be glued, propped or blocked. The cruelty is that the run only counts if it is set off deliberately at the end: a tile knocked early takes everything downstream of it with it, and those have to be stood back up before anything else can be added. The first houseguest to complete their route and topple it cleanly from the first tile to the gate wins.',
+  desc: 'Each houseguest gets a mat, a crate of dominoes and the pattern they have been told to build, and they stand every tile themselves. Nothing may be propped, glued or blocked. The cruelty is that the run only counts once it is set off deliberately at the end: a tile knocked early takes everything after it down too, and all of those have to be stood back up before another one can be added. The first houseguest to finish their pattern and topple it in one clean run wins.',
   // Hands and nerve, with mental reading the route before building it. Nothing
   // physical about it beyond keeping still, which is temperament's job here.
   stats: { intuition: 0.34, temperament: 0.30, mental: 0.24, physical: 0.12 },

@@ -105,6 +105,17 @@ const _STYLE = `<style>
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,.12)}
 .siggrip .gp-rules{max-width:660px;margin:9px auto 0;padding:9px 12px;border-radius:6px;font-size:11.5px;
   line-height:1.55;opacity:.85;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12)}
+.siggrip .gp-weights{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:9px auto 2px;max-width:720px}
+.siggrip .gp-w{display:flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.8px;opacity:.9;text-transform:uppercase}
+.siggrip .gp-w i{font-style:normal}
+.siggrip .gp-wb{width:42px;height:5px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden}
+.siggrip .gp-wb b{display:block;height:100%;border-radius:3px;background:currentColor}
+.siggrip .gp-w u{text-decoration:none;opacity:.75}
+.siggrip .gp-w.is-spread{opacity:.7;font-style:italic}
+/* The shared avatar helper returns its own sized element, so the circle only
+   has to clip it — sizing it twice is what left the poles with empty faces. */
+.siggrip .gp-face .bb-av,.siggrip .gp-win-f .bb-av{width:100%!important;height:100%!important}
+.siggrip .gp-face .bb-av img,.siggrip .gp-win-f .bb-av img{width:100%;height:100%;object-fit:cover}
 @media(prefers-reduced-motion:reduce){.siggrip *{animation:none!important;transition:none!important}}
 </style>`;
 
@@ -146,14 +157,23 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
   const done = at >= total - 1;
   const longest = Math.max(...runs.map(r => Number(r.minutes) || 0), 1);
 
+  /* THE YARD IS THE LAST EIGHT POLES, NOT ALL EIGHTEEN.
+     A full house draws eighteen lanes, which is a wall of thumbnails nobody can
+     read and a row so wide the shape of it — the whole point of the screen —
+     stops being visible. The eight who lasted longest is the picture; everybody
+     else is in the log and the board. */
+  const LANES = 8;
+  const shownRuns = runs.slice(0, LANES);
+
   // Poles are drawn in the order they came DOWN — first out on the left — so
   // the row reads left to right as the competition actually emptied.
-  const lanes = [...runs].reverse().map((r, i) => {
-    // A lane lights up as its houseguest's moment is revealed. The winner's
-    // pole is the last thing to light, which is the whole picture.
-    const shown = at >= 0 && i <= at + 1;
+  const lanes = [...shownRuns].reverse().map((r, i) => {
+    // Nothing on this screen resolves before the log does. A pole carrying its
+    // minutes while the cards still say STILL HANGING is the screen spoiling
+    // its own competition.
+    const shown = done;
     const pct = Math.max(6, Math.min(96, ((Number(r.minutes) || 0) / longest) * 92));
-    const isWin = r.name === runs[0].name;
+    const isWin = r.name === runs[0].name && done;
     return `<div class="gp-lane ${isWin && shown ? 'is-win' : ''} ${r.threw ? 'is-thrown' : ''} ${shown ? '' : 'is-hidden'}">
       <div class="gp-pole">
         <div class="gp-bar"></div><div class="gp-ticks"></div>
@@ -171,15 +191,24 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
   const cards = beats.map((b, i) => i > at
     ? `<div class="gp-locked">STILL HANGING</div>`
     : `<div class="gp-card">
-        <div class="gp-card-h">${(b.players || []).slice(0, 2).map(n =>
-    `<span class="gp-face" style="width:26px;height:26px">${avatar(n, 26)}</span>`).join('')}
+        <div class="gp-card-h">${(b.players || []).slice(0, 2).map(n => avatar(n, 26)).join('')}
           <span class="gp-badge ${b.badgeClass === 'gold' ? 'is-gold' : b.badgeClass === 'red' ? 'is-red' : ''}">${esc(b.badgeText || '')}</span></div>
         <div class="gp-body">${esc(b.text)}</div>
       </div>`).join('');
 
-  const board = runs.map((r, i) => `<div class="gp-srow ${at >= 0 && i > 0 && at < total - 1 ? '' : ''} ${r.threw ? 'is-out' : ''}">
-      <span>${i + 1}. ${esc(r.name)}</span><em>${Number(r.minutes).toFixed(0)}m</em>
-    </div>`).join('');
+  /* THE BOARD WAS PRINTING THE WHOLE RESULT BEFORE A SINGLE CARD TURNED.
+     Eighteen names in finishing order with their minutes beside them, sitting
+     next to a log that still said STILL HANGING — the competition was over on
+     arrival and the reveal was decoration. The order is the answer here, so
+     until the log is finished this shows the field alphabetically with no
+     times against it, and only then becomes the result. */
+  const board = (done
+    ? runs.slice(0, 10).map((r, i) => `<div class="gp-srow ${r.threw ? 'is-out' : ''}">
+        <span>${i + 1}. ${esc(r.name)}</span><em>${Number(r.minutes).toFixed(0)}m</em>
+      </div>`)
+    : [...runs].map(r => r.name).sort().slice(0, 10).map(n =>
+      `<div class="gp-srow"><span>${esc(n)}</span><em>&mdash;</em></div>`)
+  ).join('');
 
   const winner = runs[0];
   return `${_STYLE}<div class="rp-page siggrip">
@@ -188,7 +217,26 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
       <div class="gp-head">
         <div class="gp-eyebrow">Week ${esc(ep?.num || '')} &middot; ${actType === 'hoh' ? 'Head of Household' : 'Power of Veto'}</div>
         <div class="gp-title">Get A Grip</div>
-        <div class="gp-sub">Six poles, six hands, and nothing at all happening to any of them.</div>
+        <div class="gp-sub">Poles, hands, and nothing at all happening to any of them.</div>
+        ${(() => {
+          /* THE FORMULA, ON THE PAGE.
+             Every other signature screen prints what the competition actually
+             reads and this one did not, so there was no way to look at a result
+             and check it against the profile behind it. `swingBy` is drawn
+             apart from the weights on purpose: a stat that widens the SPREAD
+             does not make a houseguest better at this, it makes them less
+             predictable, and putting it in the same bar would say the
+             opposite. */
+          const w = Object.entries(comp.stats || {}).sort((a, b) => b[1] - a[1]);
+          if (!w.length) return '';
+          const bars = w.map(([k, v]) =>
+            `<span class="gp-w"><i>${esc(k)}</i><span class="gp-wb"><b style="width:${Math.round(v * 100)}%"></b></span><u>${Math.round(v * 100)}%</u></span>`).join('');
+          const swing = Object.keys(comp.roles?.steadiness || comp.roles?.nerve || {})[0];
+          const spread = swing
+            ? `<span class="gp-w is-spread" title="Widens the spread rather than raising the score"><i>&plusmn; ${esc(swing)}</i><u>consistency</u></span>`
+            : '';
+          return `<div class="gp-weights">${bars}${spread}</div>`;
+        })()}
       </div>
 
       <div class="gp-yard">${lanes}</div>
@@ -196,8 +244,10 @@ export function rpBuildSigGetAGrip(ep, actType, u = {}) {
       <div class="gp-grid2">
         <div>${cards}</div>
         <div class="gp-side">
-          <div class="gp-side-h">TIME OFF THE FLOOR</div>
-          <div class="gp-side-s">Nobody was knocked down. Every one of these is a hand that opened.</div>
+          <div class="gp-side-h">${done ? 'TIME OFF THE FLOOR' : 'ON THE POLES'}</div>
+          <div class="gp-side-s">${done
+    ? 'Nobody was knocked down. Every one of these is a hand that opened.'
+    : 'Nobody has been knocked down. They are all just holding on.'}</div>
           ${board}
           ${done ? `<div class="gp-win">
             <div class="gp-win-f">${avatar(winner.name, 50)}</div>

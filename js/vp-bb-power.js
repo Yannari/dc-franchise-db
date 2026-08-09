@@ -47,6 +47,11 @@ export function rpBuildBBPowerPlayed(ep, act, u = {}) {
     background:radial-gradient(ellipse 55% 35% at 50% 0%,rgba(255,199,88,.13),transparent 70%),
       linear-gradient(180deg,#171208,#0a0805 86%);position:relative;overflow:clip}
   .pw-head{text-align:center;padding:20px 16px 8px}
+  .pw-beat{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed rgba(255,199,88,.14)}
+  .pw-beat:last-child{border-bottom:0}
+  .pw-beat figure{margin:0;display:flex;gap:3px;flex:none}
+  .pw-beat figure img{width:30px;height:30px;border-radius:50%}
+  .pw-badge{display:inline-block;font-size:8.5px;letter-spacing:1.6px;color:var(--pw-gold);border:1px solid var(--pw-line);border-radius:2px;padding:2px 5px;margin-bottom:4px}
   .pw-kick{font-size:9px;letter-spacing:3.4px;color:var(--pw-dim)}
   .pw-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:46px;line-height:1.05;
     color:#fff6e4;text-shadow:0 0 30px rgba(255,199,88,.4);margin:4px 0 2px}
@@ -116,6 +121,26 @@ export function rpBuildBBPowerPlayed(ep, act, u = {}) {
       </div>
       <p class="pw-body" style="margin-top:10px">Every plan made this week was made about a block
         that stopped existing thirty seconds ago.</p>
+    </article>` : ''}
+
+    ${/* ── what actually happened, beat by beat ──
+
+          The screen showed the power, the stamp and the block it rewrote, and
+          never the NARRATION — so a play whose whole substance is in its beats
+          (an interrogation, an alumnus walking through the door, a second veto
+          run alone) rendered as a card with a name on it and nothing else. The
+          render-completeness guard caught it: acts narrating text no screen
+          ever shows.
+
+          Every power play gets this, not just the new ones. The Cloud and the
+          Coup have been carrying beats nobody could read either. */ ''}
+    ${(act.beats || []).length ? `<article class="pw-card">
+      <div class="pw-cardh">HOW IT WENT</div>
+      ${(act.beats || []).map(b => `<div class="pw-beat">
+        ${(b.players || []).length ? `<figure>${(b.players || []).slice(0, 3).map(n => AV(n, 30)).join('')}</figure>` : ''}
+        <div>${b.badgeText ? `<span class="pw-badge">${E(b.badgeText)}</span>` : ''}
+          <p class="pw-body">${E(b.text || '')}</p></div>
+      </div>`).join('')}
     </article>` : ''}
   </div>
 </div>`;

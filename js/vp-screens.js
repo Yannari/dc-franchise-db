@@ -21064,6 +21064,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Total Drama episode — one challenge screen, one camp screen.
         if ((act.socialBeats || []).length) pendingBeats.push(...act.socialBeats);
         break;
+      // Three plays, one screen. What each does differently lives in its beats;
+      // what they share is "a secret power fired, and here is who knew".
+      case 'interrogation':
+      case 'mystery-competitor':
+      case 'mystery-veto':
       case 'power-played': {
         // The Coup d'État and the Cloud used to fire into nothing at all: the
         // act was emitted and no surface read it, so a week could be rewritten

@@ -5267,6 +5267,38 @@ export function generateBBSummaryText(ep) {
         }
         break;
 
+      case 'interrogation':
+        sec('THE INTERROGATION');
+        ln(`  ${act.deposed} is not Head of Household any more. Somebody took it, and the wall`);
+        ln('  would not say who — so ${act.deposed} got to ask the whole house, one question each,'.replace('${act.deposed}', act.deposed));
+        ln('  and name somebody at the end of it.');
+        if (act.caught) {
+          ln(`  ${act.deposed} said ${act.holder}, and was right. ${act.deposed} keeps the week and`);
+          ln(`  ${act.holder} has spent the biggest thing they had for nothing.`);
+        } else {
+          ln(`  ${act.deposed} named the wrong houseguest, out loud, in front of everybody.`);
+          ln(`  ${act.holder} is Head of Household and nobody in this house knows it happened.`);
+        }
+        break;
+
+      case 'mystery-competitor':
+        sec('THE MYSTERY COMPETITOR');
+        ln(`  There was a name in the veto bag that does not live here. ${act.guest} walked back`);
+        ln(`  into this house and took a spot in the draw on ${act.holder}'s behalf${act.displaced ? `, and ${act.displaced} lost theirs for it` : ''}.`);
+        ln(act.won
+          ? `  ${act.guest} won, and handed it straight to ${act.holder}.`
+          : `  ${act.guest} lost. ${act.holder} paid for a body in the draw and got exactly that.`);
+        break;
+
+      case 'mystery-veto':
+        sec('THE MYSTERY VETO');
+        ln('  The ceremony was over and the week was supposed to be settled. It was not: a second');
+        ln(`  veto competition ran tonight with exactly one person allowed to play in it.`);
+        ln(act.won
+          ? `  ${act.holder} beat it alone.${act.saves ? ` ${act.saves} comes off a block everybody had stopped thinking about.` : ''}`
+          : `  ${act.holder} did not beat it. Nobody was standing in the way, and the house now knows the power existed and did nothing.`);
+        break;
+
       case 'secret-power-comp':
         sec('THE SECRET POWER COMPETITION');
         ln('  Three powers were hidden inside the Head of Household competition, and before a');

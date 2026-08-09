@@ -30,6 +30,7 @@ import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
+import { playInterrogation, playMysteryCompetitor, playMysteryVeto } from './secret-power-plays.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
@@ -2142,6 +2143,26 @@ export function simulateBBWeek(options = {}) {
      clean pairs — everybody left is protected, or the pairs have been eaten
      into — and the week falls back to an ordinary two-chair block, which is
      the only honest thing to do with a rule that has run out of people. */
+  // ── somebody takes the crown that was just handed out ──
+  //
+  // After the Head of Household exists and before anybody is nominated, which
+  // is the only window where taking it is worth anything. The deposed HOH then
+  // gets to hunt for whoever did it, and `week.hoh` is whatever survives that.
+  if (!compressed) {
+    try {
+      const usurp = playInterrogation({ week, house, hoh, rng });
+      if (usurp) {
+        week.interrogation = usurp;
+        week.acts.push(addBeats(usurp, { players: [usurp.deposed, usurp.holder] }));
+        if (!usurp.caught) {
+          hoh = usurp.hoh;
+          week.hoh = hoh;
+          gs.bb.hoh = hoh;
+        }
+      }
+    } catch { /* the crown stands */ }
+  }
+
   // ── the week where nobody goes home ──
   //
   // `cancelEviction` has been in BASE_WEEK_RULES since the contract was
@@ -2915,6 +2936,29 @@ export function simulateBBWeek(options = {}) {
       plan?.backdoorTarget || null);
     week.vetoDraw = vetoDraw;
     let vetoPlayers = vetoDraw.players;
+
+    // ── somebody who does not live here takes a spot ──
+    //
+    // Only usable on the block, per the show, and it buys a BODY in the draw
+    // rather than a win — the alumnus still has to beat the room. Read from the
+    // franchise's own finished players so the person who walks in is somebody
+    // this show actually has.
+    let mysteryGuest = null;
+    if (!compressed) {
+      try {
+        const alumni = (players || [])
+          .filter(p => p?.name && !house.includes(p.name))
+          .map(p => p.name);
+        mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni, rng });
+        if (mysteryGuest) {
+          week.mysteryCompetitor = mysteryGuest;
+          week.acts.push(addBeats(mysteryGuest, { players: [mysteryGuest.holder] }));
+          if (mysteryGuest.displaced) {
+            vetoPlayers = vetoPlayers.filter(n => n !== mysteryGuest.displaced);
+          }
+        }
+      } catch { week.mysteryCompetitor = null; }
+    }
     // ── the hacker's second authority: a seat nobody drew a chip for ──
     //
     // The loudest of the three, and the only one with witnesses: the house
@@ -3021,6 +3065,10 @@ export function simulateBBWeek(options = {}) {
       } catch { week.prizeExchange = null; }
     }
 
+    // The alumnus won it, so it belongs to whoever paid for them to be there.
+    if (mysteryGuest?.vetoTo && house.includes(mysteryGuest.vetoTo)) {
+      vetoWinner = mysteryGuest.vetoTo;
+    }
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;
     setSpotlight({ vetoWinner, vetoPlayers: [...vetoPlayers] });
@@ -3203,6 +3251,37 @@ export function simulateBBWeek(options = {}) {
     // and then watched the veto meeting produce the block that had already
     // been overruled. The act is built now and pushed after the ceremony.
     const blockAfterCeremony = [...nominees];
+
+    // ── a second veto, with one player in it ──
+    //
+    // Fires here for the same reason the coup does: the house has just watched
+    // the week settle, and then it does not settle. Usable whether or not the
+    // holder is a nominee, per the show, which is what makes it more than a
+    // self-save — it can take somebody else off a block everybody had stopped
+    // thinking about.
+    if (!compressed) {
+      try {
+        const solo = playMysteryVeto({ week, nominees, house, rng });
+        if (solo) {
+          week.mysteryVeto = solo;
+          week.acts.push(addBeats(solo, { players: [solo.holder] }));
+          if (solo.won && solo.saves && nominees.includes(solo.saves)) {
+            nominees = nominees.filter(n => n !== solo.saves);
+            week.mysteryVetoSaved = solo.saves;
+            // The chair does not stay empty. Same authority as any other veto:
+            // the Head of Household names who sits in it.
+            const eligible = house.filter(n => n !== hoh && n !== solo.holder
+              && !nominees.includes(n) && n !== solo.saves);
+            if (eligible.length) {
+              const replacement = eligible[Math.floor(rng() * eligible.length)];
+              nominees = [...nominees, replacement];
+              week.mysteryVetoReplacement = replacement;
+            }
+          }
+        }
+      } catch { week.mysteryVeto = null; }
+    }
+
     let coupAct = null;
     const coup = (gs.bb?.powers || []).find(pw => pw.powerId === 'coup-d-etat'
       && !pw.used && !pw.disposed && week.num <= pw.expiresAfterWeek

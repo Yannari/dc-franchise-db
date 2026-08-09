@@ -390,3 +390,99 @@ describe('the screen', () => {
     expect(src).toMatch(/rpBuildBBSecretPowerComp\(view, act, spDeps\)/);
   });
 });
+
+describe('the powers actually fire', () => {
+  // They were granted, tracked, expiring at the jury — and doing nothing. A
+  // houseguest could trade the best week of their game for one and no rule
+  // would change, which is the same "written and unreachable" fault the Halting
+  // Hex sat in for months.
+  const BIG = ['ana', 'ben', 'cleo', 'dev', 'eli', 'fay', 'gus', 'hana', 'iris', 'jo'];
+  const arm = async powerId => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    setPlayers(BIG.map(name => ({
+      name, archetype: 'floater', gender: 'f',
+      stats: { physical: 6, endurance: 6, mental: 6, social: 6, strategic: 6,
+        loyalty: 5, boldness: 9, intuition: 8, temperament: 5 },
+    })));
+    // Jury opens at jurySize + 2, so a ten-house with a five-jury is safely
+    // pre-jury. The first version of this used a house of six against a jury of
+    // seven — already PAST the line — and every power expired on the day it was
+    // granted. Nothing fired, and the rule was right.
+    seasonConfig.jurySize = 5;
+    setGs({ bb: { powers: [], weeks: [], stats: {} }, activePlayers: [...BIG], bonds: {} });
+    return grantPower(powerId, 'ben', { week: 3, visibility: 'secret', source: 'test' });
+  };
+
+  it('the Interrogation takes the crown, and can lose it again', async () => {
+    const { playInterrogation } = await import('../js/bb/secret-power-plays.js');
+    await arm('hoh-interrogation');
+    // A deposed HOH who guesses right keeps the week and the power is wasted.
+    const caught = playInterrogation({ week: { num: 3 }, house: BIG, hoh: 'ana', rng: () => 0.01 });
+    expect(caught).toBeTruthy();
+    expect(caught.caught).toBe(true);
+    expect(caught.hoh, 'the deposed HOH did not keep their week').toBe('ana');
+
+    await arm('hoh-interrogation');
+    // A deposed HOH who guesses wrong loses it, and never finds out.
+    const missed = playInterrogation({ week: { num: 3 }, house: BIG, hoh: 'ana', rng: () => 0.99 });
+    expect(missed === null || missed.hoh === 'ben').toBe(true);
+  });
+
+  it('the Mystery Competitor only works from the block', async () => {
+    const { playMysteryCompetitor } = await import('../js/bb/secret-power-plays.js');
+    await arm('mystery-competitor');
+    const off = playMysteryCompetitor({ week: { num: 3 }, nominees: ['cleo', 'dev'],
+      players: ['cleo', 'dev'], alumni: ['Alejandro'], rng: () => 0.2 });
+    expect(off, 'it fired for somebody who was not nominated').toBe(null);
+
+    await arm('mystery-competitor');
+    const on = playMysteryCompetitor({ week: { num: 3 }, nominees: ['ben', 'dev'],
+      players: ['ben', 'dev', 'eli', 'fay'], alumni: ['Alejandro'], rng: () => 0.2 });
+    expect(on).toBeTruthy();
+    expect(on.guest).toBe('Alejandro');
+    // Buys a body, not a win — and when it wins, the veto goes to the payer.
+    expect(on.won ? on.vetoTo : null).toBe(on.won ? 'ben' : null);
+  });
+
+  it('the Mystery Veto runs alone, and can be lost alone', async () => {
+    const { playMysteryVeto } = await import('../js/bb/secret-power-plays.js');
+    await arm('mystery-veto');
+    const won = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG, rng: () => 0.1 });
+    expect(won).toBeTruthy();
+    expect(won.won).toBe(true);
+    expect(won.saves).toBe('ben');
+
+    await arm('mystery-veto');
+    const lost = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG, rng: () => 0.8 });
+    expect(lost).toBeTruthy();
+    expect(lost.won, 'nobody was in the way and it was won anyway').toBe(false);
+    expect(lost.saves).toBe(null);
+  });
+
+  it('spends the power whether it worked or not', async () => {
+    const { playMysteryVeto } = await import('../js/bb/secret-power-plays.js');
+    await arm('mystery-veto');
+    playMysteryVeto({ week: { num: 3 }, nominees: ['ben'], house: BIG, rng: () => 0.8 });
+    expect(gs.bb.powers[0].used, 'a losing play left the power on the shelf').toBe(true);
+  });
+
+  it('is wired into the week at all three timings', () => {
+    const src = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
+    expect(src).toMatch(/playInterrogation\(\{/);
+    expect(src).toMatch(/playMysteryCompetitor\(\{/);
+    expect(src).toMatch(/playMysteryVeto\(\{/);
+    // And the results are acted on, not just narrated.
+    expect(src, 'the usurper never actually becomes HOH').toMatch(/hoh = usurp\.hoh/);
+    expect(src, 'the alumnus wins and the veto goes nowhere').toMatch(/mysteryGuest\?\.vetoTo/);
+    expect(src, 'the second veto never takes anybody off the block')
+      .toMatch(/nominees = nominees\.filter\(n => n !== solo\.saves\)/);
+  });
+
+  for (const act of ['interrogation', 'mystery-competitor', 'mystery-veto']) {
+    it(`${act} reaches both transcripts`, () => {
+      const fs = require('node:fs');
+      expect(fs.readFileSync('js/bb-run.js', 'utf8')).toMatch(new RegExp(`case '${act}'`));
+      expect(fs.readFileSync('js/text-backlog.js', 'utf8')).toMatch(new RegExp(`case '${act}'`));
+    });
+  }
+});

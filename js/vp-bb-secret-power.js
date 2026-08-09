@@ -47,14 +47,18 @@ const SP_CSS = `
 .bbsp-h{font-family:var(--font-mono);font-size:9px;letter-spacing:2.4px;text-transform:uppercase;color:#8b8271;margin-bottom:10px}
 
 /* ── the public board ── */
-.bbsp-row{display:grid;grid-template-columns:20px 26px 1fr auto;gap:9px;align-items:center;padding:7px 0;border-bottom:1px dashed rgba(240,233,220,.1)}
+.bbsp-row{display:grid;grid-template-columns:22px 22px minmax(0,1fr) 46px;gap:9px;align-items:center;padding:7px 0;border-bottom:1px dashed rgba(240,233,220,.1)}
 .bbsp-row:last-child{border-bottom:0}
 .bbsp-pos{font-family:var(--font-mono);font-size:11px;color:#8b8271;text-align:right}
 .bbsp-who{font-size:14.5px;color:#f0e9dc;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.bbsp-score{font-family:var(--font-mono);font-size:11.5px;color:#8b8271}
+.bbsp-score{font-family:var(--font-mono);font-size:11.5px;color:#8b8271;text-align:right}
 .bbsp-row.is-crown .bbsp-who,.bbsp-row.is-crown .bbsp-pos{color:#e8b866}
-/* Never running for it. The strike IS the twist. */
-.bbsp-row.is-elsewhere .bbsp-who{color:#8b8271;text-decoration:line-through;text-decoration-thickness:1px}
+/* Never running for it. The strike IS the twist — but it belongs on the NAME
+   and not on the row: put on the flex container it also struck the tag, the
+   score and the badge, which reads as a rendering fault rather than as a point
+   being made. */
+.bbsp-row.is-elsewhere .bbsp-nm{color:#8b8271;text-decoration:line-through;text-decoration-thickness:1px}
+.bbsp-nm{white-space:nowrap}
 .bbsp-tag{font-family:var(--font-mono);font-size:8px;letter-spacing:1.4px;text-transform:uppercase;border:1px solid currentColor;border-radius:2px;padding:2px 5px}
 .bbsp-tag.gold{color:#e8b866}.bbsp-tag.red{color:#d4705c}.bbsp-tag.blue{color:#7fb0cc}
 
@@ -135,7 +139,7 @@ export function rpBuildBBSecretPowerComp(ep, act, deps) {
     return `<div class="bbsp-row ${cls}">
       ${face(name)}
       <span class="bbsp-pos">${i + 1}</span>
-      <span class="bbsp-who">${esc(name)}${tag}</span>
+      <span class="bbsp-who"><span class="bbsp-nm">${esc(name)}</span>${tag}</span>
       <span class="bbsp-score">${r?.score != null ? esc(String(Math.round(r.score))) : ''}</span>
     </div>`;
   }).join('')) || '<div class="bbsp-h">The yard has not run yet.</div>';

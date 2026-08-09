@@ -5239,6 +5239,32 @@ export function generateBBSummaryText(ep) {
         }
         break;
 
+      case 'secret-power-comp':
+        sec('THE SECRET POWER COMPETITION');
+        ln('  Three powers were hidden inside the Head of Household competition, and before a');
+        ln('  single houseguest played they chose in private what they were competing for: the');
+        ln('  crown, or one of the three. Not both.');
+        for (const r of act.rooms || []) {
+          if (!r.winner) {
+            ln(`  ${r.name} — unclaimed. ${(r.entrants || []).length ? `${r.entrants.join(', ')} went for it and got nothing.` : 'Nobody went for it, and the house will never learn it was out there.'}`);
+            continue;
+          }
+          ln(`  ${r.name} — ${r.winner}, told alone and told nothing else.`);
+        }
+        if (act.winner) {
+          ln(`  ${act.winner} takes the Head of Household, out of the houseguests who were actually`);
+          ln('  running for it. Everybody else out there was playing a different game.');
+        }
+        ln('  Every power won here expires the moment the jury opens.');
+        break;
+
+      case 'no-eviction':
+        sec('NO EVICTION');
+        ln('  No nomination ceremony this week, no veto and no vote. Nobody leaves, and the');
+        ln('  Head of Household holds the most powerful seat in the house with nothing at all');
+        ln('  to spend it on.');
+        break;
+
       case 'whacktivity':
         sec('THE WHACKTIVITY COMPETITIONS');
         ln('  Three competitions, three different powers, and one choice each. The Head of Household');

@@ -1335,6 +1335,27 @@ export function summariseWeek(week) {
         if (act.found) line('  Somebody found it. Who, and what it is, stays off this page.');
         break;
       }
+      case 'secret-power-comp': {
+        line('');
+        line('THE SECRET POWER COMPETITION');
+        line('  Three powers hidden inside the Head of Household. Every houseguest chose, in');
+        line('  private, whether they were playing for the crown or for one of them.');
+        for (const r of act.rooms || []) {
+          const who = (r.entrants || []).length ? r.entrants.join(', ') : 'nobody';
+          if (!r.winner) { line(`  ${r.name}: UNCLAIMED — ${who} went for it.`); continue; }
+          line(`  ${r.name}: ${r.winner} (${who}).`);
+        }
+        if (act.winner) line(`  Head of Household: ${act.winner}, out of those who were running for it.`);
+        else line('  Nobody won the Head of Household outright — the whole yard was chasing a door.');
+        line('  The house is told none of this. Every power won here dies when the jury opens.');
+        break;
+      }
+      case 'no-eviction': {
+        line('');
+        line('NO EVICTION');
+        line('  No nomination ceremony, no veto, no vote. The house is the same size on Thursday.');
+        break;
+      }
       case 'whacktivity': {
         line('');
         line('THE WHACKTIVITY COMPETITIONS');

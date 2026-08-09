@@ -1483,6 +1483,10 @@ export function buildEpisodeMap() {
     // Both really do take two. A double eviction runs a second cycle in all
     // three of its styles, and a Split House evicts one houseguest from each
     // side on the same night.
+    // Nobody leaves. Declared here as well as in the contract because this
+    // projection reads twist IDs rather than resolved rules — the same reason
+    // the double eviction and the Split House are both listed by name.
+    if (_allTypes.includes('bb-no-eviction')) elims = 0;
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
     // You Go, They Go takes two as well — one voted out and one chained to
     // them. The guard mirrors the engine's: four nominees, a Head of Household

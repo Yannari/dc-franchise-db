@@ -388,6 +388,21 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Everybody is about to watch everybody else choose a door.',
     },
   },
+  'bb-no-eviction': {
+    id: 'bb-no-eviction', layer: 'scheduled', category: 'structural',
+    timing: 'week-opening', duration: { weeks: 1 },
+    // The three rules that ARE the twist. `cancelEviction` is the one that
+    // matters; the other two say the same thing in the vocabulary the veto and
+    // nomination code reads, so nothing downstream has to special-case a week
+    // that simply stops after the crown.
+    rules: { cancelEviction: true, nomineeCount: 0, vetoCount: 0 },
+    acquisition: { channel: 'none', secrecy: 'public' },
+    announcement: {
+      name: 'No Eviction',
+      rule: 'There will be no nomination ceremony this week, no veto and no vote. Nobody is leaving this house on Thursday. The Head of Household competition still runs, and whatever else is hiding inside it still counts.',
+      sting: 'A week of consequences and no way to act on any of them.',
+    },
+  },
   'bb-secret-power-comp': {
     id: 'bb-secret-power-comp', layer: 'scheduled', category: 'distribution',
     timing: 'hoh', duration: { weeks: 1 },

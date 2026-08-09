@@ -152,3 +152,93 @@ describe('the week wires it into the crown', () => {
     expect(ui).toMatch(/t\.type === 'bb-whacktivity' \|\| t\.type === 'bb-secret-power-comp'/);
   });
 });
+
+describe('the week where nobody goes home', () => {
+  // `cancelEviction` has been in BASE_WEEK_RULES since the contract was
+  // written and the Halting Hex has been declaring it ever since — and nothing
+  // had ever read it. So the Hex was a power that granted, expired, and did
+  // nothing, and there was no way to author a no-eviction week at all.
+  const fs = require('node:fs');
+
+  it('is a rule the week actually reads now', () => {
+    const src = fs.readFileSync('js/bb/week.js', 'utf8');
+    expect(src, 'cancelEviction is still declared and never consulted')
+      .toMatch(/week\.twistState\?\.rules\?\.cancelEviction/);
+  });
+
+  it('stops before the ceremony rather than after the vote', () => {
+    // It cancels nominations, the veto AND the eviction. Stopping later would
+    // run a block and a veto for a week that cannot evict anybody.
+    const src = fs.readFileSync('js/bb/week.js', 'utf8');
+    const gate = src.indexOf('week.twistState?.rules?.cancelEviction');
+    const noms = src.indexOf('let duoWeekNoms = null;');
+    expect(gate).toBeGreaterThan(-1);
+    expect(gate, 'the gate runs after nominations have already happened')
+      .toBeLessThan(noms);
+  });
+
+  it('leaves the crown standing, so it can pair with the power competition', () => {
+    // The whole point of pairing them: an episode whose only outcome is who
+    // walked away holding something. If the gate ran before the Head of
+    // Household, there would be nothing to hide the powers inside.
+    const src = fs.readFileSync('js/bb/week.js', 'utf8');
+    const hoh = src.indexOf("runBBCompetition({ type:'hoh'");
+    const secret = src.indexOf('runSecretPowerComp({');
+    const gate = src.indexOf('week.twistState?.rules?.cancelEviction');
+    expect(hoh).toBeLessThan(gate);
+    expect(secret).toBeLessThan(gate);
+  });
+
+  it('declares the rules in the vocabulary the rest of the week reads', () => {
+    const contract = fs.readFileSync('js/bb/twist-contract.js', 'utf8');
+    const at = contract.indexOf("'bb-no-eviction'");
+    expect(at, 'the twist does not exist').toBeGreaterThan(-1);
+    const block = contract.slice(at, at + 900);
+    expect(block).toMatch(/cancelEviction: true/);
+    expect(block).toMatch(/nomineeCount: 0/);
+    expect(block).toMatch(/vetoCount: 0/);
+  });
+
+  it('is counted by the timeline as a week nobody leaves', () => {
+    // Or the projection is wrong from that week to the finale, which is the
+    // fault this season's timeline has already had twice.
+    const run = fs.readFileSync('js/run-ui.js', 'utf8');
+    expect(run).toMatch(/_allTypes\.includes\('bb-no-eviction'\)\) elims = 0;/);
+  });
+
+  it('cannot be scheduled with a week that evicts twice', () => {
+    const core = fs.readFileSync('js/core.js', 'utf8');
+    const at = core.indexOf("id:'bb-no-eviction'");
+    const block = core.slice(at, at + 1600);
+    expect(block).toMatch(/bb-double-eviction/);
+    expect(block).toMatch(/bb-instant-eviction/);
+  });
+});
+
+describe('both new acts reach both transcripts', () => {
+  // The act-coverage guard plays seasons and reports acts that fire and are
+  // never written down — but it can only see twists its seasons actually
+  // scheduled, so a new one is UNTESTED there rather than passing. Asserted
+  // directly instead of waiting to find out.
+  const fs = require('node:fs');
+  const run = fs.readFileSync('js/bb-run.js', 'utf8');
+  const backlog = fs.readFileSync('js/text-backlog.js', 'utf8');
+
+  for (const act of ['secret-power-comp', 'no-eviction']) {
+    it(`${act} is written by summariseWeek`, () => {
+      expect(run, `summariseWeek drops ${act}`).toMatch(new RegExp(`case '${act}'`));
+    });
+    it(`${act} is written by the text backlog`, () => {
+      expect(backlog, `the backlog drops ${act}`).toMatch(new RegExp(`case '${act}'`));
+    });
+  }
+
+  it('says who won what in the secret competition', () => {
+    // A transcript that records "a competition happened" and not its result is
+    // the same as not recording it.
+    const at = run.indexOf("case 'secret-power-comp'");
+    expect(run.slice(at, at + 900)).toMatch(/r\.winner/);
+    const bAt = backlog.indexOf("case 'secret-power-comp'");
+    expect(backlog.slice(bAt, bAt + 1200)).toMatch(/r\.winner/);
+  });
+});

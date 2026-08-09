@@ -2142,6 +2142,39 @@ export function simulateBBWeek(options = {}) {
      clean pairs — everybody left is protected, or the pairs have been eaten
      into — and the week falls back to an ordinary two-chair block, which is
      the only honest thing to do with a rule that has run out of people. */
+  // ── the week where nobody goes home ──
+  //
+  // `cancelEviction` has been in BASE_WEEK_RULES since the contract was
+  // written, the Halting Hex has been declaring it since it was added, and
+  // NOTHING HAS EVER READ IT. So the Hex has been a power that grants, expires
+  // and does nothing, and there was no way to author a no-eviction week at all.
+  //
+  // Read here, at the top of the nomination phase, because that is exactly what
+  // it cancels: no ceremony, no veto, no vote, nobody leaves. Everything before
+  // this line still happens — the Head of Household is still crowned, and any
+  // competition hiding powers inside it still hands them out — which is what
+  // makes this pairable with the secret power competition: a whole episode
+  // whose only outcome is who is holding what.
+  if (week.twistState?.rules?.cancelEviction) {
+    week.nominees = [];
+    week.evicted = null;
+    week.cancelledEviction = true;
+    week.acts.push(addBeats({
+      type: 'no-eviction',
+      beats: [{
+        text: 'There is no ceremony this week. No nominations, no veto, no vote — this house is '
+          + 'the same size on Thursday as it is right now, and everybody in it has to spend the '
+          + 'week looking at each other knowing that.',
+        players: [...house].slice(0, 6), badgeText: 'NOBODY GOES HOME', badgeClass: 'gold',
+      }, {
+        text: `${hoh} holds a Head of Household with nothing to spend it on, which is either the `
+          + 'safest week of their game or the most useless.',
+        players: [hoh].filter(Boolean), badgeText: 'A CROWN AND NO BLOCK', badgeClass: 'blue',
+      }],
+    }, { players: [hoh].filter(Boolean) }));
+    return week;
+  }
+
   let duoWeekNoms = null;
   if (duoWeekActive(week)) {
     try {

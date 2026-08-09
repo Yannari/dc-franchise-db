@@ -35,6 +35,7 @@ import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState } from './bb/twin-twist.js';
+import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
@@ -727,6 +728,14 @@ export function simulateBBEpisode() {
         // 'choose' means the user cast it themselves.
         pick: seasonConfig.bbSaboteur === 'choose' ? (seasonConfig.bbSaboteurPlayer || null) : null,
       });
+    } catch { /* the season plays without one */ }
+  }
+
+  // Dynamic Duos: the shape of the whole season rather than a week's rule, so
+  // it is seated on night one beside the other season-layer twists.
+  if (seasonConfig.bbDuos && seasonConfig.bbDuos !== 'off' && !gs.bb?.duos) {
+    try {
+      installDuos(house, { keyAt: Number(seasonConfig.bbDuosKeyAt) || 10, rng: Math.random });
     } catch { /* the season plays without one */ }
   }
 

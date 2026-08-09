@@ -22,6 +22,7 @@ import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
+import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire } from './vp-bb-duos.js';
 import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
   rpBuildBBTwinEntry, rpBuildBBTwinOut } from './vp-bb-twins.js';
 import { rpBuildBBRivalsOpen, rpBuildBBRivalsHoh, rpBuildBBRivalsWeek,
@@ -20823,6 +20824,21 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // anyway, for the only people who are allowed to know: the rules, the two
       // stat lines, and the two of them deciding between themselves which one
       // walks through the front door.
+      // Dynamic Duos. Three moments, three screens — written with the module
+      // rather than after it, because the Twin Twist shipped with its swap
+      // passed to a screen that never drew it.
+      case 'duos-open':
+        screens.push({ id: id('bb-duos-open'), label: 'Duos: Announcement',
+          html: rpBuildBBDuosOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'duos-key':
+        screens.push({ id: id('bb-duos-key'), label: 'Duos: Golden Key',
+          html: rpBuildBBDuosKey(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'duos-keys-expire':
+        screens.push({ id: id('bb-duos-expire'), label: 'Duos: Keys Expire',
+          html: rpBuildBBDuosExpire(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
       case 'twin-open':
         screens.push({ id: id('bb-twins-open'), label: 'Twins: Announcement',
           html: rpBuildBBTwinOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });

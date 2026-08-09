@@ -21,6 +21,8 @@ import { resolveVetoRules, isDiamond } from './veto-rules.js';
 import { applyVetoDrawTwist } from './veto-draw.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
+import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
+  announceDuos, keyHolders } from './duos.js';
 import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
@@ -1166,6 +1168,10 @@ export function simulateBBWeek(options = {}) {
       // It is the only place the rules get said out loud, to the only people
       // allowed to hear them, and the two of them decide between themselves
       // which one walks through the front door.
+      try {
+        const duoOpen = announceDuos(week);
+        if (duoOpen) week.acts.push(duoOpen);
+      } catch { /* the season plays without the announcement */ }
       const opening = openTwinTwist(week, { rng });
       if (opening) week.acts.push(opening);
       const swap = opening ? null : swapTwins(week, { rng });
@@ -1569,7 +1575,13 @@ export function simulateBBWeek(options = {}) {
   // week." They sit this one out and then decide it, which is the twist.
   let rivalsOut = [];
   try { rivalsOut = rivalsSittingOut(week); } catch { rivalsOut = []; }
-  const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh && !rivalsOut.includes(name));
+  // "Holders of a Golden Key did not compete in competitions." Same seam as the
+  // Rivals sitting out, for the same reason: it is a filter on who is in the
+  // yard, and nothing downstream has to know why.
+  let keysOut = [];
+  try { keysOut = duosSittingOut(); } catch { keysOut = []; }
+  const sittingOut = [...rivalsOut, ...keysOut];
+  const hohPlayers = house.filter(name => name !== gs.bb.outgoingHoh && !sittingOut.includes(name));
   const hohCompetition = preCrowned ? null
     : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
       // The saboteur got to the yard first. Chosen at the briefing, before any
@@ -2061,11 +2073,27 @@ export function simulateBBWeek(options = {}) {
   // true in the week they arrive.
   let rivalsSafe = [];
   try { rivalsSafe = rivalsImmune(week); } catch { rivalsSafe = []; }
+  // A Golden Key is safety from nomination AND eviction until the house is
+  // down to the size the twist named.
+  let keySafe = [];
+  try { keySafe = keyHolders(); } catch { keySafe = []; }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
     carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite),
-    ...rivalsSafe].filter(Boolean);
-  let nominees = [...new Set(plan.nominees)]
-    .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+    ...rivalsSafe, ...keySafe].filter(Boolean);
+  /* THE DUOS TWIST NAMES A PAIR.
+     The Head of Household still decides who they want gone; what changes is
+     that naming one of a duo names both. When the target has no partner left —
+     the solo player, or a duo already broken — this returns null and the
+     ordinary two-name plan runs, which is what the show did once the pairs
+     started coming apart. */
+  let duoPair = null;
+  try { duoPair = duoNominees(plan.nominees?.[0] || plan.target, house); } catch { duoPair = null; }
+
+  let nominees = duoPair
+    ? duoPair.filter(name => house.includes(name) && !untouchable.includes(name))
+    : [...new Set(plan.nominees)]
+      .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+  if (duoPair && nominees.length === 2) week.duoNomination = [...nominees];
   while (nominees.length < 2) {
     const extra = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
@@ -4212,6 +4240,19 @@ export function simulateBBWeek(options = {}) {
   // of the vote and out of the nominations. They simply do not leave the
   // house. Nothing else in the week engine has to know, which is exactly why
   // this runs AFTER the removal rather than instead of it.
+  /* One of a pair is gone, so the other one is handed a key. AFTER the
+     eviction, exactly like Camp Comeback: the evictee is already out of the
+     roster, the vote and the nominations. This only hands the survivor a
+     status. */
+  if (evicted) {
+    try {
+      const key = grantGoldenKey({ week, evicted, house: gs.activePlayers });
+      if (key) { week.goldenKey = key; week.acts.push(addBeats(key, { players: [key.holder] })); }
+      const done = expireKeys({ week, house: gs.activePlayers });
+      if (done) { week.keysExpired = done; week.acts.push(addBeats(done, { players: done.holders })); }
+    } catch { /* the season plays on without the paperwork */ }
+  }
+
   if (!compressed && twists.has('bb-camp-comeback') && evicted) {
     try {
       const camped = sendToCamp({ week, evicted, house, rng });

@@ -133,6 +133,48 @@ export const BB_TWIST_CONTRACTS = {
   // were INFORMED. The drama is not the secret; it is that the whole house now
   // spends three days working out which of them it is about while three people
   // already know.
+  // ══ Dynamic Duos + the Golden Key (BB13) ══
+  //
+  // The wiki gives both halves: houseguests "paired up in duos and nominated as
+  // duos", and "when one member of the duo was evicted, the other member
+  // received a 'Golden Key' and was safe from nomination and eviction until the
+  // final 10. Holders of a Golden Key did not compete in competitions, though
+  // they did get to cast votes to evict and have a spot to win the whole game."
+  //
+  // `rules: {}` and it is not a lie: nomineeCount is still two. What changes is
+  // WHICH two, and that is a question about identity rather than about the
+  // week's shape — so it lives in js/bb/duos.js at the two seams the Rivals
+  // twist already uses, and no other module has to know.
+  'bb-duos': {
+    id: 'bb-duos', layer: 'season', category: 'cast-composition',
+    timing: 'season-opening', duration: { weeks: null },
+    rules: {},
+    acquisition: { channel: 'random-draw', secrecy: 'public' },
+    announcement: {
+      name: 'Dynamic Duos',
+      reactions: 'paranoia',
+      rule: 'You are playing in pairs, and the Head of Household nominates a PAIR — not two houseguests, two houseguests who came in together. If your partner is evicted you are handed a Golden Key: safe from nomination and eviction until the house is down to ten. A key holder does not compete for anything. You still vote, and you can still win this game.',
+      sting: 'Look at the person beside you. Whatever happens to them this week happens to you.',
+    },
+    season: {
+      label: 'Dynamic Duos',
+      key: 'bbDuos',
+      accent: '245,158,11',
+      hint: 'A season-long twist. The house plays in pairs and is nominated in pairs. Lose your '
+        + 'partner and you are handed a Golden Key — untouchable until the final ten, and unable '
+        + 'to compete for anything until then. Key holders still vote, and can still win.',
+      modes: [
+        { value: 'off', label: 'Off' },
+        { value: 'on', label: 'On — pair the house up' },
+      ],
+      options: [
+        { key: 'bbDuosKeyAt', type: 'number', label: 'Keys expire at', min: 4, max: 14, default: 10,
+          hint: 'The house size at which every Golden Key stops working at once, and everybody '
+            + 'holding one is nominatable again — after weeks of not competing. Ten is the number '
+            + 'the show used.' },
+      ],
+    },
+  },
   'bb-rivals': {
     id: 'bb-rivals', layer: 'season', category: 'cast-composition',
     timing: 'season-opening', duration: { weeks: null },

@@ -2514,9 +2514,160 @@ export function revealAllSpoilers() {
   renderTimeline();
 }
 
+/**
+ * Fill a Big Brother season's competition pickers.
+ *
+ * The Randomize button opened the Total Drama panel on any season — series
+ * checkboxes for Island, Action and World Tour over a house that has none of
+ * them — and `randomizeChallenges` schedules TWIST_CATALOG challenge twists,
+ * which a Big Brother week has no slot for. Pressing it on a house season was
+ * offering to fill in something that does not exist while the two dropdowns
+ * that DO exist on every week sat on Auto.
+ *
+ * Those are the pickers this fills: the HOH and the veto, week by week. Auto
+ * already picks at run time and picks well — this is for when you want to see
+ * the season's shape before playing it, and to decide what kind of season it
+ * is rather than finding out afterwards.
+ *
+ * The mix is the same rule the engine uses at run time (BB_COMP_MIXES): a
+ * `balanced` season favours whatever stat has been idle, a lean tilts toward
+ * one without excluding the rest. Doing it here and there with one rule means
+ * the plan and the play agree.
+ */
+export function randomizeBBComps(opts = {}) {
+  const { mix = 'balanced', clearExisting = true } = opts;
+  const epMap = buildEpisodeMap();
+  if (!epMap.length) return 0;
+  if (typeof bbCompetitionsForSlot === 'undefined') return 0;
+
+  if (clearExisting) seasonConfig.bbCompSchedule = [];
+
+  // What the season has asked for so far, in stat weight. The same measure the
+  // engine's balanced rule uses, kept here rather than imported because run-ui
+  // reads everything as a bare global.
+  const spent = {};
+  const spend = comp => {
+    for (const [stat, weight] of Object.entries(comp.stats || {})) {
+      spent[stat] = (spent[stat] || 0) + (Number(weight) || 0);
+    }
+  };
+  const LEANS = {
+    physical: ['physical', 'endurance'], mental: ['mental', 'intuition'],
+    endurance: ['endurance', 'temperament'], social: ['social', 'strategic'],
+  };
+  const lean = LEANS[mix] || null;
+
+  const weightOf = comp => {
+    const stats = comp.stats || {};
+    if (lean) {
+      const share = lean.reduce((n, s) => n + (Number(stats[s]) || 0), 0);
+      return 0.5 + share * 2.2;
+    }
+    const total = Object.values(spent).reduce((a, b) => a + b, 0);
+    if (total <= 0) return 1;
+    const average = total / Math.max(1, Object.keys(spent).length);
+    let score = 0;
+    for (const [stat, weight] of Object.entries(stats)) {
+      const w = Number(weight) || 0;
+      if (!w) continue;
+      score += w * (average > 0 ? (average - (spent[stat] || 0)) / average : 0);
+    }
+    return Math.max(0.35, Math.min(2.6, 1 + score * 1.4));
+  };
+
+  // A season should not run the same competition twice while its siblings sit
+  // unaired — the same rule the engine applies, and the reason a plan drawn
+  // here does not simply repeat the library's three favourites.
+  const used = new Set();
+  const pickFor = slot => {
+    const list = (bbCompetitionsForSlot(slot) || []).filter(c => c && c.id);
+    if (!list.length) return '';
+    const pool = list.filter(c => !used.has(c.id));
+    const from = pool.length ? pool : list;
+    const weights = from.map(c => Math.max(0.01, weightOf(c)));
+    const total = weights.reduce((a, b) => a + b, 0);
+    let roll = Math.random() * total;
+    let pick = from[from.length - 1];
+    for (const [i, comp] of from.entries()) {
+      roll -= weights[i];
+      if (roll <= 0) { pick = comp; break; }
+    }
+    used.add(pick.id);
+    spend(pick);
+    return pick.id;
+  };
+
+  let filled = 0;
+  for (const info of epMap) {
+    // The finale runs its own two-part Head of Household and never a weekly
+    // competition, so pinning one there would be scheduling a night that does
+    // not happen.
+    if (info.phase === 'finale') continue;
+    for (const slot of ['hoh', 'veto']) {
+      const id = pickFor(slot);
+      if (!id) continue;
+      _setBBComp(info.ep, slot, id);
+      filled += 1;
+    }
+  }
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+  return filled;
+}
+
+/** The house's own randomiser panel. */
+function _bbRandomizerPanel() {
+  const mixes = [
+    ['balanced', 'Balanced — every stat gets a night'],
+    ['physical', 'More physical'],
+    ['mental', 'More mental'],
+    ['endurance', 'More endurance'],
+    ['social', 'More social'],
+  ];
+  const current = seasonConfig.bbCompMix || 'balanced';
+  return `
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;color:var(--muted,#7d8590)">Fills every week's Head of Household
+          and veto. Auto already picks well at run time — this is for seeing the season's shape
+          before you play it.</span>
+        <select id="bb-rand-mix" style="background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:6px 8px;font-size:12.5px">
+          ${mixes.map(([id, label]) =>
+    `<option value="${id}" ${id === current ? 'selected' : ''}>${label}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="_runBBRandomizer()" style="background:#6366f1;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:500">Randomize</button>
+        <button onclick="_clearBBComps()" style="background:transparent;color:var(--text);border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer">Back to Auto</button>
+      </div>`;
+}
+
+export function _runBBRandomizer() {
+  const mix = document.getElementById('bb-rand-mix')?.value || 'balanced';
+  // The picker doubles as the season's setting, so what was planned is also
+  // what any un-pinned week runs.
+  seasonConfig.bbCompMix = mix;
+  const n = randomizeBBComps({ mix });
+  const note = document.getElementById('bb-rand-note');
+  if (note) note.textContent = n ? `Filled ${n} competitions.` : 'Nothing to fill.';
+}
+
+export function _clearBBComps() {
+  seasonConfig.bbCompSchedule = [];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+  const note = document.getElementById('bb-rand-note');
+  if (note) note.textContent = 'Every week back to Auto.';
+}
+
 export function showRandomizerPanel() {
   const existing = document.getElementById('randomizer-panel');
   if (existing) { existing.remove(); return; }
+
+  // A house has no Island, no Action and no World Tour, and no slot for a
+  // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was
+  // offering to fill in something that does not exist, while the two pickers
+  // that DO exist on every week sat on Auto.
+  const isBB = (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig.format) : seasonConfig.format) === 'big-brother';
 
   const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
   const seriesLabels = {
@@ -2538,9 +2689,11 @@ export function showRandomizerPanel() {
   panel.innerHTML = `
     <div style="background:var(--surface);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:16px;margin:12px 0;display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-weight:600;color:var(--text);font-size:14px">🎲 Challenge Randomizer</span>
+        <span style="font-weight:600;color:var(--text);font-size:14px">🎲 ${
+  isBB ? 'Competition Randomizer' : 'Challenge Randomizer'}</span>
         <span onclick="showRandomizerPanel()" style="cursor:pointer;color:var(--muted);font-size:18px">×</span>
       </div>
+      ${isBB ? _bbRandomizerPanel() : `
       <div style="display:flex;flex-wrap:wrap;gap:8px 16px">
         ${checkboxes}
       </div>
@@ -2551,8 +2704,8 @@ export function showRandomizerPanel() {
       <div style="display:flex;gap:8px;align-items:center">
         <button onclick="_runRandomizer()" style="background:#6366f1;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:500">Randomize</button>
         <button onclick="revealAllSpoilers()" style="background:transparent;border:1px solid rgba(99,102,241,0.3);color:var(--text);border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer">Reveal All</button>
-        <span id="rand-result" style="font-size:12px;color:var(--muted)"></span>
-      </div>
+      </div>`}
+      <span id="${isBB ? 'bb-rand-note' : 'rand-result'}" style="font-size:12px;color:var(--muted)"></span>
     </div>`;
 
   const timeline = document.getElementById('fd-timeline');

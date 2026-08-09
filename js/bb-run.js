@@ -337,8 +337,13 @@ export function bbForcedCompsForWeek(epNum) {
 export function bbCompetitionsForSlot(type) {
   // `finalRole` rides along so the finale picker can tell the recurring The
   // Wall apart from the set piece of the same name written for finale night.
+  // `stats` rides along for the same reason `finalRole` does: a caller that has
+  // to reason about the competition needs more than its name. The season
+  // randomiser weighs these to build a balanced or leaning season, and without
+  // them every competition looked identical to it — the mix setting was
+  // selected, applied, and changed nothing at all.
   const shape = (c, generic) => ({ id: c.id, name: c.name, category: c.category,
-    finalRole: c.finalRole || null, generic });
+    finalRole: c.finalRole || null, generic, stats: { ...(c.stats || {}) } });
   // The Battle Back is not an HOH or a veto and does not inherit either list's
   // restrictions: it is a competition held outside the house for a prize that
   // is neither power nor safety, so anything the library can stage is fair.

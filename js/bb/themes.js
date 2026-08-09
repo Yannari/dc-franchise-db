@@ -175,9 +175,23 @@ export function themeState() {
 
 const VOICE_HOOKS = ['open', 'noms', 'veto', 'vote'];
 
-/** The house, as the antagonist is allowed to know it. */
-function inHouse(name) {
-  return !!name && (gs.activePlayers || []).includes(name);
+/**
+ * The house, as the antagonist is allowed to know it.
+ *
+ * `roster` is the week's OWN house when the caller has one, and only falls back
+ * to `gs.activePlayers` when it does not. That is not belt-and-braces: on a
+ * Split House cycle the week engine plays a half-house passed in as
+ * `options.house`, and while `bb-run.js` currently narrows `gs.activePlayers`
+ * to the side for the duration, nothing in this file can see that promise or
+ * hold it. If it ever slipped, a perfectly legitimate `{nominees}` line would
+ * be refused, the pool walk would fall through to the least specific line in
+ * the pool, and the antagonist would read as thin writing rather than as a bug
+ * — no error, no failing test. The fallback is what keeps `themeVoice` callable
+ * with no roster at all, which the unit tests rely on.
+ */
+function inHouse(name, roster) {
+  const live = (Array.isArray(roster) && roster.length) ? roster : (gs.activePlayers || []);
+  return !!name && live.includes(name);
 }
 
 /**
@@ -188,11 +202,19 @@ function inHouse(name) {
  * houseguest is worse than an antagonist who says nothing, and the alternative
  * — trusting every caller to pass a live roster — is the bug we would find in
  * a played season rather than a test.
+ *
+ * The tokens are deliberately all STATE: a line that can be written before the
+ * season starts is a line the broadcast could already do. `{cursed}` is the one
+ * that earns the theme — it is the houseguest a Den curse seated in a third
+ * chair, and it only resolves in a week where somebody actually accepted.
  */
 function fillLine(tpl, ctx) {
   const noms = (ctx.nominees || []).filter(Boolean);
-  if (tpl.includes('{hoh}') && !inHouse(ctx.hoh)) return null;
-  if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n)))) return null;
+  const roster = ctx.house;
+  if (tpl.includes('{hoh}') && !inHouse(ctx.hoh, roster)) return null;
+  if (tpl.includes('{veto}') && !inHouse(ctx.veto, roster)) return null;
+  if (tpl.includes('{cursed}') && !inHouse(ctx.cursed, roster)) return null;
+  if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n, roster)))) return null;
   if (tpl.includes('{evicted}') && !ctx.evicted) return null;
   const list = noms.length > 1
     ? `${noms.slice(0, -1).join(', ')} and ${noms[noms.length - 1]}`
@@ -200,6 +222,8 @@ function fillLine(tpl, ctx) {
   return tpl
     .replace(/\{week\}/g, String(ctx.week ?? ''))
     .replace(/\{hoh\}/g, ctx.hoh || '')
+    .replace(/\{veto\}/g, ctx.veto || '')
+    .replace(/\{cursed\}/g, ctx.cursed || '')
     .replace(/\{nominees\}/g, list)
     .replace(/\{evicted\}/g, ctx.evicted || '');
 }
@@ -209,6 +233,38 @@ export function setThemeMood(mood) {
   const st = themeState();
   if (st) st.mood = mood;
   return mood;
+}
+
+/**
+ * Apply any non-booking arc acts scheduled for this week.
+ *
+ * Mood changes are the arc's other job. `themeScheduleEntries` skips an act
+ * with no `book`, which is correct — it writes twist entries and a mood is not
+ * one — so the acts that only move the register need somebody to read them, and
+ * that somebody has to be the week, because a mood change is a thing that
+ * happens AT a week rather than a thing written onto a schedule.
+ *
+ * A heel turn is a register change plus a palette change, not a second
+ * character: `mood` is the only thing this moves, and both the voice pools and
+ * the reader's `is-hostile` styling key off it.
+ *
+ * `fromEnd` is 1-indexed here exactly as it is in `themeScheduleEntries` — the
+ * two must agree or an arc would read one way for its bookings and another for
+ * its moods.
+ */
+export function advanceThemeArc(weekNum, totalWeeks) {
+  const theme = currentTheme();
+  const st = themeState();
+  if (!theme || !st) return null;
+  for (const act of theme.arc || []) {
+    if (!act || !act.mood) continue;
+    const ep = act.at?.week != null
+      ? Number(act.at.week)
+      : Number(totalWeeks) - Number(act.at?.fromEnd ?? 1) + 1;
+    if (!Number.isFinite(ep)) continue;
+    if (Number(weekNum) === ep) setThemeMood(act.mood);
+  }
+  return st.mood;
 }
 
 /**

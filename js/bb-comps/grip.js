@@ -785,6 +785,31 @@ export const memoryDip = {
 // Ship Til You Drop
 // ══════════════════════════════════════════════════════════════════════
 
+const SHIP_FIRST = [
+  (n, p) => `${n} takes the first three like they weigh nothing, because at this stage they do.`,
+  (n, p) => `${n} sets up early — feet apart, back straight, arms in — and stops moving entirely.`,
+  (n, p) => `${n} works out in the first minute that this is about geometry and not about strength.`,
+];
+
+const SHIP_HOLDING = [
+  (n, p) => `${n} takes another and finds somewhere for it that should not have worked.`,
+  (n, p) => `The stack on ${n} is taller than ${p.sub} ${vb(p, 'is', 'are')} now and has not moved an inch.`,
+  (n, p) => `${n} has stopped adding height and started adding width, which is the first sensible decision made out here.`,
+  (n, p) => `Whatever ${n} is doing with ${p.posAdj} shoulders is not in the rules and is absolutely working.`,
+];
+
+const SHIP_ROOM = [
+  () => `Nobody is talking. Seventeen people holding cardboard makes a very particular kind of quiet.`,
+  () => `Another box goes onto every stack at the same moment, and the whole deck sags together.`,
+  () => `Somebody says "that is not going to hold" about somebody else, and is right about the wrong person.`,
+  () => `The pile of dropped boxes at the side of the deck has stopped being funny.`,
+];
+
+const SHIP_LEAD = [
+  (a, b) => `${b} has been carrying the biggest stack on the deck for ten minutes. ${a} is now carrying a bigger one.`,
+  (a, b) => `${a} goes past ${b} on box count, and both of them know it without either looking up.`,
+];
+
 const SHIP_GO = [
   (n, p) => `${n} accepts another box, shifts the stack too far left, and loses the entire load.`,
   (n, p) => `${n} pins the boxes between a knee and ${p.posAdj} chin until the bottom one slides free.`,
@@ -807,46 +832,123 @@ export const shipTilYouDrop = {
   // A hold that gets heavier. Physical carries more here than in the other
   // endurance comps because the load genuinely grows; endurance is how long
   // the arms answer once it has.
-  stats: { physical: 0.36, endurance: 0.34, temperament: 0.17, boldness: 0.13 },
+  // Two ways to lose a growing stack and they are not the same failure: the
+  // ARMS go, or the STACK goes. Carry is the weight; balance is whether it
+  // stays up while the weight arrives. Intuition used to be read as the swing
+  // term without being declared at all, which put a stat in the maths and not
+  // on the bars.
+  stats: { physical: 0.32, endurance: 0.30, intuition: 0.22, temperament: 0.16 },
   roles: {
-    carry: { physical: 0.39, endurance: 0.37, boldness: 0.14, temperament: 0.10 },
-    balance: { intuition: 1 },
+    // How much cardboard the body will take.
+    carry: { physical: 0.52, endurance: 0.48 },
+    // Whether it stays where it is put as the load grows.
+    balance: { intuition: 0.58, temperament: 0.42 },
   },
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.carry, swingBy: this.roles.balance, luck: 2.5, context, rng,
+      mix: this.roles.carry, luck: 2.5, context, rng,
     });
+    /* BALANCE IS ADDED, NOT MULTIPLIED — see the note on Memory Dip. Carrying
+       and balancing are different jobs and a flat swing keeps them in tension;
+       multiplied, whoever has both would collect both and drift toward owning
+       the competition, which is what happened to the poles and the rope. */
+    for (const e of entries) {
+      const steady = aptitude(e.name, this.roles.balance);
+      const carry = aptitude(e.name, this.roles.carry);
+      const bonus = (steady - 5) * 0.5;
+      breakdown[e.name].balance = Math.round(steady * 100) / 100;
+      breakdown[e.name].carry = Math.round(carry * 100) / 100;
+      breakdown[e.name].balanceBonus = Math.round(bonus * 100) / 100;
+      breakdown[e.name].score = Math.round((e.score + bonus) * 100) / 100;
+      e.score += bonus;
+    }
+    entries.sort((a, b) => b.score - a.score);
+
     const say = makePicker(rng);
     const beats = [beat(
-      'The houseguests begin with one box. Another is added at every signal, and dropping any part of the stack means elimination.',
+      'The first three boxes are nothing and everybody says so out loud. Nobody says anything at all about the ninth.',
       participants.slice(0, 3), 'STACK UP')];
 
+    const [winner, runnerUp] = entries;
+    const revealAt = {};
+    const field = entries.length;
     const order = [...entries].reverse();
-    order.slice(0, Math.max(1, order.length - 2)).forEach((e, i) => {
+    const strugglers = order.filter(e => e.name !== winner.name && e.name !== runnerUp?.name);
+
+    const early = entries[Math.min(1, field - 1)] || winner;
+    beats.push(beat(say(SHIP_FIRST)(early.name, pronouns(early.name)), [early.name], 'SET UP', 'blue'));
+
+    const CARDED = Math.max(2, Math.min(6, Math.round(field * 0.35)));
+    const threw = strugglers.filter(e => e.threw);
+    const tried = strugglers.filter(e => !e.threw);
+    const carded = [...threw.slice(0, 2), ...tried.slice(0, Math.max(0, CARDED - Math.min(2, threw.length)))]
+      .sort((a, b) => strugglers.indexOf(a) - strugglers.indexOf(b));
+
+    carded.forEach((e, i) => {
       const p = pronouns(e.name);
+      revealAt[e.name] = beats.length;
       if (e.threw) {
         beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
-        return;
+      } else {
+        // The arms or the stack, told apart by which one this houseguest
+        // actually had. Both end the same way and they are not the same story.
+        const wobbled = (breakdown[e.name]?.balance ?? 5) < (breakdown[e.name]?.carry ?? 5);
+        beats.push(beat(say(SHIP_GO)(e.name, p), [e.name],
+          i === 0 ? 'FIRST TO DROP' : wobbled ? 'THE STACK GOES' : 'THE ARMS GO', 'red'));
       }
-      beats.push(beat(say(SHIP_GO)(e.name, p), [e.name], i === 0 ? 'FIRST TO DROP' : 'THE STACK GOES', 'red'));
+      if (i === 0 || i === Math.floor(CARDED / 2)) {
+        beats.push(beat(say(SHIP_ROOM)(), participants.slice(0, 3), 'THE DECK', 'grey'));
+      }
+      const mover = entries[Math.min(2 + i, Math.max(0, field - 1))];
+      if (mover && mover.name !== e.name && mover.name !== winner.name) {
+        revealAt[mover.name] = beats.length;
+        beats.push(beat(say(SHIP_HOLDING)(mover.name, pronouns(mover.name)), [mover.name], 'STILL UP', 'blue'));
+      }
     });
 
-    const [winner, runnerUp] = entries;
     if (runnerUp) {
+      beats.push(beat(say(SHIP_LEAD)(winner.name, runnerUp.name),
+        [winner.name, runnerUp.name], 'THE LEAD', 'gold'));
+      api.popDelta(winner.name, 1);
+    }
+
+    for (const e of entries) {
+      if (revealAt[e.name] == null && e.name !== winner.name && e.name !== runnerUp?.name) {
+        revealAt[e.name] = beats.length;
+      }
+    }
+
+    if (runnerUp) {
+      revealAt[runnerUp.name] = beats.length;
       beats.push(beat(say(SHIP_HOLD)(runnerUp.name, pronouns(runnerUp.name)),
         [runnerUp.name, winner.name], 'THE LAST TWO', 'gold'));
       api.popDelta(runnerUp.name, 1);
     }
+    revealAt[winner.name] = beats.length;
     beats.push(beat(
-      `${winner.name} keeps the full stack off the deck after everyone else has dropped theirs.`,
+      `${winner.name} is still holding everything ${pronouns(winner.name).sub} ${vb(pronouns(winner.name), 'was', 'were')} given when the deck is otherwise empty.`,
       [winner.name], 'STILL STANDING', 'gold'));
     // Boxes still against the body when the stack went. The screen draws the
     // stack, so this is the whole picture: a number and a shape at once.
     const boxes = quantise(entries, { top: 17, floor: 2, jitter: 1.2, rng });
     return toResult(entries, { beats, breakdown, variant: 'ship-til-you-drop',
       detail: {
-        runs: entries.map(e => ({ name: e.name, boxes: Math.round(boxes[e.name]), threw: e.threw })),
+        // The tallest stack anybody built, so the screen can draw them to scale
+        // against each other rather than against a number nobody sees.
+        tallest: Math.max(...entries.map(e => Math.round(boxes[e.name])), 1),
+        runs: entries.map(e => {
+          const bal = breakdown[e.name]?.balance ?? 5;
+          const car = breakdown[e.name]?.carry ?? 5;
+          return {
+            name: e.name, boxes: Math.round(boxes[e.name]), threw: e.threw,
+            balance: Math.round(bal * 10) / 10, carry: Math.round(car * 10) / 10,
+            // Which of the two gave first. Not a second roll — it is whichever
+            // of this houseguest's two numbers was the weaker one.
+            lostBy: bal < car ? 'balance' : 'arms',
+            revealAt: revealAt[e.name] ?? 0,
+          };
+        }),
       } });
   },
 };
@@ -854,6 +956,25 @@ export const shipTilYouDrop = {
 // ══════════════════════════════════════════════════════════════════════
 // Domino Effect
 // ══════════════════════════════════════════════════════════════════════
+
+const DOM_BUILD = [
+  (n, p) => `${n} lays a long clean run down the middle and does not breathe near it.`,
+  (n, p) => `${n} is building in short blocks with gaps between them, so a mistake can only ever cost part of it.`,
+  (n, p) => `${n} has stopped looking at anybody else's mat, which out here is the whole skill.`,
+  (n, p) => `${n} works slower than everybody and has rebuilt nothing, which by now is a very large lead.`,
+];
+
+const DOM_ROOM = [
+  () => `Somebody's run goes at the far end of the yard and every single person flinches without looking up.`,
+  () => `The yard is quieter than the have-not room at four in the morning.`,
+  () => `Two people are building on their knees now, which is faster and much worse for the mat.`,
+  () => `Nobody has spoken above a whisper since the crates were opened.`,
+];
+
+const DOM_LEAD = [
+  (a, b) => `${a} passes ${b} on tiles standing, and neither of them can afford to react to it.`,
+  (a, b) => `${b} built the first half faster. ${a} has simply not had to build any of it twice.`,
+];
 
 const DOM_GO = [
   (n, p) => `${n}'s knuckle clips a tile near the end of the route, knocking down most of the pattern.`,
@@ -876,54 +997,119 @@ export const dominoEffect = {
   desc: 'Each houseguest gets a mat, a crate of dominoes and the pattern they have been told to build, and they stand every tile themselves. Nothing may be propped, glued or blocked. The cruelty is that the run only counts once it is set off deliberately at the end: a tile knocked early takes everything after it down too, and all of those have to be stood back up before another one can be added. The first houseguest to finish their pattern and topple it in one clean run wins.',
   // Hands and nerve, with mental reading the route before building it. Nothing
   // physical about it beyond keeping still, which is temperament's job here.
-  stats: { intuition: 0.34, temperament: 0.30, mental: 0.24, physical: 0.12 },
+  // Hands lay the tiles and nerve decides how many of them are still standing
+  // when the run is set off. Kept apart because they fail differently: a bad
+  // pair of hands builds slowly, a bad temperament builds it twice.
+  stats: { intuition: 0.32, mental: 0.26, temperament: 0.26, physical: 0.16 },
   roles: {
-    steady: { intuition: 0.37, mental: 0.27, temperament: 0.24, physical: 0.12 },
-    calm: { temperament: 1 },
+    // Placing them, and reading the pattern before starting.
+    hands: { intuition: 0.48, mental: 0.36, physical: 0.16 },
+    // Whether the run survives being built.
+    nerve: { temperament: 1 },
   },
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.steady, swingBy: this.roles.calm, luck: 2.8, context, rng,
+      mix: this.roles.hands, luck: 2.8, context, rng,
     });
+    /* NERVE IS ADDED, NOT MULTIPLIED — the third competition here to take that
+       shape deliberately. Hands build it; nerve decides how much of it has to
+       be built twice, and a flat swing keeps those two in tension instead of
+       stacking on whoever happens to have both. */
+    for (const e of entries) {
+      const nerve = aptitude(e.name, this.roles.nerve);
+      const hands = aptitude(e.name, this.roles.hands);
+      const bonus = (nerve - 5) * 0.5;
+      breakdown[e.name].nerve = Math.round(nerve * 100) / 100;
+      breakdown[e.name].hands = Math.round(hands * 100) / 100;
+      breakdown[e.name].nerveBonus = Math.round(bonus * 100) / 100;
+      breakdown[e.name].score = Math.round((e.score + bonus) * 100) / 100;
+      e.score += bonus;
+    }
+    entries.sort((a, b) => b.score - a.score);
+
     const say = makePicker(rng);
     const beats = [beat(
-      'Each houseguest must copy the displayed domino pattern. An early collapse has to be rebuilt before they can continue.',
-      participants.slice(0, 3), 'THE ROUTE')];
-
-    const worst = [...entries].reverse();
-    worst.slice(0, Math.min(3, Math.max(1, worst.length - 2))).forEach(e => {
-      const p = pronouns(e.name);
-      if (e.threw) {
-        beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
-        return;
-      }
-      beats.push(beat(say(DOM_GO)(e.name, p), [e.name], 'IT GOES EARLY', 'red'));
-    });
+      'Nobody in the yard is talking above a murmur, which tells you everything about how this competition is going to be lost.',
+      participants.slice(0, 3), 'THE PATTERN')];
 
     const [winner, runnerUp] = entries;
-    beats.push(beat(say(DOM_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'BUILT', 'blue'));
-    beats.push(beat(
-      `${winner.name} tips the first domino. The chain continues through the full pattern and knocks down the final tile.`,
-      [winner.name], 'CLEAN RUN', 'gold'));
+    const revealAt = {};
+    const field = entries.length;
+    const worst = [...entries].reverse();
+    const strugglers = worst.filter(e => e.name !== winner.name && e.name !== runnerUp?.name);
+
+    const early = entries[Math.min(1, field - 1)] || winner;
+    beats.push(beat(say(DOM_BUILD)(early.name, pronouns(early.name)), [early.name], 'LAYING IT', 'blue'));
+
+    const CARDED = Math.max(2, Math.min(6, Math.round(field * 0.35)));
+    const threw = strugglers.filter(e => e.threw);
+    const tried = strugglers.filter(e => !e.threw);
+    const carded = [...threw.slice(0, 2), ...tried.slice(0, Math.max(0, CARDED - Math.min(2, threw.length)))]
+      .sort((a, b) => strugglers.indexOf(a) - strugglers.indexOf(b));
+
+    carded.forEach((e, i) => {
+      const p = pronouns(e.name);
+      revealAt[e.name] = beats.length;
+      if (e.threw) {
+        beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
+      } else {
+        beats.push(beat(say(DOM_GO)(e.name, p), [e.name], 'IT GOES EARLY', 'red'));
+      }
+      if (i === 0 || i === Math.floor(CARDED / 2)) {
+        beats.push(beat(say(DOM_ROOM)(), participants.slice(0, 3), 'THE YARD', 'grey'));
+      }
+      const mover = entries[Math.min(2 + i, Math.max(0, field - 1))];
+      if (mover && mover.name !== e.name && mover.name !== winner.name) {
+        revealAt[mover.name] = beats.length;
+        beats.push(beat(say(DOM_BUILD)(mover.name, pronouns(mover.name)), [mover.name], 'STANDING', 'blue'));
+      }
+    });
+
     if (runnerUp) {
-      beats.push(beat(
-        `${runnerUp.name} has three tiles left to place when ${winner.name}'s final marker falls.`,
-        [runnerUp.name], 'THREE SHORT', 'blue'));
+      beats.push(beat(say(DOM_LEAD)(winner.name, runnerUp.name),
+        [winner.name, runnerUp.name], 'THE LEAD', 'gold'));
+      api.popDelta(winner.name, 1);
     }
+
+    for (const e of entries) {
+      if (revealAt[e.name] == null && e.name !== winner.name && e.name !== runnerUp?.name) {
+        revealAt[e.name] = beats.length;
+      }
+    }
+
+    beats.push(beat(say(DOM_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'BUILT', 'blue'));
+    if (runnerUp) {
+      revealAt[runnerUp.name] = beats.length;
+      beats.push(beat(
+        `${runnerUp.name} is a handful of tiles from finishing and has to stand there watching somebody else set theirs off.`,
+        [runnerUp.name], 'SHORT', 'blue'));
+    }
+    revealAt[winner.name] = beats.length;
+    beats.push(beat(
+      `${winner.name} tips the first tile and the whole pattern runs, every piece of it, all the way to the end.`,
+      [winner.name], 'CLEAN RUN', 'gold'));
     // Tiles standing at the end and how many times the run went early. A
     // houseguest with a high count and two collapses built it three times.
-    const stood = quantise(entries, { top: 120, floor: 12, jitter: 6, rng });
-    const collapses = quantise([...entries].reverse(), { top: 4, floor: 0, jitter: 0.8, rng });
+    const ROUTE = 120;
+    const stood = quantise(entries, { top: ROUTE, floor: 12, jitter: 6, rng });
     return toResult(entries, { beats, breakdown, variant: 'domino-effect',
       detail: {
-        route: 120,
-        runs: entries.map(e => ({
-          name: e.name,
-          tiles: Math.round(stood[e.name]),
-          collapses: Math.round(collapses[e.name]),
-          threw: e.threw,
-        })),
+        route: ROUTE,
+        runs: entries.map((e, i) => {
+          const nerve = breakdown[e.name]?.nerve ?? 5;
+          // Rebuilds come off NERVE and nothing else, so the screen and the
+          // maths say the same thing: the pattern that went early belongs to
+          // the houseguest who could not keep still around it.
+          const collapses = Math.max(0, Math.min(4, Math.round((10 - nerve) / 2.4)));
+          return {
+            name: e.name,
+            tiles: i === 0 ? ROUTE : Math.min(ROUTE - 1, Math.round(stood[e.name])),
+            collapses, threw: e.threw,
+            nerve: Math.round(nerve * 10) / 10,
+            revealAt: revealAt[e.name] ?? 0,
+          };
+        }),
       } });
   },
 };

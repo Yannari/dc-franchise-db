@@ -109,6 +109,19 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
 }
 
 /**
+ * Every schedule entry a theme wrote, gone — and nothing else.
+ *
+ * The `source` tag is the whole mechanism: the arc writes it, the user never
+ * does, so "a week you booked is yours" survives both the rebook below and the
+ * sweep above.
+ */
+function stripThemeBookings() {
+  const sched = seasonConfig.twistSchedule;
+  if (!Array.isArray(sched) || !sched.some(t => t?.source === 'theme')) return;
+  seasonConfig.twistSchedule = sched.filter(t => t?.source !== 'theme');
+}
+
+/**
  * Install the season's theme, once.
  *
  * Writes real schedule entries rather than intercepting the twist lookup,
@@ -119,7 +132,17 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
  */
 export function installTheme(houseSize) {
   const theme = currentTheme();
-  if (!theme) return null;
+  // Turning a theme OFF has to do work, which is why this is not an early
+  // return. `seasonConfig.twistSchedule` is persisted by the UI, so the moment
+  // the picker goes back to "No theme" the previous theme's bookings are still
+  // sitting on the config with nothing left to own them — and they still fire.
+  // The user switched the theme off and the theme kept playing. Same `source`
+  // tag, same guarantee: nothing you booked is ever tagged, so nothing you
+  // booked is swept up here.
+  if (!theme) {
+    stripThemeBookings();
+    return null;
+  }
   if (!gs.bb) return null;
   if (gs.bb.theme) return gs.bb.theme;
   // A house loses one a week and ends at three.

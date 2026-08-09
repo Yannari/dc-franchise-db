@@ -178,12 +178,24 @@ describe('theme arc scheduler', () => {
     expect(defaultSettingFor('big-brother')).toBe('bb-house');
   });
 
+  // "Installs nothing" is now the narrower claim: no theme state is created and
+  // no arc is booked. It is NOT "touches nothing" — an unthemed season still has
+  // to sweep up a previous theme's leavings, which the describe below pins.
   it('installs nothing on an unthemed season', () => {
     seasonConfig.theme = 'none';
     seasonConfig.twistSchedule = [];
     gs.bb = { weeks: [] };
     expect(installTheme(12)).toBeNull();
     expect(seasonConfig.twistSchedule).toEqual([]);
+    expect(themeState()).toBeNull();
+  });
+
+  it('leaves the weeks you booked yourself alone on an unthemed season', () => {
+    seasonConfig.theme = 'none';
+    seasonConfig.twistSchedule = [{ id: 'mine', episode: 2, type: 'bb-roadkill' }];
+    gs.bb = { weeks: [] };
+    installTheme(12);
+    expect(seasonConfig.twistSchedule).toEqual([{ id: 'mine', episode: 2, type: 'bb-roadkill' }]);
   });
 });
 
@@ -249,6 +261,29 @@ describe('theme arc install', () => {
     expect(themeState().booked).toEqual(['bb-pandoras-box', 'bb-double-eviction']);
     // And the week the user booked is still theirs, exactly once.
     expect(seasonConfig.twistSchedule.filter(t => t.id === 'mine')).toHaveLength(1);
+  });
+
+  // Turning the theme OFF is the other half of the same problem, and the worse
+  // half: `twistSchedule` is persisted, so the previous theme's bookings are
+  // still sitting on the saved config with nothing left to own them. Install
+  // used to return early on an unthemed season — before the strip — so the user
+  // switched the picker to "No theme" and the theme kept playing.
+  it('sweeps up the last theme\'s bookings when the picker is set back to none', () => {
+    seasonConfig.twistSchedule = [{ id: 'mine', episode: 2, type: 'bb-roadkill' }];
+    installTheme(12);
+    const saved = JSON.parse(JSON.stringify(seasonConfig.twistSchedule));
+    expect(saved.some(t => t.source === 'theme')).toBe(true);
+
+    // Season two, same saved config, theme switched off.
+    setGs({ bb: { weeks: [] } });
+    seasonConfig.theme = 'none';
+    seasonConfig.twistSchedule = saved;
+    expect(installTheme(12)).toBeNull();
+
+    expect(seasonConfig.twistSchedule.some(t => t.source === 'theme')).toBe(false);
+    expect(seasonConfig.twistSchedule).toEqual([{ id: 'mine', episode: 2, type: 'bb-roadkill' }]);
+    // And nothing claims to be running.
+    expect(themeState()).toBeNull();
   });
 });
 

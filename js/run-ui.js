@@ -210,7 +210,12 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
     lifecycle, setting, title: config?.name || 'Untitled Season', seasonNumber: config?.seasonNumber || null,
     phase: displayState.phase || state?.phase || 'setup', episode: Number(latest?.num ?? displayState.episode ?? 0), nextEpisode, remaining, originalCount, progress,
     active, groups, latest, history, liveEpisode: Number(liveLatest?.num || 0), isHistorical, storylines: [...new Set(storylines)].slice(0, 3), twistLabel,
-    primaryLabel: lifecycle === 'setup' ? 'Start Season · Play Episode 1' : isHistorical ? `Return to Current · Episode ${liveLatest.num}` : lifecycle === 'complete' ? 'View Season Results' : state?.phase === 'finale' ? `Play Finale · Episode ${Number(state.episode || 0) + 1}` : `Play Episode ${Number(state.episode || 0) + 1}`,
+    // `nextEpisode`, not `state.episode + 1`. Two sources for one number, and
+    // they disagreed: everything else on this screen reads the last episode in
+    // the history, while the button read `gs.episode` — which the Big Brother
+    // engine never advanced. So the hub sat there having just played episode
+    // one and offered to play episode one.
+    primaryLabel: lifecycle === 'setup' ? 'Start Season · Play Episode 1' : isHistorical ? `Return to Current · Episode ${liveLatest.num}` : lifecycle === 'complete' ? 'View Season Results' : state?.phase === 'finale' ? `Play Finale · Episode ${nextEpisode}` : `Play Episode ${nextEpisode}`,
     primaryAction: isHistorical ? 'current' : lifecycle === 'complete' ? 'results' : 'simulate',
   };
 }
@@ -310,7 +315,7 @@ export function renderSeasonHub() {
     <button type="button" onclick="exportSeason()">Export</button>
   </nav>`;
   host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
-    <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></header>
+    <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
     ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : '<span class="hub-no-boot">No elimination</span>'}</div><div class="hub-last-copy"><strong>${_spoilerFree ? 'Outcome hidden until you watch' : latestElim ? `${_hubEsc(latestElim)} left the game` : 'The game moved without a vote'}</strong><span>Episode ${model.latest.num}${!_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${Number(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
@@ -701,12 +706,33 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     .catch(() => {}); // silent fallback to localStorage / embedded copy
 });
-export function toggleSpoilerFree() {
-  _spoilerFree = document.getElementById('cfg-spoiler-free')?.checked || false;
+/**
+ * Spoiler-free, from either of the two places that can now set it.
+ *
+ * It only ever lived on a checkbox in the season config, which is below the
+ * episode sections and only populated once a season is running — so the one
+ * setting whose whole job is "do not show me the result" could not be reached
+ * until after a result existed. There is a switch in the season hub header now,
+ * and it passes the value explicitly rather than reading a checkbox that may
+ * not be on the page.
+ *
+ * @param next true/false from a control, or omitted to read the config box
+ */
+export function toggleSpoilerFree(next) {
+  _spoilerFree = typeof next === 'boolean' ? next
+    : (document.getElementById('cfg-spoiler-free')?.checked || false);
+  // Whichever one was clicked, both agree afterwards.
+  const box = document.getElementById('cfg-spoiler-free');
+  if (box) box.checked = _spoilerFree;
   try { localStorage.setItem('simulator_spoilerFree', _spoilerFree); } catch(e) {}
-  renderEpisodeHistory();
-  const epToShow = viewingEpNum ? gs.episodeHistory.find(e => e.num === viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length - 1];
-  if (epToShow) renderEpisodeView(epToShow);
+  // Guarded: the hub switch is reachable BEFORE a season has any episodes, and
+  // both of these read the history without checking it is there.
+  const history = gs?.episodeHistory || [];
+  if (history.length) {
+    renderEpisodeHistory();
+    const epToShow = viewingEpNum ? history.find(e => e.num === viewingEpNum) : history[history.length - 1];
+    if (epToShow) renderEpisodeView(epToShow);
+  }
   renderSeasonHub();
 }
 

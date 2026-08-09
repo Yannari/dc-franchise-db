@@ -4741,6 +4741,22 @@
     .hub-secondary-actions button { min-height:34px; padding:0 11px; border:1px solid #2b3745; background:#111923; color:#8392a4; font:800 9px var(--font-body); letter-spacing:.45px; text-transform:uppercase; cursor:pointer; }
     .hub-secondary-actions button:hover:not(:disabled) { border-color:var(--hub-accent); color:#e4ebf2; }
     .hub-secondary-actions button:disabled { opacity:.3; cursor:not-allowed; }
+    /* The season hub's own spoiler-free switch. It sits beside the primary
+       action because that is the pair of decisions being made at that moment:
+       play the next one, and whether this screen is allowed to tell you what
+       happened. The config checkbox still exists and stays in sync. */
+    .hub-headline-right { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+    .hub-sf { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 13px 0 11px; border: 1px solid rgba(255,255,255,.11); border-radius: 7px; background: rgba(255,255,255,.02); color: #8997a8; font: 600 10px var(--font-body); letter-spacing: .4px; text-transform: uppercase; cursor: pointer; transition: border-color .16s, color .16s, background .16s; }
+    .hub-sf:hover { border-color: rgba(255,255,255,.22); color: #c8d2de; }
+    .hub-sf-track { position: relative; flex: none; width: 30px; height: 17px; border-radius: 99px; background: rgba(255,255,255,.13); transition: background .18s; }
+    .hub-sf-knob { position: absolute; top: 2.5px; left: 2.5px; width: 12px; height: 12px; border-radius: 50%; background: #7d8898; transition: transform .18s, background .18s; }
+    .hub-sf-label { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; line-height: 1.15; }
+    .hub-sf-label small { font-size: 9px; font-weight: 500; letter-spacing: .2px; text-transform: none; color: #6f7b8b; }
+    .hub-sf.is-on { border-color: color-mix(in srgb, var(--hub-accent) 55%, transparent); background: color-mix(in srgb, var(--hub-accent) 9%, transparent); color: #e6edf3; }
+    .hub-sf.is-on .hub-sf-track { background: color-mix(in srgb, var(--hub-accent) 62%, transparent); }
+    .hub-sf.is-on .hub-sf-knob { transform: translateX(13px); background: #f2f5f8; }
+    .hub-sf.is-on .hub-sf-label small { color: color-mix(in srgb, var(--hub-accent) 78%, #fff); }
+    @media (prefers-reduced-motion: reduce) { .hub-sf, .hub-sf-track, .hub-sf-knob { transition: none; } }
     .hub-headline { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 26px 28px 20px; }
     .hub-headline h1 { margin: 5px 0 4px; color: #f2f5f8; font-family: var(--font-display); font-size: clamp(27px, 3.4vw, 42px); font-weight: 500; line-height: 1; }
     .hub-headline p { margin: 0; color: #8997a8; font-size: 12px; }
@@ -4837,6 +4853,8 @@
       .hub-rail-episode { min-width: 52px; padding: 5px 6px; }
       .hub-headline { align-items: stretch; flex-direction: column; padding: 22px 20px 17px; }
       .hub-primary { width: 100%; }
+      .hub-headline-right { flex-direction: column; align-items: stretch; width: 100%; }
+      .hub-sf { justify-content: flex-start; }
       .hub-secondary-actions { padding:0 20px 14px; }
       .hub-secondary-actions button { min-height:40px; flex:1 1 auto; }
       .hub-last-night { grid-template-columns: auto auto 1fr auto; margin: 14px 16px 0; }

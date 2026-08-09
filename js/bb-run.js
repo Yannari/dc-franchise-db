@@ -681,6 +681,17 @@ function simulateSplitHouseEpisode({ house, epNum, twists }) {
     ? window.generateSummaryText(ep) : '';
   try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
   gs.episodeHistory ||= [];
+  // ── the number the rest of the app reads ──
+  //
+  // episode.js advances `gs.episode` on every one of its paths; this format
+  // never did. Big Brother derives its own `epNum` from the history length and
+  // was correct everywhere it used it — but everything OUTSIDE the week engine
+  // reads `gs.episode`, which sat at 0 for an entire season. So the season hub
+  // finished episode one and offered to "Play Episode 1", the aftermath header
+  // said episode one while the button said the same, and every module using
+  // `(gs.episode || 0) + 1` as "what episode is it" was answering 1 in week
+  // nine.
+  gs.episode = Math.max(Number(gs.episode) || 0, gs.episodeHistory.length + 1);
   gs.episodeHistory.push({
     ...ep,
     // What the fans thought AT THE END OF THIS WEEK.
@@ -1015,6 +1026,17 @@ export function simulateBBEpisode() {
   try { updateEditLayer(ep); } catch { /* the edit never blocks the week */ }
 
   gs.episodeHistory ||= [];
+  // ── the number the rest of the app reads ──
+  //
+  // episode.js advances `gs.episode` on every one of its paths; this format
+  // never did. Big Brother derives its own `epNum` from the history length and
+  // was correct everywhere it used it — but everything OUTSIDE the week engine
+  // reads `gs.episode`, which sat at 0 for an entire season. So the season hub
+  // finished episode one and offered to "Play Episode 1", the aftermath header
+  // said episode one while the button said the same, and every module using
+  // `(gs.episode || 0) + 1` as "what episode is it" was answering 1 in week
+  // nine.
+  gs.episode = Math.max(Number(gs.episode) || 0, gs.episodeHistory.length + 1);
   gs.episodeHistory.push({
     ...ep,
     // What the fans thought AT THE END OF THIS WEEK.
@@ -1593,6 +1615,17 @@ export function runBBFinale() {
     : generateBBFinaleText(ep);
   try { updateEditLayer(ep); finalizeEditSeason(); } catch { /* the edit never blocks the finale */ }
   gs.episodeHistory ||= [];
+  // ── the number the rest of the app reads ──
+  //
+  // episode.js advances `gs.episode` on every one of its paths; this format
+  // never did. Big Brother derives its own `epNum` from the history length and
+  // was correct everywhere it used it — but everything OUTSIDE the week engine
+  // reads `gs.episode`, which sat at 0 for an entire season. So the season hub
+  // finished episode one and offered to "Play Episode 1", the aftermath header
+  // said episode one while the button said the same, and every module using
+  // `(gs.episode || 0) + 1` as "what episode is it" was answering 1 in week
+  // nine.
+  gs.episode = Math.max(Number(gs.episode) || 0, gs.episodeHistory.length + 1);
   gs.episodeHistory.push({
     ...ep,
     // What the fans thought AT THE END OF THIS WEEK.

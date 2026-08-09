@@ -211,6 +211,36 @@ describe('Season Hub view model', () => {
     expect(model.storylines.join(' ')).not.toContain('active alliance');
   });
 
+  it('offers the NEXT episode, not the one that was just played', () => {
+    // Two sources for one number. Everything on that screen reads the last
+    // entry in the history; the button read `gs.episode` — which the Big
+    // Brother engine never advanced, because episode.js does it on every one of
+    // its paths and bb-run.js did it on none. So the hub sat there having just
+    // finished episode one and offered to play episode one, and the episode
+    // after that offered episode two.
+    //
+    // `episode: 0` here IS the bug: a stale counter next to a real history.
+    const model = buildSeasonHubModel(state({
+      episode: 0,
+      activePlayers: ['Bowie', 'MK', 'Priya'],
+      eliminated: ['Julia'],
+      episodeHistory: [{ num: 1, eliminated: 'Julia', votes: {} }],
+    }), config, cast);
+
+    expect(model.nextEpisode).toBe(2);
+    expect(model.primaryLabel).toBe('Play Episode 2');
+  });
+
+  it('counts the finale off the history too', () => {
+    const model = buildSeasonHubModel(state({
+      phase: 'finale', episode: 0,
+      activePlayers: ['Bowie', 'MK', 'Priya'],
+      episodeHistory: [{ num: 8, votes: {} }],
+    }), config, cast);
+
+    expect(model.primaryLabel).toBe('Play Finale · Episode 9');
+  });
+
   it('turns the primary action into results when the season is complete', () => {
     const model = buildSeasonHubModel(state({
       phase: 'complete',

@@ -118,12 +118,17 @@ export default {
           '{evicted} walks out. The offer stands for everyone else.',
           '{hoh} got the week they wanted. {evicted} paid for a week somebody else wanted.',
           '{evicted} never found out. Most of them do not.',
+          // The margin is the one thing here the house DID rather than a name
+          // it holds — a count that close, or that lopsided, is the room
+          // telling on itself.
+          '{margin}, and every hand that went up went up for a reason somebody else supplied.',
         ],
         hostile: [
           '{evicted} is gone, and the Den notes that nobody has admitted anything yet.',
           '{evicted} leaves. The Den is running out of patience and people.',
           '{evicted} goes out of that door still guessing. The Den could have told them. The Den chose not to.',
           'One down. The person responsible voted with the house and hugged them on the way out.',
+          '{evicted} goes {margin}. The Den notes how tidy that is, and how little of it was anybody\'s own idea.',
           '{hoh} will be congratulated for this. The Den will let them have it.',
         ],
       },
@@ -137,31 +142,63 @@ export default {
   // Week 2 rather than week 1 because the Den needs a house that already has
   // plans worth wrecking. The Have-Nots in week 3 are the cheap price the house
   // CAN see, so the expensive one it cannot see reads by contrast. A second Den
-  // in week 5 is the whole point of the season: it happens again, and the house
-  // still cannot name a culprit.
+  // is the whole point of the season: it happens again, and the house still
+  // cannot name a culprit. Pandora's Box is late on purpose — by then the house
+  // has twice watched somebody take something for free, so a box that CHARGES
+  // for it reads as the season finally presenting a bill. It is also the
+  // distributor that can put the Halting Hex into a pair of hands, which is the
+  // BB19 ending.
   //
-  // The heel turn is week 6, and it is the only non-booking act here — the
-  // antagonist stops offering and starts collecting. `'hostile'` is a literal
-  // the reader keys on (`is-hostile` in rpBuildBBThemeBeat); renaming it would
-  // silently lose the styling and no test would see it.
+  // ── WHY THE BACK HALF IS RELATIVE ──
   //
-  // Pandora's Box is late on purpose: by then the house has twice watched
-  // somebody take something for free, so a box that CHARGES for it reads as the
-  // season finally presenting a bill. It is also the distributor that can put
-  // the Halting Hex into a pair of hands, which is the BB19 ending.
+  // The first draft pinned the second Den to week 5 and it read beautifully on
+  // the twelve-house season it was written against and nowhere else. An arc
+  // that mixes absolute weeks with `fromEnd` weeks has the cast size sitting in
+  // the gap between them: on eleven houseguests the Den and the box landed in
+  // the same week, on ten the Den and the double eviction, on seven the box
+  // opened in WEEK ONE. So everything from the second Den onwards counts back
+  // from the finale, which is where those beats actually belong — the bill
+  // arrives at the end of the season, not on the fifth Thursday.
+  //
+  // `themeScheduleEntries` now refuses any act that would land on or before the
+  // act meant to precede it, so a season too short for all of this gets the
+  // front of the arc in order and is simply missing the tail. Measured across
+  // casts of six to eighteen: nine and up run the whole thing, six to eight
+  // keep the two Dens' opening and drop the endgame, and the order never once
+  // inverts.
   //
   // `fromEnd` is 1-indexed — `fromEnd: 1` IS the final eviction week — and the
-  // double eviction sits at 3 rather than 1 or 2 deliberately. The engine
-  // refuses a double eviction below a house of six and the last weeks run
-  // 5 -> 4 -> 3, so `fromEnd: 3` is the latest week it can actually fire for any
-  // cast size. Booking it later would not error; it would silently never
-  // happen, which is the worse failure.
+  // double eviction sits at 3 deliberately. The engine refuses one below a
+  // house of six and the last weeks run 5 -> 4 -> 3, so `fromEnd: 3` is the
+  // latest week it can actually fire for any cast size; at `fromEnd` 3 the
+  // house is always exactly six. Booking it later would not error, it would
+  // silently never happen, which is the worse failure.
+  //
+  // ── THE HEEL TURN, AUTHORED THREE TIMES ON PURPOSE ──
+  //
+  // Not redundancy. `advanceThemeArc` sets the mood on an exact week, and one
+  // week cannot be right for a three-week season and a fifteen-week one at
+  // once. Pinned to the absolute week 6 alone it never fired at all below a
+  // nine-house cast — half the authored voice and the whole `is-hostile`
+  // reader styling unreachable, silently, which is the same "books later, fires
+  // never" failure that moved the double eviction. So: week 6 turns a long
+  // season while it still has season left to spend; `fromEnd: 4` turns a
+  // middling one before the endgame; `fromEnd: 3` is the floor that always
+  // exists, because on a three-week season every week IS the endgame and a Den
+  // that never hardens is worse than one that hardens immediately. Setting the
+  // mood twice is a no-op, so whichever fires first wins and the rest are free.
+  //
+  // `'hostile'` is a literal the reader keys on (`is-hostile` in
+  // rpBuildBBThemeBeat); renaming it would silently lose the styling and no
+  // test would see it.
   arc: [
     { at: { week: 2 }, book: 'bb-den-of-temptation' },
     { at: { week: 3 }, book: 'bb-have-nots' },
-    { at: { week: 5 }, book: 'bb-den-of-temptation' },
     { at: { week: 6 }, mood: 'hostile' },
+    { at: { fromEnd: 5 }, book: 'bb-den-of-temptation' },
+    { at: { fromEnd: 4 }, mood: 'hostile' },
     { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
+    { at: { fromEnd: 3 }, mood: 'hostile' },
     { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
   ],
 

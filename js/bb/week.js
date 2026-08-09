@@ -1191,12 +1191,20 @@ export function simulateBBWeek(options = {}) {
   week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
 
   // Where the endgame is, counted from HERE: a house loses one a week and ends
-  // at three, so the week this house runs out is the current week plus whatever
-  // is left above the finale. Computed rather than stored because a season can
-  // gain weeks it did not plan for — a battle-back puts somebody back in the
-  // building — and an arc act pinned to `fromEnd` should move with the real
-  // endgame rather than with the one the premiere predicted.
-  const _totalWeeks = week.num + Math.max(0, house.length - 3);
+  // at three. Computed rather than stored because a season can gain weeks it
+  // did not plan for — a battle-back puts somebody back in the building — and
+  // an arc act pinned to `fromEnd` should move with the real endgame rather
+  // than with the one the premiere predicted.
+  //
+  // MINUS FOUR, not three, and the difference is a whole week. `installTheme`
+  // counts `houseSize - 3` from the PREMIERE house; this counts from the house
+  // standing in front of us, which has already lost `week.num - 1` people. The
+  // two must agree or `fromEnd` names one week when the arc books a twist and a
+  // different week when it turns the antagonist. Twelve houseguests in week
+  // one: 1 + 12 - 4 = 9, which is what installTheme says. The brief's `- 3`
+  // said 10 for every week of the same season, and it went unnoticed only
+  // because nothing read a `fromEnd` mood yet.
+  const _totalWeeks = week.num + Math.max(0, house.length - 4);
   advanceThemeArc(week.num, _totalWeeks);
 
   _themeSay(week, 'open', {});
@@ -5046,7 +5054,23 @@ export function simulateBBWeek(options = {}) {
   // left, so a `{cursed}` line at the count could name the very person the
   // eviction removed — and the curse's victim is by far the likeliest person to
   // be that. `{evicted}` is the only name this hook needs.
-  _themeSay(week, 'vote', { evicted: week.evicted || null,
+  // The shape of the count, "5-2", read off the ballots that were actually
+  // cast. Null when nobody left, which is the same night the hook goes silent.
+  // `week.votes` is a TALLY — nominee to count — not a ballot list of voter to
+  // target. Read as ballots it counted one entry per nominee and reported every
+  // eviction as "0-1", a line that is worse than no line because it is
+  // confidently wrong. The evictee's own count against everything else on the
+  // block is the number the house would recognise.
+  let _margin = null;
+  if (week.evicted) {
+    const tally = week.votes || {};
+    const against = Number(tally[week.evicted] || 0);
+    const rest = Object.entries(tally)
+      .filter(([n]) => n !== week.evicted)
+      .reduce((sum, [, v]) => sum + Number(v || 0), 0);
+    if (against > 0) _margin = `${against}-${rest}`;
+  }
+  _themeSay(week, 'vote', { evicted: week.evicted || null, margin: _margin,
     hoh: week.hohSecret ? null : week.hoh });
 
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);

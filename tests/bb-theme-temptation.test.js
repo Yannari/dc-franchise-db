@@ -9,7 +9,9 @@ import { gs, players, seasonConfig, relationships, TWIST_CATALOG } from '../js/c
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { themeState, themeVoice, advanceThemeArc, BB_THEMES } from '../js/bb/themes.js';
+import { themeState, themeVoice, advanceThemeArc, themeScheduleEntries,
+  BB_THEMES } from '../js/bb/themes.js';
+import { simulateBBWeek } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -139,6 +141,93 @@ describe('the arc it actually books', () => {
   });
 });
 
+// ── every cast size, not just the one it was written for ──
+//
+// The arc was authored against a twelve-house season and quietly degraded on
+// every smaller one: eleven put the Den and Pandora's Box in the same week, ten
+// the Den and the double eviction, seven opened the box in week ONE, and six
+// made the double eviction the season's first act. Nothing threw. The authored
+// escalation simply ran backwards, which is invisible unless something asserts
+// the shape rather than the contents.
+//
+// Cast six is the floor the week engine supports; eighteen is a long season.
+const CASTS = Array.from({ length: 13 }, (_, i) => i + 6);
+const ORDER = ['bb-den-of-temptation', 'bb-have-nots', 'bb-den-of-temptation',
+  'bb-pandoras-box', 'bb-double-eviction'];
+
+describe('the arc holds its shape at every cast size', () => {
+  beforeEach(() => house());
+
+  it.each(CASTS)('cast %i: one booking a week, in the authored order', size => {
+    const weeks = size - 3;
+    const out = themeScheduleEntries(THEME(), { weeks, existing: [] });
+
+    // One week, one theme act. The old dedupe was `episode:book`, so two
+    // DIFFERENT acts landing on one week was not counted as a collision.
+    const byWeek = out.map(e => Number(e.episode));
+    expect(new Set(byWeek).size, `two theme acts share a week: ${byWeek}`).toBe(byWeek.length);
+
+    // Strictly increasing, and inside the season.
+    for (const [i, ep] of byWeek.entries()) {
+      expect(ep, `week ${ep} is outside a ${weeks}-week season`).toBeGreaterThanOrEqual(1);
+      expect(ep).toBeLessThanOrEqual(weeks);
+      if (i) expect(ep, 'the arc ran backwards').toBeGreaterThan(byWeek[i - 1]);
+    }
+
+    // What survived is a PREFIX-preserving subsequence of the authored running
+    // order: acts may be dropped when a short season has no room, never
+    // reordered. This is the assertion that fails if a `fromEnd` act ever
+    // overtakes a fixed one again.
+    let at = 0;
+    for (const type of out.map(e => e.type)) {
+      const found = ORDER.indexOf(type, at);
+      expect(found, `${type} arrived out of order at cast ${size}`).toBeGreaterThanOrEqual(0);
+      at = found + 1;
+    }
+  });
+
+  it.each(CASTS)('cast %i: the Den always opens the season', size => {
+    const out = themeScheduleEntries(THEME(), { weeks: size - 3, existing: [] });
+    expect(out.length, 'the arc booked nothing at all').toBeGreaterThan(0);
+    expect(out[0].type).toBe('bb-den-of-temptation');
+  });
+
+  it.each(CASTS)('cast %i: the Den hardens, and before the endgame', size => {
+    const weeks = size - 3;
+    // A fresh state per size, standing in for the season this cast would play.
+    gs.bb = { weeks: [], theme: { id: THEME().id, mood: 'neutral', booked: [], said: [] } };
+    let turned = 0;
+    for (let w = 1; w <= weeks; w++) {
+      advanceThemeArc(w, weeks);
+      if (!turned && themeState().mood === 'hostile') turned = w;
+    }
+    // Pinned to an absolute week 6 alone, this never fired below a nine-house
+    // cast: the mood stayed neutral for the whole run and half the authored
+    // voice plus the entire `is-hostile` reader styling were unreachable.
+    expect(turned, `the Den never turned on a ${weeks}-week season`).toBeGreaterThan(0);
+    expect(themeState().mood).toBe('hostile');
+
+    const de = themeScheduleEntries(THEME(), { weeks, existing: [] })
+      .find(e => e.type === 'bb-double-eviction');
+    if (de) expect(turned, 'it turned at or after the endgame').toBeLessThan(Number(de.episode));
+  });
+
+  // The engine-level guarantee, not this theme's: a week the user booked is
+  // still theirs, and refusing it must not let the NEXT act overtake it either.
+  it('never takes a week you booked yourself, at any size', () => {
+    for (const size of CASTS) {
+      const weeks = size - 3;
+      const mine = Array.from({ length: weeks }, (_, i) => (
+        { id: `mine-${i}`, episode: i + 1, type: 'bb-roadkill' }));
+      expect(themeScheduleEntries(THEME(), { weeks, existing: mine })).toEqual([]);
+      // And one week in the middle of the arc.
+      const one = [{ id: 'mine', episode: 3, type: 'bb-roadkill' }];
+      const out = themeScheduleEntries(THEME(), { weeks, existing: one });
+      expect(out.some(e => Number(e.episode) === 3), `cast ${size}`).toBe(false);
+    }
+  });
+});
+
 // ── the heel turn ──
 describe('the Den stops asking', () => {
   beforeEach(() => house());
@@ -230,6 +319,35 @@ describe('the Den has something to say every week', () => {
     expect(themeVoice('vote', { week: 4, evicted: null, hoh: null })).toBeNull();
   });
 
+  // The margin is the only token that reads something the HOUSE DID rather than
+  // a name it holds, and it is the only one a test can catch being wrong: the
+  // first version read `week.votes` as a ballot list when it is a tally, and
+  // every eviction in a played season was announced as "0-1". Confidently
+  // wrong, and completely invisible — a name token that misresolves is refused,
+  // a number that misresolves just prints.
+  it('reads the vote as the house would count it', () => {
+    house();
+    let seen = 0;
+    withSeededRandom(515, () => {
+      for (let w = 0; w < 6; w++) {
+        const ep = simulateBBEpisode();
+        if (!ep) break;
+        const week = gs.bb.weeks[gs.bb.weeks.length - 1];
+        for (const a of (ep.acts || [])) {
+          if (a.type !== 'theme-beat' || a.hook !== 'vote') continue;
+          const m = a.line.match(/(\d+)-(\d+)/);
+          if (!m) continue;
+          seen++;
+          const against = Number(m[1]), rest = Number(m[2]);
+          expect(against, `nobody was voted out ${against}-${rest}`).toBeGreaterThan(0);
+          expect(against).toBe(Number((week.votes || {})[week.evicted] || 0));
+          expect(against + rest).toBeLessThanOrEqual((week.houseAtStart || []).length);
+        }
+      }
+    });
+    expect(seen, 'no margin line ever drew — the token is unreachable').toBeGreaterThan(0);
+  });
+
   // The season's thesis, mechanised: the chair belongs to somebody who was
   // never in the room, and the Den is the only voice in the building that can
   // say so.
@@ -302,6 +420,36 @@ describe('the Den knows which house it is talking about', () => {
     gs.activePlayers = ['Bowie', 'Chase', 'Ripper'];
     const lines = sweep({ hoh: 'Bowie', nominees: ['Chase', 'Ripper'] });
     expect(lines.some(l => l.includes('Bowie'))).toBe(true);
+  });
+
+  // THE WIRING, not the function. Every test above calls `themeVoice` directly,
+  // and on the played path `options.house` and `gs.activePlayers` are the same
+  // list — so deleting the `house:` argument from `_themeSay` leaves all of
+  // them green. This is the one that goes red: the week engine is handed a
+  // roster that shares nobody with `gs.activePlayers`, which is the shape a
+  // Split House cycle has if its narrowing ever slips, and the Den must talk
+  // about the people actually in front of it.
+  it('is handed the week roster by the week engine, not the global one', () => {
+    const side = gs.activePlayers.slice(0, 6);
+    const other = gs.activePlayers.slice(6);
+    const week = withSeededRandom(77, () => {
+      gs.activePlayers = [...other];
+      try {
+        return simulateBBWeek({ house: [...side] });
+      } finally {
+        gs.activePlayers = [...side, ...other];
+      }
+    });
+    // `vote` is excluded: `{evicted}` is the one token with no roster guard —
+    // there is nothing to check it against — so a vote line names somebody
+    // whether or not the roster arrived, and counting it would make this test
+    // pass for the wrong reason.
+    const named = (week.acts || [])
+      .filter(a => a.type === 'theme-beat' && a.hook !== 'vote')
+      .filter(b => side.some(n => b.line.includes(n)));
+    expect(named.length,
+      'the Den named nobody on its own side — _themeSay stopped passing the week roster')
+      .toBeGreaterThan(0);
   });
 
   it('never names a houseguest who left in an earlier week', () => {

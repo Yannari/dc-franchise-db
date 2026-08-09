@@ -84,8 +84,9 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
   if (!theme) return [];
   const booked = (existing || []).filter(Boolean);
   const yours = new Set(booked.map(t => Number(t.episode)));
-  const seen = new Set();
   const out = [];
+  // The week the last theme act took. Everything below hangs off this.
+  let lastEp = 0;
   for (const act of theme.arc || []) {
     if (!act || !act.book) continue;
     // `fromEnd` counts back from the finale and is 1-indexed like `week` is:
@@ -95,9 +96,32 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
       : weeks - Number(act.at?.fromEnd ?? 1) + 1;
     if (!Number.isFinite(ep) || ep < 1 || ep > weeks) continue;
     if (yours.has(ep)) continue;
-    const key = `${ep}:${act.book}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    // ── THE ARC IS A RUNNING ORDER, NOT A SET OF INDEPENDENT PINS ──
+    //
+    // An arc mixes absolute weeks with `fromEnd` weeks, and the gap between
+    // them is the cast size. That is fine at the size the arc was written for
+    // and quietly wrong at every other: on an eleven-house season Summer of
+    // Temptation put the Den and Pandora's Box in the same week; on ten, the
+    // Den and the double eviction; on seven, the box landed in WEEK ONE. The
+    // old dedupe key was `episode:book`, so two DIFFERENT acts colliding on one
+    // week was not a collision at all. Nothing crashed — the authored
+    // escalation simply inverted, and the bill arrived before the offer.
+    //
+    // So an act is refused if its week is already spoken for, or if it would
+    // land on or before the act that is supposed to precede it. Authored order
+    // IS chronological order, guaranteed, for every theme and every cast size,
+    // rather than a convention each author has to re-derive by hand.
+    //
+    // REFUSED, never shifted. Moving a late act forward to the next free week
+    // is the tempting repair and it is wrong: the acts that collide on a short
+    // season are the `fromEnd` ones, and `fromEnd` exists precisely because
+    // those acts have a legal window — a double eviction below a house of six
+    // is refused by the engine outright. Pushed forward, it would not run late;
+    // it would not run. A season too short for the whole arc gets the front of
+    // it, in order, and is missing the tail, which is legible. A season with
+    // the tail on backwards is not.
+    if (ep <= lastEp) continue;
+    lastEp = ep;
     out.push({
       id: `th-${theme.id}-${ep}-${act.book}`,
       episode: ep,
@@ -216,6 +240,10 @@ function fillLine(tpl, ctx) {
   if (tpl.includes('{cursed}') && !inHouse(ctx.cursed, roster)) return null;
   if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n, roster)))) return null;
   if (tpl.includes('{evicted}') && !ctx.evicted) return null;
+  // Not a name — the shape of the count, e.g. "5-2". A line that reads the
+  // margin is reading something the HOUSE did, which is the register the
+  // antagonist is for; a line that reads a name is only a substitution.
+  if (tpl.includes('{margin}') && !ctx.margin) return null;
   const list = noms.length > 1
     ? `${noms.slice(0, -1).join(', ')} and ${noms[noms.length - 1]}`
     : (noms[0] || '');
@@ -225,6 +253,7 @@ function fillLine(tpl, ctx) {
     .replace(/\{veto\}/g, ctx.veto || '')
     .replace(/\{cursed\}/g, ctx.cursed || '')
     .replace(/\{nominees\}/g, list)
+    .replace(/\{margin\}/g, ctx.margin || '')
     .replace(/\{evicted\}/g, ctx.evicted || '');
 }
 

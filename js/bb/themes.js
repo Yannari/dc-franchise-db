@@ -20,6 +20,7 @@
 // by episode, twists by catalog id), so a Total Drama theme later needs content
 // rather than a second engine.
 import { gs, seasonConfig } from '../core.js';
+import { stableRng } from './knowledge.js';
 
 /** The accent the reader uses when a season has no theme. */
 export const DEFAULT_ACCENT = '#f0c040';
@@ -146,4 +147,86 @@ export function installTheme(houseSize) {
 
 export function themeState() {
   return gs?.bb?.theme || null;
+}
+
+const VOICE_HOOKS = ['open', 'noms', 'veto', 'vote'];
+
+/** The house, as the antagonist is allowed to know it. */
+function inHouse(name) {
+  return !!name && (gs.activePlayers || []).includes(name);
+}
+
+/**
+ * Fill a line's tokens, or refuse to.
+ *
+ * Returns null rather than a half-filled line if any name token resolves to
+ * somebody who is not in the house. An antagonist who taunts an evicted
+ * houseguest is worse than an antagonist who says nothing, and the alternative
+ * — trusting every caller to pass a live roster — is the bug we would find in
+ * a played season rather than a test.
+ */
+function fillLine(tpl, ctx) {
+  const noms = (ctx.nominees || []).filter(Boolean);
+  if (tpl.includes('{hoh}') && !inHouse(ctx.hoh)) return null;
+  if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n)))) return null;
+  if (tpl.includes('{evicted}') && !ctx.evicted) return null;
+  const list = noms.length > 1
+    ? `${noms.slice(0, -1).join(', ')} and ${noms[noms.length - 1]}`
+    : (noms[0] || '');
+  return tpl
+    .replace(/\{week\}/g, String(ctx.week ?? ''))
+    .replace(/\{hoh\}/g, ctx.hoh || '')
+    .replace(/\{nominees\}/g, list)
+    .replace(/\{evicted\}/g, ctx.evicted || '');
+}
+
+/** Move the antagonist's register. This is how a heel turn is expressed. */
+export function setThemeMood(mood) {
+  const st = themeState();
+  if (st) st.mood = mood;
+  return mood;
+}
+
+/**
+ * What the antagonist says at one of the four fixed points in a week.
+ *
+ * Seeded on theme + hook + week, so the same season replays with the same
+ * taunts and an extra unrelated die roll earlier in the week cannot change
+ * them.
+ */
+export function themeVoice(hook, ctx = {}) {
+  const theme = currentTheme();
+  const st = themeState();
+  if (!theme || !st) return null;
+  if (!VOICE_HOOKS.includes(hook)) return null;
+  const byMood = theme.antagonist?.voice?.[hook];
+  if (!byMood) return null;
+  const pool = byMood[st.mood] || byMood.neutral;
+  if (!pool || !pool.length) return null;
+  const rng = stableRng('theme-voice', theme.id, hook, st.mood, ctx.week || 0);
+  // Walk the pool from a seeded start so a refused line falls through to the
+  // next candidate instead of silencing the hook.
+  const start = Math.floor(rng() * pool.length);
+  for (let i = 0; i < pool.length; i++) {
+    const line = fillLine(pool[(start + i) % pool.length], ctx);
+    if (line) return { speaker: theme.antagonist.name, line, mood: st.mood, hook };
+  }
+  return null;
+}
+
+/** The same line, as an act the week can push and the transcripts can read. */
+export function themeBeat(hook, ctx = {}) {
+  const said = themeVoice(hook, ctx);
+  if (!said) return null;
+  return {
+    type: 'theme-beat',
+    hook: said.hook,
+    speaker: said.speaker,
+    line: said.line,
+    mood: said.mood,
+    themeId: currentTheme()?.id || null,
+    players: [],
+    badgeText: said.speaker,
+    badgeClass: 'badge-twist',
+  };
 }

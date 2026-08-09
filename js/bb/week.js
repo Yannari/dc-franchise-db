@@ -72,7 +72,7 @@ import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
-import { installTheme } from './themes.js';
+import { installTheme, themeBeat } from './themes.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -1095,6 +1095,12 @@ function _attachRomance(week, rng) {
   if (host) (host.socialBeats ||= []).push(...beats);
 }
 
+/** Push the antagonist's line for this point in the week, if it has one. */
+function _themeSay(week, hook, ctx) {
+  const beat = themeBeat(hook, { week: week.num, ...ctx });
+  if (beat) week.acts.push(beat);
+}
+
 export function simulateBBWeek(options = {}) {
   const rng = options.rng || Math.random;
   const hooks = options.hooks || {};
@@ -1150,6 +1156,8 @@ export function simulateBBWeek(options = {}) {
   // the pre-contract twists (instant/double eviction, have-nots) keep their
   // existing paths and are merely recorded here.
   week.twistState = resolveWeekTwistState(compressed ? [] : week.twists);
+
+  _themeSay(week, 'open', {});
 
   // ── the second game, if one is running ──
   //
@@ -2665,6 +2673,14 @@ export function simulateBBWeek(options = {}) {
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 
+  // `week.nominees` is NOT the block — it is written only by the cancelled-
+  // eviction branch, which sets it to []. The block as the ceremony left it is
+  // `initialNominees`, assigned a few hundred lines above this and rewritten by
+  // the Hacker below. Passing the field the brief named would have handed the
+  // antagonist an empty list and silenced every `{nominees}` line it owns.
+  _themeSay(week, 'noms', { hoh: week.hohSecret ? null : week.hoh,
+    nominees: week.initialNominees || week.nominees || [] });
+
   // ══════════════════════════════════════════════════════════════════
   // THE HACKER
   // ══════════════════════════════════════════════════════════════════
@@ -3683,6 +3699,9 @@ export function simulateBBWeek(options = {}) {
         saved: vetoDecision.save || null, replacement, used: !!vetoDecision.use }));
     revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
       saved: vetoDecision.save || null });
+
+    _themeSay(week, 'veto', { hoh: week.hohSecret ? null : week.hoh,
+      nominees: week.finalNominees || week.nominees || [] });
     // ── AFTER the ceremony, because it happens after the ceremony ──
     //
     // Pushed where it was computed, it rendered BEFORE the veto meeting it
@@ -4970,6 +4989,11 @@ export function simulateBBWeek(options = {}) {
       }
     } catch { week.haltingHex = null; }
   }
+
+  // AFTER the Hex, not after the eviction act. The Hex un-evicts somebody the
+  // house has already voted out and nulls `week.evicted`, so a line placed at
+  // the act would announce a departure that the very next card cancels.
+  _themeSay(week, 'vote', { evicted: week.evicted || null });
 
   gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
   if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);

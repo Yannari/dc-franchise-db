@@ -251,3 +251,94 @@ describe('theme arc install', () => {
     expect(seasonConfig.twistSchedule.filter(t => t.id === 'mine')).toHaveLength(1);
   });
 });
+
+import { themeVoice, setThemeMood, themeBeat } from '../js/bb/themes.js';
+
+const VOICED = {
+  id: 'voiced', name: 'Voiced', tagline: 't', house: 'bb-house',
+  palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+  antagonist: {
+    name: 'The Voice',
+    mood: 'neutral',
+    voice: {
+      open:  { neutral: ['Week {week}. Begin.'], hostile: ['Week {week}. Suffer.'] },
+      noms:  { neutral: ['{hoh} has chosen {nominees}.'] },
+      veto:  { neutral: ['The veto changes nothing.'] },
+      vote:  { neutral: ['{evicted} is gone.'] },
+    },
+  },
+  arc: [], books: [], weights: {}, bans: [], exclusive: [],
+};
+
+function voicedSeason() {
+  BB_THEMES.voiced = VOICED;
+  seasonConfig.format = 'big-brother';
+  seasonConfig.theme = 'voiced';
+  gs.bb = { weeks: [], theme: { id: 'voiced', mood: 'neutral', booked: [], said: [] } };
+  gs.activePlayers = ['Bowie', 'Chase', 'Ripper'];
+}
+
+describe('the antagonist', () => {
+  beforeEach(voicedSeason);
+  // THEME_LIST is a load-time snapshot, but the registry tests read BB_THEMES
+  // through it — so a test-only descriptor left behind would outlive the file
+  // it was written for.
+  afterEach(() => { delete BB_THEMES.voiced; });
+
+  it('speaks at every declared hook', () => {
+    const ctx = { week: 3, hoh: 'Bowie', nominees: ['Chase', 'Ripper'], evicted: 'Chase' };
+    for (const hook of ['open', 'noms', 'veto', 'vote']) {
+      const said = themeVoice(hook, ctx);
+      expect(said, hook).not.toBeNull();
+      expect(said.speaker).toBe('The Voice');
+      expect(said.line.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('fills the tokens with what actually happened', () => {
+    const said = themeVoice('noms', { week: 3, hoh: 'Bowie', nominees: ['Chase', 'Ripper'] });
+    expect(said.line).toBe('Bowie has chosen Chase and Ripper.');
+  });
+
+  it('never names somebody who is not in the house', () => {
+    const said = themeVoice('noms', { week: 3, hoh: 'Ghost', nominees: ['Chase'] });
+    expect(said).toBeNull();
+  });
+
+  it('says nothing at a hook the theme did not declare', () => {
+    expect(themeVoice('nonsense', { week: 1 })).toBeNull();
+  });
+
+  it('changes register with the mood', () => {
+    const calm = themeVoice('open', { week: 3 });
+    setThemeMood('hostile');
+    const cross = themeVoice('open', { week: 3 });
+    expect(calm.line).toBe('Week 3. Begin.');
+    expect(cross.line).toBe('Week 3. Suffer.');
+    expect(cross.mood).toBe('hostile');
+  });
+
+  it('falls back to neutral when a mood has no lines of its own', () => {
+    setThemeMood('hostile');
+    expect(themeVoice('veto', { week: 3 }).line).toBe('The veto changes nothing.');
+  });
+
+  it('is silent on an unthemed season', () => {
+    seasonConfig.theme = 'none';
+    gs.bb.theme = null;
+    expect(themeVoice('open', { week: 1 })).toBeNull();
+  });
+
+  it('is deterministic for the same week and hook', () => {
+    const ctx = { week: 5, hoh: 'Bowie', nominees: ['Chase'] };
+    expect(themeVoice('noms', ctx).line).toBe(themeVoice('noms', ctx).line);
+  });
+
+  it('wraps a line into an act the transcripts can read', () => {
+    const act = themeBeat('open', { week: 2 });
+    expect(act.type).toBe('theme-beat');
+    expect(act.hook).toBe('open');
+    expect(act.speaker).toBe('The Voice');
+    expect(act.players).toEqual([]);
+  });
+});

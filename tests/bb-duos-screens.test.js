@@ -325,3 +325,26 @@ describe('a two-duo ceremony reads as two duos', () => {
     expect(html, 'nobody was told they are collateral').toMatch(/is who I came for, and you are/);
   });
 });
+
+describe('the veto ceremony shows a pair coming down', () => {
+  it('stamps BOTH halves, not just the name on the medallion', () => {
+    // Reported: the screen stamped one face for a decision that moved four
+    // people, which tells the viewer the partner is still on that block.
+    const weeks = (gs.bb.weeks || []).filter(w => w.duoVetoSwap);
+    if (!weeks.length) return;
+    const html = (screensByLabel.get('Veto Ceremony') || []).map(sc => sc.html).join('');
+    expect(html, 'no veto ceremony was drawn').not.toBe('');
+    expect(html, 'the partner was not marked safe').toContain('DOWN WITH THEM');
+    expect(html, 'the replacement pair was drawn as a single stand-in').toContain('REPLACEMENT DUO');
+    expect(html, 'the meeting never said the rule out loud').toMatch(/the rule takes the pair/);
+  });
+
+  it('draws every name the ceremony moved', () => {
+    const week = (gs.bb.weeks || []).find(w => w.duoVetoSwap);
+    if (!week) return;
+    const html = (screensByLabel.get('Veto Ceremony') || []).map(sc => sc.html).join('');
+    for (const n of [...week.duoVetoSwap.down, ...week.duoVetoSwap.up]) {
+      expect(html, `${n} was moved by the veto and never drawn`).toContain(n);
+    }
+  });
+});

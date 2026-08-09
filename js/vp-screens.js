@@ -19534,10 +19534,21 @@ export function rpBuildBBCeremony(ep) {
   const saved = used ? act?.saved : null;
   const replacement = used ? (act?.replacement || null) : null;
   const finalNoms = (act?.nominees || []).filter(Boolean);
-  // The block as the meeting OPENS: swap the replacement back out.
-  const startNoms = replacement
-    ? finalNoms.map(n => n === replacement ? saved : n)
-    : [...finalNoms];
+  /* A DUOS VETO MOVES FOUR PEOPLE.
+     Saving one of a duo takes the other one down with them and a whole new duo
+     goes up, so the block the meeting opened with is the kept nominees plus
+     the pair that came off — not a single-name swap. Drawing it the old way
+     stamped one face, drew one replacement, and left the twist's own rule
+     invisible at the exact ceremony that enforces it. */
+  const duoDown = (act?.duoDown || []).filter(Boolean);
+  const duoUp = (act?.duoUp || []).filter(Boolean);
+  const duoVeto = used && duoDown.length === 2 && duoUp.length === 2;
+  // The block as the meeting OPENS: swap the replacement(s) back out.
+  const startNoms = duoVeto
+    ? [...finalNoms.filter(n => !duoUp.includes(n)), ...duoDown]
+    : replacement
+      ? finalNoms.map(n => n === replacement ? saved : n)
+      : [...finalNoms];
   const selfSave = used && saved === holder;
 
   const stateKey = `bb_vcer_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
@@ -19770,19 +19781,28 @@ export function rpBuildBBCeremony(ep) {
       </div>
     </div>`;
   const slots = startNoms.map(name => {
-    const savedNow = decided && used && name === saved;
-    return savedNow
-      ? cell(name, 'is-saved', 'VETOED · SAFE', '<div class="bbvc-stamp">VETO</div>')
-      : cell(name, 'is-nom', 'NOMINATED');
-  }).join('') + (replaced ? cell(replacement, 'is-repl', 'REPLACEMENT NOMINEE') : '');
+    // BOTH halves get the stamp. The medallion was used on one of them and the
+    // rule took the other one down beside them; a screen that marks only the
+    // named half is telling the viewer the partner is still on that block.
+    const savedNow = decided && used && (name === saved || (duoVeto && duoDown.includes(name)));
+    if (!savedNow) return cell(name, 'is-nom', 'NOMINATED');
+    const tag = duoVeto && name !== saved ? 'DOWN WITH THEM · SAFE' : 'VETOED · SAFE';
+    return cell(name, 'is-saved', tag, '<div class="bbvc-stamp">VETO</div>');
+  }).join('') + (duoVeto
+    ? duoUp.map(n => cell(n, 'is-repl', 'REPLACEMENT DUO')).join('')
+    : (replaced ? cell(replacement, 'is-repl', 'REPLACEMENT NOMINEE') : ''));
 
   const stage = `<div class="bbns-stage bbvc-stage ${decided ? (used ? 'is-used' : 'is-kept') : ''}">
-    <div class="bbns-screens" data-n="${startNoms.length + (replaced ? 1 : 0)}">${slots}</div>
+    <div class="bbns-screens" data-n="${startNoms.length + (duoVeto ? duoUp.length : (replaced ? 1 : 0))}">${slots}</div>
     <div class="bbvc-medalbox ${decided ? 'is-lit' : ''}">
       <span class="bbvc-medal">${MEDAL}</span>
       <span class="bbvc-medal-t">${decided ? (used ? 'VETO USED' : 'NOT USED') : (isDiamond ? 'DIAMOND VETO' : 'POWER OF VETO')}</span>
       <span class="bbvc-medal-s">${decided
-        ? (used ? `on ${_bbEsc(saved)}` : 'the nominations stand')
+        ? (used
+          ? (duoVeto
+            ? `on ${_bbEsc(saved)} — and the duo with ${pv(saved).obj}`
+            : `on ${_bbEsc(saved)}`)
+          : 'the nominations stand')
         : `${_bbEsc(holder || '')} holds it`}</span>
     </div>
   </div>`;
@@ -19813,11 +19833,14 @@ export function rpBuildBBCeremony(ep) {
           ? `<div class="bbns-card is-final bbvc-used">
               <div class="bbns-card-h">${_bbAvatar(holder, 30)}${saved !== holder ? _bbAvatar(saved, 30) : ''}<span class="bbns-pill green">VETO USED</span></div>
               <div class="bbns-card-b">${selfSave
-                ? `"...to use the Power of Veto on myself." <strong>${_bbEsc(holder)}</strong> takes ${pv(holder).posAdj} own face off the block, and cannot be renominated this week.`
+                ? `"...to use the Power of Veto on myself." <strong>${_bbEsc(holder)}</strong> takes ${pv(holder).posAdj} own face off the block, and cannot be renominated this week.${
+  duoVeto ? ` <span class="bbh-why">And ${_bbEsc(duoDown.find(n => n !== saved) || '')} comes down beside ${pv(holder).obj}. The medallion was used on one name; the rule takes the pair, and a whole new duo goes up there instead.</span>` : ''}`
                 : `"...to use the Power of Veto on <strong>${_bbEsc(saved)}</strong>." ${vvar([
                     `${_bbEsc(saved)} closes ${pv(saved).posAdj} eyes, exhales and steps away from the nomination chair.`,
                     `${_bbEsc(saved)} covers ${pv(saved).posAdj} mouth before crossing the room to hug ${_bbEsc(holder)}.`,
                     `${_bbEsc(saved)} nods once at ${_bbEsc(holder)} and moves off the block while the room recalculates.`,
+                  ], saved, holder, 'used')}${duoVeto ? ` <span class="bbh-why">And ${_bbEsc(
+    duoDown.find(n => n !== saved) || '')} comes down beside ${pv(saved).obj}. The medallion was used on one name; the rule takes the pair, and ${_bbEsc(holder)} now has to put a whole new duo up there.</span>` : ''}${vvar([
                     `${_bbEsc(saved)} is safe. Relief reaches ${pv(saved).posAdj} face before ${pv(saved).sub} can hide it.`,
                   ], saved, holder, 'saved')}`}</div></div>`
           : `<div class="bbns-card is-final bbvc-kept">

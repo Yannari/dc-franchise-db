@@ -3493,6 +3493,12 @@ export function simulateBBWeek(options = {}) {
     }
 
     week.acts.push(addBeats({ type: 'veto-ceremony', used: !!vetoDecision.use,
+      // A DUOS VETO TAKES TWO OFF AND PUTS TWO ON. Without these the ceremony
+      // screen stamped one face and drew one replacement for a decision that
+      // moved four people, so the twist's own rule was invisible at the
+      // ceremony that enforces it.
+      duoDown: week.duoVetoSwap ? [...week.duoVetoSwap.down] : null,
+      duoUp: week.duoVetoSwap ? [...week.duoVetoSwap.up] : null,
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority, anonymous: hohSecret && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,

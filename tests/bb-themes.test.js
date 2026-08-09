@@ -502,6 +502,37 @@ describe('the antagonist picking what to say', () => {
   });
 });
 
+import { summariseWeek } from '../js/bb-run.js';
+import { rpBuildBBThemeBeat } from '../js/vp-screens.js';
+
+describe('theme acts reach the audience', () => {
+  const week = {
+    num: 3, acts: [{
+      type: 'theme-beat', hook: 'open', speaker: 'The Voice',
+      line: 'Week 3. Begin.', mood: 'neutral', themeId: 'voiced',
+      players: [], badgeText: 'The Voice', badgeClass: 'badge-twist',
+    }],
+  };
+
+  it('writes the line into the week summary', () => {
+    // `summariseWeek` returns the finished transcript as one string — it joins
+    // its own lines. (The brief's draft called `.join` on the result.)
+    const text = summariseWeek(week);
+    // Attributed and quoted. The speaker heads its own block in caps, the same
+    // as every other heading this writer emits, so the match is on the name
+    // rather than on its casing.
+    expect(text).toMatch(/the voice/i);
+    expect(text).toContain('Week 3. Begin.');
+  });
+
+  it('builds a screen that shows the speaker and the line', () => {
+    const html = rpBuildBBThemeBeat({ episode: 3 }, week.acts[0]);
+    expect(html).toContain('The Voice');
+    expect(html).toContain('Week 3. Begin.');
+    expect(html).toContain('rp-page');
+  });
+});
+
 import { defaultConfig } from '../js/core.js';
 
 describe('theme config', () => {

@@ -1531,6 +1531,14 @@ export function summariseWeek(week) {
         if ((act.eliminatedForGood || []).length) line(`  Eliminated for good: ${act.eliminatedForGood.join(', ')}.`);
         break;
       }
+      // The antagonist. One sentence, attributed, with no beats under it —
+      // `themeBeat` pushes this act raw onto the week rather than through
+      // `addBeats`, so there is nothing here but the speaker and the line.
+      case 'theme-beat':
+        line('');
+        line(`${String(act.speaker || '').toUpperCase()}`);
+        line(`  "${act.line}"`);
+        break;
       case 'twist-announcement':
         line('');
         line('TWIST ANNOUNCEMENT');

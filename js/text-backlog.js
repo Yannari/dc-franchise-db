@@ -5496,6 +5496,13 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      // The antagonist, interrupting. No `beats(act)` call: this act carries a
+      // single `line` and never a `beats` array.
+      case 'theme-beat':
+        sec(String(act.speaker || '').toUpperCase());
+        ln(`  "${act.line}"`);
+        break;
+
       case 'twist-announcement':
         sec('TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');

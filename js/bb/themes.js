@@ -19,7 +19,7 @@
 // The descriptor carries no house vocabulary in its STRUCTURE (acts are indexed
 // by episode, twists by catalog id), so a Total Drama theme later needs content
 // rather than a second engine.
-import { seasonConfig } from '../core.js';
+import { gs, seasonConfig } from '../core.js';
 
 /** The accent the reader uses when a season has no theme. */
 export const DEFAULT_ACCENT = '#f0c040';
@@ -66,8 +66,6 @@ export function currentTheme() {
 export function themeAccent() {
   return currentTheme()?.palette?.accent || DEFAULT_ACCENT;
 }
-
-import { gs } from '../core.js';
 
 /**
  * The weeks a theme's arc lands on.
@@ -125,10 +123,18 @@ export function installTheme(houseSize) {
   if (gs.bb.theme) return gs.bb.theme;
   // A house loses one a week and ends at three.
   const weeks = Math.max(1, Number(houseSize || 0) - 3);
-  const entries = themeScheduleEntries(theme, {
-    weeks, existing: seasonConfig.twistSchedule || [],
-  });
-  seasonConfig.twistSchedule = [...(seasonConfig.twistSchedule || []), ...entries];
+  // The surrounding UI persists `seasonConfig.twistSchedule` between runs, so a
+  // second season started from a saved config opens with the FIRST season's
+  // theme bookings already sitting on it. Left in place they look exactly like
+  // weeks you booked yourself, the arc politely refuses to argue with them, and
+  // the theme ends up with an empty `booked` list while its twists run anyway —
+  // state that claims credit for nothing, which is the state Task 3's
+  // antagonist reads. So strip our own leavings first. That is what the
+  // `source` tag is for: nothing you booked is ever tagged, so nothing you
+  // booked is touched, and "a week you booked is yours" still holds after.
+  const yours = (seasonConfig.twistSchedule || []).filter(t => t?.source !== 'theme');
+  const entries = themeScheduleEntries(theme, { weeks, existing: yours });
+  seasonConfig.twistSchedule = [...yours, ...entries];
   gs.bb.theme = {
     id: theme.id,
     mood: theme.antagonist?.mood || 'neutral',

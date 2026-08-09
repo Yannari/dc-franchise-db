@@ -5,7 +5,7 @@
 // that matter are the ones that stop a theme from lying — booking a twist that
 // does not exist, binding to a venue the format does not have, or naming a
 // houseguest who is not in the house.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seasonConfig, TWIST_CATALOG } from '../js/core.js';
 import { settingsForFormat } from '../js/settings.js';
 import { BB_THEMES, THEME_LIST, themeById, currentTheme, themeAccent } from '../js/bb/themes.js';
@@ -184,5 +184,70 @@ describe('theme arc scheduler', () => {
     gs.bb = { weeks: [] };
     expect(installTheme(12)).toBeNull();
     expect(seasonConfig.twistSchedule).toEqual([]);
+  });
+});
+
+// The install tests above run against the only REGISTERED theme, whose arc is
+// empty until Task 7 writes one — so they prove only that install caches an
+// object. They would all still pass if the append to `twistSchedule` were
+// deleted outright. These run against a test-only descriptor with a real arc,
+// which is what actually holds the write down.
+describe('theme arc install', () => {
+  const INSTALLED = { ...FIXTURE, id: 'fixture-installed' };
+  const ALL_THREE = ['bb-have-nots', 'bb-pandoras-box', 'bb-double-eviction'];
+
+  beforeEach(() => {
+    BB_THEMES[INSTALLED.id] = INSTALLED;
+    setGs({ bb: { weeks: [] } });
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = INSTALLED.id;
+    seasonConfig.twistSchedule = [];
+  });
+  afterEach(() => { delete BB_THEMES[INSTALLED.id]; });
+
+  // A cast of 12 ends at three, so nine weeks — the arc's `fromEnd: 1` act
+  // lands on week 9.
+  it('writes the arc onto the season schedule for real', () => {
+    installTheme(12);
+    const mine = seasonConfig.twistSchedule.filter(t => t.source === 'theme');
+    expect(mine.map(t => [t.episode, t.type])).toEqual([
+      [2, 'bb-have-nots'],
+      [4, 'bb-pandoras-box'],
+      [9, 'bb-double-eviction'],
+    ]);
+    expect(mine.find(t => t.type === 'bb-pandoras-box').prize).toBe('diamond-veto');
+    expect(themeState().booked).toEqual(ALL_THREE);
+  });
+
+  it('does not book the arc a second time when install runs again', () => {
+    installTheme(12);
+    const before = JSON.stringify(seasonConfig.twistSchedule);
+    installTheme(12);
+    expect(JSON.stringify(seasonConfig.twistSchedule)).toBe(before);
+  });
+
+  // The UI persists `twistSchedule`, so season two opens with season one's
+  // theme entries already on it. Untagged, they would read as weeks the user
+  // booked, the arc would decline every one of them, and the theme would end up
+  // claiming credit for nothing while its twists ran regardless.
+  it('rebooks its own arc on a saved config instead of reading it as yours', () => {
+    seasonConfig.twistSchedule = [{ id: 'mine', episode: 2, type: 'bb-roadkill' }];
+    installTheme(12);
+    const saved = JSON.parse(JSON.stringify(seasonConfig.twistSchedule));
+    expect(themeState().booked).toEqual(['bb-pandoras-box', 'bb-double-eviction']);
+
+    // Season two: a fresh house, the same saved config.
+    setGs({ bb: { weeks: [] } });
+    seasonConfig.twistSchedule = saved;
+    installTheme(12);
+
+    const mine = seasonConfig.twistSchedule.filter(t => t.source === 'theme');
+    expect(mine.map(t => [t.episode, t.type])).toEqual([
+      [4, 'bb-pandoras-box'],
+      [9, 'bb-double-eviction'],
+    ]);
+    expect(themeState().booked).toEqual(['bb-pandoras-box', 'bb-double-eviction']);
+    // And the week the user booked is still theirs, exactly once.
+    expect(seasonConfig.twistSchedule.filter(t => t.id === 'mine')).toHaveLength(1);
   });
 });

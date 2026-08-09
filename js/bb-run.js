@@ -37,7 +37,7 @@ import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState } from './bb/twin-twist.js';
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
-import { installTheme, themeState, currentTheme } from './bb/themes.js';
+import { installTheme } from './bb/themes.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';

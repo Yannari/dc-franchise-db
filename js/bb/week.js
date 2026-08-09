@@ -72,6 +72,7 @@ import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
+import { installTheme } from './themes.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -5144,6 +5145,12 @@ export function simulateBBWeek(options = {}) {
 export function simulateBBSeason(options = {}) {
   const weeks = [];
   const finaleSize = options.finaleSize || 3;
+  // Headless and audit seasons come in here without ever calling
+  // `prepareHouse()`, so a theme installed only on the played path would leave
+  // this one silently running unthemed — the played-vs-headless divergence this
+  // codebase has been bitten by before. The install is idempotent, so both
+  // paths calling it is free.
+  try { installTheme((gs.activePlayers || []).length); } catch { /* the season plays unthemed */ }
   while ((gs.activePlayers || []).length > finaleSize) {
     weeks.push(simulateBBWeek(options));
   }

@@ -459,15 +459,31 @@ describe('the powers actually fire', () => {
   it('the Mystery Veto runs alone, and can be lost alone', async () => {
     const { playMysteryVeto } = await import('../js/bb/secret-power-plays.js');
     await arm('mystery-veto');
-    const won = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG, rng: () => 0.1 });
+    // A win is now a score above par rather than a lucky roll, so the roll only
+    // has to be a GOOD run rather than a winning one: `posted` is the holder's
+    // own number plus a swing, and par is what the room would have posted.
+    const won = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG, rng: () => 0.9 });
     expect(won).toBeTruthy();
     expect(won.won).toBe(true);
     expect(won.saves).toBe('ben');
 
+    // Losing is no longer an rng threshold — it is a score against a par, so a
+    // loss has to be EARNED by being worse than the room. `ben` is rebuilt weak
+    // and everybody else strong.
     await arm('mystery-veto');
-    const lost = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG, rng: () => 0.8 });
+    setPlayers(BIG.map(name => ({
+      name, archetype: 'floater', gender: 'f',
+      stats: {
+        physical: name === 'ben' ? 1 : 9, endurance: name === 'ben' ? 1 : 9,
+        mental: name === 'ben' ? 1 : 9, social: 5, strategic: 5, loyalty: 5,
+        boldness: 5, intuition: 5, temperament: name === 'ben' ? 1 : 9,
+      },
+    })));
+    const lost = playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: BIG,
+      library: [{ id: 'w', name: 'The Wall', types: ['veto'], stats: { endurance: 1 } }],
+      rng: () => 0.1 });
     expect(lost).toBeTruthy();
-    expect(lost.won, 'nobody was in the way and it was won anyway').toBe(false);
+    expect(lost.won, 'the worst player in the house beat the whole house').toBe(false);
     expect(lost.saves).toBe(null);
   });
 
@@ -738,5 +754,76 @@ describe('the interrogation is a scene, and a decision', () => {
     // Rooms remember accusations better than corrections.
     const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
     expect(src).toMatch(/addBond\(n, accused, -0\.5\)/);
+  });
+});
+
+describe('the second veto is an actual competition', () => {
+  // It said "beats it alone" and there was no competition anywhere: no name,
+  // no score, nothing to beat. The house was told somebody won something and
+  // the audience was asked to take it on faith.
+  const H = ['ana', 'ben', 'cleo', 'dev', 'eli', 'fay', 'gus', 'hana', 'iris', 'jo'];
+  const LIB = [{ id: 'wall', name: 'The Wall', types: ['veto'],
+    stats: { endurance: 0.6, temperament: 0.4 } }];
+  const seeded = seed => () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const run = async (over = {}) => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { playMysteryVeto } = await import('../js/bb/secret-power-plays.js');
+    setPlayers(H.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      stats: { physical: 7, endurance: 6, mental: 6, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 5 } })));
+    seasonConfig.jurySize = 3;
+    setGs({ bb: { powers: [], weeks: [], stats: {} }, activePlayers: [...H], bonds: {} });
+    grantPower('mystery-veto', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+    return playMysteryVeto({ week: { num: 3 }, nominees: ['ben', 'eli'], house: H,
+      library: LIB, rng: seeded(3), ...over });
+  };
+
+  it('plays a competition the season actually has', async () => {
+    const out = await run();
+    expect(out.competition, 'no competition was played at all').toBeTruthy();
+    expect(out.competition.name).toBe('The Wall');
+  });
+
+  it('has a number to beat and a number posted', async () => {
+    // Alone is not unopposed. The par is what this house would have posted
+    // between them, which is the only opponent out there.
+    const out = await run();
+    expect(typeof out.competition.par).toBe('number');
+    expect(typeof out.competition.posted).toBe('number');
+    expect(out.won).toBe(out.competition.posted >= out.competition.par);
+  });
+
+  it('says both numbers out loud', async () => {
+    const out = await run();
+    const text = out.beats.map(b => `${b.badgeText} ${b.text}`).join(' ');
+    expect(text).toContain(String(out.competition.par.toFixed(1)));
+    expect(text).toContain(String(out.competition.posted.toFixed(1)));
+    expect(text, 'the competition is never named').toContain('The Wall');
+  });
+
+  it('falls back to something rather than nothing', async () => {
+    // A season whose library has no veto competition still gets a scene.
+    const out = await run({ library: [] });
+    expect(out.competition.name.length).toBeGreaterThan(3);
+  });
+
+  it('holds a second ceremony when it is won', () => {
+    // A veto that is won has to be USED somewhere, in front of everybody, or it
+    // is a rule change announced by caption.
+    const src = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
+    const at = src.indexOf('playMysteryVeto({');
+    const block = src.slice(at, at + 2400);
+    expect(block, 'nothing is shown to the house').toMatch(/type: 'veto-ceremony'/);
+    expect(block, 'the second ceremony is not marked as one').toMatch(/second: true/);
+    // Rendered by the same screen as the first, because it IS a veto meeting.
+    expect(block).toMatch(/holder: solo\.holder/);
+  });
+
+  it('is handed the week\'s own competition library', () => {
+    const src = require('node:fs').readFileSync('js/bb/week.js', 'utf8');
+    expect(src).toMatch(/library: competitionLibrary \}\);/);
   });
 });

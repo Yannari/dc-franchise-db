@@ -331,40 +331,76 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
  * which is what makes it more than a self-save: it can take somebody else off
  * a block that was already settled.
  */
-export function playMysteryVeto({ week, nominees = [], house = [], rng = Math.random } = {}) {
+export function playMysteryVeto({ week, nominees = [], house = [], library = [],
+  rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('soloVetoComp', weekNum);
   if (!inst || !house.includes(inst.holder)) return null;
 
   // Spent when it is worth spending: on the block, or holding it on the last
-  // week it exists, or with somebody worth saving sitting there.
+  // week it exists, or with somebody worth saving already sitting there.
   const onBlock = nominees.includes(inst.holder);
   const expiring = weekNum >= inst.expiresAfterWeek;
   const pull = onBlock ? 0.92 : expiring ? 0.55 : 0.18;
   if (rng() > pull) return null;
 
   usePower(inst, weekNum);
-  const s = pStats(inst.holder) || {};
-  // Alone against the clock. Better players win more, and nobody wins always.
-  const skill = ((s.physical || 5) + (s.mental || 5) + (s.endurance || 5)) / 30;
-  const won = rng() < clamp(0.34 + skill * 0.5, 0.2, 0.85);
+
+  // ── an actual competition ──
+  //
+  // It said "beats it alone" and there was no competition anywhere: no name, no
+  // score, nothing to beat. The house was told somebody won something and the
+  // audience was asked to take it on faith.
+  //
+  // So a real one is drawn from the library the week is already using, and the
+  // holder plays it the way anybody plays it — their own stats against its own
+  // weights. What they are playing against is a PAR: what this house would
+  // typically have posted on it. Alone is not unopposed; it is a number to beat
+  // that nobody is standing in front of.
+  const eligible = (library || []).filter(c => c?.stats && (c.types || []).includes('veto'));
+  const comp = eligible.length
+    ? eligible[Math.floor(rng() * eligible.length)]
+    : { id: 'solo-veto', name: 'a course in the dark', stats: { physical: .4, mental: .3, endurance: .3 } };
+
+  const score = name => {
+    const st = pStats(name) || {};
+    return Object.entries(comp.stats || {})
+      .reduce((sum, [stat, weight]) => sum + (st[stat] || 0) * weight, 0);
+  };
+  const field = house.filter(n => n !== inst.holder);
+  const avg = field.length
+    ? field.reduce((sum, n) => sum + score(n), 0) / field.length
+    : 5;
+  // The bar is what the room would have done, minus a little — nobody is
+  // pushing them, and that cuts both ways.
+  const par = Math.round((avg * 0.94) * 10) / 10;
+  const posted = Math.round((score(inst.holder) + (rng() * 3 - 1.2)) * 10) / 10;
+  const won = posted >= par;
 
   const beats = [beat(
-    'The veto ceremony is over and this week was supposed to be settled. It is not: there is a '
-      + 'second competition out there tonight and exactly one person is allowed to play in it.',
+    'The veto ceremony is over and this week was supposed to be settled. It is not. There is a '
+      + `second competition in the yard tonight — ${comp.name} — and exactly one houseguest is `
+      + 'allowed to play in it.',
     [inst.holder], 'A SECOND VETO', 'gold')];
+  beats.push(beat(
+    `${inst.holder} plays it alone against the clock. The number to beat is ${par.toFixed(1)}: what `
+      + 'this house would have posted between them, which is the only opponent out there tonight.',
+    [inst.holder], 'ALONE, AGAINST A NUMBER', 'blue'));
   beats.push(won
-    ? beat(`${inst.holder} beats it alone, and walks back in holding a real veto on a block `
-      + 'everybody had already stopped thinking about.',
-    [inst.holder], 'WON ALONE', 'gold')
-    : beat(`${inst.holder} does not beat it. Nobody was standing in the way and it was still lost, `
-      + 'and the house now knows the power existed and did nothing.',
-    [inst.holder], 'LOST ALONE', 'red'));
+    ? beat(`${posted.toFixed(1)}. ${inst.holder} beats it, and walks back inside holding a real `
+      + 'veto on a block everybody had already stopped thinking about.',
+    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'gold')
+    : beat(`${posted.toFixed(1)}, against ${par.toFixed(1)}. Nobody was standing in the way and it `
+      + 'was still lost, and the house now knows the power existed and did nothing.',
+    [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'red'));
 
-  return { type: 'mystery-veto', holder: inst.holder, won,
+  return {
+    type: 'mystery-veto', holder: inst.holder, won,
+    competition: { id: comp.id, name: comp.name, posted, par },
     saves: won ? (onBlock ? inst.holder : nominees[0] || null) : null,
     ...shown(inst, 'veto-ceremony', won
-      ? 'A second veto, won alone, after the ceremony had already settled the week.'
-      : 'A competition with one player in it, and it was still lost.'),
-    beats };
+      ? `${inst.holder} beat ${comp.name} alone, ${posted.toFixed(1)} against a par of ${par.toFixed(1)}.`
+      : `${inst.holder} played ${comp.name} alone and lost it, ${posted.toFixed(1)} against ${par.toFixed(1)}.`),
+    beats,
+  };
 }

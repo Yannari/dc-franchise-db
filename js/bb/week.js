@@ -23,7 +23,7 @@ import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
-  duoSafeWith, duoReplacementBlock } from './duos.js';
+  duoSafeWith, duoReplacementBlock, duoKinLabel } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -2503,7 +2503,22 @@ export function simulateBBWeek(options = {}) {
     }
   });
 
+  /* THE CEREMONY HAS TO KNOW IT NOMINATED A DUO.
+     Without this the screen wrote two separate individual reasons — "there is
+     a group in this house and you are in it", then an unrelated grievance
+     against the other one — for a block the Head of Household did not choose
+     twice. They chose once. The second name came with the first, and a
+     ceremony that cannot say so makes the whole twist invisible on the night
+     it matters most. */
+  let duoNom = null;
+  if (week.duoNomination && week.duoNomination.every(n => nominees.includes(n))) {
+    try {
+      duoNom = { pair: [...week.duoNomination],
+        kin: duoKinLabel(week.duoNomination[0], week.duoNomination[1]) };
+    } catch { duoNom = { pair: [...week.duoNomination], kin: '' }; }
+  }
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    duo: duoNom,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,
     // Whose ceremony this was. On an ordinary week it is the week's only Head
@@ -3198,7 +3213,15 @@ export function simulateBBWeek(options = {}) {
       // Super Safety and the Co-HOH key cover the WEEK, so they cover this
       // chair too. The Cloud deliberately does not: it buys one ceremony, and
       // this is the ceremony it does not buy.
-      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
+      /* A GOLDEN KEY IS SAFETY FROM EVICTION, NOT FROM ONE CEREMONY.
+         The wiki: a key "guaranteed this houseguest a spot in the top ten and
+         immunity from all challenges and eviction". The nomination ceremony
+         honoured that because it reads `untouchable`; this list is built
+         separately and did not carry it, so a key holder could be seated in
+         the replacement chair and voted out the same night — reported from a
+         real season, one week after being handed the key. The crown's cover
+         for a Head of Household's partner goes in for the same reason. */
+      const protectedNames = [hoh, vetoWinner, vetoDecision.save, ...(week.botbSafe || []), carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...keySafe, ...duoCrownSafe, ...nominees.filter(name => name !== vetoDecision.save)].filter(Boolean);
       // The chooser reasons from their OWN plan. An HOH follows the week's
       // nomination plan; a diamond holder follows their own read of the house,
       // which is what makes the twist a hijacking rather than a formality.
@@ -3319,7 +3342,10 @@ export function simulateBBWeek(options = {}) {
     // thinking about.
     if (!compressed) {
       try {
-        const solo = playMysteryVeto({ week, nominees, house, rng });
+        const solo = playMysteryVeto({ week, nominees, house, rng,
+          // The same library the week's own competitions come from, so what
+          // gets played alone is a competition this season actually has.
+          library: competitionLibrary });
         if (solo) {
           week.mysteryVeto = solo;
           week.acts.push(addBeats(solo, { players: [solo.holder] }));
@@ -3328,13 +3354,32 @@ export function simulateBBWeek(options = {}) {
             week.mysteryVetoSaved = solo.saves;
             // The chair does not stay empty. Same authority as any other veto:
             // the Head of Household names who sits in it.
-            const eligible = house.filter(n => n !== hoh && n !== solo.holder
+            const pool = house.filter(n => n !== hoh && n !== solo.holder
               && !nominees.includes(n) && n !== solo.saves);
-            if (eligible.length) {
-              const replacement = eligible[Math.floor(rng() * eligible.length)];
+            let replacement = null;
+            if (pool.length) {
+              replacement = pool[Math.floor(rng() * pool.length)];
               nominees = [...nominees, replacement];
               week.mysteryVetoReplacement = replacement;
             }
+            // ── AND A SECOND CEREMONY ──
+            //
+            // A veto that is won has to be USED somewhere, in front of
+            // everybody, or it is a rule change announced by caption. The house
+            // is called back in and watches the block it had already accepted
+            // come apart — rendered by the same screen as the first ceremony,
+            // because that is exactly what it is: a veto meeting, held twice.
+            week.acts.push(addBeats({
+              type: 'veto-ceremony', used: true, saved: solo.saves, replacement,
+              holder: solo.holder, diamond: false, chairAuthority: 'hoh',
+              anonymous: false, second: true,
+              reason: 'a veto nobody knew existed until it was used',
+              why: `${solo.holder} won a second veto competition alone, after this ceremony had `
+                + 'already happened once.',
+              replacementWhy: replacement
+                ? `${hoh} has to fill a chair that was settled an hour ago.` : '',
+              nominees: [...nominees],
+            }, { players: [solo.holder, solo.saves, replacement].filter(Boolean) }));
           }
         }
       } catch { week.mysteryVeto = null; }
@@ -3487,7 +3532,8 @@ export function simulateBBWeek(options = {}) {
         continue;
       }
       const authority = extra.authority === 'veto-holder' ? extra.holder : hoh;
-      const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...savedThisWeek,
+      // Same rule, same reason — see the note on the first veto's chair.
+      const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...keySafe, ...duoCrownSafe, ...savedThisWeek,
         ...(week.botbSafe || []), carePackageProtects(week.carePackage),
         ...safetySuiteSafe(week.safetySuite),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
@@ -4267,8 +4313,24 @@ export function simulateBBWeek(options = {}) {
   if (!compressed) {
     try {
       const life = duosWeekLife(week, { house, rng });
-      if (life) week.acts.push(addBeats(life,
-        { players: [...new Set((life.events || []).flatMap(e => e.players))] }));
+      /* INTO HOUSE LIFE, NOT ONTO A SCREEN OF ITS OWN.
+         Three lines about who is carrying whom do not earn their own stop in
+         the viewing party, and putting them there fragmented the week: the
+         same kind of texture as every other camp beat, sitting in a separate
+         room with a roster of every pair in the house printed above it. They
+         go in the feed with the rest of the week's social beats, which is
+         where a reader is already looking for them. The standalone act
+         survives only for a week that has no House Life to fold into. */
+      if (life) {
+        const feed = [...week.acts].reverse()
+          .find(a => a?.type === 'house' && Array.isArray(a.socialBeats));
+        if (feed) feed.socialBeats.push(...(life.beats || []));
+        else {
+          week.acts.push(addBeats(life,
+            { players: [...new Set((life.events || []).flatMap(e => e.players))] }));
+        }
+        week.duosLife = life;
+      }
     } catch { /* the season plays without it */ }
   }
 

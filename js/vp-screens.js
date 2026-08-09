@@ -19044,7 +19044,17 @@ export function rpBuildBBDuosAnnouncement(ep, act) {
  * is the meeting around it, because there was no meeting: no speeches, no
  * pleading, no adjournment. Three cards and the wall.
  */
-export function rpBuildBBSecondVeto(ep, act) {
+/* NAMED FOR THE ACT IT DRAWS, NOT FOR "the second veto".
+   This was `rpBuildBBSecondVeto` — the same name js/vp-bb-second-veto.js
+   already exports for the Double Veto and the Secret Veto, which this file
+   imports at the top. A module cannot hold both an import and a function
+   declaration under one name: the import won at every call site inside this
+   file, so `case 'second-veto'` started calling THIS builder without its deps
+   and this case started calling THEIRS with an act it does not understand.
+   Both drew nothing, silently, and the only symptom was a screen of length
+   zero. Two people building a second veto in the same week is the collision;
+   the shared name is what made it invisible. */
+export function rpBuildBBMysteryVetoCeremony(ep, act) {
   if (!act) return '';
   const holder = act.holder;
   const removed = (act.removed || [act.saved]).filter(Boolean);
@@ -21516,7 +21526,7 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // what they share is "a secret power fired, and here is who knew".
       /* A VETO CEREMONY, SO IT GETS THE VETO CEREMONY'S STAGE — the slots, the
          stamps, the replacement chairs — without the meeting around it, because
-         there was no meeting. See rpBuildBBSecondVeto.
+         there was no meeting. See rpBuildBBMysteryVetoCeremony.
 
          ON ITS OWN, ABOVE THE FALL-THROUGH GROUP. Adding it to the bottom of
          that group captured all three labels above it: interrogation, the
@@ -21525,8 +21535,8 @@ function _bbCycleScreens(view, screens, suffix = '') {
          none of them changes. A switch case with no `break` is not a place to
          add a case. */
       case 'second-veto-ceremony':
-        screens.push({ id: id('bb-veto2'), label: 'The Second Veto',
-          html: rpBuildBBSecondVeto(view, act) });
+        screens.push({ id: id('bb-veto2'), label: 'The Mystery Veto Ceremony',
+          html: rpBuildBBMysteryVetoCeremony(view, act) });
         break;
       case 'interrogation':
       case 'mystery-competitor':

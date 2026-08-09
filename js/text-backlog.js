@@ -5296,23 +5296,39 @@ export function generateBBSummaryText(ep) {
           : `  ${act.guest} lost. ${act.holder} paid for a body in the draw and got exactly that.`);
         break;
 
-      case 'second-veto-ceremony':
+      /* BOTH OF THESE PARAPHRASED INSTEAD OF PRINTING.
+         Each wrote its own two-line summary of an act whose beats the viewing
+         party draws in full — which is exactly the shape the transcript guard
+         exists to catch: a case that LOOKS deliberate, reads fine on the page,
+         and quietly drops the prose the audience saw. The structure stays,
+         because a reader wants the block change stated plainly; the narration
+         goes underneath it. */
+      case 'second-veto-ceremony': {
         sec('THE SECOND VETO MEETING');
-        ln('  The house is called back in hours after the first meeting ended, and nobody has been');
-        ln(`  told why. ${act.holder} is holding a second veto, and ${act.saved} comes off a block`);
-        ln('  the whole house had already accepted.');
-        if (act.replacement) {
-          ln(`  ${act.replacement} takes the empty chair, which was settled an hour ago.`);
+        const down = (act.removed?.length ? act.removed : [act.saved]).filter(Boolean);
+        const up = (act.seated?.length ? act.seated : (act.replacement ? [act.replacement] : []))
+          .filter(Boolean);
+        ln(`  ${act.holder} is holding a second veto, and ${down.join(' and ')} `
+          + `${down.length > 1 ? 'come' : 'comes'} off a block the whole house had already accepted.`);
+        if (act.duoDown?.length) {
+          ln('  A duo came down, not a name — so a whole duo goes back up.');
         }
+        if (up.length) ln(`  ${up.join(' and ')} take the chairs, which were settled an hour ago.`);
+        else ln('  Nobody is eligible to fill the chair, so it stays empty.');
+        ln('');
+        beats(act);
         break;
+      }
 
       case 'mystery-veto':
         sec('THE MYSTERY VETO');
-        ln('  The ceremony was over and the week was supposed to be settled. It was not: a second');
-        ln(`  veto competition ran tonight with exactly one person allowed to play in it.`);
-        ln(act.won
-          ? `  ${act.holder} beat it alone.${act.saves ? ` ${act.saves} comes off a block everybody had stopped thinking about.` : ''}`
-          : `  ${act.holder} did not beat it. Nobody was standing in the way, and the house now knows the power existed and did nothing.`);
+        if (act.competition) {
+          ln(`  ${act.competition.name} — ${act.holder} posted `
+            + `${Number(act.competition.posted).toFixed(1)} against a par of `
+            + `${Number(act.competition.par).toFixed(1)}.`);
+        }
+        ln('');
+        beats(act);
         break;
 
       case 'secret-power-comp':

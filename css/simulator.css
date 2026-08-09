@@ -2830,6 +2830,36 @@
       opacity:.07;
       background: repeating-linear-gradient(135deg, rgba(240,192,64,.25) 0 2px, transparent 2px 20px); }
 
+    /* ── VP: per-SEASON theme skin (applied to #vp-screen-content as .rp-theme-<x>) ──
+       Stacked ON TOP of the venue skin above rather than replacing it: a themed
+       season is still in one of the four houses, so the venue keeps its ::before
+       motif and the theme paints its own ::after layer over it. Declared after
+       the venue block on purpose — the two accent rules have identical
+       specificity, so source order is what lets the season's palette win.
+       Scoped to .rp-page for the same reason the venue skin is: a twist screen
+       that brought its own visual identity must not have a season palette
+       painted over it. Add a theme by adding an .rp-theme-<id> block here. */
+    .rp-theme-summer-of-temptation { --theme-accent:#c02040; --theme-glow:#ff4d6d; }
+    /* retint the reader accent to the season accent, and own a stacking context */
+    [class*="rp-theme-"] .rp-page {
+      --accent-gold: var(--theme-accent, #f0c040);
+      position: relative; }
+    [class*="rp-theme-"] .rp-page::after {
+      content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+      background-size:cover; }
+    /* 🍒 summer of temptation — a red offer bleeding in from the corners */
+    .rp-theme-summer-of-temptation .rp-page::after {
+      opacity:.10;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(192,32,64,.45), transparent 42%),
+        radial-gradient(circle at 88% 100%, rgba(255,77,109,.32), transparent 46%);
+      animation: rpThemeTemptPulse 9s ease-in-out infinite; }
+    .rp-theme-summer-of-temptation .rp-page h1,
+    .rp-theme-summer-of-temptation .rp-page h2 { letter-spacing:.04em; }
+    @keyframes rpThemeTemptPulse { 0%,100% { opacity:.10; } 50% { opacity:.17; } }
+    @media (prefers-reduced-motion: reduce) {
+      [class*="rp-theme-"] .rp-page::after { animation:none; } }
+
     /* ── VP: Component classes ── */
     .vp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
     .vp-card.fire  { border-color: var(--accent-fire); }

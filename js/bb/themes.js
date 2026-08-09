@@ -40,7 +40,8 @@ import TEMPTATION from './themes-temptation.js';
  *
  * Themes are authored in code and picked in config; there is deliberately no
  * theme editor. Add one by writing its descriptor file, importing it above,
- * listing it here, and adding an `.rp-theme-<id>` CSS block in simulator.html.
+ * listing it here, and adding an `.rp-theme-<id>` CSS block in
+ * css/simulator.css (beside the `.rp-set-*` venue skin it stacks on).
  */
 export const BB_THEMES = {
   [TEMPTATION.id]: TEMPTATION,

@@ -32,7 +32,8 @@ import { fillTeam, runMission } from './team-america.js';
 import { runDenOfTemptation, resolveCurse } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
-import { playInterrogation, playMysteryCompetitor, playMysteryVeto } from './secret-power-plays.js';
+import { playInterrogation, playMysteryCompetitor, playMysteryVeto,
+  mysteryCompetitorResult } from './secret-power-plays.js';
 import { activeSeasons } from '../franchise-meta.js';
 import { applyVetoFallout } from './veto-fallout.js';
 import { DEFAULT_ROSTER } from '../roster-data.js';
@@ -3157,6 +3158,11 @@ export function simulateBBWeek(options = {}) {
             const roster = globalThis.FRANCHISE_ROSTER || DEFAULT_ROSTER || [];
             for (const r of roster) {
               if (!r?.name || house.includes(r.name)) continue;
+              // Chris and Chef have never played a season in their lives. They
+              // are on the roster because the cast builder needs their sheets,
+              // not because they are alumni of anything, and the door opened on
+              // Chef Hatchet as "somebody who has played this game before".
+              if (r.host) continue;
               alumni.push({ name: r.name, seasonName: null, stats: r.stats || null,
                 winner: false, finalist: false, chalWins: 0 });
             }
@@ -3188,6 +3194,15 @@ export function simulateBBWeek(options = {}) {
           // yard it draws is the yard that was out there.
           vetoDraw.guest = { name: mysteryGuest.guest, for: mysteryGuest.holder,
             displaced: mysteryGuest.displaced || null };
+          // ── AND THEY ACTUALLY PLAY IT ──
+          //
+          // They used to post a number against a par, in a private simulation
+          // running alongside the real competition. So the draw listed six
+          // players, the competition showed five, and the shelf at the end had
+          // no line for the person the whole twist is about. `pStats` falls
+          // back to the franchise roster now, which means an alumnus has a real
+          // stat sheet and can simply be entered like anybody else.
+          vetoPlayers = [...vetoPlayers, mysteryGuest.guest];
         }
       } catch { week.mysteryCompetitor = null; }
     }
@@ -3249,7 +3264,12 @@ export function simulateBBWeek(options = {}) {
     let vetoOrderOnly = null;
     let pendingExchangeAct = null;
     vetoPlayers = hook(hooks, 'vetoParticipants', vetoPlayers, { week, house, hoh, nominees: [...nominees] }) || vetoPlayers;
-    vetoPlayers = [...new Set(vetoPlayers)].filter(name => house.includes(name));
+    // The guest is the one legal exception. This line exists to stop a hook
+    // seating somebody who has been evicted, and it was also throwing out the
+    // alumnus one step after they were added — so the draw announced six
+    // players and the competition ran five, every time.
+    vetoPlayers = [...new Set(vetoPlayers)]
+      .filter(name => house.includes(name) || name === mysteryGuest?.guest);
     const vetoCompetition = runBBCompetition({ type:'veto', participants:vetoPlayers, excluded:house.filter(name => !vetoPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.veto, nominees, hoh, seed:options.seed, haveNots: week.haveNots || [] });
     const vetoResults = vetoCompetition.placements.map(name => ({ name, score:vetoCompetition.scores[name], threw:!!vetoCompetition.debug.scoreBreakdown[name]?.threw }));
     let vetoWinner = hook(hooks, 'vetoOutcome', vetoCompetition.winner, { week, results:vetoResults, competition:vetoCompetition, nominees: [...nominees] });
@@ -3297,9 +3317,20 @@ export function simulateBBWeek(options = {}) {
       } catch { week.prizeExchange = null; }
     }
 
-    // The alumnus won it, so it belongs to whoever paid for them to be there.
-    if (mysteryGuest?.vetoTo && house.includes(mysteryGuest.vetoTo)) {
-      vetoWinner = mysteryGuest.vetoTo;
+    // The alumnus played the real thing; the result is read off it rather than
+    // invented, and a win belongs to whoever paid for them to be there.
+    if (mysteryGuest?.guest) {
+      try {
+        mysteryCompetitorResult({ act: mysteryGuest, competition: vetoCompetition,
+          winner: vetoWinner });
+      } catch { /* the competition stands */ }
+      if (mysteryGuest.vetoTo && house.includes(mysteryGuest.vetoTo)) {
+        vetoWinner = mysteryGuest.vetoTo;
+      } else if (vetoWinner === mysteryGuest.guest) {
+        // They won and the person who summoned them is gone: the guest cannot
+        // hold a medallion in a house they do not live in.
+        vetoWinner = vetoCompetition.placements.find(n => house.includes(n)) || vetoWinner;
+      }
     }
     gs.bb.stats[vetoWinner].vetoWins++;
     week.vetoWinner = vetoWinner;

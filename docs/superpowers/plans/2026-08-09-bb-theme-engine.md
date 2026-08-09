@@ -1367,13 +1367,20 @@ export default {
   // two people take something for free, so a box that charges for it reads as
   // the season finally presenting a bill. It is also the distributor that can
   // put the Halting Hex in somebody's hands, which is the BB19 ending.
+  //
+  // `fromEnd` is 1-INDEXED: `{fromEnd: 1}` IS the final eviction week. The
+  // double eviction therefore CANNOT sit at 1 or 2 — the engine refuses it
+  // below a house of six, and the last weeks run 5, 4, 3. `fromEnd: 3` is the
+  // latest week it can actually fire, for any cast size: the house that week
+  // is always exactly six. Booking it later would not error, it would just
+  // silently never happen, which is worse.
   arc: [
     { at: { week: 2 }, book: 'bb-den-of-temptation' },
     { at: { week: 3 }, book: 'bb-have-nots' },
     { at: { week: 5 }, book: 'bb-den-of-temptation' },
     { at: { week: 6 }, mood: 'hostile' },
-    { at: { fromEnd: 3 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
-    { at: { fromEnd: 1 }, book: 'bb-double-eviction' },
+    { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
+    { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
   ],
 
   books: ['bb-den-of-temptation', 'bb-pandoras-box'],

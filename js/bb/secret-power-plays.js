@@ -457,41 +457,14 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   const drawn = players.filter(n => n !== inst.holder && n !== hoh && !nominees.includes(n));
   const displaced = drawn.length ? drawn[Math.floor(rng() * drawn.length)] : null;
 
-  const comp = comp0;
-  const scoreOf = name => {
-    const st = pStats(name) || {};
-    return Object.entries(comp.stats || {})
-      .reduce((sum, [stat, weight]) => sum + (st[stat] || 0) * weight, 0);
-  };
-  // ── two chances, which is the point of the power ──
-  //
-  // The wiki: it "doubles their chances at winning POV". The holder is still in
-  // this competition and can win it themselves in the ordinary way — this is a
-  // SECOND route, not a replacement for the first. So the number the guest has
-  // to beat is the rest of the yard, and the holder's own run is decided by the
-  // real competition exactly as it would have been.
-  const field = players.filter(n => n !== displaced && n !== inst.holder);
-  const best = field.length ? Math.max(...field.map(scoreOf)) : 5;
-  // The guest's own form, from their record rather than invented: a winner
-  // plays like a winner. Plus the same swing everybody else gets.
-  // Their form on THIS competition: the record they were picked for, plus real
-  // stats when the franchise actually has them.
-  const guestStats = statsOf(pick);
-  const guestFit = Object.entries(comp.stats || {})
-    .reduce((sum, [stat, w]) => sum + (guestStats[stat] || 0) * w, 0);
-  const form = guestFit + (pick?.winner ? 1.4 : 0) + (pick?.finalist ? 0.6 : 0)
-    + Math.min(2.2, (pick?.chalWins || 0) * 0.45);
-  const posted = Math.round((form + (rng() * 3 - 1.4)) * 10) / 10;
-  const bar = Math.round(best * 10) / 10;
-  const won = posted >= bar;
-
+  const compName = comp0?.name || 'the veto';
   const beats = [beat(
     'The veto draw stops. There is a name in the bag that does not belong to anybody in this '
       + `house, and the door opens for somebody who has played this game before: ${guest}`
       + `${pick?.seasonName ? `, out of ${pick.seasonName}` : ''}`
       + `${pick?.winner ? ', who won it' : pick?.finalist ? ', who sat at the end of it' : ''}.`,
-    [inst.holder], 'A NAME NOBODY EXPECTED', 'gold')];
-  // ── SHE IS A PERSON, NOT A DIE ROLL ──
+    [guest, inst.holder], 'A NAME NOBODY EXPECTED', 'gold')];
+  // ── THEY ARE A PERSON, NOT A DIE ROLL ──
   //
   // The whole scene was: a name comes out of the bag, somebody is bumped, a
   // number is posted. A former houseguest walking back through that door is one
@@ -500,45 +473,81 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   // a room with the person who paid to summon them.
   beats.push(beat(
     pickFrom(ANNOUNCE, rng)(guest, inst.holder, seasonOf(pick)),
-    [inst.holder], 'HOUSEGUESTS, TO THE LIVING ROOM', 'blue'));
+    [guest, inst.holder], 'HOUSEGUESTS, TO THE LIVING ROOM', 'blue'));
   beats.push(beat(
     pickFrom(ARRIVAL, rng)(guest, house, seasonOf(pick)),
-    [inst.holder], 'THE DOOR OPENS', 'gold'));
+    [guest, inst.holder], 'THE DOOR OPENS', 'gold'));
   if (displaced) {
     beats.push(beat(
       `${displaced} is out of the draw and did nothing to deserve it, which is the part nobody `
         + 'will be able to explain to them.',
-      [displaced], 'BUMPED', 'red'));
+      [displaced, guest], 'BUMPED', 'red'));
   }
   // The room they are put in together, which is the only place the transaction
   // is visible: one of them bought this and both of them know it.
   beats.push(beat(
-    pickFrom(HANDOFF, rng)(guest, inst.holder, comp.name),
-    [inst.holder], 'A QUIET WORD', 'blue'));
+    pickFrom(HANDOFF, rng)(guest, inst.holder, compName),
+    [guest, inst.holder], 'A QUIET WORD', 'blue'));
   beats.push(beat(
-    pickFrom(DIARY, rng)(guest, inst.holder, comp.name),
-    [inst.holder], 'DIARY ROOM', 'grey'));
-  beats.push(beat(
-    `${guest} plays ${comp.name} against the best of them. The number to beat is ${bar.toFixed(1)}.`,
-    [inst.holder], 'A STRANGER IN THE YARD', 'blue'));
-  beats.push(won
-    ? beat(`${posted.toFixed(1)}. ${guest} wins it and hands it straight to ${inst.holder}, who has `
-      + 'been on the block all week and is now not going anywhere. Somebody paid for that, weeks '
-      + 'ago, in private.',
-    [inst.holder], `${posted.toFixed(1)} v ${bar.toFixed(1)}`, 'gold')
-    : beat(`${posted.toFixed(1)}, against ${bar.toFixed(1)}. ${guest} loses, goes home again, and `
-      + `${inst.holder} has bought a body in the draw and nothing else.`,
-    [inst.holder], `${posted.toFixed(1)} v ${bar.toFixed(1)}`, 'red'));
+    pickFrom(DIARY, rng)(guest, inst.holder, compName),
+    [guest, inst.holder], 'DIARY ROOM', 'grey'));
 
   return {
     type: 'mystery-competitor', holder: inst.holder, guest, displaced,
-    competition: { id: comp.id, name: comp.name, posted, bar },
-    won, vetoTo: won ? inst.holder : null,
-    ...shown(inst, 'veto-ceremony', won
-      ? `${guest} won the veto on ${inst.holder}'s behalf, ${posted.toFixed(1)} against ${bar.toFixed(1)}.`
-      : `${guest} played for ${inst.holder} and lost it, ${posted.toFixed(1)} against ${bar.toFixed(1)}.`),
+    // Filled in by `mysteryCompetitorResult` once the REAL competition has run.
+    competition: null, won: null, vetoTo: null,
+    ...shown(inst, 'veto-ceremony',
+      `${guest} walked back into the house and took a veto spot on ${inst.holder}'s behalf.`),
     beats,
   };
+}
+
+/**
+ * How it went — read off the competition everybody else played.
+ *
+ * The guest used to post a number against a PAR, in a private simulation
+ * alongside the real thing. The draw screen listed six players and the
+ * competition screen showed five, because the sixth was never in it: a name in
+ * the yard with no run, no score, and no place on the shelf at the end.
+ *
+ * They are a participant now. `pStats` falls back to the franchise roster, so
+ * an alumnus has the stat sheet the franchise says they have and is scored by
+ * exactly the same engine as the houseguests. Winning hands the medallion to
+ * the person who paid for them — which is the power — and losing is a real
+ * loss to a real room.
+ */
+export function mysteryCompetitorResult({ act, competition, winner } = {}) {
+  if (!act?.guest) return null;
+  const { guest, holder } = act;
+  const scores = competition?.scores || {};
+  const mine = Number(scores[guest]);
+  const best = Math.max(...Object.entries(scores)
+    .filter(([n]) => n !== guest).map(([, v]) => Number(v) || 0), 0);
+  const won = winner === guest;
+  const name = competition?.name || 'the competition';
+  const score = Number.isFinite(mine) ? mine.toFixed(1) : '—';
+  const bar = best ? best.toFixed(1) : '—';
+
+  act.competition = { id: competition?.id || null, name, posted: Number.isFinite(mine) ? mine : null,
+    bar: best || null };
+  act.won = won;
+  act.vetoTo = won ? holder : null;
+  act.detail = won
+    ? `${guest} won the veto on ${holder}'s behalf, ${score} against ${bar}.`
+    : `${guest} played for ${holder} and lost it, ${score} against ${bar}.`;
+
+  const beats = [beat(
+    `${guest} plays ${name} against the whole room, and is scored like anybody else out there.`,
+    [guest, holder], 'A STRANGER IN THE YARD', 'blue')];
+  beats.push(won
+    ? beat(`${score}. ${guest} wins it and hands it straight to ${holder}, who has been on the `
+      + 'block all week and is now not going anywhere. Somebody paid for that, weeks ago, in private.',
+    [guest, holder], `${score} v ${bar}`, 'gold')
+    : beat(`${score}, against ${bar}. ${guest} loses, goes home again, and ${holder} has bought a `
+      + 'body in the draw and nothing else.',
+    [guest, holder], `${score} v ${bar}`, 'red'));
+  act.beats = [...(act.beats || []), ...beats];
+  return act;
 }
 
 /**

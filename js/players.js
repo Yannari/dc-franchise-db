@@ -1,5 +1,6 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
+import { DEFAULT_ROSTER } from './roster-data.js';
 // threatScore and isAllianceBottom read bonds, and read them as a BARE
 // identifier — which worked only because main.js hangs every export on window
 // for the onclick handlers, so `getBond` happened to resolve in a browser. Off
@@ -179,7 +180,22 @@ export function miniAvatar(name, size = 28) {
 
 export function pStats(name) {
   const p = players.find(p=>p.name===name);
-  return p?.stats ? { ...DEFAULT_STATS, ...p.stats } : { ...DEFAULT_STATS };
+  if (p?.stats) return { ...DEFAULT_STATS, ...p.stats };
+  // ── somebody who is not in this cast but IS in this franchise ──
+  //
+  // A returning alumnus walking into a competition for one afternoon is not a
+  // houseguest and never will be, so they are not in `players` — and every stat
+  // read about them therefore came back as a flat sheet of fives. That is why
+  // the Mystery Competitor could not simply be entered into the veto like
+  // anybody else: the engine had nothing to score them with, so their run had
+  // to be faked alongside the real competition, and the draw ended up listing
+  // six players for a competition that showed five.
+  //
+  // The roster is the franchise's own record of who these people are. Falling
+  // back to it is strictly better than five-across-the-board.
+  const r = DEFAULT_ROSTER.find(r => r.name === name);
+  if (r?.stats) return { ...DEFAULT_STATS, ...r.stats };
+  return { ...DEFAULT_STATS };
 }
 
 export function threatScore(name, detailed) {

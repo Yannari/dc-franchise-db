@@ -501,7 +501,10 @@ describe('the powers actually fire', () => {
     expect(src).toMatch(/playMysteryVeto\(\{/);
     // And the results are acted on, not just narrated.
     expect(src, 'the usurper never actually becomes HOH').toMatch(/hoh = usurp\.hoh/);
-    expect(src, 'the alumnus wins and the veto goes nowhere').toMatch(/mysteryGuest\?\.vetoTo/);
+    // Read off the REAL competition now, rather than a private simulation.
+    expect(src, 'the alumnus wins and the veto goes nowhere').toMatch(/mysteryCompetitorResult\(\{/);
+    expect(src, 'the guest is announced and then never enters the yard')
+      .toMatch(/vetoPlayers = \[\.\.\.vetoPlayers, mysteryGuest\.guest\]/);
     // Was pinned to the exact filter expression, which broke the moment the
     // second veto learned to take a whole duo down instead of one name. The
     // record it writes is the stabler contract: it is only ever set on the
@@ -973,17 +976,40 @@ describe('the mystery competitor is a real alumnus, in a real draw', () => {
     // win it themselves. This is a SECOND route, not a replacement.
     const out = await run();
     expect(out.displaced, 'the power bumped the person who paid for it').not.toBe('ben');
-    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
-    expect(src).toMatch(/const field = players\.filter\(n => n !== displaced && n !== inst\.holder\)/);
   });
 
-  it('actually competes instead of flipping a coin', async () => {
+  it('is scored by the real competition, not beside it', async () => {
+    // The guest used to post a number against a PAR in a private simulation
+    // running alongside the real thing — so the draw screen listed six players,
+    // the competition screen showed five, and the shelf at the end had no line
+    // for the person the whole twist is about.
+    //
+    // This used to grep for `const field = players.filter(...)`, which is the
+    // fault it was written to catch, in test form: it pinned the private
+    // simulation in place and would have failed on the fix.
+    const { mysteryCompetitorResult } = await import('../js/bb/secret-power-plays.js');
     const out = await run();
-    expect(out.competition, 'no competition behind the result').toBeTruthy();
+    expect(out.competition, 'a result existed before the competition had run').toBeNull();
+
+    // The engine hands it the finished competition. A win belongs to whoever
+    // paid for them to be there.
+    mysteryCompetitorResult({ act: out, winner: out.guest,
+      competition: { id: 'the-wall', name: 'The Wall', scores: { [out.guest]: 8.2, ben: 6.1, cleo: 5.4 } } });
+    expect(out.won).toBe(true);
+    expect(out.vetoTo).toBe('ben');
     expect(out.competition.name).toBe('The Wall');
-    expect(out.won).toBe(out.competition.posted >= out.competition.bar);
-    const text = out.beats.map(b => b.text).join(' ');
-    expect(text).toContain(out.competition.bar.toFixed(1));
+    expect(out.competition.posted).toBe(8.2);
+    expect(out.beats.map(b => b.text).join(' ')).toContain('8.2');
+  });
+
+  it('loses it to the room like anybody else', async () => {
+    const { mysteryCompetitorResult } = await import('../js/bb/secret-power-plays.js');
+    const out = await run();
+    mysteryCompetitorResult({ act: out, winner: 'cleo',
+      competition: { id: 'the-wall', name: 'The Wall', scores: { [out.guest]: 3.1, ben: 6.1, cleo: 9.9 } } });
+    expect(out.won).toBe(false);
+    expect(out.vetoTo).toBeNull();
+    expect(out.beats.map(b => b.text).join(' ')).toContain('9.9');
   });
 
   it('picks for the competition, not for fame', async () => {

@@ -805,3 +805,80 @@ describe('a played season with two duos up', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// What a nomination costs the person who made it
+// ══════════════════════════════════════════════════════════════════════
+//
+// It used to cost nothing. The only fallout was for a BROKEN PROMISE — put
+// somebody up after shaking on their safety and it cost a deal, a bond and a
+// target; put up somebody you had never promised anything and the relationship
+// layer did not move at all. The most public act in the format was free.
+//
+// It is priced in TRUST now: a nomination is a betrayal only to the extent
+// there was something to betray.
+describe('the price of a nomination', () => {
+  function playUntilNomFallout(seed, cfg = {}) {
+    house();
+    Object.assign(seasonConfig, { bbDuos: 'on', bbDuosKeyAt: 10, ...cfg });
+    withSeededRandom(seed, () => {
+      let guard = 0;
+      while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+    });
+    return (gs.bb.weeks || []).flatMap(w => w.nomFallout || []);
+  }
+
+  it('charges for it at all', () => {
+    const all = [1, 5, 17].flatMap(s => playUntilNomFallout(s));
+    expect(all.length, 'no nomination ever cost anybody anything').toBeGreaterThan(5);
+    for (const f of all) expect(f.hit).toBeLessThan(0);
+  });
+
+  it('costs more the more trust there was to break', () => {
+    // THE RULE: putting up somebody you have never spoken to is nearly free.
+    // Putting up the person who has voted with you for six weeks costs you
+    // that person.
+    const all = [1, 5, 17, 41].flatMap(s => playUntilNomFallout(s));
+    const trusted = all.filter(f => f.treason >= 0.4);
+    const strangers = all.filter(f => f.treason <= 0.05);
+    if (!trusted.length || !strangers.length) return;   // seeds did not produce both
+    const mean = list => list.reduce((s, f) => s + Math.abs(f.hit), 0) / list.length;
+    expect(mean(trusted), 'betraying an ally cost no more than nominating a stranger')
+      .toBeGreaterThan(mean(strangers) * 1.5);
+  });
+
+  it('never charges the pawn, whose conversation is priced elsewhere', () => {
+    // Being asked to sit down is its own economy: agreeing earns bond, refusing
+    // costs it, being seated after saying no costs more. A second charge on top
+    // would price the same conversation twice.
+    for (const seed of [1, 5, 17, 41]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'off' });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      for (const w of gs.bb.weeks || []) {
+        const pawn = w.pawnAsk?.pawn || w.plan?.pawn;
+        if (!pawn) continue;
+        expect((w.nomFallout || []).map(f => f.nominee),
+          `${pawn} was charged for sitting in the pawn chair`).not.toContain(pawn);
+      }
+    }
+  });
+
+  it('makes the dragged half resent their partner, not just the crown', () => {
+    // The consequence that only exists in this season: you are on that block
+    // because of who you walked in with, and somebody wears it.
+    const all = [1, 5, 17, 41].flatMap(s => playUntilNomFallout(s));
+    const dragged = all.filter(f => f.kind === 'dragged');
+    expect(dragged.length, 'nobody was ever dragged up by a partner').toBeGreaterThan(0);
+    for (const f of dragged) {
+      expect(f.strain, 'being dragged onto the block cost the pair nothing').toBeLessThan(0);
+      expect(f.partner).toBeTruthy();
+      // And the crown pays less for the half it did not choose than for the
+      // half it did.
+      expect(Math.abs(f.hit)).toBeLessThan(2.2);
+    }
+  });
+});

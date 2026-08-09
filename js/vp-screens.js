@@ -19792,6 +19792,14 @@ export function rpBuildBBCeremony(ep) {
     ? duoUp.map(n => cell(n, 'is-repl', 'REPLACEMENT DUO')).join('')
     : (replaced ? cell(replacement, 'is-repl', 'REPLACEMENT NOMINEE') : ''));
 
+  // The one mark that belongs to the Duos twist, on the ceremony that enforces it.
+  const DUO_CSS = duoVeto ? `<style>
+    .bbns .bbduo-chain{position:relative;display:inline-block;width:22px;height:10px;margin:0 2px;}
+    .bbns .bbduo-chain::before,.bbns .bbduo-chain::after{content:'';position:absolute;top:0;
+      width:12px;height:10px;border:2px solid rgba(240,165,0,.75);border-radius:5px;}
+    .bbns .bbduo-chain::before{left:0;}
+    .bbns .bbduo-chain::after{right:0;}
+  </style>` : '';
   const stage = `<div class="bbns-stage bbvc-stage ${decided ? (used ? 'is-used' : 'is-kept') : ''}">
     <div class="bbns-screens" data-n="${startNoms.length + (duoVeto ? duoUp.length : (replaced ? 1 : 0))}">${slots}</div>
     <div class="bbvc-medalbox ${decided ? 'is-lit' : ''}">
@@ -19857,6 +19865,13 @@ export function rpBuildBBCeremony(ep) {
             ? `${_bbEsc(hoh)} built this block, and for the first time all week, cannot protect it.`
             : `And since ${_bbEsc(holder)} is the Head of Household, the power stays exactly where it already was.`}</div></div>`;
       case 'handover':
+        if (duoVeto) {
+          return `<div class="bbns-card is-open">
+            <div class="bbns-card-h">${_bbAvatar(holder, 30)}${namer ? _bbAvatar(namer, 30) : ''}<span class="bbns-pill gold">THE HANDOVER</span></div>
+            <div class="bbns-card-b">"<strong>${_bbEsc(namer)}</strong>, since I have just taken a
+              whole duo off your block, you must name a replacement DUO." Two chairs, one decision,
+              and ${_bbEsc(namer)} has about four seconds to make it.</div></div>`;
+        }
         return (act?.anonymous && !isDiamond)
           ? `<div class="bbns-card is-key">
               <div class="bbns-card-h">${_bbAvatar(holder, 30)}<span class="bbns-pill red">THE EMPTY CHAIR SPEAKS</span></div>
@@ -19893,7 +19908,22 @@ export function rpBuildBBCeremony(ep) {
                 `The relief around ${_bbEsc(saved)} becomes panic everywhere else.`,
                 `${_bbEsc(hoh)} stands while the eligible houseguests avoid eye contact.`,
               ], hoh, replacement, 'handover')}</div></div>`;
-      case 'replacement':
+      case 'replacement': {
+        /* NAME THE PAIR THAT IS ACTUALLY UP THERE.
+           The ordinary ceremony picks ONE stand-in and the duo rule overrules
+           it for a whole pair — and this card was still reading out the
+           overruled name. Reported from a real week: "Julia, take a seat" on
+           a night whose replacements were Priya and Raj, with the adjournment
+           two cards later naming Priya and Raj. */
+        if (duoVeto && duoUp.length === 2) {
+          const [r1, r2] = duoUp;
+          return `<div class="bbns-card is-final">
+            <div class="bbns-card-h">${namer ? _bbAvatar(namer, 30) : ''}${_bbAvatar(r1, 30)}<span class="bbduo-chain"></span>${_bbAvatar(r2, 30)}<span class="bbns-pill red">REPLACEMENT DUO</span></div>
+            <div class="bbns-card-b">${_bbEsc(namer)} stands. "<strong>${_bbEsc(r1)}</strong>,
+              <strong>${_bbEsc(r2)}</strong> — take a seat." Two chairs came empty and two have to be
+              filled, so naming one of them named the other, and neither of them found out from
+              ${_bbEsc(namer)}.${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}</div></div>`;
+        }
         if (act?.anonymous && !isDiamond) {
           return `<div class="bbns-card is-final">
             <div class="bbns-card-h">${_bbAvatar(replacement, 30)}<span class="bbns-pill red">REPLACEMENT NOMINEE</span></div>
@@ -19907,6 +19937,7 @@ export function rpBuildBBCeremony(ep) {
             `${_bbEsc(replacement)} nods at ${_bbEsc(namer)} and takes the empty seat with every camera following.`,
             `${pv(replacement).Sub} ${pv(replacement).sub === 'they' ? 'say' : 'says'}, “Got it,” though nothing about ${pv(replacement).posAdj} face looks settled.`,
           ], replacement, namer, 'replacement')}${act?.replacementWhy ? `<span class="bbh-why">${act.replacementWhy}</span>` : ''}</div></div>`;
+      }
       case 'adjourn':
         return `<div class="bbns-card is-final bbvc-adjourn">
           <div class="bbns-card-h">${_bbAvatar(holder, 30)}${finalNoms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">ADJOURNED</span></div>

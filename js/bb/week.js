@@ -2553,8 +2553,89 @@ export function simulateBBWeek(options = {}) {
     };
     try { duoNom.kin = duoKinLabel(blocks[0][0], blocks[0][1]); } catch { duoNom.kin = ''; }
   }
+
+  /* ── WHAT BEING PUT UP ACTUALLY COSTS ──
+     Until now: nothing. The only fallout from a nomination was for a BROKEN
+     PROMISE — put somebody up after shaking on their safety and it cost a deal,
+     a bond and a target. Put up somebody you had never promised anything and
+     the relationship layer did not move at all, which made the most public act
+     in the format free.
+
+     IT IS PRICED IN TRUST, NOT IN CHAIRS. A nomination is only a betrayal to
+     the extent there was something to betray: putting up somebody you have
+     never spoken to costs a Head of Household almost nothing, and putting up
+     the person who has voted with them for six weeks costs them that person.
+     So the size of the hit comes from the bond that already existed, and it
+     lands on both of them, because bonds here are symmetric — the crown pays
+     for what it spends.
+
+     THE PAWN IS NOT IN THIS. Sitting somebody down and asking them to take a
+     chair is its own economy and already has one: agreeing earns bond, being
+     asked and refusing costs it, being seated after saying no costs more. A
+     second charge on top would price the same conversation twice. */
+  week.nomFallout = [];
+  const askedPawn = week.pawnAsk?.pawn || null;
+  for (const nominee of nominees) {
+    if (!nominee || nominee === hoh) continue;
+    // A broken promise already cost more than this, and worse.
+    if ((week.brokenPromises || []).some(b => b.victim === nominee)) continue;
+    // The pawn's conversation was already priced. See above.
+    if (nominee === askedPawn || (plan.pawn === nominee && plan.target !== nominee)) continue;
+
+    const collateral = duoNom && duoNom.blocks.some((p, i) =>
+      p.includes(nominee) && duoNom.targets[i] !== nominee);
+    const isTarget = plan.target === nominee || plan.backdoorTarget === nominee;
+
+    let prior = 0, temper = 5;
+    try { prior = getBond(nominee, hoh) || 0; } catch { prior = 0; }
+    try { temper = pStats(nominee)?.temperament ?? 5; } catch { temper = 5; }
+    // Only trust can be betrayed. Somebody who already disliked them has
+    // nothing left to lose and reads the chair as confirmation.
+    const treason = Math.max(0, prior) / 10;
+    const weight = 0.3 + treason * 1.7;
+    const takesItHard = 0.6 + (10 - temper) * 0.08;
+    // The half nobody chose takes the least — they were told out loud it was
+    // not about them — and the target takes the most.
+    const base = collateral ? 0.5 : isTarget ? 1.6 : 1.0;
+    const hit = -base * weight * takesItHard;
+    try { _cappedBondWindow(() => addBond(nominee, hoh, hit)); } catch { /* no bond, no grievance */ }
+
+    /* AND THE PART THAT ONLY EXISTS IN THIS SEASON.
+       You are on that block because of who you walked in with. Somebody wears
+       that, and it is not the Head of Household — it is your partner. Loyalty
+       decides whether it gets worn quietly. */
+    if (collateral) {
+      const pairOf = duoNom.blocks.find(p => p.includes(nominee));
+      const partner = pairOf?.find(n => n !== nominee);
+      let loyal = 5;
+      try { loyal = pStats(nominee)?.loyalty ?? 5; } catch { loyal = 5; }
+      const strain = -(0.5 + (10 - loyal) * 0.11) * takesItHard;
+      if (partner) {
+        try { _cappedBondWindow(() => addBond(nominee, partner, strain)); } catch { /* texture */ }
+      }
+      week.nomFallout.push({ nominee, hoh, hit, partner, strain, treason, kind: 'dragged' });
+      continue;
+    }
+
+    /* A BETRAYAL BUYS AN ENEMY. THE OTHER KIND BUYS A CHAIR.
+       Being nominated by somebody you trusted is what makes a houseguest come
+       back for the person who did it — and it takes both halves: enough of a
+       relationship to have been broken, and enough game in them to answer it. */
+    let bold = 5, strategic = 5;
+    try { bold = pStats(nominee)?.boldness ?? 5; strategic = pStats(nominee)?.strategic ?? 5; } catch { /* defaults */ }
+    if ((isTarget || treason >= 0.4) && (bold + strategic) / 2 >= 5) {
+      try {
+        setBBTarget(nominee, hoh, treason >= 0.4
+          ? 'looked me in the eye all week and then put me up'
+          : 'put me on that block', { week });
+        reignMadeAnEnemy(week, nominee);
+      } catch { /* the bond hit still stands */ }
+    }
+    week.nomFallout.push({ nominee, hoh, hit, treason, kind: isTarget ? 'target' : 'nominee' });
+  }
+
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
-    duo: duoNom,
+    duo: duoNom, nomFallout: week.nomFallout,
     structure: plan.structure || 'target-pawn', structureWhy: plan.structureWhy || '',
     anonymous: hohSecret,
     // Whose ceremony this was. On an ordinary week it is the week's only Head
@@ -3499,6 +3580,12 @@ export function simulateBBWeek(options = {}) {
       // ceremony that enforces it.
       duoDown: week.duoVetoSwap ? [...week.duoVetoSwap.down] : null,
       duoUp: week.duoVetoSwap ? [...week.duoVetoSwap.up] : null,
+      // The ordinary ceremony seats ONE stand-in and the duo rule then throws
+      // that name away for a whole pair. The screen was still announcing the
+      // discarded one — "Julia, take a seat" on a week whose replacements were
+      // Priya and Raj — so the name it reads out comes from the wall, not from
+      // the step that got overruled.
+      replacementNames: week.duoVetoSwap ? [...week.duoVetoSwap.up] : (replacement ? [replacement] : []),
       saved: vetoDecision.save, replacement, holder: vetoWinner,
       diamond, chairAuthority, anonymous: hohSecret && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,

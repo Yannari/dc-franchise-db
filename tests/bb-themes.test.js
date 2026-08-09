@@ -466,3 +466,35 @@ describe('the antagonist picking what to say', () => {
     expect(themeVoice('open', { week: 1 })).not.toBeNull();
   });
 });
+
+import { defaultConfig } from '../js/core.js';
+
+describe('theme config', () => {
+  it('defaults to no theme, so every existing season is unchanged', () => {
+    expect(defaultConfig().theme).toBe('none');
+  });
+
+  // The picker is a hard-coded list in the HTML, the same as the venue select,
+  // so the thing that can rot is a theme registered in code with no way to pick
+  // it. THEME_LIST is the load-time snapshot, so the test-only descriptors other
+  // describes push into BB_THEMES never reach it — this reads the real registry
+  // and nothing else.
+  it('offers an option in the markup for every registered theme', async () => {
+    const fs = await import('node:fs');
+    const html = fs.readFileSync('simulator.html', 'utf8');
+    const select = html.match(/<select id="cfg-theme"[\s\S]*?<\/select>/);
+    expect(select).not.toBeNull();
+    expect(select[0]).toContain('value="none"');
+    // Guard against passing vacuously: an empty registry would satisfy the loop
+    // below without asserting anything, and the option this names is the one a
+    // careless edit to the markup would take away.
+    expect(THEME_LIST.length).toBeGreaterThan(0);
+    expect(select[0]).toContain('value="summer-of-temptation"');
+    for (const id of THEME_LIST) {
+      expect(select[0], `${id} has an option`).toContain(`value="${id}"`);
+    }
+    // And the check discriminates: an id nobody registered has no option, so a
+    // green run above means the markup really was searched.
+    expect(select[0]).not.toContain('value="not-a-theme"');
+  });
+});

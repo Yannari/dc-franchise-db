@@ -913,6 +913,7 @@ export function saveConfig() {
     format:      seasonFormat(g('cfg-format')?.value),
     host:        g('cfg-host')?.value || 'Chris',
     setting:     g('cfg-setting')?.value || 'hosted-camp',
+    theme:       g('cfg-theme')?.value || 'none',
     // House options. Read only by the Big Brother engine; harmless defaults on
     // a Total Drama season, which never looks at them.
     bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
@@ -1066,6 +1067,14 @@ export function renderConfig() {
   // written back — otherwise a house season is handed a camp.
   window.renderSettingOptions?.();
   set('cfg-setting', seasonConfig.setting || 'hosted-camp');
+  set('cfg-theme', seasonConfig.theme || 'none');
+  // Themes belong to the house. A beach season offering "Summer of Temptation"
+  // is a question with no correct answer, the same reason the venue list is
+  // scoped by format. (applyFormatScope() below scopes `cfg-theme` too, which is
+  // what catches a format switched live rather than restored; this covers the
+  // restore path on its own terms.)
+  const _themeGroup = g('theme-group');
+  if (_themeGroup) _themeGroup.style.display = seasonConfig.format === 'big-brother' ? '' : 'none';
   set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');

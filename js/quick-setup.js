@@ -1013,6 +1013,10 @@ const CONFIG_SCOPE = {
     'cfg-merge':             ['total-drama'],
     'cfg-finale-format':     ['total-drama'],  // the house finale is the three-part HOH
     'cfg-finale-assistants': ['total-drama'],
+    // A theme is a house premise; there is nothing for one to author on a beach.
+    // Scoped here as well as in applySeasonConfig so that switching show on the
+    // panel hides it immediately, the way the venue list is rebuilt immediately.
+    'cfg-theme':             ['big-brother'],
     'cfg-bb-interview':      ['big-brother'],
     'cfg-bb-host-style':     ['big-brother'],
     'cfg-bb-havenots':       ['big-brother'],

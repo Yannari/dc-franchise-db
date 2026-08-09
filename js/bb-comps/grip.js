@@ -363,6 +363,38 @@ function patienceOf(name, mix) {
 // Feeling Knotty
 // ══════════════════════════════════════════════════════════════════════
 
+const KNOT_FIRST = [
+  (n, p) => `${n} has the first one open before most of the yard has finished reading the rope, and holds it up without saying anything.`,
+  (n, p) => `The first knot in the yard goes to ${n}, who does not celebrate it and does not stop moving either.`,
+  (n, p) => `${n} gets one open early. Four people look over at the same time and then very deliberately look back down.`,
+];
+
+const KNOT_PROGRESS = [
+  (n, p) => `${n} is through the second and into the third, working with two fingers and no shoulders at all.`,
+  (n, p) => `Another one gives for ${n}. Whatever ${p.sub} ${vb(p, 'is', 'are')} doing, ${p.sub} ${vb(p, 'has', 'have')} stopped doing anything else.`,
+  (n, p) => `${n} finds the load-bearing strand first every time now, which is the difference between this and the four people still fighting.`,
+  (n, p) => `${n} has the rhythm of it: find the slack, follow it, do not pull. It is going quickly.`,
+];
+
+const KNOT_STALL = [
+  (n, p) => `${n} has been on the same knot long enough to have tried three different approaches and gone back to the first one.`,
+  (n, p) => `${n} stops, shakes out ${p.posAdj} hands, and starts again from the other end of the same knot.`,
+  (n, p) => `${n} is not making it worse, which at this stage is most of what can be asked, but ${p.sub} ${vb(p, 'is', 'are')} not making it better either.`,
+];
+
+const KNOT_ROOM = [
+  () => `The yard has gone almost silent. Seventeen people working rope makes less noise than one conversation.`,
+  () => `Somebody at the back says "do not pull it" to nobody in particular, and two people stop pulling.`,
+  () => `There is a stretch in the middle where nothing happens to anybody, and it goes on long enough to be uncomfortable.`,
+  () => `A knot gives somewhere and half the yard looks up to see whose it was.`,
+];
+
+const KNOT_LEAD = [
+  (a, b) => `${a} goes past ${b} without either of them looking up, and the order of this competition changes without a word said about it.`,
+  (a, b) => `${b} has been in front since the first knot. ${a} is not any more slower than ${b} and has stopped making mistakes, which is enough.`,
+  (a, b) => `The lead changes hands. ${a} is on the last one; ${b} is still on the fifth and now knows it.`,
+];
+
 const KNOT_TIGHTEN = [
   (n, p) => `${n} pulls the wrong end and cinches the knot tighter.`,
   (n, p) => `${n} rushes through the loose strands, tangles two together, and has to undo the extra mess first.`,
@@ -420,36 +452,96 @@ export const feelingKnotty = {
       'Six knots each, and one rule: nothing sharp. The ropes are the same length and tied the same way, which is the last thing about this competition that is going to be fair.',
       participants.slice(0, 3), 'SIX KNOTS')];
 
-    /* Every houseguest is resolved by a specific card, so the ropes on screen
-       open in step with the log instead of all at once at the end. Walked from
-       the WORST up, because this competition is watched through the people it
-       is beating. */
+    /* ── THE LOG HAS AN ARC, NOT A LIST ──
+       Seven cards for a house of seventeen is a summary: four people fail, one
+       comes second, one wins, and the fourteen minutes in the middle where the
+       competition was actually decided never happened. So the yard is watched
+       the way it would be watched — an early lead, the back of the field
+       coming apart, the room going quiet, somebody going past somebody — and
+       every card that names a houseguest also RESOLVES their rope, which is
+       what keeps the bench opening in step with it. */
+    const [winner, runnerUp] = entries;
     const revealAt = {};
     const worst = [...entries].reverse();
-    const CARDED = Math.min(4, Math.max(1, worst.length - 2));
-    worst.forEach((e, i) => {
+    const strugglers = worst.filter(e => e.name !== winner.name && e.name !== runnerUp?.name);
+    const field = entries.length;
+
+    // Early: somebody is first, and it matters who.
+    const early = entries[Math.min(1, entries.length - 1)] || winner;
+    beats.push(beat(say(KNOT_FIRST)(early.name, pronouns(early.name)), [early.name], 'FIRST OPEN', 'blue'));
+
+    // The back of the field comes apart, spread through the log rather than
+    // stacked at the top of it.
+    /* A THROWN COMPETITION IS NOT A STORY ABOUT ROPE.
+       The cards come off the back of the field, and throwers sit at the back
+       by construction — they take a scoring penalty — so a straight slice
+       produced five THREW IT cards out of six and a log in which almost
+       nobody was described untying anything. Throwing is real here (the veto
+       has its own read, see throwRead) and it is worth a card or two, but it
+       cannot be the competition. Two at most; the rest are people the rope
+       actually beat. */
+    const CARDED = Math.max(2, Math.min(6, Math.round(field * 0.35)));
+    const threw = strugglers.filter(e => e.threw);
+    const tried = strugglers.filter(e => !e.threw);
+    const carded = [...threw.slice(0, 2), ...tried.slice(0, Math.max(0, CARDED - Math.min(2, threw.length)))]
+      // Back in finishing order, so the log still empties the yard from the
+      // bottom up rather than listing the quitters first.
+      .sort((a, b) => strugglers.indexOf(a) - strugglers.indexOf(b));
+    carded.forEach((e, i) => {
       const p = pronouns(e.name);
+      revealAt[e.name] = beats.length;
       if (e.threw) {
-        revealAt[e.name] = beats.length;
         beats.push(beat(say(THROW_LINES)(e.name), [e.name], 'THREW IT', 'grey'));
-        return;
-      }
-      // Only the back of the field gets a card of its own, or the log is
-      // twenty cards of rope. Everybody else resolves against the last one.
-      if (i < CARDED) {
-        revealAt[e.name] = beats.length;
-        beats.push(beat(say(KNOT_TIGHTEN)(e.name, p), [e.name], 'TIGHTER', 'red'));
       } else {
-        revealAt[e.name] = Math.max(0, beats.length - 1);
+        beats.push(beat(say(KNOT_TIGHTEN)(e.name, p), [e.name], 'TIGHTER', 'red'));
+      }
+      // The room, between failures, so the log breathes.
+      if (i === 0 || i === Math.floor(CARDED / 2)) {
+        beats.push(beat(say(KNOT_ROOM)(), participants.slice(0, 3), 'THE YARD', 'grey'));
+      }
+      // And somebody near the front getting on with it, so the competition is
+      // not narrated entirely through the people losing it.
+      const mover = entries[Math.min(2 + i, Math.max(0, field - 1))];
+      if (mover && mover.name !== e.name && mover.name !== winner.name) {
+        revealAt[mover.name] = beats.length;
+        beats.push(beat(say(KNOT_PROGRESS)(mover.name, pronouns(mover.name)), [mover.name], 'ANOTHER GIVES', 'blue'));
       }
     });
 
-    const [winner, runnerUp] = entries;
+    // Somebody stuck in the middle of the pack, which is where most of a house
+    // spends this competition.
+    // Somebody the log has not already used. Picking by position alone cast
+    // the same houseguest twice — once for tightening a knot and again for
+    // being stuck on one — which reads as the screen losing track of the yard.
+    const used = new Set(carded.map(e => e.name));
+    const stuck = entries.slice(Math.floor(field / 2)).find(e =>
+      !used.has(e.name) && e.name !== winner.name && e.name !== runnerUp?.name)
+      || entries.find(e => !used.has(e.name) && e.name !== winner.name && e.name !== runnerUp?.name);
+    if (stuck) {
+      revealAt[stuck.name] = beats.length;
+      beats.push(beat(say(KNOT_STALL)(stuck.name, pronouns(stuck.name)), [stuck.name], 'STILL ON IT', 'grey'));
+    }
+
+    // The lead changes, which is the moment the competition turns.
+    if (runnerUp) {
+      beats.push(beat(say(KNOT_LEAD)(winner.name, runnerUp.name),
+        [winner.name, runnerUp.name], 'THE LEAD', 'gold'));
+      api.popDelta(winner.name, 1);
+    }
+
+    // Anybody the log never named resolves here, so no rope is left hanging.
+    for (const e of entries) {
+      if (revealAt[e.name] == null && e.name !== winner.name && e.name !== runnerUp?.name) {
+        revealAt[e.name] = beats.length;
+      }
+    }
+
     if (runnerUp) {
       revealAt[runnerUp.name] = beats.length;
       beats.push(beat(
         `${runnerUp.name} is loosening the final knot when ${winner.name} finishes.`,
         [runnerUp.name], 'ONE SHORT', 'blue'));
+      api.popDelta(runnerUp.name, 1);
     }
     revealAt[winner.name] = beats.length;
     beats.push(beat(say(KNOT_GOOD)(winner.name, pronouns(winner.name)), [winner.name], 'IT OPENS', 'gold'));

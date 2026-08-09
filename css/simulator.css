@@ -2838,7 +2838,16 @@
        specificity, so source order is what lets the season's palette win.
        Scoped to .rp-page for the same reason the venue skin is: a twist screen
        that brought its own visual identity must not have a season palette
-       painted over it. Add a theme by adding an .rp-theme-<id> block here. */
+       painted over it.
+
+       ADDING A THEME: append an `.rp-theme-<id>` palette line and an
+       `.rp-theme-<id> .rp-page::after` motif anywhere in this section. Both
+       the shared retint and the reduced-motion override below hold wherever
+       you put it — the override is deliberately `!important` so that appending
+       at the END of the section (the natural place, and after the @media
+       block) cannot leave your motif animating for a reader who asked for no
+       motion. Order decides the accent; it must not decide the accessibility
+       rule. */
     .rp-theme-summer-of-temptation { --theme-accent:#c02040; --theme-glow:#ff4d6d; }
     /* retint the reader accent to the season accent, and own a stacking context */
     [class*="rp-theme-"] .rp-page {
@@ -2857,8 +2866,10 @@
     .rp-theme-summer-of-temptation .rp-page h1,
     .rp-theme-summer-of-temptation .rp-page h2 { letter-spacing:.04em; }
     @keyframes rpThemeTemptPulse { 0%,100% { opacity:.10; } 50% { opacity:.17; } }
+    /* Holds for every theme, present and future, regardless of where in this
+       section its block was appended — see the note at the top. */
     @media (prefers-reduced-motion: reduce) {
-      [class*="rp-theme-"] .rp-page::after { animation:none; } }
+      [class*="rp-theme-"] .rp-page::after { animation:none !important; } }
 
     /* ── VP: Component classes ── */
     .vp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }

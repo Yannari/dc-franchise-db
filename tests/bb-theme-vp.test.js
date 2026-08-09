@@ -24,6 +24,46 @@ beforeAll(async () => {
 // The reader's stylesheet is a linked file, not inline in the shell — the
 // venue skin lives here and the theme skin has to sit beside it.
 const CSS_PATH = 'css/simulator.css';
+const SECTION_START = '/* ── VP: per-SEASON theme skin';
+const SECTION_END = '/* ── VP: Component classes ──';
+
+/** Just the theme skin, so a `.rp-theme-` elsewhere in the file cannot mask a gap. */
+function themeSection() {
+  const css = fs.readFileSync(CSS_PATH, 'utf8');
+  const from = css.indexOf(SECTION_START);
+  const to = css.indexOf(SECTION_END, from);
+  expect(from, 'theme skin section not found').toBeGreaterThan(-1);
+  expect(to, 'theme skin section is unterminated').toBeGreaterThan(from);
+  return css.slice(from, to);
+}
+
+/**
+ * (selector, body) pairs, descending into at-rules.
+ *
+ * Brace-aware rather than a split on `}`, because the section contains an
+ * `@media` and a `@keyframes` whose inner rules are exactly the ones worth
+ * checking.
+ */
+function cssRules(src) {
+  const out = [];
+  let i = 0;
+  while (i < src.length) {
+    const open = src.indexOf('{', i);
+    if (open < 0) break;
+    const prelude = src.slice(i, open).replace(/\/\*[\s\S]*?\*\//g, '').trim();
+    let depth = 1, j = open + 1;
+    while (j < src.length && depth > 0) {
+      if (src[j] === '{') depth++;
+      else if (src[j] === '}') depth--;
+      j++;
+    }
+    const body = src.slice(open + 1, j - 1);
+    if (prelude.startsWith('@')) out.push(...cssRules(body));
+    else out.push({ selector: prelude, body });
+    i = j;
+  }
+  return out;
+}
 
 describe('theme skin', () => {
   const _fmt = seasonConfig.format;
@@ -47,16 +87,41 @@ describe('theme skin', () => {
     }
   });
 
-  it('scopes the theme palette to .rp-page like the setting skin does', () => {
-    const css = fs.readFileSync(CSS_PATH, 'utf8');
-    const block = css.slice(css.indexOf('.rp-theme-summer-of-temptation'));
-    expect(block.slice(0, 400)).toContain('.rp-page');
+  // The property that matters is not "the word .rp-page appears near the theme
+  // block" — it is that NOTHING a theme paints escapes .rp-page, because a
+  // twist screen brings its own visual identity and must keep it. A rule that
+  // declares only custom properties is exempt: it hands down values and paints
+  // nothing, which is how the palette line on the bare class works.
+  it('paints nothing outside .rp-page', () => {
+    let checked = 0;
+    for (const rule of cssRules(themeSection())) {
+      if (!rule.selector.includes('rp-theme-')) continue;
+      const decls = rule.body.split(';').map(s => s.trim()).filter(Boolean);
+      if (!decls.some(d => !d.startsWith('--'))) continue;   // custom props only
+      checked++;
+      expect(rule.selector, `${rule.selector} paints outside .rp-page`).toContain('.rp-page');
+    }
+    expect(checked, 'no painting theme rules found — the test is vacuous').toBeGreaterThan(0);
   });
 
   it('gives every animated theme layer a reduced-motion fallback', () => {
-    const css = fs.readFileSync(CSS_PATH, 'utf8');
-    const block = css.slice(css.indexOf('/* ── VP: per-SEASON theme skin'));
-    expect(block.slice(0, 2000)).toContain('prefers-reduced-motion');
+    expect(themeSection()).toContain('prefers-reduced-motion');
+  });
+
+  // The accent is written twice — once in the descriptor the engine reads, once
+  // in the CSS the reader wears. Drift is silent and shows up as a reader
+  // tinted a colour its own theme does not claim.
+  it('paints each theme in the accent its descriptor claims', () => {
+    const section = themeSection();
+    for (const id of THEME_LIST) {
+      if (id === 'fixture' || id === 'voiced') continue;
+      const accent = BB_THEMES[id]?.palette?.accent;
+      expect(accent, `${id} has no palette.accent`).toBeTruthy();
+      const rule = new RegExp(`\\.rp-theme-${id}\\s*\\{([^}]*)\\}`).exec(section);
+      expect(rule, `.rp-theme-${id} has no palette rule in the theme skin`).toBeTruthy();
+      expect(rule[1].toLowerCase(), `.rp-theme-${id} does not use ${accent}`)
+        .toContain(accent.toLowerCase());
+    }
   });
 
   it('applies the theme class to the reader root', () => {

@@ -8,6 +8,7 @@ import { bbAllianceStrength, bbHeat, bbThreat, getBBTarget } from './shared-stra
 import { housePlan } from './plans.js';
 import { dealBetween, sincerityOf, tierOf } from './deals.js';
 import { believesDeal } from './knowledge.js';
+import { duoPartnerFor } from './duos.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -24,13 +25,41 @@ function archetype(name) {
 
 export { bbThreat } from './shared-strategy.js';
 
+/**
+ * What the person beside them does to a name.
+ *
+ * The gap this closes: in a Duos season the engine dragged a partner onto the
+ * block and the Head of Household was never once asked whether they wanted
+ * that. They picked a target the ordinary way and found out afterwards that
+ * they had nominated two people.
+ *
+ * So the question a nomination actually asks in this season is "do I want BOTH
+ * of them gone?", and it cuts both ways: a target whose partner is also a
+ * problem is two birds, and a target whose partner is the closest thing this
+ * Head of Household has to an ally is a shot they cannot afford to take.
+ */
+export function duoNominationPull(hoh, candidate) {
+  let partner = null;
+  try { partner = duoPartnerFor(candidate); } catch { partner = null; }
+  if (!partner || partner === hoh) return 0;
+  // Two birds: whatever this Head of Household already had against the
+  // partner, banked at a discount because it is a side effect rather than the
+  // plan.
+  const alsoWanted = Math.max(0, bbHeat(hoh, partner).total) * 0.4;
+  // And the cost: nominating somebody's partner is nominating YOUR person.
+  const ally = Math.max(0, getPerceivedBond(hoh, partner));
+  const deal = dealBetween(hoh, partner);
+  const promised = deal ? sincerityOf(deal, hoh) * (tierOf(deal) === 'final-two' ? 5 : 2.5) : 0;
+  return alsoWanted - ally * 1.1 - promised;
+}
+
 export function nominationScore(hoh, candidate, rng = Math.random) {
   const stats = pStats(hoh);
   const revenge = Math.max(0, -(getBond(hoh, candidate) || 0));
   const heat = bbHeat(hoh, candidate);
   const threatAdjustment = heat.components.threat * (stats.strategic * 0.045 - 0.35);
   const score = heat.total + threatAdjustment + revenge * 0.75
-    + nominationPlanPull(hoh, candidate) + noise(rng, 1.6);
+    + nominationPlanPull(hoh, candidate) + duoNominationPull(hoh, candidate) + noise(rng, 1.6);
   // A promise about the end discounts EVERYTHING above, proportionally. This
   // used to be a flat additive pull inside the plan weight, which lost twice:
   // a reactive houseguest's sincere final-two shrank to a third of its size,

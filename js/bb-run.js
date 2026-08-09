@@ -736,7 +736,14 @@ export function simulateBBEpisode() {
   // it is seated on night one beside the other season-layer twists.
   if (seasonConfig.bbDuos && seasonConfig.bbDuos !== 'off' && !gs.bb?.duos) {
     try {
-      installDuos(house, { keyAt: Number(seasonConfig.bbDuosKeyAt) || 10, rng: Math.random });
+      // 'on' is the BB13 shape and stays the default meaning, so a season
+      // saved before the mode existed plays exactly as it did. 'pairs' is the
+      // other game: no keys, and orphans chained to each other instead.
+      installDuos(house, {
+        keyAt: Number(seasonConfig.bbDuosKeyAt) || 10,
+        goldenKey: seasonConfig.bbDuos !== 'pairs',
+        rng: Math.random,
+      });
     } catch { /* the season plays without one */ }
   }
 

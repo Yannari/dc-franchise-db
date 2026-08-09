@@ -4987,6 +4987,34 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      // ── DYNAMIC DUOS ──
+      //
+      // The season's own two acts. `beats(act)` carries the prose; the lists
+      // around it are the state a reader cannot infer from the prose — who is
+      // still paired, who is holding a key, and who is running around with
+      // nobody, which is the single most dangerous thing to be in this season.
+      case 'duos-week': {
+        sec('PLAYING IN TWOS');
+        for (const [a, b] of (act.pairs || [])) ln(`  ${a} — ${b}`);
+        if ((act.keys || []).length) ln(`  Golden Keys: ${act.keys.join(', ')}.`);
+        if ((act.orphaned || []).length) {
+          ln(`  No partner: ${act.orphaned.join(', ')} — and can be nominated alone.`);
+        }
+        ln('');
+        beats(act);
+        break;
+      }
+
+      case 'duos-repair': {
+        sec('RE-PAIRED');
+        for (const [a, b] of (act.pairs || [])) {
+          ln(`  ${a} and ${b} are a duo from tonight. Neither of them chose it.`);
+        }
+        if (act.waiting) ln(`  ${act.waiting} is still on their own.`);
+        beats(act);
+        break;
+      }
+
       // ── YOU GO, THEY GO ──
       //
       // Three acts, and the last one is the only place a reader finds out that

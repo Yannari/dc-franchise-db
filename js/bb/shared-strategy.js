@@ -1,6 +1,7 @@
 // Big Brother adapters over the simulator's shared strategic substrate.
 // This module owns format context and evidence translation, never duplicate state.
 import { gs, players, seasonConfig } from '../core.js';
+import { duoPartnerFor } from './duos.js';
 import { resolveAllianceRepair, nameNewAlliance } from '../alliances.js';
 import { addBond, addPerceivedBond, getBond, getPerceivedBond } from '../bonds.js';
 import { pStats, romanticCompat } from '../players.js';
@@ -271,7 +272,36 @@ export function bbThreatProfile(name) {
   // information it does not have.
   const powers = knownPowerWeight(name, week);
 
-  const observed = competition + isolation + friction + centrality + control + powers;
+  // ── the person they are chained to ──
+  //
+  // In a Duos season a nomination names a PAIR, so the house cannot evaluate
+  // anybody on their own even if it wanted to: taking a shot at somebody means
+  // taking a shot at whoever they came in with. A quiet houseguest attached to
+  // a competition monster IS dangerous, because removing them removes the
+  // monster — and a monster attached to somebody harmless is cheaper to take
+  // out than the same monster standing alone.
+  //
+  // Only the visible half of the partner counts, and the read is deliberately
+  // one-directional: this asks js/bb/duos.js WHO the partner is and does the
+  // arithmetic here, because a partner lookup that computed threat would
+  // recurse straight back into the function asking the question.
+  let duo = 0;
+  try {
+    const partner = duoPartnerFor(name);
+    if (partner) {
+      const pr = gs.bb?.stats?.[partner] || {};
+      const ps = pStats(partner) || {};
+      const partnerSeen = (pr.hohWins || 0) * 0.8 + (pr.vetoWins || 0) * 0.55
+        + (pr.blockBusterWins || 0) * 0.6;
+      // Competitions everybody watched carry nearly their full weight; raw
+      // ability carries much less, for the same reason it does below — the
+      // house has to have SEEN it.
+      duo = Math.min(3, partnerSeen * 0.75
+        + (ps.strategic * 0.27 + ps.social * 0.18) * 0.3);
+    }
+  } catch { duo = 0; }
+
+  const observed = competition + isolation + friction + centrality + control + powers + duo;
 
   // ── what nobody can see yet ──
   const base = stats.strategic * 0.27 + stats.social * 0.18 + stats.physical * 0.12
@@ -315,13 +345,16 @@ export function bbThreatProfile(name) {
 
   return {
     base, socialPosition, competition, quirk,
-    observed, visibility, isolation, friction, centrality, control,
+    observed, visibility, isolation, friction, centrality, control, duo,
     // Earned standing: the part of somebody's threat that comes from being
     // GOOD rather than from being disliked. Isolation and friction make a
     // houseguest easy to nominate, which is not the same thing — and anybody
     // choosing a shield needs the difference, because hiding behind the person
     // the house already wants gone is not hiding at all.
-    standing: competition + centrality + control + base * visibility + Math.max(0, social),
+    // A duo's standing is partly borrowed, and the house knows it — which is
+    // exactly why "she's only still here because of him" is a real read and
+    // why hiding behind your own partner does not work.
+    standing: competition + centrality + control + base * visibility + Math.max(0, social) + duo * 0.6,
     // The quirk is perception, not ability — it belongs in how nominatable
     // somebody reads (total), never in the earned standing a shield is
     // chosen by.

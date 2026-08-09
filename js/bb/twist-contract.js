@@ -160,18 +160,21 @@ export const BB_TWIST_CONTRACTS = {
       label: 'Dynamic Duos',
       key: 'bbDuos',
       accent: '245,158,11',
-      hint: 'A season-long twist. The house plays in pairs and is nominated in pairs. Lose your '
-        + 'partner and you are handed a Golden Key — untouchable until the final ten, and unable '
-        + 'to compete for anything until then. Key holders still vote, and can still win.',
+      hint: 'A season-long twist. The house plays in pairs and is nominated in pairs — two '
+        + 'houseguests who came in together, never two houseguests. What happens when a duo breaks '
+        + 'is the choice: a Golden Key hands the survivor safety they cannot spend, or no key at '
+        + 'all leaves them orphaned and cheap to nominate until Big Brother chains them to the '
+        + 'next person who loses somebody.',
       modes: [
         { value: 'off', label: 'Off' },
-        { value: 'on', label: 'On — pair the house up' },
+        { value: 'on', label: 'Pairs + the Golden Key (BB13)' },
+        { value: 'pairs', label: 'Pairs only — no key, orphans get re-paired' },
       ],
       options: [
         { key: 'bbDuosKeyAt', type: 'number', label: 'Keys expire at', min: 4, max: 14, default: 10,
-          hint: 'The house size at which every Golden Key stops working at once, and everybody '
-            + 'holding one is nominatable again — after weeks of not competing. Ten is the number '
-            + 'the show used.' },
+          hint: 'Golden Key mode only. The house size at which every key stops working at once, and '
+            + 'everybody holding one is nominatable again — after weeks of not competing. Ten is '
+            + 'the number the show used.' },
       ],
     },
   },

@@ -22,7 +22,8 @@ import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
 import { rpBuildBBSaboteur, rpBuildBBSaboteurBrief, rpBuildBBSaboteurAccusation,
   rpBuildBBSaboteurReveal } from './vp-bb-saboteur.js';
-import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire } from './vp-bb-duos.js';
+import { rpBuildBBDuosOpen, rpBuildBBDuosKey, rpBuildBBDuosExpire,
+  rpBuildBBDuosRepair, rpBuildBBDuosWeek } from './vp-bb-duos.js';
 import { rpBuildBBDuoWeekOpen, rpBuildBBDuoWeekEvents,
   rpBuildBBDuoWeekEviction } from './vp-bb-duo-week.js';
 import { rpBuildBBTwinOpen, rpBuildBBTwinBrief, rpBuildBBTwinWeek, rpBuildBBTwinCaught,
@@ -20836,6 +20837,16 @@ function _bbCycleScreens(view, screens, suffix = '') {
       case 'duos-key':
         screens.push({ id: id('bb-duos-key'), label: 'Duos: Golden Key',
           html: rpBuildBBDuosKey(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      // The other mode's two screens: the week the pairs produce, and the
+      // ceremony that chains two orphans together whether they like it or not.
+      case 'duos-week':
+        screens.push({ id: id('bb-duos-week'), label: 'Duos: Playing in Twos',
+          html: rpBuildBBDuosWeek(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+        break;
+      case 'duos-repair':
+        screens.push({ id: id('bb-duos-repair'), label: 'Duos: Re-Paired',
+          html: rpBuildBBDuosRepair(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
         break;
       // You Go, They Go. The pairing, the week it produces, and the second
       // name at the door that nobody voted for.

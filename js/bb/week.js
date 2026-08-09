@@ -22,7 +22,7 @@ import { applyVetoDrawTwist } from './veto-draw.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
-  announceDuos, keyHolders } from './duos.js';
+  announceDuos, keyHolders, repairOrphans, duosWeekLife } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -4122,6 +4122,19 @@ export function simulateBBWeek(options = {}) {
     }
   } catch { /* the house has a normal week */ }
 
+  /* ── A DUOS SEASON, MID-WEEK ──
+     The twist that only fires at nominations is a rule; what makes this a
+     season is eleven weeks of what being chained to somebody does. Power
+     couples, public splits nobody can act on, one name carrying two, and the
+     orphans everybody has quietly decided are free. */
+  if (!compressed) {
+    try {
+      const life = duosWeekLife(week, { house, rng });
+      if (life) week.acts.push(addBeats(life,
+        { players: [...new Set((life.events || []).flatMap(e => e.players))] }));
+    } catch { /* the season plays without it */ }
+  }
+
   /* ── YOU GO, THEY GO: strategy for two ──
      Fired once the block is settled and before the votes are read, because
      every one of these is a thing somebody does about a block they can see.
@@ -4408,6 +4421,15 @@ export function simulateBBWeek(options = {}) {
       if (key) { week.goldenKey = key; week.acts.push(addBeats(key, { players: [key.holder] })); }
       const done = expireKeys({ week, house: gs.activePlayers });
       if (done) { week.keysExpired = done; week.acts.push(addBeats(done, { players: done.holders })); }
+      /* THE OTHER MODE. No key was handed out, so somebody is running around
+         this house with no partner — and an orphan can be put on that block by
+         themselves, which costs the next Head of Household nobody. The moment
+         two of them exist they become each other's, chosen for them. */
+      const chained = repairOrphans({ week, house: gs.activePlayers, rng });
+      if (chained) {
+        week.duosRepaired = chained;
+        week.acts.push(addBeats(chained, { players: chained.pairs.flat() }));
+      }
     } catch { /* the season plays on without the paperwork */ }
   }
 

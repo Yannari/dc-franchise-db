@@ -44,6 +44,18 @@ const CSS = `
 .bbduo .duo-beats{max-width:600px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px;}
 .bbduo .duo-beat{padding:11px 14px;border-radius:10px;background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.08);font-size:13.5px;line-height:1.6;}
+.bbduo .duo-evs{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:11px;}
+.bbduo .duo-ev{padding:12px 15px;border-radius:11px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);border-left:3px solid var(--gold);font-size:13.5px;line-height:1.62;}
+.bbduo .duo-ev .duo-tag{display:inline-block;margin-bottom:6px;font-size:10.5px;letter-spacing:.13em;
+  font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(245,182,11,.2);color:var(--gold);}
+.bbduo .duo-ev.k-red{border-left-color:#e0452e;}
+.bbduo .duo-ev.k-red .duo-tag{background:rgba(224,69,46,.22);color:#ffb3a6;}
+.bbduo .duo-ev.k-blue{border-left-color:#6ea8d8;}
+.bbduo .duo-ev.k-blue .duo-tag{background:rgba(110,168,216,.2);color:#bcdcf5;}
+.bbduo .duo-ev.k-green{border-left-color:#4fbf87;}
+.bbduo .duo-ev.k-green .duo-tag{background:rgba(79,191,135,.2);color:#a9e8c8;}
+.bbduo .duo-state{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 auto 20px;max-width:680px;}
 @media(prefers-reduced-motion:reduce){.bbduo *{animation:none!important;transition:none!important;}}
 `;
 
@@ -128,5 +140,57 @@ export function rpBuildBBDuosExpire(ep, act, u = {}) {
     </div>
 
     ${beats(act, esc)}
+  `);
+}
+
+/** Two loose ends, handed to each other. */
+export function rpBuildBBDuosRepair(ep, act, u = {}) {
+  if (!act) return '';
+  const esc = typeof u.esc === 'function' ? u.esc : esc0;
+  const avatar = typeof u.avatar === 'function' ? u.avatar : () => '';
+
+  return shell(`
+    <div class="duo-eyebrow">WEEK ${esc(act.week)} &middot; BIG BROTHER DECIDES</div>
+    <div class="duo-title">RE-PAIRED</div>
+    <div class="duo-sub">Nobody in this house lost a partner and got to stay on their own.
+      These two did not choose each other and are not being asked to.</div>
+
+    <div class="duo-pairs">
+      ${(act.pairs || []).map(([a, b]) => `<div class="duo-pair">
+        ${avatar(a, 26)}<span>${esc(a)}</span><span class="duo-amp">&amp;</span>
+        ${avatar(b, 26)}<span>${esc(b)}</span></div>`).join('')}
+    </div>
+
+    ${act.waiting ? `<div class="duo-solo"><b>${esc(act.waiting)}</b> is still on their own \u2014 and an
+      orphan can be put on that block alone, which costs the next Head of Household nobody at all.</div>` : ''}
+
+    ${beats(act, esc)}
+  `);
+}
+
+/** The week in a Duos season: what being chained to somebody does. */
+export function rpBuildBBDuosWeek(ep, act, u = {}) {
+  if (!act) return '';
+  const esc = typeof u.esc === 'function' ? u.esc : esc0;
+  const kind = e => e.badgeClass === 'red' ? 'k-red'
+    : e.badgeClass === 'green' ? 'k-green' : e.badgeClass === 'blue' ? 'k-blue' : '';
+
+  return shell(`
+    <div class="duo-eyebrow">WEEK ${esc(act.week)} &middot; ${act.goldenKey ? 'GOLDEN KEY SEASON' : 'PAIRS ONLY'}</div>
+    <div class="duo-title">PLAYING IN TWOS</div>
+
+    <div class="duo-state">
+      ${(act.pairs || []).map(([a, b]) =>
+    `<div class="duo-chip">${esc(a)} &amp; ${esc(b)}</div>`).join('')}
+      ${(act.keys || []).map(n => `<div class="duo-chip is-key">\ud83d\udd11 ${esc(n)}</div>`).join('')}
+      ${(act.orphaned || []).map(n => `<div class="duo-chip">${esc(n)} \u2014 alone</div>`).join('')}
+    </div>
+
+    <div class="duo-evs">
+      ${(act.events || []).map(e => `<div class="duo-ev ${kind(e)}">
+        <div class="duo-tag">${esc(e.badgeText || '')}</div>
+        <div>${esc(e.text)}</div>
+      </div>`).join('')}
+    </div>
   `);
 }

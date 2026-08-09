@@ -13,7 +13,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
-import { getBond, getPerceivedBond } from '../js/bonds.js';
+import { addBond, getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import {
   installDuos, duoState, duosActive, duoOf, partnerOf, duoNominees,
@@ -195,5 +195,193 @@ describe('a season with duos running', () => {
     }
     expect(pairedNoms, 'no week ever nominated a pair').toBeGreaterThan(0);
     expect(keys, 'nobody was ever handed a key').toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The other season: no keys, orphans, and being chained to one
+// ══════════════════════════════════════════════════════════════════════
+
+import {
+  goldenKeysOn, orphans, repairOrphans, duosWeekLife, duoPartnerFor,
+} from '../js/bb/duos.js';
+import { bbThreatProfile } from '../js/bb/shared-strategy.js';
+import { duoNominationPull } from '../js/bb/strategy.js';
+
+const blankStats = () => Object.fromEntries(NAMES.map(n =>
+  [n, { hohWins: 0, vetoWins: 0, timesNominated: 0, timesOnTheBlock: 0 }]));
+
+describe('the Golden Key is optional', () => {
+  it('is on by default, which is the shape the show ran', () => {
+    installDuos(NAMES, { rng: Math.random });
+    expect(goldenKeysOn()).toBe(true);
+  });
+
+  it('hands out nothing at all when it is switched off', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    expect(goldenKeysOn()).toBe(false);
+    const [, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    expect(grantGoldenKey({ week: aWeek(), evicted: b, house: gs.activePlayers })).toBe(null);
+    expect(keyHolders()).toEqual([]);
+    expect(duosSittingOut(), 'somebody sat out a competition for a key that does not exist').toEqual([]);
+  });
+
+  it('says which season it is when it reads the rules out', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const open = announceDuos(aWeek({ num: 1 }));
+    expect(open.goldenKey).toBe(false);
+    expect(open.rules.join(' ')).toMatch(/no Golden Keys/i);
+    expect(open.rules.join(' '), 'never told the house what happens instead').toMatch(/chain/i);
+  });
+});
+
+describe('being orphaned', () => {
+  it('is what losing your partner gets you with no key', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    expect(orphans(gs.activePlayers)).toEqual([a]);
+  });
+
+  it('makes you the cheapest nomination in the house', () => {
+    // THE POINT OF THE MODE. An orphan goes up alone and costs the Head of
+    // Household nobody, which is what makes everybody want a partner —
+    // including the person who voted theirs out.
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    expect(duoNominees(a, gs.activePlayers), 'an orphan still dragged somebody up').toBe(null);
+  });
+});
+
+describe('re-pairing the loose ends', () => {
+  it('chains two orphans together', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    const [c, d] = duoState().pairs[1];
+    gs.activePlayers = NAMES.filter(n => n !== b && n !== d);
+
+    const act = repairOrphans({ week: aWeek({ num: 3 }), house: gs.activePlayers });
+    expect(act.type).toBe('duos-repair');
+    expect(act.pairs).toHaveLength(1);
+    expect(act.pairs[0].sort()).toEqual([a, c].sort());
+    // And the game reads the NEW pair, not the dead one.
+    expect(partnerOf(a, gs.activePlayers)).toBe(c);
+    expect(duoNominees(a, gs.activePlayers).sort()).toEqual([a, c].sort());
+  });
+
+  it('leaves an odd orphan waiting, and says what that costs them', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const gone = [duoState().pairs[0][1], duoState().pairs[1][1], duoState().pairs[2][1]];
+    gs.activePlayers = NAMES.filter(n => !gone.includes(n));
+
+    const act = repairOrphans({ week: aWeek({ num: 3 }), house: gs.activePlayers });
+    expect(act.pairs).toHaveLength(1);
+    expect(act.waiting, 'three orphans should leave one waiting').toBeTruthy();
+    expect(act.beats.some(b => /alone/i.test(b.text))).toBe(true);
+  });
+
+  it('does nothing in a Golden Key season', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const [, b] = duoState().pairs[0];
+    const [, d] = duoState().pairs[1];
+    gs.activePlayers = NAMES.filter(n => n !== b && n !== d);
+    grantGoldenKey({ week: aWeek(), evicted: b, house: gs.activePlayers });
+    grantGoldenKey({ week: aWeek(), evicted: d, house: gs.activePlayers });
+    expect(repairOrphans({ week: aWeek(), house: gs.activePlayers })).toBe(null);
+  });
+
+  it('needs two — one loose end is not a pair', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    expect(repairOrphans({ week: aWeek(), house: gs.activePlayers })).toBe(null);
+  });
+});
+
+describe('the season the twist actually produces', () => {
+  it('says something about the pairs in the weeks between the ceremonies', () => {
+    // A season twist nobody sees between the announcement and the eviction is
+    // a twist that reads as doing nothing, which is how the Twin Twist shipped.
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    addBond(a, b, -9);                       // two people who are finished
+    gs.bb.stats = blankStats();
+
+    const act = duosWeekLife(aWeek({ num: 4 }), { house: NAMES, rng: Math.random });
+    expect(act, 'a duos season produced no weekly life at all').toBeTruthy();
+    expect(act.events.length).toBeGreaterThan(0);
+    for (const e of act.events) {
+      expect(e.text.length).toBeGreaterThan(40);
+      expect(e.players.length).toBeGreaterThan(0);
+      expect(e.badgeText).toBeTruthy();
+    }
+  });
+
+  it('stays quiet on the night the pairs are read out', () => {
+    installDuos(NAMES, { rng: Math.random });
+    expect(duosWeekLife(aWeek({ num: 1 }), { house: NAMES })).toBe(null);
+  });
+});
+
+describe('the house reads a duo as one player', () => {
+  it('adds the partner visible record to somebody threat', () => {
+    installDuos(NAMES, { rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    gs.bb.stats = blankStats();
+
+    const alone = bbThreatProfile(a).duo;
+    gs.bb.stats[b].hohWins = 3;
+    gs.bb.stats[b].vetoWins = 2;
+    const attached = bbThreatProfile(a).duo;
+
+    expect(attached, 'a partner who won five comps changed nothing').toBeGreaterThan(alone);
+    // And somebody with nobody beside them borrows nothing at all.
+    gs.bb.duos = null;
+    expect(bbThreatProfile(a).duo).toBe(0);
+  });
+
+  it('makes an HOH think twice about nominating their own ally partner', () => {
+    // The gap this closes: the engine used to drag a partner onto the block
+    // and never once ask the Head of Household whether they wanted that.
+    installDuos(NAMES, { rng: Math.random });
+    const [a, b] = duoState().pairs.find(p => !p.includes('A'));
+    gs.bb.stats = blankStats();
+
+    addBond('A', b, 9);                       // the HOH closest person
+    const withAlly = duoNominationPull('A', a);
+    addBond('A', b, -18);                     // now they cannot stand them
+    const withEnemy = duoNominationPull('A', a);
+
+    expect(withAlly, 'nominating an ally partner cost nothing').toBeLessThan(0);
+    expect(withEnemy, 'two birds was worth no more than one').toBeGreaterThan(withAlly);
+  });
+
+  it('sees nobody attached to an orphan', () => {
+    installDuos(NAMES, { goldenKey: false, rng: Math.random });
+    const [a, b] = duoState().pairs[0];
+    gs.activePlayers = NAMES.filter(n => n !== b);
+    expect(duoPartnerFor(a)).toBe(null);
+  });
+});
+
+describe('a pairs-only season, played', () => {
+  it('runs, orphans people and chains them back together', () => {
+    let repairs = 0;
+    let keys = 0;
+    for (const seed of [5, 17, 41]) {
+      house();
+      Object.assign(seasonConfig, { bbDuos: 'pairs' });
+      withSeededRandom(seed, () => {
+        let guard = 0;
+        while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+      });
+      const weeks = gs.bb.weeks || [];
+      repairs += weeks.filter(w => w.duosRepaired).length;
+      keys += weeks.filter(w => w.goldenKey).length;
+    }
+    expect(keys, 'a key was handed out in a season that has none').toBe(0);
+    expect(repairs, 'nobody was ever re-paired').toBeGreaterThan(0);
   });
 });

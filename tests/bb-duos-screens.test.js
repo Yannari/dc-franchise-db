@@ -100,3 +100,78 @@ describe('and every one of them reached a screen', () => {
     expect(html).toMatch(/competing for nothing/i);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The other mode, on screen
+// ══════════════════════════════════════════════════════════════════════
+//
+// A second season, played with the Golden Key switched off, because the two
+// modes produce entirely different acts and the pairs-only one is the mode
+// where the twist has to keep proving it is still running eight weeks in.
+describe('a pairs-only season', () => {
+  const byLabel = new Map();
+  let pairActs = [];
+
+  beforeAll(() => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, pStats, pronouns, getBond, getPerceivedBond });
+    gs.bb = { outgoingHoh: null, weeks: [], stats: {}, house: null };
+    gs.episodeHistory = [];
+    gs.jury = [];
+    gs.popularity = {};
+    Object.assign(seasonConfig, {
+      format: 'big-brother', finaleSize: 3, jurySize: 7,
+      bbDuos: 'pairs', bbDuosKeyAt: 10,
+    });
+
+    withSeededRandom(17, () => {
+      let guard = 0;
+      while (!houseIsAtFinale() && guard++ < 30) simulateBBEpisode();
+    });
+
+    pairActs = (gs.bb.weeks || []).flatMap(w => w.acts || []).filter(Boolean);
+    for (const [i, ep] of (gs.episodeHistory || []).entries()) {
+      let built = [];
+      try { built = buildVPScreens(ep, i + 1) || []; } catch { built = []; }
+      for (const sc of built) {
+        if (!sc?.label) continue;
+        if (!byLabel.has(sc.label)) byLabel.set(sc.label, []);
+        byLabel.get(sc.label).push(sc);
+      }
+    }
+  });
+
+  const html = label => (byLabel.get(label) || []).map(s => s.html).join('');
+
+  it('hands out no keys and draws no key screens', () => {
+    expect(pairActs.filter(a => a.type === 'duos-key')).toHaveLength(0);
+    expect(byLabel.get('Duos: Golden Key') || []).toHaveLength(0);
+  });
+
+  it('chains orphans together, on screen, with both names', () => {
+    const repairs = pairActs.filter(a => a.type === 'duos-repair');
+    expect(repairs.length, 'nobody was ever re-paired').toBeGreaterThan(0);
+    const drawn = html('Duos: Re-Paired');
+    expect(drawn, 'a re-pairing happened and was never drawn').toContain('RE-PAIRED');
+    for (const [a, b] of repairs[0].pairs) {
+      expect(drawn).toContain(a);
+      expect(drawn).toContain(b);
+    }
+  });
+
+  it('keeps saying something about the pairs in the weeks between', () => {
+    // The failure this exists for: a season twist that fires at nominations
+    // and is invisible for the other six days reads as a twist doing nothing.
+    const life = pairActs.filter(a => a.type === 'duos-week');
+    expect(life.length, 'the twist went quiet for the whole season').toBeGreaterThan(1);
+    const drawn = html('Duos: Playing in Twos');
+    expect(drawn).toContain('PLAYING IN TWOS');
+    expect(drawn).toContain(life[0].events[0].badgeText);
+  });
+
+  it('tells the house on night one that there are no keys', () => {
+    const open = pairActs.find(a => a.type === 'duos-open');
+    expect(open.goldenKey).toBe(false);
+    expect(html('Duos: Announcement')).toMatch(/no Golden Keys/i);
+  });
+});

@@ -279,9 +279,11 @@ describe('the ceremony knows it nominated a duo', () => {
     // The most twist-erasing line on the screen: the Head of Household gave
     // TWO separate personal reasons for a block they only decided once,
     // presenting a forced nomination as a decision, every week, all season.
+    // Said either as its own card (a one-duo block) or inside the duo's WHY
+    // card (two duos). What matters is that it is said at all.
     const cer = (screensByLabel.get('Nomination Ceremony') || []).map(x => x.html).join('');
-    expect(cer).toContain('NOT A DECISION');
     expect(cer).toMatch(/is who I came for, and/);
+    expect(cer).toMatch(/not going\s+to stand here and invent something|NOT A DECISION/);
   });
 });
 
@@ -295,5 +297,31 @@ describe('eviction night explains the duo count', () => {
     const html = (screensByLabel.get('Eviction Night') || []).map(sc => sc.html).join('');
     expect(html, 'the duo count never became a card').toContain('COUNTED BY DUO');
     expect(html).toContain('voted for a side');
+  });
+});
+
+describe('a two-duo ceremony reads as two duos', () => {
+  it('turns the keys in pairs and says so', () => {
+    // The report this exists for: four names read out one at a time, each with
+    // a reason of their own — two houseguests handed the SAME line about their
+    // resume, and a fourth told they were a pawn, for a block the Head of
+    // Household decided twice. They did not nominate four people.
+    const html = (screensByLabel.get('Nomination Ceremony') || []).map(x => x.html).join('');
+    const anyFour = (gs.bb.weeks || []).some(w => (w.duoBlocks || []).length === 2);
+    if (!anyFour) return;
+    expect(html, 'still read as four separate nominations').toMatch(/nominate TWO DUOS/);
+    expect(html, 'the keys were not turned in pairs').toMatch(/keys together/);
+    expect(html).toMatch(/come up on\s+the wall side by side/);
+  });
+
+  it('gives one reason per duo, not one per houseguest', () => {
+    const html = (screensByLabel.get('Nomination Ceremony') || []).map(x => x.html).join('');
+    const anyFour = (gs.bb.weeks || []).some(w => (w.duoBlocks || []).length === 2);
+    if (!anyFour) return;
+    // Two duos means two WHY cards, not four.
+    const whys = (html.match(/WHY [A-Z]/g) || []).length;
+    const cers = (screensByLabel.get('Nomination Ceremony') || []).length;
+    expect(whys).toBeLessThanOrEqual(cers * 2);
+    expect(html, 'nobody was told they are collateral').toMatch(/is who I came for, and you are/);
   });
 });

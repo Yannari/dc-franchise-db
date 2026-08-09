@@ -17496,11 +17496,32 @@ export function rpBuildBBNominations(ep, only = null) {
   const speeches = written.filter(b => String(b.eventId || '').startsWith('nom-speech'));
   const reactions = written.filter(b => !speeches.includes(b));
 
+  /* ── A DUOS CEREMONY TURNS KEYS IN PAIRS ──
+     Four names read out one at a time, each with a reason of their own, is
+     four separate nominations — and it produced exactly that on screen: two
+     houseguests handed the SAME line about their résumé, and a fourth told
+     they were a pawn, for a block the Head of Household decided twice. They
+     did not nominate four people. They nominated two duos, and the ceremony
+     has to be able to say so. */
+  const duoBlocks = (act?.duo?.blocks || []).filter(p => p.length === 2
+    && p.every(n => noms.includes(n)));
+  const duoCeremony = !anon && duoBlocks.length > 0
+    && duoBlocks.flat().length === noms.length;
+
   const steps = [{ kind: 'open' }];
-  noms.forEach((name, i) => {
-    steps.push({ kind: 'key', name, n: i + 1 });
-    steps.push({ kind: 'reason', name, role: roleOf(name) });
-  });
+  if (duoCeremony) {
+    duoBlocks.forEach((pair, i) => {
+      const target = act.duo.targets?.[i] || pair[0];
+      steps.push({ kind: 'duokeys', pair, i, n: i + 1 });
+      steps.push({ kind: 'duowhy', pair, i, target,
+        other: pair.find(n => n !== target), role: roleOf(target) });
+    });
+  } else {
+    noms.forEach((name, i) => {
+      steps.push({ kind: 'key', name, n: i + 1 });
+      steps.push({ kind: 'reason', name, role: roleOf(name) });
+    });
+  }
   speeches.forEach(b => steps.push({ kind: 'beat', beat: b }));
   // A nomination structure that is not the classic pawn play gets said out
   // loud in the Diary Room — two real targets, a split pair, two quiet
@@ -17558,19 +17579,27 @@ export function rpBuildBBNominations(ep, only = null) {
      person beside them came up automatically, so exactly ONE of these two
      names gets a reason and the other gets the truth: they are there because
      of who they arrived with. */
-  const duoNom = act?.duo?.pair?.length === 2 ? act.duo : null;
-  const duoTarget = duoNom
-    ? (duoNom.pair.includes(act.target) ? act.target : duoNom.pair[0]) : null;
-  const duoCollateral = duoNom ? duoNom.pair.find(n => n !== duoTarget) : null;
+  // Any duos block, one pair or two — the gate used to insist on exactly two
+  // names, so a four-name block fell straight through to the ordinary ceremony
+  // and read out four separate nominations for a decision made twice.
+  const duoNom = act?.duo?.blocks?.length ? act.duo : null;
+  const singleDuo = duoNom?.blocks?.length === 1 ? duoNom.blocks[0] : null;
+  const duoTarget = singleDuo
+    ? (singleDuo.includes(act.target) ? act.target : singleDuo[0]) : null;
+  const duoCollateral = singleDuo ? singleDuo.find(n => n !== duoTarget) : null;
 
   // ── the words ──
   const openLine = anon
     ? `The house is called to the sofas and the chair at the head of the table stays empty. The wall screen lights up: "This is the nomination ceremony. This week's Head of Household is invisible. Big Brother will now turn ${WORD} keys on their behalf."`
-    : duoNom
+    : duoNom && duoNom.blocks?.length > 1
       ? `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
-      + ` It is my responsibility as Head of Household to nominate a DUO for eviction — not two`
-      + ` houseguests, two houseguests who walked into this house together. In my nomination box`
-      + ` are their two keys, and I only had one decision to make."`
+      + ` It is my responsibility as Head of Household to nominate TWO DUOS for eviction — not four`
+      + ` houseguests. Four keys, turned two at a time, and I only had two decisions to make."`
+      : duoNom
+        ? `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
+        + ` It is my responsibility as Head of Household to nominate a DUO for eviction — not two`
+        + ` houseguests, two houseguests who walked into this house together. In my nomination box`
+        + ` are their two keys, and I only had one decision to make."`
       : `<strong>${hoh}</strong> sits down in front of the wall. "This is the nomination ceremony.`
       + ` It is my responsibility as Head of Household to nominate ${WORD} people for eviction.`
       + ` In my nomination box are the keys of the houseguests I am nominating.`
@@ -17614,6 +17643,29 @@ export function rpBuildBBNominations(ep, only = null) {
       return `<div class="bbns-card is-key">
         <div class="bbns-card-h">${_bbAvatar(step.name, 30)}<span class="bbns-pill red">KEY ${step.n} TURNED</span></div>
         <div class="bbns-card-b">${KEY_LINES[(idx + step.name.length) % KEY_LINES.length](step.name, idx)}</div></div>`;
+    }
+    if (step.kind === 'duokeys') {
+      const [a, b] = step.pair;
+      const kin = act?.duo?.kins?.[step.i] || '';
+      const ORD = ['first two', 'next two', 'last two'];
+      return `<div class="bbns-card is-key">
+        <div class="bbns-card-h">${_bbAvatar(a, 30)}<span class="bbduo-chain"></span>${_bbAvatar(b, 30)}
+          <span class="bbns-pill red">${kin ? _bbEsc(kin).toUpperCase() : 'A DUO'}</span></div>
+        <div class="bbns-card-b"><strong>${_bbEsc(hoh)}</strong> turns the ${ORD[step.i] || 'next two'}
+          keys together. <strong>${_bbEsc(a)}</strong> and <strong>${_bbEsc(b)}</strong> come up on
+          the wall side by side, which is the only way either of them was ever going up.</div></div>`;
+    }
+    if (step.kind === 'duowhy') {
+      const kin = act?.duo?.kins?.[step.i] || '';
+      const kinLine = kin && kin !== 'Came in together'
+        ? ` You are ${_bbEsc(kin).toLowerCase()}."` : '"';
+      return `<div class="bbns-card is-reason">
+        <div class="bbns-card-h">${_bbAvatar(step.target, 30)}
+          <span class="bbns-pill gold">WHY ${_bbEsc(step.target).toUpperCase()}</span></div>
+        <div class="bbns-card-b">${_bbNomReason(hoh, step.target, step.role, ep)}
+          <span class="bbh-why">"${_bbEsc(step.other)}, I have nothing against you and I am not going
+          to stand here and invent something. ${_bbEsc(step.target)} is who I came for, and you are
+          who ${_bbEsc(step.target)} walked in with.${kinLine}</span></div></div>`;
     }
     if (step.kind === 'reason') {
       // Did this nomination break something the Head of Household had promised?
@@ -17678,8 +17730,12 @@ export function rpBuildBBNominations(ep, only = null) {
         <div class="bbns-card-h">${anon || !hoh ? '' : _bbAvatar(hoh, 30)}${noms.map(n => _bbAvatar(n, 30)).join('')}<span class="bbns-pill red">NOMINATIONS ARE COMPLETE</span></div>
         <div class="bbns-card-b">${anon
           ? `"${noms.join(', ')} — you have been nominated for eviction. This nomination ceremony is complete." The wall screen goes dark, and the room stays exactly as quiet as a room where everybody suspects everybody.`
-          : duoNom
-            ? `"${spokenNoms.join(', ')} — I have nominated the two of you for eviction, because in
+          : duoNom && duoNom.blocks?.length > 1
+            ? `"${duoNom.blocks.map(p => p.join(' and ')).join(', and ')} — I have nominated two duos
+            for eviction, and one of those two pairs is losing somebody on Thursday. This is the
+            nomination ceremony. Nominations are complete."`
+            : duoNom
+              ? `"${spokenNoms.join(', ')} — I have nominated the two of you for eviction, because in
             this house you are one nomination. This is the nomination ceremony. Nominations are complete."`
             : `"${spokenNoms.join(', ')} — I have nominated you for eviction because that is my
           responsibility as Head of Household. This is the nomination ceremony. Nominations are complete."`}${
@@ -17698,7 +17754,14 @@ export function rpBuildBBNominations(ep, only = null) {
   const nextLabel = state.idx < 0 ? 'Begin the ceremony'
     : (state.idx + 1) % 2 === 1 && state.idx + 1 <= noms.length * 2 ? 'Turn the next key' : 'Reveal next';
 
-  return `<div class="rp-page bb-room bb-block bbns">
+  const DUO_CSS = duoCeremony ? `<style>
+    .bbns .bbduo-chain{position:relative;display:inline-block;width:22px;height:10px;margin:0 2px;}
+    .bbns .bbduo-chain::before,.bbns .bbduo-chain::after{content:'';position:absolute;top:0;
+      width:12px;height:10px;border:2px solid rgba(240,165,0,.75);border-radius:5px;}
+    .bbns .bbduo-chain::before{left:0;}
+    .bbns .bbduo-chain::after{right:0;}
+  </style>` : '';
+  return `${DUO_CSS}<div class="rp-page bb-room bb-block bbns">
     <div class="rp-eyebrow">Week ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:26px;letter-spacing:2px;text-align:center;color:#f85149;text-shadow:0 0 20px #f8514933;margin-bottom:4px">NOMINATION CEREMONY</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:14px">${

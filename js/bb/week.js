@@ -2539,10 +2539,19 @@ export function simulateBBWeek(options = {}) {
      it matters most. */
   let duoNom = null;
   if (week.duoNomination && week.duoNomination.every(n => nominees.includes(n))) {
-    try {
-      duoNom = { pair: [...week.duoNomination],
-        kin: duoKinLabel(week.duoNomination[0], week.duoNomination[1]) };
-    } catch { duoNom = { pair: [...week.duoNomination], kin: '' }; }
+    const blocks = week.duoBlocks?.length ? week.duoBlocks : [week.duoNomination];
+    const wanted = [plan.target, ...(plan.nominees || []), plan.backdoorTarget].filter(Boolean);
+    duoNom = {
+      pair: [...week.duoNomination],
+      blocks: blocks.map(p => [...p]),
+      // Which half the Head of Household actually came for. The other one is
+      // there because of who they walked in with, and the ceremony has to be
+      // able to tell the difference or it invents a grievance for somebody
+      // nobody chose.
+      targets: blocks.map(p => p.find(n => wanted.includes(n)) || p[0]),
+      kins: blocks.map(p => { try { return duoKinLabel(p[0], p[1]); } catch { return ''; } }),
+    };
+    try { duoNom.kin = duoKinLabel(blocks[0][0], blocks[0][1]); } catch { duoNom.kin = ''; }
   }
   week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     duo: duoNom,

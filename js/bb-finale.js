@@ -14,6 +14,7 @@
 // than writing a second opinion about how juries think.
 
 import { gs, seasonConfig } from './core.js';
+import { themeBeat, themeState } from './bb/themes.js';
 import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
@@ -396,6 +397,18 @@ export function simulateBBFinale(rng = Math.random) {
   // jurors. It runs FIRST because it is the only part of the last week that is
   // not a competition, and because the revision figure it publishes is about
   // Part Three, which has not happened yet.
+  // The season's antagonist, on the last night.
+  //
+  // The finale has its own simulator, so an antagonist wired only into
+  // simulateBBWeek escalates all season and then is simply absent for the
+  // episode everything was building to. It speaks twice here: once as the
+  // night opens, once when the winner is known.
+  const _themeFinale = (hook, ctx) => {
+    try { const b = themeBeat(hook, { week: week.num, ...ctx }); if (b) acts.push(b); }
+    catch { /* an unthemed season has nothing to say */ }
+  };
+  _themeFinale('finale', { finalists: [...house] });
+
   const finaleHouse = generateBBFinaleHouse(week, rng);
   if (finaleHouse) acts.push(finaleHouse);
 
@@ -637,6 +650,8 @@ export function simulateBBFinale(rng = Math.random) {
   try { favourite = runAmericasFavourite({ finalTwo, rng }); } catch { favourite = null; }
   if (favourite) acts.push({ type: 'americas-favourite', ...favourite });
 
+  _themeFinale('crown', { finalists: [...finalTwo], winner });
+
   gs.phase = 'complete';
   gs.winner = winner;
   gs.bb ||= {};
@@ -648,6 +663,10 @@ export function simulateBBFinale(rng = Math.random) {
     isBigBrother: true,
     isFinale: true,
     finale: true,
+    // Without this the finale episode carries no mood, the reader falls back to
+    // 'neutral', and a season that spent eight weeks escalating drops out of the
+    // escalated room for the one episode it was all building to.
+    themeMood: themeState()?.mood || null,
     houseAtStart: house,
     finalHoh, finalTwo, cut,
     jury, juryVotes: votes,

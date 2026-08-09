@@ -307,7 +307,13 @@ export function themeState() {
   return gs?.bb?.theme || null;
 }
 
-const VOICE_HOOKS = ['open', 'noms', 'veto', 'vote'];
+// Four points inside a week, and two on the last night.
+//
+// The finale runs through its own simulator, not simulateBBWeek, so an
+// antagonist wired only into the weekly hooks escalates for eight weeks, gets
+// everybody to the end, and then is not there for any of it. `finale` opens
+// the night; `crown` is the last word, after the jury has spoken.
+const VOICE_HOOKS = ['open', 'noms', 'veto', 'vote', 'finale', 'crown'];
 
 /**
  * The house, as the antagonist is allowed to know it.
@@ -350,6 +356,11 @@ function fillLine(tpl, ctx) {
   if (tpl.includes('{cursed}') && !inHouse(ctx.cursed, roster)) return null;
   if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n, roster)))) return null;
   if (tpl.includes('{evicted}') && !ctx.evicted) return null;
+  // The last night names people who are still there and one who has just won,
+  // so both go through the same roster check as everybody else.
+  const finalists = (ctx.finalists || []).filter(Boolean);
+  if (tpl.includes('{finalists}') && (!finalists.length || finalists.some(n => !inHouse(n, roster)))) return null;
+  if (tpl.includes('{winner}') && !ctx.winner) return null;
   // Not a name — the shape of the count, e.g. "5-2". A line that reads the
   // margin is reading something the HOUSE did, which is the register the
   // antagonist is for; a line that reads a name is only a substitution.
@@ -364,7 +375,11 @@ function fillLine(tpl, ctx) {
     .replace(/\{cursed\}/g, ctx.cursed || '')
     .replace(/\{nominees\}/g, list)
     .replace(/\{margin\}/g, ctx.margin || '')
-    .replace(/\{evicted\}/g, ctx.evicted || '');
+    .replace(/\{evicted\}/g, ctx.evicted || '')
+    .replace(/\{finalists\}/g, finalists.length > 1
+      ? `${finalists.slice(0, -1).join(', ')} and ${finalists[finalists.length - 1]}`
+      : (finalists[0] || ''))
+    .replace(/\{winner\}/g, ctx.winner || '');
 }
 
 /** Move the antagonist's register. This is how a heel turn is expressed. */

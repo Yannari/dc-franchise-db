@@ -973,12 +973,18 @@ async function _editBySlug(slug) {
     voice: parsed.prose,
     avatarDataUri: (rich && rich.avatarDataUri) || '',
     returneeDataUri: (rich && rich.returneeDataUri) || '',
-    // Whether the server already holds `<slug>-returnee.png`, so the slot opens
-    // itself for a character that has art rather than hiding it behind a
-    // checkbox nobody would think to tick.
-    _hasReturneeArt: !!(rich && rich.returneeDataUri)
-      || _avatarList.includes(`${(rich && rich.slug) || ''}-returnee`),
+    // Filled in below, once the draft's own slug is known.
+    _hasReturneeArt: false,
   };
+  // ── off the DRAFT's slug, not the IndexedDB record's ──
+  //
+  // This read `rich.slug`, and `rich` only exists for a character that has been
+  // saved through the Studio before. Aiden — who is in the roster, has
+  // aiden-returnee.png sitting on the server, and has never been edited here —
+  // produced `''`, so it looked for a file called `-returnee.png`, found
+  // nothing, and reported that a character with returnee art had none.
+  _draft._hasReturneeArt = !!_draft.returneeDataUri
+    || (!!_draft.slug && _avatarList.includes(`${_draft.slug}-returnee`));
   renderStudio();
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1147,6 +1153,26 @@ function _renderEditor() {
     d.returneeDataUri = ''; d._removeReturnee = true; _refreshReturneePortrait();
   });
   if (!retBox.hidden) _refreshReturneePortrait();
+  // ── and open it for art the list has not heard about yet ──
+  //
+  // `_avatarList` comes from `/api/avatars`, which is fetched asynchronously
+  // and is empty with no backend at all — so a character whose returnee
+  // portrait is sitting on disk still opened with the slot folded away and the
+  // box unticked, which reads exactly like "this character has no returnee
+  // art". One image request settles it.
+  if (retBox.hidden && d.slug && !d._removeReturnee && typeof Image !== 'undefined') {
+    const probe = new Image();
+    probe.onload = () => {
+      if (_draft !== d) return;          // editor moved on while this was in flight
+      d._hasReturneeArt = true;
+      const box = document.getElementById('st-ret');
+      const tick = document.getElementById('st-f-ret-on');
+      if (box) box.hidden = false;
+      if (tick) tick.checked = true;
+      _refreshReturneePortrait();
+    };
+    probe.src = _avatarSrc(`${d.slug}-returnee`);
+  }
 
   // save / delete
   ed.querySelector('#st-save').addEventListener('click', _save);
@@ -1305,11 +1331,20 @@ function _refreshPortrait() {
 
 function _refreshReturneePortrait() {
   const p = document.getElementById('st-ret-portrait'); if (!p) return;
+  // ── ASK THE FILE, DO NOT ASK THE LIST ──
+  //
+  // Gating the preview on `_hasReturneeArt` meant the panel could only ever
+  // show art it had been told about in advance — and the list it was told from
+  // (`/api/avatars`) is fetched asynchronously and is empty with no backend at
+  // all. So opening the slot on a character whose portrait is sitting right
+  // there printed "no returnee art" over a file that exists.
+  //
+  // The image itself is the authority: request it, and let onerror say no.
   const src = _draft.returneeDataUri
-    || (_draft.slug && _draft._hasReturneeArt && !_draft._removeReturnee
-      ? _avatarSrc(`${_draft.slug}-returnee`) : '');
+    || (_draft.slug && !_draft._removeReturnee ? _avatarSrc(`${_draft.slug}-returnee`) : '');
+  p.classList.remove('miss');
   p.innerHTML = src
-    ? `<img src="${_esc(src)}" alt="" onerror="this.closest('.st-ret-face').classList.add('miss')">`
+    ? `<img src="${_esc(src)}" alt="" onerror="this.parentElement.innerHTML='&lt;span class=&quot;st-portrait-ph&quot;&gt;no returnee art&lt;/span&gt;'">`
     : '<span class="st-portrait-ph">no returnee art</span>';
 }
 

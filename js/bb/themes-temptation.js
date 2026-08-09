@@ -114,6 +114,34 @@ export default {
           'Everything in that room was earned. That is what makes it so easy to beat.',
         ],
       },
+      finale: {
+        neutral: [
+          'Three left, and the Den has nothing further to offer. That part is over.',
+          'The Den made its offers. {finalists} are what the house did with them.',
+          '{finalists}. Every one of them said yes to something to be standing there.',
+          'The last night. The Den is only watching now, which it finds it prefers.',
+        ],
+        hostile: [
+          '{finalists}. The Den collected from all three and none of them will say so.',
+          'The offers are finished. What was taken is not.',
+          'Three chairs, and the Den remembers what each of them cost somebody else.',
+          '{finalists} arrive at the end owing a debt to people who are not here.',
+        ],
+      },
+      crown: {
+        neutral: [
+          '{winner} wins. The Den notes that they took the offer, and that nobody made them.',
+          '{winner}. The Den would like the record to show it never forced a hand.',
+          'The house chose {winner}. The Den only ever opened a door.',
+          '{winner} wins a game that kept asking, all summer, and got a yes.',
+        ],
+        hostile: [
+          '{winner} wins, and somebody who paid for it is watching from the seats.',
+          '{winner}. Every yes on the way here belonged to somebody, and not always to them.',
+          'The Den got its answer. {winner} got the money. Those are two different prizes.',
+          '{winner} wins. The Den is already thinking about next summer.',
+        ],
+      },
       vote: {
         neutral: [
           '{evicted} leaves without ever being offered anything. The Den considers that a mercy.',
@@ -209,6 +237,20 @@ export default {
     { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
     { at: { fromEnd: 3 }, mood: 'hostile' },
     { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
+    // THE ENDING, and it lands at a final five.
+    //
+    // `fromEnd` maps onto house size the same way at every cast this game
+    // supports: fromEnd 3 is always a final six, fromEnd 2 always a final
+    // five. So the endgame reads the same on a cast of twelve and a cast of
+    // twenty — the box at a final seven, the double eviction at six, and the
+    // last offer of the season put in front of five people who have all
+    // watched what taking one costs.
+    //
+    // It deliberately does not run to the finale. A season that is still
+    // introducing mechanics at a final four has nowhere to put the
+    // consequences; the Den stops dealing at five and spends the last night
+    // talking, which is what the `finale` and `crown` hooks are for.
+    { at: { fromEnd: 2 }, book: 'bb-den-of-temptation' },
   ],
 
   books: ['bb-den-of-temptation', 'bb-pandoras-box'],

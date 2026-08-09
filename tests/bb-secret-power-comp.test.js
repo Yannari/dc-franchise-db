@@ -242,3 +242,72 @@ describe('both new acts reach both transcripts', () => {
     expect(backlog.slice(bAt, bAt + 1200)).toMatch(/r\.winner/);
   });
 });
+
+describe('who knows who is holding what', () => {
+  // This is not the first twist to hand out a power in secret — the
+  // Whacktivity, Pandora's Box, the Den of Temptation and Something In This
+  // House have all been doing it — and none of them recorded who knew. So "who
+  // has the power" was not a fact the house could hold, be wrong about, or find
+  // out. It was nowhere at all.
+  //
+  // Recorded on `grantPower` rather than in any one module: five callers
+  // granting secretly is five places to forget, and the sixth would have too.
+  it('records every grant, whichever twist made it', async () => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { believesPowerHeld } = await import('../js/bb/knowledge.js');
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    grantPower('the-cloud', 'ana', { week: 2, visibility: 'secret', source: 'bb-whacktivity' });
+    expect(believesPowerHeld('ana', 'ana', 'the-cloud'), 'the holder does not know')
+      .toBe(true);
+  });
+
+  it('tells nobody when the grant was secret', async () => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { believesPowerHeld } = await import('../js/bb/knowledge.js');
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    grantPower('the-cloud', 'ana', { week: 2, visibility: 'secret', source: 'x' });
+    for (const other of HOUSE.filter(n => n !== 'ana')) {
+      expect(believesPowerHeld(other, 'ana', 'the-cloud'), `${other} should not know`)
+        .toBe(false);
+    }
+  });
+
+  it('tells the house when the grant was public', async () => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { believesPowerHeld } = await import('../js/bb/knowledge.js');
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    grantPower('the-cloud', 'ben', { week: 2, visibility: 'public', source: 'x' });
+    expect(believesPowerHeld('ana', 'ben', 'the-cloud'), 'a public grant was kept secret')
+      .toBe(true);
+  });
+
+  it('keeps the holder secret when only the POWER is public', async () => {
+    // `holder-secret` means the house knows something is out there and not who
+    // has it — which is a different fact, and the distinction the Hacker and
+    // the Invisible HOH are built on.
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { believesPowerHeld } = await import('../js/bb/knowledge.js');
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    grantPower('the-cloud', 'cleo', { week: 2, visibility: 'holder-secret', source: 'x' });
+    expect(believesPowerHeld('ana', 'cleo', 'the-cloud')).toBe(false);
+    expect(believesPowerHeld('cleo', 'cleo', 'the-cloud')).toBe(true);
+  });
+
+  it('can be told, and the listener can fail to believe it', async () => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { learnBBPower, believesPowerHeld } = await import('../js/bb/knowledge.js');
+    setGs({ bb: { weeks: [], powers: [] }, activePlayers: [...HOUSE] });
+    grantPower('the-cloud', 'ana', { week: 2, visibility: 'secret', source: 'x' });
+    learnBBPower('ben', 'ana', 'the-cloud', { from: 'ana', week: 2, confidence: 1, rng: () => 0 });
+    expect(believesPowerHeld('ben', 'ana', 'the-cloud')).toBe(true);
+    // And a rumour about a power nobody holds does not become one.
+    expect(learnBBPower('ben', 'cleo', 'diamond-veto', { week: 2 })).toBe(false);
+  });
+
+  it('is not load-bearing for the grant itself', () => {
+    // A power that fails to record who knows is still a power. The grant must
+    // not be lost to a knowledge-store problem.
+    const src = require('node:fs').readFileSync('js/bb/powers.js', 'utf8');
+    expect(src).toMatch(/try \{ recordBBPower\(/);
+  });
+});

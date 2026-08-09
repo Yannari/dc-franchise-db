@@ -153,6 +153,75 @@ export function believesDeal(knower, a, b) {
 }
 
 /**
+ * Somebody is holding a power, and the house does not know it.
+ *
+ * The `type: 'power'` fact already in this file is the HOH REIGN — who is in
+ * charge this week — which is public by definition. This is the opposite kind
+ * of fact: a secret advantage whose whole value is that nobody can price it.
+ *
+ * Recorded as a belief rather than a flag for the same reason deals are. "Who
+ * has the power" is a thing houseguests are WRONG about, loudly, for weeks, and
+ * a boolean on the instance cannot be wrong. Only the holder knows at first;
+ * everybody else has to be told, catch them using it, or guess.
+ */
+export function recordBBPower(holder, powerId, { week = 0, knownTo = [] } = {}) {
+  if (!holder || !powerId) return null;
+  const id = factId('holds', holder, powerId);
+  recordFact({ type: 'holds', subject: holder, object: powerId, payload: {}, ep: week });
+  learn(holder, id, { sourceType: 'observed', ep: week });
+  // A public grant has witnesses. A secret one has none, and that is the point.
+  for (const name of knownTo) {
+    if (name && name !== holder) learn(name, id, { sourceType: 'observed', ep: week });
+  }
+  return id;
+}
+
+/**
+ * Somebody finds out. Told, or caught watching.
+ *
+ * Returns whether the belief actually FORMED — being told is a persuasion roll
+ * the listener can fail, exactly as with a deal, so a whisper is not the same
+ * as knowledge and an unconvincing one is worth nothing.
+ */
+export function learnBBPower(knower, holder, powerId, { from = null, week = 0,
+  confidence = 0.75, rng = null } = {}) {
+  if (!knower || !holder || !powerId || knower === holder) return false;
+  const id = factId('holds', holder, powerId);
+  // No such power on record: a rumour about an advantage nobody has does not
+  // quietly become one.
+  if (!getFact(id)) return false;
+  const roll = rng || stableRng('holds', holder, powerId, knower, from || '', week);
+  return !!learn(knower, id, {
+    source: from || 'observation', sourceType: from ? 'told' : 'observed',
+    from, confidence, ep: week, rng: roll,
+  });
+}
+
+/** Does this houseguest think that one is holding something? */
+export function believesPowerHeld(knower, holder, powerId) {
+  if (!knower || !holder || !powerId) return false;
+  return !!believes(knower, factId('holds', holder, powerId));
+}
+
+/**
+ * Everybody who thinks this person is holding something.
+ *
+ * What a nomination plan is really asking when it hesitates over a name — and
+ * the reason a power that has been guessed at is worth less than one that has
+ * not, even when nobody can prove it.
+ */
+export function suspectedHolders(powerId, house = []) {
+  const out = [];
+  for (const knower of house) {
+    for (const holder of house) {
+      if (knower === holder) continue;
+      if (believesPowerHeld(knower, holder, powerId)) out.push({ knower, holder });
+    }
+  }
+  return out;
+}
+
+/**
  * Who somebody is coming for. They know; anybody they told may know.
  *
  * Keyed by HUNTER AND QUARRY, not by quarry alone. Keying it on the target

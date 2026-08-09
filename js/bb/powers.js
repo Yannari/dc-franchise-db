@@ -16,6 +16,7 @@
 // with the season.
 import { gs } from '../core.js';
 import { juryOpensAt } from './jury.js';
+import { recordBBPower } from './knowledge.js';
 
 /**
  * The definitions. Rules only — no acquisition, no narration.
@@ -305,6 +306,29 @@ export function grantPower(powerId, holder, { week = 1, visibility = 'public', s
     disposed: false, disposedReason: null,
   };
   store().push(instance);
+
+  // ── who knows, recorded HERE because every distributor comes through here ──
+  //
+  // This is not the first twist to hand out a power in secret — the Whacktivity,
+  // Pandora's Box, the Den of Temptation and Something In This House have all
+  // been doing it — and none of them recorded who knew. So "who has the power"
+  // was not a fact the house could hold, be wrong about, or find out. It was
+  // nowhere at all.
+  //
+  // Put on `grantPower` rather than in any one module for the obvious reason:
+  // five callers granting secretly is five places to forget, and the sixth
+  // would have forgotten too.
+  //
+  // `visibility` already says who should know, and it is the instance's own
+  // field, so nothing needs to be passed:
+  //
+  //   public         the house watched it happen
+  //   holder-secret  the house knows the power EXISTS, not who has it — so the
+  //                  holder fact stays with the holder
+  //   secret         nobody
+  const witnesses = visibility === 'public' ? (gs.activePlayers || []) : [];
+  try { recordBBPower(holder, powerId, { week, knownTo: witnesses }); } catch { /* knowledge is not load-bearing for the grant */ }
+
   return instance;
 }
 

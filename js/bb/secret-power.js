@@ -146,6 +146,10 @@ export function runSecretPowerComp({
       const instance = grantPower(id, room.winner, {
         week: weekNum, visibility: 'secret', source: 'bb-secret-power-comp',
       });
+      // Who knows is recorded by `grantPower` itself, off the instance's own
+      // visibility — this granted secretly, so nobody does. Doing it here as
+      // well would have been the second of five callers each remembering
+      // separately, which is how four of them come to forget.
       if (instance) granted.push({ name: room.winner, power: id });
       beats.push(beat(
         `${room.winner} was never running for Head of Household. ${room.winner} was running for `

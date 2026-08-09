@@ -735,17 +735,41 @@ describe('the interrogation is a scene, and a decision', () => {
     expect(badges).toContain('THE NAME');
   });
 
-  it('does not spend the power on a week it is safe in', async () => {
+  it('reads the board rather than rolling against boldness', async () => {
     // "Is it good for my game to use this now, or should I wait." The first
     // version rolled against boldness and threw the biggest thing on the shelf
     // at weeks the holder was never in danger in.
-    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
-    expect(src, 'nothing asks whether the holder is actually a target')
-      .toMatch(/nominationScore\(hoh, name/);
-    expect(src).toMatch(/const safe = worse >= 2/);
-    // And an expiring power is spent anyway, because an unspent one is worth
-    // nothing at the jury.
-    expect(src).toMatch(/expiring \? 0\.72/);
+    //
+    // This used to grep the source for `const safe = worse >= 2`, and that is
+    // why it broke the moment the step became a curve: a test that pins the
+    // IMPLEMENTATION of a decision fails on every improvement to it and passes
+    // on every change that leaves the line intact. What it should have pinned
+    // is that being in danger moves the answer, which is what it does now.
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { playInterrogation } = await import('../js/bb/secret-power-plays.js');
+    const { addBond } = await import('../js/bonds.js');
+    const rate = async hated => {
+      let fired = 0;
+      for (let s = 1; s <= 40; s++) {
+        seat();
+        // Everybody in this house is identical, so the only way to be the
+        // likeliest target is to be disliked — which is what nominationScore
+        // reads, and what the gate then reads out of it.
+        for (const n of H) {
+          if (n === 'ben' || n === 'ana') continue;
+          addBond('ana', n, hated ? 4 : -4);
+        }
+        grantPower('hoh-interrogation', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+        if (playInterrogation({ week: { num: 3 }, house: H, hoh: 'ana', rng: seeded(s * 31) })) fired++;
+      }
+      return fired / 40;
+    };
+    const inDanger = await rate(true);
+    const safe = await rate(false);
+    expect(inDanger, 'the holder sat on it while being the likeliest name on the board')
+      .toBeGreaterThan(0.6);
+    expect(inDanger - safe, 'the board makes no difference to the decision')
+      .toBeGreaterThan(0.15);
   });
 
   it('weighs the names rather than counting them', async () => {

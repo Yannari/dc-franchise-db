@@ -16,7 +16,7 @@
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getPerceivedBond } from '../bonds.js';
-import { activePowersAt, usePower } from './powers.js';
+import { activePowersAt, usePower, spendPull } from './powers.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: players.filter(Boolean), badgeText, badgeClass });
@@ -46,13 +46,17 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
   let pull;
   if (evicted === holder) pull = 1;
   else {
-    const worth = Math.max(0, bond(holder, evicted)) * 0.085;
     // Spending it is loud: the whole house learns a power existed and that
     // the person holding it was willing to burn it on somebody else.
     const exposure = 0.05 * Math.max(0.5, (10 - (st.boldness || 5)) / 5);
-    pull = worth + (lastWeek ? 0.22 : 0) - exposure;
+    const need = Math.max(0, Math.max(0, bond(holder, evicted)) * 0.1 - exposure);
+    // A Hex on its last night was worth +0.22 and is now the decision itself:
+    // there is no week after this one to find a better save in.
+    pull = spendPull({ need,
+      weeksLeft: lastWeek ? 0 : Math.max(1, inst.expiresAfterWeek - week.num),
+      nerve: (st.boldness || 5) / 10 });
   }
-  if (rng() >= Math.min(0.92, pull)) return null;
+  if (rng() >= pull) return null;
 
   usePower(inst, week.num);
   inst.revealed = true;

@@ -295,6 +295,47 @@ export function expiryFor(def, week) {
   return Math.min(byWeeks, week + weeksLeft - 1);
 }
 
+/**
+ * Do they spend it tonight?
+ *
+ * Every gate on the shelf was answering this question on its own, with its own
+ * hand-tuned constants, and they had all drifted the same way: timid. Measured
+ * over sixty seeded weeks with the power granted to somebody who was ACTUALLY
+ * in trouble that week, the Cloud fired 80% of the time and the Interrogation
+ * 57% — so one in five holders walked onto the block still holding the thing
+ * that would have stopped it, and nearly half of the biggest power in the game
+ * sat in a pocket through the exact week it was written for.
+ *
+ * Two rules, and they are the whole model:
+ *
+ *   1. NEED IS THE ANSWER. A holder who is the likeliest name on the board
+ *      plays it. Patience is something you can only afford when it is not you,
+ *      which is why patience here is scaled by `1 - need` — at full need it is
+ *      exactly zero, and no amount of remaining window makes somebody sit on a
+ *      power through their own eviction.
+ *   2. THE LAST WEEK IS NOT A NUDGE. An unspent power at the end of its window
+ *      is worth nothing at all, so the final week ignores patience entirely and
+ *      a marginal use beats binning it. It was a +0.18 bonus on the Diamond and
+ *      a +0.22 on the Hex, which is a rounding error against a decision.
+ *
+ * `nerve` (boldness) tilts it either way by a few points. It is a tilt and not
+ * a gate on purpose: a timid houseguest hesitates, they do not hold a veto
+ * while being evicted with it.
+ *
+ * @param need 0..1, how badly this week wants it — proportional, never a step
+ * @param weeksLeft evictions left in the window; 0 means tonight or never
+ * @param nerve 0..1, usually boldness/10
+ */
+export function spendPull({ need = 0, weeksLeft = 0, nerve = 0.5 } = {}) {
+  const cl = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  const n = cl(need, 0, 1);
+  const b = cl(nerve, 0, 1);
+  if (weeksLeft <= 0) return cl(0.55 + n * 0.42, 0, 0.97);
+  const base = n * (1.02 + (b - 0.5) * 0.14);
+  const patience = Math.min(1, weeksLeft / 3) * (1 - b) * 0.45 * (1 - n);
+  return cl(base - patience, 0.02, 0.97);
+}
+
 export function grantPower(powerId, holder, { week = 1, visibility = 'public', source = 'unknown' } = {}) {
   const def = BB_POWER_DEFINITIONS[powerId];
   if (!def || !holder) return null;

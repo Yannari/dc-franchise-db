@@ -24,7 +24,7 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { BB_POWER_DEFINITIONS, grantPower, heldPowers } from '../js/bb/powers.js';
+import { BB_POWER_DEFINITIONS, grantPower, heldPowers, spendPull } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -82,14 +82,15 @@ describe('The Cloud', () => {
   //
   // The Cloud stopped being automatic and became a DECISION, which is right —
   // and immediately made this test flaky, because five seeds is nowhere near
-  // enough to observe a decision that is usually "no". Measured over 200
-  // seeded weeks with the Cloud granted every time: it is played in 14.5% of
-  // them overall, 55% of the weeks where its holder is actually in the Head of
-  // Household's plan (22 of 40), and about 4% otherwise — a holder who senses
-  // nothing coming mostly sits on it, which is the point of making it a
-  // decision.
+  // enough to observe a decision that is usually "no". A holder who senses
+  // nothing coming mostly sits on it, which is the point of making it one.
   //
-  // At 14.5% a five-seed window comes up empty roughly 45% of the time. Thirty
+  // The rate when they DO sense it is guarded separately, in "powers get spent
+  // by the people who need them" at the bottom of this file. It used to be 55%
+  // and this comment recorded that as if it were fine — one holder in two
+  // walking onto the block still holding the thing that stops it.
+  //
+  // At ~15% overall a five-seed window comes up empty roughly 45% of the time. Thirty
   // brings that under 1%, which is the difference between a guard and a coin.
   const CLOUD_SEEDS = [2026, 77, 4242, 31, 909, 12, 88, 141, 203, 317,
     404, 512, 633, 719, 826, 934, 1041, 1158, 1263, 1372,
@@ -243,5 +244,103 @@ describe('The App Store', () => {
     for (const w of act.winners) {
       expect(w.powerId, 'the app store handed out the Diamond Veto').not.toBe('diamond-veto');
     }
+  });
+});
+
+describe('powers get spent by the people who need them', () => {
+  beforeEach(() => house());
+
+  // The complaint that produced `spendPull`, in the form it was measured in:
+  // powers were being held through the exact week they were written for.
+  //
+  // Every gate on the shelf had its own hand-tuned constants and they had all
+  // drifted timid. Measured over sixty seeded weeks, granting each power to
+  // somebody who was ACTUALLY in trouble that week: the Cloud fired 80% of the
+  // time and the Interrogation 57%. Both are now read off one shared curve, and
+  // the same measurement says 93% and 78%.
+  //
+  // The floors here sit below what was measured, not at it — this guards
+  // against the drift back toward timidity, not against the numbers moving.
+  const seeds = n => Array.from({ length: n }, (_, i) => 1000 + i * 37);
+
+  // Not by act type. Every power emits a differently-shaped act, and looking
+  // for the wrong one reads as "this power never fires" — it did, for three of
+  // them, while I was measuring this. The ledger is what they all agree on.
+  const spent = (id, holder) => !!(gs.bb?.powers || [])
+    .find(p => p.powerId === id && p.holder === holder && p.used);
+
+  it('does not sit on a power through the week it exists for', () => {
+    // Two passes over the same seeds: one with no power, to find out who was
+    // in trouble, and one granting it to exactly that person.
+    const trouble = [];
+    for (const seed of seeds(40)) {
+      house();
+      const ep = withSeededRandom(seed, () => simulateBBEpisode());
+      trouble.push({ seed, noms: ep.initialNominees || [], hoh: ep.hoh });
+    }
+
+    for (const [id, floor] of [['the-cloud', 0.8], ['hoh-interrogation', 0.6]]) {
+      let fired = 0; let n = 0;
+      for (const t of trouble) {
+        const holder = (t.noms || []).find(x => x && x !== t.hoh);
+        if (!holder) continue;
+        house();
+        withSeededRandom(t.seed, () => {
+          grantPower(id, holder, { week: 1, visibility: 'holder-secret', source: 'test' });
+          return simulateBBEpisode();
+        });
+        n++;
+        if (spent(id, holder)) fired++;
+      }
+      expect(n, `${id}: no seeded week put its holder in danger`).toBeGreaterThan(10);
+      expect(fired / n, `${id} was held through ${n - fired} of ${n} weeks its holder needed it`)
+        .toBeGreaterThan(floor);
+    }
+  }, 240000);
+
+  it('still holds it on a week nobody is coming', () => {
+    // The other half. Raising the floor is worthless if it just spends
+    // everything the moment it is granted — the Cloud on a quiet week should
+    // stay in the pocket, and it does, at 2%.
+    let fired = 0; let n = 0;
+    for (const seed of seeds(40)) {
+      house();
+      const ctl = withSeededRandom(seed, () => simulateBBEpisode());
+      const safe = NAMES.find(x => x !== ctl.hoh && !(ctl.initialNominees || []).includes(x));
+      if (!safe) continue;
+      house();
+      withSeededRandom(seed, () => {
+        grantPower('the-cloud', safe, { week: 1, visibility: 'holder-secret', source: 'test' });
+        return simulateBBEpisode();
+      });
+      n++;
+      if (spent('the-cloud', safe)) fired++;
+    }
+    expect(fired / n, 'the Cloud is being burned on quiet weeks').toBeLessThan(0.25);
+  }, 240000);
+
+  it('treats the last week of a window as the decision, not a nudge', () => {
+    // An unspent power at the end of its window is worth exactly nothing, so
+    // even a marginal use beats binning it. This was a +0.18 on the Diamond and
+    // a +0.22 on the Hex — a rounding error against a decision.
+    const marginal = { need: 0.15, nerve: 0.5 };
+    expect(spendPull({ ...marginal, weeksLeft: 4 })).toBeLessThan(0.2);
+    expect(spendPull({ ...marginal, weeksLeft: 0 })).toBeGreaterThan(0.55);
+  });
+
+  it('gives nobody patience about their own eviction', () => {
+    // Patience is scaled by how little you need it, so at full need it is
+    // exactly zero: no amount of remaining window makes somebody sit on a power
+    // while they are the one going home.
+    for (const weeksLeft of [0, 1, 3, 6]) {
+      expect(spendPull({ need: 1, weeksLeft, nerve: 0.1 }),
+        `a full-need holder hesitated with ${weeksLeft} weeks left`).toBeGreaterThan(0.9);
+    }
+    // And nerve is a tilt, not a gate: a timid houseguest hesitates, they do
+    // not hold a veto through their own eviction. A few points, not a third.
+    const bold = spendPull({ need: 0.6, weeksLeft: 3, nerve: 1 });
+    const timid = spendPull({ need: 0.6, weeksLeft: 3, nerve: 0 });
+    expect(bold).toBeGreaterThan(timid);
+    expect(bold - timid, 'boldness decides this rather than tilting it').toBeLessThan(0.35);
   });
 });

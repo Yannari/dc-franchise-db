@@ -19,7 +19,7 @@
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { BB_POWER_DEFINITIONS, usePower } from './powers.js';
+import { BB_POWER_DEFINITIONS, usePower, spendPull } from './powers.js';
 import { nominationScore } from './strategy.js';
 import { believesPowerHeld, learnBBPower } from './knowledge.js';
 
@@ -105,19 +105,20 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   };
   const danger = scoreOf(inst.holder);
   const worse = rivals.filter(n => scoreOf(n) > danger).length;
-  // Two people are likelier targets than me: the block is not coming this week,
-  // and a power spent on a safe week is a power wasted.
-  const safe = worse >= 2;
-  const expiring = weekNum >= inst.expiresAfterWeek;
+  // Where on the board they sit, as a fraction rather than a count. `worse >= 2
+  // means safe` was a step, and a step is wrong twice over: it read the same in
+  // a house of twelve as at final five, where being third-likeliest means you
+  // are up next week — and it collapsed the pull to 0.05, so the biggest power
+  // on the shelf sat out 43% of the weeks its holder was actually nominated.
+  const pct = rivals.length ? (rivals.length - worse) / rivals.length : 1;
+  // Bent, because the block is two or three chairs and not a ranking: being
+  // top of it is nearly all the need there is, and mid-pack is very little.
+  const need = pct ** 2.6;
   const s = pStats(inst.holder) || {};
-  const nerve = (s.boldness || 5) / 10;
-
-  // Expiring changes the sum entirely: an unspent power at the jury is worth
-  // nothing at all, so a mediocre week beats no week.
-  let pull = expiring ? 0.72 : safe ? 0.05 : 0.28 + nerve * 0.3;
-  // Being the likeliest name on the board is the strongest reason there is.
-  if (!safe && worse === 0) pull += 0.34;
-  if (rng() > clamp(pull, 0.02, 0.94)) return null;
+  const pull = spendPull({ need,
+    weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
+    nerve: (s.boldness || 5) / 10 });
+  if (rng() > pull) return null;
 
   usePower(inst, weekNum);
 
@@ -437,15 +438,15 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   const ally = others
     .map(n => ({ name: n, b: (() => { try { return getBond(inst.holder, n); } catch { return 0; } })() }))
     .sort((a, b) => b.b - a.b)[0] || null;
-  const worthSaving = !!ally && ally.b >= 2;
-
   // Spent when it is worth spending. Not on the block and with nobody on it
   // worth saving, this is a power looking for a use — and using it there is how
-  // you end up having spent the biggest thing you had on a stranger.
-  const expiring = weekNum >= inst.expiresAfterWeek;
-  const pull = onBlock ? 0.92
-    : worthSaving ? 0.55
-      : expiring ? 0.3 : 0.04;
+  // you end up having spent the biggest thing you had on a stranger. Sitting on
+  // the block yourself is not a dilemma, so it is very nearly one.
+  const need = onBlock ? 0.98 : Math.min(0.7, Math.max(0, ally?.b || 0) * 0.11);
+  const st = pStats(inst.holder) || {};
+  const pull = spendPull({ need,
+    weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
+    nerve: (st.boldness || 5) / 10 });
   if (rng() > pull) return null;
   // Nobody to use it on at all: it stays in the pocket rather than being spent
   // on whoever was standing nearest.

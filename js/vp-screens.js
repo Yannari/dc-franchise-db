@@ -21514,20 +21514,23 @@ function _bbCycleScreens(view, screens, suffix = '') {
         break;
       // Three plays, one screen. What each does differently lives in its beats;
       // what they share is "a secret power fired, and here is who knew".
-      case 'interrogation':
-      case 'mystery-competitor':
-      case 'mystery-veto':
-      // Its own act rather than a second `veto-ceremony`: reusing that type
-      // replayed the entire meeting — speeches, pleading, adjournment — for a
-      // scene that is three beats long and happens after everybody had gone to
-      // bed. The viewer got the same ceremony twice.
-      // A veto ceremony, so it gets the veto ceremony's stage — the slots, the
-      // stamps, the replacement chairs — without the meeting around it, because
-      // there was no meeting. See rpBuildBBSecondVeto.
+      /* A VETO CEREMONY, SO IT GETS THE VETO CEREMONY'S STAGE — the slots, the
+         stamps, the replacement chairs — without the meeting around it, because
+         there was no meeting. See rpBuildBBSecondVeto.
+
+         ON ITS OWN, ABOVE THE FALL-THROUGH GROUP. Adding it to the bottom of
+         that group captured all three labels above it: interrogation, the
+         mystery competitor and the mystery veto stopped reaching the power
+         screen and started being drawn by a builder that renders a BLOCK, which
+         none of them changes. A switch case with no `break` is not a place to
+         add a case. */
       case 'second-veto-ceremony':
         screens.push({ id: id('bb-veto2'), label: 'The Second Veto',
           html: rpBuildBBSecondVeto(view, act) });
         break;
+      case 'interrogation':
+      case 'mystery-competitor':
+      case 'mystery-veto':
       case 'power-played': {
         // The Coup d'État and the Cloud used to fire into nothing at all: the
         // act was emitted and no surface read it, so a week could be rewritten

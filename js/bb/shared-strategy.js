@@ -134,6 +134,43 @@ export function bbAllianceStrength(a, b) {
 }
 
 /**
+ * What somebody else is worth to you, when the thing being spent is a power.
+ *
+ * Every power gate that could save an ally was reading a raw bond and nothing
+ * else, which quietly meant that being in an ALLIANCE with somebody bought them
+ * nothing. Six people who had sworn to each other in week two, with a formal
+ * name on the group and a shared target list, and the veto still came down to
+ * whether the holder happened to like them 2 points more than the other chair.
+ *
+ * Three things, and the alliance is the biggest of them:
+ *
+ *   bond       whether you actually like them
+ *   alliance   whether you are sworn to them, scaled by how much of the house
+ *              that group still controls — a five-strong alliance losing a
+ *              member costs you the house, a dead two-person deal costs you a
+ *              friend
+ *   duo        a bound pair is not a preference, it is a shared fate
+ *
+ * Returned on the same 0..1 scale `spendPull` speaks, so a gate can hand it
+ * straight over as `need`.
+ */
+export function allyStake(holder, other) {
+  if (!holder || !other || holder === other) return 0;
+  const bond = (() => {
+    try { return Math.max(0, getPerceivedBond(holder, other)); } catch { return 0; }
+  })();
+  const sworn = (() => {
+    try { return allianceStrength(holder, other); } catch { return 0; }
+  })();
+  // A duo partner going home takes the holder's own game with them, which is
+  // closer to self-preservation than to a favour.
+  const bound = (() => {
+    try { return duoPartnerFor(holder) === other ? 0.34 : 0; } catch { return 0; }
+  })();
+  return Math.min(1, bond * 0.07 + sworn * 0.26 + bound);
+}
+
+/**
  * How dangerous somebody looks TO THE HOUSE.
  *
  * This used to be their stat sheet. A houseguest with strategic 10 read as the

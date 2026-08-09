@@ -21,6 +21,7 @@ import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { BB_POWER_DEFINITIONS, usePower, spendPull } from './powers.js';
 import { nominationScore } from './strategy.js';
+import { allyStake } from './shared-strategy.js';
 import { believesPowerHeld, learnBBPower } from './knowledge.js';
 
 const beat = (text, players, badgeText, badgeClass) =>
@@ -113,7 +114,32 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   const pct = rivals.length ? (rivals.length - worse) / rivals.length : 1;
   // Bent, because the block is two or three chairs and not a ranking: being
   // top of it is nearly all the need there is, and mid-pack is very little.
-  const need = pct ** 2.6;
+  const selfNeed = pct ** 2.6;
+
+  // ── and the other reason to take somebody's week off them ──
+  //
+  // This asked "am I about to go up" and stopped there, so an alliance watching
+  // its own strongest member walk toward the block had a power sitting in the
+  // room that could take the whole ceremony away, and no reason in the code to
+  // reach for it. Taking the crown is the one move that protects somebody who
+  // is not you — the Cloud cannot, the veto is one chair, this is the ceremony.
+  //
+  // Discounted against saving yourself, because it is: you are spending your
+  // own week and your own cover on somebody else's chair, and if the deposed
+  // HOH names you it was spent for nothing.
+  let allyNeed = 0;
+  let protecting = null;
+  for (const n of rivals) {
+    const stake = (() => { try { return allyStake(inst.holder, n); } catch { return 0; } })();
+    if (!stake) continue;
+    const theirPct = rivals.length
+      ? (rivals.length - rivals.filter(o => scoreOf(o) > scoreOf(n)).length) / rivals.length
+      : 1;
+    const worth = (theirPct ** 2.6) * stake * 0.85;
+    if (worth > allyNeed) { allyNeed = worth; protecting = n; }
+  }
+  const need = Math.max(selfNeed, allyNeed);
+  const forAlly = allyNeed > selfNeed && !!protecting;
   const s = pStats(inst.holder) || {};
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
@@ -144,6 +170,16 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
     `${hoh} is not Head of Household any more. Somebody in this house has taken it, the wall will `
       + 'not say who, and every houseguest here is about to be asked the same question one at a time.',
     [hoh], 'DETHRONED', 'red')];
+  if (forAlly) {
+    // Said out loud, because a power spent on somebody else is the only version
+    // of this that costs the holder anything, and it read as self-preservation
+    // with no way to tell the difference.
+    beats.push(beat(
+      `${inst.holder} was never the one in trouble this week. ${protecting} was, and ${protecting} `
+        + `does not know that ${inst.holder} has just spent a week of cover taking the ceremony away `
+        + 'before it could be read out.',
+      [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold'));
+  }
 
   const interviews = [];
   const weights = new Map();
@@ -272,6 +308,8 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
 
   return {
     type: 'interrogation', holder: inst.holder, deposed: hoh, caught,
+    // Who it was actually for — null when the holder was saving themselves.
+    protecting: forAlly ? protecting : null,
     hoh: caught ? hoh : inst.holder,
     accused, interviews,
     ...shown(inst, 'nominations', caught
@@ -435,14 +473,18 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   // actually want to keep.
   const onBlock = nominees.includes(inst.holder);
   const others = nominees.filter(n => n !== inst.holder);
+  // Not a raw bond. Being sworn to somebody in a named alliance is worth more
+  // than liking them, and it was worth nothing here: six people with a name on
+  // their group and the veto still came down to who the holder happened to like
+  // two points more.
   const ally = others
-    .map(n => ({ name: n, b: (() => { try { return getBond(inst.holder, n); } catch { return 0; } })() }))
+    .map(n => ({ name: n, b: (() => { try { return allyStake(inst.holder, n); } catch { return 0; } })() }))
     .sort((a, b) => b.b - a.b)[0] || null;
   // Spent when it is worth spending. Not on the block and with nobody on it
   // worth saving, this is a power looking for a use — and using it there is how
   // you end up having spent the biggest thing you had on a stranger. Sitting on
   // the block yourself is not a dilemma, so it is very nearly one.
-  const need = onBlock ? 0.98 : Math.min(0.7, Math.max(0, ally?.b || 0) * 0.11);
+  const need = onBlock ? 0.98 : Math.min(0.78, (ally?.b || 0) * 0.92);
   const st = pStats(inst.holder) || {};
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),

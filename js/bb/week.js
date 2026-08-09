@@ -51,7 +51,7 @@ import { tickIntentions } from '../intentions.js';
 import { applySocialStatusEffects, recordChallengeDominance, recordStrategicRespect, recordProtection } from '../relationship-events.js';
 import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
-import { rememberBBStrategy } from './shared-strategy.js';
+import { rememberBBStrategy, allyStake } from './shared-strategy.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, chooseReplacement, explainReplacement, initialVotePreference,
@@ -4304,13 +4304,15 @@ export function simulateBBWeek(options = {}) {
       if (nominees.includes(holder)) {
         save = holder; // sitting on the block holding this is not a dilemma
       } else {
-        const ally = [...nominees].sort((a, b) =>
-          getPerceivedBond(holder, b) - getPerceivedBond(holder, a))[0];
+        // Sorted by what they are actually worth to the holder — an alliance
+        // they are sworn to, not just a bond they happen to have. Somebody's
+        // own alliance-mate was losing the chair to a warmer stranger.
+        const ally = [...nominees].sort((a, b) => allyStake(holder, b) - allyStake(holder, a))[0];
         // Saving an ally, or spending expiry pressure on a move: both scale
         // with how strategically the holder thinks, never a hard gate.
         const targetSeatable = myTarget && myTarget !== hoh && myTarget !== holder
           && !nominees.includes(myTarget);
-        const need = Math.min(1, Math.max(0, getPerceivedBond(holder, ally)) * 0.1
+        const need = Math.min(1, allyStake(holder, ally)
           + (targetSeatable ? (hst.strategic || 5) * 0.04 : 0));
         // `lastWindowWeek` was worth +0.18 here. It is the whole decision on
         // the last night — see spendPull — because a Diamond nobody detonated

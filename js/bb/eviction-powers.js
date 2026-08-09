@@ -15,8 +15,8 @@
 // power is that the removal does not happen.
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { getPerceivedBond } from '../bonds.js';
 import { activePowersAt, usePower, spendPull } from './powers.js';
+import { allyStake } from './shared-strategy.js';
 
 const beat = (text, players, badgeText, badgeClass = 'gold') =>
   ({ text, players: players.filter(Boolean), badgeText, badgeClass });
@@ -39,7 +39,6 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
   if (!(gs.activePlayers || []).includes(holder)) return null;
 
   const st = pStats(holder);
-  const bond = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
   const lastWeek = week.num >= inst.expiresAfterWeek;
 
   // Saving yourself is not a decision. Saving somebody else is.
@@ -49,7 +48,11 @@ export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Mat
     // Spending it is loud: the whole house learns a power existed and that
     // the person holding it was willing to burn it on somebody else.
     const exposure = 0.05 * Math.max(0.5, (10 - (st.boldness || 5)) / 5);
-    const need = Math.max(0, Math.max(0, bond(holder, evicted)) * 0.1 - exposure);
+    // `bond * 0.1` — so an alliance the holder had sworn to in week two bought
+    // its members nothing at all here, and the Hex saved whoever the holder
+    // happened to like. allyStake counts the alliance, and counts it biggest.
+    const stake = (() => { try { return allyStake(holder, evicted); } catch { return 0; } })();
+    const need = Math.max(0, stake - exposure);
     // A Hex on its last night was worth +0.22 and is now the decision itself:
     // there is no week after this one to find a better save in.
     pull = spendPull({ need,

@@ -772,6 +772,60 @@ describe('the interrogation is a scene, and a decision', () => {
       .toBeGreaterThan(0.15);
   });
 
+  it('takes the week off somebody to protect an ally, not only itself', async () => {
+    // It asked "am I about to go up" and stopped there — so an alliance could
+    // watch its own strongest member walk toward the block with a power in the
+    // room that takes the whole ceremony away, and nothing in the code reached
+    // for it. Taking the crown is the ONE move that protects somebody who is
+    // not you: the Cloud cannot, and the veto is one chair.
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { playInterrogation } = await import('../js/bb/secret-power-plays.js');
+    const { addBond } = await import('../js/bonds.js');
+
+    const rate = async sworn => {
+      let fired = 0; let forAlly = 0;
+      for (let sd = 1; sd <= 40; sd++) {
+        seat();
+        // ben is safe — ana likes him. cleo is the name on the board.
+        addBond('ana', 'ben', 6);
+        for (const n of H) if (n !== 'ben' && n !== 'ana') addBond('ana', n, -4);
+        addBond('ben', 'cleo', 5);
+        gs.namedAlliances = sworn
+          ? [{ name: 'The Committee', members: ['ben', 'cleo', 'dev', 'eli'], active: true }]
+          : [];
+        grantPower('hoh-interrogation', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+        const out = playInterrogation({ week: { num: 3 }, house: H, hoh: 'ana', rng: seeded(sd * 71) });
+        if (out) { fired++; if (out.protecting) forAlly++; }
+      }
+      return { fired: fired / 40, forAlly: forAlly / 40 };
+    };
+
+    const withAlliance = await rate(true);
+    const alone = await rate(false);
+    expect(withAlliance.forAlly, 'it never once spent the power on somebody else')
+      .toBeGreaterThan(0.3);
+    expect(withAlliance.fired - alone.fired,
+      'being sworn to the person in danger changed nothing').toBeGreaterThan(0.15);
+    // And it says so. A power spent on somebody else is the only version of
+    // this that costs the holder anything, and it read as self-preservation.
+    seat();
+    addBond('ana', 'ben', 6);
+    for (const n of H) if (n !== 'ben' && n !== 'ana') addBond('ana', n, -4);
+    gs.namedAlliances = [{ name: 'The Committee', members: ['ben', 'cleo', 'dev', 'eli'], active: true }];
+    grantPower('hoh-interrogation', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+    let named = null;
+    for (let sd = 1; sd <= 60 && !named; sd++) {
+      const out = playInterrogation({ week: { num: 3 }, house: H, hoh: 'ana', rng: seeded(sd * 71) });
+      if (out?.protecting) named = out;
+      if (!out) { seat(); addBond('ana', 'ben', 6);
+        for (const n of H) if (n !== 'ben' && n !== 'ana') addBond('ana', n, -4);
+        gs.namedAlliances = [{ name: 'The Committee', members: ['ben', 'cleo', 'dev', 'eli'], active: true }];
+        grantPower('hoh-interrogation', 'ben', { week: 3, visibility: 'secret', source: 'test' }); }
+    }
+    expect(named, 'no seed produced an ally save to read the beats of').toBeTruthy();
+    expect(named.beats.map(b => b.badgeText)).toContain('NOT FOR THEMSELVES');
+  });
+
   it('weighs the names rather than counting them', async () => {
     // A name from somebody the deposed HOH trusts is worth more than a name
     // from somebody who has been wrong before.

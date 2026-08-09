@@ -24,7 +24,8 @@ import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
-import { BB_POWER_DEFINITIONS, grantPower, heldPowers, spendPull } from '../js/bb/powers.js';
+import { BB_POWER_DEFINITIONS, grantPower, heldPowers, spendPull, powerLedgerFor,
+  usePower, expirePowers } from '../js/bb/powers.js';
 import { BB_TWIST_CONTRACTS, POWER_ACQUISITION_CHANNELS } from '../js/bb/twist-contract.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -383,4 +384,79 @@ describe('powers get spent by the people who need them', () => {
     expect(bold).toBeGreaterThan(timid);
     expect(bold - timid, 'boldness decides this rather than tilting it').toBeLessThan(0.35);
   });
+});
+
+describe('"still out there" means still out there', () => {
+  beforeEach(() => house());
+
+  it('takes a spent power off the wall', () => {
+    // The filter had no `used` check in it at all. Its three clauses were
+    // `usedWeek === week` and then two window tests differing only in
+    // `disposed` versus `!disposed` — which between them cover every value of
+    // the flag, so the disposal half did nothing and the window half kept a
+    // SPENT power listed for the rest of its would-be life. A Diamond
+    // detonated in week 3 with a window through week 4 came back the next week
+    // reading "LAST WEEK IT EXISTS", under a heading that says STILL OUT
+    // THERE, after the audience had watched it go off.
+    grantPower('diamond-veto', NAMES[2], { week: 3, visibility: 'secret', source: 'test' });
+    const inst = gs.bb.powers.find(p => p.powerId === 'diamond-veto');
+    inst.expiresAfterWeek = 4;
+    usePower(inst, 3);
+
+    const wk3 = powerLedgerFor(3, NAMES).find(p => p.powerId === 'diamond-veto');
+    expect(wk3, 'the week it fired should still show it').toBeTruthy();
+    expect(wk3.firedThisWeek).toBe(true);
+    expect(powerLedgerFor(4, NAMES).find(p => p.powerId === 'diamond-veto'),
+      'a power that was already spent is still listed as in play').toBeUndefined();
+  });
+
+  it('drops it the night its holder does, and does not keep saying so', () => {
+    // The holder walking out is what disposes a power, and that sweep runs at
+    // the END of the week — after the ledger is snapshotted, deliberately, so
+    // that a power expiring tonight still shows as live for the week it was
+    // live in. The side effect was the evicted houseguest being listed as
+    // carrying something on the screen for the night they left.
+    grantPower('coup-d-etat', NAMES[4], { week: 2, visibility: 'secret', source: 'test' });
+    const stillIn = NAMES.filter(n => n !== NAMES[4]);
+    const gone = powerLedgerFor(2, stillIn).find(p => p.powerId === 'coup-d-etat');
+    expect(gone.disposed, 'an evicted holder was still shown holding it').toBe(true);
+    expect(gone.disposedReason).toBe('holder-evicted');
+
+    // And once it is gone it is gone. With no record of WHEN it was disposed,
+    // a lost power sat there being lost again every week until its original
+    // window ran out.
+    expirePowers(2, stillIn);
+    expect(powerLedgerFor(3, stillIn).find(p => p.powerId === 'coup-d-etat'),
+      'a power lost a week ago is still on the wall').toBeUndefined();
+  });
+});
+
+describe('The Mystery Competitor', () => {
+  beforeEach(() => house());
+
+  it('can actually open the door', () => {
+    // It fired ZERO times in fifty seeded weeks, and not because of the block
+    // rule everybody would blame. Its alumni came from `activeSeasons()` — the
+    // franchise ledger, which is empty until a season has been recorded into
+    // it, which for a first Big Brother season is always. So the list was
+    // always `[]` and the first line of the play is `if (!alumni.length)
+    // return null`. Granted, tracked, expired, and unable to fire under any
+    // circumstance. The roster is the fallback, and it is the show's own cast
+    // list: everybody on it has finished a season somewhere.
+    let onBlock = 0; let fired = 0;
+    for (let i = 0; i < 40; i++) {
+      house();
+      const holder = NAMES[7];
+      const ep = withSeededRandom(1000 + i * 37, () => {
+        grantPower('mystery-competitor', holder, { week: 1, visibility: 'secret', source: 'test' });
+        return simulateBBEpisode();
+      });
+      if ((ep.initialNominees || []).includes(holder)) onBlock++;
+      if ((gs.bb?.powers || []).find(p => p.powerId === 'mystery-competitor' && p.used)) fired++;
+    }
+    expect(onBlock, 'no seeded week put the holder on the block').toBeGreaterThan(2);
+    // On the block is the show's own restriction and the only one left. Every
+    // week that clears it should open the door.
+    expect(fired, 'the door never opened once').toBeGreaterThanOrEqual(onBlock);
+  }, 240000);
 });

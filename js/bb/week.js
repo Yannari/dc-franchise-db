@@ -34,6 +34,7 @@ import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
 import { playInterrogation, playMysteryCompetitor, playMysteryVeto } from './secret-power-plays.js';
 import { activeSeasons } from '../franchise-meta.js';
+import { DEFAULT_ROSTER } from '../roster-data.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
   chooseHackerBlockHack, chooseHackerVetoHack, chooseHackerVoteHack,
@@ -3133,14 +3134,59 @@ export function simulateBBWeek(options = {}) {
             }
           }
         } catch { /* a franchise with no history has no alumni, and no twist */ }
+        // ── AND THE FALLBACK, WITHOUT WHICH THIS POWER CANNOT FIRE AT ALL ──
+        //
+        // `activeSeasons()` is the franchise ledger, and it is empty until a
+        // season has been recorded into it — which for a first Big Brother
+        // season is always. So `alumni` was always `[]`, and the very first
+        // line of the play is `if (!alumni.length) return null`. The power was
+        // granted, tracked, expired, and could not fire under any circumstance:
+        // measured over fifty seeded weeks it fired zero times, and the block
+        // rule everybody blamed only accounts for the other 86%.
+        //
+        // The roster is the show's own cast list and everybody on it has
+        // finished a season somewhere, which is the whole qualification. It
+        // carries real stats too, so the door opens on somebody who can
+        // actually play the competition rather than a name with a placement.
+        if (!alumni.length) {
+          try {
+            // The live roster when the page has one — the user can import
+            // their own — and the shipped cast list otherwise, so this works
+            // headless and in a season that has recorded nothing yet.
+            const roster = globalThis.FRANCHISE_ROSTER || DEFAULT_ROSTER || [];
+            for (const r of roster) {
+              if (!r?.name || house.includes(r.name)) continue;
+              alumni.push({ name: r.name, seasonName: null, stats: r.stats || null,
+                winner: false, finalist: false, chalWins: 0 });
+            }
+          } catch { /* no roster on this page either */ }
+        }
         mysteryGuest = playMysteryCompetitor({ week, nominees, players: vetoPlayers, alumni,
-          library: competitionLibrary, hoh, rng });
+          library: competitionLibrary, hoh, house, rng });
         if (mysteryGuest) {
           week.mysteryCompetitor = mysteryGuest;
           week.acts.push(addBeats(mysteryGuest, { players: [mysteryGuest.holder] }));
+          // ── THE DRAW ITSELF, which nobody was telling ──
+          //
+          // Only the local `vetoPlayers` was filtered, and `week.vetoDraw` had
+          // already been handed off two dozen lines up. The draw screen reads
+          // that record — so it drew the bumped houseguest still holding a
+          // chip, listed them as playing, and never showed the guest at all.
+          // The audience watched a stranger take somebody's spot on one screen
+          // and watched that somebody keep it on the next.
           if (mysteryGuest.displaced) {
             vetoPlayers = vetoPlayers.filter(n => n !== mysteryGuest.displaced);
+            vetoDraw.players = (vetoDraw.players || []).filter(n => n !== mysteryGuest.displaced);
+            vetoDraw.bumped = mysteryGuest.displaced;
           }
+          // The guest is NOT added to the field the engine competes: they are
+          // not a houseguest, they have no stats sheet in this cast, and a
+          // proxy who could win the medallion outright is a different power
+          // from the one the show ran. Their run is scored inside the play and
+          // handed to the holder. This is the record the SCREEN needs, so the
+          // yard it draws is the yard that was out there.
+          vetoDraw.guest = { name: mysteryGuest.guest, for: mysteryGuest.holder,
+            displaced: mysteryGuest.displaced || null };
         }
       } catch { week.mysteryCompetitor = null; }
     }
@@ -3272,6 +3318,9 @@ export function simulateBBWeek(options = {}) {
       // A seat that no chip accounts for, if the hacker spent their second
       // authority — the one hack the whole house watches happen.
       hacked: vetoDraw.hacked || null,
+      // The stranger who took one of the drawn seats, so the draw screen can
+      // show the swap it was silently not showing.
+      guest: vetoDraw.guest || null,
       automatic: vetoDraw.automatic }, { nominees: [...nominees], vetoWinner }));
 
     // ...and the boxes come out after the competition that set the order.
@@ -3721,7 +3770,12 @@ export function simulateBBWeek(options = {}) {
                 + `${takenDown.length > 1 ? 'come' : 'comes'} off a block the whole house had `
                 + 'already accepted, and every plan made since the last meeting was made about a '
                 + 'block that no longer exists.',
-              players: [solo.holder, ...takenDown], badgeText: 'USED AGAIN', badgeClass: 'gold' },
+              // Deduped: on a self-save the holder and the person coming down
+              // are the same houseguest, and the card drew their face twice
+              // side by side. Exactly the fault the Halting Hex was fixed for,
+              // repeated here because the fix lived in the Hex rather than in
+              // anything shared.
+              players: [...new Set([solo.holder, ...takenDown])], badgeText: 'USED AGAIN', badgeClass: 'gold' },
             ...(duoPartnerDown ? [{
               text: `${duoPartnerDown} was never the point. The rule takes the pair, and it takes `
                 + 'it at one in the morning with nobody in the room expecting it.',
@@ -3730,14 +3784,14 @@ export function simulateBBWeek(options = {}) {
             ...(seated2.length ? [{
               text: `${hoh} has to fill ${seated2.length > 1 ? 'two chairs that were' : 'a chair that was'} `
                 + `settled an hour ago. "${seated2.join(', ')} — take a seat."`,
-              players: [hoh, ...seated2], badgeText: 'AND ONE MORE', badgeClass: 'red',
+              players: [...new Set([hoh, ...seated2])], badgeText: 'AND ONE MORE', badgeClass: 'red',
             }] : [{
               text: `Nobody in this house is eligible to fill the chair, so it stays empty and the `
                 + 'block is simply smaller than it was an hour ago.',
               players: [hoh], badgeText: 'AN EMPTY CHAIR', badgeClass: 'red',
             }]),
           ],
-        }, { players: [solo.holder, ...takenDown, ...seated2].filter(Boolean) }));
+        }, { players: [...new Set([solo.holder, ...takenDown, ...seated2])].filter(Boolean) }));
       }
     }
 

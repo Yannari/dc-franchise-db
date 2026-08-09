@@ -5285,6 +5285,15 @@ export function generateBBSummaryText(ep) {
           ln(`  ${act.deposed} named the wrong houseguest, out loud, in front of everybody.`);
           ln(`  ${act.holder} is Head of Household and nobody in this house knows it happened.`);
         }
+        // THE ROOMS THEMSELVES, which this summarised away. The Interrogation
+        // is not a verdict, it is a house being asked one question at a time —
+        // who tells, who covers for a friend, who refuses to hand anybody to a
+        // Head of Household who might be back in power in ten minutes. Three
+        // lines of outcome where the viewing party watches the whole scene is
+        // the exact fault the note below this case was written about, left
+        // sitting in the two cases above it.
+        ln('');
+        beats(act);
         break;
 
       case 'mystery-competitor':
@@ -5294,9 +5303,11 @@ export function generateBBSummaryText(ep) {
         ln(act.won
           ? `  ${act.guest} won, and handed it straight to ${act.holder}.`
           : `  ${act.guest} lost. ${act.holder} paid for a body in the draw and got exactly that.`);
+        ln('');
+        beats(act);
         break;
 
-      /* BOTH OF THESE PARAPHRASED INSTEAD OF PRINTING.
+      /* THESE ALL PARAPHRASED INSTEAD OF PRINTING.
          Each wrote its own two-line summary of an act whose beats the viewing
          party draws in full — which is exactly the shape the transcript guard
          exists to catch: a case that LOOKS deliberate, reads fine on the page,
@@ -5348,6 +5359,8 @@ export function generateBBSummaryText(ep) {
           ln('  running for it. Everybody else out there was playing a different game.');
         }
         ln('  Every power won here expires the moment the jury opens.');
+        ln('');
+        beats(act);
         break;
 
       case 'no-eviction':
@@ -5355,6 +5368,8 @@ export function generateBBSummaryText(ep) {
         ln('  No nomination ceremony this week, no veto and no vote. Nobody leaves, and the');
         ln('  Head of Household holds the most powerful seat in the house with nothing at all');
         ln('  to spend it on.');
+        ln('');
+        beats(act);
         break;
 
       case 'whacktivity':

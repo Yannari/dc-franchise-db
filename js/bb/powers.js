@@ -422,13 +422,39 @@ export function activePowerAt(timing, week, powerId = null) {
  * it: four powers with similar names and different limitations are not
  * something a viewer should be expected to hold in their head.
  */
-export function powerLedgerFor(week) {
+export function powerLedgerFor(week, house = gs.activePlayers || []) {
   return store()
-    .filter(p => p.usedWeek === week
-      || (!p.disposed && p.acquiredWeek <= week && week <= p.expiresAfterWeek)
-      || (p.disposed && p.acquiredWeek <= week && week <= p.expiresAfterWeek))
+    .filter(p => {
+      if (p.acquiredWeek > week) return false;
+      // ── SPENT IS NOT STILL OUT THERE ──
+      //
+      // There was no `used` check here at all. The three clauses this replaces
+      // were `usedWeek === week` and then two window tests that differed only in
+      // `disposed` versus `!disposed` — which between them cover every value of
+      // the flag, so the disposal half was doing nothing whatsoever and the
+      // window half kept a SPENT power on the wall for the rest of its would-be
+      // life. A Diamond detonated in week three with a window through week four
+      // came back the following week reading "LAST WEEK IT EXISTS", under a
+      // heading that says STILL OUT THERE, after the audience had watched it go
+      // off. It belongs on the week it fired and on no week after it.
+      if (p.used) return p.usedWeek === week;
+      // Same for one that left: the night it went, and not a week longer. With
+      // no record of WHEN it was disposed there was nothing to compare against,
+      // so a power lost with an evicted holder sat there being lost again every
+      // week until its original window ran out.
+      if (p.disposed) return (p.disposedWeek ?? p.expiresAfterWeek) === week;
+      return week <= p.expiresAfterWeek;
+    })
     .map(p => {
       const def = BB_POWER_DEFINITIONS[p.powerId] || {};
+      // The holder walking out the door is what disposes a power, and that
+      // sweep runs at the END of the week — after this snapshot, deliberately,
+      // so that a power expiring tonight still shows as live for the week it
+      // was live in. The side effect was that the person who had just been
+      // evicted was still listed as carrying something, on the screen for the
+      // night they left. Expiry needs the delay; an eviction does not.
+      const holderGone = !p.used && !p.disposed
+        && !(house || []).includes(p.holder) && !def.survivesEviction;
       return {
         powerId: p.powerId, name: def.name || p.powerId,
         holder: p.holder, visibility: p.visibility, source: p.source,
@@ -436,7 +462,8 @@ export function powerLedgerFor(week) {
         weeksLeft: Math.max(0, p.expiresAfterWeek - week),
         used: !!p.used, usedWeek: p.usedWeek,
         firedThisWeek: p.usedWeek === week,
-        disposed: !!p.disposed, disposedReason: p.disposedReason || null,
+        disposed: !!p.disposed || holderGone,
+        disposedReason: p.disposedReason || (holderGone ? 'holder-evicted' : null),
         blurb: def.blurb || '', catch: def.catch || '', moment: def.moment || '',
       };
     });
@@ -468,7 +495,9 @@ export function expirePowers(week, house = gs.activePlayers || []) {
     // A Bonus Life is not lost when its holder is: being evicted is the
     // trigger, not the end. It stays live for whoever has to resolve it.
     if (!house.includes(p.holder) && !def.survivesEviction) {
-      p.disposed = true; p.disposedReason = 'holder-evicted';
+      // WHEN, not just that. Without a week on it the screen had no way to
+      // tell "this left tonight" from "this left a fortnight ago".
+      p.disposed = true; p.disposedReason = 'holder-evicted'; p.disposedWeek = week;
       disposed.push(p); continue;
     }
     // `expiresAfterWeek` is the LAST week the thing can be played — every use
@@ -479,7 +508,7 @@ export function expirePowers(week, house = gs.activePlayers || []) {
     // power was unusable but not yet disposed and pushed the audience's note
     // about it a full episode late.
     if (week >= p.expiresAfterWeek) {
-      p.disposed = true; p.disposedReason = 'expired';
+      p.disposed = true; p.disposedReason = 'expired'; p.disposedWeek = week;
       disposed.push(p);
     }
   }

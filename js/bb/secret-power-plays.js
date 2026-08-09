@@ -331,8 +331,74 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
  * player database for everybody who has finished a season) and this module
  * should not learn it.
  */
+/** One line out of a pool, so the same arrival is not written twice a season. */
+const pickFrom = (pool, rng) => pool[Math.floor(rng() * pool.length)];
+
+/** Where they played, when the caller knows — some rosters carry no seasons. */
+const seasonOf = pick => (pick && typeof pick === 'object' && pick.seasonName) || null;
+
+const ANNOUNCE = [
+  (g, h, sn) => 'The house is called to the living room without being told why, which by now they '
+    + `know means something. "Houseguests. In a moment, this door is going to open, and the person `
+    + `walking through it does not live here."${sn ? ` Somebody in that room has already worked out that a season just got named.` : ''}`,
+  (g, h) => 'They are told to sit down and not to touch anything, and then they are left there for '
+    + 'four minutes with nothing to look at but the door. By minute three somebody has said the '
+    + `word "returnee" out loud and the room has stopped being able to sit still.`,
+  (g, h, sn) => `"There is one spot in this week's veto competition that has not been drawn yet." `
+    + 'That is the entire announcement. Nobody says who, nobody says how, and every person on that '
+    + `sofa starts counting the people who are missing from it.`,
+  (g, h) => 'The screen in the living room comes on and stays black. It does that for long enough '
+    + 'that two of them start laughing at it, and then the front door lock goes, which is a sound '
+    + 'this house has not heard since move-in.',
+];
+
+const ARRIVAL = [
+  (g, house, sn) => `${g} walks in${sn ? ` — ${sn}, and half this room grew up watching it` : ''}. `
+    + 'The screaming is genuine. Somebody is crying who has not cried all season, and for about '
+    + 'ninety seconds nobody in that living room is playing this game at all.',
+  (g, house, sn) => `${g} comes through the door with a bag, which is the detail that lands: a bag `
+    + `means staying. It is explained that it does not, ${g} is here for one afternoon and one `
+    + 'competition, and the disappointment goes round that room like weather.',
+  (g) => `${g} does not say anything at first. ${g} walks the length of the living room, looks at `
+    + 'the memory wall, finds the frames of people who are already gone, and only then turns round '
+    + 'to a house that has gone completely silent.',
+  (g, house) => `${g} is hugged by every single person in that room, including three who have `
+    + `spent the last week trying to evict each other. ${house.length > 6 ? 'It is the friendliest this house has been in a fortnight' : 'It is the friendliest this house has been all season'}, and it lasts until somebody `
+    + 'thinks to ask the obvious question, which is why now.',
+];
+
+const HANDOFF = [
+  (g, h, comp) => `${h} gets ${g} alone by the storage door for ninety seconds. It is not a `
+    + `strategy meeting — there is no time — it is ${h} saying who is dangerous and ${g} listening `
+    + `to a house ${g} has never lived in, and then it is ${comp} and no more talking.`,
+  (g, h) => `${g} finds ${h} before anybody else does, because ${g} has been told whose afternoon `
+    + `this is. "So you're the one." ${h} does not answer that where people can hear it, and the `
+    + 'two of them go outside.',
+  (g, h, comp) => `They get one conversation and ${h} spends it apologising, which ${g} waves off. `
+    + `"I've been sitting at home for a year. You think I'm not going to play ${comp}?"`,
+  (g, h) => `${h} tries to explain the block, the votes, who is lying to whom, and gets about a `
+    + `third of the way through before ${g} cuts in. "I don't need the `
+    + `house. I need the comp." That is the whole meeting.`,
+];
+
+const DIARY = [
+  (g, h, comp) => `${g}, in the diary room chair, in the same chair as a season ago: "I got a `
+    + `phone call four days ago. That's it. That's all the warning I had." A beat. "And now I'm `
+    + `playing ${comp} for somebody I have never met, because somebody bought me. I'd be insulted `
+    + `if it wasn't so flattering."`,
+  (g, h) => `${g}: "Do I want ${h} to win this game? I have no idea who ${h} is. But somebody in `
+    + 'there spent something real to get me through that door, and I have never in my life been '
+    + 'the thing somebody spent a power on."',
+  (g, h, comp) => `${g}: "The weird part is the smell. You forget that. Then you walk in and it's `
+    + `${comp} in twenty minutes and you're back like you never left, except everyone's a stranger `
+    + 'and you go home tonight either way."',
+  (g, h) => `${g}: "They told me the rules on the drive in. I play, I win, I hand it to ${h}, I `
+    + `leave. I don't get a vote, I don't get a bed, I don't get a say." ${g} laughs at the ceiling. `
+    + '"Best day I have had in a year."',
+];
+
 export function playMysteryCompetitor({ week, nominees = [], players = [], alumni = [],
-  library = [], hoh = null, rng = Math.random } = {}) {
+  library = [], hoh = null, house = [], rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('vetoProxy', weekNum);
   if (!inst) return null;
@@ -367,10 +433,14 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   //
   // Weighted rather than a hard best-pick: the house is summoning who it wants,
   // and the best available player is not always the one somebody thinks of.
+  const statsOf = a => (a && typeof a === 'object' && a.stats) || pStats(a?.name) || {};
   const pick = weighted(alumni, a => {
-    // If they happen to be in the current cast — a returnee — their real stats
-    // are known and beat any proxy.
-    const st = pStats(a.name);
+    // Real stats when the caller has them — the roster fallback carries the
+    // whole cast sheet — and `pStats` otherwise, which returns flat defaults
+    // for anybody outside the current cast and makes `fit` a constant. That is
+    // why the roster is worth passing: without it this weight was fame alone
+    // dressed up as a competition read.
+    const st = statsOf(a);
     const fit = Object.entries(comp0.stats || {})
       .reduce((sum, [stat, w]) => sum + (st[stat] || 0) * w, 0);
     return 1 + Math.max(0, (a.chalWins || 0)) * 0.9 + (a.winner ? 1.1 : 0)
@@ -406,7 +476,7 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   // plays like a winner. Plus the same swing everybody else gets.
   // Their form on THIS competition: the record they were picked for, plus real
   // stats when the franchise actually has them.
-  const guestStats = pStats(guest);
+  const guestStats = statsOf(pick);
   const guestFit = Object.entries(comp.stats || {})
     .reduce((sum, [stat, w]) => sum + (guestStats[stat] || 0) * w, 0);
   const form = guestFit + (pick?.winner ? 1.4 : 0) + (pick?.finalist ? 0.6 : 0)
@@ -421,12 +491,33 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
       + `${pick?.seasonName ? `, out of ${pick.seasonName}` : ''}`
       + `${pick?.winner ? ', who won it' : pick?.finalist ? ', who sat at the end of it' : ''}.`,
     [inst.holder], 'A NAME NOBODY EXPECTED', 'gold')];
+  // ── SHE IS A PERSON, NOT A DIE ROLL ──
+  //
+  // The whole scene was: a name comes out of the bag, somebody is bumped, a
+  // number is posted. A former houseguest walking back through that door is one
+  // of the biggest things this format can do and it was over in three lines,
+  // with the guest never speaking, never being greeted, and never once being in
+  // a room with the person who paid to summon them.
+  beats.push(beat(
+    pickFrom(ANNOUNCE, rng)(guest, inst.holder, seasonOf(pick)),
+    [inst.holder], 'HOUSEGUESTS, TO THE LIVING ROOM', 'blue'));
+  beats.push(beat(
+    pickFrom(ARRIVAL, rng)(guest, house, seasonOf(pick)),
+    [inst.holder], 'THE DOOR OPENS', 'gold'));
   if (displaced) {
     beats.push(beat(
       `${displaced} is out of the draw and did nothing to deserve it, which is the part nobody `
         + 'will be able to explain to them.',
       [displaced], 'BUMPED', 'red'));
   }
+  // The room they are put in together, which is the only place the transaction
+  // is visible: one of them bought this and both of them know it.
+  beats.push(beat(
+    pickFrom(HANDOFF, rng)(guest, inst.holder, comp.name),
+    [inst.holder], 'A QUIET WORD', 'blue'));
+  beats.push(beat(
+    pickFrom(DIARY, rng)(guest, inst.holder, comp.name),
+    [inst.holder], 'DIARY ROOM', 'grey'));
   beats.push(beat(
     `${guest} plays ${comp.name} against the best of them. The number to beat is ${bar.toFixed(1)}.`,
     [inst.holder], 'A STRANGER IN THE YARD', 'blue'));

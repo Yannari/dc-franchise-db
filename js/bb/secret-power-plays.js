@@ -425,12 +425,31 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   const inst = livePower('soloVetoComp', weekNum);
   if (!inst || !house.includes(inst.holder)) return null;
 
-  // Spent when it is worth spending: on the block, or holding it on the last
-  // week it exists, or with somebody worth saving already sitting there.
+  // ── who it would even be for ──
+  //
+  // `saves` was `nominees[0]` — whoever happened to be listed first. So a
+  // holder who was not on the block took somebody off it at random, for no
+  // reason, and the week rearranged itself around a choice nobody made. It is
+  // a CHOICE now: yourself if you are sitting there, otherwise the nominee you
+  // actually want to keep.
   const onBlock = nominees.includes(inst.holder);
+  const others = nominees.filter(n => n !== inst.holder);
+  const ally = others
+    .map(n => ({ name: n, b: (() => { try { return getBond(inst.holder, n); } catch { return 0; } })() }))
+    .sort((a, b) => b.b - a.b)[0] || null;
+  const worthSaving = !!ally && ally.b >= 2;
+
+  // Spent when it is worth spending. Not on the block and with nobody on it
+  // worth saving, this is a power looking for a use — and using it there is how
+  // you end up having spent the biggest thing you had on a stranger.
   const expiring = weekNum >= inst.expiresAfterWeek;
-  const pull = onBlock ? 0.92 : expiring ? 0.55 : 0.18;
+  const pull = onBlock ? 0.92
+    : worthSaving ? 0.55
+      : expiring ? 0.3 : 0.04;
   if (rng() > pull) return null;
+  // Nobody to use it on at all: it stays in the pocket rather than being spent
+  // on whoever was standing nearest.
+  if (!onBlock && !ally) return null;
 
   usePower(inst, weekNum);
 
@@ -474,9 +493,11 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
     `${inst.holder} plays it alone against the clock. The number to beat is ${par.toFixed(1)}: what `
       + 'this house would have posted between them, which is the only opponent out there tonight.',
     [inst.holder], 'ALONE, AGAINST A NUMBER', 'blue'));
+  const forWhom = onBlock ? 'themselves'
+    : `${ally?.name}, the one person on that block ${inst.holder} actually wants to keep`;
   beats.push(won
     ? beat(`${posted.toFixed(1)}. ${inst.holder} beats it, and walks back inside holding a real `
-      + 'veto on a block everybody had already stopped thinking about.',
+      + `veto for ${forWhom} on a block everybody had already stopped thinking about.`,
     [inst.holder], `${posted.toFixed(1)} v ${par.toFixed(1)}`, 'gold')
     : beat(`${posted.toFixed(1)}, against ${par.toFixed(1)}. Nobody was standing in the way and it `
       + 'was still lost, and the house now knows the power existed and did nothing.',
@@ -485,7 +506,7 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   return {
     type: 'mystery-veto', holder: inst.holder, won,
     competition: { id: comp.id, name: comp.name, posted, par },
-    saves: won ? (onBlock ? inst.holder : nominees[0] || null) : null,
+    saves: won ? (onBlock ? inst.holder : ally?.name || null) : null,
     ...shown(inst, 'veto-ceremony', won
       ? `${inst.holder} beat ${comp.name} alone, ${posted.toFixed(1)} against a par of ${par.toFixed(1)}.`
       : `${inst.holder} played ${comp.name} alone and lost it, ${posted.toFixed(1)} against ${par.toFixed(1)}.`),

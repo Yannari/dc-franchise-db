@@ -927,3 +927,72 @@ describe('the mystery competitor is a real alumnus, in a real draw', () => {
     expect(week, 'the franchise ledger is not consulted').toMatch(/activeSeasons\(\)/);
   });
 });
+
+describe('the second veto is used ON somebody, deliberately', () => {
+  // `saves` was `nominees[0]` — whoever happened to be listed first. So a
+  // holder who was not on the block took somebody off it at random, for no
+  // reason, and the week rearranged itself around a choice nobody made. That
+  // is what produced a nominee coming down with no meeting to explain it.
+  const H = ['ana', 'ben', 'cleo', 'dev', 'eli', 'fay'];
+  const seeded = seed => () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const setup = async (bonds = {}) => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { addBond } = await import('../js/bonds.js');
+    setPlayers(H.map(n => ({ name: n, archetype: 'floater', gender: 'f',
+      stats: { physical: 8, endurance: 8, mental: 8, social: 5, strategic: 5,
+        loyalty: 5, boldness: 5, intuition: 5, temperament: 8 } })));
+    seasonConfig.jurySize = 2;
+    setGs({ bb: { powers: [], weeks: [], stats: {} }, activePlayers: [...H], bonds: {} });
+    for (const [pair, v] of Object.entries(bonds)) {
+      const [a, b] = pair.split('|');
+      addBond(a, b, v);
+    }
+    grantPower('mystery-veto', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+  };
+  const play = async (nominees, seed = 5) => {
+    const { playMysteryVeto } = await import('../js/bb/secret-power-plays.js');
+    return playMysteryVeto({ week: { num: 3 }, nominees, house: H,
+      library: [{ id: 'w', name: 'The Wall', types: ['veto'], stats: { endurance: 1 } }],
+      rng: seeded(seed) });
+  };
+
+  it('saves the ally, not whoever is listed first', async () => {
+    // `cleo` is first on the block; `eli` is the friend.
+    await setup({ 'ben|eli': 6 });
+    const out = await play(['cleo', 'eli']);
+    expect(out, 'it did not fire').toBeTruthy();
+    if (out.won) expect(out.saves, 'it saved the first name on the list').toBe('eli');
+  });
+
+  it('saves itself when it is the one sitting there', async () => {
+    await setup();
+    const out = await play(['ben', 'cleo'], 2);
+    expect(out).toBeTruthy();
+    if (out.won) expect(out.saves).toBe('ben');
+  });
+
+  it('stays in the pocket when there is nobody worth using it on', async () => {
+    // Not on the block, nobody up there they care about. Using it here is how
+    // you spend the biggest thing you had on a stranger.
+    await setup();
+    let fired = 0;
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const out = await play(['cleo', 'dev'], seed);
+      if (out) fired += 1;
+      await setup();
+    }
+    expect(fired, 'it fires almost every week on a block it has no stake in')
+      .toBeLessThan(12);
+  });
+
+  it('says who it was for', async () => {
+    await setup({ 'ben|eli': 6 });
+    const out = await play(['cleo', 'eli']);
+    if (out?.won) {
+      expect(out.beats.map(b => b.text).join(' ')).toContain('eli');
+    }
+  });
+});

@@ -2040,7 +2040,7 @@ export function renderTimeline() {
         return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;
       }
       return `<span class="fd-ep-twist-tag" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : '🔀'} ${cat ? cat.name : t.type} ×</span>`;
-    }).join('');
+    }).map((html, k) => _fdThemeMark(twists[k], html)).join('');
 
     const markerClass = isFinale ? 'fd-ep-marker finale'
       : isJuryEp ? 'fd-ep-marker jury'
@@ -2330,6 +2330,50 @@ export function assignTwist(twistId) {
   }
 
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+/**
+ * Mark a card the season's theme put there.
+ *
+ * Theme cards are ordinary schedule entries — that is the whole point of
+ * stamping them at authoring time — so the same renderer draws them and the
+ * same controls edit them. Without a mark there is no way to tell what you
+ * booked from what the theme booked for you, which matters most at the moment
+ * you are deciding what to change.
+ */
+function _fdThemeMark(t, html) {
+  if (!t || t.source !== 'theme' || typeof html !== 'string') return html;
+  const badge = '<span title="Placed by the season's theme — edit or delete it like any other card"'
+    + ' style="font-size:8px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;'
+    + 'border:1px solid currentColor;border-radius:2px;padding:0 3px;margin-right:3px">theme</span>';
+  return html.replace(/^(<span[^>]*>)/, '$1' + badge);
+}
+
+/**
+ * Pick a theme, and its arc lands on the schedule to be edited.
+ *
+ * Stamped here rather than on the way into episode one, which is what makes an
+ * arc visible and editable at all. Switching themes sweeps the previous one's
+ * cards; switching to "No theme" sweeps them and leaves the rest of your
+ * schedule alone.
+ */
+export function onThemeChange() {
+  saveConfig();
+  try {
+    stampThemeArc((typeof players !== 'undefined' && players.length) || 0);
+    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  } catch (e) { /* a themeless season carries on */ }
+  renderTimeline();
+}
+
+/** Throw the edits away and lay the theme's own arc down again. */
+export function resetThemeSchedule() {
+  seasonConfig.themeArcStamped = '';
+  try {
+    stampThemeArc((typeof players !== 'undefined' && players.length) || 0);
+    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  } catch (e) { /* nothing to reset */ }
   renderTimeline();
 }
 

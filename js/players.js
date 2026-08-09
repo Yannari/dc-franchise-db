@@ -122,10 +122,33 @@ function _loadReturneeManifest() {
   if (_returneeManifest) return Promise.resolve(_returneeManifest);
   if (_returneeManifestPromise) return _returneeManifestPromise;
   if (typeof fetch === 'undefined') return Promise.resolve(null); // non-browser: signal "unknown"
-  _returneeManifestPromise = fetch('assets/avatars/returnee-manifest.json')
-    .then(r => (r.ok ? r.json() : []))
-    .then(arr => { _returneeManifest = new Set(Array.isArray(arr) ? arr : []); return _returneeManifest; })
-    .catch(() => null); // manifest missing → caller falls back to legacy probe
+  // ── THE SERVER'S OWN FILE LISTING FIRST ──
+  //
+  // The manifest is a hand-run build artifact: `node
+  // tools/gen-returnee-manifest.mjs`. So uploading `<slug>-returnee.png` from
+  // the Casting Studio — which puts the file exactly where it belongs — left
+  // the art unusable until somebody went and edited the repo, because this set
+  // is authoritative and the new slug was not in it.
+  //
+  // `/api/avatars` is the directory itself, so when a backend is answering it
+  // cannot be out of date. The static file stays as the offline path and for a
+  // deployed site with no same-origin API.
+  const fromListing = fetch('api/avatars', { cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(d => {
+      const list = d?.avatars;
+      if (!Array.isArray(list)) return null;
+      return new Set(list.filter(sl => sl.endsWith('-returnee'))
+        .map(sl => sl.slice(0, -'-returnee'.length)));
+    })
+    .catch(() => null);
+
+  _returneeManifestPromise = fromListing
+    .then(live => (live ? live : fetch('assets/avatars/returnee-manifest.json')
+      .then(r => (r.ok ? r.json() : []))
+      .then(arr => new Set(Array.isArray(arr) ? arr : []))))
+    .then(set => { _returneeManifest = set; return _returneeManifest; })
+    .catch(() => null); // nothing readable → caller falls back to legacy probe
   return _returneeManifestPromise;
 }
 

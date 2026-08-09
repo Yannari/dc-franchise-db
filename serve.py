@@ -109,6 +109,9 @@ def write_character(payload):
         with open(os.path.join(AVATAR_DIR, slug + '.png'), 'wb') as f:
             f.write(raw)
         result['wrote'].append('assets/avatars/%s.png' % slug)
+        # Returnee art is only ever used if the manifest lists it.
+        if rewrite_returnee_manifest() is not None:
+            result['wrote'].append('assets/avatars/returnee-manifest.json')
 
     return result
 
@@ -118,6 +121,32 @@ def list_avatars():
         return sorted(f[:-4] for f in os.listdir(AVATAR_DIR) if f.lower().endswith('.png'))
     except OSError:
         return []
+
+
+def rewrite_returnee_manifest():
+    """Regenerate assets/avatars/returnee-manifest.json from the files on disk.
+
+    The manifest is AUTHORITATIVE at runtime — refreshReturneeAvatars does
+    `manifest.has(base)` and never probes for a file once it has loaded — so an
+    uploaded `<slug>-returnee.png` that is not listed here is silently never
+    used. Until now the only thing that wrote it was `node
+    tools/gen-returnee-manifest.mjs`, run by hand, which meant adding returnee
+    art required editing the repo even though the upload endpoint had already
+    put the file exactly where it belongs — and an upload that skipped that step
+    left art sitting on disk that nothing would ever draw.
+
+    Derived from the directory every time, so it cannot disagree with what is
+    actually there. Same rule as the tools script, which stays for offline use.
+    """
+    try:
+        slugs = sorted(f[:-len('-returnee.png')] for f in os.listdir(AVATAR_DIR)
+                       if f.lower().endswith('-returnee.png'))
+    except OSError:
+        return None
+    path = os.path.join(AVATAR_DIR, 'returnee-manifest.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(slugs) + chr(10))
+    return slugs
 
 
 class StudioHandler(http.server.SimpleHTTPRequestHandler):

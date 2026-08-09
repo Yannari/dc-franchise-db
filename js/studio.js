@@ -125,7 +125,7 @@ function _blankChar() {
     // both. `descriptor` keeps anything that is neither — "Scouse" is worth
     // knowing and belongs to no vocabulary.
     ethnicity:'', nationality:'', descriptor:'',
-    voice:'', avatarDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
+    voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
 
@@ -972,6 +972,12 @@ async function _editBySlug(slug) {
     // keeping it here too would stack a second copy in front of the first.
     voice: parsed.prose,
     avatarDataUri: (rich && rich.avatarDataUri) || '',
+    returneeDataUri: (rich && rich.returneeDataUri) || '',
+    // Whether the server already holds `<slug>-returnee.png`, so the slot opens
+    // itself for a character that has art rather than hiding it behind a
+    // checkbox nobody would think to tick.
+    _hasReturneeArt: !!(rich && rich.returneeDataUri)
+      || _avatarList.includes(`${(rich && rich.slug) || ''}-returnee`),
   };
   renderStudio();
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1001,8 +1007,26 @@ function _renderEditor() {
       <div class="st-avatar-ctrls">
         <label class="st-btn st-file">Upload image<input type="file" id="st-f-file" accept="image/*" hidden></label>
         <button type="button" class="st-btn" id="st-f-lib">Pick from library</button>
+        <label class="st-check st-ret-toggle" title="A second portrait used only when this character is playing as a returnee">
+          <input type="checkbox" id="st-f-ret-on" ${d.returneeDataUri || d._hasReturneeArt ? 'checked' : ''}>
+          <span>Returnee portrait</span>
+        </label>
       </div>
       <div id="st-lib" class="st-lib" hidden></div>
+
+      <!-- FOLDED AWAY UNLESS ASKED FOR. Most characters never get one, and a
+           permanent second upload box costs the sheet a row for nothing. -->
+      <div class="st-ret" id="st-ret" ${d.returneeDataUri || d._hasReturneeArt ? '' : 'hidden'}>
+        <div class="st-ret-face" id="st-ret-portrait"></div>
+        <div class="st-ret-side">
+          <p class="st-ret-note">Shown instead of the main portrait when this character
+            plays a season as a returnee. Saved as <code>${_esc(d.slug || 'slug')}-returnee.png</code>.</p>
+          <div class="st-avatar-ctrls">
+            <label class="st-btn st-file">Upload returnee image<input type="file" id="st-f-ret-file" accept="image/*" hidden></label>
+            <button type="button" class="st-btn st-btn-quiet" id="st-f-ret-clear">Remove</button>
+          </div>
+        </div>
+      </div>
 
       <div class="st-row2">
         <label class="st-l">Gender
@@ -1102,6 +1126,27 @@ function _renderEditor() {
     catch { _toast('Could not read that image', 'err'); }
   });
   ed.querySelector('#st-f-lib').addEventListener('click', _toggleLibrary);
+
+  // ── the returnee slot ──
+  //
+  // The convention (`<slug>-returnee.png`) and the manifest that decides
+  // whether it is ever used were both repo-only knowledge: you had to know the
+  // filename rule, upload through the raw avatar library, and then regenerate a
+  // JSON file by hand. It is a labelled box on the character now.
+  const retBox = ed.querySelector('#st-ret');
+  ed.querySelector('#st-f-ret-on').addEventListener('change', e => {
+    retBox.hidden = !e.target.checked;
+    if (e.target.checked) _refreshReturneePortrait();
+  });
+  ed.querySelector('#st-f-ret-file').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { d.returneeDataUri = await _imgToAvatar(URL.createObjectURL(f)); _refreshReturneePortrait(); }
+    catch { _toast('Could not read that image', 'err'); }
+  });
+  ed.querySelector('#st-f-ret-clear').addEventListener('click', () => {
+    d.returneeDataUri = ''; d._removeReturnee = true; _refreshReturneePortrait();
+  });
+  if (!retBox.hidden) _refreshReturneePortrait();
 
   // save / delete
   ed.querySelector('#st-save').addEventListener('click', _save);
@@ -1256,6 +1301,16 @@ function _refreshPortrait() {
   const p = document.getElementById('st-portrait'); if (!p) return;
   const src = _draft.avatarDataUri || (_draft.slug ? _avatarSrc(_draft.slug) : '');
   p.innerHTML = src ? `<img src="${_esc(src)}" alt="" onerror="this.remove()">` : '<span class="st-portrait-ph">no avatar</span>';
+}
+
+function _refreshReturneePortrait() {
+  const p = document.getElementById('st-ret-portrait'); if (!p) return;
+  const src = _draft.returneeDataUri
+    || (_draft.slug && _draft._hasReturneeArt && !_draft._removeReturnee
+      ? _avatarSrc(`${_draft.slug}-returnee`) : '');
+  p.innerHTML = src
+    ? `<img src="${_esc(src)}" alt="" onerror="this.closest('.st-ret-face').classList.add('miss')">`
+    : '<span class="st-portrait-ph">no returnee art</span>';
 }
 
 // ── avatar library picker ───────────────────────────────────────────────
@@ -1513,9 +1568,14 @@ async function _save() {
   const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender,
     sexuality: d.sexuality, archetype: d.archetype,
     ethnicity: d.ethnicity, nationality: d.nationality, descriptor: d.descriptor,
-    voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
+    voice: d.voice, avatarDataUri: d.avatarDataUri || '',
+    returneeDataUri: d.returneeDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }
+  if (d.returneeDataUri) {
+    window.__studioAvatars = window.__studioAvatars || {};
+    window.__studioAvatars[`${d.slug}-returnee`] = d.returneeDataUri;
+  }
 
   // composed voice = bio lead-in (age/origin/orientation) + prose — this is what
   // the episode writer actually reads. Keep the fetched cache in sync too.
@@ -1544,6 +1604,25 @@ async function _save() {
         if (!j.ok) throw new Error(j.error || 'write failed');
         wrote = j.wrote;
       } catch (e) { _toast('Avatar upload failed: ' + e.message, 'warn'); }
+    }
+
+    // The returnee variant rides the same endpoint under `<slug>-returnee`.
+    // The server rewrites returnee-manifest.json off its own directory when it
+    // lands, which is the step that used to mean editing the repo: without a
+    // manifest entry the art exists and is never used.
+    if (d.returneeDataUri) {
+      try {
+        const r = await fetch(_apiUrl('/api/character'), {
+          method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice },
+            avatar: { slug: `${d.slug}-returnee`, dataUri: d.returneeDataUri } }),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'write failed');
+        wrote = [...(wrote || []), ...(j.wrote || [])];
+        d._hasReturneeArt = true;
+        if (!_avatarList.includes(`${d.slug}-returnee`)) _avatarList.push(`${d.slug}-returnee`);
+      } catch (e) { _toast('Returnee art upload failed: ' + e.message, 'warn'); }
     }
   }
 
@@ -1884,6 +1963,22 @@ function _injectCSS() {
   .st-empty{color:var(--muted,#889);font-size:13px;padding:8px}
   .st-sheet{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:13px}
   .st-sheet-head{display:flex;gap:14px;align-items:flex-start}
+  /* The returnee slot: folded away unless the character has art or you ask
+     for it, because most never get one and a permanent second upload box
+     costs the sheet a row for nothing. */
+  .st-ret-toggle{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted,#8b949e);cursor:pointer;user-select:none}
+  .st-ret-toggle input{accent-color:var(--accent,#f85149);cursor:pointer}
+  .st-ret{display:flex;gap:12px;align-items:flex-start;margin:8px 0 2px;padding:10px;
+    border:1px dashed var(--border,#333);border-radius:10px;background:rgba(255,255,255,.02)}
+  .st-ret[hidden]{display:none}
+  .st-ret-face{width:72px;height:72px;flex:0 0 auto;border-radius:10px;overflow:hidden;
+    background:var(--border,#333);border:1px solid var(--border,#333);display:grid;place-items:center}
+  .st-ret-face img{width:100%;height:100%;object-fit:cover}
+  .st-ret-face.miss img{display:none}
+  .st-ret-side{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .st-ret-note{margin:0;font-size:11px;line-height:1.45;color:var(--muted,#8b949e)}
+  .st-ret-note code{font-size:10.5px;color:var(--accent,#f85149)}
+  .st-btn-quiet{opacity:.75}
   .st-portrait{width:96px;height:96px;flex:0 0 auto;border-radius:12px;overflow:hidden;background:var(--border,#333);border:1px solid var(--border,#333);display:grid;place-items:center}
   .st-portrait img{width:100%;height:100%;object-fit:cover}
   .st-portrait-ph{font-size:10px;color:var(--muted,#889)}

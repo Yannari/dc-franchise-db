@@ -199,6 +199,46 @@ function stripThemeBookings() {
  * reimplement all of them. Everything downstream — `bbTwistsForWeek`,
  * `resolveTwistSchedule`, the Format Designer — keeps working untouched.
  */
+/**
+ * Lay the theme's arc onto the schedule NOW, at authoring time.
+ *
+ * The arc used to materialise on episode one, which meant the Format Designer
+ * had nothing to show and a theme's twists were a black box you could look at
+ * only after the season had started. They were always real schedule entries —
+ * that was the point of writing entries rather than intercepting the lookup —
+ * so the only thing standing between them and the designer was WHEN they were
+ * written.
+ *
+ * Stamped, they are ordinary cards: delete the have-nots week, drag the double
+ * eviction, change what is in the box, add five of your own around them. From
+ * this moment the schedule belongs to whoever is editing it, and `installTheme`
+ * will not touch it again — see the stamp check there.
+ *
+ * Returns the entries it added. Adds nothing without a cast, because the arc's
+ * shape depends on how long the season is.
+ */
+export function stampThemeArc(castSize) {
+  const theme = currentTheme();
+  const yours = (seasonConfig.twistSchedule || []).filter(t => t?.source !== 'theme');
+  if (!theme) {
+    seasonConfig.twistSchedule = yours;
+    seasonConfig.themeArcStamped = '';
+    return [];
+  }
+  const weeks = Math.max(0, Number(castSize || 0) - 3);
+  if (!weeks) return [];
+  const entries = themeScheduleEntries(theme, { weeks, existing: yours });
+  seasonConfig.twistSchedule = [...yours, ...entries];
+  seasonConfig.themeArcStamped = theme.id;
+  return entries;
+}
+
+/** Has this theme's arc already been laid down for editing? */
+export function themeArcIsStamped() {
+  const theme = currentTheme();
+  return !!theme && seasonConfig.themeArcStamped === theme.id;
+}
+
 export function installTheme(houseSize) {
   const theme = currentTheme();
   // Turning a theme OFF has to do work, which is why this is not an early
@@ -222,6 +262,21 @@ export function installTheme(houseSize) {
   // because the failure it prevents is invisible — an arc quietly booking week
   // 2 and week 3 of a season currently in week 9.
   if ((gs.bb.weeks?.length || 0) > 0) return null;
+  // Already stamped in the designer? Then the schedule is the user's, not
+  // ours. Re-booking here would strip every theme card and lay the defaults
+  // back down, silently undoing the edits that stamping exists to allow — a
+  // deleted week reappearing and a changed prize reverting on the way into
+  // episode one. Record the state the voice and the reader need, and leave the
+  // schedule exactly as authored.
+  if (seasonConfig.themeArcStamped === theme.id) {
+    gs.bb.theme = {
+      id: theme.id,
+      mood: theme.antagonist?.mood || 'neutral',
+      booked: (seasonConfig.twistSchedule || [])
+        .filter(t => t?.source === 'theme').map(t => t.type),
+    };
+    return gs.bb.theme;
+  }
   // A house loses one a week and ends at three.
   const weeks = Math.max(1, Number(houseSize || 0) - 3);
   // The surrounding UI persists `seasonConfig.twistSchedule` between runs, so a

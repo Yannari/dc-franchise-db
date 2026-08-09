@@ -21,6 +21,7 @@
 - VP atmosphere layers use `top:46px`, never `top:0` — the `.rp-nav` bar is 46px tall.
 - All animations need an `@media (prefers-reduced-motion: reduce)` fallback.
 - Run only the affected test files while iterating (`npx vitest run tests/<file>`), not the full suite.
+- **`bb-house` stays the default venue and a theme must never change it.** `theme.house` is a *suggestion* recorded on the descriptor — the venue is the user's choice and lives in `seasonConfig.setting`. `installTheme` must not write to `seasonConfig.setting` under any circumstance, and `defaultSettingFor('big-brother')` must keep returning `'bb-house'`. Task 2 tests this directly.
 
 ## File Structure
 
@@ -365,6 +366,31 @@ describe('theme arc scheduler', () => {
     expect(themeState().id).toBe(THEME_LIST[0]);
   });
 
+  it('never changes the venue — the house is the default and the user picks it', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = THEME_LIST[0];
+    seasonConfig.setting = 'bb-house';
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    installTheme(12);
+    expect(seasonConfig.setting).toBe('bb-house');
+  });
+
+  it('leaves a venue the user chose alone, even one the theme was not written for', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = THEME_LIST[0];
+    seasonConfig.setting = 'bb-manor';
+    seasonConfig.twistSchedule = [];
+    gs.bb = { weeks: [] };
+    installTheme(12);
+    expect(seasonConfig.setting).toBe('bb-manor');
+  });
+
+  it('keeps the house as the format default', async () => {
+    const { defaultSettingFor } = await import('../js/settings.js');
+    expect(defaultSettingFor('big-brother')).toBe('bb-house');
+  });
+
   it('installs nothing on an unthemed season', () => {
     seasonConfig.theme = 'none';
     seasonConfig.twistSchedule = [];
@@ -462,7 +488,7 @@ export function themeState() {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run tests/bb-themes.test.js`
-Expected: PASS, 16 tests.
+Expected: PASS, 19 tests.
 
 - [ ] **Step 5: Wire the install into the season**
 
@@ -701,7 +727,7 @@ export function themeBeat(hook, ctx = {}) {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run tests/bb-themes.test.js`
-Expected: PASS, 25 tests.
+Expected: PASS, 28 tests.
 
 - [ ] **Step 5: Wire the four hooks into the week**
 

@@ -18,8 +18,9 @@
 //                          lost.
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { addBond } from '../bonds.js';
-import { BB_POWER_DEFINITIONS, activePowersAt, usePower } from './powers.js';
+import { addBond, getBond } from '../bonds.js';
+import { BB_POWER_DEFINITIONS, usePower } from './powers.js';
+import { nominationScore } from './strategy.js';
 import { believesPowerHeld, learnBBPower } from './knowledge.js';
 
 const beat = (text, players, badgeText, badgeClass) =>
@@ -73,70 +74,196 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   const inst = livePower('usurpHoh', weekNum);
   if (!inst || !hoh || inst.holder === hoh || !house.includes(inst.holder)) return null;
 
-  // Worth taking? A crown is worth most to somebody who is not safe and cannot
-  // win one. Late in the power's life the calculation changes: an expiring
-  // power is worth spending on a worse week than a fresh one.
-  const s = pStats(inst.holder) || {};
+  // ── is this week worth it ──
+  //
+  // "Is it good for my game to use this now, or should I wait" is the question
+  // a real player asks, and the first version did not ask it: it rolled against
+  // boldness and threw the biggest thing on the shelf at weeks the holder was
+  // never in danger in.
+  //
+  // So it reads the actual board. `nominationScore` is what the nomination plan
+  // itself uses to decide who this Head of Household goes after — asking it
+  // about yourself IS "am I about to go up", answered with the same number that
+  // will answer it for real half an hour later.
+  const rivals = house.filter(n => n !== hoh && n !== inst.holder);
+  const scoreOf = name => {
+    try { return nominationScore(hoh, name, () => 0.5); } catch { return 0; }
+  };
+  const danger = scoreOf(inst.holder);
+  const worse = rivals.filter(n => scoreOf(n) > danger).length;
+  // Two people are likelier targets than me: the block is not coming this week,
+  // and a power spent on a safe week is a power wasted.
+  const safe = worse >= 2;
   const expiring = weekNum >= inst.expiresAfterWeek;
+  const s = pStats(inst.holder) || {};
   const nerve = (s.boldness || 5) / 10;
-  const pull = 0.18 + nerve * 0.4 + (expiring ? 0.34 : 0);
-  if (rng() > clamp(pull, 0.05, 0.9)) return null;
+
+  // Expiring changes the sum entirely: an unspent power at the jury is worth
+  // nothing at all, so a mediocre week beats no week.
+  let pull = expiring ? 0.72 : safe ? 0.05 : 0.28 + nerve * 0.3;
+  // Being the likeliest name on the board is the strongest reason there is.
+  if (!safe && worse === 0) pull += 0.34;
+  if (rng() > clamp(pull, 0.02, 0.94)) return null;
 
   usePower(inst, weekNum);
 
-  // ── the questioning ──
+  // ── the scene ──
   //
-  // Everybody is asked. What decides it is whether the deposed HOH had any
-  // reason to look at this person — a suspicion already held is worth more than
-  // any amount of instinct.
-  const d = pStats(hoh) || {};
-  // Did the deposed HOH already think this person was holding something? That
-  // is the single biggest thing pointing at them, and it is why keeping the
-  // secret in the weeks before this was worth doing.
-  let suspected = false;
-  try { suspected = believesPowerHeld(hoh, inst.holder, inst.powerId); } catch { suspected = false; }
-  let odds = 0.14 + ((d.intuition || 5) / 10) * 0.36;
-  // A house of four is a much shorter list than a house of twelve.
-  odds += Math.max(0, (8 - house.length)) * 0.03;
-  if (suspected) odds += 0.3;
-  const caught = rng() < clamp(odds, 0.06, 0.86);
-
-  const p = pronouns(inst.holder);
+  // The wiki's rule is that the deposed Head of Household interrogates EVERY
+  // other houseguest, and the drama is in those rooms rather than in the
+  // verdict. So everybody is asked, one at a time, and each gives a different
+  // kind of answer for a different reason:
+  //
+  //   tells    believes the holder has it, and has no reason to protect them
+  //   covers   believes it and DOES have a reason — a bond worth more than
+  //            this Head of Household's week
+  //   reads    no knowledge, good instincts, points at whoever benefits
+  //   guesses  no knowledge, poor instincts, names somebody they dislike
+  //   silent   will not hand anybody to a Head of Household who may be back in
+  //            power in ten minutes
+  //   denies   the person who actually did it, lying to their face
+  //
+  // The verdict is WEIGHED, not counted: a name from somebody trusted is worth
+  // more than a name from somebody who has been wrong before.
   const beats = [beat(
-    `${hoh} is not Head of Household any more. Somebody has taken it, the wall will not say who, `
-      + 'and the only thing this house has been told is that it happened.',
+    `${hoh} is not Head of Household any more. Somebody in this house has taken it, the wall will `
+      + 'not say who, and every houseguest here is about to be asked the same question one at a time.',
     [hoh], 'DETHRONED', 'red')];
+
+  const interviews = [];
+  const weights = new Map();
+  const bond = (a, b) => { try { return getBond(a, b); } catch { return 0; } };
+  for (const name of house) {
+    if (name === hoh) continue;
+    const st = pStats(name) || {};
+    let knows = false;
+    try { knows = believesPowerHeld(name, inst.holder, inst.powerId); } catch { knows = false; }
+    const loyalToHolder = bond(name, inst.holder) >= 3;
+    const trustsDeposed = bond(name, hoh) >= 2;
+
+    let kind;
+    let points = null;
+    if (name === inst.holder) {
+      kind = 'denies';
+      points = (st.strategic || 5) >= 6 ? (rivals[0] || null) : null;
+    } else if (knows && !loyalToHolder) {
+      kind = 'tells';
+      points = inst.holder;
+    } else if (knows) {
+      kind = 'covers';
+      points = rivals.find(n => n !== inst.holder && n !== name) || null;
+    } else if (rng() * 10 < (st.intuition || 5) - 3) {
+      kind = 'reads';
+      points = inst.holder;
+    } else if (!trustsDeposed && rng() < 0.34) {
+      kind = 'silent';
+    } else {
+      kind = 'guesses';
+      const pool = rivals.filter(n => n !== name);
+      points = pool.length ? pool[Math.floor(rng() * pool.length)] : null;
+    }
+
+    if (points && kind !== 'silent') {
+      // Weighed by what the deposed HOH thinks of the source. A name from
+      // somebody they trust lands; a name from somebody they do not is noise.
+      const w = 1 + clamp(bond(hoh, name) / 4, -0.6, 1.4);
+      weights.set(points, (weights.get(points) || 0) + w);
+    }
+    interviews.push({ name, kind, points });
+  }
+
+  // A handful of rooms, not eighteen. The screen shows a scene, not a
+  // transcript, and the ones worth showing are the ones that said something.
+  const shownRooms = interviews.filter(i => i.kind !== 'guesses' || rng() < 0.4).slice(0, 6);
+  const BADGE = { tells: 'HANDED OVER', covers: 'COVERING', reads: 'A GOOD READ',
+    guesses: 'A GUESS', silent: 'SAYS NOTHING', denies: 'TO THEIR FACE' };
+  for (const i of shownRooms) {
+    const p = pronouns(i.name);
+    const are = p.sub === 'they' ? 'are' : 'is';
+    const has = p.sub === 'they' ? 'have' : 'has';
+    const say = p.sub === 'they' ? 'say' : 'says';
+    let line;
+    if (i.kind === 'tells') {
+      line = `${i.name} does not hesitate. ${p.Sub} ${say} ${inst.holder}, ${p.sub} ${are} right, `
+        + `and ${p.sub} ${has} just made an enemy for the rest of the season.`;
+    } else if (i.kind === 'covers') {
+      line = `${i.name} knows exactly who it was and hands ${hoh} a different name entirely. `
+        + 'Whatever that friendship is worth, it is being spent right now.';
+    } else if (i.kind === 'reads') {
+      line = `${i.name} has no idea and says ${inst.holder} anyway, on nothing but the way `
+        + `${inst.holder} has been standing since the competition ended.`;
+    } else if (i.kind === 'guesses') {
+      line = `${i.name} names ${i.points}, which is a guess in a confident voice. ${i.points} is `
+        + 'going to hear about this by the end of the night.';
+    } else if (i.kind === 'silent') {
+      line = `${i.name} will not give a name. ${p.Sub} ${are} not handing anybody to a Head of `
+        + 'Household who could be back in power in ten minutes.';
+    } else {
+      line = `${inst.holder} sits down opposite ${hoh} and lies about it`
+        + (i.points ? `, then offers ${i.points} as a helpful suggestion.` : ', calmly, at length.');
+    }
+    beats.push(beat(line, [i.name], BADGE[i.kind],
+      i.kind === 'tells' || i.kind === 'reads' ? 'red' : i.kind === 'denies' ? 'gold' : 'blue'));
+  }
+
+  // ── the name ──
+  const ranked = [...weights.entries()].sort((a, b) => b[1] - a[1]);
+  const d = pStats(hoh) || {};
+  // The room's best answer, tempered by whether this Head of Household can read
+  // one. A poor read talks themselves out of a correct room.
+  const trust = clamp(0.3 + ((d.intuition || 5) / 10) * 0.55, 0.2, 0.9);
+  const accused = (ranked.length && rng() < trust)
+    ? ranked[0][0]
+    : (rivals[Math.floor(rng() * Math.max(1, rivals.length))] || null);
+  const caught = accused === inst.holder;
+
   beats.push(beat(
-    `${hoh} gets to ask. One question each, the whole house, and one name at the end of it — `
-      + `and if it is the right name, ${hoh} walks back into that room.`,
-    [...house].slice(0, 6), 'THE INTERROGATION', 'gold'));
+    `Everybody is called back in. ${hoh} has one name and the whole house watches ${hoh} say it: `
+      + `${accused || 'nobody at all'}.`,
+    [hoh, accused].filter(Boolean), 'THE NAME', 'gold'));
 
   if (caught) {
     beats.push(beat(
-      `${hoh} says ${inst.holder}. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not get to argue with it. `
-        + `${hoh} keeps the week, ${inst.holder} has spent the biggest thing ${p.sub} had for nothing, `
-        + 'and every person in that room now knows exactly what kind of player they are dealing with.',
+      `It is the right name. ${inst.holder} does not get to argue. ${hoh} keeps the week, the power `
+        + `is spent for nothing, and every person here has just learned what ${inst.holder} is `
+        + 'willing to do quietly.',
       [hoh, inst.holder], 'CAUGHT', 'red'));
-    // Everybody watched the accusation land. There is no keeping this.
     for (const n of house) {
       if (n === inst.holder) continue;
-      try { learnBBPower(n, inst.holder, inst.powerId, { from: hoh, week: weekNum, confidence: 1, rng: () => 0 }); } catch { /* belief store */ }
+      try {
+        learnBBPower(n, inst.holder, inst.powerId,
+          { from: hoh, week: weekNum, confidence: 1, rng: () => 0 });
+      } catch { /* belief store */ }
       addBond(n, inst.holder, -1.4);
     }
-    return { type: 'interrogation', holder: inst.holder, deposed: hoh, caught: true,
-      hoh, ...shown(inst, 'nominations', `${hoh} named ${inst.holder} and keeps the week.`), beats };
+  } else {
+    beats.push(beat(
+      accused
+        ? `It is the wrong name. ${accused} has to stand there while the whole house looks at them, `
+          + `and ${inst.holder} is Head of Household with nobody in this building any the wiser.`
+        : `${hoh} cannot make the call, and that is an answer too. ${inst.holder} is Head of `
+          + 'Household and nobody knows it.',
+      [hoh, accused].filter(Boolean), 'THE WRONG NAME', 'gold'));
+    // Being named for something you did not do costs you anyway — the room
+    // heard it, and rooms remember accusations better than corrections.
+    if (accused) {
+      for (const n of house) {
+        if (n === accused) continue;
+        addBond(n, accused, -0.5);
+      }
+    }
+    addBond(hoh, inst.holder, -0.6);
   }
 
-  beats.push(beat(
-    `${hoh} names somebody else. It is the wrong somebody, and the room watches ${hoh} be wrong `
-      + `out loud — which costs more than the crown did. ${inst.holder} is Head of Household and `
-      + 'nobody in this house knows it happened.',
-    [hoh, inst.holder], 'THE WRONG NAME', 'gold'));
-  addBond(hoh, inst.holder, -0.6);
-  return { type: 'interrogation', holder: inst.holder, deposed: hoh, caught: false,
-    hoh: inst.holder,
-    ...shown(inst, 'nominations', `${inst.holder} is Head of Household and nobody knows it.`),
-    beats };
+  return {
+    type: 'interrogation', holder: inst.holder, deposed: hoh, caught,
+    hoh: caught ? hoh : inst.holder,
+    accused, interviews,
+    ...shown(inst, 'nominations', caught
+      ? `${hoh} named ${inst.holder} and keeps the week.`
+      : `${inst.holder} is Head of Household and nobody knows it.`),
+    beats,
+  };
 }
 
 /**

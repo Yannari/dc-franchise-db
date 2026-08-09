@@ -658,3 +658,85 @@ describe('the doors open one at a time', () => {
       .toBe(wins.length);
   });
 });
+
+describe('the interrogation is a scene, and a decision', () => {
+  // The wiki's rule: the deposed Head of Household interrogates EVERY other
+  // houseguest, and if they name the right person they keep the week. The
+  // drama is in those rooms and not in the verdict, and the first version had
+  // three beats and no rooms at all.
+  const H = ['ana', 'ben', 'cleo', 'dev', 'eli', 'fay', 'gus', 'hana', 'iris', 'jo'];
+  const seat = () => {
+    setPlayers(H.map((n, i) => ({
+      name: n, archetype: 'floater', gender: 'f',
+      stats: { physical: 5, endurance: 5, mental: 5, social: 5,
+        strategic: i % 3 ? 7 : 4, loyalty: 5, boldness: 8,
+        intuition: i % 2 ? 8 : 3, temperament: 5 },
+    })));
+    seasonConfig.jurySize = 3;
+    setGs({ bb: { powers: [], weeks: [], stats: {} }, activePlayers: [...H], bonds: {} });
+  };
+  const seeded = seed => () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const run = async (week = 3, seed = 5) => {
+    const { grantPower } = await import('../js/bb/powers.js');
+    const { playInterrogation } = await import('../js/bb/secret-power-plays.js');
+    seat();
+    grantPower('hoh-interrogation', 'ben', { week: 3, visibility: 'secret', source: 'test' });
+    return playInterrogation({ week: { num: week }, house: H, hoh: 'ana', rng: seeded(seed) });
+  };
+
+  it('asks everybody, which is the rule', async () => {
+    const out = await run();
+    expect(out, 'it did not fire at all').toBeTruthy();
+    expect(out.interviews.map(i => i.name).sort())
+      .toEqual(H.filter(n => n !== 'ana').sort());
+  });
+
+  it('gets more than one kind of answer out of the house', async () => {
+    // Some tell, some cover for a friend, some read it off body language, some
+    // guess, some refuse to hand anybody to a Head of Household who might be
+    // back in power in ten minutes. One kind of answer is a formality.
+    const out = await run();
+    const kinds = new Set(out.interviews.map(i => i.kind));
+    expect(kinds.size, 'the whole house answered the same way').toBeGreaterThan(2);
+    expect(kinds.has('denies'), 'the person who did it was not asked').toBe(true);
+  });
+
+  it('plays the rooms, not just the verdict', async () => {
+    const out = await run();
+    // Dethroned, several interviews, the name, and the outcome.
+    expect(out.beats.length).toBeGreaterThan(5);
+    const badges = out.beats.map(b => b.badgeText);
+    expect(badges).toContain('DETHRONED');
+    expect(badges).toContain('THE NAME');
+  });
+
+  it('does not spend the power on a week it is safe in', async () => {
+    // "Is it good for my game to use this now, or should I wait." The first
+    // version rolled against boldness and threw the biggest thing on the shelf
+    // at weeks the holder was never in danger in.
+    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
+    expect(src, 'nothing asks whether the holder is actually a target')
+      .toMatch(/nominationScore\(hoh, name/);
+    expect(src).toMatch(/const safe = worse >= 2/);
+    // And an expiring power is spent anyway, because an unspent one is worth
+    // nothing at the jury.
+    expect(src).toMatch(/expiring \? 0\.72/);
+  });
+
+  it('weighs the names rather than counting them', async () => {
+    // A name from somebody the deposed HOH trusts is worth more than a name
+    // from somebody who has been wrong before.
+    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
+    expect(src).toMatch(/weights\.set\(points, \(weights\.get\(points\) \|\| 0\) \+ w\)/);
+    expect(src).toMatch(/clamp\(bond\(hoh, name\) \/ 4/);
+  });
+
+  it('costs the wrongly accused something', async () => {
+    // Rooms remember accusations better than corrections.
+    const src = require('node:fs').readFileSync('js/bb/secret-power-plays.js', 'utf8');
+    expect(src).toMatch(/addBond\(n, accused, -0\.5\)/);
+  });
+});

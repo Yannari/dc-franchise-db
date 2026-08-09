@@ -9,7 +9,7 @@
 // produces reach `buildVPScreens` and come back as HTML with the right words in
 // it. Every assertion is on rendered output rather than on the act.
 import { beforeAll, describe, expect, it } from 'vitest';
-import { gs, players, seasonConfig } from '../js/core.js';
+import { gs, players, seasonConfig, setRelationships } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
@@ -24,6 +24,17 @@ const CAST = [
   ['J', 'goat', 'f'], ['K', 'hothead', 'm'], ['L', 'perceptive-player', 'f'],
 ].map(([name, archetype, gender]) => ({ name, archetype, gender, sexuality: 'straight' }));
 
+// The cast, built in pairs — see tests/bb-duos.test.js for why the twist
+// refuses to run without this.
+const DUO_RELS = [
+  { a: 'A', b: 'B', kin: 'siblings' },
+  { a: 'C', b: 'D', kin: 'exes' },
+  { a: 'E', b: 'F', kin: 'married' },
+  { a: 'G', b: 'H', kin: 'old-friends' },
+  { a: 'I', b: 'J', kin: 'colleagues' },
+  { a: 'K', b: 'L', kin: 'cousins' },
+].map((r, i) => ({ ...r, id: `duo-rel-${i}`, type: 'ally', bond: 3 }));
+
 let screensByLabel = new Map();
 let acts = [];
 
@@ -34,6 +45,7 @@ beforeAll(() => {
   gs.episodeHistory = [];
   gs.jury = [];
   gs.popularity = {};
+  setRelationships(DUO_RELS.map(r => ({ ...r })));
   Object.assign(seasonConfig, {
     format: 'big-brother', finaleSize: 3, jurySize: 7,
     bbDuos: 'on', bbDuosKeyAt: 10,
@@ -71,16 +83,31 @@ describe('the season produced the acts', () => {
 });
 
 describe('and every one of them reached a screen', () => {
-  it('draws the pairing, with the pairs on it', () => {
+  it('draws the pairing as a move-in, with the pairs on the wall', () => {
     const [screen] = screensFor('Duos: Announcement');
     expect(screen, 'the announcement never became a screen').toBeTruthy();
     expect(screen.html).toContain('DYNAMIC DUOS');
-    // The pairs themselves, not just the heading.
+    // The house's own furniture, because this is a night of television rather
+    // than a settings page: the front-door feed and the wall of frames.
+    expect(screen.html, 'the announcement is not built as a move-in').toContain('bbf-feed');
+    expect(screen.html).toContain('FRONT DOOR');
+    expect(screen.html, 'the chain between two frames is the whole idea').toContain('bbdn-link');
+
     const open = acts.find(a => a.type === 'duos-open');
     for (const [a, b] of open.pairs.slice(0, 3)) {
       expect(screen.html, `the pair ${a} & ${b} is missing`).toContain(a);
       expect(screen.html).toContain(b);
     }
+  });
+
+  it('says HOW each duo knows each other, in the cast’s own words', () => {
+    // The reason bond-score pairing had to go: "these two get on quite well"
+    // is not something a host can read out.
+    const screen = screensFor('Duos: Announcement')[0];
+    const open = acts.find(a => a.type === 'duos-open');
+    expect(open.kin, 'the announcement carries no relation labels').toBeTruthy();
+    expect(open.kin.some(k => /sibling|exes|married|cousin|friend|worked/i.test(k))).toBe(true);
+    expect(screen.html).toContain(open.kin[0]);
   });
 
   it('draws the key, naming the holder and the partner who went', () => {
@@ -119,6 +146,7 @@ describe('a pairs-only season', () => {
     gs.episodeHistory = [];
     gs.jury = [];
     gs.popularity = {};
+    setRelationships(DUO_RELS.map(r => ({ ...r })));
     Object.assign(seasonConfig, {
       format: 'big-brother', finaleSize: 3, jurySize: 7,
       bbDuos: 'pairs', bbDuosKeyAt: 10,

@@ -44,7 +44,7 @@
 // sense — they vote, they are counted, they can reach the end. What changes is
 // two filters at two seams in week.js: they join the sitting-out list for
 // competitions, and they join `untouchable` at the nomination ceremony.
-import { gs, players, seasonConfig } from '../core.js';
+import { gs, players, seasonConfig, kinshipPairs, REL_KINSHIP } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 
@@ -126,40 +126,80 @@ export function hasKey(name) { return keyHolders().includes(name); }
 export function orphans(house = gs.activePlayers || []) {
   const st = duoState();
   if (!st) return [];
-  return house.filter(n => n !== st.solo && !hasKey(n) && !partnerOf(n, house));
+  return house.filter(n => !hasKey(n) && !partnerOf(n, house));
+}
+
+/** How two of them know each other, in the words the cast was built with. */
+export function duoKin(a, b) {
+  const st = duoState();
+  if (!st) return 'none';
+  return st.kinds?.[[a, b].sort().join('|')] || 'none';
+}
+
+/** That relation, said the way a screen should say it. */
+export function duoKinLabel(a, b) {
+  const kin = duoKin(a, b);
+  if (kin === 'chained') return 'Chained by Big Brother';
+  return REL_KINSHIP[kin]?.label || 'Came in together';
+}
+
+/** How many duos this cast could actually field. */
+export function declaredDuos(house = gs.activePlayers || []) {
+  const seen = new Set();
+  const out = [];
+  for (const pair of kinshipPairs()) {
+    if (!house.includes(pair.a) || !house.includes(pair.b)) continue;
+    if (seen.has(pair.a) || seen.has(pair.b)) continue;   // one duo each
+    seen.add(pair.a); seen.add(pair.b);
+    out.push(pair);
+  }
+  return out;
 }
 
 /**
- * Pair the house up.
+ * Pair the house up — out of the cast, not out of the bond table.
  *
- * Paired by who already knows whom: the strongest existing bond first, so the
- * duos read as people who arrived together rather than a shuffle. An odd house
- * leaves one person unpaired — they play alone all season, and in key mode they
- * can never earn one, which is exactly the trade the show's solo players had.
+ * A DUO IS A DECLARED RELATION. That is the whole premise: nobody walked into
+ * this house alone, and the reason two people are chained together is that they
+ * are siblings, or exes, or married, or worked together — something the cast
+ * was built with and the audience is told on night one. Pairing by whoever
+ * happened to have the strongest bond produced duos that meant nothing, could
+ * not be announced ("these two get on quite well"), and changed depending on
+ * which week the twist was installed.
+ *
+ * So this reads the kinship axis (js/core.js) and nothing else, and it REFUSES
+ * to run on a cast that has not been built for it. A season with no declared
+ * relations cannot play Dynamic Duos, the same way one with no declared twins
+ * cannot play the Twin Twist — the answer is to go and build the cast, not to
+ * invent relationships nobody wrote.
+ *
+ * Anybody left over came in ALONE. They are not a solo curiosity: they cannot
+ * be nominated as half of anything, which makes them the cheapest name on the
+ * wall, and in key mode they can never earn one because there is nobody to
+ * lose.
  */
 export function installDuos(house = [], { keyAt = DEFAULT_KEY_AT, goldenKey = true, rng = Math.random } = {}) {
   const names = [...house].filter(Boolean);
   if (names.length < 4) return null;
 
-  const pool = [...names];
-  const pairs = [];
-  while (pool.length >= 2) {
-    const a = pool.shift();
-    // Closest first, with a nudge of noise so a season is not deterministic.
-    let best = null, bestScore = -Infinity;
-    for (const b of pool) {
-      const score = getPerceivedBond(a, b) + (rng() * 2 - 1);
-      if (score > bestScore) { bestScore = score; best = b; }
-    }
-    pool.splice(pool.indexOf(best), 1);
-    pairs.push([a, best]);
-  }
-  const solo = pool[0] || null;
+  const declared = declaredDuos(names);
+  // Two duos is the floor: with one, a single nomination ends the twist and
+  // every other week of the season is an ordinary week wearing its name.
+  if (declared.length < 2) return null;
+
+  const pairs = declared.map(d => [d.a, d.b]);
+  const kinds = {};
+  for (const d of declared) kinds[[d.a, d.b].sort().join('|')] = d.kin;
+  const taken = new Set(pairs.flat());
+  const singles = names.filter(n => !taken.has(n));
 
   gs.bb ||= {};
   gs.bb.duos = {
     pairs,
-    solo,
+    kinds,
+    // Everybody who walked in on their own. Plural, because a cast is built
+    // with as many duos as it is built with, and the rest came alone.
+    singles,
     goldenKey: !!goldenKey,
     // name -> { week } for everybody whose partner has gone
     keys: {},
@@ -212,18 +252,19 @@ export function announceDuos(week) {
     name: 'Dynamic Duos',
     goldenKey: !!st.goldenKey,
     pairs: st.pairs.map(p => [...p]),
-    solo: st.solo,
+    kin: st.pairs.map(([a, b]) => duoKinLabel(a, b)),
+    singles: [...(st.singles || [])],
     keyAt: st.keyAt,
     rules,
     beats: [
       beat(pick(OPEN_LINES), [], 'DYNAMIC DUOS', 'gold'),
       ...st.pairs.map(([a, b]) => beat(`${a} and ${b}.`, [a, b], 'A PAIR', 'blue')),
-      ...(st.solo ? [beat(`${st.solo} is on their own, and will be all the way through. `
-        + (st.goldenKey
-          ? `There is no partner to lose, which means there is no key to win.`
-          : `There is nobody to be nominated beside, which means ${pronouns(st.solo).sub} can be put on `
-            + `that block alone from the first week.`),
-      [st.solo], 'ALONE', 'red')] : []),
+      ...(st.singles || []).map(n => beat(`${n} walked in alone. `
+      + (st.goldenKey
+        ? `There is no partner to lose, which means there is no key to win.`
+        : `There is nobody to be nominated beside, which means ${pronouns(n).sub} can be put on that `
+          + `block alone from the first week — and that costs a Head of Household nobody.`),
+    [n], 'CAME IN ALONE', 'red')),
     ],
   };
 }
@@ -362,6 +403,8 @@ export function repairOrphans({ week, house = gs.activePlayers || [], rng = Math
     // The old pairs stay in the record; the new one is what the game reads,
     // so it goes on the front where `duoOf` finds it first.
     st.pairs = [[a, best], ...st.pairs.filter(p => !p.includes(a) && !p.includes(best))];
+    // Nobody declared this one. Big Brother did, which is its own label.
+    st.kinds[[a, best].sort().join('|')] = 'chained';
     made.push([a, best]);
     // Being handed to each other is not nothing. It is not friendship either.
     addBond(a, best, 1);
@@ -484,6 +527,28 @@ function keyWeek(name, rng) {
   ], rng), [name], 'A KEY AND A BALLOT', 'gold');
 }
 
+/** A week where nothing broke, which is still a week spent in twos. */
+function steadyWeek(live, weekNum) {
+  const closest = [...live].sort((x, y) => getBond(y[0], y[1]) - getBond(x[0], x[1]))[0];
+  const worst = [...live].sort((x, y) => getBond(x[0], x[1]) - getBond(y[0], y[1]))[0];
+  const LINES = [
+    () => `Nobody in this house can make a plan for one person. Every conversation this week ends with `
+      + `somebody counting in twos and getting a number they did not like.`,
+    () => closest
+      ? `${closest[0]} and ${closest[1]} are the pair everybody checks against before they say anything, `
+        + `and the checking is starting to look like a habit.`
+      : `The pairs hold, which is its own kind of news.`,
+    () => worst
+      ? `${worst[0]} and ${worst[1]} are not close and are not going anywhere. The house has stopped `
+        + `expecting them to sort it out and started planning around it.`
+      : `Nothing came apart this week, which nobody trusts.`,
+    () => `A quiet week in a house where nobody is a single vote. The arithmetic does not go away just `
+      + `because nothing happened.`,
+  ];
+  return ev('steady', LINES[Math.abs(weekNum) % LINES.length](),
+    closest || [], 'STILL IN TWOS', 'blue');
+}
+
 /**
  * The week in a Duos season.
  *
@@ -522,9 +587,11 @@ export function duosWeekLife(week, { house = gs.activePlayers || [], rng = Math.
       if (!st.power.some(p => p[0] === pair[0])) st.power.push([...pair]);
       continue;
     }
-    // Two people who are finished and cannot get away from each other.
-    if (bond <= -3 && !st.splits.some(s => s.includes(pair[0]) && s.includes(pair[1]))
-      && rng() < 0.7) {
+    // Two people who are finished and cannot get away from each other. Not on
+    // a dice roll: a duo publicly coming apart is the loudest thing this twist
+    // produces, and it happens once per pair, so gating it behind a 70% left
+    // seasons where the house's worst pairing was never mentioned.
+    if (bond <= -3 && !st.splits.some(s => s.includes(pair[0]) && s.includes(pair[1]))) {
       events.push(publicSplit(pair, rng));
       st.splits.push([...pair]);
       continue;
@@ -548,7 +615,14 @@ export function duosWeekLife(week, { house = gs.activePlayers || [], rng = Math.
     if (once(`key:${name}`, 3)) events.push(keyWeek(name, rng));
   }
 
-  if (!events.length) return null;
+  /* THE WEEK IS NEVER SILENT.
+     Everything above is conditional — a season where no pair is winning, no
+     pair is failing and nobody is orphaned rolled nothing at all, and a season
+     twist with nothing on screen between the announcement and the eviction is
+     a twist the audience decides is doing nothing. So the quiet weeks say the
+     quiet thing: the pairing is still the fact everybody is playing around. */
+  if (!events.length) events.push(steadyWeek(live, weekNum));
+
   return {
     type: 'duos-week', week: weekNum, secret: false,
     goldenKey: !!st.goldenKey,

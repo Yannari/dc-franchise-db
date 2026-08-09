@@ -739,11 +739,19 @@ export function simulateBBEpisode() {
       // 'on' is the BB13 shape and stays the default meaning, so a season
       // saved before the mode existed plays exactly as it did. 'pairs' is the
       // other game: no keys, and orphans chained to each other instead.
-      installDuos(house, {
+      const seated = installDuos(house, {
         keyAt: Number(seasonConfig.bbDuosKeyAt) || 10,
         goldenKey: seasonConfig.bbDuos !== 'pairs',
         rng: Math.random,
       });
+      // A duo is a DECLARED relation, so a cast built without any cannot play
+      // this — and failing silently would leave a season labelled Dynamic Duos
+      // that never once nominated a pair. Recorded where the Run tab can say it.
+      if (!seated) {
+        gs.bb.duosBlocked = 'This cast has fewer than two declared relationships, so Dynamic Duos '
+          + 'cannot run. Pair houseguests up on the Relationships tab — siblings, exes, married, '
+          + 'worked together — and the twist will seat itself on night one.';
+      }
     } catch { /* the season plays without one */ }
   }
 
@@ -1340,6 +1348,31 @@ export function summariseWeek(week) {
         line(act.found ? 'FOUND IT' : 'THE HOUSE IS LOOKING');
         line(`  Searching this week: ${(act.searchers || []).join(', ') || 'nobody'}.`);
         if (act.found) line('  Somebody found it. Who, and what it is, stays off this page.');
+        break;
+      }
+      case 'interrogation': {
+        line('');
+        line('THE INTERROGATION');
+        line(`  ${act.deposed} was dethroned by ${act.caught ? act.holder : 'somebody'}.`);
+        line(act.caught
+          ? `  ${act.deposed} named ${act.holder} correctly and keeps the week. The power is spent for nothing.`
+          : `  ${act.deposed} named the wrong houseguest. ${act.holder} is Head of Household and nobody knows.`);
+        break;
+      }
+      case 'mystery-competitor': {
+        line('');
+        line('THE MYSTERY COMPETITOR');
+        line(`  ${act.guest} entered the veto draw on ${act.holder}'s behalf${act.displaced ? `, bumping ${act.displaced}` : ''}.`);
+        line(act.won ? `  ${act.guest} won it. The veto belongs to ${act.holder}.`
+          : `  ${act.guest} lost. ${act.holder} bought a body in the draw and nothing else.`);
+        break;
+      }
+      case 'mystery-veto': {
+        line('');
+        line('THE MYSTERY VETO');
+        line(`  ${act.holder} called a second veto competition with one player in it.`);
+        line(act.won ? `  Won alone. ${act.saves ? `${act.saves} comes off the block.` : ''}`
+          : '  Lost alone. Nobody was in the way and it was still lost.');
         break;
       }
       case 'secret-power-comp': {

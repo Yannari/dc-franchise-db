@@ -160,11 +160,14 @@ export const BB_TWIST_CONTRACTS = {
       label: 'Dynamic Duos',
       key: 'bbDuos',
       accent: '245,158,11',
-      hint: 'A season-long twist. The house plays in pairs and is nominated in pairs — two '
-        + 'houseguests who came in together, never two houseguests. What happens when a duo breaks '
-        + 'is the choice: a Golden Key hands the survivor safety they cannot spend, or no key at '
-        + 'all leaves them orphaned and cheap to nominate until Big Brother chains them to the '
-        + 'next person who loses somebody.',
+      hint: 'NEEDS A CAST BUILT IN PAIRS. A duo is a DECLARED relation — siblings, exes, married, '
+        + 'worked together — set on the Relationships tab, and a season with fewer than two of them '
+        + 'cannot run this twist at all. The house is then nominated in pairs: two houseguests who '
+        + 'came in together, never two houseguests. What happens when a duo breaks is the choice: a '
+        + 'Golden Key hands the survivor safety they cannot spend, or no key at all leaves them '
+        + 'orphaned and cheap to nominate until Big Brother chains them to the next person who '
+        + 'loses somebody.',
+      requires: 'kinship',
       modes: [
         { value: 'off', label: 'Off' },
         { value: 'on', label: 'Pairs + the Golden Key (BB13)' },

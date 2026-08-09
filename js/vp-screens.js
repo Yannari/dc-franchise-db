@@ -20843,8 +20843,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
       // rather than after it, because the Twin Twist shipped with its swap
       // passed to a screen that never drew it.
       case 'duos-open':
+        // The move-in's furniture, because this IS a move-in: the intro quote
+        // and the room's first read are what makes a face on that wall a
+        // person, and a duos night that skipped them was a settings page.
         screens.push({ id: id('bb-duos-open'), label: 'Duos: Announcement',
-          html: rpBuildBBDuosOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar }) });
+          html: rpBuildBBDuosOpen(view, act, { esc: _bbEsc, avatar: _bbAvatar,
+            slug: _bbSlug, quote: _bbIntroQuote, reads: _bbFirstRead }) });
         break;
       case 'duos-key':
         screens.push({ id: id('bb-duos-key'), label: 'Duos: Golden Key',

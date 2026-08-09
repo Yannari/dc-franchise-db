@@ -96,13 +96,22 @@ describe('the setting itself', () => {
     }
   });
 
-  it('is on the setup panel and saved with the season', () => {
-    const fs = require('node:fs');
-    expect(fs.readFileSync('simulator.html', 'utf8')).toMatch(/id="cfg-bb-comp-mix"/);
-    const ui = fs.readFileSync('js/cast-ui.js', 'utf8');
-    expect(ui, 'the control is not read into the config').toMatch(/bbCompMix:\s+g\('cfg-bb-comp-mix'\)/);
-    expect(ui, 'the control is not restored when a season loads')
-      .toMatch(/set\('cfg-bb-comp-mix'/);
+  it('survives a save with no control on the page', () => {
+    // The mix is set from the timeline's Competition Randomizer, not from a
+    // dropdown in Season Options — it belongs beside the thing that applies it.
+    // Which means `saveConfig` reads an element that is not there, and a bare
+    // `|| 'balanced'` would quietly reset the season's mix every time anything
+    // else on that panel changed.
+    const ui = require('node:fs').readFileSync('js/cast-ui.js', 'utf8');
+    expect(ui, 'a missing control resets the mix')
+      .toMatch(/bbCompMix:\s+g\('cfg-bb-comp-mix'\)\?\.value \|\| seasonConfig\.bbCompMix/);
+  });
+
+  it('is offered where it is applied', () => {
+    const run = require('node:fs').readFileSync('js/run-ui.js', 'utf8');
+    expect(run, 'the randomiser does not offer the mix').toMatch(/id="bb-rand-mix"/);
+    expect(run, 'choosing a mix does not stick to the season')
+      .toMatch(/seasonConfig\.bbCompMix = mix/);
   });
 });
 

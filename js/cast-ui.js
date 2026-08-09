@@ -916,7 +916,11 @@ export function saveConfig() {
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     // Which stats this season's competitions should ask for. See BB_COMP_MIXES.
-    bbCompMix:   g('cfg-bb-comp-mix')?.value || 'balanced',
+    // Set from the timeline's Competition Randomizer rather than from a control
+    // here, so the value already on the season has to SURVIVE a save — reading
+    // a missing element and defaulting would quietly reset the mix to balanced
+    // every time anything else on this panel changed.
+    bbCompMix:   g('cfg-bb-comp-mix')?.value || seasonConfig.bbCompMix || 'balanced',
     // Off unless explicitly switched on: the one setting here that costs
     // money every time a season is played.
     socialWriter: !!document.getElementById('cfg-social-writer')?.checked,
@@ -1062,7 +1066,6 @@ export function renderConfig() {
   set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
-  set('cfg-bb-comp-mix', seasonConfig.bbCompMix || 'balanced');
   { const w = document.getElementById('cfg-social-writer');
     if (w) w.checked = seasonConfig.socialWriter === true; }
   applySeasonTwistConfig(set);

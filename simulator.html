@@ -538,24 +538,6 @@
               <span class="bbopt-fixed-k">Endgame</span>
               <span>Always a final three: a three-part Head of Household, then the jury votes.</span>
             </div>
-            <!-- Every competition declares which stats decide it, and nothing read
-                 those when choosing one, so which stats mattered in a season was
-                 whatever the draw happened to produce — eight weeks with no
-                 endurance night and the wall-sitters never got one. -->
-            <div class="form-group" id="grp-bb-comp-mix">
-              <label class="form-label">Competition mix</label>
-              <select id="cfg-bb-comp-mix" onchange="saveConfig()" class="form-input">
-                <option value="balanced">Balanced &mdash; every stat gets a night</option>
-                <option value="physical">More physical</option>
-                <option value="mental">More mental</option>
-                <option value="endurance">More endurance</option>
-                <option value="social">More social</option>
-              </select>
-              <div class="hint hint-tight">Balanced is an active rule, not the absence of one: it
-                favours whatever the season has not asked for yet, so the whole cast's range decides
-                something. The leans tilt without excluding &mdash; a mental comp still airs in a
-                physical season.</div>
-            </div>
             <div class="form-group" id="grp-bb-safety">
               <label class="form-label">BB Block Buster</label>
               <select id="cfg-bb-safety" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">
@@ -564,16 +546,21 @@
               </select>
               <div class="hint hint-tight">Three on the block; one wins their way off before the vote.</div>
             </div>
-            <!-- Every season twist, built from its own contract in
-                 js/bb/twist-contract.js. Two of them used to live here as two
-                 near-identical hand-written slabs; a third would have been a
-                 third copy. -->
-            <div id="bb-season-twists"></div>
+            <!-- Beside the setting it qualifies. It used to sit AFTER the whole
+                 season-twists block, which is built at run time and can run to
+                 several panels, so the number that says when Block Buster stops
+                 was separated from Block Buster by everything else on the page —
+                 findable only by knowing it was there. -->
             <div class="form-group" id="grp-bb-safety-stops">
               <label class="form-label">Stops with this many left</label>
               <input type="number" id="cfg-bb-safety-stops" class="form-input" min="5" max="14" value="9" onchange="saveConfig()">
               <div class="hint hint-tight">Two nominees again once the house is this small.</div>
             </div>
+            <!-- Every season twist, built from its own contract in
+                 js/bb/twist-contract.js. Two of them used to live here as two
+                 near-identical hand-written slabs; a third would have been a
+                 third copy. -->
+            <div id="bb-season-twists"></div>
             <div class="form-group" id="grp-bb-havenots">
               <label class="form-label">Have-Nots</label>
               <select id="cfg-bb-havenots" onchange="saveConfig();qsOnHouseOptionChange&&qsOnHouseOptionChange()" class="form-input">

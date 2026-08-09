@@ -54,6 +54,7 @@ import { rpBuildSigDizzyDiscs } from './vp-bb-sig/dizzy-discs.js';
 import { rpBuildSigLogRoll } from './vp-bb-sig/log-roll.js';
 import { rpBuildSigHoldUp } from './vp-bb-sig/hold-up.js';
 import { rpBuildSigCagedEggs } from './vp-bb-sig/caged-eggs.js';
+import { rpBuildSigGetAGrip } from './vp-bb-sig/get-a-grip.js';
 import { rpBuildSigLaserMaze } from './vp-bb-sig/laser-maze.js';
 import { rpBuildSigWaterRescue } from './vp-bb-sig/water-rescue.js';
 import { rpBuildSigTheWall } from './vp-bb-sig/the-wall.js';
@@ -16986,12 +16987,23 @@ export function rpBuildBBVetoDraw(ep) {
   const state = _tvState[stateKey];
 
   // The automatic seats are known before anybody reaches into anything.
-  const steps = [{ kind: 'open' }, ...draws.map(d => ({ kind: 'draw', d })), { kind: 'set' }];
+  // The stranger goes in AFTER the chips and BEFORE the field is read out,
+  // because that is the order it happened: the bag is emptied, and then a
+  // person who does not live here walks into the yard and somebody's seat is
+  // gone. The screen used to skip this entirely — it drew the bumped houseguest
+  // still holding a chip and never showed the guest at all, so the audience
+  // watched somebody lose their spot on one screen and keep it on the next.
+  const guest = act?.guest || null;
+  const steps = [{ kind: 'open' }, ...draws.map(d => ({ kind: 'draw', d })),
+    ...(guest ? [{ kind: 'guest' }] : []), { kind: 'set' }];
   const done = state.idx >= steps.length - 1;
   const revealed = Math.max(0, state.idx + 1);
   const pulledCount = Math.max(0, Math.min(draws.length, state.idx));
   const drawn = draws.slice(0, pulledCount).map(d => d.chose || d.drew).filter(Boolean);
-  const seated = [...automatic, ...drawn];
+  const guestStep = guest ? steps.findIndex(st => st.kind === 'guest') : -1;
+  const swapped = guestStep >= 0 && state.idx >= guestStep;
+  const seated = [...automatic, ...drawn]
+    .map(n => (swapped && guest?.displaced && n === guest.displaced ? guest.name : n));
   const seats = Math.max(players_.length, automatic.length + draws.length);
 
   const CHIP = `<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -17007,7 +17019,8 @@ export function rpBuildBBVetoDraw(ep) {
         return `<div class="bbvs-seat ${who ? 'is-in' : ''} ${auto && who ? 'is-auto' : ''}">
           ${who
             ? `${_bbAvatar(who, 46)}<b>${_bbEsc(who)}</b>
-               <i>${auto ? (who === hoh ? 'HOH' : 'nominated') : 'drawn'}</i>`
+               <i>${who === guest?.name ? 'does not live here'
+                 : auto ? (who === hoh ? 'HOH' : 'nominated') : 'drawn'}</i>`
             : `<span class="bbvs-empty">?</span><i>in the bag</i>`}
         </div>`;
       }).join('')}
@@ -17040,10 +17053,19 @@ export function rpBuildBBVetoDraw(ep) {
           ? `${_bbEsc(d.why || `${d.drawer} picks ${got}.`)}`
           : `${d.drawer} reaches in and pulls <strong>${_bbEsc(got)}</strong>. Nobody chose that; the bag did.`}</div></div>`;
     }
+    if (step.kind === 'guest') {
+      return `<div class="bbns-card is-key">
+        <div class="bbns-card-h">${_bbAvatar(guest.name, 30)}${guest.displaced ? _bbAvatar(guest.displaced, 30) : ''}
+          <span class="bbns-pill gold">A NAME THAT DOES NOT LIVE HERE</span></div>
+        <div class="bbns-card-b"><strong>${_bbEsc(guest.name)}</strong> walks into the yard and takes
+          a drawn seat${guest.displaced ? `. <strong>${_bbEsc(guest.displaced)}</strong> is out of it, and did nothing to deserve that` : ''}.
+          ${guest.for ? `Whatever ${_bbEsc(guest.name)} wins tonight belongs to <strong>${_bbEsc(guest.for)}</strong>, who paid for it weeks ago, in private.` : ''}</div></div>`;
+    }
     return `<div class="bbns-card is-final">
-      <div class="bbns-card-h">${players_.slice(0, 6).map(n => _bbAvatar(n, 26)).join('')}
+      <div class="bbns-card-h">${[...players_, ...(guest ? [guest.name] : [])].slice(0, 6).map(n => _bbAvatar(n, 26)).join('')}
         <span class="bbns-pill red">PLAYING FOR THE VETO</span></div>
-      <div class="bbns-card-b">${players_.join(', ')}. Everybody else watches.</div></div>`;
+      <div class="bbns-card-b">${[...players_, ...(guest ? [`${guest.name} (for ${guest.for})`] : [])].join(', ')}.
+        Everybody else watches.</div></div>`;
   };
 
   return `<div class="rp-page bb-room bb-block bbns">
@@ -17104,6 +17126,8 @@ const _BB_SIG_BUILDERS = {
   'hide-and-go-veto': rpBuildSigHideAndGoVeto,
   'bb-comics': rpBuildSigBBComics,
   'before-or-after': rpBuildSigBeforeOrAfter,
+  // Batch three.
+  'get-a-grip': rpBuildSigGetAGrip,
   // The deepened recurring competitions keep their original variant tags, so a
   // season saved before they were rewritten still resolves here — and each
   // builder declines when the new per-round data is absent, dropping that old

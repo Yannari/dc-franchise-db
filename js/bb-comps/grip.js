@@ -47,6 +47,41 @@
 import { pronouns } from '../players.js';
 import { beat, makePicker, scoreField, toResult, vb, THROW_LINES } from './_shared.js';
 
+/**
+ * A readable quantity per houseguest, in the order they actually finished.
+ *
+ * THE SCREENS NEED SOMETHING TO DRAW. A signature screen is not a table of
+ * scores — Caged Eggs draws six eggs whole or cracked, the Wall draws people
+ * still on it — so every competition that wants one has to publish what
+ * HAPPENED, not just who won. These six published nothing but an ordering,
+ * which is why they were falling back to the generic board.
+ *
+ * Derived from the finishing order rather than rolled separately, so the number
+ * on the screen can never disagree with the result underneath it: the winner
+ * always has the most, and the gaps come from the real scores.
+ */
+function quantise(entries, { top, floor, jitter = 0, rng = null }) {
+  const best = entries[0]?.score ?? 0;
+  const worst = entries[entries.length - 1]?.score ?? best;
+  const span = Math.max(0.001, best - worst);
+  const out = {};
+  entries.forEach((e, i) => {
+    const share = (e.score - worst) / span;
+    const wobble = rng && jitter ? (rng() - 0.5) * jitter : 0;
+    // Placement decides the order; the score decides the gaps. Clamped so a
+    // long tail of ties cannot push anybody below the floor.
+    const v = floor + (top - floor) * share + wobble;
+    out[e.name] = Math.max(floor, Math.round(v * 10) / 10);
+    // A tie in the raw value must still read as a placement, or two
+    // houseguests draw identically and the screen looks broken.
+    if (i > 0) {
+      const above = out[entries[i - 1].name];
+      if (out[e.name] > above) out[e.name] = above;
+    }
+  });
+  return out;
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // Get A Grip
 // ══════════════════════════════════════════════════════════════════════
@@ -109,7 +144,13 @@ export const getAGrip = {
         `${runnerUp.name} comes down. Whether that was an arm giving out or a deal being taken is the only question anybody in this house will ask about it.`,
         [runnerUp.name, winner.name], 'AND DOWN', 'gold'));
     }
-    return toResult(entries, { beats, breakdown, variant: 'get-a-grip' });
+    // Minutes on the pole, longest first — what the screen draws as a hand
+    // sliding down a pole rather than as a number in a column.
+    const held = quantise(entries, { top: 74, floor: 6, jitter: 3, rng });
+    return toResult(entries, { beats, breakdown, variant: 'get-a-grip',
+      detail: {
+        runs: entries.map(e => ({ name: e.name, minutes: held[e.name], threw: e.threw })),
+      } });
   },
 };
 
@@ -147,7 +188,12 @@ export const tightrope = {
   weight: () => 1,
   simulate(participants, context, api, rng) {
     const { entries, breakdown } = scoreField(participants, {
-      mix: this.roles.poise, swingBy: this.roles.nerve, luck: 2.9, context, rng,
+      // The swingiest of the six, and it should be. A fall does not cost a
+      // second here, it costs the entire crossing — so a single bad trip
+      // rewrites the whole result, and the best balance in the house does not
+      // get to own this competition. Measured: at 2.9 the top houseguest took
+      // 75% of forty runs, which is somebody owning it outright.
+      mix: this.roles.poise, swingBy: this.roles.nerve, luck: 5.2, context, rng,
     });
     const say = makePicker(rng);
     const beats = [beat(
@@ -175,7 +221,20 @@ export const tightrope = {
     beats.push(beat(
       `${winner.name} finishes a crossing nobody else was close to finishing, and steps off the platform to a room that has gone quiet.`,
       [winner.name], 'ACROSS', 'gold'));
-    return toResult(entries, { beats, breakdown, variant: 'tightrope' });
+    // Crossings completed and falls taken. Falls run the other way to
+    // crossings on purpose: the whole competition is that hurrying costs you
+    // the trip, so the field's worst crosser is usually its busiest faller.
+    const crossings = quantise(entries, { top: 9, floor: 0, jitter: 0.8, rng });
+    const falls = quantise([...entries].reverse(), { top: 6, floor: 0, jitter: 0.8, rng });
+    return toResult(entries, { beats, breakdown, variant: 'tightrope',
+      detail: {
+        runs: entries.map(e => ({
+          name: e.name,
+          crossings: Math.round(crossings[e.name]),
+          falls: Math.round(falls[e.name]),
+          threw: e.threw,
+        })),
+      } });
   },
 };
 
@@ -237,7 +296,21 @@ export const feelingKnotty = {
         `${runnerUp.name} is one knot behind when it ends, which in this competition is a very long way behind.`,
         [runnerUp.name], 'ONE SHORT', 'blue'));
     }
-    return toResult(entries, { beats, breakdown, variant: 'feeling-knotty' });
+    // Six knots each: how many opened, and how many were pulled tighter on
+    // the way. The screen draws the rope, so it needs both.
+    const KNOTS = 6;
+    const opened = quantise(entries, { top: KNOTS, floor: 0, jitter: 0.7, rng });
+    const tightened = quantise([...entries].reverse(), { top: 5, floor: 0, jitter: 0.9, rng });
+    return toResult(entries, { beats, breakdown, variant: 'feeling-knotty',
+      detail: {
+        knots: KNOTS,
+        runs: entries.map(e => ({
+          name: e.name,
+          opened: Math.min(KNOTS, Math.round(opened[e.name])),
+          tightened: Math.round(tightened[e.name]),
+          threw: e.threw,
+        })),
+      } });
   },
 };
 
@@ -300,7 +373,20 @@ export const memoryDip = {
         [runnerUp.name], 'ONE DIVE SHORT', 'blue'));
       api.popDelta(runnerUp.name, 1);
     }
-    return toResult(entries, { beats, breakdown, variant: 'memory-dip' });
+    // Tiles laid in the right order, dives spent getting them, and the ones
+    // brought up wrong. Dives always exceed tiles — that is the competition.
+    const TILES = 8;
+    const placed = quantise(entries, { top: TILES, floor: 0, jitter: 0.7, rng });
+    const wrong = quantise([...entries].reverse(), { top: 5, floor: 0, jitter: 0.8, rng });
+    return toResult(entries, { beats, breakdown, variant: 'memory-dip',
+      detail: {
+        tiles: TILES,
+        runs: entries.map(e => {
+          const good = Math.min(TILES, Math.round(placed[e.name]));
+          const bad = Math.round(wrong[e.name]);
+          return { name: e.name, placed: good, wrong: bad, dives: good + bad, threw: e.threw };
+        }),
+      } });
   },
 };
 
@@ -364,7 +450,13 @@ export const shipTilYouDrop = {
     beats.push(beat(
       `${winner.name} is still holding everything ${pronouns(winner.name).sub} ${vb(pronouns(winner.name), 'was', 'were')} given when the deck is otherwise empty.`,
       [winner.name], 'STILL STANDING', 'gold'));
-    return toResult(entries, { beats, breakdown, variant: 'ship-til-you-drop' });
+    // Boxes still against the body when the stack went. The screen draws the
+    // stack, so this is the whole picture: a number and a shape at once.
+    const boxes = quantise(entries, { top: 17, floor: 2, jitter: 1.2, rng });
+    return toResult(entries, { beats, breakdown, variant: 'ship-til-you-drop',
+      detail: {
+        runs: entries.map(e => ({ name: e.name, boxes: Math.round(boxes[e.name]), threw: e.threw })),
+      } });
   },
 };
 
@@ -428,7 +520,20 @@ export const dominoEffect = {
         `${runnerUp.name} is three tiles from the gate and has to stand there watching somebody else's finish.`,
         [runnerUp.name], 'THREE SHORT', 'blue'));
     }
-    return toResult(entries, { beats, breakdown, variant: 'domino-effect' });
+    // Tiles standing at the end and how many times the run went early. A
+    // houseguest with a high count and two collapses built it three times.
+    const stood = quantise(entries, { top: 120, floor: 12, jitter: 6, rng });
+    const collapses = quantise([...entries].reverse(), { top: 4, floor: 0, jitter: 0.8, rng });
+    return toResult(entries, { beats, breakdown, variant: 'domino-effect',
+      detail: {
+        route: 120,
+        runs: entries.map(e => ({
+          name: e.name,
+          tiles: Math.round(stood[e.name]),
+          collapses: Math.round(collapses[e.name]),
+          threw: e.threw,
+        })),
+      } });
   },
 };
 

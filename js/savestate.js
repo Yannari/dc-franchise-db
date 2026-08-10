@@ -1,6 +1,6 @@
 // js/savestate.js — Game state persistence: save, snapshot, init, reset
 import { gs, gsCheckpoints, players, seasonConfig, relationships, preGameAlliances,
-         prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum } from './core.js';
+         prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum, seasonFormat} from './core.js';
 import { pStats, pronouns } from './players.js';
 import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
@@ -733,6 +733,11 @@ export function initGameState() {
     affairs: [],                   // [{ cheater, partner, secretPartner, exposure, resolved, resolution }]
     franchiseMeta: _fMeta,
     seasonNumber: seasonConfig?.seasonNumber || 0,  // saves become self-identifying (Task 8b relies on this)
+    // ...and self-identifying on the SHOW too, which is the other half of an
+    // identity now. A save that says "season 14" and nothing else cannot be
+    // told apart from the other show's season 14 — which is exactly how the
+    // Control Room could sync Total Drama episodes into a Big Brother season.
+    format: seasonFormat(seasonConfig),
   });
 
   // Initialize survival values when food/water system is enabled

@@ -362,7 +362,7 @@
   <!-- 1) TOTAL DRAMA ANALYTICS (AI) -->
   <section class="ai-panel glass-card" id="aiPanel">
     <div class="ai-head">
-      <h2 class="section-title">📈 Total Drama Analytics <span class="muted">(AI)</span></h2>
+      <h2 class="section-title">📈 <span data-show-name>Total Drama</span> Analytics <span class="muted">(AI)</span></h2>
       <div class="ai-status" id="aiStatus">Paste your episode summary and generate analytics.</div>
     </div>
 
@@ -389,10 +389,6 @@
     </div>
 
     <div class="ai-controls">
-      <div class="ai-field">
-        <label class="ai-label" for="aiShow">Show</label>
-        <select id="aiShow" class="ai-input" title="Which show this season number belongs to. Big Brother 14 and Total Drama 14 are different seasons and keep separate episodes, summaries and analytics."></select>
-      </div>
       <div class="ai-field">
         <label class="ai-label" for="aiSeason">Season</label>
         <input id="aiSeason" class="ai-input" type="number" min="1" value="5" />
@@ -757,10 +753,20 @@ Owen: This is going to be amazing!"
   // answer before that resolves; it is never the source of truth.
   function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || CS_SHOWS; }
 
-  /** The show the page is currently looking at. */
+  /**
+   * The show the page is currently looking at.
+   *
+   * THE HEADER SWITCHER, not a control of our own. The site already has one —
+   * `js/show-switcher.js`, mounted by the header on every page, with `?show=`
+   * winning over a remembered choice — and a second dropdown for the same
+   * question is a second answer waiting to disagree with the first.
+   *
+   * `?show=all` is meaningful on a career or a rankings table and meaningless
+   * for one season's episodes, so an "all" selection falls through to whatever
+   * the simulator is currently running.
+   */
   function _csFormat() {
-    const el = document.getElementById('aiShow');
-    const picked = el && el.value;
+    const picked = window.__SHOWS && window.__SHOWS.current;
     if (picked && _csShows()[picked]) return picked;
     try {
       const cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}');
@@ -2272,9 +2278,44 @@ Owen: This is going to be amazing!"
         .sort((a, b) => a.num - b.num);
     }
 
+    /**
+     * Which show a simulator save came from.
+     *
+     * Saves stamp `format` now, but every save made before that does not — and
+     * a Big Brother season is unmistakable from the inside, because `gs.bb` is
+     * where the whole format lives. Neither guess is needed for a stamped save.
+     */
+    function _payloadFormat(payload) {
+      const state = payload?.gs || payload || {};
+      const stamped = payload?.format || state.format;
+      if (stamped && _csShows()[stamped]) return stamped;
+      if (state.bb || payload?.bb) return 'big-brother';
+      return CS_DEFAULT_FORMAT;
+    }
+
     async function _importSimulatorPayload(payload, sourceLabel) {
       const rows = _simulatedEpisodeRows(payload);
       if (!rows.length) throw new Error('No simulated episodes with summaries were found. Simulate an episode first.');
+
+      // ── THE SHOW HAS TO MATCH, AND THIS ONE WRITES ──
+      //
+      // Every key it writes is built from the PAGE's show, and every row it
+      // writes comes from the SIMULATOR's season. With the simulator on Total
+      // Drama and this page on Big Brother, sync quietly filed a Total Drama
+      // season under Big Brother 14 — and there is no undo for that, because
+      // the episodes overwrite whatever was already there.
+      const payloadFormat = _payloadFormat(payload);
+      const pageFormat = _csFormat();
+      if (payloadFormat !== pageFormat) {
+        const nameOf = f => (window.__SHOWS && window.__SHOWS.names && window.__SHOWS.names[f]) || f;
+        const err = new Error(
+          `That save is a ${nameOf(payloadFormat)} season and this page is showing `
+          + `${nameOf(pageFormat)}. Switch the show at the top of the page to `
+          + `${nameOf(payloadFormat)} and sync again — importing it here would file `
+          + `${nameOf(payloadFormat)} episodes under ${nameOf(pageFormat)} season ${Number(els.season.value || 1)}.`);
+        err.showMismatch = true;
+        throw err;
+      }
 
       const season = Number(els.season.value || 1);
       let newCount = 0;
@@ -2342,7 +2383,11 @@ Owen: This is going to be amazing!"
         if (!state) return _requestSimulatorFile('No simulator save exists on this origin. On yannari.github.io, choose the JSON made by Simulator → Export Season.');
         await _importSimulatorPayload(state, 'Direct simulator sync');
       } catch (error) {
-        _requestSimulatorFile('Direct access is unavailable here. Choose the JSON made by Simulator → Export Season.');
+        // A show mismatch is a real answer, not a missing-access problem, and
+        // offering the file picker for it would just import the wrong season
+        // by a different route.
+        if (error?.showMismatch) setStatus(error.message);
+        else _requestSimulatorFile('Direct access is unavailable here. Choose the JSON made by Simulator → Export Season.');
       } finally {
         els.simulatorSync.disabled = false;
       }
@@ -7754,30 +7799,28 @@ Would you like to:
        so anything wired below sees it. -->
   <script type="module">
     import { SHOWS, DEFAULT_FORMAT, showName } from './js/shows.js';
+    import { currentShow, ALL } from './js/show-switcher.js';
+    const resolve = () => {
+      const s = currentShow();
+      return (s && s !== ALL && SHOWS[s]) ? s : null;
+    };
     window.__SHOWS = {
       prefixes: Object.fromEntries(Object.entries(SHOWS).map(([f, sh]) => [f, sh.prefix])),
       names: Object.fromEntries(Object.entries(SHOWS).map(([f, sh]) => [f, sh.name])),
       default: DEFAULT_FORMAT,
+      current: resolve(),
     };
-    const sel = document.getElementById('aiShow');
-    if (sel) {
-      let current = DEFAULT_FORMAT;
-      try {
-        const cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}');
-        if (cfg.format && SHOWS[cfg.format]) current = cfg.format;
-      } catch (e) { /* no config, no opinion */ }
-      try { current = localStorage.getItem('current_season_show') || current; } catch (e) { /* ignore */ }
-      if (!SHOWS[current]) current = DEFAULT_FORMAT;
-      sel.innerHTML = Object.keys(SHOWS)
-        .map(f => `<option value="${f}"${f === current ? ' selected' : ''}>${showName(f)}</option>`).join('');
-      // Everything on this page is keyed off the pair, so changing the show is
-      // changing which season you are looking at. Reload rather than trying to
-      // re-hydrate a dozen panels in place and missing one.
-      sel.addEventListener('change', () => {
-        try { localStorage.setItem('current_season_show', sel.value); } catch (e) { /* ignore */ }
-        location.reload();
-      });
-    }
-  </script>
+    // Everything on this page is keyed off (show, number), so changing the show
+    // is changing which season you are looking at — not filtering the one you
+    // have. Reload rather than re-hydrating a dozen panels and missing one.
+    window.addEventListener('showchange', () => {
+      const next = resolve();
+      if (next !== window.__SHOWS.current) location.reload();
+    });
+    // The heading follows the switcher, or the page says "Total Drama
+    // Analytics" while the header says Big Brother.
+    const label = window.__SHOWS.current || DEFAULT_FORMAT;
+    document.querySelectorAll('[data-show-name]').forEach(el => { el.textContent = showName(label); });
+    </script>
 </body>
 </html>

@@ -60,6 +60,36 @@ describe('a season is a show and a number', () => {
     expect(html).toMatch(/seasonId: _pubFormat === CS_DEFAULT_FORMAT/);
   });
 
+  it('refuses to sync a season from the other show', () => {
+    // Sync WRITES, and every key it writes is built from the page's show while
+    // every row comes from the simulator's season. With the simulator on Total
+    // Drama and this page on Big Brother it filed a Total Drama season under
+    // Big Brother 14, overwriting whatever was there, with no undo.
+    expect(html).toMatch(/const payloadFormat = _payloadFormat\(payload\);/);
+    expect(html).toMatch(/if \(payloadFormat !== pageFormat\)/);
+    // And says so, instead of the generic "direct access is unavailable" that
+    // would send you to import the same wrong season through the file picker.
+    expect(html).toMatch(/err\.showMismatch = true;/);
+    expect(html).toMatch(/if \(error\?\.showMismatch\) setStatus\(error\.message\);/);
+  });
+
+  it('can tell an unstamped Big Brother save by what is inside it', () => {
+    // Saves stamp `format` now, but the ones already on disk do not — and a
+    // Big Brother season is unmistakable from the inside.
+    expect(html).toMatch(/if \(state\.bb \|\| payload\?\.bb\) return 'big-brother';/);
+    // The simulator stamps it going forward.
+    const save = readFileSync('js/savestate.js', 'utf8');
+    expect(save, 'a save still cannot say which show it is').toMatch(/format: seasonFormat\(seasonConfig\)/);
+  });
+
+  it('uses the site-wide show switcher instead of adding a second control', () => {
+    // There is already one, mounted by the header on every page. A second
+    // dropdown for the same question is a second answer waiting to disagree.
+    expect(html).not.toMatch(/id="aiShow"/);
+    expect(html).toMatch(/import \{ currentShow, ALL \} from '\.\/js\/show-switcher\.js'/);
+    expect(html).toMatch(/window\.addEventListener\('showchange'/);
+  });
+
   it('reads the show list from shows.js rather than keeping a second one', () => {
     // The page carries a two-entry literal as a pre-module fallback only; the
     // module bridge replaces it. A third show must not need editing here.

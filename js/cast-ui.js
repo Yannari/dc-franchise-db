@@ -7,7 +7,7 @@ import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
 import { seasonFormat, formatIsRunnable, formatName } from './core.js';
-import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug,
+import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug, resolveAvatarSlug,
   hasReturneeArt, whenReturneeArtKnown } from './players.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
@@ -403,7 +403,13 @@ export function syncCastToRoster() {
     if (ri !== -1) {
       FRANCHISE_ROSTER[ri] = { ...FRANCHISE_ROSTER[ri], archetype: p.archetype, stats: { ...p.stats }, gender: p.gender };
       if (p.sexuality) FRANCHISE_ROSTER[ri].sexuality = p.sexuality;
-      if (p.isReturnee !== undefined) FRANCHISE_ROSTER[ri].isReturnee = p.isReturnee;
+      // NOT isReturnee. Returning is a fact about an APPEARANCE, not about a
+      // person: Jules being a returnee in season 12 does not make Jules a
+      // returnee in season 15. Persisting it here wrote a season's casting
+      // decision onto the permanent character record, where every later season
+      // could inherit it — and the shipped roster already carried one, which is
+      // how it was found.
+      delete FRANCHISE_ROSTER[ri].isReturnee;
       updated++;
     } else {
       FRANCHISE_ROSTER.push({ name: p.name, slug: baseAvatarSlug(p), gender: p.gender, archetype: p.archetype, stats: { ...p.stats } });
@@ -738,7 +744,15 @@ export function renderCast() {
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
   const ovPct=((ov-1)/9*100).toFixed(0), isEd=editingId===p.id;
-  const avatar=`<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
+  // ── resolveAvatarSlug, not the stored `p.slug` ──
+  //
+  // `slug` is a CACHE of the rule, written by applyAvatarSlug. A player who was
+  // a returnee last season keeps `jules-returnee` in that field until something
+  // recomputes it, so unticking Returning left the returnee portrait on screen —
+  // the box said one thing and the face said another. Asking the rule directly
+  // makes "returnee art only when Returning is ticked" structural instead of
+  // dependent on every path remembering to refresh a cached string.
+  const avatar=`<img src="assets/avatars/${resolveAvatarSlug(p)}.png" alt="${p.name}" onerror="this.remove()">`;
   // Which portrait is actually on screen. The variant used to appear silently
   // on a returnee's card and there was no way to tell it had — or to tell, for
   // anybody else, that one existed at all.

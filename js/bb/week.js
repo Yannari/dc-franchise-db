@@ -12,6 +12,7 @@ import { rollDeparture } from '../departures.js';
 import { runBattleBack } from './battle-back.js';
 import { resolveBonusLife } from './bonus-life.js';
 import { resolveHaltingHex } from './eviction-powers.js';
+import { resolveRewind } from './rewind.js';
 import { runCoinOfDestiny, coinNominations } from './coin-of-destiny.js';
 import { runSafetySuite, safetySuiteSafe } from './safety-suite.js';
 import { runCarePackage, runTimeCapsule, carePackageProtects, coHohNominee,
@@ -2361,20 +2362,61 @@ export function simulateBBWeek(options = {}) {
     if (!duoWeekNoms) week.duoWeekCollapsed = true;
   }
 
+  // ── THE CURSE TAKES A CHAIR; IT DOES NOT ADD ONE ──
+  //
+  // It used to append a nominee, which made the block one bigger than whatever
+  // else was shaping it — and every other third-chair mechanic in the game
+  // refused to run beside it for that reason alone. Nine cards and the Block
+  // Buster, all incompatible with the one twist whose curse could just as
+  // easily have taken a seat instead of adding one.
+  //
+  // Reserved, so the Head of Household knows the cost while they are choosing:
+  // they name ONE this week instead of two, or two instead of three under the
+  // Block Buster, and the last chair is filled by somebody nobody chose. The
+  // block is exactly the size it would have been. The Den now costs the HOH a
+  // nomination rather than costing the week its shape.
+  //
+  // Resolved HERE rather than at the ceremony because the curse is allowed to
+  // MISS — everybody eligible can be protected — and a seat reserved for a
+  // curse that never lands leaves the block one short and the vote broken. The
+  // name has to be known before the Head of Household starts counting.
+  //
+  // A duo week is left alone: its block is pairs, and half a pair beside a
+  // cursed stranger is not a duo block.
+  let curseSeat = null;
+  const _curseCanReserve = !duoWeekNoms && !duoPair;
+  if (week.temptation?.accepted && _curseCanReserve) {
+    const curseAct = resolveCurse({ week, house, rng, protectedNames: [...untouchable] });
+    if (curseAct) {
+      if (curseAct.cursed) {
+        curseSeat = curseAct.cursed;
+        week.temptationChair = curseSeat;
+      } else {
+        week.temptationCurseMissed = true;
+      }
+      week.acts.push(addBeats(curseAct,
+        curseAct.cursed ? { nominees: [curseAct.cursed] } : {}));
+    }
+  }
+  // How many the Head of Household actually gets to name.
+  const hohSeats = Math.max(1, nomineeCount - (curseSeat ? 1 : 0));
+
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
   // what used to leave half a duo on the block beside a stranger.
   let nominees = duoWeekNoms ? [...duoWeekNoms]
     : duoPair ? [...duoPair]
       : [...new Set(plan.nominees)]
-        .filter(name => house.includes(name) && !untouchable.includes(name)).slice(0, 2);
+        .filter(name => house.includes(name) && !untouchable.includes(name)
+          && name !== curseSeat).slice(0, hohSeats);
   if (duoWeekNoms) week.duoWeekNominees = [...duoWeekNoms];
   if (duoPair && nominees.length === duoPair.length) {
     week.duoNomination = [...nominees];
     if (duoPairs) week.duoBlocks = duoPairs.map(p => [...p]);
   }
-  while (nominees.length < 2) {
-    const extra = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
+  while (nominees.length < hohSeats) {
+    const extra = chooseReplacement(hoh, house,
+      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
     if (!extra || nominees.includes(extra) || untouchable.includes(extra)) break;
     nominees.push(extra);
   }
@@ -2400,11 +2442,15 @@ export function simulateBBWeek(options = {}) {
   //
   // The third is named by the same read that names a replacement, so it is
   // another target rather than a name out of a hat.
-  while ((safetyActive || doubleVote) && nominees.length < nomineeCount) {
-    const third = chooseReplacement(hoh, house, [...untouchable, ...nominees], plan, rng);
+  while ((safetyActive || doubleVote) && nominees.length < hohSeats) {
+    const third = chooseReplacement(hoh, house,
+      [...untouchable, ...nominees, curseSeat].filter(Boolean), plan, rng);
     if (!third || nominees.includes(third)) break;
     nominees.push(third);
   }
+  // And the reserved chair, last, so the block reads as the Head of
+  // Household's names plus the one that is not theirs.
+  if (curseSeat && !nominees.includes(curseSeat)) nominees.push(curseSeat);
   // ── BB ROADKILL: the third key nobody's hand is on ──
   //
   // Everybody plays, one at a time and out of sight of the rest, and only the
@@ -4340,7 +4386,11 @@ export function simulateBBWeek(options = {}) {
     // How they wore it, judged on what the week actually achieved rather than on
   // what they meant. The house holds this against them next week.
   try { week.reign = week.hohSecret ? null : recordReign(week); } catch { week.reign = null; }
-  gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
+  // `week.rewound` wins: the reign was erased, so there is no outgoing Head of
+  // Household to bar from next week's competition. Without this the line below
+  // would hand the crown straight back to somebody the twist just took it from,
+  // one screen after telling the house they were never crowned.
+  gs.bb.outgoingHoh = (week.hohSecret || week.rewound) ? null : hoh;
     gs.bb.weeks.push(week);
     // One episode, however many cycles it took. A double eviction runs the week
   // engine twice and a Split House runs it once per side, so an unconditional
@@ -5145,6 +5195,39 @@ export function simulateBBWeek(options = {}) {
     } catch { week.haltingHex = null; }
   }
 
+  // ── The Rewind ──
+  //
+  // Same seam as the Hex, and after it on purpose: if the Hex has already
+  // stopped the night there is nothing left to stop, and a Rewind spent on an
+  // eviction that is not happening is the "do not waste the power" fault this
+  // shelf has been fixed for twice.
+  //
+  // The difference from the Hex is the line that erases `outgoingHoh`. That
+  // single field is the whole of "the reign is gone": it is what bars last
+  // week's Head of Household from competing, so clearing it puts them back on
+  // the same starting line as the two people they nominated.
+  week.rewind = null;
+  if (!compressed && evicted) {
+    try {
+      const rw = resolveRewind({ week, evicted, nominees, hoh, house,
+        ballots: week.votingLog || [], rng });
+      if (rw) {
+        week.rewind = rw;
+        week.acts.push(addBeats(rw, { players: [rw.holder, rw.spared].filter(Boolean) }));
+        week.evictionCancelled = true;
+        week.rewound = true;
+        week.evicted = null;
+        evicted = null;
+        if (week.duoWeekTaken) { secondEvicted = null; week.duoWeekTaken = null; }
+        // The week never happened: no block, no reign, nobody barred.
+        week.finalNominees = [];
+        nominees = [];
+        gs.bb.outgoingHoh = null;
+        gs.bb.rewoundWeek = week.num;
+      }
+    } catch { week.rewind = null; }
+  }
+
   // AFTER the Hex, not after the eviction act. The Hex un-evicts somebody the
   // house has already voted out and nulls `week.evicted`, so a line placed at
   // the act would announce a departure that the very next card cancels.
@@ -5332,7 +5415,11 @@ export function simulateBBWeek(options = {}) {
   try { week.reign = week.hohSecret ? null : recordReign(week); } catch { week.reign = null; }
   // An invisible winner was never publicly HOH, so nothing locks them out
   // of next week's competition — the twist's stated perk.
-  gs.bb.outgoingHoh = week.hohSecret ? null : hoh;
+  // `week.rewound` wins: the reign was erased, so there is no outgoing Head of
+  // Household to bar from next week's competition. Without this the line below
+  // would hand the crown straight back to somebody the twist just took it from,
+  // one screen after telling the house they were never crowned.
+  gs.bb.outgoingHoh = (week.hohSecret || week.rewound) ? null : hoh;
   gs.bb.weeks.push(week);
   // One episode, however many cycles it took. A double eviction runs the week
   // engine twice and a Split House runs it once per side, so an unconditional

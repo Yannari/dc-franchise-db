@@ -27,7 +27,7 @@
 
 import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { addBond, getPerceivedBond } from '../bonds.js';
+import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 import { makePicker, clamp } from '../bb-comps/_shared.js';
 import { BB_POWER_DEFINITIONS, grantPower } from './powers.js';
 
@@ -283,8 +283,32 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
     };
   }
 
-  const cursed = eligible[Math.floor(rng() * eligible.length)];
+  // ── WHO PAYS, AND WHY IT IS NOT A NAME OUT OF A HAT ──
+  //
+  // A uniform draw made accepting free. The offer costs nothing, refusing
+  // costs nothing, and the bill went to a stranger — so there was no decision
+  // in it, only a dice roll somebody else lost. Weighted toward the people the
+  // taker is CLOSEST to, accepting becomes a gamble with your own alliance:
+  // most of the time the curse lands near you, and the person it seats is
+  // somebody you needed.
+  //
+  // Proportional, and deliberately not deterministic. Always-the-closest-ally
+  // would name the taker out loud — the room would read the block and know —
+  // and nobody would ever accept again. A LEAN means the house's inference is
+  // usually right and occasionally, expensively, wrong, which is the same
+  // shape as every other read in this game.
+  const _bondTo = n => { try { return getBond(t.entrant, n); } catch { return 0; } };
+  const weights = eligible.map(n => 1 + Math.max(0, _bondTo(n)) * 0.4);
+  const total = weights.reduce((a, b) => a + b, 0);
+  let roll = rng() * total;
+  let cursed = eligible[eligible.length - 1];
+  for (let i = 0; i < eligible.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) { cursed = eligible[i]; break; }
+  }
   t.cursed = cursed;
+  // What the room can actually see: the cursed and the taker were close.
+  t.curseCloseness = Math.max(0, _bondTo(cursed));
 
   gs.popularity ||= {};
   gs.popularity[cursed] = (gs.popularity[cursed] || 0) + 2;
@@ -294,8 +318,41 @@ export function resolveCurse({ week, house, protectedNames = [], rng = Math.rand
     if (g.guess && g.guess !== cursed) addBond(cursed, g.guess, -0.6);
   }
 
+  // ── AND NOW THE ROOM HAS SOMETHING TO READ ──
+  //
+  // The guesses made back in the Den were a dice roll against intuition that
+  // looked at nothing that had happened — the house was suspicious on cue and
+  // suspicious of nobody in particular. The curse leans toward the taker's own
+  // people, so the block is EVIDENCE: whoever the cursed is closest to is
+  // worth a hard look, and the sharpest person in the room is the one who
+  // thinks of it.
+  //
+  // Read off PERCEIVED bonds, not real ones. The house infers from what it has
+  // been allowed to see, which is exactly why it can be confidently wrong about
+  // a pair that has been careful.
+  const reader = (house || [])
+    .filter(n => n !== cursed && n !== t.entrant)
+    .sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+  const inferenceBeats = [];
+  if (reader) {
+    const near = (house || [])
+      .filter(n => n !== cursed && n !== reader)
+      .sort((a, b) => getPerceivedBond(cursed, b) - getPerceivedBond(cursed, a))[0];
+    if (near && getPerceivedBond(cursed, near) > 2) {
+      const rightForTheRightReason = near === t.entrant;
+      inferenceBeats.push(beat(
+        `${reader} works the block backwards. Nobody put ${cursed} up, so the question is who benefits from ${cursed} being there — and the answer ${reader} keeps arriving at is ${near}, because they are the person ${cursed} has been closest to all week.`,
+        [reader, near], rightForTheRightReason ? 'READS IT RIGHT' : 'READS IT WRONG',
+        rightForTheRightReason ? 'gold' : 'grey'));
+      addBond(reader, near, -0.8);
+      t.inference = { reader, accused: near, correct: rightForTheRightReason };
+    }
+  }
+
   return {
     type: 'temptation-curse', week: weekNum, cursed, missed: false, curse: t.curse,
-    beats: [beat(say(CURSED)(cursed, pronouns(cursed)), [cursed], 'CURSED', 'red')],
+    inference: t.inference || null,
+    beats: [beat(say(CURSED)(cursed, pronouns(cursed)), [cursed], 'CURSED', 'red'),
+      ...inferenceBeats],
   };
 }

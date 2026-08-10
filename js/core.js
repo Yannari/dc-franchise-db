@@ -574,7 +574,7 @@ export const TWIST_CATALOG = [
     // chair, Battle of the Block runs two blocks of two, and a Split House has
     // two blocks in two houses — none of them can also carry a secret third
     // nominee without the ceremony meaning something different in each half.
-    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-den-of-temptation', 'bb-hacker'],
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-hacker'],
     incompatibleModes:['block-buster'] },
   { id:'bb-coin-of-destiny', emoji:'🪙', name:'The Coin of Destiny', format:'big-brother',
     category:'power', phase:'any',
@@ -626,8 +626,7 @@ export const TWIST_CATALOG = [
     category:'power', phase:'any',
     desc:'A third houseguest goes on the block every week and nobody in the house puts them there. In the MVP variant the audience votes one houseguest the Most Valuable Player and that houseguest secretly names the third nominee, revealed just before the veto competition; in the direct variant the audience names the third nominee itself. Either way the house spends the week hunting a culprit who may not be in the building. If the veto saves the third nominee there is no replacement — the chair simply empties.',
     // The block's shape is the conflict, exactly as it is for Roadkill.
-    incompatible:['bb-roadkill', 'bb-hacker', 'bb-battle-of-the-block', 'bb-split-house',
-      'bb-den-of-temptation'],
+    incompatible:['bb-roadkill', 'bb-hacker', 'bb-battle-of-the-block', 'bb-split-house'],
     incompatibleModes:['block-buster'] },
   { id:'bb-hacker', emoji:'💻', name:'The Hacker', format:'big-brother',
     category:'power', phase:'any',
@@ -636,15 +635,20 @@ export const TWIST_CATALOG = [
     // collides with everything that reshapes the block, and with the week that
     // has no veto to hack.
     incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house',
-      'bb-den-of-temptation', 'bb-instant-eviction'],
+      'bb-instant-eviction'],
     incompatibleModes:['block-buster'] },
   { id:'bb-den-of-temptation', emoji:'😈', name:'Den of Temptation', format:'big-brother',
     category:'advantages', phase:'any',
-    desc:'The audience sends one houseguest into the Den alone and offers them a real power for nothing. There is no competition and no catch they can see — except that accepting puts a curse into the house, and the curse never lands on them. Take it and a houseguest chosen at random must nominate themselves alongside the Head of Household’s two. Refuse and nothing happens to anybody. The house is told a curse has landed and is never told who caused it, so it spends the week hunting a culprit and is perfectly capable of settling on the wrong one.',
-    // The curse seats a third chair, so it collides with everything else that
-    // reshapes the block for exactly the reasons Roadkill does.
-    incompatible:['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house', 'bb-hacker'],
-    incompatibleModes:['block-buster'] },
+    desc:'The audience sends one houseguest into the Den alone and offers them a real power for nothing. There is no competition and no catch they can see — except that accepting puts a curse into the house, and the curse never lands on them. Take it and a houseguest must nominate THEMSELVES this week, taking a chair the Head of Household would have filled: the block is the size it always was, but the Head of Household gets one fewer name on it. The curse leans toward the people the taker is closest to, so accepting means gambling somebody you needed. Refuse and nothing happens to anybody. The house is told a curse has landed and is never told who caused it, so it reads the block backwards and is perfectly capable of settling on the wrong name.',
+    // Compatible with everything that shapes the block, because it no longer
+    // shapes it. The curse TAKES a chair rather than adding one: the Head of
+    // Household names one fewer and the cursed fills the seat, so the block is
+    // exactly the size the week would have had anyway — two ordinarily, three
+    // under the Block Buster or beside a Roadkill. It used to append a nominee,
+    // which is why it once refused four cards and a mode; what it costs now is
+    // a NOMINATION, not the week's shape. Verified by playing it beside each of
+    // them: no crashes, and the block never came out the wrong size.
+  },
   { id:'bb-whacktivity', emoji:'🚪', name:'Whacktivity', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'Three separate competitions run at once, each one attached to a different power, and every houseguest picks ONE to enter or sits out entirely. Five to a room. You choose your door before you know who else chose it, so the power everybody wants is the one you have to beat four people for — and the Head of Household cannot play. A houseguest alone in a room still has to beat the competition rather than being handed it. Winners are told in private and the house is told nothing, but everybody saw who walked in.',

@@ -53,17 +53,26 @@ describe('the channel', () => {
     expect(c.acquisition.secrecy).toBe('secret');
   });
 
-  it('is in the catalog and cannot run beside anything else that reshapes the block', () => {
+  // It used to refuse four cards and a mode, because the curse APPENDED a
+  // nominee and so the block came out one bigger than whatever else was
+  // shaping it. It takes a seat now instead — the Head of Household names one
+  // fewer — so the block is the size it always was and there is nothing left
+  // to collide with. Played beside each of them across five seeds: no crashes,
+  // and the block never came out the wrong size.
+  it('is in the catalog and can now run beside everything that shapes the block', () => {
     const entry = TWIST_CATALOG.find(t => t.id === 'bb-den-of-temptation');
     expect(entry, 'no catalog entry').toBeTruthy();
     expect(entry.format).toBe('big-brother');
-    // The curse seats a third chair, so it collides for Roadkill's reasons.
-    for (const other of ['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house']) {
-      expect(entry.incompatible, `${other} can run alongside it`).toContain(other);
+    for (const other of ['bb-roadkill', 'bb-battle-of-the-block', 'bb-split-house', 'bb-hacker']) {
+      expect(entry.incompatible || [], `${other} still refuses it`).not.toContain(other);
+      // and symmetric — the resolver checks both directions, so a leftover on
+      // the other card would block it just as hard.
+      const partner = TWIST_CATALOG.find(t => t.id === other);
+      expect(partner.incompatible || [], `${other} still names the Den`)
+        .not.toContain('bb-den-of-temptation');
     }
-    // ...and Roadkill has to say so back, or the designer only blocks one way.
-    const rk = TWIST_CATALOG.find(t => t.id === 'bb-roadkill');
-    expect(rk.incompatible).toContain('bb-den-of-temptation');
+    expect(entry.incompatibleModes || [], 'the Block Buster still refuses it')
+      .not.toContain('block-buster');
   });
 });
 
@@ -220,7 +229,7 @@ describe('who pays', () => {
 });
 
 describe('in a played week', () => {
-  it('seats the cursed houseguest in a third chair', () => {
+  it('seats the cursed houseguest in a chair the HOH would have filled', () => {
     // Play until an offer is accepted and the curse can actually seat.
     let ep = null;
     for (let seed = 1; seed <= 40; seed++) {
@@ -232,10 +241,17 @@ describe('in a played week', () => {
     expect(ep, 'no week in 40 seeds seated the curse').toBeTruthy();
     const act = ep.acts.find(a => a.type === 'temptation');
     const week = gs.bb.weeks[gs.bb.weeks.length - 1];
-    expect(week.initialNominees, 'the curse did not add a chair').toContain(act.cursed);
-    expect(week.initialNominees.length).toBeGreaterThanOrEqual(3);
-    // The Head of Household's own two are untouched — the cursed nominated
-    // themselves, they were not chosen by anybody.
+    expect(week.initialNominees, 'the cursed is not on the block').toContain(act.cursed);
+    // THE CURSE TAKES A SEAT, IT DOES NOT ADD ONE. The block is exactly the
+    // size the week would have had anyway — two ordinarily, three under the
+    // Block Buster — which is what lets the Den run beside every other twist
+    // that shapes the block. What it costs is a NOMINATION: the Head of
+    // Household names one fewer, and the last chair is somebody nobody chose.
+    const expected = week.safetyMode || week.doubleVote ? 3 : 2;
+    expect(week.initialNominees.length, 'the curse changed the size of the block').toBe(expected);
+    const hohOwn = week.initialNominees.filter(n => n !== act.cursed);
+    expect(hohOwn.length, 'the HOH should have named one fewer').toBe(expected - 1);
+    // Nobody chose the name, so it cannot be the Head of Household's.
     expect(act.cursed).not.toBe(week.hoh);
   });
 

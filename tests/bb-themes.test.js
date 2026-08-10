@@ -880,24 +880,59 @@ describe('a theme whose twists the season will refuse', () => {
     expect(themeModeConflicts(seasonConfig)).toEqual({ modes: [], cards: [] });
   });
 
+  // Summer of Temptation no longer conflicts with anything — the curse takes a
+  // chair rather than adding one — so the feature is exercised with a theme
+  // that books a card which genuinely still clashes. Nine third-chair
+  // mechanics remain incompatible with the Block Buster; the Den is simply not
+  // one of them any more.
   it('names the mode and the twists it kills', () => {
+    BB_THEMES.clashy = {
+      id: 'clashy', name: 'Clashy', tagline: 't', house: 'bb-house',
+      palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+      antagonist: { name: 'Nobody', voice: {} },
+      arc: [{ at: { week: 2 }, book: 'bb-roadkill' }],
+      books: [], weights: {}, bans: [], exclusive: [],
+    };
+    seasonConfig.theme = 'clashy';
     seasonConfig.bbSafetyMode = 'block-buster';
-    const { modes, cards } = themeModeConflicts(seasonConfig);
-    expect(modes).toContain('the Block Buster');
-    expect(cards).toContain('Den of Temptation');
+    try {
+      const { modes, cards } = themeModeConflicts(seasonConfig);
+      expect(modes).toContain('the Block Buster');
+      expect(cards).toContain('BB Roadkill');
+    } finally { delete BB_THEMES.clashy; }
+  });
+
+  it('is quiet for Summer of Temptation, which no longer collides with it', () => {
+    seasonConfig.bbSafetyMode = 'block-buster';
+    expect(themeModeConflicts(seasonConfig)).toEqual({ modes: [], cards: [] });
   });
 
   it('is derived from the arc, so it cannot go stale', () => {
-    // The conflict is computed off the acts the theme actually books. Nothing
-    // is declared twice, so an arc that gains an act cannot outrun its warning.
+    // The conflict is computed off the acts the theme actually books, not from
+    // a list declared beside them — so an arc that gains an act cannot outrun
+    // its own warning.
+    BB_THEMES.clashy2 = {
+      id: 'clashy2', name: 'Clashy2', tagline: 't', house: 'bb-house',
+      palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+      antagonist: { name: 'Nobody', voice: {} },
+      arc: [{ at: { week: 2 }, book: 'bb-roadkill' },
+            { at: { week: 4 }, book: 'bb-hacker' },
+            { at: { week: 6 }, book: 'bb-have-nots' }],
+      books: [], weights: {}, bans: [], exclusive: [],
+    };
+    seasonConfig.theme = 'clashy2';
     seasonConfig.bbSafetyMode = 'block-buster';
-    const booked = new Set(BB_THEMES['summer-of-temptation'].arc
-      .filter(a => a.book).map(a => a.book));
-    const { cards } = themeModeConflicts(seasonConfig);
-    for (const name of cards) {
-      const card = TWIST_CATALOG.find(c => (c.name || c.id) === name);
-      expect(booked, `${name} is one of the theme's own bookings`).toContain(card.id);
-    }
+    try {
+      const booked = new Set(BB_THEMES.clashy2.arc.filter(a => a.book).map(a => a.book));
+      const { cards } = themeModeConflicts(seasonConfig);
+      expect(cards.length, 'the fixture books two cards the mode refuses').toBe(2);
+      for (const name of cards) {
+        const card = TWIST_CATALOG.find(c => (c.name || c.id) === name);
+        expect(booked, `${name} is one of the theme's own bookings`).toContain(card.id);
+      }
+      // Have-Nots runs fine beside the mode, so it must not be listed.
+      expect(cards).not.toContain('Have-Nots');
+    } finally { delete BB_THEMES.clashy2; }
   });
 
   it('reports nothing at all for an unthemed season', () => {
@@ -909,8 +944,10 @@ describe('a theme whose twists the season will refuse', () => {
   // The half that made this worth building: the engine really does drop them.
   it('matches what the engine will actually do with the card', () => {
     const on = { format: 'big-brother', bbSafetyMode: 'block-buster' };
-    expect(resolveTwistSchedule(['bb-den-of-temptation'], on)).toEqual([]);
-    expect(resolveTwistSchedule(['bb-den-of-temptation'],
-      { format: 'big-brother', bbSafetyMode: 'off' })).toEqual(['bb-den-of-temptation']);
+    // Still refused: Roadkill names the third chair, and so does the mode.
+    expect(resolveTwistSchedule(['bb-roadkill'], on)).toEqual([]);
+    // No longer refused: the Den takes a chair rather than adding one.
+    expect(resolveTwistSchedule(['bb-den-of-temptation'], on))
+      .toEqual(['bb-den-of-temptation']);
   });
 });

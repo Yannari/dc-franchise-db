@@ -1731,11 +1731,18 @@ function _bbFinalCompPicker(role, slot, label) {
   if (!list.length) return '';
   const chosen = (seasonConfig.bbFinalComps || {})[role] || '';
   const pinned = !!chosen;
+  // Reads the WEEKS as well as the other finale part. Staging Part Two with the
+  // competition week six already ran is the clash most worth catching, and it
+  // was the one nothing could see.
+  const used = _bbPinnedIndex({ skipRole: role });
+  const clash = pinned && used.has(chosen);
   let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
     pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
-    pinned ? 'Pinned — the finale runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}`;
+    clash ? `Also pinned to ${used.get(chosen).join(', ')}`
+    : pinned ? 'Pinned — the finale runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}`;
   h += `<select onchange="event.stopPropagation();_setBBFinalComp('${role}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
-    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:150px">`;
+    clash ? '#f7c873' : pinned ? '#cdd6f4' : '#8b949e'};border:1px solid ${
+    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;max-width:150px">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
   // Two "The Wall"s exist — the recurring endurance comp and the set piece
   // written for finale night — and a dropdown with the same word twice in it is
@@ -1744,7 +1751,7 @@ function _bbFinalCompPicker(role, slot, label) {
   const seen = {};
   list.forEach(c => { seen[c.name] = (seen[c.name] || 0) + 1; });
   const opt = c => `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${
-    c.name}${seen[c.name] > 1 ? ` · ${c.finalRole ? 'finale set piece' : c.category}` : ''}</option>`;
+    c.name}${seen[c.name] > 1 ? ` · ${c.finalRole ? 'finale set piece' : c.category}` : ''}${_bbUsedTag(used, c.id)}</option>`;
   const usual = list.filter(c => !c.generic);
   const rest = list.filter(c => c.generic);
   if (usual.length) {
@@ -1795,16 +1802,62 @@ const _BB_FOCUS_META = {
 };
 
 /** One slot's dropdown, listing only what can serve it. */
+/**
+ * Everywhere a competition is already pinned this season.
+ *
+ * Two pickers write two different places — `bbCompSchedule` for the weeks,
+ * `bbFinalComps` for finale night — and neither has ever read the other, or
+ * even itself. So there was no way to tell that the competition you were about
+ * to pin to week nine is the one already running in week four, short of opening
+ * every dropdown in the timeline and remembering what you saw.
+ *
+ * Returns compId -> ['wk 4 HOH', 'Finale P2'], with the slot you are currently
+ * editing left out — otherwise every pinned picker reports itself as a clash.
+ */
+export function _bbPinnedIndex({ skipEp = null, skipSlot = null, skipRole = null } = {}) {
+  const used = new Map();
+  const add = (id, where) => {
+    if (!id) return;
+    if (!used.has(id)) used.set(id, []);
+    used.get(id).push(where);
+  };
+  for (const entry of seasonConfig.bbCompSchedule || []) {
+    const ep = Number(entry?.episode);
+    for (const slot of ['hoh', 'veto']) {
+      if (skipEp === ep && skipSlot === slot) continue;
+      add(entry?.[slot], `wk ${ep} ${slot.toUpperCase()}`);
+    }
+  }
+  const fin = seasonConfig.bbFinalComps || {};
+  for (const role of ['one', 'two']) {
+    if (skipRole === role) continue;
+    add(fin[role], `Finale P${role === 'one' ? '1' : '2'}`);
+  }
+  return used;
+}
+
+/** " — already wk 4 HOH", or nothing. Appended to an option's own label. */
+export const _bbUsedTag = (used, id) => {
+  const at = used.get(id);
+  return at?.length ? ` — already ${at.slice(0, 2).join(', ')}${at.length > 2 ? ` +${at.length - 2}` : ''}` : '';
+};
+
 function _bbCompPicker(ep, slot, label) {
   const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
   if (!list.length) return '';
   const chosen = _bbCompEntry(ep)?.[slot] || '';
   const pinned = !!chosen;
+  const used = _bbPinnedIndex({ skipEp: Number(ep), skipSlot: slot });
+  // Pinned to something another week is already running. Not blocked — a
+  // deliberate repeat is a legitimate thing to want — but never silent.
+  const clash = pinned && used.has(chosen);
   let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
     pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
-    pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}`;
+    clash ? `Also pinned to ${used.get(chosen).join(', ')}`
+    : pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}`;
   h += `<select onchange="event.stopPropagation();_setBBComp(${ep},'${slot}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
-    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:205px">`;
+    clash ? '#f7c873' : pinned ? '#cdd6f4' : '#8b949e'};border:1px solid ${
+    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;max-width:205px">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
   const written = list.filter(c => !c.generic);
   const generic = list.filter(c => c.generic);
@@ -1818,7 +1871,7 @@ function _bbCompPicker(ep, slot, label) {
     const meta = _BB_FOCUS_META[focus];
     h += `<optgroup label="${meta.label} · ${comps.length}">`;
     comps.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-      h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} · ${meta.short}</option>`;
+      h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} · ${meta.short}${_bbUsedTag(used, c.id)}</option>`;
     });
     h += `</optgroup>`;
   }
@@ -1828,7 +1881,7 @@ function _bbCompPicker(ep, slot, label) {
     // while the list is OPEN — closed, both read identically and you cannot
     // tell which one the week is pinned to.
     h += `<optgroup label="Generic fallbacks">`;
-    generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)</option>`; });
+    generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)${_bbUsedTag(used, c.id)}</option>`; });
     h += `</optgroup>`;
   }
   return h + `</select></label>`;

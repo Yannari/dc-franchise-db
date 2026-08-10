@@ -19,7 +19,7 @@
 // The descriptor carries no house vocabulary in its STRUCTURE (acts are indexed
 // by episode, twists by catalog id), so a Total Drama theme later needs content
 // rather than a second engine.
-import { gs, seasonConfig } from '../core.js';
+import { gs, seasonConfig, TWIST_CATALOG, twistModeClashes } from '../core.js';
 import { stableRng } from './knowledge.js';
 
 /** The accent the reader uses when a season has no theme. */
@@ -281,6 +281,41 @@ export function stampThemeArc(castSize) {
   seasonConfig.twistSchedule = [...yours, ...entries];
   seasonConfig.themeArcStamped = theme.id;
   return entries;
+}
+
+/**
+ * Which of this theme's own twists the season's settings will refuse.
+ *
+ * DERIVED, not declared. A theme could carry an `incompatibleModes` list of its
+ * own, but it would be a second copy of something the cards already say, and
+ * the copy would be the one that went stale — the arc gains an act, the list
+ * does not, and the theme cheerfully promises a season it cannot deliver.
+ *
+ * The case this exists for: the Den of Temptation seats a third nominee, and so
+ * does the Block Buster, so they cannot both own the block. Summer of
+ * Temptation books the Den three times. Turn the Block Buster on and three
+ * quarters of the arc is refused at `bbTwistsForWeek` — silently, and after the
+ * cards are already sitting on the timeline looking like they will run.
+ *
+ * Returns `{ modes, cards }`, both empty when everything can run.
+ */
+export function themeModeConflicts(cfg) {
+  const theme = currentTheme();
+  const config = cfg || seasonConfig;
+  if (!theme) return { modes: [], cards: [] };
+  const modes = new Set();
+  const cards = new Set();
+  for (const act of theme.arc || []) {
+    if (!act?.book) continue;
+    const card = TWIST_CATALOG.find(c => c.id === act.book);
+    if (!card) continue;
+    const clash = twistModeClashes(card, config);
+    if (clash.length) {
+      clash.forEach(m => modes.add(m));
+      cards.add(card.name || card.id);
+    }
+  }
+  return { modes: [...modes], cards: [...cards] };
 }
 
 /** Has this theme's arc already been laid down for editing? */

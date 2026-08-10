@@ -78,7 +78,8 @@ describe('theme registry', () => {
 });
 
 import { gs, setGs, resolveTwistSchedule } from '../js/core.js';
-import { themeScheduleEntries, installTheme, themeState, stampThemeArc, themeArcIsStamped } from '../js/bb/themes.js';
+import { themeScheduleEntries, installTheme, themeState, stampThemeArc, themeArcIsStamped,
+  themeModeConflicts } from '../js/bb/themes.js';
 
 const FIXTURE = {
   id: 'fixture', name: 'Fixture', tagline: 't', house: 'bb-house',
@@ -857,5 +858,59 @@ describe('a theme that was picked but never stamped', () => {
     // 17 cast is 14 weeks; fromEnd 3 is week 12, where the house is six.
     expect(de.episode).toBe(12);
     expect(17 - (de.episode - 1)).toBe(6);
+  });
+});
+
+// ── when the season's settings refuse the theme's own twists ────────────
+//
+// The Den of Temptation seats a third nominee and so does the Block Buster, so
+// they cannot both own the block — the catalogue has always said so. What it
+// did not do was say so anywhere you could see it: the theme stamps three Den
+// cards, they sit on the timeline looking exactly like cards that will run, and
+// `bbTwistsForWeek` drops all three in silence.
+describe('a theme whose twists the season will refuse', () => {
+  beforeEach(() => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    seasonConfig.bbSafetyMode = 'off';
+  });
+  afterEach(() => { seasonConfig.bbSafetyMode = 'off'; });
+
+  it('is quiet when everything can run', () => {
+    expect(themeModeConflicts(seasonConfig)).toEqual({ modes: [], cards: [] });
+  });
+
+  it('names the mode and the twists it kills', () => {
+    seasonConfig.bbSafetyMode = 'block-buster';
+    const { modes, cards } = themeModeConflicts(seasonConfig);
+    expect(modes).toContain('the Block Buster');
+    expect(cards).toContain('Den of Temptation');
+  });
+
+  it('is derived from the arc, so it cannot go stale', () => {
+    // The conflict is computed off the acts the theme actually books. Nothing
+    // is declared twice, so an arc that gains an act cannot outrun its warning.
+    seasonConfig.bbSafetyMode = 'block-buster';
+    const booked = new Set(BB_THEMES['summer-of-temptation'].arc
+      .filter(a => a.book).map(a => a.book));
+    const { cards } = themeModeConflicts(seasonConfig);
+    for (const name of cards) {
+      const card = TWIST_CATALOG.find(c => (c.name || c.id) === name);
+      expect(booked, `${name} is one of the theme's own bookings`).toContain(card.id);
+    }
+  });
+
+  it('reports nothing at all for an unthemed season', () => {
+    seasonConfig.theme = 'none';
+    seasonConfig.bbSafetyMode = 'block-buster';
+    expect(themeModeConflicts(seasonConfig)).toEqual({ modes: [], cards: [] });
+  });
+
+  // The half that made this worth building: the engine really does drop them.
+  it('matches what the engine will actually do with the card', () => {
+    const on = { format: 'big-brother', bbSafetyMode: 'block-buster' };
+    expect(resolveTwistSchedule(['bb-den-of-temptation'], on)).toEqual([]);
+    expect(resolveTwistSchedule(['bb-den-of-temptation'],
+      { format: 'big-brother', bbSafetyMode: 'off' })).toEqual(['bb-den-of-temptation']);
   });
 });

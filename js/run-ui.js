@@ -2113,6 +2113,9 @@ export function renderTimeline() {
   });
 
   container.innerHTML = html;
+  // The theme's twists and the season's modes can disagree; say so where the
+  // theme is chosen, and refresh it whenever the timeline is redrawn.
+  try { renderThemeModeWarning(); } catch (e) {}
   updateSelectedCount();
 }
 
@@ -2372,11 +2375,40 @@ export function assignTwist(twistId) {
  * you are deciding what to change.
  */
 function _fdThemeMark(t, html) {
-  if (!t || t.source !== 'theme' || typeof html !== 'string') return html;
-  const badge = '<span title="Placed by the theme — edit or delete it like any other card"'
-    + ' style="font-size:8px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;'
-    + 'border:1px solid currentColor;border-radius:2px;padding:0 3px;margin-right:3px">theme</span>';
-  return html.replace(/^(<span[^>]*>)/, '$1' + badge);
+  if (!t || typeof html !== 'string') return html;
+  let badges = '';
+  if (t.source === 'theme') {
+    badges += '<span title="Placed by the theme &mdash; edit or delete it like any other card"'
+      + ' style="font-size:8px;letter-spacing:.08em;text-transform:uppercase;opacity:.65;'
+      + 'border:1px solid currentColor;border-radius:2px;padding:0 3px;margin-right:3px">theme</span>';
+  }
+  // A card the season's own settings will refuse.
+  //
+  // The engine drops these at `bbTwistsForWeek`, silently and correctly: the
+  // Den of Temptation seats a third nominee and so does the Block Buster, so
+  // they cannot both own the block. But the card sits on the timeline looking
+  // exactly like one that will run, and a theme that stamps three of them
+  // leaves you reading a schedule where half the season never happens.
+  let clash = [];
+  try {
+    const cat = (typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG : [])
+      .find(c => c.id === t.type);
+    if (cat && typeof twistModeClashes === 'function') {
+      clash = twistModeClashes(cat, seasonConfig) || [];
+    }
+  } catch (e) { clash = []; }
+  if (clash.length) {
+    badges += '<span title="This will not run &mdash; ' + clash.join(', ')
+      + ' owns the same part of the week"'
+      + ' style="font-size:8px;letter-spacing:.08em;text-transform:uppercase;'
+      + 'background:#f85149;color:#2a0a08;border-radius:2px;padding:0 3px;margin-right:3px;'
+      + 'font-weight:800">will not run</span>';
+  }
+  if (!badges) return html;
+  const out = html.replace(/^(<span[^>]*>)/, '$1' + badges);
+  return clash.length
+    ? out.replace(/^<span /, '<span data-dead="1" ')
+    : out;
 }
 
 /**
@@ -2396,6 +2428,27 @@ export function onThemeChange() {
   renderTimeline();
 }
 
+/**
+ * Say so when the season's own settings will refuse the theme's twists.
+ *
+ * The engine drops them correctly and silently, which is the problem: you pick
+ * Summer of Temptation with the Block Buster on, three Den of Temptation cards
+ * appear on the timeline, and none of them will ever run.
+ */
+export function renderThemeModeWarning() {
+  const el = document.getElementById('theme-mode-warning');
+  if (!el) return;
+  let conflict = { modes: [], cards: [] };
+  try {
+    if (typeof themeModeConflicts === 'function') conflict = themeModeConflicts(seasonConfig);
+  } catch (e) { conflict = { modes: [], cards: [] }; }
+  if (!conflict.modes.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = '';
+  el.innerHTML = `<strong>${conflict.cards.join(', ')}</strong> cannot run while `
+    + `${conflict.modes.join(' and ')} is on — they own the same part of the week. `
+    + 'Those weeks will play as ordinary ones. Turn it off, or expect a thinner season.';
+}
+
 /** Throw the edits away and lay the theme's own arc down again. */
 export function resetThemeSchedule() {
   seasonConfig.themeArcStamped = '';
@@ -2404,6 +2457,7 @@ export function resetThemeSchedule() {
     localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   } catch (e) { /* nothing to reset */ }
   renderTimeline();
+  renderThemeModeWarning();
 }
 
 export function removeTwistFromEpisode(ep, twistEntryId) {

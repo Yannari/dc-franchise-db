@@ -11,7 +11,7 @@
 // carried `stated` and `changed` per ballot all along and was never shown to
 // anything that draws conclusions.
 import { describe, expect, it } from 'vitest';
-import { voteLedger, ledgerLine } from '../js/analysis/vote-ledger.js';
+import { voteLedger, ledgerLine, positionLedger, weekLedger } from '../js/analysis/vote-ledger.js';
 
 // Week 2 as played: Stella out 10-3, with the six the transcript lists as
 // "already locked without being asked".
@@ -110,5 +110,84 @@ describe('the week Ireland was called a mastermind', () => {
     expect(voteLedger({ hoh: 'Nico' })).toBeNull();
     expect(voteLedger(null)).toBeNull();
     expect(ledgerLine(null)).toBe('');
+  });
+});
+
+// ── the other half: what the week did TO the person who ran it ──
+//
+// "She entered the week as an invisible player with a secret power and left as
+// someone everyone now knows can make things happen." That is a position
+// change, and both ends of it are on the record — `openingState` and
+// `closingState` carry bonds and `intentions`, which is who is hunting whom.
+// Nothing had ever subtracted one from the other.
+const HOUSE = ['Ireland', 'Nico', 'Dylon', 'Zella', 'Amberly', 'Tobias'];
+const intents = pairs => Object.fromEntries(HOUSE.map(n => [n, { targets: pairs[n] || [] }]));
+const bonds = v => Object.fromEntries(HOUSE.filter(n => n !== 'Ireland')
+  .map(n => [['Ireland', n].sort().join('||'), v]));
+
+const irelandWeek = () => ({
+  ...week2(),
+  openingState: { intentions: intents({}), bonds: bonds(2), alliances: [
+    { name: 'The Plot Twist', members: ['Ireland', 'Amberly', 'Tobias'] }] },
+  closingState: { intentions: intents({ Dylon: ['Ireland'], Zella: ['Ireland'] }), bonds: bonds(0.5),
+    alliances: [{ name: 'The Plot Twist', members: ['Ireland', 'Amberly', 'Tobias'] }] },
+});
+
+describe('what the week did to the person who ran it', () => {
+  it('counts the people now pointing at them who were not before', () => {
+    const p = positionLedger(irelandWeek(), 'Ireland');
+    expect(p.hunters.before).toBe(0);
+    expect(p.hunters.after).toBe(2);
+    expect(p.hunters.gained.sort()).toEqual(['Dylon', 'Zella']);
+    expect(p.moreVisible, 'walked out of the week no more watched than she walked in').toBe(true);
+  });
+
+  it('reads the room cooling on them', () => {
+    const p = positionLedger(irelandWeek(), 'Ireland');
+    expect(p.standing.before).toBe(2);
+    expect(p.standing.after).toBe(0.5);
+    expect(p.standing.delta).toBe(-1.5);
+  });
+
+  it('averages standing, so a shrinking house is not read as a collapse', () => {
+    const rec = irelandWeek();
+    // Same feelings, one fewer houseguest to hold them.
+    rec.closingState.bonds = Object.fromEntries(
+      Object.entries(bonds(2)).filter(([k]) => !k.includes('Zella')));
+    rec.closingState.intentions = intents({});
+    const p = positionLedger(rec, 'Ireland');
+    expect(p.standing.delta, 'losing a houseguest read as losing the room').toBe(0);
+  });
+
+  it('declines when the record has no bookends to compare', () => {
+    expect(positionLedger(week2(), 'Ireland')).toBeNull();
+    expect(positionLedger(null)).toBeNull();
+  });
+});
+
+describe('the three axes, as components rather than a grade', () => {
+  it('reports outcome, execution and position separately', () => {
+    // The whole point: they disagree. A week can deliver the result, cost more
+    // than it needed to, and leave the person worse off — and collapsing that
+    // into one number is what made the machine call it a masterclass.
+    const w = weekLedger(irelandWeek(), 'Ireland');
+    expect(w.outcome.margin).toBe('10-3');
+    expect(w.execution.movesSpent).toBe(4);
+    expect(w.execution.movesNeeded).toBe(1);
+    expect(w.execution.blockRebuilt).toBe(true);
+    expect(w.position.moreVisible).toBe(true);
+  });
+
+  it('notices when an ally was put up, which is half of "it went well"', () => {
+    const rec = irelandWeek();
+    rec.initialNominees = ['Stella', 'Jules', 'Amberly'];
+    const w = weekLedger(rec, 'Ireland');
+    expect(w.outcome.alliesNominated, 'an allied nominee is not reported anywhere')
+      .toEqual(['Amberly']);
+  });
+
+  it('never returns a verdict', () => {
+    const w = weekLedger(irelandWeek(), 'Ireland');
+    expect(JSON.stringify(w)).not.toMatch(/"(grade|rating|score|verdict)"/i);
   });
 });

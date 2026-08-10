@@ -7851,7 +7851,7 @@ Would you like to:
     // did it. It cannot see that ten of thirteen voters were already going that
     // way, because no sentence in the episode says so. That is arithmetic over
     // the ballots, and it belongs on the screen without an AI in the loop.
-    const { voteLedger, ledgerLine } = await import('./js/analysis/vote-ledger.js');
+    const { voteLedger, ledgerLine, weekLedger } = await import('./js/analysis/vote-ledger.js');
     window.renderVoteLedger = record => {
       const panel = document.getElementById('panelLedger');
       const body = document.getElementById('cardLedger');
@@ -7880,6 +7880,33 @@ Would you like to:
         rows.push(`<div>Said one name and wrote another: `
           + `${l.brokenWord.map(v => `${v.voter} (said ${v.said})`).join(', ')}.</div>`);
       }
+
+      // ── the three axes, side by side, deliberately not added up ──
+      //
+      // A week can deliver the result, cost more than it needed to, and leave
+      // the person worse off than it found them. Collapsing that into one
+      // number is what produced "masterclass" for a week the house would have
+      // decided on its own.
+      const w = weekLedger(record);
+      if (w?.position) {
+        const p = w.position;
+        const axis = (label, text) => `<div style="margin-top:6px"><b>${label}</b> — ${text}</div>`;
+        rows.push('<div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.12);padding-top:10px">'
+          + `<div class="muted" style="margin-bottom:4px">${p.subject}'s week, on three axes</div>`
+          + axis('Outcome', `${l.evictee} left ${l.margin}`
+            + `${w.outcome.alliesNominated.length
+              ? `, but ${w.outcome.alliesNominated.join(' and ')} sat on that block` : ', allies untouched'}.`)
+          + axis('Execution', `${w.execution.movesSpent} vote${w.execution.movesSpent === 1 ? '' : 's'} moved `
+            + `for ${w.execution.movesNeeded} needed`
+            + `${w.execution.blockRebuilt ? ', and the block had to be rebuilt' : ''}`
+            + `${w.execution.brokenWord ? `, with ${w.execution.brokenWord} broken word${w.execution.brokenWord === 1 ? '' : 's'} in the room` : ''}.`)
+          + axis('Position', p.hunters.gained.length
+            ? `${p.hunters.gained.join(', ')} now name${p.hunters.gained.length === 1 ? 's' : ''} them a target `
+              + `(${p.hunters.before} → ${p.hunters.after}), and the room moved ${p.standing.delta > 0 ? '+' : ''}${p.standing.delta}.`
+            : `${p.hunters.after} people name them a target, and the room moved ${p.standing.delta > 0 ? '+' : ''}${p.standing.delta}.`)
+          + '</div>');
+      }
+
       body.innerHTML = rows.join('');
       panel.hidden = false;
     };

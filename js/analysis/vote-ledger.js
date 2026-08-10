@@ -148,3 +148,137 @@ export function ledgerLine(ledger) {
   return `${evictee} left ${margin}. ${inf.alreadyThere} were already there and `
     + `${inf.movedVotes.length} moved, of which ${inf.neededMoving} were actually needed.`;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE OTHER HALF: what the week did TO you
+// ══════════════════════════════════════════════════════════════════════
+//
+// The vote ledger answers whether a result needed working for. It does not
+// answer the question that made the hand-written analysis good:
+//
+//   "She entered the week as an invisible player with a secret power and left
+//    as someone everyone now knows can make things happen."
+//
+// That is a position change, and it is in the record. Every episode carries
+// `openingState` and `closingState` — bonds, perceived bonds, and `intentions`,
+// which is who is hunting whom. So the house's opinion of somebody at the start
+// of a week and at the end of it are both on disk, and nothing has ever
+// subtracted one from the other.
+
+const bondKey = (a, b) => [a, b].sort().join('||');
+
+/** Everybody naming this person as a target, in one snapshot. */
+function huntersOf(state, name) {
+  const out = [];
+  for (const [who, plan] of Object.entries(state?.intentions || {})) {
+    if (who === name) continue;
+    if ((plan?.targets || []).includes(name)) out.push(who);
+  }
+  return out;
+}
+
+/** How the room feels about them, summed over everybody else. */
+function standingOf(state, name, house) {
+  const bonds = state?.bonds || {};
+  let total = 0;
+  let counted = 0;
+  for (const other of house) {
+    if (other === name) continue;
+    const v = Number(bonds[bondKey(name, other)]);
+    if (Number.isFinite(v)) { total += v; counted++; }
+  }
+  return { total, counted };
+}
+
+/**
+ * What a week cost the person who ran it.
+ *
+ * @param record an episode record with bookend snapshots
+ * @param subject whose week to read; defaults to the Head of Household
+ * @returns {object|null} null when the record has no bookends to compare
+ */
+export function positionLedger(record, subject = null) {
+  const before = record?.openingState;
+  const after = record?.closingState;
+  const name = subject || record?.hoh || null;
+  if (!before || !after || !name) return null;
+
+  const house = [...new Set([
+    ...Object.keys(before.intentions || {}),
+    ...Object.keys(after.intentions || {}),
+  ])];
+  if (!house.length) return null;
+
+  const huntedBefore = huntersOf(before, name);
+  const huntedAfter = huntersOf(after, name);
+  const newHunters = huntedAfter.filter(h => !huntedBefore.includes(h));
+  const droppedHunters = huntedBefore.filter(h => !huntedAfter.includes(h));
+
+  const standBefore = standingOf(before, name, house);
+  const standAfter = standingOf(after, name, house);
+  // Averaged, so a week that also shrank the house does not read as a collapse
+  // in feeling. Fewer people is not the same as being liked less.
+  const avgBefore = standBefore.counted ? standBefore.total / standBefore.counted : 0;
+  const avgAfter = standAfter.counted ? standAfter.total / standAfter.counted : 0;
+
+  return {
+    subject: name,
+    hunters: {
+      before: huntedBefore.length,
+      after: huntedAfter.length,
+      gained: newHunters,
+      lost: droppedHunters,
+    },
+    standing: {
+      before: Math.round(avgBefore * 100) / 100,
+      after: Math.round(avgAfter * 100) / 100,
+      delta: Math.round((avgAfter - avgBefore) * 100) / 100,
+    },
+    // The summary the hand-written read reached for: more people pointing at
+    // you than were pointing at you a week ago.
+    moreVisible: newHunters.length > droppedHunters.length,
+  };
+}
+
+/**
+ * The three axes, as components rather than as a grade.
+ *
+ * OUTCOME, EXECUTION and POSITION were the axes a person used to describe a
+ * week the machine called a masterclass — and the useful part was that they
+ * disagreed with each other. So this returns what each one is made of and
+ * refuses to collapse them into a verdict, because the disagreement is the
+ * finding.
+ */
+export function weekLedger(record, subject = null) {
+  const vote = voteLedger(record);
+  const position = positionLedger(record, subject);
+  if (!vote && !position) return null;
+
+  const name = subject || record?.hoh || null;
+  const allies = (record?.openingState?.alliances || [])
+    .filter(a => (a.members || []).includes(name))
+    .flatMap(a => a.members).filter(m => m !== name);
+  const nominated = new Set([...(record?.initialNominees || []), ...(record?.finalNominees || [])]);
+
+  return {
+    subject: name,
+    vote,
+    position,
+    outcome: vote ? {
+      targetLeft: vote.outcome.hohGotTarget,
+      margin: vote.margin,
+      // Allies untouched is half of what "it went well" means and is never
+      // reported anywhere.
+      alliesNominated: allies.filter(a => nominated.has(a)),
+    } : null,
+    execution: vote ? {
+      // Spent more than the result required.
+      movesSpent: vote.influence.movedVotes.length,
+      movesNeeded: vote.influence.neededMoving,
+      // The room could not count on what it was told.
+      brokenWord: vote.brokenWord.length,
+      // A block that had to be rebuilt is a plan that did not survive contact.
+      blockRebuilt: vote.outcome.renomWasNeeded,
+    } : null,
+  };
+}

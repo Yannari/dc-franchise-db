@@ -36,7 +36,7 @@ export default {
       // feed to the site and does no writing.
       return await generateSocialCrowd(body, env);
     } else {
-      return await generateAnalytics(summaryText, season, episode, env, body.activeCast);
+      return await generateAnalytics(summaryText, season, episode, env, body.activeCast, body.ledger);
     }
   },
 };
@@ -306,7 +306,7 @@ Return ONLY valid JSON matching the schema exactly.
   return await callOpenAI(payload, env);
 }
 
-async function generateAnalytics(summaryText, season, episode, env, activeCast = null) {
+async function generateAnalytics(summaryText, season, episode, env, activeCast = null, ledger = null) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -561,6 +561,13 @@ EPISODE-SPECIFIC IMPACT (episodeImpact):
 - This object answers only: "What happened and changed DURING THIS EPISODE?"
 - Do not summarize the contestant's whole season and do not repeat generic current positioning.
 - turningPoint: the single recorded moment that most changed this episode's direction. If no decisive turn is supported, say "No single turning point was established" and explain why.
+- THE LEDGER OUTRANKS THE PROSE. When measured numbers are supplied below, they are arithmetic off the recorded ballots and the before/after snapshots — not opinion, and not something the transcript can override. A transcript describes a player using a power and their target leaving; it cannot tell you whether that target was already leaving. The ledger can, and does.
+- Specifically: if 'vote.influence.rodeConsensus' is true, or 'alreadyThere' is at or near 'majority', then the result did NOT depend on whoever appeared to drive it. Say so. Do not describe a week as controlled, masterful or engineered when the majority was already there — credit the outcome and be honest that it needed no work.
+- 'neededMoving' is how many votes the result actually required. Moves beyond that were spent on a margin, not on the result.
+- 'blocsThatAgreedIndependently' listing two or more groups is the strongest available evidence that the outcome was not one person's doing.
+- Outcome and execution are SEPARATE findings and are allowed to disagree. A player can get exactly what they wanted while playing the week badly, and saying both is better than picking one.
+- 'week.position' is what the week cost them: who names them a target now who did not before, and which way the room moved. A player who got their result and left more watched than they arrived is a real and interesting outcome — report it rather than smoothing it into a win.
+- 'relationships.brokenPromises' names anybody who voted against somebody they were sworn to. That is usually the most interesting thing in the episode and the transcript states it nowhere.
 - voteStory.initialPlan: the plan or competing plans visible before Tribal. decisiveShift: the event, pitch, advantage, defection, or failure that changed the result. finalOutcome: the actual result and immediate strategic meaning. Never invent a hidden flip.
 - gainers / losers: maximum 3 each. Describe position gained or lost THIS EPISODE and give concrete evidence from the supplied summary. Use [] if nobody is clearly supported.
 - changes: only include a before→after transition supported by this episode. dimension should be a plain category such as "alliance", "trust", "target", "power", "reputation", or "advantage". cause must name the episode event. Use [] instead of guessing.
@@ -738,6 +745,20 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
     + Object.entries(gaps).map(([f, names]) => `- ${f} omitted these active players: ${names.join(", ")}`).join("\n")
     + `\nRegenerate the FULL analytics with bootPredictions and powerRankings entries for EVERY active player listed above as well as everyone you already covered. Do not drop anyone.`;
 
+  // ── the measured half of the input ──
+  //
+  // Everything in `summaryText` is prose, and prose cannot answer the question
+  // that decides whether a week was well played: did this have to be done at
+  // all. The ledger is arithmetic off the recorded ballots and the before/after
+  // snapshots, so it is appended as its own clearly-labelled section rather than
+  // being described in the instructions and hoped for.
+  const measured = ledger ? `
+
+═══ MEASURED LEDGER (arithmetic, not narration — outranks the summary above) ═══
+`
+    + JSON.stringify(ledger, null, 1) : '';
+  const analyticsInput = `${summaryText}${measured}`;
+
   // Try GPT-5 first (analytics runs on OpenAI, not the DeepSeek episode-writing path)
   if (env.OPENAI_API_KEY) {
     let lastData = null, lastGaps = null;
@@ -745,7 +766,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
       const payload = {
         model: "gpt-5.5",
         instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
-        input: summaryText,
+        input: analyticsInput,
         text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
       };
       const response = await callOpenAI(payload, env, { provider: "openai" });
@@ -780,7 +801,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
       const payload = {
         model: "claude-opus-4-8",
         instructions: attempt === 0 ? instructions : instructions + retryNote(lastGaps),
-        input: summaryText,
+        input: analyticsInput,
         text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
       };
       const response = await callClaude(payload, env);
@@ -830,7 +851,9 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
             max_tokens: 16000,
             stream: true,
             system: claudeInstructions,
-            messages: [{ role: "user", content: summaryText }],
+            // Same input as the primary path, ledger included — a fallback that
+            // reasons off less evidence is a fallback that disagrees with the panels.
+            messages: [{ role: "user", content: analyticsInput }],
           }),
         });
 

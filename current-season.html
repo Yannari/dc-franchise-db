@@ -3080,6 +3080,24 @@ async function generateEpisodeAI() {
     }
   }
   
+  // The same three ledgers the Control Room panels draw, handed to the model so
+  // the written analysis and the measured panels cannot contradict each other on
+  // one screen. Null when the episode was pasted rather than synced — there are
+  // no ballots to read, and a guess is the exact failure this corrects.
+  async function _episodeLedger(season, episode) {
+    try {
+      const raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${episode}`);
+      const record = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!record) return null;
+      const mod = await import('./js/analysis/vote-ledger.js');
+      const vote = mod.voteLedger(record);
+      const week = mod.weekLedger(record);
+      const rel = mod.relationshipLedger(record);
+      if (!vote && !week && !rel) return null;
+      return { vote, week, relationships: rel, lines: mod.relationshipLines(rel) };
+    } catch (e) { return null; }
+  }
+
   try {
     const response = await fetch(EPISODE_WORKER_URL, {
       method: 'POST',
@@ -3093,6 +3111,19 @@ async function generateEpisodeAI() {
         franchiseContext: franchiseContext,
         seasonSetting: seasonSetting,
         previousEpisodes: previousEpisodes,
+        // ── THE MEASURED HALF, so the prose stops guessing at causation ──
+        //
+        // Everything above this line is prose. A transcript says a player used
+        // a power and their target left, so the only causal story available is
+        // that the power did it — which is how a week the house would have
+        // decided on its own came back described as a masterclass.
+        //
+        // These are numbers off the ballots and the bookend snapshots: how many
+        // votes never had to be moved, who was already going that way, what the
+        // week cost the person who ran it, and who wrote down a name they were
+        // sworn to. The model is told to reason FROM them rather than around
+        // them.
+        ledger: await _episodeLedger(season, episode),
         storyBible: localStorage.getItem(_sKey('STORY_BIBLE', season)) || ''
       })
     });

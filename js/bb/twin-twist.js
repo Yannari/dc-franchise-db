@@ -73,6 +73,40 @@ export function twinState() {
   return gs.bb?.twins || null;
 }
 
+/**
+ * Repair a season that installed before the identity was given back.
+ *
+ * `statsA` is captured at install and frozen into the season, and the viewing
+ * party reads it from there — so a season that installed while the front's
+ * roster entry was still wearing the other twin's line has that line baked in,
+ * and no amount of editing the cast afterwards can reach it. Both panels of the
+ * Changeover show one person's nine numbers under two names, permanently.
+ *
+ * The roster is the copy that was never touched, so it is the repair. Runs on
+ * load rather than at install, because install is the one moment that has
+ * already passed for the seasons that need this.
+ *
+ * @returns true when something was actually put back
+ */
+export function repairTwinStats() {
+  const st = twinState();
+  if (!st || !st.front) return false;
+  const entry = (players || []).find(p => p.name === st.front);
+  const real = entry?._twinRealStats || entry?.stats;
+  if (!real) return false;
+  const other = (players || []).find(p => p.name === st.other);
+  const sameAsOther = other?.stats && STAT_KEYS.every(k =>
+    Number(st.statsA?.[k]) === Number(other.stats[k]));
+  const alreadyRight = STAT_KEYS.every(k => Number(st.statsA?.[k]) === Number(real[k]));
+  // Only when it is BOTH wrong and wrong in the specific way this bug produces:
+  // the front carrying the other twin's numbers. Two twins who genuinely rolled
+  // the same line are not a fault to correct.
+  if (alreadyRight || !sameAsOther) return false;
+  st.statsA = { ...real };
+  if (st.active === 'a' && entry) entry.stats = { ...real };
+  return true;
+}
+
 /** Is this name the shared identity two people are playing? */
 export const isTwinIdentity = name => !!name && twinState()?.front === name;
 

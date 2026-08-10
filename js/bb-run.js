@@ -34,7 +34,7 @@ import { simulateBBFinale, finalCompChoices } from './bb-finale.js';
 import { generateBBFinaleText } from './text-backlog.js';
 import { updateEditLayer, finalizeEditSeason } from './edit-layer.js';
 import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
-import { installTwinTwist, twinState } from './bb/twin-twist.js';
+import { installTwinTwist, twinState, repairTwinStats } from './bb/twin-twist.js';
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
 import { installTheme, reanchorThemeArc } from './bb/themes.js';
@@ -791,6 +791,11 @@ export function simulateBBEpisode() {
 
   // The other season-layer twist, seated the same way and for the same reason:
   // it is chosen on night one and there is no week to schedule it on.
+  // A season that installed the twins BEFORE the identity was given back has
+  // the wrong stat line frozen into its state, where editing the cast cannot
+  // reach it. Install has already happened for those seasons, so the repair has
+  // to run on the way past.
+  try { repairTwinStats(); } catch { /* a season with no twins has nothing to repair */ }
   if (seasonConfig.bbTwins && seasonConfig.bbTwins !== 'off' && !twinState()) {
     try {
       installTwinTwist(house, {

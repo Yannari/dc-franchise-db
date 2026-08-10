@@ -1073,6 +1073,27 @@ function renderPlayerProfile(fullPlayer) {
   .pp-gitem-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 50%);
     opacity:0;transition:opacity .2s;display:flex;align-items:flex-end;padding:10px;}
   .pp-gitem:hover .pp-gitem-overlay{opacity:1;}
+  /* ── adding art ──
+     The dropzone is a tile in the grid rather than a button above it, so the
+     "+" sits exactly where the picture it makes will appear. */
+  .pp-gadd{position:relative;aspect-ratio:3/4;border-radius:14px;cursor:pointer;
+    border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.02);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    transition:border-color .2s,background .2s,transform .2s;}
+  .pp-gadd:hover{border-color:${tc.color}77;background:${tc.color}0d;transform:translateY(-4px);}
+  .pp-gadd.is-over{border-color:${tc.color};background:${tc.color}1f;transform:scale(1.02);}
+  .pp-gadd-plus{font-size:34px;line-height:1;color:${tc.color};font-weight:300;}
+  .pp-gadd-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(255,255,255,.45);text-align:center;padding:0 10px;}
+  .pp-gadd input{display:none;}
+  .pp-gadd.is-busy{pointer-events:none;opacity:.6;}
+  /* Removal lives on the tile it removes, and only appears on hover — a delete
+     MODE would be one more piece of state to be in the wrong half of. */
+  .pp-gdel{position:absolute;top:6px;right:6px;z-index:3;width:24px;height:24px;
+    border-radius:50%;border:none;cursor:pointer;font-size:13px;line-height:24px;
+    padding:0;color:#fff;background:rgba(10,10,12,.72);opacity:0;transition:opacity .2s,background .2s;}
+  .pp-gitem:hover .pp-gdel{opacity:1;}
+  .pp-gdel:hover{background:#c0392b;}
   .pp-gitem-num{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.05em;}
   .pp-gallery-empty{text-align:center;padding:32px;color:var(--muted,#888);font-size:13px;
     border:1px dashed rgba(255,255,255,.1);border-radius:14px;}
@@ -1345,13 +1366,18 @@ function renderPlayerProfile(fullPlayer) {
         <div class="pp-gitem-overlay"><span class="pp-gitem-num">#${i}</span></div>
       </div>`;
     }
+    // The pill still carries the slug — the lightbox reads it back out of the
+    // DOM — but it names the bucket now, because that is where these live.
     html += `<div class="pp-section pp-reveal" style="margin-top:28px"><h2>Character Gallery</h2>
       <span class="pp-pill">assets/gallery/${slug}/</span></div>
-    <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}</div>
+    <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}${ppAddTile(slug)}</div>
     <div class="pp-gallery-empty" id="pp-gallery-empty">
-      No images yet — drop files into <code>assets/gallery/${slug}/1.png</code>, <code>2.jpg</code>, <code>3.webp</code>…
-      <div class="pp-gallery-hint">Supports png, jpg, jpeg, webp, gif — up to 12 images per character</div>
+      No images yet — drop them on the <b>+</b> above, or drag them anywhere onto it.
+      <div class="pp-gallery-hint">png, jpg, webp or gif — up to 12 per character. They upload straight to the gallery.</div>
     </div>`;
+    // Bound after the markup is in the document, not here — `html` is still a
+    // string at this point and the tile it wires up does not exist yet.
+    _ppGallerySlug = slug;
   }
 
   // ── STORY ────────────────────────────────────────────────
@@ -1376,6 +1402,7 @@ function renderPlayerProfile(fullPlayer) {
     <div id="pp-view-wiki" hidden></div>`;
 
   _wireViewTabs(player);
+  ppGalleryBind();
 
   /* Redraw when the show changes. Registered once — the handler re-enters this
      function, and a listener added on every pass would multiply. */
@@ -1639,6 +1666,210 @@ function ppGalleryTryNext(i, img, slug) {
     // Exhausted locally AND on R2 — there is genuinely no image here.
     document.getElementById('ppg-' + i).style.display = 'none';
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ADDING TO THE GALLERY
+// ══════════════════════════════════════════════════════════════════════
+//
+// assets/gallery/ is git-ignored and disposable — the bucket is the original,
+// and the only way to add a picture used to be a script run against a folder
+// you may not have. So the page uploads: drop files on the "+" tile and they go
+// straight to R2 through the Worker.
+//
+// The credentials are the Casting Studio's, same localStorage keys, so a token
+// pasted in either place works in both.
+let _ppGallerySlug = '';
+const PP_API = 'https://dc-studio.yannari19.workers.dev';
+const _ppExtOf = name => (String(name).split('.').pop() || '').toLowerCase();
+function _ppToken() { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } }
+
+/** Ask for the write token once, and remember it the way the Studio does. */
+function _ppAskToken() {
+  const t = (prompt('Paste your studio token to upload gallery art.\n(the same token the Casting Studio uses — it is remembered on this device)') || '').trim();
+  if (!t) return '';
+  try { localStorage.setItem('studio_api_token', t); } catch { /* private mode: this session only */ }
+  return t;
+}
+
+function ppAddTile(slug) {
+  return `<label class="pp-gadd" id="pp-gadd" title="Add images to this gallery">
+    <span class="pp-gadd-plus">+</span>
+    <span class="pp-gadd-label" id="pp-gadd-label">Add art</span>
+    <input type="file" accept="image/*" multiple id="pp-gadd-input">
+  </label>`;
+}
+
+/** Wire the dropzone. The grid is redrawn on every upload and delete, so this
+ *  runs again each time — it attaches to whatever "+" tile is current. */
+function ppGalleryBindTile() {
+  const zone = document.getElementById('pp-gadd');
+  if (!zone) return;
+  const input = document.getElementById('pp-gadd-input');
+  if (input) input.onchange = () => { const f = [...input.files]; input.value = ''; ppGalleryUpload(f); };
+  // The whole tile is a drop target. `dragover` must preventDefault or the
+  // browser navigates to the dropped file and the profile disappears.
+  ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.add('is-over');
+  }));
+  ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('is-over')));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    ppGalleryUpload([...(e.dataTransfer?.files || [])].filter(f => /^image\//.test(f.type)));
+  });
+}
+
+/** Called once after the profile markup lands in the document. */
+function ppGalleryBind() {
+  if (!_ppGallerySlug) return;
+  ppGalleryBindTile();
+  // One listing instead of up to 48 probes, when the Worker can be reached.
+  ppGalleryRefresh({ quiet: true });
+}
+
+/**
+ * Shrink and re-encode before upload.
+ *
+ * The bucket averages 410 KB an image and the biggest are over a megabyte, for
+ * tiles that render at 160px and a lightbox that never needs more than about
+ * 1600. GIFs pass through untouched — a canvas keeps the first frame and throws
+ * the animation away, and there are animated ones in here.
+ */
+async function _ppPrepare(file) {
+  const ext = _ppExtOf(file.name);
+  if (ext === 'gif' || file.type === 'image/gif') {
+    return { blob: file, ext: 'gif', type: 'image/gif' };
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im); im.onerror = () => rej(new Error('not a readable image'));
+      im.src = url;
+    });
+    const cap = 1600;
+    const scale = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    // Transparent cut-out poses are most of this gallery, so no white fill:
+    // the alpha channel has to survive or the page cannot tell a pose from a
+    // scene shot, and it crops the tall ones through the head.
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise(res => c.toBlob(res, 'image/webp', 0.9));
+    if (!blob) throw new Error('could not encode');
+    // A re-encode that made it BIGGER is not worth having.
+    if (blob.size >= file.size && scale === 1) {
+      const keep = ext === 'jpeg' ? 'jpg' : ext;
+      if (['png', 'jpg', 'webp'].includes(keep)) return { blob: file, ext: keep, type: file.type };
+    }
+    return { blob, ext: 'webp', type: 'image/webp' };
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/** Which numbered slots are taken, straight from the bucket. */
+async function _ppTakenSlots(slug) {
+  const r = await fetch(`${PP_API}/api/gallery/${encodeURIComponent(slug)}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'could not list the gallery');
+  return j.images || [];
+}
+
+async function ppGalleryUpload(files) {
+  const slug = _ppGallerySlug;
+  const zone = document.getElementById('pp-gadd');
+  const label = document.getElementById('pp-gadd-label');
+  if (!files || !files.length || !slug) return;
+  const token = _ppToken() || _ppAskToken();
+  if (!token) return;
+
+  const say = t => { if (label) label.textContent = t; };
+  zone?.classList.add('is-busy');
+  try {
+    const taken = new Set((await _ppTakenSlots(slug)).map(o => parseInt(o.file, 10)).filter(Boolean));
+    const free = [];
+    for (let i = 1; i <= 12 && free.length < files.length; i++) if (!taken.has(i)) free.push(i);
+    if (!free.length) { alert('This gallery already has twelve images. Remove one first.'); return; }
+    if (free.length < files.length) {
+      if (!confirm(`Only ${free.length} slot${free.length === 1 ? '' : 's'} free — upload the first ${free.length}?`)) return;
+    }
+
+    let ok = 0;
+    const failed = [];
+    for (let n = 0; n < free.length; n++) {
+      say(files.length > 1 ? `${n + 1} of ${free.length}…` : 'Uploading…');
+      try {
+        const { blob, ext, type } = await _ppPrepare(files[n]);
+        const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${free[n]}.${ext}`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': type },
+          body: blob,
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+        ok++;
+      } catch (err) { failed.push(`${files[n].name}: ${err.message}`); }
+    }
+    if (failed.length) {
+      alert(`${ok} uploaded, ${failed.length} failed:\n\n${failed.slice(0, 5).join('\n')}`);
+    }
+    await ppGalleryRefresh();
+  } catch (err) {
+    alert('Upload failed: ' + err.message);
+  } finally {
+    zone?.classList.remove('is-busy');
+    say('Add art');
+  }
+}
+
+async function ppGalleryDelete(ev, file) {
+  // The tile behind this button opens the lightbox.
+  ev.stopPropagation();
+  ev.preventDefault();
+  const slug = _ppGallerySlug;
+  if (!slug || !confirm(`Delete ${file} from ${slug}'s gallery?\n\nThis removes it from the bucket. There is no other copy.`)) return;
+  const token = _ppToken() || _ppAskToken();
+  if (!token) return;
+  try {
+    const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${file}`, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token },
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+    await ppGalleryRefresh();
+  } catch (err) { alert('Delete failed: ' + err.message); }
+}
+
+/**
+ * Redraw the grid from what the bucket actually holds.
+ *
+ * `quiet` is the on-load pass: if the Worker cannot be reached it leaves the
+ * probe-rendered grid exactly as it is rather than blanking a gallery that is
+ * on screen and working.
+ */
+async function ppGalleryRefresh({ quiet = false } = {}) {
+  const slug = _ppGallerySlug;
+  const grid = document.getElementById('pp-gallery-grid');
+  if (!slug || !grid) return;
+  let images;
+  try { images = await _ppTakenSlots(slug); } catch (err) {
+    if (!quiet) alert('Could not read the gallery: ' + err.message);
+    return;
+  }
+  const empty = document.getElementById('pp-gallery-empty');
+  if (empty) empty.style.display = images.length ? 'none' : '';
+  grid.innerHTML = images.map(o => {
+    const i = parseInt(o.file, 10) || 0;
+    return `<div class="pp-gitem" id="ppg-${i}" onclick="ppLightbox(${i})">
+      <img id="ppgi-${i}" src="${GALLERY_REMOTE}/${slug}/${o.file}" alt="Gallery ${i}"
+        onload="ppGalleryLoaded(${i},this)"
+        onerror="document.getElementById('ppg-${i}').style.display='none'"/>
+      <button class="pp-gdel" title="Delete this image"
+        onclick="ppGalleryDelete(event,'${o.file}')">&times;</button>
+      <div class="pp-gitem-overlay"><span class="pp-gitem-num">#${i}</span></div>
+    </div>`;
+  }).join('') + ppAddTile(slug);
+  ppGalleryBindTile();
 }
 
 // ── Lightbox ────────────────────────────────────────────────

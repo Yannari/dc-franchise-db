@@ -62,7 +62,11 @@ export default {
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
                           '/api/roster', '/api/roster/status', '/api/live-season',
                           '/api/social'];
-    const isPublicRead = PUBLIC_READS.includes(url.pathname);
+    // The gallery listing is per-slug, so it is a prefix rather than a fixed
+    // path — but it is the same kind of thing as the rest of this list: public
+    // data the player page reads from whatever origin it happens to be on.
+    const isPublicRead = PUBLIC_READS.includes(url.pathname)
+      || url.pathname.startsWith('/api/gallery/');
     const rcors = isPublicRead ? { ...cors, 'Access-Control-Allow-Origin': '*' } : cors;
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: rcors });
@@ -93,6 +97,74 @@ export default {
         // which is exactly how a verification pass reads "the upload failed".
         if (typeof obj.size === 'number') h.set('Content-Length', String(obj.size));
         return new Response(request.method === 'HEAD' ? null : obj.body, { headers: h });
+      }
+
+      // ── what is in one character's gallery ────────────────────────────
+      //
+      // The player page used to discover art by requesting 1.png, 1.jpg,
+      // 1.webp, 1.gif, 2.png … up to twelve slots: as many as 48 requests per
+      // profile, every one of the misses a 404 the browser logs in red. One
+      // listing answers the same question, and the upload panel needs it for a
+      // second reason — it has to know which index is free before it can put
+      // anything anywhere.
+      if (request.method === 'GET' && url.pathname.startsWith('/api/gallery/')) {
+        const slug = decodeURIComponent(url.pathname.slice('/api/gallery/'.length));
+        if (!SLUG_RE.test(slug)) return json({ ok: false, error: 'bad slug' }, 400, rcors);
+        const images = [];
+        // A character has a dozen images, not a thousand, so one page is the
+        // whole answer — but `truncated` is honoured rather than assumed away.
+        let cursor;
+        do {
+          const page = await env.GALLERY.list({ prefix: slug + '/', cursor });
+          for (const o of page.objects || []) {
+            const file = o.key.slice(slug.length + 1);
+            if (file.includes('/')) continue;              // no subfolders here
+            images.push({ file, size: o.size });
+          }
+          cursor = page.truncated ? page.cursor : null;
+        } while (cursor);
+        images.sort((a, b) => (parseInt(a.file, 10) || 0) - (parseInt(b.file, 10) || 0));
+        return json({ ok: true, slug, images }, 200, rcors, 30);
+      }
+
+      // ── adding to and removing from the gallery ───────────────────────
+      //
+      // assets/gallery/ is git-ignored and 592 MB, so the working copy is
+      // disposable and the bucket is the original. That leaves no way to add a
+      // picture except a script run against a folder you may not have, which is
+      // why this exists: the player page uploads straight to R2.
+      //
+      // Not a GitHub commit like the avatar route. Avatars are small, few, and
+      // genuinely part of the repo; gallery art is none of those things, and
+      // putting it back in git is the exact thing that stopped the site
+      // deploying.
+      if ((request.method === 'PUT' || request.method === 'DELETE')
+          && url.pathname.startsWith('/gallery/')) {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const key = decodeURIComponent(url.pathname.slice('/gallery/'.length));
+        // Whitelisted rather than sanitised: the shape of a legal key is known
+        // exactly — one slug, one number, one known extension — so anything
+        // else is refused rather than repaired. `..` never has to be special
+        // cased because a dot is not in the alphabet.
+        if (!/^[a-z0-9][a-z0-9-]*\/\d{1,3}\.(png|jpe?g|webp|gif)$/.test(key)) {
+          return json({ ok: false, error: 'bad key' }, 400, cors);
+        }
+        if (request.method === 'DELETE') {
+          await env.GALLERY.delete(key);
+          return json({ ok: true, deleted: key }, 200, cors);
+        }
+        const body = await request.arrayBuffer();
+        if (!body.byteLength) return json({ ok: false, error: 'empty body' }, 400, cors);
+        if (body.byteLength > 12 * 1024 * 1024) {
+          return json({ ok: false, error: 'too large (12 MB limit)' }, 413, cors);
+        }
+        await env.GALLERY.put(key, body, {
+          httpMetadata: { contentType: request.headers.get('Content-Type') || 'image/webp' },
+        });
+        return json({ ok: true, key, size: body.byteLength }, 200, cors);
       }
 
       if (request.method === 'GET' && url.pathname === '/api/ping') {
@@ -1357,7 +1429,11 @@ function corsHeaders(request, env) {
   }
   return {
     'Access-Control-Allow-Origin': allow,
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    // PUT and DELETE are the gallery's, and they only reach R2 with a token.
+    // Missing here, the browser's preflight refuses the upload before the
+    // Worker is ever asked — and the failure surfaces as a bare CORS error
+    // with nothing about methods in it.
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin',

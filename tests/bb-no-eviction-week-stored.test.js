@@ -15,6 +15,8 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { episodeRecords, ensureFeeds } from '../js/social/live.js';
+import { extractEvents } from '../js/social/events.js';
+import { readFileSync } from 'node:fs';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -87,5 +89,35 @@ describe('a week nobody was evicted in', () => {
     // Stored AND in the history, which is the normal case after the fix.
     expect(gs.bb.weeks.length).toBe(1);
     expect(episodeRecords(gs, 'big-brother').map(r => r.episode)).toEqual([1]);
+  });
+
+  it('reacts to the rest of the week, not only the four spine facts', () => {
+    // The feed read who won, who went up, whether the veto moved anybody and
+    // who left. On a No Eviction week three of those are missing by design, so
+    // a night with a twist announcement, a secret power competition, alliances
+    // forming and a blow-up produced 2 events and about 19 posts — while the
+    // record carried five acts and sixty-one social beats nothing read.
+    house([{ episode: 1, type: 'bb-no-eviction' }, { episode: 1, type: 'bb-secret-power-comp' }]);
+    withSeededRandom(2026, () => simulateBBEpisode());
+    const rec = episodeRecords(gs, 'big-brother')[0];
+    const ev = extractEvents(rec.record, { format: 'big-brother', season: 1, episode: 1 });
+    const kinds = new Set(ev.map(e => e.kind));
+
+    expect(kinds.has('twist'), 'a twist was announced and the audience never heard').toBe(true);
+    expect(ev.length, 'the week is still being read as two facts').toBeGreaterThan(6);
+    // And it turns into an actual feed rather than a handful of posts.
+    const res = ensureFeeds(gs, { format: 'big-brother', season: 1, rebuild: true });
+    expect(res.posts).toBeGreaterThan(60);
+  });
+
+  it('does not invent an alliance out of an alliance argument', () => {
+    // Three hundred house events and a hundred and ninety-seven distinct badges
+    // across a season: mapping them all by name guesses wrong constantly, and a
+    // formation event fired for a row about a formation is a post about
+    // something that did not happen. Only unambiguous signals are read.
+    const src = readFileSync('js/social/events.js', 'utf8');
+    expect(src).toMatch(/badge === 'ALLIANCE FORMED'/);
+    expect(src, 'every alliance-ish event is being read as a formation')
+      .not.toMatch(/id\.startsWith\('alliance-'\)/);
   });
 });

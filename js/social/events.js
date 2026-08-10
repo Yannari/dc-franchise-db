@@ -147,6 +147,65 @@ function bbEvents(week, meta) {
         { upTo: meta.episode }));
     }
   }
+  out.push(...bbHouseEvents(week, meta));
+  return out;
+}
+
+/**
+ * The rest of the week — the part the audience actually talks about.
+ *
+ * This read four facts and no more: who won, who went up, whether the veto
+ * moved anybody, who left. Which is fine on an ordinary week and close to
+ * nothing on an unusual one — a No Eviction week has three of those missing by
+ * design, so a night with a twins announcement, a secret power competition,
+ * two alliances forming and a blow-up over a frying pan produced exactly two
+ * events and about nineteen posts.
+ *
+ * Meanwhile the record was carrying five acts and sixty-one social beats that
+ * nothing read at all.
+ *
+ * DELIBERATELY NARROW. There are three hundred house events and a hundred and
+ * ninety-seven distinct badges across a season, and mapping all of them by name
+ * would guess wrong constantly — an alliance ARGUMENT filed as an alliance
+ * FORMING produces a post about something that did not happen, and the
+ * validator is right to throw those away. So this takes only the signals that
+ * cannot be misread, and leaves the rest as colour in the transcript.
+ */
+function bbHouseEvents(week, meta) {
+  const out = [];
+  const acts = Array.isArray(week?.acts) ? week.acts : [];
+  let jitter = 0.03;
+  const bump = () => (jitter += 0.01);
+
+  // A twist announcement IS the episode on the week it lands, and the topic
+  // vocabulary has had a `twist` trigger all along with nothing emitting it.
+  for (const act of acts) {
+    if (act?.type === 'twist-announcement' || act?.type === 'no-eviction'
+        || act?.type === 'secret-power-comp') {
+      out.push(event('twist', { ...meta, jitter: bump() }));
+    }
+  }
+
+  for (const act of acts) {
+    for (const beat of (act?.socialBeats || [])) {
+      const id = String(beat?.eventId || '');
+      const badge = String(beat?.badgeText || '');
+      const who = (beat?.players || []).filter(Boolean);
+      if (!who.length) continue;
+      const pair = { subject: who[0], actor: who[1] || null };
+
+      // Unambiguous by name: the badge says the alliance was formed.
+      if (badge === 'ALLIANCE FORMED') {
+        out.push(event('alliance-formed', { ...meta, ...pair, jitter: bump() }));
+      } else if (id.startsWith('showmance-') || id === 'bond-first-kiss') {
+        out.push(event('showmance-formed', { ...meta, ...pair, jitter: bump() }));
+      } else if (badge === 'BLOW-UP' || badge === 'THE ROOM TURNS') {
+        out.push(event('argument', { ...meta, ...pair, jitter: bump() }));
+      } else if (badge === 'KINDNESS' || badge === 'A REAL MOMENT') {
+        out.push(event('kindness', { ...meta, ...pair, jitter: bump() }));
+      }
+    }
+  }
   return out;
 }
 

@@ -34,6 +34,7 @@ export const DEFAULT_ACCENT = '#f0c040';
 // only: theme files know nothing about the registry, the registry collects
 // them.
 import TEMPTATION from './themes-temptation.js';
+import MACHINE from './themes-cora.js';
 
 /**
  * Every theme, by id.
@@ -45,6 +46,7 @@ import TEMPTATION from './themes-temptation.js';
  */
 export const BB_THEMES = {
   [TEMPTATION.id]: TEMPTATION,
+  [MACHINE.id]: MACHINE,
 };
 
 export const THEME_LIST = Object.keys(BB_THEMES);

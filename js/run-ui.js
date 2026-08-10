@@ -1760,6 +1760,40 @@ function _bbFinalCompPicker(role, slot, label) {
   return h + `</select></label>`;
 }
 
+/**
+ * The stat family a competition asks for most.
+ *
+ * Categories describe the prop (a puzzle can still be physical); this reads
+ * the declared scoring weights instead, so the picker answers the question a
+ * season planner actually has: who is this competition built to favour?
+ */
+export function _bbCompFocus(comp) {
+  const stats = comp?.stats || {};
+  const ranked = Object.entries(stats)
+    .map(([stat, weight]) => [stat, Number(weight) || 0])
+    .filter(([, weight]) => weight > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const [first, second] = ranked;
+  if (!first || first[1] <= 0) return 'specialty';
+  // No family clearly owns the result: show it as balanced instead of making
+  // a 0.01 difference look like a meaningful design decision.
+  if (first[1] < 0.28 || first[1] - (second?.[1] || 0) < 0.04) return 'balanced';
+  return _BB_FOCUS_META[first[0]] ? first[0] : 'specialty';
+}
+
+const _BB_FOCUS_META = {
+  balanced: { label: 'Balanced', short: 'BAL' },
+  endurance: { label: 'Endurance focus', short: 'END' },
+  temperament: { label: 'Temperament focus', short: 'TMP' },
+  physical: { label: 'Physical focus', short: 'PHY' },
+  boldness: { label: 'Boldness focus', short: 'BLD' },
+  mental: { label: 'Mental focus', short: 'MEN' },
+  intuition: { label: 'Intuition focus', short: 'INT' },
+  social: { label: 'Social focus', short: 'SOC' },
+  strategic: { label: 'Strategic focus', short: 'STR' },
+  specialty: { label: 'Specialty / chance', short: 'SPC' },
+};
+
 /** One slot's dropdown, listing only what can serve it. */
 function _bbCompPicker(ep, slot, label) {
   const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
@@ -1770,13 +1804,22 @@ function _bbCompPicker(ep, slot, label) {
     pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
     pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}`;
   h += `<select onchange="event.stopPropagation();_setBBComp(${ep},'${slot}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
-    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:150px">`;
+    pinned ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;max-width:205px">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
   const written = list.filter(c => !c.generic);
   const generic = list.filter(c => c.generic);
-  if (written.length) {
-    h += `<optgroup label="Written">`;
-    written.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name}</option>`; });
+  const order = ['balanced', 'endurance', 'temperament', 'physical', 'boldness',
+    'mental', 'intuition', 'social', 'strategic', 'specialty'];
+  const grouped = Object.fromEntries(order.map(f => [f, []]));
+  written.forEach(c => grouped[_bbCompFocus(c)].push(c));
+  for (const focus of order) {
+    const comps = grouped[focus];
+    if (!comps.length) continue;
+    const meta = _BB_FOCUS_META[focus];
+    h += `<optgroup label="${meta.label} · ${comps.length}">`;
+    comps.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+      h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} · ${meta.short}</option>`;
+    });
     h += `</optgroup>`;
   }
   if (generic.length) {
@@ -1784,7 +1827,7 @@ function _bbCompPicker(ep, slot, label) {
     // written comp ("Before or After"), and an optgroup only disambiguates
     // while the list is OPEN — closed, both read identically and you cannot
     // tell which one the week is pinned to.
-    h += `<optgroup label="Generic">`;
+    h += `<optgroup label="Generic fallbacks">`;
     generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)</option>`; });
     h += `</optgroup>`;
   }

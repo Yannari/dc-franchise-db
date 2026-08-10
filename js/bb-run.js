@@ -1367,6 +1367,17 @@ export function summariseWeek(week) {
         line('  The votes were read out and they no longer decide anything.');
         break;
       }
+      case 'rewind': {
+        line('');
+        line('THE WEEK IS REWOUND');
+        line(`  ${act.holder} stops the eviction after the count and rewinds the week.`);
+        line(`  ${act.spared} stays. The block clears. ${act.deposed || 'The Head of Household'} loses the reign entirely.`);
+        line('  Everybody plays for the next one, including the houseguests who were on that block.');
+        for (const e of (act.exposed || []).slice(0, 6)) {
+          line(`  Public now: ${e.voter} voted to evict ${e.voted}.`);
+        }
+        break;
+      }
       case 'power-expired':
         line('');
         line('WHAT QUIETLY LEFT THE GAME');

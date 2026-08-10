@@ -5240,6 +5240,24 @@ export function generateBBSummaryText(ep) {
         break;
       }
 
+      case 'rewind': {
+        sec('THE WEEK IS REWOUND');
+        ln(`  ${act.holder} stops the eviction after the count and rewinds the whole week.`);
+        ln(`  ${act.spared} does not leave. ${(act.nominees || []).join(' and ') || 'The block'} comes off the block,`);
+        ln(`  and ${act.deposed || 'the Head of Household'} is not Head of Household any more — not deposed,`);
+        ln('  never crowned. In the morning everybody plays for it, including them.');
+        if ((act.exposed || []).length) {
+          ln('');
+          ln('  And the votes were read before the button landed, so the count is public');
+          ln('  with everybody it names still in the house:');
+          for (const e of act.exposed.slice(0, 6)) ln(`    ${e.voter} voted to evict ${e.voted}.`);
+        }
+        if (act.selfExposed) ln(`  ${act.holder} is in that count too, and spent the power anyway.`);
+        ln('');
+        beats(act);
+        break;
+      }
+
       case 'power-expired':
         sec('WHAT QUIETLY LEFT THE GAME');
         (act.beats || []).forEach(b => ln(`  ${b.text}`));

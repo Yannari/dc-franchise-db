@@ -127,6 +127,33 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'Eviction night, after the votes are counted.',
   },
 
+  // BB16, week 11: a gold button in the have-not room with no label on it. They
+  // pressed it, a timer appeared, and nobody knew what they had done until the
+  // eviction stopped mid-vote and the entire week was rewound — nominees off
+  // the block, the crown gone, and everybody who had just been on that block
+  // free to play for the next Head of Household.
+  //
+  // The distinction from the Halting Hex, which also cancels an eviction, is
+  // the whole reason both can exist: the Hex stops the NIGHT and leaves the
+  // week standing. This erases the WEEK. The reign goes with it, so the person
+  // who spent three days building that block plays for it again from the same
+  // starting line as the two people they put up.
+  //
+  // And the votes are read first. That is not decoration — it is the price.
+  // Every ballot in the room becomes public knowledge, including the holder's,
+  // with every person who was betrayed still in the house and now eligible to
+  // win. There is no quiet way to use this.
+  'rewind-button': {
+    id: 'rewind-button',
+    name: 'The Rewind',
+    rules: { rewindWeek: true },
+    useTiming: 'eviction-night',
+    windowWeeks: 3,
+    blurb: 'Stops the eviction after the votes have been read and rewinds the whole week: nobody leaves, the block clears, and the Head of Household loses the reign entirely.',
+    catch: 'The votes are read FIRST, so every ballot in that room becomes public — including the one belonging to whoever pressed it — and the deposed Head of Household is free to compete for it again.',
+    moment: 'Eviction night, after the votes are read and before anybody stands up.',
+  },
+
   // ── the two that edit the FIELD rather than the medallion ──
   //
   // These shipped first as schedulable week cards and that was wrong, for a

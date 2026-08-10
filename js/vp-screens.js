@@ -41,6 +41,7 @@ import { rpBuildBBTeamAmerica } from './vp-bb-team-america.js';
 import { rpBuildBBJuryHouse } from './vp-bb-jury-house.js';
 import { rpBuildBBHaltingHex } from './vp-bb-halting-hex.js';
 import { rpBuildBBSecondVeto } from './vp-bb-second-veto.js';
+import { rpBuildBBRewind } from './vp-bb-rewind.js';
 import { rpBuildBBVetoDrawTwist } from './vp-bb-veto-draw.js';
 import { rpBuildSigOtev } from './vp-bb-sig/otev.js';
 import { rpBuildSigZingbot } from './vp-bb-sig/zingbot.js';
@@ -21497,6 +21498,12 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const hxDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-haltinghex'), label: 'The Halting Hex',
           html: rpBuildBBHaltingHex(view, act, hxDeps) });
+        break;
+      }
+      case 'rewind': {
+        const rwDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
+        screens.push({ id: id('bb-rewind'), label: 'The Rewind',
+          html: rpBuildBBRewind(view, act, rwDeps) });
         break;
       }
       case 'second-veto': {

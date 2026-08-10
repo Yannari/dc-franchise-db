@@ -40,6 +40,9 @@ const WHACK_MIX = Object.freeze({
   'coup-d-etat': { mental: 0.3, strategic: 0.34, boldness: 0.2, endurance: 0.16 },
   'the-cloud': { physical: 0.3, endurance: 0.3, temperament: 0.24, mental: 0.16 },
   'bonus-life': { endurance: 0.34, physical: 0.28, temperament: 0.22, mental: 0.16 },
+  // Nerve first. Taking a whole week back is the loudest thing on the shelf
+  // and there is no quiet way to hold it, never mind press it.
+  'rewind-button': { boldness: 0.34, temperament: 0.26, endurance: 0.22, mental: 0.18 },
 });
 const DEFAULT_MIX = Object.freeze({ mental: 0.3, endurance: 0.26, physical: 0.24, strategic: 0.2 });
 

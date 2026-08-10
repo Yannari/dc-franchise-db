@@ -114,3 +114,42 @@ describe('and a week that stands down is projected as standing down', () => {
     expect(dropAt(buildEpisodeMap(), 2)).toBe(1);
   });
 });
+
+// A house ends at three, whatever the slider says.
+//
+// `houseFinaleSize()` in bb-run.js returns 3 unconditionally — the last night
+// is a three-part Head of Household played from three, and the week engine
+// refuses a house of fewer than four. The projection read
+// `seasonConfig.finaleSize` instead, and that key SURVIVES a format change, so
+// a season carrying a final two from a camp season drew one week too many:
+// a phantom eviction from three, and a finale starting from two. Reported off
+// a screenshot showing "Ep 16 · 3 LEFT" followed by the finale.
+describe('the house always ends at a final three', () => {
+  const finaleOf = map => map[map.length - 1];
+
+  it('ignores a configured final two', () => {
+    season([], { finaleSize: 2 });
+    const map = buildEpisodeMap();
+    expect(finaleOf(map).active, 'the finale runs from three').toBe(3);
+  });
+
+  it('projects the same season whatever the slider says', () => {
+    season([], { finaleSize: 2 });
+    const two = buildEpisodeMap().map(e => `${e.ep}:${e.active}`);
+    season([], { finaleSize: 3 });
+    const three = buildEpisodeMap().map(e => `${e.ep}:${e.active}`);
+    expect(two).toEqual(three);
+  });
+
+  it('leaves the last playable week with four in the house', () => {
+    season([], { finaleSize: 2 });
+    const map = buildEpisodeMap();
+    expect(map[map.length - 2].active, 'the week before the finale plays from four').toBe(4);
+  });
+
+  it('still honours the slider for a camp season', () => {
+    season([], { finaleSize: 2 });
+    seasonConfig.format = 'total-drama';
+    expect(finaleOf(buildEpisodeMap()).active).toBe(2);
+  });
+});

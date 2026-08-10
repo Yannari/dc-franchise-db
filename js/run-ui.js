@@ -1449,7 +1449,18 @@ export function runFanVote() {
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
   const cast    = players.length || 18;
-  const finale  = seasonConfig.finaleSize || 3;
+  // A house ALWAYS ends at three, whatever the slider says.
+  //
+  // `houseFinaleSize()` returns 3 unconditionally because the last night is a
+  // three-part Head of Household played from three and the week engine cannot
+  // run a house of fewer than four — a configured final two is refused there.
+  // This projection read the slider instead, so a season carrying finaleSize 2
+  // drew one week too many, ending on a phantom eviction from three and a
+  // finale starting from two. The engine would have stopped a week earlier; the
+  // timeline was the thing that was wrong.
+  const _isHouse = (typeof seasonFormat === 'function'
+    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+  const finale  = _isHouse ? 3 : (seasonConfig.finaleSize || 3);
   const mergeAt = seasonConfig.mergeAt || 12;
   // ── Total Drama's returns are Total Drama's ──
   //

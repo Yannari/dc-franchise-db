@@ -1736,13 +1736,13 @@ function _bbFinalCompPicker(role, slot, label) {
   // was the one nothing could see.
   const used = _bbPinnedIndex({ skipRole: role });
   const clash = pinned && used.has(chosen);
-  let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
+  let h = `<label style="display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0;font-size:9.5px;letter-spacing:.5px;color:${
     pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
     clash ? `Also pinned to ${used.get(chosen).join(', ')}`
-    : pinned ? 'Pinned — the finale runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}`;
+    : pinned ? 'Pinned — the finale runs exactly this competition' : 'Auto — the library picks, weighted'}"><span style="flex:0 0 auto">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}</span>`;
   h += `<select onchange="event.stopPropagation();_setBBFinalComp('${role}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
     clash ? '#f7c873' : pinned ? '#cdd6f4' : '#8b949e'};border:1px solid ${
-    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;max-width:150px">`;
+    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
   // Two "The Wall"s exist — the recurring endurance comp and the set piece
   // written for finale night — and a dropdown with the same word twice in it is
@@ -1862,13 +1862,19 @@ function _bbCompPicker(ep, slot, label) {
   // Pinned to something another week is already running. Not blocked — a
   // deliberate repeat is a legitimate thing to want — but never silent.
   const clash = pinned && used.has(chosen);
-  let h = `<label style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;letter-spacing:.5px;color:${
+  // `flex:1 1 100%` and `min-width:0`, or it does not fit the card it lives in.
+  // The select carried a fixed 205px max-width inside a column narrower than
+  // that, and a flex child will not shrink below its content without an
+  // explicit `min-width:0` — so a pinned row simply hung over the right-hand
+  // edge of the episode. Invisible while the border was dim; obvious the moment
+  // a clash painted it amber, which is how it got noticed.
+  let h = `<label style="display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0;font-size:9.5px;letter-spacing:.5px;color:${
     pinned ? '#a5b4fc' : 'var(--muted,#7d8590)'}" title="${
     clash ? `Also pinned to ${used.get(chosen).join(', ')}`
-    : pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}`;
+    : pinned ? 'Pinned — this week runs exactly this competition' : 'Auto — the library picks, weighted'}"><span style="flex:0 0 auto">${label}${clash ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}</span>`;
   h += `<select onchange="event.stopPropagation();_setBBComp(${ep},'${slot}',this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
     clash ? '#f7c873' : pinned ? '#cdd6f4' : '#8b949e'};border:1px solid ${
-    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;max-width:205px">`;
+    clash ? 'rgba(245,158,11,0.7)' : `rgba(99,102,241,${pinned ? '0.55' : '0.22'})`};border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
   h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
   const written = list.filter(c => !c.generic);
   const generic = list.filter(c => c.generic);
@@ -2200,11 +2206,11 @@ export function renderTimeline() {
         // Full opacity inside a row the designer dims: the rest of the finale
         // card is greyed because nothing can be booked onto it, but these two
         // are live controls and a dimmed control reads as a disabled one.
-        ? `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(245,158,11,0.18);opacity:1">
+        ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(245,158,11,0.18);opacity:1">
             ${_bbFinalCompPicker('one', 'final-1', 'PART 1')}${_bbFinalCompPicker('two', 'final-2', 'PART 2')}
             <span style="font-size:9.5px;letter-spacing:.5px;color:var(--muted,#7d8590);align-self:center" title="Part three is the jury quiz every season">PART 3 · Jury Statements</span>
           </div>`
-        : `<div class="fd-ep-comps" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
+        : `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
             ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
           </div>`)
       : '';

@@ -125,10 +125,21 @@ function bbEvents(week, meta) {
 
   if (week.vetoWinner) {
     out.push(event('comp-win', { ...meta, subject: week.vetoWinner, jitter: 0.02 }));
-    // The veto only counts as USED when the final block differs from the first.
-    const before = (week.initialNominees || []).map(slug).sort().join(',');
-    const after = (week.finalNominees || []).map(slug).sort().join(',');
-    if (before && after && before !== after) {
+    // The veto counts as used when the ceremony says it was used.
+    //
+    // This compared the two nominee lists and called any difference a veto.
+    // A Coup d'Etat replaces the whole block and a detonated Diamond takes
+    // somebody down on its own holder's authority, so on those weeks the feed
+    // credited the veto winner with a save they had refused to make — and the
+    // model was handed it as a fact to write posts about.
+    const used = week.vetoUsed !== undefined ? !!week.vetoUsed : (() => {
+      const notTheVeto = new Set([...(week.coup?.removed || []),
+        ...(week.diamondDetonation?.saved ? [week.diamondDetonation.saved] : [])]);
+      return (week.finalNominees || []).length
+        && (week.initialNominees || []).some(n =>
+          !(week.finalNominees || []).includes(n) && !notTheVeto.has(n));
+    })();
+    if (used) {
       out.push(event('veto-used', { ...meta, subject: week.vetoWinner }));
     }
   }

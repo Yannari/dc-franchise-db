@@ -22273,9 +22273,18 @@ function _bbStories(ep, stillIn) {
   const beats = (ep.acts || []).flatMap(act => act.socialBeats || []);
   const initial = ep.initialNominees || [];
   const finalNoms = ep.finalNominees || [];
-  const vetoUsed = initial.length && finalNoms.length
-    && initial.some(name => !finalNoms.includes(name));
-  const saved = initial.filter(name => !finalNoms.includes(name));
+  // A name leaving the block is not proof the veto took it off: a Coup d'Etat
+  // replaces both nominees and a detonated Diamond takes somebody down on its
+  // own holder's authority. The ceremony records what it did, so ask it.
+  const notTheVeto = new Set([...(ep.coup?.removed || []),
+    ...(ep.diamondDetonation?.saved ? [ep.diamondDetonation.saved] : [])]);
+  const cameDown = initial.filter(name => !finalNoms.includes(name) && !notTheVeto.has(name));
+  const vetoUsed = ep.vetoUsed !== undefined
+    ? !!ep.vetoUsed
+    : Boolean(initial.length && finalNoms.length && cameDown.length);
+  const saved = ep.vetoUsed !== undefined
+    ? (ep.vetoSavedAll || (ep.vetoSaved ? [ep.vetoSaved] : []))
+    : cameDown;
   const replacement = finalNoms.filter(name => !initial.includes(name));
 
   // ── the eviction, and whether anybody saw it coming ──

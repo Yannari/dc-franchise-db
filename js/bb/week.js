@@ -1445,9 +1445,10 @@ export function simulateBBWeek(options = {}) {
     const joined = [...(alliance.history || [])].reverse()
       .find(h => h.type === 'recruited')?.member;
     if (!joined || !house.includes(joined)) return null;
+    const jp = pronouns(joined);
     return {
       text: `The members of <strong>${alliance.name}</strong> bring <strong>${joined}</strong> into the bedroom `
-        + `and offer them a place in the alliance. ${joined} agrees, then asks who outside the room already knows.`,
+        + `and offer ${jp.obj} a place in the alliance. ${joined} agrees, then asks who outside the room already knows.`,
       players: [joined, ...members.filter(n => n !== joined).slice(0, 3)],
       badgeText: 'BROUGHT IN', badgeClass: 'blue',
       eventId: 'alliance-recruited', category: 'deals', location: 'bedroom',
@@ -3931,6 +3932,27 @@ export function simulateBBWeek(options = {}) {
     // house beats follow them.
     vetoCeremonyAct.socialBeats = [...vetoFallout.beats, ...(vetoCeremonyAct.socialBeats || [])];
     week.acts.push(vetoCeremonyAct);
+
+    // ── WHAT THE VETO ITSELF DID, RECORDED RATHER THAN INFERRED ──
+    //
+    // Nothing wrote this down, so everything downstream worked it out by
+    // diffing initialNominees against finalNominees: if a name left the block,
+    // the veto must have taken it off. It must not. A Coup d'Etat replaces the
+    // whole block and a detonated Diamond takes somebody down on its holder's
+    // authority, and neither has anything to do with the person who won the
+    // veto — who, on those weeks, gets told in front of the house that they
+    // are "now a person who makes moves" for a move they declined to make.
+    //
+    // The ceremony knows the truth and passes it to its own act already. This
+    // puts it somewhere the acts AFTER the ceremony can read it too, which is
+    // where the fallout events live.
+    week.vetoUsed = !!vetoDecision.use;
+    week.vetoSaved = vetoDecision.save || null;
+    week.vetoReplacement = replacement || null;
+    // A duos veto takes two down and puts two up, so the single name is not
+    // the whole story on those weeks.
+    week.vetoSavedAll = week.duoVetoSwap ? [...week.duoVetoSwap.down]
+      : (vetoDecision.save ? [vetoDecision.save] : []);
     revise('veto', { hoh, nominees: [...blockAfterCeremony], vetoWinner,
       saved: vetoDecision.save || null });
 

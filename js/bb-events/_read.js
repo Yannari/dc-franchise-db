@@ -56,10 +56,36 @@ export function actFacts(ctx = {}) {
   const plan = ctx.week?.plan || {};
   const initial = ctx.week?.initialNominees || [];
   const final = ctx.week?.finalNominees || [];
-  // The veto took someone off exactly when a name left the block between the
-  // ceremony and the final line-up; whoever replaced them arrived the same way.
-  const saved = ctx.saved ?? (final.length ? initial.find(n => !final.includes(n)) : undefined) ?? null;
-  const replacement = ctx.replacement ?? (initial.length ? final.find(n => !initial.includes(n)) : undefined) ?? null;
+  // ── WHO THE VETO TOOK OFF ──
+  //
+  // This diffed the two nominee lists and called the difference the veto's
+  // work: a name left the block, so the veto took it off. That is wrong on
+  // every week where something ELSE moved the block. A Coup d'Etat replaces
+  // both nominees outright and a detonated Diamond takes somebody down on its
+  // own holder's authority, and on those weeks the diff handed the veto's
+  // fallout events a person the veto never touched — so the houseguest who
+  // held the veto and DECLINED to use it was told, in front of the house,
+  // that they were now a person who makes moves.
+  //
+  // The ceremony records what it actually did now, so prefer that and fall
+  // back to the diff only for a week that has no veto ceremony to ask.
+  const w = ctx.week || {};
+  const vetoRecorded = w.vetoUsed !== undefined;
+  // Names that came off the block by some other authority. Subtracted from the
+  // fallback so an unrecorded week cannot make the same mistake either.
+  const notTheVeto = new Set([
+    ...(w.coup?.removed || []),
+    ...(w.diamondDetonation?.saved ? [w.diamondDetonation.saved] : []),
+  ]);
+  const byDiff = final.length
+    ? initial.find(n => !final.includes(n) && !notTheVeto.has(n)) : undefined;
+  const saved = ctx.saved
+    ?? (vetoRecorded ? (w.vetoUsed ? w.vetoSaved : null) : byDiff)
+    ?? null;
+  const replacement = ctx.replacement
+    ?? (vetoRecorded ? (w.vetoUsed ? w.vetoReplacement : null)
+      : (initial.length ? final.find(n => !initial.includes(n)) : undefined))
+    ?? null;
   return {
     target: ctx.target ?? plan.target ?? null,
     pawn: ctx.pawn ?? plan.pawn ?? null,

@@ -1094,6 +1094,10 @@ function renderPlayerProfile(fullPlayer) {
     padding:0;color:#fff;background:rgba(10,10,12,.72);opacity:0;transition:opacity .2s,background .2s;}
   .pp-gitem:hover .pp-gdel{opacity:1;}
   .pp-gdel:hover{background:#c0392b;}
+  .pp-gdel:focus-visible{opacity:1;outline:2px solid ${tc.color};}
+  /* A touch screen has no hover, so a delete that only appears on hover is a
+     delete that does not exist on a phone. */
+  @media (hover:none){ .pp-gdel{opacity:.85;} }
   .pp-gitem-num{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.05em;}
   .pp-gallery-empty{text-align:center;padding:32px;color:var(--muted,#888);font-size:13px;
     border:1px dashed rgba(255,255,255,.1);border-radius:14px;}
@@ -1767,9 +1771,20 @@ async function _ppPrepare(file) {
   } finally { URL.revokeObjectURL(url); }
 }
 
-/** Which numbered slots are taken, straight from the bucket. */
-async function _ppTakenSlots(slug) {
-  const r = await fetch(`${PP_API}/api/gallery/${encodeURIComponent(slug)}`);
+/**
+ * Which numbered slots are taken, straight from the bucket.
+ *
+ * `fresh` skips the HTTP cache, and everything that WRITES must pass it. The
+ * listing is sent with `max-age=30`, which is right for drawing a page and
+ * wrong for every other caller: an upload that finished would not appear until
+ * the cache expired — it looked like a silent failure and it was reported as
+ * one — and, worse, a second upload inside the same thirty seconds would
+ * compute its free slots from the stale list and overwrite the first one.
+ */
+async function _ppTakenSlots(slug, { fresh = false } = {}) {
+  const url = `${PP_API}/api/gallery/${encodeURIComponent(slug)}`
+    + (fresh ? `?t=${Date.now()}` : '');
+  const r = await fetch(url, fresh ? { cache: 'no-store' } : undefined);
   const j = await r.json();
   if (!j.ok) throw new Error(j.error || 'could not list the gallery');
   return j.images || [];
@@ -1786,7 +1801,8 @@ async function ppGalleryUpload(files) {
   const say = t => { if (label) label.textContent = t; };
   zone?.classList.add('is-busy');
   try {
-    const taken = new Set((await _ppTakenSlots(slug)).map(o => parseInt(o.file, 10)).filter(Boolean));
+    const taken = new Set((await _ppTakenSlots(slug, { fresh: true }))
+      .map(o => parseInt(o.file, 10)).filter(Boolean));
     const free = [];
     for (let i = 1; i <= 12 && free.length < files.length; i++) if (!taken.has(i)) free.push(i);
     if (!free.length) { alert('This gallery already has twelve images. Remove one first.'); return; }
@@ -1852,7 +1868,9 @@ async function ppGalleryRefresh({ quiet = false } = {}) {
   const grid = document.getElementById('pp-gallery-grid');
   if (!slug || !grid) return;
   let images;
-  try { images = await _ppTakenSlots(slug); } catch (err) {
+  // Anything but the first draw is showing the result of a write, so it must
+  // not be answered out of a cache written before that write happened.
+  try { images = await _ppTakenSlots(slug, { fresh: !quiet }); } catch (err) {
     if (!quiet) alert('Could not read the gallery: ' + err.message);
     return;
   }
@@ -1860,8 +1878,19 @@ async function ppGalleryRefresh({ quiet = false } = {}) {
   if (empty) empty.style.display = images.length ? 'none' : '';
   grid.innerHTML = images.map(o => {
     const i = parseInt(o.file, 10) || 0;
+    // ?v= is the file's own size. R2 objects are served `immutable` for a
+    // year, which is right — a new pose is a new file — but a slot REPLACED in
+    // place is the same URL with different bytes, and without this the browser
+    // would keep showing the deleted picture until next year.
+    //
+    // crossorigin, because ppGalleryLoaded reads the alpha channel back off a
+    // canvas to spot transparent cut-outs, and a canvas painted with an image
+    // fetched no-cors is tainted — getImageData throws, the probe silently
+    // gives up, and every tall pose gets cropped through the head. The Worker
+    // already sends Access-Control-Allow-Origin on these.
     return `<div class="pp-gitem" id="ppg-${i}" onclick="ppLightbox(${i})">
-      <img id="ppgi-${i}" src="${GALLERY_REMOTE}/${slug}/${o.file}" alt="Gallery ${i}"
+      <img id="ppgi-${i}" src="${GALLERY_REMOTE}/${slug}/${o.file}?v=${o.size}" alt="Gallery ${i}"
+        crossorigin="anonymous"
         onload="ppGalleryLoaded(${i},this)"
         onerror="document.getElementById('ppg-${i}').style.display='none'"/>
       <button class="pp-gdel" title="Delete this image"

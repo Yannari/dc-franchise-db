@@ -1,3 +1,4 @@
+import { SHOWS, showName, DEFAULT_FORMAT } from './shows.js';
 // ══════════════════════════════════════════════════════════════════════
 // core.js — Constants, state, and serialization (extracted from simulator.html)
 // ══════════════════════════════════════════════════════════════════════
@@ -1243,8 +1244,22 @@ export const S10_TRIBES = [
 // Everything written before Big Brother existed is Total Drama, so BOTH the
 // season config and the twist catalog treat a missing format as 'total-drama'
 // rather than requiring 147 catalog entries and fourteen seasons to be edited.
-export const SEASON_FORMATS = ['total-drama', 'big-brother'];
-export const DEFAULT_FORMAT = 'total-drama';
+// ── ONE REGISTRY, NOT TWO ──
+//
+// This file used to keep its own list of shows and its own display names, in
+// parallel with js/shows.js — whose entire stated purpose is to be "the only
+// place that knows the slugs, the URL prefixes and the display names, so
+// adding a third show is one entry here rather than a search for every place a
+// format was assumed". Six modules read that file; seven read this copy, and
+// the copy's `formatName` was a hardcoded ternary that returns "Total Drama"
+// for anything it does not recognise. At two shows that is invisible. At five
+// it silently mislabels three of them.
+//
+// The leaf rule in CLAUDE.md is about CYCLES, and shows.js imports nothing at
+// all — so this is one import into a leaf from a leaf, and the names below stay
+// exactly as they were for the seven modules already using them.
+export { DEFAULT_FORMAT } from './shows.js';
+export const SEASON_FORMATS = Object.keys(SHOWS);
 
 /** Which show is this season? Accepts a config, a season record, or a bare tag. */
 export function seasonFormat(source) {
@@ -1278,7 +1293,7 @@ export function formatIsRunnable(source) {
 }
 
 export function formatName(source) {
-  return seasonFormat(source) === 'big-brother' ? 'Big Brother' : 'Total Drama';
+  return showName(seasonFormat(source));
 }
 
 export const S10_BONDS_PRESET = [

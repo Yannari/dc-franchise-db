@@ -390,6 +390,10 @@
 
     <div class="ai-controls">
       <div class="ai-field">
+        <label class="ai-label" for="aiShow">Show</label>
+        <select id="aiShow" class="ai-input" title="Which show this season number belongs to. Big Brother 14 and Total Drama 14 are different seasons and keep separate episodes, summaries and analytics."></select>
+      </div>
+      <div class="ai-field">
         <label class="ai-label" for="aiSeason">Season</label>
         <input id="aiSeason" class="ai-input" type="number" min="1" value="5" />
       </div>
@@ -622,9 +626,9 @@ Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
             <h4 style="margin: 0 0 4px 0; color: #93c5fd; font-size: 14px;">🏆 Franchise Context (Optional — All-Stars / Returning Players)</h4>
             <p style="opacity: 0.7; font-size: 12px; margin: 0 0 8px 0;">
               Paste returning player histories here. The AI will use these to reference prior seasons in episodes. Saved automatically per season.
-              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';_csDelete('franchise_context_s'+s);document.getElementById('franchise-context-input').value='';alert('Franchise context cleared for season '+s+'.');})()" style="margin-left:8px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Cache</button>
-              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const e=document.getElementById('aiEpisode')?.value||document.getElementById('aiEpisode')?.value||'1';_csDelete('AI_SUMMARY_s'+s+'_e'+e);const ep=document.getElementById('episode-summary-input');if(ep)ep.value='';const ai=document.getElementById('aiSummary');if(ai)ai.value='';alert('Summary cache cleared for S'+s+' E'+e+'. Re-paste your simulator output to re-enhance.');})();" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Summary Cache</button>
-              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const v=document.getElementById('franchise-context-input').value.trim();_csPut('franchise_context_s'+s,v);alert('Franchise context updated for season '+s+' ('+v.length+' chars). It will be used on the next episode you generate — you do NOT need to be on Episode 1.');})()" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.45);border-radius:4px;color:#86efac;cursor:pointer;">💾 Update Context (mid-season)</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';_csDelete(_sKey('franchise_context', s));document.getElementById('franchise-context-input').value='';alert('Franchise context cleared for season '+s+'.');})()" style="margin-left:8px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Cache</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const e=document.getElementById('aiEpisode')?.value||document.getElementById('aiEpisode')?.value||'1';_csDelete(_sKey('AI_SUMMARY', s) + '_e' + e);const ep=document.getElementById('episode-summary-input');if(ep)ep.value='';const ai=document.getElementById('aiSummary');if(ai)ai.value='';alert('Summary cache cleared for S'+s+' E'+e+'. Re-paste your simulator output to re-enhance.');})();" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Summary Cache</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const v=document.getElementById('franchise-context-input').value.trim();_csPut(_sKey('franchise_context', s), v);alert('Franchise context updated for season '+s+' ('+v.length+' chars). It will be used on the next episode you generate — you do NOT need to be on Episode 1.');})()" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.45);border-radius:4px;color:#86efac;cursor:pointer;">💾 Update Context (mid-season)</button>
             </p>
             <textarea
               id="franchise-context-input"
@@ -730,6 +734,48 @@ Owen: This is going to be amazing!"
     })).catch(e => console.warn('IDB put failed:', e));
   }
 
+  // ══════════════════════════════════════════════════════════════════
+  // WHICH SHOW IS THIS SEASON
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // Every stored key on this page was `NAME_s<number>` — the episodes, the
+  // summaries, the analytics, the event ledger, the story bible, all seven
+  // families of them. A season number is not an identity once there is a second
+  // show, so Big Brother 14 opened Total Drama 14's episodes and analytics, and
+  // publishing it would have overwritten Total Drama 14's row in
+  // seasons_database, which is matched on the number alone.
+  //
+  // The rule is the one js/shows.js already declares permanent for every URL on
+  // the site: A BARE INTEGER IS TOTAL DRAMA. So Total Drama keeps the key it has
+  // always had and needs no migration whatsoever, and every other show gets its
+  // own prefix — `AI_ANALYTICS_bb-14`, and `_sv-14` the day a third exists.
+  // Nothing to convert, nothing to lose, and one entry in shows.js to add a show.
+  const CS_SHOWS = { 'total-drama': 'td', 'big-brother': 'bb' };
+  const CS_DEFAULT_FORMAT = 'total-drama';
+  // Filled from js/shows.js as soon as the module graph loads — see the module
+  // tag at the end of the page. The literal above is only what this page can
+  // answer before that resolves; it is never the source of truth.
+  function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || CS_SHOWS; }
+
+  /** The show the page is currently looking at. */
+  function _csFormat() {
+    const el = document.getElementById('aiShow');
+    const picked = el && el.value;
+    if (picked && _csShows()[picked]) return picked;
+    try {
+      const cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}');
+      if (cfg.format && _csShows()[cfg.format]) return cfg.format;
+    } catch (e) { /* no config, no opinion */ }
+    return CS_DEFAULT_FORMAT;
+  }
+
+  /** `AI_ANALYTICS_s14` for Total Drama, `AI_ANALYTICS_bb-14` for anything else. */
+  function _sKey(name, season, format) {
+    const fmt = format || _csFormat();
+    const n = Number(season) || 1;
+    return fmt === CS_DEFAULT_FORMAT ? `${name}_s${n}` : `${name}_${_csShows()[fmt]}-${n}`;
+  }
+
   function _csGet(key) {
     return _csOpenDB().then(db => new Promise((resolve, reject) => {
       const tx = db.transaction(CS_STORE, 'readonly');
@@ -739,7 +785,7 @@ Owen: This is going to be amazing!"
     })).catch(e => { console.warn('IDB get failed:', e); return undefined; });
   }
 
-  function _ledgerKey(season) { return `SEASON_EVENT_LEDGER_s${Number(season) || 1}`; }
+  function _ledgerKey(season) { return _sKey('SEASON_EVENT_LEDGER', Number(season) || 1); }
   function _parseStoredJson(raw, fallback = null) {
     if (raw == null || raw === '') return fallback;
     if (typeof raw !== 'string') return raw;
@@ -1003,7 +1049,7 @@ Owen: This is going to be amazing!"
     }
 
     function cacheKey(season, episode) {
-      return `AI_ANALYTICS_s${season}_e${episode}`;
+      return `${_sKey('AI_ANALYTICS', season)}_e${episode}`;
     }
 
     function saveLastSelection(season, episode) {
@@ -1776,7 +1822,7 @@ Owen: This is going to be amazing!"
     }
 
     async function loadSimulatorEpisode(season, episode) {
-      return _parseStoredJson(await _csGet(`SIMULATOR_EPISODE_s${season}_e${episode}`), null);
+      return _parseStoredJson(await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${episode}`), null);
     }
 
     async function renderGameplayTable() {
@@ -2136,13 +2182,13 @@ Owen: This is going to be amazing!"
     }
 
     function summaryKey(season, episode) {
-      return `AI_SUMMARY_s${season}_e${episode}`;
+      return `${_sKey('AI_SUMMARY', season)}_e${episode}`;
     }
     function castStateKey(season, episode) {
-      return `AI_CAST_s${season}_e${episode}`;
+      return `${_sKey('AI_CAST', season)}_e${episode}`;
     }
     function tabKey(season, episode) {
-      return `AI_TAB_s${season}_e${episode}`;
+      return `${_sKey('AI_TAB', season)}_e${episode}`;
     }
 
     function saveSummary(season, episode, text) {
@@ -2237,8 +2283,8 @@ Owen: This is going to be amazing!"
       for (const row of rows) {
         if (!(await loadSummary(season, row.num))) newCount++;
         saveSummary(season, row.num, row.summary);
-        await _csPut(`SIMULATOR_SUMMARY_s${season}_e${row.num}`, row.summary);
-        await _csPut(`SIMULATOR_EPISODE_s${season}_e${row.num}`, JSON.stringify(row.record));
+        await _csPut(`${_sKey('SIMULATOR_SUMMARY', season)}_e${row.num}`, row.summary);
+        await _csPut(`${_sKey('SIMULATOR_EPISODE', season)}_e${row.num}`, JSON.stringify(row.record));
         const parsedCast = parseCastFromSummary(row.summary);
         if (parsedCast.length) knownCast = parsedCast;
         const eliminated = [...parseEliminated(row.summary)];
@@ -2325,7 +2371,7 @@ Owen: This is going to be amazing!"
       if (!summaryText.trim()) return setStatus("Paste an episode summary or raw BrantSteele output first.");
 
       // Auto-convert or enhance summary as needed before analytics
-      const cachedKey = `AI_SUMMARY_s${season}_e${episode}`;
+      const cachedKey = `${_sKey('AI_SUMMARY', season)}_e${episode}`;
       if (!isStructuredSummary(summaryText)) {
         // Raw BrantSteele — summarize first
         setStatus("Step 1/2: Converting raw to structured summary…");
@@ -2351,9 +2397,9 @@ Owen: This is going to be amazing!"
           setStatus("Step 1/2: Enhancing summary…");
           const fcEl = document.getElementById('franchise-context-input');
           const ssEl = document.getElementById('season-setting-input');
-          const fc = (fcEl ? fcEl.value.trim() : '') || (await _csGet(`franchise_context_s${season}`)) || '';
+          const fc = (fcEl ? fcEl.value.trim() : '') || (await _csGet(_sKey('franchise_context', season))) || '';
           const ss = (ssEl ? ssEl.value.trim() : '') || (await _csGet(`season_setting_s${season}`)) || '';
-          if (fc) _csPut(`franchise_context_s${season}`, fc);
+          if (fc) _csPut(_sKey('franchise_context', season), fc);
           if (ss) _csPut(`season_setting_s${season}`, ss);
           try {
             summaryText = await autoEnhance(season, episode, summaryText, null, fc, ss);
@@ -2709,10 +2755,10 @@ Owen: This is going to be amazing!"
     const url = workerUrl || EPISODE_WORKER_URL;
     const prevSummaries = [];
     for (let i = Math.max(1, episode - 3); i < episode; i++) {
-      const s = await _csGet(`AI_SUMMARY_s${season}_e${i}`);
+      const s = await _csGet(`${_sKey('AI_SUMMARY', season)}_e${i}`);
       if (s) prevSummaries.push({ episode: i, summary: s });
     }
-    if (franchiseContext === undefined) franchiseContext = (await _csGet(`franchise_context_s${season}`)) || '';
+    if (franchiseContext === undefined) franchiseContext = (await _csGet(_sKey('franchise_context', season))) || '';
     if (seasonSetting === undefined) seasonSetting = (await _csGet(`season_setting_s${season}`)) || '';
     const resp = await fetch(url, {
       method: 'POST',
@@ -2737,7 +2783,7 @@ Owen: This is going to be amazing!"
     // Pass up to 3 previous summaries so ongoing storylines can chain properly
     const prevSummaries = [];
     for (let i = Math.max(1, episode - 3); i < episode; i++) {
-      const s = await _csGet(`AI_SUMMARY_s${season}_e${i}`);
+      const s = await _csGet(`${_sKey('AI_SUMMARY', season)}_e${i}`);
       if (s) prevSummaries.push(`--- Episode ${i} Summary ---\n${s}`);
     }
     const prevSummary = prevSummaries.join('\n\n');
@@ -2779,7 +2825,7 @@ async function generateEpisodeAI() {
   const episodeNum = parseInt(episode);
   
   // ── Step 1: Ensure structured summary exists ────────────────────────────────
-  const cachedSummaryKey = `AI_SUMMARY_s${season}_e${episodeNum}`;
+  const cachedSummaryKey = `${_sKey('AI_SUMMARY', season)}_e${episodeNum}`;
   let summary = await _csGet(cachedSummaryKey);
 
   const generateBtn = document.getElementById('generate-episode-btn');
@@ -2793,12 +2839,12 @@ async function generateEpisodeAI() {
   if (episodeNum === 1) {
     const fcEl = document.getElementById('franchise-context-input');
     franchiseContextEarly = fcEl ? fcEl.value.trim() : '';
-    if (franchiseContextEarly) _csPut(`franchise_context_s${season}`, franchiseContextEarly);
+    if (franchiseContextEarly) _csPut(_sKey('franchise_context', season), franchiseContextEarly);
     const ssEl = document.getElementById('season-setting-input');
     seasonSettingEarly = ssEl ? ssEl.value.trim() : '';
     if (seasonSettingEarly) _csPut(`season_setting_s${season}`, seasonSettingEarly);
   } else {
-    franchiseContextEarly = (await _csGet(`franchise_context_s${season}`)) || '';
+    franchiseContextEarly = (await _csGet(_sKey('franchise_context', season))) || '';
     seasonSettingEarly = (await _csGet(`season_setting_s${season}`)) || '';
   }
   // If still no season setting (e.g. generating a later episode before ever saving one),
@@ -2815,7 +2861,7 @@ async function generateEpisodeAI() {
       const _autoFC = await buildFranchiseContextFromCast(CURRENT.cast);
       if (_autoFC) {
         franchiseContextEarly = _autoFC;
-        _csPut(`franchise_context_s${season}`, _autoFC);
+        _csPut(_sKey('franchise_context', season), _autoFC);
         console.log(`✅ Auto-built franchise context from voice profiles (${_autoFC.length} chars).`);
       }
     } catch (e) { console.warn('Auto franchise-context build failed:', e); }
@@ -2888,10 +2934,10 @@ async function generateEpisodeAI() {
     const franchiseContextInput = document.getElementById('franchise-context-input');
     franchiseContext = franchiseContextInput ? franchiseContextInput.value.trim() : '';
     if (franchiseContext) {
-      _csPut(`franchise_context_s${season}`, franchiseContext);
+      _csPut(_sKey('franchise_context', season), franchiseContext);
     }
   } else {
-    franchiseContext = (await _csGet(`franchise_context_s${season}`)) || '';
+    franchiseContext = (await _csGet(_sKey('franchise_context', season))) || '';
   }
 
   // Get season setting — shown only on ep1; silently reused for all episodes
@@ -2934,7 +2980,7 @@ async function generateEpisodeAI() {
       }
     } else {
       // BrantSteele summary for older episodes — already saved when user pasted it
-      const summaryKey = `AI_SUMMARY_s${season}_e${i}`;
+      const summaryKey = `${_sKey('AI_SUMMARY', season)}_e${i}`;
       const savedSummary = await _csGet(summaryKey);
       if (savedSummary) {
         previousEpisodes.push({
@@ -2972,7 +3018,7 @@ async function generateEpisodeAI() {
         franchiseContext: franchiseContext,
         seasonSetting: seasonSetting,
         previousEpisodes: previousEpisodes,
-        storyBible: localStorage.getItem('STORY_BIBLE_s' + season) || ''
+        storyBible: localStorage.getItem(_sKey('STORY_BIBLE', season)) || ''
       })
     });
     
@@ -2994,14 +3040,14 @@ async function generateEpisodeAI() {
     // Update the rolling STORY BIBLE with this episode (background; preserves long-season
     // continuity so the architect/writer don't lose early history when transcripts scroll off).
     try {
-      const _priorBible = localStorage.getItem('STORY_BIBLE_s' + season) || '';
+      const _priorBible = localStorage.getItem(_sKey('STORY_BIBLE', season)) || '';
       fetch(EPISODE_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: 'story-digest', season, episode, storyBible: _priorBible, episodeText: transcript })
       })
         .then(r => r.json())
-        .then(d => { if (d && d.bible) localStorage.setItem('STORY_BIBLE_s' + season, d.bible); })
+        .then(d => { if (d && d.bible) localStorage.setItem(_sKey('STORY_BIBLE', season), d.bible); })
         .catch(() => {});  // bible update is best-effort; never blocks the episode
     } catch (_e) {}
 
@@ -4635,13 +4681,17 @@ setTimeout(function() {
     _csDelete(storageKey);
 
     // Also clear all episode transcripts and analytics for this season from IndexedDB
+    // Scoped to the show, or deleting Big Brother 14 would sweep away every
+    // Total Drama 14 key on the way past — the substring `_s14_` appears in
+    // exactly the keys belonging to the OTHER show.
+    const _delSuffix = _csFormat() === CS_DEFAULT_FORMAT
+      ? `_s${seasonNumber}` : `_${_csShows()[_csFormat()]}-${seasonNumber}`;
     _csKeys().then(keys => {
-      keys.filter(k =>
-        k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
-      ).forEach(k => _csDelete(k));
+      keys.filter(k => k.includes(`${_delSuffix}_e`) || k.includes(`${_delSuffix}_`)
+        || k.endsWith(_delSuffix)).forEach(k => _csDelete(k));
     });
     // Clear franchise context for this season
-    _csDelete(`franchise_context_s${seasonNumber}`);
+    _csDelete(_sKey('franchise_context', seasonNumber));
     // Clean up any leftover localStorage keys too
     Object.keys(localStorage).filter(k =>
       k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
@@ -5774,7 +5824,12 @@ setTimeout(function() {
     }
     
     // Check if season already exists
-    const existingIndex = seasonsDB.seasons.findIndex(s => s.seasonNumber === seasonData.seasonNumber);
+    // NUMBER AND SHOW. Matched on the number alone, publishing Big Brother 14
+    // did not merely read Total Drama 14's row — it overwrote it.
+    const _pubFormat = seasonData.format || _csFormat();
+    const existingIndex = seasonsDB.seasons.findIndex(s =>
+      s.seasonNumber === seasonData.seasonNumber
+      && (s.format || CS_DEFAULT_FORMAT) === _pubFormat);
 
     // Only write the 3 short award fields to seasons_database (full awards live in season-data.json)
     const shortAwards = {
@@ -5789,6 +5844,10 @@ setTimeout(function() {
       // Preserve any existing fields (emoji, castPhotoPath, etc.) that may have been set manually
       ...(existingIndex >= 0 ? seasonsDB.seasons[existingIndex] : {}),
       seasonNumber: seasonData.seasonNumber,
+      // Stamped, so the row can never again be found by number alone.
+      format: _pubFormat,
+      seasonId: _pubFormat === CS_DEFAULT_FORMAT
+        ? `td-${seasonData.seasonNumber}` : `${_csShows()[_pubFormat]}-${seasonData.seasonNumber}`,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,
@@ -7603,7 +7662,7 @@ JOURNEYS: Two players nominated by the losing team are sent to an isolated part 
     const s = seasonEl.value;
     const ctxEl = document.getElementById('franchise-context-input');
     const settingEl = document.getElementById('season-setting-input');
-    if (ctxEl) ctxEl.value = (await _csGet(`franchise_context_s${s}`)) || '';
+    if (ctxEl) ctxEl.value = (await _csGet(_sKey('franchise_context', s))) || '';
     if (settingEl) {
       const saved = (await _csGet(`season_setting_s${s}`)) || '';
       if (saved) {
@@ -7690,5 +7749,35 @@ Would you like to:
 </footer>
 <!-- SITE FOOTER END -->
   <script type="module" src="js/site-header.js"></script>
+  <!-- shows.js is the one place that knows the shows; this page reads it rather
+       than keeping a second list. Module scripts run before DOMContentLoaded,
+       so anything wired below sees it. -->
+  <script type="module">
+    import { SHOWS, DEFAULT_FORMAT, showName } from './js/shows.js';
+    window.__SHOWS = {
+      prefixes: Object.fromEntries(Object.entries(SHOWS).map(([f, sh]) => [f, sh.prefix])),
+      names: Object.fromEntries(Object.entries(SHOWS).map(([f, sh]) => [f, sh.name])),
+      default: DEFAULT_FORMAT,
+    };
+    const sel = document.getElementById('aiShow');
+    if (sel) {
+      let current = DEFAULT_FORMAT;
+      try {
+        const cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}');
+        if (cfg.format && SHOWS[cfg.format]) current = cfg.format;
+      } catch (e) { /* no config, no opinion */ }
+      try { current = localStorage.getItem('current_season_show') || current; } catch (e) { /* ignore */ }
+      if (!SHOWS[current]) current = DEFAULT_FORMAT;
+      sel.innerHTML = Object.keys(SHOWS)
+        .map(f => `<option value="${f}"${f === current ? ' selected' : ''}>${showName(f)}</option>`).join('');
+      // Everything on this page is keyed off the pair, so changing the show is
+      // changing which season you are looking at. Reload rather than trying to
+      // re-hydrate a dozen panels in place and missing one.
+      sel.addEventListener('change', () => {
+        try { localStorage.setItem('current_season_show', sel.value); } catch (e) { /* ignore */ }
+        location.reload();
+      });
+    }
+  </script>
 </body>
 </html>

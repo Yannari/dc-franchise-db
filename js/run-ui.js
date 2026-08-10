@@ -1751,7 +1751,7 @@ function _bbFinalCompPicker(role, slot, label) {
   const seen = {};
   list.forEach(c => { seen[c.name] = (seen[c.name] || 0) + 1; });
   const opt = c => `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${
-    c.name}${seen[c.name] > 1 ? ` · ${c.finalRole ? 'finale set piece' : c.category}` : ''}${_bbUsedTag(used, c.id)}</option>`;
+    c.name}${seen[c.name] > 1 ? ` · ${c.finalRole ? 'finale set piece' : c.category}` : ''}${_bbUsedTag(used, c.id, chosen)}</option>`;
   const usual = list.filter(c => !c.generic);
   const rest = list.filter(c => c.generic);
   if (usual.length) {
@@ -1836,10 +1836,21 @@ export function _bbPinnedIndex({ skipEp = null, skipSlot = null, skipRole = null
   return used;
 }
 
-/** " — already wk 4 HOH", or nothing. Appended to an option's own label. */
-export const _bbUsedTag = (used, id) => {
+/**
+ * " · in wk 4 HOH", or nothing.
+ *
+ * NEVER on the option that is currently selected. A `<select>` renders its
+ * chosen option's text in the closed control, so tagging that one put "Get A
+ * Grip · END — already wk 15 HOH" inside a 205px box and the timeline filled up
+ * with truncated amber sentences. The closed control says which competition is
+ * pinned; the amber border and the dot on the label say it clashes; the tooltip
+ * says where. The suffix belongs in the OPEN list, where you are choosing.
+ */
+export const _bbUsedTag = (used, id, chosen = null) => {
+  if (!id || id === chosen) return '';
   const at = used.get(id);
-  return at?.length ? ` — already ${at.slice(0, 2).join(', ')}${at.length > 2 ? ` +${at.length - 2}` : ''}` : '';
+  if (!at?.length) return '';
+  return ` · in ${at.slice(0, 2).join(', ')}${at.length > 2 ? ` +${at.length - 2}` : ''}`;
 };
 
 function _bbCompPicker(ep, slot, label) {
@@ -1871,7 +1882,7 @@ function _bbCompPicker(ep, slot, label) {
     const meta = _BB_FOCUS_META[focus];
     h += `<optgroup label="${meta.label} · ${comps.length}">`;
     comps.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-      h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} · ${meta.short}${_bbUsedTag(used, c.id)}</option>`;
+      h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} · ${meta.short}${_bbUsedTag(used, c.id, chosen)}</option>`;
     });
     h += `</optgroup>`;
   }
@@ -1881,7 +1892,7 @@ function _bbCompPicker(ep, slot, label) {
     // while the list is OPEN — closed, both read identically and you cannot
     // tell which one the week is pinned to.
     h += `<optgroup label="Generic fallbacks">`;
-    generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)${_bbUsedTag(used, c.id)}</option>`; });
+    generic.forEach(c => { h += `<option value="${c.id}" ${c.id === chosen ? 'selected' : ''}>${c.name} (generic)${_bbUsedTag(used, c.id, chosen)}</option>`; });
     h += `</optgroup>`;
   }
   return h + `</select></label>`;

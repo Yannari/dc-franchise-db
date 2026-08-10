@@ -38,15 +38,25 @@ describe('a competition already pinned somewhere says so', () => {
 
   it('says where, not just that', () => {
     const used = _bbPinnedIndex();
-    expect(_bbUsedTag(used, 'bb-the-wall')).toBe(' — already wk 4 HOH, Finale P2');
+    expect(_bbUsedTag(used, 'bb-the-wall')).toBe(' · in wk 4 HOH, Finale P2');
     expect(_bbUsedTag(used, 'bb-nothing-here')).toBe('');
+  });
+
+  it('never tags the option that is already selected', () => {
+    // A `<select>` renders its chosen option's text in the CLOSED control, so
+    // tagging that one put a truncated amber sentence inside a 205px box on
+    // every pinned row in the timeline. The closed control names the
+    // competition; the amber border and the tooltip carry the clash.
+    const used = _bbPinnedIndex();
+    expect(_bbUsedTag(used, 'bb-the-wall', 'bb-the-wall')).toBe('');
+    expect(_bbUsedTag(used, 'bb-the-wall', 'bb-otev')).toBe(' · in wk 4 HOH, Finale P2');
   });
 
   it('summarises rather than running off the end of the option', () => {
     seasonConfig.bbCompSchedule = [1, 2, 3, 4].map(episode => ({ episode, hoh: 'bb-the-wall' }));
     seasonConfig.bbFinalComps = {};
     const tag = _bbUsedTag(_bbPinnedIndex(), 'bb-the-wall');
-    expect(tag).toBe(' — already wk 1 HOH, wk 2 HOH +2');
+    expect(tag).toBe(' · in wk 1 HOH, wk 2 HOH +2');
   });
 
   it('is empty on a season with nothing pinned', () => {

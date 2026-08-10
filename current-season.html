@@ -1133,8 +1133,11 @@ Owen: This is going to be amazing!"
         });
       }
 
-      // TRIBES block: === TRIBES (ACTIVE) === with # Tribe headings
-      const tribesBlock = parseBlock(text, /^===\s*TRIBES\b/i);
+      // TRIBES block: === TRIBES (ACTIVE) === with # Tribe headings.
+      // Big Brother has no tribes — its active roster is === STILL IN THE
+      // HOUSE ===, a flat list with no # headers, which the same loop reads
+      // correctly because it only skips headers rather than requiring them.
+      const tribesBlock = parseBlock(text, /^===\s*(?:TRIBES|STILL IN THE HOUSE)\b/i);
       if (tribesBlock.length) {
         tribesBlock.forEach(l => {
           if (/^#\s*/.test(l)) return; // header
@@ -1203,7 +1206,15 @@ Owen: This is going to be amazing!"
   // META block: === ELIMINATED === (handles plain, (PERMANENT), and two-line split)
   // Matches: === ELIMINATED ===, === ELIMINATED (PERMANENT) ===,
   //          === ELIMINATED        (no closing ===, next line is (PERMANENT) ===)
-  const elimStartRegex = /^===\s*ELIMINATED/i;
+  //
+  // EVICTED and JURY are the same people under the words Big Brother uses.
+  // Nobody is eliminated in that format, so a BB season wrote === EVICTED ===
+  // and every houseguest who had left the house stayed lit up on the roster.
+  // Jurors are in here too: they are out of the house, and listing them under
+  // their own heading is not a reason to show them as still playing. The block
+  // ends at the next === header either way, and the de-dup below absorbs the
+  // overlap when someone is named under both.
+  const elimStartRegex = /^===\s*(?:ELIMINATED|EVICTED|JURY)\b/i;
   let inElimBlock = false;
 
   for (let i = 0; i < lines.length; i++) {
@@ -1218,11 +1229,15 @@ Owen: This is going to be amazing!"
       continue;
     }
 
-    // End of block (hit another === header or ----)
+    // End of block (hit another === header or ----). Keep scanning rather
+    // than stopping: EVICTED and JURY are two blocks describing the same
+    // set, and stopping at the first one to close would read only whichever
+    // came first.
     if (inElimBlock && (/^===/.test(line) || /^---/.test(line))) {
-      break;
+      inElimBlock = false;
+      continue;
     }
-    
+
     // Collect names while in ELIMINATED block
     if (inElimBlock) {
       pushName(line);

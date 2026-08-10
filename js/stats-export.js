@@ -6,6 +6,7 @@ import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -2953,6 +2954,14 @@ export function extractLiveSeasonSnapshot() {
   const stillIn = players.filter(p => p.status === 'in').length;
   return {
     seasonNumber: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonNumber) || _getSeasonNumber(),
+    // ── WHICH SHOW IS AIRING ──
+    //
+    // This snapshot carried a season NUMBER and nothing else, and the Worker
+    // falls back to Total Drama for a payload with no format. So syncing Big
+    // Brother 1 filed it as Total Drama 1 — and the collision check compared it
+    // against Total Drama's finished seasons, which is how a Big Brother sync
+    // came back with "Total Drama 1 is already published as a finished season".
+    format: seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null),
     title: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonTitle) || null,
     episode,
     totalPlayers: players.length,

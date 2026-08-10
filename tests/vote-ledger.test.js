@@ -11,7 +11,8 @@
 // carried `stated` and `changed` per ballot all along and was never shown to
 // anything that draws conclusions.
 import { describe, expect, it } from 'vitest';
-import { voteLedger, ledgerLine, positionLedger, weekLedger } from '../js/analysis/vote-ledger.js';
+import { voteLedger, ledgerLine, positionLedger, weekLedger,
+  relationshipLedger, relationshipLines } from '../js/analysis/vote-ledger.js';
 
 // Week 2 as played: Stella out 10-3, with the six the transcript lists as
 // "already locked without being asked".
@@ -189,5 +190,93 @@ describe('the three axes, as components rather than a grade', () => {
   it('never returns a verdict', () => {
     const w = weekLedger(irelandWeek(), 'Ireland');
     expect(JSON.stringify(w)).not.toMatch(/"(grade|rating|score|verdict)"/i);
+  });
+});
+
+// ── the part people actually watch ──
+//
+// "The relationship between Stella and Tobias was really interesting to watch."
+// Tobias made a final three promise in week one and voted her out in week two.
+// No screen said so: the vote card showed a name and the analysis called it a
+// coalition decision. The one fact that made it worth watching was never
+// printed, and it was on the record the whole time.
+const bk = (a, b) => [a, b].sort().join('||');
+
+const stellaWeek = () => ({
+  evicted: 'Stella',
+  votingLog: [
+    { voter: 'Tobias', voted: 'Stella', changed: true, stated: 'Stella' },
+    { voter: 'Harriett', voted: 'Jules', changed: false, stated: 'Jules' },
+    { voter: 'Aaron', voted: 'Stella', changed: false, stated: 'Stella' },
+  ],
+  openingState: {
+    bonds: { [bk('Tobias', 'Stella')]: 6, [bk('Harriett', 'Jules')]: 5, [bk('Aaron', 'Stella')]: 0 },
+    alliances: [
+      { name: 'The Final Three', members: ['Tobias', 'Stella', 'Misha'] },
+      { name: 'The Pipeline', members: ['Harriett', 'Stella', 'Jules'] },
+    ],
+    perceivedBonds: {},
+  },
+  closingState: {
+    bonds: { [bk('Tobias', 'Stella')]: 1, [bk('Harriett', 'Jules')]: 5, [bk('Aaron', 'Stella')]: 0 },
+    alliances: [],
+    perceivedBonds: {
+      'Jules→Harriett': { perceived: 6 },
+      'Harriett→Jules': { perceived: 1 },
+    },
+  },
+});
+
+describe('the relationships, which are the part people watch', () => {
+  it('names somebody writing down a partner’s name', () => {
+    const r = relationshipLedger(stellaWeek());
+    const tobias = r.brokenPromises.find(p => p.voter === 'Tobias');
+    expect(tobias, 'a final-three partner was evicted and nothing said so').toBeTruthy();
+    expect(tobias.against).toBe('Stella');
+    expect(tobias.alliance).toBe('The Final Three');
+    expect(tobias.bond, 'read the bond from AFTER the fallout instead of before the choice').toBe(6);
+    expect(tobias.left).toBe(true);
+  });
+
+  it('catches the alliance vote even when the friendship was thin', () => {
+    // Harriett voted her own Pipeline member. Low drama in the bond, high in
+    // the alliance — and it is the alliance that made it a betrayal.
+    const r = relationshipLedger(stellaWeek());
+    expect(r.brokenPromises.map(p => p.voter)).toContain('Harriett');
+    expect(r.brokenPromises.find(p => p.voter === 'Harriett').alliance).toBe('The Pipeline');
+  });
+
+  it('leaves a vote against a stranger out of it', () => {
+    const r = relationshipLedger(stellaWeek());
+    expect(r.brokenPromises.map(p => p.voter), 'a vote costing nothing was reported as a betrayal')
+      .not.toContain('Aaron');
+  });
+
+  it('reports what came apart', () => {
+    const r = relationshipLedger(stellaWeek());
+    const pair = r.colder.find(m => [m.a, m.b].includes('Tobias'));
+    expect(pair.from).toBe(6);
+    expect(pair.to).toBe(1);
+    expect(pair.delta).toBe(-5);
+  });
+
+  it('finds the one holding it tighter than the other', () => {
+    // Directional perceived bonds make "he thinks they are closer than she
+    // does" a fact rather than a reading — and it is reliably the next thing
+    // to break.
+    const r = relationshipLedger(stellaWeek());
+    expect(r.oneSided[0]).toMatchObject({ believer: 'Jules', other: 'Harriett', gap: 5 });
+  });
+
+  it('says it the way somebody would say it', () => {
+    const lines = relationshipLines(relationshipLedger(stellaWeek()));
+    expect(lines.join(' ')).toContain("Tobias wrote down Stella's name");
+    expect(lines.join(' ')).toContain('The Final Three');
+    expect(lines.join(' ')).toMatch(/Jules thinks that friendship with Harriett/);
+  });
+
+  it('declines without bookends', () => {
+    expect(relationshipLedger({ votingLog: [] })).toBeNull();
+    expect(relationshipLines(null)).toEqual([]);
   });
 });

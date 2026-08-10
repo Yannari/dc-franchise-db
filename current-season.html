@@ -501,6 +501,14 @@
           <div class="mini-body" id="cardVoteStory">—</div>
         </div>
 
+        <!-- What happened BETWEEN people. The vote card shows a name; this
+             shows that the name belonged to somebody's final three partner. -->
+        <div class="mini-panel" id="panelRelationships" hidden>
+          <div class="mini-title">WHAT IT COST THEM</div>
+          <div class="mini-subtitle">Relationships that moved — measured, not written</div>
+          <div class="mini-body" id="cardRelationships">—</div>
+        </div>
+
         <!-- Computed from the ballots, not written by the model. The tally has
              always been on screen; what was missing is whether anybody had to
              be moved to produce it. -->
@@ -7851,7 +7859,8 @@ Would you like to:
     // did it. It cannot see that ten of thirteen voters were already going that
     // way, because no sentence in the episode says so. That is arithmetic over
     // the ballots, and it belongs on the screen without an AI in the loop.
-    const { voteLedger, ledgerLine, weekLedger } = await import('./js/analysis/vote-ledger.js');
+    const { voteLedger, ledgerLine, weekLedger, relationshipLedger, relationshipLines }
+      = await import('./js/analysis/vote-ledger.js');
     window.renderVoteLedger = record => {
       const panel = document.getElementById('panelLedger');
       const body = document.getElementById('cardLedger');
@@ -7909,6 +7918,32 @@ Would you like to:
 
       body.innerHTML = rows.join('');
       panel.hidden = false;
+
+      // ── and what it cost the people in it ──
+      //
+      // "The relationship between Stella and Tobias was really interesting to
+      // watch." He made a final three promise in week one and wrote her name
+      // down in week two — and the vote card showed a name, the analysis called
+      // it a coalition decision, and the fact that made it worth watching was
+      // never printed.
+      const relPanel = document.getElementById('panelRelationships');
+      const relBody = document.getElementById('cardRelationships');
+      if (relPanel && relBody) {
+        const rel = relationshipLedger(record);
+        const lines = relationshipLines(rel);
+        if (!lines.length) { relPanel.hidden = true; }
+        else {
+          const group = (label, items) => items.length
+            ? `<div style="margin-top:8px"><span class="muted">${label}</span><div>${items.join('</div><div>')}</div></div>`
+            : '';
+          relBody.innerHTML =
+            group('Wrote down their own', relationshipLines({ ...rel, colder: [], closer: [], oneSided: [] }))
+            + group('Came apart', relationshipLines({ ...rel, brokenPromises: [], closer: [], oneSided: [] }))
+            + group('Got closer', relationshipLines({ ...rel, brokenPromises: [], colder: [], oneSided: [] }))
+            + group('One-sided', relationshipLines({ ...rel, brokenPromises: [], colder: [], closer: [] }));
+          relPanel.hidden = false;
+        }
+      }
     };
     </script>
 </body>

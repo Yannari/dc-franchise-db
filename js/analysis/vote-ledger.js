@@ -282,3 +282,133 @@ export function weekLedger(record, subject = null) {
     } : null,
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE RELATIONSHIPS, WHICH ARE THE PART PEOPLE ACTUALLY WATCH
+// ══════════════════════════════════════════════════════════════════════
+//
+// "The relationship between Stella and Tobias was really interesting to watch."
+// Tobias made a final three promise in week one and voted her out in week two.
+// Nothing on any screen said so — the vote card showed a name, the analysis
+// called it a coalition decision, and the one fact that made it worth watching
+// was never printed.
+//
+// It is all on the record. `bonds` gives what two people actually are to each
+// other at both ends of the week; `perceivedBonds` is DIRECTIONAL, so it also
+// holds the case where one of them thinks the friendship is worth more than the
+// other does. Cross that with who voted for whom and the week's relationships
+// stop being a list of names and become the things that happened between them.
+
+const dirKey = (a, b) => `${a}→${b}`;
+
+/** Every pair either snapshot has an opinion about. */
+function pairsIn(...states) {
+  const out = new Set();
+  for (const st of states) {
+    for (const k of Object.keys(st?.bonds || {})) out.add(k);
+  }
+  return [...out].map(k => k.split('||')).filter(p => p.length === 2);
+}
+
+/**
+ * What happened between people this week.
+ *
+ * @param record an episode record with bookend snapshots and a vote
+ * @param opts.minMove how far a bond has to travel to be worth reporting
+ * @returns {object|null}
+ */
+export function relationshipLedger(record, { minMove = 1.5, limit = 4 } = {}) {
+  const before = record?.openingState;
+  const after = record?.closingState;
+  if (!before || !after) return null;
+
+  const bondBefore = before.bonds || {};
+  const bondAfter = after.bonds || {};
+  const alliancesBefore = before.alliances || [];
+  const log = Array.isArray(record?.votingLog) ? record.votingLog : [];
+  const evictee = record?.evicted || null;
+
+  const sharedAlliance = (a, b) => (alliancesBefore
+    .find(al => (al.members || []).includes(a) && (al.members || []).includes(b))?.name) || null;
+
+  // ── the one the question was about ──
+  //
+  // Somebody wrote down the name of a person they were close to, or sworn to.
+  // The bond is read from BEFORE the vote: what they were to each other when
+  // the choice was made, not what the fallout left behind.
+  const votedAgainstOwn = [];
+  for (const b of log) {
+    if (!b?.voter || !b?.voted) continue;
+    const bond = Number(bondBefore[[b.voter, b.voted].sort().join('||')]) || 0;
+    const alliance = sharedAlliance(b.voter, b.voted);
+    if (bond < 3 && !alliance) continue;
+    votedAgainstOwn.push({
+      voter: b.voter, against: b.voted, bond: Math.round(bond * 10) / 10,
+      alliance, left: b.voted === evictee,
+    });
+  }
+  votedAgainstOwn.sort((x, y) => (y.bond + (y.alliance ? 3 : 0)) - (x.bond + (x.alliance ? 3 : 0)));
+
+  // ── what moved, and how far ──
+  const moves = [];
+  for (const [a, b] of pairsIn(before, after)) {
+    const k = [a, b].sort().join('||');
+    const from = Number(bondBefore[k]) || 0;
+    const to = Number(bondAfter[k]) || 0;
+    const delta = to - from;
+    if (Math.abs(delta) < minMove) continue;
+    moves.push({ a, b, from: Math.round(from * 10) / 10, to: Math.round(to * 10) / 10,
+      delta: Math.round(delta * 10) / 10, alliance: sharedAlliance(a, b) });
+  }
+  moves.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+
+  // ── one of them is holding it tighter than the other ──
+  //
+  // `perceivedBonds` is directional, so the case where A believes the
+  // friendship is worth more than B does is a fact rather than a reading. It is
+  // also, reliably, the next thing to break.
+  const lopsided = [];
+  const pb = after.perceivedBonds || {};
+  for (const [a, b] of pairsIn(after)) {
+    const ab = Number(pb[dirKey(a, b)]?.perceived);
+    const ba = Number(pb[dirKey(b, a)]?.perceived);
+    if (!Number.isFinite(ab) || !Number.isFinite(ba)) continue;
+    const gap = ab - ba;
+    if (Math.abs(gap) < 2) continue;
+    lopsided.push(gap > 0
+      ? { believer: a, other: b, gap: Math.round(gap * 10) / 10 }
+      : { believer: b, other: a, gap: Math.round(-gap * 10) / 10 });
+  }
+  lopsided.sort((x, y) => y.gap - x.gap);
+
+  return {
+    brokenPromises: votedAgainstOwn.slice(0, limit),
+    closer: moves.filter(m => m.delta > 0).slice(0, limit),
+    colder: moves.filter(m => m.delta < 0).slice(0, limit),
+    oneSided: lopsided.slice(0, limit),
+  };
+}
+
+/** Sentences a screen can print, in the register somebody would actually say. */
+export function relationshipLines(rel) {
+  if (!rel) return [];
+  const out = [];
+  for (const p of rel.brokenPromises) {
+    out.push(p.alliance
+      ? `${p.voter} wrote down ${p.against}'s name — they were in ${p.alliance} together`
+        + `${p.left ? ', and it worked' : ', and it did not'}.`
+      : `${p.voter} voted against ${p.against}, who they were a ${p.bond} with going in.`);
+  }
+  for (const m of rel.colder) {
+    out.push(`${m.a} and ${m.b} came apart this week — ${m.from} to ${m.to}`
+      + `${m.alliance ? `, inside ${m.alliance}` : ''}.`);
+  }
+  for (const m of rel.closer) {
+    out.push(`${m.a} and ${m.b} got closer, ${m.from} to ${m.to}.`);
+  }
+  for (const l of rel.oneSided) {
+    out.push(`${l.believer} thinks that friendship with ${l.other} is worth `
+      + `${l.gap} more than ${l.other} does.`);
+  }
+  return out;
+}

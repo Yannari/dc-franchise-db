@@ -39,3 +39,8 @@ worker/.wrangler/
 # routine `git add -A` publishes the entire database to a public repo, permanently.
 backups/
 *.dump.sql
+
+# The gallery lives in Cloudflare R2 (bucket dc-gallery), not here — 592 MB of
+# it broke GitHub Pages, whose published-site limit is 1 GB. Kept on disk so
+# localhost still works; pushed with scripts/upload_gallery_r2.py.
+assets/gallery/

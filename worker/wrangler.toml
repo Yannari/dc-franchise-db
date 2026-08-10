@@ -18,3 +18,10 @@ ALLOWED_ORIGIN = "https://yannari.github.io" # your site origin ("*" to allow an
 binding = "DB"
 database_name = "dc-franchise"
 database_id = "e00978c3-52eb-48e2-8e0f-d90fc51b2437"
+
+# The gallery. 592 MB of it, which is what broke GitHub Pages: the published
+# site was 778 MB against a 1 GB limit, and 28 of 30 builds were timing out.
+# Pages serves the app; R2 serves the pictures.
+[[r2_buckets]]
+binding = "GALLERY"
+bucket_name = "dc-gallery"

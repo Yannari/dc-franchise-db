@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
 """
+# ══════════════════════════════════════════════════════════════════════
+# WHERE THESE FILES GO NOW
+# ══════════════════════════════════════════════════════════════════════
+#
+# assets/gallery/ is no longer served from the repo. 592 MB of it took the
+# published GitHub Pages site to 778 MB against a 1 GB limit and the builds
+# stopped finishing — 28 of 30 failing, so nothing deployed at all. The gallery
+# lives in Cloudflare R2 (bucket `dc-gallery`) and is served by the Worker at
+# /gallery/<slug>/<n>.<ext>; player.html reads it from there in production and
+# from this folder on localhost.
+#
+# So this script still writes here — that is the working copy, and the local
+# site uses it — and the files then have to be pushed to R2. Upload with:
+#
+#     python3 scripts/upload_gallery_r2.py
+#
+# which reads wrangler's own credentials, so there is nothing extra to set up.
+# ── R2 ──
 Auto-populate assets/gallery/<slug>/ from the Total Drama Fandom wiki.
 
 For every player in franchise_roster.json that does NOT already have gallery

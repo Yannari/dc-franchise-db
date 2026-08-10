@@ -731,6 +731,23 @@ function _neverPlayedHtml(player, show) {
 
 let _fullPlayer = null;
 
+// ── WHERE THE GALLERY LIVES ──
+//
+// Not in the repo any more. 592 MB of it took the published site to 778 MB
+// against GitHub Pages' 1 GB limit, and the builds stopped finishing — 28 of 30
+// failing, so nothing deployed at all for over an hour. Pages serves the app;
+// R2 serves the pictures, through the Worker that is already deployed.
+//
+// Local development still reads the folder, because on localhost serve.py has
+// the files and there is no reason to go to the network for them. One constant
+// decides, so there is exactly one place to change if the host ever moves.
+const GALLERY_BASE = (() => {
+  const h = location.hostname;
+  const local = h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
+  return local ? 'assets/gallery' : 'https://dc-studio.yannari19.workers.dev/gallery';
+})();
+const galleryUrl = (slug, i, ext) => `${GALLERY_BASE}/${slug}/${i}.${ext}`;
+
 function renderPlayerProfile(fullPlayer) {
   _fullPlayer = fullPlayer;
   const container = document.getElementById('player-content');
@@ -1314,7 +1331,7 @@ function renderPlayerProfile(fullPlayer) {
     let galleryItems = '';
     for (let i = 1; i <= MAX_SLOTS; i++) {
       galleryItems += `<div class="pp-gitem" id="ppg-${i}" style="display:none" onclick="ppLightbox(${i})">
-        <img id="ppgi-${i}" src="assets/gallery/${slug}/${i}.png" alt="Gallery ${i}"
+        <img id="ppgi-${i}" src="${galleryUrl(slug, i, 'png')}" alt="Gallery ${i}"
           onload="ppGalleryLoaded(${i},this)"
           onerror="ppGalleryTryNext(${i},this,'${slug}')"/>
         <div class="pp-gitem-overlay"><span class="pp-gitem-num">#${i}</span></div>
@@ -1600,7 +1617,7 @@ function ppGalleryTryNext(i, img, slug) {
   if (idx >= 0 && idx < _galleryExts.length - 1) {
     // Try next extension
     const next = _galleryExts[idx + 1];
-    img.src = `assets/gallery/${slug}/${i}.${next}`;
+    img.src = galleryUrl(slug, i, next);
   } else {
     // All extensions exhausted — hide slot
     document.getElementById('ppg-' + i).style.display = 'none';

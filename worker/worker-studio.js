@@ -68,6 +68,33 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: rcors });
 
     try {
+      // ── the gallery, out of R2 ──
+      //
+      // 592 MB of it, and it is why GitHub Pages stopped deploying at all: the
+      // published site reached 778 MB against a 1 GB limit, and 28 of 30 builds
+      // timed out. Pages serves the app; the pictures come from here.
+      //
+      // Public and cached hard. These are content-addressed by path and never
+      // change in place — a new pose is a new file — so a year is safe and the
+      // browser stops asking.
+      if ((request.method === 'GET' || request.method === 'HEAD')
+          && url.pathname.startsWith('/gallery/')) {
+        const key = decodeURIComponent(url.pathname.slice('/gallery/'.length));
+        if (!key || key.includes('..')) return new Response('Not found', { status: 404 });
+        const obj = await env.GALLERY.get(key);
+        if (!obj) return new Response('Not found', { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+        const h = new Headers({
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream',
+        });
+        if (obj.httpEtag) h.set('ETag', obj.httpEtag);
+        // A HEAD with no Content-Length reports every image as zero bytes,
+        // which is exactly how a verification pass reads "the upload failed".
+        if (typeof obj.size === 'number') h.set('Content-Length', String(obj.size));
+        return new Response(request.method === 'HEAD' ? null : obj.body, { headers: h });
+      }
+
       if (request.method === 'GET' && url.pathname === '/api/ping') {
         const doc = await getJson(env, ROSTER_PATH, { players: [] });
         return json({ ok: true, roster: (doc.players || []).length }, 200, cors);

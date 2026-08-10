@@ -130,16 +130,16 @@ export default {
       },
       crown: {
         neutral: [
-          '{winner} wins. The Den notes that they took the offer, and that nobody made them.',
-          '{winner}. The Den would like the record to show it never forced a hand.',
-          'The house chose {winner}. The Den only ever opened a door.',
-          '{winner} wins a game that kept asking, all summer, and got a yes.',
+          '{winner} wins. The Den never made anybody do anything, and would like that on the record before the lights go out.',
+          '{winner}. Every door in this house was unlocked all summer. The Den simply stood next to one of them. Goodnight.',
+          'The house chose {winner}. The Den chose nobody, took nothing, and got a yes out of almost all of you anyway.',
+          '{winner} wins a game that spent twelve weeks asking. The Den will be here next summer, asking again.',
         ],
         hostile: [
-          '{winner} wins, and somebody who paid for it is watching from the seats.',
-          '{winner}. Every yes on the way here belonged to somebody, and not always to them.',
-          'The Den got its answer. {winner} got the money. Those are two different prizes.',
-          '{winner} wins. The Den is already thinking about next summer.',
+          '{winner} wins, and somebody who paid for it is watching from the seats. The Den hopes they are watching closely.',
+          '{winner}. Every yes on the way here belonged to somebody, and not always to them. The Den kept every receipt.',
+          'The Den got its answer, {winner} got the money, and the two are not the same prize. Goodnight.',
+          '{winner} wins. The Den is closing now. It was never locked, and not one of you tried the handle to check.',
         ],
       },
       vote: {

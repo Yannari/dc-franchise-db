@@ -738,13 +738,21 @@ let _fullPlayer = null;
 // failing, so nothing deployed at all for over an hour. Pages serves the app;
 // R2 serves the pictures, through the Worker that is already deployed.
 //
-// Local development still reads the folder, because on localhost serve.py has
-// the files and there is no reason to go to the network for them. One constant
-// decides, so there is exactly one place to change if the host ever moves.
-const GALLERY_BASE = (() => {
+// Local development PREFERS the folder, because when serve.py has the files
+// there is no reason to go to the network for them — but it is no longer
+// required to have them. assets/gallery/ is git-ignored and disposable: a fresh
+// clone has never had it, and anyone who reclaims the 592 MB has deleted it. In
+// both cases the page used to show a wall of empty slots and look broken.
+//
+// So local is a preference with a fallback, not a fork. A slot that runs out of
+// extensions locally retries the same image against R2 before giving up, and
+// flips the base for everything drawn after it — one image pays for the
+// discovery, the rest of the session goes straight to the network.
+const GALLERY_REMOTE = 'https://dc-studio.yannari19.workers.dev/gallery';
+let GALLERY_BASE = (() => {
   const h = location.hostname;
   const local = h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
-  return local ? 'assets/gallery' : 'https://dc-studio.yannari19.workers.dev/gallery';
+  return local ? 'assets/gallery' : GALLERY_REMOTE;
 })();
 const galleryUrl = (slug, i, ext) => `${GALLERY_BASE}/${slug}/${i}.${ext}`;
 
@@ -1618,8 +1626,17 @@ function ppGalleryTryNext(i, img, slug) {
     // Try next extension
     const next = _galleryExts[idx + 1];
     img.src = galleryUrl(slug, i, next);
+  } else if (img.src.indexOf(GALLERY_REMOTE) !== 0) {
+    // Every extension missing LOCALLY, which normally means the git-ignored
+    // assets/gallery/ folder is not on this machine rather than that this
+    // character has no art. Ask R2 before concluding there is nothing to show.
+    // Tested per-slot on the image's own src, not on a global flag: slots that
+    // were already in flight when the first one flipped the base still get
+    // their retry instead of silently hiding.
+    GALLERY_BASE = GALLERY_REMOTE;
+    img.src = `${GALLERY_REMOTE}/${slug}/${i}.${_galleryExts[0]}`;
   } else {
-    // All extensions exhausted — hide slot
+    // Exhausted locally AND on R2 — there is genuinely no image here.
     document.getElementById('ppg-' + i).style.display = 'none';
   }
 }

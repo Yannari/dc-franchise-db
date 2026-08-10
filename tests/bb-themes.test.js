@@ -78,7 +78,7 @@ describe('theme registry', () => {
 });
 
 import { gs, setGs, resolveTwistSchedule } from '../js/core.js';
-import { themeScheduleEntries, installTheme, themeState, stampThemeArc } from '../js/bb/themes.js';
+import { themeScheduleEntries, installTheme, themeState, stampThemeArc, themeArcIsStamped } from '../js/bb/themes.js';
 
 const FIXTURE = {
   id: 'fixture', name: 'Fixture', tagline: 't', house: 'bb-house',
@@ -808,5 +808,53 @@ describe('the antagonist is present at the finale', () => {
     const last = [...t.arc].filter(a => a.book).pop();
     expect(last.at.fromEnd).toBe(2);          // fromEnd 2 is a final five at every cast
     expect(t.arc.some(a => a.book && a.at.fromEnd === 1)).toBe(false);
+  });
+});
+
+// A theme picked but never stamped.
+//
+// Stamping fired only on the picker's change event, which meant it never fired
+// for the two cases that matter most: a season whose theme was saved before
+// stamping existed, and any config restored on page load. The theme was set,
+// the arc was nowhere, and the timeline showed an empty season — the double
+// eviction the theme claims to book simply was not there.
+describe('a theme that was picked but never stamped', () => {
+  const ARC = {
+    id: 'latestamp', name: 'Late', tagline: 't', house: 'bb-house',
+    palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+    antagonist: { name: 'Nobody', voice: {} },
+    arc: [{ at: { week: 2 }, book: 'bb-have-nots' },
+          { at: { fromEnd: 3 }, book: 'bb-double-eviction' }],
+    books: [], weights: {}, bans: [], exclusive: [],
+  };
+  beforeEach(() => {
+    BB_THEMES.latestamp = ARC;
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'latestamp';
+    seasonConfig.twistSchedule = [];
+    setGs({ bb: { weeks: [] } });
+  });
+  afterEach(() => { delete BB_THEMES.latestamp; });
+
+  it('is reported as unstamped, which is what the timeline checks', () => {
+    seasonConfig.themeArcStamped = '';
+    expect(themeArcIsStamped()).toBe(false);
+    stampThemeArc(17);
+    expect(themeArcIsStamped()).toBe(true);
+  });
+
+  it('is reported as unstamped when a DIFFERENT theme was the one stamped', () => {
+    seasonConfig.themeArcStamped = 'summer-of-temptation';
+    expect(themeArcIsStamped()).toBe(false);
+  });
+
+  it('books the double eviction at a final six once stamped', () => {
+    seasonConfig.themeArcStamped = '';
+    stampThemeArc(17);
+    const de = seasonConfig.twistSchedule.find(t => t.type === 'bb-double-eviction');
+    expect(de).toBeTruthy();
+    // 17 cast is 14 weeks; fromEnd 3 is week 12, where the house is six.
+    expect(de.episode).toBe(12);
+    expect(17 - (de.episode - 1)).toBe(6);
   });
 });

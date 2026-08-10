@@ -1783,6 +1783,24 @@ function _bbCompPicker(ep, slot, label) {
 export function renderTimeline() {
   const container = document.getElementById('fd-timeline');
   if (!container) return;
+  // A theme that was picked but never stamped gets stamped here.
+  //
+  // Stamping used to happen ONLY on the picker's change event, which quietly
+  // meant it never happened at all for the two cases that matter most: a season
+  // whose theme was saved before stamping existed, and any config restored on
+  // page load. The theme was set, the arc was nowhere, and the timeline showed
+  // an empty season with no way to tell why.
+  //
+  // Only ever fills a gap — never re-stamps. Once the cards are down they are
+  // the user's, and "reset to the theme's own schedule" is the way back.
+  try {
+    if (typeof currentTheme === 'function' && currentTheme()
+        && !themeArcIsStamped()
+        && (typeof players !== 'undefined' && players.length)) {
+      stampThemeArc(players.length);
+      localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+    }
+  } catch (e) { /* an unthemed season draws as it always did */ }
   const epMap   = buildEpisodeMap();
   const schedule = (seasonConfig.twistSchedule || []).filter(Boolean);
   const isHouse = (typeof seasonFormat !== 'undefined' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';

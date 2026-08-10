@@ -176,6 +176,21 @@ export default {
     { at: { fromEnd: 2 }, book: 'bb-invisible-hoh' },
   ],
 
+  // ── THE AI INSTIGATOR ───────────────────────────────────────────────────
+  //
+  // BB26's instigator was an audience-picked houseguest who spent a week
+  // framing the others with deepfakes while the house knew only that somebody
+  // was doing it. That is the Saboteur, which this game already has — a
+  // season-long job from the audience, a house told a saboteur exists and never
+  // told who. Building a second one would have been building the same twist
+  // twice, so the theme turns the existing one on instead.
+  //
+  // A knob rather than a card because it is season-long: it is installed on
+  // night one and runs until it banks or is caught. Banking at six puts the
+  // payoff just before CORA turns, so the season has an unmasking and an
+  // escalation in the same stretch rather than one quiet half and one loud one.
+  seasonKnobs: { bbSaboteur: 'random', bbSaboteurBankWeek: 6 },
+
   books: ['bb-whacktivity', 'bb-app-store', 'bb-invisible-hoh'],
   weights: { 'bb-app-store': 1.6, 'bb-secret-power-comp': 1.4 },
   bans: [],

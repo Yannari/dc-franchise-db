@@ -281,6 +281,23 @@ export function stampThemeArc(castSize) {
   if (!weeks) return [];
   const entries = themeScheduleEntries(theme, { weeks, existing: yours });
   seasonConfig.twistSchedule = [...yours, ...entries];
+
+  // ── SEASON-LONG TWISTS THE THEME TURNS ON ──────────────────────────────
+  //
+  // Some of what a theme needs is not a card on a week. The Saboteur is a
+  // season knob — one houseguest takes a job from the audience every week and
+  // the house is told only that a saboteur exists — and no arc could reach it,
+  // so the Machine Summer's AI Instigator was described in a comment and never
+  // happened.
+  //
+  // Applied at STAMP time, like the arc, and for the same reason: it lands
+  // visibly in the config where you can see it, change it, or turn it off,
+  // rather than being forced on at episode one by something you cannot
+  // inspect. Never re-applied — once stamped, the settings are yours.
+  for (const [key, value] of Object.entries(theme.seasonKnobs || {})) {
+    seasonConfig[key] = value;
+  }
+
   seasonConfig.themeArcStamped = theme.id;
   return entries;
 }

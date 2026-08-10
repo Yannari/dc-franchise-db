@@ -16,7 +16,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
 import { BB_THEMES, themeScheduleEntries, resolveArcWeek, expandArc,
-  themeState, themeModeConflicts } from '../js/bb/themes.js';
+  themeState, themeModeConflicts, stampThemeArc, themeArcIsStamped } from '../js/bb/themes.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -179,5 +179,66 @@ describe('CORA speaks', () => {
     expect(themeState().id).toBe('machine-summer');
     expect(themeState().booked).toContain('bb-whacktivity');
     expect(themeState().booked).toContain('bb-invisible-hoh');
+  });
+});
+
+// ── the AI Instigator ───────────────────────────────────────────────────
+//
+// BB26's instigator was an audience-picked houseguest who spent a week framing
+// the others while the house knew only that somebody was doing it. That is the
+// Saboteur, which this game already has, so the theme turns the existing one on
+// rather than building the same twist a second time.
+//
+// The capability that needed building was not a card: it was an arc being able
+// to reach a SEASON KNOB at all. Without it the Instigator was a comment in a
+// descriptor and nothing else.
+describe('the theme turns on the season-long twist it needs', () => {
+  beforeEach(() => house({ bbSaboteur: 'off' }));
+
+  it('declares the Saboteur rather than a second saboteur', () => {
+    expect(THEME().seasonKnobs?.bbSaboteur).toBe('random');
+  });
+
+  it('switches it on when the arc is stamped', () => {
+    expect(seasonConfig.bbSaboteur).toBe('off');
+    stampThemeArc(17);
+    expect(seasonConfig.bbSaboteur).toBe('random');
+    expect(Number(seasonConfig.bbSaboteurBankWeek)).toBe(6);
+  });
+
+  it('banks before CORA turns, so the season is not one quiet half and one loud one', () => {
+    const weeks = 17 - 3;
+    let turn = null;
+    for (const a of THEME().arc) {
+      if (!a.mood) continue;
+      const w = resolveArcWeek(a.at, weeks);
+      if (w >= 1 && w <= weeks) turn = turn === null ? w : Math.min(turn, w);
+    }
+    expect(Number(THEME().seasonKnobs.bbSaboteurBankWeek)).toBeLessThanOrEqual(turn);
+  });
+
+  // `stampThemeArc` IS the deliberate "lay the theme down" action — it is what
+  // the picker and the reset link call — so re-applying the knob there is
+  // correct. What protects a setting you changed is the stamp guard: a redraw
+  // only stamps when nothing has been stamped yet.
+  it('is re-applied by an explicit reset, which is what a reset means', () => {
+    stampThemeArc(17);
+    seasonConfig.bbSaboteur = 'off';
+    stampThemeArc(17);
+    expect(seasonConfig.bbSaboteur).toBe('random');
+  });
+
+  it('survives a redraw, because a redraw does not re-stamp', () => {
+    stampThemeArc(17);
+    seasonConfig.bbSaboteur = 'off';          // the user turns it back off
+    // what renderTimeline does on every draw: stamp only if nothing is stamped
+    if (!themeArcIsStamped()) stampThemeArc(17);
+    expect(seasonConfig.bbSaboteur).toBe('off');
+  });
+
+  it('actually installs a saboteur in a played season', () => {
+    stampThemeArc(17);
+    withSeededRandom(11, () => simulateBBEpisode());
+    expect(gs.bb.saboteur?.player, 'no saboteur was cast').toBeTruthy();
   });
 });

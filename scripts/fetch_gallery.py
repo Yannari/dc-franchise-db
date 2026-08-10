@@ -42,6 +42,8 @@ import json, os, sys, time, argparse, urllib.parse, urllib.request, unicodedata
 WIKIS = [
     "https://totaldrama.fandom.com/api.php",
     "https://disventurecamp.fandom.com/api.php",
+    # A lot of the Big Brother cast comes from here.
+    "https://mhrp.fandom.com/api.php",
 ]
 UA  = "dc-franchise-gallery-fetch/1.0 (personal fan project)"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +51,15 @@ ROSTER = os.path.join(ROOT, "franchise_roster.json")
 GALLERY_DIR = os.path.join(ROOT, "assets", "gallery")
 EXTS = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}
 MIN_DIM = 300           # drop icons/sprites smaller than this on the short side
+# Per-wiki override. The Mad House wiki's character art IS its icons, so at the
+# default floor its whole cast comes back with one picture each. 214x267 is
+# still well above the size these are ever displayed at.
+MIN_DIM_BY_WIKI = {"https://mhrp.fandom.com/api.php": 200}
+# "icon" is in the denylist below because on most wikis it means interface
+# furniture. On the Mad House wiki it is the naming convention for the cast
+# portraits themselves — AaliyahMH6Icon.png IS the character art — so denying
+# it there throws away most of what the wiki has.
+ALLOW_ICON_WIKIS = {"https://mhrp.fandom.com/api.php"}
 DENY_SUBSTR = [         # obvious non-character / interface files
     "wiki", "wordmark", "favicon", "site-logo", "logo", "icon", "badge",
     "spinner", "loading", "placeholder", "stub", "spoiler", "vote", "star",
@@ -87,14 +98,22 @@ def resolve_title(base, name):
     # fuzzy search fallback
     try:
         d = api(base, {"action": "query", "list": "search",
-                       "srsearch": name, "srlimit": "8"})
-        for r in d["query"]["search"]:
-            t = r["title"]
-            low = t.lower()
-            if any(x in low for x in ("/beta", "/interactions", " and ")):
-                continue
+                       "srsearch": name, "srlimit": "10"})
+        hits = [r["title"] for r in d["query"]["search"]
+                if not any(x in r["title"].lower()
+                           for x in ("/beta", "/interactions", " and "))]
+        for t in hits:
             if _norm(t) == target:
                 return t
+        # The roster holds first names; the Mad House wiki titles its articles
+        # with full ones ("Aaliyah" -> "Aaliyah Anderson"), so an exact match
+        # finds nothing there. Accept a first-name match only when it is
+        # UNAMBIGUOUS — searching that wiki for "Aaliyah" also returns Miranda
+        # and Donovan, and a script running unattended must not guess between
+        # two people. Ambiguous ones are left for --only with the exact title.
+        first = [t for t in hits if _norm(t.split()[0]) == target]
+        if len(first) == 1:
+            return first[0]
     except Exception:
         pass
     return None
@@ -114,8 +133,30 @@ def article_image_titles(base, title):
         if not cont: break
     return titles
 
-def resolve(base, file_titles):
+def own_files(images, name):
+    """Keep only files named after this character, when any are.
+
+    An article does not only embed its own subject. On the Mad House wiki,
+    Aaliyah Anderson's page carries 20 files and 18 of them are the REST OF THE
+    CAST's icons, because the page ends in a season template — so without this,
+    her gallery fills with her housemates.
+
+    All-or-nothing: where filenames carry names this is decisive (64 of
+    Alejandro's 242 files say "Alejandro") and the per-character cap is small,
+    so losing the unnamed scene shots costs nothing. Where they do not, nothing
+    matches and everything is kept, which is the behaviour this had before.
+    """
+    keys = {k for k in (_norm(name), _norm(name.split()[0])) if len(k) >= 3}
+    if not keys:
+        return images
+    mine = [im for im in images if any(k in _norm(im["title"]) for k in keys)]
+    return mine or images
+
+
+def resolve(base, file_titles, min_dim=None):
     """Batch-resolve File: titles -> [{title,url,mime,w,h}] keeping only usable images."""
+    min_dim = min_dim if min_dim is not None else MIN_DIM_BY_WIKI.get(base, MIN_DIM)
+    deny = [d for d in DENY_SUBSTR if d != "icon" or base not in ALLOW_ICON_WIKIS]
     out = []
     for i in range(0, len(file_titles), 50):
         chunk = file_titles[i:i+50]
@@ -127,8 +168,8 @@ def resolve(base, file_titles):
             mime, w, h = ii.get("mime"), ii.get("width", 0), ii.get("height", 0)
             name = page.get("title", "").lower()
             if mime not in EXTS: continue
-            if min(w, h) < MIN_DIM: continue
-            if any(s in name for s in DENY_SUBSTR): continue
+            if min(w, h) < min_dim: continue
+            if any(s in name for s in deny): continue
             if w >= 3*h: continue  # banners / title cards
             out.append({"title": page["title"], "url": ii["url"], "mime": mime,
                         "w": w, "h": h, "area": w*h, "aspect": w/max(1, h)})
@@ -219,7 +260,7 @@ def main():
                 time.sleep(0.2); continue
             try:
                 titles = article_image_titles(base, title)
-                cand = resolve(base, titles or [])[:n_target * 4]
+                cand = own_files(resolve(base, titles or []), name)[:n_target * 4]
             except Exception as e:
                 errors.append((name, f"images: {e}")); cand = []
             if cand:

@@ -1098,6 +1098,12 @@ function renderPlayerProfile(fullPlayer) {
   /* A touch screen has no hover, so a delete that only appears on hover is a
      delete that does not exist on a phone. */
   @media (hover:none){ .pp-gdel{opacity:.85;} }
+  .pp-gfill{margin-left:8px;padding:3px 12px;border-radius:20px;cursor:pointer;
+    font-size:11px;font-weight:600;letter-spacing:.04em;font-family:inherit;
+    color:${tc.color};background:${tc.color}14;border:1px solid ${tc.color}44;
+    transition:background .2s,border-color .2s;}
+  .pp-gfill:hover:not([disabled]){background:${tc.color}2a;border-color:${tc.color}88;}
+  .pp-gfill[disabled]{opacity:.55;cursor:default;}
   .pp-gitem-num{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.05em;}
   .pp-gallery-empty{text-align:center;padding:32px;color:var(--muted,#888);font-size:13px;
     border:1px dashed rgba(255,255,255,.1);border-radius:14px;}
@@ -1360,7 +1366,7 @@ function renderPlayerProfile(fullPlayer) {
   // ── GALLERY ───────────────────────────────────────────────
   {
     const slug = player.id || player.name.toLowerCase().replace(/[^a-z0-9]/g,'-');
-    const MAX_SLOTS = 12;
+    const MAX_SLOTS = PP_GALLERY_MAX;
     let galleryItems = '';
     for (let i = 1; i <= MAX_SLOTS; i++) {
       galleryItems += `<div class="pp-gitem" id="ppg-${i}" style="display:none" onclick="ppLightbox(${i})">
@@ -1373,15 +1379,21 @@ function renderPlayerProfile(fullPlayer) {
     // The pill still carries the slug — the lightbox reads it back out of the
     // DOM — but it names the bucket now, because that is where these live.
     html += `<div class="pp-section pp-reveal" style="margin-top:28px"><h2>Character Gallery</h2>
-      <span class="pp-pill">assets/gallery/${slug}/</span></div>
+      <span class="pp-pill">assets/gallery/${slug}/</span>
+      <button type="button" class="pp-gfill" id="pp-gfill" onclick="ppGalleryFill()"
+        title="Search the Total Drama, Disventure Camp and Mad House wikis and add what is missing">Fill from wiki</button></div>
     <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}${ppAddTile(slug)}</div>
     <div class="pp-gallery-empty" id="pp-gallery-empty">
       No images yet — drop them on the <b>+</b> above, or drag them anywhere onto it.
-      <div class="pp-gallery-hint">png, jpg, webp or gif — up to 12 per character. They upload straight to the gallery.</div>
+      <div class="pp-gallery-hint">png, jpg, webp or gif — up to ${PP_GALLERY_MAX} per character. They upload straight to the gallery.</div>
     </div>`;
     // Bound after the markup is in the document, not here — `html` is still a
     // string at this point and the tile it wires up does not exist yet.
+    //
+    // The NAME as well as the slug: a wiki is searched by what the character is
+    // called, and "rosa-maria" is not what the article is called.
     _ppGallerySlug = slug;
+    _ppGalleryName = player.name || slug.replace(/-/g, ' ');
   }
 
   // ── STORY ────────────────────────────────────────────────
@@ -1684,7 +1696,23 @@ function ppGalleryTryNext(i, img, slug) {
 // The credentials are the Casting Studio's, same localStorage keys, so a token
 // pasted in either place works in both.
 let _ppGallerySlug = '';
+let _ppGalleryName = '';
 const PP_API = 'https://dc-studio.yannari19.workers.dev';
+/** Fourteen, and the number lives here rather than in five literals. */
+const PP_GALLERY_MAX = 14;
+
+// The wikis the cast is drawn from. Both the API and the image host answer
+// with `Access-Control-Allow-Origin: *`, so the search AND the download both
+// run in the page — no proxy, and the bytes go from the wiki through the same
+// upload path a dropped file takes.
+const PP_WIKIS = [
+  { name: 'Total Drama', api: 'https://totaldrama.fandom.com/api.php' },
+  { name: 'Disventure Camp', api: 'https://disventurecamp.fandom.com/api.php' },
+  // A lower floor here: this wiki's character art IS its icons, and at the
+  // default 300 the whole cast comes back with one picture each. 214x267 is
+  // still comfortably above the 160px the tiles render at.
+  { name: 'Mad House', api: 'https://mhrp.fandom.com/api.php', minDim: 200, allowIcon: true },
+];
 const _ppExtOf = name => (String(name).split('.').pop() || '').toLowerCase();
 function _ppToken() { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } }
 
@@ -1804,8 +1832,8 @@ async function ppGalleryUpload(files) {
     const taken = new Set((await _ppTakenSlots(slug, { fresh: true }))
       .map(o => parseInt(o.file, 10)).filter(Boolean));
     const free = [];
-    for (let i = 1; i <= 12 && free.length < files.length; i++) if (!taken.has(i)) free.push(i);
-    if (!free.length) { alert('This gallery already has twelve images. Remove one first.'); return; }
+    for (let i = 1; i <= PP_GALLERY_MAX && free.length < files.length; i++) if (!taken.has(i)) free.push(i);
+    if (!free.length) { alert(`This gallery is full (${PP_GALLERY_MAX} images). Remove one first.`); return; }
     if (free.length < files.length) {
       if (!confirm(`Only ${free.length} slot${free.length === 1 ? '' : 's'} free — upload the first ${free.length}?`)) return;
     }
@@ -1899,6 +1927,298 @@ async function ppGalleryRefresh({ quiet = false } = {}) {
     </div>`;
   }).join('') + ppAddTile(slug);
   ppGalleryBindTile();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FILLING A GALLERY FROM THE WIKIS
+// ══════════════════════════════════════════════════════════════════════
+//
+// The same job scripts/fetch_gallery.py does, from the page, for one character
+// — because the folder that script writes into is git-ignored and may not
+// exist, and R2 is the original now.
+//
+// It only ever writes into FREE slots. Nothing already in a gallery is
+// replaced, so this is safe to press twice, and pressing it on a full gallery
+// does nothing at all.
+
+/** Lowercase, strip accents and punctuation — "Rosa-Maria" matches "Rosa María". */
+function _ppNorm(s) {
+  return String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+async function _ppWikiApi(base, params) {
+  // origin=* is what makes an anonymous cross-origin MediaWiki request legal.
+  const q = new URLSearchParams({ ...params, format: 'json', origin: '*' });
+  const r = await fetch(`${base}?${q}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+function* _ppNameVariants(name) {
+  yield name;
+  if (name.includes(' ')) yield name.replace(/ /g, '_');
+  if (name.includes('-')) yield name.replace(/-/g, ' ');
+  if (name.includes('-')) yield name.replace(/-/g, '');
+}
+
+/**
+ * Find a character's article on one wiki.
+ *
+ * Returns `{title}` when it is certain, `{candidates}` when several articles
+ * could be the person, and `{}` when nothing matches.
+ *
+ * The `candidates` case is why this is not a boolean. The roster holds first
+ * names — "Aaliyah" — and the Mad House wiki titles its articles with full
+ * ones — "Aaliyah Anderson". An exact match finds neither, and picking the
+ * first search hit would have quietly filled a gallery with somebody else's
+ * face: searching that wiki for "Aaliyah" returns Miranda, Donovan and Shiloh
+ * as well. So a first-name match is offered, not assumed.
+ */
+async function _ppFindArticle(base, name) {
+  for (const v of new Set(_ppNameVariants(name))) {
+    try {
+      const d = await _ppWikiApi(base, { action: 'query', titles: v, prop: 'info', redirects: 1 });
+      const page = Object.values(d.query.pages)[0];
+      if (page && !('missing' in page) && page.title) return { title: page.title };
+    } catch { /* try the next variant */ }
+  }
+  const skip = t => {
+    const low = t.toLowerCase();
+    return low.includes('/beta') || low.includes('/interactions') || low.includes(' and ');
+  };
+  try {
+    const d = await _ppWikiApi(base, { action: 'query', list: 'search', srsearch: name, srlimit: '10' });
+    const hits = (d.query.search || []).map(h => h.title).filter(t => !skip(t));
+    for (const t of hits) if (_ppNorm(t) === _ppNorm(name)) return { title: t };
+    // "Aaliyah" is the whole first word of "Aaliyah Anderson", but only a
+    // fragment of "Aaliyahna" — a word boundary, not a prefix.
+    const want = _ppNorm(name);
+    const firstName = hits.filter(t => _ppNorm(t.split(/\s+/)[0]) === want);
+    if (firstName.length === 1) return { title: firstName[0] };
+    if (firstName.length > 1) return { candidates: firstName };
+  } catch { /* no search, no match */ }
+  return {};
+}
+
+/**
+ * Keep only the files that are named after this character, if any are.
+ *
+ * An article does not only embed its own subject's pictures. Aaliyah Anderson's
+ * page on the Mad House wiki carries twenty files and eighteen of them are the
+ * REST OF THE CAST's icons — Andre, Aurora, Carmen, Clayton — because the page
+ * ends in a season template. Without this, pressing Fill on a Mad House
+ * character gives you two pictures of them and a dozen of their housemates.
+ *
+ * All-or-nothing on purpose. Where filenames carry names this is decisive (64
+ * of Alejandro's 242 files say "Alejandro"), and the cap is fourteen, so
+ * dropping the unnamed scene shots costs nothing. Where they do not, no file
+ * matches and everything is kept — which is exactly the old behaviour.
+ */
+function _ppOwnFiles(files, name) {
+  const keys = [_ppNorm(name), _ppNorm(String(name).split(/\s+/)[0])]
+    .filter(k => k.length >= 3);
+  if (!keys.length) return files;
+  const mine = files.filter(f => keys.some(k => _ppNorm(f.title).includes(k)));
+  return mine.length ? mine : files;
+}
+
+/** Usable images embedded on an article, portrait-led. Mirrors fetch_gallery.py. */
+async function _ppArticleImages(base, title, name, minDim = 300, allowIcon = false) {
+  // "icon" usually means interface furniture. On the Mad House wiki it is the
+  // naming convention for the cast portraits themselves — AaliyahMH6Icon.png IS
+  // the character art — so denying it there throws away most of what it has.
+  const DENY = ['wiki', 'wordmark', 'favicon', 'site-logo', 'logo', 'icon', 'badge',
+    'spinner', 'loading', 'placeholder', 'stub', 'spoiler', 'vote', 'star',
+    'userbox', 'emoji', 'button', 'nav', 'banner-', 'header-']
+    .filter(d => d !== 'icon' || !allowIcon);
+  const MIME = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+  const files = [];
+  let cont = null;
+  for (let page = 0; page < 6; page++) {
+    const p = { action: 'query', prop: 'images', titles: title, imlimit: '500', redirects: 1 };
+    if (cont) p.imcontinue = cont;
+    const d = await _ppWikiApi(base, p);
+    const pg = Object.values(d.query.pages)[0];
+    if (!pg || 'missing' in pg) return { images: [], fileCount: 0 };
+    files.push(...(pg.images || []).map(im => im.title));
+    cont = d.continue?.imcontinue;
+    if (!cont) break;
+  }
+  const out = [];
+  for (let i = 0; i < files.length; i += 50) {
+    const d = await _ppWikiApi(base, { action: 'query', titles: files.slice(i, i + 50).join('|'),
+      prop: 'imageinfo', iiprop: 'url|size|mime' });
+    for (const pg of Object.values(d.query.pages || {})) {
+      const ii = (pg.imageinfo || [])[0];
+      if (!ii) continue;
+      const low = (pg.title || '').toLowerCase();
+      const w = ii.width || 0, h = ii.height || 0;
+      if (!MIME[ii.mime]) continue;
+      if (Math.min(w, h) < minDim) continue;       // icons and sprites
+      if (DENY.some(s => low.includes(s))) continue;
+      if (w >= 3 * h) continue;                    // banners and title cards
+      out.push({ title: pg.title, url: ii.url, w, h, area: w * h, aspect: w / Math.max(1, h) });
+    }
+  }
+  const seen = new Set();
+  const uniq = _ppOwnFiles(out.filter(im => !seen.has(im.url) && seen.add(im.url)),
+    name || title);
+  // Solo character renders are square or tall; episode stills and group scenes
+  // are wide. Leading with portraits opens the gallery on THIS character.
+  const by = a => (b, c) => c.area - b.area;
+  return {
+    fileCount: files.length,
+    images: [
+      ...uniq.filter(i => i.aspect <= 1.1).sort(by()),
+      ...uniq.filter(i => i.aspect > 1.1 && i.aspect <= 1.6).sort(by()),
+      ...uniq.filter(i => i.aspect > 1.6).sort(by()),
+    ],
+  };
+}
+
+/** Is this a transparent cut-out pose rather than a scene? */
+function _ppIsCutout(img) {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 24; c.height = 24;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 24, 24);
+    const px = ctx.getImageData(0, 0, 24, 24).data;
+    let clear = 0;
+    for (let p = 3; p < px.length; p += 4) if (px[p] < 250) clear++;
+    return clear / (px.length / 4) > 0.10;
+  } catch { return false; }
+}
+
+async function ppGalleryFill() {
+  const slug = _ppGallerySlug;
+  const btn = document.getElementById('pp-gfill');
+  if (!slug) return;
+  const token = _ppToken() || _ppAskToken();
+  if (!token) return;
+  const say = t => { if (btn) btn.textContent = t; };
+  const name = _ppGalleryName || slug.replace(/-/g, ' ');
+
+  btn?.setAttribute('disabled', 'disabled');
+  try {
+    const taken = new Set((await _ppTakenSlots(slug, { fresh: true }))
+      .map(o => parseInt(o.file, 10)).filter(Boolean));
+    const free = [];
+    for (let i = 1; i <= PP_GALLERY_MAX; i++) if (!taken.has(i)) free.push(i);
+    if (!free.length) {
+      alert(`This gallery is already full (${PP_GALLERY_MAX} images). Nothing was changed — filling never replaces what is there.`);
+      return;
+    }
+
+    // ── find the character ──
+    //
+    // Every wiki is tried and every outcome recorded, because "not found" is
+    // the answer that needs explaining: whether the article is missing, or
+    // found but carrying nothing usable, is the difference between a wrong
+    // name and a thin page.
+    say('Searching…');
+    const why = [];
+    let found = null;
+    for (const wiki of PP_WIKIS) {
+      try {
+        const hit = await _ppFindArticle(wiki.api, name);
+        let title = hit.title;
+        if (!title && hit.candidates) {
+          // Several people share this first name on this wiki. Ask rather than
+          // guess — the wrong guess fills the gallery with a stranger.
+          const list = hit.candidates.map((t, n) => `${n + 1}. ${t}`).join('\n');
+          const pick = prompt(
+            `${wiki.name} wiki has ${hit.candidates.length} articles starting with "${name}".\n\n`
+            + `${list}\n\nType a number to use that one, or leave blank to skip this wiki:`, '1');
+          const n = parseInt(pick, 10);
+          if (!n || !hit.candidates[n - 1]) {
+            why.push(`${wiki.name}: ${hit.candidates.length} possible matches, none chosen`);
+            continue;
+          }
+          title = hit.candidates[n - 1];
+        }
+        if (!title) { why.push(`${wiki.name}: no article for "${name}"`); continue; }
+        const { images, fileCount } = await _ppArticleImages(wiki.api, title, name, wiki.minDim, wiki.allowIcon);
+        if (!images.length) {
+          why.push(`${wiki.name}: found "${title}" but none of its ${fileCount} files are usable `
+            + '(too small, or logos and banners)');
+          continue;
+        }
+        found = { wiki, title, images };
+        break;
+      } catch (err) { why.push(`${wiki.name}: ${err.message}`); }
+    }
+
+    if (!found) {
+      const exact = prompt(
+        `No art found for "${name}".\n\n${why.join('\n')}\n\n`
+        + 'If the wiki spells the name differently, type the EXACT article title '
+        + 'and it will look that up directly:', name);
+      if (!exact || !exact.trim()) return;
+      for (const wiki of PP_WIKIS) {
+        try {
+          const { images } = await _ppArticleImages(wiki.api, exact.trim(), exact.trim(), wiki.minDim, wiki.allowIcon);
+          if (images.length) { found = { wiki, title: exact.trim(), images }; break; }
+        } catch { /* next wiki */ }
+      }
+      if (!found) { alert(`Still nothing for "${exact.trim()}" on any of the three wikis.`); return; }
+    }
+
+    // ── take the images ──
+    //
+    // Cut-outs are capped. These wikis are dominated by transparent pose
+    // assets, and a gallery of nothing but them is what this cap exists to
+    // prevent — scene shots go in first, poses fill what is left.
+    let added = 0, poses = 0;
+    const failed = [];
+    for (const cand of found.images) {
+      if (added >= free.length) break;
+      say(`Adding ${added + 1}…`);
+      try {
+        const img = await new Promise((res, rej) => {
+          const im = new Image();
+          im.crossOrigin = 'anonymous';
+          im.onload = () => res(im);
+          im.onerror = () => rej(new Error('could not load'));
+          im.src = cand.url;
+        });
+        const cutout = _ppIsCutout(img);
+        if (cutout && poses >= 2) continue;
+        const cap = 1600;
+        const scale = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const blob = await new Promise(r2 => c.toBlob(r2, 'image/webp', 0.9));
+        if (!blob) throw new Error('could not encode');
+        const res = await fetch(`${PP_API}/gallery/${encodeURIComponent(slug)}/${free[added]}.webp`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'image/webp' },
+          body: blob,
+        });
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok || !j.ok) throw new Error(j.error || `HTTP ${res.status}`);
+        added++;
+        if (cutout) poses++;
+      } catch (err) { failed.push(err.message); }
+    }
+
+    await ppGalleryRefresh();
+    if (!added) {
+      alert(`Found "${found.title}" on the ${found.wiki.name} wiki, but nothing could be added.`
+        + (failed.length ? `\n\n${failed.slice(0, 3).join('\n')}` : ''));
+    } else {
+      alert(`Added ${added} image${added === 1 ? '' : 's'} from "${found.title}" (${found.wiki.name} wiki).`
+        + `\n\nNothing already in the gallery was touched.`);
+    }
+  } catch (err) {
+    alert('Fill failed: ' + err.message);
+  } finally {
+    btn?.removeAttribute('disabled');
+    say('Fill from wiki');
+  }
 }
 
 // ── Lightbox ────────────────────────────────────────────────

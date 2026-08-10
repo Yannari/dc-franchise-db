@@ -19,6 +19,8 @@
     "test:e2e": "playwright test",
     "test:all": "vitest run && playwright test",
     "deploy": "wrangler deploy --config worker/wrangler.toml",
+    "deploy:analytics": "wrangler deploy --config worker/wrangler-analytics.toml",
+    "deploy:all": "npm run deploy && npm run deploy:analytics",
     "preview": "wrangler dev --config worker/wrangler.toml"
   },
   "repository": {

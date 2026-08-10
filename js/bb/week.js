@@ -1898,9 +1898,18 @@ export function simulateBBWeek(options = {}) {
         week.interrogation = usurp;
         week.acts.push(addBeats(usurp, { players: [usurp.deposed, usurp.holder] }));
         if (!usurp.caught) {
+          const deposed = hoh;
           hoh = usurp.hoh;
           week.hoh = hoh;
           gs.bb.hoh = hoh;
+          // WHO THE HOUSE THINKS RAN THE WEEK.
+          //
+          // The Interrogation is announced, so the room knows the ceremony
+          // changed hands and the blame has nowhere to go. The Deepfake reads
+          // the nominations out in the deposed HOH's own voice, so the room
+          // believes it watched them choose — and the grievance has to land
+          // where the house puts it, not where it belongs.
+          if (usurp.creditsDeposed) week.hohPublic = deposed;
         }
       }
     } catch { /* the crown stands */ }
@@ -2750,7 +2759,11 @@ export function simulateBBWeek(options = {}) {
     // not about them — and the target takes the most.
     const base = collateral ? 0.5 : isTarget ? 1.6 : 1.0;
     const hit = -base * weight * takesItHard;
-    try { _cappedBondWindow(() => addBond(nominee, hoh, hit)); } catch { /* no bond, no grievance */ }
+    // Aimed at whoever the house believes named them. Normally that is the Head
+    // of Household; under a Deepfake it is somebody who named nobody, and the
+    // whole week is spent resenting them for it.
+    const blamed = week.hohPublic || hoh;
+    try { _cappedBondWindow(() => addBond(nominee, blamed, hit)); } catch { /* no bond, no grievance */ }
 
     /* AND THE PART THAT ONLY EXISTS IN THIS SEASON.
        You are on that block because of who you walked in with. Somebody wears

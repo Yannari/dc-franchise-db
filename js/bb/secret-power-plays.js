@@ -166,6 +166,48 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   //
   // The verdict is WEIGHED, not counted: a name from somebody trusted is worth
   // more than a name from somebody who has been wrong before.
+  // ── THE UNCONTESTED THEFT ───────────────────────────────────────────────
+  //
+  // The Interrogation announces itself: the house is told the ceremony was
+  // taken, and spends a day trying to find the hand that took it. The Deepfake
+  // declares nothing. The wall reads the nominations out in the deposed Head of
+  // Household's own voice, so the house does not know anything was taken — it
+  // believes it watched somebody nominate two of their own, and every grievance
+  // that follows goes to a person who chose nobody.
+  //
+  // Same theft, same decision to make it, opposite social consequence: one
+  // costs the holder their cover, the other costs somebody else their week.
+  if (BB_POWER_DEFINITIONS[inst.powerId]?.rules?.contested !== 'interrogation') {
+    // `usePower` already ran above, with the decision to spend it.
+    // The SAME act type as the Interrogation, deliberately. This file already
+    // holds three plays behind one screen because writing a fourth screen for a
+    // fourth variation on "a secret power fired" is a fourth place for the same
+    // stamp to drift. The difference between having your week taken from you in
+    // public and having it taken without anybody noticing is entirely in the
+    // beats — which is where the comment at the top of this file says it should
+    // be, and where both transcript writers will already find it.
+    return {
+      type: 'interrogation', holder: inst.holder, deposed: hoh,
+      caught: false, creditsDeposed: true,
+      protecting: forAlly ? protecting : null,
+      hoh: inst.holder,
+      accused: null, interviews: [],
+      ...shown(inst, 'nominations',
+        `${inst.holder} is Head of Household and the wall will say it was ${hoh}.`),
+      beats: [
+        beat(`${hoh} is not Head of Household any more and will not be told. `
+          + `${inst.holder} has the week, the wall will read the nominations out in `
+          + `${hoh}'s voice, and the house is going to spend it blaming ${hoh} for a `
+          + 'block nobody in this room watched them choose.',
+        [hoh, inst.holder], 'THE WALL LIES', 'red'),
+        ...(forAlly ? [beat(
+          `${inst.holder} was never the one in trouble this week. ${protecting} was — and `
+          + `${protecting} will never know, because there is nothing to find out.`,
+          [inst.holder, protecting], 'NOT FOR THEMSELVES', 'gold')] : []),
+      ],
+    };
+  }
+
   const beats = [beat(
     `${hoh} is not Head of Household any more. Somebody in this house has taken it, the wall will `
       + 'not say who, and every houseguest here is about to be asked the same question one at a time.',

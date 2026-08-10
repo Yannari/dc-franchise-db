@@ -230,6 +230,30 @@ export const BB_POWER_DEFINITIONS = {
 
   // The only power in the shelf that the person it is used against can TAKE
   // BACK. Everything else is a windfall; this is a bet.
+  // The same theft, without the room to catch it in — and with somebody else's
+  // name on the block.
+  //
+  // The Interrogation is anonymous, so the dethroning has nowhere to land: the
+  // house knows the ceremony was taken and never who took it. The Deepfake is
+  // the opposite failure. The wall reads the nominations out in the Head of
+  // Household's own voice, so the house does not know a theft happened at all —
+  // it thinks it watched somebody nominate two of their own allies, and every
+  // grievance in the room goes to a person who chose nobody.
+  'deepfake-hoh': {
+    id: 'deepfake-hoh',
+    name: 'The Deepfake',
+    rules: { usurpHoh: true, contested: false, creditsDeposed: true },
+    useTiming: 'post-hoh',
+    windowWeeks: 4,
+    windowUntil: 'jury',
+    blurb: 'Takes the Head of Household away from whoever won it and names the block in '
+      + 'their name. The house is never told the ceremony changed hands.',
+    catch: 'There is no interrogation and nothing to confess to, because nobody is looking. '
+      + 'The cost is paid by the Head of Household you took it from, who spends the week '
+      + 'answering for a block they did not choose and cannot explain.',
+    moment: 'After the Head of Household is crowned, before nominations.',
+  },
+
   'hoh-interrogation': {
     id: 'hoh-interrogation',
     name: 'The Interrogation',

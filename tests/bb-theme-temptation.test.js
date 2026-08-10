@@ -10,7 +10,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { themeState, themeVoice, advanceThemeArc, themeScheduleEntries,
-  currentTheme, themeAccent, BB_THEMES } from '../js/bb/themes.js';
+  currentTheme, themeAccent, BB_THEMES, expandArc } from '../js/bb/themes.js';
 import { simulateBBWeek } from '../js/bb/week.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -101,13 +101,16 @@ describe('the arc it actually books', () => {
       .filter(t => t.source === 'theme')
       .map(t => [Number(t.episode), t.type])
       .sort((a, b) => a[0] - b[0]);
-    // Twelve houseguests end at three, so nine weeks. `fromEnd` maps onto house
-    // size the same way at every cast: 4 is a final seven (week 6), 3 a final
-    // six (week 7), 2 a final five (week 8) — where the season's last offer is.
+    // Twelve houseguests end at three, so nine weeks — the SHORT end of what
+    // this game casts. The cadence has no room to fire (it starts at week five
+    // and stops before the endgame, which here begins at six), so a short
+    // season gets the opening and the endgame and nothing in between. `fromEnd`
+    // maps onto house size the same way at every cast: 4 is a final seven
+    // (week 6), 3 a final six (week 7), 2 a final five (week 8) — where the
+    // season's last offer is.
     expect(mine).toEqual([
       [2, 'bb-den-of-temptation'],
       [3, 'bb-have-nots'],
-      [5, 'bb-den-of-temptation'],
       [6, 'bb-pandoras-box'],
       [7, 'bb-double-eviction'],
       [8, 'bb-den-of-temptation'],
@@ -157,7 +160,11 @@ const CASTS = Array.from({ length: 13 }, (_, i) => i + 6);
 // The authored running order, read off the descriptor rather than copied from
 // it. A hand-kept copy goes stale the moment the arc gains an act — which is
 // exactly what happened when the season gained its ending at a final five.
-const ORDER = THEME().arc.filter(a => a.book).map(a => a.book);
+//
+// Expanded per SEASON LENGTH, because an act can now recur: the Den makes an
+// offer on a cadence rather than twice a summer, so how many times it appears
+// depends on how long the season is.
+const orderFor = weeks => expandArc(THEME().arc, weeks).filter(a => a.book).map(a => a.book);
 
 describe('the arc holds its shape at every cast size', () => {
   beforeEach(() => house());
@@ -182,6 +189,7 @@ describe('the arc holds its shape at every cast size', () => {
     // order: acts may be dropped when a short season has no room, never
     // reordered. This is the assertion that fails if a `fromEnd` act ever
     // overtakes a fixed one again.
+    const ORDER = orderFor(weeks);
     let at = 0;
     for (const type of out.map(e => e.type)) {
       const found = ORDER.indexOf(type, at);
@@ -323,10 +331,14 @@ describe('the Den stops asking', () => {
   it('is neutral before the turn and hostile after it', () => {
     play();
     expect(themeState().mood).toBe('neutral');
-    // Nine weeks in a twelve-house season, so week 6 is the arc's turn.
-    advanceThemeArc(5, 9);
+    // Nine weeks in a twelve-house season. The turn is authored twice — 62% of
+    // the way in, and a `fromEnd: 5` backstop — and on a season this short the
+    // backstop is the earlier of the two, at week five. It has to be: 62% of
+    // nine weeks lands after the endgame has already begun, and a Den that
+    // hardens once the bill has arrived has escalated to nothing.
+    advanceThemeArc(4, 9);
     expect(themeState().mood).toBe('neutral');
-    advanceThemeArc(6, 9);
+    advanceThemeArc(5, 9);
     expect(themeState().mood).toBe('hostile');
     // And it stays turned — a heel turn is not a one-week costume.
     advanceThemeArc(7, 9);

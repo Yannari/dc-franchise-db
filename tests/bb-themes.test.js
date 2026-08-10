@@ -806,8 +806,9 @@ describe('the antagonist is present at the finale', () => {
   it('ends its arc at a final five, not at the finale', () => {
     const t = BB_THEMES['summer-of-temptation'];
     const last = [...t.arc].filter(a => a.book).pop();
-    expect(last.at.fromEnd).toBe(2);          // fromEnd 2 is a final five at every cast
-    expect(t.arc.some(a => a.book && a.at.fromEnd === 1)).toBe(false);
+    expect(last.at?.fromEnd).toBe(2);         // fromEnd 2 is a final five at every cast
+    // Nothing books the last week — the Den stops dealing before the finale.
+    expect(t.arc.some(a => a.book && a.at?.fromEnd === 1)).toBe(false);
   });
 });
 

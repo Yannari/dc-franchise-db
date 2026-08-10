@@ -111,6 +111,60 @@ function _warnOnce(key, message) {
   try { console.warn(message); } catch { /* no console, no warning, no harm */ }
 }
 
+/**
+ * Resolve one anchor to a week number.
+ *
+ * Three forms, because a season is between nine and seventeen weeks long here
+ * and no single one of them scales:
+ *   `{week: n}`      counted from the premiere — for acts that belong to the
+ *                    opening whatever the cast size.
+ *   `{fromEnd: n}`   counted back from the last week, 1-indexed. It maps onto
+ *                    house size identically at every cast: fromEnd 3 is always
+ *                    a final six, fromEnd 2 always a final five.
+ *   `{frac: 0..1}`   a proportion of the season. The escalation belongs about
+ *                    two thirds in, and "week 6" is two thirds of a twelve-cast
+ *                    season and barely a third of a twenty — which is how the
+ *                    Den came to spend more of a long season hostile than calm.
+ */
+export function resolveArcWeek(at, weeks) {
+  if (!at) return NaN;
+  if (at.week != null) return Number(at.week);
+  if (at.frac != null) {
+    const w = Math.round(Number(weeks) * Number(at.frac));
+    return Math.min(Math.max(w, 1), Number(weeks));
+  }
+  return Number(weeks) - Number(at.fromEnd ?? 1) + 1;
+}
+
+/**
+ * Flatten an arc, expanding any act that recurs.
+ *
+ * A fixed list of five acts cannot fill a seventeen-week season: Summer of
+ * Temptation opened with two offers, went silent for six to nine weeks, then
+ * dumped everything into the endgame. Reported off a real timeline — twists
+ * bunched into episodes 1-3 and 10-13 with nothing in between.
+ *
+ * `{ every: n, from: w, untilFromEnd: k }` says "an offer every n weeks from
+ * week w, stopping before the endgame anchors take over". It expands in place,
+ * so the authored running order — and the ordering guarantee below — still
+ * holds.
+ */
+export function expandArc(arc, weeks) {
+  const out = [];
+  for (const act of arc || []) {
+    if (!act) continue;
+    if (!act.every) { out.push(act); continue; }
+    const from = Math.max(1, Number(act.from ?? 1));
+    const stop = act.untilFromEnd != null
+      ? resolveArcWeek({ fromEnd: act.untilFromEnd }, weeks)
+      : Number(weeks) + 1;
+    for (let w = from; w < stop && w <= weeks; w += Number(act.every)) {
+      out.push({ ...act, every: undefined, at: { week: w } });
+    }
+  }
+  return out;
+}
+
 export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) {
   if (!theme) return [];
   const booked = (existing || []).filter(Boolean);
@@ -118,13 +172,9 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
   const out = [];
   // The week the last theme act took. Everything below hangs off this.
   let lastEp = 0;
-  for (const act of theme.arc || []) {
+  for (const act of expandArc(theme.arc, weeks)) {
     if (!act || !act.book) continue;
-    // `fromEnd` counts back from the finale and is 1-indexed like `week` is:
-    // `fromEnd: 1` IS the last week, `fromEnd: 2` the one before it.
-    const ep = act.at?.week != null
-      ? Number(act.at.week)
-      : weeks - Number(act.at?.fromEnd ?? 1) + 1;
+    const ep = resolveArcWeek(act.at, weeks);
     if (!Number.isFinite(ep) || ep < 1 || ep > weeks) continue;
     if (yours.has(ep)) continue;
     // ── THE ARC IS A RUNNING ORDER, NOT A SET OF INDEPENDENT PINS ──
@@ -412,9 +462,7 @@ export function advanceThemeArc(weekNum, totalWeeks) {
   if (!theme || !st) return null;
   for (const act of theme.arc || []) {
     if (!act || !act.mood) continue;
-    const ep = act.at?.week != null
-      ? Number(act.at.week)
-      : Number(totalWeeks) - Number(act.at?.fromEnd ?? 1) + 1;
+    const ep = resolveArcWeek(act.at, totalWeeks);
     if (!Number.isFinite(ep)) continue;
     if (Number(weekNum) === ep) setThemeMood(act.mood);
   }

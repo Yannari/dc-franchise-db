@@ -229,27 +229,36 @@ export default {
   // rpBuildBBThemeBeat); renaming it would silently lose the styling and no
   // test would see it.
   arc: [
+    // A season is between nine and seventeen weeks here, and a fixed list of
+    // five acts cannot fill the long end of that. Authored as an opening, a
+    // CADENCE, and an endgame, so the shape reads the same at every cast:
+    // the Den keeps asking all the way through rather than twice a summer.
     { at: { week: 2 }, book: 'bb-den-of-temptation' },
     { at: { week: 3 }, book: 'bb-have-nots' },
-    { at: { week: 6 }, mood: 'hostile' },
-    { at: { fromEnd: 5 }, book: 'bb-den-of-temptation' },
-    { at: { fromEnd: 4 }, mood: 'hostile' },
+
+    // The offer, on a rhythm. Stops before the endgame anchors take over so it
+    // never collides with them — the run-order rule would drop whichever came
+    // second, and dropping the bill is worse than dropping an offer.
+    { every: 3, from: 5, untilFromEnd: 5, book: 'bb-den-of-temptation' },
+
+    // The turn, as a PROPORTION rather than a fixed week. `week: 6` is two
+    // thirds of a twelve-cast season and barely a third of a twenty, so the Den
+    // used to spend more of a long season collecting than offering, and the
+    // escalation stopped meaning anything.
+    { at: { frac: 0.62 }, mood: 'hostile' },
+    // Backstop. On a very short season 62% lands INSIDE the endgame, and a Den
+    // that hardens after the bill has already arrived has escalated to nothing.
+    // Both acts set the same mood, so whichever comes first is the turn.
+    { at: { fromEnd: 5 }, mood: 'hostile' },
+
+    // The endgame, anchored to house size. fromEnd 4 is always a final seven,
+    // 3 always a final six, 2 always a final five.
     { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
-    { at: { fromEnd: 3 }, mood: 'hostile' },
     { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
-    // THE ENDING, and it lands at a final five.
-    //
-    // `fromEnd` maps onto house size the same way at every cast this game
-    // supports: fromEnd 3 is always a final six, fromEnd 2 always a final
-    // five. So the endgame reads the same on a cast of twelve and a cast of
-    // twenty — the box at a final seven, the double eviction at six, and the
-    // last offer of the season put in front of five people who have all
-    // watched what taking one costs.
-    //
-    // It deliberately does not run to the finale. A season that is still
-    // introducing mechanics at a final four has nowhere to put the
-    // consequences; the Den stops dealing at five and spends the last night
-    // talking, which is what the `finale` and `crown` hooks are for.
+    // THE ENDING, at a final five. It deliberately does not run to the finale:
+    // a season still introducing mechanics at a final four has nowhere to put
+    // the consequences. The Den stops dealing here and spends the last night
+    // talking — that is what the `finale` and `crown` hooks are for.
     { at: { fromEnd: 2 }, book: 'bb-den-of-temptation' },
   ],
 

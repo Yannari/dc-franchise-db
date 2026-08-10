@@ -133,7 +133,25 @@ function _loadReturneeManifest() {
   // `/api/avatars` is the directory itself, so when a backend is answering it
   // cannot be out of date. The static file stays as the offline path and for a
   // deployed site with no same-origin API.
-  const fromListing = fetch('api/avatars', { cache: 'no-store' })
+  // ── ONLY WHERE SOMETHING CAN ANSWER ──
+  //
+  // `/api/avatars` is serve.py and the Studio worker. On the published site
+  // there is no backend, so this asked every single page load and got a 404 in
+  // the console every time — noise I added, on a request whose answer was
+  // always going to be "fall back to the static file".
+  //
+  // Same test the Studio uses to decide whether it can WRITE: a configured API
+  // base, or a local host. Anywhere else, the committed manifest is the only
+  // answer there is.
+  const backend = (() => {
+    try {
+      if (localStorage.getItem('studio_api_base')) return true;
+      const h = location.hostname;
+      return h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
+    } catch { return false; }
+  })();
+
+  const fromListing = !backend ? Promise.resolve(null) : fetch('api/avatars', { cache: 'no-store' })
     .then(r => (r.ok ? r.json() : null))
     .then(d => {
       const list = d?.avatars;

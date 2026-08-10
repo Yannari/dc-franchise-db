@@ -84,6 +84,19 @@ describe('returnee art follows the checkbox, not history', () => {
     expect(studio).toMatch(/&& !d\._retSlotClosed \? '' : 'hidden'/);
   });
 
+  it('does not ask a backend that is not there', () => {
+    // `/api/avatars` is serve.py and the Studio worker. The published site has
+    // neither, so probing it on every page load put a 404 in the console every
+    // time — for a request whose answer was always "fall back to the committed
+    // manifest". Same test the Studio uses to decide whether it can write.
+    const players = readFileSync('js/players.js', 'utf8');
+    expect(players).toMatch(/const backend = \(\(\) => \{/);
+    expect(players).toMatch(/localStorage\.getItem\('studio_api_base'\)/);
+    expect(players).toMatch(/h === 'localhost' \|\| h === '127\.0\.0\.1'/);
+    expect(players, 'the listing is still fetched unconditionally')
+      .toMatch(/const fromListing = !backend \? Promise\.resolve\(null\) : fetch\('api\/avatars'/);
+  });
+
   it('ships a roster with no appearance flags on it', () => {
     // One had already leaked in, which is how this was found.
     const leaked = DEFAULT_ROSTER.filter(r => 'isReturnee' in r).map(r => r.name);

@@ -21911,7 +21911,20 @@ export function buildBBWeekScreens(ep) {
 
   // The finale's acts belong to no cycle and are rendered once, in order.
   for (const act of ep.acts || []) {
-    if (act.type === 'finale-house') {
+    // Same act, same screen as during the season — the last night keeps its own
+    // chain, so it has to be named here too.
+    //
+    // Gated on the finale on purpose: this loop also runs for ordinary weeks,
+    // where `_bbCycleScreens` already draws the beat AND rehomes any house life
+    // that ended up hosted on it. Catching weekly beats here would take that
+    // handling away from them and drop the hosted beats.
+    if (act.type === 'theme-beat' && ep.isFinale) {
+      vpScreens.push({
+        id: `theme-beat-${act.hook}`,
+        label: act.speaker,
+        html: rpBuildBBThemeBeat(view, act),
+      });
+    } else if (act.type === 'finale-house') {
       // THE HOUSE'S OWN SCREEN, not a second one written for the same night.
       //
       // `rpBuildBBHouseLife` already draws a stretch of house life — rooms,

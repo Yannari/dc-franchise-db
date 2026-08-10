@@ -6,6 +6,7 @@
 // does not exist, binding to a venue the format does not have, or naming a
 // houseguest who is not in the house.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import fs from 'node:fs';
 import { seasonConfig, TWIST_CATALOG } from '../js/core.js';
 import { settingsForFormat } from '../js/settings.js';
 import { BB_THEMES, THEME_LIST, themeById, currentTheme, themeAccent } from '../js/bb/themes.js';
@@ -743,5 +744,69 @@ describe('stamping the arc for editing', () => {
     stampThemeArc(12);
     expect(seasonConfig.twistSchedule.map(t => t.type))
       .toEqual(['bb-have-nots', 'bb-pandoras-box', 'bb-double-eviction']);
+  });
+});
+
+// ── the last night ──────────────────────────────────────────────────────
+//
+// The finale runs through its own simulator and its own act chains, so an
+// antagonist wired only into the weekly hooks escalates for eight weeks, gets
+// everybody to the end, and is then absent for the episode it was all building
+// towards. Worse, the finale episode carried no mood, so the reader dropped out
+// of the escalated room for the biggest screen of the season.
+describe('the antagonist is present at the finale', () => {
+  it('declares finale hooks the weekly loop never uses', async () => {
+    const { BB_THEMES: T } = await import('../js/bb/themes.js');
+    const voice = T['summer-of-temptation'].antagonist.voice;
+    expect(Object.keys(voice)).toEqual(expect.arrayContaining(['finale', 'crown']));
+    for (const hook of ['finale', 'crown']) {
+      for (const mood of ['neutral', 'hostile']) {
+        expect(voice[hook][mood].length, `${hook}/${mood} has variants`).toBeGreaterThanOrEqual(4);
+      }
+    }
+  });
+
+  it('speaks at both finale hooks', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    setGs({ bb: { weeks: [], theme: { id: 'summer-of-temptation', mood: 'hostile', booked: [] } },
+      activePlayers: ['Bowie', 'Chase', 'Ripper'] });
+    const open = themeBeat('finale', { week: 14, finalists: ['Bowie', 'Chase', 'Ripper'] });
+    const crown = themeBeat('crown', { week: 14, finalists: ['Bowie', 'Chase'], winner: 'Bowie' });
+    expect(open?.line).toBeTruthy();
+    expect(crown?.line).toBeTruthy();
+    expect(crown.mood).toBe('hostile');
+  });
+
+  // The guard refuses a LINE it cannot fill, not the hook: several finale lines
+  // name nobody at all and stay perfectly sayable. What must never happen is a
+  // name reaching the screen for somebody who is not there.
+  it('never names a finalist who is not in the house', () => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    setGs({ bb: { weeks: [], theme: { id: 'summer-of-temptation', mood: 'neutral', booked: [] } },
+      activePlayers: ['Bowie', 'Chase'] });
+    for (let week = 1; week <= 25; week++) {
+      const said = themeBeat('finale', { week, finalists: ['Bowie', 'Ghost'] });
+      if (said) expect(said.line, `week ${week}`).not.toContain('Ghost');
+    }
+  });
+
+  // Both writers, again — the finale keeps a SEPARATE act chain from the
+  // weekly switch, so being handled there proves nothing about here.
+  it('is written by both transcript writers on the last night', () => {
+    const backlog = fs.readFileSync('js/text-backlog.js', 'utf8');
+    const finaleChain = backlog.slice(backlog.indexOf("act.type === 'theme-beat' && ep.isFinale"));
+    expect(finaleChain.slice(0, 400)).toContain("act.type === 'finale-house'");
+    const vp = fs.readFileSync('js/vp-screens.js', 'utf8');
+    const vpChain = vp.slice(vp.indexOf("act.type === 'theme-beat' && ep.isFinale"));
+    expect(vpChain.slice(0, 500)).toContain("act.type === 'finale-house'");
+  });
+
+  it('ends its arc at a final five, not at the finale', () => {
+    const t = BB_THEMES['summer-of-temptation'];
+    const last = [...t.arc].filter(a => a.book).pop();
+    expect(last.at.fromEnd).toBe(2);          // fromEnd 2 is a final five at every cast
+    expect(t.arc.some(a => a.book && a.at.fromEnd === 1)).toBe(false);
   });
 });

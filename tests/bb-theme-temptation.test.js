@@ -101,14 +101,16 @@ describe('the arc it actually books', () => {
       .filter(t => t.source === 'theme')
       .map(t => [Number(t.episode), t.type])
       .sort((a, b) => a[0] - b[0]);
-    // Twelve houseguests end at three, so nine weeks: fromEnd 4 is week 6 and
-    // fromEnd 3 is week 7.
+    // Twelve houseguests end at three, so nine weeks. `fromEnd` maps onto house
+    // size the same way at every cast: 4 is a final seven (week 6), 3 a final
+    // six (week 7), 2 a final five (week 8) — where the season's last offer is.
     expect(mine).toEqual([
       [2, 'bb-den-of-temptation'],
       [3, 'bb-have-nots'],
       [5, 'bb-den-of-temptation'],
       [6, 'bb-pandoras-box'],
       [7, 'bb-double-eviction'],
+      [8, 'bb-den-of-temptation'],
     ]);
   });
 
@@ -152,8 +154,10 @@ describe('the arc it actually books', () => {
 //
 // Cast six is the floor the week engine supports; eighteen is a long season.
 const CASTS = Array.from({ length: 13 }, (_, i) => i + 6);
-const ORDER = ['bb-den-of-temptation', 'bb-have-nots', 'bb-den-of-temptation',
-  'bb-pandoras-box', 'bb-double-eviction'];
+// The authored running order, read off the descriptor rather than copied from
+// it. A hand-kept copy goes stale the moment the arc gains an act — which is
+// exactly what happened when the season gained its ending at a final five.
+const ORDER = THEME().arc.filter(a => a.book).map(a => a.book);
 
 describe('the arc holds its shape at every cast size', () => {
   beforeEach(() => house());

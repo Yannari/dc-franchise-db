@@ -5782,7 +5782,15 @@ export function generateBBFinaleText(ep) {
   ln('═'.repeat(46));
 
   for (const act of ep.acts || []) {
-    if (act.type === 'finale-house') {
+    // The season's antagonist, on the last night. The finale keeps its own act
+    // chain rather than the weekly switch, so a beat handled there is still
+    // unhandled here — and an unhandled act is dropped in silence. Gated on the
+    // finale because this chain also runs for ordinary weeks, where the weekly
+    // switch already writes it.
+    if (act.type === 'theme-beat' && ep.isFinale) {
+      sec(act.speaker.toUpperCase());
+      ln(`"${act.line}"`);
+    } else if (act.type === 'finale-house') {
       finaleHouseLines(act, ln);
     } else if (act.type === 'finale-brief') {
       sec('HOW TONIGHT WORKS');

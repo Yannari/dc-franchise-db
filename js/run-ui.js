@@ -3542,6 +3542,23 @@ export async function rebuildSeasonSocial() {
       : window.refreshSocialFeed?.({ rebuild: true });
     const now = (gs.social?.posts || []).length;
     const builtCount = (res?.built || []).length;
+    // A zero says which zero it is. There are two of them and they send you to
+    // completely different places: no episodes to read at all, or episodes that
+    // yielded nothing worth posting about.
+    if (!builtCount) {
+      const found = Number(res?.found) || 0;
+      const fmt = res?.format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+      say(found
+        ? `Rebuilt nothing: ${found} episode${found === 1 ? '' : 's'} were read as ${fmt} `
+          + `and none of them carried an event worth writing about. If this is the wrong `
+          + `show, the season's format is what decides it.`
+        : `Rebuilt nothing: no episodes found for ${fmt}. `
+          + (res?.format === 'big-brother'
+            ? 'The house keeps its weeks in gs.bb.weeks — an empty one means the season has no simulated weeks in this save.'
+            : 'The season has no episode history in this save.'));
+      saveGameState();
+      return;
+    }
     say(`Rebuilt ${builtCount} episode${builtCount === 1 ? '' : 's'}: `
       + `${now} posts${_writerNote(written, res)}. Publish to site.`);
     saveGameState();

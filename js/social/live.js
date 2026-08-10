@@ -104,7 +104,12 @@ export function ensureFeeds(gs, {
     built.push(episode);
   }
 
-  return { built, dropped, posts: storeOf(gs).posts.length };
+  // `found` and `format` so a zero can explain itself. "Rebuilt 0 episodes"
+  // is the same unhelpful shape as "the writer returned nothing usable": it
+  // says the outcome and withholds the one fact that tells you where to look —
+  // whether there were no episodes to read, or episodes that produced nothing.
+  return { built, dropped, posts: storeOf(gs).posts.length,
+    found: records.length, format };
 }
 
 /**

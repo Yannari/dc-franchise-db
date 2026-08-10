@@ -584,3 +584,52 @@ export function themeBeat(hook, ctx = {}) {
     badgeClass: 'badge-twist',
   };
 }
+
+/**
+ * Let the season antagonist read a public rule that its own arc booked.
+ *
+ * This deliberately accepts an announcement produced by twist-contract.js,
+ * rather than looking the twist up in the catalog. The contract has already
+ * removed anything the house is not allowed to know (a secret holder, a
+ * Pandora prize, a Whacktivity winner); catalog copy has not. No announcement
+ * in means no antagonist line out.
+ */
+export function themeTwistAnnouncement(announcement, ctx = {}) {
+  const theme = currentTheme();
+  const st = themeState();
+  const week = Number(ctx.week || 0);
+  if (!theme || !st || !announcement?.twist || !week) return null;
+
+  const owned = (seasonConfig.twistSchedule || []).some(entry =>
+    entry?.source === 'theme'
+    && Number(entry.episode) === week
+    && entry.type === announcement.twist);
+  if (!owned) return null;
+
+  const rule = String(announcement.rule || '').trim();
+  if (!rule) return null;
+  const name = String(announcement.name || 'This twist').trim();
+  const sting = String(announcement.sting || '').trim();
+  const detail = `${name}: ${rule}${sting ? ` ${sting}` : ''}`;
+  const pools = theme.id === 'machine-summer'
+    ? [
+        `Houseguests, CORA has updated this week's rules. ${detail}`,
+        `CORA is making an adjustment. Listen carefully. ${detail}`,
+        `This week requires a new protocol. ${detail}`,
+        `Houseguests, here is the rule CORA has selected for you. ${detail}`,
+      ]
+    : [
+        `Houseguests, the Den has changed the terms of this week. ${detail}`,
+        `Another door has opened, and this is the rule attached to it. ${detail}`,
+        `The Den has something new for the house. Listen before you decide how dangerous it is. ${detail}`,
+        `The house wanted to know what the Den had planned. Here it is. ${detail}`,
+      ];
+  const rng = stableRng('theme-twist-announcement', gs?.bb?.seasonSalt || 0,
+    theme.id, st.mood, week, announcement.twist, ctx.side || '');
+  return {
+    speaker: theme.antagonist?.name || 'The Voice',
+    line: pools[Math.floor(rng() * pools.length)],
+    mood: st.mood,
+    themeId: theme.id,
+  };
+}

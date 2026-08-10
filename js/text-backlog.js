@@ -5526,11 +5526,15 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'twist-announcement':
-        sec('TWIST ANNOUNCEMENT');
+        sec(act.themeAnnouncer?.speaker || 'TWIST ANNOUNCEMENT');
         ln('  "Houseguests, please gather in the living room."');
-        for (const a of act.announced || []) {
-          ln(`  ${a.name.toUpperCase()}: ${a.rule}`);
-          if (a.sting) ln(`  ${a.sting}`);
+        if (act.themeAnnouncer) {
+          ln(`  "${act.themeAnnouncer.line}"`);
+        } else {
+          for (const a of act.announced || []) {
+            ln(`  ${a.name.toUpperCase()}: ${a.rule}`);
+            if (a.sting) ln(`  ${a.sting}`);
+          }
         }
         beats(act);
         break;

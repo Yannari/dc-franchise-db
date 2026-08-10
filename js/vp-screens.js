@@ -18895,8 +18895,8 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
     if (step.kind === 'reveal') {
       const a = step.a;
       return `<div class="bbns-card is-final bbta-reveal${a.twist === 'bb-diamond-veto' ? ' bbvc-diamond' : ''}">
-        <div class="bbns-card-h"><span class="bbns-pill ${a.twist === 'bb-diamond-veto' ? 'bbvc-dmd-pill' : 'gold'}">${_bbEsc(a.name).toUpperCase()}</span></div>
-        <div class="bbns-card-b">"${_bbEsc(a.rule)}"${a.sting ? `<span class="bbta-sting">${_bbEsc(a.sting)}</span>` : ''}</div></div>`;
+        <div class="bbns-card-h"><span class="bbns-pill ${a.twist === 'bb-diamond-veto' ? 'bbvc-dmd-pill' : 'gold'}">${_bbEsc(act.themeAnnouncer?.speaker || a.name).toUpperCase()}</span></div>
+        <div class="bbns-card-b">"${_bbEsc(act.themeAnnouncer?.line || a.rule)}"${!act.themeAnnouncer && a.sting ? `<span class="bbta-sting">${_bbEsc(a.sting)}</span>` : ''}</div></div>`;
     }
     const b = step.b || {};
     return `<div class="bbns-card">

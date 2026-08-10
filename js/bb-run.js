@@ -1553,10 +1553,15 @@ export function summariseWeek(week) {
         break;
       case 'twist-announcement':
         line('');
-        line('TWIST ANNOUNCEMENT');
-        for (const a of act.announced || []) {
-          line(`  ${a.name.toUpperCase()}: ${a.rule}`);
-          if (a.sting) line(`  ${a.sting}`);
+        if (act.themeAnnouncer) {
+          line(String(act.themeAnnouncer.speaker || 'THE VOICE').toUpperCase());
+          line(`  "${act.themeAnnouncer.line}"`);
+        } else {
+          line('TWIST ANNOUNCEMENT');
+          for (const a of act.announced || []) {
+            line(`  ${a.name.toUpperCase()}: ${a.rule}`);
+            if (a.sting) line(`  ${a.sting}`);
+          }
         }
         break;
       case 'veto-ceremony':

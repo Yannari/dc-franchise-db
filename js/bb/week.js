@@ -75,7 +75,8 @@ import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
-import { advanceThemeArc, installTheme, themeBeat, themeState } from './themes.js';
+import { advanceThemeArc, installTheme, themeBeat, themeState,
+  themeTwistAnnouncement } from './themes.js';
 import { resolveWeekTwistState } from './twist-contract.js';
 import { offerSaboteurMission, resolveSaboteurMission, checkSaboteurBank, saboteurEvicted,
   announceSaboteur, runSaboteurAccusation, saboteurState } from './saboteur.js';
@@ -1644,7 +1645,15 @@ export function simulateBBWeek(options = {}) {
         effects: [{ kind: 'bond', text: `${outsiders[0]} & ${outsiders[1]} +0.3`, delta: 0.3 }],
       });
     }
-    week.acts.push({ type: 'twist-announcement', announced: group, secondCall: again, socialBeats: beats });
+    // Only decorate a rule the contract already made public. The theme helper
+    // also verifies that this exact week/type came from the theme's stamped
+    // arc, so CORA or the Den never takes credit for a card the user booked.
+    const themeAnnouncer = themeTwistAnnouncement(group[0], {
+      week: week.themeWeek ?? week.num,
+      side: options.splitSide || '',
+    });
+    week.acts.push({ type: 'twist-announcement', announced: group,
+      secondCall: again, socialBeats: beats, themeAnnouncer });
     }
   }
   // After the wall has spoken, if it spoke this week.

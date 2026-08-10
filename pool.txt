@@ -1,0 +1,24 @@
+endurance USUAL (7): Hold the Line | Cold Comfort | The Wall | Pressure Cooker | The Wall | Dizzy Discs | Log Roll
+endurance REST  (32): Cut and Cover | Majority Rules | Morph 'O' Matic | Knockout | Slippery Slope | Bowlerina | Pure Chance | Slingshot Aim | Rollerball | In The Balance | Tower of Hanoi | Spelling Search | Stay or Fold | Tumblin' Dice | Rollin' in the Dough | Ready, Set, Woah | Solve For X | OTEV | Hide and Go Veto | BB Comics | Before or After | The Run | Who Said It? | Drunk Speeches | Zingbot Competition | To Drink or to Bluff | Punch, Slap, Kick | The Black Box | What's The Hold Up | Caged Eggs | Laser Maze | Water Rescue
+skill USUAL (15): Cut and Cover | Slippery Slope | Bowlerina | Slingshot Aim | Rollerball | In The Balance | Tower of Hanoi | Spelling Search | Rollin' in the Dough | Ready, Set, Woah | The Run | What's The Hold Up | Caged Eggs | Laser Maze | Water Rescue
+skill REST  (24): Hold the Line | Cold Comfort | Majority Rules | Morph 'O' Matic | Knockout | Pure Chance | Stay or Fold | Tumblin' Dice | Solve For X | OTEV | The Wall | Pressure Cooker | Hide and Go Veto | BB Comics | Before or After | The Wall | Who Said It? | Drunk Speeches | Zingbot Competition | To Drink or to Bluff | Punch, Slap, Kick | The Black Box | Dizzy Discs | Log Roll
+total 62, hoh-capable 33
+  hoh endurance (6): Hold the Line, Cold Comfort, The Wall, Pressure Cooker, Dizzy Discs, Log Roll
+  hoh puzzle (3): Cut and Cover, Tower of Hanoi, Spelling Search
+  hoh quiz (4): Majority Rules, Solve For X, Who Said It?, Zingbot Competition
+  hoh memory (4): Morph 'O' Matic, Knockout, Drunk Speeches, The Black Box
+  hoh physical (5): Slippery Slope, Rollin' in the Dough, Ready, Set, Woah, What's The Hold Up, Water Rescue
+  hoh precision (5): Bowlerina, Slingshot Aim, Rollerball, In The Balance, Caged Eggs
+  hoh luck (3): Pure Chance, Stay or Fold, Tumblin' Dice
+  hoh mental (2): BB Comics, Before or After
+  hoh social (1): To Drink or to Bluff
+ALL endurance (9): Hold the Line[hoh/veto], Cold Comfort[hoh/veto/arena], Unravel[arena], White Knuckle[arena], The Wall[hoh/tiebreaker/return], Pressure Cooker[hoh/tiebreaker/return], The Wall[final], Dizzy Discs[hoh/veto/tiebreaker/return], Log Roll[hoh/tiebreaker]
+ALL puzzle (5): Cut and Cover[hoh/veto/arena/tiebreaker], Knight Moves[arena], The Blind Spot[pair], Tower of Hanoi[hoh/veto/tiebreaker], Spelling Search[hoh/veto/tiebreaker]
+ALL quiz (6): Majority Rules[hoh/veto/tiebreaker], Instant Crossword[arena], Solve For X[hoh/veto/tiebreaker], Jury Statements[final], Who Said It?[hoh/tiebreaker], Zingbot Competition[hoh/veto/tiebreaker]
+ALL memory (5): Morph 'O' Matic[hoh/veto/arena/tiebreaker], Knockout[hoh/veto/tiebreaker], Drunk Speeches[hoh/tiebreaker], Punch, Slap, Kick[veto/tiebreaker], The Black Box[hoh/veto/tiebreaker]
+ALL physical (12): Slippery Slope[veto/arena/hoh], Steady Hands[arena], Vertigo[arena], Last Shot[arena], Down the Tube[arena], Spin Cycle[arena], Ball and Chain[pair], Rollin' in the Dough[hoh/veto/tiebreaker], Ready, Set, Woah[hoh/veto/tiebreaker], The Run[final], What's The Hold Up[hoh/tiebreaker], Water Rescue[hoh/veto/tiebreaker]
+ALL precision (10): Bowlerina[hoh/veto/arena/tiebreaker], Perfect Shot[arena], Niagara Balls[arena], The Pouring 20s[pair], Crash Pad[pair], Slingshot Aim[hoh/veto/tiebreaker], Rollerball[hoh/veto/tiebreaker], In The Balance[hoh/veto/tiebreaker], Caged Eggs[hoh/veto/tiebreaker], Laser Maze[veto/tiebreaker]
+ALL luck (4): Pure Chance[hoh/veto/arena/tiebreaker], On Tilt[arena], Stay or Fold[hoh/veto/tiebreaker], Tumblin' Dice[hoh/veto/tiebreaker]
+ALL mental (10): Flash Wall[arena], Lockout[arena], Blackout[arena], Head Count[arena], The Long Number[arena], Chain Reaction[arena], OTEV[veto], Hide and Go Veto[veto], BB Comics[veto/hoh], Before or After[hoh/veto/tiebreaker/return]
+ALL social (1): To Drink or to Bluff[hoh/veto/tiebreaker]
+final-typed: The Wall[endurance], The Run[skill], Jury Statements[quiz]

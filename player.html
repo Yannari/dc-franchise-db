@@ -2176,13 +2176,31 @@ async function ppGalleryFill() {
       if (added >= free.length) break;
       say(`Adding ${added + 1}…`);
       try {
-        const img = await new Promise((res, rej) => {
-          const im = new Image();
-          im.crossOrigin = 'anonymous';
-          im.onload = () => res(im);
-          im.onerror = () => rej(new Error('could not load'));
-          im.src = cand.url;
-        });
+        // Through the Worker, never straight from the wiki — see
+        // /api/wiki-image. A direct request gets a 404 served AS AN IMAGE,
+        // which decodes happily and uploads as a grey square.
+        const wr = await fetch(`${PP_API}/api/wiki-image?url=${encodeURIComponent(cand.url)}`,
+          { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!wr.ok) {
+          const j = await wr.json().catch(() => ({}));
+          throw new Error(j.error || `fetch failed (${wr.status})`);
+        }
+        const src = URL.createObjectURL(await wr.blob());
+        let img;
+        try {
+          img = await new Promise((res, rej) => {
+            const im = new Image();
+            im.onload = () => res(im);
+            im.onerror = () => rej(new Error('could not decode'));
+            im.src = src;
+          });
+        } finally { URL.revokeObjectURL(src); }
+        // The wiki said how big this is. Anything that decodes far smaller is
+        // not the file we asked for — a placeholder, an error card, a thumbnail
+        // — and uploading it is worse than skipping it.
+        if (cand.w && img.naturalWidth < Math.min(cand.w, 300) * 0.6) {
+          throw new Error(`got ${img.naturalWidth}x${img.naturalHeight}, expected ${cand.w}x${cand.h}`);
+        }
         const cutout = _ppIsCutout(img);
         if (cutout && poses >= 2) continue;
         const cap = 1600;

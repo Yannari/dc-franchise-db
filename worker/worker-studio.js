@@ -127,6 +127,40 @@ export default {
         return json({ ok: true, slug, images }, 200, rcors, 30);
       }
 
+      // ── fetching a wiki image on the page's behalf ────────────────────
+      //
+      // Fandom hotlink-protects its image host. The same URL that returns
+      // 264 KB to curl returns a 404 placeholder to a browser, because the
+      // browser sends a Referer — and it returns it AS AN IMAGE, so nothing
+      // errors: the page decoded the placeholder, re-encoded it, and uploaded
+      // five identical 550-byte grey squares into a gallery.
+      //
+      // A Worker has no Referer, so it gets the real file. The bytes come back
+      // here, the page still does the resizing and the WebP encoding, and the
+      // upload path is unchanged.
+      //
+      // Locked to the wiki image host and behind the token, because "fetch any
+      // URL you like and hand me the bytes" is an open proxy.
+      if (request.method === 'GET' && url.pathname === '/api/wiki-image') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const target = url.searchParams.get('url') || '';
+        let host = '';
+        try { host = new URL(target).hostname; } catch { host = ''; }
+        if (host !== 'static.wikia.nocookie.net') {
+          return json({ ok: false, error: 'only static.wikia.nocookie.net' }, 400, cors);
+        }
+        const res = await fetch(target, { headers: { 'User-Agent': 'dc-franchise-gallery/1.0' } });
+        if (!res.ok) return json({ ok: false, error: `wiki said ${res.status}` }, 502, cors);
+        const type = res.headers.get('Content-Type') || '';
+        if (!type.startsWith('image/')) return json({ ok: false, error: 'not an image' }, 502, cors);
+        return new Response(res.body, {
+          headers: { ...cors, 'Content-Type': type, 'Cache-Control': 'no-store' },
+        });
+      }
+
       // ── adding to and removing from the gallery ───────────────────────
       //
       // assets/gallery/ is git-ignored and 592 MB, so the working copy is

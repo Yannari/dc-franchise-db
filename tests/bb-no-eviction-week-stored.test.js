@@ -61,4 +61,31 @@ describe('a week nobody was evicted in', () => {
     expect(res.built.length, 'the episode was found and still built nothing').toBe(1);
     expect(res.posts).toBeGreaterThan(0);
   });
+
+  it('recovers a save that already lost the week, without replaying it', () => {
+    // The push is fixed going forward. A season played BEFORE the fix still has
+    // the hole, and a week that has already aired — move-in day, the twins, the
+    // competition, two rounds of house life — is not something anybody should
+    // have to play again to get back.
+    house([{ episode: 1, type: 'bb-no-eviction' }]);
+    withSeededRandom(2026, () => simulateBBEpisode());
+    expect(gs.episodeHistory.length).toBe(1);
+
+    // Exactly the damaged state: the episode happened, the ledger is empty.
+    gs.bb.weeks = [];
+
+    expect(episodeRecords(gs, 'big-brother').length,
+      'the played week is unreachable and would have to be replayed').toBe(1);
+    const res = ensureFeeds(gs, { format: 'big-brother', season: 1, rebuild: true });
+    expect(res.found).toBe(1);
+    expect(res.posts, 'recovered the episode but still built nothing').toBeGreaterThan(0);
+  });
+
+  it('does not double-count a week the ledger already has', () => {
+    house([{ episode: 1, type: 'bb-no-eviction' }]);
+    withSeededRandom(2026, () => simulateBBEpisode());
+    // Stored AND in the history, which is the normal case after the fix.
+    expect(gs.bb.weeks.length).toBe(1);
+    expect(episodeRecords(gs, 'big-brother').map(r => r.episode)).toEqual([1]);
+  });
 });

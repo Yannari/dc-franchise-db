@@ -42,11 +42,28 @@ export function episodeRecords(gs, format) {
   // jury vote, the winner, the half-million — was the single episode the
   // audience had no reaction to at all.
   if (format === 'big-brother') {
+    // ── ANY WEEK THE LEDGER DOES NOT HAVE, NOT JUST THE FINALE ──
+    //
+    // This read `isFinale` only, because the finale was the one known episode
+    // that never reaches `gs.bb.weeks`. It was not the only one: a No Eviction
+    // week returned before the push and produced a complete episode the ledger
+    // had no record of — so a season whose first night had just been played
+    // reported no episodes at all.
+    //
+    // The push is fixed, but a save made before that fix still has the hole,
+    // and a played week is not something anybody should have to replay to get
+    // back. The episode record carries everything this reads — hoh, both
+    // nominee lists, the veto winner, who left — so the history IS the
+    // recovery, and reading it costs nothing on a season that never had the
+    // problem.
     const seen = new Set(out.map(r => r.episode));
     for (const [i, record] of (gs?.episodeHistory || []).entries()) {
-      if (!record?.isFinale && !record?.finale) continue;
-      const episode = Number(record.num ?? i + 1);
-      if (!Number.isFinite(episode) || seen.has(episode)) continue;
+      const episode = Number(record?.num ?? i + 1);
+      if (!record || !Number.isFinite(episode) || seen.has(episode)) continue;
+      // A Big Brother episode, rather than something another format left here.
+      const isWeek = record.isFinale || record.finale || record.hoh
+        || (record.initialNominees || []).length || (record.finalNominees || []).length;
+      if (!isWeek) continue;
       seen.add(episode);
       out.push({ record, episode });
     }

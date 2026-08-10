@@ -15990,7 +15990,7 @@ export function rpBuildBBColdOpen(ep) {
       : '';
     return `<div class="bbf-tile ${i === look ? 'is-now' : ''} ${inHouse ? 'is-in' : 'is-empty'}"${lookAt}>
       <div class="bbf-frame">
-        ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+        ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>`
           : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#222831;font-size:17px;font-weight:800">?</div>`}
@@ -22186,7 +22186,7 @@ const _bbEsc = v => String(v ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const _bbAvatar = (name, px = 26) => `<span class="bb-av" style="width:${px}px;height:${px}px">
-  <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+  <img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
   <i>${(name || '?')[0]}</i></span>`;
 
@@ -22230,7 +22230,7 @@ function _bbMemoryWall(stillIn, { note = '', status = {}, notYet = [] } = {}) {
         ${marks.length ? `<span class="bbw-mark ${marks.length > 1 ? 'is-multi' : ''}">${
           marks.map(m => `<b class="bbw-m-${m}">${label[m]}</b>`).join('')}</span>` : ''}
         <div class="bbw-photo">
-          <img src="assets/avatars/${_bbSlug(name)}.png" alt=""
+          <img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#4a4e48">${(name || '?')[0]}</span>
         </div>

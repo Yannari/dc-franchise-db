@@ -11,7 +11,7 @@ import { pStats, pronouns, challengeWeakness } from './players.js';
 import { getBond, bondLabel } from './bonds.js';
 import { EDIT_LABELS } from './edit-layer.js';
 import { buildCrashout, vpGenerateQuote, _riLastWords, _bbFinalPleaSpeech,
-  _bbIntroQuote, _bbFirstRead } from './vp-screens.js';
+  _bbIntroQuote, _bbFirstRead, rpBuildBBOverview } from './vp-screens.js';
 
 // Challenge-specific text functions
 import { _textCliffDive } from './chal/cliff-dive.js';
@@ -4168,6 +4168,140 @@ const _BB_PHASE_TITLE = {
   eviction: 'HOUSE LIFE — the last hours',
 };
 
+/**
+ * The two HOUSE STATUS screens, as text.
+ *
+ * The viewing party builds one of these before the week starts and one after it
+ * ends, and the transcript had neither. A reader got everything that HAPPENED
+ * and almost nothing about where anybody STOOD — the record so far, what each
+ * houseguest is playing for and why, which relationships are actually driving
+ * decisions, how visible each alliance is to the people outside it. That is
+ * most of what makes a week legible, and it was replay-only.
+ *
+ * Rendered THROUGH the screen builder rather than rewritten alongside it. The
+ * opening screen withholds a great deal on purpose — houseguests who have not
+ * walked in yet, block and veto markers for a week that has not happened, and
+ * the win from a sealed Head of Household reign, which a status screen crediting
+ * it would out by arithmetic. A text version written from the same data would
+ * have to reproduce every one of those omissions and would eventually miss one,
+ * and a transcript that spoils its own week is worse than no transcript.
+ *
+ * `skip` drops sections the transcript already prints under its own headings,
+ * so the two do not say the same thing twice a few lines apart.
+ */
+function _textBBHouseStatus(ep, phase, ln, sec, { skip = [] } = {}) {
+  let html = '';
+  try { html = rpBuildBBOverview(ep, phase) || ''; } catch { return; }
+  if (!html) return;
+
+  const lines = _textStripHtml(html
+    // FIRST, and the reason three earlier attempts at this kept failing: the
+    // builders are template literals written across several indented lines, so
+    // the markup carries real newlines between one cell and the next. Splitting
+    // on \n later therefore broke rows apart no matter what separators were put
+    // between the tags — an alliance hold row arrived as a loose score, a loose
+    // name and a loose reason, and the score ended up credited to whoever was
+    // printed above it. Only tags decide where a line ends here.
+    .replace(/\s*\r?\n\s*/g, ' ')
+    // A portrait IS a name on this screen, and in two places it is the only
+    // one: "X is coming for Emmah" draws the hunter as a face and never writes
+    // their name down. Dropping the face therefore deleted whoever was doing
+    // the hunting. The avatar now carries the name in its alt text — which the
+    // screen reader wanted anyway — so take it from there and drop the initial
+    // that used to stand in for it.
+    .replace(/<span class="bb-av"[^>]*>.*?alt="([^"]*)".*?<\/span>/gi,
+      (_, name) => (name ? `${name} · ` : ''))
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/button>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    // The gazette's IN BRIEF is a <ul>, and without this its items arrived as
+    // one unreadable sentence: three separate changes of mind run together
+    // with no gap between them.
+    //
+    // Spans are deliberately NOT broken here. A standing row is one <div> made
+    // of a face span, a name and a stats span, so breaking on </span> detached
+    // every number from the houseguest it belonged to and turned the whole
+    // table into a column of loose digits.
+    .replace(/<\/li>/gi, '\n')
+    // Spans sit side by side on one row and their text ran together without a
+    // gap — "wants out Brightlybehind Bowie". A separator rather than a break,
+    // because a standing row IS a set of spans and breaking them detaches every
+    // number from the houseguest it belongs to.
+    // Same for the other inline cells. An alliance hold row is
+    // <b>score</b><span>name</span><em>reason</em> — one row, three cells, and
+    // the score comes FIRST. Left to break into separate lines, the merge below
+    // would have folded each score onto the line above it and credited every
+    // member's hold to the person before them.
+    .replace(/<\/(?:span|b|em|strong|i)>/gi, ' · '))
+    .replace(/&middot;|&bull;/g, '·').replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&times;/g, '×').replace(/&mdash;/g, '—').replace(/&ndash;/g, '–')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&amp;/g, '&')                       // last, so &amp;times; is safe
+    .split('\n')
+    .map(l => l.replace(/▲|▼/g, '').replace(/(\s*·\s*)+/g, ' · ')
+      .replace(/^\s*·\s*|\s*·\s*$/g, '')
+      // A record badge sits inside the same cell as the plan it belongs to and
+      // has no separator of its own: "playing the whole board1× HOH".
+      .replace(/([a-z])(\d+×)/g, '$1 · $2')
+      .trim())
+    // A portrait next to the name it depicts now says it twice — "Emmah ·
+    // Emmah", "Nichelle · Jo · Nichelle vs · Jo". Only a bare capitalised name
+    // is ever dropped, and only when a LATER cell on the same row names that
+    // person too, so the hunter in "Bowie · is coming for · Emmah" survives:
+    // nothing later on that line names Bowie.
+    .map(l => {
+      const cells = l.split(' · ');
+      const namesIn = s => s.split(/[^A-Za-z'-]+/).filter(Boolean);
+      return cells.filter((c, i) => {
+        if (!/^[A-Z][A-Za-z'-]*$/.test(c)) return true;
+        return !cells.slice(i + 1).some(later => namesIn(later).includes(c));
+      }).join(' · ')
+        // A pairing is one phrase, not two cells: "Nichelle vs Jo".
+        .replace(/ (vs|&) · /g, ' $1 ');
+    })
+    // The memory wall draws a portrait as a letter in a circle, so every
+    // houseguest arrived in the transcript twice: their initial, then their
+    // name. A single letter is never a line worth reading here.
+    .filter(l => l && !/^[A-Za-z]$/.test(l))
+    // A line with no letters in it is a value, not a statement — the counts
+    // beside a name in the standing grid, which each sit in their own cell and
+    // so arrive on their own line, meaning nothing on their own.
+    .reduce((acc, l) => {
+      if (acc.length && !/[A-Za-z]/.test(l)) acc[acc.length - 1] += ` · ${l}`;
+      else acc.push(l);
+      return acc;
+    }, []);
+  if (!lines.length) return;
+
+  // The screen's own headings, so a skipped one takes its body with it.
+  const HEADINGS = ['WHERE EVERYBODY STANDS', 'WHAT EVERYBODY IS PLAYING FOR',
+    'RELATIONSHIPS THAT MATTER', 'WHY PLANS CHANGED', 'THE SEASON SO FAR'];
+  const drop = new Set(skip);
+
+  sec(`HOUSE STATUS — ${phase === 'opening' ? 'BEFORE' : 'AFTER'}`);
+  let dropping = false;
+  let wrote = 0;
+  for (const line of lines) {
+    // The screen repeats its own title and the phase caption; the section
+    // heading above already says both.
+    if (line === 'HOUSE STATUS' || /^Week \d+$/.test(line)) continue;
+    if (/^(Before anything happens this week|After everything that happened this week)\.$/.test(line)) continue;
+    if (HEADINGS.includes(line)) {
+      dropping = drop.has(line);
+      if (!dropping) { ln(''); ln(`  ${line}`); wrote++; }
+      continue;
+    }
+    if (dropping) continue;
+    ln(`  ${line}`);
+    wrote++;
+  }
+  // A week with nothing to report should not leave a bare heading behind.
+  if (!wrote) ln('  Nothing has moved yet.');
+}
+
 export function generateBBSummaryText(ep) {
   if (ep.isFinale) return generateBBFinaleText(ep);
   const L = [];
@@ -4229,6 +4363,11 @@ export function generateBBSummaryText(ep) {
       ln(`  ${late.join(', ')} ${late.length === 1 ? 'has' : 'have'} not walked in yet.`);
     }
   }
+
+  // Where the house stands walking into the week, before a single thing in it
+  // has happened. On week one this is thin by design — nobody has a record, an
+  // alliance or a target yet — and it fills out from week two.
+  _textBBHouseStatus(ep, 'opening', ln, sec);
 
   // MOVE-IN DAY.
   //
@@ -5790,6 +5929,11 @@ export function generateBBSummaryText(ep) {
       ln('');
     }
   }
+
+  // And the same picture again with the week's results in it. WHY PLANS CHANGED
+  // is dropped: HOW THE PLANS CHANGED above is the same revisions from the same
+  // field, and printing both puts the identical list on the page twice.
+  _textBBHouseStatus(ep, 'closing', ln, sec, { skip: ['WHY PLANS CHANGED'] });
 
   return L.join('\n');
 }

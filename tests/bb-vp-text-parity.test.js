@@ -57,8 +57,12 @@ const REWORDED = new Map([
   ['bb-americasnominee', "AMERICA'S NOMINEE — the third key on the wall"],
   ['bb-double', 'DOUBLE EVICTION — THE SECOND CYCLE, LIVE'],
   ['bb-otherside', 'THE HOUSE IS SPLIT — "the two halves cannot see or speak to each other"'],
-  ['bb-overview', 'GOING IN and THE ALLIANCE BOARD carry the same standings in prose'],
-  ['bb-overview-after', 'THE ALLIANCE BOARD and HOW THE PLANS CHANGED, after the week'],
+  // Both overview screens used to be here, exempted on the grounds that the
+  // transcript said roughly the same thing in prose. It did not: the alliance
+  // board and the plan changes are two of the screen's five sections, and the
+  // record so far, what everybody is playing for and which relationships are
+  // driving decisions reached no reader at all. They are rendered from the
+  // builder now, so the page and the transcript cannot drift apart.
 ]);
 
 const BLOCK = /<\/(div|p|li|td|th|tr|h[1-6]|article|section|blockquote|figcaption|aside)>|<br\s*\/?>/gi;

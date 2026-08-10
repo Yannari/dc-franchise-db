@@ -18939,7 +18939,118 @@ export function rpBuildBBTwistAnnouncement(ep, act) {
  * unthemed fallback, which in practice nothing reaches — a theme-beat act
  * cannot exist without a theme.
  */
+/**
+ * The antagonist's card — and each theme draws its own.
+ *
+ * A shared card made the second theme a recolour of the first: same pulsing
+ * eye, same layout, teal instead of red. The tokens carry a season's palette
+ * across the WEEKLY screens, which is what they are for, but the antagonist's
+ * own screen is the one place a theme should look like nothing else — so this
+ * dispatches on the theme and falls back to the Den's booth for anything that
+ * has not drawn itself one yet.
+ */
 export function rpBuildBBThemeBeat(ep, act) {
+  if (act?.themeId === 'machine-summer') return _rpThemeBeatCora(ep, act);
+  return _rpThemeBeatDen(ep, act);
+}
+
+/**
+ * CORA: a wall terminal, not a face.
+ *
+ * The show gave its AI a hologram box in the living room. The interesting part
+ * was never the hologram — it was that the house was being ADDRESSED BY THE
+ * BUILDING, and every surface it spoke from was one it also watched them
+ * through. So this is a panel set into the wall: a voiceprint that moves while
+ * she talks, telemetry nobody asked for, and a status line that is polite right
+ * up until it is not.
+ *
+ * CSS only, no emoji, and the whole thing goes still under reduced motion.
+ */
+function _rpThemeBeatCora(ep, act) {
+  const week = ep?.num ?? ep?.episode ?? '';
+  const hostile = act?.mood === 'hostile';
+  // Deterministic bar heights: the same beat draws the same voiceprint every
+  // time the screen is rebuilt, so a reveal does not reshuffle her voice.
+  const seedStr = `${act?.hook || ''}${week}${act?.line?.length || 0}`;
+  let h = 0; for (const ch of seedStr) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const bars = Array.from({ length: 48 }, (_, i) => {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const base = 12 + (h % 76);
+    // taper the ends so it reads as a waveform rather than a bar chart
+    const edge = Math.min(i, 47 - i) / 12;
+    // PIXELS, not per cent. A percentage height on a flex item under
+    // `align-items:center` has no definite basis to resolve against, so every
+    // bar collapsed to 4px and the voiceprint was a dotted line.
+    return Math.max(5, Math.round(0.62 * base * Math.min(1, edge)));
+  });
+  const status = hostile ? 'SUPERVISION WITHDRAWN' : 'ASSISTING';
+  const label = { open: 'WEEK OPEN', noms: 'NOMINATIONS LOGGED', veto: 'VETO LOGGED',
+    vote: 'VOTE TALLIED', finale: 'FINAL NIGHT', crown: 'RESULT CONFIRMED' }[act?.hook] || 'BROADCAST';
+  return `<div class="rp-page bb-room bb-block cora${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
+    <style>
+      .cora{--c:#3ad6c4;--c2:#7ef0e2;--ink:#dfe9ee;max-width:1100px;margin:0 auto;padding:34px 20px}
+      .cora.is-hostile{--c:#ff3b30;--c2:#ff7a6e;--ink:#ffe4e0}
+      .cora-term{position:relative;border:1px solid color-mix(in srgb,var(--c) 42%,transparent);
+        border-radius:3px;background:
+          linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 34%),
+          linear-gradient(180deg,#0a141a,#050a0e);
+        box-shadow:0 0 0 1px rgba(0,0,0,.6),0 24px 70px -30px var(--c),
+          inset 0 0 90px -30px color-mix(in srgb,var(--c) 40%,transparent);
+        overflow:hidden}
+      .cora-term::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+        background:repeating-linear-gradient(180deg,color-mix(in srgb,var(--c2) 9%,transparent) 0 1px,transparent 1px 3px);
+        animation:coraScan 6s linear infinite}
+      .cora.is-hostile .cora-term::after{animation-duration:1.6s;opacity:.75}
+      @keyframes coraScan{0%{background-position:0 0}100%{background-position:0 60px}}
+      .cora-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;
+        border-bottom:1px solid color-mix(in srgb,var(--c) 26%,transparent);
+        font-family:ui-monospace,Consolas,monospace;font-size:9px;letter-spacing:.2em;
+        text-transform:uppercase;color:color-mix(in srgb,var(--ink) 62%,transparent);position:relative;z-index:2}
+      .cora-dot{width:7px;height:7px;border-radius:50%;background:var(--c);
+        box-shadow:0 0 10px var(--c);animation:coraPulse 2.4s ease-in-out infinite}
+      .cora.is-hostile .cora-dot{animation-duration:.7s}
+      @keyframes coraPulse{0%,100%{opacity:.45}50%{opacity:1}}
+      .cora-name{color:var(--c);font-weight:700;letter-spacing:.34em}
+      .cora-status{margin-left:auto;color:var(--c)}
+      .cora-body{position:relative;z-index:2;padding:30px 30px 26px;text-align:center}
+      .cora-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:70px;margin-bottom:26px}
+      .cora-wave i{display:block;width:4px;border-radius:2px;background:var(--c);
+        box-shadow:0 0 8px -1px var(--c);animation:coraWave 1.1s ease-in-out infinite alternate}
+      .cora.is-hostile .cora-wave i{animation-duration:.34s}
+      @keyframes coraWave{from{transform:scaleY(.42)}to{transform:scaleY(1)}}
+      .cora-line{font-size:23px;line-height:1.45;color:var(--ink);max-width:760px;margin:0 auto;
+        font-family:var(--font-display,inherit);letter-spacing:.012em}
+      .cora-meta{display:flex;gap:26px;justify-content:center;margin-top:24px;
+        font-family:ui-monospace,Consolas,monospace;font-size:8.5px;letter-spacing:.18em;
+        text-transform:uppercase;color:color-mix(in srgb,var(--ink) 38%,transparent);position:relative;z-index:2}
+      .cora-meta b{display:block;color:var(--c);font-weight:700;margin-top:3px;letter-spacing:.14em}
+      @media(max-width:640px){.cora-line{font-size:18px}.cora-meta{gap:14px}}
+      @media(prefers-reduced-motion:reduce){
+        .cora-term::after,.cora-dot,.cora-wave i{animation:none!important}
+        .cora-wave i{transform:scaleY(.8)}}
+    </style>
+    <div class="cora-term">
+      <div class="cora-bar">
+        <span class="cora-dot"></span>
+        <span class="cora-name">CORA</span>
+        <span>${label}</span>
+        <span class="cora-status">${status}</span>
+      </div>
+      <div class="cora-body">
+        <div class="cora-wave" aria-hidden="true">${
+          bars.map(b => `<i style="height:${b}px"></i>`).join('')}</div>
+        <div class="cora-line">${_bbEsc(act?.line || '')}</div>
+        <div class="cora-meta">
+          <span>Week<b>${week || '--'}</b></span>
+          <span>Channel<b>HOUSE WIDE</b></span>
+          <span>Consent<b>${hostile ? 'NOT REQUIRED' : 'ASSUMED'}</b></span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _rpThemeBeatDen(ep, act) {
   const week = ep?.num ?? ep?.episode ?? '';
   const hostile = act?.mood === 'hostile';
   return `<div class="rp-page bb-room bb-block bbth${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">

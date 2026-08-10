@@ -44,3 +44,8 @@ backups/
 # it broke GitHub Pages, whose published-site limit is 1 GB. Kept on disk so
 # localhost still works; pushed with scripts/upload_gallery_r2.py.
 assets/gallery/
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

@@ -143,7 +143,26 @@ export default {
     // powers, choose one before you know who else chose it. The show's morality
     // test opened the same way — the house voted on something and the AI
     // quietly sorted them by what they voted.
-    { at: { week: 2 }, book: 'bb-whacktivity' },
+    // ── CORA HANDS OUT UPGRADES ────────────────────────────────────────
+    //
+    // BB26 gave the Deepfake away in the premiere's Upgrade Competition: you
+    // picked a side before you knew what was behind it, and the winners each
+    // walked out with a power. The Whacktivity is that shape already — three
+    // doors, choose one before you know who else chose it, winners told in
+    // private and the house told nothing — so the arc stocks the doors rather
+    // than a new competition being written to do the same job.
+    //
+    // The three are one menu with one idea behind it: CORA editing the rules on
+    // your behalf. Wear the Head of Household's face; change who goes up in the
+    // empty chair; take yourself off the block entirely. The middle one stands
+    // in for America's Veto, which BB26 handed out beside the Deepfake in the
+    // same competition.
+    //
+    // The Deepfake runs four weeks from here, so on any cast it expires around
+    // the time CORA turns: it is used while she is still being helpful, or it
+    // dies the week she stops.
+    { at: { week: 2 }, book: 'bb-whacktivity',
+      options: { doors: ['deepfake-hoh', 'veto-replacement', 'the-cloud'] } },
     // And then it opens the store. An audience-facing power channel is the most
     // obviously machine thing in the catalogue.
     { at: { week: 3 }, book: 'bb-app-store' },

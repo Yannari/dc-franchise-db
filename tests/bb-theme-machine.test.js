@@ -242,3 +242,54 @@ describe('the theme turns on the season-long twist it needs', () => {
     expect(gs.bb.saboteur?.player, 'no saboteur was cast').toBeTruthy();
   });
 });
+
+// ── how the Deepfake reaches the house ──────────────────────────────────
+//
+// BB26 gave it away in the premiere's Upgrade Competition — pick a side blind,
+// winners walk out with a power. The Whacktivity is that shape already, so the
+// arc stocks its doors instead of a second competition being written to do the
+// same job.
+describe('CORA hands out the Deepfake', () => {
+  beforeEach(() => house());
+
+  it('stocks the week-two doors rather than taking the default three', () => {
+    const whack = THEME().arc.find(a => a.book === 'bb-whacktivity');
+    expect(whack?.options?.doors).toContain('deepfake-hoh');
+    expect(whack.options.doors.length).toBe(3);
+  });
+
+  it('only stocks powers that exist', async () => {
+    const { BB_POWER_DEFINITIONS } = await import('../js/bb/powers.js');
+    for (const a of THEME().arc) {
+      for (const id of a.options?.doors || []) {
+        expect(BB_POWER_DEFINITIONS[id], `${id} is not a real power`).toBeTruthy();
+      }
+      if (a.options?.prize) {
+        expect(BB_POWER_DEFINITIONS[a.options.prize], `${a.options.prize} is not a real power`).toBeTruthy();
+      }
+    }
+  });
+
+  it('carries the doors onto the stamped card, where you can change them', () => {
+    stampThemeArc(17);
+    const card = seasonConfig.twistSchedule.find(t => t.type === 'bb-whacktivity');
+    expect(card, 'the Whacktivity was never booked').toBeTruthy();
+    expect(card.doors).toContain('deepfake-hoh');
+  });
+
+  // The power runs four weeks from week two, so it expires around the turn:
+  // spent while CORA is still helpful, or dead the week she stops.
+  it('expires near the turn rather than outliving it', async () => {
+    const { BB_POWER_DEFINITIONS } = await import('../js/bb/powers.js');
+    const weeks = 17 - 3;
+    let turn = null;
+    for (const a of THEME().arc) {
+      if (!a.mood) continue;
+      const w = resolveArcWeek(a.at, weeks);
+      if (w >= 1 && w <= weeks) turn = turn === null ? w : Math.min(turn, w);
+    }
+    const expires = 2 + BB_POWER_DEFINITIONS['deepfake-hoh'].windowWeeks;
+    expect(Math.abs(expires - turn), 'the Deepfake outlives the turn by a long way')
+      .toBeLessThanOrEqual(3);
+  });
+});

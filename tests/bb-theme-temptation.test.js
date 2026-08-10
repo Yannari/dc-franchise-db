@@ -103,16 +103,19 @@ describe('the arc it actually books', () => {
       .sort((a, b) => a[0] - b[0]);
     // Twelve houseguests end at three, so nine weeks — the SHORT end of what
     // this game casts. The cadence has no room to fire (it starts at week five
-    // and stops before the endgame, which here begins at six), so a short
-    // season gets the opening and the endgame and nothing in between. `fromEnd`
-    // maps onto house size the same way at every cast: 4 is a final seven
-    // (week 6), 3 a final six (week 7), 2 a final five (week 8) — where the
-    // season's last offer is.
+    // and stops before the endgame, which here begins at five), so a short
+    // season gets the opening and the endgame and nothing in between.
+    //
+    // These weeks are the schedule's PREDICTION; `fromEnd` is really a house
+    // size, and `reanchorThemeArc` corrects the week in play. 5 is a final
+    // eight (week 5), 4 a final seven (week 6) — where the double goes, because
+    // it takes two and has to leave five standing — and 2 a final five
+    // (week 8), where the season's last offer is.
     expect(mine).toEqual([
       [2, 'bb-den-of-temptation'],
       [3, 'bb-have-nots'],
-      [6, 'bb-pandoras-box'],
-      [7, 'bb-double-eviction'],
+      [5, 'bb-pandoras-box'],
+      [6, 'bb-double-eviction'],
       [8, 'bb-den-of-temptation'],
     ]);
   });

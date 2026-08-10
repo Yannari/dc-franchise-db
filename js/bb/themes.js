@@ -223,10 +223,94 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
       episode: ep,
       type: act.book,
       source: 'theme',
+      // ── AN ENDGAME ACT IS ANCHORED TO THE HOUSE, NOT TO A COUNTED-BACK WEEK ──
+      //
+      // `fromEnd` is written as a house size — 3 is a final six — and the week
+      // it resolves to here is only this schedule's PREDICTION of when a house
+      // of that size will be standing. The prediction assumes a season is
+      // `cast - 3` weeks and that every week evicts exactly one, and neither
+      // holds in play: a measured seventeen-cast season ran sixteen weeks over
+      // fifteen episodes with two weeks that evicted nobody, so every
+      // end-anchored act aired one house size early. The double eviction landed
+      // at a final eight and the season's closing act at a final six.
+      //
+      // So the entry carries the size it was written for, and `reanchorThemeArc`
+      // moves it to whichever week the house actually reaches that size. The
+      // episode stays a real editable number the whole way — the designer draws
+      // it, the twist lookups read it — it is simply allowed to be corrected by
+      // the season it is in.
+      ...(act.at?.fromEnd != null
+        ? { atHouse: Number(act.at.fromEnd) + 3, plannedEpisode: ep }
+        : {}),
       ...(act.options || {}),
     });
   }
   return out;
+}
+
+/**
+ * Put every end-anchored theme card back on its predicted week.
+ *
+ * `reanchorThemeArc` edits `episode` as a season plays, and the schedule it
+ * edits is saved config that outlives the season. Without this, a second season
+ * started from the same config opens with the first season's corrections baked
+ * in and every card already marked as having fired — so the whole endgame is
+ * skipped, silently, on every run after the first.
+ */
+export function resetThemeAnchors() {
+  for (const entry of seasonConfig.twistSchedule || []) {
+    if (!entry || entry.source !== 'theme') continue;
+    if (entry.plannedEpisode != null) entry.episode = Number(entry.plannedEpisode);
+    delete entry.themeFired;
+  }
+}
+
+/**
+ * Move this week's end-anchored theme cards onto this week.
+ *
+ * Called once per episode, before the twist lookup, with the house that is
+ * about to play. A card fires when the house has shrunk to the size it was
+ * written for — or past it, which is the case that matters: a double eviction
+ * at a final six leaves a final four, and an act anchored at a final five would
+ * otherwise wait for a week that never comes.
+ *
+ * At most one card moves onto any one week. Two acts due together are two acts
+ * whose window the house crossed in one jump, and firing both would collapse
+ * the authored escalation into a single night; the larger anchor goes first,
+ * which is the earlier act, and the rest wait. That keeps the guarantee
+ * `themeScheduleEntries` makes at authoring time — authored order is
+ * chronological order — true in play as well as on paper.
+ *
+ * Returns the entries that FIRE this week — including one that was already
+ * sitting on the right week and needed no correction, because "did this act
+ * happen" is the question worth asking of it, not "did the date change".
+ */
+export function reanchorThemeArc(epNum, houseSize) {
+  const sched = seasonConfig.twistSchedule;
+  if (!Array.isArray(sched)) return [];
+  const ep = Number(epNum);
+  const live = Number(houseSize);
+  if (!Number.isFinite(ep) || !Number.isFinite(live)) return [];
+  const pending = sched.filter(e => e && e.source === 'theme'
+    && !e.themeFired && Number.isFinite(Number(e.atHouse)));
+  // Anything already due but not chosen this week must not fire on its
+  // predicted episode either — it is waiting its turn, not sitting on a date.
+  const due = pending.filter(e => live <= Number(e.atHouse))
+    .sort((a, b) => Number(b.atHouse) - Number(a.atHouse));
+  const now = due[0] || null;
+  const fired = [];
+  for (const entry of pending) {
+    if (entry === now) {
+      entry.themeFired = true;
+      entry.episode = ep;
+      fired.push(entry);
+      continue;
+    }
+    // Not this week. If its prediction says otherwise, the prediction is the
+    // thing that is wrong — push it clear rather than let it run early.
+    if (Number(entry.episode) <= ep) entry.episode = ep + 1;
+  }
+  return fired;
 }
 
 /**
@@ -373,6 +457,8 @@ export function installTheme(houseSize) {
   // episode one. Record the state the voice and the reader need, and leave the
   // schedule exactly as authored.
   if (seasonConfig.themeArcStamped === theme.id) {
+    // A fresh season, on a schedule the last one may have corrected.
+    resetThemeAnchors();
     gs.bb.theme = {
       id: theme.id,
       mood: theme.antagonist?.mood || 'neutral',

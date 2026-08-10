@@ -170,7 +170,7 @@ export default {
     // The cadence: CORA keeps editing the house. Costumes, chores and prizes
     // handed out on a schedule nobody agreed to — the BB Mascots, in the show's
     // terms. Stops before the endgame anchors take over.
-    { every: 3, from: 5, untilFromEnd: 5, book: 'bb-prizes-and-punishments' },
+    { every: 3, from: 5, untilFromEnd: 6, book: 'bb-prizes-and-punishments' },
 
     // ── the turn ──
     // Week 10 on the real show, which on a twelve-cast season would be past the
@@ -180,14 +180,21 @@ export default {
     { at: { fromEnd: 5 }, mood: 'hostile' },
 
     // ── the endgame ──
+    // `fromEnd: n` means a house of n + 3, and `reanchorThemeArc` fires each of
+    // these on the week the house actually reaches that size rather than on the
+    // week this schedule predicted it would.
+    //
     // Everybody outside, living on nothing, because CORA has decided the house
-    // is a resource it is spending. fromEnd 5 is a final eight at every cast.
-    { at: { fromEnd: 5 }, book: 'bb-have-nots' },
+    // is a resource it is spending.
+    { at: { fromEnd: 6 }, book: 'bb-have-nots' },
     // A door with a question mark, from the machine that already knows.
-    { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'the-cloud' } },
+    { at: { fromEnd: 5 }, book: 'bb-pandoras-box', options: { prize: 'the-cloud' } },
     // Canon, and the best beat in the season: the AI turns and the first thing
-    // it does with its new mood is take two people out on one night.
-    { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
+    // it does with its new mood is take two people out on one night. At a final
+    // seven, because it takes two — run at a final six it would leave four
+    // standing and the ending below, written for a final five, would be aiming
+    // at a week the season no longer contains.
+    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
     // THE ENDING, at a final five: CORA stops asking a houseguest to run the
     // week and runs it itself. The Invisible HOH is a reign nobody can see —
     // which, played by a machine that has been reading every conversation all

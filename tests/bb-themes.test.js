@@ -79,7 +79,7 @@ describe('theme registry', () => {
 
 import { gs, setGs, resolveTwistSchedule } from '../js/core.js';
 import { themeScheduleEntries, installTheme, themeState, stampThemeArc, themeArcIsStamped,
-  themeModeConflicts } from '../js/bb/themes.js';
+  themeModeConflicts, reanchorThemeArc } from '../js/bb/themes.js';
 
 const FIXTURE = {
   id: 'fixture', name: 'Fixture', tagline: 't', house: 'bb-house',
@@ -855,9 +855,91 @@ describe('a theme that was picked but never stamped', () => {
     stampThemeArc(17);
     const de = seasonConfig.twistSchedule.find(t => t.type === 'bb-double-eviction');
     expect(de).toBeTruthy();
-    // 17 cast is 14 weeks; fromEnd 3 is week 12, where the house is six.
+    // 17 cast is 14 weeks; the fixture's fromEnd 3 is week 12, where the house
+    // is six — and the entry says so, so a season that runs long can correct it.
     expect(de.episode).toBe(12);
     expect(17 - (de.episode - 1)).toBe(6);
+    expect(de.atHouse).toBe(6);
+  });
+});
+
+// ── the endgame is a house size, and the week was only ever a guess ──────
+//
+// Measured off a played seventeen-cast season: sixteen weeks over fifteen
+// episodes, two of which evicted nobody. A season is NOT `cast - 3` weeks, so
+// every act counted back from an assumed finale aired one house size early —
+// the double at a final eight, the closing act at a final six.
+describe('end-anchored theme cards follow the house, not the calendar', () => {
+  beforeEach(() => {
+    seasonConfig.format = 'big-brother';
+    seasonConfig.theme = 'summer-of-temptation';
+    seasonConfig.twistSchedule = [];
+    seasonConfig.themeArcStamped = '';
+    setGs({ ...gs, bb: null });
+    stampThemeArc(17);
+  });
+  // The last test installs a theme onto `gs.bb`, and an installed theme is what
+  // `currentTheme()` reads FIRST — left behind, it answers for every describe
+  // below this one.
+  afterEach(() => { setGs({ ...gs, bb: null }); });
+
+  const de = () => seasonConfig.twistSchedule.find(t => t.type === 'bb-double-eviction');
+
+  it('carries the house size it was written for', () => {
+    expect(de().atHouse).toBe(7);
+    expect(de().plannedEpisode).toBe(de().episode);
+  });
+
+  it('waits when the season runs long and the house is still too big', () => {
+    // The predicted week arrives, but two weeks evicted nobody, so nine are
+    // still standing. The card must not fire on the strength of the date.
+    const moved = reanchorThemeArc(11, 9);
+    expect(moved).toEqual([]);
+    expect(de().episode).toBeGreaterThan(11);
+    expect(de().themeFired).toBeFalsy();
+  });
+
+  it('fires on the week the house actually reaches the size', () => {
+    reanchorThemeArc(11, 9);
+    reanchorThemeArc(12, 8);   // Pandora's week — a final eight
+    const fired = reanchorThemeArc(13, 7);
+    expect(fired.map(m => m.type)).toEqual(['bb-double-eviction']);
+    expect(de().episode).toBe(13);
+    expect(de().themeFired).toBe(true);
+  });
+
+  it('still fires when the house jumps clean past the size', () => {
+    // Somebody walked, or an earlier double took two: the house goes 8 -> 6
+    // without ever standing at seven. An act that waits for exactly seven waits
+    // for a week that does not exist.
+    reanchorThemeArc(11, 8);   // Pandora
+    const fired = reanchorThemeArc(12, 6);
+    expect(fired.map(m => m.type)).toEqual(['bb-double-eviction']);
+  });
+
+  it('never fires two acts on one week, and keeps them in authored order', () => {
+    // A house crossing several anchors at once must not collapse the whole
+    // endgame into one night.
+    const first = reanchorThemeArc(9, 5).map(m => m.type);
+    const second = reanchorThemeArc(10, 5).map(m => m.type);
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(1);
+    // Larger anchor first — that is the earlier act.
+    expect(first[0]).toBe('bb-pandoras-box');
+    expect(second[0]).toBe('bb-double-eviction');
+  });
+
+  it('is put back on its predicted week when a new season installs the theme', () => {
+    reanchorThemeArc(11, 8);
+    reanchorThemeArc(12, 7);
+    expect(de().themeFired).toBe(true);
+    const planned = de().plannedEpisode;
+    // A second season from the same saved config. Without the reset it opens
+    // with every endgame card already marked as having fired.
+    setGs({ ...gs, bb: { weeks: [] } });
+    installTheme(17);
+    expect(de().themeFired).toBeFalsy();
+    expect(de().episode).toBe(planned);
   });
 });
 

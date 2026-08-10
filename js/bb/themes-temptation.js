@@ -239,7 +239,7 @@ export default {
     // The offer, on a rhythm. Stops before the endgame anchors take over so it
     // never collides with them — the run-order rule would drop whichever came
     // second, and dropping the bill is worse than dropping an offer.
-    { every: 3, from: 5, untilFromEnd: 5, book: 'bb-den-of-temptation' },
+    { every: 3, from: 5, untilFromEnd: 6, book: 'bb-den-of-temptation' },
 
     // The turn, as a PROPORTION rather than a fixed week. `week: 6` is two
     // thirds of a twelve-cast season and barely a third of a twenty, so the Den
@@ -251,10 +251,19 @@ export default {
     // Both acts set the same mood, so whichever comes first is the turn.
     { at: { fromEnd: 5 }, mood: 'hostile' },
 
-    // The endgame, anchored to house size. fromEnd 4 is always a final seven,
-    // 3 always a final six, 2 always a final five.
-    { at: { fromEnd: 4 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
-    { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
+    // ── THE ENDGAME, IN HOUSE SIZES ────────────────────────────────────────
+    //
+    // `fromEnd: n` means a house of n + 3, and `reanchorThemeArc` fires each of
+    // these on the week the house actually reaches that size rather than on the
+    // week this schedule predicted it would.
+    //
+    // The double sits one week earlier than it used to. It takes TWO, so a
+    // double at a final six leaves a final four and the closing act below —
+    // written for a final five — was aiming at a week the season no longer
+    // contained. At a final seven the double leaves exactly five standing, and
+    // the Den's last offer lands on them.
+    { at: { fromEnd: 5 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
+    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
     // THE ENDING, at a final five. It deliberately does not run to the finale:
     // a season still introducing mechanics at a final four has nowhere to put
     // the consequences. The Den stops dealing here and spends the last night

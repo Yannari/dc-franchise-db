@@ -37,7 +37,7 @@ import { installBBSaboteur, saboteurState } from './bb/saboteur.js';
 import { installTwinTwist, twinState } from './bb/twin-twist.js';
 import { installDuos } from './bb/duos.js';
 import { installRivals, rivalsState } from './bb/rivals.js';
-import { installTheme } from './bb/themes.js';
+import { installTheme, reanchorThemeArc } from './bb/themes.js';
 // Re-exported so the Format Designer (bare-globals world) can list what a
 // distributor is allowed to hand out.
 export { BB_POWER_DEFINITIONS } from './bb/powers.js';
@@ -835,6 +835,11 @@ export function simulateBBEpisode() {
   // every double (episode 3, then 5). The schedule is authored in episodes,
   // so the twist lookup uses the episode count too.
   const epNum = (gs.episodeHistory?.length || 0) + 1;
+  // A theme's endgame is written in house sizes — a final six, a final five —
+  // and the schedule only guessed which weeks those would be. The house that is
+  // about to play is the fact; let the guess be corrected by it before anything
+  // reads the schedule.
+  try { reanchorThemeArc(epNum, house.length); } catch { /* the arc keeps its guess */ }
   const twists = bbTwistsForWeek(epNum);
 
   // A distributor's cargo is configured on its SCHEDULED INSTANCE — that is

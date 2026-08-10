@@ -924,6 +924,238 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// BIG BROTHER OVERRIDE
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every prompt template in this file is Total Drama's: tribes, tribal
+// council, immunity challenges, Chris. Nothing here knew Big Brother
+// existed, so a BB episode was written against a vocabulary that has no
+// word for what happened in it. The model translated on the fly — eviction
+// became tribal council, the HOH comp became immunity — and invented the
+// structure it was missing.
+//
+// That improvisation is where the facts went. One measured episode came
+// back naming the wrong Head of Household, listing the veto winner as a
+// nominee in a section set before the veto, and stating in consecutive
+// paragraphs that a houseguest both claimed and denied holding power. It
+// also dropped a house meeting entirely: the simulator prints 29 of 29
+// meeting and confrontation beats, and none of them survived the rewrite,
+// because the template has no section a house event can land in.
+//
+// So: detect the format from the source text, and replace the parts of
+// the prompt that are wrong for it.
+function isBigBrother(text) {
+  if (!text || typeof text !== "string") return false;
+  const head = text.slice(0, 60000);
+  return /HEAD OF HOUSEHOLD|NOMINATION CEREMONY|POWER OF VETO/.test(head);
+}
+
+const BB_OVERRIDE = `
+═══════════════════════════════════════════════════════════
+⚠️ THIS IS A BIG BROTHER SEASON — THE FORMAT BELOW IS OVERRIDDEN
+═══════════════════════════════════════════════════════════
+
+Everything after this block describes Total Drama: tribes, tribal council,
+immunity challenges, camp. THIS EPISODE HAS NONE OF THOSE. Where the two
+conflict, THIS BLOCK WINS. Take the writing craft from below — the voice,
+the invention rules, the emotional depth, the comedy — and none of the
+vocabulary or the section list.
+
+THE GAME YOU ARE WRITING:
+- Sixteen houseguests, one house, nobody leaves and nobody splits into tribes.
+- A Head of Household wins power for the week and names two nominees.
+- The Power of Veto can pull a nominee off the block; the HOH then names a
+  replacement. The veto holder may be a nominee, and may save themselves.
+- On eviction night the house votes. The HOH does not vote unless there is
+  a tie. THE NOMINEES DO NOT VOTE. Everyone else does.
+- Nobody is "voted out at tribal council". They are EVICTED.
+
+VOCABULARY — never use the left column, always the right:
+  tribal council            -> eviction night / the live vote
+  immunity challenge        -> Head of Household competition, or the veto comp
+  individual immunity       -> the veto, or being safe on the wall
+  tribe / tribe swap        -> the house / there is no swap
+  merge / post-merge        -> there is no merge; the house is one from day one
+  camp                      -> the house
+  voted out                 -> evicted
+  Chris                     -> the host (BB has no Chris; do not name him)
+
+═══════════════════════════════════════════════════════════
+FACTS ARE NOT YOURS TO WRITE
+═══════════════════════════════════════════════════════════
+
+You may invent how it FELT. You may never invent what HAPPENED. Everything
+in this list is read straight from the source text, copied, and never
+inferred, reconstructed, or smoothed into a better story:
+
+  • who won Head of Household, and who won the veto
+  • who was nominated, in what order, and who went up as the replacement
+  • whether the veto was used, on whom, and by whom
+  • who holds which power or advantage, when they got it, when they used it
+  • every vote: who cast it and whose name they wrote
+  • who was evicted
+  • which alliances exist and who is in them
+
+If the source text does not say something, YOU DO NOT KNOW IT. Write around
+the gap. Do not fill it.
+
+Two failures to check your own draft for before you finish:
+  1. CONTRADICTION. Read your episode back. If one paragraph says a person
+     holds power and another says they do not, you invented one of them.
+     Go back to the source and delete the one that is not in it.
+  2. ROLE DRIFT. The HOH, the veto holder and the nominees are four
+     different jobs and one person can hold two of them. Name each person's
+     role from the source every time you write it. Do not remember it.
+
+Hidden and secret powers are the hardest thing in this format and the thing
+you get wrong most: someone can hold power the house does not know about.
+Keep the house's belief and the truth separate on the page at all times.
+Write what the house thinks, and write what is true, and never let your own
+narration adopt the house's mistake as fact.
+
+═══════════════════════════════════════════════════════════
+OUTPUT FORMAT — BIG BROTHER (REPLACES THE STRUCTURE BELOW)
+═══════════════════════════════════════════════════════════
+
+=== META ===
+SEASON: [name]
+WEEK [num] - "[invented episode title]"
+
+=== CAST (ALL) ===
+[all original houseguests, alphabetical, one per line]
+
+=== STILL IN THE HOUSE ===
+[active houseguests, one per line]
+
+=== EVICTED ===
+[evicted houseguests, one per line, oldest first]
+
+=== JURY ===
+[jurors if the jury has started, oldest first; otherwise N/A]
+
+---
+
+## THE WEEK OPENS
+[4-6 sentences. Where the house stands coming out of the last eviction. Who
+is exposed, who is comfortable and wrong to be. Pull from the source's
+opening house life. At least one specific conversation AND one thing
+somebody is carrying that they have not said out loud.]
+
+---
+
+## HEAD OF HOUSEHOLD
+[The competition: what it was, how it went, who fell out and when, who won.
+Name the winner ONCE, clearly, and never contradict it afterwards. Then the
+room's reaction — who goes upstairs first, who does not go at all, and what
+that absence says.]
+
+---
+
+## HOUSE LIFE
+[⚠️ MANDATORY SECTION. NEVER OMIT IT, NEVER LEAVE IT EMPTY.
+
+Every house meeting, confrontation, blow-up, argument, alliance meeting and
+aftershock in the source text goes HERE, in full, with the people who were
+in the room named. These are the scenes the house will still be talking
+about in three weeks and they are the reason this format is worth watching.
+
+A house meeting is a set piece: somebody calls the house together, the room
+fills, an accusation lands or does not land, and people leave in a
+different configuration than they arrived in. Write it as a SCENE — who
+called it, what was said, who backed the caller, who went quiet, and what
+it cost. Do not summarise it in a sentence. Do not fold it into a strategy
+paragraph. Do not drop it because the week was busy.
+
+If the source contains no house events, write the ordinary texture of the
+house instead — cooking, sleep, the slop, boredom, somebody cracking. This
+section is never empty.]
+
+---
+
+## NOMINATION CEREMONY
+[Who went up and the reasoning given out loud. Then the reasoning that was
+not said out loud. If the nominations were shaped by a hidden power, say so
+plainly to the reader while keeping the house in the dark.]
+
+---
+
+## POWER OF VETO
+[Who played and how they were drawn. The competition. Who won. Then the
+lobbying: who got to the veto holder first, who did not bother, who was
+too proud to ask.]
+
+---
+
+## VETO CEREMONY
+[Used or not used, on whom, and the replacement if there is one. The
+reaction in the room. If an alliance member went up, that is the week's
+fracture — write it as one.]
+
+---
+
+## THE VOTE
+[The campaign first: what each nominee is telling people and who is
+actually listening. Then the count, as a table:
+
+| Voter | Vote |
+|-------|------|
+| [name] | [name] |
+
+Only houseguests who actually voted appear. Nominees do not vote. The HOH
+does not vote unless there was a tie. Then the result, then the eviction.]
+
+---
+
+## WHY THEY WENT
+[The surface reason the house would give, then the real structure
+underneath it: which bloc needed it, who was protecting whom, and what the
+evicted houseguest misread. If somebody was blindsided, say what they
+believed and who let them keep believing it.]
+
+---
+
+## STRATEGIC ANALYSIS
+### [Houseguest]: [their week in four words]
+[What they did, what they are feeling, what they want that they cannot
+say out loud, and what is building. 4-6 houseguests — the ones the week
+actually moved.]
+
+---
+
+## CURRENT GAME STATUS
+[Every remaining houseguest grouped by alliance, each with a one-line role:
+Hub, Shield, Threat, Operator, Wildcard, Outsider — and one line of why.]
+
+---
+
+## ONGOING STORYLINES
+[3-5 threads. For each: the situation, what each person in it feels, and
+the specific thing that will make it explode.]
+
+---
+
+## COMEDY BEATS
+### [Houseguest(s)]: [one-line label]
+[3-5 moments played for laughs. The house is a pressure cooker and funny
+things happen in it.]
+
+---
+
+## COLD OPEN HOOK
+[The scene next week opens on.]
+
+---
+
+## NEXT WEEK QUESTIONS
+[4-5 questions the week actually raised.]
+
+═══════════════════════════════════════════════════════════
+END OF BIG BROTHER OVERRIDE — everything below is Total Drama
+reference. Use its CRAFT. Ignore its FORMAT.
+═══════════════════════════════════════════════════════════
+`;
+
 async function enhanceSummary(simulatorSummary, season, episode, env, prevSummary = "", franchiseContext = "", seasonSetting = "", quality = false) {
   if (!simulatorSummary || typeof simulatorSummary !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
@@ -940,7 +1172,10 @@ async function enhanceSummary(simulatorSummary, season, episode, env, prevSummar
     ? `═══ PREVIOUS EPISODE SUMMARIES ═══\n${prevSummary}\n═══ END ═══\n\n`
     : "";
 
-  const instructions = `You are a Total Drama franchise analyst. You will receive an episode summary generated by a game simulator. Your job is to reformat and expand it into the rich narrative format used by the TV episode writer. The simulator has all the facts. You add the comedy, the character voice, and the cartoon energy. This is Total Drama / Disventure Camp — a CARTOON COMEDY first, drama second.
+  // Placed first so it is the first thing read: it disclaims the rest.
+  const bbBlock = isBigBrother(simulatorSummary) ? BB_OVERRIDE : "";
+
+  const instructions = `${bbBlock}You are a Total Drama franchise analyst. You will receive an episode summary generated by a game simulator. Your job is to reformat and expand it into the rich narrative format used by the TV episode writer. The simulator has all the facts. You add the comedy, the character voice, and the cartoon energy. This is Total Drama / Disventure Camp — a CARTOON COMEDY first, drama second.
 
 ${franchiseBlock}
 CRITICAL RULES:
@@ -1430,7 +1665,9 @@ async function generateSummary(rawText, season, episode, env, prevSummary = "", 
     });
   }
 
-  const instructions = `You are a Total Drama franchise analyst and TV writer's room assistant. Convert the raw BrantSteele simulation output into a structured episode summary. Your summaries are used to generate full episode scripts — so they must be SPECIFIC, STORY-DRIVEN, and full of usable dramatic detail. Vague relationship labels ("brewing instability", "minor positive relationships") are USELESS. Concrete story moments are EVERYTHING.
+  const bbBlock = isBigBrother(rawText) ? BB_OVERRIDE : "";
+
+  const instructions = `${bbBlock}You are a Total Drama franchise analyst and TV writer's room assistant. Convert the raw BrantSteele simulation output into a structured episode summary. Your summaries are used to generate full episode scripts — so they must be SPECIFIC, STORY-DRIVEN, and full of usable dramatic detail. Vague relationship labels ("brewing instability", "minor positive relationships") are USELESS. Concrete story moments are EVERYTHING.
 
 ═══════════════════════════════════════════════════════════
 HOW TO READ BRANTSTEELE OUTPUT — CRITICAL
@@ -2355,7 +2592,39 @@ CHRONOLOGY STILL OVERRIDES THE PLAN: the plan tells you the whole episode includ
 ${episodePlan}
 ` : '';
 
-  const instructions = `
+  // The screenplay writer needs the vocabulary and the fact-lock, not the
+  // section list — it outputs scenes, not headed sections.
+  const bbScreen = isBigBrother(summaryText) ? `
+═══════════════════════════════════════════════════════════
+⚠️ THIS IS A BIG BROTHER EPISODE, NOT TOTAL DRAMA
+═══════════════════════════════════════════════════════════
+There are no tribes, no camp, no tribal council, no immunity challenge, no
+merge, and no Chris. There is one house, a Head of Household who nominates
+two houseguests, a Power of Veto that can pull one of them off the block,
+and a live vote on eviction night. Nobody is voted out; they are EVICTED.
+The nominees do not vote. The HOH votes only to break a tie.
+
+The scene vocabulary is the house: the HOH room, the storeroom, the have-not
+room, the backyard, the diary room. Confessionals are DIARY ROOM entries.
+
+WRITE THE HOUSE MEETINGS. If the beat sheet contains a house meeting, a
+confrontation or a blow-up, it gets a full scene with the room named and
+present — not a line of narration. Those scenes are the format.
+
+LOCKED, NEVER INVENTED: who won HOH, who won the veto, who was nominated,
+who went up as a replacement, whether the veto was used and on whom, who
+holds which power, every vote and who cast it, and who was evicted. Give
+each person their role from the beat sheet every time — HOH, veto holder
+and nominee are different jobs and one person can hold two of them.
+
+If a houseguest holds a power the house does not know about, keep the
+house's belief and the truth apart. Your narration follows the truth; only
+the houseguests are allowed to be wrong.
+═══════════════════════════════════════════════════════════
+
+` : '';
+
+  const instructions = `${bbScreen}
 You are the screenwriter for a TOTAL DRAMA episode — a cartoon-comedy reality-competition show (Total Drama / Disventure Camp energy). You are handed a STORY PLAN (from a story architect) and a BEAT SHEET (locked facts + the memorable beats), and you write the full episode transcript. Make it a STORY, not a report. Most of the episode is NOT on the beat sheet — the conversations, jokes, reactions, and texture between the beats are yours to invent.
 
 ⛔ ABSOLUTE OUTPUT PURITY — your entire output is the in-universe transcript and nothing else. NEVER write meta-commentary, notes, reasoning, or self-correction ("Wait—", "let me check the summary", "reset", "actually, let me", "hold on", "hmm"). If a detail is unclear, silently pick the most consistent option and keep writing in character.

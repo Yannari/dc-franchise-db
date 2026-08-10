@@ -1185,10 +1185,29 @@ async function writeCharacter(env, payload) {
   const dataUri = avatar.dataUri || '';
   if (dataUri.startsWith('data:image') && dataUri.includes(',')) {
     const b64 = dataUri.slice(dataUri.indexOf(',') + 1);
-    const path = `${AVATAR_DIR}/${slug}.png`;
+    // ── THE SLUG THE CALLER ASKED FOR ──
+    //
+    // This wrote `<roster slug>.png` and ignored `avatar.slug` completely.
+    // Harmless while a character had exactly one image, and destructive the
+    // moment anything uploads a VARIANT: the returnee slot posts
+    // `jules-returnee` and this saved it straight over jules.png, replacing the
+    // character's real portrait with their returnee art — twice, because the
+    // first restore was undone by the next upload through this endpoint.
+    //
+    // Validated rather than trusted: the slug becomes a path in a git commit.
+    const want = String(avatar.slug || '').trim().toLowerCase();
+    const target = /^[a-z0-9][a-z0-9-]*$/.test(want) ? want : slug;
+    const path = `${AVATAR_DIR}/${target}.png`;
     const existing = await getFile(env, path);
     await putFile(env, path, b64, `studio: avatar for ${name}`, existing && existing.sha);
     result.wrote.push(path);
+    // A returnee variant is only ever USED if the manifest lists it, and the
+    // manifest is a committed file — so writing the art without it leaves the
+    // image in the repo and invisible everywhere.
+    if (target.endsWith('-returnee')) {
+      try { await rewriteReturneeManifest(env); result.wrote.push(RETURNEE_MANIFEST); }
+      catch (e) { /* the art landed; the manifest can be regenerated */ }
+    }
   }
 
   return result;
@@ -1246,6 +1265,29 @@ async function deleteFile(env, path, message, sha) {
 async function getJson(env, path, fallback) {
   const f = await getFile(env, path);
   return f ? decodeJson(f.content) : fallback;
+}
+
+const RETURNEE_MANIFEST = `${AVATAR_DIR}/returnee-manifest.json`;
+
+/**
+ * Regenerate returnee-manifest.json from what is actually in the directory.
+ *
+ * refreshReturneeAvatars() treats this file as authoritative — it asks
+ * `manifest.has(base)` and never looks for the image once the manifest has
+ * loaded — so returnee art that is not listed here exists and is never drawn.
+ * Derived from the listing every time, so it cannot disagree with the files.
+ */
+async function rewriteReturneeManifest(env) {
+  const slugs = (await listAvatars(env))
+    .filter(s => s.endsWith('-returnee'))
+    .map(s => s.slice(0, -'-returnee'.length))
+    .sort();
+  const body = `${JSON.stringify(slugs)}
+`;
+  const existing = await getFile(env, RETURNEE_MANIFEST);
+  await putFile(env, RETURNEE_MANIFEST, bytesToB64(new TextEncoder().encode(body)),
+    'studio: returnee manifest', existing && existing.sha);
+  return slugs;
 }
 
 async function listAvatars(env) {

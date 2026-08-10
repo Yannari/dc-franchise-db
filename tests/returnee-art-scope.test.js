@@ -59,6 +59,31 @@ describe('returnee art follows the checkbox, not history', () => {
       .not.toMatch(/FRANCHISE_ROSTER\[ri\]\.isReturnee = p\.isReturnee/);
   });
 
+  it('writes an avatar to the slug that was asked for', () => {
+    // The endpoint wrote `<roster slug>.png` and ignored the slug the caller
+    // sent. Harmless while a character had exactly one image — and destructive
+    // the moment anything uploaded a VARIANT: the returnee slot posted
+    // `jules-returnee` and this saved it over jules.png, replacing the real
+    // portrait with the returnee art. It then looked like a rendering bug,
+    // because every screen was correctly drawing a base portrait that was no
+    // longer the base portrait.
+    const serve = readFileSync('serve.py', 'utf8');
+    expect(serve).toMatch(/want = \(avatar\.get\('slug'\) or ''\)\.strip\(\)\.lower\(\)/);
+    expect(serve, 'a slug is a filename here and is still trusted unvalidated')
+      .toMatch(/re\.fullmatch\(r'\[a-z0-9\]\[a-z0-9-\]\*', want or ''\)/);
+    expect(serve).toMatch(/AVATAR_DIR, target \+ '\.png'/);
+  });
+
+  it('lets the returnee slot actually be closed', () => {
+    // Two things re-opened it on their own — the re-render reads
+    // `_hasReturneeArt`, and the file probe ticks it when the art exists — so
+    // unticking snapped straight back and there was no way to close it.
+    const studio = readFileSync('js/studio.js', 'utf8');
+    expect(studio).toMatch(/d\._retSlotClosed = !e\.target\.checked;/);
+    expect(studio).toMatch(/if \(retBox\.hidden && !d\._retSlotClosed/);
+    expect(studio).toMatch(/&& !d\._retSlotClosed \? '' : 'hidden'/);
+  });
+
   it('ships a roster with no appearance flags on it', () => {
     // One had already leaked in, which is how this was found.
     const leaked = DEFAULT_ROSTER.filter(r => 'isReturnee' in r).map(r => r.name);

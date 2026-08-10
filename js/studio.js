@@ -1013,8 +1013,8 @@ function _renderEditor() {
       <div class="st-avatar-ctrls">
         <label class="st-btn st-file">Upload image<input type="file" id="st-f-file" accept="image/*" hidden></label>
         <button type="button" class="st-btn" id="st-f-lib">Pick from library</button>
-        <label class="st-check st-ret-toggle" title="A second portrait used only when this character is playing as a returnee">
-          <input type="checkbox" id="st-f-ret-on" ${d.returneeDataUri || d._hasReturneeArt ? 'checked' : ''}>
+        <label class="st-check st-ret-toggle" title="Show the second portrait slot. This does NOT mark the character as a returnee — that is per season, in the Cast Builder. It only controls whether a returnee portrait exists to use.">
+          <input type="checkbox" id="st-f-ret-on" ${(d.returneeDataUri || d._hasReturneeArt) && !d._retSlotClosed ? 'checked' : ''}>
           <span>Returnee portrait</span>
         </label>
       </div>
@@ -1022,7 +1022,7 @@ function _renderEditor() {
 
       <!-- FOLDED AWAY UNLESS ASKED FOR. Most characters never get one, and a
            permanent second upload box costs the sheet a row for nothing. -->
-      <div class="st-ret" id="st-ret" ${d.returneeDataUri || d._hasReturneeArt ? '' : 'hidden'}>
+      <div class="st-ret" id="st-ret" ${(d.returneeDataUri || d._hasReturneeArt) && !d._retSlotClosed ? '' : 'hidden'}>
         <div class="st-ret-face" id="st-ret-portrait"></div>
         <div class="st-ret-side">
           <p class="st-ret-note">Shown instead of the main portrait when this character
@@ -1142,6 +1142,11 @@ function _renderEditor() {
   const retBox = ed.querySelector('#st-ret');
   ed.querySelector('#st-f-ret-on').addEventListener('change', e => {
     retBox.hidden = !e.target.checked;
+    // Remembered, because two things re-open this box on their own — the
+    // re-render reads `_hasReturneeArt`, and the probe below ticks it when the
+    // file exists — so unticking it snapped straight back and there was no way
+    // to close it at all. An explicit close outranks both.
+    d._retSlotClosed = !e.target.checked;
     if (e.target.checked) _refreshReturneePortrait();
   });
   ed.querySelector('#st-f-ret-file').addEventListener('change', async e => {
@@ -1160,7 +1165,7 @@ function _renderEditor() {
   // portrait is sitting on disk still opened with the slot folded away and the
   // box unticked, which reads exactly like "this character has no returnee
   // art". One image request settles it.
-  if (retBox.hidden && d.slug && !d._removeReturnee && typeof Image !== 'undefined') {
+  if (retBox.hidden && !d._retSlotClosed && d.slug && !d._removeReturnee && typeof Image !== 'undefined') {
     const probe = new Image();
     probe.onload = () => {
       if (_draft !== d) return;          // editor moved on while this was in flight

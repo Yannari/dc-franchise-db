@@ -103,12 +103,24 @@ def write_character(payload):
     avatar = payload.get('avatar') or {}
     data_uri = avatar.get('dataUri') or ''
     if data_uri.startswith('data:image'):
-        b64 = data_uri.split(',', 1)[1] if ',' in data_uri else ''
-        raw = base64.b64decode(b64)
+        # ── THE SLUG THE CALLER ASKED FOR ──
+        #
+        # This wrote `<roster slug>.png` and ignored `avatar['slug']` entirely.
+        # Harmless while the only avatar a character had was their portrait —
+        # and destructive the moment anything uploaded a VARIANT: the returnee
+        # slot posted `jules-returnee` and the endpoint saved it over jules.png,
+        # replacing the character's real portrait with their returnee art. It
+        # then looked like a rendering bug, because every screen was correctly
+        # drawing a base portrait that was no longer the base portrait.
+        #
+        # Validated rather than trusted: a slug is a filename here.
+        want = (avatar.get('slug') or '').strip().lower()
+        target = want if re.fullmatch(r'[a-z0-9][a-z0-9-]*', want or '') else slug
+        raw = base64.b64decode(data_uri.split(',', 1)[1] if ',' in data_uri else '')
         os.makedirs(AVATAR_DIR, exist_ok=True)
-        with open(os.path.join(AVATAR_DIR, slug + '.png'), 'wb') as f:
+        with open(os.path.join(AVATAR_DIR, target + '.png'), 'wb') as f:
             f.write(raw)
-        result['wrote'].append('assets/avatars/%s.png' % slug)
+        result['wrote'].append('assets/avatars/%s.png' % target)
         # Returnee art is only ever used if the manifest lists it.
         if rewrite_returnee_manifest() is not None:
             result['wrote'].append('assets/avatars/returnee-manifest.json')

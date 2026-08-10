@@ -75,4 +75,31 @@ describe('the frozen stat line', () => {
     gs.bb = { weeks: [], stats: {} };
     expect(repairTwinStats()).toBe(false);
   });
+
+  it('reaches the episodes that already aired', () => {
+    // The Changeover reads `act.twins`, a copy taken when the act was built —
+    // so repairing the season alone leaves every week already played showing
+    // the same wrong nine numbers forever. Reported exactly that way: fixed in
+    // the builder, unchanged on the screen.
+    season({ frontStats: { ...HARRIETT }, statsA: { ...JANE } });
+    const twinAct = { type: 'twin-open', front: 'Harriett',
+      twins: { other: 'Jane', active: 'a', statsA: { ...JANE }, statsB: { ...JANE } } };
+    gs.bb.weeks = [{ num: 1, acts: [twinAct] }];
+    gs.episodeHistory = [{ num: 1, acts: [twinAct] }];
+
+    expect(repairTwinStats()).toBe(true);
+    expect(nine(twinAct.twins.statsA), 'the aired episode still shows the other twin')
+      .toEqual(HARRIETT);
+    // The other twin's own panel is untouched.
+    expect(nine(twinAct.twins.statsB)).toEqual(JANE);
+  });
+
+  it('leaves an act that was never damaged alone', () => {
+    season({ frontStats: { ...HARRIETT }, statsA: { ...JANE } });
+    const healthy = { type: 'twin-open', front: 'Harriett',
+      twins: { other: 'Jane', active: 'a', statsA: { ...HARRIETT }, statsB: { ...JANE } } };
+    gs.bb.weeks = [{ num: 1, acts: [healthy] }];
+    repairTwinStats();
+    expect(nine(healthy.twins.statsA)).toEqual(HARRIETT);
+  });
 });

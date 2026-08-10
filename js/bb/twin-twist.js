@@ -104,6 +104,26 @@ export function repairTwinStats() {
   if (alreadyRight || !sameAsOther) return false;
   st.statsA = { ...real };
   if (st.active === 'a' && entry) entry.stats = { ...real };
+
+  // ── AND THE EPISODES THAT ALREADY AIRED ──
+  //
+  // The Changeover reads `act.twins`, not the live state — every twin act
+  // carries its own copy of both stat lines, taken when the act was built. So
+  // repairing the season fixes every week from here and leaves the ones already
+  // played showing the same wrong nine numbers forever, which is not a fix, it
+  // is half of one.
+  //
+  // Matched on the same test as above rather than overwritten blindly: an act
+  // whose `statsA` is not the other twin's line was not damaged and is not
+  // touched, so a season that was only ever partly wrong stays partly right.
+  const wrong = other?.stats;
+  const patch = act => {
+    if (!act?.twins?.statsA || !wrong) return;
+    if (!STAT_KEYS.every(k => Number(act.twins.statsA[k]) === Number(wrong[k]))) return;
+    act.twins.statsA = { ...real };
+  };
+  for (const week of (gs.bb?.weeks || [])) for (const act of (week.acts || [])) patch(act);
+  for (const ep of (gs.episodeHistory || [])) for (const act of (ep.acts || [])) patch(act);
   return true;
 }
 

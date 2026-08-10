@@ -1965,15 +1965,15 @@ export function renderTimeline() {
         const reasons = t.returnReasons || ['random'];
         const reasonOpts = ['random','unfinished-business','entertainment','strategic-threat','underdog'];
         const reasonLabels = { 'random':'Random', 'unfinished-business':'Unfinished Business', 'entertainment':'Entertainment', 'strategic-threat':'Strategic Threat', 'underdog':'Underdog' };
-        let configHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','returnCount',+this.value)" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let configHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','returnCount',+this.value)" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         for (let n = 1; n <= 3; n++) configHtml += `<option value="${n}" ${n===rc?'selected':''}>${n}</option>`;
         configHtml += `</select>`;
         for (let s = 0; s < rc; s++) {
-          configHtml += `<select onchange="event.stopPropagation();_updateReturnReason('${t.id}',${s},this.value)" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:2px" title="Slot ${s+1} reason">`;
+          configHtml += `<select onchange="event.stopPropagation();_updateReturnReason('${t.id}',${s},this.value)" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:2px;min-width:0;max-width:100%" title="Slot ${s+1} reason">`;
           reasonOpts.forEach(r => configHtml += `<option value="${r}" ${reasons[s]===r?'selected':''}>${reasonLabels[r]}</option>`);
           configHtml += `</select>`;
         }
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${configHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-double-eviction') {
         const styles = {
@@ -1982,27 +1982,37 @@ export function renderTimeline() {
           'week-in-one': 'Two Weeks in One',
         };
         const cur = t.deStyle || 'fast-forward';
-        let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let styleHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','deStyle',this.value)" onclick="event.stopPropagation()" title="How the double eviction runs" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         Object.entries(styles).forEach(([k, label]) => { styleHtml += `<option value="${k}" ${k===cur?'selected':''}>${label}</option>`; });
         styleHtml += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${styleHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-battle-back') {
         // Two aired shapes plus the competition it is fought on. The comp list
         // is deliberately wider than an HOH or veto picker — see
         // bbCompetitionsForSlot('battle-back').
-        const styles = {
-          gauntlet: 'Gauntlet (first out fights everyone)',
-          showdown: 'Showdown (house elects a champion)',
-        };
+        // ── STACKED, NOT STRUNG ALONG ONE LINE ──
+        //
+        // Emoji, name, two dropdowns and a close button on a single inline row
+        // inside a column this narrow could only ever overflow, and the widest
+        // option text set the width of a control that had nowhere to go. The
+        // name and the × keep the header row; the dropdowns get a row each and
+        // fill it.
+        //
+        // The parentheses move to the tooltip. "Gauntlet (first out fights
+        // everyone)" is the label doing the job of a title attribute that was
+        // already there and already said it.
+        const styles = { gauntlet: 'Gauntlet', showdown: 'Showdown' };
         const curStyle = t.bbStyle || 'gauntlet';
-        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbStyle',this.value)" onclick="event.stopPropagation()" title="How the battle back is fought" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        const SEL = 'font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);'
+          + 'border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%';
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbStyle',this.value)" onclick="event.stopPropagation()" title="Gauntlet — the first evictee fights everyone in turn. Showdown — the house elects one champion to face them." style="${SEL}">`;
         Object.entries(styles).forEach(([k, label]) => { h += `<option value="${k}" ${k === curStyle ? 'selected' : ''}>${label}</option>`; });
         h += `</select>`;
         const comps = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot('battle-back') : []) || [];
         if (comps.length) {
           const chosen = t.bbComp || '';
-          h += `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbComp',this.value)" onclick="event.stopPropagation()" title="Which competition they fight on" style="font-size:10px;background:#1e1e2e;color:${chosen ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${chosen ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;margin-left:3px;max-width:150px">`;
+          h += `<select onchange="event.stopPropagation();updateTwist('${t.id}','bbComp',this.value)" onclick="event.stopPropagation()" title="Which competition they fight on" style="font-size:10px;background:#1e1e2e;color:${chosen ? '#cdd6f4' : '#8b949e'};border:1px solid rgba(99,102,241,${chosen ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
           h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
           const written = comps.filter(c => !c.generic), generic = comps.filter(c => c.generic);
           if (written.length) {
@@ -2017,7 +2027,11 @@ export function renderTimeline() {
           }
           h += `</select>`;
         }
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;flex-direction:column;align-items:stretch;gap:3px;max-width:100%;min-width:0">
+          <span style="display:flex;align-items:center;gap:4px;min-width:0">
+            <span style="flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat.emoji} ${cat.name}</span>
+            <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;flex:0 0 auto">×</span>
+          </span>${h}</span>`;
       }
       if (t.type === 'bb-pandoras-box') {
         // What goes IN the box — drawn from the power inventory, so every
@@ -2025,10 +2039,10 @@ export function renderTimeline() {
         const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS)
           || { 'diamond-veto': { id: 'diamond-veto', name: 'The Diamond Power of Veto' } };
         const chosen = t.prize || 'diamond-veto';
-        let prizeHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','prize',this.value)" onclick="event.stopPropagation()" title="What the box holds" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let prizeHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','prize',this.value)" onclick="event.stopPropagation()" title="What the box holds" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         Object.values(defs).forEach(d => { prizeHtml += `<option value="${d.id}" ${d.id===chosen?'selected':''}>${d.name}</option>`; });
         prizeHtml += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${prizeHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       // Two channels, one door control. The Whacktivity's three rooms and the
       // secret power competition's three hiding places are the same authoring
@@ -2052,7 +2066,7 @@ export function renderTimeline() {
         const doors = Array.isArray(t.doors) && t.doors.length
           ? [...t.doors, '', '', ''].slice(0, 3)
           : stock;
-        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:3px";
+        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:3px;min-width:0;max-width:100%";
         let h = '';
         doors.forEach((chosen, idx) => {
           h += `<select onchange="event.stopPropagation();_updateWhackDoor('${t.id}',${idx},this.value)" onclick="event.stopPropagation()" title="Door ${idx + 1}" style="${style}">`;
@@ -2065,14 +2079,14 @@ export function renderTimeline() {
           });
           h += `</select>`;
         });
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-care-package') {
         // A distributor, so the shelf is authorable. 'auto' runs the show's
         // rotation; anything else books that package onto this week — which
         // matters most for the Never-Not Pass, since it is first in the
         // rotation and does nothing at all on a season without Have-Nots.
-        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px";
+        const style = "font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%";
         const cpStyle = t.cpStyle || 'time-capsule';
         // Which shape the audience channel runs. The capsule makes the
         // favourite earn it; the package just hands it over.
@@ -2096,7 +2110,7 @@ export function renderTimeline() {
           });
           h += `</select>`;
         }
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-americas-nominee') {
         // Two shapes, and they are genuinely different twists. Direct: the
@@ -2106,24 +2120,24 @@ export function renderTimeline() {
         // so there IS a culprit sitting in that room being no more suspicious
         // than anybody else.
         const chosen = t.anStyle === 'mvp' ? 'mvp' : 'direct';
-        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','anStyle',this.value)" onclick="event.stopPropagation()" title="Who actually names the third nominee" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let h = `<select onchange="event.stopPropagation();updateTwist('${t.id}','anStyle',this.value)" onclick="event.stopPropagation()" title="Who actually names the third nominee" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         h += `<option value="direct" ${chosen === 'direct' ? 'selected' : ''}>Named by the audience</option>`;
         h += `<option value="mvp" ${chosen === 'mvp' ? 'selected' : ''}>Named by a secret MVP</option>`;
         h += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-den-of-temptation') {
         // What is on the table in the Den. Same source as the box and the
         // shelf; 'random' lets the season surprise itself.
         const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
         const chosen = t.offer || 'random';
-        let offerHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','offer',this.value)" onclick="event.stopPropagation()" title="What the Den offers" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let offerHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','offer',this.value)" onclick="event.stopPropagation()" title="What the Den offers" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         offerHtml += `<option value="random" ${chosen === 'random' ? 'selected' : ''}>A random temptation</option>`;
         Object.values(defs).forEach(d => {
           offerHtml += `<option value="${d.id}" ${d.id === chosen ? 'selected' : ''}>${d.name}</option>`;
         });
         offerHtml += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${offerHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${offerHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'bb-app-store') {
         // What goes ON the shelf. Same source as the box's cargo, so a power
@@ -2131,13 +2145,13 @@ export function renderTimeline() {
         // default stocks everything, which is the BB20 shape.
         const defs = (typeof BB_POWER_DEFINITIONS !== 'undefined' && BB_POWER_DEFINITIONS) || {};
         const chosen = t.shelf || 'all';
-        let shelfHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','shelf',this.value)" onclick="event.stopPropagation()" title="What is on the shelf this week" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px">`;
+        let shelfHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','shelf',this.value)" onclick="event.stopPropagation()" title="What is on the shelf this week" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
         shelfHtml += `<option value="all" ${chosen === 'all' ? 'selected' : ''}>Everything on the shelf</option>`;
         Object.values(defs).forEach(d => {
           shelfHtml += `<option value="${d.id}" ${d.id === chosen ? 'selected' : ''}>${d.name} only</option>`;
         });
         shelfHtml += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${shelfHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${shelfHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'reward-twist-challenge') {
         const _rtcChallenges = TWIST_CATALOG.filter(c => c.category === 'challenge');
@@ -2153,7 +2167,7 @@ export function renderTimeline() {
           _rtcHtml += `<div class="rtc-option" data-name="${c.name.toLowerCase()}" onmousedown="event.preventDefault();_selectRtcEngine('${t.id}','${c.id}')" style="padding:4px 8px;font-size:10px;color:#cdd6f4;cursor:pointer;border-bottom:1px solid rgba(99,102,241,0.08)" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background=''">${c.emoji} ${c.name}${_seriesTag}${_phaseTag}</div>`;
         });
         _rtcHtml += `</div></div>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} Reward: ${_rtcHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} Reward: ${_rtcHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'producer-swap') {
         const tribeNames = (seasonConfig.tribes || []).map(tr => tr.name).filter(Boolean);
@@ -2167,7 +2181,7 @@ export function renderTimeline() {
         let cfg = _ps('swapPlayer', t.swapPlayer || '', allNames, 'move player');
         cfg += ` <span style="color:#a5b4fc">→</span> ` + _ps('swapToTribe', t.swapToTribe || '', tribeNames, 'to tribe');
         cfg += ` <span style="opacity:.45">swap back:</span>` + _ps('swapPlayer2', t.swapPlayer2 || '', allNames, 'none');
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${cfg} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.type === 'auction') {
         const _mode = t.auctionImmunity === 'reward' ? 'reward' : 'immunity';
@@ -2175,7 +2189,7 @@ export function renderTimeline() {
         _aSel += `<option value="immunity" ${_mode==='immunity'?'selected':''}>Immunity</option>`;
         _aSel += `<option value="reward" ${_mode==='reward'?'selected':''}>Reward</option>`;
         _aSel += `</select>`;
-        return `<span class="fd-ep-twist-tag" style="display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap">${cat.emoji} ${cat.name} ${_aSel} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${_aSel} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
       if (t.spoilerFree) {
         const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';

@@ -125,7 +125,13 @@ export async function ensureFeedsWritten(gs, opts = {}) {
     fetchImpl = null, maxEvents = 6 } = opts;
   // Build first, always. If anything below fails the season already has a feed.
   const result = ensureFeeds(gs, opts);
-  if (!endpoint || !result.built.length) return { ...result, written: 0 };
+  // A missing endpoint returned no `reason`, so the UI fell through to its
+  // catch-all — "the writer returned nothing usable" — for the one case that is
+  // not about the writer at all. It is the difference between "the model gave
+  // me nothing" and "there is nowhere to ask", and only one of those is
+  // something you can act on.
+  if (!endpoint) return { ...result, written: 0, reason: 'no-endpoint' };
+  if (!result.built.length) return { ...result, written: 0, reason: 'nothing-to-write' };
 
   // Read off the state rather than imported from core.js: everything under
   // this file is meant to be pure, this one is meant to know only what a game

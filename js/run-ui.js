@@ -3450,6 +3450,9 @@ function _writerNote(wasOn, res) {
       + 'no call was made. Advantages, alliances and key moments are what it '
       + 'writes from; a night that only has a vote has nothing to add',
     'nothing-to-write': 'there was nothing to send',
+    'no-endpoint': 'no writer URL is set, so nothing was asked. Set the social '
+      + 'writer worker URL, or turn the writer off and the built-in templates '
+      + 'will write the season instead',
     'no-answer': 'the worker did not answer. Check it is deployed and reachable',
     'all-rejected': 'every post the model returned was rejected — it named '
       + 'somebody or something that did not happen',

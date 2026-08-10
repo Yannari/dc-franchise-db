@@ -176,33 +176,52 @@ export async function requestPosts(packet, { endpoint, timeoutMs = 12000, fetchI
  * model cannot see what it already said.
  */
 export async function rewriteEpisode(posts, events, {
-  cast = [], endpoint = null, fetchImpl = null, maxEvents = 6, timeoutMs = 12000,
+  cast = [], endpoint = null, fetchImpl = null, maxEvents = 12, timeoutMs = 12000,
 } = {}) {
   if (!endpoint || !posts?.length || !events?.length) {
     return { posts, written: 0, rejected: [], reason: 'nothing-to-write' };
   }
-  const key = e => `${e.kind}|${e.subject || ''}`;
-  const byEvent = new Map();
-  for (const p of posts) byEvent.set(`${p.kind}|${p.subject || ''}`,
-    [...(byEvent.get(`${p.kind}|${p.subject || ''}`) || []), p]);
 
-  // The loudest moments first, and a cap. A night has a dozen events and the
-  // audience is only really arguing about two or three of them; rewriting the
-  // long tail is money spent on posts nobody scrolls to.
+  // ── ONE GROUP PER MOMENT PER STREAM ──
   //
-  // RANKED BY WHAT CAN BE CITED, not by `e.receipts`. That field is only one of
-  // the two ways a fact arrives — the moment readers set the flat
-  // `e.receipt` — so filtering on it selected almost nothing: an idol played, a
-  // rescue, the season's biggest betrayal all scored zero and the loop never
-  // ran. The writer reported "returned nothing usable" while never having made
-  // a single call. Exactly the fault that had already been fixed one function
-  // away in `buildPacket`, left here because the fix was aimed at the packet
-  // rather than at the field.
-  const ranked = [...events]
-    .map(e => ({ e, facts: citableFacts(e).length }))
-    .filter(x => x.facts || x.e.kind === 'blindside' || x.e.kind === 'finale')
-    .sort((a, b) => b.facts - a.facts)
-    .map(x => x.e)
+  // Grouping was `kind|subject`, which puts the timeline posts and the group
+  // chat about the same moment in one bucket. The packet then took its stream
+  // from whichever post happened to be first, so half of every batch was
+  // written in the wrong register — chat voice on the timeline, or a batch of
+  // timeline posts asked for in chat voice — and the validator threw the
+  // mismatches away. Splitting costs a second call for the moments that have
+  // both, and it is the difference between a written post and a rejected one.
+  const key = p => `${p.kind}|${p.subject || ''}|${p.stream}`;
+  const byGroup = new Map();
+  for (const p of posts) {
+    if (p.topic === 'scream') continue;   // four words; the templates do them well
+    const k = key(p);
+    byGroup.set(k, [...(byGroup.get(k) || []), p]);
+  }
+
+  // ── RANK, DO NOT GATE ──
+  //
+  // This filtered to events with something citable, and dropped the rest
+  // entirely. But `citableFacts` measures whether a moment has PRIOR HISTORY to
+  // point at, which is a fine way to sort and a terrible way to choose. A first
+  // Head of Household win has no history by definition, and an eviction nobody
+  // saw coming has none either — so measured over four weeks the gate excluded
+  // every comp win, two of four nomination sets and one of four EVICTIONS, and
+  // between 55% and 82% of an episode's posts never reached the model at all.
+  // What the audience read was mostly template, which is what repetition looks
+  // like from the outside.
+  //
+  // So: everything is eligible. Order by how many posts the group actually
+  // holds — that is how many readers the writing reaches — and break ties on
+  // citable facts, which is what that number was always good for.
+  const ranked = [...byGroup.entries()]
+    .map(([k, group]) => {
+      const ev = events.find(e => `${e.kind}|${e.subject || ''}|${group[0].stream}` === k)
+        || events.find(e => e.kind === group[0].kind && (e.subject || '') === (group[0].subject || ''));
+      return ev ? { ev, group, facts: citableFacts(ev).length } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.group.length - a.group.length) || (b.facts - a.facts))
     .slice(0, maxEvents);
 
   const approved = [];
@@ -216,14 +235,7 @@ export async function rewriteEpisode(posts, events, {
   let asked = 0;
   let answered = 0;
 
-  for (const ev of ranked) {
-    const group = byEvent.get(key(ev));
-    if (!group?.length) continue;
-    // Screams are not worth a round trip — they are four words and the
-    // templates already do them well.
-    const targets = group.filter(p => p.topic !== 'scream');
-    if (!targets.length) continue;
-
+  for (const { ev, group: targets } of ranked) {
     const packet = buildPacket(ev, { cast, stream: targets[0].stream, count: targets.length });
     asked += 1;
     const out = await requestPosts(packet, { endpoint, fetchImpl, timeoutMs });

@@ -557,14 +557,40 @@ describe('choosing which moments are worth writing', () => {
     expect(seen, 'the event with a fact was not the one sent').toEqual(['loud']);
   });
 
-  it('still spends nothing on an episode with nothing to say', async () => {
+  // This used to assert the opposite: an event with no citable fact cost no
+  // call at all. That was the gate, and the gate was wrong. `citableFacts`
+  // measures whether a moment has PRIOR HISTORY to point at, so a first Head of
+  // Household win scored zero by definition and so did an eviction nobody saw
+  // coming. Measured over four weeks it excluded every comp win, half the
+  // nomination sets and one eviction outright, leaving 55-82% of an episode as
+  // template — which is what a viewer reads as repetition.
+  //
+  // A moment with no history is still worth writing. What is not worth a call
+  // is a moment with no READERS, and that is the line this now holds.
+  it('writes a moment that has no history behind it', async () => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    let calls = 0;
+    const fetchImpl = async () => {
+      calls += 1;
+      return { ok: true, json: async () => ({ posts: [{ text: 'week one and it is already like this', cites: [] }] }) };
+    };
+    const events = [{ kind: 'comp-win', subject: 'jade', season: 1, episode: 1 }];
+    const posts = [{ kind: 'comp-win', subject: 'jade', stream: 'timeline', text: 't' }];
+    const res = await rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl });
+    expect(calls, 'a first-week win has no receipts and was skipped for it').toBe(1);
+    expect(res.written).toBe(1);
+  });
+
+  it('spends nothing when there are no posts to improve', async () => {
     const { rewriteEpisode } = await import('../js/social/writer.js');
     let calls = 0;
     const fetchImpl = async () => { calls += 1; return { ok: true, json: async () => ({ posts: [] }) }; };
+    // Screams are four words and the templates do them well; a group of nothing
+    // but screams is a group with nobody to write for.
     const events = [{ kind: 'episode-aired', subject: null, season: 1, episode: 1 }];
-    const posts = [{ kind: 'episode-aired', subject: null, stream: 'timeline', text: 't' }];
+    const posts = [{ kind: 'episode-aired', subject: null, stream: 'timeline', topic: 'scream', text: 't' }];
     const res = await rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl });
-    expect(calls, 'a nothing night still cost an API call').toBe(0);
+    expect(calls, 'a night with nothing to improve still cost an API call').toBe(0);
     expect(res.written).toBe(0);
   });
 });
@@ -580,7 +606,10 @@ describe('the writer names its own failure', () => {
   const po = (over = {}) => ({ kind: 'twist', subject: 'jade', stream: 'timeline', text: 't', ...over });
 
   it('says when no call was worth making', async () => {
-    const res = await run([ev()], [po()], async () => { throw new Error('should not be called'); });
+    // Reached now when no post GROUP maps to an event worth writing, rather
+    // than when no event carried a citable fact — see the ranking change.
+    const res = await run([ev()], [po({ topic: 'scream' })],
+      async () => { throw new Error('should not be called'); });
     expect(res.reason).toBe('no-facts');
     expect(res.asked).toBe(0);
   });
@@ -620,5 +649,109 @@ describe('the writer names its own failure', () => {
       async () => ({ ok: true, json: async () => ({ posts: [{ text: 'jade really did that huh', cites: [] }] }) }));
     expect(res.written).toBe(1);
     expect(res.reason).toBe(null);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The complaint was "a lot of repetition, I don't think the AI is writing
+// anything". It was writing — for between 18% and 45% of an episode, chosen
+// by a rule that excluded every competition win, half the nominations and,
+// one week, the eviction. The rest was template, and template is what
+// repetition sounds like.
+// ══════════════════════════════════════════════════════════════════════
+describe('the model reaches the whole night', () => {
+  const feed = (kinds) => kinds.flatMap(([kind, subject, n, stream = 'timeline']) =>
+    Array.from({ length: n }, () => ({ kind, subject, stream, text: 't' })));
+
+  const run = async (events, posts, opts = {}) => {
+    const { rewriteEpisode } = await import('../js/social/writer.js');
+    const sent = [];
+    const fetchImpl = async (url, o) => {
+      const body = JSON.parse(o.body);
+      sent.push({ kind: body.event.kind, subject: body.event.subject,
+        stream: body.platform || body.stream, count: body.count });
+      // A full batch, and every line genuinely different — the validator
+      // rejects a near-duplicate, so lines that vary by one token would leave
+      // this measuring the dedupe rather than the coverage.
+      const n = body.count || 1;
+      const shapes = [
+        'i cannot believe that just happened on my television',
+        'the way nobody in that room said a single word',
+        'screaming crying throwing up genuinely',
+        'this is the worst thing i have ever watched happen',
+        'okay but who actually benefits from that, think about it',
+        'my whole bracket is ruined and i deserve compensation',
+        'no because the audacity of some people in this house',
+        'rewatching that clip for the ninth time tonight',
+        'somebody check on the group chat i think it died',
+        'that was cold and i respect it a little bit',
+        'we are never recovering from this one as a fandom',
+        'put it on the record that i called this weeks ago',
+      ];
+      const tails = ['honestly', 'and that is the tweet', 'goodnight everybody',
+        'anyway', 'i am going to lie down', 'unbelievable scenes'];
+      return { ok: true, json: async () => ({ posts: Array.from({ length: n }, (_, i) => {
+        const k = sent.length * 7 + i;
+        return { text: `${shapes[k % shapes.length]} ${tails[k % tails.length]}`, cites: [] };
+      }) }) };
+    };
+    const res = await rewriteEpisode(posts, events, { endpoint: 'http://w', fetchImpl, ...opts });
+    return { sent, res };
+  };
+
+  const WEEK = [
+    { kind: 'comp-win', subject: 'nico', season: 1, episode: 2 },
+    { kind: 'nomination', subject: 'stella', season: 1, episode: 2 },
+    { kind: 'eviction', subject: 'stella', season: 1, episode: 2, receipt: 'the deal they shook on' },
+    { kind: 'argument', subject: 'joel', season: 1, episode: 2 },
+  ];
+  const POSTS = feed([
+    ['comp-win', 'nico', 8], ['nomination', 'stella', 8],
+    ['eviction', 'stella', 12], ['argument', 'joel', 6],
+  ]);
+
+  it('writes the competition win that has no history behind it', async () => {
+    const { sent } = await run(WEEK, POSTS);
+    expect(sent.map(s => s.kind)).toContain('comp-win');
+  });
+
+  it('writes the eviction every time, not only when it carries receipts', async () => {
+    const bare = WEEK.map(e => ({ ...e, receipt: undefined }));
+    const { sent } = await run(bare, POSTS);
+    expect(sent.map(s => s.kind)).toContain('eviction');
+  });
+
+  it('writes the house rows, which never carry a citable fact at all', async () => {
+    const { sent } = await run(WEEK, POSTS);
+    expect(sent.map(s => s.kind)).toContain('argument');
+  });
+
+  it('covers most of the feed rather than a corner of it', async () => {
+    // Measured on what is SENT, not on what comes back written: how many of a
+    // model's lines survive dedup is the model's business, and a stub with a
+    // small vocabulary would have this test grading its own prose. What the
+    // code decides is how much of the night it offers up, and the old rule
+    // offered between 18% and 45% of it.
+    const { sent } = await run(WEEK, POSTS);
+    const offered = sent.reduce((n, s) => n + (s.count || 0), 0);
+    expect(offered / POSTS.length).toBeGreaterThan(0.9);
+  });
+
+  it('sends the loudest moment first, so a cap cuts the tail and not the story', async () => {
+    const { sent } = await run(WEEK, POSTS, { maxEvents: 1 });
+    expect(sent).toHaveLength(1);
+    expect(sent[0].kind, 'the 12-post eviction lost to something smaller').toBe('eviction');
+  });
+
+  it('asks for the group chat in its own voice, not the timeline\'s', async () => {
+    // One bucket held both streams and took its register from whichever post
+    // sorted first, so half of every batch came back in the wrong voice and
+    // was thrown away by the validator.
+    const events = [{ kind: 'eviction', subject: 'stella', season: 1, episode: 2 }];
+    const posts = [...feed([['eviction', 'stella', 6, 'timeline']]),
+                   ...feed([['eviction', 'stella', 6, 'chat']])];
+    const { sent } = await run(events, posts);
+    expect(sent).toHaveLength(2);
+    expect(new Set(sent.map(s => s.stream)).size, 'both batches asked for the same platform').toBe(2);
   });
 });

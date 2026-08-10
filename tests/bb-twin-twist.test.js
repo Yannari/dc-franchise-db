@@ -14,7 +14,7 @@
 // swap is REAL (the stat line moves, so every system downstream feels it without
 // knowing the twist exists), and that suspicion is something the twins can
 // actually manage rather than a countdown.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, setRelationships,
   kinshipBetween, kinshipPairs, familyPairs, tensePairs } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
@@ -190,6 +190,65 @@ describe('a twin the cast declared', () => {
     expect(gs.activePlayers).toContain('Lex');
     expect(players.filter(p => p.name === 'Lex').length).toBe(1);
     setRelationships([]);
+  });
+
+  // ── the two of them are two people, and stay two people ─────────────────
+  //
+  // Reported off a played week 1: both stat panels showed the same nine
+  // numbers under two different names, with the front twin's photograph over
+  // the other twin's line. Two separate faults, one root confusion — `active`
+  // says who is in the BUILDING, not who owns the NAME.
+  describe('whose stat line is whose', () => {
+    beforeEach(() => {
+      house();
+      setRelationships([{ id: 'r1', a: 'Kit', b: 'Lex', type: 'unbreakable', bond: 10, kin: 'twins' }]);
+      globalThis.relationships = relationships;
+      gs.activePlayers = [...NAMES];
+    });
+    afterEach(() => setRelationships([]));
+
+    const KIT = () => spread(NAMES.indexOf('Kit') + 1);
+    const LEX = () => spread(NAMES.indexOf('Lex') + 1);
+    const statsOf = name => {
+      const s = players.find(p => p.name === name)?.stats || {};
+      return Object.fromEntries(STAT_KEYS.map(k => [k, s[k]]));
+    };
+
+    it('does not build the next season out of leftovers from the last one', () => {
+      // `applyActive` writes whoever is inside onto the front's roster entry —
+      // on night one, not just after a swap. Nothing gave it back, so the next
+      // install read the borrowed line as Kit's own and handed BOTH twins the
+      // same numbers.
+      const first = installTwinTwist([...NAMES], { rng: Math.random, pick: 'Kit' });
+      expect(first.statsA).toMatchObject(KIT());
+      // Leave the OTHER twin in the building — `applyActive` has now written
+      // their line onto the roster entry Kit is named by.
+      first.active = 'a';
+      swapTwins(aWeek(), { rng: Math.random });
+      expect(twinState().active, 'the setup did not seat the other twin').toBe('b');
+      expect(statsOf('Kit'), 'the entry was never borrowed, so this proves nothing')
+        .toEqual(LEX());
+      gs.bb.twins = null;
+      gs.activePlayers = [...NAMES];
+
+      const second = installTwinTwist([...NAMES], { rng: Math.random, pick: 'Kit' });
+      expect(second.statsA).toMatchObject(KIT());
+      expect(second.statsB).toMatchObject(LEX());
+      for (const k of STAT_KEYS) {
+        expect(second.statsA[k], `${k} is the same on both twins`).not.toBe(second.statsB[k]);
+      }
+    });
+
+    it('gives each twin their own line when they both finally walk in', () => {
+      const st = installTwinTwist([...NAMES], { rng: Math.random, pick: 'Kit' });
+      // End the twist on a week the OTHER twin is inside. Keyed off `active`
+      // this was a coin flip that left the two of them permanently swapped.
+      st.active = 'b';
+      st.completed = st.quota;
+      expect(checkTwinEntry(aWeek({ num: 6, houseAtStart: gs.activePlayers }))).toBeTruthy();
+      expect(statsOf('Kit')).toEqual(KIT());
+      expect(statsOf('Lex')).toEqual(LEX());
+    });
   });
 
   it('reads the two axes apart', () => {

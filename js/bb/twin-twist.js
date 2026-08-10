@@ -165,6 +165,25 @@ export function installTwinTwist(house = [], {
   const seat = useDeclared ? useDeclared.front : front;
   const seatEntry = (players || []).find(p => p.name === seat) || entry;
 
+  // ── GIVE THE IDENTITY BACK BEFORE BORROWING IT AGAIN ────────────────────
+  //
+  // `applyActive` writes whichever twin is in the building onto the front's
+  // roster entry — that is the whole mechanic, and it fires on night one, not
+  // just after a swap. Nothing ever put the front's own line back, so the
+  // moment a season seated twin B the roster entry stopped being the person it
+  // is named after. Harmless inside that season, because `statsA` was captured
+  // before it happened; fatal to the next one, which built `statsA` out of the
+  // leftovers and got the OTHER twin's numbers. Both panels then showed one
+  // person twice — reported off a played week 1, with Harriett's photograph
+  // over Jane's stat line, twice.
+  //
+  // So the untouched line is stashed on the entry the first time it is borrowed
+  // and handed back at the top of every install. It lives on the player rather
+  // than on `gs` on purpose: `gs` is the season, and the thing that needs
+  // repairing outlives the season.
+  if (seatEntry._twinRealStats) seatEntry.stats = { ...seatEntry._twinRealStats };
+  else seatEntry._twinRealStats = { ...seatEntry.stats };
+
   const statsA = { ...seatEntry.stats };
   // Their real stats when the roster has them, and a lopsided variant when it
   // does not.
@@ -1329,10 +1348,15 @@ export function checkTwinEntry(week) {
 
   // The one the house met stays under the name it knows. The other one becomes
   // a houseguest in their own right, with their own stats and their own name.
+  // Twin A owns the name the house has been using — `active: 'a'` is defined as
+  // the one they met on night one — so A gets it back and B walks in as
+  // themselves, whichever of them happens to be standing in the room today.
+  // Keyed off `active` this was a coin flip: end the twist on a B week and the
+  // two of them swapped stat lines permanently, each finishing the season as
+  // the other person.
   const entry = (players || []).find(p => p.name === st.front);
-  const frontStats = liveStats(st);
-  const otherStats = st.active === 'a' ? st.statsB : st.statsA;
-  if (entry) entry.stats = { ...frontStats };
+  const otherStats = st.statsB;
+  if (entry) entry.stats = { ...st.statsA };
   const already = (players || []).find(p => p.name === st.other);
   if (already) {
     // A declared twin the cast already holds — they keep their own record and

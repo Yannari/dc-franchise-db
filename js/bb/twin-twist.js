@@ -56,7 +56,7 @@
 // caught, and there is no way to do one without the other.
 import { gs, players, seasonConfig, kinshipPairs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { addBond, getBond } from '../bonds.js';
+import { addBond, getBond, setBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -1379,11 +1379,29 @@ export function checkTwinEntry(week) {
   gs.bb.stats[st.other] ||= { hohWins: 0, vetoWins: 0, blockBusterWins: 0,
     timesNominated: 0, timesSaved: 0, timesOnTheBlock: 0 };
 
-  // The house's feelings about the front carry over to the other one, halved:
-  // they have been talking to this person for six weeks and did not know it.
+  // ── ONE RELATIONSHIP, NOW HELD BY TWO PEOPLE ────────────────────────────
+  //
+  // The house has spent the whole twist forming one relationship with one
+  // houseguest, and every conversation in it was had with whichever twin was
+  // in the room. There is no way to say which of them a given afternoon
+  // belonged to, and the house could not tell you either. So the standing does
+  // not get divided when they separate — it gets DUPLICATED. Both of them walk
+  // away holding exactly what the identity was holding.
+  //
+  // It used to carry over halved, which quietly said the opposite: that the
+  // one who came out of the storeroom was half a stranger. She is not. She has
+  // been in that house as much as her twin has.
+  //
+  // `setBond`, not `addBond`, because the second twin's ledger is not a base to
+  // build on — anything sitting on it was accumulated by somebody nobody in
+  // this house has ever met.
+  // The house takes the deception out on the identity FIRST, and the copy is
+  // taken after — `addBond` scales by the pair's temperament, so dealing the
+  // same -0.8 to each of them separately lands differently on each and leaves
+  // the two of them a fraction apart forever.
   for (const n of house.filter(x => x !== st.front)) {
-    try { addBond(n, st.other, getBond(n, st.front) * 0.5 - 0.5); } catch { /* new to them */ }
     try { addBond(n, st.front, -0.8); } catch { /* fine */ }
+    try { setBond(n, st.other, getBond(n, st.front)); } catch { /* new to them */ }
   }
   if (seasonConfig?.popularityEnabled !== false) {
     gs.popularity ||= {};

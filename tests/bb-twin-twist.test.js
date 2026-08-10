@@ -18,7 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig, relationships, setRelationships,
   kinshipBetween, kinshipPairs, familyPairs, tensePairs } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
-import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { getBond, setBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, houseIsAtFinale } from '../js/bb-run.js';
 import { installTwinTwist, openTwinTwist, swapTwins, twinTells, twinDiscovery, checkTwinEntry,
   twinEvicted, twinUnfinished, twinState, isTwinIdentity, twinExposure,
@@ -237,6 +237,31 @@ describe('a twin the cast declared', () => {
       for (const k of STAT_KEYS) {
         expect(second.statsA[k], `${k} is the same on both twins`).not.toBe(second.statsB[k]);
       }
+    });
+
+    it('hands both of them the identity is standing, not half of it each', () => {
+      // The house formed ONE relationship, and every conversation in it was had
+      // with whichever twin was in the room that day. Nobody — including the
+      // house — can say which afternoon belonged to which of them, so the
+      // standing is duplicated when they separate rather than divided.
+      const st = installTwinTwist([...NAMES], { rng: Math.random, pick: 'Kit' });
+      const others = NAMES.filter(n => n !== 'Kit' && n !== 'Lex');
+      // A house that feels several different ways about the identity, and a
+      // second twin carrying numbers nobody in this house ever gave her.
+      others.forEach((n, i) => {
+        setBond(n, 'Kit', [7, -6, 2.5, 0, -1.5, 4, 9, -3, 1, 6][i] ?? 0);
+        setBond(n, 'Lex', i % 2 ? 3 : -4);
+      });
+      st.completed = st.quota;
+      expect(checkTwinEntry(aWeek({ num: 6, houseAtStart: gs.activePlayers }))).toBeTruthy();
+      for (const n of others) {
+        expect(getBond(n, 'Lex'), `${n} does not feel the same about both of them`)
+          .toBeCloseTo(getBond(n, 'Kit'), 5);
+      }
+      // And the house still took the deception out on them — the copy is taken
+      // after that lands, not before, or temperament scaling deals the same
+      // penalty differently to each twin and leaves them a fraction apart.
+      expect(getBond(others[0], 'Kit')).toBeLessThan(7);
     });
 
     it('gives each twin their own line when they both finally walk in', () => {

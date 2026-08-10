@@ -2344,6 +2344,19 @@ export function simulateBBWeek(options = {}) {
         players: [hoh].filter(Boolean), badgeText: 'A CROWN AND NO BLOCK', badgeClass: 'blue',
       }],
     }, { players: [hoh].filter(Boolean) }));
+    // ── STORE IT. THE WEEK STILL HAPPENED. ──
+    //
+    // This returned straight out, and both `gs.bb.weeks.push(week)` calls are
+    // further down — so a No Eviction week was simulated in full, written to
+    // the transcript, and never added to the house's own week ledger.
+    //
+    // Everything that reads that ledger therefore could not see it. The social
+    // feed builds from `gs.bb.weeks` and reported "no episodes found for Big
+    // Brother" on a season whose first episode had just been played. The season
+    // export maps over the same array. And the next week's number comes from
+    // `gs.bb.weeks.length + 1`, so the following week would have called itself
+    // week one as well — two week ones in a season, from one early return.
+    gs.bb.weeks.push(week);
     return week;
   }
 

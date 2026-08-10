@@ -501,6 +501,15 @@
           <div class="mini-body" id="cardVoteStory">—</div>
         </div>
 
+        <!-- Computed from the ballots, not written by the model. The tally has
+             always been on screen; what was missing is whether anybody had to
+             be moved to produce it. -->
+        <div class="mini-panel" id="panelLedger" hidden>
+          <div class="mini-title">WHAT IT COST</div>
+          <div class="mini-subtitle">Measured from the ballots — no interpretation</div>
+          <div class="mini-body" id="cardLedger">—</div>
+        </div>
+
         <div class="mini-panel">
           <div class="mini-title">WHO GAINED</div>
           <div class="mini-subtitle">Position improved during this episode</div>
@@ -2027,6 +2036,19 @@ Owen: This is going to be amazing!"
 
       // Overview cards
       renderEpisodeImpact(analytics);
+      // ── the measured panel, from the SIMULATOR record rather than the model ──
+      //
+      // The analytics object is what the AI wrote about the transcript. This
+      // reads the ballots the simulator actually recorded, which is the only
+      // place the difference between "won the vote" and "had to win the vote"
+      // exists. Silent when the episode was pasted rather than synced: there is
+      // no ballot record to read, and a guess here would be exactly the failure
+      // this panel is for.
+      // Not awaited: renderAll is synchronous and every caller expects it to
+      // stay that way. The panel fills itself when the record arrives.
+      _csGet(`${_sKey('SIMULATOR_EPISODE', seasonNow)}_e${episodeNow}`)
+        .then(rec => window.renderVoteLedger?.(typeof rec === 'string' ? JSON.parse(rec) : rec))
+        .catch(() => {});
       renderMoveCard(els.cardBestMove, analytics.bestMove);
       els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
 
@@ -7821,6 +7843,46 @@ Would you like to:
     // Analytics" while the header says Big Brother.
     const label = window.__SHOWS.current || DEFAULT_FORMAT;
     document.querySelectorAll('[data-show-name]').forEach(el => { el.textContent = showName(label); });
+
+    // ── the measured half of the analysis ──
+    //
+    // The model reads the transcript, so it can only narrate what the prose
+    // says: a player used a power and their target left, therefore the power
+    // did it. It cannot see that ten of thirteen voters were already going that
+    // way, because no sentence in the episode says so. That is arithmetic over
+    // the ballots, and it belongs on the screen without an AI in the loop.
+    const { voteLedger, ledgerLine } = await import('./js/analysis/vote-ledger.js');
+    window.renderVoteLedger = record => {
+      const panel = document.getElementById('panelLedger');
+      const body = document.getElementById('cardLedger');
+      if (!panel || !body) return;
+      const l = voteLedger(record);
+      if (!l) { panel.hidden = true; return; }
+      const inf = l.influence;
+      const rows = [];
+      rows.push(`<div style="font-size:14px;margin-bottom:8px">${ledgerLine(l)}</div>`);
+      rows.push(`<div><b>${inf.alreadyThere}</b> of ${l.votesAgainst} votes against `
+        + `${l.evictee} never moved${inf.rodeConsensus
+          ? ' — a majority on their own, so the result did not need working for.'
+          : `, and ${inf.neededMoving} of the ${inf.movedVotes.length} that moved were actually needed.`}</div>`);
+      if (inf.blocsThatAgreedIndependently.length > 1) {
+        rows.push(`<div>${inf.blocsThatAgreedIndependently.map(b => b.alliance).join(' and ')} `
+          + `reached that name separately.</div>`);
+      }
+      if (inf.movedVotes.length) {
+        rows.push(`<div>Moved: ${inf.movedVotes.map(m => `${m.voter}${m.by ? ` (${m.by})` : ` (${m.how})`}`).join(', ')}</div>`);
+      }
+      if (l.outcome.hohTarget) {
+        rows.push(`<div>${l.hoh || 'The Head of Household'} went in wanting <b>${l.outcome.hohTarget}</b>`
+          + `${l.outcome.hohGotTarget ? ' and got them.' : ` and ${l.evictee} left instead.`}</div>`);
+      }
+      if (l.brokenWord.length) {
+        rows.push(`<div>Said one name and wrote another: `
+          + `${l.brokenWord.map(v => `${v.voter} (said ${v.said})`).join(', ')}.</div>`);
+      }
+      body.innerHTML = rows.join('');
+      panel.hidden = false;
+    };
     </script>
 </body>
 </html>

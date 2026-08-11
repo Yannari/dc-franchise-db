@@ -189,20 +189,29 @@ export default {
     // Canon Week 10, and it has to sit at a final seven rather than a final
     // six: it takes TWO, and the ending this arc is aiming at is a final five.
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    // AND THEN NOTHING, DELIBERATELY.
+    // ── THE SANCTUM, at a final five ──────────────────────────────────
     //
-    // The other two themes book a last twist at a final five. This one stops,
-    // because the Mastermind's stated goal has been MET at that point — three
-    // taken, three left to play for it — and a fourth device would say the
-    // opposite of everything the count has been building. The last week of this
-    // season is a normal week that the house cannot believe is a normal week,
-    // which is the most this theme can do to them and the cheapest.
+    // The Mastermind took Week 11 himself: the ceremonies moved to times of
+    // his choosing, the nomination keys replaced with voodoo dolls, and the
+    // eviction vote held IN PUBLIC — you evicted by pushing a pin into
+    // somebody, in the room, in front of them.
     //
-    // The real season filled it with the Sanctum: the Mastermind ran Week 11
-    // himself, moved every ceremony to a time of his choosing, and held the
-    // eviction vote in public with voodoo dolls instead of keys. That is a card
-    // we do not have — a PUBLIC eviction vote is not a reskin of anything on
-    // the shelf — and it is the one piece of this season worth building new.
+    // That last part is the only genuinely new mechanic in this season, and it
+    // is the reason the theme has a finale rather than a fade: every other
+    // week in this game runs on the ballot being secret. Detection is a
+    // probability, an alliance that comes up short blames the wrong chair, and
+    // the best week of somebody's game is the flip nobody sees. Take the
+    // secrecy away for one night and all of it collapses into certainty —
+    // which is what an author does to a house he has stopped hiding from.
+    //
+    // It sits AFTER the three sacrifices, on the five he left, because the
+    // count is his argument and this is him collecting on it.
+    { at: { fromEnd: 2 }, book: 'bb-sanctum-week' },
+    // AND NOTHING AFTER IT, DELIBERATELY.
+    //
+    // The final four week is left alone. The Sanctum is the last thing the
+    // Mastermind does, and a device after it would be an author who could not
+    // stop talking.
   ],
 
   // ── THE ACCOMPLICE ──────────────────────────────────────────────────────

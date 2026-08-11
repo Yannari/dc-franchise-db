@@ -1012,6 +1012,15 @@ export function settleBBAllianceWeek(week, rng = Math.random) {
         // Being TOLD is certain — it already went through the belief check on
         // the way in. Everything below is the alliance working it out instead.
         known = knowsVote(ballot.evict, ballot.voter, ballot.evict);
+        // The Sanctum. Nobody has to work anything out on a night when the
+        // vote was cast in front of them, so detection is not rolled for — it
+        // is skipped. This is the single line that gives that twist its whole
+        // meaning: every branch below asks `known`, and on this night every
+        // one of them takes the seen path.
+        if (!known && week.publicVote) {
+          try { learnBBVote(ballot.evict, ballot.voter, ballot.evict, week.num, rng); } catch { /* they still saw it */ }
+          known = true;
+        }
         if (!known) {
           detectP = betrayalDetectChance(alliance, ballot.voter, ballot.evict, week);
           if (rng() < detectP) {

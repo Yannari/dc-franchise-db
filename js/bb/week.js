@@ -71,7 +71,7 @@ import { ensureHousePlan, reviseHousePlans, dropFromHousePlans, describeHousePla
 import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, tierOf, sincerityOf } from './deals.js';
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
-import { recordBBVotes, tickBBKnowledge } from './knowledge.js';
+import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
@@ -1325,6 +1325,19 @@ export function simulateBBWeek(options = {}) {
   // silently knows the identity.
   const hohSecret = week.twistState?.rules?.hohSecret === true;
   week.hohSecret = hohSecret;
+
+  // ── THE SANCTUM: no secret ballot ────────────────────────────────────
+  //
+  // The inverse of the line above. Where the Invisible HOH asks "could the
+  // house know this?" and answers no, this week answers YES to the one thing
+  // the house is never allowed to know for certain — who voted how.
+  //
+  // Set here, next to its opposite, because everything downstream is written
+  // on the assumption that a ballot is private: detection is a probability,
+  // an alliance that comes up short blames the wrong chair, and a flip that is
+  // never seen is the best week of somebody's game. For one night none of that
+  // is true, and the places that care read this flag.
+  week.publicVote = week.twistState?.rules?.publicVote === true;
 
   /**
    * Season modes that put a third houseguest on the block.
@@ -5208,9 +5221,43 @@ export function simulateBBWeek(options = {}) {
   // hardcoded to silence, which made a farewell speech - one of the format's
   // signature moments - impossible to write. The evicted houseguest is passed
   // through so events can be about the person actually leaving.
+  // ── the Sanctum's running order ──────────────────────────────────────
+  //
+  // A public vote is not the same votes read out loud: it is a SEQUENCE, and
+  // the order is the drama. Each voter walks to the table knowing every vote
+  // cast before theirs, so the room watches the count build — and the last
+  // chair votes into a result that is already decided, in front of the person
+  // it decides.
+  //
+  // The order is not the house's to choose. Seeded off the week so a replay
+  // reads the same, and stored on the act rather than resorting the ballots,
+  // because the ledger everything else reads must stay the ledger.
+  if (week.publicVote && ballots.length) {
+    const seq = [...ballots];
+    const r = stableRng('sanctum-order', gs?.bb?.seasonSalt || 0, week.num);
+    for (let i = seq.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [seq[i], seq[j]] = [seq[j], seq[i]];
+    }
+    let running = 0;
+    week.sanctumOrder = seq.map((b, i) => {
+      running += (b.evict === evicted) ? 1 : 0;
+      return {
+        voter: b.voter, evict: b.evict, position: i + 1,
+        // Was the night already over when this one walked up? The reader wants
+        // to mark the chair that voted into a decided result.
+        afterDecided: running > Math.floor(ballots.length / 2),
+        forEvicted: b.evict === evicted,
+      };
+    });
+  }
+
   week.acts.push(addBeats(
     { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
       secondEvicted, doubleVote,
+      // The night the room watched each other vote.
+      publicVote: !!week.publicVote,
+      sanctumOrder: week.sanctumOrder || null,
       // Four on the block and a result nobody can reconstruct from the ballots
       // alone: the reader has to be shown the two sides added up, or the night
       // reads as the wrong name being called.

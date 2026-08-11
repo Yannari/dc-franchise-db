@@ -1598,6 +1598,17 @@ export function summariseWeek(week) {
       case 'eviction': {
         line('');
         line('EVICTION NIGHT');
+        // The Sanctum, before the tally — the tally is the wrong shape for a
+        // night whose whole point is the ORDER, and a transcript that prints
+        // "3 votes to 1" has thrown away everything that made it different.
+        if (act.publicVote && (act.sanctumOrder || []).length) {
+          line('  THE SANCTUM — there is no secret ballot tonight. A doll for every');
+          line('  houseguest, and they vote one at a time in front of the room.');
+          for (const v of act.sanctumOrder) {
+            line(`    ${v.position}. ${v.voter} puts the pin into ${v.evict}.`
+              + (v.afterDecided ? ' The room already knows how this ends.' : ''));
+          }
+        }
         Object.entries(act.votes || {}).forEach(([name, count]) => line(`  ${name}: ${count} vote${count === 1 ? '' : 's'}`));
         if (act.tieBreak) line(act.tieBreak.anonymous
           ? '  Tied — the Invisible HOH breaks it through the wall screen, and nobody stands up.'

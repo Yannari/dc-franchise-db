@@ -20919,6 +20919,188 @@ export function _bbFinalPleaSpeech(ep, name) {
   
 }
 
+/**
+ * THE SANCTUM — the night the ballot stopped being secret.
+ *
+ * BB27 ran its final week out of a room the house had not been shown, with
+ * voodoo dolls in place of the nomination keys: you evicted by walking to the
+ * table and pushing a pin into somebody, in front of the room and in front of
+ * them.
+ *
+ * The screen is built around the two things that makes different from every
+ * other eviction. First it is a SEQUENCE — each voter goes up knowing every
+ * vote cast before theirs, so the count builds in the open and the last chairs
+ * are voting into a decided result. Second there is nothing to work out
+ * afterwards, so the usual apparatus of suspicion is simply absent: no count
+ * that will not reconcile, nobody wrongly accused. The reader should feel that
+ * absence as pressure rather than relief.
+ *
+ * Click-to-reveal, one vote at a time, because reading them all at once is the
+ * secret ballot again.
+ */
+export function rpBuildBBSanctum(ep) {
+  const act = (ep.acts || []).find(a => a.type === 'eviction' && a.publicVote);
+  if (!act) return '';
+  const order = act.sanctumOrder || [];
+  const noms = (act.nominees || []).filter(Boolean);
+  const evicted = act.evicted || '';
+  if (!order.length) return '';
+
+  const stateKey = `bb_sanctum_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const total = order.length;
+
+  // A doll for EVERY houseguest still playing, which is what the rule says and
+  // what makes the table unbearable: your own is on it. Drawing only the two
+  // nominees made the room look like a normal eviction with worse props, and
+  // contradicted the sentence directly above it.
+  const table = [...new Set([...order.map(v => v.voter), ...noms])];
+
+  // A doll for every houseguest still playing — that is the rule, and it is
+  // why the room is unbearable: your own doll is on the table too.
+  const dollFor = (name, stuck, size = 54) => {
+    const h = size * 1.6;
+    return `<svg viewBox="0 0 40 64" width="${size}" height="${h}" class="bbsc-doll${stuck ? ' is-stuck' : ''}"
+                 role="img" aria-label="${_bbEsc(name)}${stuck ? ', pinned' : ''}">
+      <!-- burlap figure: head, body, stitched arms and legs -->
+      <circle cx="20" cy="12" r="9" class="bbsc-cloth"/>
+      <path d="M11 22 L29 22 L32 46 L8 46 Z" class="bbsc-cloth"/>
+      <path d="M11 25 L2 34 M29 25 L38 34" class="bbsc-limb"/>
+      <path d="M14 46 L12 60 M26 46 L28 60" class="bbsc-limb"/>
+      <!-- the stitching over the face, which is the whole reason these are horrid -->
+      <path d="M15 10 L19 14 M19 10 L15 14" class="bbsc-stitch"/>
+      <path d="M22 10 L26 14 M26 10 L22 14" class="bbsc-stitch"/>
+      <path d="M15 18 L25 18" class="bbsc-stitch"/>
+      ${stuck ? `<g class="bbsc-pin">
+        <line x1="30" y1="16" x2="17" y2="31" class="bbsc-pinshaft"/>
+        <circle cx="31" cy="15" r="3.4" class="bbsc-pinhead"/>
+      </g>` : ''}
+    </svg>`;
+  };
+
+  const steps = order.map((v, i) => {
+    const decided = v.afterDecided;
+    return `<div class="bbsc-step" id="bbsc-step-${ep.num}-${i}">
+      <div class="bbsc-seat">${v.position} of ${total}</div>
+      <div class="bbsc-cast">
+        <div class="bbsc-voter">${_bbEsc(v.voter)}</div>
+        <div class="bbsc-arrow" aria-hidden="true">&rarr;</div>
+        <div class="bbsc-target">
+          ${dollFor(v.evict, true, 42)}
+          <div class="bbsc-tname">${_bbEsc(v.evict)}</div>
+        </div>
+      </div>
+      <div class="bbsc-note">${decided
+        ? `The room already knows how this ends. ${_bbEsc(v.voter)} walks up anyway, `
+          + `with ${_bbEsc(v.evict)} watching, and does it where everybody can see.`
+        : `${_bbEsc(v.voter)} takes the pin and puts it into <strong>${_bbEsc(v.evict)}</strong>. `
+          + `Nobody has to be told whose vote that was.`}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="rp-page bb-room bb-block bbsc" data-ambient="tribal-tension">
+    <style>
+      .bbsc{--bbsc-wax:#e8dcc0;--bbsc-blood:#96202c;--bbsc-cloth:#b9a884}
+      .bbsc-hall{max-width:1000px;margin:0 auto;padding:26px 22px 96px;text-align:center}
+      .bbsc-eyebrow{font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+        color:var(--bbsc-wax);opacity:.75}
+      .bbsc-title{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:40px;letter-spacing:.12em;
+        margin:6px 0 4px;color:var(--bbsc-wax)}
+      .bbsc-rule{width:180px;height:1px;margin:14px auto 8px;
+        background:linear-gradient(90deg,transparent,var(--bbsc-wax),transparent);opacity:.6}
+      .bbsc-sub{max-width:640px;margin:0 auto 26px;opacity:.72;font-size:14px;line-height:1.6}
+      /* the table: a doll for everybody still playing */
+      .bbsc-table{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+        padding:20px 16px;margin-bottom:26px;
+        background:linear-gradient(180deg,rgba(232,220,192,.05),transparent);
+        border-top:1px solid rgba(232,220,192,.22);border-bottom:1px solid rgba(232,220,192,.22)}
+      .bbsc-slot{width:64px;text-align:center}
+      .bbsc-slotname{font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+        opacity:.6;margin-top:2px}
+      /* the two whose dolls are the ones that can actually be used tonight */
+      .bbsc-slot.is-nominee .bbsc-slotname{opacity:1;color:var(--bbsc-blood)}
+      .bbsc-slot.is-nominee .bbsc-cloth{filter:brightness(1.15)}
+      .bbsc-cloth{fill:var(--bbsc-cloth);opacity:.9}
+      .bbsc-limb{stroke:var(--bbsc-cloth);stroke-width:2.4;fill:none;opacity:.85;stroke-linecap:round}
+      .bbsc-stitch{stroke:#3a2f22;stroke-width:1.5;fill:none;stroke-linecap:round;opacity:.85}
+      .bbsc-pinshaft{stroke:#d8d8dc;stroke-width:1.6}
+      .bbsc-pinhead{fill:var(--bbsc-blood)}
+      .bbsc-doll.is-stuck .bbsc-cloth{opacity:1}
+      /* the votes, one at a time */
+      .bbsc-step{opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s;
+        max-width:640px;margin:0 auto 16px;padding:16px 18px;
+        border:1px solid rgba(232,220,192,.18);background:rgba(0,0,0,.28)}
+      .bbsc-step.is-visible{opacity:1;transform:none}
+      .bbsc-seat{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.5;
+        margin-bottom:8px}
+      .bbsc-cast{display:flex;align-items:center;justify-content:center;gap:16px}
+      .bbsc-voter{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:22px}
+      .bbsc-arrow{opacity:.5}
+      .bbsc-tname{font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+      .bbsc-note{margin-top:10px;font-size:13px;line-height:1.6;opacity:.8}
+      .bbsc-controls{position:fixed;left:0;right:0;bottom:0;z-index:40;
+        display:flex;gap:10px;justify-content:center;align-items:center;
+        padding:12px;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,0))}
+      .bbsc-btn{padding:8px 18px;border:1px solid var(--bbsc-wax);background:transparent;
+        color:var(--bbsc-wax);cursor:pointer;font-family:inherit;letter-spacing:.12em;
+        text-transform:uppercase;font-size:11px}
+      .bbsc-btn:hover{background:rgba(232,220,192,.12)}
+      .bbsc-count{font-size:11px;letter-spacing:.2em;opacity:.7}
+      @media(prefers-reduced-motion:reduce){.bbsc-step{transition:none}}
+    </style>
+    <div class="bbsc-hall">
+      <div class="bbsc-eyebrow">Week ${_bbEsc(String(ep.num ?? ''))} &middot; there is no secret ballot</div>
+      <h1 class="bbsc-title">The Sanctum</h1>
+      <div class="bbsc-rule"></div>
+      <p class="bbsc-sub">A doll for every houseguest, and a pin. They vote one at a time,
+        in an order they did not choose, in front of the room and in front of the nominees.
+        Nothing about tonight has to be worked out afterwards.</p>
+
+      <div class="bbsc-table">
+        ${table.map(n => `<div class="bbsc-slot${noms.includes(n) ? ' is-nominee' : ''}">
+          ${dollFor(n, false, 40)}
+          <div class="bbsc-slotname">${_bbEsc(n)}</div>
+        </div>`).join('')}
+      </div>
+
+      ${steps}
+
+      <div class="bbsc-controls" id="bbsc-controls-${ep.num}">
+        <button class="bbsc-btn" onclick="bbSanctumNext(${ep.num}, ${total})">Next vote</button>
+        <button class="bbsc-btn" onclick="bbSanctumAll(${ep.num}, ${total})">Reveal all</button>
+        <span class="bbsc-count" id="bbsc-count-${ep.num}">${Math.max(0, state.idx + 1)} / ${total}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** DOM-only reveal: patch classes, never rebuild the page. */
+export function _bbSanctumApply(num, upTo, total) {
+  for (let i = 0; i <= upTo && i < total; i++) {
+    document.getElementById(`bbsc-step-${num}-${i}`)?.classList.add('is-visible');
+  }
+  const c = document.getElementById(`bbsc-count-${num}`);
+  if (c) c.textContent = `${Math.max(0, upTo + 1)} / ${total}`;
+}
+
+export function bbSanctumNext(num, total) {
+  const key = `bb_sanctum_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  if (st.idx >= total - 1) return;
+  st.idx++;
+  _bbSanctumApply(num, st.idx, total);
+  document.getElementById(`bbsc-step-${num}-${st.idx}`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+export function bbSanctumAll(num, total) {
+  const key = `bb_sanctum_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  st.idx = total - 1;
+  _bbSanctumApply(num, st.idx, total);
+}
+
 export function rpBuildBBEviction(ep) {
   const act = (ep.acts || []).find(a => a.type === 'eviction');
   const noms = (act?.nominees || []).filter(Boolean);
@@ -22085,6 +22267,15 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // Total Drama's plans screen for a house — and Eviction Night is the
         // live hour, so the intentions and the result stop sharing a page.
         screens.push({ id: id('bb-plans'), label: 'Voting Plans', html: rpBuildBBVotingPlans(view) });
+        // The Sanctum sits BETWEEN the plans and the result, because that is
+        // where it happens: the room is called down, the votes are cast in
+        // front of each other one at a time, and only then does the night
+        // resolve on the eviction screen as it always does. A separate screen
+        // rather than a rewrite of Eviction Night — the vote is what changed,
+        // not the pleas, the count or the walk to the door.
+        if ((view.acts || []).some(a => a.type === 'eviction' && a.publicVote)) {
+          screens.push({ id: id('bb-sanctum'), label: 'The Sanctum', html: rpBuildBBSanctum(view) });
+        }
         screens.push({ id: id('bb-evict'), label: 'Eviction Night', html: rpBuildBBEviction(view) });
         // No separate Vote screen: Eviction Night reads every ballot from the
         // Diary Room itself, so a second page repeating the same nine votes was

@@ -5704,6 +5704,22 @@ export function generateBBSummaryText(ep) {
         break;
 
       case 'eviction': {
+        // The Sanctum. Both transcript writers carry it, because the rule in
+        // this codebase is that neither is the canonical one — a beat written
+        // into only one of them is a beat half the readers never see.
+        if (act.publicVote && (act.sanctumOrder || []).length) {
+          sec('THE SANCTUM');
+          ln('  There is no secret ballot tonight. A doll for every houseguest, and a pin.');
+          ln('  They vote one at a time, in an order they did not choose, in front of the room');
+          ln('  and in front of the nominees.');
+          ln('');
+          for (const v of act.sanctumOrder) {
+            ln(`  ${v.position}. ${v.voter} puts the pin into ${v.evict}.`
+              + (v.afterDecided ? ' The room already knows how this ends.' : ''));
+          }
+          ln('');
+          ln('  Nothing about tonight has to be worked out afterwards.');
+        }
         if (ep.invisibleReveal && ep.invisibleReveal.to) {
           sec('THE GOODBYE MESSAGES');
           ln(`  In the goodbye messages, the Invisible HOH finally signs the week:`);

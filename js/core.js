@@ -547,6 +547,16 @@ export const TWIST_CATALOG = [
     category:'power', phase:'any',
     desc:'The Head of Household competition runs — and the result is sealed. Only the winner knows who holds power: nominations are read by Big Brother, the replacement is named anonymously, and the Invisible HOH casts no vote but may compete in next week\'s HOH competition. The house spends the week guessing, and the guesses are not always right.',
     engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction'] },
+  // `phase:'any'` like every other house card — a Big Brother season has no
+  // merge, so a phase gate here is a filter with nothing behind it.
+  { id:'bb-sanctum-week', emoji:'🕯️', name:'The Sanctum', format:'big-brother',
+    category:'ceremony', phase:'any',
+    desc:'The house is called down to a room it has not been shown before, and the week is run out of it. There is no secret ballot: the voters are handed a doll for every houseguest still playing, and they evict by walking to the table and pushing a pin into one, in front of the room, in front of the nominees, one at a time and in an order somebody else chose. Everybody watches everybody vote. There is nothing to work out afterwards, no count that will not reconcile and nobody to wrongly suspect — every alliance learns exactly who broke it at the moment it breaks, and the last voters cast into a result they can already see coming.',
+    engineType:'bb-sanctum-week',
+    // It owns the eviction, so nothing else that reshapes the vote may share
+    // the night. It sits happily beside the Block Buster: that decides who is
+    // still on the block when the room is called down, which is upstream.
+    incompatible:['bb-instant-eviction', 'bb-double-eviction', 'bb-no-eviction', 'bb-duo-week'] },
   { id:'bb-pandoras-box', emoji:'❓', name:'Pandora\'s Box', format:'big-brother',
     category:'advantages', phase:'any',
     desc:'A door with a question mark appears in the HOH room. Open it and something good happens to you while something bad happens to the house — and what was inside stays secret. The canonical cargo is a hidden Diamond Power of Veto with a two-eviction fuse, detonated live at an eviction: the holder saves a nominee and personally names the replacement while the house watches a week of plans evaporate.',

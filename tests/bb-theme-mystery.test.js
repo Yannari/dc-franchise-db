@@ -105,13 +105,14 @@ describe('the Month of Mayhem arithmetic', () => {
     expect(7 - 2).toBe(5);
   });
 
-  it('books nothing after the count is met', () => {
-    // Deliberate: the other two themes end on a twist at a final five. This one
-    // stops, because a fourth device would contradict the number the antagonist
-    // has spent a month promising.
+  it('collects on the count at a final five, and stops there', () => {
+    // The three sacrifices leave five, and the Sanctum is what he does with
+    // them. Nothing after it — a device past the finale is an author who
+    // cannot stop talking.
     const last = [...THEME().arc].filter(a => a.book).pop();
-    expect(last.book).toBe('bb-double-eviction');
-    expect(THEME().arc.some(a => a.book && a.at?.fromEnd < 4)).toBe(false);
+    expect(last.book).toBe('bb-sanctum-week');
+    expect(last.at.fromEnd + 3).toBe(5);
+    expect(THEME().arc.some(a => a.book && a.at?.fromEnd < 2)).toBe(false);
   });
 
   it('lands those anchors on the real house, not on a counted-back week', () => {

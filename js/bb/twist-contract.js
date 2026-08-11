@@ -27,6 +27,7 @@ export const BASE_WEEK_RULES = Object.freeze({
   replacementAuthority: 'hoh', // 'hoh' | 'veto-holder' — who fills the empty chair
   cancelVotes: 0,           // ballots removed before the count
   cancelEviction: false,    // nobody leaves this week
+  publicVote: false,        // the ballot is secret unless a twist opens it
   addSlots: [],             // extra competition slots ('safety', 'return', ...)
   secondCycle: false,       // a compressed second eviction cycle after the first
 });
@@ -369,6 +370,29 @@ export const BB_TWIST_CONTRACTS = {
       name: 'The Invisible HOH',
       rule: 'This week’s Head of Household is INVISIBLE. The competition result will not be revealed: only the winner knows who holds power. Nominations will be read by Big Brother, and the Invisible HOH may compete in next week’s HOH competition.',
       sting: 'Somebody in this room is about to run the week without wearing the key.',
+    },
+  },
+  // BB27's Sanctum Week. The Mastermind took the final week, moved the
+  // ceremonies to times of his choosing, and replaced the nomination keys with
+  // voodoo dolls — the eviction vote was cast in public, by stabbing the doll
+  // of the person you were voting out, in the room, in front of them.
+  //
+  // The mechanic that matters is the LOSS OF THE SECRET BALLOT. Everything this
+  // game does with suspicion downstream of a vote — detection chance, the
+  // misattributed accusation, the alliance that comes out one short and blames
+  // the wrong chair — exists because a ballot is private. Take that away for one
+  // night and all of it resolves to certainty.
+  'bb-sanctum-week': {
+    id: 'bb-sanctum-week', layer: 'scheduled', category: 'ceremony',
+    timing: 'eviction', duration: { weeks: 1 },
+    rules: { publicVote: true },
+    // Announced, and it has to be: the whole weight of the night is the house
+    // knowing in advance that there is nowhere to hide a vote.
+    acquisition: { channel: 'none', secrecy: 'public' },
+    announcement: {
+      name: 'The Sanctum',
+      rule: 'This week ends in the Sanctum. There is no secret ballot: each voter will be given a doll for every houseguest and will evict by pushing a pin into one, out loud, in front of the room and in front of the nominees. Votes are cast one at a time, in an order you do not choose, and everybody watches.',
+      sting: 'Whatever you were going to tell them afterwards, you will be telling them while they watch you do it.',
     },
   },
   'bb-app-store': {

@@ -182,10 +182,11 @@ export default {
     //   final nine  -> the special elimination takes one   (one)
     //   final seven -> the double eviction takes two       (three) -> final five
     //
-    // The White Locust week: "by the end of their stay, one houseguest would
-    // not be checking out". An instant eviction is a week that takes somebody
-    // without the ceremonies, which is that, minus the guest star.
-    { at: { fromEnd: 6 }, book: 'bb-instant-eviction' },
+    // The White Locust week, which is now itself rather than an instant
+    // eviction wearing its name: the house checks in, the Call Out Chain runs,
+    // and one of them does not check out. Canon puts it at nine houseguests,
+    // which is what fromEnd 6 is at every cast.
+    { at: { fromEnd: 6 }, book: 'bb-white-locust' },
     // Canon Week 10, and it has to sit at a final seven rather than a final
     // six: it takes TWO, and the ending this arc is aiming at is a final five.
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
@@ -229,7 +230,7 @@ export default {
   // it was played once.
   seasonKnobs: { bbSaboteur: 'random', bbSaboteurBankWeek: 4 },
 
-  books: ['bb-secret-power-comp', 'bb-hidden-power', 'bb-instant-eviction'],
+  books: ['bb-secret-power-comp', 'bb-hidden-power', 'bb-white-locust', 'bb-sanctum-week'],
   weights: { 'bb-hidden-power': 1.8, 'bb-secret-power-comp': 1.5, 'bb-pandoras-box': 1.3 },
   bans: [],
   exclusive: [],

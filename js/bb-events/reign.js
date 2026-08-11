@@ -70,6 +70,7 @@ const houseMeeting = {
     _spend(this.id, ctx);
     const room = _others(house, hoh);
     const p = pronouns(hoh);
+    const target = targetOf(hoh) || furthestFrom(hoh, room) || room[0];
     // Somebody says the quiet part in front of everybody, which is the entire
     // mechanism: the meeting does not fail because of the answer, it fails
     // because the question was asked in public.
@@ -78,7 +79,7 @@ const houseMeeting = {
     const text = _variant([
       `${hoh} calls everybody into the living room and opens with, “This is not a dictatorship.” A few people glance at each other before ${p.sub} reaches the end of the sentence.`,
       `${hoh} spends most of the meeting explaining why nobody should take the nominations personally. ${_list(room.slice(0, 3))} leave together and immediately discuss how personal it sounded.`,
-      `${hoh} stands in the middle of the living room and asks, one at a time, who wants ${p.posAdj} target to stay. ${honest} answers honestly. Everybody watches ${hoh} hear it.`,
+      `${hoh} stands in the middle of the living room and asks, one at a time, who wants ${target} to stay. ${honest} answers honestly. Everybody watches ${hoh} hear it.`,
       `${hoh} calls a house meeting to clear the air, then asks each person to declare where they stand. The answers grow shorter as the room gets more uncomfortable.`,
     ], ctx, hoh, honest);
 
@@ -91,7 +92,7 @@ const houseMeeting = {
     room.forEach((a, i) => { const b = room[i + 1]; if (b) api.addBond(a, b, 0.5); });
     api.remember(honest, hoh, 'made-me-say-it-out-loud', 2, {});
     api.popDelta(hoh, -3);
-    return { text, players: [hoh, honest], badgeText: 'HOUSE MEETING', badgeClass: 'red',
+    return { text, players: [hoh, ...room], badgeText: 'HOUSE MEETING', badgeClass: 'red',
       // Same scene, same treatment on the screen.
       meeting: { caller: hoh, about: honest, outcome: 'backfires', cause: 'power', room: [...room],
         beats: [
@@ -111,7 +112,8 @@ const saysItOutLoud = {
     const hoh = ctx?.hoh;
     if (!hoh || _spent('reign-announces-target', ctx)) return 0;
     const { ego, mode } = reignTemperament(hoh);
-    return mode === 'hohitis' && targetOf(hoh) ? _reigning(ctx, 6 * ego) : 0;
+    return mode === 'hohitis' && targetOf(hoh) && ctx?.phase === 'post-hoh'
+      ? _reigning(ctx, 6 * ego) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
@@ -131,7 +133,7 @@ const saysItOutLoud = {
     api.addBond(mark, hoh, -1.4);
     reignMadeAnEnemy(ctx.week, mark);
     audience.forEach(n => api.remember(n, hoh, 'cannot-keep-quiet', 1, {}));
-    return { text, players: [hoh, mark], badgeText: 'SAYS IT OUT LOUD', badgeClass: 'orange' };
+    return { text, players: [hoh, mark, ...audience], badgeText: 'SAYS IT OUT LOUD', badgeClass: 'orange' };
   },
 };
 
@@ -142,12 +144,13 @@ const testsTheAlliance = {
     const hoh = ctx?.hoh;
     if (!hoh || _spent('reign-loyalty-test', ctx)) return 0;
     const { ego, mode } = reignTemperament(hoh);
-    return mode === 'hohitis' && alliancesOf(hoh).length ? _reigning(ctx, 5 * ego) : 0;
+    const activeAlliance = alliancesOf(hoh).find(a => (a?.members || []).some(n => n !== hoh && house.includes(n)));
+    return mode === 'hohitis' && activeAlliance ? _reigning(ctx, 5 * ego) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
     _spend(this.id, ctx);
-    const alliance = alliancesOf(hoh)[0];
+    const alliance = alliancesOf(hoh).find(a => (a?.members || []).some(n => n !== hoh && house.includes(n)));
     const mates = ((alliance?.members) || []).filter(n => n !== hoh && house.includes(n));
     if (!mates.length) {
       return { text: `${hoh} looks for somebody to test and finds nobody worth testing.`,
@@ -169,7 +172,7 @@ const testsTheAlliance = {
     api.suspicion(hoh, doubter, 1.3);
     api.suspicion(doubter, hoh, 1);
     reignMadeAnEnemy(ctx.week, doubter);
-    return { text, players: [hoh, doubter], badgeText: 'LOYALTY TEST', badgeClass: 'orange' };
+    return { text, players: [hoh, ...mates], badgeText: 'LOYALTY TEST', badgeClass: 'orange' };
   },
 };
 
@@ -182,7 +185,7 @@ const letsTheHouseDecide = {
     const hoh = ctx?.hoh;
     if (!hoh || _spent('reign-house-decides', ctx)) return 0;
     const { nerves, mode } = reignTemperament(hoh);
-    return mode === 'frightened' ? _reigning(ctx, 6 * nerves) : 0;
+    return mode === 'frightened' && ctx?.phase === 'post-hoh' ? _reigning(ctx, 6 * nerves) : 0;
   },
   fire(house, ctx, api) {
     const hoh = ctx.hoh;
@@ -201,7 +204,7 @@ const letsTheHouseDecide = {
     api.remember(advisor, hoh, 'let-me-pick', 2, { about: 'their own nominations' });
     _others(house, hoh).forEach(n => api.suspicion(n, hoh, -0.3));
     api.popDelta(hoh, -1);
-    return { text, players: [hoh, advisor], badgeText: 'SOMEBODY ELSE DECIDES', badgeClass: 'grey' };
+    return { text, players: [hoh, advisor, ..._others(house, hoh, advisor)], badgeText: 'SOMEBODY ELSE DECIDES', badgeClass: 'grey' };
   },
 };
 
@@ -365,11 +368,9 @@ const carveItUp = {
       api.suspicion(b, a, 1.2);
       api.popDelta(a, -1);
     }
-    // Either way, the people whose names were in that room find out.
-    for (const n of [x, y].filter(Boolean)) api.suspicion(n, agree ? a : b, 0.7);
     void p;
 
-    return { text, players: [a, b, x].filter(Boolean),
+    return { text, players: [a, b, x, y].filter(Boolean),
       badgeText: agree ? 'TWO CROWNS, ONE DEAL' : 'TWO CROWNS, NO DEAL',
       badgeClass: agree ? 'green' : 'red' };
   },

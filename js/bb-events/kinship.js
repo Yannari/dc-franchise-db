@@ -24,15 +24,10 @@
 // `feelsFor(a, b)` and `feelsFor(b, a)` separately, and several of them exist
 // ONLY when those two numbers disagree.
 import { gs, seasonConfig, kinshipPairs, REL_KINSHIP } from '../core.js';
-import { pronouns, romanticCompat } from '../players.js';
+import { romanticCompat } from '../players.js';
 import { feelsFor, addLean, leanGap, getBond } from '../bonds.js';
 import { spotlightOrder } from './_read.js';
 
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They', Obj: 'Them' }; } };
-const has = (name, verb) => `${P(name).sub} ${P(name).sub === 'they' ? verb : `${verb}s`}`;
-// `has()` conjugates a REGULAR verb by adding an s, so has(x, 'have') came out
-// as "he haves". The one irregular this file needs gets its own helper.
-const hasHave = name => (P(name).sub === 'they' ? 'have' : 'has');
 const label = kin => REL_KINSHIP?.[kin]?.label || 'History';
 
 /**
@@ -146,25 +141,24 @@ const exRelapse = {
     _spend(this.id, ctx); _burn(this.id);
     const { a, b } = p;
     const text = _line([
-      `They have been extremely normal about it for two weeks. Tonight ${a} and ${b} are the last two `
-        + `awake and neither of them goes to bed, and by the time anybody comes down in the morning `
-        + `something has very obviously changed.`,
-      `"We said we were not going to do this." ${a} is right, they did say that, and it turns out to `
-        + `have been a plan rather than a fact.`,
-      `Everybody in this house knows they used to be together and has been waiting to see it. `
-        + `It happens in the storeroom, badly, and ${a} comes out looking like somebody who has just `
-        + `made a decision ${hasHave(a)} not thought through.`,
-      `The thing about being locked in a house with an ex is that all the reasons it ended are outside `
-        + `and all the reasons it started are in here. By Thursday ${a} and ${b} have stopped pretending.`,
+      `${a} and ${b} stay up after everyone else leaves the kitchen. The conversation drifts from the vote `
+        + `to an old joke, then to why they broke up. Neither of them goes to bed when they should.`,
+      `"We said we weren't doing this in here." ${a} says it after ${b} reaches for ${a}'s hand. `
+        + `Neither one lets go.`,
+      `${a} and ${b} disappear into the storage room to settle an argument. They come back twenty minutes `
+        + `later no longer arguing and suddenly unable to look at anyone.`,
+      `They begin the night comparing notes about the game and end it admitting they still miss each other. `
+        + `By breakfast, keeping their distance is no longer part of the plan.`,
     ], `${this.id}|${a}|${b}`, ctx);
 
     api.addBond(a, b, 2.6);
     api.popDelta(a, 2); api.popDelta(b, 2);
     api.showmance(a, b, { rekindled: true });
-    for (const n of _others(house, a, b).slice(0, 3)) {
+    const witnesses = _others(house, a, b).slice(0, 3);
+    for (const n of witnesses) {
       api.remember(n, a, 'back-with-their-ex', 2, { about: b });
     }
-    return { text, players: [a, b], badgeText: 'BACK ON', badgeClass: 'gold' };
+    return { text, players: [a, b, ...witnesses], badgeText: 'BACK ON', badgeClass: 'gold' };
   },
 };
 
@@ -185,18 +179,15 @@ const exUnrequited = {
     const p = _pick(house, ['exes', 'ex-friends'], x => x.gap >= 4 && x.warmSide >= 1);
     _spend(this.id, ctx);
     const { warm, cold } = p;
-    const witness = _others(house, warm, cold)[0];
-    const wp = P(warm);
     const text = _line([
-      `${warm} is still in this and ${cold} is not, and the whole house can see it except ${warm}. `
-        + `${wp.Sub} ${has(warm, 'keep')} finding reasons to be in whichever room ${cold} is in, `
-        + `and ${cold} has started leaving them.`,
-      `"${cold} did not mean it like that." ${warm} says it to ${witness || 'nobody'} about something `
-        + `${cold} very much did mean like that. It is the third time this week.`,
-      `${cold} is perfectly nice about it, which is somehow the worst version. ${warm} would rather `
-        + `be argued with.`,
-      `They are civil, they are friendly, they cook next to each other. And every single time ${cold} `
-        + `walks out of a room without looking back, ${warm} watches the door for a second too long.`,
+      `${warm} keeps finding small reasons to sit beside ${cold}. ${cold} keeps finding equally small `
+        + `reasons to get up. After the third time, people stop pretending not to notice.`,
+      `${warm} tells the Diary Room that ${cold} is only being careful because of the cameras. `
+        + `${cold} has already told the Diary Room there is nothing left to be careful about.`,
+      `${cold} is kind without encouraging anything. ${warm} would almost prefer a fight; at least a fight `
+        + `would mean there was still something to settle.`,
+      `${warm} starts telling an old story about the two of them. ${cold} corrects one detail, then leaves `
+        + `before the story reaches the part where they were still together.`,
     ], `${this.id}|${warm}|${cold}`, ctx);
 
     // It costs them, in the only currency this house has: the person carrying
@@ -204,8 +195,8 @@ const exUnrequited = {
     addLean(warm, cold, -0.6);
     api.addBond(warm, cold, -0.3);
     api.popDelta(warm, 1);
-    if (witness) api.remember(witness, warm, 'not-over-them', 2, { about: cold });
-    return { text, players: [warm, cold], badgeText: 'ONE OF THEM IS NOT OVER IT', badgeClass: 'blue' };
+    return { text, players: [warm, cold],
+      badgeText: 'ONE OF THEM IS NOT OVER IT', badgeClass: 'blue' };
   },
 };
 
@@ -224,19 +215,20 @@ const exColdWar = {
     const { a, b } = p;
     const third = _others(house, a, b)[0];
     const text = _line([
-      `${a} and ${b} have not been alone in a room together since the first night and both of them `
-        + `are managing it deliberately. It takes real coordination in a house this size.`,
-      `Somebody asks, innocently, how they know each other. Both of them answer at the same time `
-        + `with two completely different sentences.`,
-      `The kitchen empties when they are both in it. Nobody decided that; it simply started happening `
-        + `around the fourth day and nobody has said anything about it.`,
-      `"I am not going to talk about it." ${a} says it pleasantly, twice, to two different people, `
-        + `and by the evening the whole house is talking about it.`,
+      `${a} walks into the kitchen, sees ${b}, and turns back for a mug neither of them believes was forgotten. `
+        + `${third || 'Someone at the table'} clocks it immediately.`,
+      `A harmless conversation turns sharp the moment ${a} and ${b} disagree. Neither raises a voice. `
+        + `They do not need to; they already know exactly where to aim.`,
+      `${a} asks the room to pass the salt while looking directly past ${b}, who is holding it. `
+        + `The silence that follows lasts longer than the joke deserves.`,
+      `${third || 'Another houseguest'} asks whether the two of them can work together for one vote. `
+        + `${a} says “ask ${b}.” ${b} says “there's your answer.”`,
     ], `${this.id}|${a}|${b}`, ctx);
 
     api.addBond(a, b, -1.1);
     if (third) api.suspicion(third, a, 0.4);
-    return { text, players: [a, b], badgeText: 'NOT SPEAKING', badgeClass: 'red' };
+    return { text, players: [a, b, third].filter(Boolean),
+      badgeText: 'NOT SPEAKING', badgeClass: 'red' };
   },
 };
 
@@ -263,22 +255,19 @@ const estrangedAttempt = {
     const lands = (rng ? rng() : Math.random()) < Math.max(0.15, Math.min(0.8, 0.42 + reach * 0.06));
 
     const text = lands ? _line([
-      `They end up on the sofa at two in the morning and ${warm} says the thing neither of them has `
-        + `said in years. ${cold} does not say it back. ${cold} does stay, though, and they are still `
-        + `sitting there when it gets light.`,
-      `It is not a reconciliation. It is ${warm} and ${cold} agreeing that whatever this is, it does `
-        + `not have to be carried around a house on television, and that is more than either of them `
-        + `came in expecting.`,
-      `Somebody asks how long it has been. They work it out together, out loud, and the number is `
-        + `bad enough that both of them go quiet.`,
+      `${warm} finally asks ${cold} to talk without an audience. The apology is awkward and incomplete, `
+        + `but ${cold} stays long enough to answer it.`,
+      `${warm} and ${cold} agree they are not fixing years of damage in one night. They do agree to stop `
+        + `using the house as another way to punish each other.`,
+      `${cold} corrects ${warm}'s version of what happened between them. For once, ${warm} listens instead `
+        + `of preparing the next defence. The conversation does not solve everything, but it does not become a fight.`,
     ], `${this.id}|${warm}|${cold}|y`, ctx) : _line([
-      `${warm} tries. It takes about ninety seconds for the conversation to arrive at the thing it `
-        + `always arrives at, and ${cold} walks away from it exactly the way ${hasHave(cold)} `
-        + `always walked away from it.`,
-      `"I did not come here to do this." ${cold} says it and means it, and ${warm} spends the rest `
-        + `of the night in the garden.`,
-      `It goes wrong in the first sentence. Ten people pretend very hard to be doing something else `
-        + `in the next room.`,
+      `${warm} asks for a clean start. ${cold} hears it as a request to forget why they stopped speaking, `
+        + `and the conversation ends there.`,
+      `"I didn't come here to repair this for television," ${cold} says. ${warm} has no answer that does `
+        + `not sound rehearsed.`,
+      `${warm} opens with an apology and follows it immediately with an excuse. ${cold} catches the difference `
+        + `and walks away before the excuse becomes another argument.`,
     ], `${this.id}|${warm}|${cold}`, ctx);
 
     if (lands) {
@@ -312,23 +301,24 @@ const familyShield = {
     const { warm, cold, kin } = p;
     const threat = _others(house, warm, cold)[0];
     const text = _line([
-      `Somebody says ${cold}'s name in front of ${warm} and the temperature of the room changes `
-        + `before ${warm} has said anything at all. Nobody brings it up again in front of ${warm}.`,
-      `${warm} takes a hit ${warm} did not have to take, in a conversation ${cold} was not even in, `
-        + `and does not mention it afterwards. ${cold} finds out anyway.`,
-      `"You can talk about anybody in this house except one person." ${warm} says it lightly, `
-        + `to the room, and everybody understands it was not light.`,
-      `The house has worked out that the fastest way to lose ${warm} is to come for ${cold}. `
-        + `That is useful information and every single person in here now has it.`,
+      `${threat || 'Someone'} floats ${cold}'s name as an easy vote. ${warm} shuts it down so quickly that `
+        + `the room learns more from the defence than it did from the suggestion.`,
+      `${warm} is offered a deal that leaves ${cold} exposed and refuses before hearing the rest. `
+        + `${cold} was not in the room, but the refusal reaches ${cold} before dinner.`,
+      `"Pitch whoever you want," ${warm} tells ${threat || 'the room'}. "Just don't pitch ${cold} to me." `
+        + `It is honest, protective, and terrible threat management.`,
+      `${threat || 'A houseguest'} tests whether ${warm} would vote against ${cold}. ${warm}'s face answers `
+        + `before the words do, and the question immediately becomes part of the week's strategy.`,
     ], `${this.id}|${warm}|${cold}`, ctx);
 
     api.addBond(warm, cold, 1.4);
     // Protecting somebody in a house like this is the loudest thing you can do
     // about who you are with — and it makes you the more dangerous half.
-    for (const n of _others(house, warm, cold).slice(0, 4)) api.suspicion(n, warm, 0.5);
+    const witnesses = _others(house, warm, cold).slice(0, 4);
+    for (const n of witnesses) api.suspicion(n, warm, 0.5);
     if (threat) api.setTarget(threat, warm, `${warm} will always protect ${cold}`);
     api.popDelta(warm, 2);
-    return { text, players: [warm, cold], badgeText: `${String(label(kin)).toUpperCase()} · SHIELDED`,
+    return { text, players: [warm, cold, ...witnesses], badgeText: `${String(label(kin)).toUpperCase()} · SHIELDED`,
       badgeClass: 'blue' };
   },
 };
@@ -345,25 +335,31 @@ const familyCompared = {
   fire(house, ctx, api) {
     const p = _pick(house, ['siblings', 'parent-child', 'cousins', 'twins']);
     _spend(this.id, ctx);
-    // Whoever the house rates less. Being the other one is its own thing.
+    // The less invested side is the one already tiring of being treated as a
+    // matched set. This is about that person's response, not an invented
+    // claim that the whole house objectively ranks one relative above another.
     const lesser = p.coldSide === feelsFor(p.a, p.b) ? p.a : p.b;
     const better = lesser === p.a ? p.b : p.a;
+    const comparer = _others(house, lesser, better)[0] || null;
     const text = _line([
-      `It is meant kindly every time. "You are nothing like ${better}." ${lesser} laughs every time, `
-        + `and has now heard it four times in eleven days.`,
-      `Somebody compares them out loud, badly, in front of both of them. ${better} does not notice. `
-        + `${lesser} notices.`,
-      `The house has decided which of them is the dangerous one. It has not told ${lesser}, `
-        + `and it has not needed to.`,
-      `"Which one of you is the smart one?" It is a joke. It is a joke ${lesser} is going to `
-        + `think about at three in the morning.`,
+      `${comparer || 'Someone'} tells ${lesser}, "You're nothing like ${better}," and means it as a compliment. `
+        + `${lesser} still hears the comparison before the compliment.`,
+      `${comparer || 'Another houseguest'} compares how ${lesser} and ${better} approach the game. ${better} brushes it off. `
+        + `${lesser} goes quiet and changes rooms.`,
+      `${lesser} wins an argument and ${comparer || 'somebody'} credits ${better} for giving advice. ${better} denies it, `
+        + `but the correction arrives too late to help.`,
+      `${comparer || 'Somebody'} jokes about which relative is carrying the pair. ${lesser} laughs with everyone else, `
+        + `then tells ${better} in private that it was not funny.`,
     ], `${this.id}|${lesser}|${better}`, ctx);
 
     // Resentment inside a family is exactly what the lean is for: the bond
     // between them does not have to move for one of them to start pulling away.
     addLean(lesser, better, -1.3);
-    api.popDelta(better, 1);
-    return { text, players: [lesser, better], badgeText: 'BEING THE OTHER ONE', badgeClass: 'blue' };
+    // The audience sympathy belongs to the person being reduced to a
+    // comparison, not the relative who happened to be praised.
+    api.popDelta(lesser, 1);
+    return { text, players: [lesser, better, comparer].filter(Boolean),
+      badgeText: 'BEING THE OTHER ONE', badgeClass: 'blue' };
   },
 };
 
@@ -384,19 +380,20 @@ const partnersStrain = {
     _spend(this.id, ctx);
     const { a, b, kin } = p;
     const text = _line([
-      `Nobody in this house has to guess where ${a}'s vote is going, and that is the entire problem. `
-        + `Two people who arrived together are one number to everybody else in here.`,
-      `They have started disagreeing in front of people on purpose. It is not convincing anybody `
-        + `and both of them can tell it is not convincing anybody.`,
-      `"You cannot be in an alliance with your ${noun(kin)}, that is just being `
-        + `in a couple." Somebody says it as a joke at the kitchen table. Nobody laughs, including them.`,
-      `${a} spends the day being careful not to look at ${b} across a room, which is a considerably `
-        + `stranger thing to watch than looking would have been.`,
+      `A vote count reaches ${a} and ${b}, and everyone writes down two votes before either one answers. `
+        + `${a} points out that they are allowed to disagree. Nobody changes the count.`,
+      `${a} and ${b} deliberately take opposite sides in a harmless debate. The performance is so obvious `
+        + `that it only reminds the room how coordinated they usually are.`,
+      `"That's not an alliance," somebody says when ${a} mentions working with ${b}. "That's your ${noun(kin)}." `
+        + `The table laughs. ${a} and ${b} do not.`,
+      `${a} avoids checking ${b}'s reaction during a strategy meeting. The effort is visible enough that `
+        + `three other people check ${b}'s reaction instead.`,
     ], `${this.id}|${a}|${b}`, ctx);
 
-    for (const n of _others(house, a, b).slice(0, 4)) { api.suspicion(n, a, 0.5); api.suspicion(n, b, 0.5); }
-    api.popDelta(a, 1);
-    return { text, players: [a, b], badgeText: 'COUNTED AS ONE VOTE', badgeClass: 'red' };
+    const witnesses = _others(house, a, b).slice(0, 4);
+    for (const n of witnesses) { api.suspicion(n, a, 0.5); api.suspicion(n, b, 0.5); }
+    return { text, players: [a, b, ...witnesses],
+      badgeText: 'COUNTED AS ONE VOTE', badgeClass: 'red' };
   },
 };
 
@@ -421,13 +418,12 @@ const partnersBreak = {
     _spend(this.id, ctx); _burn(this.id);
     const { warm, cold, kin } = p;
     const text = _line([
-      `It ends in the bedroom with eleven people pretending to be asleep four feet away. `
-        + `${cold} has been done with this for longer than ${warm} realised, and says so in about `
-        + `two sentences.`,
-      `"I did not want to do this in here." ${cold} did not, and is doing it in here anyway, `
-        + `because there is nowhere in this building that is not in here.`,
-      `${warm} works it out mid-conversation — not from anything ${cold} says, from the way `
-        + `${has(cold, 'say')} it — and stops talking in the middle of a sentence.`,
+      `${cold} asks ${warm} to stop discussing the game and listen. The conversation is quiet, direct, `
+        + `and over before ${warm} understands that the relationship is too.`,
+      `"I didn't want to do this in here," ${cold} says, "but pretending we're fine in here is worse." `
+        + `${warm} asks to talk after the season. ${cold} does not promise that conversation.`,
+      `${warm} begins by defending the couple's game. ${cold} has to interrupt: this is not about the game. `
+        + `That is the moment ${warm} finally understands.`,
     ], `${this.id}|${warm}|${cold}`, ctx);
 
     api.addBond(warm, cold, -3.5);
@@ -439,10 +435,11 @@ const partnersBreak = {
     const sh = (gs.showmances || []).find(s => (s.players || []).includes(warm)
       && (s.players || []).includes(cold));
     if (sh) { sh.broken = true; sh.phase = 'broken-up'; }
-    for (const n of _others(house, warm, cold).slice(0, 4)) {
+    const witnesses = _others(house, warm, cold).slice(0, 4);
+    for (const n of witnesses) {
       api.remember(n, cold, 'ended-it-in-the-house', 2, { about: warm });
     }
-    return { text, players: [warm, cold],
+    return { text, players: [warm, cold, ...witnesses],
       badgeText: `${String(label(kin)).toUpperCase()} · IT ENDS HERE`, badgeClass: 'red' };
   },
 };
@@ -468,14 +465,14 @@ const exFriendsApology = {
     // this one is — which is the whole reason it needs two numbers.
     const lands = (rng ? rng() : Math.random()) < Math.max(0.1, Math.min(0.85, 0.4 + feelsFor(cold, warm) * 0.07));
     const text = lands ? _line([
-      `${warm} apologises properly — not the version that explains itself, the other one. `
-        + `${cold} takes about four seconds and then takes it.`,
-      `They do not talk about what happened. They talk about something from before it happened, `
-        + `for two hours, and by the end of it something has quietly been put down.`,
+      `${warm} apologises without explaining why ${warm} did it. ${cold} asks one question, gets a straight `
+        + `answer, and accepts the apology without pretending everything is fixed.`,
+      `${warm} and ${cold} begin with an old story they both still find funny. When the conversation reaches `
+        + `the falling-out, neither one dodges it. By the end, speaking again feels possible.`,
     ], `${this.id}|${warm}|${cold}|y`, ctx) : _line([
-      `${warm} apologises. ${cold} says "it's fine" in the voice of somebody for whom it is `
-        + `not fine and is not going to be.`,
-      `It is a good apology. ${cold} has heard it before, which is the problem with it.`,
+      `${warm} apologises. ${cold} says, "I heard you," which is not forgiveness and is not mistaken for it.`,
+      `${warm}'s apology is careful and sincere. ${cold} points out that it is also the same apology `
+        + `${warm} gave before the friendship ended.`,
     ], `${this.id}|${warm}|${cold}`, ctx);
 
     if (lands) { api.addBond(warm, cold, 2.4); addLean(cold, warm, 1.4); api.popDelta(warm, 2); }
@@ -500,23 +497,23 @@ const knownBefore = {
     const { a, b, kin } = p;
     const suspicious = _others(house, a, b)[0];
     const text = _line([
-      `It comes out that ${a} and ${b} knew each other before any of this, and the house does the `
-        + `arithmetic in about a second and a half. It does not matter whether they are working `
-        + `together. Everybody has decided they are.`,
-      `"How did nobody know this?" Somebody knew. Somebody always knows. `
-        + `${a} and ${b} spend the rest of the day being asked about it separately.`,
-      `They are not an alliance. They have never once talked about the vote. `
-        + `${suspicious || 'The house'} has them written down as a pair anyway, and that is now `
-        + `permanent regardless of what either of them does about it.`,
-      `${String(label(kin))}, apparently. The room takes it about as well as a room ever takes `
-        + `finding out two of the people in it have history nobody was told about.`,
+      `${a} mentions a place ${b} used to work, then realises nobody was supposed to know that. `
+        + `${suspicious || 'Someone nearby'} asks the obvious question, and the room goes quiet for the answer.`,
+      `${a} and ${b} give separate accounts of how well they knew each other before the season. `
+        + `The accounts mostly match; the word “mostly” becomes the problem.`,
+      `${suspicious || 'A houseguest'} learns that ${a} and ${b} knew each other before casting and immediately `
+        + `rechecks every vote conversation involving either of them.`,
+      `${a} finally tells the room that ${b} was ${kin === 'colleagues' ? 'a former colleague' : 'an old friend'}. `
+        + `The history sounds harmless. Keeping it quiet does not.`,
     ], `${this.id}|${a}|${b}`, ctx);
 
-    for (const n of _others(house, a, b).slice(0, 5)) { api.suspicion(n, a, 0.6); api.suspicion(n, b, 0.6); }
+    const witnesses = _others(house, a, b).slice(0, 5);
+    for (const n of witnesses) { api.suspicion(n, a, 0.6); api.suspicion(n, b, 0.6); }
     // Being suspected of a bloc is how blocs start.
     api.addBond(a, b, 0.8);
     if (suspicious) api.setTarget(suspicious, a, `${a} and ${b} came in already knowing each other`);
-    return { text, players: [a, b], badgeText: 'THEY CAME IN KNOWING EACH OTHER', badgeClass: 'red' };
+    return { text, players: [a, b, ...witnesses],
+      badgeText: 'THEY CAME IN KNOWING EACH OTHER', badgeClass: 'red' };
   },
 };
 
@@ -535,18 +532,16 @@ const bloodQuestion = {
     const { a, b, kin } = p;
     const asker = _others(house, a, b)[0];
     const text = _line([
-      `${asker || 'Somebody'} asks it at the table, straight out: "Final two. Half a million. `
-        + `Do you take ${b}?" ${a} answers immediately, and the speed of it is what everybody `
-        + `takes away rather than the answer.`,
-      `"Could you write ${b}'s name down?" ${a} says of course. Nobody in that garden believes it, `
-        + `including, quite visibly, ${a}.`,
-      `The question everybody has been circling since day one gets asked by somebody with no tact `
-        + `and no agenda, which is the only way it was ever going to get asked.`,
+      `${asker || 'Somebody'} asks ${a} directly: "Final two, one seat left—do you take ${b}?" `
+        + `${a} answers too quickly, and the speed is more revealing than the answer.`,
+      `${asker || 'A houseguest'} asks whether ${a} could ever write ${b}'s name down. ${a} says yes, `
+        + `then spends so long explaining the answer that nobody believes it.`,
+      `The conversation turns to endgame cuts. ${asker || 'Someone'} asks ${a} where loyalty to a `
+        + `${noun(kin)} ends and the game begins. ${a} says that is easy to answer and then does not answer it.`,
     ], `${this.id}|${a}|${b}`, ctx);
 
-    for (const n of _others(house, a, b).slice(0, 3)) api.suspicion(n, a, 0.35);
-    api.popDelta(a, 1);
-    return { text, players: [a, b], badgeText: `WOULD YOU CUT YOUR ${noun(kin).toUpperCase()}`,
+    if (asker) api.suspicion(asker, a, 0.55);
+    return { text, players: [a, b, asker].filter(Boolean), badgeText: `WOULD YOU CUT YOUR ${noun(kin).toUpperCase()}`,
       badgeClass: 'blue' };
   },
 };

@@ -321,10 +321,11 @@ const kitchenTable = {
     const group = _leastSeen(house).slice(0, 3);
     const [a, b, c] = group;
     const text = _variant([
-      `${group.join(', ')} spend two hours at the kitchen table telling stories and making each other laugh. Nobody talks game, and nobody leaves early.`,
-      `${a} tells a story about ${pronouns(a).posAdj} job that has nothing to do with anything and by the end ${b} and ${c} have decided how they feel about ${pronouns(a).obj}.`,
+      `${a}, ${b} and ${c} spend two hours at the kitchen table telling stories and making each other laugh. `
+        + `Nobody talks game, and nobody leaves early.`,
+      `${a} tells a story from work, loses the thread twice and has ${b} and ${c} laughing too hard to help. An hour later, the three of them are still at the table.`,
       `The conversation is about food, and then about home, and then, without anyone steering it, about who has been acting strangely this week.`,
-      `${group.join(', ')} stay up long past the point of usefulness. Nobody says a single strategic word and all three leave knowing more than they came with.`,
+      `${a}, ${b} and ${c} stay up until the lights dim around them. They never mention the vote; they do learn who listens, who interrupts and who cannot let a story end without topping it.`,
     ], ctx, ...group);
 
     // The most undervalued thing in the house: being liked by default.
@@ -340,33 +341,36 @@ const showmanceDomestic = {
   id: 'life-showmance-domestic',
   category: 'house-life',
   weight(house, ctx) {
+    if (ctx?.week?._domesticShowmance) return 0;
     const paired = house.find(n => romanceOf(n) && house.includes(romanceOf(n)));
     return paired ? _w(9, ctx) : 0;
   },
   fire(house, ctx, api) {
     const a = house.find(n => romanceOf(n) && house.includes(romanceOf(n)));
     const b = romanceOf(a);
+    if (ctx?.week) ctx.week._domesticShowmance = true;
     const p = pronouns(a);
     const strained = bond(a, b) < 3 || _nominees(ctx).includes(a) || _nominees(ctx).includes(b);
     const text = strained ? _variant([
-      `${a} and ${b} have their first proper argument, in whispers, in a house with eleven other people in it and nowhere to have it.`,
+      `${a} and ${b} have a muted argument in the bedroom. They stop when somebody enters, then spend `
+        + `the rest of the afternoon sitting on opposite sides of the house.`,
       `Being seen as a pair was fun until the house started treating it as a target on two backs. ${a} says so, badly.`,
       `${b} wants to talk about the vote. ${a} wants to not be in the house. Neither gets what they want.`,
       `They are still together and they have both started thinking about the week where one of them has to write the other's name down.`,
     ], ctx, a, b) : _variant([
       `${a} and ${b} take up a whole afternoon doing nothing in particular, and the rest of the house watches two people forget there are cameras.`,
-      `It is not subtle. It has not been subtle for a while. ${a} has stopped trying to make it subtle.`,
+      `${a} saves the seat beside ${pronouns(a).obj} for ${b}, makes ${b} a plate, and stops pretending `
+        + `either gesture is accidental.`,
       `Somebody jokes that ${a} and ${b} are attached at the hip. ${b} usually denies it. This time, ${b} just smiles.`,
       `${a} and ${b} are the only two people in this house who look properly rested, and everybody has noticed.`,
     ], ctx, a, b);
 
     api.addBond(a, b, strained ? -0.8 : 1.3);
     // A visible couple is two votes nobody else can have.
-    _others(house, a, b).forEach(w => {
-      if (pStats(w).intuition >= 5) api.suspicion(w, a, 0.6);
-    });
+    const witnesses = _others(house, a, b).filter(w => pStats(w).intuition >= 5).slice(0, 4);
+    witnesses.forEach(w => api.suspicion(w, a, 0.6));
     return {
-      text, players: [a, b],
+      text, players: [a, b, ...witnesses],
       badgeText: strained ? 'STRAIN' : 'THE PAIR',
       badgeClass: strained ? 'red' : 'gold',
     };
@@ -550,7 +554,8 @@ function _meetingBeats({ caller, about, outcome, cause, room, house, ctx }) {
 
   const theCase = cause === 'lie' ? _variant([
     `${caller} does not raise ${p.posAdj} voice. ${p.Sub} repeats, exactly, what ${about} has been telling people about ${p.obj}, and asks ${about} to say it again now.`,
-    `"Somebody in this room has been saying I made deals I never made." ${caller} looks at nobody in particular, which fools nobody in particular.`,
+    `"Somebody in this room has been telling people I offered deals I never offered." ${caller} does not `
+      + `name ${about}, but turns toward ${about} before anyone else can ask who the meeting is about.`,
     `${caller} names the false story, who first repeated it and where it was supposedly said. Then ${p.sub} turns to ${about}: “Tell them where you got it.”`,
     `${caller} asks three people to repeat what ${about} told them privately. The details differ, but every version puts ${caller} at the centre of the lie.`,
   ], ctx, caller, 'case') : cause === 'nothing-to-lose' ? _variant([

@@ -96,7 +96,7 @@ describe('the Month of Mayhem arithmetic', () => {
     // The claim the antagonist makes out loud. One at a final nine, two at a
     // final seven — three sacrifices, and a final five to play it out.
     const arc = THEME().arc.filter(a => a.book);
-    const instant = arc.find(a => a.book === 'bb-instant-eviction');
+    const instant = arc.find(a => a.book === 'bb-white-locust');
     const double = arc.find(a => a.book === 'bb-double-eviction');
     expect(instant.at.fromEnd + 3).toBe(9);        // fromEnd n is a house of n+3
     expect(double.at.fromEnd + 3).toBe(7);
@@ -118,13 +118,13 @@ describe('the Month of Mayhem arithmetic', () => {
   it('lands those anchors on the real house, not on a counted-back week', () => {
     stampThemeArc(17);
     const de = seasonConfig.twistSchedule.find(t => t.type === 'bb-double-eviction');
-    const ie = seasonConfig.twistSchedule.find(t => t.type === 'bb-instant-eviction');
+    const ie = seasonConfig.twistSchedule.find(t => t.type === 'bb-white-locust');
     expect(ie.atHouse).toBe(9);
     expect(de.atHouse).toBe(7);
     // A season that runs long must not fire them on the predicted week.
     expect(reanchorThemeArc(Number(ie.episode), 11)).toEqual([]);
     expect(reanchorThemeArc(Number(ie.episode) + 2, 9).map(e => e.type))
-      .toEqual(['bb-instant-eviction']);
+      .toEqual(['bb-white-locust']);
   });
 });
 
@@ -221,7 +221,7 @@ describe('a season that actually plays', () => {
     expect(at('bb-secret-power-comp'), 'the powers week never ran').toBeTruthy();
     expect(at('bb-hidden-power'), 'nothing was ever hidden in the house').toBeTruthy();
     // The two that carry the theme's stated promise.
-    expect(at('bb-instant-eviction').house, 'the first sacrifice missed a final nine').toBe(9);
+    expect(at('bb-white-locust').house, 'the first sacrifice missed a final nine').toBe(9);
     expect(at('bb-double-eviction').house, 'the double missed a final seven').toBe(7);
     expect(themeState().mood, 'the Mastermind never took over').toBe('hostile');
   });

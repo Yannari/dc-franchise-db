@@ -179,8 +179,9 @@ const theMarkItLeaves = {
     const { holder, watcher } = cast;
     const p = pronouns(holder);
     const text = _variant([
-      `The power is gone and what it taught the house about ${holder} is not: ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} `
-        + `somebody things END UP with, and ${watcher} has started treating ${p.obj} as one.`,
+      `${holder} no longer has the power, but ${watcher} still checks every conversation for signs `
+        + `${p.sub} ${p.sub === 'they' ? 'have' : 'has'} found something else. Once somebody produces one advantage, `
+        + `the house starts imagining a second.`,
       `${holder} is carrying nothing now. ${watcher} keeps checking anyway, which is what a spent power actually costs you.`,
       `"They had one. Why would they only have one?" ${watcher} cannot prove it, cannot forget it, and cannot stop saying it.`,
       `Using it in public bought ${holder} a week and sold ${p.obj} the rest of the season as somebody to watch.`,

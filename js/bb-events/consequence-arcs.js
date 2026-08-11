@@ -310,14 +310,17 @@ function brokenWord(house, ctx) {
   for (const entry of broken) {
     const voter = entry?.voter;
     if (!voter || !house.includes(voter)) continue;
-    // The person they promised to keep. If that person went home, it is the
-    // ally who was counting on the vote who finds out instead.
-    const kept = entry.cast;
-    const promisee = house.includes(kept) ? kept
-      : closestTo(kept, house.filter(n => n !== voter));
-    if (!promisee || promisee === voter) continue;
-    if (remembers(promisee, voter, 'broke-word-found-out')) continue;
-    return { voter, promisee, promised: entry.promised, cast: kept, week };
+    const promised = entry.promised;
+    const cast = entry.cast;
+    if (!promised || !cast || promised === cast) continue;
+    // Both fields name nominees: the first is who the voter said they would
+    // evict and the second is who they wrote down. Neither nominee is
+    // automatically the recipient of that promise. Use a remaining houseguest
+    // who heard the public count and has the intuition to question it.
+    const watcher = quiet(house.filter(n => n !== voter))
+      .sort((a, b) => pStats(b).intuition - pStats(a).intuition || (a < b ? -1 : 1))[0];
+    if (!watcher || remembers(watcher, voter, 'broke-word-found-out')) continue;
+    return { voter, promisee: watcher, promised, cast, week };
   }
   return null;
 }
@@ -346,15 +349,15 @@ const promiseExposedByCount = {
       > pStats(promisee).intuition * 0.7 + 2;
 
     const text = ready ? variant([
-      `${promisee} works the vote backwards over breakfast and there is exactly one arrangement of it that works, and it has ${voter} writing ${cast} down after saying ${promised} all week. ${voter} has an explanation ready and delivers it well. ${promisee} lets ${pronouns(voter).obj} finish.`,
-      `"The numbers were ${promised === cast ? 'fine' : 'nine to one on paper'}." ${promisee} does not need ${voter} to confess. The eviction count already did that${gone ? ` when ${gone} left` : ''}; this conversation is only about whether ${voter} will say it.`,
+      `${promisee} works through the public vote promises over breakfast. The count does not prove who lied, but ${voter} said ${promised} all week and is now defending a result that required somebody to write ${cast}. ${voter} has an explanation ready and delivers it well.`,
+      `${promisee} asks why ${voter} spent all week saying ${promised} when the vote${gone ? ` that sent ${gone} out` : ''} came back differently. ${voter} never admits writing ${cast}; the speed of the explanation is what ${promisee} remembers.`,
       `${voter} explains that the room moved late and there was no time to come and find ${promisee}. It is a good explanation. It is also the third good explanation ${voter} has produced this month, and ${promisee} has started keeping them in order.`,
       `${promisee} asks ${voter} one question in the kitchen — not accusing, just counting out loud — and ${voter} answers it smoothly enough that ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} the answer was prepared before the question existed.`,
     ], ctx, promisee, voter, cast) : variant([
-      `${promisee} says the count out loud and watches ${voter}'s face do the arithmetic a half second too slowly. That half second is the whole conversation.`,
-      `"You told me ${promised}." ${voter} starts a sentence three separate times in the kitchen. ${promisee} waits through all three and then leaves before the fourth.`,
-      `The vote came back and one number was wrong, and only one person had promised ${promisee} anything. ${voter} does not deny it so much as stop talking, which in this house is the same thing.`,
-      `${promisee} does not shout. ${p.Sub} simply repeats what ${voter} promised before the vote, then what the eviction count revealed, and lets the kitchen hold the gap between them.`,
+      `${promisee} repeats the count and watches ${voter}'s face do the arithmetic a half second too slowly. It is not proof. It is enough to make ${promisee} keep asking.`,
+      `"You told everybody ${promised}." ${voter} starts a sentence three separate times in the kitchen. ${promisee} waits through all three and then leaves before the fourth.`,
+      `The vote came back differently from the count ${voter} helped sell. When ${promisee} asks whether ${voter} wrote ${cast}, ${voter} stops talking instead of saying no.`,
+      `${promisee} does not shout. ${p.Sub} repeats the name ${voter} said before the vote, then the name somebody secretly wrote, and asks why ${voter}'s story changed overnight.`,
     ], ctx, promisee, voter, cast);
 
     api.remember(promisee, voter, 'broke-word-found-out', 3, { promised, cast });

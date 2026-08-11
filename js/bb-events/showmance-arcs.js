@@ -145,7 +145,8 @@ const underground = {
   location: 'storage',
   weight(house, ctx) {
     const pair = _couple(house);
-    if (!pair || house.length < 5 || _once('showmance-goes-underground', ctx)) return 0;
+    if (!pair || house.length < 5 || _once('showmance-goes-underground', ctx)
+      || ctx?.week?._showmanceConcealment) return 0;
     // Somebody has to be worried, which means somebody has to already be a
     // target or already be watched.
     const heat = Math.max(suspicionOf(_others(house, pair.a, pair.b)[0] || '', pair.a) || 0, 0);
@@ -154,6 +155,7 @@ const underground = {
   fire(house, ctx, api, rng) {
     const { a, b } = _couple(house);
     _spend(this.id, ctx);
+    if (ctx?.week) ctx.week._showmanceConcealment = this.id;
     const watcher = _quiet(_others(house, a, b))
       .sort((x, y) => pStats(y).intuition - pStats(x).intuition || (x < y ? -1 : 1))[0]
       || _others(house, a, b)[0];

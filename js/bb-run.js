@@ -1595,6 +1595,25 @@ export function summariseWeek(week) {
         });
         for (const change of act.changed || []) line(`  ${change.voter}'s vote moves from ${change.from} to ${change.to} after talking with ${change.changedBy}.`);
         break;
+      case 'white-locust': {
+        line('');
+        line('WHITE LOCUST RESORT');
+        line(`  Safety: ${act.safe} wins ${act.safetyTask} in ${act.safetyTime}s and is safe.`);
+        line(`  ${act.safe} must call somebody out.`);
+        for (const r of act.rounds) {
+          if (r.sweep) {
+            line(`  Nobody failed. The resort keeps ${r.target} anyway — the slowest of everybody who played.`);
+            continue;
+          }
+          line(`  ${r.caller} calls out ${r.target} — ${r.task}, ${r.limit}s.`);
+          line(r.made
+            ? `    ${r.target} makes it in ${r.time}s${r.betrayal ? ' — and they were supposed to be working together' : ''}. The pin passes.`
+            : `    ${r.target} does not make it. ${r.time}s against ${r.limit}. Eliminated on the spot.`);
+        }
+        line(`  ${act.evicted} does not check out of the White Locust Resort.`);
+        line(`  Fastest turn of the night: ${act.hoh} — the new Head of Household.`);
+        break;
+      }
       case 'eviction': {
         line('');
         line('EVICTION NIGHT');

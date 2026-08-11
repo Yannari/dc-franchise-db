@@ -547,6 +547,14 @@ export const TWIST_CATALOG = [
     category:'power', phase:'any',
     desc:'The Head of Household competition runs — and the result is sealed. Only the winner knows who holds power: nominations are read by Big Brother, the replacement is named anonymously, and the Invisible HOH casts no vote but may compete in next week\'s HOH competition. The house spends the week guessing, and the guesses are not always right.',
     engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction'] },
+  { id:'bb-white-locust', emoji:'🏨', name:'White Locust Resort', format:'big-brother',
+    category:'ceremony', phase:'any',
+    desc:'The house checks into a resort for the week, and the resort is quite clear that not everybody is checking out of it. Everybody plays for safety first; whoever wins is safe and has to call somebody out. That person gets a task and a clock, and if the clock beats them they are gone on the spot — no nominations, no campaign, no vote. Survive it and the pin passes to you: you call out the next person, who gets the same rules and less time than you had. It runs until somebody fails. Whoever came through their turn fastest is the new Head of Household, so the week still has a reign at the end of it — and then runs a normal eviction on top, which is the part that makes this a week nobody forgets.',
+    engineType:'bb-white-locust',
+    // It takes somebody out before the week has started, so nothing else that
+    // owns an eviction or crowns a Head of Household may share it.
+    incompatible:['bb-double-eviction', 'bb-instant-eviction', 'bb-no-eviction', 'bb-duo-week',
+      'bb-battle-of-the-block', 'bb-invisible-hoh', 'bb-split-house', 'bb-camp-comeback'] },
   // `phase:'any'` like every other house card — a Big Brother season has no
   // merge, so a phase gate here is a filter with nothing behind it.
   { id:'bb-sanctum-week', emoji:'🕯️', name:'The Sanctum', format:'big-brother',

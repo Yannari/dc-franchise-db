@@ -5703,6 +5703,33 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'white-locust': {
+        sec('WHITE LOCUST RESORT');
+        ln('  The house checks in for the week. The resort is clear that not everybody');
+        ln('  is checking out of it.');
+        ln('');
+        ln(`  ${act.safe} wins ${act.safetyTask} in ${act.safetyTime} seconds and is safe —`);
+        ln('  and safety comes with an obligation. They have to call somebody out.');
+        ln('');
+        for (const r of act.rounds) {
+          if (r.sweep) {
+            ln(`  Nobody failed the chain. The resort keeps ${r.target} regardless: the slowest`);
+            ln('  turn of the night, and the lobby only lets so many people leave.');
+            continue;
+          }
+          ln(`  ${r.caller} calls out ${r.target}. ${r.task[0].toUpperCase()}${r.task.slice(1)}, ${r.limit} seconds:`);
+          ln(`  ${r.doing}.`);
+          ln(r.made
+            ? `    ${r.time}s. ${r.target} makes it${r.betrayal
+              ? `, and now knows exactly what ${r.caller} thinks of their arrangement` : ''}. The pin passes to them.`
+            : `    ${r.time}s against ${r.limit}. ${r.target} does not make it, and there is nothing`
+              + ' to campaign against.');
+          ln('');
+        }
+        ln(`  ${act.evicted} does not check out of the White Locust Resort.`);
+        ln(`  ${act.hoh} had the fastest turn of the night, and is the new Head of Household.`);
+        break;
+      }
       case 'eviction': {
         // The Sanctum. Both transcript writers carry it, because the rule in
         // this codebase is that neither is the canonical one — a beat written

@@ -72,6 +72,7 @@ import { settleDeals, endgameDealSummary, dealBetween, breakDeal, exposeDeal, ti
 import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
+import { runCallOutChain } from './white-locust.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
@@ -1707,8 +1708,46 @@ export function simulateBBWeek(options = {}) {
   // already decided. Running a second competition inside the half would invent
   // a contest that never happened, so the cycle takes the name it was handed
   // and says where it came from.
-  const preCrowned = options.preCrownedHoh && house.includes(options.preCrownedHoh)
+  let preCrowned = options.preCrownedHoh && house.includes(options.preCrownedHoh)
     ? options.preCrownedHoh : null;
+
+  // ── THE WHITE LOCUST RESORT ──────────────────────────────────────────
+  //
+  // The other way to arrive with the power already decided. The Call Out Chain
+  // crowns whoever survived their turn fastest, so it hands back a Head of
+  // Household exactly like a Split House does — and it takes somebody out of
+  // the game on the way, before a single nomination is made.
+  //
+  // It runs HERE, in front of the competition it replaces, because everything
+  // below assumes the yard it is about to play in still contains everybody.
+  if (!compressed && week.twistState?.rules?.callOutChain && !preCrowned) {
+    try {
+      const chain = runCallOutChain(week, house, { rng });
+      if (chain) {
+        week.acts.push(addBeats(chain.act, { players: [chain.evicted], evicted: chain.evicted }));
+        week.resortEvicted = chain.evicted;
+        // Out of the house before the week runs. Every roster-scoped system
+        // reads gs.activePlayers, so this is the only place it has to be said
+        // — and the local `house` is narrowed too, or the week plays a
+        // competition against somebody who has already gone.
+        gs.activePlayers = (gs.activePlayers || []).filter(n => n !== chain.evicted);
+        // And ELIMINATED, not merely off the roster. The normal eviction path
+        // does both a thousand lines below this one; a player removed from the
+        // roster but missing from `gs.eliminated` is a player the placements,
+        // the jury and the finale all disagree about.
+        gs.eliminated ||= [];
+        if (!gs.eliminated.includes(chain.evicted)) gs.eliminated.push(chain.evicted);
+        const at = house.indexOf(chain.evicted);
+        if (at >= 0) house.splice(at, 1);
+        preCrowned = house.includes(chain.hoh) ? chain.hoh : null;
+        week.resortHoh = preCrowned;
+      }
+    } catch (err) {
+      // Loud, like the detection catch below: a resort week that silently does
+      // not happen is a scheduled twist that vanished.
+      (week._resortError ||= []).push(String(err?.message || err));
+    }
+  }
 
   // HOH act and the first scramble.
   //

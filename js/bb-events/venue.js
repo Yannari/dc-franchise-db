@@ -87,7 +87,8 @@ const sharedSpace = {
       `${a} finds ${b} already in ${_v('downtime')}. ${a} sits down, and they spend the next half hour talking without anyone else interrupting.`,
       `${a} and ${b} talk in ${_v('gather')} about nothing for an hour, which in here is how trust is actually built.`,
     ], ctx, a, b) : _variant([
-      `${a} and ${b} are stuck in ${_v('gather')} together being scrupulously polite, and the whole house can feel it.`,
+      `${a} and ${b} end up alone in ${_v('gather')}. They discuss food, laundry, and the weather outside—`
+        + `everything except the argument both came in carrying.`,
       `There is one room and both of them are in it. ${a} and ${b} talk about ${_v('foodSource')} for ten minutes rather than the obvious.`,
       `${a} and ${b} share ${_v('downtime')} without sharing anything else. Everybody watching learns something anyway.`,
       `${b} settles into ${_v('gather')} hoping for a room to ${pronouns(b).ref}. ${a} sits at the opposite end and stays. Neither is willing to give the other the satisfaction of leaving first, so they remain there in silence.`,
@@ -118,6 +119,7 @@ const privateCorner = {
   id: 'venue-private-corner',
   category: 'deals',
   weight(house, ctx) {
+    if (ctx?.week?._privateCornerAired) return 0;
     if (house.length < 4) return 0;
     const pair = _quietPair(house, ctx);
     if (!pair || bond(pair.a, pair.b) < 1) return 0;
@@ -125,27 +127,34 @@ const privateCorner = {
     return band(6 - _exposure() * 3);
   },
   fire(house, ctx, api) {
+    if (ctx?.week) ctx.week._privateCornerAired = true;
     const { a, b } = _quietPair(house, ctx);
     const exposed = _exposure() >= 0.8;
+    const watchers = house.filter(n => n !== a && n !== b);
     const text = exposed ? _variant([
-      `${a} and ${b} try to talk quietly in ${_v('shelter')}. There is nowhere in ${_v('place')} that is actually out of sight, and four people clock it.`,
+      `${a} and ${b} lower their voices in ${_v('shelter')}. The conversation stays private, but the fact that `
+        + `they needed privacy does not; people see them leave and begin guessing why.`,
       `${a} walks ${b} to ${_v('water')} to say something private. In this building that is a public announcement.`,
       `There are no corners here. ${a} and ${b} have their conversation anyway and spend the rest of the day managing what it looked like.`,
     ], ctx, a, b) : _variant([
-      `${a} and ${b} disappear into ${_v('downtime')} for twenty minutes. Nobody sees what was said; everybody sees that they were gone.`,
-      `There are more rooms in ${_v('place')} than there are people. ${a} and ${b} use one, and come out having decided something.`,
-      `${a} takes ${b} through to ${_v('shelter')} where the cameras are the only company, and says the thing out loud at last.`,
-      `Twenty minutes unaccounted for. ${a} and ${b} return separately, which fools precisely nobody and protects them anyway.`,
+      `${a} and ${b} disappear into ${_v('downtime')} long enough to compare targets without being interrupted. `
+        + `When they return, both avoid the name they agreed on.`,
+      `${a} and ${b} use an empty room to compare what the HOH told each of them. One detail does not match, `
+        + `and they agree to keep the discrepancy between them.`,
+      `${a} takes ${b} through to ${_v('shelter')} and asks for an honest vote commitment. ${b} gives one, `
+        + `on the condition that the conversation stays in the room.`,
+      `${a} returns from ${_v('shelter')} first. ${b} follows a few minutes later. ${watchers[0] || 'Someone nearby'} `
+        + `notices the gap but cannot tell whether it covered a deal, an argument, or nothing at all.`,
     ], ctx, a, b);
 
     api.addBond(a, b, 1.2);
     api.remember(a, b, 'trust', 2, { about: 'a private conversation' });
     // Getting away with it is the venue's doing. Being seen is too.
-    const watchers = house.filter(n => n !== a && n !== b);
-    watchers.forEach(w => api.suspicion(w, a, exposed ? 0.8 : 0.35));
+    const witnesses = exposed ? watchers.slice(0, 4) : watchers.slice(0, 1);
+    witnesses.forEach(w => api.suspicion(w, a, exposed ? 0.8 : 0.35));
     if (exposed) api.popDelta(a, -1);
     return {
-      text, players: [a, b],
+      text, players: [a, b, ...witnesses].filter(Boolean),
       badgeText: exposed ? 'NOWHERE TO HIDE' : 'OUT OF SIGHT',
       badgeClass: exposed ? 'red' : 'blue',
     };
@@ -239,7 +248,7 @@ const overlooked = {
       `"You've been quiet." ${forgotten} says ${p.sub} is fine. ${noticer} sits down anyway.`,
       `${noticer} pulls ${forgotten} into ${_v('gather')} for no reason at all, which is the first time that has happened this week.`,
     ], ctx, forgotten, noticer) : _variant([
-      `${forgotten} goes a whole day without being in a single conversation that matters, and nobody notices that ${p.sub} did.`,
+      `${forgotten} reaches dinner without being included in a single conversation that matters. Nobody can remember when ${p.sub} dropped out of the day.`,
       `${forgotten} drifts through ${_v('place')} being agreed with by everybody and consulted by nobody.`,
       `Somebody would have to be looking to see how little ${forgotten} has been asked this week. Nobody is looking.`,
       `${forgotten} eats alone in ${_v('foodSource')} at an hour when the house is full, which takes some doing.`,

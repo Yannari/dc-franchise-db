@@ -382,6 +382,20 @@ export const BB_TWIST_CONTRACTS = {
   // misattributed accusation, the alliance that comes out one short and blames
   // the wrong chair — exists because a ballot is private. Take that away for one
   // night and all of it resolves to certainty.
+  // The resort week. It crowns the Head of Household through the chain rather
+  // than a competition, and takes somebody out before the week starts — so it
+  // declares BOTH, and the week engine reads `preCrownedHoh` from the result.
+  'bb-white-locust': {
+    id: 'bb-white-locust', layer: 'scheduled', category: 'ceremony',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { callOutChain: true },
+    acquisition: { channel: 'none', secrecy: 'public' },
+    announcement: {
+      name: 'White Locust Resort',
+      rule: 'The house is checking into the White Locust Resort for the week. Everybody competes for safety; the winner is safe and must call somebody out. Called out, you have a task and a time limit — beat it and you call out the next person with less time than you had, fail it and you are eliminated on the spot, with no nomination and no vote. Whoever completed their turn fastest becomes the new Head of Household.',
+      sting: 'One of you is not checking out. The rest of the week happens anyway.',
+    },
+  },
   'bb-sanctum-week': {
     id: 'bb-sanctum-week', layer: 'scheduled', category: 'ceremony',
     timing: 'eviction', duration: { weeks: 1 },

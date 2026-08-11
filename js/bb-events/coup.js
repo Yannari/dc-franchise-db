@@ -86,8 +86,8 @@ function _lastCoup(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    // Only the recent past: a fortnight on, the house has new problems.
-    if (w && w.num < now && now - w.num <= 2 && w.coup?.holder) return w;
+    // This event is explicitly the following week's immediate fallout.
+    if (w && w.num < now && now - w.num <= 1 && w.coup?.holder) return w;
   }
   return null;
 }
@@ -118,7 +118,7 @@ const dethroned = {
     const loud = st.temperament <= 5;
     const text = loud ? _variant([
       `${hoh} is still Head of Household. ${p.Sub} still ${p.sub === 'they' ? 'have' : 'has'} the room, the key and the bed, and not one decision left to make with any of it — and ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} so, at volume, to anybody who comes near the door.`,
-      `"I won that competition." ${hoh} says it four times in an hour. Nobody disagrees. It has stopped being the point and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} it.`,
+      `"I won that competition." ${hoh} keeps returning to the point. Nobody disagrees. It simply stopped mattering when the coup was played, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} it.`,
       `${hoh} spends the evening explaining to ${witness || 'the kitchen'} exactly what the week was supposed to be. It is a good plan. It is also now entirely theoretical.`,
     ], ctx, hoh, c.holder) : _variant([
       `${hoh} congratulates ${c.holder} on the move, warmly, in front of people, and goes to bed early. ${witness ? `${witness} notices what time it is.` : 'It is not that late.'}`,
@@ -128,7 +128,7 @@ const dethroned = {
     // The bond damage is applied by the engine; this is the reign it cost.
     api.popDelta(hoh, loud ? -1 : 0.5);
     if (witness) api.addBond(hoh, witness, 0.4);
-    return { text, players: [hoh, c.holder],
+    return { text, players: [hoh, c.holder, witness].filter(Boolean),
       badgeText: loud ? 'A REIGN IN NAME ONLY' : 'TAKING IT QUIETLY',
       badgeClass: loud ? 'red' : 'grey' };
   },
@@ -178,7 +178,7 @@ const savedDebt = {
       `${who} came off that block in front of everybody, lifted by ${c.holder}, and the whole house watched the debt being created. There is no version of the rest of this game where ${p.sub} ${p.sub === 'they' ? 'owe' : 'owes'} nothing.`,
       `${who} thanks ${c.holder} once, properly, and then avoids ${c.holder} for the rest of the evening, because the second conversation is the one with a price in it.`,
       `"You didn't have to do that." ${who} says it and both of them know ${c.holder} absolutely did have to do that, for reasons that have nothing to do with ${who}.`,
-      `${watcher || 'The house'} has already worked out that ${who} is now ${c.holder}'s, whatever ${who} says about it, and starts counting the votes accordingly.`,
+      `${watcher || 'The house'} watched ${c.holder} save ${who} and now counts them together whenever the votes are discussed. ${who} can deny a deal; ${p.sub} cannot undo the picture everybody saw.`,
     ], ctx, who, c.holder);
     api.addBond(who, c.holder, 0.8);
     if (watcher) api.suspicion(watcher, who, 0.9);
@@ -203,8 +203,8 @@ const nowATarget = {
     const p = pronouns(c.holder);
     const text = _variant([
       `${reader} does the only calculation that matters now: ${c.holder} had something nobody knew about, and used it. The open question is whether that was the only thing ${p.sub} ${p.sub === 'they' ? 'had' : 'had'}.`,
-      `${c.holder} spent a secret to run a week and bought a permanent title with it — biggest threat in the house, agreed by everybody, out loud, by Friday.`,
-      `"Great move." ${reader} means it, and also means: you are the first name I say the next time I have any power at all.`,
+      `${c.holder} spent a secret power to take over the week. By Friday, ${reader} is already using that move as the reason ${c.holder} cannot be allowed near the end.`,
+      `“Great move,” ${reader} tells ${c.holder}. Later, in a different room, ${reader} uses the same move to argue that ${c.holder} should leave next.`,
       `Nobody is frightened of ${c.holder} for what ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} left. They are frightened because ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} willing to do that in front of everybody.`,
     ], ctx, c.holder, reader);
     api.suspicion(reader, c.holder, 1.8);

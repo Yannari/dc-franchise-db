@@ -96,13 +96,14 @@ const accusedDefends = {
     // Denying it well is a social stat. Denying it badly makes it true.
     const convincing = st.social * 0.6 + st.temperament * 0.4 >= 6;
     const text = correct ? _variant([
-      `${guess} denies turning the key with exactly the right amount of offence, which takes practice, and ${who} walks away half-convinced. Half.`,
+      `${who} asks ${guess} directly whether ${guess} was behind the third nomination. ${guess} says no, asks why ${who} suspects `
+        + `${pronouns(guess).obj}, and gives away nothing useful. ${who} leaves without withdrawing the accusation.`,
       `"Why would I put you up and then sit here talking to you about it?" It is a good question. ${guess} is counting on ${who} not noticing it is also not an answer.`,
       `${guess} handles the accusation the way you handle a hot pan — quickly, and without looking at it directly. ${who} notices the speed.`,
       `${who} asks ${guess} straight out. ${guess} says no. One of them is lying, and this time it is not the person being accused of lying.`,
     ], ctx, who, guess) : _variant([
-      `${guess} did not do this and cannot prove ${p.sub} did not do this, which is the exact position the twist is designed to put somebody in. ${convincing ? `${who} believes ${p.obj}, mostly.` : `${who} does not believe a word.`}`,
-      `"I didn't nominate you. I couldn't have — I don't even know who won that thing." ${guess} says it three times to three people, and each retelling makes ${p.obj} sound slightly more like somebody with a story.`,
+      `${guess} asks how ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} supposed to prove ${p.sub} did not secretly win a competition nobody watched. ${convincing ? `${who} admits there is no answer to that.` : `${who} treats the lack of an answer as proof.`}`,
+      `"I didn't nominate you. I couldn't have — I don't even know who won that thing." ${guess} answers before ${who} has finished the accusation, and the speed of the denial makes it sound rehearsed.`,
       `${guess} spends the week defending something ${p.sub} did not do, against somebody who has decided ${p.sub} did, using the only defence available: saying so.`,
       `${guess} finally asks the obvious question — "what would I even gain?" — and ${who} answers it with a shrug, because the theory never needed a motive to get this far.`,
     ], ctx, who, guess);

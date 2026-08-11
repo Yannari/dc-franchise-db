@@ -142,9 +142,9 @@ describe('Big Brother house-event scheduler contract', () => {
     const api = createHouseEventApi({ act:'house', week:{ num:2 } });
     const variants = Array.from({ length: 12 }, (_, beat) =>
       event.fire([...gs.activePlayers], { act:'house', beat, week:{ num:2 } }, api).text);
-    const elapsedTimeVariant = variants.find(text => text.includes('not a small thing'));
+    const elapsedTimeVariant = variants.find(text => text.includes('2 weeks in one house'));
 
-    expect(elapsedTimeVariant).toContain('after 2 weeks in one house');
+    expect(elapsedTimeVariant).toContain('After 2 weeks in one house');
     expect(elapsedTimeVariant).not.toContain('five weeks');
   });
 

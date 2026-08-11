@@ -80,8 +80,19 @@ export function recordBBVotes(week) {
     const id = factId('vote', ballot.voter, ballot.evict);
     recordFact({ type: 'vote', subject: ballot.voter, object: ballot.evict,
       payload: { week: ep, evicted: week.evicted, against: ballot.evict === week.evicted }, ep });
-    // You know how you voted. Nobody else does.
-    learn(ballot.voter, id, { sourceType: 'observed', ep });
+    // You know how you voted. Nobody else does — unless the ballot was not
+    // secret, which is the Sanctum and nothing else. That week the vote is
+    // cast in the room in front of everybody, so it is a PUBLIC fact the
+    // moment it happens, like the Head of Household below it.
+    //
+    // Forcing detection in the alliance ledger was not enough on its own: that
+    // told the victim, and left everybody else in the room to work out from a
+    // count what they had just watched with their own eyes.
+    if (week.publicVote) {
+      live().forEach(name => learn(name, id, { sourceType: 'public', ep }));
+    } else {
+      learn(ballot.voter, id, { sourceType: 'observed', ep });
+    }
     ids.push(id);
   }
   // The Head of Household and the nominees are public, so the whole house

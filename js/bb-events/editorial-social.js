@@ -20,7 +20,7 @@ const bedroomPolitics = {
     const [a,b,d] = trio(h, rng);
     const text = pick([
       `${b} leaves ${pronouns(b).posAdj} clothes folded on an empty bed to claim it. ${a} dumps them onto the floor and opens ${pronouns(a).posAdj} suitcase. “I was saving that bed,” ${b} says. “You weren't sleeping in it,” ${a} answers, and keeps unpacking while ${d} watches from across the room.`,
-      `${a} wants everyone to switch beds so the rooms are “more balanced.” ${b} asks why ${a} gets to decide that. ${d} stays out of it, but clearly agrees with ${b}.`,
+      `${a} wants everyone to switch beds so the rooms are “more balanced.” ${b} asks why ${a} gets to decide that. ${d} says nothing, but pushes ${pronouns(d).posAdj} suitcase farther under the bed when ${a} looks over.`,
       `${b} wakes up and finds ${a}'s charger plugged into the outlet beside the bed. Neither will unplug it. Ten minutes later, they are arguing about every little thing that has happened all week.`,
       `After lights-out, ${a} accuses ${b} of taking the extra pillows. ${b} tells ${a} to check under ${pronouns(a).posAdj} own bed. ${d} tries not to laugh and fails.`,
     ], rng);
@@ -56,7 +56,7 @@ const kitchenAfterDark = {
       `While ${a} washes dishes, ${b} admits ${pronouns(b).sub} lied about something early in the game. ${a} stops scrubbing for a second, then quietly asks what really happened.`,
       `${d} starts doing an impression of ${a} in the kitchen. ${a} walks in halfway through it, stares for a moment, then joins in and makes everyone laugh harder.`,
     ],rng);
-    api.addBond(a,b,1.1); api.addBond(a,d,.5); api.addBond(b,d,.5); api.remember(b,a,'late-night-trust',1,{});
+    api.addBond(a,b,1.1); api.addBond(a,d,.5); api.addBond(b,d,.5);
     return result(text,[a,b,d],'2 A.M. CREW','green');
   },
 };
@@ -136,7 +136,9 @@ const poolsideSpark = {
       `${a} offers to put sunscreen on ${b}'s shoulders. The conversation beside the pair trails off as the rest of the yard notices.`,
       `${b} makes ${a} laugh so hard that ${a} snorts. ${a} covers ${pronouns(a).posAdj} face and tells ${b} never to repeat it. ${b} promises between laughs.`,
     ],rng);
-    api.addBond(a,b,1.1); api.showmance(a,b,{ source:'poolside-spark' }); api.remember(a,b,'romantic-spark',1,{});
+    // This is chemistry, not yet a relationship. Turning one flirtatious
+    // afternoon into a showmance made later "define it" scenes nonsensical.
+    api.addBond(a,b,1.1); api.remember(a,b,'romantic-spark',1,{}); api.remember(b,a,'romantic-spark',1,{});
     return result(text,[a,b],'CHEMISTRY','pink');
   },
 };
@@ -200,7 +202,7 @@ const meetingCrash = {
   fire(h,c,api,rng) {
     const [a,b,d]=trio(h,rng);
     const text=pick([
-      `${a} opens the HOH-room door without knocking. ${b} and ${d} immediately stop talking and move farther apart on the bed.`,
+      `${a} opens the bedroom door without knocking. ${b} and ${d} immediately stop talking and move farther apart on the beds.`,
       `${a} walks into the bedroom. ${b} says, “Perfect timing,” a little too quickly, while ${d} suddenly starts folding clothes.`,
       `${a} sits down beside ${b} and ${d} and waits to see whether they will continue their conversation. They spend the next several minutes talking about the weather instead.`,
       `${b} and ${d} are using the chessboard to count votes. When ${a} comes outside, ${b} sweeps the pieces back into the box. ${a} notices.`,
@@ -212,9 +214,12 @@ const meetingCrash = {
 
 const silentStandoff = {
   id:'editorial-silent-standoff', category:'social',
-  weight:(h,c) => h.length>=4 ? fit(c,1.8) : 0,
+  weight:(h,c) => h.length>=4 && !c?.week?._coldWarScene
+    && h.some(a=>h.some(b=>a!==b&&bond(a,b)<=-2)) ? fit(c,1.8) : 0,
   fire(h,c,api,rng) {
-    const a=actor(h,rng), b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
+    if(c?.week) c.week._coldWarScene='editorial-silent-standoff';
+    const hostile=h.filter(a=>h.some(b=>a!==b&&bond(a,b)<=-2));
+    const a=pick(hostile,rng), b=[...h].filter(n=>n!==a).sort((x,y)=>bond(a,x)-bond(a,y))[0];
     const text=pick([
       `${a} pours coffee for everyone at the table except ${b}. ${b} gets up, takes the pot from ${a}'s hand and pours ${pronouns(b).ref} a cup without saying a word.`,
       `${a} and ${b} wipe down opposite ends of the kitchen counter in silence. When they meet in the middle, neither one moves out of the way.`,

@@ -159,7 +159,7 @@ const heldItAndLost = {
       `${who} sat out an hour that was designed for exactly this situation, and is now campaigning through it.`,
     ], ctx, who, watcher);
     api.popDelta(who, 1);
-    if (watcher) api.addBond(who, watcher, -0.4);
+    if (watcher) api.suspicion(watcher, who, 0.6);
     return { text, players: [who, watcher].filter(Boolean),
       badgeText: 'THE BET, LOST IN PUBLIC', badgeClass: 'red' };
   },

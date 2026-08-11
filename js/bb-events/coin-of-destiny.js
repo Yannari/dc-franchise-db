@@ -47,7 +47,7 @@ const _buyerCast = (house, ctx) => {
   const c = _coin(ctx);
   const buyers = (c?.buyers || []).filter(n => house.includes(n));
   if (!buyers.length) return null;
-  const who = buyers[0];
+  const who = [...buyers].sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
   const watcher = _others(house, who).sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
   return watcher ? { c, who, watcher, buyers } : null;
 };
@@ -119,7 +119,7 @@ const paidInPublic = {
     const { who, watcher, buyers } = cast;
     const p = pronouns(who);
     const text = _variant([
-      `${who} paid to try to take the nominations, in front of everybody, and that is true whether or not ${p.sub} ${p.sub === 'they' ? 'got' : 'got'} anything for it. ${watcher} has filed it under things that do not need proving.`,
+      `${who} paid to try to take the nominations in front of everybody. Whether ${p.sub} won the power is secret; wanting it badly enough to pay is not.`,
       `Buying in is a sentence with only one meaning, and ${who} said it out loud with money. ${watcher} heard it.`,
       `"${who} wanted it enough to pay." ${watcher} keeps the observation short, because it does not need help.`,
       `${buyers.length} people bought in and every one of them told the house the same thing about how safe they feel. ${who} was the loudest about it.`,
@@ -201,7 +201,7 @@ const calledItQuietly = {
       `${w} keeps saying "whoever did it" with a warmth nobody else is managing. ${watcher} notices the warmth before the words.`,
       `${watcher} invents a detail about how the call was made and watches ${w} agree with something that did not happen.`,
     ], ctx, w, watcher) : _variant([
-      `${w} won the game in front of everybody and then said nothing at all about the rest of the night, which is exactly what the other ${(c.buyers || []).length - 1 || 'few'} would have done.`,
+      `${w} earned the right to make a private call, then returned without volunteering a word about it. Every other buyer is being just as careful, which gives the house nothing to compare.`,
       `Somebody asks ${w} how the call went. "They don't tell you anything in there." It is a good answer and it is even mostly true.`,
       `${w} is as blank about the coin as everybody who did not touch it, and ${p.sub} ${p.sub === 'they' ? 'stay' : 'stays'} blank for the rest of the week.`,
     ], ctx, w, watcher);

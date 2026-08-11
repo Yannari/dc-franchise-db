@@ -20920,6 +20920,185 @@ export function _bbFinalPleaSpeech(ep, name) {
 }
 
 /**
+ * THE WHITE LOCUST RESORT — the chain, and the clock that keeps shrinking.
+ *
+ * The screen is a check-in board, because that is the joke the season is making:
+ * a resort with a guest list, and a line through one of the names at the end of
+ * the stay. Every round is a key card — who was called out, by whom, the task,
+ * and the two numbers that decide it.
+ *
+ * The clock is the drama and it is drawn, not stated: each round's bar is the
+ * time taken against the time allowed, so a survivor who scraped it reads as a
+ * bar that nearly touched the line, and the failure reads as one that went
+ * straight through it.
+ */
+export function rpBuildBBWhiteLocust(ep, act) {
+  if (!act) return '';
+  const rounds = act.rounds || [];
+  const stateKey = `bb_locust_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const total = rounds.length;
+  // The widest clock on the board sets the scale, so every bar is comparable.
+  const scale = Math.max(act.safetyTime || 0, ...rounds.map(r => Math.max(r.time, r.limit)), 1);
+  const pct = v => Math.max(2, Math.min(100, (v / scale) * 100));
+
+  const cards = rounds.map((r, i) => {
+    if (r.sweep) {
+      return `<div class="bbwl-card is-out" id="bbwl-step-${ep.num}-${i}">
+        <div class="bbwl-rnum">The last check-out</div>
+        <div class="bbwl-who"><strong>${_bbEsc(r.target)}</strong></div>
+        <div class="bbwl-task">Nobody failed the chain. The resort keeps the slowest turn of the night.</div>
+      </div>`;
+    }
+    return `<div class="bbwl-card ${r.made ? 'is-safe' : 'is-out'}" id="bbwl-step-${ep.num}-${i}">
+      <div class="bbwl-rnum">Round ${i + 1} &middot; ${r.limit}s on the clock</div>
+      <div class="bbwl-who">
+        <span class="bbwl-caller">${_bbEsc(r.caller)}</span>
+        <span class="bbwl-calls">calls out</span>
+        <strong>${_bbEsc(r.target)}</strong>
+        ${r.betrayal ? '<span class="bbwl-flag">an ally</span>' : ''}
+      </div>
+      <div class="bbwl-task">${_bbEsc(r.task)} &mdash; ${_bbEsc(r.doing)}.</div>
+      <div class="bbwl-clock">
+        <div class="bbwl-bar"><span style="width:${pct(r.time)}%"></span></div>
+        <div class="bbwl-limit" style="left:${pct(r.limit)}%"></div>
+      </div>
+      <div class="bbwl-nums">
+        <span>${r.time}s</span>
+        <span class="bbwl-vs">against</span>
+        <span>${r.limit}s</span>
+        <span class="bbwl-verdict">${r.made ? 'checked out' : 'did not check out'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="rp-page bb-room bb-block bbwl" data-ambient="tribal-tension">
+    <style>
+      .bbwl{--bbwl-gold:#d9b45c;--bbwl-safe:#4fbf8b;--bbwl-out:#96202c}
+      .bbwl-lobby{max-width:920px;margin:0 auto;padding:26px 22px 96px}
+      .bbwl-head{text-align:center;margin-bottom:24px}
+      .bbwl-eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+        color:var(--bbwl-gold);opacity:.8}
+      .bbwl-name{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:38px;letter-spacing:.08em;
+        margin:6px 0 2px}
+      .bbwl-stars{color:var(--bbwl-gold);letter-spacing:.5em;font-size:12px;opacity:.8}
+      .bbwl-sub{max-width:600px;margin:14px auto 0;opacity:.72;font-size:14px;line-height:1.6}
+      .bbwl-safety{display:flex;align-items:center;justify-content:center;gap:12px;
+        margin:22px auto;padding:12px 18px;max-width:560px;
+        border:1px solid rgba(217,180,92,.35);background:rgba(217,180,92,.06)}
+      .bbwl-key{flex:0 0 auto}
+      .bbwl-safetytext{font-size:14px;line-height:1.5}
+      .bbwl-card{opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;
+        border:1px solid rgba(255,255,255,.1);border-left-width:3px;
+        background:rgba(0,0,0,.3);padding:16px 18px;margin-bottom:14px}
+      .bbwl-card.is-visible{opacity:1;transform:none}
+      .bbwl-card.is-safe{border-left-color:var(--bbwl-safe)}
+      .bbwl-card.is-out{border-left-color:var(--bbwl-out)}
+      .bbwl-rnum{font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55;
+        margin-bottom:8px}
+      .bbwl-who{font-size:19px;font-family:"Bodoni MT",Didot,Georgia,serif;margin-bottom:6px}
+      .bbwl-caller{opacity:.8}
+      .bbwl-calls{font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.5;
+        margin:0 8px;font-family:inherit}
+      .bbwl-flag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+        color:var(--bbwl-out);border:1px solid var(--bbwl-out);padding:1px 6px;margin-left:8px}
+      .bbwl-task{font-size:13px;opacity:.75;line-height:1.55;margin-bottom:12px}
+      .bbwl-clock{position:relative;height:8px;background:rgba(255,255,255,.07);margin-bottom:8px}
+      .bbwl-bar span{display:block;height:100%;background:var(--bbwl-safe)}
+      .bbwl-card.is-out .bbwl-bar span{background:var(--bbwl-out)}
+      .bbwl-limit{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--bbwl-gold)}
+      .bbwl-nums{display:flex;gap:10px;align-items:baseline;font-size:12px;opacity:.8}
+      .bbwl-vs{opacity:.5}
+      .bbwl-verdict{margin-left:auto;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+      .bbwl-card.is-safe .bbwl-verdict{color:var(--bbwl-safe)}
+      .bbwl-card.is-out .bbwl-verdict{color:var(--bbwl-out)}
+      .bbwl-crown{margin-top:20px;padding:16px 18px;text-align:center;
+        border:1px solid rgba(217,180,92,.4);background:rgba(217,180,92,.07)}
+      .bbwl-controls{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;gap:10px;
+        justify-content:center;align-items:center;padding:12px;
+        background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,0))}
+      .bbwl-btn{padding:8px 18px;border:1px solid var(--bbwl-gold);background:transparent;
+        color:var(--bbwl-gold);cursor:pointer;font-family:inherit;letter-spacing:.12em;
+        text-transform:uppercase;font-size:11px}
+      .bbwl-btn:hover{background:rgba(217,180,92,.12)}
+      .bbwl-count{font-size:11px;letter-spacing:.2em;opacity:.7}
+      .bbwl-beat{margin:12px auto 0;max-width:620px;font-size:13px;line-height:1.65;
+        opacity:.8;text-align:left}
+      @media(prefers-reduced-motion:reduce){.bbwl-card{transition:none}}
+    </style>
+    <div class="bbwl-lobby">
+      <div class="bbwl-head">
+        <div class="bbwl-eyebrow">Week ${_bbEsc(String(ep.num ?? ''))} &middot; now checking in</div>
+        <div class="bbwl-name">White Locust Resort</div>
+        <div class="bbwl-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="bbwl-sub">Everybody plays for safety. Whoever wins it is safe, and has to
+          call somebody out. Beat the clock and you call out the next one with less time than
+          you had. Fail it and you do not check out.</p>
+      </div>
+
+      <div class="bbwl-safety">
+        <svg class="bbwl-key" width="60" height="18" viewBox="0 0 60 18" aria-hidden="true">
+          <rect x="1" y="1" width="42" height="16" rx="2" fill="none" stroke="#d9b45c" opacity=".8"/>
+          <rect x="5" y="5" width="18" height="3" fill="#d9b45c" opacity=".55"/>
+          <rect x="5" y="10" width="11" height="2" fill="#d9b45c" opacity=".35"/>
+          <circle cx="52" cy="9" r="5" fill="none" stroke="#d9b45c" opacity=".8"/>
+        </svg>
+        <div class="bbwl-safetytext"><strong>${_bbEsc(act.safe)}</strong> wins
+          ${_bbEsc(act.safetyTask)} in ${act.safetyTime}s and is safe &mdash;
+          and safety comes with an obligation.</div>
+      </div>
+
+      ${cards}
+
+      <div class="bbwl-crown" id="bbwl-crown-${ep.num}" style="display:none">
+        <strong>${_bbEsc(act.evicted)}</strong> does not check out of the White Locust Resort.<br>
+        <span style="opacity:.75">Fastest turn of the night: <strong>${_bbEsc(act.hoh)}</strong>,
+        the new Head of Household.</span>
+        ${/* The act's own beats. An act that narrates something no screen shows
+              is a beat written for nobody, and there is a guard that says so —
+              it caught this one. */''}
+        ${(act.beats || []).map(b => `<p class="bbwl-beat">${b.text || ''}</p>`).join('')}
+      </div>
+
+      <div class="bbwl-controls">
+        <button class="bbwl-btn" onclick="bbLocustNext(${ep.num}, ${total})">Next round</button>
+        <button class="bbwl-btn" onclick="bbLocustAll(${ep.num}, ${total})">Reveal all</button>
+        <span class="bbwl-count" id="bbwl-count-${ep.num}">${Math.max(0, state.idx + 1)} / ${total}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** DOM-only reveal, like every other screen here: patch classes, never rebuild. */
+export function _bbLocustApply(num, upTo, total) {
+  for (let i = 0; i <= upTo && i < total; i++) {
+    document.getElementById(`bbwl-step-${num}-${i}`)?.classList.add('is-visible');
+  }
+  const c = document.getElementById(`bbwl-count-${num}`);
+  if (c) c.textContent = `${Math.max(0, upTo + 1)} / ${total}`;
+  const crown = document.getElementById(`bbwl-crown-${num}`);
+  if (crown) crown.style.display = upTo >= total - 1 ? '' : 'none';
+}
+
+export function bbLocustNext(num, total) {
+  const key = `bb_locust_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  if (st.idx >= total - 1) return;
+  st.idx++;
+  _bbLocustApply(num, st.idx, total);
+  document.getElementById(`bbwl-step-${num}-${st.idx}`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+export function bbLocustAll(num, total) {
+  const key = `bb_locust_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  st.idx = total - 1;
+  _bbLocustApply(num, st.idx, total);
+}
+
+/**
  * THE SANCTUM — the night the ballot stopped being secret.
  *
  * BB27 ran its final week out of a room the house had not been shown, with
@@ -22040,6 +22219,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const cppDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-carepackage-play'), label: 'Package Spent',
           html: rpBuildBBCarePackagePlay(view, act, cppDeps) });
+        break;
+      }
+      case 'white-locust': {
+        screens.push({ id: id('bb-whitelocust'), label: 'White Locust Resort',
+          html: rpBuildBBWhiteLocust(view, act) });
         break;
       }
       case 'coin-of-destiny': {

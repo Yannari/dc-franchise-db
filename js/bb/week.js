@@ -1269,7 +1269,19 @@ export function simulateBBWeek(options = {}) {
   // until after eviction night, where the results belong.
   try {
     const entered = checkTwinEntry(week);
-    if (entered) week.acts.push(entered);
+    if (entered) {
+      week.acts.push(entered);
+      // She walks in at the TOP of the week, so she plays this one. The rest of
+      // the week reads the local `house` array — the competition field, the
+      // nomination pool, the vote — and without this she spent her own arrival
+      // week unable to win anything, be nominated for anything or vote, which
+      // is a strange first week for somebody whose whole storyline was getting
+      // into the house. `houseAtStart` is this same array on purpose: she was
+      // in the building before the week started, just not in the open.
+      for (const name of (gs.activePlayers || [])) {
+        if (!house.includes(name)) house.push(name);
+      }
+    }
     else {
       // Night one is not a changeover — there is nothing to change over from.
       // It is the only place the rules get said out loud, to the only people
@@ -2881,6 +2893,16 @@ export function simulateBBWeek(options = {}) {
       allowThrowing: false,
     });
     const hacker = hkComp.winner;
+    // The competition result is private. Individual competition writers
+    // normally celebrate the winner by name, so publishing their ordinary
+    // beats here silently reveals the Hacker before the anonymous powers are
+    // even used. Keep the mechanical result for simulation, but replace its
+    // public transcript with the only fact the house receives.
+    hkComp.beats = [{
+      text: 'Each houseguest competes alone. When the final attempt ends, the result is sealed and only the winner is told.',
+      players: [], badgeText: 'RESULT SEALED', badgeClass: 'grey',
+    }];
+    hkComp.text = 'The Hacker competition ends with no public result.';
     week.hacker = { winner: hacker, competition: hkComp,
       blockHack: null, vetoHack: null, voteHack: null };
 
@@ -4401,7 +4423,9 @@ export function simulateBBWeek(options = {}) {
       { type: 'departure', ...departure, nominees: [...nominees] },
       { nominees: [...nominees], evicted: departure.name }));
 
-    gs.activePlayers = house.filter(name => name !== departure.name);
+    // Same snapshot problem as the eviction write below — see the note there.
+    gs.activePlayers = [...house, ...(gs.activePlayers || []).filter(n => !house.includes(n))]
+      .filter(name => name !== departure.name);
     // ── what quietly left the game ──
   //
   // A power carried for a month and never spent used to vanish in silence:
@@ -5311,7 +5335,24 @@ export function simulateBBWeek(options = {}) {
   _themeSay(week, 'vote', { evicted: week.evicted || null, margin: _margin,
     hoh: week.hohSecret ? null : week.hoh });
 
-  gs.activePlayers = house.filter(name => name !== evicted && name !== secondEvicted);
+  // ── ANYBODY WHO WALKED IN DURING THE WEEK IS STILL HERE ──
+  //
+  // `house` is a snapshot taken before the week started, and rebuilding the
+  // roster from it deleted everyone who joined after that line ran. The twin
+  // twist is where it shows: the second twin enters, gets a player record, gets
+  // a stats record, is pushed onto gs.activePlayers by checkTwinEntry — and
+  // then this line, forty-one hundred lines later, quietly removed her again.
+  // Every week after that she was in the cast and not in the house: no
+  // competitions, no votes, nobody targeting her, and a grey frame on the
+  // memory wall that made her look evicted. She had in fact survived, which
+  // was the entire point of the twist.
+  //
+  // Read the difference off the live roster rather than naming the mechanics,
+  // so a late arrival from any of them — the twin, a rival, a returnee — keeps
+  // the seat it was given.
+  const walkedIn = (gs.activePlayers || []).filter(name => !house.includes(name));
+  gs.activePlayers = [...house, ...walkedIn]
+    .filter(name => name !== evicted && name !== secondEvicted);
   if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
 

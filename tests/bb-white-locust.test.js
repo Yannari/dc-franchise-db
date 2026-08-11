@@ -174,6 +174,31 @@ describe('the eliminated houseguest is properly gone', () => {
   });
 });
 
+// A registered event that never fires is the same as an unwritten one, and it
+// is the specific way this codebase has lost work before.
+describe('the week after the resort', () => {
+  it('gives the house something to say about it', () => {
+    const seen = new Set();
+    for (const seed of [313, 414, 515, 616]) {
+      house();
+      playToResort(seed, 3);
+      for (const h of gs.bb?.house?.eventHistory || []) {
+        const id = h?.id || h?.eventId || h;
+        if (typeof id === 'string' && id.startsWith('locust-')) seen.add(id);
+      }
+    }
+    // All four, across four seeds: the caller who was wrong about you, the one
+    // who nearly went home, a departure with nobody to blame, and a reign that
+    // was won in a corridor.
+    expect([...seen].sort()).toEqual([
+      'locust-asterisk-reign',
+      'locust-called-out-survived',
+      'locust-closest-call',
+      'locust-no-vote-to-argue-with',
+    ]);
+  });
+});
+
 describe('it reaches the reader', () => {
   it('is in both transcripts', () => {
     const week = playToResort();

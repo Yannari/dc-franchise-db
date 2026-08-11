@@ -73,6 +73,7 @@ import { rememberStrategy, strategicMemoryScore } from '../strategy-memory.js';
 import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, blocRoster } from './blocs.js';
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
+import { runPremiereMystery } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 import { recordReign, reignMadeAnEnemy } from './reign.js';
@@ -1772,7 +1773,86 @@ export function simulateBBWeek(options = {}) {
   const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
   if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
   if (yard(sittingOut).length < 2) sittingOut = [];
-  const hohPlayers = yard(sittingOut);
+  // ── PREMIERE NIGHT ───────────────────────────────────────────────────
+  //
+  // Runs before the relic is read below, because it is what hands the relic
+  // out: the two hunts happen, the two prizes are granted through the ordinary
+  // power shelf, and the gatekeeper block underneath then finds a live power
+  // and acts on it in the same week. Nothing here knows about the other; they
+  // meet at the ledger.
+  if (!compressed && week.twistState?.rules?.premiereMystery) {
+    try {
+      const opening = runPremiereMystery(week, house, { rng });
+      if (opening) {
+        week.premiereMystery = { relicWinner: opening.relicWinner, hostWinner: opening.hostWinner };
+        week.acts.push(addBeats(opening.act,
+          { players: [opening.relicWinner, opening.hostWinner] }));
+      }
+    } catch (err) {
+      (week._premiereError ||= []).push(String(err?.message || err));
+    }
+  }
+
+  let hohPlayers = yard(sittingOut);
+
+  // ── THE RELIC ────────────────────────────────────────────────────────
+  //
+  // BB27 premiere night: whoever recovered the stolen HOH relic chose which
+  // four houseguests were allowed to play for the first crown, themselves
+  // optional. It acts on the YARD rather than on a ceremony, which is what
+  // makes it worse than it sounds — there is no veto for not being in it.
+  //
+  // The holder either backs themselves or backs a friend. Both are legible on
+  // screen and both are somebody's whole week.
+  try {
+    const relic = activePowerAt('hoh-competition', week.num, 'hoh-gatekeeper');
+    if (relic && house.includes(relic.holder) && hohPlayers.length > 4) {
+      const strength = n => {
+        try {
+          const s = pStats(n);
+          return (s.physical + s.endurance + s.mental + s.intuition) / 4;
+        } catch { return 5; }
+      };
+      const others = hohPlayers.filter(n => n !== relic.holder);
+      const median = [...hohPlayers].map(strength).sort((a, b) => a - b)[Math.floor(hohPlayers.length / 2)];
+      let picked;
+      if (hohPlayers.includes(relic.holder) && strength(relic.holder) >= median) {
+        // Back yourself, against the three you are most likely to beat.
+        picked = [relic.holder, ...others.sort((a, b) => strength(a) - strength(b)).slice(0, 3)];
+      } else {
+        // You cannot win it, so buy a friendly reign instead: the four people
+        // who like you most, and you are not one of them.
+        picked = others.sort((a, b) => {
+          let ba = 0; let bb = 0;
+          try { ba = getPerceivedBond(relic.holder, a); } catch { ba = 0; }
+          try { bb = getPerceivedBond(relic.holder, b); } catch { bb = 0; }
+          return bb - ba;
+        }).slice(0, 4);
+      }
+      hohPlayers = picked.filter(Boolean);
+      usePower(relic, week.num);
+      week.relicPick = { holder: relic.holder, eligible: [...hohPlayers],
+        includedSelf: hohPlayers.includes(relic.holder) };
+      week.acts.push(addBeats({
+        type: 'relic-pick', holder: relic.holder, eligible: [...hohPlayers],
+        includedSelf: hohPlayers.includes(relic.holder),
+        beats: [{
+          text: `<strong>${relic.holder}</strong> reads out four names, and the rest of the house `
+            + `is not playing today. ${hohPlayers.join(', ')} go to the yard`
+            + `${hohPlayers.includes(relic.holder) ? '' : ` — and ${relic.holder} does not`}. `
+            + `Everybody can count who is missing.`,
+          players: [relic.holder, ...hohPlayers].slice(0, 5),
+          badgeText: 'THE RELIC', badgeClass: 'gold',
+          eventId: 'relic-gatekeeper', category: 'power', location: 'backyard',
+        }],
+      }, { players: [relic.holder] }));
+      // Being locked out of a crown is not forgotten by the people locked out.
+      for (const n of house) {
+        if (hohPlayers.includes(n) || n === relic.holder) continue;
+        try { addBond(n, relic.holder, -1.6); } catch { /* fine */ }
+      }
+    }
+  } catch { /* the yard stands as it was */ }
   const hohCompetition = preCrowned ? null
     : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
       // The saboteur got to the yard first. Chosen at the briefing, before any
@@ -3852,6 +3932,59 @@ export function simulateBBWeek(options = {}) {
     // viewer watched somebody overrule a block they had not been shown yet,
     // and then watched the veto meeting produce the block that had already
     // been overruled. The act is built now and pushed after the ceremony.
+    // ── THE BUY-OFF ──────────────────────────────────────────────────
+    //
+    // BB27's premiere prize. The holder won ten thousand dollars in public and
+    // was privately told what it was really for: if they are a final nominee,
+    // they hand the money to the Head of Household and come off the block, and
+    // the Head of Household CANNOT REFUSE and must name a replacement on the
+    // spot.
+    //
+    // Every other save in this game is used on you or by you. This one is done
+    // TO the person in charge, in front of the room, and it is the only reason
+    // it is worth having: the week does not just change, somebody's authority
+    // is publicly overruled by a cheque.
+    //
+    // Spent as late as it can be — after the veto has settled the block —
+    // because a nominee who was going to come down anyway should not waste it.
+    try {
+      const bo = activePowerAt('veto-ceremony', week.num, 'buy-off');
+      if (bo && nominees.includes(bo.holder) && house.includes(bo.holder)) {
+        const pool = house.filter(n => n !== hoh && n !== vetoWinner && !nominees.includes(n));
+        if (pool.length) {
+          // The Head of Household names the replacement, with no time to think
+          // — so it is the person they liked least of whoever is left.
+          const replacementUp = pool.slice().sort((a, b) => {
+            let ba = 0; let bb = 0;
+            try { ba = getPerceivedBond(hoh, a); } catch { ba = 0; }
+            try { bb = getPerceivedBond(hoh, b); } catch { bb = 0; }
+            return ba - bb;
+          })[0];
+          const at = nominees.indexOf(bo.holder);
+          nominees.splice(at, 1, replacementUp);
+          usePower(bo, week.num);
+          week.buyOff = { holder: bo.holder, hoh, replacement: replacementUp, amount: 10000 };
+          week.acts.push(addBeats({
+            type: 'buy-off', holder: bo.holder, hoh, replacement: replacementUp, amount: 10000,
+            beats: [{
+              text: `<strong>${bo.holder}</strong> does not ask. The envelope goes across the table to `
+                + `<strong>${hoh}</strong>, and the ten thousand dollars everybody watched `
+                + `${bo.holder} win turns out to have been a key all along. ${bo.holder} steps off `
+                + `the block; ${hoh} has to put <strong>${replacementUp}</strong> up in their place `
+                + `with the room watching and no say in it.`,
+              players: [bo.holder, hoh, replacementUp],
+              badgeText: 'BOUGHT OFF THE BLOCK', badgeClass: 'gold',
+              eventId: 'buy-off-played', category: 'power', location: 'living-room',
+            }],
+          }, { players: [bo.holder, hoh, replacementUp] }));
+          // Being overruled in public costs the Head of Household, and the
+          // replacement did not volunteer.
+          try { addBond(hoh, bo.holder, -2.4); } catch { /* fine */ }
+          try { addBond(replacementUp, bo.holder, -2.8); } catch { /* fine */ }
+        }
+      }
+    } catch { /* the block stands as the ceremony left it */ }
+
     const blockAfterCeremony = [...nominees];
 
     // ── a second veto, with one player in it ──

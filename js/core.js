@@ -547,6 +547,13 @@ export const TWIST_CATALOG = [
     category:'power', phase:'any',
     desc:'The Head of Household competition runs — and the result is sealed. Only the winner knows who holds power: nominations are read by Big Brother, the replacement is named anonymously, and the Invisible HOH casts no vote but may compete in next week\'s HOH competition. The house spends the week guessing, and the guesses are not always right.',
     engineType:'bb-invisible-hoh', incompatible:['bb-instant-eviction', 'bb-double-eviction'] },
+  { id:'bb-premiere-mystery', emoji:'🗝️', name:'Premiere Night Mystery', format:'big-brother',
+    category:'advantages', phase:'any',
+    desc:'Nobody has unpacked and the host has already been taken, along with the Head of Household relic. The house is split in two and sent looking — one half for the relic, one half for the host — and each half is playing for a prize it has not been told the shape of. Whoever recovers the relic gets to name the four houseguests allowed to compete for the first crown, out loud, in front of the twelve who are not. Whoever finds the host wins ten thousand dollars in public and is told in private what the money is actually for: spent once, before the jury, it takes them off the block and forces the Head of Household to name somebody else on the spot. The house spends a fortnight watching the loud prize.',
+    engineType:'bb-premiere-mystery',
+    // It hands out the relic, which decides who plays for the crown — so
+    // nothing else that owns the first competition may share the night.
+    incompatible:['bb-battle-of-the-block', 'bb-split-house', 'bb-invisible-hoh', 'bb-white-locust'] },
   { id:'bb-white-locust', emoji:'🏨', name:'White Locust Resort', format:'big-brother',
     category:'ceremony', phase:'any',
     desc:'The house checks into a resort for the week, and the resort is quite clear that not everybody is checking out of it. Everybody plays for safety first; whoever wins is safe and has to call somebody out. That person gets a task and a clock, and if the clock beats them they are gone on the spot — no nominations, no campaign, no vote. Survive it and the pin passes to you: you call out the next person, who gets the same rules and less time than you had. It runs until somebody fails. Whoever came through their turn fastest is the new Head of Household, so the week still has a reign at the end of it — and then runs a normal eviction on top, which is the part that makes this a week nobody forgets.',

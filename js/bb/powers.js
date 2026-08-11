@@ -70,6 +70,53 @@ export const BB_POWER_DEFINITIONS = {
   // and it covers that ceremony only. Using it on nomination day does not stop
   // the holder being named as a replacement at the veto ceremony, which is the
   // detail that makes it a decision rather than a week of immunity.
+  // BB27, premiere night. The Mastermind stole the HOH relic, and whoever
+  // recovered it chose WHICH FOUR HOUSEGUESTS were allowed to play for the
+  // first Head of Household — with the option to put themselves in or leave
+  // themselves out.
+  //
+  // It is on the shelf rather than welded into the premiere card because
+  // nothing about it is specific to night one: "you decide who is eligible for
+  // the next crown" is a legal, horrible power in any week, and putting it here
+  // makes it reachable through every channel that hands powers out — Pandora,
+  // the Whacktivity, the Secret Power Competition — for free.
+  //
+  // It is also the only power in this game that acts BEFORE a competition
+  // rather than on a ceremony, which is why it reads as more frightening than
+  // its numbers deserve: you cannot veto your way out of not being in the yard.
+  'hoh-gatekeeper': {
+    id: 'hoh-gatekeeper',
+    name: 'The Relic',
+    rules: { hohEligibility: 4 },
+    useTiming: 'hoh-competition',
+    windowWeeks: 1,
+    blurb: 'The holder names the four houseguests eligible to play for the next Head of Household, and may include or exclude themselves.',
+    catch: 'Everybody sees the four names, and everybody can count who is missing from them — this is the least deniable power in the game.',
+    moment: 'The morning of the Head of Household competition, before anybody is in the yard.',
+  },
+
+  // The other half of the same night. Whoever found the host won $10,000 IN
+  // PUBLIC — and privately learned they could spend it to get off the block.
+  //
+  // The shape is what makes it worth having: the house knows about the money
+  // and not about the power, so the holder walks around visibly rich and
+  // secretly safe. And the Head of Household cannot refuse it, which no other
+  // save in this game can say — a veto is used on you, this is done TO the
+  // person in charge, in front of everybody, and they have to name somebody
+  // else on the spot with no time to think.
+  'buy-off': {
+    id: 'buy-off',
+    name: 'The Buy-Off',
+    rules: { buyOff: true },
+    useTiming: 'veto-ceremony',
+    // Pre-jury on the show. Four evictions is that, at the sizes this game
+    // casts, without hard-coding a jury rule into a power.
+    windowWeeks: 4,
+    blurb: 'The holder pays the Head of Household to take themselves off the block. The HOH cannot refuse and must name a replacement on the spot.',
+    catch: 'The money was won in public, so the moment it is spent the whole house knows exactly what that prize really was — and it only works once.',
+    moment: 'The veto ceremony, after the veto has been used or not used.',
+  },
+
   'the-cloud': {
     id: 'the-cloud',
     name: 'The Cloud',

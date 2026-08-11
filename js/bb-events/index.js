@@ -32,6 +32,7 @@ import { VOTE_PLAN_EVENTS } from './vote-plans.js';
 import { INVISIBLE_EVENTS } from './invisible.js';
 import { HACKER_EVENTS } from './hacker.js';
 import { ROADKILL_EVENTS } from './roadkill.js';
+import { WHITE_LOCUST_EVENTS } from './white-locust.js';
 import { PANDORA_EVENTS } from './pandora.js';
 import { SPLIT_HOUSE_EVENTS } from './split-house.js';
 import { TEMPTATION_EVENTS } from './temptation.js';
@@ -79,6 +80,7 @@ export const HOUSE_EVENTS = [
   ...INVISIBLE_EVENTS,
   ...HACKER_EVENTS,
   ...ROADKILL_EVENTS,
+  ...WHITE_LOCUST_EVENTS,
   ...PANDORA_EVENTS,
   ...SPLIT_HOUSE_EVENTS,
   ...TEMPTATION_EVENTS,

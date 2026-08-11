@@ -382,6 +382,22 @@ export const BB_TWIST_CONTRACTS = {
   // misattributed accusation, the alliance that comes out one short and blames
   // the wrong chair — exists because a ballot is private. Take that away for one
   // night and all of it resolves to certainty.
+  // Premiere night. It hands out two powers and nothing else — the relic
+  // decides who plays for the crown, and the buy-off is the money.
+  'bb-premiere-mystery': {
+    id: 'bb-premiere-mystery', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { premiereMystery: true },
+    // Holder-secret rather than public: the house watches BOTH hunts and sees
+    // both winners, so the twist announces itself — what stays hidden is the
+    // second half of what one of them was told.
+    acquisition: { channel: 'dedicated-competition', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'Premiere Night Mystery',
+      rule: 'The host has been taken and the Head of Household relic with them. The house splits into two groups: one hunts the relic, one hunts the host. Each group is playing for a prize, and the winners will be told what they have won in private.',
+      sting: 'One of you is about to be handed something in front of everybody, and told what it really is afterwards.',
+    },
+  },
   // The resort week. It crowns the Head of Household through the chain rather
   // than a competition, and takes somebody out before the week starts — so it
   // declares BOTH, and the week engine reads `preCrownedHoh` from the result.

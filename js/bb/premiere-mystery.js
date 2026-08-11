@@ -64,6 +64,7 @@ const pick = (draw, list) => list[Math.floor(draw() * list.length)];
 function runHunt({ team, target, targetName, draw, api }) {
   const rounds = [];
   const events = [];
+  const metPairs = new Set();
   const heat = Object.fromEntries(team.map(n => [n, 0]));   // how close each searcher is
   const rooms = [...ROOMS];
   for (let i = rooms.length - 1; i > 0; i--) {
@@ -128,6 +129,13 @@ function runHunt({ team, target, targetName, draw, api }) {
       if (who.length < 2) continue;
       const room = rooms.find(x => x.id === roomId);
       const [a, b] = who;
+      // Two people who keep choosing the same room keep meeting in it, which
+      // is true and unreadable: the identical card three rounds running looks
+      // like a bug even though the search underneath is right. The first
+      // meeting is the story; after that they have already met.
+      const met = `${[a, b].sort().join('|')}`;
+      if (metPairs.has(met)) continue;
+      metPairs.add(met);
       if (draw() < 0.55) {
         api.bond(a, b, 1.6);
         events.push({ kind: 'together', players: [a, b], round: round + 1,
@@ -146,7 +154,12 @@ function runHunt({ team, target, targetName, draw, api }) {
       const warm = team.filter(n => heat[n] > 0);
       const quiet = warm.sort((x, y) => stat(y, 'strategic') - stat(x, 'strategic'))[0];
       const mark = quiet ? team.find(n => n !== quiet) : null;
-      if (quiet && mark) {
+      // Same rule as the meetings above: one event per pair per hunt. Two
+      // people already have a card about each other; a second one about the
+      // same two reads as the page repeating itself.
+      const key = quiet && mark ? [quiet, mark].sort().join('|') : null;
+      if (quiet && mark && !metPairs.has(key)) {
+        metPairs.add(key);
         api.bond(quiet, mark, -0.6);
         events.push({ kind: 'withheld', players: [quiet, mark], round: round + 1,
           text: `${quiet} has narrowed it down and says so to nobody. When ${mark} asks whether `
@@ -214,17 +227,36 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
       const aIn = relicTeam.includes(a);
       const bIn = relicTeam.includes(b);
       if (aIn === bIn) continue;
-      // Move the second one to the first one's group, and give the group they
-      // left somebody back so the halves stay halves.
-      const from = bIn ? relicTeam : hostTeam;
-      const to = bIn ? hostTeam : relicTeam;
-      const swapBack = from.find(n => n !== b && !kept.includes(n));
+      // Move the second one to the first one's group, and send somebody back
+      // the other way so the halves stay halves.
+      //
+      // THE SWAP HAS TO COME FROM THE GROUP B IS JOINING. It was picked out of
+      // the group B was LEAVING and then spliced out of the other one — where
+      // indexOf returns -1, so splice(-1, 1) quietly removed that group's last
+      // member instead, and the same person was pushed into a team they were
+      // still in. The result was houseguests appearing twice in one search and
+      // a card reading "Damien and Damien end up in the storeroom together".
+      const from = bIn ? relicTeam : hostTeam;   // where b is now
+      const to = bIn ? hostTeam : relicTeam;     // where a is, and b is going
+      const swapBack = to.find(n => n !== a && !kept.includes(n));
       if (!swapBack) continue;
-      from.splice(from.indexOf(b), 1); to.push(b);
-      to.splice(to.indexOf(swapBack), 1); from.push(swapBack);
+      from.splice(from.indexOf(b), 1);
+      to.splice(to.indexOf(swapBack), 1);
+      to.push(b);
+      from.push(swapBack);
       kept.push(a, b);
     }
   } catch { /* no declared relationships, no adjustment */ }
+  // Belt: whatever the pairing did, every houseguest searches once and appears
+  // on exactly one side. A duplicate here is four wasted cards and a
+  // conversation somebody has with themselves.
+  const seen = new Set();
+  for (const team of [relicTeam, hostTeam]) {
+    for (let i = team.length - 1; i >= 0; i--) {
+      if (seen.has(team[i])) team.splice(i, 1); else seen.add(team[i]);
+    }
+  }
+  for (const n of cast) if (!seen.has(n)) hostTeam.push(n);
 
   // ── two hunts, actually searched ──
   //

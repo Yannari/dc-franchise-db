@@ -183,6 +183,35 @@ describe('premiere night', () => {
     }
   });
 
+  it('never puts the same houseguest in a group twice', () => {
+    // Reported off a real episode 1: one name searched three rooms in a single
+    // round and a card read "Damien and Damien end up in the storeroom
+    // together". The declared-pair swap took its replacement out of the wrong
+    // group — indexOf returned -1 and splice(-1, 1) removed somebody else.
+    for (const seed of [511, 222, 909, 414]) {
+      house();
+      const act = openingAct(playPremiere(seed));
+      const all = [...act.relicTeam, ...act.hostTeam];
+      expect(new Set(all).size, 'somebody is in the search twice').toBe(all.length);
+      expect(new Set(all).size, 'somebody was dropped from the search').toBe(NAMES.length);
+      for (const h of act.hunts) {
+        expect(new Set(h.team).size).toBe(h.team.length);
+        // And nobody has a conversation with themselves.
+        for (const e of h.events || []) {
+          expect(new Set(e.players).size, `${e.players.join(' + ')}`).toBe(e.players.length);
+        }
+      }
+    }
+  });
+
+  it('reports a pair meeting once, not once a round', () => {
+    const act = openingAct(playPremiere(414));
+    for (const h of act.hunts) {
+      const pairs = (h.events || []).map(e => [...e.players].sort().join('|'));
+      expect(new Set(pairs).size).toBe(pairs.length);
+    }
+  });
+
   it('says how the two groups were formed', () => {
     // The wiki does not say how the house split, so this is our rule and the
     // screen has to admit that rather than present a coin toss as history.

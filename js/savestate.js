@@ -641,20 +641,69 @@ export function buildPreAlliances() {
  * and never reached the game. It did not appear in the viewing party because it
  * was not in the season, and nothing anywhere said so.
  *
- * Safe only before the first episode. Once a week has been played the house has
- * formed real opinions and back-dating a group into it would rewrite history
- * the transcript has already told; the caller warns instead.
+ * Before the first episode, all of them go in. After it, the objection is to
+ * BACK-DATING: a group written into a house that has already voted, formed
+ * opinions and had those printed in a transcript did not exist while any of
+ * that happened.
+ *
+ * That objection does not apply to a group whose members have never been in the
+ * house together. Twins are the case that proves it — the second one is outside
+ * the game until she walks in, so a pair naming both of them has had no history
+ * to rewrite and nothing to be absent from. It is not being back-dated; it is
+ * starting now, which is exactly when it became possible. Those are applied
+ * mid-season and dated to the week they became real, so the alliance board does
+ * not claim they have been together since night one.
  *
  * Returns what it did, so the caller can say so rather than guess.
  */
 export function applyPreAlliances() {
-  if (!gs) return { applied: 0, started: false, dropped: [] };
-  const started = (gs.episodeHistory || []).length > 0 || (gs.bb?.weeks || []).length > 0;
-  if (started) return { applied: 0, started: true, dropped: [] };
+  if (!gs) return { applied: 0, started: false, dropped: [], deferred: [] };
+  const dropped = [];
   const fresh = buildPreAlliances();
+  dropped.push(...(buildPreAlliances.dropped || []));
   const live = (gs.namedAlliances || []).filter(a => !a.preGame);
-  gs.namedAlliances = [...fresh, ...live];
-  return { applied: fresh.length, started: false, dropped: buildPreAlliances.dropped || [] };
+  const started = (gs.episodeHistory || []).length > 0 || (gs.bb?.weeks || []).length > 0;
+
+  if (!started) {
+    gs.namedAlliances = [...fresh, ...live];
+    return { applied: fresh.length, started: false, dropped, deferred: [] };
+  }
+
+  // Every roster the season has played, in order.
+  const rosters = [
+    ...(gs.bb?.weeks || []).map(w => w.houseAtStart || []),
+    ...(gs.episodeHistory || []).map(h => h.houseAtStart || h.activePlayers || []),
+  ].filter(r => r.length);
+  // The week a group first COULD have met — the first roster holding all of
+  // them. Zero means they were all there on night one.
+  const firstPossible = members => {
+    const i = rosters.findIndex(roster => members.every(m => roster.includes(m)));
+    return i;
+  };
+
+  const nowActive = new Set(gs.activePlayers || []);
+  const week = rosters.length;
+
+  const applied = [];
+  const refused = [];
+  for (const a of fresh) {
+    // All of them have to be in the house NOW, or the group cannot meet at all.
+    if (!a.members.every(m => nowActive.has(m))) { refused.push(a.name); continue; }
+    const at = firstPossible(a.members);
+    // Everybody was here on night one. The group could have existed for every
+    // week already played and did not, so writing it in behind those weeks IS
+    // back-dating — that is the case this refuses.
+    if (at === 0) { refused.push(a.name); continue; }
+    // Somebody arrived after the season began: a twin walking out of the
+    // storeroom, a returnee, a late rival. The group was impossible until they
+    // got here, so nothing before that week is being rewritten. It starts at
+    // the week it first became possible, and is no longer called pre-game,
+    // because these two could not have shaken on it before then.
+    const formed = at === -1 ? week : at + 1;
+    applied.push({ ...a, formed, formedEp: formed, preGame: false, deferredFromPreGame: true });
+  }
+  gs.namedAlliances = [...applied, ...live];
+  return { applied: applied.length, started: refused.length > 0, dropped, deferred: applied.map(a => a.name) };
 }
 
 export function initGameState() {

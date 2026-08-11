@@ -134,3 +134,89 @@ describe('an alliance naming somebody who is not in the cast', () => {
     expect(buildPreAlliances().map(a => a.name)).toEqual(['The Founders']);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The case the blanket rule got wrong.
+//
+// A pair naming both twins cannot have been in play before the second one
+// walked in — she was outside the game. There is no history for it to be
+// absent from and nothing to rewrite, so refusing it on the grounds that the
+// season had started was refusing it for a reason that did not apply to it.
+// ══════════════════════════════════════════════════════════════════════
+describe('a group that could not have existed from night one', () => {
+  it('goes in mid-season, dated to the week it became possible', async () => {
+    const { installTwinTwist, twinState } = await import('../js/bb/twin-twist.js');
+    initGameState();
+    globalThis.gs = gs;
+    let twin = null;
+    // Seed chosen because she survives her arrival week on it. She does not on
+    // every seed, and that is the game working — she walks in mid-week and the
+    // house can put her straight up.
+    withSeededRandom(13, () => {
+      installTwinTwist([...gs.activePlayers], { weeks: 2, quota: 0, rng: Math.random, pick: 'Scary' });
+      for (let i = 0; i < 3; i++) simulateBBEpisode();
+    });
+    twin = twinState().other;
+    expect(twinState().entered, 'the twin never got in').toBe(true);
+    expect(gs.activePlayers).toContain(twin);
+
+    setPreGameAlliances([{ id: 't1', name: 'The Pair',
+      members: ['Scary', twin], permanence: 'permanent' }]);
+    const res = applyPreAlliances();
+
+    expect(res.applied, 'the twins were refused for a reason that is not about them').toBe(1);
+    expect(res.deferred).toEqual(['The Pair']);
+    const pair = (gs.namedAlliances || []).find(a => a.name === 'The Pair');
+    expect(pair).toBeTruthy();
+    // Not claimed to have existed since night one — she was not there.
+    expect(pair.formed).toBeGreaterThan(0);
+    expect(pair.preGame).toBe(false);
+  });
+
+  it('still refuses a group that HAS shared the house', () => {
+    initGameState();
+    globalThis.gs = gs;
+    withSeededRandom(11, () => { for (let i = 0; i < 2; i++) simulateBBEpisode(); });
+    setPreGameAlliances([FOUNDERS]);   // three houseguests, both weeks, together
+    const res = applyPreAlliances();
+    expect(res.applied).toBe(0);
+    expect(res.started).toBe(true);
+  });
+
+  it('refuses a pair whose second member is not in the house yet', () => {
+    initGameState();
+    globalThis.gs = gs;
+    withSeededRandom(11, () => simulateBBEpisode());
+    const gone = (gs.eliminated || [])[0];
+    if (!gone) return;
+    setPreGameAlliances([{ id: 't2', name: 'The Impossible',
+      members: [gone, 'Bowie'], permanence: 'normal' }]);
+    const res = applyPreAlliances();
+    expect(res.applied, 'an evicted houseguest was put in an alliance').toBe(0);
+  });
+});
+
+describe('the rule itself, without the twist', () => {
+  it('applies to anybody who joined after the season began', () => {
+    // The twins are the case that surfaced it, but the rule is about shared
+    // history, not about twins: a returnee or a rival walking in late is the
+    // same shape.
+    initGameState();
+    globalThis.gs = gs;
+    withSeededRandom(11, () => { for (let i = 0; i < 2; i++) simulateBBEpisode(); });
+
+    const latecomer = 'The Latecomer';
+    players.push({ name: latecomer, slug: 'the-latecomer', gender: 'f',
+      sexuality: 'straight', archetype: 'floater',
+      stats: Object.fromEntries(KEYS.map(k => [k, 5])) });
+    gs.activePlayers = [...gs.activePlayers, latecomer];
+
+    const partner = gs.activePlayers[0];
+    setPreGameAlliances([{ id: 'l1', name: 'The New Deal',
+      members: [partner, latecomer], permanence: 'normal' }]);
+    const res = applyPreAlliances();
+    expect(res.applied).toBe(1);
+    expect((gs.namedAlliances || []).find(a => a.name === 'The New Deal').formed)
+      .toBeGreaterThan(0);
+  });
+});

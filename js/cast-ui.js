@@ -1494,11 +1494,19 @@ function _pushPreAlliances() {
       ...res.dropped.map(d => `${d.name} — ${d.missing.join(', ')}`), '',
       'Check the spelling, or remove them from the alliance.'].join('\n'));
   }
+  if (res.deferred?.length) {
+    alert(['Applied to the season in progress: ' + res.deferred.join(', '), '',
+      'These name people who have never been in the house at the same time —',
+      'a twin who has only just walked in, for instance — so there is no',
+      'history to rewrite. The alliance is dated to this week rather than to',
+      'night one.'].join('\n'));
+  }
   if (res.started) {
     alert(['The season has already started, so this is saved for the NEXT season',
       'rather than applied to this one.', '',
-      'Backing a group into a house that has already played weeks would rewrite',
-      'history the transcript has already told. Reset the season to apply it.'].join('\n'));
+      'These members have already shared the house for a week or more. Writing',
+      'a group in behind them would rewrite weeks the transcript has told.',
+      'Reset the season to apply it from night one.'].join('\n'));
   }
 }
 export function deletePreAlliance(id) { preGameAlliances = preGameAlliances.filter(a => a.id !== id); savePreAlliances(); renderAllianceList(); _pushPreAlliances(); }

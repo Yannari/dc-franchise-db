@@ -3128,6 +3128,75 @@ Owen: This is going to be amazing!"
   // Generate episode using AI
 // Replace the existing generateEpisodeAI function with this updated version:
 
+// ── DEPTH 0 ON PURPOSE ──
+//
+// These were declared inside generateEpisodeAI, which is a different
+// function from the IIFE that holds callAI — so the analysis call could not
+// see them at all and threw `_episodeLedger is not defined`. Both callers
+// need them, so they live beside _sKey and _csGet, which are the only things
+// they depend on and are already here.
+// The same three ledgers the Control Room panels draw, handed to the model so
+  // the written analysis and the measured panels cannot contradict each other on
+  // one screen. Null when the episode was pasted rather than synced — there are
+  // no ballots to read, and a guess is the exact failure this corrects.
+  async function _episodeLedger(season, episode) {
+    try {
+      const raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${episode}`);
+      const record = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!record) return null;
+      const mod = await import('./js/analysis/vote-ledger.js');
+      const vote = mod.voteLedger(record);
+      const week = mod.weekLedger(record);
+      const rel = mod.relationshipLedger(record);
+      if (!vote && !week && !rel) return null;
+      return { vote, week, relationships: rel, lines: mod.relationshipLines(rel) };
+    } catch (e) { return null; }
+  }
+
+// ── EVERY EPISODE BEFORE THIS ONE ──
+  //
+  // The analysis was handed one night and no memory, which is why it could only
+  // ever describe. Every claim an analyst makes is comparative — third time he
+  // has agreed to something he should have refused, that alliance loses a member
+  // every time it holds power, she has not been in a winning vote since the veto
+  // — and not one of those sentences can be written from tonight alone. No
+  // amount of prompt wording conjures the first two weeks.
+  //
+  // Two parts, both cheap. The game record is measured across every week played
+  // so far and is cross-episode by construction. The reads are the earlier
+  // verdicts compressed to a few hundred characters each: enough to catch a
+  // contradiction, not enough to invite a re-telling.
+  //
+  // Strictly BEFORE `upto`. Handing it tonight's own episode would let it cite
+  // the thing it is supposed to be judging.
+  async function _seasonHistory(season, upto) {
+    const out = { record: null, reads: [] };
+    const records = [];
+    for (let i = 1; i < upto; i++) {
+      try {
+        const raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${i}`);
+        const rec = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (rec) records.push(rec);
+      } catch { /* a missing episode is a gap, not a failure */ }
+      try {
+        const raw = await _csGet(`${_sKey('AI_ANALYTICS', season)}_e${i}`);
+        const a = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const line = a?.narrativeSummary || a?.turningPoint?.description || null;
+        if (line) out.reads.push({ episode: i, summary: String(line).slice(0, 400) });
+      } catch { /* an episode nobody analysed simply has no read */ }
+    }
+    if (records.length) {
+      try {
+        const mod = await import('./js/analysis/game-record.js');
+        const last = records[records.length - 1] || {};
+        out.record = mod.recordLines(mod.seasonRecord(records, {
+          alliances: last.closingState?.alliances || last.closingState?.namedAlliances || [],
+        }));
+      } catch { out.record = null; }
+    }
+    return (out.record || out.reads.length) ? out : null;
+  }
+
 async function generateEpisodeAI() {
   // Safety check: ensure EPISODE_WORKER_URL is defined
   if (typeof EPISODE_WORKER_URL === 'undefined') {
@@ -3331,68 +3400,6 @@ async function generateEpisodeAI() {
     }
   }
   
-  // The same three ledgers the Control Room panels draw, handed to the model so
-  // the written analysis and the measured panels cannot contradict each other on
-  // one screen. Null when the episode was pasted rather than synced — there are
-  // no ballots to read, and a guess is the exact failure this corrects.
-  async function _episodeLedger(season, episode) {
-    try {
-      const raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${episode}`);
-      const record = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      if (!record) return null;
-      const mod = await import('./js/analysis/vote-ledger.js');
-      const vote = mod.voteLedger(record);
-      const week = mod.weekLedger(record);
-      const rel = mod.relationshipLedger(record);
-      if (!vote && !week && !rel) return null;
-      return { vote, week, relationships: rel, lines: mod.relationshipLines(rel) };
-    } catch (e) { return null; }
-  }
-
-  // ── EVERY EPISODE BEFORE THIS ONE ──
-  //
-  // The analysis was handed one night and no memory, which is why it could only
-  // ever describe. Every claim an analyst makes is comparative — third time he
-  // has agreed to something he should have refused, that alliance loses a member
-  // every time it holds power, she has not been in a winning vote since the veto
-  // — and not one of those sentences can be written from tonight alone. No
-  // amount of prompt wording conjures the first two weeks.
-  //
-  // Two parts, both cheap. The game record is measured across every week played
-  // so far and is cross-episode by construction. The reads are the earlier
-  // verdicts compressed to a few hundred characters each: enough to catch a
-  // contradiction, not enough to invite a re-telling.
-  //
-  // Strictly BEFORE `upto`. Handing it tonight's own episode would let it cite
-  // the thing it is supposed to be judging.
-  async function _seasonHistory(season, upto) {
-    const out = { record: null, reads: [] };
-    const records = [];
-    for (let i = 1; i < upto; i++) {
-      try {
-        const raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${i}`);
-        const rec = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        if (rec) records.push(rec);
-      } catch { /* a missing episode is a gap, not a failure */ }
-      try {
-        const raw = await _csGet(`${_sKey('AI_ANALYTICS', season)}_e${i}`);
-        const a = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        const line = a?.narrativeSummary || a?.turningPoint?.description || null;
-        if (line) out.reads.push({ episode: i, summary: String(line).slice(0, 400) });
-      } catch { /* an episode nobody analysed simply has no read */ }
-    }
-    if (records.length) {
-      try {
-        const mod = await import('./js/analysis/game-record.js');
-        const last = records[records.length - 1] || {};
-        out.record = mod.recordLines(mod.seasonRecord(records, {
-          alliances: last.closingState?.alliances || last.closingState?.namedAlliances || [],
-        }));
-      } catch { out.record = null; }
-    }
-    return (out.record || out.reads.length) ? out : null;
-  }
-
   try {
     const response = await fetch(EPISODE_WORKER_URL, {
       method: 'POST',

@@ -205,3 +205,83 @@ describe('the Control Room shows a board', () => {
     expect(block).toMatch(/not solid/);
   });
 });
+
+
+// ══════════════════════════════════════════════════════════════════════
+// `_episodeLedger is not defined`.
+//
+// It was declared inside generateEpisodeAI, and callAI lives in a different
+// construct entirely, so the analysis call could not see it. Every earlier
+// test here asserted the CALL was written — which it was. None of them
+// asserted the function was reachable from where it is called, and that is
+// the only thing that was ever wrong.
+//
+// So this one measures brace depth: both helpers have to sit at the top
+// level of the script block, where every caller can reach them.
+// ══════════════════════════════════════════════════════════════════════
+describe('the helpers are reachable from both callers', () => {
+  const page = readFileSync('current-season.html', 'utf8');
+  const lines = page.split('\n');
+
+  /** Brace depth per line inside the main script block, strings stripped. */
+  const depths = (() => {
+    const open = lines.findIndex((l, i) => i > 700 && /^\s*<script>\s*$/.test(l));
+    const close = lines.findIndex((l, i) => i > open && /<\/script>/.test(l));
+    const out = {};
+    let depth = 0, inBlockComment = false;
+    for (let i = open + 1; i < close; i++) {
+      let l = lines[i];
+      if (inBlockComment) {
+        const e = l.indexOf('*/');
+        if (e < 0) { out[i + 1] = depth; continue; }
+        l = l.slice(e + 2); inBlockComment = false;
+      }
+      l = l.replace(/\/\*[\s\S]*?\*\//g, '');
+      if (l.includes('/*')) { inBlockComment = true; l = l.slice(0, l.indexOf('/*')); }
+      out[i + 1] = depth;
+      // Walked character by character rather than stripped with regexes: a
+      // brace inside a string or a line comment is not a brace, and the
+      // escape-heavy patterns that would express that are exactly the thing
+      // most likely to be mangled on the way into this file.
+      let quote = null, esc = false;
+      for (let c = 0; c < l.length; c++) {
+        const ch = l[c];
+        if (quote) {
+          if (esc) { esc = false; continue; }
+          if (ch === '\\') { esc = true; continue; }
+          if (ch === quote) quote = null;
+          continue;
+        }
+        if (ch === "'" || ch === '"' || ch === '`') { quote = ch; continue; }
+        if (ch === '/' && l[c + 1] === '/') break;   // rest of the line is a comment
+        if (ch === '{') depth++;
+        else if (ch === '}') depth--;
+      }
+    }
+    return out;
+  })();
+
+  const lineOf = needle => lines.findIndex(l => l.includes(needle)) + 1;
+
+  it('declares both at the top of the script, not inside another function', () => {
+    for (const fn of ['async function _episodeLedger(', 'async function _seasonHistory(']) {
+      const n = lineOf(fn);
+      expect(n, `${fn} is missing`).toBeGreaterThan(0);
+      expect(depths[n], `${fn} is nested inside another function, so only that `
+        + `function can call it — this is exactly the bug`).toBe(0);
+    }
+  });
+
+  it('keeps their own dependencies reachable from there', () => {
+    // Moving them out is only safe while what they call is at least as visible.
+    for (const dep of ['function _sKey(', 'function _csGet(']) {
+      expect(depths[lineOf(dep)], `${dep} is nested, so the helpers cannot use it`).toBe(0);
+    }
+  });
+
+  it('is called from two different places, which is why scope matters', () => {
+    const calls = [...page.matchAll(/_episodeLedger\(season, episode\)/g)].length;
+    expect(calls, 'both the analysis and the episode writer should use it')
+      .toBeGreaterThanOrEqual(2);
+  });
+});

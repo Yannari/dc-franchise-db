@@ -20966,6 +20966,24 @@ export function rpBuildBBPremiereMystery(ep, act) {
         background:rgba(217,180,92,.07);font-size:12.5px;line-height:1.6}
       .bbpm-secretlab{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
         color:var(--bbpm-gold);margin-bottom:4px}
+      .bbpm-hunt-log{border:1px solid rgba(217,180,92,.2);background:rgba(0,0,0,.24);
+        padding:16px 18px;margin-bottom:14px}
+      .bbpm-row{display:flex;gap:12px;align-items:baseline;padding:7px 0;
+        border-bottom:1px dashed rgba(255,255,255,.07);font-size:13px;line-height:1.55}
+      .bbpm-row:last-of-type{border-bottom:0}
+      .bbpm-room{flex:0 0 130px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+        opacity:.5}
+      .bbpm-row.is-warm .bbpm-room{color:var(--bbpm-gold);opacity:.95}
+      .bbpm-row.is-found .bbpm-room{color:var(--bbpm-green);opacity:1}
+      .bbpm-row.is-found .bbpm-line{color:var(--bbpm-green)}
+      .bbpm-line{flex:1}
+      .bbpm-ev{display:flex;gap:12px;align-items:baseline;margin-top:10px;padding:10px 12px;
+        border-left:2px solid var(--bbpm-gold);background:rgba(217,180,92,.06);
+        font-size:13px;line-height:1.6}
+      .bbpm-evbadge{flex:0 0 120px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+        color:var(--bbpm-gold)}
+      .bbpm-where{margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,180,92,.2);
+        font-size:12.5px;letter-spacing:.02em;color:var(--bbpm-gold)}
       .bbpm-beats{max-width:700px;margin:24px auto 0}
       .bbpm-beat{font-size:13.5px;line-height:1.7;opacity:.85;margin-bottom:12px}
     </style>
@@ -20978,9 +20996,29 @@ export function rpBuildBBPremiereMystery(ep, act) {
           prize it has not been told the shape of.</p>
       </div>
 
+      ${(act.hunts || []).map(h => `<div class="bbpm-hunt-log">
+        ${/* The hiding place is NOT in this header. It was, and it told the
+              reader the answer before they read a single room — every near
+              miss below it is only tense if you do not already know. It is
+              named at the bottom, once somebody has found it. */''}
+        <div class="bbpm-hunt">Hunting ${_bbEsc(h.target)} &middot; ${h.team.length} of them
+          searching</div>
+        ${(h.rounds || []).map((r, i) => `<div class="bbpm-row is-${r.outcome}"
+            id="bbpm-step-${ep.num}-${_bbEsc(h.target).replace(/\W/g, '')}-${i}">
+          <span class="bbpm-room">${_bbEsc(r.room)}</span>
+          <span class="bbpm-line">${_bbEsc(r.text)}</span>
+        </div>`).join('')}
+        ${(h.events || []).map(e => `<div class="bbpm-ev">
+          <span class="bbpm-evbadge">${_bbEsc(e.badge)}</span>
+          <span class="bbpm-line">${_bbEsc(e.text)}</span>
+        </div>`).join('')}
+        <div class="bbpm-where">It was in ${_bbEsc(h.hidingIn)} the whole time.
+          <strong>${_bbEsc(h.found)}</strong> has it.</div>
+      </div>`).join('')}
+
       <div class="bbpm-split">
         <div class="bbpm-side">
-          <div class="bbpm-hunt">Hunting the relic</div>
+          <div class="bbpm-hunt">The relic &middot; found by ${_bbEsc(act.relicWinner || '')}</div>
           <ul>${team(act.relicTeam || [], act.relicWinner)}</ul>
           <div class="bbpm-prize">
             <div class="bbpm-pname">The Relic</div>
@@ -20991,7 +21029,7 @@ export function rpBuildBBPremiereMystery(ep, act) {
         </div>
 
         <div class="bbpm-side">
-          <div class="bbpm-hunt">Hunting the host</div>
+          <div class="bbpm-hunt">The host &middot; found by ${_bbEsc(act.hostWinner || '')}</div>
           <ul>${team(act.hostTeam || [], act.hostWinner)}</ul>
           <div class="bbpm-prize">
             <div class="bbpm-pname">$${Number(act.money || 0).toLocaleString()}</div>

@@ -1813,16 +1813,90 @@ export function simulateBBWeek(options = {}) {
           return (s.physical + s.endurance + s.mental + s.intuition) / 4;
         } catch { return 5; }
       };
+      const stat_ = (n, k) => { try { return Number(pStats(n)?.[k]) || 5; } catch { return 5; } };
       const others = hohPlayers.filter(n => n !== relic.holder);
       const median = [...hohPlayers].map(strength).sort((a, b) => a - b)[Math.floor(hohPlayers.length / 2)];
+
+      // ── THE HOURS BEFORE THE NAMES ARE READ ──────────────────────────
+      //
+      // The pick was a sort, and a sort is not what this power is. Everybody
+      // in that house knows the four names have not been decided yet and that
+      // the person deciding them is standing in the kitchen, so the interval
+      // between winning this and spending it is the most intensely political
+      // stretch of the season — and it was happening off screen, instantly,
+      // with nobody allowed to say anything.
+      //
+      // So the house LOBBIES. Each pitch is a real offer with a real price,
+      // it lands or it does not on social against the holder's read, and
+      // whatever was promised is remembered by both of them afterwards —
+      // which is the point. A promise made to get into a competition is a
+      // debt somebody is holding in week four.
+      const lobby = [];
+      // WHO ASKS, and it must not be "the five most social" — selecting on
+      // social and then branching on social gave every pitch in the house the
+      // same shape, five times in a row.
+      //
+      // Three different reasons to go and knock: you are good at asking, you
+      // are the most obviously about to be left out, or you simply decided to.
+      const byNerve = others.slice().sort((a, b) =>
+        (stat_(b, 'social') + stat_(b, 'boldness')) - (stat_(a, 'social') + stat_(a, 'boldness')));
+      const byExposure = others.slice().sort((a, b) => strength(a) - strength(b));
+      const askers = [...new Set([
+        ...byNerve.slice(0, 2),
+        ...byExposure.slice(0, 2),
+        ...others.filter(() => rng() < 0.25),
+      ])].slice(0, Math.min(5, others.length));
+      const owed = new Set();
+      for (const asker of askers) {
+        const st = pStats(asker);
+        let warmth = 0;
+        try { warmth = getPerceivedBond(relic.holder, asker); } catch { warmth = 0; }
+        // What they are actually offering. A weak player has nothing to trade
+        // but loyalty; a strong one can offer to take somebody else out.
+        // What they can actually put on the table, and it has to differ across
+        // a cast or every pitch reads the same. Strategic players trade a
+        // target, social ones trade a vote, the bold ask outright, and whoever
+        // has neither offers the only thing they have.
+        const offer = st.strategic >= 6 && strength(asker) >= median ? 'target'
+          : st.social >= 6 ? 'vote'
+            : st.boldness >= 7 ? 'plea'
+              : strength(asker) >= median ? 'safety'
+                : 'loyalty';
+        const chance = 0.18
+          + ((st.social || 5) / 10) * 0.3
+          + Math.max(0, warmth) * 0.035
+          + (offer === 'target' ? 0.1 : 0)
+          - Math.max(0, strength(asker) - median) * 0.05;   // strong asks are scarier
+        const won = rng() < Math.max(0.05, Math.min(0.9, chance));
+        lobby.push({ asker, offer, won, warmth: Math.round(warmth * 10) / 10 });
+        if (won) {
+          owed.add(asker);
+          // Both of them remember what was said. This is the debt.
+          try {
+            rememberStrategy(relic.holder, asker, 'promised-me-a-seat', week.num, 2,
+              { format: 'big-brother', offer });
+            rememberStrategy(asker, relic.holder, 'let-me-play', week.num, 2,
+              { format: 'big-brother', offer });
+          } catch { /* texture */ }
+          try { addBond(relic.holder, asker, 1.1); } catch { /* fine */ }
+        } else {
+          try { addBond(relic.holder, asker, -0.5); } catch { /* fine */ }
+        }
+      }
+      week.relicLobby = lobby;
+
       let picked;
       if (hohPlayers.includes(relic.holder) && strength(relic.holder) >= median) {
-        // Back yourself, against the three you are most likely to beat.
-        picked = [relic.holder, ...others.sort((a, b) => strength(a) - strength(b)).slice(0, 3)];
+        // Back yourself, against the three you are most likely to beat — but a
+        // promise made an hour ago outranks the arithmetic, because breaking
+        // one on night one is a thing the whole house watches you do.
+        const rest = others.sort((a, b) => (owed.has(b) - owed.has(a)) || (strength(a) - strength(b)));
+        picked = [relic.holder, ...rest.slice(0, 3)];
       } else {
-        // You cannot win it, so buy a friendly reign instead: the four people
-        // who like you most, and you are not one of them.
+        // You cannot win it, so buy a friendly reign instead: the people who
+        // asked and were told yes first, then the people who like you most.
         picked = others.sort((a, b) => {
+          if (owed.has(a) !== owed.has(b)) return owed.has(b) - owed.has(a);
           let ba = 0; let bb = 0;
           try { ba = getPerceivedBond(relic.holder, a); } catch { ba = 0; }
           try { bb = getPerceivedBond(relic.holder, b); } catch { bb = 0; }
@@ -1830,6 +1904,19 @@ export function simulateBBWeek(options = {}) {
         }).slice(0, 4);
       }
       hohPlayers = picked.filter(Boolean);
+
+      // A promise made and then not kept, in public, before anybody has played
+      // a single competition. This is the worst thing that can happen to
+      // somebody on night one and it is entirely self-inflicted.
+      const broken = [...owed].filter(n => !hohPlayers.includes(n));
+      week.relicBroken = broken;
+      for (const n of broken) {
+        try { addBond(n, relic.holder, -3.2); } catch { /* fine */ }
+        try {
+          rememberStrategy(n, relic.holder, 'promised-and-did-not', week.num, 3,
+            { format: 'big-brother' });
+        } catch { /* texture */ }
+      }
       usePower(relic, week.num);
       week.relicPick = { holder: relic.holder, eligible: [...hohPlayers],
         includedSelf: hohPlayers.includes(relic.holder) };
@@ -1841,7 +1928,35 @@ export function simulateBBWeek(options = {}) {
         detail: `${relic.holder} names the only four houseguests allowed to play for this week's `
           + `crown: ${hohPlayers.join(', ')}. Everybody else watches, and everybody can count who `
           + 'is missing.',
-        beats: [{
+        lobby: lobby.map(l => ({ ...l })), broken: [...broken],
+        beats: [
+          // The hours before the names, one beat each. A power whose whole
+          // weight is who lobbied for it should not resolve in one sentence.
+          ...lobby.map(l => ({
+            text: l.won
+              ? `${l.asker} gets to ${relic.holder} early and offers ${
+                l.offer === 'target' ? 'to go after somebody on their behalf'
+                  : l.offer === 'vote' ? 'a vote, whenever it is needed and without asking why'
+                    : l.offer === 'safety' ? 'a week of safety if it ever comes to that'
+                      : l.offer === 'plea' ? 'nothing at all, and simply asks'
+                        : `the only thing ${l.asker} has on night one, which is loyalty`}. `
+                + `${relic.holder} says yes. Neither of them writes it down and both of them will remember it.`
+              : `${l.asker} makes the case and ${relic.holder} listens to all of it and does not say yes. `
+                + `${l.asker} goes back to the bedroom having spent something and bought nothing.`,
+            players: [l.asker, relic.holder],
+            badgeText: l.won ? 'A PROMISE' : 'TURNED DOWN',
+            badgeClass: l.won ? 'gold' : 'grey',
+            eventId: l.won ? 'relic-promise' : 'relic-refused',
+            category: 'deals', location: 'kitchen',
+          })),
+          ...broken.map(n => ({
+            text: `${n} was told yes. ${n} is not one of the four names. On night one, in front of `
+              + `everybody, before a single competition has been played.`,
+            players: [n, relic.holder],
+            badgeText: 'PROMISED AND NOT KEPT', badgeClass: 'red',
+            eventId: 'relic-promise-broken', category: 'deals', location: 'living-room',
+          })),
+          {
           // No markup in a power-played beat: the shared power screen escapes
           // beat text (it has never carried any, so nothing was broken by
           // that), and tags here would render as literal <strong> on the page.

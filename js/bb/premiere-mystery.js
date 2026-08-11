@@ -26,9 +26,155 @@ import { addBond } from '../bonds.js';
 import { grantPower } from './powers.js';
 import { stableRng } from './knowledge.js';
 
+// The rooms of a hotel nobody has been in for an hour. Each carries a
+// different kind of hiding place, which is why who searches where matters.
+const ROOMS = [
+  { id: 'storeroom', name: 'the storeroom', lean: 'mental',
+    detail: 'shelves of tinned nothing, stacked by somebody with a system' },
+  { id: 'pantry', name: 'the pantry', lean: 'intuition',
+    detail: 'a cold room that smells faintly of a smell nobody can name' },
+  { id: 'sauna', name: 'the sauna', lean: 'boldness',
+    detail: 'unbearable within ninety seconds, which is the point of it' },
+  { id: 'lobby', name: 'the lobby desk', lean: 'social',
+    detail: 'pigeonholes for rooms this hotel does not have' },
+  { id: 'laundry', name: 'the laundry chute', lean: 'physical',
+    detail: 'a drop nobody wants to put their arm into twice' },
+  { id: 'library', name: 'the reading room', lean: 'mental',
+    detail: 'three hundred books and one of them is hollow' },
+  { id: 'ballroom', name: 'the ballroom', lean: 'endurance',
+    detail: 'a floor that carries sound to every other room in the building' },
+  { id: 'cellar', name: 'the cellar stair', lean: 'boldness',
+    detail: 'the lights are on a timer somebody else controls' },
+];
+
 const stat = (name, key) => {
   try { return Number(pStats(name)?.[key]) || 5; } catch { return 5; }
 };
+const cap = t => `${t[0].toUpperCase()}${t.slice(1)}`;
+const pick = (draw, list) => list[Math.floor(draw() * list.length)];
+
+/**
+ * One group's hunt, as a sequence of rooms rather than a die roll.
+ *
+ * Each round every searcher picks a room and turns something up or does not,
+ * and the interesting output is not the winner — it is the record of who was
+ * standing next to whom in a cellar at midnight on the first night, which is
+ * where a season's first bonds actually come from.
+ */
+function runHunt({ team, target, targetName, draw, api }) {
+  const rounds = [];
+  const events = [];
+  const heat = Object.fromEntries(team.map(n => [n, 0]));   // how warm each searcher is
+  let found = null;
+  const rooms = [...ROOMS];
+  for (let i = rooms.length - 1; i > 0; i--) {
+    const j = Math.floor(draw() * (i + 1));
+    [rooms[i], rooms[j]] = [rooms[j], rooms[i]];
+  }
+  // The thing is in exactly one of them, and the house does not know which.
+  const hidingIn = rooms[Math.floor(draw() * Math.min(4, rooms.length))];
+
+  for (let round = 0; round < 3 && !found; round++) {
+    const picks = [];
+    for (const who of team) {
+      // Where somebody looks is a read: intuition narrows it, and being warm
+      // already pulls you back to the room you were in.
+      const bias = stat(who, 'intuition') / 10;
+      const pool = rooms.slice(0, Math.max(3, Math.round(rooms.length * (1 - bias * 0.45))));
+      const room = heat[who] > 0 && draw() < 0.55
+        ? hidingIn
+        : pool[Math.floor(draw() * pool.length)];
+      picks.push({ who, room });
+    }
+
+    // Two people in one room is the first social fact of the season.
+    const byRoom = {};
+    for (const p of picks) (byRoom[p.room.id] ||= []).push(p.who);
+
+    for (const p of picks) {
+      const skill = stat(p.who, p.room.lean) / 10;
+      const right = p.room.id === hidingIn.id;
+      const roll = draw();
+      if (right && roll < 0.34 + skill * 0.4 && !found) {
+        found = p.who;
+        rounds.push({ round: round + 1, who: p.who, room: p.room.name, outcome: 'found',
+          text: `${p.who} goes back into ${p.room.name} for the second time and comes out holding it.` });
+        break;
+      }
+      if (right) {
+        heat[p.who] += 1;
+        rounds.push({ round: round + 1, who: p.who, room: p.room.name, outcome: 'warm',
+          text: pick(draw, [
+            `${p.who} is in ${p.room.name} — ${p.room.detail} — and comes out with nothing, and a face that tells four people where to go next.`,
+            `${p.who} spends far too long in ${p.room.name} and leaves without saying why, which is itself an answer.`,
+            `Something in ${p.room.name} is not sitting right and ${p.who} cannot say what. ${p.who} goes back to the lobby and keeps looking at the door.`,
+            `${p.who} has been in ${p.room.name} twice now. The second time, ${p.who} shuts the door behind ${'them'}.`,
+          ]) });
+      } else {
+        // Four searchers can pick the same room in a round, and the sentence
+        // was identical every time — the same line three deep reads as a bug
+        // even when the simulation underneath is fine.
+        rounds.push({ round: round + 1, who: p.who, room: p.room.name, outcome: 'cold',
+          text: pick(draw, [
+            `${p.who} takes ${p.room.name} apart. ${cap(p.room.detail)}. Nothing.`,
+            `Nothing in ${p.room.name}, and ${p.who} has now checked it properly enough to say so out loud.`,
+            `${p.who} tries ${p.room.name} — ${p.room.detail} — and gives it up after five minutes.`,
+            `${p.who} works ${p.room.name} over and finds a light switch, a draught and no relic.`,
+            `${p.who} is not the first person through ${p.room.name} tonight and can tell.`,
+          ]) });
+      }
+    }
+
+    // ── what happened while they were looking ──
+    for (const [roomId, who] of Object.entries(byRoom)) {
+      if (who.length < 2 || found) continue;
+      const room = rooms.find(x => x.id === roomId);
+      const [a, b] = who;
+      // Two strangers in a small room, an hour into knowing each other.
+      const together = draw() < 0.55;
+      if (together) {
+        api.bond(a, b, 1.6);
+        events.push({ kind: 'together', players: [a, b],
+          text: `${a} and ${b} end up in ${room.name} together and stop searching to talk. `
+            + `It is the first conversation either of them has had in this house that was not a name and a handshake.`,
+          badge: 'FIRST NIGHT' });
+      } else {
+        api.bond(a, b, -1.2);
+        events.push({ kind: 'collide', players: [a, b],
+          text: `${a} and ${b} arrive at ${room.name} within seconds of each other and neither `
+            + `leaves. They search around one another in silence, and both of them remember it.`,
+          badge: 'IN EACH OTHER’S WAY' });
+      }
+    }
+    // Somebody sits on what they know rather than sharing it.
+    if (!found && team.length > 3 && draw() < 0.5) {
+      const warm = team.filter(n => heat[n] > 0);
+      const quiet = warm.sort((x, y) => stat(y, 'strategic') - stat(x, 'strategic'))[0];
+      if (quiet) {
+        const mark = team.find(n => n !== quiet);
+        api.bond(quiet, mark, -0.6);
+        events.push({ kind: 'withheld', players: [quiet, mark].filter(Boolean),
+          text: `${quiet} has narrowed it down and says so to nobody. When ${mark} asks whether `
+            + `${quiet} has checked ${hidingIn.name}, the answer is a shrug — on night one, before `
+            + `anybody has done anything to anybody.`,
+          badge: 'KEEPS IT' });
+      }
+    }
+  }
+
+  // Three rounds and nothing: whoever got warmest gets it, because the search
+  // has to end and the building is not that big.
+  if (!found) {
+    found = team.slice().sort((a, b) => (heat[b] - heat[a])
+      || (stat(b, 'intuition') - stat(a, 'intuition')))[0];
+    rounds.push({ round: 4, who: found, room: hidingIn.name, outcome: 'found',
+      text: `Nobody has turned up anything for an hour. ${found} goes back to ${hidingIn.name} on `
+        + `a hunch that is mostly stubbornness, and this time puts a hand behind the panel.` });
+  }
+
+  return { found, rounds, events, hidingIn: hidingIn.name, target, targetName };
+}
+
 
 /**
  * Split the house and run both hunts.
@@ -53,14 +199,21 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
   const relicTeam = shuffled.slice(0, half);
   const hostTeam = shuffled.slice(half);
 
-  // Different hunts, different people. The relic is behind a wall and takes
-  // somebody who will pull it apart; the host is hidden somewhere in a building
-  // nobody has been in for an hour, and takes somebody who notices things.
-  const score = (name, a, b) => stat(name, a) * 0.6 + stat(name, b) * 0.4 + (r() - 0.5) * 5.5;
-  const relicWinner = [...relicTeam].sort((x, y) =>
-    score(y, 'physical', 'boldness') - score(x, 'physical', 'boldness'))[0];
-  const hostWinner = [...hostTeam].sort((x, y) =>
-    score(y, 'intuition', 'mental') - score(x, 'intuition', 'mental'))[0];
+  // ── two hunts, actually searched ──
+  //
+  // This was a sort() over a stat with noise on it, which produced a winner and
+  // nothing else — no rooms, no near misses, nobody standing next to anybody.
+  // The first night of a season is where every relationship in it starts, and
+  // it was being spent on a die roll.
+  const api = {
+    bond: (a, b, d) => { try { addBond(a, b, d); } catch { /* strangers */ } },
+  };
+  const relicHunt = runHunt({ team: relicTeam, target: 'relic', targetName: 'the relic',
+    draw: r, api });
+  const hostHunt = runHunt({ team: hostTeam, target: 'host', targetName: 'the host',
+    draw: r, api });
+  const relicWinner = relicHunt.found;
+  const hostWinner = hostHunt.found;
 
   // ── the prizes ──
   //
@@ -104,6 +257,12 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
       type: 'premiere-mystery',
       relicWinner, hostWinner,
       relicTeam: [...relicTeam], hostTeam: [...hostTeam],
+      hunts: [
+        { target: 'the relic', team: [...relicTeam], found: relicWinner,
+          hidingIn: relicHunt.hidingIn, rounds: relicHunt.rounds, events: relicHunt.events },
+        { target: 'the host', team: [...hostTeam], found: hostWinner,
+          hidingIn: hostHunt.hidingIn, rounds: hostHunt.rounds, events: hostHunt.events },
+      ],
       money: 10000,
       relicGranted: !!relicGranted,
       buyOffGranted: !!buyOffGranted,

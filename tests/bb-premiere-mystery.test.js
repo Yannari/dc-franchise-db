@@ -146,6 +146,41 @@ describe('premiere night', () => {
     expect(week.relicPick.holder).toBe(act.relicWinner);
   });
 
+  it('is a search, not a die roll', () => {
+    const week = playPremiere();
+    const act = openingAct(week);
+    expect(act.hunts?.length).toBe(2);
+    for (const h of act.hunts) {
+      // Rooms actually searched, and the last thing that happens is the find.
+      expect(h.rounds.length).toBeGreaterThan(1);
+      expect(h.rounds[h.rounds.length - 1].outcome).toBe('found');
+      expect(h.rounds[h.rounds.length - 1].who).toBe(h.found);
+      expect(h.hidingIn).toBeTruthy();
+      // Nobody searches after it has been found.
+      expect(h.rounds.filter(r => r.outcome === 'found').length).toBe(1);
+    }
+  });
+
+  it('makes the relic worth lobbying for, and remembers who was told yes', () => {
+    // The pick was a sort over stats, which is not what this power is: the
+    // hours between winning it and spending it are the most political stretch
+    // of the season, and they were happening off screen instantly.
+    const week = playPremiere();
+    expect(week.relicLobby?.length, 'nobody asked').toBeGreaterThan(0);
+    for (const l of week.relicLobby) {
+      expect(['target', 'vote', 'safety', 'plea', 'loyalty']).toContain(l.offer);
+    }
+    // Anybody told yes is either in the four, or on the broken list — never
+    // silently dropped.
+    const promised = week.relicLobby.filter(l => l.won).map(l => l.asker);
+    for (const n of promised) {
+      const kept = week.relicPick.eligible.includes(n);
+      const broken = (week.relicBroken || []).includes(n);
+      expect(kept || broken, `${n} was promised a seat and neither got one nor was recorded as broken`)
+        .toBe(true);
+    }
+  });
+
   it('replays identically from the same seed', () => {
     const a = openingAct(playPremiere(222));
     house();

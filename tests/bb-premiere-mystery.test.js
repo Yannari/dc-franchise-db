@@ -161,6 +161,37 @@ describe('premiere night', () => {
     }
   });
 
+  it('is a competition, so both groups play the same length of one', () => {
+    // Reported off a real episode: one group had sixteen cards and the other
+    // had ONE, because a first-round find ended that group's night before it
+    // started. The wiki calls it a competition — "each group would compete in a
+    // competition where the winner would receive a game-changing prize" — and a
+    // competition has a shape.
+    for (const seed of [511, 222, 909]) {
+      house();
+      const act = openingAct(playPremiere(seed));
+      const [a, b] = act.hunts.map(h => h.rounds.length);
+      expect(Math.min(a, b), 'a group barely searched').toBeGreaterThan(4);
+      // Both sides play the same rounds; the counts differ only by team size.
+      const perHead = act.hunts.map(h => (h.rounds.length - 1) / h.team.length);
+      expect(Math.abs(perHead[0] - perHead[1])).toBeLessThan(0.6);
+      // The recovery is the LAST thing that happens, not a lucky early roll.
+      for (const h of act.hunts) {
+        expect(h.rounds[h.rounds.length - 1].outcome).toBe('found');
+        expect(h.rounds.filter(r => r.outcome === 'found').length).toBe(1);
+      }
+    }
+  });
+
+  it('says how the two groups were formed', () => {
+    // The wiki does not say how the house split, so this is our rule and the
+    // screen has to admit that rather than present a coin toss as history.
+    const act = openingAct(playPremiere());
+    expect(act.splitRule).toMatch(/split themselves/i);
+    expect(act.relicTeam.length + act.hostTeam.length).toBe(NAMES.length);
+    expect(Math.abs(act.relicTeam.length - act.hostTeam.length)).toBeLessThanOrEqual(1);
+  });
+
   it('makes the relic worth lobbying for, and remembers who was told yes', () => {
     // The pick was a sort over stats, which is not what this power is: the
     // hours between winning it and spending it are the most political stretch

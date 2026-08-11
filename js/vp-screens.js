@@ -20942,7 +20942,16 @@ export function rpBuildBBPremiereMystery(ep, act) {
   // same building, so it is the same furniture with the manor's colours on it.
   const hunts = act.hunts || [];
 
+  // Every card the reveal walks through, in the order it walks them: the two
+  // hunts in full, then the night's own beats.
+  let step = -1;
+  const stateKey = `bb_premiere_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
   const card = (entry, kind) => {
+    step += 1;
+    const myStep = step;
     const people = (entry.players || [entry.who]).filter(Boolean).slice(0, 4);
     const cat = kind === 'event'
       ? { label: entry.badge || 'the first night', fg: '#d9b45c', bg: 'rgba(217,180,92,.14)' }
@@ -20952,7 +20961,8 @@ export function rpBuildBBPremiereMystery(ep, act) {
           ? { label: 'something here', fg: '#d9b45c', bg: 'rgba(217,180,92,.12)' }
           : { label: 'nothing', fg: '#7a8a80', bg: 'rgba(122,138,128,.1)' };
     const weight = kind === 'event' || entry.outcome === 'found' ? 'headline' : 'normal';
-    return `<article class="bbf-card is-${weight} bbpm-card" style="--bbf-a:${cat.fg}">
+    return `<article class="bbf-card is-${weight} bbpm-card${myStep <= state.idx ? ' is-shown' : ''}"
+      id="bbpm-step-${ep.num}-${myStep}" style="--bbf-a:${cat.fg}">
       <span class="bbf-node"></span>
       <header class="bbf-head">
         ${entry.room ? `<span class="bbf-slug">${_bbEsc(entry.room)}</span>` : ''}
@@ -21002,7 +21012,9 @@ export function rpBuildBBPremiereMystery(ep, act) {
     </div>
   </div>`;
 
-  return `<div class="rp-page bb-room bbpm" data-ambient="tribal-tension">
+  // Built first, counted after: the control bar needs the total number of
+  // cards, and that is only known once every card has been made.
+  const html = `<div class="rp-page bb-room bbpm" data-ambient="tribal-tension">
     <style>
       .bbpm{--bbpm-gold:#d9b45c;--bbpm-green:#4fbf8b}
       /* House Life's chrome, in the manor's colours. The feed frame, the
@@ -21035,6 +21047,23 @@ export function rpBuildBBPremiereMystery(ep, act) {
       .bbpm-where{margin-top:10px;padding:9px 12px;font-size:12.5px;
         border-left:2px solid var(--bbpm-gold);background:rgba(217,180,92,.07);
         color:var(--bbpm-gold)}
+      .bbpm-rule{margin:10px 12px 14px;padding:10px 12px;font-size:12.5px;line-height:1.6;
+        border-left:2px solid var(--bbpm-gold);background:rgba(217,180,92,.06)}
+      .bbpm-rulelab{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+        color:var(--bbpm-gold);margin-bottom:4px}
+      /* click-to-reveal, like the Sanctum and the resort — this was the one
+         screen in the theme that arrived all at once. */
+      .bbpm-card{opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s}
+      .bbpm-card.is-shown{opacity:1;transform:none}
+      @media(prefers-reduced-motion:reduce){.bbpm-card{transition:none}}
+      .bbpm-controls{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;gap:10px;
+        justify-content:center;align-items:center;padding:12px;
+        background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,0))}
+      .bbpm-btn{padding:8px 18px;border:1px solid var(--bbpm-gold);background:transparent;
+        color:var(--bbpm-gold);cursor:pointer;font-family:inherit;letter-spacing:.12em;
+        text-transform:uppercase;font-size:11px}
+      .bbpm-btn:hover{background:rgba(217,180,92,.12)}
+      .bbpm-count{font-size:11px;letter-spacing:.2em;opacity:.7}
       .bbpm-close{margin:18px 0 6px}
       .bbpm-prizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
         gap:14px;margin-top:8px}
@@ -21059,6 +21088,10 @@ export function rpBuildBBPremiereMystery(ep, act) {
           <span>THE RELIC IS GONE</span>
           <span class="bbf-hud-sp">${(act.relicTeam || []).length + (act.hostTeam || []).length} IN THE HOUSE</span>
         </div>
+        ${act.splitRule ? `<div class="bbpm-rule">
+          <span class="bbpm-rulelab">How the two groups formed</span>
+          ${_bbEsc(act.splitRule)}
+        </div>` : ''}
         ${hunts.map(huntBlock).join('')}
       </div>
 
@@ -21067,7 +21100,9 @@ export function rpBuildBBPremiereMystery(ep, act) {
             that narrates something no screen shows is a beat written for
             nobody. They are cards here like everything else. */''}
       <div class="bbf-cards bbpm-cards bbpm-close">
-        ${(act.beats || []).map(b => `<article class="bbf-card is-headline bbpm-card"
+        ${(act.beats || []).map(b => { step += 1; return `<article
+            class="bbf-card is-headline bbpm-card${step <= state.idx ? ' is-shown' : ''}"
+            id="bbpm-step-${ep.num}-${step}"
             style="--bbf-a:${b.badgeClass === 'purple' ? '#b08bd6' : '#d9b45c'}">
           <span class="bbf-node"></span>
           <header class="bbf-head">
@@ -21078,7 +21113,7 @@ export function rpBuildBBPremiereMystery(ep, act) {
               (b.players || []).slice(0, 3).map(n => rpPortrait(n)).join('')}</div>` : ''}
             <div class="bbf-txt">${b.text || ''}</div>
           </div>
-        </article>`).join('')}
+        </article>`; }).join('')}
       </div>
 
       <div class="bbpm-prizes">
@@ -21093,8 +21128,45 @@ export function rpBuildBBPremiereMystery(ep, act) {
            ${_bbEsc(act.hostWinner || '')} off the block and leaves the Head of Household naming
            somebody else on the spot, with no say in it.`)}
       </div>
+
+      <div class="bbpm-controls">
+        <button class="bbpm-btn" onclick="bbPremiereNext(${ep.num}, ${'${TOTAL}'})">Next</button>
+        <button class="bbpm-btn" onclick="bbPremiereAll(${ep.num}, ${'${TOTAL}'})">Reveal all</button>
+        <span class="bbpm-count" id="bbpm-count-${ep.num}">${'${SHOWN}'} / ${'${TOTAL}'}</span>
+      </div>
     </div>
   </div>`;
+
+  const total = step + 1;
+  return html
+    .replace(/\$\{TOTAL\}/g, String(total))
+    .replace(/\$\{SHOWN\}/g, String(Math.max(0, Math.min(state.idx + 1, total))));
+}
+
+/** DOM-only reveal, the same shape the Sanctum and the resort use. */
+export function _bbPremiereApply(num, upTo, total) {
+  for (let i = 0; i <= upTo && i < total; i++) {
+    document.getElementById(`bbpm-step-${num}-${i}`)?.classList.add('is-shown');
+  }
+  const c = document.getElementById(`bbpm-count-${num}`);
+  if (c) c.textContent = `${Math.max(0, upTo + 1)} / ${total}`;
+}
+
+export function bbPremiereNext(num, total) {
+  const key = `bb_premiere_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  if (st.idx >= total - 1) return;
+  st.idx++;
+  _bbPremiereApply(num, st.idx, total);
+  document.getElementById(`bbpm-step-${num}-${st.idx}`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+export function bbPremiereAll(num, total) {
+  const key = `bb_premiere_${num}`;
+  const st = _tvState[key] || (_tvState[key] = { idx: -1 });
+  st.idx = total - 1;
+  _bbPremiereApply(num, st.idx, total);
 }
 
 /** A key on a fob — the relic, which is a hotel's HOH key by another name. */

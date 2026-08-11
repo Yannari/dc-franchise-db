@@ -126,3 +126,82 @@ describe('the Control Room reads a trend', () => {
     expect(page).toMatch(/cr-streak/);
   });
 });
+
+
+// ══════════════════════════════════════════════════════════════════════
+// The layout. Ten equal cards could not carry an analysis: an argument is
+// a claim followed by its evidence, and equal weight says neither is which.
+// ══════════════════════════════════════════════════════════════════════
+describe('the episode page leads with a claim', () => {
+  const page = readFileSync('current-season.html', 'utf8');
+  const worker = readFileSync('worker/worker-episode-live.js', 'utf8');
+
+  it('asks the model for an assertion, not a description', () => {
+    expect(worker).toMatch(/verdict: \{/);
+    expect(worker).toMatch(/It must be an assertion, not a description/);
+    expect(worker).toMatch(/"narrativeSummary", "verdict", "decisionPoints",/);
+  });
+
+  it('asks for the alternative that existed at the time', () => {
+    expect(worker).toMatch(/decisionPoints: \{/);
+    expect(worker).toMatch(/JUDGED ON WHAT WAS KNOWABLE THEN/);
+    expect(worker).toMatch(/an option that ACTUALLY EXISTED at that moment/);
+    // The permission that stops it inventing a mistake to blame.
+    expect(worker.replace(/\s+/g, ' ')).toMatch(/some nights are lost by other people playing well/);
+  });
+
+  it('renders the claim at the top of the page', () => {
+    expect(page).toMatch(/id="cardVerdictClaim"/);
+    expect(page).toMatch(/class="ep-claim"/);
+    expect(page).toMatch(/function renderVerdict\(analytics\)/);
+  });
+
+  it('still says something for an episode analysed before the verdict existed', () => {
+    // A cached season must not render an empty headline.
+    const fn = page.slice(page.indexOf('function renderVerdict'), page.indexOf('function renderDecisions'));
+    expect(fn).toMatch(/episodeImpact\?\.turningPoint/);
+    expect(fn).toMatch(/regenerate to get the argued read/i);
+  });
+
+  it('draws the vote instead of printing the tally', () => {
+    expect(page).toMatch(/class="vb-bar"/);
+    expect(page).toMatch(/vb-major/);
+    for (const seg of ['vb-locked', 'vb-moved', 'vb-surplus', 'vb-against']) {
+      expect(page).toContain(seg);
+    }
+  });
+
+  it('shows chose, alternative and verdict side by side', () => {
+    expect(page).toMatch(/function renderDecisions\(analytics\)/);
+    expect(page).toMatch(/<b>Chose<\/b>/);
+    expect(page).toMatch(/<b>Alternative<\/b>/);
+    expect(page).toMatch(/<b>Verdict<\/b>/);
+  });
+
+  it('dropped the equal-weight grid it replaced', () => {
+    const view = page.slice(page.indexOf('id="viewOverview"'), page.indexOf('<!-- GAMEPLAY PAGE -->'));
+    expect(view, 'the old cards-grid is still there').not.toMatch(/class="cards-grid/);
+    expect(view).toMatch(/class="ep-spine"/);
+  });
+});
+
+describe('the Control Room shows a board', () => {
+  const page = readFileSync('current-season.html', 'utf8');
+
+  it('draws who can actually produce votes', () => {
+    expect(page).toMatch(/id="crFactions"/);
+    expect(page).toMatch(/cr-fac-votes/);
+  });
+
+  it('counts only the living, and strikes the rest rather than hiding them', () => {
+    const block = page.slice(page.indexOf('const factionsEl'), page.indexOf('alliancesEl.innerHTML = alliances.length'));
+    expect(block).toMatch(/live = members\.filter\(n => !eliminated\.has/);
+    expect(block).toMatch(/'gone'/);
+  });
+
+  it('marks the member who is not solid', () => {
+    const block = page.slice(page.indexOf('const factionsEl'), page.indexOf('alliancesEl.innerHTML = alliances.length'));
+    expect(block).toMatch(/shaky/);
+    expect(block).toMatch(/not solid/);
+  });
+});

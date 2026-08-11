@@ -319,6 +319,44 @@ async function generateAnalytics(summaryText, season, episode, env, activeCast =
     additionalProperties: false,
     properties: {
       narrativeSummary: { type: "string" },
+      // ── THE CLAIM, AND THE DECISIONS UNDER IT ──
+      //
+      // An analysis is an argument: one thing you are asserting about the
+      // night, and the evidence for it. The old shape had no place for the
+      // assertion — turning point, vote story, gainers, losers, changes — so
+      // ten equal fragments came back and the screen had nothing to lead with.
+      verdict: {
+        type: "object", additionalProperties: false,
+        properties: {
+          // Six to ten words. The whole read, compressed to the sentence you
+          // would say first if somebody asked what happened.
+          claim: { type: "string" },
+          // Two short paragraphs arguing it, from the ledger where there is one.
+          argument: { type: "string" },
+          // Three or four, each two or three words: how the night was decided.
+          tags: { type: "array", items: { type: "string" } },
+        },
+        required: ["claim", "argument", "tags"],
+      },
+      // The moments the episode could have gone differently, in the order they
+      // happened. Judged on what was knowable THEN — a decision is not bad
+      // because it lost.
+      decisionPoints: {
+        type: "array",
+        items: {
+          type: "object", additionalProperties: false,
+          properties: {
+            when: { type: "string" },        // "Before nominations", "Eviction night"
+            who: { type: "string" },
+            title: { type: "string" },       // what the decision was, in a line
+            context: { type: "string" },     // what they were choosing between, and why now
+            chose: { type: "string" },
+            alternative: { type: "string" }, // the option that actually existed at the time
+            verdict: { type: "string" },     // right, wrong, or right and unlucky — argued
+          },
+          required: ["when", "who", "title", "context", "chose", "alternative", "verdict"],
+        },
+      },
       episodeImpact: {
         type: "object",
         additionalProperties: false,
@@ -545,7 +583,8 @@ async function generateAnalytics(summaryText, season, episode, env, activeCast =
       },
     },
     required: [
-      "narrativeSummary", "episodeImpact", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
+      "narrativeSummary", "verdict", "decisionPoints",
+      "episodeImpact", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
       "allianceStability", "votingBlocs", "titles", "roles", "socialNetwork", "juryManagement",
       "threatBreakdown", "pathToVictory",
       "resumesList", "relationshipsList",
@@ -690,6 +729,31 @@ RELATIONSHIPS (relationshipsList):
   * -3 to -6: Tension / distrust
   * -7 to -9: Rivalry
   * -10: Enemies
+
+THE VERDICT (verdict)
+- claim: six to ten words. The sentence you would say FIRST if somebody asked
+  what happened tonight. It must be an assertion, not a description — "Nico won
+  the power and Ireland spent it", not "A busy week in the house". If the ledger
+  shows the vote was never close, the claim should probably say so.
+- argument: two short paragraphs making the case. Argue from the measured ledger
+  wherever there is one: how many votes never had to move, what the week cost
+  the person who ran it. A claim the numbers do not support is not a claim.
+- tags: three or four, two or three words each — how the night was decided.
+  Examples: "Decided in the room", "Plan held", "Hidden power, undetected",
+  "One promise broken".
+
+DECISION POINTS (decisionPoints)
+- Two to four, in the order they happened. These are the moments the episode
+  could have gone another way, and they carry the whole analysis.
+- JUDGED ON WHAT WAS KNOWABLE THEN. A decision is not bad because it lost, and
+  is not good because it won. If the correct play was the one they made and it
+  still failed, say exactly that — some nights are lost by other people playing
+  well. Hindsight makes this section worthless.
+- alternative must be an option that ACTUALLY EXISTED at that moment, taken by
+  somebody in that position with the information they had. Not "should have won
+  the veto".
+- verdict argues one of: right, wrong, or right and unlucky. Be willing to say
+  a move everybody praised was cheap, or that a disaster was well played.
 
 Use ONLY facts from the summary.
 

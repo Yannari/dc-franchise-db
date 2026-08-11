@@ -215,7 +215,72 @@
 .ledger-health{margin:0 0 12px;border:1px solid rgba(255,255,255,.09);border-left:3px solid #3fb950;background:rgba(255,255,255,.035);font-size:11px;color:#8b949e}.ledger-health.has-issues{border-left-color:#d29922}.ledger-health.has-errors{border-left-color:#f85149}.ledger-health summary{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 10px;cursor:pointer;list-style:none}.ledger-health summary::-webkit-details-marker{display:none}.ledger-health-dot{width:7px;height:7px;border-radius:50%;background:#3fb950;flex:none}.ledger-health.has-issues .ledger-health-dot{background:#d29922}.ledger-health.has-errors .ledger-health-dot{background:#f85149}.ledger-health-hint{margin-left:auto;font-size:10px;color:#6e7681}.ledger-health-issues{border-top:1px solid rgba(255,255,255,.08);padding:8px 10px}.ledger-health-issue{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.07);color:#c9d1d9}.ledger-health-issue:last-child{border-bottom:0}.ledger-health-issue b{color:#d29922;margin-right:6px}.ledger-health-issue.error b{color:#f85149}
 
 /* Season Control Room — a broadcast desk, not another card dashboard. */
-.control-room{--cr-red:#ff5a5f;--cr-amber:#f0b429;--cr-green:#42d392;background:#0d1117;border:1px solid rgba(255,255,255,.11);overflow:hidden}.cr-mast{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:22px 24px 18px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(90deg,rgba(255,90,95,.12),transparent 42%)}.cr-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--cr-red);text-transform:uppercase}.cr-title{margin:4px 0 0;font-size:28px;letter-spacing:-.03em}.cr-deck{margin-top:5px;color:#8b949e;font-size:12px;max-width:68ch}.cr-source{flex:none;text-align:right;font-size:10px;color:#8b949e}.cr-source b{display:block;color:#c9d1d9;font-size:12px;margin-bottom:3px}.cr-cast-strip{display:flex;align-items:center;gap:8px;padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.08);overflow-x:auto;scrollbar-width:thin}.cr-cast-label{position:sticky;left:0;z-index:2;background:#0d1117;padding-right:8px;color:#8b949e;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.cr-face{position:relative;flex:none;width:34px;height:34px;border:1px solid rgba(255,255,255,.14);background:#161b22;overflow:hidden;transform:rotate(-2deg)}.cr-face:nth-child(even){transform:rotate(2deg)}.cr-face img{width:100%;height:100%;object-fit:cover}.cr-face span{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;color:#8b949e}.cr-face.eliminated{filter:grayscale(1);opacity:.3}.cr-face.eliminated:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;background:rgba(13,17,23,.45);color:#ff7b72;font-size:22px;font-weight:900}.cr-board{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(270px,.88fr)}.cr-main{padding:22px 24px}.cr-rail{padding:22px;border-left:1px solid rgba(255,255,255,.1);background:#10151c}.cr-section+.cr-section{margin-top:24px}.cr-section-title{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8b949e}.cr-section-title:after{content:'';height:1px;flex:1;background:rgba(255,255,255,.09)}.cr-headline{padding:16px 18px;border-left:4px solid var(--cr-amber);background:#161b22}.cr-headline strong{display:block;font-size:18px;line-height:1.25}.cr-headline p{margin:6px 0 0;color:#9da7b3;font-size:12px;line-height:1.5}.cr-list{display:flex;flex-direction:column}.cr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}.cr-row:last-child{border-bottom:0}.cr-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;background:#21262d;border:1px solid rgba(255,255,255,.12)}.cr-avatar img{width:100%;height:100%;object-fit:cover}.cr-avatar span{display:grid;width:100%;height:100%;place-items:center;font-size:11px;font-weight:900;color:#8b949e}.cr-row-copy{min-width:0}.cr-row-copy b{font-size:12px}.cr-row-copy small{display:block;margin-top:2px;color:#8b949e;font-size:10px;line-height:1.35}.cr-trend{margin-left:7px;font-size:9px;font-weight:800;letter-spacing:.04em;vertical-align:1px}.cr-trend.up{color:#56d4a2}.cr-trend.down{color:#ff7b72}.cr-trend.flat{color:#6e7681}.cr-streak{margin-left:7px;padding:1px 5px;border:1px solid rgba(255,123,114,.4);color:#ff7b72;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.cr-value{font-size:12px;font-weight:900;color:#c9d1d9}.cr-value.danger{color:#ff7b72}.cr-value.power{color:#56d4a2}.cr-thread{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.45;color:#c9d1d9}.cr-thread:last-child{border-bottom:0}.cr-thread-meta{display:block;margin-bottom:3px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8b949e}.cr-thread.recorded .cr-thread-meta{color:#56d4a2}.cr-thread.inferred .cr-thread-meta{color:#d2a8ff}.cr-empty{padding:14px;border:1px dashed rgba(255,255,255,.15);color:#8b949e;font-size:11px;line-height:1.5}.cr-meter{height:4px;margin-top:6px;background:#21262d}.cr-meter span{display:block;height:100%;background:var(--cr-green)}
+/* ── THE WEEK: an argued read ─────────────────────────────────────
+   The old grid gave every fragment the same weight, so nothing could be
+   the point. Here the claim leads at display size and everything under it
+   is evidence, at evidence size. */
+.ep-spine{display:flex;flex-direction:column;gap:20px;padding:4px 0 8px}
+.ep-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#8b949e}
+.ep-verdict{padding:20px 22px;background:#161b22;border:1px solid rgba(255,255,255,.1);border-left:3px solid #f0b429}
+.ep-claim{margin:7px 0 12px;font-size:26px;line-height:1.22;letter-spacing:-.02em;text-wrap:balance;max-width:26ch;color:#e6edf3}
+.ep-argument{color:#9da7b3;font-size:13.5px;line-height:1.6;max-width:70ch}
+.ep-argument p{margin:0 0 9px}
+.ep-argument p:last-child{margin-bottom:0}
+.ep-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}
+.ep-tag{padding:3px 9px;border:1px solid rgba(255,255,255,.16);background:#0d1117;color:#9da7b3;
+  font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.ep-block{background:#161b22;border:1px solid rgba(255,255,255,.1)}
+.ep-block > header{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.09)}
+.ep-block > header h4{margin:0;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#c9d1d9}
+.ep-block > header span{font-size:10px;color:#8b949e;text-align:right}
+.ep-block .ep-body{padding:16px 18px;font-size:13.5px;line-height:1.55;color:#c9d1d9}
+.ep-block.ep-quiet .ep-body{color:#9da7b3}
+.ep-movers{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.ep-sub{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#8b949e;margin-bottom:7px}
+.ep-sub.up{color:#56d4a2}.ep-sub.down{color:#ff7b72}
+
+/* the vote, drawn — "10-3" tells you nothing; this tells you it was over */
+.vb-tally{display:flex;align-items:baseline;gap:11px;margin-bottom:13px;flex-wrap:wrap}
+.vb-tally b{font-size:30px;letter-spacing:-.02em;color:#e6edf3;font-variant-numeric:tabular-nums}
+.vb-tally span{color:#8b949e;font-size:12px}
+.vb-bar{position:relative;height:34px;display:flex;overflow:hidden;background:#0d1117;border:1px solid rgba(255,255,255,.12)}
+.vb-bar i{display:flex;align-items:center;justify-content:center;font-style:normal;
+  font-size:10px;font-weight:800;letter-spacing:.06em;color:#0d1117;min-width:0;overflow:hidden;white-space:nowrap}
+.vb-locked{background:#8b949e}.vb-moved{background:#f0b429}
+.vb-surplus{background:rgba(139,148,158,.32);color:#c9d1d9}
+.vb-against{background:rgba(255,123,114,.28);color:#c9d1d9}
+.vb-major{position:absolute;top:-5px;bottom:-5px;width:2px;background:#e6edf3;box-shadow:0 0 0 1px #0d1117}
+.vb-major b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;
+  letter-spacing:.12em;color:#e6edf3;white-space:nowrap}
+.vb-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:24px}
+.vb-legend div{display:flex;gap:7px;max-width:30ch}
+.vb-legend em{width:9px;height:9px;margin-top:4px;flex:0 0 auto}
+.vb-legend b{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c9d1d9}
+.vb-legend p{margin:1px 0 0;font-size:11.5px;line-height:1.45;color:#8b949e}
+.vb-ballots{display:flex;flex-wrap:wrap;gap:5px;margin-top:18px;padding-top:15px;border-top:1px solid rgba(255,255,255,.09)}
+.vb-ballot{padding:5px 8px;background:#0d1117;border:1px solid rgba(255,255,255,.12);min-width:84px}
+.vb-ballot b{display:block;font-size:11.5px;color:#c9d1d9}
+.vb-ballot small{font-size:9.5px;color:#6e7681}
+.vb-ballot.moved{border-color:rgba(240,180,41,.55)}.vb-ballot.moved small{color:#f0b429}
+.vb-ballot.broke{border-color:rgba(255,123,114,.55)}.vb-ballot.broke small{color:#ff7b72}
+
+/* decision points — numbered because they are genuinely a sequence */
+.dp{display:grid;grid-template-columns:38px minmax(0,1fr);gap:0 16px;padding:18px 0;border-top:1px solid rgba(255,255,255,.09)}
+.dp:first-child{border-top:0;padding-top:2px}
+.dp .dp-n{font-size:19px;font-weight:800;color:#4d545c;font-variant-numeric:tabular-nums;line-height:1.1}
+.dp .dp-when{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#f0b429;margin-bottom:5px}
+.dp h5{margin:0 0 5px;font-size:16px;font-weight:700;color:#e6edf3;letter-spacing:-.01em}
+.dp .dp-ctx{margin:0;color:#9da7b3;font-size:13px;line-height:1.55;max-width:70ch}
+.dp .dp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin-top:12px}
+.dp .dp-grid > div{border-left:2px solid rgba(255,255,255,.12);padding-left:11px}
+.dp .dp-grid > div.took{border-left-color:#f0b429}
+.dp .dp-grid b{display:block;font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#6e7681;margin-bottom:2px}
+.dp .dp-grid > div.took b{color:#f0b429}
+.dp .dp-grid p{margin:0;font-size:12.5px;line-height:1.5;color:#9da7b3}
+@media (max-width:620px){.ep-claim{font-size:21px}.dp{grid-template-columns:26px minmax(0,1fr);gap:0 11px}}
+
+.control-room{--cr-red:#ff5a5f;--cr-amber:#f0b429;--cr-green:#42d392;background:#0d1117;border:1px solid rgba(255,255,255,.11);overflow:hidden}.cr-mast{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:22px 24px 18px;border-bottom:1px solid rgba(255,255,255,.1);background:linear-gradient(90deg,rgba(255,90,95,.12),transparent 42%)}.cr-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--cr-red);text-transform:uppercase}.cr-title{margin:4px 0 0;font-size:28px;letter-spacing:-.03em}.cr-deck{margin-top:5px;color:#8b949e;font-size:12px;max-width:68ch}.cr-source{flex:none;text-align:right;font-size:10px;color:#8b949e}.cr-source b{display:block;color:#c9d1d9;font-size:12px;margin-bottom:3px}.cr-cast-strip{display:flex;align-items:center;gap:8px;padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.08);overflow-x:auto;scrollbar-width:thin}.cr-cast-label{position:sticky;left:0;z-index:2;background:#0d1117;padding-right:8px;color:#8b949e;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.cr-face{position:relative;flex:none;width:34px;height:34px;border:1px solid rgba(255,255,255,.14);background:#161b22;overflow:hidden;transform:rotate(-2deg)}.cr-face:nth-child(even){transform:rotate(2deg)}.cr-face img{width:100%;height:100%;object-fit:cover}.cr-face span{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:900;color:#8b949e}.cr-face.eliminated{filter:grayscale(1);opacity:.3}.cr-face.eliminated:after{content:'×';position:absolute;inset:0;display:grid;place-items:center;background:rgba(13,17,23,.45);color:#ff7b72;font-size:22px;font-weight:900}.cr-board{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(270px,.88fr)}.cr-main{padding:22px 24px}.cr-rail{padding:22px;border-left:1px solid rgba(255,255,255,.1);background:#10151c}.cr-section+.cr-section{margin-top:24px}.cr-section-title{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#8b949e}.cr-section-title:after{content:'';height:1px;flex:1;background:rgba(255,255,255,.09)}.cr-headline{padding:16px 18px;border-left:4px solid var(--cr-amber);background:#161b22}.cr-headline strong{display:block;font-size:18px;line-height:1.25}.cr-headline p{margin:6px 0 0;color:#9da7b3;font-size:12px;line-height:1.5}.cr-list{display:flex;flex-direction:column}.cr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}.cr-row:last-child{border-bottom:0}.cr-avatar{width:30px;height:30px;border-radius:50%;overflow:hidden;background:#21262d;border:1px solid rgba(255,255,255,.12)}.cr-avatar img{width:100%;height:100%;object-fit:cover}.cr-avatar span{display:grid;width:100%;height:100%;place-items:center;font-size:11px;font-weight:900;color:#8b949e}.cr-row-copy{min-width:0}.cr-row-copy b{font-size:12px}.cr-row-copy small{display:block;margin-top:2px;color:#8b949e;font-size:10px;line-height:1.35}.cr-factions{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.09)}.cr-fac{background:#161b22;padding:12px 13px;display:flex;flex-direction:column;gap:7px}.cr-fac-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.cr-fac-top b{font-size:13px;color:#e6edf3}.cr-fac-votes{font-size:19px;font-weight:900;color:#f0b429;font-variant-numeric:tabular-nums}.cr-fac ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}.cr-fac li{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#8b949e}.cr-fac li em{width:5px;height:5px;border-radius:50%;background:#4d545c;flex:0 0 auto}.cr-fac li.swing{color:#c9d1d9}.cr-fac li.swing em{background:#f0b429}.cr-fac li.gone{opacity:.45;text-decoration:line-through}.cr-fac-read{font-size:10.5px;line-height:1.45;color:#6e7681;border-top:1px solid rgba(255,255,255,.08);padding-top:7px;margin-top:auto}.cr-fac-meter{height:3px;background:#21262d}.cr-fac-meter i{display:block;height:100%;background:#f0b429}.cr-trend{margin-left:7px;font-size:9px;font-weight:800;letter-spacing:.04em;vertical-align:1px}.cr-trend.up{color:#56d4a2}.cr-trend.down{color:#ff7b72}.cr-trend.flat{color:#6e7681}.cr-streak{margin-left:7px;padding:1px 5px;border:1px solid rgba(255,123,114,.4);color:#ff7b72;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.cr-value{font-size:12px;font-weight:900;color:#c9d1d9}.cr-value.danger{color:#ff7b72}.cr-value.power{color:#56d4a2}.cr-thread{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.45;color:#c9d1d9}.cr-thread:last-child{border-bottom:0}.cr-thread-meta{display:block;margin-bottom:3px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8b949e}.cr-thread.recorded .cr-thread-meta{color:#56d4a2}.cr-thread.inferred .cr-thread-meta{color:#d2a8ff}.cr-empty{padding:14px;border:1px dashed rgba(255,255,255,.15);color:#8b949e;font-size:11px;line-height:1.5}.cr-meter{height:4px;margin-top:6px;background:#21262d}.cr-meter span{display:block;height:100%;background:var(--cr-green)}
 @media(max-width:780px){.cr-mast{align-items:flex-start;flex-direction:column}.cr-source{text-align:left}.cr-board{grid-template-columns:1fr}.cr-rail{border-left:0;border-top:1px solid rgba(255,255,255,.1)}.cr-main,.cr-rail{padding:18px}.cr-title{font-size:23px}}
 </style>
 
@@ -473,12 +538,15 @@
         <div class="cr-board">
           <div class="cr-main">
             <section class="cr-section"><div class="cr-section-title">State of play</div><div id="crHeadline" class="cr-headline"><strong>No season signal yet</strong><p>Sync the simulator or generate analytics for an episode.</p></div></section>
+            <!-- The board: who can actually produce votes, and who inside each
+                 group is not solid. A list of alliance names cannot show that. -->
+            <section class="cr-section"><div class="cr-section-title">The board &mdash; who has the votes</div><div id="crFactions" class="cr-factions"></div></section>
             <section class="cr-section"><div class="cr-section-title">Strategic fault lines</div><div id="crThreads" class="cr-list"></div></section>
             <section class="cr-section"><div class="cr-section-title">Recent recorded movement</div><div id="crMovement" class="cr-list"></div></section>
           </div>
           <aside class="cr-rail">
-            <section class="cr-section"><div class="cr-section-title">Power desk</div><div id="crPower" class="cr-list"></div></section>
-            <section class="cr-section"><div class="cr-section-title">Danger board</div><div id="crDanger" class="cr-list"></div></section>
+            <section class="cr-section"><div class="cr-section-title">Running the house</div><div id="crPower" class="cr-list"></div></section>
+            <section class="cr-section"><div class="cr-section-title">Under pressure</div><div id="crDanger" class="cr-list"></div></section>
             <section class="cr-section"><div class="cr-section-title">Alliance pressure</div><div id="crAlliances" class="cr-list"></div></section>
           </aside>
         </div>
@@ -486,73 +554,70 @@
     </div>
 
     <!-- OVERVIEW PAGE -->
+    <!-- ══════════════════════════════════════════════════════════════
+         THE WEEK — an argued read, not a grid of equal fragments.
+         Was ten same-sized cards, which is why it could never carry an
+         analysis: an argument is a claim followed by its evidence, and
+         ten equal boxes have no way to say which is which.
+         ══════════════════════════════════════════════════════════════ -->
     <div class="window-body hidden" id="viewOverview">
-      <div class="mini-subtitle" style="margin:0 0 14px">Episode-only review · what changed between the opening scene and the end credits</div>
-      <div class="cards-grid">
-        <div class="mini-panel">
-          <div class="mini-title">TURNING POINT</div>
-          <div class="mini-subtitle">The moment that redirected this episode</div>
-          <div class="mini-body" id="cardTurningPoint">—</div>
-        </div>
+      <div class="ep-spine">
 
-        <div class="mini-panel">
-          <div class="mini-title">THE VOTE STORY</div>
-          <div class="mini-subtitle">Plan → shift → result</div>
-          <div class="mini-body" id="cardVoteStory">—</div>
-        </div>
+        <section class="ep-verdict" id="panelVerdict">
+          <div class="ep-eyebrow" id="verdictEyebrow">The verdict</div>
+          <h3 class="ep-claim" id="cardVerdictClaim">Not evaluated yet.</h3>
+          <div class="ep-argument" id="cardVerdictArgument"></div>
+          <div class="ep-tags" id="cardVerdictTags"></div>
+        </section>
 
-        <!-- What happened BETWEEN people. The vote card shows a name; this
-             shows that the name belonged to somebody's final three partner. -->
-        <div class="mini-panel" id="panelRelationships" hidden>
-          <div class="mini-title">WHAT IT COST THEM</div>
-          <div class="mini-subtitle">Relationships that moved — measured, not written</div>
-          <div class="mini-body" id="cardRelationships">—</div>
-        </div>
+        <!-- Arithmetic over the ballots. The tally has always been on screen;
+             what was missing is whether anybody had to be moved to produce it. -->
+        <section class="ep-block" id="panelLedger" hidden>
+          <header><h4>How the vote was built</h4><span>Measured from the ballots — no interpretation</span></header>
+          <div class="ep-body" id="cardLedger">—</div>
+        </section>
 
-        <!-- Computed from the ballots, not written by the model. The tally has
-             always been on screen; what was missing is whether anybody had to
-             be moved to produce it. -->
-        <div class="mini-panel" id="panelLedger" hidden>
-          <div class="mini-title">WHAT IT COST</div>
-          <div class="mini-subtitle">Measured from the ballots — no interpretation</div>
-          <div class="mini-body" id="cardLedger">—</div>
-        </div>
+        <section class="ep-block" id="panelDecisions" hidden>
+          <header><h4>Decision points</h4><span>Judged on what was knowable at the time, not on the result</span></header>
+          <div class="ep-body" id="cardDecisions"></div>
+        </section>
 
-        <div class="mini-panel">
-          <div class="mini-title">WHO GAINED</div>
-          <div class="mini-subtitle">Position improved during this episode</div>
-          <div class="mini-body" id="cardEpisodeGainers">—</div>
-        </div>
+        <!-- The vote card shows a name; this shows the name belonged to
+             somebody's final three partner. -->
+        <section class="ep-block" id="panelRelationships" hidden>
+          <header><h4>What it cost</h4><span>Relationships that moved — measured, not written</span></header>
+          <div class="ep-body" id="cardRelationships">—</div>
+        </section>
 
-        <div class="mini-panel">
-          <div class="mini-title">WHO LOST GROUND</div>
-          <div class="mini-subtitle">Position worsened during this episode</div>
-          <div class="mini-body" id="cardEpisodeLosers">—</div>
-        </div>
-      </div>
+        <section class="ep-block">
+          <header><h4>Who moved, and which way</h4><span>Position at the end of the episode against the start of it</span></header>
+          <div class="ep-body ep-movers">
+            <div><div class="ep-sub up">Gained</div><div id="cardEpisodeGainers">—</div></div>
+            <div><div class="ep-sub down">Lost ground</div><div id="cardEpisodeLosers">—</div></div>
+          </div>
+        </section>
 
-      <div class="cards-grid two">
-        <div class="mini-panel">
-          <div class="mini-title">WHAT CHANGED</div>
-          <div class="mini-subtitle">Concrete before → after movement</div>
-          <div class="mini-body" id="cardEpisodeChanges">Not evaluated yet.</div>
-        </div>
+        <section class="ep-block">
+          <header><h4>On the record</h4><span>Concrete before → after movement, and what the night leaves open</span></header>
+          <div class="ep-body ep-movers">
+            <div><div class="ep-sub">What changed</div><div id="cardEpisodeChanges">Not evaluated yet.</div></div>
+            <div><div class="ep-sub">Left unresolved</div><div id="cardUnresolved">Not evaluated yet.</div></div>
+          </div>
+        </section>
 
-        <div class="mini-panel">
-          <div class="mini-title">LEFT UNRESOLVED</div>
-          <div class="mini-subtitle">Questions the episode creates but does not answer</div>
-          <div class="mini-body" id="cardUnresolved">Not evaluated yet.</div>
-        </div>
+        <section class="ep-block">
+          <header><h4>Best executed move</h4><span>Execution, judged apart from whether it worked</span></header>
+          <div class="ep-body" id="cardBestMove">—</div>
+        </section>
 
-        <div class="mini-panel">
-          <div class="mini-title">BEST EXECUTED MOVE</div>
-          <div class="mini-body" id="cardBestMove">—</div>
-        </div>
+        <section class="ep-block ep-quiet">
+          <header><h4>Episode summary</h4><span>The night as written</span></header>
+          <div class="ep-body" id="cardEpisodeSummary">—</div>
+        </section>
 
-        <div class="mini-panel">
-          <div class="mini-title">EPISODE SUMMARY</div>
-          <div class="mini-body" id="cardEpisodeSummary">—</div>
-        </div>
+        <!-- Kept because the old layout referenced them and the renderers
+             still fill them; the verdict now leads instead. -->
+        <div hidden><div id="cardTurningPoint"></div><div id="cardVoteStory"></div></div>
       </div>
     </div>
 
@@ -1374,7 +1439,74 @@ Owen: This is going to be amazing!"
       `;
     }
 
+    // ── THE CLAIM ──
+    //
+    // The page leads with what the night WAS, and everything under it is the
+    // case for it. Falls back to the turning point for an episode analysed
+    // before this field existed, so a cached season still reads as something
+    // rather than as an empty headline.
+    function renderVerdict(analytics) {
+      const claimEl = document.getElementById('cardVerdictClaim');
+      const argEl = document.getElementById('cardVerdictArgument');
+      const tagEl = document.getElementById('cardVerdictTags');
+      const eyebrow = document.getElementById('verdictEyebrow');
+      if (!claimEl) return;
+      const v = analytics?.verdict;
+      const ep = Number(els.episode.value || 1);
+      if (eyebrow) eyebrow.textContent = `Episode ${ep} — the verdict`;
+
+      if (v?.claim) {
+        claimEl.textContent = v.claim;
+        argEl.innerHTML = String(v.argument || '').split(/\n{2,}/).filter(Boolean)
+          .map(par => `<p>${escapeHtml(par)}</p>`).join('') || '';
+        tagEl.innerHTML = (v.tags || []).slice(0, 5)
+          .map(t => `<span class="ep-tag">${escapeHtml(t)}</span>`).join('');
+        return;
+      }
+      const turning = analytics?.episodeImpact?.turningPoint;
+      if (turning?.moment) {
+        claimEl.textContent = turning.moment;
+        argEl.innerHTML = `<p>${escapeHtml(turning.whyItMattered || '')}</p>`
+          + '<p class="muted">Analysed before the verdict existed — regenerate to get the argued read.</p>';
+        tagEl.innerHTML = '';
+        return;
+      }
+      claimEl.textContent = 'Not evaluated yet.';
+      argEl.innerHTML = '<p class="muted">Generate analytics for this episode.</p>';
+      tagEl.innerHTML = '';
+    }
+
+    // ── WHERE IT COULD HAVE GONE OTHERWISE ──
+    //
+    // Chose / alternative / verdict, side by side, because the alternative is
+    // the part that makes it analysis. A single "turning point" box can only
+    // report what happened.
+    function renderDecisions(analytics) {
+      const panel = document.getElementById('panelDecisions');
+      const body = document.getElementById('cardDecisions');
+      if (!panel || !body) return;
+      const list = Array.isArray(analytics?.decisionPoints) ? analytics.decisionPoints : [];
+      if (!list.length) { panel.hidden = true; return; }
+      panel.hidden = false;
+      body.innerHTML = list.slice(0, 5).map((d, i) => `
+        <article class="dp">
+          <div class="dp-n">${String(i + 1).padStart(2, '0')}</div>
+          <div>
+            <div class="dp-when">${escapeHtml(d.when || '')}${d.who ? ' &middot; ' + escapeHtml(d.who) : ''}</div>
+            <h5>${escapeHtml(d.title || '')}</h5>
+            <p class="dp-ctx">${escapeHtml(d.context || '')}</p>
+            <div class="dp-grid">
+              <div class="took"><b>Chose</b><p>${escapeHtml(d.chose || '')}</p></div>
+              <div><b>Alternative</b><p>${escapeHtml(d.alternative || '')}</p></div>
+              <div><b>Verdict</b><p>${escapeHtml(d.verdict || '')}</p></div>
+            </div>
+          </div>
+        </article>`).join('');
+    }
+
     function renderEpisodeImpact(analytics) {
+      renderVerdict(analytics);
+      renderDecisions(analytics);
       const impact = analytics?.episodeImpact || null;
       const unavailable = '<div class="muted">Not evaluated for this cached episode. Regenerate Analytics to add episode-specific analysis.</div>';
       const turning = impact?.turningPoint;
@@ -2054,6 +2186,40 @@ Owen: This is going to be amazing!"
 
       powerEl.innerHTML = power.length ? power.map(row => _crPersonRow(row,'power')).join('') : _crEmpty('Power rankings not evaluated for this episode.');
       dangerEl.innerHTML = danger.length ? danger.map(row => _crPersonRow(row,'danger')).join('') : _crEmpty('Next-boot danger not evaluated for this episode.');
+      // ── THE BOARD ──
+      //
+      // A named list of alliances tells you they exist. What decides a week is
+      // how many votes each can actually produce, and which member inside it is
+      // not solid — so members are drawn, the dead are struck through rather
+      // than dropped, and anybody the stability read calls a risk is marked.
+      const factionsEl = document.getElementById('crFactions');
+      if (factionsEl) {
+        const blocs = Array.isArray(latest.observations?.votingBlocs) ? latest.observations.votingBlocs : [];
+        const shaky = new Set();
+        for (const a of alliances) {
+          if (Number(a.score) < 55 && a.note) {
+            for (const name of cast) if (String(a.note).includes(name)) shaky.add(name);
+          }
+        }
+        factionsEl.innerHTML = blocs.length ? blocs.slice(0, 4).map(b => {
+          const members = Array.isArray(b.members) ? b.members : [];
+          const live = members.filter(n => !eliminated.has(String(n).toLowerCase()));
+          const strength = Math.max(0, Math.min(100, Math.round(Number(b.strength) || 0)));
+          return `<div class="cr-fac">
+            <div class="cr-fac-top"><b>${escapeHtml(b.name || 'Bloc')}</b>
+              <span class="cr-fac-votes">${live.length}</span></div>
+            <div class="cr-fac-meter"><i style="width:${strength}%"></i></div>
+            <ul>${members.map(n => {
+              const out = eliminated.has(String(n).toLowerCase());
+              const cls = out ? 'gone' : (shaky.has(n) ? 'swing' : '');
+              return `<li class="${cls}"><em></em>${escapeHtml(n)}${shaky.has(n) && !out ? ' — not solid' : ''}</li>`;
+            }).join('')}</ul>
+            ${b.target ? `<div class="cr-fac-read">Hunting ${escapeHtml(b.target)}.${b.notes ? ' ' + escapeHtml(b.notes) : ''}</div>`
+              : (b.notes ? `<div class="cr-fac-read">${escapeHtml(b.notes)}</div>` : '')}
+          </div>`;
+        }).join('') : _crEmpty('No voting blocs recorded at this point in the season.');
+      }
+
       alliancesEl.innerHTML = alliances.length ? alliances.map(a => { const score=Math.max(0,Math.min(100,Math.round(Number(a.score)||0))); return `<div class="cr-thread inferred"><span class="cr-thread-meta">AI stability read · ${score}/100</span><b>${escapeHtml(a.name || 'Alliance')}</b><div class="cr-meter"><span style="width:${score}%"></span></div><small>${escapeHtml(a.note || '')}</small></div>`; }).join('') : _crEmpty('Alliance stability not evaluated for this episode.');
 
       const assessments = (latest.events || []).filter(event => event.provenance?.kind === 'ai-inferred' && ['assessment.biggest-risk','assessment.voting-bloc','assessment.best-move'].includes(event.type)).slice(0,5);
@@ -8029,7 +8195,57 @@ Would you like to:
       if (!l) { panel.hidden = true; return; }
       const inf = l.influence;
       const rows = [];
-      rows.push(`<div style="font-size:14px;margin-bottom:8px">${ledgerLine(l)}</div>`);
+
+      // ── DRAW THE ARITHMETIC ──
+      //
+      // "10-3" is a fact nobody can use. The shape underneath it is the read:
+      // how many were never going anywhere, how many actually had to be worked,
+      // and how much of the margin was surplus that changed nothing. A bar puts
+      // the majority line where you can see the week end before it started.
+      const locked = Math.max(0, inf.alreadyThere);
+      const moved = Math.max(0, l.votesAgainst - locked);
+      const against = Math.max(0, (l.voters ?? 0) - l.votesAgainst);
+      const majority = l.majority ?? Math.floor((l.voters || 0) / 2) + 1;
+      const surplus = Math.max(0, l.votesAgainst - majority);
+      const lockedShown = Math.max(0, locked - Math.max(0, locked - (majority - moved)));
+      const total = Math.max(1, l.voters || (l.votesAgainst + against));
+      const seg = (cls, n, label) => n > 0
+        ? `<i class="${cls}" style="flex:${n}">${n >= 2 ? label : ''}</i>` : '';
+      rows.push(`<div class="vb-tally"><b>${l.votesAgainst}&#8211;${against}</b>`
+        + `<span>${escapeHtml(l.evictee)} evicted &middot; ${total} voting &middot; majority ${majority}</span></div>`);
+      rows.push(`<div class="vb-bar" role="img" aria-label="${locked} never moved, ${moved} were moved, `
+        + `${surplus} surplus, ${against} against">`
+        + seg('vb-locked', Math.max(0, locked - surplus), 'LOCKED')
+        + seg('vb-moved', moved, 'MOVED')
+        + seg('vb-surplus', surplus, 'SURPLUS')
+        + seg('vb-against', against, 'AGAINST')
+        + `<span class="vb-major" style="left:${Math.min(99, (majority / total) * 100)}%">`
+        + `<b>MAJORITY &middot; ${majority}</b></span></div>`);
+      rows.push('<div class="vb-legend">'
+        + `<div><em class="vb-locked"></em><div><b>Locked</b><p>Named ${escapeHtml(l.evictee)} `
+        + `from the start. Nobody spent anything on them.</p></div></div>`
+        + (moved ? `<div><em class="vb-moved"></em><div><b>Moved</b><p>Votes that actually had to be `
+          + `worked. This is the whole cost of the night.</p></div></div>` : '')
+        + (surplus ? `<div><em class="vb-surplus"></em><div><b>Surplus</b><p>Past the majority — changed `
+          + `nothing, and told the room who is together.</p></div></div>` : '')
+        + (against ? `<div><em class="vb-against"></em><div><b>Against</b><p>Voted the other way. `
+          + `Whether that is a bloc or three unrelated reasons is the question.</p></div></div>` : '')
+        + '</div>');
+      // Every ballot, with why it is in the group it is in.
+      const movedNames = new Set((inf.movedVotes || []).map(m => m.voter));
+      const brokeNames = new Set((l.brokenWord || []).map(v => v.voter));
+      if (Array.isArray(record?.votingLog) && record.votingLog.length) {
+        rows.push('<div class="vb-ballots">' + record.votingLog.map(b => {
+          const cls = brokeNames.has(b.voter) ? 'broke' : movedNames.has(b.voter) ? 'moved' : '';
+          const tag = brokeNames.has(b.voter) ? 'broke a deal'
+            : movedNames.has(b.voter) ? 'moved'
+            : b.voted === l.evictee ? 'locked' : '';
+          return `<div class="vb-ballot ${cls}"><b>${escapeHtml(b.voter)}</b>`
+            + `<small>${escapeHtml(b.voted)}${tag ? ' &middot; ' + tag : ''}</small></div>`;
+        }).join('') + '</div>');
+      }
+
+      rows.push(`<div style="margin-top:16px;font-size:13px">${ledgerLine(l)}</div>`);
       rows.push(`<div><b>${inf.alreadyThere}</b> of ${l.votesAgainst} votes against `
         + `${l.evictee} never moved${inf.rodeConsensus
           ? ' — a majority on their own, so the result did not need working for.'

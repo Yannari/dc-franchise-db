@@ -404,7 +404,6 @@
         <button class="btn btn-primary" id="aiGenerate">Generate Analytics</button>
         <button class="btn btn-ghost" id="aiLoadCached">Load Cached</button>
         <button class="btn btn-ghost" id="ledgerExport" type="button" title="Download the season's confirmed facts and clearly-labelled AI assessments">Export Ledger</button>
-        <button class="btn btn-ghost" id="seasonAnalysis" type="button" title="Read the whole season at once: who controlled it, when it turned, and how each game actually ended">Season Analysis</button>
         <label class="ai-toggle">
           <input type="checkbox" id="aiAutoLoad" checked />
           <span>Auto-load on refresh</span>
@@ -513,14 +512,6 @@
         <!-- Computed from the ballots, not written by the model. The tally has
              always been on screen; what was missing is whether anybody had to
              be moved to produce it. -->
-        <!-- The whole season at once. Every other panel here reads one
-             episode; this one reads the shape none of them can see. -->
-        <div class="mini-panel" id="panelSeasonAnalysis" hidden style="grid-column:1/-1">
-          <div class="mini-title">THE SEASON</div>
-          <div class="mini-subtitle">Read across every week — measured ballots first, prose second</div>
-          <div class="mini-body" id="cardSeasonAnalysis">—</div>
-        </div>
-
         <div class="mini-panel" id="panelLedger" hidden>
           <div class="mini-title">WHAT IT COST</div>
           <div class="mini-subtitle">Measured from the ballots — no interpretation</div>
@@ -2569,101 +2560,6 @@ Owen: This is going to be amazing!"
       const exported = await window.exportSeasonEventLedger(season);
       setStatus(exported ? `Exported Season ${season} event ledger.` : `No Season ${season} ledger exists yet.`);
     });
-
-    // ── THE SEASON, RATHER THAN THE WEEK ──
-    //
-    // Everything else on this screen analyses one episode. That is the right
-    // unit for "what happened on Thursday" and the wrong one for "what kind of
-    // season was this": a game is not the sum of its weeks, and the claims
-    // worth making — who controlled it, when it changed hands, which alliance
-    // was real — are invisible from inside any single one of them.
-    //
-    // Sends three things. The measured game record and the per-week ledgers are
-    // arithmetic over the ballots; the summaries are prose. The worker is told
-    // which outranks which, the same rule that fixed the weekly analysis.
-    async function _seasonMaterial(season) {
-      const mod = await import('./js/analysis/vote-ledger.js');
-      const rec = await import('./js/analysis/game-record.js');
-      const records = [];
-      const weeks = [];
-      const summaries = [];
-      for (let i = 1; i <= 40; i++) {
-        let raw = null;
-        try { raw = await _csGet(`${_sKey('SIMULATOR_EPISODE', season)}_e${i}`); } catch { raw = null; }
-        const record = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : raw;
-        if (record) {
-          records.push(record);
-          try {
-            const l = mod.voteLedger(record);
-            const r = mod.relationshipLedger(record);
-            weeks.push({ episode: i, line: l ? mod.ledgerLine(l) : null,
-              relationships: r ? mod.relationshipLines(r) : null });
-          } catch { /* a week without ballots still counts as a week */ }
-        }
-        let summary = null;
-        try { summary = await _csGet(`${_sKey('AI_SUMMARY', season)}_e${i}`); } catch { summary = null; }
-        if (summary) summaries.push(`=== EPISODE ${i} ===\n${summary}`);
-      }
-      if (!records.length && !summaries.length) return null;
-      // Finishing order is only known once somebody has won; until then the
-      // record simply carries no placements, which is correct for a season in
-      // progress and stops the analysis inventing a winner.
-      let gameRecord = null;
-      try {
-        const last = records[records.length - 1] || {};
-        const alliances = last.closingState?.alliances || last.closingState?.namedAlliances || [];
-        gameRecord = rec.recordLines(rec.seasonRecord(records, { alliances }));
-      } catch (e) { gameRecord = null; }
-      return { gameRecord, weeks, summaries: summaries.join('\n\n') };
-    }
-
-    document.getElementById('seasonAnalysis')?.addEventListener('click', async () => {
-      const season = Number(els.season.value || 1);
-      const btn = document.getElementById('seasonAnalysis');
-      const panel = document.getElementById('panelSeasonAnalysis');
-      const body = document.getElementById('cardSeasonAnalysis');
-      setStatus('Reading the whole season...');
-      if (btn) btn.disabled = true;
-      try {
-        const material = await _seasonMaterial(season);
-        if (!material) {
-          setStatus('No episodes synced for this season yet — nothing to analyse.');
-          return;
-        }
-        const workerUrl = normalizeWorkerUrl(els.workerUrl.value
-          || localStorage.getItem('AI_ENDPOINT_URL') || EPISODE_WORKER_URL);
-        const res = await fetch(workerUrl, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode: 'season-analysis', season, format: _csFormat(), ...material }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!data.analysis) throw new Error(data.error || 'The worker returned nothing.');
-        await _csPut(`${_sKey('SEASON_ANALYSIS', season)}`, data.analysis);
-        if (panel && body) {
-          panel.hidden = false;
-          body.innerHTML = _mdToHtml(data.analysis);
-          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        setStatus(`Season ${season} analysed — ${material.weeks.length} week(s) of ballots read.`);
-      } catch (err) {
-        setStatus('Season analysis failed: ' + (err?.message || String(err)));
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    });
-
-    /** Enough markdown for the analysis, and no more. */
-    function _mdToHtml(md) {
-      const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return esc(md)
-        .replace(/^## (.+)$/gm, '<h3 style="margin:18px 0 6px;font-size:13px;letter-spacing:1px;color:var(--accent,#f0a500)">$1</h3>')
-        .replace(/^# (.+)$/gm, '<h2 style="margin:20px 0 8px;font-size:15px">$1</h2>')
-        .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-        .replace(/^- (.+)$/gm, '<div style="margin:2px 0 2px 12px">• $1</div>')
-        .replace(/\n{2,}/g, '</p><p style="margin:8px 0;line-height:1.55">')
-        .replace(/^/, '<p style="margin:8px 0;line-height:1.55">') + '</p>';
-    }
 
 
     // ----------------------------

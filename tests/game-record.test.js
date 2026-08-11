@@ -170,6 +170,15 @@ describe('the line handed to the writer', () => {
 describe('the record reaches the writers', () => {
   const read = f => require('node:fs').readFileSync(f, 'utf8');
 
+  it('ships from the repo rather than by hand', () => {
+    // It had no wrangler config at all, so it was pasted into the dashboard —
+    // which is how it ended up running a prompt several revisions behind the
+    // file, with everything written here sitting inert.
+    const toml = read('worker/wrangler-season.toml');
+    expect(toml).toMatch(/name = "dc-analytic-seasons"/);
+    expect(toml).toMatch(/main = "worker-season-live\.js"/);
+  });
+
   it('is sent with the season export', () => {
     const src = read('js/stats-export.js');
     expect(src).toMatch(/gameRecord,/);
@@ -219,27 +228,18 @@ describe('the record reaches the writers', () => {
     }
   });
 
-  it('gives the Control Room the season as well as the week', () => {
-    const page = read('current-season.html');
-    expect(page).toMatch(/mode: 'season-analysis'/);
-    expect(page).toMatch(/_seasonMaterial/);
-    expect(page).toMatch(/panelSeasonAnalysis/);
-    const worker = read('worker/worker-episode-live.js');
-    expect(worker).toMatch(/mode === "season-analysis"/);
-    expect(worker).toMatch(/THE MEASURED HALF OUTRANKS THE PROSE/);
-    // The sections that make it an analysis rather than a recap.
-    for (const section of ['THE SHAPE OF THE SEASON', 'THE TURN',
-      'WHO PLAYED THE BEST GAME', 'HOW EACH GAME ENDED', 'THE COUNTERFACTUAL']) {
-      expect(worker).toContain(section);
-    }
-  });
-
   it('judges on what was knowable, not on the finish', () => {
-    // The single instruction that separates analysis from hindsight.
-    const worker = read('worker/worker-episode-live.js');
-    const season = read('worker/worker-season-live.js');
-    expect(worker).toMatch(/GIVEN WHAT THEY COULD KNOW\s*\n?AT THE TIME/);
-    expect(season).toMatch(/what they could know at the\s*\n?\s*time/);
+    // The single instruction that separates analysis from hindsight, and it
+    // has to be in BOTH prompt branches — the Big Brother one and the Total
+    // Drama one — because a verdict written from the finishing order is not a
+    // verdict, it is a summary with opinions attached.
+    // Whitespace-normalised: these are prose in a template literal and wrap
+    // wherever the line ran out, so matching the raw text tests the line
+    // breaks rather than the instruction.
+    const season = read('worker/worker-season-live.js').replace(/\s+/g, ' ');
+    expect((season.match(/could know/g) || []).length).toBe(2);
     expect(season).toMatch(/hindsight/i);
+    // And the permission that stops it manufacturing a mistake to blame.
+    expect((season.match(/lost by other people playing well/g) || []).length).toBe(2);
   });
 });

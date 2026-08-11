@@ -25,8 +25,6 @@ export default {
       return await enhanceSummary(summaryText, season, episode, env, body.prevSummary || "", franchiseContext, seasonSetting, quality);
     } else if (mode === "story-digest") {
       return await generateBibleUpdate(body.storyBible || "", body.episodeText || body.summaryText || "", episode, env);
-    } else if (mode === "season-analysis") {
-      return await generateSeasonAnalysis(body, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else if (mode === "social") {
@@ -2143,104 +2141,6 @@ Rules:
 }
 
 // Non-streaming Anthropic text call (used for the short Story Architect / beat-sheet passes).
-/**
- * The season, read the way a strategy podcast reads one after it airs.
- *
- * The Control Room analyses a week at a time, which is the right unit for "what
- * happened on Thursday" and the wrong one for "what kind of season was this". A
- * game is not the sum of its weeks — the interesting claims are all about shape:
- * who was in charge and for how long, when the house changed hands, which
- * alliance was real and which was three people who kept saying a name. None of
- * that is visible from inside any single week.
- *
- * Given three things: the measured game record, the per-week ledgers, and the
- * episode summaries. The first two are arithmetic and the third is prose, and
- * the prompt is explicit about which outranks which — the same rule that fixed
- * the weekly analysis, applied to the season.
- */
-async function generateSeasonAnalysis(body, env) {
-  const { season, gameRecord, weeks = [], summaries = '', format = 'big-brother' } = body;
-  if (!gameRecord && !summaries) {
-    return new Response(JSON.stringify({ error: "Nothing to analyse" }), {
-      status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-  const isBB = format === 'big-brother';
-  const weekBlock = (weeks || []).map(w =>
-    `WEEK ${w.episode}: ${w.line || '(no ballots)'}` + (w.relationships ? `\n  ${w.relationships}` : '')
-  ).join('\n');
-
-  const instructions = `
-You are the analyst on a strategy podcast, recapping a completed season of
-${isBB ? 'Big Brother' : 'this show'}. Not a recapper. The audience has watched
-every episode and wants to be told what they missed.
-
-THE MEASURED HALF OUTRANKS THE PROSE. The GAME RECORD and the WEEK LEDGERS below
-are arithmetic over the actual ballots and rosters, and every number in them is
-true. The episode summaries are how the season FELT. Where the two disagree the
-numbers win, and a story the summaries tell that the numbers do not support is a
-story about the edit rather than about the game. Say so when it happens — it is
-one of the most interesting things you can notice.
-
-Read the record with these distinctions, because they ARE the analysis:
-- a competition won under threat is not the same act as one won from safety
-- being pulled off the block is a favour; surviving the vote is a result
-- voting with the house is the best available measure of who was in the room
-- ${isBB
-    ? 'a week where the Head of Household got their target was decided on Thursday; a week where they did not was decided in the bedrooms'
-    : 'a vote that went the way the person in power wanted was decided at the challenge; one that did not was decided at camp'}
-
-WRITE THESE SECTIONS, in this order, in markdown:
-
-## THE SHAPE OF THE SEASON
-What kind of season this was and who actually controlled it. Name the moment
-control changed hands, and say whether the house ever knew that it had.
-
-## THE TURN
-The single week the season stopped being one thing and became another. Argue it
-from the ledgers — what the numbers looked like either side of it. If there was
-no turn, say so instead, and say what that means about the season.
-
-## WHO PLAYED THE BEST GAME
-Ranked top to bottom, and NOT the finishing order — rank the games. Where your
-ranking and the finish disagree, that gap is the point. Explain it.
-
-## HOW EACH GAME ENDED
-Everybody who left, in order. A paragraph each: what game they were playing,
-what actually ended it, and what the correct line was GIVEN WHAT THEY COULD KNOW
-AT THE TIME. Some games are lost by other people playing well — say that when it
-is the honest answer, rather than inventing a mistake to blame.
-
-## WHAT THE WINNER ACTUALLY DID
-The winning game, argued. What did the win depend on, and what was the last real
-threat to it? If the win was mostly other people's failure, say so.
-
-## THE COUNTERFACTUAL
-The one decision that would most have changed the season: whose, and which week.
-One decision, not a list, and it has to have been available at the time.
-
-Be specific, and be willing to be unkind about the games. Never invent a
-competition, a vote or a week that is not in the material below.
-`.trim();
-
-  const input = [
-    '=== GAME RECORD (measured) ===', gameRecord || '(not available)', '',
-    '=== WEEK LEDGERS (measured from the ballots) ===', weekBlock || '(none)', '',
-    '=== EPISODE SUMMARIES ===', summaries || '(none)',
-  ].join('\n');
-
-  try {
-    const text = await callAnthropicText(instructions, input, env, MODELS.quality, 8000);
-    return new Response(JSON.stringify({ analysis: text, season }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: String(err?.message || err) }), {
-      status: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-}
-
 async function callAnthropicText(system, userText, env, model, maxTokens = 1600) {
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

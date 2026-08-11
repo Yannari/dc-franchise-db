@@ -1,0 +1,19 @@
+# The Season Builder worker — dc-analytic-seasons.
+#
+# This one had no config in the repo at all, so it was hand-deployed through the
+# dashboard, which is how it ended up running a prompt several revisions behind
+# the file. Everything written here sat inert until somebody remembered to paste
+# it in. Now it ships like the other two.
+#
+# The name is the one already live — confirmed against the deployed script, not
+# guessed. Deploying under any other name would leave the old worker answering
+# the URL the Season Builder has in local storage.
+#
+# Deploy:
+#   cd worker && wrangler deploy --config wrangler-season.toml
+#
+# Secrets (already set; listed so the next person knows what it needs):
+#   wrangler secret put OPENAI_API_KEY --config wrangler-season.toml
+name = "dc-analytic-seasons"
+main = "worker-season-live.js"
+compatibility_date = "2024-11-01"

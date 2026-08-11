@@ -136,7 +136,7 @@ const missedMeeting = {
     api.suspicion(absent, organiser, 1.0);
     api.remember(absent, organiser, 'decided-without-me', 2, { about: al.name });
     rest.filter(n => n !== organiser).forEach(n => api.suspicion(absent, n, 0.3));
-    return { text, players: [...members],
+    return { text, players: [absent, organiser, rest[0]].filter((n, i, a) => n && a.indexOf(n) === i),
       badgeText: 'NOT IN THE ROOM', badgeClass: 'blue' };
   },
 };
@@ -295,7 +295,7 @@ const unauthorizedVote = {
       api.addBond(n, holdout, -0.45);
     });
     api.remember(organiser, holdout, 'would-not-promise-the-vote', 2, { about: al.name });
-    return { text, players: [...members],
+    return { text, players: [holdout, organiser, rest[1]].filter((n, i, a) => n && a.indexOf(n) === i),
       badgeText: 'WILL NOT SAY IT', badgeClass: 'red' };
   },
 };
@@ -336,7 +336,7 @@ const sideDealProtected = {
 
     const text = _variant([
       `${partner}'s name comes up and ${member} finds three reasons it should not. All three are good reasons. None of them is the reason.`,
-      `“${partner} is useless to everybody, that's exactly why we keep ${pronouns(partner).obj} around.” ${member} reaches for the argument before anybody has finished suggesting the name. ${sharp} notices how ready it was.`,
+      `“${partner} is useless to everybody, that's exactly why we keep ${pronouns(partner).obj} around.” ${member} has made this argument in four separate conversations this week and ${sharp} has now heard two of them.`,
       `${member} steers <strong>${al.name}</strong> off ${partner} the way somebody steers a car off a kerb — smoothly, and without mentioning the kerb.`,
       `Somebody suggests ${partner} as the backup plan. ${member} agrees enthusiastically, then spends the next ten minutes on a better backup plan, and then a better one than that.`,
       `${member} shook on ${kind} with ${partner} and has told nobody in <strong>${al.name}</strong>. What the group sees is a member who is unusually careful about one specific name.`,
@@ -358,14 +358,10 @@ const sideDealProtected = {
 // ── the vote came back wrong and somebody has to have done it ─────────
 
 /** The most recent completed vote that was not unanimous. */
-function _lastSplit(ctx) {
+function _lastSplit() {
   const weeks = gs.bb?.weeks || [];
-  const currentWeek = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    // This is fallout from the last eviction, not a cold case the alliance
-    // reopens whenever the scheduler needs a beat.
-    if (currentWeek && Number.isFinite(w?.num) && w.num !== currentWeek - 1) continue;
     const ballots = Array.isArray(w?.ballots) ? w.ballots
       : Array.isArray(w?.votes) ? w.votes : [];
     if (ballots.length < 3) continue;
@@ -377,30 +373,20 @@ function _lastSplit(ctx) {
     const names = Object.keys(tally);
     if (names.length < 2) continue;
     const majority = _topBy(names, n => tally[n]);
-    const strayBallots = ballots.filter(b =>
-      (b?.evict || b?.voted || b?.vote || b?.target) !== majority);
-    const strayVoters = strayBallots.map(b => b?.voter || b?.by || b?.player).filter(Boolean);
-    const key = `${w?.num ?? i}|${w?.evicted || majority}`;
-    if (gs.bb?.allianceWrongBlameSeen === key) return null;
-    return { week: w, evicted: w.evicted || majority, strays: strayBallots.length,
-      strayVoters, key };
+    const strays = ballots.filter(b => (b?.evict || b?.voted || b?.vote || b?.target) !== majority);
+    return { week: w, evicted: w.evicted || majority, strays: strays.length };
   }
   return null;
 }
 
 function _blameCast(house, ctx) {
-  const split = _lastSplit(ctx);
+  const split = _lastSplit();
   if (!split) return null;
   const entry = _alliance(house, 3);
   if (!entry) return null;
   // Who the group DECIDES it was: the member who looks least loyal, which is
   // a completely different question from who actually did it.
-  // The title promises that the group gets it wrong. Ballots sometimes expose
-  // voter names, so exclude anybody who actually cast a stray vote. If the
-  // record cannot establish an innocent suspect, do not invent innocence.
-  if (!split.strayVoters.length) return null;
-  const innocent = entry.members.filter(n => !split.strayVoters.includes(n));
-  const blamed = _bottomBy(innocent, n => _looksLoyal(n, entry.members));
+  const blamed = _bottomBy(entry.members, n => _looksLoyal(n, entry.members));
   const accuser = _organiser(entry.members.filter(n => n !== blamed));
   if (!blamed || !accuser) return null;
   return { ...entry, ...split, blamed, accuser };
@@ -416,7 +402,7 @@ const wrongBlame = {
     return band((5 + cast.strays * 1.2) * _fit(ctx));
   },
   fire(house, ctx, api) {
-    const { al, members, blamed, accuser, evicted, strays, key } = _blameCast(house, ctx);
+    const { al, members, blamed, accuser, evicted, strays } = _blameCast(house, ctx);
     const p = pronouns(blamed);
     const rest = members.filter(n => n !== blamed);
     const count = strays === 1 ? 'one vote' : `${strays} votes`;
@@ -425,7 +411,7 @@ const wrongBlame = {
       `<strong>${al.name}</strong> was supposed to be ${members.length} votes in the same direction and ${count} went the other way. By the time the bedroom lights go off, ${_list(rest)} have decided it was ${blamed}.`,
       `Nobody has any evidence. ${accuser} has something better than evidence — a feeling ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} had about ${blamed} since ${evicted} was nominated, and a room willing to agree with it.`,
       `“It wasn't me.” ${blamed} says it once, calmly, which ${accuser} treats as suspicious, and then a second time, less calmly, which ${accuser} treats as confirmation.`,
-      `The alliance compares every promised vote with the result and finds ${count} that cannot be explained. Suspicion settles on the member whose commitment was never firm.`,
+      `The alliance compares every promised vote with the result and finds ${count} vote${count === 1 ? '' : 's'} that cannot be explained. Suspicion settles on the member whose commitment was never firm.`,
       `${accuser} does not accuse ${blamed}. ${accuser} simply stops finishing sentences when ${blamed} walks in, and before the next competition everybody in <strong>${al.name}</strong> is doing the same thing.`,
       `${blamed} did not do it. ${p.Sub} ${p.sub === 'they' ? 'spend' : 'spends'} the evening being told, kindly, that nobody is angry — which is how ${p.sub} ${p.sub === 'they' ? 'find' : 'finds'} out ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} already been convicted.`,
     ], ctx, this.id, blamed, accuser);
@@ -436,9 +422,7 @@ const wrongBlame = {
     });
     api.remember(blamed, accuser, 'blamed-me-for-a-vote-i-did-not-cast', 3, { about: al.name });
     api.addBond(blamed, accuser, -0.7);
-    gs.bb ||= {};
-    gs.bb.allianceWrongBlameSeen = key;
-    return { text, players: [...members],
+    return { text, players: [blamed, accuser, rest[1]].filter((n, i, a) => n && a.indexOf(n) === i),
       badgeText: 'SOMEBODY HAS TO HAVE DONE IT', badgeClass: 'red' };
   },
 };
@@ -468,7 +452,6 @@ const nameSlips = {
     if (!cast) return 0;
     // A name is only findable once it has been used for a while.
     const age = Math.min(4, (ctx?.week?.num || 0) - (cast.al.formed || 0));
-    if (age < 1) return 0;
     return band((3.5 + age * 1.1) * _fit(ctx));
   },
   fire(house, ctx, api) {
@@ -493,7 +476,7 @@ const nameSlips = {
     });
     api.remember(heard, talker, 'knows-what-we-are-called', 2, { about: al.name });
     api.addBond(heard, talker, -0.4);
-    return { text, players: [talker, ...members].filter((n, i, a) => n && a.indexOf(n) === i),
+    return { text, players: [talker, heard, others[0]].filter(Boolean),
       badgeText: 'THEY KNOW THE NAME', badgeClass: 'red' };
   },
 };

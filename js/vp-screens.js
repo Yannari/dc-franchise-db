@@ -20935,122 +20935,189 @@ export function _bbFinalPleaSpeech(ep, name) {
  */
 export function rpBuildBBPremiereMystery(ep, act) {
   if (!act) return '';
-  const team = (names, winner) => names.map(n => `<li class="${n === winner ? 'is-win' : ''}">
-      ${_bbEsc(n)}${n === winner ? '<span class="bbpm-tick">found it</span>' : ''}</li>`).join('');
 
-  return `<div class="rp-page bb-room bb-block bbpm" data-ambient="tribal-tension">
+  // The two hunts, as the two things the house is actually doing tonight. The
+  // first version grouped by nothing and drew a table; House Life groups by
+  // room and draws cards with faces on them, and this is the same night in the
+  // same building, so it is the same furniture with the manor's colours on it.
+  const hunts = act.hunts || [];
+
+  const card = (entry, kind) => {
+    const people = (entry.players || [entry.who]).filter(Boolean).slice(0, 4);
+    const cat = kind === 'event'
+      ? { label: entry.badge || 'the first night', fg: '#d9b45c', bg: 'rgba(217,180,92,.14)' }
+      : entry.outcome === 'found'
+        ? { label: 'found it', fg: '#4fbf8b', bg: 'rgba(79,191,139,.14)' }
+        : entry.outcome === 'warm'
+          ? { label: 'something here', fg: '#d9b45c', bg: 'rgba(217,180,92,.12)' }
+          : { label: 'nothing', fg: '#7a8a80', bg: 'rgba(122,138,128,.1)' };
+    const weight = kind === 'event' || entry.outcome === 'found' ? 'headline' : 'normal';
+    return `<article class="bbf-card is-${weight} bbpm-card" style="--bbf-a:${cat.fg}">
+      <span class="bbf-node"></span>
+      <header class="bbf-head">
+        ${entry.room ? `<span class="bbf-slug">${_bbEsc(entry.room)}</span>` : ''}
+        <span class="bbf-cat" style="background:${cat.bg};color:${cat.fg}">${_bbEsc(cat.label)}</span>
+      </header>
+      <div class="bbf-body">
+        <div class="bbf-faces">${
+          people.length === 2 ? rpDuoImg(people[0], people[1])
+            : people.map(n => rpPortrait(n)).join('')}</div>
+        <div class="bbf-txt">${_bbEsc(entry.text || '')}</div>
+      </div>
+    </article>`;
+  };
+
+  const huntBlock = h => {
+    // Rounds and the things that happened between them, in the order they
+    // happened — the events belong inside the search, not in a list under it.
+    const entries = [
+      ...(h.rounds || []).map(r => ({ ...r, _kind: 'round' })),
+      ...(h.events || []).map(e => ({ ...e, _kind: 'event' })),
+    ];
+    // Keep the find last; everything else in the order the engine wrote it.
+    entries.sort((a, b) => (a.outcome === 'found' ? 1 : 0) - (b.outcome === 'found' ? 1 : 0));
+    const goal = h.target === 'the relic' ? 'relic' : 'host';
+    return `<div class="bbf-room-block bbpm-block" data-goal="${goal}">
+      <div class="bbf-room-h bbpm-room-h">
+        ${goal === 'relic' ? _bbpmRelicIcon() : _bbpmHostIcon()}
+        <span class="bbf-room-n">Hunting ${_bbEsc(h.target)}</span>
+        <span class="bbf-room-cam">${h.team.length} searching</span>
+        <span class="bbf-room-c">${(h.rounds || []).length}</span>
+      </div>
+      <div class="bbf-cards bbpm-cards">
+        ${entries.map(e => card(e, e._kind)).join('')}
+      </div>
+      <div class="bbpm-where">It was in ${_bbEsc(h.hidingIn)} the whole time.
+        <strong>${_bbEsc(h.found)}</strong> has it.</div>
+    </div>`;
+  };
+
+  const prize = (who, title, body, secret) => `<div class="bbpm-prize">
+    <div class="bbpm-pwho">${rpPortrait(who)}</div>
+    <div>
+      <div class="bbpm-pname">${title}</div>
+      <div class="bbpm-ptext">${body}</div>
+      ${secret ? `<div class="bbpm-secret">
+        <span class="bbpm-secretlab">What the room does not hear</span>${secret}</div>` : ''}
+    </div>
+  </div>`;
+
+  return `<div class="rp-page bb-room bbpm" data-ambient="tribal-tension">
     <style>
       .bbpm{--bbpm-gold:#d9b45c;--bbpm-green:#4fbf8b}
-      .bbpm-wrap{max-width:1000px;margin:0 auto;padding:26px 22px 60px}
-      .bbpm-head{text-align:center;margin-bottom:26px}
-      .bbpm-eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;
-        color:var(--bbpm-gold);opacity:.8}
-      .bbpm-title{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:36px;letter-spacing:.08em;
-        margin:6px 0 10px}
-      .bbpm-sub{max-width:620px;margin:0 auto;opacity:.72;font-size:14px;line-height:1.6}
-      .bbpm-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-      .bbpm-side{border:1px solid rgba(217,180,92,.28);background:rgba(0,0,0,.3);padding:18px}
-      .bbpm-hunt{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.6;
-        margin-bottom:10px}
-      .bbpm-side ul{list-style:none;margin:0 0 14px;padding:0;
-        display:flex;flex-wrap:wrap;gap:6px}
-      .bbpm-side li{font-size:12px;opacity:.55;padding:2px 8px;border:1px solid rgba(255,255,255,.1)}
-      .bbpm-side li.is-win{opacity:1;border-color:var(--bbpm-gold);color:var(--bbpm-gold)}
-      .bbpm-tick{font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-left:6px;
-        opacity:.75}
-      .bbpm-prize{border-top:1px solid rgba(217,180,92,.22);padding-top:12px}
-      .bbpm-pname{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:20px;margin-bottom:6px}
-      .bbpm-ptext{font-size:13px;line-height:1.6;opacity:.82}
-      /* the half the room did not hear */
-      .bbpm-secret{margin-top:12px;padding:10px 12px;border-left:2px solid var(--bbpm-gold);
-        background:rgba(217,180,92,.07);font-size:12.5px;line-height:1.6}
+      /* House Life's chrome, in the manor's colours. The feed frame, the
+         viewfinder brackets and the REC dot are all that show red by default,
+         and a hotel at midnight is not a security camera. */
+      .bbpm .bbf-feed{border-color:rgba(217,180,92,.26);
+        background:linear-gradient(180deg,rgba(18,34,28,.94),rgba(8,17,14,.94))}
+      .bbpm .bbf-feed::after{
+        background:
+          linear-gradient(90deg,rgba(217,180,92,.55) 0 16px,transparent 16px) 0 0/100% 1px no-repeat,
+          linear-gradient(90deg,transparent calc(100% - 16px),rgba(217,180,92,.55) calc(100% - 16px)) 0 0/100% 1px no-repeat,
+          linear-gradient(90deg,rgba(217,180,92,.55) 0 16px,transparent 16px) 0 100%/100% 1px no-repeat,
+          linear-gradient(90deg,transparent calc(100% - 16px),rgba(217,180,92,.55) calc(100% - 16px)) 0 100%/100% 1px no-repeat,
+          linear-gradient(0deg,rgba(217,180,92,.55) 0 16px,transparent 16px) 0 100%/1px 100% no-repeat,
+          linear-gradient(0deg,transparent calc(100% - 16px),rgba(217,180,92,.55) calc(100% - 16px)) 0 0/1px 100% no-repeat,
+          linear-gradient(0deg,rgba(217,180,92,.55) 0 16px,transparent 16px) 100% 100%/1px 100% no-repeat,
+          linear-gradient(0deg,transparent calc(100% - 16px),rgba(217,180,92,.55) calc(100% - 16px)) 100% 0/1px 100% no-repeat}
+      .bbpm .bbf-hud{border-bottom-color:rgba(217,180,92,.22);color:#cbbf9d}
+      .bbpm .bbf-rec{color:var(--bbpm-gold)}
+      .bbpm .bbf-rec::before{background:var(--bbpm-gold)}
+      .bbpm .bbf-card{background:rgba(16,30,25,.66);border-color:rgba(217,180,92,.1)}
+      .bbpm .bbf-node{background:#0a1712}
+      .bbpm-wrap{max-width:1100px;margin:0 auto;padding:4px 18px 60px}
+      .bbpm-block{margin-bottom:22px}
+      .bbpm-room-h{--bbf-c:var(--bbpm-gold)}
+      .bbpm-block[data-goal="host"] .bbpm-room-h{--bbf-c:var(--bbpm-green)}
+      .bbpm-cards{--bbf-c:var(--bbpm-gold)}
+      .bbpm-block[data-goal="host"] .bbpm-cards{--bbf-c:var(--bbpm-green)}
+      .bbpm-room-h svg{width:20px;height:20px;flex:none}
+      .bbpm-where{margin-top:10px;padding:9px 12px;font-size:12.5px;
+        border-left:2px solid var(--bbpm-gold);background:rgba(217,180,92,.07);
+        color:var(--bbpm-gold)}
+      .bbpm-close{margin:18px 0 6px}
+      .bbpm-prizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+        gap:14px;margin-top:8px}
+      .bbpm-prize{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;
+        border:1px solid rgba(217,180,92,.3);background:rgba(0,0,0,.3)}
+      .bbpm-pwho img{width:52px;height:52px;border-radius:50%}
+      .bbpm-pname{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:21px;margin-bottom:6px;
+        color:var(--bbpm-gold)}
+      .bbpm-ptext{font-size:13px;line-height:1.6;opacity:.85}
+      .bbpm-secret{margin-top:10px;padding:9px 11px;border-left:2px solid var(--bbpm-gold);
+        background:rgba(217,180,92,.08);font-size:12.5px;line-height:1.6}
       .bbpm-secretlab{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
         color:var(--bbpm-gold);margin-bottom:4px}
-      .bbpm-hunt-log{border:1px solid rgba(217,180,92,.2);background:rgba(0,0,0,.24);
-        padding:16px 18px;margin-bottom:14px}
-      .bbpm-row{display:flex;gap:12px;align-items:baseline;padding:7px 0;
-        border-bottom:1px dashed rgba(255,255,255,.07);font-size:13px;line-height:1.55}
-      .bbpm-row:last-of-type{border-bottom:0}
-      .bbpm-room{flex:0 0 130px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-        opacity:.5}
-      .bbpm-row.is-warm .bbpm-room{color:var(--bbpm-gold);opacity:.95}
-      .bbpm-row.is-found .bbpm-room{color:var(--bbpm-green);opacity:1}
-      .bbpm-row.is-found .bbpm-line{color:var(--bbpm-green)}
-      .bbpm-line{flex:1}
-      .bbpm-ev{display:flex;gap:12px;align-items:baseline;margin-top:10px;padding:10px 12px;
-        border-left:2px solid var(--bbpm-gold);background:rgba(217,180,92,.06);
-        font-size:13px;line-height:1.6}
-      .bbpm-evbadge{flex:0 0 120px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-        color:var(--bbpm-gold)}
-      .bbpm-where{margin-top:12px;padding-top:10px;border-top:1px solid rgba(217,180,92,.2);
-        font-size:12.5px;letter-spacing:.02em;color:var(--bbpm-gold)}
-      .bbpm-beats{max-width:700px;margin:24px auto 0}
-      .bbpm-beat{font-size:13.5px;line-height:1.7;opacity:.85;margin-bottom:12px}
     </style>
+    <div class="rp-eyebrow">Week ${_bbEsc(String(ep.num ?? ''))} — nobody has unpacked</div>
+    <div class="rp-title" style="color:#d9b45c">Premiere Night</div>
     <div class="bbpm-wrap">
-      <div class="bbpm-head">
-        <div class="bbpm-eyebrow">Week ${_bbEsc(String(ep.num ?? ''))} &middot; nobody has unpacked</div>
-        <div class="bbpm-title">Premiere Night</div>
-        <p class="bbpm-sub">The host is gone and the Head of Household relic with them.
-          The house is split in two and sent looking, and each half is playing for a
-          prize it has not been told the shape of.</p>
+      <div class="bbf-feed">
+        <div class="bbf-hud">
+          <span class="bbf-rec">SEARCHING</span>
+          <span>THE HOST IS GONE</span>
+          <span>THE RELIC IS GONE</span>
+          <span class="bbf-hud-sp">${(act.relicTeam || []).length + (act.hostTeam || []).length} IN THE HOUSE</span>
+        </div>
+        ${hunts.map(huntBlock).join('')}
       </div>
 
-      ${(act.hunts || []).map(h => `<div class="bbpm-hunt-log">
-        ${/* The hiding place is NOT in this header. It was, and it told the
-              reader the answer before they read a single room — every near
-              miss below it is only tense if you do not already know. It is
-              named at the bottom, once somebody has found it. */''}
-        <div class="bbpm-hunt">Hunting ${_bbEsc(h.target)} &middot; ${h.team.length} of them
-          searching</div>
-        ${(h.rounds || []).map((r, i) => `<div class="bbpm-row is-${r.outcome}"
-            id="bbpm-step-${ep.num}-${_bbEsc(h.target).replace(/\W/g, '')}-${i}">
-          <span class="bbpm-room">${_bbEsc(r.room)}</span>
-          <span class="bbpm-line">${_bbEsc(r.text)}</span>
-        </div>`).join('')}
-        ${(h.events || []).map(e => `<div class="bbpm-ev">
-          <span class="bbpm-evbadge">${_bbEsc(e.badge)}</span>
-          <span class="bbpm-line">${_bbEsc(e.text)}</span>
-        </div>`).join('')}
-        <div class="bbpm-where">It was in ${_bbEsc(h.hidingIn)} the whole time.
-          <strong>${_bbEsc(h.found)}</strong> has it.</div>
-      </div>`).join('')}
-
-      <div class="bbpm-split">
-        <div class="bbpm-side">
-          <div class="bbpm-hunt">The relic &middot; found by ${_bbEsc(act.relicWinner || '')}</div>
-          <ul>${team(act.relicTeam || [], act.relicWinner)}</ul>
-          <div class="bbpm-prize">
-            <div class="bbpm-pname">The Relic</div>
-            <div class="bbpm-ptext"><strong>${_bbEsc(act.relicWinner || '')}</strong> names the
-              four houseguests allowed to compete for the first Head of Household — and may
-              leave themselves out of it. Read aloud, to everybody.</div>
+      ${/* The act's own beats. Dropped when this screen was rebuilt around
+            cards, and the render guard caught it within the minute — an act
+            that narrates something no screen shows is a beat written for
+            nobody. They are cards here like everything else. */''}
+      <div class="bbf-cards bbpm-cards bbpm-close">
+        ${(act.beats || []).map(b => `<article class="bbf-card is-headline bbpm-card"
+            style="--bbf-a:${b.badgeClass === 'purple' ? '#b08bd6' : '#d9b45c'}">
+          <span class="bbf-node"></span>
+          <header class="bbf-head">
+            ${b.badgeText ? `<span class="rp-brant-badge ${b.badgeClass || 'grey'}">${_bbEsc(b.badgeText)}</span>` : ''}
+          </header>
+          <div class="bbf-body">
+            ${(b.players || []).length ? `<div class="bbf-faces">${
+              (b.players || []).slice(0, 3).map(n => rpPortrait(n)).join('')}</div>` : ''}
+            <div class="bbf-txt">${b.text || ''}</div>
           </div>
-        </div>
-
-        <div class="bbpm-side">
-          <div class="bbpm-hunt">The host &middot; found by ${_bbEsc(act.hostWinner || '')}</div>
-          <ul>${team(act.hostTeam || [], act.hostWinner)}</ul>
-          <div class="bbpm-prize">
-            <div class="bbpm-pname">$${Number(act.money || 0).toLocaleString()}</div>
-            <div class="bbpm-ptext"><strong>${_bbEsc(act.hostWinner || '')}</strong> is handed
-              the money in front of the house, and the house forms an opinion about it
-              immediately.</div>
-            <div class="bbpm-secret">
-              <span class="bbpm-secretlab">What the room does not hear</span>
-              It is not a prize, it is a key. Spent once before the jury it takes
-              ${_bbEsc(act.hostWinner || '')} off the block and leaves the Head of Household
-              naming somebody else on the spot, with no say in it.
-            </div>
-          </div>
-        </div>
+        </article>`).join('')}
       </div>
 
-      <div class="bbpm-beats">
-        ${(act.beats || []).map(b => `<p class="bbpm-beat">${b.text || ''}</p>`).join('')}
+      <div class="bbpm-prizes">
+        ${prize(act.relicWinner, 'The Relic',
+          `<strong>${_bbEsc(act.relicWinner || '')}</strong> names the four houseguests allowed to
+           compete for the first Head of Household — and may leave themselves out of it.
+           Read aloud, to everybody.`, '')}
+        ${prize(act.hostWinner, `$${Number(act.money || 0).toLocaleString()}`,
+          `<strong>${_bbEsc(act.hostWinner || '')}</strong> is handed the money in front of the
+           house, and the house forms an opinion about it immediately.`,
+          `It is not a prize, it is a key. Spent once before the jury it takes
+           ${_bbEsc(act.hostWinner || '')} off the block and leaves the Head of Household naming
+           somebody else on the spot, with no say in it.`)}
       </div>
     </div>
   </div>`;
+}
+
+/** A key on a fob — the relic, which is a hotel's HOH key by another name. */
+function _bbpmRelicIcon() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="7" cy="9" r="4.2" fill="none" stroke="#d9b45c" stroke-width="1.6"/>
+    <circle cx="7" cy="9" r="1.4" fill="#d9b45c"/>
+    <path d="M10.6 11.4 L19 19" stroke="#d9b45c" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M16.4 16.4 L14.6 18.2 M18.6 18.6 L17 20.2" stroke="#d9b45c" stroke-width="1.6"
+      stroke-linecap="round"/>
+  </svg>`;
+}
+
+/** An empty chair with a microphone on it. */
+function _bbpmHostIcon() {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="6" y="3" width="5" height="8" rx="2.5" fill="none" stroke="#4fbf8b" stroke-width="1.6"/>
+    <path d="M4 10.5a4.5 4.5 0 0 0 9 0" fill="none" stroke="#4fbf8b" stroke-width="1.6"
+      stroke-linecap="round"/>
+    <path d="M8.5 15v4" stroke="#4fbf8b" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M15 20V9a2 2 0 0 1 2-2h3" fill="none" stroke="#4fbf8b" stroke-width="1.4"
+      opacity=".6" stroke-linecap="round"/>
+  </svg>`;
 }
 
 /**

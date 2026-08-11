@@ -5,6 +5,7 @@ import { gs, players, seasonConfig } from './core.js';
 import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
+import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
@@ -1467,6 +1468,15 @@ export function extractSeasonTemplate() {
         story: '[AI_FILL]',
         gameplayStyle: '[AI_FILL]',
         keyMoments: '[AI_FILL]',
+        // The analysis. Present in the template so a season exported without a
+        // worker still has the shape, and an unfilled field says [AI_FILL]
+        // rather than being silently absent.
+        gameArchetype: '[AI_FILL]',
+        resume: '[AI_FILL]',
+        demise: '[AI_FILL]',
+        demiseKind: '[AI_FILL]',
+        optimalLine: '[AI_FILL]',
+        ceiling: '[AI_FILL]',
         challengeWins: pd.chalRecord?.wins || 0,
         immunityWins: pd.immunityWins,
         rewardWins: pd.rewardWins,
@@ -2258,6 +2268,32 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus) {
     return template;
   }
 
+  // ── THE RECORD, NOT JUST THE PROSE ──
+  //
+  // The writer used to get episode text and a line of totals, and was asked for
+  // an analyst's read of a game it could only see narrated. It cannot be done:
+  // whether a veto was won under threat or from safety, whether somebody's
+  // safety was won or granted, whether they were in the room when the house
+  // decided — none of that survives into prose, and all of it is the analysis.
+  //
+  // Computed here rather than asked for, so the numbers in the verdict are the
+  // numbers in the game.
+  let gameRecord = null;
+  try {
+    const weeks = (gs?.bb?.weeks || []).filter(Boolean);
+    if (weeks.length) {
+      gameRecord = recordLines(seasonRecord(weeks, {
+        finalists: (template.placements || []).slice().sort((a, b) => a.placement - b.placement)
+          .map(p => p.name),
+        alliances: gs.namedAlliances || [],
+        juryVotes: Object.fromEntries((template.placements || [])
+          .map(p => [p.name, p.juryVotes || 0])),
+      }));
+    }
+  } catch (err) {
+    console.warn('[narrative-fill] game record unavailable, sending prose only:', err?.message || err);
+  }
+
   const response = await fetch(workerUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2265,6 +2301,7 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus) {
       mode: 'narrative-fill',
       template,
       episodes,
+      gameRecord,
       season: template.seasonNumber,
       seasonTitle: template.title,
       // The worker writes in the voice of the show it is given.
@@ -2300,6 +2337,16 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus) {
       if (aiP.gameplayStyle) target.gameplayStyle = aiP.gameplayStyle;
       if (aiP.keyMoments) target.keyMoments = aiP.keyMoments;
       if (aiP.emoji) target.emoji = aiP.emoji;
+      // The analysis. Each one is a question the database can be asked later —
+      // every comp beast who lost at final three, everybody whose ceiling was
+      // "could have won" — which is why the two taxonomy fields are enums and
+      // not prose.
+      if (aiP.gameArchetype) target.gameArchetype = aiP.gameArchetype;
+      if (aiP.resume) target.resume = aiP.resume;
+      if (aiP.demise) target.demise = aiP.demise;
+      if (aiP.demiseKind) target.demiseKind = aiP.demiseKind;
+      if (aiP.optimalLine) target.optimalLine = aiP.optimalLine;
+      if (aiP.ceiling) target.ceiling = aiP.ceiling;
     }
   }
 
@@ -2665,8 +2712,11 @@ function _bbStats(weeks) {
     // distinction the veto exists to create.
     (week.finalNominees || []).forEach(name => ensure(name).timesOnBlock++);
 
-    const saved = (week.initialNominees || []).filter(n => !(week.finalNominees || []).includes(n));
-    saved.forEach(name => ensure(name).timesSaved++);
+    // Who the VETO took off, not merely who left the block. A Coup replaces
+    // both nominees and a detonated Diamond takes somebody down on its own
+    // holder's authority, and counting those here credited the veto with saves
+    // it never made — in a field that then feeds the season's analysis.
+    vetoSavedIn(week).forEach(name => ensure(name).timesSaved++);
 
     Object.entries(week.votes || {}).forEach(([name, count]) => { ensure(name).votesReceived += count; });
   }
@@ -2709,6 +2759,15 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         story: '[AI_FILL]',
         gameplayStyle: '[AI_FILL]',
         keyMoments: '[AI_FILL]',
+        // The analysis. Present in the template so a season exported without a
+        // worker still has the shape, and an unfilled field says [AI_FILL]
+        // rather than being silently absent.
+        gameArchetype: '[AI_FILL]',
+        resume: '[AI_FILL]',
+        demise: '[AI_FILL]',
+        demiseKind: '[AI_FILL]',
+        optimalLine: '[AI_FILL]',
+        ceiling: '[AI_FILL]',
         // Big Brother only — nested so it cannot be mistaken for Total Drama stats.
         bb: {
           hohWins: bb.hohWins || 0,

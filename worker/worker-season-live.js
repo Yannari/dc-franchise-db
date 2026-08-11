@@ -366,6 +366,21 @@ async function generateNarrativeFill(body, env) {
     episodeSummaries += `\n\n=== EPISODE ${ep.episode} ===\n${ep.summary}`;
   });
 
+  // ── THE MEASURED HALF ──
+  //
+  // Computed from the game rather than read out of the prose, because the
+  // distinctions that make an analysis — a veto won under threat versus one
+  // won from safety, safety earned versus safety granted, who was actually in
+  // the room — do not survive into a transcript.
+  //
+  // Absent for a season imported from text rather than played. That is stated
+  // rather than left silent, so the model does not fill the gap with invented
+  // competition counts.
+  const recordBlock = body.gameRecord
+    ? `\n=== GAME RECORD (measured — every number here is true) ===\n${body.gameRecord}\n`
+    : '\n(No measured game record for this season — it was imported rather than '
+      + 'played, so judge from the episodes and do not invent competition counts.)\n';
+
   const awardEntrySchema = (extra = {}) => ({
     type: "object", additionalProperties: false,
     properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" }, ...extra },
@@ -405,9 +420,29 @@ async function generateNarrativeFill(body, env) {
             strategicRank: { type: "number" },
             story: { type: "string" },
             gameplayStyle: { type: "string" },
-            keyMoments: { type: "array", items: { type: "string" } }
+            keyMoments: { type: "array", items: { type: "string" } },
+            // ── THE ANALYSIS ──
+            // A fixed taxonomy rather than free prose, so the database can be
+            // asked "every comp beast who lost at final three" in two seasons'
+            // time. Free-form reads better once and is useless forever after.
+            gameArchetype: { type: "string", enum: [
+              "comp-beast", "alliance-hub", "social-manipulator", "floater",
+              "pawn-shield", "backdoor-artist", "goat", "under-the-radar",
+              "wildcard", "early-casualty",
+            ] },
+            resume: { type: "string" },
+            demise: { type: "string" },
+            demiseKind: { type: "string", enum: [
+              "outplayed", "collateral", "never-had-a-path", "comp-dependent",
+              "exposed", "won-the-game",
+            ] },
+            optimalLine: { type: "string" },
+            ceiling: { type: "string", enum: [
+              "won-it", "could-have-won", "best-realistic-finish", "overperformed",
+            ] }
           },
-          required: ["name", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments"]
+          required: ["name", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments",
+            "gameArchetype", "resume", "demise", "demiseKind", "optimalLine", "ceiling"]
         }
       },
       seasonNarrative: { type: "string" },
@@ -503,15 +538,70 @@ any of them. The vocabulary is:
 SEASON DATA (pre-computed, DO NOT change these numbers):
 ${templateSummary}
 
-YOUR JOB: Fill in narrative fields ONLY. For each houseguest, write:
+YOU ARE AN ANALYST, NOT A NARRATOR.
+Write the way a strategy podcast breaks a season down after it airs: what kind
+of game each houseguest was playing, whether it was the right one, and what
+actually ended them. Not highlights. A verdict, argued from the record.
+
+THE RECORD OUTRANKS THE EPISODES. The GAME RECORD below is measured from the
+game itself and every number in it is true. The episode text is how the season
+FELT; the record is what it WAS. Where they disagree, the record wins, and if
+the episodes never mention something the record shows, the record still counts.
+
+How to read the record, because these distinctions ARE the analysis:
+- "won under threat" is a competition won with your own name on the block or in
+  the plan. Winning four vetoes from safety and winning one that saved your life
+  are not the same act and must never be described as if they were.
+- "as the target" / "as a pawn" / "as the renom" are three different weeks. A
+  pawn was trusted. A target was hunted. A renom was somebody else's problem.
+- "pulled down" is a save somebody else chose to make; "survived the vote" is a
+  result they earned themselves. The first is a favour, the second is a game.
+- "voted with the house N%" is the single best measure of whether somebody was
+  actually IN the room when the eviction was decided. High alignment with no
+  competition wins is a real game, not a passive one. Low alignment means they
+  kept being told the plan after it had changed.
+- "blindsided Nx" is the same question from the other end: how often the house
+  moved without them.
+- Group count and reach are position, not popularity. Somebody in four groups is
+  either the hub of the season or about to be caught for it, and which one is
+  the interesting question.
+
+For each houseguest write:
 - notes: 1 sentence summary
-- strategicRank: 1-10 number
-- story: 4-8 sentence narrative arc. Write like a sports documentary voiceover —
-  dramatic, specific, present tense. Anchor it to what actually happened: the
-  weeks they held power, the times they sat on the block and survived, the vote
-  that ended them.
+- strategicRank: 1-10, and rank the GAME not the finish. A fifth-place player
+  who controlled three evictions outranks a finalist who was carried, and you
+  should say so.
+- story: 4-8 sentences. Their arc, told through the decisions — when they had
+  power and what they did with it, when they were in danger and how they got
+  out, the moment their game stopped working.
 - gameplayStyle: 3-6 evocative words (NOT generic like "Strategic player")
-- keyMoments: Array of 3-8 specific moment descriptions with week numbers
+- keyMoments: 3-8 specific moments with week numbers
+- gameArchetype: the taxonomy value that fits. comp-beast wins its safety.
+  alliance-hub is the person every group runs through. social-manipulator moves
+  votes without holding power. floater drifts to whichever side is winning and
+  is rarely wrong about which that is. pawn-shield keeps getting used and
+  keeps surviving. backdoor-artist gets people out without ever naming them on
+  Saturday. goat is kept because they cannot beat anybody. under-the-radar is
+  never nominated and never in charge. early-casualty went before a game
+  existed — use it rather than pretending three weeks was a strategy.
+- resume: the case they could genuinely make on finale night, in their own
+  favour, using only things they actually did. If the honest answer is that
+  they have no case, say that instead of inventing one.
+- demise: what ENDED them — the specific decision, by the specific people. "Was
+  evicted 7-2" is not a demise. Why the seven, and when did it become seven?
+  For the winner, what the last real threat to them was and how it died.
+- demiseKind: outplayed (somebody beat them at the game), collateral (they were
+  not the point, they were available), never-had-a-path (the numbers were never
+  going to be there), comp-dependent (safe only while winning, and then not),
+  exposed (their game became visible and they could not survive being seen),
+  won-the-game (the winner only).
+- optimalLine: what they SHOULD have done, judged on what they could know at the
+  time — not on what you know from the finish. If the correct play was the one
+  they made and it still failed, say that: some games are lost by other people
+  playing well. This field is worthless if it is hindsight.
+- ceiling: won-it, could-have-won (a real path existed and they missed it),
+  best-realistic-finish (they got everything available from their position), or
+  overperformed (they finished above what their game earned).
 
 Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/
 legacy), and all awards.
@@ -524,7 +614,7 @@ comps rather than a challenge record.
 
 IMPORTANT: Use EXACTLY these houseguest names — do not modify, abbreviate, or add suffixes.
 Cast: ${canonicalCast.join(', ')}
-
+${recordBlock}
 ${episodeSummaries}
 
 Return ONLY valid JSON matching the schema.
@@ -534,18 +624,45 @@ You are writing narrative content for a Total Drama season. All STATS are alread
 SEASON DATA (pre-computed, DO NOT change these numbers):
 ${templateSummary}
 
-YOUR JOB: Fill in narrative fields ONLY. For each player, write:
+YOU ARE AN ANALYST, NOT A NARRATOR. Break the season down the way a strategy
+podcast does after it airs: what game each player was playing, whether it was
+the right one, and what actually ended them. Argue a verdict from the record.
+
+For each player write:
 - notes: 1 sentence summary
-- strategicRank: 1-10 number
-- story: 4-8 sentence narrative arc. Write like a sports documentary voiceover — dramatic, specific, present tense.
+- strategicRank: 1-10, ranking the GAME rather than the finish. A player who
+  controlled three votes and went out fifth outranks a finalist who was carried.
+- story: 4-8 sentences, told through the decisions rather than the highlights.
 - gameplayStyle: 3-6 evocative words (NOT generic like "Strategic player")
-- keyMoments: Array of 3-8 specific moment descriptions with episode numbers
+- keyMoments: 3-8 specific moments with episode numbers
+- gameArchetype: comp-beast (wins their safety), alliance-hub (everything runs
+  through them), social-manipulator (moves votes without holding power),
+  floater (drifts to the winning side and is rarely wrong about which it is),
+  pawn-shield (keeps getting used and keeps surviving), backdoor-artist (gets
+  people out without ever being seen to aim), goat (kept because they cannot
+  win), under-the-radar (never targeted, never in charge), wildcard, or
+  early-casualty (went before a game existed — use it rather than pretending
+  three episodes was a strategy).
+- resume: the case they could genuinely make at the final vote, using only what
+  they actually did. If they have no case, say so instead of inventing one.
+- demise: what ENDED them — the specific decision by the specific people. "Voted
+  out 5-2" is not a demise; why the five, and when did it become five? For the
+  winner, name the last real threat to them and how it died.
+- demiseKind: outplayed, collateral (they were not the point, they were
+  available), never-had-a-path, comp-dependent (safe only while winning),
+  exposed (their game became visible and they could not survive being seen), or
+  won-the-game (winner only).
+- optimalLine: what they should have done judged on what they could know AT THE
+  TIME. If the correct play was the one they made and it still failed, say so —
+  some games are lost by other people playing well. Hindsight makes this field
+  worthless.
+- ceiling: won-it, could-have-won, best-realistic-finish, or overperformed.
 
 Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/legacy), and all awards.
 
 IMPORTANT: Use EXACTLY these player names — do not modify, abbreviate, or add suffixes.
 Cast: ${canonicalCast.join(', ')}
-
+${recordBlock}
 ${episodeSummaries}
 
 Return ONLY valid JSON matching the schema.

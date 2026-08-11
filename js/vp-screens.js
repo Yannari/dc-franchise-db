@@ -23012,6 +23012,10 @@ const _BB_ICON = {
   veto: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.8l5 2v4.2c0 3-2.1 5.3-5 6.2-2.9-.9-5-3.2-5-6.2V3.8z"/><path d="M5.6 8.2l1.7 1.7 3.3-3.4"/></svg>`,
   block: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="2.2"/></svg>`,
   ally: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.6" cy="6" r="2.2"/><circle cx="11" cy="6.6" r="1.8"/><path d="M1.8 13c.4-2.1 1.9-3.2 3.8-3.2S9 10.9 9.4 13"/><path d="M10.6 9.9c1.7 0 2.9 1 3.3 3"/></svg>`,
+  // Winning your way OFF the block: a door in a wall, because that is what it
+  // is. Deliberately not another shield — the veto already owns that shape and
+  // two shields side by side read as one stat drawn twice.
+  buster: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.4V4.2l6-1.6v11.6z"/><path d="M9 7.6h3.4v5.8H9"/><circle cx="7.4" cy="8.4" r=".7" fill="currentColor" stroke="none"/></svg>`,
   alone: `<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.6" r="2.4"/><path d="M3.6 13.2c.5-2.4 2.2-3.6 4.4-3.6s3.9 1.2 4.4 3.6"/></svg>`,
 };
 
@@ -23400,14 +23404,22 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   const priorWeeks = (gs.episodeHistory || []).filter(h => h.format === 'big-brother'
     && (opening ? h.num < ep.num : h.num <= ep.num));
   const stats = {};
-  const bump = (name, key) => { if (!name) return; (stats[name] ||= { hoh: 0, veto: 0, block: 0 })[key]++; };
+  const bump = (name, key) => { if (!name) return; (stats[name] ||= { hoh: 0, veto: 0, block: 0, buster: 0 })[key]++; };
   priorWeeks.forEach(h => {
     // A sealed week's win is real but the HOUSE cannot see it — crediting it
     // on a status screen would out the Invisible HOH by arithmetic.
     if (!h.hohSecret) bump(h.hoh, 'hoh');
     bump(h.vetoWinner, 'veto');
+    // Winning your way off the block is a competition win and the house
+    // watched you do it. The board counted crowns, vetoes and nominations and
+    // not this, so somebody who took the Block Buster three weeks running
+    // showed up on the wall as a three-time nominee and nothing else.
+    bump(h.safetyWinner, 'buster');
     (h.finalNominees || []).forEach(n => bump(n, 'block'));
   });
+  // Only a house that plays it should carry the column. On a season without
+  // the twist an always-empty icon in the key is a question nobody can answer.
+  const bustersInPlay = priorWeeks.some(h => h.safetyWinner);
 
   const alliances = (snap.alliances || snap.namedAlliances || gs.namedAlliances || [])
     .filter(a => a.active !== false && !a.dissolved && (a.members || []).some(m => stillIn.includes(m)));
@@ -23423,14 +23435,19 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
   </div>`;
 
   const rows = stillIn.map(name => {
-    const st = stats[name] || { hoh: 0, veto: 0, block: 0 };
+    const st = stats[name] || { hoh: 0, veto: 0, block: 0, buster: 0 };
     const mates = alliesOf(name);
     const others = stillIn.filter(n => n !== name);
     const standing = others.length
       ? others.reduce((sum, n) => sum + (typeof getPerceivedBond === 'function' ? getPerceivedBond(n, name) : 0), 0) / others.length
       : 0;
     return { name, mates, ...st,
-      power: st.hoh * 2 + st.veto * 1.5 + mates.length * 0.8 + standing * 0.5 - st.block * 0.6 };
+      // A Block Buster win counts toward standing. Winning your own way off
+      // the block is a competition win the whole house watched, and it was
+      // scoring here as nothing while the nomination it cancelled scored
+      // against them — so beating it three weeks running read as falling.
+      power: st.hoh * 2 + st.veto * 1.5 + (st.buster || 0) * 1.2
+        + mates.length * 0.8 + standing * 0.5 - st.block * 0.6 };
   }).sort((a, b) => b.power - a.power);
 
   const third = Math.ceil(rows.length / 3);
@@ -23446,6 +23463,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     <span style="color:#f0a500">${_BB_ICON.hoh} times Head of Household</span>
     <span style="color:#3fb950">${_BB_ICON.veto} vetoes won</span>
     <span style="color:#f85149">${_BB_ICON.block} times on the block</span>
+    ${bustersInPlay ? `<span style="color:#d2a8ff">${_BB_ICON.buster} won their way off the block</span>` : ''}
     <span style="color:#58a6ff">${_BB_ICON.ally} allies in the house</span>
     <span style="color:#4d545c">${_BB_ICON.alone} working alone</span>
   </div>`;
@@ -23460,6 +23478,7 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
           ${r.hoh ? _bbStat('hoh', r.hoh, '#f0a500') : ''}
           ${r.veto ? _bbStat('veto', r.veto, '#3fb950') : ''}
           ${r.block ? _bbStat('block', r.block, '#f85149') : ''}
+          ${r.buster ? _bbStat('buster', r.buster, '#d2a8ff') : ''}
           ${r.mates.length ? _bbStat('ally', r.mates.length, '#58a6ff') : _bbStat('alone', null, '#4d545c')}
         </span>
       </div>`).join('')}

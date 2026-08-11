@@ -11,7 +11,7 @@ import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug, resolveAvatarS
   hasReturneeArt, whenReturneeArtKnown } from './players.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta } from './franchise-meta.js';
-import { persistFranchiseLedger } from './savestate.js';
+import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
 
 export function showTab(name) {
   audio.sfx('tab-swoosh');
@@ -1473,10 +1473,36 @@ export function submitAlliance() {
   } else {
     preGameAlliances.push(alliance);
   }
-  savePreAlliances(); closeAllianceForm(); renderAllianceList();
+  savePreAlliances(); closeAllianceForm(); renderAllianceList(); _pushPreAlliances();
 }
-export function deletePreAlliance(id) { preGameAlliances = preGameAlliances.filter(a => a.id !== id); savePreAlliances(); renderAllianceList(); }
-export function clearPreAlliances() { if (!confirm('Clear all pre-game alliances?')) return; preGameAlliances = []; savePreAlliances(); closeAllianceForm(); renderAllianceList(); }
+
+/**
+ * Get the change into the season, or say why it could not.
+ *
+ * A pre-game alliance used to be written to local storage and stop there.
+ * `initGameState` copies them into the game, and it runs once, only when there
+ * is no game state — which by the time anybody opens the Relationships tab
+ * there usually is. So the alliance existed in the Cast Builder, did not exist
+ * in the season, never appeared in the viewing party, and nothing said so.
+ */
+function _pushPreAlliances() {
+  let res;
+  try { res = applyPreAlliances(); } catch { return; }
+  if (res.dropped?.length) {
+    alert(['These pre-game alliances name somebody who is not in the cast, so they',
+      'were not applied:', '',
+      ...res.dropped.map(d => `${d.name} — ${d.missing.join(', ')}`), '',
+      'Check the spelling, or remove them from the alliance.'].join('\n'));
+  }
+  if (res.started) {
+    alert(['The season has already started, so this is saved for the NEXT season',
+      'rather than applied to this one.', '',
+      'Backing a group into a house that has already played weeks would rewrite',
+      'history the transcript has already told. Reset the season to apply it.'].join('\n'));
+  }
+}
+export function deletePreAlliance(id) { preGameAlliances = preGameAlliances.filter(a => a.id !== id); savePreAlliances(); renderAllianceList(); _pushPreAlliances(); }
+export function clearPreAlliances() { if (!confirm('Clear all pre-game alliances?')) return; preGameAlliances = []; savePreAlliances(); closeAllianceForm(); renderAllianceList(); _pushPreAlliances(); }
 export function renderAllianceList() {
   const list = document.getElementById('alliance-list');
   const addBtn = document.getElementById('add-alliance-btn');

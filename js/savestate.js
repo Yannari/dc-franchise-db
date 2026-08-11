@@ -602,6 +602,61 @@ export function snapshotGameState() {
   };
 }
 
+/**
+ * The pre-game alliances, in the shape the game plays.
+ *
+ * An alliance naming somebody who is not in the cast is dropped, because half
+ * an alliance is not the one that was designed. That used to happen in silence
+ * — rename one houseguest in the Cast Builder and a three-person alliance
+ * simply stopped existing, with nothing on screen to say so — so the names it
+ * could not find come back with it.
+ */
+export function buildPreAlliances() {
+  const known = new Set((players || []).map(p => p.name));
+  const kept = [];
+  const dropped = [];
+  for (const a of preGameAlliances || []) {
+    const missing = (a.members || []).filter(m => !known.has(m));
+    if (missing.length) { dropped.push({ name: a.name, missing }); continue; }
+    kept.push({
+      id: 'pre-' + a.id, name: a.name, members: [...a.members], formed: 0,
+      betrayals: [], quits: [], active: true,
+      permanence: a.permanence || 'normal', preGame: true,
+    });
+  }
+  buildPreAlliances.dropped = dropped;
+  if (dropped.length) {
+    console.warn('[pre-game alliances] not applied — these members are not in the cast:',
+      dropped.map(d => `${d.name} (${d.missing.join(', ')})`).join('; '));
+  }
+  return kept;
+}
+
+/**
+ * Push the Cast Builder's pre-game alliances into a season that already exists.
+ *
+ * `initGameState` runs once, and only when there is no game state at all. So an
+ * alliance added after the Run tab had been opened — which is most of them,
+ * since that is where you go to look at the cast — was written to local storage
+ * and never reached the game. It did not appear in the viewing party because it
+ * was not in the season, and nothing anywhere said so.
+ *
+ * Safe only before the first episode. Once a week has been played the house has
+ * formed real opinions and back-dating a group into it would rewrite history
+ * the transcript has already told; the caller warns instead.
+ *
+ * Returns what it did, so the caller can say so rather than guess.
+ */
+export function applyPreAlliances() {
+  if (!gs) return { applied: 0, started: false, dropped: [] };
+  const started = (gs.episodeHistory || []).length > 0 || (gs.bb?.weeks || []).length > 0;
+  if (started) return { applied: 0, started: true, dropped: [] };
+  const fresh = buildPreAlliances();
+  const live = (gs.namedAlliances || []).filter(a => !a.preGame);
+  gs.namedAlliances = [...fresh, ...live];
+  return { applied: fresh.length, started: false, dropped: buildPreAlliances.dropped || [] };
+}
+
 export function initGameState() {
   if (!players.length) return false;
 
@@ -702,10 +757,7 @@ export function initGameState() {
     exiledThisEp: null,
     penaltyVoteThisEp: null,
     shotInDarkEnabledThisEp: false,
-    namedAlliances: (preGameAlliances || []).filter(a => a.members.every(m => players.some(p => p.name === m))).map(a => ({
-      id: 'pre-' + a.id, name: a.name, members: [...a.members], formed: 0, betrayals: [], quits: [], active: true,
-      permanence: a.permanence || 'normal', preGame: true,
-    })),
+    namedAlliances: buildPreAlliances(),
     playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
     adaptationProfiles: {}, // bounded learned tendencies; base stats remain unchanged
     _adaptationProcessedEpisodes: [],

@@ -16,6 +16,7 @@ import { simulateBBEpisode } from '../js/bb-run.js';
 import { installTwinTwist, twinState } from '../js/bb/twin-twist.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
+import { readFileSync } from 'node:fs';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee',
   'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb', 'Jo', 'Dawn'];
@@ -103,5 +104,74 @@ describe('a late arrival of any kind keeps its seat', () => {
     const src = (await import('node:fs')).readFileSync('js/bb/week.js', 'utf8');
     expect(src).toMatch(/const walkedIn = \(gs\.activePlayers \|\| \[\]\)\.filter\(name => !house\.includes\(name\)\)/);
     expect(src).not.toMatch(/gs\.activePlayers = house\.filter\(name => name !== evicted/);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// "One voted for another because one had a final two with the other person
+// on the block that seemed stronger — but it's actually not, they're twins."
+//
+// Everything the entry set was about what the HOUSE felt. Nothing said what
+// the two of them were to EACH OTHER: no bond, no alliance, no deal. So the
+// strategy layer saw two people who had never met, and a promise made in a
+// bedroom outranked being her sister — correctly, by every number it had.
+// ══════════════════════════════════════════════════════════════════════
+describe('the twins are bound to each other, not just to the house', () => {
+  const pair = () => [twinState().front, twinState().other];
+
+  it('ends up close, without anybody having to arrange it', () => {
+    const [a, b] = pair();
+    expect(getBond(a, b)).toBeGreaterThan(5);
+  });
+
+  it('is a real alliance, so the blocs and the board can see it', () => {
+    const [a, b] = pair();
+    const al = (gs.namedAlliances || []).find(x =>
+      (x.members || []).includes(a) && (x.members || []).includes(b) && x.twins);
+    expect(al, 'no alliance was created for the twins').toBeTruthy();
+    // Alliances dissolve on low bonds and betrayals. Being her sister is not
+    // a thing that decays.
+    expect(al.permanence).toBe('permanent');
+  });
+
+  it('is a locked final two, which is the tier the vote logic weighs', () => {
+    // The exact complaint: a final two with somebody else outranked the twin,
+    // because the twin was not recorded at that tier — or at any tier.
+    const [a, b] = pair();
+    const deal = (gs.sideDeals || []).find(d =>
+      (d.players || []).includes(a) && (d.players || []).includes(b)
+      && (d.tier === 'final-two' || d.type === 'final-two'));
+    expect(deal, 'the twins had no endgame deal at all').toBeTruthy();
+    expect(deal.active).not.toBe(false);
+    expect(deal.broken).toBeFalsy();
+  });
+
+  it('does not create a second one on a later week', () => {
+    const [a, b] = pair();
+    const all = (gs.namedAlliances || []).filter(x =>
+      (x.members || []).includes(a) && (x.members || []).includes(b) && x.twins);
+    expect(all).toHaveLength(1);
+  });
+
+  it('never had one of them write the other name down', () => {
+    const [a, b] = pair();
+    const crossed = gs.bb.weeks.flatMap(w => (w.ballots || w.votingLog || []))
+      .filter(v => [a, b].includes(v.voter)
+        && [a, b].includes(v.voted ?? v.evict)
+        && v.voter !== (v.voted ?? v.evict));
+    expect(crossed).toHaveLength(0);
+  });
+});
+
+describe('a pre-game alliance reaches the game without being re-saved', () => {
+  it('is applied before a week plays, not only when the form is touched', () => {
+    // It was called from the Relationships form and nowhere else, so one made
+    // before that hook existed sat in local storage forever, and the first
+    // sign was somebody voting as though their own group did not exist.
+    const src = readFileSync('js/run-ui.js', 'utf8');
+    const fn = src.slice(src.indexOf('export function simulateNext()'),
+      src.indexOf('export function simulateNext()') + 1400);
+    expect(fn).toMatch(/window\.applyPreAlliances\?\.\(\)/);
   });
 });

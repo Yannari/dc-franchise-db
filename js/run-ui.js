@@ -896,6 +896,19 @@ export function _saveBBCheckpoint() {
 
 export function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
+
+  // ── PRE-GAME ALLIANCES, EVERY TIME, NOT ONLY WHEN THE FORM IS TOUCHED ──
+  //
+  // `applyPreAlliances` was called from the Relationships form and nowhere
+  // else, so an alliance created before that hook existed — or created, then
+  // left alone while the page reloaded — sat in local storage and never reached
+  // the game. Nothing on screen said so, and the first sign was a houseguest
+  // voting as though a group they were in did not exist.
+  //
+  // Idempotent, and it refuses on its own terms: nothing is applied to a season
+  // where the members have all been in the house since night one, because that
+  // would be back-dating.
+  try { window.applyPreAlliances?.(); } catch { /* the week plays without it */ }
   // Fire-making / Koh-Lanta override: force F4 finale
   const _needsF4Finale = seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta';
   if (_needsF4Finale) {

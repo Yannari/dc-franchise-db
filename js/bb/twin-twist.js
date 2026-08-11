@@ -58,6 +58,7 @@ import { gs, players, seasonConfig, kinshipPairs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, setBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
+import { makeEndgameDeal } from './deals.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
@@ -1463,6 +1464,42 @@ export function checkTwinEntry(week) {
     gs.popularity[st.front] = round2((gs.popularity[st.front] || 0) + Math.max(0, st.applause) * 1.5 + 5);
     gs.popularity[st.other] = round2((gs.popularity[st.other] || 0) + 4);
   }
+
+  // ── TIE THE TWO OF THEM TOGETHER ──
+  //
+  // Everything above this sets what the HOUSE feels about them. Nothing set
+  // what they are to EACH OTHER, so the moment the second one walked in the
+  // strategy layer saw two people who had never met: no bond, no alliance, no
+  // deal. A twin voted with somebody she had a final two with, against her own
+  // sister, and was right to by every number available to her — the one fact
+  // that should have outweighed it was not written down anywhere.
+  //
+  // Three separate systems have to hear it, because three separate systems ask
+  // the question: the bond, for anything reading closeness; a named alliance,
+  // for the blocs, the board and alliance strength; and an endgame deal,
+  // because that is the tier the vote logic weighs a final two at, and being
+  // her sister has to sit at least as high as a promise made in a bedroom.
+  try { setBond(st.front, st.other, 10); } catch { /* bonds may be cold */ }
+  try {
+    gs.namedAlliances ||= [];
+    const already = gs.namedAlliances.find(a =>
+      (a.members || []).length === 2
+      && (a.members || []).includes(st.front) && (a.members || []).includes(st.other));
+    if (!already) {
+      gs.namedAlliances.push({
+        id: `twins-${String(st.front).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        name: 'The Twins',
+        members: [st.front, st.other],
+        formed: st.enteredWeek, formedEp: st.enteredWeek,
+        betrayals: [], quits: [], active: true,
+        // Not breakable by the ordinary decay rules. Alliances dissolve over
+        // low bonds and betrayals; this one is a fact about the two of them.
+        permanence: 'permanent', twins: true,
+      });
+    }
+  } catch { /* the pair still has the bond and the deal */ }
+  try { makeEndgameDeal(st.front, st.other, 'final-two', { week: { num: st.enteredWeek },
+    about: 'the two of us, which was never in doubt' }); } catch { /* deal shelf full */ }
 
   return {
     type: 'twin-entry', week: st.enteredWeek, front: st.front, other: st.other,

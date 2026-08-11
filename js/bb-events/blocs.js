@@ -184,7 +184,7 @@ const blocTargetPicked = {
       `${plotter} stops talking about ${bloc.label} as a rumour and starts talking about it as a problem with a solution. ${why}.`,
       `"We are not playing against ${bloc.members.length} people, we are playing against one group that votes ${bloc.members.length} times." ${plotter} names ${target} — ${why}.`,
       `${plotter} works backwards from the end of the season and arrives at ${target}${confidant ? `, and tells ${confidant} so` : ''}. ${why}.`,
-      `${plotter} has counted it enough times to be sure. The way through ${bloc.label} is ${target}. ${why}.`,
+      `${plotter} has counted it enough times to be sure. The way through ${bloc.label} is ${target}, because ${why.toLowerCase()}.`,
     ], ctx, plotter, target);
 
     // The whole point of the layer: this is a real target now.
@@ -194,8 +194,7 @@ const blocTargetPicked = {
     api.suspicion(plotter, target, 0.8);
     if (confidant) api.addBond(plotter, confidant, 0.4);
     recordPlanAgainst(plotter, bloc.id, ctx?.week?.num || 0);
-    return { text, players: [plotter, target, confidant].filter(Boolean),
-      badgeText: 'A PLAN WITH A NAME', badgeClass: 'red' };
+    return { text, players: [plotter, target], badgeText: 'A PLAN WITH A NAME', badgeClass: 'red' };
   },
 };
 

@@ -159,7 +159,7 @@ const meetingSeen = {
     const text = _variant([
       `${seen[0]} goes to the storage room. ${seen[1]} follows about ninety seconds later, which is exactly long enough to look unrelated. ${observer} is on the sofa and counts to ninety twice more before anybody comes back.`,
       `${observer} walks into the bedroom and a conversation stops in the middle of a word. ${_list(seen)} are both suddenly very interested in the laundry. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not ask what it was about, because the answer would be a lie and then ${p.sub} would know they lie.`,
-      `${seen[0]} and ${seen[1]} have gone into the same room separately, eleven minutes apart, and ${observer} has not been invited. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not know what they are deciding. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} something is being decided.`,
+      `Four people have gone into the same room in eleven minutes and ${observer} has not been one of them. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not know what ${_list(seen)} are deciding. ${p.Sub} ${p.sub === 'they' ? 'know' : 'knows'} it is being decided.`,
       `${observer} has started noticing the leaving rather than the talking. ${seen[0]} first, then ${seen[1]}, never together, always within two minutes. Nobody leaves a room that carefully unless the room matters.`,
     ], ctx, observer, plan.alliance, seen[0], seen[1]);
 
@@ -319,7 +319,7 @@ const falseCommitmentDoubt = {
     const text = outcome === 'lies' ? _variant([
       `${doubter} cannot point at anything. ${voter} said yes, ${voter} has kept saying yes, and something about how quickly the answer came has felt wrong ever since.`,
       `"${voter} agreed too fast." ${doubter} says it to nobody, in the mirror, brushing ${p.posAdj} teeth. It is not evidence. It is the only thing ${p.sub} ${p.sub === 'they' ? 'have' : 'has'}.`,
-      `${voter} keeps volunteering the same reassurance before ${doubter} can ask for it. The answer never changes; the need to keep giving it is what bothers ${doubter}.`,
+      `${doubter} has watched ${voter} promise this vote three times now and has started counting how often ${voter} volunteers it unasked. Four. People do not repeat things they have already settled.`,
       `${voter} is a good liar and ${doubter} is a good reader, and in this house that produces nothing at all: ${doubter} is certain and cannot say why, so ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} nothing.`,
     ], ctx, doubter, voter) : _variant([
       `${voter} still has not actually said the word yes about ${plan.target}, and ${doubter} has started noticing the shape of the sentences ${voter} uses instead.`,
@@ -375,7 +375,7 @@ const internalDissent = {
     const text = stance === 'refusing' ? _variant([
       `"I am not writing ${plan.target}'s name and I am not going to pretend to think about it." ${voter} says it to ${org} with the door open, which ${org} minds considerably more than the refusal.`,
       `${org} explains the plan to ${voter} twice, in slightly different words, as though the first version had been the problem. ${voter} says no both times and does not offer a third opportunity.`,
-      `${voter} came into the meeting firmly set on the other nominee and says so before ${org} finishes the pitch. ${org} asks what could change ${pronouns(voter).posAdj} mind. ${voter} says, “Not this conversation.”`,
+      `${voter} gave ${pronouns(voter).posAdj} word to somebody else before this room ever met, and tells ${org} exactly that. ${org} points out that the somebody else will not be here to appreciate it.`,
       `It is not really about ${plan.target}. ${voter} has decided ${org} makes decisions and then holds meetings, and this is the meeting where ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} so.`,
     ], ctx, org, voter, plan.target) : _variant([
       `${voter} is voting with the room and wants ${org} to know it costs something. ${org} thanks ${p.obj}. It is not the tone ${voter} wanted.`,
@@ -515,14 +515,14 @@ const competingCounts = {
     const split = a.target !== b.target;
 
     const text = split ? _variant([
-      `${a.organizer} has ${voter} down for ${a.target}. ${b.organizer} has ${voter} down for ${b.target}. The same vote is holding up two incompatible plans, and neither organizer knows which count has borrowed it.`,
+      `${a.organizer} has ${voter} down for ${a.target}. ${b.organizer} has ${voter} down for ${b.target}. Both counts reach a majority, one of them is fiction, and neither organizer will know which until the vote is read.`,
       `Two rooms, two whiteboards nobody is allowed to write on, one name on both of them. ${voter} has told ${a.organizer} and ${b.organizer} slightly different versions of the same sentence and neither has compared notes.`,
       `${b.organizer} says "we have the votes" in front of ${a.organizer}, who also has the votes, using several of the same people. Neither of them asks the obvious follow-up.`,
       `The problem is not that ${voter} lied to anybody. The problem is that ${a.organizer} and ${b.organizer} both counted ${voter} without asking whether anybody else had, and a house only has so many people in it.`,
     ], ctx, a.organizer, b.organizer, voter) : _variant([
-      `${a.organizer} and ${b.organizer} are both taking credit for ${voter}'s vote against ${a.target}. The destination matches; the promises around it do not, and neither room realizes the other one is claiming the same person.`,
+      `${a.organizer} and ${b.organizer} are both taking credit for ${voter}'s vote against ${a.target}. They are both wrong about whose it was and right about where it lands, which will do until it does not.`,
       `${voter} agreed with two separate rooms about the same name on the same afternoon. Both rooms went away believing they had recruited ${voter}. Only one of them had spoken to ${voter} first.`,
-      `${a.organizer} and ${b.organizer} arrive at the same total by counting ${voter} in separate rooms. The number looks right, so neither asks how the other reached it.`,
+      `The counts match. That is the only reason nobody notices that ${a.organizer} and ${b.organizer} have been counting the same houseguest twice.`,
       `${a.organizer} lists the votes for ${a.target} in front of ${b.organizer} and includes ${voter}. ${b.organizer} says nothing, and starts wondering what else the two lists have in common.`,
     ], ctx, a.organizer, b.organizer, a.target);
 
@@ -638,7 +638,7 @@ const quietRefusalSpreads = {
 
     const text = _variant([
       `"I told them no and I am telling you it happened." ${voter} does not name every person in the room to ${warned}, only the one who runs it, which is the name that does the damage.`,
-      `${voter} finds ${warned} in the pantry and does not bother with a preamble: there is a plan, it is ${org}'s, and it is aimed at ${plan.target}. ${warned} realizes nobody from that room intended to mention it.`,
+      `${voter} finds ${warned} in the pantry and does not bother with a preamble: there is a plan, it is ${org}'s, and the only reason ${warned} has not been asked is that ${warned} was never going to be.`,
       `${voter} said no when the plan was pitched and has been carrying it around since. ${warned} is the first person who asks a question ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} to answer honestly.`,
       `"How many people do you think have been asked?" ${voter} lets ${warned} guess, twice, and then says the real number. ${warned} stops making the sandwich.`,
     ], ctx, voter, warned, org);
@@ -766,7 +766,7 @@ const backdoorPlayedVeto = {
       `${target} drew to play and ${hoh} spent the entire competition doing arithmetic instead of watching. It did not land — but ${target} was one result away from walking out of this week untouchable.`,
       `The bag had six names in it and one of them ended the week. ${hoh} got away with it${confidant ? ` and tells ${confidant} so twice, which is once more than somebody who feels safe would` : ''}.`,
       `${target} played for the veto without ever knowing why the room went quiet when ${pronouns(target).posAdj} name came out. ${hoh} has not stopped thinking about it since.`,
-      `${target} loses the veto and the plan survives. ${hoh} looks relieved enough to reveal how close the week came to falling apart${confidant ? `; only ${confidant} hears ${p.obj} admit it` : ''}.`,
+      `It held. ${hoh} knows exactly how narrowly, ${confidant ? `and ${confidant} is the only person ${p.sub} will admit that to` : 'and has nobody to say it to'}.`,
     ], ctx, hoh, target);
 
     api.remember(hoh, target, won ? 'slipped-the-backdoor' : 'nearly-slipped-the-backdoor', won ? 3 : 1,
@@ -829,7 +829,7 @@ const pawnPanic = {
     ], ctx, asker, pawn, other);
 
     // A debt that will be collected next week, one way or the other.
-    api.addBond(asker, pawn, -0.5);
+    api.addBond(asker, pawn, 0.7);
     api.remember(asker, pawn, 'owe-them-the-block', 2,
       { about: `asked ${pawn} to sit as a pawn against ${other}` });
     api.suspicion(pawn, asker, 0.6);
@@ -955,13 +955,11 @@ const flipCollapses = {
   weight(house, ctx) {
     const found = _brokenVote(ctx, house);
     if (!found) return 0;
-    if (_spent('plan-flip-collapses', ctx)) return 0;
     return _evictionNight(ctx, found.kind === 'lied' ? 7 : 9);
   },
   fire(house, ctx, api) {
     const found = _brokenVote(ctx, house);
     if (!found) return _fallback(`Every vote that was promised this week was cast.`, house.slice(0, 1), 'COUNT HOLDS');
-    _spend(this.id, ctx);
     const { plan, voter, kind } = found;
     const org = plan.organizer;
     const p = pronouns(voter);
@@ -969,18 +967,19 @@ const flipCollapses = {
     const text = kind === 'lied' ? _variant([
       `${voter} told ${org}'s room ${plan.target} and wrote something else, and the extraordinary part is that ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} not looked nervous once all day.`,
       `The room has ${voter} down as a yes. ${voter} decided on no as soon as the pitch ended and has spent the rest of the campaign making the yes look comfortable.`,
-      `${org} counted ${voter}. ${voter} let ${pronouns(org).obj} do it. Only ${voter} and the audience know the count was false before the first key is pulled.`,
+      `${org} counted ${voter}. ${voter} let ${pronouns(org).obj} count ${p.obj}. Only one of them knows that yet.`,
       `The lie was never in what ${voter} said. It was in how easy ${p.sub} made it for ${org} to stop asking.`,
     ], ctx, org, voter, plan.target) : _variant([
       `${voter} agreed to this before the campaigning started and the ballot does not say ${plan.target}. Somewhere between the room and the chair, somebody made a better case.`,
-      `${org} put ${voter} in the count and left ${p.obj} there. In the Diary Room, ${voter} votes the other way; whether ${org} can identify the missing vote from the final tally is a problem for tomorrow.`,
+      `${org} put ${voter} in the count and left ${p.obj} there, which was the mistake. The vote ${org} was owed goes the other way and ${org} finds out with everybody else.`,
       `${voter} does not think of it as breaking anything. The week changed, the count changed, and nobody in that room ever asked ${p.obj} to promise it twice.`,
       `The flip is one vote. ${org} counted it as ${pronouns(org).posAdj}; ${voter} knew it was ${pronouns(voter).posAdj} all along. The difference between those two readings is the whole night.`,
     ], ctx, org, voter, plan.target);
 
-    // The audience sees the ballot; the organizer does not. Do not grant the
-    // house certainty about a secret Diary Room vote. The count-based follow-up
-    // can create suspicion next week if the public positions make it traceable.
+    api.addBond(org, voter, -1.3);
+    api.remember(org, voter, 'said-yes-and-did-not', 3,
+      { about: `the vote against ${plan.target}`, kind });
+    api.suspicion(org, voter, 1.8);
     return { text, players: [org, voter],
       badgeText: kind === 'lied' ? 'THE YES WAS NEVER REAL' : 'THE FLIP FELL APART',
       badgeClass: 'red' };
@@ -1051,7 +1050,7 @@ const targetSurvivesRegroup = {
       `${org} tried to end ${survivor}'s season and did not, and now has to live in a house where ${survivor} gets to decide what happens next. ${survivor} takes the whole morning to make that point without saying a word of it.`,
     ], ctx, survivor, org) : _variant([
       `${survivor} is polite to ${org} all morning, which is the most alarming thing ${org} has seen this week.`,
-      `Nobody has told ${survivor} anything. ${survivor} has still narrowed the push to ${org}'s room, and has decided that suspecting it quietly is worth more than saying it too soon.`,
+      `Nobody has told ${survivor} anything. ${survivor} still knows exactly which room it came out of, and has decided that knowing quietly is worth more than saying it.`,
       `${org} keeps finding reasons to be wherever ${survivor} is not. ${survivor} notices, files it, and goes back to the washing up.`,
       `"No hard feelings." ${survivor} says it to ${org} and means the first word considerably more than the second.`,
     ], ctx, survivor, org);

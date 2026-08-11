@@ -68,12 +68,11 @@ const stillHere = {
     const { spared, against } = cast;
     const p = pronouns(spared);
     const named = against.slice(0, 3).join(', ');
-    const namedVerb = Math.min(against.length, 3) === 1 ? 'is' : 'are';
     const text = _variant([
-      `Every vote was read out and then nothing happened, so ${spared} is standing in the kitchen with a complete list of the people who wanted ${p.obj} gone. ${named} ${namedVerb} on it, and ${against.length === 1 ? 'that voter knows' : 'all of them know'} ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} it.`,
+      `Every vote was read out and then nothing happened, so ${spared} is standing in the kitchen holding a complete list of the people who wanted ${p.obj} gone. ${named} are on it and all of them know ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} it.`,
       `${spared} has not said anything about the vote. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} not need to — ${against.length} people in this house voted to remove ${p.obj}, it was announced out loud, and ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} still here.`,
       `The house gave ${spared} the one thing you are never supposed to hand somebody: a public, itemised list of their enemies, with nothing at the end of it.`,
-      `${named} ${against.length === 1 ? 'spends' : 'spend'} the day working out how to explain a vote that everybody heard and that cost ${against.length === 1 ? 'that voter' : 'them'} nothing except ${spared}'s trust.`,
+      `${named} spend the day working out how to explain a vote that everybody heard and that cost them nothing except ${spared}.`,
     ], ctx, spared, named);
     for (const voter of against) {
       api.addBond(spared, voter, -1.4);
@@ -100,10 +99,10 @@ const spentItOnYou = {
     const { hex, reader } = cast;
     const p = pronouns(hex.holder);
     const text = _variant([
-      `${hex.holder} had a power nobody knew about and spent it on ${hex.spared} rather than on ${p.ref}. ${reader} finds that more interesting than the cancelled eviction: whatever their deal is, ${hex.spared} was worth burning the power for.`,
+      `${hex.holder} had a power nobody knew about and spent it on ${hex.spared} rather than on ${p.obj}self. ${reader} finds that more interesting than the eviction that did not happen — you only do that for somebody you are going to the end with.`,
       `The Hex is gone and ${hex.holder} is not protected by anything any more. ${reader} works that out roughly four minutes after the announcement.`,
       `"${hex.holder} just told us two things," ${reader} says. "That there was a power. And exactly who ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} willing to lose it for."`,
-      `${hex.holder} saved somebody else in front of the entire house. Whatever ${hex.holder} and ${hex.spared} call their relationship, nobody can treat it as casual now.`,
+      `${hex.holder} saved somebody else in front of the entire house and bought a partnership nobody can pretend is not there.`,
     ], ctx, hex.holder, reader);
     api.suspicion(reader, hex.holder, 1.5);
     api.addBond(hex.spared, hex.holder, 1.6);

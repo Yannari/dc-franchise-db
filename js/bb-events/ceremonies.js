@@ -281,8 +281,7 @@ const nomStoic = {
     const p = pronouns(nominee);
     const text = _variant([
       `${nominee} takes it without a flicker. No speech, no glare, no wounded look for the cameras — ${p.sub} just picks up ${p.posAdj} key and asks what time the veto players are drawn.`,
-      `${nominee} congratulates ${ctx.hoh}, asks what time the nomination meeting is, and goes to make coffee. `
-        + `The composure gives the room nothing to gossip about, which becomes its own topic.`,
+      `Everyone watches ${nominee} for the crack. It does not come. ${p.Sub} congratulates ${ctx.hoh} on the win, means about sixty percent of it, and goes to make coffee.`,
       `"Right," says ${nominee}, standing before the ceremony is properly over. "Then I'd better win the veto." Two people laugh. One of them stops when ${p.sub} realises ${nominee} was not joking.`,
       `${nominee} does not give the room the reaction it came for. By dinner that composure has been discussed in three separate conversations, none of which ${p.sub} was in.`,
     ], ctx, nominee);
@@ -360,8 +359,7 @@ const vetoLeftOnBlock = {
       `"I have decided not to use the Power of Veto." ${stranded} nods along with the sentence like ${p.sub} had known it was coming. ${p.Sub} had not known it was coming.`,
       `The veto stays in ${holder}'s pocket. ${stranded} keeps looking at ${holder} after everyone else turns toward the nominees, making the broken expectation visible to the room.`,
       `${holder} announces that the veto will not be used. ${stranded} says, “That's fine,” twice without looking at anyone.`,
-      `The veto stays in its box. ${stranded} nods through the decision, leaves before the kitchen fills, `
-        + `and spends the night counting votes instead of pretending the ceremony changed nothing.`,
+      `Nothing happens at the veto ceremony, and that is the loudest thing that happens all week. ${stranded} goes to bed early. ${p.Sub} does not sleep early.`,
       `${stranded} watches ${holder} return the veto to its box. The apology ${holder} mouths across the room only makes ${p.obj} look away faster.`,
       `${holder} says the nominations should stay the same. ${stranded} had asked for a different answer in private and now knows what that conversation was worth.`,
       ...(allied ? [`${holder} and ${stranded} are supposed to be working together. When ${holder} keeps the veto, ${stranded} stares at ${pronouns(holder).obj} through the rest of the ceremony.`] : []),

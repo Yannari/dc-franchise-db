@@ -86,8 +86,7 @@ const _costumeCast = (house, ctx) => {
 const _coHohCast = (house, ctx) => {
   const c = _cp(ctx);
   const hoh = ctx?.week?.hohSecret ? null : (ctx?.week?.hoh || ctx?.hoh);
-  if (c?.effect !== 'co-hoh' || !hoh || c.recipient === hoh
-    || !house.includes(hoh) || !house.includes(c.recipient)) return null;
+  if (c?.effect !== 'co-hoh' || !hoh || !house.includes(hoh) || !house.includes(c.recipient)) return null;
   return { c, hoh, co: c.recipient };
 };
 const _silencedCast = (house, ctx) => {
@@ -119,15 +118,14 @@ const countryHasAFavourite = {
     if (!cast) return null;
     const { c, who, stung } = cast;
     const p = pronouns(stung);
-    const weekNum = Math.max(1, Number(ctx?.week?.num) || 1);
-    const elapsed = `${weekNum} ${weekNum === 1 ? 'week' : 'weeks'}`;
     const text = _variant([
-      `${stung} has spent ${elapsed} making sure every room notices ${p.obj}, and the box went to ${who}. `
+      `${stung} has spent five weeks being the loudest person in every room and the box went to ${who}. `
         + `There is nobody to be angry at about that, which is why ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} angry at ${who}.`,
       `The house has just been handed a ranking it did not ask for. ${who} is at the top of it and ${stung} `
         + `is not, and ${p.sub} ${p.sub === 'they' ? 'have' : 'has'} no way of appealing to a room ${p.sub} cannot enter.`,
       `"They don't see what I do in here." ${stung} says it about ${who}'s package, and means it, and it does not help.`,
-      `${who} was chosen by the audience for something nobody in the house could earn. ${stung} keeps circling that point without saying the part that actually hurts: the audience chose somebody else.`,
+      `${who} is now the most protected person in the house and did nothing in the house to become it. `
+        + `${stung} keeps that sentence in ${p.posAdj} mouth all day without ever quite saying it.`,
     ], ctx, who, stung);
     api.suspicion(stung, who, 0.9);
     api.addBond(stung, who, -1);
@@ -232,11 +230,11 @@ const silencedInPublic = {
     const { c, who, all } = cast;
     const p = pronouns(who);
     const text = _variant([
-      `${who} was not allowed to vote at the eviction and does not have to wonder why. ${c.recipient} said ${p.posAdj} name in front of everybody, `
+      `${who} cannot vote tonight and does not have to wonder why. ${c.recipient} said ${p.posAdj} name in front of everybody, `
         + `which removes the one comfort a silenced houseguest usually gets: not knowing.`,
-      `${all.join(' and ')} sat through the eviction without a vote between them, watching ${c.recipient} avoid looking over.`,
+      `${all.join(' and ')} sit through the whole eviction without a vote between them, watching ${c.recipient} not look over.`,
       `"You could have picked anybody." ${who} says it to ${c.recipient} directly, because for once there is somebody to say it to.`,
-      `There was no mystery to solve afterwards. ${who} left the eviction with a name, witnesses and no way to get the vote back.`,
+      `A hacked ballot leaves you hunting. This left ${who} with a name, a date and an audience, and nothing at all to do about any of it.`,
     ], ctx, who, c.recipient);
     for (const name of all) {
       api.suspicion(name, c.recipient, 1.6);
@@ -269,7 +267,7 @@ const publicMoney = {
         + `${hunter} has decided it went to ${guess}, on the evidence of a mood ${guess} was in on Tuesday.`,
       `${hunter} spends the evening pricing people. "What would you take? Honestly. What's the number?" `
         + 'Nobody gives a real answer and every non-answer goes in the file.',
-      `The money is public and the spending is not, so ever since the eviction the house has been unable to tell `
+      `The money is public and the spending is not, so the house has spent two days being unable to tell `
         + `an ordinary vote from a bought one. ${hunter} thinks ${guess}'s was bought.`,
       `"It's not about the money, it's about who takes it." ${hunter} is right about that and wrong, probably, about ${guess}.`,
     ], ctx, hunter, guess);

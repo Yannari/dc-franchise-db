@@ -109,8 +109,7 @@ function _lastWhack(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    if (w && w.num < now && now - w.num <= 1
-      && w.whacktivity?.rooms?.some(r => r.opened && (r.entrants || []).length)) return w;
+    if (w && w.num < now && w.whacktivity?.rooms?.some(r => r.opened && (r.entrants || []).length)) return w;
   }
   return null;
 }
@@ -140,7 +139,7 @@ const declaredIt = {
     const p = pronouns(who);
     const text = _variant([
       `Nobody knows what happened behind that door. Everybody knows ${who} walked through the one marked ${room.power}, because everybody was standing there watching ${p.obj} do it.`,
-      `${watcher} does not need to guess what ${who} wanted. The door said ${room.power}, and ${who} crossed the room in front of everybody to enter it.`,
+      `${watcher} does not need to guess what ${who} was after. ${who} announced it by crossing a room — the door said ${room.power} on it and ${p.sub} ${p.sub === 'they' ? 'went' : 'went'} straight to it.`,
       `"You wanted ${room.power}." ${watcher} says it as a fact, because it is one. ${who} cannot argue with a door ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} seen walking through.`,
       `${who} spends the evening being asked, lightly and repeatedly, why ${room.power} specifically. There is no good answer that is not also a confession about how ${p.posAdj} week is going.`,
     ], ctx, who, room.power);
@@ -300,12 +299,12 @@ const beingNormal = {
     const overplayed = pStats(watcher).intuition >= 7 && st.strategic <= 6;
     const p = pronouns(who);
     const text = overplayed ? _variant([
-      `${who} calls the room a waste of time before ${watcher} asks how it went. The answer is casual; volunteering it is not.`,
+      `${who} has told three people it was a waste of time in there, unprompted, in slightly different words each time. ${watcher} has heard all three versions.`,
       `${who} keeps steering conversations away from the ${room.power} room with the enthusiasm of somebody steering a car. ${watcher} is in the passenger seat noticing every turn.`,
       `"Honestly it was nothing." ${who} says it once too often, and ${watcher} — who was not thinking about it — starts thinking about it.`,
     ], ctx, who, watcher) : _variant([
       `${who} is exactly as vague about that room as everybody else who was in it, which is the only correct amount of vague.`,
-      `Somebody asks ${who} how it went. “Fine.” That is the whole answer, delivered with the same shrug everybody else brought back from the room.`,
+      `Somebody asks ${who} how it went. "${p.Sub === 'They' ? 'Fine' : 'Fine'}." That is the whole answer, and it is the same answer four other people gave.`,
       `${who} lets the subject die and does not resurrect it, which is harder than it sounds and is why nobody looks twice.`,
     ], ctx, who, watcher);
     if (overplayed) {
@@ -331,7 +330,7 @@ const stillWatching = {
     if (!cast) return null;
     const { room, inIt, watcher } = cast;
     const text = _variant([
-      `${watcher} can still name everyone who entered the ${room.power} room. What ${watcher} cannot tell is whether any of them left with an advantage.`,
+      `The list has not gone anywhere. ${watcher} still knows exactly who walked into the ${room.power} room, and still cannot tell which of them came out different.`,
       `A week on, ${inIt.slice(0, 2).join(' and ')} are still being handled slightly carefully by people who cannot say why out loud.`,
       `Nobody has produced anything. ${watcher} points out that nobody producing anything is exactly what holding something looks like.`,
       `The room that opened is old news everywhere except in the heads of the people who were not in it.`,

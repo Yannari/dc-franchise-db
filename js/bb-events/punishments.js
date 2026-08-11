@@ -37,8 +37,7 @@ const _wearers = (house, ctx) => activePunishments(ctx?.week?.num || 0)
   .filter(x => x.def);
 
 const _wornCast = (house, ctx) => {
-  const wearable = new Set(['egg-detective', 'red-unitard', 'lord-of-the-latrine', 'adam-and-eve']);
-  const worn = _wearers(house, ctx).filter(x => wearable.has(x.p.id));
+  const worn = _wearers(house, ctx);
   if (!worn.length) return null;
   const { p, def } = worn[0];
   // The person who most needs this conversation to go well is the one it costs.
@@ -148,7 +147,8 @@ const theTether = {
         + 'which is unfair and completely understandable.',
       `The tether means ${partner} hears every pitch ${who} makes, and ${who} hears every one of ${p.posAdj}. `
         + 'By Wednesday they know more about each other than either wanted to.',
-      `“I need ten minutes alone.” “So do I.” ${who} and ${partner} have had the same argument three times without ever getting more than one metre apart.`,
+      `"I didn't vote for you." "Nobody voted for me, that's the whole problem." ${who} and ${partner} `
+        + 'have had this exact argument three times, at a distance of one metre.',
     ], ctx, who, partner);
     api.addBond(who, partner, -0.8);
     api.suspicion(partner, who, 0.6);
@@ -173,8 +173,9 @@ const thePity = {
     const text = _variant([
       `${kind} is kind about ${def.name}, genuinely and repeatedly, and that is somehow worse than being laughed at — `
         + `${who} has become somebody the house is nice TO rather than somebody it works WITH.`,
-      `${kind} makes one joke about ${def.name}, sees how tired ${who} is and quietly stops. Being handled gently feels worse to ${who} than the joke did.`,
-      `“At least people feel bad for you,” ${kind} says, trying to help. ${who} asks whether pity comes with a vote.`,
+      `Being the country's favourite got ${who} a costume. ${kind} points out that this is funny, `
+        + `and then stops finding it funny about an hour later.`,
+      `"America loves you." ${kind} means it warmly. ${who} has started to hear it as a sentence about what the vote actually cost ${p.obj}.`,
       `${kind} carries ${who}'s plate over without being asked. Small kindnesses all week, and every one of them `
         + `is the house filing ${who} under somebody who is having a hard time rather than somebody who is playing.`,
     ], ctx, who, kind);

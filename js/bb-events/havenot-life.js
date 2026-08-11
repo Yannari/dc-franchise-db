@@ -31,7 +31,6 @@ import { pronouns } from '../players.js';
 import {
   pStats, bond, band, spotlightOrder, isNice, closestTo, furthestFrom,
 } from './_read.js';
-import { punishedHaveNots } from '../bb/punishments.js';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -213,7 +212,7 @@ const solidarity = {
       `${second} says the worst part is not the cold, it is knowing it is coming all day. ${first} agrees, and for the first time this season the two of them are agreeing about something that is not the game.`,
       `Nobody else in this house understands and ${first} and ${second} both know it. That is most of what an alliance is, and neither of them has said the word.`,
       `${first} and ${second} sit on the have-not beds at two in the morning listing every meal they are going to eat when they get out. It takes an hour and neither of them wants it to end.`,
-      `${together >= 2 ? `Second week in the same room for both of them. ` : ''}${first} says, “At least it's you,” and ${second} does not have anything clever to say back, which is unusual.`,
+      `${together >= 1 ? `Second week in the same room for both of them. ` : ''}${first} says, “At least it's you,” and ${second} does not have anything clever to say back, which is unusual.`,
     ], ctx, this.id, first, second);
 
     api.addBond(first, second, 1.3);
@@ -232,10 +231,7 @@ const solidarity = {
 // ── somebody chose this ───────────────────────────────────────────────
 
 function _resentCast(house, ctx) {
-  const punished = new Set(punishedHaveNots(ctx?.week?.num || 0));
-  // Only the competition-selected Have-Nots can reasonably blame the HOH.
-  // Slop added later by a package, box or prize has a different public source.
-  const slop = _haveNots(house, ctx).filter(n => !punished.has(n));
+  const slop = _haveNots(house, ctx);
   if (!slop.length) return null;
   const hoh = ctx?.hoh && house.includes(ctx.hoh) && !slop.includes(ctx.hoh) ? ctx.hoh : null;
   if (!hoh) return null;
@@ -267,7 +263,7 @@ const selectionResentment = {
       `“It's not personal.” ${hoh} says it in passing on the way upstairs. ${stewing} has been lying on a metal bed frame for three nights working out precisely how personal it is.`,
       `${lucky ? `${lucky} finished one place above ${stewing} and is currently eating a full dinner. ` : ''}${stewing} has done the arithmetic on that gap approximately forty times today.`,
       `${stewing} is not going to say anything, because saying it makes ${p.obj} the person who complained about slop. ${p.Sub} ${p.sub === 'they' ? 'just add' : 'just adds'} ${hoh} to a list instead.`,
-      `${weeks >= 2 ? `This is the ${_ordinal(weeks)} week ${stewing} has been on slop, and ${hoh} chose one of them. ` : `${stewing} watches ${hoh} carry a plate up to the Head of Household room. `}${stewing} waits until ${hoh} is upstairs, then tells the person beside ${p.obj}, “I won't forget who put me down here.”`,
+      `${weeks >= 2 ? `This is the ${_ordinal(weeks)} week ${stewing} has been on slop and ${hoh} has been Head of Household for one of them. ` : `${stewing} watches ${hoh} carry a plate up to the Head of Household room. `}Nothing is said. Something is definitely decided.`,
       `${_list(slop)} are on slop and none of them chose it. ${stewing} is the only one who has noticed that ${hoh} has not once come into the have-not room this week.`,
     ], ctx, this.id, stewing, hoh);
 

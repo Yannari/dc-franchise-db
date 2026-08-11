@@ -116,7 +116,7 @@ function _lastWeek(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    if (w && w.num < now && now - w.num <= 1 && w.hacker) return w;
+    if (w && w.num < now && w.hacker) return w;
   }
   return null;
 }
@@ -220,7 +220,7 @@ const hohDisowns = {
     // A reign nobody believes is a reign that bought nothing.
     const believed = pStats(hoh).social >= 6 && perceived(victim, hoh) >= 0;
     const text = _variant([
-      `"That was not me." ${hoh} has repeated it in every room with decreasing effect. ${victim} hears it again and ${believed ? 'mostly believes it, which still does not put ' + p.obj + ' back in charge of the block' : 'does not believe a word of it'}.`,
+      `"That was not me." ${hoh} has now said it eleven times, to eleven people, with decreasing effect. ${victim} listens to number twelve and ${believed ? 'mostly believes it, which does not put ' + p.obj + ' back in charge of anything' : 'does not believe a word of it'}.`,
       `${hoh} spends the day explaining that the block on that wall is not the block ${p.sub} made. It is true, it is unprovable, and it makes ${p.obj} sound exactly like somebody covering for a move.`,
       `The one week ${hoh} had the power, somebody else used it. ${p.Sub} ${p.sub === 'they' ? 'try' : 'tries'} telling ${victim} so. ${believed ? `${victim} nods. ${victim} also stops treating ${hoh} as the person to negotiate with, because what would be the point.` : `${victim} hears an HOH disowning ${p.posAdj} own nominations, which is what an HOH would say either way.`}`,
       `${hoh} asks the room, genuinely, whether anybody actually saw ${p.obj} name ${victim}. Nobody did. Nobody can un-see the key on the wall either.`,
@@ -286,7 +286,7 @@ const missingVoteMath = {
     if (!cast) return null;
     const { silenced, counter, accused } = cast;
     const text = _variant([
-      `${counter} has been counting Thursday's vote all week and it will not add up. More people claim they voted than votes were read. Somebody in this house is lying, and ${counter} has decided it is ${accused}.`,
+      `${counter} has been counting Thursday's vote all week and it will not add up. Seven people claim they voted; six votes were read. Somebody in this house is lying, and ${counter} has decided it is ${accused}.`,
       `"One of us didn't vote." ${counter} says it flatly, at the table, and watches which face moves. ${silenced === accused ? `${silenced}'s does, a little.` : `${accused}'s does, for entirely unrelated reasons, and that is the end of ${accused}'s week.`}`,
       `The house reruns the eviction out loud — who said what, who claimed what — and arrives at a number that is one short of the people in the room. ${counter} starts a list. ${accused} is at the top of it.`,
       `${counter} works out that a ballot went missing on Thursday and reaches the sensible conclusion: somebody was cancelled. Then the sensible part stops, and ${counter} decides ${accused} is the reason.`,
@@ -379,7 +379,7 @@ const alibiTrade = {
     if (!cast) return null;
     const { a, b } = cast;
     const text = _variant([
-      `${a} and ${b} establish, for the record and for each other, that neither left the room during the competition window. Their stories match because they compared them first, which makes the truth sound rehearsed.`,
+      `${a} and ${b} establish, for the record and for each other, that neither of them left the room during the competition window. Two innocent people building a defence is indistinguishable from two guilty ones doing the same thing.`,
       `"You know it wasn't me, right?" ${a} asks it, ${b} returns it, and within a minute they have a mutual alibi neither of them can actually verify.`,
       `${a} and ${b} agree to vouch for each other if the house comes asking. It is a small conspiracy in defence of nothing, and it will look enormous if anybody notices it.`,
       `${a} works out that being suspected is worse than being nominated, and recruits ${b} into saying so loudly and in unison.`,

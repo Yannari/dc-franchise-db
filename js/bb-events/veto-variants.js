@@ -26,6 +26,7 @@
 // Everything here reads `week.secondVeto` and `week.vetoRules`, which the week
 // engine writes onto the week rather than only onto its act, so the reaction
 // survives into the campaign and into the week after.
+import { gs } from '../core.js';
 import { pronouns } from '../players.js';
 import { pStats, band, bond, closestTo, spotlightOrder } from './_read.js';
 
@@ -36,8 +37,17 @@ function _variant(list, ctx, ...salt) {
   return list[hash % list.length];
 }
 
-/** Current medallion only: every scene below also reads this week's block. */
-const _second = ctx => ctx?.week?.secondVeto || null;
+/** The second medallion this week, or last — its fallout outlives the meeting. */
+function _second(ctx) {
+  if (ctx?.week?.secondVeto) return ctx.week.secondVeto;
+  const weeks = gs?.bb?.weeks || [];
+  const now = ctx?.week?.num || 0;
+  for (let i = weeks.length - 1; i >= 0; i--) {
+    const w = weeks[i];
+    if (w && w.num <= now && now - w.num <= 1 && w.secondVeto) return w.secondVeto;
+  }
+  return null;
+}
 
 const _noms = ctx => (ctx?.week?.finalNominees || ctx?.week?.initialNominees || []);
 const _after = ctx => ctx?.act === 'campaign' || ctx?.act === 'house';
@@ -114,10 +124,12 @@ const twoMedallions = {
     const { holder, replacement } = sec;
     const p = pronouns(hoh);
     const text = _variant([
-      `${hoh} put up the original block and watched it change twice. ${holder} made the second change after the first veto decision was already over.`,
+      `${hoh} won this house, put up two people, and is going to Thursday with a block ${p.sub} did not `
+        + `choose either half of. ${holder} did the second half of it after the meeting had already ended.`,
       `"I had one week." ${hoh} keeps coming back to that sentence. ${holder} rewrote the only week ${p.sub} `
         + `is ever going to get, and did it in front of everybody.`,
-      `The arithmetic ${hoh} is doing is simple: two medallions came out, and ${replacement} is now sitting in a chair ${p.sub} did not put ${pronouns(replacement).obj} in.`,
+      `The arithmetic ${hoh} is doing is simple and it does not improve: two medallions came out, ${p.sub} `
+        + `held neither, and ${replacement} is sitting in a chair ${p.sub} did not put ${pronouns(replacement).obj} in.`,
       `${holder} tries to have a normal conversation with ${hoh} about something else entirely. It lasts about `
         + `a minute and a half.`,
     ], ctx, hoh, holder);
@@ -125,7 +137,7 @@ const twoMedallions = {
     api.suspicion(hoh, holder, 1.4);
     try { api.setTarget(hoh, holder, 'took my week off me after the meeting ended'); } catch { /* texture */ }
     try { api.remember(hoh, holder, 'rewrote-my-block', 2, { twist: 'bb-double-veto' }); } catch { /* texture */ }
-    return { text, players: [hoh, holder, replacement].filter(Boolean), badgeText: 'THE SECOND CHANGE WASN’T MINE', badgeClass: 'red' };
+    return { text, players: [hoh, holder], badgeText: 'NEITHER NAME WAS MINE', badgeClass: 'red' };
   },
 };
 
@@ -216,7 +228,8 @@ function _forcedCast(house, ctx) {
   // Nothing to resent when the holder saved themselves out of a chair they were
   // sitting in — that is not a favour anybody was passed over for.
   if (!saved && bond(dec.replacement, dec.holder) > 6) return null;
-  return { holder: dec.holder, replacement: dec.replacement, saved };
+  return { holder: dec.holder, replacement: dec.replacement,
+    saved: saved || closestTo(dec.holder, house.filter(n => n !== dec.replacement)) };
 }
 
 export const VETO_VARIANT_EVENTS = [courtedInTheDark, twoMedallions, leftInTheBox, noSayInIt];

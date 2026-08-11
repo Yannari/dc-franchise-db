@@ -88,10 +88,10 @@ const theChair = {
     const { who, confidant } = cast;
     const p = pronouns(who);
     const text = _variant([
-      `${who} is on the block and there is nobody to campaign to about the decision. The Head of Household did not make it, and whoever did cannot be pulled into the storage room for a conversation.`,
+      `${who} is on the block and there is nobody to campaign to about it. The Head of Household did not do this, the veto cannot undo it cleanly, and the person who did is not in the room to be worked on.`,
       `"Who do I even talk to?" ${who} asks ${confidant || 'the ceiling'}, and it is a real question with no answer in this building.`,
       `${who} has spent a week being liked by everybody in here and nominated anyway. ${p.Sub} ${p.sub === 'they' ? 'are' : 'is'} starting to work out that the room ${p.sub} needed to be liked by was never in here.`,
-      `Every other nominee this season could look at somebody and know who named them. ${who} looks around the kitchen and sees ${Math.max(0, house.length - 1)} faces that may have had nothing to do with it.`,
+      `Every other nominee this season could look at somebody and know. ${who} looks around the kitchen and gets nine faces that all look equally not guilty.`,
     ], ctx, who);
     api.popDelta(who, 1.5);
     if (confidant) api.addBond(who, confidant, 0.4);

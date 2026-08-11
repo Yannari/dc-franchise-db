@@ -51,8 +51,7 @@ function _lastBox(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    if (w && w.num < now && now - w.num <= 1
-      && w.pandorasBox?.opened && !w.hohSecret) return w;
+    if (w && w.num < now && w.pandorasBox?.opened && !w.hohSecret) return w;
   }
   return null;
 }
@@ -133,7 +132,7 @@ const thePrice = {
     const p = pronouns(sore);
     const text = _variant([
       `${sore}'s entire week of laundry is on the line on the wrong side of a locked door, and ${box.hoh} is inside explaining about ${box.publicClaim}. ${p.Sub} ${p.sub === 'they' ? 'do' : 'does'} the arithmetic on that trade out loud, at length.`,
-      `"We are locked out of the yard. For ${box.publicClaim}." ${sore} repeats the trade whenever somebody defends it, and it sounds worse each time.`,
+      `"We are locked out of the yard. For ${box.publicClaim}." ${sore} says it four times in an hour, and every time ${p.sub} ${p.sub === 'they' ? 'say' : 'says'} it, it sounds worse.`,
       `The doors lock, and ${sore} looks at ${box.hoh} the way you look at somebody who has spent your money. Nothing gets said directly. It does not need to be.`,
       `${sore} has been counting the hours of lockdown against the value of ${box.publicClaim} and has arrived at a number ${p.sub} ${p.sub === 'they' ? 'want' : 'wants'} the whole house to hear.`,
     ], ctx, sore, box.hoh);

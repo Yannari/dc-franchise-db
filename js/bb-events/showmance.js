@@ -82,8 +82,7 @@ const hidingIt = {
   location: 'bedroom',
   weight(house, ctx) {
     const pair = _couple(house);
-    if (!pair || house.length < 5 || _once('showmance-hiding-it', ctx)
-      || ctx?.week?._showmanceConcealment) return 0;
+    if (!pair || house.length < 5 || _once('showmance-hiding-it', ctx)) return 0;
     // Only early. After a fortnight nobody is pretending.
     const age = (ctx?.week?.num || 0) - (pair.sh.sparkEp || 0);
     return age <= 2 ? _fit(ctx, 8) : 0;
@@ -91,7 +90,6 @@ const hidingIt = {
   fire(house, ctx, api) {
     const { a, b } = _couple(house);
     _spend(this.id, ctx);
-    if (ctx?.week) ctx.week._showmanceConcealment = this.id;
     const watcher = _quiet(_others(house, a, b))[0];
     const p = pronouns(a);
     const text = _variant([

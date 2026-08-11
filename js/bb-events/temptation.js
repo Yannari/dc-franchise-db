@@ -97,8 +97,7 @@ function _lastDen(ctx) {
   const now = ctx?.week?.num || 0;
   for (let i = weeks.length - 1; i >= 0; i--) {
     const w = weeks[i];
-    if (w && w.num < now && now - w.num <= 1
-      && w.temptation?.accepted && w.temptation.cursed) return w;
+    if (w && w.num < now && w.temptation?.accepted && w.temptation.cursed) return w;
   }
   return null;
 }
@@ -132,7 +131,7 @@ const carriesIt = {
       `"Somebody in this house got a present and I got the bill." ${cursed} is not wrong and is not being quiet about it${witness ? `. ${witness} agrees with every word and stays carefully out of the splash` : ''}.`,
       `${cursed} kicks a cupboard door, apologises to the cupboard, and goes back to explaining to the kitchen that ${p.sub} ${p.sub === 'they' ? 'were' : 'was'} nominated by a coin toss.`,
     ], ctx, cursed) : _variant([
-      `${cursed} takes the chair without arguing. The lack of a reaction makes the room more nervous than shouting would have.`,
+      `${cursed} takes the chair without arguing about it, which everybody notices, and files the whole thing somewhere it can be got at later.`,
       `"It's fine. It's the game." ${cursed} says it twice, evenly, and ${witness || 'the room'} can tell it is not filed under fine.`,
       `${cursed} does the maths in public — nominated by nobody, saved by nobody, owed by everybody — and then lets it go, in the way that means the opposite of letting it go.`,
     ], ctx, cursed);
@@ -246,7 +245,7 @@ const performingSympathy = {
     ], ctx, who, watcher) : _variant([
       `${who} is sympathetic about ${t.cursed}'s chair in exactly the way everybody else is: briefly, and then about something else. Nobody looks twice.`,
       `${who} says the right amount about the curse — which is not much — and spends the rest of the day being visibly uninterested in where it came from.`,
-      `Somebody asks ${who} who ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} took it. ${p.Sub} ${p.sub === 'they' ? 'name' : 'names'} somebody plausible, ${p.sub === 'they' ? 'shrug' : 'shrugs'}, and the conversation moves past ${p.obj}.`,
+      `Somebody asks ${who} who ${p.sub} ${p.sub === 'they' ? 'think' : 'thinks'} took it. ${p.Sub} ${p.sub === 'they' ? 'name' : 'names'} somebody plausible, shrug, and the conversation moves past ${p.obj}.`,
     ], ctx, who, watcher);
     if (overplayed) {
       api.suspicion(watcher, who, 1.5);
@@ -299,11 +298,11 @@ const afterwards = {
     const text = _variant([
       `${wary} has drawn the obvious conclusion from ${cursed}'s week: things get handed out in this house that somebody else pays for, and there is no reason to think it happened only once.`,
       `Nobody has forgotten that ${cursed} sat in a chair nobody chose. It has changed how this house hears the word "offer".`,
-      `${wary} points out, to nobody in particular, that whoever accepted the offer is still in the house. The room goes quiet because there is no useful way to investigate that.`,
-      `${cursed}'s week has become the reason the entire house is suspicious whenever good news arrives without an explanation.`,
+      `${wary} points out, to nobody in particular, that whoever took it is still here and still holding it. The room does not enjoy that thought and does not disagree with it either.`,
+      `${cursed}'s week has become the reason this house is suspicious of good news, which is a thing one anonymous decision managed to do to nine people.`,
     ], ctx, cursed, wary);
     api.popDelta(cursed, 0.5);
-    return { text, players: [wary, cursed], badgeText: 'AFTER THE CURSE', badgeClass: 'grey' };
+    return { text, players: [wary, cursed], badgeText: 'STILL HOLDING IT', badgeClass: 'grey' };
   },
 };
 

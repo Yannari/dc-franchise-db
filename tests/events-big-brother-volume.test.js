@@ -5,8 +5,7 @@
 // category has quietly taken over the house, and that every event still
 // satisfies the scheduler contract no matter which act it lands in.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { gs, seasonConfig, setRelationships } from '../js/core.js';
-import { setBond, setLean } from '../js/bonds.js';
+import { gs, seasonConfig } from '../js/core.js';
 import { simulateBBSeason, simulateBBWeek } from '../js/bb/week.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
 import {
@@ -44,28 +43,6 @@ function reset() {
   // unset made this harness a season with NO jury, which correctly silenced
   // jury-management and then shifted what fired everywhere else.
   seasonConfig.jurySize = 7;
-
-  // This is a reachability sweep for the whole registered library, including
-  // scenes that can only exist when people entered with history. A cast with
-  // no declared relationships can no more exercise `kin-*` than a schedule
-  // with no Hacker week can exercise `hacker-*`.
-  const priorRelationships = [
-    { id: 'kin-a', a: 'A', b: 'B', type: 'ally', bond: 5, kin: 'exes' },
-    { id: 'kin-b', a: 'C', b: 'D', type: 'rival', bond: -3, kin: 'exes' },
-    { id: 'kin-c', a: 'E', b: 'F', type: 'rival', bond: -3, kin: 'ex-friends' },
-    { id: 'kin-d', a: 'G', b: 'H', type: 'nemesis', bond: -4, kin: 'estranged' },
-    { id: 'kin-e', a: 'I', b: 'J', type: 'ally', bond: 4, kin: 'siblings' },
-    { id: 'kin-f', a: 'K', b: 'L', type: 'ally', bond: 4, kin: 'married' },
-    { id: 'kin-g', a: 'M', b: 'N', type: 'rival', bond: -3, kin: 'partners' },
-    { id: 'kin-h', a: 'B', b: 'E', type: 'neutral', bond: 1, kin: 'old-friends' },
-    { id: 'kin-i', a: 'F', b: 'G', type: 'neutral', bond: 1, kin: 'colleagues' },
-  ];
-  setRelationships(priorRelationships);
-  for (const r of priorRelationships) setBond(r.a, r.b, r.bond);
-  // Two deliberately uneven pairs make the asymmetric events real fixtures,
-  // rather than loosening their triggers merely to satisfy this guard.
-  setLean('C', 'D', 7);
-  setLean('M', 'N', 7);
 }
 
 const ACTS = ['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign'];
@@ -449,7 +426,6 @@ describe('the Big Brother event library as a whole', () => {
       // nominee per voter worked.
       const ids = (act.socialBeats || [])
         .map(b => b.eventId)
-        .filter(Boolean)
         .filter(id => !/^(alliance|romance|upkeep|campaign)-/.test(String(id || '')));
       const counts = {};
       ids.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
@@ -457,10 +433,7 @@ describe('the Big Brother event library as a whole', () => {
         expect(n, `${id} aired ${n} times in one act`).toBeLessThanOrEqual(2);
       }
       // Repeats only appear in the long stretches that outrun the pool.
-      if (ids.length <= 10) {
-        expect(new Set(ids).size,
-          `short act repeated before exhausting its pool: ${ids.join(', ')}`).toBe(ids.length);
-      }
+      if (ids.length <= 10) expect(new Set(ids).size).toBe(ids.length);
     }
   });
 

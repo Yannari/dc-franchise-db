@@ -465,7 +465,7 @@ const wordGetsAround = {
     })();
     const ownVote = teller === about;
     const heardFrom = belief && belief.sourceType !== 'observed' && belief.source
-      && belief.source !== 'observation' && belief.source !== about ? belief.source : null;
+      && belief.source !== 'observation' ? belief.source : null;
     const how = ownVote ? 'was there'
       : heardFrom ? `heard it from ${heardFrom}`
       : 'worked it out';

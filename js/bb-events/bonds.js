@@ -217,7 +217,7 @@ const badDay = {
       `${low} is having a bad day for reasons that have nothing to do with the game, and ${friend} is the only person who asks about the reasons instead of the game.`,
       `${friend} finds ${low} sitting on the bathroom floor and does not ask what happened, just sits down too. They are there twenty minutes and neither of them says much.`,
       `Nobody in here gets to be homesick out loud. ${low} is anyway, and ${friend} lets ${p.obj} be, and does not tell anybody afterwards.`,
-      `After ${timeTogether} in one house, ${friend} notices when ${low} skips lunch and goes quiet. ${friend} knows better than to ask in front of everyone and waits until they are alone.`,
+      `${friend} notices before ${low} says anything, which after ${timeTogether} in one house is not a small thing.`,
     ], ctx, low, friend);
 
     api.addBond(low, friend, 1.5);
@@ -234,13 +234,12 @@ const coldWar = {
   id: 'bond-cold-war',
   category: 'house-life',
   weight(house, ctx) {
-    if (_once('bond-cold-war', ctx) || ctx?.week?._coldWarScene) return 0;
+    if (_once('bond-cold-war', ctx)) return 0;
     return _enemies(house) ? _quietTime(ctx, 8) : 0;
   },
   fire(house, ctx, api) {
     const pair = _enemies(house);
     _spend(this.id, ctx);
-    if (ctx?.week) ctx.week._coldWarScene = this.id;
     if (!pair) {
       return { text: 'Everybody is, for one day, getting along.', players: [],
         badgeText: 'AN EASY DAY', badgeClass: 'grey' };
@@ -251,8 +250,7 @@ const coldWar = {
     const text = _variant([
       `${a} and ${b} manage an entire day in a house this size without speaking once. It takes real coordination and both of them are putting the work in.`,
       `${b} comes into the kitchen. ${a} finishes making tea with enormous care and leaves without it. Nobody comments, because everybody has watched this for a week.`,
-      `${a} asks ${b} to pass a plate. ${b} passes it without looking up, and the person between them `
-        + `finds an excuse to leave the table.`,
+      `They are perfectly polite to each other in front of other people, which is somehow worse to be in the room for than shouting would be.`,
       `${a} has started timing showers around ${b}'s schedule. ${b} has started doing the same thing. Neither has said a word about it.`,
     ], ctx, a, b);
 
@@ -291,8 +289,7 @@ const pettyNeedling = {
       `It is about a pan. It is not about a pan. ${sharper} says the thing about the pan in a tone that makes three people leave the kitchen.`,
       `${sharper} repeats back something ${other} said, in ${other}'s voice, to two people, twice. ${other} hears about it within the hour.`,
       `${other} takes the last of something. ${sharper} does not mention it, and then mentions it, and then mentions it again at dinner.`,
-      `${other} wipes down the counter and leaves the dirty pan beside ${sharper}'s plate. ${sharper} carries it `
-        + `back to the sink, sets it down harder than necessary, and asks whether this is supposed to be funny.`,
+      `Nothing happens all day except a series of very small things, each of which would sound insane described out loud, and all of which land.`,
     ], ctx, a, b);
 
     api.addBond(a, b, -0.9);
@@ -331,7 +328,7 @@ const apologyRefused = {
     ], ctx, asker, refuser) : _variant([
       `${asker} apologises. ${refuser} says "okay" in a way that means nothing of the sort, and the conversation is somehow worse afterwards than it was before.`,
       `"I'd rather you just didn't talk to me." ${refuser} says it calmly. ${asker} had a whole speech ready and does not get to use any of it.`,
-      `${asker} asks whether they can put the fight behind them. ${refuser} says, “You still think the problem was the fight.” That ends the conversation.`,
+      `${asker} tries to clear the air and discovers that ${refuser} does not want it cleared — that the feud is doing something for ${refuser} that peace would not.`,
       `${asker} apologises for the argument but not for the comment that started it. ${refuser} notices the distinction and ends the conversation before it becomes another fight.`,
     ], ctx, asker, refuser);
 
@@ -342,11 +339,9 @@ const apologyRefused = {
       api.popDelta(refuser, 1);
     } else {
       api.addBond(asker, refuser, -0.8);
-      api.remember(asker, refuser, 'apology-refused', 2, {});
-      // Refusing a qualified apology is not automatically bad television.
-      // The person who says sorry for the argument while defending the insult
-      // is the one the edit holds responsible.
-      api.popDelta(asker, -1);
+      api.remember(asker, refuser, 'would-not-let-it-go', 2, {});
+      api.popDelta(refuser, -2);
+      api.popDelta(asker, 1);
     }
     return { text, players: [asker, refuser],
       badgeText: accepted ? 'THEY LET IT GO' : 'NOT ACCEPTED',

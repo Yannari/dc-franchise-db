@@ -59,7 +59,7 @@ const bedroomSnoring = {
       `${exhausted} waits until morning to tell ${sleeper} that the entire bedroom was awake. ${sleeper} laughs. ${exhausted} has not slept enough to find that charming.`,
       `${sleeper}'s snoring stops every time somebody says ${sleeper}'s name and starts again when the bedroom settles. By three in the morning, ${exhausted} is taking it personally.`,
       `${exhausted} builds a wall of pillows between the beds. ${sleeper} wakes up, studies the construction and asks whether this counts as a nomination.`,
-      `${sleeper}'s snoring keeps ${exhausted} awake until ${exhausted} gives up and moves to the bedroom floor. In the morning, ${sleeper} apologises and offers earplugs for the next night. ${exhausted} takes the earplugs, not the apology.`,
+      `${sleeper}'s snoring keeps ${exhausted} awake until ${exhausted} gives up and moves to the bedroom floor. In the morning, ${sleeper} apologizes and offers earplugs for the next night. ${exhausted} takes the earplugs, not the apology.`,
     ],c,sleeper,exhausted);
     api.addBond(exhausted,sleeper,-.7); api.remember(exhausted,sleeper,'irritation',1,{about:'kept the bedroom awake'});
     return out(text,[sleeper,exhausted],'NO SLEEP','grey');

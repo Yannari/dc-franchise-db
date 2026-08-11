@@ -357,8 +357,7 @@ const blockPressure = {
     const mode = anger > collapse && anger > 4 ? 'anger' : collapse > 4 ? 'despair' : 'focus';
 
     const text = mode === 'anger' ? _variant([
-      `${nom} slams a cupboard after another conversation ends with “we'll see.” The kitchen goes quiet; `
-        + `nobody needs clarification that the missing answer was about the veto.`,
+      `${nom} slams a cupboard hard enough that the whole kitchen stops. Nobody asks what it was about because everybody knows.`,
       `"Say it to me, then." ${nom} is looking straight at ${hoh || 'the room'}, and the temperature drops about ten degrees.`,
       `${nom} has been polite since the nomination and runs out of it between one sentence and the next.`,
       `It comes out sideways — a joke with too much in it, aimed at nobody, landing on everybody.`,
@@ -527,8 +526,7 @@ const replacementFallout = {
 
     const text = blindsided ? _variant([
       `${replacement} was told this morning ${p.sub} was safe. ${p.Sub} sits down in the chair anyway, because there is nowhere else to sit.`,
-      `${replacement}'s name is called. ${p.Sub} stays standing beside the sofa for a beat before taking the empty chair, `
-        + `and two people avoid meeting ${p.posAdj} eyes.`,
+      `The name is ${replacement}'s and it takes ${p.obj} a full second to move, which the whole house sees.`,
       `${replacement} looks directly at ${hoh} while walking to the empty chair. ${hoh} keeps their eyes on the table.`,
       `"Safe" turned out to have a shelf life of about four hours, and ${replacement} learns that standing up.`,
     ], ctx, replacement) : _variant([
@@ -579,7 +577,7 @@ const savedGuilt = {
     ], ctx, saved, replacement) : _variant([
       `${saved} is off the block and visibly relieved about it, which ${replacement} watches from the chair ${saved} just left.`,
       `${saved} celebrates a little too openly for somebody whose safety cost ${replacement} theirs.`,
-      `${replacement} waits for ${saved} to come upstairs. By dinner, it is clear ${saved} is not coming.`,
+      `${saved} does not go and find ${replacement}. Everybody notices that ${p.sub} does not.`,
     ], ctx, saved, replacement);
 
     api.addBond(saved, replacement, decent ? 0.5 : -1.2);
@@ -622,7 +620,7 @@ const hohRefusesEntry = {
     const p = pronouns(turned);
     const text = _variant([
       `${turned} knocks on the HOH door and is told, through it, that now is not a good time. The stairs are long on the way back down.`,
-      `${hoh} does not open the door for ${turned}. People downstairs watch ${p.obj} come back without having gone in, and nobody asks how it went.`,
+      `${hoh} does not open the door for ${turned}. Four people in the kitchen watch ${p.obj} come back down and nobody asks how it went.`,
       `"I'm sleeping." ${hoh} is not sleeping, ${turned} knows ${hoh} is not sleeping, and that is the message.`,
       `The HOH room is the only door in this house that locks, and today ${hoh} uses it on ${turned}.`,
     ], ctx, hoh, turned);
@@ -634,7 +632,7 @@ const hohRefusesEntry = {
     _others(house, hoh, turned).forEach(w => api.suspicion(w, hoh, 0.2));
     api.popDelta(hoh, -1);
     return {
-      text, players: [...house],
+      text, players: [hoh, turned],
       badgeText: 'DOOR STAYS SHUT', badgeClass: 'red',
     };
   },
@@ -1124,7 +1122,7 @@ const savedThemselves = {
     const text = _variant([
       `${saved} took ${p.ref} off the block with ${p.posAdj} own hands and nobody in this house can take that away from ${p.obj}. ${p.Sub} also forced ${hoh} to put another name in the chair, and ${p.sub} ${p.sub === 'they' ? 'know' : 'knows'} that too.`,
       `There is a particular kind of quiet that follows somebody saving themselves. ${saved} is safe, everybody else is one chair short, and the room is doing the arithmetic out loud.`,
-      `${saved} does not celebrate. Hearing ${p.posAdj} name at the ceremony once was enough to learn how easily the house could say it again.`,
+      `${saved} does not celebrate. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} been on the block once now, which means the house has already had the conversation about ${p.obj} — and will have it again.`,
       `"I didn't have a choice." ${saved} says it to everybody who will listen. Nobody has suggested ${p.sub} did.`,
     ], ctx, saved, hoh);
     api.popDelta(saved, 2);
@@ -1210,7 +1208,7 @@ const vetoHolderFallout = {
       `${hoh} does not raise it with ${holder} and that is the problem. They are perfectly polite to each other for the rest of the day and everybody in the house can hear it.`,
       `"You could have told me first." ${hoh} is not talking about the veto. ${holder} understands that and says nothing, because there is no answer that helps.`,
       `${holder} used it on ${saved} and now has to live in a house with ${replacement || 'the person who took the chair'}. ${p.Sub} ${p.sub === 'they' ? 'have' : 'has'} started rehearsing the conversation and has not had it yet.`,
-      `${holder} could have left the nominations alone and chose not to. Before dinner, half the house is asking whether saving ${saved} was loyalty or a warning.`,
+      `The veto came off the wall and ${holder} used it, which means ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} now a person who makes moves. The house adjusts its list accordingly.`,
     ], ctx, holder, hoh, saved);
 
     if (hoh) {

@@ -20920,6 +20920,102 @@ export function _bbFinalPleaSpeech(ep, name) {
 }
 
 /**
+ * PREMIERE NIGHT — two hunts, two prizes, and only one of them is what it looks
+ * like.
+ *
+ * Deliberately NOT a third bespoke world. The twist announcement that opens this
+ * night is the same wall screen every twist gets, and this page is the result
+ * board that follows it: the same split-panel shape the rest of the house uses,
+ * with the theme's own green and brass on it.
+ *
+ * The one thing it does that no other screen does is show the prizes UNEQUAL.
+ * The relic panel says what it does. The money panel says what the house was
+ * told, and then, underneath, what the winner was told afterwards — because the
+ * gap between those two sentences is the entire premise of the season.
+ */
+export function rpBuildBBPremiereMystery(ep, act) {
+  if (!act) return '';
+  const team = (names, winner) => names.map(n => `<li class="${n === winner ? 'is-win' : ''}">
+      ${_bbEsc(n)}${n === winner ? '<span class="bbpm-tick">found it</span>' : ''}</li>`).join('');
+
+  return `<div class="rp-page bb-room bb-block bbpm" data-ambient="tribal-tension">
+    <style>
+      .bbpm{--bbpm-gold:#d9b45c;--bbpm-green:#4fbf8b}
+      .bbpm-wrap{max-width:1000px;margin:0 auto;padding:26px 22px 60px}
+      .bbpm-head{text-align:center;margin-bottom:26px}
+      .bbpm-eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+        color:var(--bbpm-gold);opacity:.8}
+      .bbpm-title{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:36px;letter-spacing:.08em;
+        margin:6px 0 10px}
+      .bbpm-sub{max-width:620px;margin:0 auto;opacity:.72;font-size:14px;line-height:1.6}
+      .bbpm-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+      .bbpm-side{border:1px solid rgba(217,180,92,.28);background:rgba(0,0,0,.3);padding:18px}
+      .bbpm-hunt{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.6;
+        margin-bottom:10px}
+      .bbpm-side ul{list-style:none;margin:0 0 14px;padding:0;
+        display:flex;flex-wrap:wrap;gap:6px}
+      .bbpm-side li{font-size:12px;opacity:.55;padding:2px 8px;border:1px solid rgba(255,255,255,.1)}
+      .bbpm-side li.is-win{opacity:1;border-color:var(--bbpm-gold);color:var(--bbpm-gold)}
+      .bbpm-tick{font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-left:6px;
+        opacity:.75}
+      .bbpm-prize{border-top:1px solid rgba(217,180,92,.22);padding-top:12px}
+      .bbpm-pname{font-family:"Bodoni MT",Didot,Georgia,serif;font-size:20px;margin-bottom:6px}
+      .bbpm-ptext{font-size:13px;line-height:1.6;opacity:.82}
+      /* the half the room did not hear */
+      .bbpm-secret{margin-top:12px;padding:10px 12px;border-left:2px solid var(--bbpm-gold);
+        background:rgba(217,180,92,.07);font-size:12.5px;line-height:1.6}
+      .bbpm-secretlab{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+        color:var(--bbpm-gold);margin-bottom:4px}
+      .bbpm-beats{max-width:700px;margin:24px auto 0}
+      .bbpm-beat{font-size:13.5px;line-height:1.7;opacity:.85;margin-bottom:12px}
+    </style>
+    <div class="bbpm-wrap">
+      <div class="bbpm-head">
+        <div class="bbpm-eyebrow">Week ${_bbEsc(String(ep.num ?? ''))} &middot; nobody has unpacked</div>
+        <div class="bbpm-title">Premiere Night</div>
+        <p class="bbpm-sub">The host is gone and the Head of Household relic with them.
+          The house is split in two and sent looking, and each half is playing for a
+          prize it has not been told the shape of.</p>
+      </div>
+
+      <div class="bbpm-split">
+        <div class="bbpm-side">
+          <div class="bbpm-hunt">Hunting the relic</div>
+          <ul>${team(act.relicTeam || [], act.relicWinner)}</ul>
+          <div class="bbpm-prize">
+            <div class="bbpm-pname">The Relic</div>
+            <div class="bbpm-ptext"><strong>${_bbEsc(act.relicWinner || '')}</strong> names the
+              four houseguests allowed to compete for the first Head of Household — and may
+              leave themselves out of it. Read aloud, to everybody.</div>
+          </div>
+        </div>
+
+        <div class="bbpm-side">
+          <div class="bbpm-hunt">Hunting the host</div>
+          <ul>${team(act.hostTeam || [], act.hostWinner)}</ul>
+          <div class="bbpm-prize">
+            <div class="bbpm-pname">$${Number(act.money || 0).toLocaleString()}</div>
+            <div class="bbpm-ptext"><strong>${_bbEsc(act.hostWinner || '')}</strong> is handed
+              the money in front of the house, and the house forms an opinion about it
+              immediately.</div>
+            <div class="bbpm-secret">
+              <span class="bbpm-secretlab">What the room does not hear</span>
+              It is not a prize, it is a key. Spent once before the jury it takes
+              ${_bbEsc(act.hostWinner || '')} off the block and leaves the Head of Household
+              naming somebody else on the spot, with no say in it.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bbpm-beats">
+        ${(act.beats || []).map(b => `<p class="bbpm-beat">${b.text || ''}</p>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/**
  * THE WHITE LOCUST RESORT — the chain, and the clock that keeps shrinking.
  *
  * The screen is a check-in board, because that is the joke the season is making:
@@ -22219,6 +22315,11 @@ function _bbCycleScreens(view, screens, suffix = '') {
         const cppDeps = { tvState: _tvState, reveal: _bbReveal, esc: _bbEsc, avatar: _bbAvatar };
         screens.push({ id: id('bb-carepackage-play'), label: 'Package Spent',
           html: rpBuildBBCarePackagePlay(view, act, cppDeps) });
+        break;
+      }
+      case 'premiere-mystery': {
+        screens.push({ id: id('bb-premiere'), label: 'Premiere Night',
+          html: rpBuildBBPremiereMystery(view, act) });
         break;
       }
       case 'white-locust': {

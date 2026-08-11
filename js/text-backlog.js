@@ -5703,6 +5703,17 @@ export function generateBBSummaryText(ep) {
         beats(act);
         break;
 
+      case 'premiere-mystery': {
+        sec('PREMIERE NIGHT');
+        ln('  Nobody has unpacked. The host is gone and the Head of Household relic with them,');
+        ln('  and the house is split in two and sent looking.');
+        ln('');
+        ln(`  Hunting the relic: ${(act.relicTeam || []).join(', ')}`);
+        ln(`  Hunting the host:  ${(act.hostTeam || []).join(', ')}`);
+        ln('');
+        for (const b of act.beats || []) { ln(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`); ln(''); }
+        break;
+      }
       case 'white-locust': {
         sec('WHITE LOCUST RESORT');
         ln('  The house checks in for the week. The resort is clear that not everybody');
@@ -5728,6 +5739,8 @@ export function generateBBSummaryText(ep) {
         }
         ln(`  ${act.evicted} does not check out of the White Locust Resort.`);
         ln(`  ${act.hoh} had the fastest turn of the night, and is the new Head of Household.`);
+        ln('');
+        for (const b of act.beats || []) ln(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }
       case 'eviction': {

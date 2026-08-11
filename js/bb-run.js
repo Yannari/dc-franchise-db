@@ -1632,6 +1632,16 @@ export function summariseWeek(week) {
         });
         for (const change of act.changed || []) line(`  ${change.voter}'s vote moves from ${change.from} to ${change.to} after talking with ${change.changedBy}.`);
         break;
+      case 'premiere-mystery': {
+        line('');
+        line('PREMIERE NIGHT');
+        line(`  Hunting the relic: ${(act.relicTeam || []).join(', ')}`);
+        line(`  Hunting the host:  ${(act.hostTeam || []).join(', ')}`);
+        line(`  ${act.relicWinner} finds the relic, and names the four who may play for the first crown.`);
+        line(`  ${act.hostWinner} finds the host, and is handed $${Number(act.money || 0).toLocaleString()} in front of everybody.`);
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
+        break;
+      }
       case 'white-locust': {
         line('');
         line('WHITE LOCUST RESORT');
@@ -1649,6 +1659,9 @@ export function summariseWeek(week) {
         }
         line(`  ${act.evicted} does not check out of the White Locust Resort.`);
         line(`  Fastest turn of the night: ${act.hoh} — the new Head of Household.`);
+        // The act's own beats, which the transcript guard is right to want:
+        // the summary above says what happened, the beat says what it was like.
+        for (const b of act.beats || []) line(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);
         break;
       }
       case 'eviction': {

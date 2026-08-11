@@ -1834,14 +1834,22 @@ export function simulateBBWeek(options = {}) {
       week.relicPick = { holder: relic.holder, eligible: [...hohPlayers],
         includedSelf: hohPlayers.includes(relic.holder) };
       week.acts.push(addBeats({
-        type: 'relic-pick', holder: relic.holder, eligible: [...hohPlayers],
-        includedSelf: hohPlayers.includes(relic.holder),
+        type: 'power-played', powerId: 'hoh-gatekeeper', holder: relic.holder,
+        name: BB_POWER_DEFINITIONS['hoh-gatekeeper'].name, timing: 'nominations',
+        secret: relic.visibility === 'secret', visibility: relic.visibility,
+        eligible: [...hohPlayers], includedSelf: hohPlayers.includes(relic.holder),
+        detail: `${relic.holder} names the only four houseguests allowed to play for this week's `
+          + `crown: ${hohPlayers.join(', ')}. Everybody else watches, and everybody can count who `
+          + 'is missing.',
         beats: [{
-          text: `<strong>${relic.holder}</strong> reads out four names, and the rest of the house `
+          // No markup in a power-played beat: the shared power screen escapes
+          // beat text (it has never carried any, so nothing was broken by
+          // that), and tags here would render as literal <strong> on the page.
+          text: `${relic.holder} reads out four names, and the rest of the house `
             + `is not playing today. ${hohPlayers.join(', ')} go to the yard`
             + `${hohPlayers.includes(relic.holder) ? '' : ` — and ${relic.holder} does not`}. `
             + `Everybody can count who is missing.`,
-          players: [relic.holder, ...hohPlayers].slice(0, 5),
+          players: [...new Set([relic.holder, ...hohPlayers])].slice(0, 5),
           badgeText: 'THE RELIC', badgeClass: 'gold',
           eventId: 'relic-gatekeeper', category: 'power', location: 'backyard',
         }],
@@ -3964,13 +3972,25 @@ export function simulateBBWeek(options = {}) {
           nominees.splice(at, 1, replacementUp);
           usePower(bo, week.num);
           week.buyOff = { holder: bo.holder, hoh, replacement: replacementUp, amount: 10000 };
+          // A `power-played` act, not an invented one. This game already has a
+          // shared screen and a transcript line for "somebody spent a power",
+          // and every power in the shelf arrives through it — a bespoke act
+          // type here would have been a second way to say the same thing, with
+          // its own page, in a house where every other power looks alike.
           week.acts.push(addBeats({
-            type: 'buy-off', holder: bo.holder, hoh, replacement: replacementUp, amount: 10000,
+            type: 'power-played', powerId: 'buy-off', holder: bo.holder,
+            name: BB_POWER_DEFINITIONS['buy-off'].name, timing: 'veto-ceremony',
+            secret: bo.visibility === 'secret', visibility: bo.visibility,
+            removed: [bo.holder], seated: [replacementUp], nominees: [...nominees],
+            detail: `${bo.holder} pays ${hoh} ten thousand dollars to come off the block, and `
+              + `${hoh} has no say in it — ${replacementUp} goes up in their place, named on the `
+              + 'spot in front of the room.',
+            hoh, replacement: replacementUp, amount: 10000,
             beats: [{
-              text: `<strong>${bo.holder}</strong> does not ask. The envelope goes across the table to `
-                + `<strong>${hoh}</strong>, and the ten thousand dollars everybody watched `
+              text: `${bo.holder} does not ask. The envelope goes across the table to `
+                + `${hoh}, and the ten thousand dollars everybody watched `
                 + `${bo.holder} win turns out to have been a key all along. ${bo.holder} steps off `
-                + `the block; ${hoh} has to put <strong>${replacementUp}</strong> up in their place `
+                + `the block; ${hoh} has to put ${replacementUp} up in their place `
                 + `with the room watching and no say in it.`,
               players: [bo.holder, hoh, replacementUp],
               badgeText: 'BOUGHT OFF THE BLOCK', badgeClass: 'gold',

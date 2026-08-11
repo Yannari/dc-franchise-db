@@ -146,6 +146,20 @@ export default {
   //
   // Two months of hotel, then a month of the Mastermind.
   arc: [
+    // ── NIGHT ONE ─────────────────────────────────────────────────────
+    //
+    // The Mastermind takes the host and the relic before anybody has unpacked,
+    // and the house is split in two and sent looking. This is where the season
+    // establishes that it HAS an author — every other act in this arc is that
+    // author doing something, and without this one they are a decor scheme
+    // with opinions.
+    //
+    // It is also where the season's two premiere powers enter: the relic,
+    // which decides who may play for the first crown, and ten thousand dollars
+    // that turn out to be a key. The house spends a fortnight watching the
+    // wrong prize.
+    { at: { week: 1 }, book: 'bb-premiere-mystery' },
+
     // Canon Week 2, and the powers are the real ones: the Secret Power
     // Competition hid three inside the Head of Household comp, and everybody
     // decided in private whether they were playing for the crown or for one of
@@ -230,7 +244,8 @@ export default {
   // it was played once.
   seasonKnobs: { bbSaboteur: 'random', bbSaboteurBankWeek: 4 },
 
-  books: ['bb-secret-power-comp', 'bb-hidden-power', 'bb-white-locust', 'bb-sanctum-week'],
+  books: ['bb-premiere-mystery', 'bb-secret-power-comp', 'bb-hidden-power',
+    'bb-white-locust', 'bb-sanctum-week'],
   weights: { 'bb-hidden-power': 1.8, 'bb-secret-power-comp': 1.5, 'bb-pandoras-box': 1.3 },
   bans: [],
   exclusive: [],

@@ -57,6 +57,17 @@ describe('the theme is a theme the engine already knows how to run', () => {
     expect(Object.keys(t).some(k => k === 'setting')).toBe(false);
   });
 
+  it('opens on night one, which is where the author is established', () => {
+    // Built the premiere card and forgot to book it, so a themed episode 1 was
+    // an ordinary week — reported off the actual season.
+    const first = THEME().arc.filter(a => a.book)[0];
+    expect(first.book).toBe('bb-premiere-mystery');
+    expect(first.at.week).toBe(1);
+    stampThemeArc(17);
+    expect(seasonConfig.twistSchedule.find(t => Number(t.episode) === 1)?.type)
+      .toBe('bb-premiere-mystery');
+  });
+
   it('books only cards that exist', () => {
     for (const act of THEME().arc) {
       if (!act.book) continue;

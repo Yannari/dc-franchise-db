@@ -80,8 +80,18 @@ export function playerRecord(name, weeks) {
     name,
     weeksPlayed: 0,
     comp: { hoh: 0, veto: 0, needed: 0, banked: 0, weeksInPower: [] },
+    // ── THE BLOCK BUSTER IS ITS OWN RECORD ────────────────────────────
+    //
+    // It was folded into nothing at all here: a houseguest who took the arena
+    // three weeks running had a résumé that said no competition wins and three
+    // trips to the block, which reads as somebody who kept getting lucky. It
+    // is the opposite — they won their way off, in front of the house, every
+    // time. `played` is how often they were IN one, so the wins mean
+    // something; `streak` is the consecutive run, because "again and again" is
+    // the whole story of that kind of season and a total cannot say it.
+    blockBuster: { won: 0, played: 0, streak: 0, weeks: [] },
     block: { total: 0, asTarget: 0, asPawn: 0, asReplacement: 0, weeks: [] },
-    survived: { byVeto: 0, byVote: 0, closestMargin: null },
+    survived: { byVeto: 0, byVote: 0, bySafety: 0, closestMargin: null },
     votes: { cast: 0, withHouse: 0, against: 0, changedMind: 0, brokePromise: 0 },
     blindsided: 0,
     votesReceived: 0,
@@ -109,7 +119,20 @@ export function playerRecord(name, weeks) {
     if (week.hoh === name && !inDanger) rec.comp.banked++;
     else if (week.hoh === name) rec.comp.needed++;
 
-    if (onBlock) {
+    // In the arena, and out of it. Read before the block bookkeeping, because
+    // the Block Buster empties a chair before eviction night and the final
+    // nominees no longer contain whoever won their way out.
+    const inArena = (week.blockBeforeSafety || []).includes(name);
+    if (inArena) {
+      rec.blockBuster.played++;
+      if (week.safetyWinner === name) {
+        rec.blockBuster.won++;
+        rec.blockBuster.weeks.push(week.num);
+        rec.survived.bySafety++;
+      }
+    }
+
+    if (onBlock || inArena) {
       rec.block.total++;
       rec.block.weeks.push(week.num);
       if (week.plan?.target === name) rec.block.asTarget++;
@@ -150,6 +173,15 @@ export function playerRecord(name, weeks) {
       rec.evictedWeek = week.num;
       rec.evictedBy = ballots.filter(b => b.voted === name).map(b => b.voter);
     }
+  }
+
+  // The longest run of consecutive weeks they saved themselves. Somebody who
+  // did it in weeks 3, 4 and 5 is a different houseguest from somebody who did
+  // it in weeks 2, 6 and 9, and a total of three cannot tell them apart.
+  let run = 0;
+  for (let i = 0; i < rec.blockBuster.weeks.length; i++) {
+    run = (i && rec.blockBuster.weeks[i] === rec.blockBuster.weeks[i - 1] + 1) ? run + 1 : 1;
+    if (run > rec.blockBuster.streak) rec.blockBuster.streak = run;
   }
 
   rec.voteAlignment = rec.votes.cast ? rec.votes.withHouse / rec.votes.cast : null;
@@ -229,7 +261,19 @@ export function recordLine(rec) {
   const comp = [];
   if (rec.comp.hoh) comp.push(`${rec.comp.hoh} HOH`);
   if (rec.comp.veto) comp.push(`${rec.comp.veto} veto`);
+  // Counted apart from HOH and veto on purpose. Those are won from safety or
+  // for safety; this one is won WITH YOUR NAME ALREADY ON THE WALL, minutes
+  // before a vote that was going to remove you. Folding them together loses
+  // the only competition record in this game that is also a survival record.
+  if (rec.blockBuster?.won) comp.push(`${rec.blockBuster.won} Block Buster`);
   parts.push(comp.length ? comp.join(' + ') : 'no comp wins');
+  if (rec.blockBuster?.won) {
+    parts.push(rec.blockBuster.streak > 1
+      ? `saved themselves ${rec.blockBuster.won}x in the arena, ${rec.blockBuster.streak} weeks running`
+      : `saved themselves in the arena ${rec.blockBuster.won}x of ${rec.blockBuster.played}`);
+  } else if (rec.blockBuster?.played) {
+    parts.push(`in the arena ${rec.blockBuster.played}x and never won it`);
+  }
   if (rec.comp.needed) parts.push(`${rec.comp.needed} won under threat`);
   if (rec.block.total) {
     const how = [];

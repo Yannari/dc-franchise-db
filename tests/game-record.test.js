@@ -243,3 +243,65 @@ describe('the record reaches the writers', () => {
     expect((season.match(/lost by other people playing well/g) || []).length).toBe(2);
   });
 });
+
+// ── the Block Buster is a competition record AND a survival record ──────
+//
+// It was neither. The engine had counted it since the twist was built and the
+// record read by the analysis counted nothing, so a houseguest who won their
+// way off the block three weeks running came out as "no comp wins, three trips
+// to the block" — a description of somebody lucky, when they were the opposite.
+describe('winning your way off the block', () => {
+  const arena = (num, three, winner) => week({
+    num, hoh: 'A', initialNominees: three, blockBeforeSafety: three,
+    safetyWinner: winner,
+    finalNominees: three.filter(n => n !== winner),
+    evicted: three.filter(n => n !== winner)[0],
+    votes: {}, ballots: [],
+  });
+
+  it('is counted apart from HOH and veto', () => {
+    const rec = playerRecord('C', [arena(1, ['B', 'C', 'D'], 'C')]);
+    expect(rec.blockBuster.won).toBe(1);
+    expect(rec.blockBuster.played).toBe(1);
+    // Not folded into the comps — those mean something different.
+    expect(rec.comp.hoh).toBe(0);
+    expect(rec.comp.veto).toBe(0);
+    // And it is a survival, by neither the veto nor the vote.
+    expect(rec.survived.bySafety).toBe(1);
+    expect(rec.survived.byVeto).toBe(0);
+    expect(rec.survived.byVote).toBe(0);
+  });
+
+  it('counts being in one you did not win', () => {
+    const rec = playerRecord('D', [arena(1, ['B', 'C', 'D'], 'C')]);
+    expect(rec.blockBuster.played).toBe(1);
+    expect(rec.blockBuster.won).toBe(0);
+  });
+
+  it('knows the difference between three in a row and three scattered', () => {
+    // The whole reason the streak exists. Same total, different houseguest.
+    const runOf3 = playerRecord('C', [
+      arena(3, ['B', 'C', 'D'], 'C'), arena(4, ['B', 'C', 'D'], 'C'),
+      arena(5, ['B', 'C', 'D'], 'C')]);
+    const scattered = playerRecord('C', [
+      arena(2, ['B', 'C', 'D'], 'C'), arena(6, ['B', 'C', 'D'], 'C'),
+      arena(9, ['B', 'C', 'D'], 'C')]);
+    expect(runOf3.blockBuster.won).toBe(scattered.blockBuster.won);
+    expect(runOf3.blockBuster.streak).toBe(3);
+    expect(scattered.blockBuster.streak).toBe(1);
+  });
+
+  it('says so on the record line, in the words an analyst would use', () => {
+    const rec = playerRecord('C', [
+      arena(3, ['B', 'C', 'D'], 'C'), arena(4, ['B', 'C', 'D'], 'C')]);
+    const line = recordLine({ ...rec, placement: 4 });
+    expect(line).toContain('2 Block Buster');
+    expect(line).toMatch(/2 weeks running/);
+  });
+
+  it('names somebody who kept landing there and never won it', () => {
+    const rec = playerRecord('D', [
+      arena(3, ['B', 'C', 'D'], 'C'), arena(4, ['B', 'C', 'D'], 'C')]);
+    expect(recordLine({ ...rec, placement: 6 })).toContain('never won it');
+  });
+});

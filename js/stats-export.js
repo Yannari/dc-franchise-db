@@ -2698,18 +2698,40 @@ function _bbStats(weeks) {
   const stat = {};
   const ensure = name => (stat[name] ||= {
     hohWins: 0, vetoWins: 0, timesNominated: 0, timesOnBlock: 0, timesSaved: 0, votesReceived: 0,
+    // The arena, kept apart from the comps. See the résumé note below.
+    blockBusterWins: 0, blockBusterPlayed: 0, blockBusterStreak: 0, blockBusterWeeks: [],
   });
 
   for (const week of weeks) {
     if (week.hoh) ensure(week.hoh).hohWins++;
     if (week.vetoWinner) ensure(week.vetoWinner).vetoWins++;
 
+    // ── THE BLOCK BUSTER ────────────────────────────────────────────
+    //
+    // Tracked by the engine since it was built and exported by nothing, so a
+    // houseguest who won their way off the block three weeks running had a
+    // résumé reading "no competition wins, three trips to the block" — which
+    // describes somebody lucky, and they were the opposite.
+    //
+    // Counted separately from HOH and veto rather than added to them: those
+    // are won from safety or for safety, and this one is won with your name
+    // already on the wall, minutes before the vote. `played` makes the wins
+    // mean something, and the weeks make a streak possible.
+    for (const name of week.blockBeforeSafety || []) ensure(name).blockBusterPlayed++;
+    if (week.safetyWinner) {
+      const r = ensure(week.safetyWinner);
+      r.blockBusterWins++;
+      r.blockBusterWeeks.push(week.num);
+    }
+
     // Nominated counts every time a name went up, including as a replacement.
     const nominated = new Set([...(week.initialNominees || []), ...(week.finalNominees || [])]);
     nominated.forEach(name => ensure(name).timesNominated++);
 
     // On the block counts only reaching eviction night still nominated — the
-    // distinction the veto exists to create.
+    // distinction the veto exists to create. Somebody the arena took off the
+    // block never reached eviction night on it, which is the point of the
+    // twist and is why they are counted in blockBusterPlayed instead.
     (week.finalNominees || []).forEach(name => ensure(name).timesOnBlock++);
 
     // Who the VETO took off, not merely who left the block. A Coup replaces
@@ -2719,6 +2741,17 @@ function _bbStats(weeks) {
     vetoSavedIn(week).forEach(name => ensure(name).timesSaved++);
 
     Object.entries(week.votes || {}).forEach(([name, count]) => { ensure(name).votesReceived += count; });
+  }
+
+  // The consecutive run, which is the part a total cannot say. Three saves in
+  // weeks 3, 4 and 5 is a houseguest the house could not remove; three in
+  // weeks 2, 6 and 9 is a houseguest who kept ending up there. Same number.
+  for (const r of Object.values(stat)) {
+    let run = 0;
+    for (let i = 0; i < r.blockBusterWeeks.length; i++) {
+      run = (i && r.blockBusterWeeks[i] === r.blockBusterWeeks[i - 1] + 1) ? run + 1 : 1;
+      if (run > r.blockBusterStreak) r.blockBusterStreak = run;
+    }
   }
   return stat;
 }
@@ -2913,7 +2946,12 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     // somehow appears twice in one season document.
     _stripSeasonFromPlayer(player, seasonNum, 'big-brother');
 
+    // challengeWins stays HOH + veto — the two the rest of the app and every
+    // Total Drama season already mean by it. The arena is its own number, and
+    // an ADDITIONAL one, so nothing that reads challengeWins today changes and
+    // a résumé can still say "and won their way off the block four times".
     const compWins = (bb.hohWins || 0) + (bb.vetoWins || 0);
+    const arenaWins = bb.blockBusterWins || 0;
     if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
     // totalSeasons is set by _rebuildByShow, once the details are final.
     if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
@@ -2922,6 +2960,11 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     player.totalChallengeWins = (player.totalChallengeWins || 0) + compWins;
     player.totalHohWins = (player.totalHohWins || 0) + (bb.hohWins || 0);
     player.totalVetoWins = (player.totalVetoWins || 0) + (bb.vetoWins || 0);
+    player.totalBlockBusterWins = (player.totalBlockBusterWins || 0) + arenaWins;
+    player.totalBlockBusterPlayed = (player.totalBlockBusterPlayed || 0) + (bb.blockBusterPlayed || 0);
+    // A career best, not a sum: the longest run in any single season.
+    player.bestBlockBusterStreak = Math.max(player.bestBlockBusterStreak || 0,
+      bb.blockBusterStreak || 0);
 
     player.seasonDetails.push(_tagSeasonDetail({
       season: seasonNum,
@@ -2934,6 +2977,10 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       bb: {
         hohWins: bb.hohWins || 0,
         vetoWins: bb.vetoWins || 0,
+        blockBusterWins: arenaWins,
+        blockBusterPlayed: bb.blockBusterPlayed || 0,
+        blockBusterStreak: bb.blockBusterStreak || 0,
+        blockBusterWeeks: [...(bb.blockBusterWeeks || [])],
         timesNominated: bb.timesNominated || 0,
         timesOnBlock: bb.timesOnBlock || 0,
         timesSaved: bb.timesSaved || 0,

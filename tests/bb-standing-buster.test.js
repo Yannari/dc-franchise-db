@@ -79,3 +79,39 @@ describe('a house that does not play it', () => {
       .not.toMatch(/won their way off the block/);
   }, 900000);
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// Ireland: one crown, two Block Busters won, and no nomination icon at all.
+//
+// The block counter read finalNominees — the block as it stood at the VOTE —
+// so anybody who came off it disappeared from their own nomination history.
+// Winning your way off twice showed as never having been nominated. The veto
+// erases somebody the same way.
+// ══════════════════════════════════════════════════════════════════════
+describe('coming off the block does not erase going up', () => {
+  it('counts a nomination the Block Buster cancelled', () => {
+    // The board reads the season out of gs.episodeHistory — "as of this week"
+    // — so a record has to be IN the season to be counted, not merely passed.
+    const ep = {
+      num: 9, format: 'big-brother',
+      houseAtStart: ['Ireland', 'Bowie', 'Chase', 'Millie'],
+      initialNominees: ['Ireland', 'Bowie'], finalNominees: ['Bowie'],
+      safetyWinner: 'Ireland', hoh: 'Chase', vetoWinner: 'Millie',
+      vetoUsed: false, eliminated: 'Bowie', votingLog: [],
+    };
+    gs.episodeHistory.push(ep);
+    const html = rpBuildBBOverview(ep, 'closing') || '';
+    gs.episodeHistory.pop();
+    // Both facts on the row: she went up, and she got herself off.
+    expect(html).toMatch(/times on the block/);
+    expect(html).toMatch(/won their way off the block/);
+  });
+
+  it('counts a nomination the veto cancelled', () => {
+    const src = readFileSync('js/vp-screens.js', 'utf8');
+    // Read from the union, so neither route to safety deletes the nomination.
+    expect(src).toMatch(/new Set\(\[\.\.\.\(h\.initialNominees \|\| \[\]\), \.\.\.\(h\.finalNominees \|\| \[\]\)\]\)/);
+    expect(src, 'the final-only read is still there')
+      .not.toMatch(/\(h\.finalNominees \|\| \[\]\)\.forEach\(n => bump\(n, 'block'\)\)/);
+  });
+});

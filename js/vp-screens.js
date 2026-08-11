@@ -23415,7 +23415,18 @@ export function rpBuildBBOverview(ep, phase = 'closing') {
     // not this, so somebody who took the Block Buster three weeks running
     // showed up on the wall as a three-time nominee and nothing else.
     bump(h.safetyWinner, 'buster');
-    (h.finalNominees || []).forEach(n => bump(n, 'block'));
+    // ── EVERY TIME THEY WENT UP, NOT ONLY THE TIMES THEY STAYED UP ──
+    //
+    // This read finalNominees alone, which is the block as it stood at the
+    // vote — so anybody who came OFF it vanished from their own nomination
+    // history. Ireland went up twice, won her way off both times, and the wall
+    // showed her as somebody who had never been nominated in her life. The
+    // veto does the same thing to whoever it saves.
+    //
+    // Being put up is the fact. Getting off it is a different fact, and it has
+    // its own icon two columns over.
+    [...new Set([...(h.initialNominees || []), ...(h.finalNominees || [])])]
+      .forEach(n => bump(n, 'block'));
   });
   // Only a house that plays it should carry the column. On a season without
   // the twist an always-empty icon in the key is a question nobody can answer.

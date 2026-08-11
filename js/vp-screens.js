@@ -19093,40 +19093,179 @@ function _rpThemeBeatDen(ep, act) {
 function _rpThemeBeatMystery(ep, act) {
   const week = ep?.num ?? ep?.episode ?? '';
   const hostile = act?.mood === 'hostile';
+  const gold = hostile ? '#e8dcc0' : '#d9b45c';
+
+  // ── the corridor, in one-point perspective ────────────────────────────
+  //
+  // Drawn rather than stacked out of divs — the project rule, and the only way
+  // this reads as a hotel instead of four rectangles. Everything converges on a
+  // vanishing point behind the far door, so the side walls, the ceiling, the
+  // floor and every door frame are computed from one depth parameter.
+  //
+  // The far door is the one standing open, so the light comes TOWARDS the
+  // viewer down the whole length of the corridor. That is the image the theme
+  // is about: the room you have not found, lit, at the end of a hall.
+  const VX = 310, VY = 188;                    // vanishing point
+  const NEAR = { l: 8, r: 612, t: 14, b: 366 }; // the opening, at the viewer
+  // depth 0 = at the viewer, 1 = at the vanishing point. 0.82 keeps the far
+  // wall a real rectangle rather than a dot.
+  const px = (edge, d) => edge + (VX - edge) * d;
+  const py = (edge, d) => edge + (VY - edge) * d;
+  const FAR = 0.82;
+
+  // Doors down each wall. Each is a quad between two depths, floor to lintel.
+  const doorAt = (side, d0, d1, num, open) => {
+    const ex = side === 'l' ? NEAR.l : NEAR.r;
+    const x0 = px(ex, d0), x1 = px(ex, d1);
+    const top0 = py(NEAR.t, d0) + (py(NEAR.b, d0) - py(NEAR.t, d0)) * 0.14;
+    const bot0 = py(NEAR.b, d0);
+    const top1 = py(NEAR.t, d1) + (py(NEAR.b, d1) - py(NEAR.t, d1)) * 0.14;
+    const bot1 = py(NEAR.b, d1);
+    const mid = (x0 + x1) / 2;
+    const midTop = (top0 + top1) / 2;
+    return `<g class="bbmy-door${open ? ' is-open' : ''}">
+      <polygon points="${x0},${top0} ${x1},${top1} ${x1},${bot1} ${x0},${bot0}"
+               class="bbmy-doorface"/>
+      <polygon points="${x0},${top0} ${x1},${top1} ${x1},${bot1} ${x0},${bot0}"
+               class="bbmy-doorline"/>
+      <text x="${mid}" y="${midTop - 5}" class="bbmy-num">${num}</text>
+    </g>`;
+  };
+
+  const n = Number(week) || 1;
+  const walls = [
+    doorAt('l', 0.10, 0.30, 100 + n * 10 + 1, false),
+    doorAt('l', 0.42, 0.56, 100 + n * 10 + 3, false),
+    doorAt('r', 0.16, 0.36, 100 + n * 10 + 2, false),
+    doorAt('r', 0.48, 0.60, 100 + n * 10 + 4, false),
+  ].join('');
+
+  // The far door, centred on the vanishing point, standing open by a gap that
+  // widens the month the Mastermind takes the building.
+  const fw = 62, fh = 118, gap = hostile ? 26 : 9;
+  const fx = VX - fw / 2, fy = VY - fh * 0.56;
+
   return `<div class="rp-page bb-room bb-block bbmy${hostile ? ' is-hostile' : ''}" data-ambient="tribal-tension">
     <style>
-      .bbmy{--bbmy-glow:var(--theme-accent,#b08bd6);--bbmy-gap:14px}
-      .bbmy.is-hostile{--bbmy-glow:var(--theme-glow,#fff4dc);--bbmy-gap:42px}
-      .bbmy-hall{max-width:1100px;margin:0 auto;padding:44px 24px;text-align:center}
-      .bbmy-door{position:relative;width:150px;height:230px;margin:0 auto 26px;
-        border:2px solid var(--bbmy-glow);border-radius:4px 4px 0 0;
-        background:linear-gradient(180deg, rgba(0,0,0,.86), rgba(0,0,0,.97));
-        box-shadow:0 0 44px rgba(0,0,0,.9) inset;overflow:hidden}
-      /* the gap, and the light coming through it from a room nobody has been in */
-      .bbmy-door::before{content:'';position:absolute;top:0;bottom:0;left:50%;
-        width:var(--bbmy-gap);transform:translateX(-50%);
-        background:linear-gradient(90deg,transparent,var(--bbmy-glow),transparent);
-        filter:blur(3px);opacity:.85;transition:width .6s ease;
-        animation:bbmy-breathe 5.5s ease-in-out infinite}
-      /* the same light, lying across the corridor floor */
-      .bbmy-door::after{content:'';position:absolute;left:50%;bottom:-1px;
-        width:calc(var(--bbmy-gap) * 3);height:10px;transform:translateX(-50%);
-        background:radial-gradient(closest-side, var(--bbmy-glow), transparent);
-        opacity:.5}
-      .bbmy-knob{position:absolute;top:52%;left:18px;width:9px;height:9px;border-radius:50%;
-        background:var(--bbmy-glow);opacity:.6}
-      @keyframes bbmy-breathe{0%,100%{opacity:.6}50%{opacity:1}}
-      @media(prefers-reduced-motion:reduce){.bbmy-door::before{animation:none}}
-      .bbmy-who{font-size:13px;letter-spacing:.34em;text-transform:uppercase;opacity:.75;
-        margin-bottom:16px;color:var(--bbmy-glow)}
-      .bbmy-line{font-size:29px;line-height:1.45;max-width:760px;margin:0 auto;
+      .bbmy{--bbmy-gold:${gold};--bbmy-lamp:var(--theme-glow,#8fe3bb)}
+      .bbmy.is-hostile{--bbmy-lamp:#fff4dc}
+      .bbmy-hall{max-width:1100px;margin:0 auto;padding:26px 24px 44px;text-align:center}
+      .bbmy-sign{font-family:"Bodoni MT",Didot,Georgia,serif;letter-spacing:.36em;
+        font-size:15px;text-transform:uppercase;color:var(--bbmy-gold);
+        text-shadow:0 0 16px var(--bbmy-gold);margin-bottom:2px}
+      .bbmy-sign .bbmy-flick{animation:bbmy-flick 6s steps(1) infinite}
+      @keyframes bbmy-flick{0%,92%,96%{opacity:1}94%,98%{opacity:.2}}
+      .bbmy-rule{width:200px;height:1px;margin:12px auto 18px;
+        background:linear-gradient(90deg,transparent,var(--bbmy-gold),transparent);opacity:.65}
+      .bbmy-svg{width:100%;max-width:660px;height:auto;display:block;margin:0 auto;
+        border:1px solid rgba(217,180,92,.22)}
+      .bbmy-doorface{fill:rgba(0,0,0,.55)}
+      .bbmy-doorline{fill:none;stroke:var(--bbmy-gold);stroke-width:.9;opacity:.55}
+      .bbmy-door.is-open .bbmy-doorline{opacity:.9}
+      .bbmy-num{fill:var(--bbmy-gold);font-size:8px;letter-spacing:.14em;text-anchor:middle;
+        font-family:"Bodoni MT",Didot,Georgia,serif;opacity:.55}
+      .bbmy-glow{animation:bbmy-breathe 5.5s ease-in-out infinite}
+      @keyframes bbmy-breathe{0%,100%{opacity:.62}50%{opacity:1}}
+      @media(prefers-reduced-motion:reduce){
+        .bbmy-glow,.bbmy-sign .bbmy-flick{animation:none}}
+      .bbmy-card{position:relative;max-width:720px;margin:24px auto 0;padding:24px 30px 26px;
+        background:linear-gradient(180deg,rgba(244,236,214,.06),rgba(244,236,214,.02));
+        border:1px solid rgba(217,180,92,.3)}
+      .bbmy-card::before,.bbmy-card::after{content:'';position:absolute;width:13px;height:13px;
+        border:1px solid var(--bbmy-gold);opacity:.55}
+      .bbmy-card::before{top:6px;left:6px;border-right:0;border-bottom:0}
+      .bbmy-card::after{bottom:6px;right:6px;border-left:0;border-top:0}
+      .bbmy-who{font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+        color:var(--bbmy-gold);opacity:.85;margin-bottom:12px}
+      .bbmy-line{font-size:26px;line-height:1.5;margin:0;
         font-family:"Bodoni MT",Didot,Georgia,serif;font-style:italic}
+      .bbmy-key{margin-top:18px;opacity:.75}
     </style>
     ${week === '' ? '' : `<div class="rp-eyebrow">Week ${_bbEsc(String(week))}</div>`}
     <div class="bbmy-hall">
-      <div class="bbmy-door" aria-hidden="true"><span class="bbmy-knob"></span></div>
-      <div class="bbmy-who">${_bbEsc(act?.speaker || '')}</div>
-      <div class="bbmy-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</div>
+      <div class="bbmy-sign">Hotel Myst<span class="bbmy-flick">&egrave;</span>re</div>
+      <div class="bbmy-rule"></div>
+
+      <svg class="bbmy-svg" viewBox="0 0 620 380" role="img"
+           aria-label="A hotel corridor receding to a door standing open">
+        <defs>
+          <filter id="bbmyBlur"><feGaussianBlur stdDeviation="${hostile ? 9 : 5}"/></filter>
+          <linearGradient id="bbmyWallL" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="${hostile ? '#100f0e' : '#0d1f19'}"/>
+            <stop offset="100%" stop-color="${hostile ? '#26241f' : '#1c4034'}"/>
+          </linearGradient>
+          <linearGradient id="bbmyWallR" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="${hostile ? '#100f0e' : '#0d1f19'}"/>
+            <stop offset="100%" stop-color="${hostile ? '#26241f' : '#1c4034'}"/>
+          </linearGradient>
+          <linearGradient id="bbmyFloor" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="${hostile ? '#0a0908' : '#08130f'}"/>
+            <stop offset="100%" stop-color="${hostile ? '#1a1917' : '#123027'}"/>
+          </linearGradient>
+          <pattern id="bbmyPaper" width="26" height="36" patternUnits="userSpaceOnUse">
+            <path d="M13 3 L23 18 L13 33 L3 18 Z" fill="none"
+                  stroke="${gold}" stroke-width=".5" opacity=".20"/>
+          </pattern>
+          <radialGradient id="bbmySpill">
+            <stop offset="0%" stop-color="var(--bbmy-lamp)" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="var(--bbmy-lamp)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <rect width="620" height="380" fill="${hostile ? '#0a0908' : '#08130f'}"/>
+        <!-- ceiling, floor and the two side walls, all converging -->
+        <polygon points="${NEAR.l},${NEAR.t} ${NEAR.r},${NEAR.t}
+                         ${px(NEAR.r, FAR)},${py(NEAR.t, FAR)} ${px(NEAR.l, FAR)},${py(NEAR.t, FAR)}"
+                 fill="${hostile ? '#141312' : '#0b1a15'}"/>
+        <polygon points="${NEAR.l},${NEAR.b} ${NEAR.r},${NEAR.b}
+                         ${px(NEAR.r, FAR)},${py(NEAR.b, FAR)} ${px(NEAR.l, FAR)},${py(NEAR.b, FAR)}"
+                 fill="url(#bbmyFloor)"/>
+        <polygon points="${NEAR.l},${NEAR.t} ${px(NEAR.l, FAR)},${py(NEAR.t, FAR)}
+                         ${px(NEAR.l, FAR)},${py(NEAR.b, FAR)} ${NEAR.l},${NEAR.b}"
+                 fill="url(#bbmyWallL)"/>
+        <polygon points="${NEAR.r},${NEAR.t} ${px(NEAR.r, FAR)},${py(NEAR.t, FAR)}
+                         ${px(NEAR.r, FAR)},${py(NEAR.b, FAR)} ${NEAR.r},${NEAR.b}"
+                 fill="url(#bbmyWallR)"/>
+        <!-- the wallpaper, on the walls only -->
+        <polygon points="${NEAR.l},${NEAR.t} ${px(NEAR.l, FAR)},${py(NEAR.t, FAR)}
+                         ${px(NEAR.l, FAR)},${py(NEAR.b, FAR)} ${NEAR.l},${NEAR.b}"
+                 fill="url(#bbmyPaper)" opacity=".55"/>
+        <polygon points="${NEAR.r},${NEAR.t} ${px(NEAR.r, FAR)},${py(NEAR.t, FAR)}
+                         ${px(NEAR.r, FAR)},${py(NEAR.b, FAR)} ${NEAR.r},${NEAR.b}"
+                 fill="url(#bbmyPaper)" opacity=".55"/>
+
+        ${walls}
+
+        <!-- brass sconces, dimming with distance -->
+        <circle cx="${px(NEAR.l, 0.36)}" cy="${py(NEAR.t, 0.36) + 26}" r="6"
+                fill="var(--bbmy-lamp)" opacity=".5" filter="url(#bbmyBlur)"/>
+        <circle cx="${px(NEAR.r, 0.42)}" cy="${py(NEAR.t, 0.42) + 22}" r="5"
+                fill="var(--bbmy-lamp)" opacity=".42" filter="url(#bbmyBlur)"/>
+
+        <!-- the far door, ajar -->
+        <rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" rx="1"
+              fill="rgba(0,0,0,.8)" stroke="${gold}" stroke-width="1.1" opacity=".95"/>
+        <rect x="${VX - gap / 2}" y="${fy + 2}" width="${gap}" height="${fh - 4}"
+              fill="var(--bbmy-lamp)" filter="url(#bbmyBlur)" class="bbmy-glow"/>
+        <circle cx="${fx + fw - 8}" cy="${fy + fh * 0.55}" r="2.2" fill="${gold}" opacity=".8"/>
+
+        <!-- the light, coming down the corridor towards the viewer -->
+        <polygon points="${VX - gap / 2},${fy + fh} ${VX + gap / 2},${fy + fh}
+                         ${VX + gap * (hostile ? 5 : 3)},${NEAR.b} ${VX - gap * (hostile ? 5 : 3)},${NEAR.b}"
+                 fill="url(#bbmySpill)" opacity="${hostile ? 0.5 : 0.3}" class="bbmy-glow"/>
+      </svg>
+
+      <div class="bbmy-card">
+        <div class="bbmy-who">${_bbEsc(act?.speaker || '')}</div>
+        <p class="bbmy-line">&ldquo;${_bbEsc(act?.line || '')}&rdquo;</p>
+        <svg class="bbmy-key" width="94" height="20" viewBox="0 0 94 20" aria-hidden="true">
+          <circle cx="11" cy="10" r="7.5" fill="none" stroke="${gold}" stroke-width="1.3" opacity=".85"/>
+          <circle cx="11" cy="10" r="2.6" fill="${gold}" opacity=".5"/>
+          <rect x="18" y="8.6" width="52" height="2.8" rx="1.2" fill="${gold}" opacity=".85"/>
+          <rect x="62" y="11.4" width="3" height="6" rx="1" fill="${gold}" opacity=".85"/>
+          <rect x="69" y="11.4" width="3" height="4" rx="1" fill="${gold}" opacity=".85"/>
+        </svg>
+      </div>
     </div>
   </div>`;
 }

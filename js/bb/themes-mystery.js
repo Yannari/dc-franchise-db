@@ -30,13 +30,14 @@ export default {
   tagline: 'Every room in this hotel has a door you have not found.',
   house: 'bb-house',
 
-  // A hotel after midnight rather than a haunted house: mauve and tarnished
-  // gold, deco lettering, black that is slightly violet rather than neutral.
-  // Deliberately nowhere near the other two — the Den is mahogany and brass,
-  // CORA is a teal screen, and both go red-adjacent when they turn. This one
-  // turns the other way: the colour DRAINS out of it, to bone and candle, for
-  // the month the Mastermind is running the building.
-  palette: { accent: '#b08bd6', ink: '#e6e0ee', paper: '#0b0910', glow: '#d8bff2' },
+  // The wiki calls it a haunted hotel, so this is a GRAND HOTEL rather than a
+  // haunted house: deep green walls, brass, lamplight, gold lettering with too
+  // much tracking. The identity is the surface — the Den is mahogany brown,
+  // CORA is a blue-black screen, and nothing else in this game is green.
+  //
+  // And it escalates the opposite way to both of them. They go red; this one
+  // DRAINS, to bone and candle, for the month the Mastermind runs the building.
+  palette: { accent: '#4fbf8b', ink: '#e8f0e8', paper: '#0a1712', glow: '#8fe3bb' },
   fonts: {
     display: '"Bodoni MT", Didot, "Playfair Display", Georgia, serif',
     body: '"Inter", system-ui, sans-serif',
